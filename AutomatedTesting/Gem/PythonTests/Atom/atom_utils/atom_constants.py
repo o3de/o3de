@@ -393,7 +393,7 @@ class AtomComponentProperties:
             'name': 'PostFX Shape Weight Modifier',
             'requires': [AtomComponentProperties.postfx_layer()],
             'shapes': ['Axis Aligned Box Shape', 'Box Shape', 'Capsule Shape', 'Compound Shape', 'Cylinder Shape',
-                       'Disk Shape', 'Polygon Prism Shape', 'Quad Shape', 'Sphere Shape', 'Vegetation Reference Shape'],
+                       'Disk Shape', 'Polygon Prism Shape', 'Quad Shape', 'Sphere Shape', 'Shape Reference'],
         }
         return properties[property]
 

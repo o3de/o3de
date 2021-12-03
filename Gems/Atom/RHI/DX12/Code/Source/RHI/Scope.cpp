@@ -309,7 +309,7 @@ namespace AZ
 
             PIXBeginEvent(0xFFFF00FF, GetId().GetCStr());
 
-            if (RHI::Factory::Get().IsPixModuleLoaded() || RHI::Factory::Get().IsRenderDocModuleLoaded())
+            if (RHI::Factory::Get().PixGpuEventsEnabled())
             {
                 PIXBeginEvent(commandList.GetCommandList(), 0xFFFF00FF, GetId().GetCStr());
             }
@@ -426,7 +426,7 @@ namespace AZ
                 }
             }
 
-            if (RHI::Factory::Get().IsPixModuleLoaded() || RHI::Factory::Get().IsRenderDocModuleLoaded())
+            if (RHI::Factory::Get().PixGpuEventsEnabled())
             {
                 PIXEndEvent(commandList.GetCommandList());
             }

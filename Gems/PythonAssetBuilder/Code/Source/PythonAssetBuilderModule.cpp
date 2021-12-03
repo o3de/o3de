@@ -34,9 +34,7 @@ namespace PythonAssetBuilder
         // Add required SystemComponents to the SystemEntity.
         AZ::ComponentTypeList GetRequiredSystemComponents() const override
         {
-            return AZ::ComponentTypeList {
-                azrtti_typeid<PythonAssetBuilderSystemComponent>(),
-            };
+            return AZ::ComponentTypeList{};
         }
     };
 }

@@ -15,9 +15,9 @@ ly_add_target(
         awsclientauth_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
-            Include/Public
+            Include
         PRIVATE
-            Include/Private
+            Source
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
@@ -35,7 +35,7 @@ ly_add_target(
         awsclientauth_shared_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
-            Include/Private
+            Source
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
@@ -97,8 +97,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             awsclientauth_test_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
-                "Include/Private"
-                "Include/Public"
+                Source
+                Include
                 Tests
         BUILD_DEPENDENCIES
             PRIVATE
