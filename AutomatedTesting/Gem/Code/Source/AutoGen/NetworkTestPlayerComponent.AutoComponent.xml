@@ -19,8 +19,8 @@
   
     <RemoteProcedure Name="AutonomousToAuthorityNoParams" InvokeFrom="Autonomous" HandleOn="Authority" IsPublic="false" IsReliable="false" GenerateEventBindings="true" Description="" />
 
-    <RemoteProcedure Name="AuthorityToAutonomous" InvokeFrom="Authority" HandleOn="Autonomous" IsPublic="false" IsReliable="false" GenerateEventBindings="true" Description="" >
-        <Param Type="float" Name="SomeFloat" />
+    <RemoteProcedure Name="AuthorityToAutonomous_PlayerNumber" InvokeFrom="Authority" HandleOn="Autonomous" IsPublic="false" IsReliable="true" GenerateEventBindings="true" Description="" >
+        <Param Type="int" Name="player_number" />
     </RemoteProcedure>
     
     <RemoteProcedure Name="AuthorityToAutonomousNoParams" InvokeFrom="Authority" HandleOn="Autonomous" IsPublic="false" IsReliable="false" GenerateEventBindings="true" Description="" />
