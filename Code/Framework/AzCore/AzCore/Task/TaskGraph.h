@@ -16,7 +16,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
-#include <aZcore/RTTI/RTTI.h>
+#include <AzCore/RTTI/RTTI.h>
 
 namespace AZ
 {
