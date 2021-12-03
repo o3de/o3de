@@ -55,7 +55,9 @@ class LightCullingTileIterator
 
     uint m_readIndex;
     uint m_value;   
-    // true if there are too many lights / decals assigned to this particular screen tile 
+
+    // true if the maximum number of lights per tile is exceeded
+    // lights will probably flicker if this happens
     bool m_overflow;
     StructuredBuffer<uint> m_lightListRemapped;
 };

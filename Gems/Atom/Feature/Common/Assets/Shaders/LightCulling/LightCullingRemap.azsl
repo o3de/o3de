@@ -145,7 +145,8 @@ void WriteTileLightData(const uint groupIndex, const uint3 groupID, const uint l
         uint4 tileLightData = PassSrg::m_tileLightData[groupID.xy];
         // Used for the heatmap
         tileLightData.w = lightsInWorstBin;
-	// pack a "lights have overflowed bit" into this uint
+        
+        // pack a "lights have overflowed bit" into this uint
         tileLightData.w |= overflow ? (1 << 31) : 0;
 
         PassSrg::m_tileLightData[groupID.xy] = tileLightData;    
@@ -194,7 +195,9 @@ void MainCS(
     GroupMemoryBarrierWithGroupSync();
 
     uint totalLights = PassSrg::m_lightCount.Load(uint3(groupID.xy, 0)).x;
-    bool overflow = totalLights > (NVLC_MAX_POSSIBLE_LIGHTS_PER_BIN - 1);
+    
+    // expect flickering if the max number of lights per tile is exceeded
+    const bool overflow = totalLights > (NVLC_MAX_POSSIBLE_LIGHTS_PER_BIN - 1);
     totalLights = min(totalLights, NVLC_MAX_POSSIBLE_LIGHTS_PER_BIN - 1);
 
     AssignLightsToSharedMemoryBins(groupIndex, groupID, totalLights);

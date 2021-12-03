@@ -315,11 +315,6 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
         lightingOutput.m_diffuseColor.w = -1; // Disable subsurface scattering
     }
 
-    if (lightingData.tileIterator.m_overflow)
-    {
-        lightingOutput.m_diffuseColor = lightingOutput.m_specularColor = float4(1,0,0,1);
-    }
-
     return lightingOutput;
 }
 
