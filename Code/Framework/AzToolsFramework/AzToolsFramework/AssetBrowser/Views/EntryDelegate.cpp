@@ -311,8 +311,8 @@ namespace AzToolsFramework
             QPainter* painter,
             const QStyleOptionViewItem& option,
             const QModelIndex& index,
-            QString& displayString,
-            QRect& remainingRect) const
+            const QString& displayString,
+            const QRect& remainingRect) const
         {
             painter->save();
             painter->setRenderHint(QPainter::Antialiasing);
@@ -321,9 +321,9 @@ namespace AzToolsFramework
             initStyleOption(&optionV4, index);
             optionV4.state &= ~(QStyle::State_HasFocus | QStyle::State_Selected);
 
-            QRect textRect = optionV4.widget->style()->proxy()->subElementRect(QStyle::SE_ItemViewItemText, &optionV4);
+            const QRect textRect = optionV4.widget->style()->proxy()->subElementRect(QStyle::SE_ItemViewItemText, &optionV4);
 
-            QRegularExpression htmlMarkupRegex("<[^>]*>");
+            const QRegularExpression htmlMarkupRegex("<[^>]*>");
 
             // Start with the raw rich text for the entity name.
             QString displayStringRichText =  displayString;
@@ -331,7 +331,7 @@ namespace AzToolsFramework
             // If there is any HTML markup in the entity name, don't elide.
             if (!htmlMarkupRegex.match(displayStringRichText).hasMatch())
             {
-                QFontMetrics fontMetrics(optionV4.font);
+                const QFontMetrics fontMetrics(optionV4.font);
                 int textWidthAvailable = textRect.width();
                 // Qt uses "..." for elide, but there doesn't seem to be a way to retrieve this exact string from Qt.
                 // Subtract the elide string from the width available, so it can actually appear.
