@@ -54,7 +54,7 @@ namespace UnitTest
         AZStd::unique_ptr<ToolsTestApplication> CreateTestApplication() override;
 
         void CreateRootPrefab();
-        void PropagateAllTemplateChanges();
+        virtual void PropagateAllTemplateChanges();
 
         AZ::Entity* CreateEntity(const char* entityName, const bool shouldActivate = true);
         AZ::EntityId CreateEntityWithPrefab(const char* entityName, AZ::EntityId parentId = AZ::EntityId());

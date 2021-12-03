@@ -120,14 +120,15 @@ namespace UnitTest
         }
 
         auto transform = aznew AzToolsFramework::Components::TransformComponent;
-        transform->SetParent(parentId);
         entity->AddComponent(transform);
+        transform->SetParent(parentId);
 
         entity->Activate();
 
         // Update our undo cache entry to include the rename / reparent as one atomic operation.
         m_prefabPublicInterface->GenerateUndoNodesForEntityChangeAndUpdateCache(entityId, m_undoStack->GetTop());
-        m_prefabSystemComponent->OnSystemTick();
+
+        PropagateAllTemplateChanges();
 
         return entityId;
     }
