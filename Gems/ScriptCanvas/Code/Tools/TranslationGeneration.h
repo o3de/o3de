@@ -108,7 +108,7 @@ namespace ScriptCanvasEditorTools
         void TranslateEBus(const AZ::BehaviorEBus* behaviorEBus);
 
         //! Generate the translation data for a specific AZ::Event
-        AZ::Entity* TranslateAZEvent(const AZ::BehaviorMethod& method);
+        bool TranslateSingleAZEvent(const AZ::BehaviorMethod* method);
 
         //! Generate the translation data for AZ::Events
         void TranslateAZEvents();
@@ -132,6 +132,9 @@ namespace ScriptCanvasEditorTools
         void TranslateBehaviorProperty(const AZ::BehaviorProperty* behaviorProperty, const AZStd::string& className, const AZStd::string& context, Entry* entry = nullptr);
 
     private:
+
+        //! Returns the entity for a valid AZ::Event
+        AZ::Entity* GetAZEventNode(const AZ::BehaviorMethod& method);
 
         //! Utility to populate a BehaviorMethod's translation data
         void TranslateMethod(AZ::BehaviorMethod* behaviorMethod, Method& methodEntry);

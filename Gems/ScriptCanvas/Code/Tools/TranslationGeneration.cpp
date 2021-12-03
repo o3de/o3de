@@ -187,7 +187,7 @@ namespace ScriptCanvasEditorTools
         }
     }
 
-    AZ::Entity* TranslationGeneration::TranslateAZEvent(const AZ::BehaviorMethod& method)
+    AZ::Entity* TranslationGeneration::GetAZEventNode(const AZ::BehaviorMethod& method)
     {
         // Make sure the method returns an AZ::Event by reference or pointer
         if (AZ::MethodReturnsAzEventByReferenceOrPointer(method))
@@ -246,6 +246,11 @@ namespace ScriptCanvasEditorTools
             for (const auto& methodPair : behaviorClass->m_methods)
             {
                 const AZ::BehaviorMethod* behaviorMethod = methodPair.second;
+
+                if (TranslateSingleAZEvent(behaviorMethod))
+                {
+                    continue;
+                }
 
                 Method methodEntry;
 
@@ -362,20 +367,79 @@ namespace ScriptCanvasEditorTools
         return true;
     }
 
+    //! Generate the translation data for a specific AZ::Event
+    bool TranslationGeneration::TranslateSingleAZEvent(const AZ::BehaviorMethod* method)
+    {
+        AZ::Entity* node = GetAZEventNode(*method);
+        if (!node)
+        {
+            return false;
+        }
+
+        TranslationFormat translationRoot;
+
+        ScriptCanvas::Nodes::Core::AzEventHandler* nodeComponent = node->FindComponent<ScriptCanvas::Nodes::Core::AzEventHandler>();
+        nodeComponent->Init();
+        nodeComponent->Configure();
+
+        const ScriptCanvas::Nodes::Core::AzEventEntry& azEventEntry{ nodeComponent->GetEventEntry() };
+
+        Entry entry;
+        entry.m_key = azEventEntry.m_eventName;
+        entry.m_context = "AZEventHandler";
+        entry.m_details.m_name = azEventEntry.m_eventName;
+
+        SplitCamelCase(entry.m_details.m_name);
+
+        for (const ScriptCanvas::Slot& slot : nodeComponent->GetSlots())
+        {
+            Slot slotEntry;
+
+            if (slot.IsVisible())
+            {
+                slotEntry.m_key = slot.GetName();
+
+                if (slot.GetId() == azEventEntry.m_azEventInputSlotId)
+                {
+                    slotEntry.m_details.m_name = azEventEntry.m_eventName;
+                }
+                else
+                {
+                    slotEntry.m_details.m_name = slot.GetName();
+                }
+
+                entry.m_slots.push_back(slotEntry);
+            }
+        }
+
+        translationRoot.m_entries.push_back(entry);
+
+        // delete the node, don't need to keep it beyond this point
+        delete node;
+
+
+        AZStd::string filename = GraphCanvas::TranslationKey::Sanitize(entry.m_key);
+
+        AZStd::string targetFile = AZStd::string::format("AZEvents/%s", filename.c_str());
+
+        SaveJSONData(targetFile, translationRoot);
+
+        translationRoot.m_entries.clear();
+
+        return true;
+    }
+
+
     void TranslationGeneration::TranslateAZEvents()
     {
         GraphCanvas::TranslationKey translationKey;
-        AZStd::vector<AZ::Entity*> nodes;
+        AZStd::vector<AZ::BehaviorMethod*> methods;
 
         // Methods
         for (const auto& behaviorMethod : m_behaviorContext->m_methods)
         {
-            const auto& method = *behaviorMethod.second;
-            AZ::Entity* node = TranslateAZEvent(method);
-            if (node)
-            {
-                nodes.push_back(node);
-            }
+            const auto method = behaviorMethod.second;
+            methods.push_back(method);
         }
 
         // Methods in classes
@@ -383,66 +447,14 @@ namespace ScriptCanvasEditorTools
         {
             for (auto behaviorMethod : behaviorClass.second->m_methods)
             {
-                const auto& method = *behaviorMethod.second;
-                AZ::Entity* node = TranslateAZEvent(method);
-                if (node)
-                {
-                    nodes.push_back(node);
-                }
+                const auto method = behaviorMethod.second;
+                methods.push_back(method);
             }
         }
 
-        TranslationFormat translationRoot;
-
-        for (auto& node : nodes)
+        for (auto& method : methods)
         {
-            ScriptCanvas::Nodes::Core::AzEventHandler* nodeComponent = node->FindComponent<ScriptCanvas::Nodes::Core::AzEventHandler>();
-            nodeComponent->Init();
-            nodeComponent->Configure();
-
-            const ScriptCanvas::Nodes::Core::AzEventEntry& azEventEntry{ nodeComponent->GetEventEntry() };
-
-            Entry entry;
-            entry.m_key = azEventEntry.m_eventName;
-            entry.m_context = "AZEventHandler";
-            entry.m_details.m_name = azEventEntry.m_eventName;
-
-            SplitCamelCase(entry.m_details.m_name);
-
-            for (const ScriptCanvas::Slot& slot : nodeComponent->GetSlots())
-            {
-                Slot slotEntry;
-
-                if (slot.IsVisible())
-                {
-                    slotEntry.m_key = slot.GetName();
-
-                    if (slot.GetId() == azEventEntry.m_azEventInputSlotId)
-                    {
-                        slotEntry.m_details.m_name = azEventEntry.m_eventName;
-                    }
-                    else
-                    {
-                        slotEntry.m_details.m_name = slot.GetName();
-                    }
-
-                    entry.m_slots.push_back(slotEntry);
-                }
-            }
-
-            translationRoot.m_entries.push_back(entry);
-
-            // delete the node, don't need to keep it beyond this point
-            delete node;
-
-
-            AZStd::string filename = GraphCanvas::TranslationKey::Sanitize(entry.m_key);
-
-            AZStd::string targetFile = AZStd::string::format("AZEvents/%s", filename.c_str());
-
-            SaveJSONData(targetFile, translationRoot);
-
-            translationRoot.m_entries.clear();
+            TranslateSingleAZEvent(method);
         }
     }
 
@@ -930,9 +942,7 @@ namespace ScriptCanvasEditorTools
             // We know this is a getter, so there will only be one parameter, we will use the method name as a best
             // guess for the argument name
             SplitCamelCase(cleanName);
-            method.m_arguments.push_back(); // argument 0 is reserve for a "return value" which there won't be one
-            method.m_arguments.push_back(); // adding entry for the argument name
-            method.m_arguments[1].m_details.m_name = cleanName;
+            method.m_results[0].m_details.m_name = cleanName;
 
             entry->m_methods.push_back(method);
 
