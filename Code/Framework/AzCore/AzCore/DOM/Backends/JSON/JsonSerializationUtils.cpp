@@ -105,7 +105,7 @@ namespace AZ::Dom::Json
             return VisitorFailure(
                 VisitorErrorCode::InternalError,
                 AZStd::string::format(
-                    "EndObject: Expected %lu attributes but received %lu attributes instead", attributeCount,
+                    "EndObject: Expected %llu attributes but received %llu attributes instead", attributeCount,
                     m_entryStack.front().m_entryCount));
         }
 
@@ -159,7 +159,7 @@ namespace AZ::Dom::Json
             return VisitorFailure(
                 VisitorErrorCode::InternalError,
                 AZStd::string::format(
-                    "EndArray: Expected %lu elements but received %lu elements instead", elementCount, m_entryStack.front().m_entryCount));
+                    "EndArray: Expected %llu elements but received %llu elements instead", elementCount, m_entryStack.front().m_entryCount));
         }
 
         m_entryStack.pop_front();
