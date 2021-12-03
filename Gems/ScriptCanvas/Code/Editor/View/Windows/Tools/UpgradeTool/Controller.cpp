@@ -17,7 +17,6 @@
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/TickBus.h>
-#include <AzCore/IO/FileIOEventBus.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/UserSettings/UserSettingsProvider.h>
 #include <AzFramework/Asset/AssetSystemBus.h>

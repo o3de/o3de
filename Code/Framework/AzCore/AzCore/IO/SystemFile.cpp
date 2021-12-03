@@ -8,7 +8,6 @@
 
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/IO/FileIO.h>
-#include <AzCore/IO/FileIOEventBus.h>
 
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/std/functional.h>
@@ -101,7 +100,6 @@ bool SystemFile::Open(const char* fileName, int mode, int platformFlags)
     {
         if (strlen(fileName) > m_fileName.max_size())
         {
-            EBUS_EVENT(FileIOEventBus, OnError, this, nullptr, 0);
             return false;
         }
 

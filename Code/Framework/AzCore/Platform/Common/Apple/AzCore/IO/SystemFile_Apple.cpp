@@ -7,7 +7,6 @@
  */
 
 #include <AzCore/IO/FileIO.h>
-#include <AzCore/IO/FileIOEventBus.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/string/wildcard.h>
@@ -44,21 +43,7 @@ namespace AZ::IO::Platform
                 entry = readdir(dir);
             }
 
-            int lastError = errno;
-            if (lastError != 0)
-            {
-                EBUS_EVENT(FileIOEventBus, OnError, nullptr, filter, lastError);
-            }
-
             closedir(dir);
-        }
-        else
-        {
-            int lastError = errno;
-            if (lastError != ENOENT)
-            {
-                EBUS_EVENT(FileIOEventBus, OnError, nullptr, filter, 0);
-            }
         }
     }
 }

@@ -8,44 +8,12 @@
 
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/TickBus.h>
-#include <AzCore/IO/FileIOEventBus.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/IO/FileOperations.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/FileSaver.h>
 #include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
-
-namespace FileSaverCpp
-{
-    class FileEventHandler
-        : public AZ::IO::FileIOEventBus::Handler
-    {
-    public:
-        int m_errorCode = 0;
-        AZStd::string m_fileName;
-
-        FileEventHandler()
-        {
-            BusConnect();
-        }
-
-        ~FileEventHandler()
-        {
-            BusDisconnect();
-        }
-
-        void OnError(const AZ::IO::SystemFile* /*file*/, const char* fileName, int errorCode) override
-        {
-            m_errorCode = errorCode;
-
-            if (fileName)
-            {
-                m_fileName = fileName;
-            }
-        }
-    };
-}
 
 namespace ScriptCanvasEditor
 {
@@ -63,8 +31,6 @@ namespace ScriptCanvasEditor
             , AZStd::string target
             , size_t remainingAttempts)
         {
-            FileSaverCpp::FileEventHandler fileEventHandler;
-
             if (remainingAttempts == 0)
             {
                 AZ::SystemTickBus::QueueFunction([this, tmpFileName]()
