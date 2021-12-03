@@ -808,6 +808,21 @@ namespace AudioControls
                                 {
                                     AZ::StringFunc::Path::StripExtension(sControlName);
                                 }
+                                else if (eControlType == eACET_SWITCH_STATE)
+                                {
+                                    if (!pATLParent->SwitchStateConnectionCheck(pAudioSystemControl))
+                                    {
+                                        QMessageBox messageBox(this);
+                                        messageBox.setStandardButtons(QMessageBox::Ok);
+                                        messageBox.setDefaultButton(QMessageBox::Ok);
+                                        messageBox.setWindowTitle("Audio Controls Editor");
+                                        messageBox.setText("Not in the same switch group, connection failed.");
+                                        if (messageBox.exec() == QMessageBox::Ok)
+                                        {
+                                            return;
+                                        }
+                                    }
+                                }
                                 CATLControl* pTargetControl2 = m_pTreeModel->CreateControl(eControlType, sControlName, pATLParent);
                                 if (pTargetControl2)
                                 {
