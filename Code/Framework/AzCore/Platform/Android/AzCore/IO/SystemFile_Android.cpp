@@ -215,7 +215,7 @@ namespace Platform
     {
         if (handle != PlatformSpecificInvalidHandle)
         {
-            off_t result = fseeko(handle, static_cast<off_t>(offset), mode);
+            fseeko(handle, static_cast<off_t>(offset), mode);
         }
     }
 

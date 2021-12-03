@@ -78,8 +78,14 @@ AllocatorDebugConfig BestFitExternalMapAllocator::GetDebugConfig()
 // Allocate
 // [1/28/2011]
 //=========================================================================
-BestFitExternalMapAllocator::pointer_type
-BestFitExternalMapAllocator::Allocate(size_type byteSize, size_type alignment, int flags, const char* name, const char* fileName, int lineNum, unsigned int suppressStackRecord)
+BestFitExternalMapAllocator::pointer_type BestFitExternalMapAllocator::Allocate(
+    size_type byteSize,
+    size_type alignment,
+    int flags,
+    [[maybe_unused]] const char* name,
+    [[maybe_unused]] const char* fileName,
+    [[maybe_unused]] int lineNum,
+    unsigned int suppressStackRecord)
 {
     (void)suppressStackRecord;
 
