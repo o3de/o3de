@@ -13,6 +13,7 @@
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 
 #include <QMimeData>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QRegularExpression::d': class 'QExplicitlySharedDataPointer<QRegularExpressionPrivate>' needs to have dll-interface to be used by clients of class 'QRegularExpression'
@@ -162,7 +163,7 @@ namespace AzToolsFramework
         {
             return aznumeric_cast<int>(AssetBrowserEntry::Column::Count);
         }
-
+        
         QVariant AssetBrowserModel::data(const QModelIndex& index, int role) const
         {
             if (!index.isValid())
@@ -266,6 +267,11 @@ namespace AzToolsFramework
         void AssetBrowserModel::SetRootEntry(AZStd::shared_ptr<RootAssetBrowserEntry> rootEntry)
         {
             m_rootEntry = rootEntry;
+        }
+
+        void AssetBrowser::AssetBrowserModel::setFilterModel(AssetBrowserFilterModel* filterModel)
+        {
+            m_filterModel = filterModel;
         }
 
         QModelIndex AssetBrowserModel::parent(const QModelIndex& child) const
@@ -391,6 +397,11 @@ namespace AzToolsFramework
             int row = entry->row();
             index = createIndex(row, aznumeric_cast<int>(AssetBrowserEntry::Column::DisplayName), entry);
             return true;
+        }
+
+        const AssetBrowserFilterModel* AssetBrowserModel::GetFilterModel() const
+        {
+            return m_filterModel;
         }
 
     } // namespace AssetBrowser

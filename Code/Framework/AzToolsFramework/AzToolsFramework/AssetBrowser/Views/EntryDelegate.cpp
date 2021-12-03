@@ -9,12 +9,15 @@
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 #include <AzToolsFramework/AssetBrowser/Views/EntryDelegate.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzQtComponents/Components/StyledBusyLabel.h>
 
 #include <QApplication>
+#include <QTextDocument>
+
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // 4251: class 'QScopedPointer<QBrushData,QBrushDataPointerDeleter>' needs to have dll-interface to be used by clients of class 'QBrush'
                                                                // 4800: 'uint': forcing value to bool 'true' or 'false' (performance warning)
 #include <QAbstractItemView>
@@ -166,7 +169,7 @@ namespace AzToolsFramework
             if (data.canConvert<const AssetBrowserEntry*>())
             {
                 bool isEnabled = (option.state & QStyle::State_Enabled) != 0;
-                bool isSelected = (option.state & QStyle::State_Selected) != 0;
+                [[maybe_unused]] bool isSelected = (option.state & QStyle::State_Selected) != 0;
 
                 QStyle* style = option.widget ? option.widget->style() : QApplication::style();
 
@@ -265,14 +268,103 @@ namespace AzToolsFramework
                     remainingRect.adjust(thumbX, 0, 0, 0); // bump it to the right by the size of the thumbnail
                     remainingRect.adjust(EntrySpacingLeftPixels, 0, 0, 0); // bump it to the right by the spacing.
                 }
+
                 QString displayString = index.column() == aznumeric_cast<int>(AssetBrowserEntry::Column::Name)
                     ? qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::Name)))
                     : qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::Path)));
 
-                style->drawItemText(
-                    painter, remainingRect, option.displayAlignment, actualPalette, isEnabled, displayString,
-                    isSelected ? QPalette::HighlightedText : QPalette::Text);
+                AssetBrowserModel* abModel;
+                AssetBrowserComponentRequestBus::BroadcastResult(abModel, &AssetBrowserComponentRequests::GetAssetBrowserModel);
+                AZ_Assert(abModel, "Failed to get filebrowser model");
+                const AssetBrowserFilterModel* filterModel = abModel->GetFilterModel();
+                QString label{ displayString.data() };
+                if (!displayString.isNull() && filterModel->GetStringFilter() &&
+                    !filterModel->GetStringFilter()->GetFilterString().isEmpty())
+                {
+                    
+                    QString filterString = abModel->GetFilterModel()->GetStringFilter()->GetFilterString();
+                    // highlight characters in filter
+                    int highlightTextIndex = 0;
+                    do
+                    {
+                        highlightTextIndex = label.lastIndexOf(filterString, highlightTextIndex - 1, Qt::CaseInsensitive);
+                        if (highlightTextIndex >= 0)
+                        {
+                            const QString BACKGROUND_COLOR{ /*"#FFFF99"*/ /*"#FF007F"*/ "#707070" /*"#CFCFC9"*/ };
+                            label.insert(static_cast<int>(highlightTextIndex + filterString.length()), "</span>");
+                            label.insert(highlightTextIndex, "<span style=\"background-color: " + BACKGROUND_COLOR + "\">");
+                        }
+                    } while (highlightTextIndex > 0);
+                }
+
+                PaintEntryNameAsRichText(painter, option, index, label, remainingRect);
+                
+                //style->drawItemText(
+                //    painter, remainingRect, option.displayAlignment, actualPalette, isEnabled, label,
+                //    isSelected ? QPalette::HighlightedText : QPalette::Text);
             }
+        }
+
+        void SearchEntryDelegate::PaintEntryNameAsRichText(
+            QPainter* painter,
+            const QStyleOptionViewItem& option,
+            const QModelIndex& index,
+            QString& displayString,
+            QRect& remainingRect) const
+        {
+            painter->save();
+            painter->setRenderHint(QPainter::Antialiasing);
+
+            QStyleOptionViewItem optionV4{ option };
+            initStyleOption(&optionV4, index);
+            optionV4.state &= ~(QStyle::State_HasFocus | QStyle::State_Selected);
+
+            QRect textRect = optionV4.widget->style()->proxy()->subElementRect(QStyle::SE_ItemViewItemText, &optionV4);
+
+            QRegularExpression htmlMarkupRegex("<[^>]*>");
+
+            // Start with the raw rich text for the entity name.
+            QString displayStringRichText =  displayString;//optionV4.text;
+
+            // If there is any HTML markup in the entity name, don't elide.
+            if (!htmlMarkupRegex.match(displayStringRichText).hasMatch())
+            {
+                QFontMetrics fontMetrics(optionV4.font);
+                int textWidthAvailable = textRect.width();
+                // Qt uses "..." for elide, but there doesn't seem to be a way to retrieve this exact string from Qt.
+                // Subtract the elide string from the width available, so it can actually appear.
+                textWidthAvailable -= fontMetrics.horizontalAdvance(QObject::tr("..."));
+                if (!displayString.isEmpty())
+                {
+                    QString htmlStripped = displayString;
+                    htmlStripped.remove(htmlMarkupRegex);
+                    textWidthAvailable -= fontMetrics.horizontalAdvance(htmlStripped) + 5;
+                }
+
+                displayStringRichText = fontMetrics.elidedText(optionV4.text, Qt::TextElideMode::ElideRight, textWidthAvailable);
+            }
+
+            //// delete the text from the item so we can use the standard painter to draw the icon
+            //optionV4.text.clear();
+            //optionV4.widget->style()->drawControl(QStyle::CE_ItemViewItem, &optionV4, painter);
+
+            // Now we setup a Text Document so it can draw the rich text
+            QTextDocument textDoc;
+            textDoc.setDefaultFont(optionV4.font);
+            if (option.state & QStyle::State_Enabled)
+            {
+                textDoc.setDefaultStyleSheet("body {color: white}");
+            }
+            else
+            {
+                textDoc.setDefaultStyleSheet("body {color: #7C7C7C}");
+            }
+            textDoc.setHtml("<body>" + displayStringRichText + "</body>");
+            painter->translate(remainingRect.topLeft());
+            textDoc.setTextWidth(remainingRect.width());
+            textDoc.drawContents(painter, QRectF(0, 0, remainingRect.width(), remainingRect.height()));
+
+            painter->restore();
         }
 
         void SearchEntryDelegate::LoadBranchPixMaps()

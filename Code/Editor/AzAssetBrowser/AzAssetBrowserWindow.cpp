@@ -17,6 +17,8 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserTableModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 
 // AzQtComponents
 #include <AzQtComponents/Utilities/QtWindowUtilities.h>
@@ -83,6 +85,9 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     m_ui->m_assetBrowserTableViewWidget->setVisible(false);
     m_ui->m_toggleDisplayViewBtn->setVisible(false);
     m_ui->m_searchWidget->SetFilterInputInterval(AZStd::chrono::milliseconds(250));
+
+    m_assetBrowserModel->setFilterModel(m_filterModel.data());
+
     if (ed_useNewAssetBrowserTableView)
     {
         m_ui->m_toggleDisplayViewBtn->setVisible(true);
