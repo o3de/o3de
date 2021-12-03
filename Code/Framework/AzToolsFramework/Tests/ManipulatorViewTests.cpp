@@ -21,9 +21,6 @@
 #include <AzToolsFramework/UnitTest/ToolsTestApplication.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace UnitTest
 {
     using namespace AzToolsFramework;
@@ -102,19 +99,8 @@ namespace UnitTest
         EXPECT_NEAR(scale, 2.0f, std::numeric_limits<float>::epsilon());
     }
 
-    TEST_F(ManipulatorViewTest, SomeTest)
+    TEST_F(ManipulatorViewTest, ManipulatorViewQuadDrawsAtCorrectPositionWhenManipulatorSpaceIsScaledUniformlyAndNonUniformly)
     {
-        auto testDebugDisplayRequests = AZStd::make_shared<TestDebugDisplayRequests>();
-
-        // create the direct call manipulator viewport interaction and an immediate mode dispatcher
-        AZStd::unique_ptr<AzManipulatorTestFramework::ManipulatorViewportInteraction> viewportManipulatorInteraction =
-            AZStd::make_unique<AzManipulatorTestFramework::DirectCallManipulatorViewportInteraction>(testDebugDisplayRequests);
-        AZStd::unique_ptr<AzManipulatorTestFramework::ImmediateModeActionDispatcher> actionDispatcher =
-            AZStd::make_unique<AzManipulatorTestFramework::ImmediateModeActionDispatcher>(*viewportManipulatorInteraction);
-
-        auto planarTranslationViewQuad = CreateManipulatorViewQuadForPlanarTranslationManipulator(
-            AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Color::CreateZero(), AZ::Color::CreateZero(), 2.0f, 0.28f, 0.6f);
-
         const AZ::Transform space =
             AZ::Transform::CreateTranslation(AZ::Vector3(2.0f, -3.0f, -4.0f)) * AZ::Transform::CreateUniformScale(2.0f);
         const AZ::Vector3 localPosition = AZ::Vector3(2.0f, -2.0f, 0.0f);
@@ -128,23 +114,30 @@ namespace UnitTest
         manipulatorState.m_nonUniformScale = nonUniformScale;
         manipulatorState.m_localPosition = AZ::Vector3::CreateZero();
 
-        // camera 2.50, -8.00, 22.00, -90.00, 0.00
+        // camera (go to position format) - 10.00, -15.00, 22.00, -90.00, 0.00
         const AzFramework::CameraState cameraState = AzFramework::CreateDefaultCamera(
             AZ::Transform::CreateFromMatrix3x3AndTranslation(
-                AZ::Matrix3x3::CreateRotationX(AZ::DegToRad(-90.0f)), AZ::Vector3(2.5f, -8.0f, 22.0f)),
+                AZ::Matrix3x3::CreateRotationX(AZ::DegToRad(-90.0f)), AZ::Vector3(10.0f, -15.0f, 6.0f)),
             AZ::Vector2(1280, 720));
 
+        auto testDebugDisplayRequests = AZStd::make_shared<TestDebugDisplayRequests>();
+        auto planarTranslationViewQuad = CreateManipulatorViewQuadForPlanarTranslationManipulator(
+            AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Color::CreateZero(), AZ::Color::CreateZero(), 2.2f, 0.2f, 1.0f);
+
         planarTranslationViewQuad->Draw(
-            viewportManipulatorInteraction->GetManipulatorManagerId(), AzToolsFramework::ManipulatorManagerState{ false },
+            AzToolsFramework::ManipulatorManagerId(1), AzToolsFramework::ManipulatorManagerState{ false },
             AzToolsFramework::ManipulatorId(1), manipulatorState, *testDebugDisplayRequests, cameraState,
             AzToolsFramework::ViewportInteraction::MouseInteraction{});
 
-        auto points = testDebugDisplayRequests->GetPoints();
+        const AZStd::vector<AZ::Vector3> expectedDisplayPositions = {
+            AZ::Vector3(10.5f, -13.5f, -4.0f), AZ::Vector3(11.5f, -13.5f, -4.0f), AZ::Vector3(10.5f, -14.5f, -4.0f),
+            AZ::Vector3(11.5f, -14.5f, -4.0f), AZ::Vector3(10.5f, -13.5f, -4.0f), AZ::Vector3(10.5f, -14.5f, -4.0f),
+            AZ::Vector3(11.5f, -14.5f, -4.0f), AZ::Vector3(11.5f, -13.5f, -4.0f)
+        };
 
-        int i;
-        i = 0;
+        const auto points = testDebugDisplayRequests->GetPoints();
+
+        using ::testing::UnorderedPointwise;
+        EXPECT_THAT(points, UnorderedPointwise(ContainerIsClose(), expectedDisplayPositions));
     }
 } // namespace UnitTest
-
-#pragma optimize("", on)
-#pragma inline_depth()

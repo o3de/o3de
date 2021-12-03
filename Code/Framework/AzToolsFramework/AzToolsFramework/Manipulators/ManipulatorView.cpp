@@ -383,8 +383,8 @@ namespace AzToolsFramework
         debugDisplay.DrawLine(quadBoundVisual.m_corner1, quadBoundVisual.m_corner2);
 
         debugDisplay.SetColor(ViewColor(manipulatorState.m_mouseOver, m_axis2Color, m_mouseOverColor).GetAsVector4());
+        debugDisplay.DrawLine(quadBoundVisual.m_corner4, quadBoundVisual.m_corner1);
         debugDisplay.DrawLine(quadBoundVisual.m_corner2, quadBoundVisual.m_corner3);
-        debugDisplay.DrawLine(quadBoundVisual.m_corner1, quadBoundVisual.m_corner4);
 
         if (manipulatorState.m_mouseOver)
         {
