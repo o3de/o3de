@@ -6,6 +6,8 @@
  *
  */
 
+#pragma once
+
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/XcbEventHandler.h>
 #include <AzFramework/XcbInterface.h>

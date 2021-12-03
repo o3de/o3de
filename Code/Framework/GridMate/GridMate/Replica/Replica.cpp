@@ -579,7 +579,6 @@ namespace GridMate
             chunkInfo.m_payload.Init(128);
             mc.m_outBuffer = &chunkInfo.m_payload;
 
-            PackedSize writeOffset = mc.m_outBuffer->GetExactSize();
             // Write the ctor data if we need to
             if (mc.m_marshalFlags & ReplicaMarshalFlags::IncludeCtorData)
             {
