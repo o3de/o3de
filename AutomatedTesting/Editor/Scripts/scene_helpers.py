@@ -20,18 +20,18 @@ def log_exception_traceback():
     logger.error(data)
 
 
-def sanitize_name_for_disk(name: str):
+def sanitize_name_for_disk(name: str) -> str:
     """Removes illegal filename characters from a string.
 
     Parameters
     ----------
     name :
         String to clean.
-        
+
 
     Returns
     -------
-    type
+    str
         Name with illegal characters removed.
 
     """
@@ -49,7 +49,7 @@ def get_mesh_node_names(scene_graph: sceneData.SceneGraph) -> Tuple[List[SceneGr
 
     Returns
     -------
-    type
+    Tuple[List[SceneGraphName], List[str]]
         Tuple of [Mesh Nodes, All Node Paths]
 
     """

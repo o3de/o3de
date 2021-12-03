@@ -141,7 +141,7 @@ class SceneManifest:
 
         Returns
         -------
-        type
+        dict
             Newly created mesh group.
 
         """
@@ -169,7 +169,7 @@ class SceneManifest:
 
         Returns
         -------
-        type
+        dict
             The newly created Prefab group
 
         """
@@ -344,7 +344,7 @@ class SceneManifest:
 
         Returns
         -------
-        type
+        dict
             LOD rule.
 
         """
@@ -367,7 +367,7 @@ class SceneManifest:
 
         Returns
         -------
-        type
+        dict
             LOD level.
 
         """
@@ -562,7 +562,7 @@ class SceneManifest:
 
         Returns
         -------
-        type
+        dict
             The newly created mesh group.
 
         """
@@ -630,7 +630,7 @@ class SceneManifest:
 
         Returns
         -------
-        type
+        dict
             The newly created mesh group.
 
         """
@@ -672,7 +672,7 @@ class SceneManifest:
 
         Returns
         -------
-        type
+        dict
             The newly created mesh group.
 
         """
