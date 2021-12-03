@@ -860,17 +860,20 @@ namespace AzToolsFramework
                     return;
                 }
 
+                bool suppressTransformChangedEvent = m_suppressTransformChangedEvent;
+                // temporarily disable calling OnTransformChanged, because CheckApplyCachedWorldTransform is not guaranteed
+                // to call it when m_cachedWorldTransform is identity. We send it manually later.
+                m_suppressTransformChangedEvent = false;
+                // When parent comes online, compute local TM from world TM.
+                CheckApplyCachedWorldTransform(parentTransform->GetWorldTM());
                 if (!m_initialized)
                 {
                     m_initialized = true;
-                    // OnTransformChanged should only be called once when entity is recreated
+                    // If this is the first time this entity is being activated, manually compute OnTransformChanged
+                    // this can occur when either the entity first created or undo/redo command is performed
                     OnTransformChanged(AZ::Transform::Identity(), parentTransform->GetWorldTM());
                 }
-                else
-                {
-                    // When parent comes online, compute local TM from world TM.
-                    CheckApplyCachedWorldTransform(parentTransform->GetWorldTM());
-                }
+                m_suppressTransformChangedEvent = suppressTransformChangedEvent;
 
                 auto& parentChildIds = GetParentTransformComponent()->m_childrenEntityIds;
                 if (parentChildIds.end() == AZStd::find(parentChildIds.begin(), parentChildIds.end(), GetEntityId()))
