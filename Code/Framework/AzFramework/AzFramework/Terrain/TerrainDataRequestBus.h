@@ -144,8 +144,7 @@ namespace AzFramework
                 return result;
             }
             SurfaceData::SurfacePoint BehaviorContextGetSurfacePointFromVector2(
-                const AZ::Vector2& inPosition,
-                Sampler sampleFilter = Sampler::DEFAULT) const
+                const AZ::Vector2& inPosition, Sampler sampleFilter = Sampler::DEFAULT) const
             {
                 SurfaceData::SurfacePoint result;
                 GetSurfacePointFromVector2(inPosition, result, sampleFilter);
