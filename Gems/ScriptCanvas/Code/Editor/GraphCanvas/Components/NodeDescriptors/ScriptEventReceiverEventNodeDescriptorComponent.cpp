@@ -177,9 +177,11 @@ namespace ScriptCanvasEditor
 
                     if (scriptCanvasSlot && scriptCanvasSlot->IsVisible())
                     {
-                        Nodes::DisplayScriptCanvasSlot(GetEntityId(), (*scriptCanvasSlot));
+                        Nodes::DisplayScriptCanvasSlot(GetEntityId(), (*scriptCanvasSlot), 0);
                     }
 
+                    int paramIndex = 0;
+                    int outputIndex = 0;
                     //
                     // inputCount and outputCount work because the order of the slots is maintained from the BehaviorContext, if this changes
                     // in the future then we should consider storing the actual offset or key name at that time.
@@ -188,10 +190,14 @@ namespace ScriptCanvasEditor
                     {
                         scriptCanvasSlot = eventHandler->GetSlot(slotId);
 
+                        int& index = (scriptCanvasSlot->IsData() && scriptCanvasSlot->IsInput()) ? paramIndex : outputIndex;
+
                         if (scriptCanvasSlot && scriptCanvasSlot->IsVisible())
                         {
-                            Nodes::DisplayScriptCanvasSlot(GetEntityId(), (*scriptCanvasSlot));
+                            Nodes::DisplayScriptCanvasSlot(GetEntityId(), (*scriptCanvasSlot), index);
                         }
+
+                        ++index;
                     }
 
                     if (myEvent.m_resultSlotId.IsValid())
@@ -200,7 +206,7 @@ namespace ScriptCanvasEditor
 
                         if (scriptCanvasSlot && scriptCanvasSlot->IsVisible())
                         {
-                            Nodes::DisplayScriptCanvasSlot(GetEntityId(), (*scriptCanvasSlot));
+                            Nodes::DisplayScriptCanvasSlot(GetEntityId(), (*scriptCanvasSlot), 0);
                         }
                     }
 

@@ -5,62 +5,61 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "ReturnTypeExample",
-                "category": "Tests",
-                "tooltip": "Example of returning by value, pointer and reference.",
-                "subtitle": "Tests"
+                "name": "Return Type Example",
+                "category": "Examples",
+                "tooltip": "Example of returning by value, pointer and reference."
             },
             "slots": [
                 {
-                    "base": "Input_Return By Value",
+                    "base": "Input_Return By Value_0",
                     "details": {
                         "name": "Return By Value"
                     }
                 },
                 {
-                    "base": "Output_On Return By Value",
+                    "base": "Output_On Return By Value_0",
                     "details": {
                         "name": "On Return By Value"
                     }
                 },
                 {
-                    "base": "DataOutput_Value",
+                    "base": "DataOutput_Value_0",
                     "details": {
                         "name": "Value"
                     }
                 },
                 {
-                    "base": "Input_Return By Pointer",
+                    "base": "Input_Return By Pointer_1",
                     "details": {
                         "name": "Return By Pointer"
                     }
                 },
                 {
-                    "base": "Output_On Return By Pointer",
+                    "base": "Output_On Return By Pointer_1",
                     "details": {
                         "name": "On Return By Pointer"
                     }
                 },
                 {
-                    "base": "DataOutput_Pointer",
+                    "base": "DataOutput_Pointer_1",
                     "details": {
                         "name": "Pointer"
                     }
                 },
                 {
-                    "base": "Input_Return By Reference",
+                    "base": "Input_Return By Reference_2",
                     "details": {
                         "name": "Return By Reference"
                     }
                 },
                 {
-                    "base": "Output_On Return By Reference",
+                    "base": "Output_On Return By Reference_2",
                     "details": {
                         "name": "On Return By Reference"
                     }
                 },
                 {
-                    "base": "DataOutput_Reference",
+                    "base": "DataOutput_Reference_2",
                     "details": {
                         "name": "Reference"
                     }
