@@ -163,8 +163,10 @@ void TerrainSystem::ClampPosition(float x, float y, AZ::Vector2& outPosition, AZ
 
 bool TerrainSystem::InWorldBounds(float x, float y) const
 {
-    if (x >= m_currentSettings.m_worldBounds.GetMin().GetX() && x <= m_currentSettings.m_worldBounds.GetMax().GetX() &&
-        y >= m_currentSettings.m_worldBounds.GetMin().GetY() && y <= m_currentSettings.m_worldBounds.GetMax().GetY())
+    const float zTestValue = m_currentSettings.m_worldBounds.GetMin().GetX() +
+        ((m_currentSettings.m_worldBounds.GetMax().GetX() - m_currentSettings.m_worldBounds.GetMin().GetX()) / 2.0f);
+    const AZ::Vector3 testValue{ x, y, zTestValue };
+    if (m_currentSettings.m_worldBounds.Contains(testValue))
     {
         return true;
     }
@@ -278,29 +280,14 @@ float TerrainSystem::GetHeight(const AZ::Vector3& position, Sampler sampler, boo
     return GetHeightSynchronous(position.GetX(), position.GetY(), sampler, terrainExistsPtr);
 }
 
-float TerrainSystem::GetHeightOnly(const AZ::Vector3& position, Sampler sampler) const
-{
-    return GetHeight(position, sampler, nullptr);
-}
-
 float TerrainSystem::GetHeightFromVector2(const AZ::Vector2& position, Sampler sampler, bool* terrainExistsPtr) const
 {
     return GetHeightSynchronous(position.GetX(), position.GetY(), sampler, terrainExistsPtr);
 }
 
-float TerrainSystem::GetHeightFromVector2Only(const AZ::Vector2& position, Sampler sampler) const
-{
-    return GetHeightFromVector2(position, sampler, nullptr);
-}
-
 float TerrainSystem::GetHeightFromFloats(float x, float y, Sampler sampler, bool* terrainExistsPtr) const
 {
     return GetHeightSynchronous(x, y, sampler, terrainExistsPtr);
-}
-
-float TerrainSystem::GetHeightFromFloatsOnly(float x, float y, Sampler sampler) const
-{
-    return GetHeightFromFloats(x, y, sampler, nullptr);
 }
 
 bool TerrainSystem::GetIsHole(const AZ::Vector3& position, Sampler sampler) const
@@ -366,11 +353,6 @@ AZ::Vector3 TerrainSystem::GetNormal(const AZ::Vector3& position, Sampler sample
     return GetNormalSynchronous(position.GetX(), position.GetY(), sampler, terrainExistsPtr);
 }
 
-AZ::Vector3 TerrainSystem::GetNormalOnly(const AZ::Vector3& position, Sampler sampler) const
-{
-    return GetNormal(position, sampler, nullptr);
-}
-
 AZ::Vector3 TerrainSystem::GetNormalFromVector2(const AZ::Vector2& position, Sampler sampler, bool* terrainExistsPtr) const
 {
     return GetNormalSynchronous(position.GetX(), position.GetY(), sampler, terrainExistsPtr);
@@ -381,28 +363,16 @@ AZ::Vector3 TerrainSystem::GetNormalFromFloats(float x, float y, Sampler sampler
     return GetNormalSynchronous(x, y, sampler, terrainExistsPtr);
 }
 
-
 AzFramework::SurfaceData::SurfaceTagWeight TerrainSystem::GetMaxSurfaceWeight(
     const AZ::Vector3& position, Sampler sampleFilter, bool* terrainExistsPtr) const
 {
     return GetMaxSurfaceWeightFromFloats(position.GetX(), position.GetY(), sampleFilter, terrainExistsPtr);
 }
 
-AzFramework::SurfaceData::SurfaceTagWeight TerrainSystem::GetMaxSurfaceWeightOnly(const AZ::Vector3& position, Sampler sampleFilter) const
-{
-    return GetMaxSurfaceWeight(position, sampleFilter, nullptr);
-}
-
 AzFramework::SurfaceData::SurfaceTagWeight TerrainSystem::GetMaxSurfaceWeightFromVector2(
     const AZ::Vector2& inPosition, Sampler sampleFilter, bool* terrainExistsPtr) const
 {
     return GetMaxSurfaceWeightFromFloats(inPosition.GetX(), inPosition.GetY(), sampleFilter, terrainExistsPtr);
-}
-
-AzFramework::SurfaceData::SurfaceTagWeight TerrainSystem::GetMaxSurfaceWeightFromVector2Only(
-    const AZ::Vector2& inPosition, Sampler sampleFilter) const
-{
-    return GetMaxSurfaceWeightFromVector2(inPosition, sampleFilter, nullptr);
 }
 
 AzFramework::SurfaceData::SurfaceTagWeight TerrainSystem::GetMaxSurfaceWeightFromFloats(
@@ -527,30 +497,14 @@ void TerrainSystem::GetSurfaceWeights(
     GetOrderedSurfaceWeights(inPosition.GetX(), inPosition.GetY(), sampleFilter, outSurfaceWeights, terrainExistsPtr);
 }
 
-void TerrainSystem::GetSurfaceWeightsOnly(
-    const AZ::Vector3& inPosition, AzFramework::SurfaceData::SurfaceTagWeightList& outSurfaceWeights, Sampler sampleFilter) const
-{
-    GetSurfaceWeights(inPosition, outSurfaceWeights, sampleFilter, nullptr);
-}
-
 void TerrainSystem::GetSurfaceWeightsFromVector2(
     const AZ::Vector2& inPosition,
     AzFramework::SurfaceData::SurfaceTagWeightList& outSurfaceWeights,
     Sampler sampleFilter,
     bool* terrainExistsPtr) const
 {
-
     GetOrderedSurfaceWeights(inPosition.GetX(), inPosition.GetY(), sampleFilter, outSurfaceWeights, terrainExistsPtr);
 }
-
-void TerrainSystem::GetSurfaceWeightsFromVector2Only(
-    const AZ::Vector2& inPosition,
-    AzFramework::SurfaceData::SurfaceTagWeightList& outSurfaceWeights,
-    Sampler sampleFilter) const
-{
-    GetSurfaceWeightsFromVector2(inPosition, outSurfaceWeights, sampleFilter, nullptr);
-}
-
 
 void TerrainSystem::GetSurfaceWeightsFromFloats(
     float x, float y,

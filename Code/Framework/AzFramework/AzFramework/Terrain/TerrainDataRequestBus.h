@@ -59,10 +59,6 @@ namespace AzFramework
                 const AZ::Vector2& position, Sampler sampler = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const = 0;
             virtual float GetHeightFromFloats(
                 float x, float y, Sampler sampler = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const = 0;
-            //! These functions are required for python tests as we can't pass the terrainExistsPtr.
-            virtual float GetHeightOnly(const AZ::Vector3& position, Sampler sampler = Sampler::BILINEAR) const = 0;
-            virtual float GetHeightFromVector2Only(const AZ::Vector2& position, Sampler sampler = Sampler::BILINEAR) const = 0;
-            virtual float GetHeightFromFloatsOnly(float x, float y, Sampler sampler = Sampler::BILINEAR) const = 0;
 
             //! Returns true if there's a hole at location x,y.
             //! Also returns true if there's no terrain data at location x,y.
@@ -79,8 +75,6 @@ namespace AzFramework
                 const AZ::Vector2& position, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const = 0;
             virtual AZ::Vector3 GetNormalFromFloats(
                 float x, float y, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const = 0;
-            //! This function is required for python tests as we can't pass the terrainExistsPtr.
-            virtual AZ::Vector3 GetNormalOnly(const AZ::Vector3& position, Sampler sampleFilter = Sampler::BILINEAR) const = 0;
 
             //! Given an XY coordinate, return the max surface type and weight.
             //! @terrainExists: Can be nullptr. If != nullptr then, if there's no terrain at location x,y or location x,y is inside
@@ -91,10 +85,6 @@ namespace AzFramework
                 const AZ::Vector2& inPosition, Sampler sampleFilter = Sampler::DEFAULT, bool* terrainExistsPtr = nullptr) const = 0;
             virtual SurfaceData::SurfaceTagWeight GetMaxSurfaceWeightFromFloats(
                 float x, float y, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const = 0;
-            virtual SurfaceData::SurfaceTagWeight GetMaxSurfaceWeightOnly(
-                const AZ::Vector3& position, Sampler sampleFilter = Sampler::BILINEAR) const = 0;
-            virtual SurfaceData::SurfaceTagWeight GetMaxSurfaceWeightFromVector2Only(
-                const AZ::Vector2& inPosition, Sampler sampleFilter = Sampler::DEFAULT) const = 0;
 
             //! Given an XY coordinate, return the set of surface types and weights. The Vector3 input position version is defined to
             //! ignore the input Z value.
@@ -114,14 +104,6 @@ namespace AzFramework
                 SurfaceData::SurfaceTagWeightList& outSurfaceWeights,
                 Sampler sampleFilter = Sampler::DEFAULT,
                 bool* terrainExistsPtr = nullptr) const = 0;
-            virtual void GetSurfaceWeightsOnly(
-                const AZ::Vector3& inPosition,
-                SurfaceData::SurfaceTagWeightList& outSurfaceWeights,
-                Sampler sampleFilter = Sampler::DEFAULT) const = 0;
-            virtual void GetSurfaceWeightsFromVector2Only(
-                const AZ::Vector2& inPosition,
-                SurfaceData::SurfaceTagWeightList& outSurfaceWeights,
-                Sampler sampleFilter = Sampler::DEFAULT) const = 0;
 
             //! Convenience function for  low level systems that can't do a reverse lookup from Crc to string. Everyone else should use
             //! GetMaxSurfaceWeight or GetMaxSurfaceWeightFromFloats.
@@ -168,6 +150,50 @@ namespace AzFramework
                 SurfaceData::SurfacePoint result;
                 GetSurfacePointFromVector2(inPosition, result, sampleFilter);
                 return result;
+            }
+            // Private variations of the GetHeight.., GetNormal..., GetMaxSurfaceWeight..., GetSurfaceWeights... APIs
+            // exposed to BehaviorContext that does not use the terrainExists "out" parameter.
+            float BehaviorContextGetHeight(const AZ::Vector3& position, Sampler sampler = Sampler::BILINEAR)
+            {
+                return GetHeight(position, sampler, nullptr);
+            }
+            float BehaviorContextGetHeightFromVector2(const AZ::Vector2& position, Sampler sampler = Sampler::BILINEAR)
+            {
+                return GetHeightFromVector2(position, sampler, nullptr);
+            }
+            float BehaviorContextGetHeightFromFloats(float x, float y, Sampler sampler = Sampler::BILINEAR)
+            {
+                return GetHeightFromFloats(x, y, sampler, nullptr);
+            }
+            AZ::Vector3 BehaviorContextGetNormal(const AZ::Vector3& position, Sampler sampleFilter = Sampler::BILINEAR)
+            {
+                return GetNormal(position, sampleFilter, nullptr);
+            }
+            SurfaceData::SurfaceTagWeight BehaviorContextGetMaxSurfaceWeight(
+                const AZ::Vector3& position, Sampler sampleFilter = Sampler::BILINEAR)
+            {
+                return GetMaxSurfaceWeight(position, sampleFilter, nullptr);
+            }
+            SurfaceData::SurfaceTagWeight BehaviorContextGetMaxSurfaceWeightFromVector2(
+                const AZ::Vector2& inPosition, Sampler sampleFilter = Sampler::DEFAULT)
+            {
+                return GetMaxSurfaceWeightFromVector2(inPosition, sampleFilter, nullptr);
+            }
+            SurfaceData::SurfaceTagWeightList& BehaviorContextGetSurfaceWeights(
+                const AZ::Vector3& inPosition,
+                Sampler sampleFilter = Sampler::DEFAULT)
+            {
+                static SurfaceData::SurfaceTagWeightList list;
+                GetSurfaceWeights(inPosition, list, sampleFilter, nullptr);
+                return list;
+            }
+            SurfaceData::SurfaceTagWeightList& BehaviorContextGetSurfaceWeightsFromVector2(
+                const AZ::Vector2& inPosition,
+                Sampler sampleFilter = Sampler::DEFAULT)
+            {
+                static SurfaceData::SurfaceTagWeightList list;
+                GetSurfaceWeightsFromVector2(inPosition, list, sampleFilter, nullptr);
+                return list;
             }
         };
         using TerrainDataRequestBus = AZ::EBus<TerrainDataRequests>;

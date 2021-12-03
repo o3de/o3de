@@ -7,6 +7,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 #fmt: off
 class Tests():
+    level_components_added                      = ("Level components added correctly", "Failed to create level components")
     create_terrain_spawner_entity               = ("Terrain_spawner_entity created successfully", "Failed to create terrain_spawner_entity")
     create_height_provider_entity               = ("Height_provider_entity created successfully", "Failed to create height_provider_entity")
     bounds_max_changed                          = ("Terrain World Bounds Max changed successfully", "Failed to change Terrain World Bounds Max")
@@ -32,13 +33,13 @@ def Terrain_World_ConfigurationWorks():
     The Editor is stable there are no warnings or errors.
 
     Test Steps:
-     1) Load the base level
-     2) Load the level components
-     3) Create 2 test entities, one parent at 512.0, 512.0, 50.0 and one child at the default position and add the required components
-     4) Start the Tracer to catch any errors and warnings
+     1) Start the Tracer to catch any errors and warnings
+     2) Load the base level
+     3) Load the level components
+     4) Create 2 test entities, one parent at 512.0, 512.0, 50.0 and one child at the default position and add the required components
      5) Set the base Terrain World values
      6) Change the Axis Aligned Box Shape dimensions
-     7) Set the Vegetation Shape reference to terrain_spawner_entity
+     7) Set the Shape Reference to terrain_spawner_entity
      8) Set the FastNoise Gradient frequency to 0.01
      9) Set the Gradient List to height_provider_entity
      10) Disable and Enable the Terrain Gradient List so that it is recognised
@@ -61,39 +62,39 @@ def Terrain_World_ConfigurationWorks():
     SET_BOX_Y_SIZE = 2048.0
     SET_BOX_Z_SIZE = 100.0
     CLAMP = 1
-
+    
     helper.init_idle()
     
-    # 1) Load the level
-    helper.open_level("", "Base")
-    helper.wait_for_condition(lambda: general.get_current_level_name() == "Base", 2.0)
-
-    # 2) Load the level components
-    terrain_world_component = hydra.add_level_component("Terrain World")
-    hydra.add_level_component("Terrain World Renderer")
-
-    # 3) Create 2 test entities, one parent at 512.0, 512.0, 50.0 and one child at the default position and add the required components
-    entity1_components_to_add = ["Axis Aligned Box Shape", "Terrain Layer Spawner", "Terrain Height Gradient List", "Terrain Physics Heightfield Collider"]
-    entity2_components_to_add = ["Vegetation Reference Shape", "Gradient Transform Modifier", "FastNoise Gradient"]
-    terrain_spawner_entity = hydra.Entity("TerrainEntity")
-    terrain_spawner_entity.create_entity(azmath.Vector3(512.0, 512.0, 50.0), entity1_components_to_add)
-    Report.result(Tests.create_terrain_spawner_entity, terrain_spawner_entity.id.IsValid())
-    height_provider_entity = hydra.Entity("HeightProviderEntity")
-    height_provider_entity.create_entity(azmath.Vector3(0.0, 0.0, 0.0), entity2_components_to_add,terrain_spawner_entity.id)
-    Report.result(Tests.create_height_provider_entity, height_provider_entity.id.IsValid())
-
-    # Give everything a chance to finish initializing.
-    general.idle_wait_frames(1)
-
-    # 4) Start the Tracer to catch any errors and warnings
+    # 1) Start the Tracer to catch any errors and warnings
     with Tracer() as section_tracer:
+        # 2) Load the level
+        helper.open_level("", "Base")
+        helper.wait_for_condition(lambda: general.get_current_level_name() == "Base", 2.0)
+        
+        # 3) Load the level components
+        terrain_world_component = hydra.add_level_component("Terrain World")
+        Report.critical_result(Tests.level_components_added, terrain_world_component is not None and hydra.add_level_component("Terrain World Renderer") is not None)
+ 
+        # 4) Create 2 test entities, one parent at 512.0, 512.0, 50.0 and one child at the default position and add the required components
+        entity1_components_to_add = ["Axis Aligned Box Shape", "Terrain Layer Spawner", "Terrain Height Gradient List", "Terrain Physics Heightfield Collider"]
+        entity2_components_to_add = ["Shape Reference", "Gradient Transform Modifier", "FastNoise Gradient"]
+        terrain_spawner_entity = hydra.Entity("TerrainEntity")
+        terrain_spawner_entity.create_entity(azmath.Vector3(512.0, 512.0, 50.0), entity1_components_to_add)
+        Report.result(Tests.create_terrain_spawner_entity, terrain_spawner_entity.id.IsValid())
+        height_provider_entity = hydra.Entity("HeightProviderEntity")
+        height_provider_entity.create_entity(azmath.Vector3(0.0, 0.0, 0.0), entity2_components_to_add,terrain_spawner_entity.id)
+        Report.result(Tests.create_height_provider_entity, height_provider_entity.id.IsValid())
+
+        # Give everything a chance to finish initializing.
+        general.idle_wait_frames(1)
+
         # 5) Set the base Terrain World values
-        world_bounds_max = azmath.Vector3(1024.0, 1024.0, 1024.0)
-        world_bounds_min = azmath.Vector3(0.0, 0.0, 0.0)
+        world_bounds_max = azmath.Vector3(1100.0, 1100.0, 1100.0)
+        world_bounds_min = azmath.Vector3(10.0, 10.0, 10.0)
         height_query_resolution = azmath.Vector2(1.0, 1.0)
-        editor.EditorComponentAPIBus(bus.Broadcast, "SetComponentProperty", terrain_world_component, "Configuration|World Bounds (Max)", world_bounds_max)
-        editor.EditorComponentAPIBus(bus.Broadcast, "SetComponentProperty", terrain_world_component, "Configuration|World Bounds (Min)", world_bounds_min)
-        editor.EditorComponentAPIBus(bus.Broadcast, "SetComponentProperty", terrain_world_component, "Configuration|Height Query Resolution (m)", height_query_resolution)
+        hydra.set_component_property_value(terrain_world_component, "Configuration|World Bounds (Max)", world_bounds_max)
+        hydra.set_component_property_value(terrain_world_component, "Configuration|World Bounds (Min)", world_bounds_min)
+        hydra.set_component_property_value(terrain_world_component, "Configuration|Height Query Resolution (m)", height_query_resolution)
         world_max = hydra.get_component_property_value(terrain_world_component, "Configuration|World Bounds (Max)")
         world_min = hydra.get_component_property_value(terrain_world_component, "Configuration|World Bounds (Min)")
         world_query = hydra.get_component_property_value(terrain_world_component, "Configuration|Height Query Resolution (m)")
@@ -107,16 +108,16 @@ def Terrain_World_ConfigurationWorks():
         box_shape_dimensions = hydra.get_component_property_value(terrain_spawner_entity.components[0], "Axis Aligned Box Shape|Box Configuration|Dimensions")
         Report.result(Tests.box_dimensions_changed, box_dimensions == box_shape_dimensions)
         
-        # 7) Set the Vegetation Shape reference to terrain_spawner_entity
+        # 7) Set the Shape Reference to terrain_spawner_entity
         height_provider_entity.get_set_test(0, "Configuration|Shape Entity Id", terrain_spawner_entity.id)
         entityId = hydra.get_component_property_value(height_provider_entity.components[0], "Configuration|Shape Entity Id")
         Report.result(Tests.shape_changed, entityId == terrain_spawner_entity.id)
 
         # 8) Set the FastNoise Gradient frequency to 0.01
-        Frequency = 0.01
-        height_provider_entity.get_set_test(2, "Configuration|Frequency", Frequency)
-        FrequencyVal = hydra.get_component_property_value(height_provider_entity.components[2], "Configuration|Frequency")
-        Report.result(Tests.frequency_changed, math.isclose(Frequency, FrequencyVal, abs_tol = 0.00001))
+        frequency = 0.01
+        height_provider_entity.get_set_test(2, "Configuration|Frequency", frequency)
+        frequencyVal = hydra.get_component_property_value(height_provider_entity.components[2], "Configuration|Frequency")
+        Report.result(Tests.frequency_changed, math.isclose(frequency, frequencyVal, abs_tol = 0.00001))
 
         # 9) Set the Gradient List to height_provider_entity
         propertyTree = hydra.get_property_tree(terrain_spawner_entity.components[2])
@@ -124,30 +125,32 @@ def Terrain_World_ConfigurationWorks():
         checkID = propertyTree.get_container_item("Configuration|Gradient Entities", 0)
         Report.result(Tests.entity_added, checkID.GetValue() == height_provider_entity.id)
 
-        # 10) Disable and Enable the Terrain Gradient List so that it is recognised
+        general.idle_wait_frames(1)
+
+        # 10) Disable and Enable the Terrain Gradient List so that it is recognised, EnableComponents performs both actions.
         editor.EditorComponentAPIBus(bus.Broadcast, 'EnableComponents', [terrain_spawner_entity.components[2]])
 
         # 11) Check terrain exists at a known position in the world
-        terrainDoesNotExist = terrain.TerrainDataRequestBus(bus.Broadcast, 'GetIsHoleFromFloats', 0.0, 0.0, CLAMP)
-        Report.result(Tests.terrain_exists, not terrainDoesNotExist)
+        terrainExists = not terrain.TerrainDataRequestBus(bus.Broadcast, 'GetIsHoleFromFloats', 10.0, 10.0, CLAMP)
+        Report.result(Tests.terrain_exists, terrainExists)
 
-        terrainDoesNotExist = terrain.TerrainDataRequestBus(bus.Broadcast, 'GetIsHoleFromFloats', 1024.0, 1024.0, CLAMP)
-        Report.result(Tests.terrain_exists, not terrainDoesNotExist)
+        terrainExists = not terrain.TerrainDataRequestBus(bus.Broadcast, 'GetIsHoleFromFloats', 1100.0, 1100.0, CLAMP)
+        Report.result(Tests.terrain_exists, terrainExists)
 
         # 12) Check terrain does not exist at a known position outside the world
-        terrainDoesNotExist = terrain.TerrainDataRequestBus(bus.Broadcast, 'GetIsHoleFromFloats', 1025.0, 1025.0, CLAMP)
+        terrainDoesNotExist = terrain.TerrainDataRequestBus(bus.Broadcast, 'GetIsHoleFromFloats', 1101.0, 1101.0, CLAMP)
         Report.result(Tests.terrain_does_not_exist, terrainDoesNotExist)
 
-        terrainDoesNotExist = terrain.TerrainDataRequestBus(bus.Broadcast, 'GetIsHoleFromFloats', -1.0, -1.0, CLAMP)
+        terrainDoesNotExist = terrain.TerrainDataRequestBus(bus.Broadcast, 'GetIsHoleFromFloats', 9.0, 9.0, CLAMP)
         Report.result(Tests.terrain_does_not_exist, terrainDoesNotExist)
 
         # 13) Check height value is the expected one when query resolution is changed
-        testpoint = terrain.TerrainDataRequestBus(bus.Broadcast, 'GetHeightFromFloatsOnly', 10.5, 10.5, CLAMP)
+        testpoint = terrain.TerrainDataRequestBus(bus.Broadcast, 'GetHeightFromFloats', 10.5, 10.5, CLAMP)
         height_query_resolution = azmath.Vector2(0.5, 0.5)
-        editor.EditorComponentAPIBus(bus.Broadcast, "SetComponentProperty", terrain_world_component, "Configuration|Height Query Resolution (m)", height_query_resolution)
+        hydra.set_component_property_value(terrain_world_component, "Configuration|Height Query Resolution (m)", height_query_resolution)
         general.idle_wait_frames(1)
-        testpoint2 =  terrain.TerrainDataRequestBus(bus.Broadcast, 'GetHeightFromFloatsOnly', 10.5, 10.5, CLAMP)
-        Report.result(Tests.values_not_the_same, not math.isclose(testpoint, testpoint2, abs_tol = 0.000001))
+        testpoint2 =  terrain.TerrainDataRequestBus(bus.Broadcast, 'GetHeightFromFloats', 10.5, 10.5, CLAMP)
+        Report.result(Tests.values_not_the_same, not math.isclose(testpoint, testpoint2, abs_tol = 0.000000001))
         
     helper.wait_for_condition(lambda: section_tracer.has_errors or section_tracer.has_asserts, 1.0)
     for error_info in section_tracer.errors:
