@@ -11,12 +11,12 @@ static const int TileCountMax = 75;
 static const int OverflowDisplayNumber = 999;
 
 
-static const float3 BarelyUsedColor = float3(0.05, 0.05, 0.20);
-static const float3 LightlyUsedColor = float3(0.05, 0.05, 0.60);
-static const float3 ModeratelyUsedColor = float3(0.05, 0.60, 0.05);
-static const float3 HeavilyUsedColor = float3(1.00, 1.00, 0.05);
-static const float3 OverUsedColor = float3(1.00, 0.05, 0.05);
-static const float3 OverflowColor = float3(1.0, 1.0, 1.0);
+static const float3 BarelyUsedColor = float3(0.05, 0.05, 0.20);         // Deep dark blue
+static const float3 LightlyUsedColor = float3(0.05, 0.05, 0.60);        // Deep blue
+static const float3 ModeratelyUsedColor = float3(0.05, 0.60, 0.05);     // Green
+static const float3 HeavilyUsedColor = float3(1.00, 1.00, 0.05);        // Yellow
+static const float3 OverUsedColor = float3(1.00, 0.05, 0.05);           // Red
+static const float3 OverflowColor = float3(1.0, 1.0, 1.0);              // White
 
 
 #include <Atom/Features/SrgSemantics.azsli>
