@@ -115,17 +115,17 @@ namespace AZ::Dom::Json
     //! rapidjson stream wrapper for AZStd::string suitable for in-situ parsing
     //! Faster than rapidjson::MemoryStream for reading from AZStd::string / AZStd::string_view (because it requires a null terminator)
     //! \note This needs to be inlined for performance reasons.
-    struct AzStringStream
+    struct NullDelimitedStringStream
     {
         using Ch = char; //<! Denotes the string character storage type for rapidjson
 
-        AZ_FORCE_INLINE AzStringStream(AZStd::string& buffer)
+        AZ_FORCE_INLINE NullDelimitedStringStream(char* buffer)
         {
-            m_cursor = buffer.data();
+            m_cursor = buffer;
             m_begin = m_cursor;
         }
 
-        AZ_FORCE_INLINE AzStringStream(AZStd::string_view buffer)
+        AZ_FORCE_INLINE NullDelimitedStringStream(AZStd::string_view buffer)
         {
             // rapidjson won't actually call PutBegin or Put unless kParseInSituFlag is set, so this is safe
             m_cursor = const_cast<char*>(buffer.data());
@@ -193,6 +193,7 @@ namespace AZ::Dom::Json
     //! \return The aggregate result specifying whether the visitor operations were successful.
     template<ParseFlags parseFlags = ParseFlags::ParseComments>
     Visitor::Result VisitSerializedJson(AZStd::string_view buffer, Lifetime lifetime, Visitor& visitor);
+
     //! Reads serialized JSON from a string in-place and applies it to a visitor.
     //! \param buffer The UTF-8 serialized JSON to read. This buffer will be modified as part of the deserialization process to
     //! apply null terminators.
@@ -201,7 +202,7 @@ namespace AZ::Dom::Json
     //! \param parseFlags (template) Settings for adjusting parser behavior.
     //! \return The aggregate result specifying whether the visitor operations were successful.
     template<ParseFlags parseFlags = ParseFlags::ParseComments>
-    Visitor::Result VisitSerializedJsonInPlace(AZStd::string& buffer, Visitor& visitor);
+    Visitor::Result VisitSerializedJsonInPlace(char* buffer, Visitor& visitor);
 
     //! Takes a visitor specified by a callback and produces a rapidjson::Document.
     //! \param writeCallback A callback specifying a visitor to accept to build the resulting document.
@@ -231,7 +232,7 @@ namespace AZ::Dom::Json
         // If the string is null terminated, we can use the faster AzStringStream path - otherwise we fall back on rapidjson::MemoryStream
         if (buffer.data()[buffer.size()] == '\0')
         {
-            AzStringStream stream(buffer);
+            NullDelimitedStringStream stream(buffer);
             reader.Parse<static_cast<int>(parseFlags)>(stream, handler);
         }
         else
@@ -243,10 +244,10 @@ namespace AZ::Dom::Json
     }
 
     template<ParseFlags parseFlags>
-    Visitor::Result VisitSerializedJsonInPlace(AZStd::string& buffer, Visitor& visitor)
+    Visitor::Result VisitSerializedJsonInPlace(char* buffer, Visitor& visitor)
     {
         rapidjson::Reader reader;
-        AzStringStream stream(buffer);
+        NullDelimitedStringStream stream(buffer);
         RapidJsonReadHandler handler(&visitor, Lifetime::Persistent);
 
         reader.Parse<static_cast<int>(parseFlags) | rapidjson::kParseInsituFlag>(stream, handler);

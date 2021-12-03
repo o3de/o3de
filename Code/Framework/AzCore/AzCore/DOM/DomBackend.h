@@ -22,28 +22,22 @@ namespace AZ::Dom
     public:
         virtual ~Backend() = default;
 
-        //! Attempt to read this format from the given stream into the target Visitor.
-        //! The base implementation reads the stream into memory and calls ReadFromString.
-        virtual Visitor::Result ReadFromStream(
-            AZ::IO::GenericStream* stream, Visitor& visitor, size_t maxSize = AZStd::numeric_limits<size_t>::max());
+        //! Attempt to read this format from the given buffer into the target Visitor.
+        virtual Visitor::Result ReadFromBuffer(
+            const char* buffer, size_t size, AZ::Dom::Lifetime lifetime, Visitor& visitor) = 0;
         //! Attempt to read this format from a mutable string into the target Visitor. This enables some backends to
         //! parse without making additional string allocations.
+        //! This string must be null terminated.
         //! This string may be modified and read in place without being copied, so when calling this please ensure that:
         //! - The string won't be deallocated until the visitor no longer needs the values and
         //! - The string is safe to modify in place.
-        //! The base implementation simply calls ReadFromString.
-        virtual Visitor::Result ReadFromStringInPlace(AZStd::string& buffer, Visitor& visitor);
-        //! Attempt to read this format from an immutable buffer in memory into the target Visitor.
-        virtual Visitor::Result ReadFromString(AZStd::string_view buffer, Lifetime lifetime, Visitor& visitor) = 0;
+        //! The base implementation simply calls ReadFromBuffer.
+        virtual Visitor::Result ReadFromBufferInPlace(char* buffer, Visitor& visitor);
 
-        //! Acquire a visitor interface for writing to the target output file.
-        virtual AZStd::unique_ptr<Visitor> CreateStreamWriter(AZ::IO::GenericStream& stream) = 0;
         //! A callback that accepts a Visitor, making DOM calls to inform the serializer, and returns an
         //! aggregate error code to indicate whether or not the operation succeeded.
         using WriteCallback = AZStd::function<Visitor::Result(Visitor&)>;
         //! Attempt to write a value to a stream using a write callback.
-        Visitor::Result WriteToStream(AZ::IO::GenericStream& stream, WriteCallback callback);
-        //! Attempt to write a value to a string using a write callback.
-        Visitor::Result WriteToString(AZStd::string& buffer, WriteCallback callback);
+        virtual Visitor::Result WriteToStream(AZ::IO::GenericStream& stream, WriteCallback callback) = 0;
     };
 } // namespace AZ::Dom

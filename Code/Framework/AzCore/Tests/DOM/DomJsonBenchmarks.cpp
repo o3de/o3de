@@ -8,6 +8,7 @@
 
 #if defined(HAVE_BENCHMARK)
 
+#include <AzCore/DOM/DomUtils.h>
 #include <AzCore/DOM/Backends/JSON/JsonBackend.h>
 #include <AzCore/DOM/Backends/JSON/JsonSerializationUtils.h>
 #include <AzCore/JSON/document.h>
@@ -132,7 +133,7 @@ namespace Benchmark
             auto result = AZ::Dom::Json::WriteToRapidJsonDocument(
                 [&](AZ::Dom::Visitor& visitor)
                 {
-                    return backend.ReadFromStringInPlace(payloadCopy, visitor);
+                    return AZ::Dom::Utils::ReadFromStringInPlace(backend, payloadCopy, visitor);
                 });
 
             benchmark::DoNotOptimize(result.GetValue());
@@ -152,7 +153,7 @@ namespace Benchmark
             auto result = AZ::Dom::Json::WriteToRapidJsonDocument(
                 [&](AZ::Dom::Visitor& visitor)
                 {
-                    return backend.ReadFromString(serializedPayload, AZ::Dom::Lifetime::Temporary, visitor);
+                    return AZ::Dom::Utils::ReadFromString(backend, serializedPayload, AZ::Dom::Lifetime::Temporary, visitor);
                 });
 
             benchmark::DoNotOptimize(result.GetValue());

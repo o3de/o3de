@@ -8,31 +8,34 @@
 
 #pragma once
 
-#include <AzCore/DOM/DomBackend.h>
 #include <AzCore/DOM/Backends/JSON/JsonSerializationUtils.h>
+#include <AzCore/DOM/DomBackend.h>
 
 namespace AZ::Dom
 {
     //! A DOM backend for serializing and deserializing JSON <=> UTF-8 text
     //! \param ParseFlags Controls how deserialized JSON is parsed.
     //! \param WriteFormat Controls how serialized JSON is formatted.
-    template<Json::ParseFlags ParseFlags = Json::ParseFlags::ParseComments, Json::OutputFormatting WriteFormat = Json::OutputFormatting::PrettyPrintedJson>
+    template<
+        Json::ParseFlags ParseFlags = Json::ParseFlags::ParseComments,
+        Json::OutputFormatting WriteFormat = Json::OutputFormatting::PrettyPrintedJson>
     class JsonBackend final : public Backend
     {
     public:
-        Visitor::Result ReadFromStringInPlace(AZStd::string& buffer, Visitor& visitor) override
+        Visitor::Result ReadFromBuffer(const char* buffer, size_t size, AZ::Dom::Lifetime lifetime, Visitor& visitor) override
+        {
+            return Json::VisitSerializedJson<ParseFlags>({ buffer, size }, lifetime, visitor);
+        }
+
+        Visitor::Result ReadFromBufferInPlace(char* buffer, Visitor& visitor) override
         {
             return Json::VisitSerializedJsonInPlace<ParseFlags>(buffer, visitor);
         }
 
-        Visitor::Result ReadFromString(AZStd::string_view buffer, Lifetime lifetime, Visitor& visitor) override
+        Visitor::Result WriteToStream(AZ::IO::GenericStream& stream, WriteCallback callback) override
         {
-            return Json::VisitSerializedJson<ParseFlags>(buffer, lifetime, visitor);
-        }
-
-        AZStd::unique_ptr<Visitor> CreateStreamWriter(AZ::IO::GenericStream& stream) override
-        {
-            return Json::CreateJsonStreamWriter(stream, WriteFormat);
+            AZStd::unique_ptr<Visitor> visitor = Json::CreateJsonStreamWriter(stream, WriteFormat);
+            return callback(*visitor.get());
         }
     };
 } // namespace AZ::Dom

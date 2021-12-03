@@ -8,6 +8,7 @@
 
 #include <AzCore/DOM/Backends/JSON/JsonBackend.h>
 #include <AzCore/DOM/Backends/JSON/JsonSerializationUtils.h>
+#include <AzCore/DOM/DomUtils.h>
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
@@ -70,7 +71,7 @@ namespace AZ::Dom::Tests
             {
                 AZStd::string serializedDocument;
                 JsonBackend backend;
-                auto result = backend.WriteToString(serializedDocument, visitDocumentFn);
+                auto result = Dom::Utils::WriteToString(backend, serializedDocument, visitDocumentFn);
                 EXPECT_TRUE(result.IsSuccess());
                 EXPECT_EQ(canonicalSerializedDocument, serializedDocument);
             }
@@ -81,7 +82,7 @@ namespace AZ::Dom::Tests
                     [&canonicalSerializedDocument](AZ::Dom::Visitor& visitor)
                     {
                         JsonBackend backend;
-                        return backend.ReadFromString(canonicalSerializedDocument, AZ::Dom::Lifetime::Temporary, visitor);
+                        return Dom::Utils::ReadFromString(backend, canonicalSerializedDocument, Dom::Lifetime::Persistent, visitor);
                     });
                 EXPECT_TRUE(result.IsSuccess());
                 EXPECT_EQ(AZ::JsonSerialization::Compare(*m_document, result.GetValue()), JsonSerializerCompareResult::Equal);
@@ -91,11 +92,11 @@ namespace AZ::Dom::Tests
             {
                 AZStd::string serializedDocument;
                 JsonBackend backend;
-                auto result = backend.WriteToString(
-                    serializedDocument,
+                auto result = Dom::Utils::WriteToString(
+                    backend, serializedDocument,
                     [&backend, &canonicalSerializedDocument](AZ::Dom::Visitor& visitor)
                     {
-                        return backend.ReadFromString(canonicalSerializedDocument, AZ::Dom::Lifetime::Temporary, visitor);
+                        return Dom::Utils::ReadFromString(backend, canonicalSerializedDocument, Dom::Lifetime::Persistent, visitor);
                     });
                 EXPECT_TRUE(result.IsSuccess());
                 EXPECT_EQ(canonicalSerializedDocument, serializedDocument);
