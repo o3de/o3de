@@ -44,7 +44,8 @@ namespace AZ
         //           -> Queued (Rendering will transition to Queued if a pass was queued with the PassSystem during Rendering)
         //
         // Any State -> Orphaned  (transition to Orphaned state can be outside the jurisdiction of the pass and so can happen from any state)
-        // Orphaned  -> Queued    (Orphaned state transitions back to idle. 
+        // Orphaned  -> Queued    (When coming out of Orphaned state, pass will queue itself for build. In practice this
+        //                         (almost?) never happens as orphaned passes are re-created in most if not all cases.)
         //
         enum class PassState : u8
         {
