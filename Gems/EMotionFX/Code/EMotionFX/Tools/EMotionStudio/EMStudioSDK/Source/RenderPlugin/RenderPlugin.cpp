@@ -933,6 +933,7 @@ namespace EMStudio
 
         // save the current settings and disable rendering
         m_renderOptions.SetLastUsedLayout(layout->GetName());
+        SaveRenderOptions();
         ClearViewWidgets();
         VisibilityChanged(false);
 

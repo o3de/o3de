@@ -454,29 +454,6 @@ void ViewportWidget::contextMenuEvent(QContextMenuEvent* e)
     RenderViewportWidget::contextMenuEvent(e);
 }
 
-#ifdef LYSHINE_ATOM_TODO // check if still needed
-void ViewportWidget::HandleSignalRender([[maybe_unused]] const SRenderContext& context)
-{
-    // Called from QViewport when redrawing the viewport.
-    // Triggered from a QViewport resize event or from our call to QViewport::Update
-    if (m_canvasRenderIsEnabled)
-    {
-        gEnv->pRenderer->SetSrgbWrite(true);
-
-        UiEditorMode editorMode = m_editorWindow->GetEditorMode();
-
-        if (editorMode == UiEditorMode::Edit)
-        {
-            RenderEditMode();
-        }
-        else // if (editorMode == UiEditorMode::Preview)
-        {
-            RenderPreviewMode();
-        }
-    }
-}
-#endif
-
 void ViewportWidget::UserSelectionChanged(HierarchyItemRawPtrList* items)
 {
     Refresh();
@@ -998,13 +975,6 @@ void ViewportWidget::RenderEditMode()
         canvasSize,
         m_viewportInteraction->GetCanvasToViewportScale(),
         m_viewportInteraction->GetCanvasToViewportTranslation());
-
-#ifdef LYSHINE_ATOM_TODO
-    // clear the stencil buffer before rendering each canvas - required for masking
-    // NOTE: the FRT_CLEAR_IMMEDIATE is required since we will not be setting the render target
-    ColorF viewportBackgroundColor(0, 0, 0, 0); // if clearing color we want to set alpha to zero also
-    gEnv->pRenderer->ClearTargetsImmediately(FRT_CLEAR_STENCIL, viewportBackgroundColor);
-#endif
 
     // Set the target size of the canvas
     EBUS_EVENT_ID(canvasEntityId, UiCanvasBus, SetTargetCanvasSize, false, canvasSize);
