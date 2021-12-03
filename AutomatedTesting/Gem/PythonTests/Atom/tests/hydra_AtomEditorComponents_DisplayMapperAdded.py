@@ -142,7 +142,7 @@ def AtomEditorComponents_DisplayMapper_AddedToEntity():
         display_mapper_component.set_component_property_value(
             AtomComponentProperties.display_mapper('Enable LDR color grading LUT'), True)
         Report.result(
-            Test.enable_ldr_color_grading_lut,
+            Tests.enable_ldr_color_grading_lut,
             display_mapper_component.get_component_property_value(
                 AtomComponentProperties.display_mapper('Enable LDR color grading LUT')) is True)
 
