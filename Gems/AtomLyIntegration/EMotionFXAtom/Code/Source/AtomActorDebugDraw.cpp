@@ -46,6 +46,14 @@ namespace AZ::Render
             return;
         }
 
+        // Update the mesh deformers (perform cpu skinning and morphing) when needed.
+        if (renderFlags[EMotionFX::ActorRenderFlag::RENDER_AABB] || renderFlags[EMotionFX::ActorRenderFlag::RENDER_FACENORMALS] ||
+            renderFlags[EMotionFX::ActorRenderFlag::RENDER_TANGENTS] || renderFlags[EMotionFX::ActorRenderFlag::RENDER_VERTEXNORMALS] ||
+            renderFlags[EMotionFX::ActorRenderFlag::RENDER_WIREFRAME])
+        {
+            instance->UpdateMeshDeformers(0.0f, true);
+        }
+
         const RPI::Scene* scene = RPI::Scene::GetSceneForEntityId(m_entityId);
         const RPI::ViewportContextPtr viewport = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get()->GetViewportContextByScene(scene);
         AzFramework::DebugDisplayRequests* debugDisplay = GetDebugDisplay(viewport->GetId());

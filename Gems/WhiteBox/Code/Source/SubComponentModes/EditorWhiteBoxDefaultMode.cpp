@@ -33,8 +33,8 @@ namespace WhiteBox
         AZ::Color, cl_whiteBoxVertexIndicatorColor, AZ::Color::CreateFromRgba(0, 0, 0, 102), nullptr,
         AZ::ConsoleFunctorFlags::Null, "The color of the vertex indicator");
 
-    static const AZ::Crc32 HideEdge = AZ_CRC("com.o3de.action.whitebox.hide_edge", 0x6a60ae23);
-    static const AZ::Crc32 HideVertex = AZ_CRC("com.o3de.action.whitebox.hide_vertex", 0x4a4bd092);
+    static const AZ::Crc32 HideEdge = AZ_CRC("com.o3de.action.whitebox.hide_edge", 0x84f6a9b9);
+    static const AZ::Crc32 HideVertex = AZ_CRC("com.o3de.action.whitebox.hide_vertex", 0x5f81c937);
 
     static const char* const HideEdgeTitle = "Hide Edge";
     static const char* const HideEdgeDesc = "Hide the selected edge to merge the two connected polygons";

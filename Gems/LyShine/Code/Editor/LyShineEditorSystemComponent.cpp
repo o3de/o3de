@@ -103,6 +103,7 @@ namespace LyShineEditor
     void LyShineEditorSystemComponent::Activate()
     {
         AzToolsFramework::EditorEventsBus::Handler::BusConnect();
+        AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
         LyShine::LyShineRequestBus::Handler::BusConnect();
     }
 
@@ -118,6 +119,7 @@ namespace LyShineEditor
         }
         LyShine::LyShineRequestBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEventsBus::Handler::BusDisconnect();
+        AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -202,6 +204,16 @@ namespace LyShineEditor
         {
             QString absoluteName = stringPath.c_str();
             UiEditorDLLBus::Broadcast(&UiEditorDLLInterface::OpenSourceCanvasFile, absoluteName);
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void LyShineEditorSystemComponent::OnStopPlayInEditor()
+    {
+        // reset UI system
+        if (gEnv->pLyShine)
+        {
+            gEnv->pLyShine->Reset();
         }
     }
 }

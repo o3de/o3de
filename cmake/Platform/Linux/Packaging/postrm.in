@@ -8,8 +8,3 @@
 #
 
 set -o errexit # exit on the first failure encountered
-
-{
-    pushd @CPACK_PACKAGING_INSTALL_PREFIX@
-    popd
-} &> /dev/null # hide output

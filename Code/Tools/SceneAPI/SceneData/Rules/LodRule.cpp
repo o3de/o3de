@@ -21,7 +21,6 @@ namespace AZ
         {
             const size_t LodRule::m_maxLods;
 
-            AZ_CLASS_ALLOCATOR_IMPL(LodRule, SystemAllocator, 0)
 
             SceneNodeSelectionList& LodRule::GetNodeSelectionList(size_t index)
             {
