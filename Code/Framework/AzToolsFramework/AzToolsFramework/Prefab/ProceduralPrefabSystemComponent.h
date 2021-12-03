@@ -18,6 +18,7 @@ namespace AzToolsFramework
             : public AZ::Component
             , private ProceduralPrefabSystemComponentInterface
             , AzFramework::AssetCatalogEventBus::Handler
+            , PrefabPublicNotificationBus::Handler
         {
         public:
             AZ_COMPONENT(ProceduralPrefabSystemComponent, "{81211818-088A-49E6-894B-7A11764106B1}");
@@ -27,11 +28,15 @@ namespace AzToolsFramework
         protected:
             void Activate() override;
             void Deactivate() override;
-            
+
             void OnCatalogAssetChanged(const AZ::Data::AssetId&) override;
-        
+
+            void OnTemplateRemoved(TemplateId templateId) override;
+            void OnAllTemplatesRemoved() override;
+
             void RegisterProceduralPrefab(const AZStd::string& prefabFilePath, TemplateId templateId) override;
-            
+
+            AZStd::mutex m_lookupMutex;
             AZStd::unordered_map<AZ::Data::AssetId, TemplateId> m_assetIdToTemplateLookup;
         };
     } // namespace Prefab

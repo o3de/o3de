@@ -35,14 +35,25 @@ namespace AzToolsFramework
             AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
             AZ::Interface<ProceduralPrefabSystemComponentInterface>::Unregister(this);
 
+            AZStd::scoped_lock lock(m_lookupMutex);
             m_assetIdToTemplateLookup.clear();
         }
 
         void ProceduralPrefabSystemComponent::OnCatalogAssetChanged(const AZ::Data::AssetId& assetId)
         {
-            auto itr = m_assetIdToTemplateLookup.find(assetId);
+            TemplateId templateId = InvalidTemplateId;
 
-            if (itr != m_assetIdToTemplateLookup.end())
+            {
+                AZStd::scoped_lock lock(m_lookupMutex);
+                auto itr = m_assetIdToTemplateLookup.find(assetId);
+
+                if (itr != m_assetIdToTemplateLookup.end())
+                {
+                    templateId = itr->second;
+                }
+            }
+
+            if (templateId != InvalidTemplateId)
             {
                 auto prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
 
@@ -78,8 +89,29 @@ namespace AzToolsFramework
                     return;
                 }
 
-                prefabSystemComponentInterface->UpdatePrefabTemplate(itr->second, readPrefabFileResult.TakeValue());
+                prefabSystemComponentInterface->UpdatePrefabTemplate(templateId, readPrefabFileResult.TakeValue());
             }
+        }
+
+        void ProceduralPrefabSystemComponent::OnTemplateRemoved(TemplateId removedTemplateId)
+        {
+            AZStd::scoped_lock lock(m_lookupMutex);
+
+            for (const auto& [assetId, templateId] : m_assetIdToTemplateLookup)
+            {
+                if (templateId == removedTemplateId)
+                {
+                    m_assetIdToTemplateLookup.erase(assetId);
+                    break;
+                }
+            }
+        }
+
+        void ProceduralPrefabSystemComponent::OnAllTemplatesRemoved()
+        {
+            AZStd::scoped_lock lock(m_lookupMutex);
+
+            m_assetIdToTemplateLookup.clear();
         }
 
         void ProceduralPrefabSystemComponent::RegisterProceduralPrefab(const AZStd::string& prefabFilePath, TemplateId templateId)
@@ -91,6 +123,7 @@ namespace AzToolsFramework
 
             if (assetId.IsValid())
             {
+                AZStd::scoped_lock lock(m_lookupMutex);
                 m_assetIdToTemplateLookup[assetId] = templateId;
             }
             else

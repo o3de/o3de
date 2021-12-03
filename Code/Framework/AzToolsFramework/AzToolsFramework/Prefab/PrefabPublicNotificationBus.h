@@ -26,6 +26,12 @@ namespace AzToolsFramework
 
             virtual void OnPrefabTemplateDirtyFlagUpdated(
                 [[maybe_unused]] TemplateId templateId, [[maybe_unused]] bool status) {}
+
+            // Sent after a template has been removed
+            virtual void OnTemplateRemoved([[maybe_unused]] TemplateId templateId) {}
+
+            // Sent after all templates have been removed
+            virtual void OnAllTemplatesRemoved() {}
         };
 
         using PrefabPublicNotificationBus = AZ::EBus<PrefabPublicNotifications>;
