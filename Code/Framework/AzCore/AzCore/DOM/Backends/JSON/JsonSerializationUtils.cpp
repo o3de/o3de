@@ -103,8 +103,10 @@ namespace AZ::Dom::Json
         if (m_entryStack.front().m_entryCount != attributeCount)
         {
             return VisitorFailure(
-                VisitorErrorCode::InternalError, "EndObject: Expected %lu attributes but received %lu attributes instead", attributeCount,
-                m_entryStack.front().m_entryCount);
+                VisitorErrorCode::InternalError,
+                AZStd::string::format(
+                    "EndObject: Expected %lu attributes but received %lu attributes instead", attributeCount,
+                    m_entryStack.front().m_entryCount));
         }
 
         m_entryStack.pop_front();
@@ -155,8 +157,9 @@ namespace AZ::Dom::Json
         if (m_entryStack.front().m_entryCount != elementCount)
         {
             return VisitorFailure(
-                VisitorErrorCode::InternalError, "EndArray: Expected %lu elements but received %lu elements instead", elementCount,
-                m_entryStack.front().m_entryCount);
+                VisitorErrorCode::InternalError,
+                AZStd::string::format(
+                    "EndArray: Expected %lu elements but received %lu elements instead", elementCount, m_entryStack.front().m_entryCount));
         }
 
         m_entryStack.pop_front();
@@ -507,7 +510,8 @@ namespace AZ::Dom::Json
                             for (auto it = currentValue.MemberEnd(); it != currentValue.MemberBegin(); --it)
                             {
                                 auto entry = (it - 1);
-                                const AZStd::string_view key(entry->name.GetString(), aznumeric_cast<size_t>(entry->name.GetStringLength()));
+                                const AZStd::string_view key(
+                                    entry->name.GetString(), aznumeric_cast<size_t>(entry->name.GetStringLength()));
                                 entryStack.push(&entry->value);
                                 entryStack.push(key);
                             }

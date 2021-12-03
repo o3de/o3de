@@ -227,16 +227,10 @@ namespace AZ::Dom
 
         //! Helper method, constructs a failure \ref Result with the specified code.
         static Result VisitorFailure(VisitorErrorCode code);
+        //! Helper method, constructs a failure \ref Result with the specified code and supplemental info.
+        static Result VisitorFailure(VisitorErrorCode code, AZStd::string additionalInfo);
         //! Helper method, constructs a failure \ref Result with the specified error.
         static Result VisitorFailure(VisitorError error);
-
-        //! Helper method, constructs a failure \ref Result with the specified code and supplemental info specified by a format string
-        //! and its arguments.
-        template<class... TArgs>
-        static Result VisitorFailure(VisitorErrorCode code, const char* formatString, TArgs... formatArgs)
-        {
-            return AZ::Failure(VisitorError(code, AZStd::string::format(formatString, formatArgs...)));
-        }
 
         //! Helper method, constructs a success \ref Result.
         static Result VisitorSuccess();
