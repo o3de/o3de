@@ -172,7 +172,7 @@ namespace LmbrCentral
         const auto screenEnd = AzFramework::WorldToScreen(worldEnd, m_cameraState);
 
         // diagonal offset to ensure we interact with the planar manipulator and not one of the linear manipulators
-        const AzFramework::ScreenVector offset(30, -30);
+        const AzFramework::ScreenVector offset(50, -50);
 
         m_actionDispatcher
             ->CameraState(m_cameraState)
