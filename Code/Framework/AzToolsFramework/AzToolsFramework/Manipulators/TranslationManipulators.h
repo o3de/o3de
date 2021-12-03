@@ -53,6 +53,7 @@ namespace AzToolsFramework
         void SetAxes(const AZ::Vector3& axis1, const AZ::Vector3& axis2, const AZ::Vector3& axis3 = AZ::Vector3::CreateAxisZ());
 
         void ConfigurePlanarView(
+            float planeSize,
             const AZ::Color& plane1Color,
             const AZ::Color& plane2Color = AZ::Color(0.0f, 1.0f, 0.0f, 0.5f),
             const AZ::Color& plane3Color = AZ::Color(0.0f, 0.0f, 1.0f, 0.5f));

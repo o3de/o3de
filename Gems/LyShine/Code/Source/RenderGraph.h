@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <IRenderer.h>
 #include <LyShine/IRenderGraph.h>
+#include <LyShine/UiRenderFormats.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/std/containers/stack.h>
 #include <AzCore/std/containers/set.h>
@@ -79,8 +79,8 @@ namespace LyShine
             , const AZ::Matrix4x4& modelViewProjMat
             , AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw) override;
 
-        void AddPrimitive(DynUiPrimitive* primitive);
-        DynUiPrimitiveList& GetPrimitives() const;
+        void AddPrimitive(LyShine::UiPrimitive* primitive);
+        LyShine::UiPrimitiveList& GetPrimitives() const;
 
         int GetOrAddTexture(const AZ::Data::Instance<AZ::RPI::Image>& texture, bool isClampTextureMode);
         int GetNumTextures() const { return m_numTextures; }
@@ -92,7 +92,7 @@ namespace LyShine
         bool GetIsPremultiplyAlpha() const { return m_preMultiplyAlpha; }
         AlphaMaskType GetAlphaMaskType() const { return m_alphaMaskType; }
 
-        bool HasSpaceToAddPrimitive(DynUiPrimitive* primitive) const;
+        bool HasSpaceToAddPrimitive(LyShine::UiPrimitive* primitive) const;
 
         // Search to see if this texture is already used by this texture unit, returns -1 if not used
         int FindTexture(const AZ::Data::Instance<AZ::RPI::Image>& texture, bool isClampTextureMode) const;
@@ -122,7 +122,7 @@ namespace LyShine
         int             m_totalNumVertices;
         int             m_totalNumIndices;
 
-        DynUiPrimitiveList   m_primitives;
+        LyShine::UiPrimitiveList   m_primitives;
     };
 
     // A mask render node handles using one set of render nodes to mask another set of render nodes
@@ -262,13 +262,9 @@ namespace LyShine
         void StartChildrenForMask() override;
         void EndMask() override;
 
-        //! Begin rendering to a texture
-        void BeginRenderToTexture(int renderTargetHandle, SDepthTexture* renderTargetDepthSurface,
-            const AZ::Vector2& viewportTopLeft, const AZ::Vector2& viewportSize, const AZ::Color& clearColor) override;
-
         void EndRenderToTexture() override;
 
-        DynUiPrimitive* GetDynamicQuadPrimitive(const AZ::Vector2* positions, uint32 packedColor) override;
+        LyShine::UiPrimitive* GetDynamicQuadPrimitive(const AZ::Vector2* positions, uint32 packedColor) override;
 
         bool IsRenderingToMask() const override;
         void SetIsRenderingToMask(bool isRenderingToMask) override;
@@ -280,11 +276,11 @@ namespace LyShine
         // ~IRenderGraph
 
         // LYSHINE_ATOM_TODO - this can be renamed back to AddPrimitive after removal of IRenderer from all UI components
-        void AddPrimitiveAtom(DynUiPrimitive* primitive, const AZ::Data::Instance<AZ::RPI::Image>& texture,
+        void AddPrimitiveAtom(LyShine::UiPrimitive* primitive, const AZ::Data::Instance<AZ::RPI::Image>& texture,
             bool isClampTextureMode, bool isTextureSRGB, bool isTexturePremultipliedAlpha, BlendMode blendMode);
 
         //! Add an indexed triangle list primitive to the render graph which will use maskTexture as an alpha (gradient) mask
-        void AddAlphaMaskPrimitiveAtom(DynUiPrimitive* primitive,
+        void AddAlphaMaskPrimitiveAtom(LyShine::UiPrimitive* primitive,
             AZ::Data::Instance<AZ::RPI::AttachmentImage> contentAttachmentImage,
             AZ::Data::Instance<AZ::RPI::AttachmentImage> maskAttachmentImage,
             bool isClampTextureMode,
@@ -333,8 +329,8 @@ namespace LyShine
 
         struct DynamicQuad
         {
-            SVF_P2F_C4B_T2F_F4B         m_quadVerts[4];
-            DynUiPrimitive   m_primitive;
+            LyShine::UiPrimitiveVertex         m_quadVerts[4];
+            LyShine::UiPrimitive   m_primitive;
         };
 
     protected: // member functions

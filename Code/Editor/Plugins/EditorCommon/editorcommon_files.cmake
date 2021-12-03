@@ -13,7 +13,6 @@ set(FILES
     EditorCommonAPI.h
     ActionOutput.h
     ActionOutput.cpp
-    UiEditorDLLBus.h
     DockTitleBarWidget.cpp
     DockTitleBarWidget.h
     SaveUtilities/AsyncSaveRunner.h

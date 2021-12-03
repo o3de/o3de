@@ -169,5 +169,5 @@ private: // data
     int m_renderTargetHeight = 0;
 
     //! cached rendering data for performance optimization of rendering the render target to screen
-    DynUiPrimitive m_cachedPrimitive;
+    LyShine::UiPrimitive m_cachedPrimitive;
 };
