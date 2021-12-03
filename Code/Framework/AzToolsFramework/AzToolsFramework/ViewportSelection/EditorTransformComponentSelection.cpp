@@ -33,6 +33,7 @@
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
+#include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/ViewportSelection/EditorVisibleEntityDataCache.h>
 #include <Entity/EditorEntityContextBus.h>
@@ -1376,7 +1377,7 @@ namespace AzToolsFramework
         // view
         rotationManipulators->SetLocalAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ());
         rotationManipulators->ConfigureView(
-            2.0f, AzFramework::ViewportColors::XAxisColor, AzFramework::ViewportColors::YAxisColor,
+            RotationManipulatorRadius(), AzFramework::ViewportColors::XAxisColor, AzFramework::ViewportColors::YAxisColor,
             AzFramework::ViewportColors::ZAxisColor);
 
         struct SharedRotationState
@@ -1535,7 +1536,8 @@ namespace AzToolsFramework
             RecalculateAverageManipulatorTransform(m_entityIdManipulators.m_lookups, m_pivotOverrideFrame, m_pivotMode, m_referenceFrame));
 
         scaleManipulators->SetAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ());
-        scaleManipulators->ConfigureView(2.0f, AZ::Color::CreateOne(), AZ::Color::CreateOne(), AZ::Color::CreateOne());
+        scaleManipulators->ConfigureView(
+            LinearManipulatorAxisLength(), AZ::Color::CreateOne(), AZ::Color::CreateOne(), AZ::Color::CreateOne());
 
         struct SharedScaleState
         {
