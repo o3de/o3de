@@ -48,8 +48,6 @@
 #include <AzCore/IO/Path/PathReflect.h>
 #include <AzCore/IO/SystemFile.h>
 
-#include <AzCore/Driller/Driller.h>
-#include <AzCore/Debug/EventTraceDriller.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Script/ScriptSystemBus.h>
 

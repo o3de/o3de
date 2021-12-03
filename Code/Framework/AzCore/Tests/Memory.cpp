@@ -12,7 +12,6 @@
 #include <AzCore/Memory/HeapSchema.h>
 #include <AzCore/Memory/HphaSchema.h>
 
-#include <AzCore/Driller/Driller.h>
 #include <AzCore/Memory/AllocationRecords.h>
 #include <AzCore/Debug/StackTracer.h>
 #include <AzCore/UnitTest/TestTypes.h>
@@ -43,17 +42,13 @@ namespace UnitTest
         void SetUp() override
         {
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
-            m_drillerManager = Debug::DrillerManager::Create();
             AZ::AllocatorManager::Instance().EnterProfilingMode();
         }
         void TearDown() override
         {
-            Debug::DrillerManager::Destroy(m_drillerManager);
             AZ::AllocatorManager::Instance().ExitProfilingMode();
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
         }
-    protected:
-        Debug::DrillerManager*      m_drillerManager = nullptr;
     };
 
     class SystemAllocatorTest

@@ -107,11 +107,6 @@ set(FILES
     Debug/ProfilerReflection.cpp
     Debug/ProfilerReflection.h
     Debug/StackTracer.h
-    Debug/EventTrace.h
-    Debug/EventTrace.cpp
-    Debug/EventTraceDriller.h
-    Debug/EventTraceDriller.cpp
-    Debug/EventTraceDrillerBus.h
     Debug/Timer.h
     Debug/Trace.cpp
     Debug/Trace.h
@@ -120,14 +115,6 @@ set(FILES
     Debug/TraceReflection.h
     DOM/DomVisitor.cpp
     DOM/DomVisitor.h
-    Driller/DefaultStringPool.h
-    Driller/Driller.cpp
-    Driller/Driller.h
-    Driller/DrillerBus.cpp
-    Driller/DrillerBus.h
-    Driller/DrillerRootHandler.h
-    Driller/Stream.cpp
-    Driller/Stream.h
     EBus/BusImpl.h
     EBus/EBus.h
     EBus/EBusEnvironment.cpp

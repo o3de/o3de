@@ -1392,7 +1392,7 @@ namespace UnitTest
         EXPECT_TRUE(done);
     }
 
-    // Fixture for thread-driller-bus related calls
+    // Fixture for thread-event-bus related calls
     // exists only to categorize the tests.
     class ThreadEventsBus :
         public AllocatorsFixture

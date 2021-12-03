@@ -41,7 +41,6 @@ namespace AZ
 }
 namespace AZ::Debug
 {
-    class DrillerManager;
     class LocalFileEventLogger;
 }
 

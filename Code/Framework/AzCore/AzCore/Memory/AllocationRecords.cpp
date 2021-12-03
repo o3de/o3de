@@ -242,9 +242,8 @@ void AllocationRecords::UnregisterAllocation(void* address, size_t byteSize, siz
     {
         AZStd::scoped_lock lock(m_recordsMutex);
         Debug::AllocationRecordsType::iterator iter = m_records.find(address);
-        // We cannot assert if an allocation does not exist because our allocators start up way before the driller is started and the
-        // Allocator Records would be created. It is currently impossible to actually track all allocations that happen before a certain
-        // point
+        // We cannot assert if an allocation does not exist because allocations may have been made before tracking was enabled. 
+        // It is currently impossible to actually track all allocations that happen before a certain point
         // AZ_Assert(iter!=m_records.end(), "Could not find address 0x%p in the allocator!", address);
         if (iter == m_records.end())
         {
