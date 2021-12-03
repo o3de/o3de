@@ -436,25 +436,11 @@
                     "details": {
                         "name": "Get Normal"
                     },
-                    "params": [
-                        {
-                            "typeid": "",
-                            "details": {
-                                "name": ""
-                            }
-                        },
-                        {
-                            "typeid": "",
-                            "details": {
-                                "name": "Normal"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "int"
+                                "name": "Normal"
                             }
                         }
                     ]
@@ -465,25 +451,11 @@
                     "details": {
                         "name": "Get Diffuse"
                     },
-                    "params": [
-                        {
-                            "typeid": "",
-                            "details": {
-                                "name": ""
-                            }
-                        },
-                        {
-                            "typeid": "",
-                            "details": {
-                                "name": "Diffuse"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "int"
+                                "name": "Diffuse"
                             }
                         }
                     ]
@@ -494,25 +466,11 @@
                     "details": {
                         "name": "Get Specular"
                     },
-                    "params": [
-                        {
-                            "typeid": "",
-                            "details": {
-                                "name": ""
-                            }
-                        },
-                        {
-                            "typeid": "",
-                            "details": {
-                                "name": "Specular"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "int"
+                                "name": "Specular"
                             }
                         }
                     ]
@@ -523,25 +481,11 @@
                     "details": {
                         "name": "Get Bump"
                     },
-                    "params": [
-                        {
-                            "typeid": "",
-                            "details": {
-                                "name": ""
-                            }
-                        },
-                        {
-                            "typeid": "",
-                            "details": {
-                                "name": "Bump"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "int"
+                                "name": "Bump"
                             }
                         }
                     ]
@@ -552,25 +496,11 @@
                     "details": {
                         "name": "Get Emissive"
                     },
-                    "params": [
-                        {
-                            "typeid": "",
-                            "details": {
-                                "name": ""
-                            }
-                        },
-                        {
-                            "typeid": "",
-                            "details": {
-                                "name": "Emissive"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "int"
+                                "name": "Emissive"
                             }
                         }
                     ]
@@ -581,25 +511,11 @@
                     "details": {
                         "name": "Get Roughness"
                     },
-                    "params": [
-                        {
-                            "typeid": "",
-                            "details": {
-                                "name": ""
-                            }
-                        },
-                        {
-                            "typeid": "",
-                            "details": {
-                                "name": "Roughness"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "int"
+                                "name": "Roughness"
                             }
                         }
                     ]
@@ -610,25 +526,11 @@
                     "details": {
                         "name": "Get Base Color"
                     },
-                    "params": [
-                        {
-                            "typeid": "",
-                            "details": {
-                                "name": ""
-                            }
-                        },
-                        {
-                            "typeid": "",
-                            "details": {
-                                "name": "Base Color"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "int"
+                                "name": "Base Color"
                             }
                         }
                     ]
@@ -639,25 +541,11 @@
                     "details": {
                         "name": "Get Ambient Occlusion"
                     },
-                    "params": [
-                        {
-                            "typeid": "",
-                            "details": {
-                                "name": ""
-                            }
-                        },
-                        {
-                            "typeid": "",
-                            "details": {
-                                "name": "Ambient Occlusion"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "int"
+                                "name": "Ambient Occlusion"
                             }
                         }
                     ]
@@ -668,25 +556,11 @@
                     "details": {
                         "name": "Get Metallic"
                     },
-                    "params": [
-                        {
-                            "typeid": "",
-                            "details": {
-                                "name": ""
-                            }
-                        },
-                        {
-                            "typeid": "",
-                            "details": {
-                                "name": "Metallic"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "int"
+                                "name": "Metallic"
                             }
                         }
                     ]
