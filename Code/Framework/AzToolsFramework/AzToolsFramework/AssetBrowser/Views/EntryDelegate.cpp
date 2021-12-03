@@ -162,7 +162,6 @@ namespace AzToolsFramework
             : EntryDelegate(parent)
         {
             LoadBranchPixMaps();
-
         }
 
         void SearchEntryDelegate::Init()
@@ -179,7 +178,6 @@ namespace AzToolsFramework
             if (data.canConvert<const AssetBrowserEntry*>())
             {
                 bool isEnabled = (option.state & QStyle::State_Enabled) != 0;
-                [[maybe_unused]] bool isSelected = (option.state & QStyle::State_Selected) != 0;
 
                 QStyle* style = option.widget ? option.widget->style() : QApplication::style();
 

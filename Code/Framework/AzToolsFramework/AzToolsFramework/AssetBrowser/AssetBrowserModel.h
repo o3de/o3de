@@ -88,7 +88,6 @@ namespace AzToolsFramework
             AssetBrowserFilterModel* GetFilterModel() const;
             void setFilterModel(AssetBrowserFilterModel* filterModel);
 
-
             static void SourceIndexesToAssetIds(const QModelIndexList& indexes, AZStd::vector<AZ::Data::AssetId>& assetIds);
             static void SourceIndexesToAssetDatabaseEntries(const QModelIndexList& indexes, AZStd::vector<AssetBrowserEntry*>& entries);
             
