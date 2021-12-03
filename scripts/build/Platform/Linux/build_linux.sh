@@ -32,6 +32,8 @@ else
     LAST_CMD=$(<${LAST_CONFIGURE_CMD_FILE})
     if [[ "${LAST_CMD}" != "${CONFIGURE_CMD}" ]]; then
         echo [ci_build] Last run command different, generating
+        echo "${LAST_CMD}=="
+        echo "${CONFIGURE_CMD}=="
         RUN_CONFIGURE=1
     fi
 fi
@@ -40,7 +42,7 @@ if [[ ! -z "$RUN_CONFIGURE" ]]; then
     eval echo [ci_build] ${CONFIGURE_CMD}
     eval ${CONFIGURE_CMD}
     # Save the run only if success
-    eval echo "${CONFIGURE_CMD}" > ${LAST_CONFIGURE_CMD_FILE}
+    echo "${CONFIGURE_CMD}" > ${LAST_CONFIGURE_CMD_FILE}
 fi
 
 eval echo [ci_build] cmake --build . --target ${CMAKE_TARGET} --config ${CONFIGURATION} -j $(grep -c processor /proc/cpuinfo) -- ${CMAKE_NATIVE_BUILD_ARGS}
