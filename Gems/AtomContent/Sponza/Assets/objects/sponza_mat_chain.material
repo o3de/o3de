@@ -5,12 +5,6 @@
     "materialTypeVersion": 4,
     "properties": {
         "baseColor": {
-            "color": [
-                0.800000011920929,
-                0.800000011920929,
-                0.800000011920929,
-                1.0
-            ],
             "textureBlendMode": "Lerp",
             "textureMap": "../Textures/chain_basecolor.png"
         },

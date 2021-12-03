@@ -1,20 +1,11 @@
 {
     "description": "",
-    "materialType": "Materials/Types/StandardPBR.materialtype",
     "parentMaterial": "",
-    "propertyLayoutVersion": 3,
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 4,
     "properties": {
-        "occlusion": {
-            "diffuseTextureMap": "Textures/fabric_ao.png"
-        },
         "baseColor": {
-            "color": [
-                0.800000011920929,
-                0.800000011920929,
-                0.800000011920929,
-                1.0
-            ],
-            "textureMap": "Textures/fabricGreen_1k_basecolor.png"
+            "textureMap": "../Textures/fabricGreen_1k_basecolor.png"
         },
         "general": {
             "applySpecularAA": true
@@ -23,22 +14,25 @@
             "color": [
                 0.0,
                 1.0,
-                0.15378041565418244,
+                0.15378041565418243,
                 1.0
             ]
         },
         "metallic": {
-            "textureMap": "Textures/fabric_metallic.png"
+            "textureMap": "../Textures/fabric_metallic.png"
         },
         "normal": {
             "factor": 0.5,
-            "textureMap": "Textures/fabric_normal.jpg"
+            "textureMap": "../Textures/fabric_normal.jpg"
+        },
+        "occlusion": {
+            "diffuseTextureMap": "../Textures/fabric_ao.png"
         },
         "opacity": {
             "factor": 1.0
         },
         "roughness": {
-            "textureMap": "Textures/fabric_roughness.png"
+            "textureMap": "../Textures/fabric_roughness.png"
         }
     }
 }

@@ -1,20 +1,11 @@
 {
     "description": "",
-    "materialType": "Materials/Types/StandardPBR.materialtype",
     "parentMaterial": "",
-    "propertyLayoutVersion": 3,
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 4,
     "properties": {
-        "occlusion": {
-            "diffuseTextureMap": "Textures/curtain_ao.png"
-        },
         "baseColor": {
-            "color": [
-                0.800000011920929,
-                0.800000011920929,
-                0.800000011920929,
-                1.0
-            ],
-            "textureMap": "Textures/curtainRed_1k_basecolor.png"
+            "textureMap": "../Textures/curtainRed_1k_basecolor.png"
         },
         "general": {
             "applySpecularAA": true
@@ -22,22 +13,25 @@
         "irradiance": {
             "color": [
                 1.0,
-                0.023315785452723504,
-                0.048538949340581897,
+                0.023315785452723503,
+                0.048538949340581894,
                 1.0
             ]
         },
         "metallic": {
-            "textureMap": "Textures/curtain_metallic.png"
+            "textureMap": "../Textures/curtain_metallic.png"
         },
         "normal": {
-            "textureMap": "Textures/curtain_normal.jpg"
+            "textureMap": "../Textures/curtain_normal.jpg"
+        },
+        "occlusion": {
+            "diffuseTextureMap": "../Textures/curtain_ao.png"
         },
         "opacity": {
             "factor": 1.0
         },
         "roughness": {
-            "textureMap": "Textures/curtain_roughness.png"
+            "textureMap": "../Textures/curtain_roughness.png"
         },
         "uv": {
             "center": [

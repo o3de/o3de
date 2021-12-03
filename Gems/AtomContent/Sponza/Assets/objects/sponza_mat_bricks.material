@@ -5,12 +5,6 @@
     "materialTypeVersion": 4,
     "properties": {
         "baseColor": {
-            "color": [
-                0.800000011920929,
-                0.800000011920929,
-                0.800000011920929,
-                1.0
-            ],
             "textureMap": "../Textures/bricks_1k_basecolor.png"
         },
         "clearCoat": {
@@ -23,9 +17,9 @@
         },
         "irradiance": {
             "color": [
-                1.0,
-                0.9703211784362793,
-                0.9703211784362793,
+                0.27467766404151917,
+                0.27467766404151917,
+                0.270496666431427,
                 1.0
             ]
         },
@@ -42,7 +36,6 @@
             "algorithm": "ContactRefinement",
             "factor": 0.03500000014901161,
             "quality": "Medium",
-            "textureMap": "../Textures/bricks_1k_height.png",
             "useTexture": false
         },
         "roughness": {

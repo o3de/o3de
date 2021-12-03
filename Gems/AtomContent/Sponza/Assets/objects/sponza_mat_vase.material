@@ -1,20 +1,11 @@
 {
     "description": "",
-    "materialType": "Materials/Types/StandardPBR.materialtype",
     "parentMaterial": "",
-    "propertyLayoutVersion": 3,
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 4,
     "properties": {
-        "occlusion": {
-            "diffuseTextureMap": "Textures/vase_1k_ao.png"
-        },
         "baseColor": {
-            "color": [
-                0.800000011920929,
-                0.800000011920929,
-                0.800000011920929,
-                1.0
-            ],
-            "textureMap": "Textures/vase_1k_basecolor.png"
+            "textureMap": "../Textures/vase_1k_basecolor.png"
         },
         "general": {
             "applySpecularAA": true
@@ -28,24 +19,25 @@
             ]
         },
         "metallic": {
-            "textureMap": "Textures/vase_1k_metallic.png"
+            "textureMap": "../Textures/vase_1k_metallic.png"
         },
         "normal": {
-            "textureMap": "Textures/vase_1k_normal.jpg"
+            "textureMap": "../Textures/vase_1k_normal.jpg"
+        },
+        "occlusion": {
+            "diffuseTextureMap": "../Textures/vase_1k_ao.png"
         },
         "opacity": {
             "factor": 1.0
         },
         "parallax": {
-            "algorithm": "POM",
-            "factor": 0.027000000700354577,
+            "factor": 0.027000000700354576,
             "pdo": true,
             "quality": "High",
-            "textureMap": "Textures/vase_1k_height.png",
             "useTexture": false
         },
         "roughness": {
-            "textureMap": "Textures/vase_1k_roughness.png"
+            "textureMap": "../Textures/vase_1k_roughness.png"
         },
         "specularF0": {
             "enableMultiScatterCompensation": true

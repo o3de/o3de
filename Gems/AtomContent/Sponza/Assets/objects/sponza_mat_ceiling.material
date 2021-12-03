@@ -5,12 +5,6 @@
     "materialTypeVersion": 4,
     "properties": {
         "baseColor": {
-            "color": [
-                0.800000011920929,
-                0.800000011920929,
-                0.800000011920929,
-                1.0
-            ],
             "textureMap": "../Textures/ceiling_1k_basecolor.png"
         },
         "emissive": {
@@ -18,6 +12,14 @@
                 0.0,
                 0.0,
                 0.0,
+                1.0
+            ]
+        },
+        "irradiance": {
+            "color": [
+                0.29176774621009827,
+                0.27888914942741394,
+                0.2501564025878906,
                 1.0
             ]
         },
