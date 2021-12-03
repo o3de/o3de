@@ -4305,10 +4305,10 @@ namespace ScriptCanvasEditor
     {
         m_forceCloseInProgress = true;
         QMessageBox::critical(this, QString(), QObject::tr
-        ("The ScriptCanvas Editor has encountered an external bug which prevents it from tracking the file state.<br><br>"
-        "The ScriptCanvas files in the process of being saved may have saved successfully.<br><br>Closing this window will close "
-        "the ScriptCanvas Editor, and request a launch of the Asset Processor.<br>"
-        "Verify that the Asset Processor or is running before launching the ScriptCanvas Editor again.<br>"
+        ("The Script Canvas Editor has encountered an external bug which prevents it from tracking the file state.<br><br>"
+        "The Script Canvas files in the process of being saved may have saved successfully.<br><br>Closing this window will close "
+        "the Script Canvas Editor, and request a launch of the Asset Processor.<br>"
+        "Verify that the Asset Processor is running before launching the Script Canvas Editor again.<br>"
         "The status of the Asset Processor can be monitored from the O3DE Editor in the bottom-right corner of the status bar."));
 
         AzFramework::AssetSystem::LaunchAssetProcessor();
