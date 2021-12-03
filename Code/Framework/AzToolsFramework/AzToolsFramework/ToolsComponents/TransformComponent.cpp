@@ -860,14 +860,17 @@ namespace AzToolsFramework
                     return;
                 }
 
-                bool suppressTransformChangedEvent = m_suppressTransformChangedEvent;
-                // temporarily disable OnTransformChanged notification, because CheckApplyCachedWorldTransform is not guaranteed
-                // to notify. We send it manually later.
-                m_suppressTransformChangedEvent = false;
-                // When parent comes online, compute local TM from world TM.
-                CheckApplyCachedWorldTransform(parentTransform->GetWorldTM());
-                OnTransformChanged(AZ::Transform::Identity(), parentTransform->GetWorldTM());
-                m_suppressTransformChangedEvent = suppressTransformChangedEvent;
+                if (!m_initialized)
+                {
+                    m_initialized = true;
+                    // OnTransformChanged should only be called once when entity is recreated
+                    OnTransformChanged(AZ::Transform::Identity(), parentTransform->GetWorldTM());
+                }
+                else
+                {
+                    // When parent comes online, compute local TM from world TM.
+                    CheckApplyCachedWorldTransform(parentTransform->GetWorldTM());
+                }
 
                 auto& parentChildIds = GetParentTransformComponent()->m_childrenEntityIds;
                 if (parentChildIds.end() == AZStd::find(parentChildIds.begin(), parentChildIds.end(), GetEntityId()))
