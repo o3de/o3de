@@ -233,9 +233,9 @@ namespace AZ::Dom
         //! Helper method, constructs a failure \ref Result with the specified code and supplemental info specified by a format string
         //! and its arguments.
         template<class... TArgs>
-        static Result VisitorFailure(VisitorErrorCode code, TArgs... formatArgs)
+        static Result VisitorFailure(VisitorErrorCode code, const char* formatString, TArgs... formatArgs)
         {
-            return AZ::Failure(VisitorError(code, AZStd::string::format(formatArgs...)));
+            return AZ::Failure(VisitorError(code, AZStd::string::format(formatString, formatArgs...)));
         }
 
         //! Helper method, constructs a success \ref Result.
