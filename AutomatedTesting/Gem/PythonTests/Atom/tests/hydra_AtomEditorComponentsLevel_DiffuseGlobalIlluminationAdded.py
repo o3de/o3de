@@ -26,10 +26,10 @@ class Tests:
         "Couldn't exit game mode")
 
 
-def AtomEditorComponents_DiffuseGlobalIllumination_AddedToEntity():
+def AtomEditorComponentsLevel_DiffuseGlobalIllumination_AddedToEntity():
     """
     Summary:
-    Tests the Diffuse Global Illumination level component can be added to the level entity and has the expected functionality.
+    Tests the Diffuse Global Illumination level component can be added to the level entity and is stable.
 
     Test setup:
     - Wait for Editor idle loop.
@@ -52,7 +52,7 @@ def AtomEditorComponents_DiffuseGlobalIllumination_AddedToEntity():
 
     import azlmbr.legacy.general as general
 
-    from editor_python_test_tools.editor_entity_utils import EditorLevel
+    from editor_python_test_tools.editor_entity_utils import EditorLevelEntity
     from editor_python_test_tools.utils import Report, Tracer, TestHelper
     from Atom.atom_utils.atom_constants import AtomComponentProperties, GLOBAL_ILLUMINATION_QUALITY
 
@@ -64,24 +64,25 @@ def AtomEditorComponents_DiffuseGlobalIllumination_AddedToEntity():
 
         # Test steps begin.
         # 1. Add Diffuse Global Illumination level component to the level entity.
-        diffuse_global_illumination_component = EditorLevel.add_component(AtomComponentProperties.diffuse_global_illumination())
+        diffuse_global_illumination_component = EditorLevelEntity.add_component(
+            AtomComponentProperties.diffuse_global_illumination())
         Report.critical_result(
             Tests.diffuse_global_illumination_component,
-            EditorLevel.has_component(AtomComponentProperties.diffuse_global_illumination()))
+            EditorLevelEntity.has_component(AtomComponentProperties.diffuse_global_illumination()))
 
         # 2. UNDO the level component addition.
         # -> UNDO component addition.
         general.undo()
         general.idle_wait_frames(1)
         Report.result(Tests.creation_undo,
-                      not EditorLevel.has_component(AtomComponentProperties.diffuse_global_illumination()))
+                      not EditorLevelEntity.has_component(AtomComponentProperties.diffuse_global_illumination()))
 
         # 3. REDO the level component addition.
         # -> REDO component addition.
         general.redo()
         general.idle_wait_frames(1)
         Report.result(Tests.creation_redo,
-                      EditorLevel.has_component(AtomComponentProperties.diffuse_global_illumination()))
+                      EditorLevelEntity.has_component(AtomComponentProperties.diffuse_global_illumination()))
 
         # 4. Set Quality Level property to Low
         diffuse_global_illumination_component.set_component_property_value(
@@ -105,4 +106,4 @@ def AtomEditorComponents_DiffuseGlobalIllumination_AddedToEntity():
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
-    Report.start_test(AtomEditorComponents_DiffuseGlobalIllumination_AddedToEntity)
+    Report.start_test(AtomEditorComponentsLevel_DiffuseGlobalIllumination_AddedToEntity)

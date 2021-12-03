@@ -39,6 +39,10 @@ class TestAutomation(EditorTestSuite):
     class AtomEditorComponents_DirectionalLightAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_DirectionalLightAdded as test_module
 
+    @pytest.mark.test_case_id("C36525660")
+    class AtomEditorComponents_DisplayMapperAdded(EditorSharedTest):
+        from Atom.tests import hydra_AtomEditorComponents_DisplayMapperAdded as test_module
+        
     @pytest.mark.test_case_id("C36525661")
     class AtomEditorComponents_EntityReferenceAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_EntityReferenceAdded as test_module

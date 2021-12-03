@@ -168,9 +168,9 @@ class TestAutomation(EditorTestSuite):
     enable_prefab_system = False
 
     @pytest.mark.test_case_id("C36529666")
-    class AtomEditorComponents_DiffuseGlobalIlluminationAdded(EditorSharedTest):
-        from Atom.tests import hydra_AtomEditorComponents_DiffuseGlobalIlluminationAdded as test_module
+    class AtomEditorComponentsLevel_DiffuseGlobalIlluminationAdded(EditorSharedTest):
+        from Atom.tests import hydra_AtomEditorComponentsLevel_DiffuseGlobalIlluminationAdded as test_module
 
     @pytest.mark.test_case_id("C36525660")
-    class AtomEditorComponents_DisplayMapperAdded(EditorSharedTest):
-        from Atom.tests import hydra_AtomEditorComponents_DisplayMapperAdded as test_module
+    class AtomEditorComponentsLevel_DisplayMapperAdded(EditorSharedTest):
+        from Atom.tests import hydra_AtomEditorComponentsLevel_DisplayMapperAdded as test_module

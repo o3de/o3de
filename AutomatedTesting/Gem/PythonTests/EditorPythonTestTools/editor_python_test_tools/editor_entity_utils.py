@@ -472,7 +472,7 @@ class EditorEntity:
         assert focus_prefab_result.IsSuccess(), f"Prefab operation 'FocusOnOwningPrefab' failed. Error: {focus_prefab_result.GetError()}"
 
 
-class EditorLevel:
+class EditorLevelEntity:
     """
     EditorLevel class used to add and fetch level components.
     Level entity is a special entity that you do not create/destroy independently of larger systems of level creation.
@@ -499,7 +499,7 @@ class EditorLevel:
         :param component_name: String of component name to add.
         :return: Component object of newly added component.
         """
-        component = EditorLevel.add_components([component_name])[0]
+        component = EditorLevelEntity.add_components([component_name])[0]
         return component
 
     @staticmethod
@@ -510,7 +510,7 @@ class EditorLevel:
         :return: List of newly added components to the level
         """
         components = []
-        type_ids = EditorLevel.get_type_ids(component_names)
+        type_ids = EditorLevelEntity.get_type_ids(component_names)
         for type_id in type_ids:
             new_comp = EditorComponent()
             new_comp.type_id = type_id
@@ -532,7 +532,7 @@ class EditorLevel:
         :return: List of Level Component objects of given component name
         """
         component_list = []
-        type_ids = EditorLevel.get_type_ids(component_names)
+        type_ids = EditorLevelEntity.get_type_ids(component_names)
         for type_id in type_ids:
             component = EditorComponent()
             component.type_id = type_id
@@ -554,7 +554,7 @@ class EditorLevel:
         :param component_name: Name of component to check for
         :return: True, if level has specified component. Else, False
         """
-        type_ids = EditorLevel.get_type_ids([component_name])
+        type_ids = EditorLevelEntity.get_type_ids([component_name])
         return editor.EditorLevelComponentAPIBus(bus.Broadcast, "HasComponentOfType", type_ids[0])
 
     @staticmethod
@@ -564,5 +564,5 @@ class EditorLevel:
         :param component_name: Name of component to check for
         :return: integer count of occurences of level component attached to level or zero if none are present
         """
-        type_ids = EditorLevel.get_type_ids([component_name])
+        type_ids = EditorLevelEntity.get_type_ids([component_name])
         return editor.EditorLevelComponentAPIBus(bus.Broadcast, "CountComponentsOfType", type_ids[0])
