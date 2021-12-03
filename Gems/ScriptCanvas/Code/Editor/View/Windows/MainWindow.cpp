@@ -1571,7 +1571,7 @@ namespace ScriptCanvasEditor
         
         if (outTabIndex == -1)
         {
-            return AZ::Failure(AZStd::string::format("Script Canvas Asset %.*s is not open in a tab", assetPath.data()));
+            return AZ::Failure(AZStd::string::format("Script Canvas Asset %.*s is not open in a tab", assetPath.size(), assetPath.data()));
         }
 
         SetActiveAsset(handle);
