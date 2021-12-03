@@ -61,6 +61,9 @@ set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt")
 set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 set(CPACK_LICENSE_URL ${LY_INSTALLER_LICENSE_URL})
 
+set(CPACK_3P_LICENSE_FILE "${CPACK_BINARY_DIR}/NOTICES.txt")
+set(CPACK_3P_MANIFEST_FILE "${CPACK_BINARY_DIR}/SPDX-License.json")
+
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CPACK_PACKAGE_NAME}/${CPACK_PACKAGE_VERSION}")
 
 # neither of the SOURCE_DIR variables equate to anything during execution of pre/post build scripts
@@ -93,6 +96,16 @@ endif()
 # We download it to a different location because CPACK_PACKAGING_INSTALL_PREFIX will be removed during
 # cpack generation. CPACK_BINARY_DIR persists across cpack invocations
 set(LY_CMAKE_PACKAGE_DOWNLOAD_PATH ${CPACK_BINARY_DIR}/${CPACK_CMAKE_PACKAGE_FILE})
+
+# Scan the source and packages for licenses, then add it to the 
+
+configure_file(${LY_ROOT_FOLDER}/cmake/LicenseScan.cmake.in
+    ${CPACK_BINARY_DIR}/LicenseScan.cmake
+    @ONLY
+)
+ly_install(SCRIPT ${CPACK_BINARY_DIR}/LicenseScan.cmake
+    COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
+)
 
 configure_file(${LY_ROOT_FOLDER}/cmake/Packaging/CMakeDownload.cmake.in
     ${CPACK_BINARY_DIR}/CMakeDownload.cmake
