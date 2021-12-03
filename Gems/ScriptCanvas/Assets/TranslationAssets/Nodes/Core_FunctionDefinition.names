@@ -7,18 +7,17 @@
             "details": {
                 "name": "Function Definition",
                 "category": "Core",
-                "tooltip": "Represents either an execution entry or exit node.",
-                "subtitle": "Core"
+                "tooltip": "Represents either an execution entry or exit node."
             },
             "slots": [
                 {
-                    "base": "Input_ ",
+                    "base": "Input_ _0",
                     "details": {
                         "name": " "
                     }
                 },
                 {
-                    "base": "Output_ ",
+                    "base": "Output_ _0",
                     "details": {
                         "name": " "
                     }

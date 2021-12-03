@@ -382,6 +382,9 @@ namespace GraphCanvas
                 m_translationAssets.push_back(assetId);
             }
         };
+
+        m_translationAssets.clear();
+
         AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets, nullptr, collectAssetsCb, postEnumerateCb);
     }
 

@@ -154,7 +154,7 @@ namespace LyShine
         // [LYSHINE_ATOM_TODO][ATOM-15073] - need to combine into a single DrawIndexed call to take advantage of the draw call
         // optimization done by this RenderGraph. This option will be added to DynamicDrawContext. For
         // now we could combine the vertices ourselves
-        for (const DynUiPrimitive& primitive : m_primitives)
+        for (const LyShine::UiPrimitive& primitive : m_primitives)
         {
             dynamicDraw->DrawIndexed(primitive.m_vertices, primitive.m_numVertices, primitive.m_indices, primitive.m_numIndices, AZ::RHI::IndexFormat::Uint16, drawSrg);
         }
@@ -163,7 +163,7 @@ namespace LyShine
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    void PrimitiveListRenderNode::AddPrimitive(DynUiPrimitive* primitive)
+    void PrimitiveListRenderNode::AddPrimitive(LyShine::UiPrimitive* primitive)
     {
         // always clear the next pointer before adding to list
         primitive->m_next = nullptr;
@@ -174,9 +174,9 @@ namespace LyShine
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    DynUiPrimitiveList& PrimitiveListRenderNode::GetPrimitives() const
+    LyShine::UiPrimitiveList& PrimitiveListRenderNode::GetPrimitives() const
     {
-        return const_cast<DynUiPrimitiveList&>(m_primitives);
+        return const_cast<LyShine::UiPrimitiveList&>(m_primitives);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -198,7 +198,7 @@ namespace LyShine
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    bool PrimitiveListRenderNode::HasSpaceToAddPrimitive(DynUiPrimitive* primitive) const
+    bool PrimitiveListRenderNode::HasSpaceToAddPrimitive(LyShine::UiPrimitive* primitive) const
     {
         return primitive->m_numVertices + m_totalNumVertices < std::numeric_limits<uint16>::max();
     }
@@ -222,9 +222,9 @@ namespace LyShine
     {
         size_t numPrims = m_primitives.size();
         size_t primCount = 0;
-        const DynUiPrimitive* lastPrim = nullptr;
+        const LyShine::UiPrimitive* lastPrim = nullptr;
         int highestTexUnit = 0;
-        for (const DynUiPrimitive& primitive : m_primitives)
+        for (const LyShine::UiPrimitive& primitive : m_primitives)
         {
             if (primCount > numPrims)
             {
@@ -666,13 +666,6 @@ namespace LyShine
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    void RenderGraph::BeginRenderToTexture([[maybe_unused]] int renderTargetHandle, [[maybe_unused]] SDepthTexture* renderTargetDepthSurface,
-        [[maybe_unused]] const AZ::Vector2& viewportTopLeft, [[maybe_unused]] const AZ::Vector2& viewportSize, [[maybe_unused]] const AZ::Color& clearColor)
-    {
-        // LYSHINE_ATOM_TODO - this function will be removed when all IRenderer references are gone from UI components
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
     void RenderGraph::BeginRenderToTexture(AZ::Data::Instance<AZ::RPI::AttachmentImage> attachmentImage,
         const AZ::Vector2& viewportTopLeft, const AZ::Vector2& viewportSize, const AZ::Color& clearColor)
     {
@@ -705,7 +698,7 @@ namespace LyShine
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    void RenderGraph::AddPrimitiveAtom(DynUiPrimitive* primitive, const AZ::Data::Instance<AZ::RPI::Image>& texture,
+    void RenderGraph::AddPrimitiveAtom(LyShine::UiPrimitive* primitive, const AZ::Data::Instance<AZ::RPI::Image>& texture,
         bool isClampTextureMode, bool isTextureSRGB, bool isTexturePremultipliedAlpha, BlendMode blendMode)
     {
         AZStd::vector<RenderNode*>* renderNodeList = m_renderNodeListStack.top();
@@ -778,7 +771,7 @@ namespace LyShine
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    void RenderGraph::AddAlphaMaskPrimitiveAtom(DynUiPrimitive* primitive,
+    void RenderGraph::AddAlphaMaskPrimitiveAtom(LyShine::UiPrimitive* primitive,
         AZ::Data::Instance<AZ::RPI::AttachmentImage> contentAttachmentImage,
         AZ::Data::Instance<AZ::RPI::AttachmentImage> maskAttachmentImage,
         bool isClampTextureMode,
@@ -862,7 +855,7 @@ namespace LyShine
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    DynUiPrimitive* RenderGraph::GetDynamicQuadPrimitive(const AZ::Vector2* positions, uint32 packedColor)
+    LyShine::UiPrimitive* RenderGraph::GetDynamicQuadPrimitive(const AZ::Vector2* positions, uint32 packedColor)
     {
         const int numVertsInQuad = 4;
         const int numIndicesInQuad = 6;
@@ -1154,10 +1147,10 @@ namespace LyShine
 
                 const PrimitiveListRenderNode* primListRenderNode = static_cast<const PrimitiveListRenderNode*>(renderNode);
                 
-                DynUiPrimitiveList& primitives = primListRenderNode->GetPrimitives();
+                LyShine::UiPrimitiveList& primitives = primListRenderNode->GetPrimitives();
                 info.m_numPrimitives += static_cast<int>(primitives.size());
                 {
-                    for (const DynUiPrimitive& primitive : primitives)
+                    for (const LyShine::UiPrimitive& primitive : primitives)
                     {
                         info.m_numTriangles += primitive.m_numIndices / 3;
                     }
@@ -1338,10 +1331,10 @@ namespace LyShine
                     previousNodeAlreadyCounted = false;
                 }
 
-                DynUiPrimitiveList& primitives = primListRenderNode->GetPrimitives();
+                LyShine::UiPrimitiveList& primitives = primListRenderNode->GetPrimitives();
                 int numPrimitives = static_cast<int>(primitives.size());
                 int numTriangles = 0;
-                for (const DynUiPrimitive& primitive : primitives)
+                for (const LyShine::UiPrimitive& primitive : primitives)
                 {
                     numTriangles += primitive.m_numIndices / 3;
                 }

@@ -153,7 +153,6 @@ class Launcher(object):
         :return: None
         """
         self.workspace.asset_processor.stop()
-        self.save_project_log_files()
 
     def save_project_log_files(self):
         # type: () -> None
