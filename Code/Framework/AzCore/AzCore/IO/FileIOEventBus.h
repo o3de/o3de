@@ -17,33 +17,6 @@ namespace AZ
     namespace IO
     {
         /**
-         * File IO interface. All events return true if we executed the
-         * specific operation and no other code will be executed. If we return false
-         * the normal code for the specific event will be executed.
-         * IMPORTANT: We support multiple listeners with the idea that many systems can listen
-         * for event. This interface allows to actually perform the operations, in such cases make
-         * sure only one of the listeners provides this service (otherwise depending on registration
-         * order service providers may change)
-         * IMPORTANT: We don't provide any sync for the FileIOBus. We do that for a couple of reasons.
-         * 1. If you will handle file IO youself or keeptrack of statistics you code will most likely already do that
-         * 2. It is NOT safe to BusConnect/BusDisconnect while the FileIO is in use (this is why you should connect in advance)
-         * otherwise if you provide service you can end up connecting in a middle of reads/writes/etc.
-         */
-        class FileIO
-            : public AZ::EBusTraits
-        {
-        public:
-            virtual ~FileIO() {}
-            virtual bool OnOpen(SystemFile& file, const char* fileName, int mode, int platformFlags, bool& isFileOpened) = 0;
-            virtual bool OnClose(SystemFile& file) = 0;
-            virtual bool OnSeek(SystemFile& file, SystemFile::SizeType offset, SystemFile::SeekMode mode) = 0;
-            virtual bool OnRead(SystemFile& file, SystemFile::SizeType byteSize, void* buffer, SystemFile::SizeType& numRead) = 0;
-            virtual bool OnWrite(SystemFile& file, const void* buffer, SystemFile::SizeType byteSize, SystemFile::SizeType& numWritten) = 0;
-        };
-
-        typedef AZ::EBus<FileIO> FileIOBus;
-
-        /**
          * Interface for handling file io events. All events are syncronized
          */
         class FileIOEvents
