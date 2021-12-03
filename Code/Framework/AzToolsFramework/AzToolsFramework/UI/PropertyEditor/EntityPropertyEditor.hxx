@@ -625,7 +625,7 @@ namespace AzToolsFramework
         bool m_prefabsAreEnabled = false;
 
         ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
-        bool m_entityIsReadOnly = false;
+        bool m_selectionContainsReadOnlyEntity = false;
 
         // Reordering row widgets within the RPE.
         static constexpr float MoveFadeSeconds = 0.5f;

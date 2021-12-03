@@ -977,7 +977,7 @@ namespace AzToolsFramework
             m_gui->m_entityDetailsLabel->setVisible(false);
 
             // If we're in edit mode, make the name field editable.
-            m_gui->m_entityNameEditor->setReadOnly(!m_gui->m_componentListContents->isEnabled() || m_entityIsReadOnly);
+            m_gui->m_entityNameEditor->setReadOnly(!m_gui->m_componentListContents->isEnabled() || m_selectionContainsReadOnlyEntity);
 
             // get the name of the entity.
             auto entity = GetSelectedEntityById(entityId);
@@ -1066,7 +1066,7 @@ namespace AzToolsFramework
 
     bool EntityPropertyEditor::CanAddComponentsToSelection(const SelectionEntityTypeInfo& selectionEntityTypeInfo) const
     {
-        if (m_entityIsReadOnly)
+        if (m_selectionContainsReadOnlyEntity)
         {
             // Can't add components if there is a read only entity in the selection
             return false;
@@ -1137,12 +1137,12 @@ namespace AzToolsFramework
         GetSelectedEntities(m_selectedEntityIds);
 
         // Check if any of the selected entities are marked as read only
-        m_entityIsReadOnly = false;
+        m_selectionContainsReadOnlyEntity = false;
         for (const auto& entityId : m_selectedEntityIds)
         {
             if (m_readOnlyEntityPublicInterface->IsReadOnly(entityId))
             {
-                m_entityIsReadOnly = true;
+                m_selectionContainsReadOnlyEntity = true;
                 break;
             }
         }
@@ -1703,7 +1703,7 @@ namespace AzToolsFramework
             componentEditor->InvalidateAll(!componentInFilter ? m_filterString.c_str() : nullptr);
 
             // If we are in read only mode, then show the components as disabled
-            if (m_entityIsReadOnly)
+            if (m_selectionContainsReadOnlyEntity)
             {
                 componentEditor->mockDisabledState(true);
             }
@@ -3104,7 +3104,7 @@ namespace AzToolsFramework
             }
         }
 
-        m_gui->m_statusComboBox->setDisabled(m_entityIsReadOnly);
+        m_gui->m_statusComboBox->setDisabled(m_selectionContainsReadOnlyEntity);
         m_gui->m_statusComboBox->setVisible(!m_isSystemEntityEditor && !m_isLevelEntityEditor);
         m_gui->m_statusComboBox->style()->unpolish(m_gui->m_statusComboBox);
         m_gui->m_statusComboBox->style()->polish(m_gui->m_statusComboBox);
@@ -3333,7 +3333,7 @@ namespace AzToolsFramework
 
         const bool hasComponents = !m_selectedEntityIds.empty() && !componentsToEdit.empty();
         // Don't allow components to be removed/cut/enabled/disabled if read only
-        const bool allowRemove = hasComponents && AreComponentsRemovable(componentsToEdit) && !m_entityIsReadOnly;
+        const bool allowRemove = hasComponents && AreComponentsRemovable(componentsToEdit) && !m_selectionContainsReadOnlyEntity;
         const bool allowCopy = hasComponents && AreComponentsCopyable(componentsToEdit);
 
         m_actionToDeleteComponents->setEnabled(allowRemove);
@@ -3395,7 +3395,7 @@ namespace AzToolsFramework
             return false;
         }
 
-        if (m_entityIsReadOnly)
+        if (m_selectionContainsReadOnlyEntity)
         {
             // Can't paste components if there is a read only entity in the selection
             return false;
