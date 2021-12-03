@@ -19,8 +19,7 @@
 namespace ScriptCanvasEditor
 {
     ScriptCanvasMemoryAsset::ScriptCanvasMemoryAsset()
-        : m_isSaving(false)
-        , m_sourceInError(false)
+        : m_sourceInError(false)
     {
         m_undoState = AZStd::make_unique<SceneUndoState>(this);
     }

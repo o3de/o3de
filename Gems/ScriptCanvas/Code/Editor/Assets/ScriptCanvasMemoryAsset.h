@@ -321,7 +321,6 @@ namespace ScriptCanvasEditor
         //! The undo helper is an object that implements the Undo behaviors
         AZStd::unique_ptr<UndoHelper> m_undoHelper;
 
-        bool m_isSaving;
         bool m_sourceInError;
 
         AZ::Data::AssetId m_sourceUuid;

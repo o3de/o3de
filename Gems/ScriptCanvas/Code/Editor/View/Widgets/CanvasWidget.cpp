@@ -70,11 +70,8 @@ namespace ScriptCanvasEditor
         {
             EditorGraphRequests* editorGraphRequests = EditorGraphRequestBus::FindFirstHandler(scriptCanvasId);
             editorGraphRequests->CreateGraphCanvasScene();
-
             AZ::EntityId graphCanvasSceneId = editorGraphRequests->GetGraphCanvasGraphId();
-
             m_graphicsView->SetScene(graphCanvasSceneId);
-
             m_scriptCanvasId = scriptCanvasId;
         }
 
