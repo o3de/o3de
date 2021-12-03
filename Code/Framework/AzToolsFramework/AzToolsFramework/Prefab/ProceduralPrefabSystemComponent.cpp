@@ -6,6 +6,8 @@
  *
  */
 
+#include <AzCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzToolsFramework/Prefab/ProceduralPrefabSystemComponent.h>
 #include <Prefab/Procedural/ProceduralPrefabAsset.h>
