@@ -57,7 +57,7 @@ namespace AZ::Dom::Tests
 
             auto visitDocumentFn = [this](AZ::Dom::Visitor& visitor)
             {
-                return Json::VisitRapidJsonValue(*m_document, visitor, Lifetime::Persistent);
+                return Json::VisitRapidJsonValue(*m_document, visitor, Lifetime::Temporary);
             };
 
             // Document -> Document
@@ -82,7 +82,7 @@ namespace AZ::Dom::Tests
                     [&canonicalSerializedDocument](AZ::Dom::Visitor& visitor)
                     {
                         JsonBackend backend;
-                        return Dom::Utils::ReadFromString(backend, canonicalSerializedDocument, Dom::Lifetime::Persistent, visitor);
+                        return Dom::Utils::ReadFromString(backend, canonicalSerializedDocument, Lifetime::Temporary, visitor);
                     });
                 EXPECT_TRUE(result.IsSuccess());
                 EXPECT_EQ(AZ::JsonSerialization::Compare(*m_document, result.GetValue()), JsonSerializerCompareResult::Equal);
@@ -96,7 +96,7 @@ namespace AZ::Dom::Tests
                     backend, serializedDocument,
                     [&backend, &canonicalSerializedDocument](AZ::Dom::Visitor& visitor)
                     {
-                        return Dom::Utils::ReadFromString(backend, canonicalSerializedDocument, Dom::Lifetime::Persistent, visitor);
+                        return Dom::Utils::ReadFromString(backend, canonicalSerializedDocument, Lifetime::Temporary, visitor);
                     });
                 EXPECT_TRUE(result.IsSuccess());
                 EXPECT_EQ(canonicalSerializedDocument, serializedDocument);
