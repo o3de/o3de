@@ -40,7 +40,6 @@ namespace AzToolsFramework
             : QStyledItemDelegate(parent)
             , m_iconSize(qApp->style()->pixelMetric(QStyle::PM_SmallIconSize))
         {
-
         }
 
         EntryDelegate::~EntryDelegate() = default;
@@ -323,10 +322,9 @@ namespace AzToolsFramework
 
             const QRegularExpression htmlMarkupRegex("<[^>]*>");
 
-            // Start with the raw rich text for the entity name.
-            QString displayStringRichText =  displayString;
+            QString displayStringRichText = displayString;
 
-            // If there is any HTML markup in the entity name, don't elide.
+            // If there is any HTML markup in the display text, don't elide.
             if (!htmlMarkupRegex.match(displayStringRichText).hasMatch())
             {
                 const QFontMetrics fontMetrics(optionV4.font);

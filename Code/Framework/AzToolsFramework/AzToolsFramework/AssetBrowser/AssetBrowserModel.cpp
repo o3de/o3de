@@ -163,7 +163,7 @@ namespace AzToolsFramework
         {
             return aznumeric_cast<int>(AssetBrowserEntry::Column::Count);
         }
-        
+
         QVariant AssetBrowserModel::data(const QModelIndex& index, int role) const
         {
             if (!index.isValid())

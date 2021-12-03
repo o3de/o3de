@@ -18,7 +18,6 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserTableModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
-#include <AzCore/std/smart_ptr/shared_ptr.h>
 
 // AzQtComponents
 #include <AzQtComponents/Utilities/QtWindowUtilities.h>
