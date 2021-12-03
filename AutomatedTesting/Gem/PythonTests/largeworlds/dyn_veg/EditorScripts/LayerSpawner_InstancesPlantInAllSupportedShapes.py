@@ -9,7 +9,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 def LayerSpawner_InstancesPlantInAllSupportedShapes():
     """
     Summary:
-    The level is loaded and vegetation area is created. Then the Vegetation Reference Shape
+    The level is loaded and vegetation area is created. Then the Shape Reference
     component of vegetation area is pinned with entities of different shape components to check
     if the vegetation plants in different shaped areas.
 
@@ -67,7 +67,7 @@ def LayerSpawner_InstancesPlantInAllSupportedShapes():
                                                10.0, 10.0, 10.0,
                                                asset_path)
     vegetation.remove_component("Box Shape")
-    vegetation.add_component("Vegetation Reference Shape")
+    vegetation.add_component("Shape Reference")
 
     # Create surface for planting on
     dynveg.create_surface_entity("Surface Entity", entity_position, 60.0, 60.0, 1.0)

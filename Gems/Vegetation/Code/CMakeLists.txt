@@ -103,6 +103,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
                 AZ::AzFrameworkTestShared
                 Gem::Vegetation.Static
+                Gem::LmbrCentral.Mocks
     )
     ly_add_googletest(
         NAME Gem::Vegetation.Tests

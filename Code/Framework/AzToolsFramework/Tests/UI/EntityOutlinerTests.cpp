@@ -128,7 +128,7 @@ namespace UnitTest
         void ProcessDeferredUpdates()
         {
             // Force a prefab propagation for updates that are deferred to the next tick.
-            m_prefabSystemComponent->OnSystemTick();
+            PropagateAllTemplateChanges();
 
             // Ensure the model process its entity update queue
             m_model->ProcessEntityUpdates();
