@@ -134,7 +134,7 @@ namespace UnitTest
     }
 
     void PrefabTestFixture::CompareInstances(const AzToolsFramework::Prefab::Instance& instanceA,
-                                             const AzToolsFramework::Prefab::Instance& instanceB, bool shouldCompareLinkIds, bool shouldCompareContainerEntities)
+        const AzToolsFramework::Prefab::Instance& instanceB, bool shouldCompareLinkIds, bool shouldCompareContainerEntities)
     {
         AzToolsFramework::Prefab::TemplateId templateAId = instanceA.GetTemplateId();
         AzToolsFramework::Prefab::TemplateId templateBId = instanceB.GetTemplateId();

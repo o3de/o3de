@@ -6,9 +6,6 @@
  *
  */
 
-#include "Entity/PrefabEditorEntityOwnershipInterface.h"
-#include "Prefab/PrefabTestFixture.h"
-
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Math/Matrix3x3.h>
@@ -23,6 +20,8 @@
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
+#include <Prefab/PrefabTestFixture.h>
 
 #include <AZTestShared/Math/MathTestHelpers.h>
 
