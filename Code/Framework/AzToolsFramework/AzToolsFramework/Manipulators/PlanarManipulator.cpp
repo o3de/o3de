@@ -171,7 +171,7 @@ namespace AzToolsFramework
         const AzFramework::CameraState& cameraState,
         const ViewportInteraction::MouseInteraction& mouseInteraction)
     {
-        if (cl_manipulatorDrawDebug)
+        if (ed_manipulatorDrawDebug)
         {
             if (PerformingAction())
             {

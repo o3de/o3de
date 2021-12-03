@@ -7,49 +7,48 @@
             "details": {
                 "name": "Replace String",
                 "category": "String",
-                "tooltip": "Allows replacing a substring from a given string.",
-                "subtitle": "String"
+                "tooltip": "Allows replacing a substring from a given string."
             },
             "slots": [
                 {
-                    "base": "DataInput_Source",
+                    "base": "DataInput_Source_0",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "base": "DataInput_Replace",
+                    "base": "DataInput_Replace_1",
                     "details": {
                         "name": "Replace"
                     }
                 },
                 {
-                    "base": "DataInput_With",
+                    "base": "DataInput_With_2",
                     "details": {
                         "name": "With"
                     }
                 },
                 {
-                    "base": "DataInput_Case Sensitive",
+                    "base": "DataInput_Case Sensitive_3",
                     "details": {
                         "name": "Case Sensitive"
                     }
                 },
                 {
-                    "base": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }
                 },
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In",
                         "tooltip": "Input signal"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }

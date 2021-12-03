@@ -19,6 +19,7 @@
 #include <LyShine/Bus/UiCanvasBus.h>
 #include <LyShine/Bus/UiAnimateEntityBus.h>
 #include <LyShine/UiAssetTypes.h>
+#include <LyShine/UiRenderFormats.h>
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -31,7 +32,6 @@
 
 #include <IFont.h>
 #include <ILocalizationManager.h>
-#include <IRenderer.h>
 #include <TextureAtlas/TextureAtlasBus.h>
 #include <TextureAtlas/TextureAtlasNotificationBus.h>
 #include <TextureAtlas/TextureAtlas.h>
@@ -608,13 +608,13 @@ private: // types
         ColorB              m_color;
         IFFont*             m_font;
         uint32              m_fontTextureVersion;
-        DynUiPrimitive      m_cachedPrimitive;
+        LyShine::UiPrimitive      m_cachedPrimitive;
     };
 
     struct RenderCacheImageBatch
     {
         AZ::Data::Instance<AZ::RPI::Image>  m_texture;
-        DynUiPrimitive                      m_cachedPrimitive;
+        LyShine::UiPrimitive             m_cachedPrimitive;
     };
 
     struct RenderCacheData
