@@ -76,7 +76,7 @@ namespace AzToolsFramework
             void EndAddEntry(AssetBrowserEntry* parent) override;
             void BeginRemoveEntry(AssetBrowserEntry* entry) override;
             void EndRemoveEntry() override;
-            const AssetBrowserFilterModel* GetFilterModel() const;
+
             //////////////////////////////////////////////////////////////////////////
             // TickBus
             //////////////////////////////////////////////////////////////////////////
@@ -84,7 +84,10 @@ namespace AzToolsFramework
 
             AZStd::shared_ptr<RootAssetBrowserEntry> GetRootEntry() const;
             void SetRootEntry(AZStd::shared_ptr<RootAssetBrowserEntry> rootEntry);
+
+            AssetBrowserFilterModel* GetFilterModel() const;
             void setFilterModel(AssetBrowserFilterModel* filterModel);
+
 
             static void SourceIndexesToAssetIds(const QModelIndexList& indexes, AZStd::vector<AZ::Data::AssetId>& assetIds);
             static void SourceIndexesToAssetDatabaseEntries(const QModelIndexList& indexes, AZStd::vector<AssetBrowserEntry*>& entries);

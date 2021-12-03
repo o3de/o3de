@@ -269,6 +269,11 @@ namespace AzToolsFramework
             m_rootEntry = rootEntry;
         }
 
+        AssetBrowserFilterModel* AssetBrowserModel::GetFilterModel() const
+        {
+            return m_filterModel;
+        }
+
         void AssetBrowser::AssetBrowserModel::setFilterModel(AssetBrowserFilterModel* filterModel)
         {
             m_filterModel = filterModel;
@@ -397,11 +402,6 @@ namespace AzToolsFramework
             int row = entry->row();
             index = createIndex(row, aznumeric_cast<int>(AssetBrowserEntry::Column::DisplayName), entry);
             return true;
-        }
-
-        const AssetBrowserFilterModel* AssetBrowserModel::GetFilterModel() const
-        {
-            return m_filterModel;
         }
 
     } // namespace AssetBrowser
