@@ -23,7 +23,7 @@ namespace AzToolsFramework
         ~TraceLogger();
 
         //! Open log file and dump log sink into it
-        void PrepareLogFile(const AZStd::string& logFileName);
+        void OpenLogFile(const AZStd::string& logFileName, bool clearLogFile);
 
         //! Add filter to ignore messages for windows with matching names
         void AddWindowFilter(const AZStd::string& filter);

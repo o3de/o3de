@@ -50,7 +50,7 @@ namespace AzToolsFramework
         return false;
     }
 
-    void TraceLogger::PrepareLogFile(const AZStd::string& logFileName)
+    void TraceLogger::OpenLogFile(const AZStd::string& logFileName, bool clearLogFile)
     {
         using namespace AzFramework;
 
@@ -73,7 +73,7 @@ namespace AzToolsFramework
         AZStd::string logPath;
         StringFunc::Path::Join(logDirectory.c_str(), logFileName.c_str(), logPath);
 
-        m_logFile.reset(aznew LogFile(logPath.c_str(), true));
+        m_logFile.reset(aznew LogFile(logPath.c_str(), clearLogFile));
         if (m_logFile)
         {
             m_logFile->SetMachineReadable(false);
