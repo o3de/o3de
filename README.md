@@ -5,7 +5,11 @@ O3DE (Open 3D Engine) is an open-source, real-time, multi-platform 3D engine tha
 ## Contribute
 For information about contributing to Open 3D Engine, visit [https://o3de.org/docs/contributing/](https://o3de.org/docs/contributing/).
 
-## Download and Install
+## Binary Releases
+
+For the latest release of the engine, you can download installer binaries from: [https://o3de.org/download/](https://o3de.org/download/)
+
+## Download and Build from Source
 
 This repository uses Git LFS for storing large binary files.  
 
