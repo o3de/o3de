@@ -6,43 +6,43 @@
             "variant": "",
             "details": {
                 "name": "Repeater",
-                "category": "Timing",
+                "category": "Nodeables",
                 "tooltip": "Repeats the output signal the given number of times using the specified delay to space the signals out."
             },
             "slots": [
                 {
-                    "base": "Input_Start",
+                    "base": "Input_Start_0",
                     "details": {
                         "name": "Start"
                     }
                 },
                 {
-                    "base": "DataInput_Repetitions",
+                    "base": "DataInput_Repetitions_0",
                     "details": {
                         "name": "Repetitions"
                     }
                 },
                 {
-                    "base": "DataInput_Interval",
+                    "base": "DataInput_Interval_1",
                     "details": {
                         "name": "Interval"
                     }
                 },
                 {
-                    "base": "Output_On Start",
+                    "base": "Output_On Start_0",
                     "details": {
                         "name": "On Start"
                     }
                 },
                 {
-                    "base": "Output_Complete",
+                    "base": "Output_Complete_1",
                     "details": {
                         "name": "Complete",
                         "tooltip": "Signaled upon node exit"
                     }
                 },
                 {
-                    "base": "Output_Action",
+                    "base": "Output_Action_2",
                     "details": {
                         "name": "Action",
                         "tooltip": "Signaled every repetition"

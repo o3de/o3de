@@ -52,7 +52,6 @@
 #include <AzFramework/Archive/ArchiveFileIO.h>
 
 #include <LoadScreenBus.h>
-#include <LyShine/Bus/UiSystemBus.h>
 #include <AzFramework/Logging/MissingAssetLogger.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
 #include <AzCore/Interface/Interface.h>
@@ -77,7 +76,6 @@
 #include <IAudioSystem.h>
 #include <ICmdLine.h>
 #include <IProcess.h>
-#include <LyShine/ILyShine.h>
 
 #include <AzFramework/Archive/Archive.h>
 #include "XConsole.h"
@@ -1104,11 +1102,6 @@ AZ_POP_DISABLE_WARNING
         }
 
         InlineInitializationProcessing("CSystem::Init Level System");
-
-        if (m_env.pLyShine)
-        {
-            m_env.pLyShine->PostInit();
-        }
 
         InlineInitializationProcessing("CSystem::Init InitLmbrAWS");
 
