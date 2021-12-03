@@ -40,6 +40,7 @@ namespace AzToolsFramework
             : QStyledItemDelegate(parent)
             , m_iconSize(qApp->style()->pixelMetric(QStyle::PM_SmallIconSize))
         {
+
         }
 
         EntryDelegate::~EntryDelegate() = default;
@@ -161,6 +162,15 @@ namespace AzToolsFramework
             : EntryDelegate(parent)
         {
             LoadBranchPixMaps();
+
+        }
+
+        void SearchEntryDelegate::Init()
+        {
+            AssetBrowserModel* assetBrowserModel;
+            AssetBrowserComponentRequestBus::BroadcastResult(assetBrowserModel, &AssetBrowserComponentRequests::GetAssetBrowserModel);
+            AZ_Assert(assetBrowserModel, "Failed to get filebrowser model");
+            m_assetBrowserFilerModel = assetBrowserModel->GetFilterModel();
         }
 
         void SearchEntryDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
@@ -273,16 +283,12 @@ namespace AzToolsFramework
                     ? qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::Name)))
                     : qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::Path)));
 
-                AssetBrowserModel* abModel;
-                AssetBrowserComponentRequestBus::BroadcastResult(abModel, &AssetBrowserComponentRequests::GetAssetBrowserModel);
-                AZ_Assert(abModel, "Failed to get filebrowser model");
-                const AssetBrowserFilterModel* filterModel = abModel->GetFilterModel();
                 QString label{ displayString.data() };
-                if (!displayString.isNull() && filterModel->GetStringFilter() &&
-                    !filterModel->GetStringFilter()->GetFilterString().isEmpty())
+                if (m_assetBrowserFilerModel && m_assetBrowserFilerModel->GetStringFilter() 
+                    && !m_assetBrowserFilerModel->GetStringFilter()->GetFilterString().isEmpty())
                 {
-                    
-                    QString filterString = abModel->GetFilterModel()->GetStringFilter()->GetFilterString();
+
+                    QString filterString = m_assetBrowserFilerModel->GetStringFilter()->GetFilterString();
                     // highlight characters in filter
                     int highlightTextIndex = 0;
                     do
@@ -290,22 +296,18 @@ namespace AzToolsFramework
                         highlightTextIndex = label.lastIndexOf(filterString, highlightTextIndex - 1, Qt::CaseInsensitive);
                         if (highlightTextIndex >= 0)
                         {
-                            const QString BACKGROUND_COLOR{ /*"#FFFF99"*/ /*"#FF007F"*/ "#707070" /*"#CFCFC9"*/ };
+                            const QString BACKGROUND_COLOR{ "#707070" };
                             label.insert(static_cast<int>(highlightTextIndex + filterString.length()), "</span>");
                             label.insert(highlightTextIndex, "<span style=\"background-color: " + BACKGROUND_COLOR + "\">");
                         }
                     } while (highlightTextIndex > 0);
                 }
 
-                PaintEntryNameAsRichText(painter, option, index, label, remainingRect);
-                
-                //style->drawItemText(
-                //    painter, remainingRect, option.displayAlignment, actualPalette, isEnabled, label,
-                //    isSelected ? QPalette::HighlightedText : QPalette::Text);
+                PaintEntryDisplayStringAsRichText(painter, option, index, label, remainingRect);
             }
         }
 
-        void SearchEntryDelegate::PaintEntryNameAsRichText(
+        void SearchEntryDelegate::PaintEntryDisplayStringAsRichText(
             QPainter* painter,
             const QStyleOptionViewItem& option,
             const QModelIndex& index,
@@ -324,7 +326,7 @@ namespace AzToolsFramework
             QRegularExpression htmlMarkupRegex("<[^>]*>");
 
             // Start with the raw rich text for the entity name.
-            QString displayStringRichText =  displayString;//optionV4.text;
+            QString displayStringRichText =  displayString;
 
             // If there is any HTML markup in the entity name, don't elide.
             if (!htmlMarkupRegex.match(displayStringRichText).hasMatch())
@@ -343,10 +345,6 @@ namespace AzToolsFramework
 
                 displayStringRichText = fontMetrics.elidedText(optionV4.text, Qt::TextElideMode::ElideRight, textWidthAvailable);
             }
-
-            //// delete the text from the item so we can use the standard painter to draw the icon
-            //optionV4.text.clear();
-            //optionV4.widget->style()->drawControl(QStyle::CE_ItemViewItem, &optionV4, painter);
 
             // Now we setup a Text Document so it can draw the rich text
             QTextDocument textDoc;
