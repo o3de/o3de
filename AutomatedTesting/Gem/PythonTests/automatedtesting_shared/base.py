@@ -128,10 +128,7 @@ class TestAutomationBase:
             errors.append(TestRunError("FAILED TEST", error_str))
             if return_code and return_code != TestAutomationBase.TEST_FAIL_RETCODE: # Crashed
                 crash_info = "-- No crash log available --"
-                if sys.platform.startswith('linux'):
-                    crash_log = os.path.join(workspace.paths.project_log(), 'crash.log')
-                else:
-                    crash_log = os.path.join(workspace.paths.project_log(), 'error.log')
+                crash_log = workspace.paths.crash_log()
 
                 try:
                     waiter.wait_for(lambda: os.path.exists(crash_log), timeout=TestAutomationBase.WAIT_FOR_CRASH_LOG)
