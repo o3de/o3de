@@ -142,6 +142,7 @@ namespace EMotionFX
             context.m_previousPose = &previousPose->GetPose();
             context.m_nextPose = &nextPose->GetPose();
             context.m_motionInstance = motionInstance;
+            context.m_actorInstance = actorInstance;
 
             bool lastNextValid = false;
             for (const Frame& frame : frames)

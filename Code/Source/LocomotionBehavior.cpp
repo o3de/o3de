@@ -195,6 +195,7 @@ namespace EMotionFX
             Feature::CalculateVelocity(m_pelvisNodeIndex, m_rootNodeIndex, motionInstance, pelvisVelocityContext.m_velocity);
             rootTrajectoryContext.m_pose = &inputPose;
             rootTrajectoryContext.m_trajectoryQuery = &behaviorInstance->GetTrajectoryQuery();
+            rootTrajectoryContext.m_actorInstance = behaviorInstance->GetActorInstance();
 
             // 1. Broad-phase search using KD-tree
             {

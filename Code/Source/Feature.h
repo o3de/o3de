@@ -69,6 +69,7 @@ namespace EMotionFX
                 const Pose* m_previousPose = nullptr;
                 const Pose* m_nextPose = nullptr;
                 float m_timeDelta = 0.0f;
+                ActorInstance* m_actorInstance = nullptr;
 
                 FeatureMatrix& m_featureMatrix;
             };

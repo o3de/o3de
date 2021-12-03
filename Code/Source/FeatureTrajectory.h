@@ -32,8 +32,6 @@ namespace AZ
 namespace EMotionFX
 {
     class Pose;
-    class Motion;
-    class MotionInstance;
 
     namespace MotionMatching
     {
@@ -81,6 +79,7 @@ namespace EMotionFX
                 const FeatureMatrix& m_featureMatrix;
                 const Pose* m_pose;
                 const TrajectoryQuery* m_trajectoryQuery;
+                const ActorInstance* m_actorInstance = nullptr;
             };
             float CalculateFutureFrameCost(size_t frameIndex, const FrameCostContext& context) const;
             float CalculatePastFrameCost(size_t frameIndex, const FrameCostContext& context) const;
