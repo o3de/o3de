@@ -166,18 +166,10 @@ namespace UnitTest
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
 
         processLaunchInfo.m_commandlineParameters.emplace<AZStd::vector<AZStd::string>>(
-#if defined(AZ_PLATFORM_WINDOWS)
-            // On Windows, double escapement of double-quotes is needed
-            AZStd::vector<AZStd::string>{ AZStd::string(AZ_TRAIT_TEST_ROOT_FOLDER "ProcessLaunchTest"),
-                                            "-param1",
-                                            R"("\"param 1val\"")",
-                                            R"(-param2="\"param2v al\"")" }
-#else
-            AZStd::vector<AZStd::string>{ AZStd::string(AZ_TRAIT_TEST_ROOT_FOLDER "ProcessLaunchTest"),
-                                            "-param1",
-                                            R"("param 1val")",
-                                            R"(-param2="param2v al")" }
-#endif // defined(AZ_PLATFORM_WINDOWS)
+        AZStd::vector<AZStd::string>{ AZStd::string(AZ_TRAIT_TEST_ROOT_FOLDER "ProcessLaunchTest"),
+                                        "-param1",
+                                        R"("\"param 1val\"")",
+                                        R"(-param2="\"param2v al\"")" }
         );
 
         processLaunchInfo.m_workingDirectory = AZ::Test::GetCurrentExecutablePath();
@@ -214,18 +206,10 @@ namespace UnitTest
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
 
         processLaunchInfo.m_commandlineParameters.emplace<AZStd::vector<AZStd::string>>(
-#if defined(AZ_PLATFORM_WINDOWS)
-            // On Windows, double escapement of double-quotes is needed
-            AZStd::vector<AZStd::string>{ AZStd::string(AZ_TRAIT_TEST_ROOT_FOLDER "ProcessLaunchTest"),
-                                            "-param1",
-                                            R"("\"param, 1val\"")",
-                                            R"(-param2="\"param,2v al\"")" }
-#else
             AZStd::vector<AZStd::string>{ AZStd::string(AZ_TRAIT_TEST_ROOT_FOLDER "ProcessLaunchTest"),
                                             "-param1",
                                             R"("param, 1val")",
                                             R"(-param2="param,2v al")" }
-#endif // defined(AZ_PLATFORM_WINDOWS)
         );
 
         processLaunchInfo.m_workingDirectory = AZ::Test::GetCurrentExecutablePath();
