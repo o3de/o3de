@@ -32,8 +32,6 @@ else
     LAST_CMD=$(<${LAST_CONFIGURE_CMD_FILE})
     if [[ "${LAST_CMD}" != "${CONFIGURE_CMD}" ]]; then
         echo [ci_build] Last run command different, generating
-        echo "${LAST_CMD}=="
-        echo "${CONFIGURE_CMD}=="
         RUN_CONFIGURE=1
     fi
 fi

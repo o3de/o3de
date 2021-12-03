@@ -11,6 +11,7 @@
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Debug/TraceMessageBus.h>
+#include <AzCore/UnitTest/TestTypes.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 
@@ -22,7 +23,7 @@ namespace ViewPaneFuncsUnitTests
 {
 
     class ViewPanePythonBindingsFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public ::UnitTest::ScopedAllocatorSetupFixture
     {
     public:
         AzToolsFramework::ToolsApplication m_app;

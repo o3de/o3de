@@ -11,6 +11,7 @@
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Debug/TraceMessageBus.h>
+#include <AzCore/UnitTest/TestTypes.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 #include <AzToolsFramework/Application/ToolsApplication.h>
@@ -22,7 +23,7 @@ namespace DisplaySettingsPythonBindingsUnitTests
 {
 
     class DisplaySettingsPythonBindingsFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public ::UnitTest::ScopedAllocatorSetupFixture
     {
     public:
         AzToolsFramework::ToolsApplication m_app;
@@ -51,7 +52,7 @@ namespace DisplaySettingsPythonBindingsUnitTests
     }
 
     class DisplaySettingsComponentFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public ::UnitTest::ScopedAllocatorSetupFixture
     {
     public:
         AzToolsFramework::ToolsApplication m_app;
