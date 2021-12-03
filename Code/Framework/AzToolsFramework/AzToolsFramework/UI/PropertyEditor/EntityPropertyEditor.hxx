@@ -29,6 +29,7 @@
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityBus.h>
 #include <AzToolsFramework/ToolsComponents/ComponentMimeData.h>
 #include <AzToolsFramework/ToolsComponents/EditorInspectorComponentBus.h>
 #include <AzQtComponents/Components/O3DEStylesheet.h>
@@ -117,6 +118,7 @@ namespace AzToolsFramework
         , public AZ::EntitySystemBus::Handler
         , public AZ::TickBus::Handler
         , private EditorWindowUIRequestBus::Handler
+        , private ReadOnlyEntityPublicNotificationBus::Handler
     {
         Q_OBJECT;
     public:
@@ -253,6 +255,9 @@ namespace AzToolsFramework
 
         // EditorWindowRequestBus overrides
         void SetEditorUiEnabled(bool enable) override;
+
+        // ReadOnlyEntityPublicNotificationBus overrides ...
+        void OnReadOnlyEntityStatusChanged(const AZ::EntityId& entityId, bool readOnly) override;
 
         bool IsEntitySelected(const AZ::EntityId& id) const;
         bool IsSingleEntitySelected(const AZ::EntityId& id) const;

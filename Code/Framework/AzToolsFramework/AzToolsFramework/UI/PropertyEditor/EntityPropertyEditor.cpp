@@ -569,6 +569,12 @@ namespace AzToolsFramework
         AZ::EntitySystemBus::Handler::BusConnect();
         EntityPropertyEditorRequestBus::Handler::BusConnect();
         EditorWindowUIRequestBus::Handler::BusConnect();
+
+        AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+        EditorEntityContextRequestBus::BroadcastResult(
+            editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
+        ReadOnlyEntityPublicNotificationBus::Handler::BusConnect(editorEntityContextId);
+
         m_spacer = nullptr;
 
         m_emptyIcon = QIcon();
@@ -618,6 +624,7 @@ namespace AzToolsFramework
     {
         qApp->removeEventFilter(this);
 
+        ReadOnlyEntityPublicNotificationBus::Handler::BusDisconnect();
         EditorWindowUIRequestBus::Handler::BusDisconnect();
         EntityPropertyEditorRequestBus::Handler::BusDisconnect();
         ToolsApplicationEvents::Bus::Handler::BusDisconnect();
@@ -5760,6 +5767,14 @@ namespace AzToolsFramework
 
         // record the selected state after entering/leaving component mode
         SaveComponentEditorState();
+    }
+
+    void EntityPropertyEditor::OnReadOnlyEntityStatusChanged(const AZ::EntityId& entityId, [[maybe_unused]] bool readOnly)
+    {
+        if (IsEntitySelected(entityId))
+        {
+            UpdateContents();
+        }
     }
 
     void EntityPropertyEditor::OnEditorModeActivated(
