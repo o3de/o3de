@@ -100,7 +100,7 @@ namespace UnitTest
 
         for (size_t i = 0; i < entityCount; ++i)
         {
-            CreateNamedEntity(AZStd::string::format("Entity%zu", i));
+            CreateEntityUnderRootPrefab(AZStd::string::format("Entity%zu", i));
             EXPECT_EQ(m_model->rowCount(GetRootIndex()), i + 1);
         }
 
@@ -136,7 +136,7 @@ namespace UnitTest
         AZ::EntityId parentId;
         for (int i = 0; i < depth; i++)
         {
-            parentId = CreateNamedEntity(AZStd::string::format("EntityDepth%i", i), parentId);
+            parentId = CreateEntityUnderRootPrefab(AZStd::string::format("EntityDepth%i", i), parentId);
             EXPECT_EQ(modelDepth(), i + 1);
         }
 

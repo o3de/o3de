@@ -54,8 +54,8 @@ namespace UnitTest
         AZStd::unique_ptr<ToolsTestApplication> CreateTestApplication() override;
 
         void CreateRootPrefab();
-        AZ::Entity* CreateEntity(const char* entityName, const bool shouldActivate = true);
-        AZ::EntityId CreateNamedEntity(AZStd::string name, AZ::EntityId parentId = AZ::EntityId());
+        AZ::Entity* CreateEntity(AZStd::string entityName, const bool shouldActivate = true);
+        AZ::EntityId CreateEntityUnderRootPrefab(AZStd::string name, AZ::EntityId parentId = AZ::EntityId());
 
         void CompareInstances(const Instance& instanceA, const Instance& instanceB, bool shouldCompareLinkIds = true,
             bool shouldCompareContainerEntities = true);

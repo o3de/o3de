@@ -71,14 +71,17 @@ namespace UnitTest
     void PrefabTestFixture::CreateRootPrefab()
     {
         auto entityOwnershipService = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+        ASSERT_TRUE(entityOwnershipService != nullptr);
         entityOwnershipService->CreateNewLevelPrefab("UnitTestRoot.prefab", "");
-        auto& rootEntity = entityOwnershipService->GetRootPrefabInstance()->get().GetContainerEntity()->get();
+        auto rootEntityReference = entityOwnershipService->GetRootPrefabInstance()->get().GetContainerEntity();
+        ASSERT_TRUE(rootEntityReference.has_value());
+        auto& rootEntity = rootEntityReference->get();
         rootEntity.Deactivate();
         rootEntity.CreateComponent<AzToolsFramework::Components::TransformComponent>();
         rootEntity.Activate();
     }
 
-    AZ::Entity* PrefabTestFixture::CreateEntity(const char* entityName, const bool shouldActivate)
+    AZ::Entity* PrefabTestFixture::CreateEntity(AZStd::string entityName, const bool shouldActivate)
     {
         // Circumvent the EntityContext system and generate a new entity with a transformcomponent
         AZ::Entity* newEntity = aznew AZ::Entity(entityName);
@@ -92,7 +95,7 @@ namespace UnitTest
         return newEntity;
     }
 
-    AZ::EntityId PrefabTestFixture::CreateNamedEntity(AZStd::string name, AZ::EntityId parentId)
+    AZ::EntityId PrefabTestFixture::CreateEntityUnderRootPrefab(AZStd::string name, AZ::EntityId parentId)
     {
         auto createResult = m_prefabPublicInterface->CreateEntity(parentId, AZ::Vector3());
         AZ_Assert(createResult.IsSuccess(), "Failed to create entity: %s", createResult.GetError().c_str());
