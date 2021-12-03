@@ -30,4 +30,3 @@ class TestAutomation(EditorTestSuite):
         
     class test_TerrainHeightGradientList_AddRemoveGradientWorks(EditorSharedTest):
         from .EditorScripts import TerrainHeightGradientList_AddRemoveGradientWorks as test_module
-
