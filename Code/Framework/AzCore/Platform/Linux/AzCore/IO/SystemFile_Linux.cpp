@@ -9,6 +9,7 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/std/functional.h>
 #include <AzCore/std/string/wildcard.h>
 #include <../Common/UnixLike/AzCore/IO/Internal/SystemFileUtils_UnixLike.h>
 

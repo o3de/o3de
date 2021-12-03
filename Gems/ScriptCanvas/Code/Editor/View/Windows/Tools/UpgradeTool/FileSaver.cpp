@@ -8,6 +8,7 @@
 
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/IO/SystemFile.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/IO/FileOperations.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>

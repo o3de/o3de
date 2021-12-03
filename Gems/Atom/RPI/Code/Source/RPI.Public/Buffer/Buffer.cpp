@@ -17,6 +17,9 @@
 #include <Atom/RPI.Public/Buffer/BufferSystemInterface.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
 #include <AzCore/Component/TickBus.h>
+
+AZ_DECLARE_BUDGET(RPI);
+
 namespace AZ
 {
     namespace RPI

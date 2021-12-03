@@ -9,6 +9,7 @@
 
 #include "CrySystem_precompiled.h"
 #include "SystemEventDispatcher.h"
+#include <AzCore/Debug/Profiler.h>
 
 AZ_DECLARE_BUDGET(CrySystem);
 

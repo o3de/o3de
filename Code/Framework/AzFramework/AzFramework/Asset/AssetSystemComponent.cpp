@@ -9,6 +9,7 @@
 #include <AzFramework/Asset/AssetSystemComponent.h>
 
 #include <AzCore/Asset/AssetManagerBus.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Interface/Interface.h>
