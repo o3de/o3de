@@ -15,7 +15,6 @@
 #include <EMotionFX/Source/AnimGraphPose.h>
 #include <EMotionFX/Source/AnimGraphPosePool.h>
 #include <EMotionFX/Source/EventManager.h>
-#include <EMotionFX/Source/MotionInstance.h>
 #include <Behavior.h>
 #include <BehaviorInstance.h>
 #include <FrameDatabase.h>
@@ -120,8 +119,7 @@ namespace EMotionFX
 
         void FeatureTrajectory::ExtractFeatureValues(const ExtractFrameContext& context)
         {
-            ActorInstance* actorInstance = context.m_motionInstance->GetActorInstance();
-            Pose* bindPose = actorInstance->GetTransformData()->GetBindPose();
+            const ActorInstance* actorInstance = context.m_actorInstance;
             AnimGraphPosePool& posePool = GetEMotionFX().GetThreadData(actorInstance->GetThreadIndex())->GetPosePool();
             AnimGraphPose* samplePose = posePool.RequestPose(actorInstance);
             AnimGraphPose* nextSamplePose = posePool.RequestPose(actorInstance);
@@ -137,18 +135,16 @@ namespace EMotionFX
             SetFeatureData(context.m_featureMatrix, frameIndex, midSampleIndex, midSample);
 
             // Sample the past.
-            Motion* sourceMotion = currentFrame.GetSourceMotion();
             const float pastFrameTimeDelta = m_pastTimeRange / static_cast<float>(m_numPastSamples - 1);
-            SamplePose(currentFrame.GetSampleTime(), bindPose, sourceMotion, context.m_motionInstance, &samplePose->GetPose());
+            currentFrame.SamplePose(&samplePose->GetPose());
             for (size_t i = 0; i < m_numPastSamples; ++i)
             {
-                const size_t sampleIndex = CalcPastFrameIndex(i);
-
                 // Increase the sample index by one as the zeroth past/future sample actually needs one time delta time difference to the current frame.
-                const float sampleTime = AZ::GetMax(0.0f, currentFrame.GetSampleTime() - (i+1) * pastFrameTimeDelta);
-                SamplePose(sampleTime, bindPose, sourceMotion, context.m_motionInstance, &nextSamplePose->GetPose());
+                const float sampleTimeOffset = (i+1) * pastFrameTimeDelta * (-1.0f);
+                currentFrame.SamplePose(&nextSamplePose->GetPose(), sampleTimeOffset);
 
                 const Sample sample = GetSampleFromPose(samplePose->GetPose(), invRootTransform);
+                const size_t sampleIndex = CalcPastFrameIndex(i);
                 SetFeatureData(context.m_featureMatrix, frameIndex, sampleIndex, sample);
 
                 *samplePose = *nextSamplePose;
@@ -156,16 +152,15 @@ namespace EMotionFX
 
             // Sample into the future.
             const float futureFrameTimeDelta = m_futureTimeRange / (float)(m_numFutureSamples - 1);
-            SamplePose(currentFrame.GetSampleTime(), bindPose, sourceMotion, context.m_motionInstance, &samplePose->GetPose());
+            currentFrame.SamplePose(&samplePose->GetPose());
             for (size_t i = 0; i < m_numFutureSamples; ++i)
             {
-                const size_t sampleIndex = CalcFutureFrameIndex(i);
-
                 // Sample the value at the future sample point.
-                const float sampleTime = AZ::GetMin(currentFrame.GetSampleTime() + (i+1) * futureFrameTimeDelta, sourceMotion->GetDuration());
-                SamplePose(sampleTime, bindPose, sourceMotion, context.m_motionInstance, &nextSamplePose->GetPose());
+                const float sampleTimeOffset = (i+1) * futureFrameTimeDelta;
+                currentFrame.SamplePose(&nextSamplePose->GetPose(), sampleTimeOffset);
 
                 const Sample sample = GetSampleFromPose(samplePose->GetPose(), invRootTransform);
+                const size_t sampleIndex = CalcFutureFrameIndex(i);
                 SetFeatureData(context.m_featureMatrix, frameIndex, sampleIndex, sample);
 
                 *samplePose = *nextSamplePose;

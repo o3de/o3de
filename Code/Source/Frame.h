@@ -16,6 +16,7 @@
 #include <AzCore/RTTI/RTTI.h>
 
 #include <EMotionFX/Source/EMotionFXConfig.h>
+#include <EMotionFX/Source/Pose.h>
 
 namespace EMotionFX
 {
@@ -36,6 +37,14 @@ namespace EMotionFX
             Frame();
             Frame(size_t frameIndex, Motion* sourceMotion, float sampleTime, bool mirrored);
             ~Frame() = default;
+
+            //! Sample the pose for the given frame.
+            //! @param[in] outputPose The pose used to store the sampled result.
+            //! @param[in] timeOffset Frames in the frame database are samples with a given sample rate (default = 30 fps).
+            //!     For calculating velocities for example, it is needed to sample a pose close to a frame but not exactly at the frame position.
+            //!     The timeOffset parameter can be used for that and represents the offset in time from the frame sample time in seconds.
+            //!     In case the time offset is 0.0, the pose exactly at the frame position will be sampled.
+            void SamplePose(Pose* outputPose, float timeOffset = 0.0f) const;
 
             Motion* GetSourceMotion() const;
             float GetSampleTime() const;
