@@ -401,6 +401,8 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
     const InputChannelId& inputChannelId = inputChannel.GetInputChannelId();
     const InputDeviceId& inputDeviceId = inputChannel.GetInputDevice().GetInputDeviceId();
 
+    bool consumeEvent = false;
+
     // Handle Keyboard Inputs
     if (InputDeviceKeyboard::IsKeyboardDevice(inputDeviceId))
     {
@@ -499,14 +501,6 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
         {
             ToggleThroughImGuiVisibleState();
         }
-
-        // If we have the Discrete Input Mode Enabled.. and we are in the Visible State, then consume input here
-        if (m_enableDiscreteInputMode && m_clientMenuBarState == DisplayState::Visible)
-        {
-            return true;
-        }
-
-        return false;
     }
 
     // Handle Mouse Inputs
@@ -516,10 +510,16 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
         if (0 <= mouseButtonIndex && mouseButtonIndex < AZ_ARRAY_SIZE(io.MouseDown))
         {
             io.MouseDown[mouseButtonIndex] = inputChannel.IsActive();
+
+            // only consume the event during edit mode in the editor so the viewport doesn't also respond to it
+            consumeEvent = gEnv->IsEditing() && io.WantCaptureMouse;
         }
         else if (inputChannelId == InputDeviceMouse::Movement::Z)
         {
             io.MouseWheel = inputChannel.GetValue() / static_cast<float>(IMGUI_WHEEL_DELTA);
+
+            // only consume the event during edit mode in the editor so the viewport doesn't also respond to it
+            consumeEvent = gEnv->IsEditing() && io.WantCaptureMouse;
         }
     }
 
@@ -557,13 +557,16 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
     if (m_clientMenuBarState == DisplayState::Visible
         || m_editorWindowState == DisplayState::Visible)
     {
-        // If we have the Discrete Input Mode Enabled.. then consume the input here. 
+        // If we have the Discrete Input Mode Enabled.. then consume the input here.
         if (m_enableDiscreteInputMode)
         {
             return true;
         }
+
+        return consumeEvent;
     }
 
+    // don't allow event capturing when ImGui isn't active
     return false;
 }
 

@@ -382,16 +382,22 @@ namespace AzToolsFramework
 
             if (buttonChannel)
             {
-                if (mouseEvent->type() != QEvent::Type::MouseButtonRelease)
+                // reset the consumed event cache
+                m_lastConsumedInputChannelEvent = nullptr;
+
+                const bool buttonActive = (mouseEvent->type() != QEvent::Type::MouseButtonRelease);
+                buttonChannel->UpdateState(buttonActive);
+
+                if (m_lastConsumedInputChannelEvent == buttonChannel)
                 {
-                    buttonChannel->UpdateState(true);
+                    // a standard az-input handler consumed the event so mark it as such
+                    mouseEvent->accept();
                 }
                 else
                 {
-                    buttonChannel->UpdateState(false);
+                    // only notify if not consumed elsewhere
+                    NotifyUpdateChannelIfNotIdle(buttonChannel, mouseEvent);
                 }
-
-                NotifyUpdateChannelIfNotIdle(buttonChannel, mouseEvent);
             }
         }
     }
@@ -520,8 +526,22 @@ namespace AzToolsFramework
         {
             wheelAngle = angleDelta.y();
         }
+
+        // reset the consumed event cache
+        m_lastConsumedInputChannelEvent = nullptr;
+
         cursorZChannel->ProcessRawInputEvent(aznumeric_cast<float>(wheelAngle));
-        NotifyUpdateChannelIfNotIdle(cursorZChannel, wheelEvent);
+
+        if (m_lastConsumedInputChannelEvent == cursorZChannel)
+        {
+            // a standard az-input handler consumed the event so mark it as such
+            wheelEvent->accept();
+        }
+        else
+        {
+            // only notify if not consumed elsewhere
+            NotifyUpdateChannelIfNotIdle(cursorZChannel, wheelEvent);
+        }
     }
 
     void QtEventToAzInputMapper::ClearInputChannels(QEvent* event)
