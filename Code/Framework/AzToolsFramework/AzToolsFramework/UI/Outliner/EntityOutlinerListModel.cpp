@@ -297,13 +297,6 @@ namespace AzToolsFramework
         auto entityUiHandler = m_editorEntityUiInterface->GetHandler(id);
         QIcon icon;
 
-        // TODO - Move to member variable
-        bool isReadOnly = false;
-        if (ReadOnlyEntityPublicInterface* readOnlyEntityInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get())
-        {
-            isReadOnly = readOnlyEntityInterface->IsReadOnly(id);
-        }
-
         // Retrieve the icon from the handler
         if (entityUiHandler != nullptr)
         {
@@ -333,7 +326,7 @@ namespace AzToolsFramework
             return QIcon(QString(":/Entity/entity_notactive.svg"));
         }
 
-        return isReadOnly ? QIcon(QString(":/Entity/entity_readonly.svg")) : QIcon(QString(":/Entity/entity.svg"));
+        return QIcon(QString(":/Entity/entity.svg"));
     }
 
     QVariant EntityOutlinerListModel::GetEntityTooltip(const AZ::EntityId& id) const
@@ -2002,9 +1995,13 @@ namespace AzToolsFramework
         , m_lockCheckBoxes(parent, "Lock", EntityOutlinerListModel::PartiallyLockedRole, EntityOutlinerListModel::LockedAncestorRole)
     {
         m_editorEntityFrameworkInterface = AZ::Interface<AzToolsFramework::EditorEntityUiInterface>::Get();
-
         AZ_Assert((m_editorEntityFrameworkInterface != nullptr),
             "EntityOutlinerItemDelegate requires a EditorEntityFrameworkInterface instance on Construction.");
+
+        m_readOnlyEntityPublicInterface = AZ::Interface<AzToolsFramework::ReadOnlyEntityPublicInterface>::Get();
+        AZ_Assert(
+            (m_readOnlyEntityPublicInterface != nullptr),
+            "EntityOutlinerItemDelegate requires a ReadOnlyEntityPublicInterface instance on Construction.");
     }
 
     EntityOutlinerItemDelegate::CheckboxGroup::CheckboxGroup(QWidget* parent, AZStd::string prefix,
@@ -2116,6 +2113,12 @@ namespace AzToolsFramework
                 }
 
                 PaintEntityNameAsRichText(painter, customOption, index);
+
+                // Paint Read-Only icon if necessary
+                if (m_readOnlyEntityPublicInterface->IsReadOnly(entityId))
+                {
+                    PaintReadOnlyIcon(painter, option, index);
+                }
             }
             break;
             default:
@@ -2342,6 +2345,20 @@ namespace AzToolsFramework
 
         painter->restore();
         EntityOutlinerListModel::s_paintingName = false;
+    }
+
+    void EntityOutlinerItemDelegate::PaintReadOnlyIcon(QPainter* painter, const QStyleOptionViewItem& option, [[maybe_unused]] const QModelIndex& index) const
+    {
+        // Build the rect that will be used to paint the icon
+        QRect readOnlyRect = QRect(option.rect.topLeft() + m_readOnlyOffset, QSize(m_readOnlyRadius * 2, m_readOnlyRadius * 2));
+
+        painter->save();
+        painter->setRenderHint(QPainter::Antialiasing, true);
+        painter->setPen(Qt::NoPen);
+        painter->setBrush(m_readOnlyBackgroundColor);
+        painter->drawEllipse(readOnlyRect.center(), m_readOnlyRadius, m_readOnlyRadius);
+        m_readOnlyIcon.paint(painter, readOnlyRect);
+        painter->restore();
     }
 
     QSize EntityOutlinerItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const
