@@ -15,6 +15,7 @@
 #include <AzCore/Debug/ProfilerBus.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/JSON/filereadstream.h>
+#include <AzCore/Math/MathUtils.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/JsonSerializationResult.h>
@@ -375,6 +376,7 @@ namespace Profiler
 
             DrawTable();
         }
+        ImGui::EndChild();
     }
 
     void ImGuiCpuProfiler::DrawFilePicker()
@@ -597,8 +599,9 @@ namespace Profiler
 
             DrawFrameBoundaries();
 
-            // Draw an invisible button to capture inputs
-            ImGui::InvisibleButton("Timeline Input", { ImGui::GetWindowContentRegionWidth(), baseRow * RowHeight });
+            // Draw an invisible button to capture inputs and make sure it is non-zero
+            ImGui::InvisibleButton("Timeline Input",
+                { ImGui::GetWindowContentRegionWidth(), AZ::GetMax(baseRow, decltype(baseRow){1}) * RowHeight });
 
             // Controls
             ImGuiIO& io = ImGui::GetIO();
@@ -643,7 +646,9 @@ namespace Profiler
                 }
             }
         }
-        ImGui::EndChild();
+        ImGui::EndChild(); // "Timeline"
+
+        ImGui::EndChild(); // "Options and Statistics"
     }
 
     void ImGuiCpuProfiler::CacheCpuTimingStatistics()
