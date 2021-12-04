@@ -1256,23 +1256,6 @@ namespace AzToolsFramework
             return true;
         }
 
-        bool PrefabIntegrationManager::IsOwnedByProceduralPrefab(const AZ::EntityId& entityId)
-        {
-            if (auto instanceEntityMapperInterface = AZ::Interface<InstanceEntityMapperInterface>::Get())
-            {
-                if (auto instanceReference = instanceEntityMapperInterface->FindOwningInstance(entityId); instanceReference.has_value())
-                {
-                    if (auto templateReference = s_prefabSystemComponentInterface->FindTemplate(instanceReference->get().GetTemplateId());
-                        templateReference.has_value())
-                    {
-                        return templateReference->get().IsProcedural();
-                    }
-                }
-            }
-
-            return false;
-        }
-
         void PrefabIntegrationManager::OnPrefabComponentActivate(AZ::EntityId entityId)
         {
             // Register entity to appropriate UI Handler for UI overrides
@@ -1282,7 +1265,7 @@ namespace AzToolsFramework
             }
             else
             {
-                if (IsOwnedByProceduralPrefab(entityId))
+                if (s_prefabPublicInterface->IsOwnedByProceduralPrefabInstance(entityId))
                 {
                     s_editorEntityUiInterface->RegisterEntity(entityId, m_proceduralPrefabUiHandler.GetHandlerId());
                 }

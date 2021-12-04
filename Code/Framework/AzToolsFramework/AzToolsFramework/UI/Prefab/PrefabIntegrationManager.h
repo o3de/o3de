@@ -158,8 +158,6 @@ namespace AzToolsFramework
             AZStd::unique_ptr<QDialog> ConstructSavePrefabDialog(TemplateId templateId, bool useSaveAllPrefabsPreference);
             void SavePrefabsInDialog(QDialog* unsavedPrefabsDialog);
 
-            bool IsOwnedByProceduralPrefab(const AZ::EntityId& entityId);
-
             AZStd::vector<AZStd::unique_ptr<QAction>> m_actions;
 
             static const AZStd::string s_prefabFileExtension;

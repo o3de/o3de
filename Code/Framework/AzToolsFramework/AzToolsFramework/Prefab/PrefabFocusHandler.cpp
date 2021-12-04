@@ -214,7 +214,6 @@ namespace AzToolsFramework::Prefab
         // Refresh the read-only cache, if the interface is initialized.
         if (m_readOnlyEntityQueryInterface)
         {
-            // 
             m_readOnlyEntityQueryInterface->RefreshReadOnlyState({ previousContainerEntityId, m_focusedInstanceContainerEntityId });
         }
 
