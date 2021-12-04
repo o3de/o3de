@@ -24,7 +24,8 @@ namespace AZ
     namespace IO
     {
         class RequestPath;
-        namespace Requests {
+        namespace Requests
+        {
             struct ReadData;
         }
 

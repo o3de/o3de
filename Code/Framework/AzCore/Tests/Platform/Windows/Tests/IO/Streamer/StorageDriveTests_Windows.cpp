@@ -406,7 +406,7 @@ namespace AZ::IO
         request->CreateFileMetaDataRetrieval(path);
         request->SetCompletionCallback([](const FileRequest& request)
             {
-                auto& fileMetaData = AZStd::get<FileRequest::FileMetaDataRetrievalData>(request.GetCommand());
+                auto& fileMetaData = AZStd::get<Requests::FileMetaDataRetrievalData>(request.GetCommand());
                 EXPECT_FALSE(fileMetaData.m_found);
                 EXPECT_EQ(0, fileMetaData.m_fileSize);
             });
@@ -424,7 +424,7 @@ namespace AZ::IO
 
         request->SetCompletionCallback([](const FileRequest& request)
             {
-                auto& fileMetaData = AZStd::get<FileRequest::FileMetaDataRetrievalData>(request.GetCommand());
+                auto& fileMetaData = AZStd::get<Requests::FileMetaDataRetrievalData>(request.GetCommand());
                 EXPECT_TRUE(fileMetaData.m_found);
                 EXPECT_EQ(4_kib, fileMetaData.m_fileSize);
             });
@@ -442,7 +442,7 @@ namespace AZ::IO
         request->CreateFileMetaDataRetrieval(path);
         request->SetCompletionCallback([](const FileRequest& request)
             {
-                auto& fileMetaData = AZStd::get<FileRequest::FileMetaDataRetrievalData>(request.GetCommand());
+                auto& fileMetaData = AZStd::get<Requests::FileMetaDataRetrievalData>(request.GetCommand());
                 EXPECT_FALSE(fileMetaData.m_found);
                 EXPECT_EQ(0, fileMetaData.m_fileSize);
             });
@@ -460,7 +460,7 @@ namespace AZ::IO
 
         request->SetCompletionCallback([](const FileRequest& request)
             {
-                auto& fileMetaData = AZStd::get<FileRequest::FileMetaDataRetrievalData>(request.GetCommand());
+                auto& fileMetaData = AZStd::get<Requests::FileMetaDataRetrievalData>(request.GetCommand());
                 EXPECT_TRUE(fileMetaData.m_found);
                 EXPECT_EQ(16_kib, fileMetaData.m_fileSize);
             });
@@ -484,7 +484,7 @@ namespace AZ::IO
 
         request->SetCompletionCallback([](const FileRequest& request)
             {
-                auto& fileMetaData = AZStd::get<FileRequest::FileMetaDataRetrievalData>(request.GetCommand());
+                auto& fileMetaData = AZStd::get<Requests::FileMetaDataRetrievalData>(request.GetCommand());
                 EXPECT_TRUE(fileMetaData.m_found);
                 EXPECT_EQ(4_kib, fileMetaData.m_fileSize);
             });
@@ -502,7 +502,7 @@ namespace AZ::IO
         request->CreateFileExistsCheck(invalidPath);
         request->SetCompletionCallback([](const FileRequest& request)
             {
-                auto& fileExistsCheck = AZStd::get<FileRequest::FileExistsCheckData>(request.GetCommand());
+                auto& fileExistsCheck = AZStd::get<Requests::FileExistsCheckData>(request.GetCommand());
                 EXPECT_EQ(AZ::IO::IStreamerTypes::RequestStatus::Completed, request.GetStatus());
                 EXPECT_FALSE(fileExistsCheck.m_found);
             });
@@ -519,7 +519,7 @@ namespace AZ::IO
         request->CreateFileExistsCheck(path);
         request->SetCompletionCallback([](const FileRequest& request)
             {
-                auto& fileExistsCheck = AZStd::get<FileRequest::FileExistsCheckData>(request.GetCommand());
+                auto& fileExistsCheck = AZStd::get<Requests::FileExistsCheckData>(request.GetCommand());
                 EXPECT_EQ(AZ::IO::IStreamerTypes::RequestStatus::Completed, request.GetStatus());
                 EXPECT_FALSE(fileExistsCheck.m_found);
             });
@@ -535,7 +535,7 @@ namespace AZ::IO
         request->CreateFileExistsCheck(m_dummyRequestPath);
         request->SetCompletionCallback([](const FileRequest& request)
             {
-                auto& fileExistsCheck = AZStd::get<FileRequest::FileExistsCheckData>(request.GetCommand());
+                auto& fileExistsCheck = AZStd::get<Requests::FileExistsCheckData>(request.GetCommand());
                 EXPECT_EQ(AZ::IO::IStreamerTypes::RequestStatus::Completed, request.GetStatus());
                 EXPECT_TRUE(fileExistsCheck.m_found);
             });
@@ -551,7 +551,7 @@ namespace AZ::IO
         request->CreateFileExistsCheck(m_dummyRequestPath);
         request->SetCompletionCallback([](const FileRequest& request)
             {
-                auto& fileExistsCheck = AZStd::get<FileRequest::FileExistsCheckData>(request.GetCommand());
+                auto& fileExistsCheck = AZStd::get<Requests::FileExistsCheckData>(request.GetCommand());
                 EXPECT_EQ(AZ::IO::IStreamerTypes::RequestStatus::Completed, request.GetStatus());
                 EXPECT_TRUE(fileExistsCheck.m_found);
             });
@@ -573,7 +573,7 @@ namespace AZ::IO
         request->CreateFileExistsCheck(m_dummyRequestPath);
         request->SetCompletionCallback([](const FileRequest& request)
             {
-                auto& fileExistsCheck = AZStd::get<FileRequest::FileExistsCheckData>(request.GetCommand());
+                auto& fileExistsCheck = AZStd::get<Requests::FileExistsCheckData>(request.GetCommand());
                 EXPECT_EQ(AZ::IO::IStreamerTypes::RequestStatus::Completed, request.GetStatus());
                 EXPECT_TRUE(fileExistsCheck.m_found);
             });

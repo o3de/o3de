@@ -26,7 +26,8 @@ namespace AZ::IO
         struct DestroyDedicatedCacheData;
     } // namespace Requests
 
-    struct DedicatedCacheConfig final : public IStreamerStackConfig
+    struct DedicatedCacheConfig final :
+        public IStreamerStackConfig
     {
         AZ_RTTI(AZ::IO::DedicatedCacheConfig, "{DF0F6029-02B0-464C-9846-524654335BCC}", IStreamerStackConfig);
         AZ_CLASS_ALLOCATOR(DedicatedCacheConfig, AZ::SystemAllocator, 0);

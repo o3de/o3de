@@ -203,8 +203,8 @@ namespace AZ::IO
                     return;
                 }
             }
-            else if constexpr (AZStd::is_same_v<Command, FileRequest::FileExistsCheckData> ||
-                AZStd::is_same_v<Command, FileRequest::FileMetaDataRetrievalData>)
+            else if constexpr (AZStd::is_same_v<Command, Requests::FileExistsCheckData> ||
+                AZStd::is_same_v<Command, Requests::FileMetaDataRetrievalData>)
             {
                 if (IsServicedByThisDrive(args.m_path.GetAbsolutePath()))
                 {
@@ -212,7 +212,7 @@ namespace AZ::IO
                     return;
                 }
             }
-            else if constexpr (AZStd::is_same_v<Command, FileRequest::CancelData>)
+            else if constexpr (AZStd::is_same_v<Command, Requests::CancelData>)
             {
                 if (CancelRequest(request, args.m_target))
                 {
@@ -221,11 +221,11 @@ namespace AZ::IO
                     return;
                 }
             }
-            else if constexpr (AZStd::is_same_v<Command, FileRequest::FlushData>)
+            else if constexpr (AZStd::is_same_v<Command, Requests::FlushData>)
             {
                 FlushCache(args.m_path);
             }
-            else if constexpr (AZStd::is_same_v<Command, FileRequest::FlushAllData>)
+            else if constexpr (AZStd::is_same_v<Command, Requests::FlushAllData>)
             {
                 FlushEntireCache();
             }
@@ -257,13 +257,13 @@ namespace AZ::IO
             hasWorked = AZStd::visit([this, request](auto&& args)
             {
                 using Command = AZStd::decay_t<decltype(args)>;
-                if constexpr (AZStd::is_same_v<Command, FileRequest::FileExistsCheckData>)
+                    if constexpr (AZStd::is_same_v<Command, Requests::FileExistsCheckData>)
                 {
                     FileExistsRequest(request);
                     m_pendingRequests.pop_front();
                     return true;
                 }
-                else if constexpr (AZStd::is_same_v<Command, FileRequest::FileMetaDataRetrievalData>)
+                else if constexpr (AZStd::is_same_v<Command, Requests::FileMetaDataRetrievalData>)
                 {
                     FileMetaDataRetrievalRequest(request);
                     m_pendingRequests.pop_front();
@@ -360,19 +360,19 @@ namespace AZ::IO
                 readSize = args.m_size;
                 offset = args.m_offset;
             }
-            else if constexpr (AZStd::is_same_v<Command, FileRequest::CompressedReadData>)
+            else if constexpr (AZStd::is_same_v<Command, Requests::CompressedReadData>)
             {
                 targetFile = &args.m_compressionInfo.m_archiveFilename;
                 readSize = args.m_compressionInfo.m_compressedSize;
                 offset = args.m_compressionInfo.m_offset;
             }
-            else if constexpr (AZStd::is_same_v<Command, FileRequest::FileExistsCheckData>)
+            else if constexpr (AZStd::is_same_v<Command, Requests::FileExistsCheckData>)
             {
                 readSize = 0;
                 AZStd::chrono::microseconds getFileExistsTimeAverage = m_getFileExistsTimeAverage.CalculateAverage();
                 startTime += getFileExistsTimeAverage;
             }
-            else if constexpr (AZStd::is_same_v<Command, FileRequest::FileMetaDataRetrievalData>)
+            else if constexpr (AZStd::is_same_v<Command, Requests::FileMetaDataRetrievalData>)
             {
                 readSize = 0;
                 AZStd::chrono::microseconds getFileExistsTimeAverage = m_getFileMetaDataRetrievalTimeAverage.CalculateAverage();
@@ -412,14 +412,14 @@ namespace AZ::IO
         {
             using Command = AZStd::decay_t<decltype(args)>;
             if constexpr (AZStd::is_same_v<Command, Requests::ReadData> ||
-                          AZStd::is_same_v<Command, FileRequest::FileExistsCheckData>)
+                          AZStd::is_same_v<Command, Requests::FileExistsCheckData>)
             {
                 if (IsServicedByThisDrive(args.m_path.GetAbsolutePath()))
                 {
                     EstimateCompletionTimeForRequest(request, startTime, activeFile, activeOffset);
                 }
             }
-            else if constexpr (AZStd::is_same_v<Command, FileRequest::CompressedReadData>)
+            else if constexpr (AZStd::is_same_v<Command, Requests::CompressedReadData>)
             {
                 if (IsServicedByThisDrive(args.m_compressionInfo.m_archiveFilename.GetAbsolutePath()))
                 {
@@ -780,7 +780,7 @@ namespace AZ::IO
 
     void StorageDriveWin::FileExistsRequest(FileRequest* request)
     {
-        auto& fileExists = AZStd::get<FileRequest::FileExistsCheckData>(request->GetCommand());
+        auto& fileExists = AZStd::get<Requests::FileExistsCheckData>(request->GetCommand());
 
         AZ_PROFILE_SCOPE(AzCore, "StorageDriveWin::FileExistsRequest %s : %s",
             m_name.c_str(), fileExists.m_path.GetRelativePath());
@@ -836,7 +836,7 @@ namespace AZ::IO
 
     void StorageDriveWin::FileMetaDataRetrievalRequest(FileRequest* request)
     {
-        auto& command = AZStd::get<FileRequest::FileMetaDataRetrievalData>(request->GetCommand());
+        auto& command = AZStd::get<Requests::FileMetaDataRetrievalData>(request->GetCommand());
 
         AZ_PROFILE_SCOPE(AzCore, "StorageDriveWin::FileMetaDataRetrievalRequest %s : %s",
             m_name.c_str(), command.m_path.GetRelativePath());

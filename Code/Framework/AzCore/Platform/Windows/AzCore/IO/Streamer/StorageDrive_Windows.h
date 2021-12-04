@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/PlatformIncl.h>
+#include <AzCore/IO/Streamer/RequestPath.h>
 #include <AzCore/IO/Streamer/Statistics.h>
 #include <AzCore/IO/Streamer/StreamerConfiguration.h>
 #include <AzCore/IO/Streamer/StreamStackEntry.h>
@@ -18,6 +19,12 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/Statistics/RunningStatistic.h>
+
+namespace AZ::IO::Requests
+{
+    struct ReadData;
+    struct ReportData;
+}
 
 namespace AZ::IO
 {
