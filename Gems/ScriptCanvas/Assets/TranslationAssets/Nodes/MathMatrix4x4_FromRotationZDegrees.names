@@ -5,31 +5,31 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "From Rotation Z Degrees",
+                "name": "From RotationZ Degrees",
                 "category": "Math/Matrix4x4",
-                "tooltip": "Returns a rotation matrix representing a rotation in degrees around Z-axis"
+                "tooltip": "returns a rotation matrix representing a rotation in degrees around Z-axis"
             },
             "slots": [
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "base": "DataInput_Degrees",
+                    "base": "DataInput_Degrees_0",
                     "details": {
                         "name": "Degrees"
                     }
                 },
                 {
-                    "base": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

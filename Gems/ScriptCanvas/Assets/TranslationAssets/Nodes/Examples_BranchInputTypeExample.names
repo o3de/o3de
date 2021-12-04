@@ -1,0 +1,70 @@
+{
+    "entries": [
+        {
+            "base": "{FDD3D684-2C9A-0C05-D2A3-FD67685D8F26}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Branch Input Type Example",
+                "category": "Examples",
+                "tooltip": "Example of branch passing as input by value, pointer and reference."
+            },
+            "slots": [
+                {
+                    "base": "Input_Get Internal Vector_0",
+                    "details": {
+                        "name": "Get Internal Vector"
+                    }
+                },
+                {
+                    "base": "Output_On Get Internal Vector_0",
+                    "details": {
+                        "name": "On Get Internal Vector"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result_0",
+                    "details": {
+                        "name": "Result"
+                    }
+                },
+                {
+                    "base": "Input_Branches On Input Type_1",
+                    "details": {
+                        "name": "Branches On Input Type"
+                    }
+                },
+                {
+                    "base": "DataInput_Input Type_0",
+                    "details": {
+                        "name": "Input Type"
+                    }
+                },
+                {
+                    "base": "Output_By Value_1",
+                    "details": {
+                        "name": "By Value"
+                    }
+                },
+                {
+                    "base": "DataOutput_Value Input_1",
+                    "details": {
+                        "name": "Value Input"
+                    }
+                },
+                {
+                    "base": "Output_By Pointer_2",
+                    "details": {
+                        "name": "By Pointer"
+                    }
+                },
+                {
+                    "base": "DataOutput_Pointer Input_2",
+                    "details": {
+                        "name": "Pointer Input"
+                    }
+                }
+            ]
+        }
+    ]
+}

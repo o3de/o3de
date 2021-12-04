@@ -60,6 +60,12 @@ namespace Multiplayer
 
     void PythonEditorFuncs::Reflect(AZ::ReflectContext* context)
     {
+        if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serialize->Class<PythonEditorFuncs, AZ::Component>()
+                ->Version(0);
+        }
+
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             // This will create static python methods in the 'azlmbr.multiplayer' module
