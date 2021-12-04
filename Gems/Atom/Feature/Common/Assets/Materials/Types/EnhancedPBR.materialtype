@@ -1224,13 +1224,39 @@
                     "softMax": 20.0
                 },
                 {
+                    "name": "shrinkFactor",
+                    "displayName": "    Shrink Factor",
+                    "description": "Shrink (absolute) offset towards the normal opposite direction to ensure correct shadow map projection",
+                    "type": "float",
+                    "defaultValue": 0.005,
+                    "min": 0.0,
+                    "softMax": 0.05,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "name": "m_shrinkFactor"
+                    }
+                },
+                {
+                    "name": "angleOffset",
+                    "displayName": "    Angle Offset",
+                    "description": "Angle to accept below (N . L = 0) in scattering through thin objects",
+                    "type": "float",
+                    "defaultValue": 0.1,
+                    "min": -1.0,
+                    "softMax": 1.0,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "name": "m_angleOffset"
+                    }
+                },
+                {
                     "name": "transmissionScale",
                     "displayName": "    Scale",
                     "description": "Strength of transmission",
                     "type": "float",
                     "defaultValue": 3.0,
                     "min": 0.0,
-                    "softMax": 20.0
+                    "softMax": 100.0
                 }
             ],
             "detailLayerGroup": [

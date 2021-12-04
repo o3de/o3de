@@ -275,6 +275,14 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     lightingData.diffuseAmbientOcclusion = GetOcclusionInput(MaterialSrg::m_diffuseOcclusionMap, MaterialSrg::m_sampler, IN.m_uv[MaterialSrg::m_diffuseOcclusionMapUvIndex], MaterialSrg::m_diffuseOcclusionFactor, o_diffuseOcclusion_useTexture);
     lightingData.specularOcclusion = GetOcclusionInput(MaterialSrg::m_specularOcclusionMap, MaterialSrg::m_sampler, IN.m_uv[MaterialSrg::m_specularOcclusionMapUvIndex], MaterialSrg::m_specularOcclusionFactor, o_specularOcclusion_useTexture);
 
+    // ------- Thin Object Light Transmission -------
+
+    // Angle offset for subsurface scattering through thin objects
+    lightingData.angleOffset = MaterialSrg::m_angleOffset;
+
+    // Shrink (absolute) offset towards the normal opposite direction to ensure correct shadow map projection
+    lightingData.shrinkFactor = MaterialSrg::m_shrinkFactor;
+
     // ------- Clearcoat -------
     
     // [GFX TODO][ATOM-14603]: Clean up the double uses of these clear coat flags

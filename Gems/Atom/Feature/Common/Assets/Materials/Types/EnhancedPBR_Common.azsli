@@ -100,6 +100,8 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
     float4 m_transmissionTintThickness;
     Texture2D m_transmissionThicknessMap;
     uint m_transmissionThicknessMapUvIndex;
+    float m_shrinkFactor;
+    float m_angleOffset;
 }
 
 // Callback function for ParallaxMapping.azsli
