@@ -9,6 +9,7 @@
 #include <AzToolsFramework/UI/Prefab/Procedural/ProceduralPrefabReadOnlyHandler.h>
 
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 
@@ -23,10 +24,21 @@ namespace AzToolsFramework
                 m_prefabPublicInterface != nullptr,
                 "ProceduralPrefabReadOnlyHandler requires a PrefabPublicInterface instance on Initialize.");
 
+            m_prefabFocusPublicInterface = AZ::Interface<PrefabFocusPublicInterface>::Get();
+            AZ_Assert(
+                m_prefabFocusPublicInterface != nullptr,
+                "ProceduralPrefabReadOnlyHandler requires a PrefabFocusPublicInterface instance on Initialize.");
+
             AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
             EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
 
             ReadOnlyEntityQueryRequestBus::Handler::BusConnect(editorEntityContextId);
+
+             // Refresh the whole read-only cache
+            if (auto readOnlyEntityQueryInterface = AZ::Interface<ReadOnlyEntityQueryInterface>::Get())
+            {
+                readOnlyEntityQueryInterface->RefreshReadOnlyStateForAllEntities();
+            }
         }
 
         ProceduralPrefabReadOnlyHandler ::~ProceduralPrefabReadOnlyHandler()

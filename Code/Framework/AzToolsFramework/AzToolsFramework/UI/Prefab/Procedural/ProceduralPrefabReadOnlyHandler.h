@@ -31,7 +31,7 @@ namespace AzToolsFramework
             ProceduralPrefabReadOnlyHandler();
             ~ProceduralPrefabReadOnlyHandler() override;
 
-            // overrides ...
+            // ReadOnlyEntityQueryRequestBus overrides ...
             void IsReadOnly(const AZ::EntityId& entityId, bool& isReadOnly) override;
 
         private:
