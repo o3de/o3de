@@ -99,7 +99,7 @@ set(LY_CMAKE_PACKAGE_DOWNLOAD_PATH ${CPACK_BINARY_DIR}/${CPACK_CMAKE_PACKAGE_FIL
 
 # Scan the source and packages for licenses, then add it to the 
 
-configure_file(${LY_ROOT_FOLDER}/cmake/LicenseScan.cmake.in
+configure_file(${LY_ROOT_FOLDER}/cmake/Packaging/LicenseScan.cmake.in
     ${CPACK_BINARY_DIR}/LicenseScan.cmake
     @ONLY
 )
