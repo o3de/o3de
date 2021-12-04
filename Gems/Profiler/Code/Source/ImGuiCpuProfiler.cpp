@@ -599,7 +599,7 @@ namespace Profiler
 
             DrawFrameBoundaries();
 
-            // Draw an invisible button to capture inputs and make sure it is non-zero
+            // Draw an invisible button to capture inputs and make sure it has a non-zero height
             ImGui::InvisibleButton("Timeline Input",
                 { ImGui::GetWindowContentRegionWidth(), AZ::GetMax(baseRow, decltype(baseRow){1}) * RowHeight });
 
