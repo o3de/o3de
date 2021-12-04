@@ -15,11 +15,7 @@ namespace AzToolsFramework
         m_prefabCapsuleColor = QColor("#361561");
         m_prefabCapsuleDisabledColor = QColor("#4B3455");
         m_prefabCapsuleEditColor = QColor("#361561");
+        m_prefabIconPath = QString(":/Entity/prefab_edit.svg");
         m_prefabEditOpenIconPath = QString(":/Entity/prefab_edit_open_readonly.svg");
-    }
-
-    void ProceduralPrefabUiHandler::PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
-    {
-        PrefabUiHandler::PaintItemBackground(painter, option, index);
     }
 }

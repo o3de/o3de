@@ -29,7 +29,5 @@ namespace AzToolsFramework
 
         ProceduralPrefabUiHandler();
         ~ProceduralPrefabUiHandler() override = default;
-
-        void PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     };
 } // namespace AzToolsFramework
