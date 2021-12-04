@@ -401,60 +401,63 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
     const InputChannelId& inputChannelId = inputChannel.GetInputChannelId();
     const InputDeviceId& inputDeviceId = inputChannel.GetInputDevice().GetInputDeviceId();
 
-    // Handle Keyboard Hotkeys
-    if (InputDeviceKeyboard::IsKeyboardDevice(inputDeviceId) && inputChannel.IsStateBegan())
-    {
-        // Cycle through ImGui Menu Bar States on Home button press
-        if (inputChannelId == InputDeviceKeyboard::Key::NavigationHome)
-        {
-            ToggleThroughImGuiVisibleState();
-        }
-
-        // Cycle through Standalone Editor Window States
-        if (inputChannel.GetInputChannelId() == InputDeviceKeyboard::Key::NavigationEnd)
-        {
-            if (gEnv->IsEditor() && m_editorWindowState == DisplayState::Hidden)
-            {
-                ImGuiUpdateListenerBus::Broadcast(&IImGuiUpdateListener::OnOpenEditorWindow);
-            }
-            else
-            {
-                m_editorWindowState = m_editorWindowState == DisplayState::Visible
-                                          ? DisplayState::VisibleNoMouse
-                                          : DisplayState::Visible;
-            }
-        }
-    }
-
-    // Handle Keyboard Modifier Keys
+    // Handle Keyboard Inputs
     if (InputDeviceKeyboard::IsKeyboardDevice(inputDeviceId))
     {
-        if (inputChannelId == InputDeviceKeyboard::Key::ModifierShiftL
-            || inputChannelId == InputDeviceKeyboard::Key::ModifierShiftR)
+        // Handle Keyboard Hotkeys
+        if (inputChannel.IsStateBegan())
         {
-            io.KeyShift = inputChannel.IsActive();
-        }
-        else if (inputChannelId == InputDeviceKeyboard::Key::ModifierAltL
-                 || inputChannelId == InputDeviceKeyboard::Key::ModifierAltR)
-        {
-            io.KeyAlt = inputChannel.IsActive();
-        }
-        else if (inputChannelId == InputDeviceKeyboard::Key::ModifierCtrlL
-                 || inputChannelId == InputDeviceKeyboard::Key::ModifierCtrlR)
-        {
-            io.KeyCtrl = inputChannel.IsActive();
-        }
+            // Cycle through ImGui Menu Bar States on Home button press
+            if (inputChannelId == InputDeviceKeyboard::Key::NavigationHome)
+            {
+                ToggleThroughImGuiVisibleState();
+            }
 
-        // Set Keydown Flag in ImGui Keys Array
-        const int keyIndex = GetAzKeyIndex(inputChannelId);
-        if (0 <= keyIndex  && keyIndex < AZ_ARRAY_SIZE(io.KeysDown))
+            // Cycle through Standalone Editor Window States
+            if (inputChannel.GetInputChannelId() == InputDeviceKeyboard::Key::NavigationEnd)
+            {
+                if (gEnv->IsEditor() && m_editorWindowState == DisplayState::Hidden)
+                {
+                    ImGuiUpdateListenerBus::Broadcast(&IImGuiUpdateListener::OnOpenEditorWindow);
+                }
+                else
+                {
+                    m_editorWindowState = m_editorWindowState == DisplayState::Visible
+                                              ? DisplayState::VisibleNoMouse
+                                              : DisplayState::Visible;
+                }
+            }
+        }
+        // Handle Keyboard Modifier Keys
+        else
         {
-            io.KeysDown[keyIndex] = inputChannel.IsActive();
+            if (inputChannelId == InputDeviceKeyboard::Key::ModifierShiftL
+                || inputChannelId == InputDeviceKeyboard::Key::ModifierShiftR)
+            {
+                io.KeyShift = inputChannel.IsActive();
+            }
+            else if (inputChannelId == InputDeviceKeyboard::Key::ModifierAltL
+                     || inputChannelId == InputDeviceKeyboard::Key::ModifierAltR)
+            {
+                io.KeyAlt = inputChannel.IsActive();
+            }
+            else if (inputChannelId == InputDeviceKeyboard::Key::ModifierCtrlL
+                     || inputChannelId == InputDeviceKeyboard::Key::ModifierCtrlR)
+            {
+                io.KeyCtrl = inputChannel.IsActive();
+            }
+
+            // Set Keydown Flag in ImGui Keys Array
+            const int keyIndex = GetAzKeyIndex(inputChannelId);
+            if (0 <= keyIndex  && keyIndex < AZ_ARRAY_SIZE(io.KeysDown))
+            {
+                io.KeysDown[keyIndex] = inputChannel.IsActive();
+            }
         }
     }
 
     // Handle Controller Inputs
-    if (InputDeviceGamepad::IsGamepadDevice(inputDeviceId))
+    else if (InputDeviceGamepad::IsGamepadDevice(inputDeviceId))
     {
         // Only pipe in Controller Nav Inputs when at least 1 of the two controller modes are enabled.
         if (m_controllerModeFlags)
@@ -507,7 +510,7 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
     }
 
     // Handle Mouse Inputs
-    if (InputDeviceMouse::IsMouseDevice(inputDeviceId))
+    else if (InputDeviceMouse::IsMouseDevice(inputDeviceId))
     {
         const int mouseButtonIndex = GetAzMouseButtonIndex(inputChannelId);
         if (0 <= mouseButtonIndex && mouseButtonIndex < AZ_ARRAY_SIZE(io.MouseDown))
@@ -521,7 +524,7 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
     }
 
     // Handle Touch Inputs
-    if (InputDeviceTouch::IsTouchDevice(inputDeviceId))
+    else if (InputDeviceTouch::IsTouchDevice(inputDeviceId))
     {
         const int touchIndex = GetAzTouchIndex(inputChannelId);
         if (0 <= touchIndex && touchIndex < AZ_ARRAY_SIZE(io.MouseDown))
@@ -542,7 +545,7 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
     }
 
     // Handle Virtual Keyboard Inputs
-    if (InputDeviceVirtualKeyboard::IsVirtualKeyboardDevice(inputDeviceId))
+    else if (InputDeviceVirtualKeyboard::IsVirtualKeyboardDevice(inputDeviceId))
     {
         if (inputChannelId == AzFramework::InputDeviceVirtualKeyboard::Command::EditEnter)
         {
