@@ -29,5 +29,7 @@ namespace AzToolsFramework
 
         ProceduralPrefabUiHandler();
         ~ProceduralPrefabUiHandler() override = default;
+
+        QString GenerateItemTooltip(AZ::EntityId entityId) const override;
     };
 } // namespace AzToolsFramework

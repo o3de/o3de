@@ -8,6 +8,8 @@
 
 #include <AzToolsFramework/UI/Prefab/Procedural/ProceduralPrefabUiHandler.h>
 
+#include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
+
 namespace AzToolsFramework
 {
     ProceduralPrefabUiHandler::ProceduralPrefabUiHandler()
@@ -17,5 +19,19 @@ namespace AzToolsFramework
         m_prefabCapsuleEditColor = QColor("#361561");
         m_prefabIconPath = QString(":/Entity/prefab_edit.svg");
         m_prefabEditOpenIconPath = QString(":/Entity/prefab_edit_open_readonly.svg");
+    }
+
+    QString ProceduralPrefabUiHandler::GenerateItemTooltip(AZ::EntityId entityId) const
+    {
+        QString tooltip;
+
+        AZ::IO::Path path = m_prefabPublicInterface->GetOwningInstancePrefabPath(entityId);
+
+        if (!path.empty())
+        {
+            tooltip = QObject::tr("Double click to inspect.\n%1").arg(path.Native().data());
+        }
+
+        return tooltip;
     }
 }
