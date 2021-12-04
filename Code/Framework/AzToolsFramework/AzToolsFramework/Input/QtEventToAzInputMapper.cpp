@@ -195,6 +195,11 @@ namespace AzToolsFramework
 
         // Install a global event filter to ensure we don't miss mouse and key release events.
         QApplication::instance()->installEventFilter(this);
+
+        if (m_enabled)
+        {
+            AzFramework::InputChannelNotificationBus::Handler::BusConnect();
+        }
     }
 
     bool QtEventToAzInputMapper::HandlesInputEvent(const AzFramework::InputChannel& channel) const
@@ -209,10 +214,15 @@ namespace AzToolsFramework
     void QtEventToAzInputMapper::SetEnabled(bool enabled)
     {
         m_enabled = enabled;
-        if (!enabled)
+        if (m_enabled)
+        {
+            AzFramework::InputChannelNotificationBus::Handler::BusConnect();
+        }
+        else
         {
             // Clear input channels to reset our input state if we're disabled.
             ClearInputChannels(nullptr);
+            AzFramework::InputChannelNotificationBus::Handler::BusDisconnect();
         }
     }
 
@@ -316,6 +326,20 @@ namespace AzToolsFramework
         }
 
         return false;
+    }
+
+    AZ::s32 QtEventToAzInputMapper::GetPriority() const
+    {
+        return AzFramework::InputChannelEventListener::GetPriorityLast();
+    }
+
+    void QtEventToAzInputMapper::OnInputChannelEvent(const AzFramework::InputChannel& inputChannel,
+                                                     bool& o_hasBeenConsumed)
+    {
+        if (o_hasBeenConsumed)
+        {
+            m_lastConsumedInputChannelEvent = &inputChannel;
+        }
     }
 
     void QtEventToAzInputMapper::NotifyUpdateChannelIfNotIdle(const AzFramework::InputChannel* channel, QEvent* event)
