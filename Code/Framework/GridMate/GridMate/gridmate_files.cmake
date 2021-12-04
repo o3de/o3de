@@ -39,8 +39,6 @@ set(FILES
     Containers/unordered_map.h
     Containers/unordered_set.h
     Containers/vector.h
-    Online/OnlineUtilityThread.h
-    Online/UserServiceTypes.h
     Replica/BasicHostChunkDescriptor.h
     Replica/DeltaCompressedDataSet.h
     Replica/DataSet.cpp
