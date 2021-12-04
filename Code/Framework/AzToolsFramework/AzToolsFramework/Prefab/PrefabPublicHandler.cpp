@@ -918,6 +918,19 @@ namespace AzToolsFramework
             }
         }
 
+        bool PrefabPublicHandler::IsOwnedByProceduralPrefabInstance(AZ::EntityId entityId) const
+        {
+            InstanceOptionalReference instanceReference = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
+
+            if (instanceReference.has_value())
+            {
+                TemplateReference templateReference = m_prefabSystemComponentInterface->FindTemplate(instanceReference->get().GetTemplateId());
+                return (templateReference.has_value()) && (templateReference->get().IsProcedural());
+            }
+
+            return false;
+        }
+
         bool PrefabPublicHandler::IsInstanceContainerEntity(AZ::EntityId entityId) const
         {
             InstanceOptionalReference owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);

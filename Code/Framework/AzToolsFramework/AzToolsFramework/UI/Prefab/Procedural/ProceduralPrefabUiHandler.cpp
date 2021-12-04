@@ -12,7 +12,7 @@ namespace AzToolsFramework
 {
     ProceduralPrefabUiHandler::ProceduralPrefabUiHandler()
     {
-        m_prefabCapsuleColor = QColor("#2B1037");
+        m_prefabCapsuleColor = QColor("#361561");
         m_prefabCapsuleDisabledColor = QColor("#4B3455");
         m_prefabCapsuleEditColor = QColor("#361561");
         m_prefabEditOpenIconPath = QString(":/Entity/prefab_edit_open_readonly.svg");
