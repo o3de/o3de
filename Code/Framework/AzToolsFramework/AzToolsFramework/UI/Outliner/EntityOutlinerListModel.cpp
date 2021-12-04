@@ -299,7 +299,7 @@ namespace AzToolsFramework
 
         // TODO - Move to member variable
         bool isReadOnly = false;
-        if (ReadOnlyEntityInterface* readOnlyEntityInterface = AZ::Interface<ReadOnlyEntityInterface>::Get())
+        if (ReadOnlyEntityPublicInterface* readOnlyEntityInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get())
         {
             isReadOnly = readOnlyEntityInterface->IsReadOnly(id);
         }
