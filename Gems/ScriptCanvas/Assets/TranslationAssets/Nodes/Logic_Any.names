@@ -11,13 +11,13 @@
             },
             "slots": [
                 {
-                    "base": "Input_Input 0",
+                    "base": "Input_Input 0_0",
                     "details": {
                         "name": "Input 0"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out",
                         "tooltip": "Signaled when the node receives a signal from the selected index"

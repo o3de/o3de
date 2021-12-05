@@ -35,7 +35,6 @@
 
 // CryCommon
 #include <CryCommon/INavigationSystem.h>
-#include <CryCommon/LyShine/ILyShine.h>
 #include <CryCommon/MainThreadRenderRequestBus.h>
 
 // Editor
@@ -594,13 +593,6 @@ void CGameEngine::SwitchToInEditor()
 
     // Enable accelerators.
     GetIEditor()->EnableAcceleratos(true);
-
-
-    // reset UI system
-    if (gEnv->pLyShine)
-    {
-        gEnv->pLyShine->Reset();
-    }
 
     // [Anton] - order changed, see comments for CGameEngine::SetSimulationMode
     //! Send event to switch out of game.

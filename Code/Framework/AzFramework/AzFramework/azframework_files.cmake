@@ -277,6 +277,8 @@ set(FILES
     Process/ProcessWatcher.cpp
     Process/ProcessWatcher.h
     Process/ProcessCommon_fwd.h
+    Process/ProcessCommunicatorTracePrinter.cpp
+    Process/ProcessCommunicatorTracePrinter.h
     ProjectManager/ProjectManager.h
     ProjectManager/ProjectManager.cpp
     Render/GameIntersectorComponent.h

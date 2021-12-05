@@ -8,6 +8,7 @@
 
 file(REAL_PATH "${CPACK_SOURCE_DIR}/.." LY_ROOT_FOLDER)
 include(${LY_ROOT_FOLDER}/cmake/Platform/Common/PackagingPostBuild_common.cmake)
+include(${CPACK_CODESIGN_SCRIPT})
 
 # convert the path to a windows style path using string replace because TO_NATIVE_PATH
 # only works on real paths
@@ -59,39 +60,7 @@ set(_light_command
 )
 
 if(CPACK_UPLOAD_URL) # Skip signing if we are not uploading the package
-    file(TO_NATIVE_PATH "${LY_ROOT_FOLDER}/scripts/signer/Platform/Windows/signer.ps1" _sign_script)
-
-    unset(_signing_command)
-    find_program(_psiexec_path psexec.exe)
-    if(_psiexec_path)
-        list(APPEND _signing_command
-            ${_psiexec_path}
-            -accepteula 
-            -nobanner 
-            -s
-        )
-    endif()
-
-    find_program(_powershell_path powershell.exe REQUIRED)
-    list(APPEND _signing_command
-        ${_powershell_path}
-        -NoLogo
-        -ExecutionPolicy Bypass 
-        -File ${_sign_script}
-    )
-
-    message(STATUS "Signing package files in ${_cpack_wix_out_dir}")
-    execute_process(
-        COMMAND ${_signing_command} -packagePath ${_cpack_wix_out_dir}
-        RESULT_VARIABLE _signing_result
-        ERROR_VARIABLE _signing_errors
-        OUTPUT_VARIABLE _signing_output
-        ECHO_OUTPUT_VARIABLE
-    )
-
-    if(NOT ${_signing_result} EQUAL 0)
-        message(FATAL_ERROR "An error occurred during signing package files.  ${_signing_errors}")
-    endif()
+    ly_sign_binaries("${_cpack_wix_out_dir}" "packagePath")
 endif()
 
 message(STATUS "Creating Bootstrap Installer...")
@@ -116,18 +85,7 @@ endif()
 message(STATUS "Bootstrap installer generated to ${_bootstrap_output_file}")
 
 if(CPACK_UPLOAD_URL) # Skip signing if we are not uploading the package
-    message(STATUS "Signing bootstrap installer in ${_bootstrap_output_file}")
-    execute_process(
-        COMMAND ${_signing_command} -bootstrapPath ${_bootstrap_output_file}
-        RESULT_VARIABLE _signing_result
-        ERROR_VARIABLE _signing_errors
-        OUTPUT_VARIABLE _signing_output
-        ECHO_OUTPUT_VARIABLE
-    )
-
-    if(NOT ${_signing_result} EQUAL 0)
-        message(FATAL_ERROR "An error occurred during signing bootstrap installer.  ${_signing_errors}")
-    endif()
+    ly_sign_binaries("${_bootstrap_output_file}" "bootstrapPath")
 endif()
 
 # use the internal default path if somehow not specified from cpack_configure_downloads

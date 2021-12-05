@@ -60,7 +60,7 @@ float3 GetIblSpecular(
     
         // compute blend amount based on world position in the reflection probe volume
         float blendAmount = ComputeLerpBetweenInnerOuterOBBs(
-            ObjectSrg::GetReflectionProbeWorldMatrixInverse(),
+            (float3x4)ObjectSrg::GetReflectionProbeWorldMatrixInverse(),
             ObjectSrg::m_reflectionProbeData.m_innerObbHalfLengths,
             ObjectSrg::m_reflectionProbeData.m_outerObbHalfLengths,
             position);
@@ -121,4 +121,3 @@ void ApplyIBL(Surface surface, inout LightingData lightingData)
         }
     }
 }
-
