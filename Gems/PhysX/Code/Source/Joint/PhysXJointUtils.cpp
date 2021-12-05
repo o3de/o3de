@@ -6,22 +6,25 @@
  *
  */
 
-#include <AzFramework/Physics/PhysicsScene.h>
-#include <AzFramework/Physics/PhysicsSystem.h>
-#include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
-#include <AzCore/EBus/EBus.h>
+#include <Source/Joint/PhysXJointUtils.h>
 
 #include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
 #include <PhysX/PhysXLocks.h>
 #include <PhysX/Debug/PhysXDebugConfiguration.h>
 #include <PhysX/MathConversion.h>
-#include <Source/Joint/PhysXJointUtils.h>
 #include <Include/PhysX/NativeTypeIdentifiers.h>
 
+#include <AzFramework/Physics/PhysicsScene.h>
+#include <AzFramework/Physics/PhysicsSystem.h>
+#include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
+#include <AzCore/Interface/Interface.h>
+#include <AzCore/EBus/EBus.h>
+
+
 namespace PhysX {
-    namespace Utils 
+    namespace Utils
     {
-        struct PxJointActorData 
+        struct PxJointActorData
         {
             static PxJointActorData InvalidPxJointActorData;
 
@@ -75,11 +78,11 @@ namespace PhysX {
             }
             return false;
         }
-        
+
         physx::PxRigidActor* GetPxRigidActor(AzPhysics::SceneHandle sceneHandle, AzPhysics::SimulatedBodyHandle worldBodyHandle)
         {
             auto* worldBody = GetSimulatedBodyFromHandle(sceneHandle, worldBodyHandle);
-            if (worldBody != nullptr 
+            if (worldBody != nullptr
                 && static_cast<physx::PxBase*>(worldBody->GetNativePointer())->is<physx::PxRigidActor>())
             {
                 return static_cast<physx::PxRigidActor*>(worldBody->GetNativePointer());
@@ -96,7 +99,7 @@ namespace PhysX {
         }
 
         AzPhysics::SimulatedBody* GetSimulatedBodyFromHandle(AzPhysics::SceneHandle sceneHandle,
-            AzPhysics::SimulatedBodyHandle bodyHandle) 
+            AzPhysics::SimulatedBodyHandle bodyHandle)
         {
             if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
             {
@@ -105,7 +108,7 @@ namespace PhysX {
             return nullptr;
         }
 
-        void InitializeGenericProperties(const JointGenericProperties& properties, physx::PxJoint* nativeJoint) 
+        void InitializeGenericProperties(const JointGenericProperties& properties, physx::PxJoint* nativeJoint)
         {
             if (!nativeJoint)
             {
@@ -138,10 +141,10 @@ namespace PhysX {
             // Hard limit uses a tolerance value (distance to limit at which limit becomes active).
             // Soft limit allows angle to exceed limit but springs back with configurable spring stiffness and damping.
             physx::PxJointLimitCone swingLimit(
-                AZ::DegToRad(properties.m_limitFirst), 
-                AZ::DegToRad(properties.m_limitSecond), 
+                AZ::DegToRad(properties.m_limitFirst),
+                AZ::DegToRad(properties.m_limitSecond),
                 properties.m_tolerance);
-            
+
             if (properties.m_isSoftLimit)
             {
                 swingLimit.stiffness = properties.m_stiffness;
@@ -166,8 +169,8 @@ namespace PhysX {
             }
 
             physx::PxJointAngularLimitPair limitPair(
-                AZ::DegToRad(properties.m_limitSecond), 
-                AZ::DegToRad(properties.m_limitFirst), 
+                AZ::DegToRad(properties.m_limitSecond),
+                AZ::DegToRad(properties.m_limitFirst),
                 properties.m_tolerance);
 
             if (properties.m_isSoftLimit)
@@ -181,12 +184,12 @@ namespace PhysX {
         }
 
         namespace PxJointFactories
-        {   
+        {
             PxJointUniquePtr CreatePxD6Joint(
                 const PhysX::D6JointLimitConfiguration& configuration,
                 AzPhysics::SceneHandle sceneHandle,
                 AzPhysics::SimulatedBodyHandle parentBodyHandle,
-                AzPhysics::SimulatedBodyHandle childBodyHandle) 
+                AzPhysics::SimulatedBodyHandle childBodyHandle)
             {
                 PxJointActorData actorData = GetJointPxActors(sceneHandle, parentBodyHandle, childBodyHandle);
 
@@ -205,7 +208,7 @@ namespace PhysX {
                 const physx::PxTransform childLocalTransform(PxMathConvert(configuration.m_childLocalRotation).getNormalized());
                 parentLocalTransform.p = parentWorldTransform.q.rotateInv(childOffset);
 
-                physx::PxD6Joint* joint = PxD6JointCreate(PxGetPhysics(), 
+                physx::PxD6Joint* joint = PxD6JointCreate(PxGetPhysics(),
                     actorData.parentActor, parentLocalTransform, actorData.childActor, childLocalTransform);
 
                 joint->setMotion(physx::PxD6Axis::eTWIST, physx::PxD6Motion::eLIMITED);
@@ -215,10 +218,10 @@ namespace PhysX {
                 AZ_Warning("PhysX Joint",
                     configuration.m_swingLimitY >= JointConstants::MinSwingLimitDegrees && configuration.m_swingLimitZ >= JointConstants::MinSwingLimitDegrees,
                     "Very small swing limit requested for joint between \"%s\" and \"%s\", increasing to %f degrees to improve stability",
-                    actorData.parentActor ? actorData.parentActor->getName() : "world", 
+                    actorData.parentActor ? actorData.parentActor->getName() : "world",
                     actorData.childActor ? actorData.childActor->getName() : "world",
                     JointConstants::MinSwingLimitDegrees);
-                
+
                 const float swingLimitY = AZ::DegToRad(AZ::GetMax(JointConstants::MinSwingLimitDegrees, configuration.m_swingLimitY));
                 const float swingLimitZ = AZ::DegToRad(AZ::GetMax(JointConstants::MinSwingLimitDegrees, configuration.m_swingLimitZ));
                 physx::PxJointLimitCone limitCone(swingLimitY, swingLimitZ);
@@ -250,7 +253,7 @@ namespace PhysX {
                 const PhysX::FixedJointConfiguration& configuration,
                 AzPhysics::SceneHandle sceneHandle,
                 AzPhysics::SimulatedBodyHandle parentBodyHandle,
-                AzPhysics::SimulatedBodyHandle childBodyHandle) 
+                AzPhysics::SimulatedBodyHandle childBodyHandle)
             {
                 PxJointActorData actorData = GetJointPxActors(sceneHandle, parentBodyHandle, childBodyHandle);
 
@@ -269,13 +272,13 @@ namespace PhysX {
                 {
                     PHYSX_SCENE_READ_LOCK(actorData.childActor->getScene());
                     joint = physx::PxFixedJointCreate(
-                        PxGetPhysics(), 
+                        PxGetPhysics(),
                         actorData.parentActor, PxMathConvert(parentLocalTM),
                         actorData.childActor, PxMathConvert(childLocalTM));
                 }
 
                 InitializeGenericProperties(
-                    configuration.m_genericProperties, 
+                    configuration.m_genericProperties,
                     static_cast<physx::PxJoint*>(joint));
 
                 return Utils::PxJointUniquePtr(joint, ReleasePxJoint);
@@ -285,7 +288,7 @@ namespace PhysX {
                 const PhysX::BallJointConfiguration& configuration,
                 AzPhysics::SceneHandle sceneHandle,
                 AzPhysics::SimulatedBodyHandle parentBodyHandle,
-                AzPhysics::SimulatedBodyHandle childBodyHandle) 
+                AzPhysics::SimulatedBodyHandle childBodyHandle)
             {
                 PxJointActorData actorData = GetJointPxActors(sceneHandle, parentBodyHandle, childBodyHandle);
 
@@ -303,14 +306,14 @@ namespace PhysX {
 
                 {
                     PHYSX_SCENE_READ_LOCK(actorData.childActor->getScene());
-                    joint = physx::PxSphericalJointCreate(PxGetPhysics(), 
+                    joint = physx::PxSphericalJointCreate(PxGetPhysics(),
                         actorData.parentActor, PxMathConvert(parentLocalTM),
                         actorData.childActor, PxMathConvert(childLocalTM));
                 }
 
                 InitializeSphericalLimitProperties(configuration.m_limitProperties, joint);
                 InitializeGenericProperties(
-                    configuration.m_genericProperties, 
+                    configuration.m_genericProperties,
                     static_cast<physx::PxJoint*>(joint));
 
                 return Utils::PxJointUniquePtr(joint, ReleasePxJoint);
@@ -320,7 +323,7 @@ namespace PhysX {
                 const PhysX::HingeJointConfiguration& configuration,
                 AzPhysics::SceneHandle sceneHandle,
                 AzPhysics::SimulatedBodyHandle parentBodyHandle,
-                AzPhysics::SimulatedBodyHandle childBodyHandle) 
+                AzPhysics::SimulatedBodyHandle childBodyHandle)
             {
                 PxJointActorData actorData = GetJointPxActors(sceneHandle, parentBodyHandle, childBodyHandle);
 
@@ -338,14 +341,14 @@ namespace PhysX {
 
                 {
                     PHYSX_SCENE_READ_LOCK(actorData.childActor->getScene());
-                    joint = physx::PxRevoluteJointCreate(PxGetPhysics(), 
+                    joint = physx::PxRevoluteJointCreate(PxGetPhysics(),
                         actorData.parentActor, PxMathConvert(parentLocalTM),
                         actorData.childActor, PxMathConvert(childLocalTM));
                 }
 
                 InitializeRevoluteLimitProperties(configuration.m_limitProperties, joint);
                 InitializeGenericProperties(
-                    configuration.m_genericProperties, 
+                    configuration.m_genericProperties,
                     static_cast<physx::PxJoint*>(joint));
 
                 return Utils::PxJointUniquePtr(joint, ReleasePxJoint);

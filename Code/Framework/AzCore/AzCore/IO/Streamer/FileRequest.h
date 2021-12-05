@@ -108,15 +108,15 @@ namespace AZ::IO::Requests
         FileRange m_range;
     };
 
+    enum class ReportType : int8_t
+    {
+        FileLocks
+    };
+
     struct ReportData
     {
         inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityLow;
         inline constexpr static bool s_failWhenUnhandled = false;
-
-        enum class ReportType
-        {
-            FileLocks
-        };
 
         explicit ReportData(ReportType reportType);
 
@@ -312,7 +312,7 @@ namespace AZ::IO
         void CreateFlushAll();
         void CreateDedicatedCacheCreation(RequestPath path, const FileRange& range = {}, FileRequest* parent = nullptr);
         void CreateDedicatedCacheDestruction(RequestPath path, const FileRange& range = {}, FileRequest* parent = nullptr);
-        void CreateReport(Requests::ReportData::ReportType reportType);
+        void CreateReport(Requests::ReportType reportType);
         void CreateCustom(AZStd::any data, bool failWhenUnhandled = true, FileRequest* parent = nullptr);
 
         void SetCompletionCallback(OnCompletionCallback callback);

@@ -14,6 +14,7 @@
 #include <AzCore/IO/Streamer/BlockCache.h>
 #include <AzCore/IO/Streamer/DedicatedCache.h>
 #include <AzCore/IO/Streamer/FullFileDecompressor.h>
+#include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/IO/Streamer/Scheduler.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/IO/Streamer/StreamerConfiguration.h>
@@ -207,7 +208,7 @@ namespace AZ
     {
         if (m_streamer)
         {
-            m_streamer->QueueRequest(m_streamer->Report(AZ::IO::Requests::ReportData::ReportType::FileLocks));
+            m_streamer->QueueRequest(m_streamer->Report(AZ::IO::Requests::ReportType::FileLocks));
         }
     }
 

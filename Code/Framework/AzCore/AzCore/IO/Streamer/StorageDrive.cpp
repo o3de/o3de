@@ -452,7 +452,7 @@ namespace AZ
         {
             switch (data.m_reportType)
             {
-            case Requests::ReportData::ReportType::FileLocks:
+            case Requests::ReportType::FileLocks:
                 for (u32 i = 0; i < m_fileHandles.size(); ++i)
                 {
                     if (m_fileHandles[i] != nullptr)

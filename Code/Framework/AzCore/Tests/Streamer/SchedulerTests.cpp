@@ -9,6 +9,7 @@
 #include <AzCore/Casting/lossy_cast.h>
 #include <AzCore/IO/Streamer/Streamer.h>
 #include <AzCore/IO/Streamer/Scheduler.h>
+#include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/std/parallel/atomic.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/std/smart_ptr/make_shared.h>

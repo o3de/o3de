@@ -7,6 +7,7 @@
  */
 
 #pragma once
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Asset/AssetCommon.h>
@@ -37,7 +38,7 @@ namespace AssetProcessor
         public AZ::Data::AssetCatalog
     {
     public:
-        
+
         AZ_COMPONENT(ToolsAssetCatalogComponent, "{AE68E46B-0E21-499A-8309-41408BCBE4BF}");
 
         ToolsAssetCatalogComponent() = default;

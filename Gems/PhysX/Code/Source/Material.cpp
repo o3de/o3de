@@ -7,14 +7,16 @@
  */
 
 #include "Material.h"
+
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <PxPhysicsAPI.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
+#include <PxPhysicsAPI.h>
 #include <PhysX/MeshAsset.h>
 
 namespace PhysX
 {
-    Material::Material(Material&& material) 
+    Material::Material(Material&& material)
         : m_pxMaterial(AZStd::move(material.m_pxMaterial))
         , m_surfaceType(material.m_surfaceType)
         , m_surfaceString(AZStd::move(material.m_surfaceString))
@@ -103,7 +105,7 @@ namespace PhysX
         SetDebugColor(materialConfiguration.m_debugColor);
 
         Physics::LegacySurfaceTypeRequestsBus::BroadcastResult(
-            m_cryEngineSurfaceId, 
+            m_cryEngineSurfaceId,
             &Physics::LegacySurfaceTypeRequestsBus::Events::GetLegacySurfaceTypeFronName,
             m_surfaceString);
     }
@@ -159,7 +161,7 @@ namespace PhysX
 
     void Material::SetDynamicFriction(float dynamicFriction)
     {
-        AZ_Warning("PhysX Material", dynamicFriction >= 0.0f, 
+        AZ_Warning("PhysX Material", dynamicFriction >= 0.0f,
             "SetDynamicFriction: Dynamic friction %f for material %s is out of range [0, PX_MAX_F32)",
             dynamicFriction, m_surfaceString.c_str());
 
@@ -176,10 +178,10 @@ namespace PhysX
 
     void Material::SetStaticFriction(float staticFriction)
     {
-        AZ_Warning("PhysX Material", staticFriction >= 0.0f, 
+        AZ_Warning("PhysX Material", staticFriction >= 0.0f,
             "SetStaticFriction: Static friction %f for material %s is out of range [0, PX_MAX_F32)",
             staticFriction, m_surfaceString.c_str());
-        
+
         if (m_pxMaterial)
         {
             m_pxMaterial->setStaticFriction(AZ::GetMax(0.0f, staticFriction));
@@ -193,7 +195,7 @@ namespace PhysX
 
     void Material::SetRestitution(float restitution)
     {
-        AZ_Warning("PhysX Material", restitution >= 0 && restitution <= 1.0f, 
+        AZ_Warning("PhysX Material", restitution >= 0 && restitution <= 1.0f,
             "SetRestitution: Restitution %f for material %s is out of range [0, 1]",
             restitution, m_surfaceString.c_str());
 
@@ -316,8 +318,8 @@ namespace PhysX
         }
 
         // It is important to return exactly the amount of materials specified in materialSelection
-        // If a number of materials different to what was cooked is assigned on a physx mesh it will lead to undefined 
-        // behavior and subtle bugs. Unfortunately, there's no warning or assertion on physx side at the shape creation time, 
+        // If a number of materials different to what was cooked is assigned on a physx mesh it will lead to undefined
+        // behavior and subtle bugs. Unfortunately, there's no warning or assertion on physx side at the shape creation time,
         // nor mention of this in the documentation
         outMaterials.resize(materialIdsAssignedToSlots.size(), GetDefaultMaterial());
 
@@ -390,7 +392,7 @@ namespace PhysX
 
         if (!assetConfiguration.m_asset.IsReady())
         {
-            // The asset is valid but is still loading, 
+            // The asset is valid but is still loading,
             // Do not set the empty slots in this case to avoid the entity being in invalid state
             return;
         }

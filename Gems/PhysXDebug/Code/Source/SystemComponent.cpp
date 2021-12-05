@@ -8,31 +8,31 @@
 
 #include "SystemComponent.h"
 
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Component/TransformBus.h>
-#include <AzCore/Console/IConsole.h>
-
+#include <PhysX/Debug/PhysXDebugInterface.h>
 #include <PhysX/SystemComponentBus.h>
 #include <PhysX/MathConversion.h>
 #include <PhysX/UserDataTypes.h>
 #include <PhysX/Utils.h>
 #include <PhysX/PhysXLocks.h>
 
+#include <CryCommon/IConsole.h>
+#include <CryCommon/IRenderAuxGeom.h>
+#include <CryCommon/ISystem.h>
+#include <CryCommon/MathConversion.h>
+
+#include <AzFramework/Components/CameraBus.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Physics/Ragdoll.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Utils.h>
-#include <AzFramework/Components/CameraBus.h>
 
-#include <IRenderAuxGeom.h>
-#include <MathConversion.h>
+#include <AzCore/Component/TransformBus.h>
+#include <AzCore/Console/IConsole.h>
+#include <AzCore/Debug/Profiler.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
-#include <IConsole.h>
-#include <CryCommon/ISystem.h>
-
-#include <PhysX/Debug/PhysXDebugInterface.h>
 
 namespace PhysXDebug
 {

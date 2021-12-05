@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AzCore/IO/Streamer/FileRequest.h>
+#include <AzCore/IO/Streamer/RequestPath.h>
 #include <AzCore/IO/IStreamerTypes.h>
 #include <AzCore/IO/Streamer/Statistics.h>
 #include <AzCore/IO/Streamer/StreamerConfiguration.h>
@@ -25,11 +25,19 @@ namespace AZ::IO
 {
     class FileRequest;
 
+    namespace Requests
+    {
+        struct CancelData;
+        struct RescheduleData;
+    } // namespace Requests
+
     class Scheduler final
     {
     public:
         explicit Scheduler(AZStd::shared_ptr<StreamStackEntry> streamStack, u64 memoryAlignment = AZCORE_GLOBAL_NEW_ALIGNMENT,
             u64 sizeAlignment = 1, u64 granularity = 1_mib);
+        ~Scheduler();
+
         void Start(const AZStd::thread_desc& threadDesc);
         void Stop();
 
@@ -67,9 +75,9 @@ namespace AZ::IO
 
         enum class Order
         {
-            FirstRequest, //< The first request is the most important to process next.
-            SecondRequest, //< The second request is the most important to process next.
-            Equal //< Both requests are equally important.
+            FirstRequest, //!< The first request is the most important to process next.
+            SecondRequest, //!< The second request is the most important to process next.
+            Equal //!< Both requests are equally important.
         };
         //! Determine which of the two provided requests is more important to process next.
         Order Thread_PrioritizeRequests(const FileRequest* first, const FileRequest* second) const;

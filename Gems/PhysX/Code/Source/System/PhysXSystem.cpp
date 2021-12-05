@@ -5,16 +5,17 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzCore/Math/MathUtils.h>
-#include <AzCore/Memory/SystemAllocator.h>
+#include <System/PhysXSystem.h>
 
 #include <Scene/PhysXScene.h>
-#include <System/PhysXSystem.h>
 #include <System/PhysXAllocator.h>
 #include <System/PhysXCpuDispatcher.h>
 #include <PhysX/Debug/PhysXDebugConfiguration.h>
-
 #include <PxPhysicsAPI.h>
+
+#include <AzCore/Math/MathUtils.h>
+#include <AzCore/Debug/Profiler.h>
+#include <AzCore/Memory/SystemAllocator.h>
 
 // only enable physx timestep warning when not running debug or in Release
 #if !defined(DEBUG) && !defined(RELEASE)
@@ -59,7 +60,7 @@ namespace PhysX
     {
         m_onMaterialLibraryReloadedCallback(asset);
     }
-    
+
     PhysXSystem::PhysXSystem(PhysXSettingsRegistryManager* registryManager, const physx::PxCookingParams& cookingParams)
         : m_registryManager(*registryManager)
         , m_materialLibraryAssetHelper(
@@ -365,7 +366,7 @@ namespace PhysX
     void PhysXSystem::OnCatalogLoaded([[maybe_unused]]const char* catalogFile)
     {
         // now that assets can be resolved, lets load the default material library.
-        
+
         if (!m_systemConfig.m_materialLibraryAsset.GetId().IsValid())
         {
             m_onMaterialLibraryLoadErrorEvent.Signal(AzPhysics::SystemEvents::MaterialLibraryLoadErrorType::InvalidId);
@@ -515,7 +516,7 @@ namespace PhysX
 
         AZ_Warning("PhysX", loadedSuccessfully,
             "LoadDefaultMaterialLibrary: Default Material Library asset data is invalid.");
-        
+
         return loadedSuccessfully;
     }
 

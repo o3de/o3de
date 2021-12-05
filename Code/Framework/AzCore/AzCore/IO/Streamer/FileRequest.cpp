@@ -351,7 +351,7 @@ namespace AZ::IO
         SetOptionalParent(parent);
     }
 
-    void FileRequest::CreateReport(Requests::ReportData::ReportType reportType)
+    void FileRequest::CreateReport(Requests::ReportType reportType)
     {
         AZ_Assert(
             AZStd::holds_alternative<AZStd::monostate>(m_command),

@@ -17,6 +17,7 @@
 #include <AzCore/Asset/AssetSerializer.h>
 
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 
@@ -142,7 +143,7 @@ namespace AzFramework
     AZ::Outcome<void, AZStd::string> CompileScript(ScriptCompileRequest& request, AZ::ScriptContext& scriptContext)
     {
         AZ_TracePrintf(request.m_errorWindow.data(), "Starting script compile.\n");
-                
+
         AZStd::string debugName = "@";
         debugName += request.m_sourceFile;
         AZStd::to_lower(debugName.begin(), debugName.end());
@@ -180,14 +181,14 @@ namespace AzFramework
     {
         using namespace AZ::IO;
         FileIOStream outputStream;
-        
+
         if (!outputStream.Open(request.m_destPath.c_str(), OpenMode::ModeWrite | OpenMode::ModeBinary))
         {
             return AZ::Failure(AZStd::string("Failed to open output file %s", request.m_destPath.data()));
         }
 
         request.m_output = &outputStream;
-        
+
         if (writeAssetInfo)
         {
             if (request.m_prewriteCallback)
@@ -292,7 +293,7 @@ namespace AzFramework
 
     namespace Internal
     {
-        
+
         AZStd::string PrintLuaValue(lua_State* lua, int stackIdx, int depth = 0)
         {
             constexpr int MaxDepth = 4;
@@ -302,7 +303,7 @@ namespace AzFramework
             }
 
             const int elementType = lua_type(lua, stackIdx);
-            
+
             switch (elementType)
             {
             case LUA_TSTRING:
@@ -347,7 +348,7 @@ namespace AzFramework
                         {
                             keyValuePairs += " ";
                         }
-                    }   
+                    }
                 }
 
                 tableStr += keyValuePairs.length() < 1024 ? keyValuePairs : AZStd::string::format("too many keys (%i)!", keyCount);
@@ -891,18 +892,18 @@ namespace AzFramework
             // This is the root table (properties) it will be used as properties for all sub tables
             // ScriptComponents can share the same lua script asset, but each instance's Properties table needs to be unique.
             // This way the script can change a property at runtime and not affect the other ScriptComponents which are using the same script.
-            // For normal properties we will create new variable instances, but NetSynched variables aren't stored in Lua, and instead 
+            // For normal properties we will create new variable instances, but NetSynched variables aren't stored in Lua, and instead
             // are retrieved using the __index and __newIndex metamethods.
             // Ensure that this instance of Properties table has the proper __index and __newIndex metamethods.
-            lua_newtable(lua);  // This new table will become the Properties instance metatable.  Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {} 
+            lua_newtable(lua);  // This new table will become the Properties instance metatable.  Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {}
             lua_pushliteral(lua, "__index");  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {} __index
             lua_pushcclosure(lua, &Internal::Properties__Index, 0);  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {} __index function
-            lua_rawset(lua, -3);  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {__index=Internal::Properties__Index} 
+            lua_rawset(lua, -3);  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {__index=Internal::Properties__Index}
 
             lua_pushliteral(lua, "__newindex");
             lua_pushcclosure(lua, &Internal::Properties__NewIndex, 0);
-            lua_rawset(lua, -3);  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {__index=Internal::Properties__Index __newindex=Internal::Properties__NewIndex} 
-            lua_setmetatable(lua, -2);  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {Meta{__index=Internal::Properties__Index __newindex=Internal::Properties__NewIndex} } 
+            lua_rawset(lua, -3);  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {__index=Internal::Properties__Index __newindex=Internal::Properties__NewIndex}
+            lua_setmetatable(lua, -2);  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {Meta{__index=Internal::Properties__Index __newindex=Internal::Properties__NewIndex} }
 
             metatableIndex = lua_gettop(lua);  // This will be the metatable for all subtables
         }

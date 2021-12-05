@@ -1151,7 +1151,7 @@ namespace AZ::IO
     {
         switch (data.m_reportType)
         {
-        case Requests::ReportData::ReportType::FileLocks:
+        case Requests::ReportType::FileLocks:
             if (m_cachesInitialized)
             {
                 for (u32 i = 0; i < m_maxFileHandles; ++i)

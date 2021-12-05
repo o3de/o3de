@@ -10,6 +10,7 @@
 #include <FileIOBaseTestTypes.h>
 #include <AzCore/IO/CompressionBus.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/IO/Streamer/Streamer.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/IO/Streamer/StreamerConfiguration.h>
@@ -36,12 +37,12 @@ namespace AZ
                 constexpr size_t bufferByteSize = 1_mib;
                 constexpr size_t bufferSize = bufferByteSize / sizeof(u32);
                 u32* buffer = new u32[bufferSize];
-                
+
                 AZ_Assert(paddingSize < bufferByteSize, "Padding can't currently be larger than %i bytes.", bufferByteSize);
                 size_t paddingCount = paddingSize / sizeof(u32);
 
                 FileIOStream stream(name.c_str(), OpenMode::ModeWrite | OpenMode::ModeBinary);
-                
+
                 // Write pre-padding
                 for (size_t i = 0; i < paddingCount; ++i)
                 {
@@ -154,7 +155,7 @@ namespace AZ
                 m_hasPadding = (padding == PadArchive::Yes);
                 uint32_t paddingSize = s_paddingSize;
                 Utils::CreateTestFile(m_filename, m_fileSize / 2, m_hasPadding ? paddingSize : 0 );
-                
+
                 m_hasFile = true;
 
                 BusConnect();
@@ -211,8 +212,8 @@ namespace AZ
                     info.m_offset = m_hasPadding ? paddingSize : 0;
                     info.m_uncompressedSize = m_fileSize;
 
-                    info.m_decompressor = 
-                        [this](const AZ::IO::CompressionInfo& info, const void* compressed, 
+                    info.m_decompressor =
+                        [this](const AZ::IO::CompressionInfo& info, const void* compressed,
                         size_t compressedSize, void* uncompressed, size_t uncompressedSize) -> bool
                     {
                         Decompress(info, compressed, compressedSize, uncompressed, uncompressedSize);
@@ -251,7 +252,7 @@ namespace AZ
                 AllocatorsTestFixture::SetUp();
                 AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
                 AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-                
+
                 m_prevFileIO = FileIOBase::GetInstance();
                 FileIOBase::SetInstance(&m_fileIO);
 
@@ -274,7 +275,7 @@ namespace AZ
                 m_application->Destroy();
                 delete m_application;
                 m_application = nullptr;
-                
+
                 for (size_t i = 0; i < m_testFileCount; ++i)
                 {
                     AZStd::string name = AZStd::string::format("TestFile_%zu.test", i);
@@ -296,7 +297,7 @@ namespace AZ
                 AllocatorsTestFixture::TearDown();
             }
 
-            //! Requests are typically completed by Streamer before it updates it's internal bookkeeping. 
+            //! Requests are typically completed by Streamer before it updates it's internal bookkeeping.
             //! If a test depends on getting status information such as if cache files have been cleared
             //! then call WaitForScheduler to give Steamers scheduler some time to update it's internal status.
             void WaitForScheduler()
@@ -455,7 +456,7 @@ namespace AZ
         };
 
 #if !AZ_TRAIT_DISABLE_FAILED_STREAMER_TESTS
-        
+
         TYPED_TEST_CASE_P(StreamerTest);
 
         // Read a file that's smaller than the cache.
@@ -478,7 +479,7 @@ namespace AZ
             char* buffer = new char[fileSize];
             this->PeriodicallyCheckedRead(testFile->GetFileName(), buffer, fileSize, 0, AZStd::chrono::seconds(5));
             this->VerifyTestFile(buffer, fileSize);
-            
+
             delete[] buffer;
         }
 
@@ -520,7 +521,7 @@ namespace AZ
             constexpr size_t bufferSize = 480 * sizeof(u32);
 #endif
             constexpr size_t numRequests = (fileSize / bufferSize) + 1;
-            
+
             auto testFile = this->CreateTestFile(fileSize, PadArchive::No);
 
             AZStd::vector<FileRequestPtr> requests;
@@ -590,14 +591,14 @@ namespace AZ
             char buffer[fileSize];
             FileRequestPtr request = this->m_streamer->Read(testFile->GetFileName(), buffer, fileSize, fileSize);
             this->m_streamer->SetRequestCompleteCallback(request, AZStd::move(callback));
-            
+
             this->m_streamer->SuspendProcessing();
             this->m_streamer->QueueRequest(AZStd::move(request));
 
             // Sleep for a short while to make sure the test doesn't outrun the Streamer.
             AZStd::this_thread::sleep_for(AZStd::chrono::seconds(1));
             EXPECT_EQ(IStreamerTypes::RequestStatus::Pending, this->m_streamer->GetRequestStatus(request));
-            
+
             // Wait for a maximum of a few seconds for the request to complete. If it doesn't, the suspend is most likely stuck and the test should fail.
             this->m_streamer->ResumeProcessing();
             bool hasTimedOut = !sync.try_acquire_for(AZStd::chrono::seconds(5));

@@ -28,6 +28,7 @@ namespace AZ::IO
     public:
         using PreparedQueue = AZStd::deque<FileRequest*>;
 
+        StreamerContext();
         ~StreamerContext();
 
         //! Gets a new file request, either by creating a new instance or
