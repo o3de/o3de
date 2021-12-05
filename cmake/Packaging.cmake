@@ -105,6 +105,10 @@ configure_file(${LY_ROOT_FOLDER}/cmake/Packaging/LicenseScan.cmake.in
 ly_install(SCRIPT ${CPACK_BINARY_DIR}/LicenseScan.cmake
     COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
 )
+ly_install(FILES ${CPACK_3P_LICENSE_FILE} ${CPACK_3P_MANIFEST_FILE}
+    DESTINATION ${CPACK_BINARY_DIR}
+    COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
+)
 
 configure_file(${LY_ROOT_FOLDER}/cmake/Packaging/CMakeDownload.cmake.in
     ${CPACK_BINARY_DIR}/CMakeDownload.cmake
