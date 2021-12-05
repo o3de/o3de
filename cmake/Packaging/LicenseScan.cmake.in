@@ -14,7 +14,7 @@ cmake_path(SET _license_script_path "@LY_ROOT_FOLDER@/scripts/license_scanner")
 cmake_path(SET _license_script "${_license_script_path}/license_scanner.py")
 cmake_path(SET _license_config "${_license_script_path}/scanner_config.json")
 
-set(_license_scan_path "@CMAKE_CURRENT_SOURCE_DIR@" "@LY_3P_PACKAGE_DIRECTORY@")
+set(_license_scan_path "@LY_ROOT_FOLDER@" "@LY_PACKAGE_UNPACK_LOCATION@")
 set(_license_command
     @LY_PYTHON_CMD@ -s
     -u ${_license_script}
@@ -22,6 +22,8 @@ set(_license_command
     --license-file-path @CPACK_3P_LICENSE_FILE@
     --package-file-path @CPACK_3P_MANIFEST_FILE@
 )
+
+message("Scanning ${_license_scan_path} for package licenses")
 
 execute_process(
     COMMAND ${_license_command} --scan-path ${_license_scan_path}
