@@ -102,6 +102,8 @@ file(GLOB _artifacts
     "${_cpack_wix_out_dir}/*.msi" 
     "${_cpack_wix_out_dir}/*.cab"
     "${_cpack_wix_out_dir}/*.exe"
+    ${CPACK_3P_LICENSE_FILE} 
+    ${CPACK_3P_MANIFEST_FILE}
 )
 file(COPY ${_artifacts}
     DESTINATION ${CPACK_UPLOAD_DIRECTORY}
@@ -113,7 +115,7 @@ if(CPACK_UPLOAD_URL)
     ly_upload_to_url(
         ${CPACK_UPLOAD_URL}
         ${_cpack_wix_out_dir}
-        ".*(cab|exe|msi)$"
+        ".*(cab|exe|msi|${CPACK_3P_LICENSE_FILE}|${CPACK_3P_MANIFEST_FILE})$"
     )
 
     # for auto tagged builds, we will also upload a second copy of just the boostrapper
