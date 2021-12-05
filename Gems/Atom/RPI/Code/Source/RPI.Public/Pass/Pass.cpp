@@ -1288,6 +1288,7 @@ namespace AZ
 
         void Pass::FrameBegin(FramePrepareParams params)
         {
+            AZ_PROFILE_SCOPE(RPI, "Pass::FrameBegin() - %s", m_path.GetCStr());
             AZ_RPI_BREAK_ON_TARGET_PASS;
 
             if (!IsEnabled())
@@ -1310,7 +1311,10 @@ namespace AZ
 
             // FrameBeginInternal needs to be the last function be called in FrameBegin because its implementation expects 
             // all the attachments are imported to database (for example, ImageAttachmentPreview)
-            FrameBeginInternal(params);
+            {
+                AZ_PROFILE_SCOPE(RPI, "Pass::FrameBeginInternal()");
+                FrameBeginInternal(params);
+            }
             
             // readback attachment with output state
             UpdateReadbackAttachment(params, false);

@@ -671,8 +671,6 @@ namespace AZ
             AZ::u8 width,
             int32_t viewProjOverrideIndex)
         {
-            AZ_PROFILE_SCOPE(AzRender, "AuxGeomDrawQueue: DrawPrimitiveWithSharedVerticesCommon");
-
             // grab a mutex lock for the rest of this function so that a commit cannot happen during it and
             // other threads can't add geometry during it
             AZStd::lock_guard<AZStd::recursive_mutex> lock(m_buffersWriteLock);
@@ -743,8 +741,6 @@ namespace AZ
             AZ::u8 width,
             int32_t viewProjOverrideIndex)
         {
-            AZ_PROFILE_SCOPE(AzRender, "AuxGeomDrawQueue: DrawPrimitiveWithSharedVerticesCommon");
-
             AZ_Assert(indexCount >= verticesPerPrimitiveType && (indexCount % verticesPerPrimitiveType == 0),
                 "Index count must be at least %d and must be a multiple of %d",
                 verticesPerPrimitiveType, verticesPerPrimitiveType);

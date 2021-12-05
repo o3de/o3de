@@ -312,7 +312,6 @@ namespace AZ
             Pass::FramePrepareParams params{ &frameGraphBuilder };
 
             {
-                AZ_PROFILE_SCOPE(RPI, "Pass: FrameBegin");
                 m_rootPass->FrameBegin(params);
             }
         }
