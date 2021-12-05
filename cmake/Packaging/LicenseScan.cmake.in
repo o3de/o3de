@@ -11,8 +11,8 @@ set(CMAKE_SCRIPT_MODE_FILE TRUE)
 
 # Scan the engine and 3rd Party folders for licenses
 cmake_path(SET _license_script_path "@LY_ROOT_FOLDER@/scripts/license_scanner")
-cmake_path(SET _license_script "@LY_ROOT_FOLDER@/license_scanner.py")
-cmake_path(SET _license_config "@LY_ROOT_FOLDER@/scanner_config.json")
+cmake_path(SET _license_script "${_license_script_path}/license_scanner.py")
+cmake_path(SET _license_config "${_license_script_path}/scanner_config.json")
 
 set(_license_scan_path "@CMAKE_CURRENT_SOURCE_DIR@" "@LY_3P_PACKAGE_DIRECTORY@")
 set(_license_command
