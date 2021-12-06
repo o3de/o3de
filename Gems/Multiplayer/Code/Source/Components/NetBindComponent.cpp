@@ -167,7 +167,10 @@ namespace Multiplayer
 
     void NetBindComponent::Deactivate()
     {
-        AZ_Assert(m_needsToBeStopped == false, "Entity (%s) appears to have been improperly deleted. Use MarkForRemoval to correctly clean up a networked entity.", GetEntity()->GetName().c_str());
+        AZ_Assert(
+            m_needsToBeStopped == false,
+            "Entity (%s) appears to have been improperly deleted. Use MarkForRemoval to correctly clean up a networked entity.",
+            GetEntity() ? GetEntity()->GetName().c_str() : "null");
         m_handleLocalServerRpcMessageEventHandle.Disconnect();
         if (NetworkRoleHasController(m_netEntityRole))
         {
