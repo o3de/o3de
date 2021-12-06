@@ -52,7 +52,7 @@ namespace AzToolsFramework
 
     void ReadOnlyEntitySystemComponent::RefreshReadOnlyState(const EntityIdList& entityIds)
     {
-        for (const AZ::EntityId entityId : entityIds)
+        for (const AZ::EntityId& entityId : entityIds)
         {
             bool wasReadOnly = m_readOnlystates[entityId];
             QueryReadOnlyStateForEntity(entityId);
@@ -67,10 +67,10 @@ namespace AzToolsFramework
 
     void ReadOnlyEntitySystemComponent::RefreshReadOnlyStateForAllEntities()
     {
-        for (auto elem : m_readOnlystates)
+        for (auto& elem : m_readOnlystates)
         {
             AZ::EntityId entityId = elem.first;
-            bool wasReadOnly = m_readOnlystates[entityId];
+            bool wasReadOnly = elem.second;
             QueryReadOnlyStateForEntity(entityId);
 
             if (bool isReadOnly = m_readOnlystates[entityId]; wasReadOnly != isReadOnly)
