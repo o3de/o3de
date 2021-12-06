@@ -15,8 +15,8 @@
 
 namespace AzToolsFramework
 {
-    //! Parameters to configure the appearance of the TranslationManipulators view.
-    struct TranslationManipulatorViewCreateInfo
+    //! Parameters to configure the appearance of the TranslationManipulators view(s).
+    struct TranslationManipulatorsViewCreateInfo
     {
         float linearAxisLength;
         float linearConeLength;
@@ -69,8 +69,8 @@ namespace AzToolsFramework
 
         void SetAxes(const AZ::Vector3& axis1, const AZ::Vector3& axis2, const AZ::Vector3& axis3 = AZ::Vector3::CreateAxisZ());
 
-        void ConfigureView2d(const TranslationManipulatorViewCreateInfo& translationManipulatorViewCreateInfo);
-        void ConfigureView3d(const TranslationManipulatorViewCreateInfo& translationManipulatorViewCreateInfo);
+        void ConfigureView2d(const TranslationManipulatorsViewCreateInfo& translationManipulatorViewCreateInfo);
+        void ConfigureView3d(const TranslationManipulatorsViewCreateInfo& translationManipulatorViewCreateInfo);
 
         //! Sets the bound width to use for the line/axis of a linear manipulator.
         void SetLineBoundWidth(float lineBoundWidth);

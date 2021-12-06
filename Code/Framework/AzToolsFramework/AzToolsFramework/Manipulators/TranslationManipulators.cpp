@@ -19,9 +19,9 @@ namespace AzToolsFramework
     static const AZ::Color LinearManipulatorZAxisColor = AZ::Color(0.0f, 0.0f, 1.0f, 1.0f);
     static const AZ::Color SurfaceManipulatorColor = AZ::Color(1.0f, 1.0f, 0.0f, 0.5f);
 
-    static TranslationManipulatorViewCreateInfo DefaultTranslationManipulatorViewCreateInfo()
+    static TranslationManipulatorsViewCreateInfo DefaultTranslationManipulatorViewCreateInfo()
     {
-        TranslationManipulatorViewCreateInfo createInfo;
+        TranslationManipulatorsViewCreateInfo createInfo;
         createInfo.axis1Color = LinearManipulatorXAxisColor;
         createInfo.axis2Color = LinearManipulatorYAxisColor;
         createInfo.axis3Color = LinearManipulatorZAxisColor;
@@ -246,7 +246,7 @@ namespace AzToolsFramework
         }
     }
 
-    void TranslationManipulators::ConfigureView2d(const TranslationManipulatorViewCreateInfo& translationManipulatorViewCreateInfo)
+    void TranslationManipulators::ConfigureView2d(const TranslationManipulatorsViewCreateInfo& translationManipulatorViewCreateInfo)
     {
         ConfigureLinearView(
             translationManipulatorViewCreateInfo.linearAxisLength, translationManipulatorViewCreateInfo.linearConeLength,
@@ -258,7 +258,7 @@ namespace AzToolsFramework
             translationManipulatorViewCreateInfo.axis2Color, translationManipulatorViewCreateInfo.axis3Color);
     }
 
-    void TranslationManipulators::ConfigureView3d(const TranslationManipulatorViewCreateInfo& translationManipulatorViewCreateInfo)
+    void TranslationManipulators::ConfigureView3d(const TranslationManipulatorsViewCreateInfo& translationManipulatorViewCreateInfo)
     {
         ConfigureView2d(translationManipulatorViewCreateInfo);
         ConfigureSurfaceView(translationManipulatorViewCreateInfo.surfaceRadius, translationManipulatorViewCreateInfo.surfaceColor);

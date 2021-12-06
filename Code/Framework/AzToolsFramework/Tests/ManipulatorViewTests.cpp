@@ -101,17 +101,20 @@ namespace UnitTest
 
     TEST_F(ManipulatorViewTest, ManipulatorViewQuadDrawsAtCorrectPositionWhenManipulatorSpaceIsScaledUniformlyAndNonUniformly)
     {
+        // Given
+        // simulate a custom manipulator space (e.g. entity transform) and a local offset within that space (e.g. spline vertex position)
         const AZ::Transform space =
             AZ::Transform::CreateTranslation(AZ::Vector3(2.0f, -3.0f, -4.0f)) * AZ::Transform::CreateUniformScale(2.0f);
         const AZ::Vector3 localPosition = AZ::Vector3(2.0f, -2.0f, 0.0f);
         const AZ::Vector3 nonUniformScale = AZ::Vector3(2.0f, 3.0f, 4.0f);
-
         const AZ::Transform combinedTransform =
             AzToolsFramework::ApplySpace(AZ::Transform::CreateTranslation(localPosition), space, nonUniformScale);
 
+        // create a manipulator state based on the space and local position
         AzToolsFramework::ManipulatorState manipulatorState{};
         manipulatorState.m_worldFromLocal = combinedTransform;
         manipulatorState.m_nonUniformScale = nonUniformScale;
+        // note: This is zero as the localPosition is already encoded in the combinedTransform
         manipulatorState.m_localPosition = AZ::Vector3::CreateZero();
 
         // camera (go to position format) - 10.00, -15.00, 22.00, -90.00, 0.00
@@ -120,10 +123,13 @@ namespace UnitTest
                 AZ::Matrix3x3::CreateRotationX(AZ::DegToRad(-90.0f)), AZ::Vector3(10.0f, -15.0f, 6.0f)),
             AZ::Vector2(1280, 720));
 
+        // test debug display instance to record vertices that were output
         auto testDebugDisplayRequests = AZStd::make_shared<TestDebugDisplayRequests>();
         auto planarTranslationViewQuad = CreateManipulatorViewQuadForPlanarTranslationManipulator(
             AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Color::CreateZero(), AZ::Color::CreateZero(), 2.2f, 0.2f, 1.0f);
 
+        // When
+        // draw the quad as it would be for a manipulator
         planarTranslationViewQuad->Draw(
             AzToolsFramework::ManipulatorManagerId(1), AzToolsFramework::ManipulatorManagerState{ false },
             AzToolsFramework::ManipulatorId(1), manipulatorState, *testDebugDisplayRequests, cameraState,
@@ -135,8 +141,9 @@ namespace UnitTest
             AZ::Vector3(11.5f, -14.5f, -4.0f), AZ::Vector3(11.5f, -13.5f, -4.0f)
         };
 
+        // Then
         const auto points = testDebugDisplayRequests->GetPoints();
-
+        // quad vertices appear in the expected position (not offset or scaled incorrectly by space scale)
         using ::testing::UnorderedPointwise;
         EXPECT_THAT(points, UnorderedPointwise(ContainerIsClose(), expectedDisplayPositions));
     }
