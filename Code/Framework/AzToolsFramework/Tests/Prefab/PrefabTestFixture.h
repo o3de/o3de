@@ -49,12 +49,15 @@ namespace UnitTest
         inline static const char* CarPrefabMockFilePath = "SomePathToCar";
 
         void SetUpEditorFixtureImpl() override;
+        void TearDownEditorFixtureImpl() override;
 
         AZStd::unique_ptr<ToolsTestApplication> CreateTestApplication() override;
 
-        void PropagateAllTemplateChanges();
+        void CreateRootPrefab();
+        virtual void PropagateAllTemplateChanges();
 
-        AZ::Entity* CreateEntity(const char* entityName, const bool shouldActivate = true);
+        AZ::Entity* CreateEntity(AZStd::string entityName, const bool shouldActivate = true);
+        AZ::EntityId CreateEntityUnderRootPrefab(AZStd::string entityName, AZ::EntityId parentId = AZ::EntityId());
 
         void CompareInstances(const Instance& instanceA, const Instance& instanceB, bool shouldCompareLinkIds = true,
             bool shouldCompareContainerEntities = true);
@@ -66,10 +69,17 @@ namespace UnitTest
 
         void AddRequiredEditorComponents(AZ::Entity* entity);
 
+        // Performs an undo operation and ensures the tick-scheduled updates happen
+        void Undo();
+
+        // Performs a redo operation and ensures the tick-scheduled updates happen
+        void Redo();
+
         PrefabSystemComponent* m_prefabSystemComponent = nullptr;
         PrefabLoaderInterface* m_prefabLoaderInterface = nullptr;
         PrefabPublicInterface* m_prefabPublicInterface = nullptr;
         InstanceUpdateExecutorInterface* m_instanceUpdateExecutorInterface = nullptr;
         InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
+        AzToolsFramework::UndoSystem::UndoStack* m_undoStack = nullptr;
     };
 }
