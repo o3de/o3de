@@ -54,7 +54,7 @@ namespace UnitTest
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Given
         const AZ::Transform orientation =
-            AZ::Transform::CreateFromQuaternion(AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisX(), AZ::DegToRad(-90.0f)));
+            AZ::Transform::CreateFromQuaternion(AZ::Quaternion::CreateRotationX(AZ::DegToRad(-90.0f)));
 
         const AZ::Transform translation = AZ::Transform::CreateTranslation(AZ::Vector3(5.0f, 0.0f, 10.0f));
 
@@ -117,7 +117,7 @@ namespace UnitTest
         // note: This is zero as the localPosition is already encoded in the combinedTransform
         manipulatorState.m_localPosition = AZ::Vector3::CreateZero();
 
-        // camera (go to position format) - 10.00, -15.00, 22.00, -90.00, 0.00
+        // camera (go to position format) - 10.00, -15.00, 6.00, -90.00, 0.00
         const AzFramework::CameraState cameraState = AzFramework::CreateDefaultCamera(
             AZ::Transform::CreateFromMatrix3x3AndTranslation(
                 AZ::Matrix3x3::CreateRotationX(AZ::DegToRad(-90.0f)), AZ::Vector3(10.0f, -15.0f, 6.0f)),
