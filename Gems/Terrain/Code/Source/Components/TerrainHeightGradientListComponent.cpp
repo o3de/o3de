@@ -48,6 +48,15 @@ namespace Terrain
                     ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("GradientService"))
                 ;
             }
+
+            if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+            {
+                behaviorContext->Class<TerrainHeightGradientListConfig>()
+                    ->Attribute(AZ::Script::Attributes::Category, "Terrain")
+                    ->Constructor()
+                    ->Property("gradientEntities", BehaviorValueProperty(&TerrainHeightGradientListConfig::m_gradientEntities))
+                ;
+            }
         }
     }
 

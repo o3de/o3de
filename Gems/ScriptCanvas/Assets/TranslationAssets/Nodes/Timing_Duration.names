@@ -11,33 +11,33 @@
             },
             "slots": [
                 {
-                    "base": "DataInput_Duration",
+                    "base": "DataInput_Duration_0",
                     "details": {
                         "name": "Duration"
                     }
                 },
                 {
-                    "base": "DataOutput_Elapsed",
+                    "base": "DataOutput_Elapsed_0",
                     "details": {
                         "name": "Elapsed"
                     }
                 },
                 {
-                    "base": "Input_Start",
+                    "base": "Input_Start_0",
                     "details": {
                         "name": "Start",
                         "tooltip": "Starts the countdown"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out",
                         "tooltip": "Signaled every frame while the duration is active."
                     }
                 },
                 {
-                    "base": "Output_Done",
+                    "base": "Output_Done_1",
                     "details": {
                         "name": "Done",
                         "tooltip": "Signaled once the duration is complete."

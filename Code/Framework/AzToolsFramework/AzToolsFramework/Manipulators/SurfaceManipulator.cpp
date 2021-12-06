@@ -166,8 +166,8 @@ namespace AzToolsFramework
     {
         m_manipulatorView->Draw(
             GetManipulatorManagerId(), managerState, GetManipulatorId(),
-            { TransformUniformScale(GetSpace()), GetNonUniformScale(), GetLocalPosition(), MouseOver() }, debugDisplay, cameraState,
-            mouseInteraction);
+            ManipulatorState{ TransformUniformScale(GetSpace()), GetNonUniformScale(), GetLocalPosition(), MouseOver() }, debugDisplay,
+            cameraState, mouseInteraction);
     }
 
     void SurfaceManipulator::InvalidateImpl()

@@ -5,9 +5,9 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <IRenderer.h> // for SVF_P3F_C4B_T2F which will be removed in a coming PR
 
 #include <LyShine/Draw2d.h>
+#include <LyShine/UiRenderFormats.h>
 #include "LyShinePassDataBus.h"
 
 #include <AzCore/Math/Matrix3x3.h>
@@ -22,15 +22,23 @@
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// LOCAL STATIC FUNCTIONS
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// Color to u32 => 0xAARRGGBB
-static AZ::u32 PackARGB8888(const AZ::Color& color)
+namespace
 {
-    return (color.GetA8() << 24) | (color.GetR8() << 16) | (color.GetG8() << 8) | color.GetB8();
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Color to u32 => 0xAARRGGBB
+    AZ::u32 PackARGB8888(const AZ::Color& color)
+    {
+        return (color.GetA8() << 24) | (color.GetR8() << 16) | (color.GetG8() << 8) | color.GetB8();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Vertex format for Dynamic Draw Context
+    struct Draw2dVertex
+    {
+        Vec3 xyz;
+        LyShine::UCol color;
+        Vec2 st;
+    };
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -739,7 +747,7 @@ void CDraw2d::DeferredQuad::Draw(AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynam
 
     const float z = 1.0f;   // depth test disabled, if writing Z this will write at far plane
 
-    SVF_P3F_C4B_T2F vertices[NUM_VERTS];
+    Draw2dVertex vertices[NUM_VERTS];
     const int vertIndex[NUM_VERTS] = {
         0, 1, 3, 3, 1, 2
     };
@@ -804,7 +812,7 @@ void CDraw2d::DeferredLine::Draw(AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynam
 
     const int32 NUM_VERTS = 2;
 
-    SVF_P3F_C4B_T2F vertices[NUM_VERTS];
+    Draw2dVertex vertices[NUM_VERTS];
 
     for (int i = 0; i < NUM_VERTS; ++i)
     {
@@ -857,9 +865,9 @@ void CDraw2d::DeferredRectOutline::Draw(AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext
     AZ::RPI::ViewportContextPtr viewportContext) const
 {
     // Create the 8 verts in the right vertex format for the dynamic draw context
-    SVF_P3F_C4B_T2F vertices[NUM_VERTS];
+    Draw2dVertex vertices[NUM_VERTS];
     const float z = 1.0f;   // depth test disabled, if writing Z this will write at far plane
-    uint32 packedColor = (m_color.GetA8() << 24) | (m_color.GetR8() << 16) | (m_color.GetG8() << 8) | m_color.GetB8();
+    uint32 packedColor = PackARGB8888(m_color);
     for (int i = 0; i < NUM_VERTS; ++i)
     {
         vertices[i].xyz = Vec3(m_verts2d[i].GetX(), m_verts2d[i].GetY(), z);
@@ -924,7 +932,6 @@ void CDraw2d::DeferredRectOutline::Draw(AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext
     // Add the primitive to the dynamic draw context for drawing
     dynamicDraw->SetPrimitiveType(AZ::RHI::PrimitiveTopology::TriangleList);
     dynamicDraw->DrawIndexed(vertices, NUM_VERTS, indices, NUM_INDICES, AZ::RHI::IndexFormat::Uint16, drawSrg);
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
