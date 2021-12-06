@@ -76,35 +76,28 @@ float3x3 BuildViewAlignedOrthonormalBasis(in float3 normal, in float3 dirToView)
     return float3x3(tangent, bitangent, normal);
 }
 
+// The following two edge integration functions are based on the work from:
+// [HILL16] Real-Time Area Lighting: a Journey from Research to Production, SIGGRAPH 2016
+// Ref: https://blog.selfshadow.com/publications/s2016-advances/
+
 // Cosine integration of edge in a hemisphere. v1 and v2 should be normalized vertices above the
 // xy plane in positive z space.
 float IntegrateEdge(float3 v1, float3 v2)
 {
-    // This alternate version may work better for platforms where acos() precision is low.
-    /*
-    float x = dot(v1, v2);
-    float y = abs(x);
+    float cosTheta = dot(v1, v2);
+    float absCosTheta = abs(cosTheta);
 
-    float a = 5.42031 + (3.12829 + 0.0902326 * y) * y;
-    float b = 3.45068 + (4.18814 + y) * y;
+    // Cubic rational fitting of x/sin(x)
+    float a = 5.42031 + (3.12829 + 0.0902326 * absCosTheta) * absCosTheta;
+    float b = 3.45068 + (4.18814 + absCosTheta) * absCosTheta;
     float theta_sinTheta = a / b;
 
-    if (x < 0.0)
+    if (cosTheta < 0.0)
     {
-        theta_sinTheta = PI * rsqrt(saturate(1.0 - x * x)) - theta_sinTheta;
+        theta_sinTheta = PI * saturate(rsqrt(saturate(1.0 - cosTheta * cosTheta))) - theta_sinTheta;
     }
 
-    float3 u = cross(v1, v2);
-    return theta_sinTheta * u.z;
-    */
-
-    float cosTheta = dot(v1, v2);
-    float theta = acos(cosTheta);
-
-    // calculate 1.0 / sin(theta)
-    float invSinTheta = rsqrt(saturate(1.0 - cosTheta * cosTheta));
-
-    return cross(v1, v2).z * ((theta > 0.001) ? theta * invSinTheta : 1.0);
+    return theta_sinTheta * cross(v1, v2).z;
 }
 
 // Cheaper version of above which is good enough for diffuse
@@ -112,11 +105,14 @@ float IntegrateEdgeDiffuse(float3 v1, float3 v2)
 {
     float cosTheta = dot(v1, v2);
     float absCosTheta = abs(cosTheta);
+
+    // Quadratic fitting of x/sin(x)
     float theta_sinTheta = 1.5708 + (-0.879406 + 0.308609 * absCosTheta) * absCosTheta;
     if (cosTheta < 0.0)
     {
-        theta_sinTheta = PI * rsqrt(1.0 - cosTheta * cosTheta) - theta_sinTheta;
+        theta_sinTheta = PI * saturate(rsqrt(saturate(1.0 - cosTheta * cosTheta))) - theta_sinTheta;
     }
+
     return theta_sinTheta * cross(v1, v2).z;
 }
 
@@ -447,7 +443,7 @@ void LtcQuadEvaluate(
 //    - Find the point along the edge that intersects the horizon.
 //    - Integrate from point 1 to the intersection point
 //    - Save the intersection point for later
-// 3. The first point is blow the horizon, but the second point is above.
+// 3. The first point is below the horizon, but the second point is above.
 //    - Find the point along the edge that intersects the horizon.
 //    - Integate from the previous saved insection (see option 2 above) to this new insection
 //    - Integrate from the new insection to the second point.
