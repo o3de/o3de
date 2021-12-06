@@ -144,12 +144,30 @@ namespace AzFramework
                 return result;
             }
             SurfaceData::SurfacePoint BehaviorContextGetSurfacePointFromVector2(
-                const AZ::Vector2& inPosition,
-                Sampler sampleFilter = Sampler::DEFAULT) const
+                const AZ::Vector2& inPosition, Sampler sampleFilter = Sampler::DEFAULT) const
             {
                 SurfaceData::SurfacePoint result;
                 GetSurfacePointFromVector2(inPosition, result, sampleFilter);
                 return result;
+            }
+                
+            // Functions without the optional bool* parameter that can be used from Python tests.
+            float GetHeightVal(AZ::Vector3 position, Sampler sampler = Sampler::BILINEAR) const
+            {
+                bool terrainExists;
+                return GetHeight(position, sampler, &terrainExists);
+            }
+
+            float GetHeightValFromVector2(AZ::Vector2 position, Sampler sampler = Sampler::BILINEAR) const
+            {
+                bool terrainExists;
+                return GetHeightFromVector2(position, sampler, &terrainExists);
+            }
+
+            float GetHeightValFromFloats(float x, float y, Sampler sampler = Sampler::BILINEAR) const
+            {
+                bool terrainExists;
+                return GetHeightFromFloats(x, y, sampler, &terrainExists);
             }
         };
         using TerrainDataRequestBus = AZ::EBus<TerrainDataRequests>;

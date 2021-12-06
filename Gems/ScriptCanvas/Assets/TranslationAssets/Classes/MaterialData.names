@@ -5,8 +5,7 @@
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "Material Data",
-                "category": "Rendering"
+                "name": "Material Data"
             },
             "methods": [
                 {
@@ -433,6 +432,7 @@
                 },
                 {
                     "base": "GetNormal",
+                    "context": "Getter",
                     "details": {
                         "name": "Get Normal"
                     },
@@ -440,13 +440,14 @@
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "int"
+                                "name": "Normal"
                             }
                         }
                     ]
                 },
                 {
                     "base": "GetDiffuse",
+                    "context": "Getter",
                     "details": {
                         "name": "Get Diffuse"
                     },
@@ -454,13 +455,14 @@
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "int"
+                                "name": "Diffuse"
                             }
                         }
                     ]
                 },
                 {
                     "base": "GetSpecular",
+                    "context": "Getter",
                     "details": {
                         "name": "Get Specular"
                     },
@@ -468,13 +470,14 @@
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "int"
+                                "name": "Specular"
                             }
                         }
                     ]
                 },
                 {
                     "base": "GetBump",
+                    "context": "Getter",
                     "details": {
                         "name": "Get Bump"
                     },
@@ -482,13 +485,14 @@
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "int"
+                                "name": "Bump"
                             }
                         }
                     ]
                 },
                 {
                     "base": "GetEmissive",
+                    "context": "Getter",
                     "details": {
                         "name": "Get Emissive"
                     },
@@ -496,13 +500,14 @@
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "int"
+                                "name": "Emissive"
                             }
                         }
                     ]
                 },
                 {
                     "base": "GetRoughness",
+                    "context": "Getter",
                     "details": {
                         "name": "Get Roughness"
                     },
@@ -510,13 +515,14 @@
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "int"
+                                "name": "Roughness"
                             }
                         }
                     ]
                 },
                 {
                     "base": "GetBaseColor",
+                    "context": "Getter",
                     "details": {
                         "name": "Get Base Color"
                     },
@@ -524,13 +530,14 @@
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "int"
+                                "name": "Base Color"
                             }
                         }
                     ]
                 },
                 {
                     "base": "GetAmbientOcclusion",
+                    "context": "Getter",
                     "details": {
                         "name": "Get Ambient Occlusion"
                     },
@@ -538,13 +545,14 @@
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "int"
+                                "name": "Ambient Occlusion"
                             }
                         }
                     ]
                 },
                 {
                     "base": "GetMetallic",
+                    "context": "Getter",
                     "details": {
                         "name": "Get Metallic"
                     },
@@ -552,7 +560,7 @@
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "int"
+                                "name": "Metallic"
                             }
                         }
                     ]
