@@ -47,6 +47,7 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/ToolsComponents/ComponentAssetMimeDataContainer.h>
 #include <AzToolsFramework/ToolsComponents/ComponentMimeData.h>
@@ -313,7 +314,7 @@ namespace AzToolsFramework
 
         if (isEditorOnly)
         {
-            return QIcon(QString(":/Icons/Entity_Editor_Only.svg"));
+            return QIcon(QString(":/Entity/entity_editoronly.svg"));
         }
 
         AZ::Entity* entity = nullptr;
@@ -322,10 +323,10 @@ namespace AzToolsFramework
 
         if (!isInitiallyActive)
         {
-            return QIcon(QString(":/Icons/Entity_Not_Active.svg"));
+            return QIcon(QString(":/Entity/entity_notactive.svg"));
         }
 
-        return QIcon(QString(":/Icons/Entity.svg"));
+        return QIcon(QString(":/Entity/entity.svg"));
     }
 
     QVariant EntityOutlinerListModel::GetEntityTooltip(const AZ::EntityId& id) const
@@ -1994,9 +1995,13 @@ namespace AzToolsFramework
         , m_lockCheckBoxes(parent, "Lock", EntityOutlinerListModel::PartiallyLockedRole, EntityOutlinerListModel::LockedAncestorRole)
     {
         m_editorEntityFrameworkInterface = AZ::Interface<AzToolsFramework::EditorEntityUiInterface>::Get();
-
         AZ_Assert((m_editorEntityFrameworkInterface != nullptr),
             "EntityOutlinerItemDelegate requires a EditorEntityFrameworkInterface instance on Construction.");
+
+        m_readOnlyEntityPublicInterface = AZ::Interface<AzToolsFramework::ReadOnlyEntityPublicInterface>::Get();
+        AZ_Assert(
+            (m_readOnlyEntityPublicInterface != nullptr),
+            "EntityOutlinerItemDelegate requires a ReadOnlyEntityPublicInterface instance on Construction.");
     }
 
     EntityOutlinerItemDelegate::CheckboxGroup::CheckboxGroup(QWidget* parent, AZStd::string prefix,
@@ -2108,6 +2113,12 @@ namespace AzToolsFramework
                 }
 
                 PaintEntityNameAsRichText(painter, customOption, index);
+
+                // Paint Read-Only icon if necessary
+                if (m_readOnlyEntityPublicInterface->IsReadOnly(entityId))
+                {
+                    PaintReadOnlyIcon(painter, option, index);
+                }
             }
             break;
             default:
@@ -2166,10 +2177,10 @@ namespace AzToolsFramework
 
             backgroundPath.addRect(backgroundRect);
 
-            QColor backgroundColor = m_hoverColor;
+            QColor backgroundColor = s_hoverColor;
             if (isSelected)
             {
-                backgroundColor = m_selectedColor;
+                backgroundColor = s_selectedColor;
             }
 
             painter->fillPath(backgroundPath, backgroundColor);
@@ -2334,6 +2345,20 @@ namespace AzToolsFramework
 
         painter->restore();
         EntityOutlinerListModel::s_paintingName = false;
+    }
+
+    void EntityOutlinerItemDelegate::PaintReadOnlyIcon(QPainter* painter, const QStyleOptionViewItem& option, [[maybe_unused]] const QModelIndex& index) const
+    {
+        // Build the rect that will be used to paint the icon
+        QRect readOnlyRect = QRect(option.rect.topLeft() + s_readOnlyOffset, QSize(s_readOnlyRadius * 2, s_readOnlyRadius * 2));
+
+        painter->save();
+        painter->setRenderHint(QPainter::Antialiasing, true);
+        painter->setPen(Qt::NoPen);
+        painter->setBrush(s_readOnlyBackgroundColor);
+        painter->drawEllipse(readOnlyRect.center(), s_readOnlyRadius, s_readOnlyRadius);
+        s_readOnlyIcon.paint(painter, readOnlyRect);
+        painter->restore();
     }
 
     QSize EntityOutlinerItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const
