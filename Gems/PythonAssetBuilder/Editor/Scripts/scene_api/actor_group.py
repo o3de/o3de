@@ -33,7 +33,20 @@ class ActorGroup():
     to_dict()
         Converts contents to a Python dictionary
 
-    to_json(self)
+    add_rule(rule)
+        Adds a rule into the internal rules container
+        Returns True if the rule was added to the internal rules container
+
+    create_rule(rule)
+        Helper method to add and return the rule
+
+    remove_rule(type)
+        Removes the rule from the internal rules container
+
+    to_dict()
+        Converts the contents to as a Python dictionary
+
+    to_json()
         Converts the contents to a JSON string
 
     """
@@ -44,11 +57,18 @@ class ActorGroup():
         self.id = uuid.uuid4()
         self.rules = set()
 
-    def add_rule(self, rule) -> None:
+    def add_rule(self, rule) -> bool:
         if (rule not in self.rules):
             self.rules.add(rule)
+            return True
+        return False
 
-    def remove_rule(self, rule) -> None:
+    def create_rule(self, rule) -> any:
+        if (self.add_rule(rule)):
+            return rule
+        return None
+
+    def remove_rule(self, type) -> None:
         self.rules.discard(rule)
 
     def to_dict(self) -> dict:

@@ -80,7 +80,7 @@ def generate_mesh_group(scene, sceneManifest, meshDataList, paths):
 def create_shape_configuration(nodeName):
     import scene_api.physics_data
     
-    if('_foot_' in nodeName or '_wrist_' in nodeName):
+    if(nodeName in ['_foot_','_wrist_']):
         shapeConfiguration = scene_api.physics_data.BoxShapeConfiguration()
         shapeConfiguration.scale = [1.1, 1.1, 1.1]
         shapeConfiguration.dimensions = [2.1, 3.1, 4.1]
@@ -171,7 +171,6 @@ def generate_actor_group(scene, sceneManifest, meshDataList, paths):
 
     actorGroup = scene_api.actor_group.ActorGroup()
     actorGroup.name = os.path.basename(scene.sourceFilename)
-    #actorGroup.selectedRootBone = 'C_pelvis_JNT'
     actorGroup.add_rule(actorScaleRule)
     actorGroup.add_rule(coordinateSystemRule)
     actorGroup.add_rule(skeletonOptimizationRule)
@@ -181,14 +180,6 @@ def generate_actor_group(scene, sceneManifest, meshDataList, paths):
     actorGroup.add_rule(commentRule)
     sceneManifest.manifest['values'].append(actorGroup.to_dict())
     
-
-def debug_save_manifet(manifest):
-    # C:/work/o3de/user/test.json
-    export = manifest.export()
-    data = json.loads(export)
-    with open('C:/work/o3de/user/test.json', 'w') as f:
-        json.dump(data, f, indent=3)
-
 def update_manifest(scene):
     import json, uuid, os
     import azlmbr.scene.graph
@@ -201,7 +192,6 @@ def update_manifest(scene):
     generate_mesh_group(scene, scene_manifest, mesh_name_list, all_node_paths)
 
     # Convert the manifest to a JSON string and return it
-    debug_save_manifet(scene_manifest)
     return scene_manifest.export()
 
 sceneJobHandler = None
