@@ -10,6 +10,7 @@
                 "RC blastmaterial": {
                     "glob": "*.blastmaterial",
                     "params": "copy",
+                    "critical": "true",
                     "productAssetType": "{55F38C86-0767-4E7F-830A-A4BF624BE4DA}"
                 },
                 "RC blastconfiguration": {
