@@ -23,8 +23,8 @@
 #include <SurfaceDataModule.h>
 #include <SurfaceData/SurfaceDataProviderRequestBus.h>
 #include <SurfaceData/SurfaceDataModifierRequestBus.h>
-#include <SurfaceData/SurfaceTag.h>
 #include <SurfaceData/Utility/SurfaceDataUtility.h>
+#include <Editor/EditorSurfaceDataSystemComponent.h>
 
 struct MockGlobalEnvironment
 {

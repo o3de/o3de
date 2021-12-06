@@ -12,7 +12,6 @@
 #include <AzFramework/Asset/GenericAssetHandler.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 
-
 namespace SurfaceData
 {
     namespace Details

@@ -7,6 +7,7 @@
  */
 
 #include <Components/TerrainSurfaceDataSystemComponent.h>
+#include <Terrain/TerrainDataConstants.h>
 #include <AzCore/Debug/Profiler.h> 
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -162,8 +163,7 @@ namespace Terrain
                     point.m_normal = terrainSurfacePoint.m_normal;
 
                     // Always add a "terrain" or "terrainHole" tag.
-                    const AZ::Crc32 terrainTag =
-                        isHole ? SurfaceData::Constants::s_terrainHoleTagCrc : SurfaceData::Constants::s_terrainTagCrc;
+                    const AZ::Crc32 terrainTag = isHole ? Constants::s_terrainHoleTagCrc : Constants::s_terrainTagCrc;
                     SurfaceData::AddMaxValueForMasks(point.m_masks, terrainTag, 1.0f);
 
                     // Add all of the surface tags that the terrain has at this point.
@@ -189,8 +189,8 @@ namespace Terrain
     SurfaceData::SurfaceTagVector TerrainSurfaceDataSystemComponent::GetSurfaceTags() const
     {
         SurfaceData::SurfaceTagVector tags;
-        tags.push_back(SurfaceData::Constants::s_terrainHoleTagCrc);
-        tags.push_back(SurfaceData::Constants::s_terrainTagCrc);
+        tags.push_back(Constants::s_terrainHoleTagCrc);
+        tags.push_back(Constants::s_terrainTagCrc);
         return tags;
     }
 

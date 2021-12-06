@@ -70,6 +70,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzToolsFramework
                 Gem::SurfaceData.Static
                 Gem::LmbrCentral.Editor
+                Gem::Terrain
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral.Editor
     )
@@ -97,9 +98,11 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzTest
+                AZ::AzToolsFramework
                 Legacy::CryCommon
                 Gem::SurfaceData.Static
                 Gem::LmbrCentral
+                Gem::Terrain
     )
     ly_add_googletest(
         NAME Gem::SurfaceData.Tests
