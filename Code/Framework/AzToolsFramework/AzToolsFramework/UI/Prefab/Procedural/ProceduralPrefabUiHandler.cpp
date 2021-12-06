@@ -23,15 +23,10 @@ namespace AzToolsFramework
 
     QString ProceduralPrefabUiHandler::GenerateItemTooltip(AZ::EntityId entityId) const
     {
-        QString tooltip;
-
-        AZ::IO::Path path = m_prefabPublicInterface->GetOwningInstancePrefabPath(entityId);
-
-        if (!path.empty())
+        if (AZ::IO::Path path = m_prefabPublicInterface->GetOwningInstancePrefabPath(entityId); !path.empty())
         {
-            tooltip = QObject::tr("Double click to inspect.\n%1").arg(path.Native().data());
+            return QObject::tr("Double click to inspect.\n%1").arg(path.Native().data());
         }
-
-        return tooltip;
+        return QString();
     }
 }

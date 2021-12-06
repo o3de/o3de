@@ -20,7 +20,7 @@ namespace AzToolsFramework
         class PrefabFocusPublicInterface;
         class PrefabPublicInterface;
 
-        // Ensures entities in a procedural prefab are correctly reported as read-only.
+        //! Ensures entities in a procedural prefab are correctly reported as read-only.
         class ProceduralPrefabReadOnlyHandler
             : public ReadOnlyEntityQueryRequestBus::Handler
         {

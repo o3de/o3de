@@ -920,9 +920,8 @@ namespace AzToolsFramework
 
         bool PrefabPublicHandler::IsOwnedByProceduralPrefabInstance(AZ::EntityId entityId) const
         {
-            InstanceOptionalReference instanceReference = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
-
-            if (instanceReference.has_value())
+            if (InstanceOptionalReference instanceReference = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
+                instanceReference.has_value())
             {
                 TemplateReference templateReference = m_prefabSystemComponentInterface->FindTemplate(instanceReference->get().GetTemplateId());
                 return (templateReference.has_value()) && (templateReference->get().IsProcedural());

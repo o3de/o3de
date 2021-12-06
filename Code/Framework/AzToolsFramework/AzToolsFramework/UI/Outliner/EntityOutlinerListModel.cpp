@@ -2177,10 +2177,10 @@ namespace AzToolsFramework
 
             backgroundPath.addRect(backgroundRect);
 
-            QColor backgroundColor = m_hoverColor;
+            QColor backgroundColor = s_hoverColor;
             if (isSelected)
             {
-                backgroundColor = m_selectedColor;
+                backgroundColor = s_selectedColor;
             }
 
             painter->fillPath(backgroundPath, backgroundColor);
@@ -2350,14 +2350,14 @@ namespace AzToolsFramework
     void EntityOutlinerItemDelegate::PaintReadOnlyIcon(QPainter* painter, const QStyleOptionViewItem& option, [[maybe_unused]] const QModelIndex& index) const
     {
         // Build the rect that will be used to paint the icon
-        QRect readOnlyRect = QRect(option.rect.topLeft() + m_readOnlyOffset, QSize(m_readOnlyRadius * 2, m_readOnlyRadius * 2));
+        QRect readOnlyRect = QRect(option.rect.topLeft() + s_readOnlyOffset, QSize(s_readOnlyRadius * 2, s_readOnlyRadius * 2));
 
         painter->save();
         painter->setRenderHint(QPainter::Antialiasing, true);
         painter->setPen(Qt::NoPen);
-        painter->setBrush(m_readOnlyBackgroundColor);
-        painter->drawEllipse(readOnlyRect.center(), m_readOnlyRadius, m_readOnlyRadius);
-        m_readOnlyIcon.paint(painter, readOnlyRect);
+        painter->setBrush(s_readOnlyBackgroundColor);
+        painter->drawEllipse(readOnlyRect.center(), s_readOnlyRadius, s_readOnlyRadius);
+        s_readOnlyIcon.paint(painter, readOnlyRect);
         painter->restore();
     }
 

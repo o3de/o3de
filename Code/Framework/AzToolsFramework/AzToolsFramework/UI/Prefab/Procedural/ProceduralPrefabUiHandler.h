@@ -20,6 +20,7 @@ namespace AzToolsFramework
         class PrefabPublicInterface;
     };
 
+    //! Implements the Editor UI for Procedural Prefabs.
     class ProceduralPrefabUiHandler
         : public PrefabUiHandler
     {

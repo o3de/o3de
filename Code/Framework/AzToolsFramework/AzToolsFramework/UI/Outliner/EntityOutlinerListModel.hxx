@@ -376,13 +376,14 @@ namespace AzToolsFramework
         // this is a cache, and is hence mutable
         mutable QRect m_cachedBoundingRectOfTallCharacter;
 
-        const QColor m_selectedColor = QColor(255, 255, 255, 45);
-        const QColor m_hoverColor = QColor(255, 255, 255, 30);
+        inline static const QColor s_selectedColor = QColor(255, 255, 255, 45);
+        inline static const QColor s_hoverColor = QColor(255, 255, 255, 30);
 
-        const QIcon m_readOnlyIcon = QIcon(QString(":/Entity/readonly.svg"));
-        const QColor m_readOnlyBackgroundColor = QColor("#444444");
-        const QPoint m_readOnlyOffset = QPoint(10, 10);
-        const int m_readOnlyRadius = 6;
+        inline static const QColor s_readOnlyBackgroundColor = QColor("#444444");
+        inline static const QPoint s_readOnlyOffset = QPoint(10, 10);
+        inline static const int s_readOnlyRadius = 6;
+
+        QIcon s_readOnlyIcon = QIcon(QString(":/Entity/readonly.svg"));
 
         EditorEntityUiInterface* m_editorEntityFrameworkInterface = nullptr;
         ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
