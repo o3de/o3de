@@ -23,7 +23,7 @@ float3 TransmissionKernel(float t, float3 s)
     return 0.25 * (1.0 / exp(exponent) + 3.0 / exp(exponent / 3.0));
 }
 
-// [specific profile for SKIN (not used ATM)]
+// [specific profile for SKIN (not used ATM, replaced by TransmissionKernel)]
 // Analytical integation (approximation) of diffusion profile over radius, could be precomputed in a LUT
 float3 T(float s) 
 {
