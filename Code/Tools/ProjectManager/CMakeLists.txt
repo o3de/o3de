@@ -89,6 +89,9 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 3rdParty::Qt::Widgets
                 3rdParty::Python
                 3rdParty::pybind11
+                AZ::AzCore
+                AZ::AzCoreTestCommon
+                AZ::AzTestShared
                 AZ::AzTest
                 AZ::AzFramework
                 AZ::AzFrameworkTestShared

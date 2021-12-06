@@ -10,8 +10,6 @@
 #include <LinkWidget.h>
 #include <ProjectManagerSettings.h>
 
-#include <AzCore/Settings/SettingsRegistry.h>
-
 #include <QDialogButtonBox>
 #include <QLabel>
 #include <QPushButton>
@@ -87,12 +85,6 @@ namespace O3DE::ProjectManager
 
     void ExternalLinkDialog::SetSkipDialogSetting(bool state)
     {
-        auto settingsRegistry = AZ::SettingsRegistry::Get();
-        if (settingsRegistry)
-        {
-            QString settingsKey = GetExternalLinkWarningKey();
-            settingsRegistry->Set(settingsKey.toStdString().c_str(), state);
-            SaveProjectManagerSettings();
-        }
+        PMSettings::SetProjectManagerKey(PMSettings::GetExternalLinkWarningKey(), state);
     }
 } // namespace O3DE::ProjectManager

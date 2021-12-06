@@ -17,7 +17,6 @@
 #include <ProjectUtils.h>
 #include <DownloadController.h>
 #include <ProjectManagerSettings.h>
-#include <AzCore/Settings/SettingsRegistry.h>
 
 #include <QDialogButtonBox>
 #include <QMessageBox>
@@ -306,17 +305,10 @@ namespace O3DE::ProjectManager
 
             if (newProjectSettings.m_projectName != m_projectInfo.m_projectName)
             {
-                // update reg key
-                QString oldSettingsKey = GetProjectBuiltSuccessfullyKey(m_projectInfo.m_projectName);
-                QString newSettingsKey = GetProjectBuiltSuccessfullyKey(newProjectSettings.m_projectName);
-
-                auto settingsRegistry = AZ::SettingsRegistry::Get();
-                bool projectBuiltSuccessfully = false;
-                if (settingsRegistry && settingsRegistry->Get(projectBuiltSuccessfully, oldSettingsKey.toStdString().c_str()))
-                {
-                    settingsRegistry->Set(newSettingsKey.toStdString().c_str(), projectBuiltSuccessfully);
-                    SaveProjectManagerSettings();
-                }
+                // Remove project build successfully paths for both old and new project names
+                // because a full rebuild is required when moving projects
+                PMSettings::SetProjectBuiltSuccessfully(m_projectInfo, false);
+                PMSettings::SetProjectBuiltSuccessfully(newProjectSettings, false);
             }
 
             if (!newProjectSettings.m_newPreviewImagePath.isEmpty())

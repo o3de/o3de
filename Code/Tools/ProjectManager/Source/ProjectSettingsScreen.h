@@ -35,10 +35,12 @@ namespace O3DE::ProjectManager
     protected slots:
         virtual void OnProjectNameUpdated();
         virtual void OnProjectPathUpdated();
+        virtual void OnProjectIdUpdated();
 
     protected:
         bool ValidateProjectName();
         virtual bool ValidateProjectPath();
+        bool ValidateProjectId();
 
         QString GetDefaultProjectPath();
 
@@ -46,6 +48,7 @@ namespace O3DE::ProjectManager
         QVBoxLayout* m_verticalLayout;
         FormLineEditWidget* m_projectName;
         FormBrowseEditWidget* m_projectPath;
+        FormLineEditWidget* m_projectId;
     };
 
 } // namespace O3DE::ProjectManager

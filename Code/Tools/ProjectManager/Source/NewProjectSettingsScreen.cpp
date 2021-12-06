@@ -16,6 +16,8 @@
 #include <EngineInfo.h>
 #include <CreateProjectCtrl.h>
 #include <TagWidget.h>
+
+#include <AzCore/Math/Uuid.h>
 #include <AzQtComponents/Components/FlowLayout.h>
 
 #include <QVBoxLayout>
@@ -41,9 +43,11 @@ namespace O3DE::ProjectManager
     {
         const QString defaultName = GetDefaultProjectName();
         const QString defaultPath = QDir::toNativeSeparators(GetDefaultProjectPath() + "/" + defaultName);
+        const QString randomUuid = GenerateNewProjectId();
 
         m_projectName->lineEdit()->setText(defaultName);
         m_projectPath->lineEdit()->setText(defaultPath);
+        m_projectId->lineEdit()->setText(randomUuid);
 
         // if we don't use a QFrame we cannot "contain" the widgets inside and move them around
         // as a group
@@ -173,6 +177,14 @@ namespace O3DE::ProjectManager
         return QDir::toNativeSeparators(GetDefaultProjectPath() + "/" + projectName);
     }
 
+    QString NewProjectSettingsScreen::GenerateNewProjectId()
+    {
+        AZStd::string uuid;
+        AZ::Uuid::CreateRandom().ToString(uuid);
+
+        return QString(uuid.c_str());
+    }
+
     ProjectManagerScreen NewProjectSettingsScreen::GetScreenEnum()
     {
         return ProjectManagerScreen::NewProjectSettings;
@@ -225,7 +237,7 @@ namespace O3DE::ProjectManager
             moreGemsLabel->setObjectName("moreGems");
             templateDetailsLayout->addWidget(moreGemsLabel);
 
-            QLabel* browseCatalogLabel = new QLabel(tr("Browse the  Gems Catalog to further customize your project."), this);
+            QLabel* browseCatalogLabel = new QLabel(tr("Browse the Gems Catalog to further customize your project."), this);
             browseCatalogLabel->setObjectName("browseCatalog");
             browseCatalogLabel->setWordWrap(true);
             templateDetailsLayout->addWidget(browseCatalogLabel);

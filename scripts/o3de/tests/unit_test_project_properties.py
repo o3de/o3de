@@ -16,6 +16,7 @@ from o3de import project_properties
 TEST_PROJECT_JSON_PAYLOAD = '''
 {
     "project_name": "TestProject",
+    "project_id": "{24114e69-306d-4de6-b3b4-4cb1a3eca58e}"
     "origin": "The primary repo for TestProject goes here: i.e. http://www.mydomain.com",
     "license": "What license TestProject uses goes here: i.e. https://opensource.org/licenses/MIT",
     "display_name": "TestProject",
@@ -45,20 +46,20 @@ def init_project_json_data(request):
 
 @pytest.mark.usefixtures('init_project_json_data')
 class TestEditProjectProperties:
-    @pytest.mark.parametrize("project_path, project_name, project_new_name, project_origin, project_display,\
-                            project_summary, project_icon, add_tags, delete_tags,\
-                            replace_tags, expected_result", [
+    @pytest.mark.parametrize("project_path, project_name, project_new_name, project_id, project_origin,\
+                              project_display, project_summary, project_icon,\
+                              add_tags, delete_tags, replace_tags, expected_result", [
         pytest.param(pathlib.PurePath('E:/TestProject'),
-        'test', 'test', 'editing by pytest', 'Unit Test', 'pyTest project', 'pytest.bmp', 'A B C',
+        'test', 'test', 'editing by pytest', 'ID', 'Unit Test', 'pyTest project', 'pytest.bmp', 'A B C',
         'B', 'D E F', 0),
         pytest.param('',
-        'test', 'test', 'editing by pytest', 'Unit Test', 'pyTest project', 'pytest.bmp', 'A B C',
+        'test', 'test', 'editing by pytest', 'ID', 'Unit Test', 'pyTest project', 'pytest.bmp', 'A B C',
         'B', 'D E F', 1)
         ]
     )
-    def test_edit_project_properties(self, project_path, project_name, project_new_name, project_origin, project_display,
-                                    project_summary, project_icon, add_tags, delete_tags,
-                                    replace_tags, expected_result):
+    def test_edit_project_properties(self, project_path, project_name, project_new_name, project_origin, project_id,
+                                     project_display,project_summary, project_icon, add_tags,
+                                     delete_tags, replace_tags, expected_result):
 
         def get_project_json_data(project_name: str, project_path) -> dict:
             if not project_path:
@@ -72,12 +73,14 @@ class TestEditProjectProperties:
 
         with patch('o3de.manifest.get_project_json_data', side_effect=get_project_json_data) as get_project_json_data_patch, \
                 patch('o3de.manifest.save_o3de_manifest', side_effect=save_o3de_manifest) as save_o3de_manifest_patch:
-            result = project_properties.edit_project_props(project_path, project_name, project_new_name, project_origin,
-                                                            project_display, project_summary, project_icon,
-                                                            add_tags, delete_tags, replace_tags)
+            result = project_properties.edit_project_props(project_path, project_name, project_new_name, project_id,
+                                                           project_origin, project_display, project_summary, project_icon,
+                                                           add_tags, delete_tags, replace_tags)
             assert result == expected_result
             if project_path:
                 assert self.project_json.data
+                assert self.project_json.data.get('project_name', '') == project_new_name
+                assert self.project_json.data.get('project_id', '') == project_id
                 assert self.project_json.data.get('origin', '') == project_origin
                 assert self.project_json.data.get('display_name', '') == project_display
                 assert self.project_json.data.get('summary', '') == project_summary

@@ -291,13 +291,9 @@ namespace O3DE::ProjectManager
                 // Check whether project manager has successfully built the project
                 if (currentButton)
                 {
-                    auto settingsRegistry = AZ::SettingsRegistry::Get();
                     bool projectBuiltSuccessfully = false;
-                    if (settingsRegistry)
-                    {
-                        QString settingsKey = GetProjectBuiltSuccessfullyKey(project.m_projectName);
-                        settingsRegistry->Get(projectBuiltSuccessfully, settingsKey.toStdString().c_str());
-                    }
+                    PMSettings::GetProjectBuiltSuccessfully(projectBuiltSuccessfully, project);
+
                     if (!projectBuiltSuccessfully)
                     {
                         currentButton->ShowBuildRequired();

@@ -9,14 +9,29 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <QString>
+#include <QStringList>
+#include <ProjectInfo.h>
 #endif
 
 namespace O3DE::ProjectManager
 {
-    static constexpr char ProjectManagerKeyPrefix[] = "/O3DE/ProjectManager";
+    namespace PMSettings
+    {
+        static constexpr char ProjectManagerKeyPrefix[] = "/O3DE/ProjectManager";
 
-    void SaveProjectManagerSettings();
-    QString GetProjectBuiltSuccessfullyKey(const QString& projectName);
-    QString GetExternalLinkWarningKey();
-}
+        bool SaveProjectManagerSettings();
+        bool GetProjectManagerKey(QString& result, const QString& settingsKey);
+        bool GetProjectManagerKey(bool& result, const QString& settingsKey);
+        bool SetProjectManagerKey(const QString& settingsKey, const QString& settingsValue, bool saveToDisk = true);
+        bool SetProjectManagerKey(const QString& settingsKey, bool settingsValue, bool saveToDisk = true);
+        bool RemoveProjectManagerKey(const QString& settingsKey, bool saveToDisk = true);
+        bool CopyProjectManagerKeyString(
+            const QString& settingsKeyOrig, const QString& settingsKeyDest, bool removeOrig = false, bool saveToDisk = true);
+
+        QString GetProjectKey(const ProjectInfo& projectInfo);
+        QString GetExternalLinkWarningKey();
+
+        bool GetProjectBuiltSuccessfully(bool& result, const ProjectInfo& projectInfo);
+        bool SetProjectBuiltSuccessfully(const ProjectInfo& projectInfo, bool successfullyBuilt, bool saveToDisk = true);
+    } // namespace PMSettings
+} // namespace O3DE::ProjectManager

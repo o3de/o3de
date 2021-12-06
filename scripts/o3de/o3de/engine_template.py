@@ -1113,7 +1113,7 @@ def create_from_template(destination_path: pathlib.Path,
         try:
             template_json_data = json.load(s)
         except KeyError as e:
-            logger.error(f'Could read template json {template_json}: {str(e)}.')
+            logger.error(f'Could not read template json {template_json}: {str(e)}.')
             return 1
 
     # read template name from the json
@@ -1338,7 +1338,8 @@ def create_project(project_path: pathlib.Path,
                    no_register: bool = False,
                    system_component_class_id: str = None,
                    editor_system_component_class_id: str = None,
-                   module_id: str = None) -> int:
+                   module_id: str = None,
+                   project_id: str = None) -> int:
     """
     Template instantiation specialization that makes all default assumptions for a Project template instantiation,
      reducing the effort needed in instancing a project
@@ -1366,6 +1367,7 @@ def create_project(project_path: pathlib.Path,
     :param editor_system_component_class_id: optionally specify a uuid for the editor system component class, default is
      random uuid
     :param module_id: optionally specify a uuid for the module class, default is random uuid
+    :param project_id: optionally specify a str for the project id, default is random uuid
     :return: 0 for success or non 0 failure code
     """
     if template_name and template_path:
@@ -1405,7 +1407,7 @@ def create_project(project_path: pathlib.Path,
         try:
             template_json_data = json.load(s)
         except json.JSONDecodeError as e:
-            logger.error(f'Could read template json {template_json}: {str(e)}.')
+            logger.error(f'Could not read template json {template_json}: {str(e)}.')
             return 1
 
     # read template name from the json
@@ -1576,6 +1578,12 @@ def create_project(project_path: pathlib.Path,
     replacements.append(("${NameUpper}", project_name.upper()))
     replacements.append(("${NameLower}", project_name.lower()))
     replacements.append(("${SanitizedCppName}", sanitized_cpp_name))
+
+    # was a project id specified
+    if project_id:
+        replacements.append(("${ProjectId}", project_id))
+    else:
+        replacements.append(("${ProjectId}", '{' + str(uuid.uuid4()) + '}'))
 
     # module id is a uuid with { and -
     if module_id:
@@ -1784,7 +1792,7 @@ def create_gem(gem_path: pathlib.Path,
         try:
             template_json_data = json.load(s)
         except json.JSONDecodeError as e:
-            logger.error(f'Could read template json {template_json}: {str(e)}.')
+            logger.error(f'Could not read template json {template_json}: {str(e)}.')
             return 1
 
     # read template name from the json
@@ -2123,7 +2131,8 @@ def _run_create_project(args: argparse) -> int:
                           args.no_register,
                           args.system_component_class_id,
                           args.editor_system_component_class_id,
-                          args.module_id)
+                          args.module_id,
+                          args.project_id)
 
 
 def _run_create_gem(args: argparse) -> int:
@@ -2404,6 +2413,9 @@ def add_args(subparsers) -> None:
     create_project_subparser.add_argument('--module-id', type=uuid.UUID, required=False,
                                           help='The uuid you want to associate with the module, default is a random'
                                                ' uuid Ex. {b60c92eb-3139-454b-a917-a9d3c5819594}')
+    create_project_subparser.add_argument('--project-id', type=str, required=False,
+                                          help='The str id you want to associate with the project, default is a random uuid'
+                                               ' Ex. {b60c92eb-3139-454b-a917-a9d3c5819594}')
     create_project_subparser.add_argument('-f', '--force', action='store_true', default=False,
                                       help='Copies over instantiated template directory even if it exist.')
     create_project_subparser.add_argument('--no-register', action='store_true', default=False,

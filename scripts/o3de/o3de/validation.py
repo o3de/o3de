@@ -10,6 +10,7 @@ This file validating o3de object json files
 """
 import json
 import pathlib
+import uuid
 
 def valid_o3de_json_dict(json_data: dict, key: str) -> bool:
     return key in json_data
@@ -44,7 +45,7 @@ def valid_o3de_engine_json(file_name: str or pathlib.Path) -> bool:
     return True
 
 
-def valid_o3de_project_json(file_name: str or pathlib.Path) -> bool:
+def valid_o3de_project_json(file_name: str or pathlib.Path, generate_uuid: bool = True) -> bool:
     file_name = pathlib.Path(file_name).resolve()
     if not file_name.is_file():
         return False
@@ -53,8 +54,22 @@ def valid_o3de_project_json(file_name: str or pathlib.Path) -> bool:
         try:
             json_data = json.load(f)
             test = json_data['project_name']
+
+            if not generate_uuid:
+                test = json_data['project_id']
+            else:
+                test = json_data.get('project_id', 'No ID')
+                generate_new_id = test == 'No ID'
+
         except (json.JSONDecodeError, KeyError) as e:
             return False
+
+    # Generate a random uuid for the project json if it is missing instead of failing if generate_uuid is true
+    if generate_uuid and generate_new_id:
+        with file_name.open('w') as f:
+            new_uuid = '{' + str(uuid.uuid4()) + '}'
+            json_data.update({'project_id': new_uuid})
+            f.write(json.dumps(json_data, indent=4) + '\n')
     return True
 
 

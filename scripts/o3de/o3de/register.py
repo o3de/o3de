@@ -570,7 +570,7 @@ def remove_invalid_o3de_projects(manifest_path: pathlib.Path = None) -> int:
     result = 0
 
     for project in json_data.get('projects', []):
-        if not validation.valid_o3de_project_json(pathlib.Path(project).resolve() / 'project.json'):
+        if not validation.valid_o3de_project_json(pathlib.Path(project).resolve() / 'project.json', generate_uuid=True):
             logger.warning(f"Project path {project} is invalid.")
             # Attempt to unregister all invalid projects even if previous projects failed to unregister
             # but combine the result codes of each command.

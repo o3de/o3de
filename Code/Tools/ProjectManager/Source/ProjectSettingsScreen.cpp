@@ -60,6 +60,10 @@ namespace O3DE::ProjectManager
         connect(m_projectPath->lineEdit(), &QLineEdit::textChanged, this, &ProjectSettingsScreen::OnProjectPathUpdated);
         m_verticalLayout->addWidget(m_projectPath);
 
+        m_projectId = new FormLineEditWidget(tr("Project ID"), "", this);
+        connect(m_projectId->lineEdit(), &QLineEdit::textChanged, this, &ProjectSettingsScreen::OnProjectIdUpdated);
+        m_verticalLayout->addWidget(m_projectId);
+
         projectSettingsFrame->setLayout(m_verticalLayout);
 
         m_horizontalLayout->addWidget(projectSettingsFrame);
@@ -94,6 +98,7 @@ namespace O3DE::ProjectManager
         // currently we don't have separate fields for changing the project name and display name 
         projectInfo.m_displayName = projectInfo.m_projectName;
         projectInfo.m_path = m_projectPath->lineEdit()->text();
+        projectInfo.m_id = m_projectId->lineEdit()->text();
         return projectInfo;
     }
 
@@ -142,6 +147,19 @@ namespace O3DE::ProjectManager
         return projectPathIsValid;
     }
 
+    bool ProjectSettingsScreen::ValidateProjectId()
+    {
+        bool projectIdIsValid = true;
+        if (m_projectId->lineEdit()->text().isEmpty())
+        {
+            projectIdIsValid = false;
+            m_projectId->setErrorLabelText(tr("Project ID cannot be empty."));
+        }
+
+        m_projectId->setErrorLabelVisible(!projectIdIsValid);
+        return projectIdIsValid;
+    }
+
     void ProjectSettingsScreen::OnProjectNameUpdated()
     {
         ValidateProjectName();
@@ -149,11 +167,16 @@ namespace O3DE::ProjectManager
 
     void ProjectSettingsScreen::OnProjectPathUpdated()
     {
-        Validate();
+        ValidateProjectName() && ValidateProjectPath();
+    }
+
+    void ProjectSettingsScreen::OnProjectIdUpdated()
+    {
+        ValidateProjectId();
     }
 
     bool ProjectSettingsScreen::Validate()
     {
-        return ValidateProjectName() && ValidateProjectPath();
+        return ValidateProjectName() && ValidateProjectPath() && ValidateProjectId();
     }
 } // namespace O3DE::ProjectManager

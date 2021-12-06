@@ -29,6 +29,7 @@ def get_project_props(name: str = None, path: pathlib.Path = None) -> dict:
 def edit_project_props(proj_path: pathlib.Path = None,
                        proj_name: str = None,
                        new_name: str = None,
+                       new_id: str = None,
                        new_origin: str = None,
                        new_display: str = None,
                        new_summary: str = None,
@@ -40,14 +41,15 @@ def edit_project_props(proj_path: pathlib.Path = None,
     
     if not proj_json:
         return 1
-
-    if new_origin:
-        proj_json['origin'] = new_origin
     if new_name:
         if not utils.validate_identifier(new_name):
             logger.error(f'Project name must be fewer than 64 characters, contain only alphanumeric, "_" or "-" characters, and start with a letter.  {new_name}')
             return 1
-        proj_json['project_name'] = new_name 
+        proj_json['project_name'] = new_name
+    if new_id:
+        proj_json['project_id'] = new_id
+    if new_origin:
+        proj_json['origin'] = new_origin
     if new_display:
         proj_json['display_name'] = new_display
     if new_summary:
@@ -78,6 +80,7 @@ def _edit_project_props(args: argparse) -> int:
     return edit_project_props(args.project_path,
                               args.project_name,
                               args.project_new_name,
+                              args.project_id,
                               args.project_origin,
                               args.project_display,
                               args.project_summary,
@@ -95,6 +98,8 @@ def add_parser_args(parser):
     group = parser.add_argument_group('properties', 'arguments for modifying individual project properties.')
     group.add_argument('-pnn', '--project-new-name', type=str, required=False,
                        help='Sets the name for the project.')
+    group.add_argument('-pid', '--project-id', type=str, required=False,
+                       help='Sets the ID for the project.')
     group.add_argument('-po', '--project-origin', type=str, required=False,
                        help='Sets description or url for project origin (such as project host, repository, owner...etc).')
     group.add_argument('-pd', '--project-display', type=str, required=False,
