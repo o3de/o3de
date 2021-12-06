@@ -11,6 +11,7 @@
 #include <AzCore/Serialization/Utils.h>
 
 #include <ScriptCanvas/Core/Graph.h>
+#include <ScriptCanvas/Components/EditorGraph.h>
 #include <ScriptCanvas/Variable/VariableBus.h>
 
 #include <GraphCanvas/Components/SceneBus.h>
@@ -19,7 +20,6 @@
 
 #include <Editor/Include/ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <Editor/Assets/ScriptCanvasAssetTrackerBus.h>
-#include <Editor/Assets/ScriptCanvasMemoryAsset.h>
 
 namespace ScriptCanvasEditor
 {
@@ -36,7 +36,7 @@ namespace ScriptCanvasEditor
     {
     }
 
-    void GraphItemCommand::Capture(ScriptCanvasMemoryAsset&, bool)
+    void GraphItemCommand::Capture(SourceHandle&, bool)
     {
     }
 
@@ -105,10 +105,10 @@ namespace ScriptCanvasEditor
         RestoreItem(m_redoState);
     }
 
-    void GraphItemChangeCommand::Capture(ScriptCanvasMemoryAsset& memoryAsset, bool captureUndo)
+    void GraphItemChangeCommand::Capture(SourceHandle& memoryAsset, bool captureUndo)
     {
-        m_scriptCanvasId = memoryAsset.GetScriptCanvasId();
-        m_graphCanvasGraphId = memoryAsset.GetGraphId();
+        m_scriptCanvasId = memoryAsset.Get()->GetScriptCanvasId();
+        m_graphCanvasGraphId = memoryAsset.Get()->GetGraphCanvasGraphId();
 
         UndoCache* undoCache = nullptr;
         UndoRequestBus::EventResult(undoCache, m_scriptCanvasId, &UndoRequests::GetSceneUndoCache);
@@ -204,7 +204,7 @@ namespace ScriptCanvasEditor
         RestoreItem(m_redoState);
     }
 
-    void GraphItemAddCommand::Capture(ScriptCanvasMemoryAsset& memoryAsset, bool)
+    void GraphItemAddCommand::Capture(SourceHandle& memoryAsset, bool)
     {
         GraphItemChangeCommand::Capture(memoryAsset, false);
     }
@@ -225,7 +225,7 @@ namespace ScriptCanvasEditor
         RestoreItem(m_redoState);
     }
 
-    void GraphItemRemovalCommand::Capture(ScriptCanvasMemoryAsset& memoryAsset, bool)
+    void GraphItemRemovalCommand::Capture(SourceHandle& memoryAsset, bool)
     {
         GraphItemChangeCommand::Capture(memoryAsset, true);
     }

@@ -252,11 +252,16 @@ namespace ScriptCanvasEditor
             AZ::u64 entityId =
                 aznumeric_caster(ScriptCanvas::MathNodeUtilities::GetRandomIntegral<AZ::s64>(1, std::numeric_limits<AZ::s64>::max()));
             entity->SetId(AZ::EntityId(entityId));
-            entity->Init();
-            entity->Activate();
 
             auto graph = entity->FindComponent<ScriptCanvasEditor::Graph>();
             graph->MarkOwnership(*scriptCanvasData);
+
+            entity->Init();
+            entity->Activate();
+        }
+        else
+        {
+            return AZ::Failure(AZStd::string("Loaded script canvas file was missing a necessary Entity."));
         }
 
         return AZ::Success(ScriptCanvasEditor::SourceHandle(scriptCanvasData, path));
