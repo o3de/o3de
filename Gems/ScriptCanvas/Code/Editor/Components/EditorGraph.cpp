@@ -481,6 +481,7 @@ namespace ScriptCanvasEditor
 
         ScriptCanvas::Graph::Activate();
         PostActivate();
+        m_undoHelper.SetSource(this);
     }
 
     void Graph::Deactivate()
@@ -1067,7 +1068,6 @@ namespace ScriptCanvasEditor
     void Graph::MarkOwnership(ScriptCanvas::ScriptCanvasData& owner)
     {
         m_owner = &owner;
-        m_undoHelper.SetSource(SourceHandle(GetOwnership(), {}, ""));
     }
 
     ScriptCanvas::DataPtr Graph::GetOwnership() const

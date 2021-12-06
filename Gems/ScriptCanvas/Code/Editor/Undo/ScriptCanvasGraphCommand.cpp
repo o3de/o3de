@@ -36,7 +36,7 @@ namespace ScriptCanvasEditor
     {
     }
 
-    void GraphItemCommand::Capture(SourceHandle&, bool)
+    void GraphItemCommand::Capture(Graph*, bool)
     {
     }
 
@@ -105,10 +105,10 @@ namespace ScriptCanvasEditor
         RestoreItem(m_redoState);
     }
 
-    void GraphItemChangeCommand::Capture(SourceHandle& memoryAsset, bool captureUndo)
+    void GraphItemChangeCommand::Capture(Graph* graph, bool captureUndo)
     {
-        m_scriptCanvasId = memoryAsset.Get()->GetScriptCanvasId();
-        m_graphCanvasGraphId = memoryAsset.Get()->GetGraphCanvasGraphId();
+        m_scriptCanvasId = graph->GetScriptCanvasId();
+        m_graphCanvasGraphId = graph->GetGraphCanvasGraphId();
 
         UndoCache* undoCache = nullptr;
         UndoRequestBus::EventResult(undoCache, m_scriptCanvasId, &UndoRequests::GetSceneUndoCache);
@@ -204,9 +204,9 @@ namespace ScriptCanvasEditor
         RestoreItem(m_redoState);
     }
 
-    void GraphItemAddCommand::Capture(SourceHandle& memoryAsset, bool)
+    void GraphItemAddCommand::Capture(Graph* graph, bool)
     {
-        GraphItemChangeCommand::Capture(memoryAsset, false);
+        GraphItemChangeCommand::Capture(graph, false);
     }
 
     //// Graph Item Removal Command
@@ -225,8 +225,8 @@ namespace ScriptCanvasEditor
         RestoreItem(m_redoState);
     }
 
-    void GraphItemRemovalCommand::Capture(SourceHandle& memoryAsset, bool)
+    void GraphItemRemovalCommand::Capture(Graph* graph, bool)
     {
-        GraphItemChangeCommand::Capture(memoryAsset, true);
+        GraphItemChangeCommand::Capture(graph, true);
     }
 }

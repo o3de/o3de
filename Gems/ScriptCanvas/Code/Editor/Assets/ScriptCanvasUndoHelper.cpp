@@ -18,10 +18,10 @@ namespace ScriptCanvasEditor
     {
     }
 
-    UndoHelper::UndoHelper(SourceHandle memoryAsset)
+    UndoHelper::UndoHelper(Graph* graph)
         : m_undoState(this)
     {
-        SetSource(memoryAsset);
+        SetSource(graph);
     }
 
     UndoHelper::~UndoHelper()
@@ -29,10 +29,10 @@ namespace ScriptCanvasEditor
         UndoRequestBus::Handler::BusDisconnect();
     }
 
-    void UndoHelper::SetSource(SourceHandle source)
+    void UndoHelper::SetSource(Graph* graph)
     {
-        m_memoryAsset = source;
-        UndoRequestBus::Handler::BusConnect(source.Get()->GetScriptCanvasId());
+        m_graph = graph;
+        UndoRequestBus::Handler::BusConnect(graph->GetScriptCanvasId());
     }
 
     ScriptCanvasEditor::UndoCache* UndoHelper::GetSceneUndoCache()
@@ -42,8 +42,8 @@ namespace ScriptCanvasEditor
 
     ScriptCanvasEditor::UndoData UndoHelper::CreateUndoData()
     {
-        AZ::EntityId graphCanvasGraphId = m_memoryAsset.Get()->GetGraphCanvasGraphId();
-        ScriptCanvas::ScriptCanvasId scriptCanvasId = m_memoryAsset.Get()->GetScriptCanvasId();
+        AZ::EntityId graphCanvasGraphId = m_graph->GetGraphCanvasGraphId();
+        ScriptCanvas::ScriptCanvasId scriptCanvasId = m_graph->GetScriptCanvasId();
 
         GraphCanvas::GraphModelRequestBus::Event(graphCanvasGraphId, &GraphCanvas::GraphModelRequests::OnSaveDataDirtied, graphCanvasGraphId);
 
@@ -94,22 +94,22 @@ namespace ScriptCanvasEditor
     void UndoHelper::AddGraphItemChangeUndo(AZStd::string_view undoLabel)
     {
         GraphItemChangeCommand* command = aznew GraphItemChangeCommand(undoLabel);
-        command->Capture(m_memoryAsset, true);
-        command->Capture(m_memoryAsset, false);
+        command->Capture(m_graph, true);
+        command->Capture(m_graph, false);
         AddUndo(command);
     }
 
     void UndoHelper::AddGraphItemAdditionUndo(AZStd::string_view undoLabel)
     {
         GraphItemAddCommand* command = aznew GraphItemAddCommand(undoLabel);
-        command->Capture(m_memoryAsset, false);
+        command->Capture(m_graph, false);
         AddUndo(command);
     }
 
     void UndoHelper::AddGraphItemRemovalUndo(AZStd::string_view undoLabel)
     {
         GraphItemRemovalCommand* command = aznew GraphItemRemovalCommand(undoLabel);
-        command->Capture(m_memoryAsset, true);
+        command->Capture(m_graph, true);
         AddUndo(command);
     }
 
@@ -190,7 +190,7 @@ namespace ScriptCanvasEditor
 
     void UndoHelper::UpdateCache()
     {
-        ScriptCanvas::ScriptCanvasId scriptCanvasId = m_memoryAsset.Get()->GetScriptCanvasId();
+        ScriptCanvas::ScriptCanvasId scriptCanvasId = m_graph->GetScriptCanvasId();
 
         UndoCache* undoCache = nullptr;
         UndoRequestBus::EventResult(undoCache, scriptCanvasId, &UndoRequests::GetSceneUndoCache);
