@@ -110,11 +110,16 @@ namespace ScriptCanvasEditor::Nodes
         GraphCanvas::TranslationRequests::Details details;
         GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
 
+        int paramIndex = 0;
+        int outputIndex = 0;
+
         // Create the GraphCanvas slots
         for (const auto& slot : node->GetSlots())
         {
             GraphCanvas::TranslationKey slotKey;
             slotKey << "ScriptCanvas::Node" << azrtti_typeid(node).ToString<AZStd::string>() << "slots";
+
+            int& index = (slot.IsData() && slot.IsInput()) ? paramIndex : outputIndex;
 
             if (slot.IsVisible())
             {
@@ -150,11 +155,13 @@ namespace ScriptCanvasEditor::Nodes
                     slotDetails.m_tooltip = slot.GetToolTip();
                 }
 
-                AZ::EntityId graphCanvasSlotId = DisplayScriptCanvasSlot(graphCanvasEntity->GetId(), slot);
+                AZ::EntityId graphCanvasSlotId = DisplayScriptCanvasSlot(graphCanvasEntity->GetId(), slot, index);
 
                 GraphCanvas::SlotRequestBus::Event(graphCanvasSlotId, &GraphCanvas::SlotRequests::SetName, slotDetails.m_name);
                 GraphCanvas::SlotRequestBus::Event(graphCanvasSlotId, &GraphCanvas::SlotRequests::SetTooltip, slotDetails.m_tooltip);
             }
+
+            ++index;
         }
 
         const auto& visualExtensions = node->GetVisualExtensions();
@@ -168,6 +175,14 @@ namespace ScriptCanvasEditor::Nodes
 
         GraphCanvas::NodeTitleRequestBus::Event(graphCanvasEntity->GetId(), &GraphCanvas::NodeTitleRequests::SetTitle, details.m_name);
         GraphCanvas::NodeTitleRequestBus::Event(graphCanvasEntity->GetId(), &GraphCanvas::NodeTitleRequests::SetSubTitle, details.m_category);
+
+        // Add to the tooltip the C++ class for reference
+        if (!details.m_tooltip.empty())
+        {
+            details.m_tooltip.append("\n");
+        }
+        details.m_tooltip.append(AZStd::string::format("[C++] %s", node->GetNodeTypeName().c_str()));
+
         GraphCanvas::NodeRequestBus::Event(graphCanvasEntity->GetId(), &GraphCanvas::NodeRequests::SetTooltip, details.m_tooltip);
 
         if (!nodeConfiguration.m_titlePalette.empty())
@@ -258,16 +273,19 @@ namespace ScriptCanvasEditor::Nodes
         graphCanvasEntity->CreateComponent<SlotMappingComponent>(methodNode->GetEntityId());
         graphCanvasEntity->CreateComponent<SceneMemberMappingComponent>(methodNode->GetEntityId());
 
+        bool isAccessor = false;
         switch (methodNode->GetMethodType())
         {
         case ScriptCanvas::MethodType::Event:
             graphCanvasEntity->CreateComponent<EBusSenderNodeDescriptorComponent>();
             break;
-        case ScriptCanvas::MethodType::Member:
         case ScriptCanvas::MethodType::Getter:
         case ScriptCanvas::MethodType::Setter:
         case ScriptCanvas::MethodType::Free:
+            isAccessor = true;
+        case ScriptCanvas::MethodType::Member:
             graphCanvasEntity->CreateComponent<ClassMethodNodeDescriptorComponent>();
+            break;
             break;
         default:
             AZ_Error("ScriptCanvas", false, "Invalid method node type, node creation failed. This node needs to be deleted.");
@@ -288,20 +306,73 @@ namespace ScriptCanvasEditor::Nodes
 
         const bool isEBusSender = (methodNode->GetMethodType() == ScriptCanvas::MethodType::Event);
         const AZStd::string& className = methodNode->GetMethodClassName();
-        const AZStd::string& methodName = methodNode->GetName();
+        AZStd::string methodName = methodNode->GetName();
 
         GraphCanvas::TranslationKey key;
-        key = isEBusSender ? "EBusSender" : "BehaviorClass";
-        key << className;
-        key << "methods" << methodName;
+
+        if (isAccessor)
+        {
+            AZ::StringFunc::Replace(methodName, "::Getter", "");
+            AZ::StringFunc::Replace(methodName, "::Setter", "");
+        }
 
         GraphCanvas::TranslationRequests::Details details;
         details.m_name = methodName;
 
+        AZStd::string context;
+        if (methodNode->GetMethodType() == ScriptCanvas::MethodType::Free)
+        {
+            context = "Constant";
+        }
+        else
+        {
+            context = isEBusSender ? "EBusSender" : "BehaviorClass";
+        }
+        key << context << className;
+
         GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key + ".details", details);
 
-        GraphCanvas::NodeTitleRequestBus::Event(graphCanvasNodeId, &GraphCanvas::NodeTitleRequests::SetDetails, details.m_name, details.m_subtitle);
-        GraphCanvas::NodeRequestBus::Event(graphCanvasNodeId, &GraphCanvas::NodeRequests::SetTooltip, details.m_tooltip);
+        // Set the class' name as the subtitle fallback
+        details.m_subtitle = details.m_name;
+
+        AZStd::string methodContext;
+        // Get the method's text data
+        GraphCanvas::TranslationRequests::Details methodDetails;
+        methodDetails.m_name = details.m_name; // fallback
+        key << "methods";
+        AZStd::string updatedMethodName = methodName;
+        if (isAccessor)
+        {
+            if (methodNode->GetMethodType() == ScriptCanvas::MethodType::Getter || methodNode->GetMethodType() == ScriptCanvas::MethodType::Free)
+            {
+                updatedMethodName = "Get";
+                methodContext = "Getter";
+            }
+            else
+            {
+                updatedMethodName = "Set";
+                methodContext = "Setter";
+            }
+            updatedMethodName.append(methodName);
+        }
+        key << methodContext << updatedMethodName;
+        GraphCanvas::TranslationRequestBus::BroadcastResult(methodDetails, &GraphCanvas::TranslationRequests::GetDetails, key + ".details", methodDetails);
+
+
+        if (methodDetails.m_subtitle.empty())
+        {
+            methodDetails.m_subtitle = details.m_category;
+        }
+
+        // Add to the tooltip the C++ class for reference
+        if (!methodDetails.m_tooltip.empty())
+        {
+            methodDetails.m_tooltip.append("\n");
+        }
+        methodDetails.m_tooltip.append(AZStd::string::format("[C++] %s", className.c_str()));
+
+        GraphCanvas::NodeTitleRequestBus::Event(graphCanvasNodeId, &GraphCanvas::NodeTitleRequests::SetDetails, methodDetails.m_name, methodDetails.m_subtitle);
+        GraphCanvas::NodeRequestBus::Event(graphCanvasNodeId, &GraphCanvas::NodeRequests::SetTooltip, methodDetails.m_tooltip);
 
         int paramIndex = 0;
         int outputIndex = 0;
@@ -311,9 +382,11 @@ namespace ScriptCanvasEditor::Nodes
         {
             GraphCanvas::TranslationKey slotKey = key;
 
+            int& index = (slot.IsData() && slot.IsInput()) ? paramIndex : outputIndex;
+
             if (slot.IsVisible())
             {
-                AZ::EntityId graphCanvasSlotId = DisplayScriptCanvasSlot(graphCanvasNodeId, slot);
+                AZ::EntityId graphCanvasSlotId = DisplayScriptCanvasSlot(graphCanvasNodeId, slot, index);
 
                 details.m_name = slot.GetName();
                 details.m_tooltip = slot.GetToolTip();
@@ -325,12 +398,12 @@ namespace ScriptCanvasEditor::Nodes
                 }
                 else
                 {
-                    int& index = (slot.IsData() && slot.IsInput()) ? paramIndex : outputIndex;
+                    
 
                     if (slot.IsData())
                     {
-                        key = isEBusSender ? "EBusSender" : "BehaviorClass";
-                        key << className << "methods" << methodName;
+                        key.clear();
+                        key << context << className << "methods" << updatedMethodName;
                         if (slot.IsData() && slot.IsInput())
                         {
                             key << "params";
@@ -345,7 +418,7 @@ namespace ScriptCanvasEditor::Nodes
                     }
 
                     if (slot.IsData())
-                    {
+                    { 
                         index++;
                     }
                 }
@@ -355,6 +428,8 @@ namespace ScriptCanvasEditor::Nodes
                 UpdateSlotDatumLabel(graphCanvasNodeId, slot.GetId(), details.m_name);
 
             }
+
+            ++index;
         }
 
         // Set the name
@@ -410,6 +485,9 @@ namespace ScriptCanvasEditor::Nodes
 
         AZStd::vector< ScriptCanvas::SlotId > scriptCanvasSlots = busNode->GetNonEventSlotIds();
 
+        int paramIndex = 0;
+        int outputIndex = 0;
+
         for (const auto& slotId : scriptCanvasSlots)
         {
             ScriptCanvas::Slot* slot = busNode->GetSlot(slotId);
@@ -423,6 +501,8 @@ namespace ScriptCanvasEditor::Nodes
 
             if (slot->IsVisible())
             {
+                int& index = (slot->IsData() && slot->IsInput()) ? paramIndex : outputIndex;
+
                 AZ::EntityId gcSlotId = DisplayScriptCanvasSlot(graphCanvasNodeId, (*slot), group);
 
                 if (busNode->IsIDRequired() && slot->GetDescriptor() == ScriptCanvas::SlotDescriptors::DataIn())
@@ -436,6 +516,8 @@ namespace ScriptCanvasEditor::Nodes
 
                     GraphCanvas::SlotRequestBus::Event(gcSlotId, &GraphCanvas::SlotRequests::SetDetails, details.m_name, details.m_tooltip);
                 }
+
+                ++index;
             }
         }
 
@@ -448,6 +530,13 @@ namespace ScriptCanvasEditor::Nodes
         GraphCanvas::TranslationRequests::Details details;
         details.m_name = busName;
         GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
+
+        // Add to the tooltip the C++ class for reference
+        if (!details.m_tooltip.empty())
+        {
+            details.m_tooltip.append("\n");
+        }
+        details.m_tooltip.append(AZStd::string::format("[C++] %s", busName.c_str()));
 
         GraphCanvas::NodeRequestBus::Event(graphCanvasNodeId, &GraphCanvas::NodeRequests::SetTooltip, details.m_tooltip);
         GraphCanvas::NodeTitleRequestBus::Event(graphCanvasNodeId, &GraphCanvas::NodeTitleRequests::SetTitle, details.m_name);
@@ -486,6 +575,13 @@ namespace ScriptCanvasEditor::Nodes
         // Set the name
         graphCanvasEntity->SetName(AZStd::string::format("GC-Node(%s)", decoratedName.c_str()));
 
+        // Add to the tooltip the C++ class for reference
+        if (!details.m_tooltip.empty())
+        {
+            details.m_tooltip.append("\n");
+        }
+        details.m_tooltip.append(AZStd::string::format("[C++] %s", busName.c_str()));
+
         GraphCanvas::NodeRequestBus::Event(graphCanvasNodeId, &GraphCanvas::NodeRequests::SetTooltip, details.m_tooltip);
 
         GraphCanvas::NodeTitleRequestBus::Event(graphCanvasNodeId, &GraphCanvas::NodeTitleRequests::SetTitle, details.m_name);
@@ -519,12 +615,17 @@ namespace ScriptCanvasEditor::Nodes
             *graphCanvasUserData = azEventNode->GetEntityId();
         }
 
+        int paramIndex = 0;
+        int outputIndex = 0;
+
         for (const ScriptCanvas::Slot& slot: azEventNode->GetSlots())
         {
             GraphCanvas::SlotGroup group = GraphCanvas::SlotGroups::Invalid;
 
             if (slot.IsVisible())
             {
+                int& index = (slot.IsData() && slot.IsInput()) ? paramIndex : outputIndex;
+
                 AZ::EntityId gcSlotId = DisplayScriptCanvasSlot(graphCanvasNodeId, slot, group);
 
                 GraphCanvas::TranslationKey key;
@@ -535,6 +636,8 @@ namespace ScriptCanvasEditor::Nodes
 
                 GraphCanvas::SlotRequestBus::Event(gcSlotId, &GraphCanvas::SlotRequests::SetName, details.m_name);
                 GraphCanvas::SlotRequestBus::Event(gcSlotId, &GraphCanvas::SlotRequests::SetTooltip, details.m_tooltip);;
+
+                ++index;
             }
         }
 
@@ -600,6 +703,9 @@ namespace ScriptCanvasEditor::Nodes
 
         AZStd::vector< ScriptCanvas::SlotId > scriptCanvasSlots = busNode->GetNonEventSlotIds();
 
+        int paramIndex = 0;
+        int outputIndex = 0;
+
         for (const auto& slotId : scriptCanvasSlots)
         {
             ScriptCanvas::Slot* slot = busNode->GetSlot(slotId);
@@ -613,6 +719,8 @@ namespace ScriptCanvasEditor::Nodes
 
             if (slot->IsVisible())
             {
+                int& index = (slot->IsData() && slot->IsInput()) ? paramIndex : outputIndex;
+
                 AZ::EntityId gcSlotId = DisplayScriptCanvasSlot(graphCanvasNodeId, (*slot), group);
 
                 if (busNode->IsIDRequired() && slot->GetDescriptor() == ScriptCanvas::SlotDescriptors::DataIn())
@@ -623,6 +731,8 @@ namespace ScriptCanvasEditor::Nodes
                     GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
                     GraphCanvas::SlotRequestBus::Event(gcSlotId, &GraphCanvas::SlotRequests::SetDetails, details.m_name, details.m_tooltip);
                 }
+
+                ++index;
             }
         }
 
@@ -708,17 +818,24 @@ namespace ScriptCanvasEditor::Nodes
             return graphCanvasNodeId;
         }
 
+        int paramIndex = 0;
+        int outputIndex = 0;
+
         for (const auto& slot : senderNode->GetSlots())
         {
+            int& index = (slot.IsData() && slot.IsInput()) ? paramIndex : outputIndex;
+
             if (slot.IsVisible())
             {
-                AZ::EntityId graphCanvasSlotId = DisplayScriptCanvasSlot(graphCanvasNodeId, slot);
+                AZ::EntityId graphCanvasSlotId = DisplayScriptCanvasSlot(graphCanvasNodeId, slot, index);
 
                 GraphCanvas::SlotRequestBus::Event(graphCanvasSlotId, &GraphCanvas::SlotRequests::SetName, slot.GetName());
                 GraphCanvas::SlotRequestBus::Event(graphCanvasSlotId, &GraphCanvas::SlotRequests::SetTooltip, slot.GetToolTip());
 
                 UpdateSlotDatumLabel(graphCanvasNodeId, slot.GetId(), slot.GetName());
             }
+
+            ++index;
         }
 
         // Set the name
@@ -730,7 +847,7 @@ namespace ScriptCanvasEditor::Nodes
         return graphCanvasNodeId;
     }
 
-// Function Nodes
+    // Function Nodes
     AZ::EntityId DisplayFunctionNode(AZ::EntityId graphCanvasGraphId, const ScriptCanvas::Nodes::Core::FunctionCallNode* functionNode)
     {
         return DisplayFunctionNode(graphCanvasGraphId, const_cast<ScriptCanvas::Nodes::Core::FunctionCallNode*>(functionNode));
@@ -796,14 +913,21 @@ namespace ScriptCanvasEditor::Nodes
             return graphCanvasNodeId;
         }
 
+        int paramIndex = 0;
+        int outputIndex = 0;
+
         for (const auto& slot : functionNode->GetSlots())
         {
-            AZ::EntityId graphCanvasSlotId = DisplayScriptCanvasSlot(graphCanvasNodeId, slot);
+            int& index = (slot.IsData() && slot.IsInput()) ? paramIndex : outputIndex;
+
+            AZ::EntityId graphCanvasSlotId = DisplayScriptCanvasSlot(graphCanvasNodeId, slot, index);
 
             GraphCanvas::SlotRequestBus::Event(graphCanvasSlotId, &GraphCanvas::SlotRequests::SetName, slot.GetName());
             GraphCanvas::SlotRequestBus::Event(graphCanvasSlotId, &GraphCanvas::SlotRequests::SetTooltip, slot.GetToolTip());
 
             UpdateSlotDatumLabel(graphCanvasNodeId, slot.GetId(), slot.GetName());
+
+            ++index;
         }
 
         if (asset)
@@ -1066,7 +1190,7 @@ namespace ScriptCanvasEditor::Nodes
         return graphCanvasConnectionType;
     }
 
-    AZ::EntityId DisplayScriptCanvasSlot(AZ::EntityId graphCanvasNodeId, const ScriptCanvas::Slot& slot, GraphCanvas::SlotGroup slotGroup)
+    AZ::EntityId DisplayScriptCanvasSlot(AZ::EntityId graphCanvasNodeId, const ScriptCanvas::Slot& slot, int slotIndex, GraphCanvas::SlotGroup slotGroup)
     {
         if (!slot.IsVisible())
         {
@@ -1169,6 +1293,7 @@ namespace ScriptCanvasEditor::Nodes
             }
 
             slotKeyStr.append(slot.GetName());
+            slotKeyStr.append(AZStd::string::format("_%d", slotIndex));
             slotKey << slotKeyStr << "details";
 
             GraphCanvas::TranslationRequests::Details slotDetails;

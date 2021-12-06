@@ -1,38 +1,37 @@
 {
     "entries": [
         {
-            "key": "{5B16FDCF-5FB0-5059-97E6-76AA11871337}",
+            "base": "{5B16FDCF-5FB0-5059-97E6-76AA11871337}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Center",
                 "category": "Math/AABB",
-                "tooltip": "returns the center of Source",
-                "subtitle": "AABB"
+                "tooltip": "returns the center of Source"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_AABB: Source",
+                    "base": "DataInput_Source_0",
                     "details": {
-                        "name": "AABB: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector3",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Result: Vector3"
+                        "name": "Result"
                     }
                 }
             ]

@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "ShapeAreaFalloffGradientComponentTypeId",
+            "base": "ShapeAreaFalloffGradientComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "ShapeAreaFalloffGradientComponentTypeId::Getter",
-                "category": "Constants"
-            }
+                "name": "Shape Area Falloff Gradient Component Type Id",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetShapeAreaFalloffGradientComponentTypeId",
+                    "details": {
+                        "name": "Get Shape Area Falloff Gradient Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

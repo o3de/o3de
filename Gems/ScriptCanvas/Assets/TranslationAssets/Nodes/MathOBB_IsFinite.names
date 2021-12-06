@@ -1,38 +1,37 @@
 {
     "entries": [
         {
-            "key": "{150329C4-45BF-5E9C-9358-41C648586F00}",
+            "base": "{150329C4-45BF-5E9C-9358-41C648586F00}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "IsFinite",
+                "name": "Is Finite",
                 "category": "Math/OBB",
-                "tooltip": "returns true if every element in Source is finite, is false",
-                "subtitle": "OBB"
+                "tooltip": "returns true if every element in Source is finite, is false"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_OBB: Source",
+                    "base": "DataInput_Source_0",
                     "details": {
-                        "name": "OBB: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Boolean",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Result: Boolean"
+                        "name": "Result"
                     }
                 }
             ]

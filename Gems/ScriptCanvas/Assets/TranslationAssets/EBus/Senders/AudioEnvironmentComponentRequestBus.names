@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "AudioEnvironmentComponentRequestBus",
+            "base": "AudioEnvironmentComponentRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "AudioEnvironmentComponentRequestBus",
+                "name": "Audio Environment",
                 "category": "Audio"
             },
             "methods": [
                 {
-                    "key": "SetAmount",
+                    "base": "SetAmount",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Amount"
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "SetEnvironmentAmount",
+                    "base": "SetEnvironmentAmount",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Environment Amount"

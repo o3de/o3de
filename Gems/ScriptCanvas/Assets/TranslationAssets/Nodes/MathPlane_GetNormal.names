@@ -1,38 +1,37 @@
 {
     "entries": [
         {
-            "key": "{76467598-DB87-59DD-8B65-B7636880EAB4}",
+            "base": "{76467598-DB87-59DD-8B65-B7636880EAB4}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "GetNormal",
+                "name": "Get Normal",
                 "category": "Math/Plane",
-                "tooltip": "returns the surface normal of Source",
-                "subtitle": "Plane"
+                "tooltip": "returns the surface normal of Source"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Plane: Source",
+                    "base": "DataInput_Source_0",
                     "details": {
-                        "name": "Plane: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector3",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Result: Vector3"
+                        "name": "Result"
                     }
                 }
             ]

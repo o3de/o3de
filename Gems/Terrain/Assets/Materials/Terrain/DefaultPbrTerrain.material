@@ -5,20 +5,7 @@
     "propertyLayoutVersion": 1,
     "properties": {
         "baseColor": {
-            "color": [ 0.18, 0.18, 0.18 ],
-            "useTexture": false
-        },
-        "normal":
-        {
-            "useTexture": false
-        },
-        "roughness":
-        {   
-            "useTexture": false
-        },
-        "specularF0":
-        {
-            "useTexture": false
+            "color": [ 0.18, 0.18, 0.18 ]
         }
     }
 }

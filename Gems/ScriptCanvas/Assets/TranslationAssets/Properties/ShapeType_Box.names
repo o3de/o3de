@@ -1,13 +1,30 @@
 {
     "entries": [
         {
-            "key": "ShapeType_Box",
+            "base": "ShapeType_Box",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "ShapeType_Box::Getter",
-                "category": "Constants"
-            }
+                "name": "Get Shape Type: Box",
+                "category": "Constants/Physics"
+            },
+            "methods": [
+                {
+                    "base": "ShapeType_Box",
+                    "details": {
+                        "name": "Get Shape Type: Box",
+                        "subtitle": "Shape Type"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Shape Type"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

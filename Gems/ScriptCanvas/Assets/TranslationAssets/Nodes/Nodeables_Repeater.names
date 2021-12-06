@@ -1,49 +1,48 @@
 {
     "entries": [
         {
-            "key": "{AB587027-2270-4CA6-242F-6069C6D9BBB6}",
+            "base": "{AB587027-2270-4CA6-242F-6069C6D9BBB6}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Repeater",
                 "category": "Nodeables",
-                "tooltip": "Repeats the output signal the given number of times using the specified delay to space the signals out.",
-                "subtitle": "Nodeables"
+                "tooltip": "Repeats the output signal the given number of times using the specified delay to space the signals out."
             },
             "slots": [
                 {
-                    "key": "Input_Start",
+                    "base": "Input_Start_0",
                     "details": {
                         "name": "Start"
                     }
                 },
                 {
-                    "key": "DataInput_Repetitions",
+                    "base": "DataInput_Repetitions_0",
                     "details": {
                         "name": "Repetitions"
                     }
                 },
                 {
-                    "key": "DataInput_Interval",
+                    "base": "DataInput_Interval_1",
                     "details": {
                         "name": "Interval"
                     }
                 },
                 {
-                    "key": "Output_On Start",
+                    "base": "Output_On Start_0",
                     "details": {
                         "name": "On Start"
                     }
                 },
                 {
-                    "key": "Output_Complete",
+                    "base": "Output_Complete_1",
                     "details": {
                         "name": "Complete",
                         "tooltip": "Signaled upon node exit"
                     }
                 },
                 {
-                    "key": "Output_Action",
+                    "base": "Output_Action_2",
                     "details": {
                         "name": "Action",
                         "tooltip": "Signaled every repetition"

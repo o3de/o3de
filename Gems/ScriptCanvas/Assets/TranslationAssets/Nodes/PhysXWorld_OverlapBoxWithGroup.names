@@ -1,0 +1,58 @@
+{
+    "entries": [
+        {
+            "base": "{B4F46A1B-7C2F-553F-BAE8-867066A365FA}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Overlap Box With Group",
+                "category": "PhysX/World",
+                "tooltip": "Returns the objects overlapping a box at a position"
+            },
+            "slots": [
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Pose_0",
+                    "details": {
+                        "name": "Pose"
+                    }
+                },
+                {
+                    "base": "DataInput_Dimensions_1",
+                    "details": {
+                        "name": "Dimensions"
+                    }
+                },
+                {
+                    "base": "DataInput_Collision group_2",
+                    "details": {
+                        "name": "Collision group"
+                    }
+                },
+                {
+                    "base": "DataInput_Ignore_3",
+                    "details": {
+                        "name": "Ignore"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result_0",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

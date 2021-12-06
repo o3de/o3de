@@ -1,38 +1,37 @@
 {
     "entries": [
         {
-            "key": "{924A1027-ECC4-574D-808A-E4A4EB128552}",
+            "base": "{924A1027-ECC4-574D-808A-E4A4EB128552}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "GetAxisX",
+                "name": "Get AxisX",
                 "category": "Math/OBB",
-                "tooltip": "returns the X-Axis of Source",
-                "subtitle": "OBB"
+                "tooltip": "returns the X-Axis of Source"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_OBB: Source",
+                    "base": "DataInput_Source_0",
                     "details": {
-                        "name": "OBB: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector3",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Result: Vector3"
+                        "name": "Result"
                     }
                 }
             ]

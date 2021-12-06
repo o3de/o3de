@@ -1,155 +1,44 @@
 {
     "entries": [
         {
-            "key": "TerrainDataRequestBus",
+            "base": "TerrainDataRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "TerrainDataRequestBus"
+                "name": "Terrain Data"
             },
             "methods": [
                 {
-                    "key": "GetNormalFromFloats",
+                    "base": "GetIsHoleFromFloats",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetNormalFromFloats"
+                        "tooltip": "When signaled, this will invoke Get Is Hole From Floats"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetNormalFromFloats is invoked"
+                        "tooltip": "Signaled after Get Is Hole From Floats is invoked"
                     },
                     "details": {
-                        "name": "GetNormalFromFloats"
+                        "name": "Get Is Hole From Floats"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "X"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Y"
                             }
                         },
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "int"
-                            }
-                        },
-                        {
-                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
-                            "details": {
-                                "name": "bool"
-                            }
-                        }
-                    ],
-                    "results": [
-                        {
-                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
-                            "details": {
-                                "name": "Vector3"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "GetNormal",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke GetNormal"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after GetNormal is invoked"
-                    },
-                    "details": {
-                        "name": "GetNormal"
-                    },
-                    "params": [
-                        {
-                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
-                            "details": {
-                                "name": "Vector3"
-                            }
-                        },
-                        {
-                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
-                            "details": {
-                                "name": "int"
-                            }
-                        },
-                        {
-                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
-                            "details": {
-                                "name": "bool"
-                            }
-                        }
-                    ],
-                    "results": [
-                        {
-                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
-                            "details": {
-                                "name": "Vector3"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "GetTerrainAabb",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke GetTerrainAabb"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after GetTerrainAabb is invoked"
-                    },
-                    "details": {
-                        "name": "GetTerrainAabb"
-                    },
-                    "results": [
-                        {
-                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
-                            "details": {
-                                "name": "Aabb"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "GetIsHoleFromFloats",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke GetIsHoleFromFloats"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after GetIsHoleFromFloats is invoked"
-                    },
-                    "details": {
-                        "name": "GetIsHoleFromFloats"
-                    },
-                    "params": [
-                        {
-                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
-                            "details": {
-                                "name": "float"
-                            }
-                        },
-                        {
-                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
-                            "details": {
-                                "name": "float"
-                            }
-                        },
-                        {
-                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
-                            "details": {
-                                "name": "int"
+                                "name": "Sample Filter",
+                                "tooltip": "0: Bilinear, 1: Clamp, 2: Exact"
                             }
                         }
                     ],
@@ -157,89 +46,124 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Terrain Exists"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetHeightFromFloats",
+                    "base": "GetSurfaceWeightsFromVector2",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetHeightFromFloats"
+                        "tooltip": "When signaled, this will invoke Get Surface Weights From Vector2"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetHeightFromFloats is invoked"
+                        "tooltip": "Signaled after Get Surface Weights From Vector2 is invoked"
                     },
                     "details": {
-                        "name": "GetHeightFromFloats"
+                        "name": "Get Surface Weights From Vector2"
                     },
                     "params": [
                         {
-                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
                             "details": {
-                                "name": "float"
+                                "name": "Position"
                             }
                         },
                         {
-                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "typeid": "{8F60B4D4-06F0-577C-AFB9-ECBFA7B66D4E}",
                             "details": {
-                                "name": "float"
+                                "name": "Surface Weights"
                             }
                         },
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "int"
+                                "name": "Sample Filter",
+                                "tooltip": "0: Bilinear, 1: Clamp, 2: Exact"
                             }
                         },
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
-                            }
-                        }
-                    ],
-                    "results": [
-                        {
-                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
-                            "details": {
-                                "name": "float"
+                                "name": "Terrain Exists"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetMaxSurfaceWeight",
+                    "base": "GetSurfaceWeights",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetMaxSurfaceWeight"
+                        "tooltip": "When signaled, this will invoke GetSurfaceWeights"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetMaxSurfaceWeight is invoked"
+                        "tooltip": "Signaled after GetSurfaceWeights is invoked"
                     },
                     "details": {
-                        "name": "GetMaxSurfaceWeight"
+                        "name": "GetSurfaceWeights"
                     },
                     "params": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector3"
+                                "name": "Position"
+                            }
+                        },
+                        {
+                            "typeid": "{8F60B4D4-06F0-577C-AFB9-ECBFA7B66D4E}",
+                            "details": {
+                                "name": "Surface Weights"
                             }
                         },
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "int"
+                                "name": "Sample Filter",
+                                "tooltip": "0: Bilinear, 1: Clamp, 2: Exact"
                             }
                         },
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Terrain Exists"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetMaxSurfaceWeight",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Max Surface Weight"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Max Surface Weight is invoked"
+                    },
+                    "details": {
+                        "name": "Get Max Surface Weight"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Position"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Sample Filter",
+                                "tooltip": "0: Bilinear, 1: Clamp, 2: Exact"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Terrain Exists"
                             }
                         }
                     ],
@@ -247,111 +171,213 @@
                         {
                             "typeid": "{EA14018E-E853-4BF5-8E13-D83BB99A54CC}",
                             "details": {
-                                "name": "SurfaceTagWeight"
+                                "name": "Surface Tag Weight"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetMaxSurfaceWeightFromFloats",
+                    "base": "GetSurfacePointFromVector2",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetMaxSurfaceWeightFromFloats"
+                        "tooltip": "When signaled, this will invoke Get Surface Point From Vector2"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetMaxSurfaceWeightFromFloats is invoked"
+                        "tooltip": "Signaled after Get Surface Point From Vector2 is invoked"
                     },
                     "details": {
-                        "name": "GetMaxSurfaceWeightFromFloats"
+                        "name": "Get Surface Point From Vector2"
                     },
                     "params": [
                         {
-                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
                             "details": {
-                                "name": "float"
+                                "name": "Position"
                             }
                         },
                         {
-                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "typeid": "{331A3D0E-BB1D-47BF-96A2-249FAA0D720D}",
                             "details": {
-                                "name": "float"
+                                "name": "Surface Point"
                             }
                         },
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "int"
+                                "name": "Sample Filter",
+                                "tooltip": "0: Bilinear, 1: Clamp, 2: Exact"
                             }
                         },
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
-                            }
-                        }
-                    ],
-                    "results": [
-                        {
-                            "typeid": "{EA14018E-E853-4BF5-8E13-D83BB99A54CC}",
-                            "details": {
-                                "name": "SurfaceTagWeight"
+                                "name": "Terrain Exists"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetTerrainHeightQueryResolution",
+                    "base": "GetTerrainHeightQueryResolution",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetTerrainHeightQueryResolution"
+                        "tooltip": "When signaled, this will invoke Get Terrain Height Query Resolution"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetTerrainHeightQueryResolution is invoked"
+                        "tooltip": "Signaled after Get Terrain Height Query Resolution is invoked"
                     },
                     "details": {
-                        "name": "GetTerrainHeightQueryResolution"
+                        "name": "Get Terrain Height Query Resolution"
                     },
                     "results": [
                         {
                             "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
                             "details": {
-                                "name": "Vector2"
+                                "name": "Position"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetHeight",
+                    "base": "GetNormal",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetHeight"
+                        "tooltip": "When signaled, this will invoke Get Normal"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetHeight is invoked"
+                        "tooltip": "Signaled after Get Normal is invoked"
                     },
                     "details": {
-                        "name": "GetHeight"
+                        "name": "Get Normal"
                     },
                     "params": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector3"
+                                "name": "Position"
                             }
                         },
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "int"
+                                "name": "Sample Filter",
+                                "tooltip": "0: Bilinear, 1: Clamp, 2: Exact"
                             }
                         },
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Terrain Exists"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Normal"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetMaxSurfaceWeightFromVector2",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Max Surface Weight From Vector2"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Max Surface Weight From Vector2 is invoked"
+                    },
+                    "details": {
+                        "name": "Get Max Surface Weight From Vector2"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Position"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Sample Filter",
+                                "tooltip": "0: Bilinear, 1: Clamp, 2: Exact"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Terrain Exists"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA14018E-E853-4BF5-8E13-D83BB99A54CC}",
+                            "details": {
+                                "name": "Surface Tag Weight"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetTerrainAabb",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Terrain AABB"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Terrain AABB is invoked"
+                    },
+                    "details": {
+                        "name": "Get Terrain AABB"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "AABB"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetHeight",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Height"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Height is invoked"
+                    },
+                    "details": {
+                        "name": "Get Height"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Position"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Sample Filter",
+                                "tooltip": "0: Bilinear, 1: Clamp, 2: Exact"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Terrain Exists"
                             }
                         }
                     ],
@@ -359,7 +385,48 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Height"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetSurfacePoint",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Surface Point"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Surface Point is invoked"
+                    },
+                    "details": {
+                        "name": "Get Surface Point"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Position"
+                            }
+                        },
+                        {
+                            "typeid": "{331A3D0E-BB1D-47BF-96A2-249FAA0D720D}",
+                            "details": {
+                                "name": "Surface Point"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Sample Filter",
+                                "tooltip": "0: Bilinear, 1: Clamp, 2: Exact"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Terrain Exists"
                             }
                         }
                     ]

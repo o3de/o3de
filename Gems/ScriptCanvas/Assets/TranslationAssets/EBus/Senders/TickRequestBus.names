@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "TickRequestBus",
+            "base": "TickRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "TickRequestBus",
+                "name": "Tick",
                 "category": "Timing"
             },
             "methods": [
                 {
-                    "key": "GetTickDeltaTime",
+                    "base": "GetTickDeltaTime",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Tick Delta Time"
@@ -20,8 +20,7 @@
                         "tooltip": "Signaled after Get Tick Delta Time is invoked"
                     },
                     "details": {
-                        "name": "Get Tick Delta Time",
-                        "tooltip": "Gets the latest time between ticks"
+                        "name": "Get Tick Delta Time"
                     },
                     "results": [
                         {
@@ -33,24 +32,23 @@
                     ]
                 },
                 {
-                    "key": "GetTimeAtCurrentTick",
+                    "base": "GetTimeAtCurrentTick",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Time at Current Tick"
+                        "tooltip": "When signaled, this will invoke Get Time At Current Tick"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Time at Current Tick is invoked"
+                        "tooltip": "Signaled after Get Time At Current Tick is invoked"
                     },
                     "details": {
-                        "name": "Get Time at Current Tick",
-                        "tooltip": "Gets the time in seconds since the epoch (January 1, 1970)"
+                        "name": "Get Time At Current Tick"
                     },
                     "results": [
                         {
                             "typeid": "{4C0F6AD4-0D4F-4354-AD4A-0C01E948245C}",
                             "details": {
-                                "name": "ScriptTimePoint"
+                                "name": "Script Time Point"
                             }
                         }
                     ]

@@ -1,50 +1,49 @@
 {
     "entries": [
         {
-            "key": "{F57D790D-01D5-5241-865C-3348CCB3536B}",
+            "base": "{F57D790D-01D5-5241-865C-3348CCB3536B}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Substring",
                 "category": "String",
-                "tooltip": "Returns a sub string from a given string",
-                "subtitle": "String"
+                "tooltip": "Returns a sub string from a given string"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_String: Source",
+                    "base": "DataInput_Source_0",
                     "details": {
-                        "name": "String: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Number: From",
+                    "base": "DataInput_From_1",
                     "details": {
-                        "name": "Number: From"
+                        "name": "From"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Length",
+                    "base": "DataInput_Length_2",
                     "details": {
-                        "name": "Number: Length"
+                        "name": "Length"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: String",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Result: String"
+                        "name": "Result"
                     }
                 }
             ]

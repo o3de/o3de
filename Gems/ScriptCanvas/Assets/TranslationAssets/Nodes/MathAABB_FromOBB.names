@@ -1,38 +1,37 @@
 {
     "entries": [
         {
-            "key": "{95A84A7D-9D3C-59AE-9463-1CC41D275239}",
+            "base": "{95A84A7D-9D3C-59AE-9463-1CC41D275239}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "FromOBB",
                 "category": "Math/AABB",
-                "tooltip": "returns the AABB which contains Source",
-                "subtitle": "AABB"
+                "tooltip": "returns the AABB which contains Source"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_OBB: Source",
+                    "base": "DataInput_Source_0",
                     "details": {
-                        "name": "OBB: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: AABB",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Result: AABB"
+                        "name": "Result"
                     }
                 }
             ]

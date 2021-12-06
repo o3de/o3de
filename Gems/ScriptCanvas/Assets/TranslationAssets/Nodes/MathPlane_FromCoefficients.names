@@ -1,56 +1,55 @@
 {
     "entries": [
         {
-            "key": "{C281152D-1617-52B6-BB82-8146F881CCA5}",
+            "base": "{C281152D-1617-52B6-BB82-8146F881CCA5}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "FromCoefficients",
+                "name": "From Coefficients",
                 "category": "Math/Plane",
-                "tooltip": "returns the plane that satisfies the equation Ax + By + Cz + D = 0",
-                "subtitle": "Plane"
+                "tooltip": "returns the plane that satisfies the equation Ax + By + Cz + D = 0"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Number: A",
+                    "base": "DataInput_A_0",
                     "details": {
-                        "name": "Number: A"
+                        "name": "A"
                     }
                 },
                 {
-                    "key": "DataInput_Number: B",
+                    "base": "DataInput_B_1",
                     "details": {
-                        "name": "Number: B"
+                        "name": "B"
                     }
                 },
                 {
-                    "key": "DataInput_Number: C",
+                    "base": "DataInput_C_2",
                     "details": {
-                        "name": "Number: C"
+                        "name": "C"
                     }
                 },
                 {
-                    "key": "DataInput_Number: D",
+                    "base": "DataInput_D_3",
                     "details": {
-                        "name": "Number: D"
+                        "name": "D"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Plane",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Result: Plane"
+                        "name": "Result"
                     }
                 }
             ]

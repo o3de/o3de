@@ -24,7 +24,6 @@
 #include <IEditor.h>
 #endif
 
-class CClouds;
 struct LightingSettings;
 struct IVariable;
 struct ICVar;
@@ -124,7 +123,6 @@ public: // Create from serialization only
     const char* GetTemporaryLevelName() const;
     void DeleteTemporaryLevel();
 
-    CClouds* GetClouds() { return m_pClouds; }
     void SetWaterColor(const QColor& col) { m_waterColor = col; }
     QColor GetWaterColor() const { return m_waterColor; }
     XmlNodeRef& GetFogTemplate() { return m_fogTemplate; }
@@ -163,7 +161,6 @@ protected:
     bool LoadEntitiesFromSlice(const QString& sliceFile);
     void SerializeFogSettings(CXmlArchive& xmlAr);
     virtual void SerializeViewSettings(CXmlArchive& xmlAr);
-    void SerializeNameSelection(CXmlArchive& xmlAr);
     void LogLoadTime(int time) const;
 
     struct TSaveDocContext
@@ -195,7 +192,6 @@ protected:
     QColor m_waterColor = QColor(0, 0, 255);
     XmlNodeRef m_fogTemplate;
     XmlNodeRef m_environmentTemplate;
-    CClouds* m_pClouds;
     std::list<IDocListener*> m_listeners;
     bool m_bDocumentReady = false;
     ICVar* doc_validate_surface_types = nullptr;

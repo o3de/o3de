@@ -1,38 +1,37 @@
 {
     "entries": [
         {
-            "key": "{E15BFD9C-5DD0-5BA9-8573-E3D38CC9ACD0}",
+            "base": "{E15BFD9C-5DD0-5BA9-8573-E3D38CC9ACD0}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "IsActive",
+                "name": "Is Active",
                 "category": "Entity/Entity",
-                "tooltip": "returns true if entity with the provided Id is valid and active.",
-                "subtitle": "Entity"
+                "tooltip": "returns true if entity with the provided Id is valid and active."
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_EntityID: Entity Id",
+                    "base": "DataInput_Entity Id_0",
                     "details": {
-                        "name": "EntityID: Entity Id"
+                        "name": "Entity Id"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Boolean",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Result: Boolean"
+                        "name": "Result"
                     }
                 }
             ]

@@ -1,38 +1,37 @@
 {
     "entries": [
         {
-            "key": "{30BE564D-B68D-5D23-BDA1-625A7A8F9504}",
+            "base": "{30BE564D-B68D-5D23-BDA1-625A7A8F9504}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "IsValid",
+                "name": "Is Valid",
                 "category": "Math/AABB",
-                "tooltip": "returns ture if Source is valid, that is if Source.min <= Source.max, else false",
-                "subtitle": "AABB"
+                "tooltip": "returns ture if Source is valid, that is if Source.min <= Source.max, else false"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_AABB: Source",
+                    "base": "DataInput_Source_0",
                     "details": {
-                        "name": "AABB: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Boolean",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Result: Boolean"
+                        "name": "Result"
                     }
                 }
             ]

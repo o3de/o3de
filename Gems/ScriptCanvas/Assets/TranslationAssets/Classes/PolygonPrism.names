@@ -1,12 +1,62 @@
 {
     "entries": [
         {
-            "key": "PolygonPrism",
+            "base": "PolygonPrism",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "PolygonPrism"
-            }
+                "name": "Polygon Prism",
+                "category": "Shape"
+            },
+            "methods": [
+                {
+                    "base": "height",
+                    "details": {
+                        "name": "Get Height"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F01C8BDD-6F24-4344-8945-521A8750B30B}",
+                            "details": {
+                                "name": "Polygon Prism",
+                                "tooltip": "Polygon prism shape"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Height"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "vertexContainer",
+                    "details": {
+                        "name": "Get Vertex Container"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F01C8BDD-6F24-4344-8945-521A8750B30B}",
+                            "details": {
+                                "name": "Polygon Prism",
+                                "tooltip": "Polygon prism shape"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EBE98B36-0783-5226-9739-064BD41EBB52}",
+                            "details": {
+                                "name": "Vertex Container",
+                                "tooltip": "Vertex data"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

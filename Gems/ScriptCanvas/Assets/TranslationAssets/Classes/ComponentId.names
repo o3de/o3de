@@ -1,34 +1,33 @@
 {
     "entries": [
         {
-            "key": "ComponentId",
+            "base": "ComponentId",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "ComponentID",
+                "name": "Component Id",
                 "category": "Entity"
             },
             "methods": [
                 {
-                    "key": "IsValid",
+                    "base": "IsValid",
                     "context": "ComponentId",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke IsValid"
+                        "tooltip": "When signaled, this will invoke Is Valid"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after IsValid is invoked"
+                        "tooltip": "Signaled after Is Valid is invoked"
                     },
                     "details": {
-                        "name": "ComponentId::IsValid",
-                        "category": "Entity"
+                        "name": "Is Valid"
                     },
                     "params": [
                         {
                             "typeid": "{60A9A069-9C3D-465A-B7AD-0D6CC803990A}",
                             "details": {
-                                "name": "BehaviorComponentId*"
+                                "name": "Behavior Component Id*"
                             }
                         }
                     ],
@@ -36,13 +35,13 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "Boolean"
+                                "name": "Is Valid"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Equal",
+                    "base": "Equal",
                     "context": "ComponentId",
                     "entry": {
                         "name": "In",
@@ -53,20 +52,19 @@
                         "tooltip": "Signaled after Equal is invoked"
                     },
                     "details": {
-                        "name": "ComponentId::Equal",
-                        "category": "Entity"
+                        "name": "Equal"
                     },
                     "params": [
                         {
                             "typeid": "{60A9A069-9C3D-465A-B7AD-0D6CC803990A}",
                             "details": {
-                                "name": "BehaviorComponentId*"
+                                "name": "Behavior Component Id"
                             }
                         },
                         {
                             "typeid": "{60A9A069-9C3D-465A-B7AD-0D6CC803990A}",
                             "details": {
-                                "name": "const BehaviorComponentId&"
+                                "name": "Behavior Component Id"
                             }
                         }
                     ],
@@ -74,31 +72,30 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "Boolean"
+                                "name": "Is Equal"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "ToString",
+                    "base": "ToString",
                     "context": "ComponentId",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke ToString"
+                        "tooltip": "When signaled, this will invoke To String"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after ToString is invoked"
+                        "tooltip": "Signaled after To String is invoked"
                     },
                     "details": {
-                        "name": "ComponentId::ToString",
-                        "category": "Entity"
+                        "name": "To String"
                     },
                     "params": [
                         {
                             "typeid": "{60A9A069-9C3D-465A-B7AD-0D6CC803990A}",
                             "details": {
-                                "name": "BehaviorComponentId*"
+                                "name": "Behavior Component Id*"
                             }
                         }
                     ],

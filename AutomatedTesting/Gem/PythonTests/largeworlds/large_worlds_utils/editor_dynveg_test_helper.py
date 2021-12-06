@@ -19,6 +19,45 @@ import azlmbr.paths
 
 sys.path.append(os.path.join(azlmbr.paths.projectroot, 'Gem', 'PythonTests'))
 import editor_python_test_tools.hydra_editor_utils as hydra
+from editor_python_test_tools.editor_entity_utils import EditorEntity
+from editor_python_test_tools.prefab_utils import Prefab
+
+
+def create_temp_mesh_prefab(mesh_asset_path, prefab_filename):
+    # Create initial entity
+    root = EditorEntity.create_editor_entity(name=prefab_filename)
+    assert root.exists(), "Failed to create entity"
+    # Add mesh component
+    mesh_component = root.add_component("Mesh")
+    assert root.has_component("Mesh") and mesh_component.is_enabled(), "Failed to add/activate Mesh component"
+    # Assign the specified mesh asset
+    mesh_asset = asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", mesh_asset_path, math.Uuid(), False)
+    mesh_component.set_component_property_value("Controller|Configuration|Mesh Asset", mesh_asset)
+    assert mesh_component.get_component_property_value("Controller|Configuration|Mesh Asset") == mesh_asset, \
+        "Failed to set Mesh asset"
+    # Create and return the temporary/in-memory prefab
+    temp_prefab = Prefab.create_prefab([root], prefab_filename)
+    return temp_prefab
+
+
+def create_temp_physx_mesh_collider(physx_mesh_id, prefab_filename):
+    # Create initial entity
+    root = EditorEntity.create_editor_entity(name=prefab_filename)
+    assert root.exists(), "Failed to create entity"
+    # Add PhysX Collider component
+    collider_component = root.add_component("PhysX Collider")
+    assert root.has_component("PhysX Collider") and collider_component.is_enabled(), \
+        "Failed to add/activate PhysX Collider component"
+    # Set the Collider's Shape Configuration field to PhysicsAsset, and assign the specified PhysX Mesh asset
+    collider_component.set_component_property_value("Shape Configuration|Shape", 7)
+    assert collider_component.get_component_property_value("Shape Configuration|Shape") == 7, \
+        "Failed to set Collider Shape to PhysicsAsset"
+    collider_component.set_component_property_value("Shape Configuration|Asset|PhysX Mesh", physx_mesh_id)
+    assert collider_component.get_component_property_value("Shape Configuration|Asset|PhysX Mesh") == physx_mesh_id, \
+        "Failed to assign PhysX Mesh asset"
+    # Create and return the temporary/in-memory prefab
+    temp_prefab = Prefab.create_prefab([root], prefab_filename)
+    return temp_prefab
 
 
 def create_surface_entity(name, center_point, box_size_x, box_size_y, box_size_z):

@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "DisplayMapperComponentTypeId",
+            "base": "DisplayMapperComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "DisplayMapperComponentTypeId::Getter",
-                "category": "Constants"
-            }
+                "name": "Display Mapper Component Type Id",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetDisplayMapperComponentTypeId",
+                    "details": {
+                        "name": "Get Display Mapper Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

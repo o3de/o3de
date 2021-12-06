@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "GameEntityContextRequestBus",
+            "base": "GameEntityContextRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "GameEntityContextRequestBus",
-                "category": "Entity"
+                "name": "Game Entity Context",
+                "category": "Game Entity"
             },
             "methods": [
                 {
-                    "key": "DeactivateGameEntity",
+                    "base": "DeactivateGameEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Deactivate Game Entity"
@@ -26,14 +26,14 @@
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "EntityId",
+                                "name": "Entity Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetEntityName",
+                    "base": "GetEntityName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Entity Name"
@@ -49,7 +49,7 @@
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "EntityId",
+                                "name": "Entity Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         }
@@ -58,13 +58,13 @@
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZStd::string"
+                                "name": "Name"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "ActivateGameEntity",
+                    "base": "ActivateGameEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Activate Game Entity"
@@ -80,14 +80,14 @@
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "EntityId",
+                                "name": "Entity Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "DestroyGameEntityAndDescendants",
+                    "base": "DestroyGameEntityAndDescendants",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Destroy Game Entity And Descendants"
@@ -103,14 +103,14 @@
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "EntityId",
+                                "name": "Entity Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "DestroyGameEntity",
+                    "base": "DestroyGameEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Destroy Game Entity"
@@ -126,30 +126,30 @@
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "EntityId",
+                                "name": "Entity Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "CreateGameEntity",
+                    "base": "CreateGameEntity",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke CreateGameEntity"
+                        "tooltip": "When signaled, this will invoke Create Game Entity"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after CreateGameEntity is invoked"
+                        "tooltip": "Signaled after Create Game Entity is invoked"
                     },
                     "details": {
-                        "name": "CreateGameEntity"
+                        "name": "Create Game Entity"
                     },
                     "params": [
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "char"
+                                "name": "Name"
                             }
                         }
                     ],

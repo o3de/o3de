@@ -1,38 +1,37 @@
 {
     "entries": [
         {
-            "key": "{93283EA1-ADED-53B8-B3BE-A7B933918286}",
+            "base": "{93283EA1-ADED-53B8-B3BE-A7B933918286}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "RotationXDegrees",
+                "name": "RotationX Degrees",
                 "category": "Math/Transform",
-                "tooltip": "returns a transform representing a rotation Degrees around the X-Axis",
-                "subtitle": "Transform"
+                "tooltip": "returns a transform representing a rotation Degrees around the X-Axis"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Degrees",
+                    "base": "DataInput_Degrees_0",
                     "details": {
-                        "name": "Number: Degrees"
+                        "name": "Degrees"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Transform",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Result: Transform"
+                        "name": "Result"
                     }
                 }
             ]

@@ -1,38 +1,37 @@
 {
     "entries": [
         {
-            "key": "{5B585330-B99A-5FDF-BA3C-CDA72468D4CA}",
+            "base": "{5B585330-B99A-5FDF-BA3C-CDA72468D4CA}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "IsFinite",
+                "name": "Is Finite",
                 "category": "Math/AABB",
-                "tooltip": "returns true if Source is finite, else false",
-                "subtitle": "AABB"
+                "tooltip": "returns true if Source is finite, else false"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_AABB: Source",
+                    "base": "DataInput_Source_0",
                     "details": {
-                        "name": "AABB: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Boolean",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Result: Boolean"
+                        "name": "Result"
                     }
                 }
             ]

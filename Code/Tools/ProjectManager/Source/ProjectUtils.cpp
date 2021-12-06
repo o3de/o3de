@@ -520,12 +520,10 @@ namespace O3DE::ProjectManager
         AZ::Outcome<QString, QString> ExecuteCommandResultModalDialog(
             const QString& cmd,
             const QStringList& arguments,
-            const QProcessEnvironment& processEnv,
             const QString& title)
         {
             QString resultOutput;
             QProcess execProcess;
-            execProcess.setProcessEnvironment(processEnv);
             execProcess.setProcessChannelMode(QProcess::MergedChannels);
 
             QProgressDialog dialog(title, QObject::tr("Cancel"), /*minimum=*/0, /*maximum=*/0);
@@ -611,11 +609,9 @@ namespace O3DE::ProjectManager
         AZ::Outcome<QString, QString> ExecuteCommandResult(
             const QString& cmd,
             const QStringList& arguments,
-            const QProcessEnvironment& processEnv,
             int commandTimeoutSeconds /*= ProjectCommandLineTimeoutSeconds*/)
         {
             QProcess execProcess;
-            execProcess.setProcessEnvironment(processEnv);
             execProcess.setProcessChannelMode(QProcess::MergedChannels);
             execProcess.start(cmd, arguments);
             if (!execProcess.waitForStarted())
@@ -628,11 +624,11 @@ namespace O3DE::ProjectManager
                 return AZ::Failure(QObject::tr("Process for command '%1' timed out at %2 seconds").arg(cmd).arg(commandTimeoutSeconds));
             }
             int resultCode = execProcess.exitCode();
+            QString resultOutput = execProcess.readAllStandardOutput();
             if (resultCode != 0)
             {
-                return AZ::Failure(QObject::tr("Process for command '%1' failed (result code %2").arg(cmd).arg(resultCode));
+                return AZ::Failure(QObject::tr("Process for command '%1' failed (result code %2) %3").arg(cmd).arg(resultCode).arg(resultOutput));
             }
-            QString resultOutput = execProcess.readAllStandardOutput();
             return AZ::Success(resultOutput);
         }
 

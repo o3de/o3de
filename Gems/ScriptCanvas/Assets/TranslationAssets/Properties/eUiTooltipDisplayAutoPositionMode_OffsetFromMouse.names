@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiTooltipDisplayAutoPositionMode_OffsetFromMouse",
+            "base": "eUiTooltipDisplayAutoPositionMode_OffsetFromMouse",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiTooltipDisplayAutoPositionMode_OffsetFromMouse::Getter",
-                "category": "Constants"
-            }
+                "name": "Offset From Mouse",
+                "category": "Constants/UI/Tooltip Display Auto Position Mode"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiTooltipDisplayAutoPositionMode_OffsetFromMouse",
+                    "details": {
+                        "name": "Offset From Mouse"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

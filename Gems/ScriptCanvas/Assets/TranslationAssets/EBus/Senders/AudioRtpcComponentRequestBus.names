@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "AudioRtpcComponentRequestBus",
+            "base": "AudioRtpcComponentRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "AudioRtpcComponentRequestBus",
+                "name": "Audio RTPC",
                 "category": "Audio"
             },
             "methods": [
                 {
-                    "key": "SetValue",
+                    "base": "SetValue",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Value"
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "SetRtpcValue",
+                    "base": "SetRtpcValue",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set RTPC Value"

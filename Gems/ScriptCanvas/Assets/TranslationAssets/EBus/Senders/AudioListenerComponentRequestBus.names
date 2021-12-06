@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "AudioListenerComponentRequestBus",
+            "base": "AudioListenerComponentRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "AudioListenerComponentRequestBus",
+                "name": "Audio Listener",
                 "category": "Audio"
             },
             "methods": [
                 {
-                    "key": "SetRotationEntity",
+                    "base": "SetRotationEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Rotation Entity"
@@ -34,7 +34,7 @@
                     ]
                 },
                 {
-                    "key": "SetPositionEntity",
+                    "base": "SetPositionEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Position Entity"
@@ -58,7 +58,7 @@
                     ]
                 },
                 {
-                    "key": "SetFullTransformEntity",
+                    "base": "SetFullTransformEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Full Transform Entity"
@@ -82,23 +82,23 @@
                     ]
                 },
                 {
-                    "key": "SetListenerEnabled",
+                    "base": "SetListenerEnabled",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetListenerEnabled"
+                        "tooltip": "When signaled, this will invoke Set Listener Enabled"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetListenerEnabled is invoked"
+                        "tooltip": "Signaled after Set Listener Enabled is invoked"
                     },
                     "details": {
-                        "name": "SetListenerEnabled"
+                        "name": "Set Listener Enabled"
                     },
                     "params": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Enabled"
                             }
                         }
                     ]

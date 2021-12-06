@@ -1,44 +1,43 @@
 {
     "entries": [
         {
-            "key": "{1D27BC5A-44D6-526E-B1EC-4B080B750ED1}",
+            "base": "{1D27BC5A-44D6-526E-B1EC-4B080B750ED1}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "GetForward",
+                "name": "Get Forward",
                 "category": "Math/Transform",
-                "tooltip": "returns the forward direction vector from the specified transform scaled by a given value (O3DE uses Z up, right handed)",
-                "subtitle": "Transform"
+                "tooltip": "returns the forward direction vector from the specified transform scaled by a given value (O3DE uses Z up, right handed)"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Transform: Source",
+                    "base": "DataInput_Source_0",
                     "details": {
-                        "name": "Transform: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Scale",
+                    "base": "DataInput_Scale_1",
                     "details": {
-                        "name": "Number: Scale"
+                        "name": "Scale"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector3",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Result: Vector3"
+                        "name": "Result"
                     }
                 }
             ]

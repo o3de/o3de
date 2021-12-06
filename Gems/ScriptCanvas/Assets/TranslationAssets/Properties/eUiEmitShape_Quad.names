@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiEmitShape_Quad",
+            "base": "eUiEmitShape_Quad",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiEmitShape_Quad::Getter",
-                "category": "Constants"
-            }
+                "name": "Quad",
+                "category": "Constants/UI/Emit Shape"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiEmitShape_Quad",
+                    "details": {
+                        "name": "Quad"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

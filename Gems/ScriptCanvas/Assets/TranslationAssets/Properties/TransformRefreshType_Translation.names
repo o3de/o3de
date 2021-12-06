@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "TransformRefreshType_Translation",
+            "base": "TransformRefreshType_Translation",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "TransformRefreshType_Translation::Getter",
-                "category": "Constants"
-            }
+                "name": "Translation",
+                "category": "Constants/Transform/Refresh Type"
+            },
+            "methods": [
+                {
+                    "base": "GetTransformRefreshType_Translation",
+                    "details": {
+                        "name": "Translation"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

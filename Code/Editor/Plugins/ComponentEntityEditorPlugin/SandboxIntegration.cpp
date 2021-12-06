@@ -10,7 +10,6 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TransformBus.h>
-#include <AzCore/Console/IConsole.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/RTTI/AttributeReader.h>
@@ -57,6 +56,7 @@
 #include <AzToolsFramework/UI/PropertyEditor/EntityPropertyEditor.hxx>
 #include <AzToolsFramework/UI/Layer/NameConflictWarning.hxx>
 #include <AzToolsFramework/ViewportSelection/EditorHelpers.h>
+#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <MathConversion.h>
 
 #include <Atom/RPI.Public/ViewportContext.h>
@@ -447,7 +447,7 @@ void SandboxIntegrationManager::OnEndUndo(const char* label, bool changed)
     // Add the undo only after we know it's got a legit change, we can't remove undos from the cry undo system so we do it here instead of OnBeginUndo
     if (changed && CUndo::IsRecording())
     {
-        CUndo::Record(new CToolsApplicationUndoLink(label));
+        CUndo::Record(new CToolsApplicationUndoLink());
     }
     if (m_startedUndoRecordingNestingLevel)
     {
@@ -498,13 +498,11 @@ void SandboxIntegrationManager::EntityParentChanged(
     // before finally being saved, it will result in all of those layers saving, too.
     AZ::EntityId oldAncestor = oldParentId;
 
-    bool wasNotInLayer = false;
     AZ::EntityId oldLayer;
     do
     {
         if (!oldAncestor.IsValid())
         {
-            wasNotInLayer = true;
             break;
         }
 
@@ -530,13 +528,11 @@ void SandboxIntegrationManager::EntityParentChanged(
 
     AZ::EntityId newAncestor = newParentId;
 
-    bool isGoingToRootScene = false;
     AZ::EntityId newLayer;
     do
     {
         if (!newAncestor.IsValid())
         {
-            isGoingToRootScene = true;
             break;
         }
 
@@ -1394,13 +1390,13 @@ void SandboxIntegrationManager::ContextMenu_NewEntity()
 {
     AZ::Vector3 worldPosition = AZ::Vector3::CreateZero();
 
-    CViewport* view = GetIEditor()->GetViewManager()->GetGameViewport();
     // If we don't have a viewport active to aid in placement, the object
     // will be created at the origin.
-    if (view)
+    if (CViewport* view = GetIEditor()->GetViewManager()->GetGameViewport())
     {
-        const QPoint viewPoint(static_cast<int>(m_contextMenuViewPoint.GetX()), static_cast<int>(m_contextMenuViewPoint.GetY()));
-        worldPosition = view->GetHitLocation(viewPoint);
+        worldPosition = AzToolsFramework::FindClosestPickIntersection(
+            view->GetViewportId(), AzFramework::ScreenPointFromVector2(m_contextMenuViewPoint), AzToolsFramework::EditorPickRayLength,
+            AzToolsFramework::GetDefaultEntityPlacementDistance());
     }
 
     CreateNewEntityAtPosition(worldPosition);
@@ -1675,6 +1671,12 @@ void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::
         if (auto viewportContext = viewportContextManager->GetViewportContextById(viewIndex))
         {
             const AZ::Transform cameraTransform = viewportContext->GetCameraTransform();
+            // do not attempt to interpolate to where we currently are
+            if (cameraTransform.GetTranslation().IsClose(center))
+            {
+                continue;
+            }
+
             const AZ::Vector3 forward = (center - cameraTransform.GetTranslation()).GetNormalized();
 
             // move camera 25% further back than required

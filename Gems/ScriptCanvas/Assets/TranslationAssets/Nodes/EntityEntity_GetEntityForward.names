@@ -1,44 +1,43 @@
 {
     "entries": [
         {
-            "key": "{1657EA13-3DAF-5E38-8964-D4480017C601}",
+            "base": "{1657EA13-3DAF-5E38-8964-D4480017C601}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "GetEntityForward",
+                "name": "Get Entity Forward",
                 "category": "Entity/Entity",
-                "tooltip": "returns the forward direction vector from the specified entity' world transform, scaled by a given value (O3DE uses Z up, right handed)",
-                "subtitle": "Entity"
+                "tooltip": "returns the forward direction vector from the specified entity' world transform, scaled by a given value (O3DE uses Z up, right handed)"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_EntityID: EntityId",
+                    "base": "DataInput_EntityId_0",
                     "details": {
-                        "name": "EntityID: EntityId"
+                        "name": "EntityId"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Scale",
+                    "base": "DataInput_Scale_1",
                     "details": {
-                        "name": "Number: Scale"
+                        "name": "Scale"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector3",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Result: Vector3"
+                        "name": "Result"
                     }
                 }
             ]

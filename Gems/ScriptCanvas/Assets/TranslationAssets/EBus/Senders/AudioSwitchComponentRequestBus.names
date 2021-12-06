@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "AudioSwitchComponentRequestBus",
+            "base": "AudioSwitchComponentRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "AudioSwitchComponentRequestBus",
+                "name": "Audio Switch",
                 "category": "Audio"
             },
             "methods": [
                 {
-                    "key": "SetState",
+                    "base": "SetState",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set State"
@@ -34,7 +34,7 @@
                     ]
                 },
                 {
-                    "key": "SetSwitchState",
+                    "base": "SetSwitchState",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Switch State"

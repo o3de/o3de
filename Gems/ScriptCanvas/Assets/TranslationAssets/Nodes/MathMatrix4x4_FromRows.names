@@ -1,56 +1,55 @@
 {
     "entries": [
         {
-            "key": "{B5272AB2-1312-5B55-A801-2A976B31665E}",
+            "base": "{B5272AB2-1312-5B55-A801-2A976B31665E}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "FromRows",
+                "name": "From Rows",
                 "category": "Math/Matrix4x4",
-                "tooltip": "returns a matrix from three row",
-                "subtitle": "Matrix4x4"
+                "tooltip": "returns a matrix from three row"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Vector4: Row1",
+                    "base": "DataInput_Row1_0",
                     "details": {
-                        "name": "Vector4: Row1"
+                        "name": "Row1"
                     }
                 },
                 {
-                    "key": "DataInput_Vector4: Row2",
+                    "base": "DataInput_Row2_1",
                     "details": {
-                        "name": "Vector4: Row2"
+                        "name": "Row2"
                     }
                 },
                 {
-                    "key": "DataInput_Vector4: Row3",
+                    "base": "DataInput_Row3_2",
                     "details": {
-                        "name": "Vector4: Row3"
+                        "name": "Row3"
                     }
                 },
                 {
-                    "key": "DataInput_Vector4: Row4",
+                    "base": "DataInput_Row4_3",
                     "details": {
-                        "name": "Vector4: Row4"
+                        "name": "Row4"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Matrix4x4",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Result: Matrix4x4"
+                        "name": "Result"
                     }
                 }
             ]

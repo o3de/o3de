@@ -1,38 +1,37 @@
 {
     "entries": [
         {
-            "key": "{768CD3CA-09E3-51EB-AE59-8D34DC0D12A8}",
+            "base": "{768CD3CA-09E3-51EB-AE59-8D34DC0D12A8}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Length",
                 "category": "Math/Vector4",
-                "tooltip": "returns the magnitude of source",
-                "subtitle": "Vector4"
+                "tooltip": "returns the magnitude of source"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Vector4: Source",
+                    "base": "DataInput_Source_0",
                     "details": {
-                        "name": "Vector4: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Number",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Result: Number"
+                        "name": "Result"
                     }
                 }
             ]

@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "BlendOp_Minimum",
+            "base": "BlendOp_Minimum",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "BlendOp_Minimum::Getter",
-                "category": "Constants"
-            }
+                "name": "Minimum",
+                "category": "Constants/Blend Operation"
+            },
+            "methods": [
+                {
+                    "base": "Minimum",
+                    "details": {
+                        "name": "Get Minimum"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

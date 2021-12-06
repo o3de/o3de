@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "ShadowmapSize_2045",
+            "base": "ShadowmapSize_2045",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "ShadowmapSize_2045::Getter",
-                "category": "Constants"
-            }
+                "name": "2045",
+                "category": "Constants/Shadowmap/Size"
+            },
+            "methods": [
+                {
+                    "base": "GetShadowmapSize_2045",
+                    "details": {
+                        "name": "2045"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

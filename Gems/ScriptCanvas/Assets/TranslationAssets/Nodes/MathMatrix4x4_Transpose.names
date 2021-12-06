@@ -1,38 +1,37 @@
 {
     "entries": [
         {
-            "key": "{8A4A10DF-A019-57A6-BF9D-493BBCA6B5E2}",
+            "base": "{8A4A10DF-A019-57A6-BF9D-493BBCA6B5E2}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Transpose",
                 "category": "Math/Matrix4x4",
-                "tooltip": "returns transpose of Matrix",
-                "subtitle": "Matrix4x4"
+                "tooltip": "returns transpose of Matrix"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Matrix4x4: Source",
+                    "base": "DataInput_Source_0",
                     "details": {
-                        "name": "Matrix4x4: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Matrix4x4",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Result: Matrix4x4"
+                        "name": "Result"
                     }
                 }
             ]

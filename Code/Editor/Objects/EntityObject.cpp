@@ -28,8 +28,7 @@
 #include "HitContext.h"
 #include "Objects/SelectionGroup.h"
 
-#include <IEntityRenderState.h>
-#include <IStatObj.h>
+static constexpr int VIEW_DISTANCE_MULTIPLIER_MAX = 100;
 
 //////////////////////////////////////////////////////////////////////////
 //! Undo Entity Link
@@ -58,7 +57,6 @@ public:
 protected:
     void Release() override { delete this; };
     int GetSize() override { return sizeof(*this); }; // Return size of xml state.
-    QString GetDescription() override { return "Entity Link"; };
     QString GetObjectName() override{ return ""; };
 
     void Undo([[maybe_unused]] bool bUndo) override
@@ -139,7 +137,6 @@ private:
     }
 
     int GetSize() override { return sizeof(CUndoAttachEntity); }
-    QString GetDescription() override { return "Attachment Changed"; }
 
     GUID m_attachedEntityGUID;
     CEntityObject::EAttachmentType m_attachmentType;
@@ -151,8 +148,6 @@ private:
 // CBase implementation.
 //////////////////////////////////////////////////////////////////////////
 
-float CEntityObject::m_helperScale = 1;
-
 namespace
 {
     CEntityObject* s_pPropertyPanelEntityObject = nullptr;
@@ -163,11 +158,8 @@ namespace
 
 //////////////////////////////////////////////////////////////////////////
 CEntityObject::CEntityObject()
-    : m_listeners(1)
 {
     m_bLoadFailed = false;
-
-    m_visualObject = nullptr;
 
     m_box.min.Set(0, 0, 0);
     m_box.max.Set(0, 0, 0);
@@ -223,7 +215,7 @@ CEntityObject::CEntityObject()
     mv_ratioLOD = 100;
     mv_viewDistanceMultiplier = 1.0f;
     mv_ratioLOD.SetLimits(0, 255);
-    mv_viewDistanceMultiplier.SetLimits(0.0f, IRenderNode::VIEW_DISTANCE_MULTIPLIER_MAX);
+    mv_viewDistanceMultiplier.SetLimits(0.0f, VIEW_DISTANCE_MULTIPLIER_MAX);
 
     m_physicsState = nullptr;
 
@@ -247,7 +239,6 @@ CEntityObject::CEntityObject()
     m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnProjectInAllDirsChange(var); });
     m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnProjectorFOVChange(var); });
     m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnProjectorTextureChange(var); });
-    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnPropertyChange(var); });
     m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnRadiusChange(var); });
 }
 
@@ -294,11 +285,6 @@ void CEntityObject::Done()
 
     ReleaseEventTargets();
     RemoveAllEntityLinks();
-
-    for (CListenerSet<IEntityObjectListener*>::Notifier notifier(m_listeners); notifier.IsValid(); notifier.Next())
-    {
-        notifier->OnDone();
-    }
 
     CBaseObject::Done();
 }
@@ -363,12 +349,6 @@ void CEntityObject::SetTransformDelegate(ITransformDelegate* pTransformDelegate)
     ForceVariableUpdate();
     s_ignorePropertiesUpdate = false;
     ResetCallbacks();
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CEntityObject::IsSameClass(CBaseObject* obj)
-{
-    return (GetClassDesc() == obj->GetClassDesc());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -459,32 +439,9 @@ bool CEntityObject::HitTest(HitContext& hc)
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CEntityObject::HitHelperTest(HitContext& hc)
-{
-    bool bResult = CBaseObject::HitHelperTest(hc);
-    if (bResult)
-    {
-        hc.object = this;
-    }
-
-    return bResult;
-}
-
-//////////////////////////////////////////////////////////////////////////
 bool CEntityObject::HitTestRect(HitContext& hc)
 {
-    bool bResult = false;
-
-    if (m_visualObject && !gSettings.viewports.bShowIcons && !gSettings.viewports.bShowSizeBasedIcons)
-    {
-        AABB box;
-        box.SetTransformedAABB(GetWorldTM(), m_visualObject->GetAABB());
-        bResult = HitTestRectBounds(hc, box);
-    }
-    else
-    {
-        bResult = CBaseObject::HitTestRect(hc);
-    }
+    bool bResult = CBaseObject::HitTestRect(hc);
 
     if (bResult)
     {
@@ -492,42 +449,6 @@ bool CEntityObject::HitTestRect(HitContext& hc)
     }
 
     return bResult;
-}
-
-//////////////////////////////////////////////////////////////////////////
-int CEntityObject::MouseCreateCallback(CViewport* view, EMouseEvent event, QPoint& point, int flags)
-{
-    AZ_PROFILE_FUNCTION(Entity);
-
-    if (event == eMouseMove || event == eMouseLDown)
-    {
-        Vec3 pos;
-        // Rise Entity above ground on Bounding box amount.
-        if (GetIEditor()->GetAxisConstrains() != AXIS_TERRAIN)
-        {
-            pos = view->MapViewToCP(point);
-        }
-        else
-        {
-            // Snap to terrain.
-            bool hitTerrain;
-            pos = view->ViewToWorld(point, &hitTerrain);
-            if (hitTerrain)
-            {
-                pos.z = GetIEditor()->GetTerrainElevation(pos.x, pos.y);
-                pos.z = pos.z - m_box.min.z;
-            }
-            pos = view->SnapToGrid(pos);
-        }
-        SetPos(pos);
-
-        if (event == eMouseLDown)
-        {
-            return MOUSECREATE_OK;
-        }
-        return MOUSECREATE_CONTINUE;
-    }
-    return CBaseObject::MouseCreateCallback(view, event, point, flags);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -592,11 +513,11 @@ void CEntityObject::AdjustLightProperties(CVarBlockPtr& properties, const char* 
     if (IVariable* pCastShadowVarLegacy = FindVariableInSubBlock(properties, pSubBlockVar, "bCastShadow"))
     {
         pCastShadowVarLegacy->SetFlags(pCastShadowVarLegacy->GetFlags() | IVariable::UI_INVISIBLE);
-
-        if (pCastShadowVarLegacy->GetDisplayValue()[0] != '0')
+        const QString zeroPrefix("0");
+        if (!pCastShadowVarLegacy->GetDisplayValue().startsWith(zeroPrefix))
         {
             bCastShadowLegacy = true;
-            pCastShadowVarLegacy->SetDisplayValue("0");
+            pCastShadowVarLegacy->SetDisplayValue(zeroPrefix);
         }
     }
 
@@ -680,11 +601,6 @@ void CEntityObject::SetName(const QString& name)
 
     CBaseObject::SetName(name);
 
-    CListenerSet<IEntityObjectListener*> listeners = m_listeners;
-    for (CListenerSet<IEntityObjectListener*>::Notifier notifier(listeners); notifier.IsValid(); notifier.Next())
-    {
-        notifier->OnNameChanged(name.toUtf8().data());
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -697,19 +613,6 @@ void CEntityObject::SetSelected(bool bSelect)
         UpdateLightProperty();
     }
 
-    for (CListenerSet<IEntityObjectListener*>::Notifier notifier(m_listeners); notifier.IsValid(); notifier.Next())
-    {
-        notifier->OnSelectionChanged(bSelect);
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CEntityObject::OnPropertyChange([[maybe_unused]] IVariable* var)
-{
-    if (s_ignorePropertiesUpdate)
-    {
-        return;
-    }
 }
 
 template <typename T>
@@ -941,11 +844,9 @@ void CEntityObject::Serialize(CObjectArchive& ar)
                 m_eventTargets.emplace_back(AZStd::move(et));
                 if (targetId != GUID_NULL)
                 {
-                    using namespace AZStd::placeholders;
                     ar.SetResolveCallback(
                         this, targetId,
-                        [this](CBaseObject* object, unsigned int index) { ResolveEventTarget(object, index); },
-                        i);
+                        [this,i](CBaseObject* object) { ResolveEventTarget(object, i); });
                 }
             }
         }
@@ -1154,12 +1055,6 @@ XmlNodeRef CEntityObject::Export([[maybe_unused]] const QString& levelPath, XmlN
         objNode->setAttr("MinSpec", ( uint32 )GetMinSpec());
     }
 
-    uint32 nMtlLayersMask = GetMaterialLayersMask();
-    if (nMtlLayersMask != 0)
-    {
-        objNode->setAttr("MatLayersMask", nMtlLayersMask);
-    }
-
     if (mv_hiddenInGame)
     {
         objNode->setAttr("HiddenInGame", true);
@@ -1256,11 +1151,6 @@ void CEntityObject::OnEvent(ObjectEvent event)
 
     case EVENT_CONFIG_SPEC_CHANGE:
     {
-        IObjectManager* objMan = GetIEditor()->GetObjectManager();
-        if (objMan && objMan->IsLightClass(this))
-        {
-            OnPropertyChange(nullptr);
-        }
         break;
     }
     default:
@@ -1348,56 +1238,6 @@ QString CEntityObject::GetLightAnimation() const
     }
 
     return "";
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CEntityObject::PostClone(CBaseObject* pFromObject, CObjectCloneContext& ctx)
-{
-    CBaseObject::PostClone(pFromObject, ctx);
-
-    CEntityObject* pFromEntity = ( CEntityObject* )pFromObject;
-    // Clone event targets.
-    if (!pFromEntity->m_eventTargets.empty())
-    {
-        size_t numTargets = pFromEntity->m_eventTargets.size();
-        for (size_t i = 0; i < numTargets; i++)
-        {
-            CEntityEventTarget& et = pFromEntity->m_eventTargets[i];
-            CBaseObject* pClonedTarget = ctx.FindClone(et.target);
-            if (!pClonedTarget)
-            {
-                pClonedTarget = et.target;  // If target not cloned, link to original target.
-            }
-
-            // Add cloned event.
-            AddEventTarget(pClonedTarget, et.event, et.sourceEvent, true);
-        }
-    }
-
-    // Clone links.
-    if (!pFromEntity->m_links.empty())
-    {
-        int numTargets = static_cast<int>(pFromEntity->m_links.size());
-        for (int i = 0; i < numTargets; i++)
-        {
-            CEntityLink& et = pFromEntity->m_links[i];
-            CBaseObject* pClonedTarget = ctx.FindClone(et.target);
-            if (!pClonedTarget)
-            {
-                pClonedTarget = et.target;  // If target not cloned, link to original target.
-            }
-
-            // Add cloned event.
-            if (pClonedTarget)
-            {
-                AddEntityLink(et.name, pClonedTarget->GetId());
-            }
-            else
-            {
-                AddEntityLink(et.name, GUID_NULL);
-            }
-        }
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1554,7 +1394,7 @@ void CEntityObject::OnObjectEvent(CBaseObject* target, int event)
 //////////////////////////////////////////////////////////////////////////
 int CEntityObject::AddEventTarget(CBaseObject* target, const QString& event, const QString& sourceEvent, [[maybe_unused]] bool bUpdateScript)
 {
-    StoreUndo("Add EventTarget");
+    StoreUndo();
     CEntityEventTarget et;
     et.target = target;
     et.event = event;
@@ -1588,7 +1428,7 @@ void CEntityObject::RemoveEventTarget(int index, [[maybe_unused]] bool bUpdateSc
 {
     if (index >= 0 && index < m_eventTargets.size())
     {
-        StoreUndo("Remove EventTarget");
+        StoreUndo();
 
         if (m_eventTargets[index].pLineGizmo)
         {
@@ -1624,7 +1464,7 @@ int CEntityObject::AddEntityLink(const QString& name, GUID targetEntityId)
         }
     }
 
-    StoreUndo("Add EntityLink");
+    StoreUndo();
 
     CLineGizmo* pLineGizmo = nullptr;
 
@@ -1672,7 +1512,7 @@ void CEntityObject::RemoveEntityLink(int index)
     if (index >= 0 && index < m_links.size())
     {
         CEntityLink& link = m_links[index];
-        StoreUndo("Remove EntityLink");
+        StoreUndo();
 
         if (link.pLineGizmo)
         {
@@ -1695,7 +1535,7 @@ void CEntityObject::RenameEntityLink(int index, const QString& newName)
 {
     if (index >= 0 && index < m_links.size())
     {
-        StoreUndo("Rename EntityLink");
+        StoreUndo();
 
         if (m_links[index].pLineGizmo)
         {
@@ -1843,18 +1683,6 @@ void CEntityObject::OnLoadFailed()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CEntityObject::SetHelperScale(float scale)
-{
-    m_helperScale = scale;
-}
-
-//////////////////////////////////////////////////////////////////////////
-float CEntityObject::GetHelperScale()
-{
-    return m_helperScale;
-}
-
-//////////////////////////////////////////////////////////////////////////
 //! Analyze errors for this object.
 void CEntityObject::Validate(IErrorReport* report)
 {
@@ -1899,19 +1727,6 @@ bool CEntityObject::IsSimilarObject(CBaseObject* pObject)
         }
     }
     return false;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CEntityObject::OnContextMenu(QMenu* pMenu)
-{
-    if (!pMenu->isEmpty())
-    {
-        pMenu->addSeparator();
-    }
-
-    // Events
-
-    CBaseObject::OnContextMenu(pMenu);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2169,16 +1984,6 @@ void CEntityObject::StoreUndoEntityLink(CSelectionGroup* pGroup)
     {
         CUndo::Record(new CUndoEntityLink(pGroup));
     }
-}
-
-void CEntityObject::RegisterListener(IEntityObjectListener* pListener)
-{
-    m_listeners.Add(pListener);
-}
-
-void CEntityObject::UnregisterListener(IEntityObjectListener* pListener)
-{
-    m_listeners.Remove(pListener);
 }
 
 template <typename T>

@@ -1,44 +1,43 @@
 {
     "entries": [
         {
-            "key": "{A03CA593-2B2E-5BEE-9A63-118D2F1E9DED}",
+            "base": "{A03CA593-2B2E-5BEE-9A63-118D2F1E9DED}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Clamp",
                 "category": "Math/AABB",
-                "tooltip": "returns the largest version of Source that can fit entirely within Clamp",
-                "subtitle": "AABB"
+                "tooltip": "returns the largest version of Source that can fit entirely within Clamp"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_AABB: Source",
+                    "base": "DataInput_Source_0",
                     "details": {
-                        "name": "AABB: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_AABB: Clamp",
+                    "base": "DataInput_Clamp_1",
                     "details": {
-                        "name": "AABB: Clamp"
+                        "name": "Clamp"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: AABB",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Result: AABB"
+                        "name": "Result"
                     }
                 }
             ]

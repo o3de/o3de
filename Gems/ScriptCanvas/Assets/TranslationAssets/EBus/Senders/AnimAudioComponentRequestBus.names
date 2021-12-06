@@ -1,79 +1,83 @@
 {
     "entries": [
         {
-            "key": "AnimAudioComponentRequestBus",
+            "base": "AnimAudioComponentRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "AnimAudioComponentRequestBus"
+                "name": "Audio",
+                "category": "Animation"
             },
             "methods": [
                 {
-                    "key": "AddTriggerEvent",
+                    "base": "AddTriggerEvent",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke AddTriggerEvent"
+                        "tooltip": "When signaled, this will invoke Add Trigger Event"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after AddTriggerEvent is invoked"
+                        "tooltip": "Signaled after Add Trigger Event is invoked"
                     },
                     "details": {
-                        "name": "AddTriggerEvent"
+                        "name": "Add Trigger Event",
+                        "tooltip": "Adds audio support to when an animation event is fired"
                     },
                     "params": [
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZStd::string"
+                                "name": "Event Name"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZStd::string"
+                                "name": "Trigger Name"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZStd::string"
+                                "name": "Joint Name"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "ClearTriggerEvents",
+                    "base": "ClearTriggerEvents",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke ClearTriggerEvents"
+                        "tooltip": "When signaled, this will invoke Clear Trigger Events"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after ClearTriggerEvents is invoked"
+                        "tooltip": "Signaled after Clear Trigger Events is invoked"
                     },
                     "details": {
-                        "name": "ClearTriggerEvents"
+                        "name": "Clear Trigger Events",
+                        "tooltip": "Clears all audio support for animation events"
                     }
                 },
                 {
-                    "key": "RemoveTriggerEvent",
+                    "base": "RemoveTriggerEvent",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke RemoveTriggerEvent"
+                        "tooltip": "When signaled, this will invoke Remove Trigger Event"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after RemoveTriggerEvent is invoked"
+                        "tooltip": "Signaled after Remove Trigger Event is invoked"
                     },
                     "details": {
-                        "name": "RemoveTriggerEvent"
+                        "name": "Remove Trigger Event",
+                        "tooltip": "Removes audio support from an anim event"
                     },
                     "params": [
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZStd::string"
+                                "name": "Event Name"
                             }
                         }
                     ]

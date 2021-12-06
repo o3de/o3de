@@ -1,50 +1,49 @@
 {
     "entries": [
         {
-            "key": "{636D27FE-E3E3-5983-A364-9147CD42F2D2}",
+            "base": "{636D27FE-E3E3-5983-A364-9147CD42F2D2}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Clamp",
                 "category": "Math/Vector2",
-                "tooltip": "returns vector clamped to [min, max] and equal to source if possible",
-                "subtitle": "Vector2"
+                "tooltip": "returns vector clamped to [min, max] and equal to source if possible"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Vector2: Source",
+                    "base": "DataInput_Source_0",
                     "details": {
-                        "name": "Vector2: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Vector2: Min",
+                    "base": "DataInput_Min_1",
                     "details": {
-                        "name": "Vector2: Min"
+                        "name": "Min"
                     }
                 },
                 {
-                    "key": "DataInput_Vector2: Max",
+                    "base": "DataInput_Max_2",
                     "details": {
-                        "name": "Vector2: Max"
+                        "name": "Max"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector2",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Result: Vector2"
+                        "name": "Result"
                     }
                 }
             ]

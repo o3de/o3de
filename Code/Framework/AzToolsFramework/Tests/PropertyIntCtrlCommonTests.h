@@ -156,6 +156,16 @@ namespace UnitTest
             EXPECT_STREQ(tooltip.toStdString().c_str(), expected.str().c_str());
         }
 
+        void EmitWidgetValueChanged()
+        {
+            emit m_widget->valueChanged(ValueType(0));
+        }
+
+        void EmitWidgetEditingFinished()
+        {
+            emit m_widget->editingFinished();
+        }
+
         AZStd::unique_ptr<QWidget> m_dummyWidget;
         AZStd::unique_ptr<HandlerAPI> m_handler;
         WidgetType* m_widget;

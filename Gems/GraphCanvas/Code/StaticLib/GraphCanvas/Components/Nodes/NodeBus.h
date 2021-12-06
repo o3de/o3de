@@ -15,7 +15,6 @@
 #include <GraphCanvas/Editor/EditorTypes.h>
 #include <GraphCanvas/Types/EntitySaveData.h>
 #include <GraphCanvas/Types/GraphCanvasGraphSerialization.h>
-#include <GraphCanvas/Types/TranslationTypes.h>
 
 #include <GraphCanvas/Components/Slots/SlotBus.h>
 

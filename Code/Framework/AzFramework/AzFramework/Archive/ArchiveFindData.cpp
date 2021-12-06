@@ -78,9 +78,9 @@ namespace AZ::IO
     {
         // get the priority into local variable to avoid it changing in the course of
         // this function execution
-        ArchiveLocationPriority nVarPakPriority = archive->GetPakPriority();
+        FileSearchPriority nVarPakPriority = archive->GetPakPriority();
 
-        if (nVarPakPriority == ArchiveLocationPriority::ePakPriorityFileFirst)
+        if (nVarPakPriority == FileSearchPriority::FileFirst)
         {
             // first, find the file system files
             ScanFS(archive, szDir);
@@ -96,7 +96,7 @@ namespace AZ::IO
             {
                 ScanZips(archive, szDir);
             }
-            if (bAllowUseFS || nVarPakPriority != ArchiveLocationPriority::ePakPriorityPakOnly)
+            if (bAllowUseFS || nVarPakPriority != FileSearchPriority::PakOnly)
             {
                 ScanFS(archive, szDir);
             }

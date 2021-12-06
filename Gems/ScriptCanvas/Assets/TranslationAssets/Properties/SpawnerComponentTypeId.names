@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "SpawnerComponentTypeId",
+            "base": "SpawnerComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "SpawnerComponentTypeId::Getter",
-                "category": "Constants"
-            }
+                "name": "Spawner Component Type Id",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetSpawnerComponentTypeId",
+                    "details": {
+                        "name": "Get Spawner Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

@@ -1,12 +1,183 @@
 {
     "entries": [
         {
-            "key": "Contact",
+            "base": "Contact",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "Contact"
-            }
+                "name": "Contact",
+                "category": "Physics"
+            },
+            "methods": [
+                {
+                    "base": "GetPosition",
+                    "details": {
+                        "name": "Get Position"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D7439508-ED10-4395-9D48-1FC3D7815361}",
+                            "details": {
+                                "name": "Contact"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector 3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetPosition",
+                    "details": {
+                        "name": "Set Position"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D7439508-ED10-4395-9D48-1FC3D7815361}",
+                            "details": {
+                                "name": "Contact"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector 3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetNormal",
+                    "details": {
+                        "name": "Get Normal"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D7439508-ED10-4395-9D48-1FC3D7815361}",
+                            "details": {
+                                "name": "Contact"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector 3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetNormal",
+                    "details": {
+                        "name": "Set Normal"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D7439508-ED10-4395-9D48-1FC3D7815361}",
+                            "details": {
+                                "name": "Contact"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector 3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetImpulse",
+                    "details": {
+                        "name": "Get Impulse"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D7439508-ED10-4395-9D48-1FC3D7815361}",
+                            "details": {
+                                "name": "Contact"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector 3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetImpulse",
+                    "details": {
+                        "name": "Set Impulse"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D7439508-ED10-4395-9D48-1FC3D7815361}",
+                            "details": {
+                                "name": "Contact"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector 3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetSeparation",
+                    "details": {
+                        "name": "Get Separation"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D7439508-ED10-4395-9D48-1FC3D7815361}",
+                            "details": {
+                                "name": "Contact"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetSeparation",
+                    "details": {
+                        "name": "Set Separation"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D7439508-ED10-4395-9D48-1FC3D7815361}",
+                            "details": {
+                                "name": "Contact"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

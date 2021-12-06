@@ -13,15 +13,8 @@
 
 namespace AzManipulatorTestFramework
 {
-    // Null debug display for dummy draw calls
-    class NullDebugDisplayRequests : public AzFramework::DebugDisplayRequests
-    {
-    public:
-        virtual ~NullDebugDisplayRequests() = default;
-    };
-
-    ViewportInteraction::ViewportInteraction()
-        : m_nullDebugDisplayRequests(AZStd::make_unique<NullDebugDisplayRequests>())
+    ViewportInteraction::ViewportInteraction(AZStd::shared_ptr<AzFramework::DebugDisplayRequests> debugDisplayRequests)
+        : m_debugDisplayRequests(AZStd::move(debugDisplayRequests))
     {
         AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler::BusConnect(m_viewportId);
         AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Handler::BusConnect(m_viewportId);
@@ -102,7 +95,7 @@ namespace AzManipulatorTestFramework
 
     AzFramework::DebugDisplayRequests& ViewportInteraction::GetDebugDisplay()
     {
-        return *m_nullDebugDisplayRequests;
+        return *m_debugDisplayRequests;
     }
 
     void ViewportInteraction::SetGridSnapping(const bool enabled)
@@ -135,21 +128,20 @@ namespace AzManipulatorTestFramework
         m_angularStep = step;
     }
 
-    int ViewportInteraction::GetViewportId() const
+    AzFramework::ViewportId ViewportInteraction::GetViewportId() const
     {
         return m_viewportId;
     }
 
-    AZStd::optional<AZ::Vector3> ViewportInteraction::ViewportScreenToWorld(
-        [[maybe_unused]] const AzFramework::ScreenPoint& screenPosition, [[maybe_unused]] float depth)
+    AZ::Vector3 ViewportInteraction::ViewportScreenToWorld([[maybe_unused]] const AzFramework::ScreenPoint& screenPosition)
     {
-        return {};
+        return AzFramework::ScreenToWorld(screenPosition, m_cameraState);
     }
 
-    AZStd::optional<AzToolsFramework::ViewportInteraction::ProjectedViewportRay> ViewportInteraction::ViewportScreenToWorldRay(
+    AzToolsFramework::ViewportInteraction::ProjectedViewportRay ViewportInteraction::ViewportScreenToWorldRay(
         [[maybe_unused]] const AzFramework::ScreenPoint& screenPosition)
     {
-        return {};
+        return AzToolsFramework::ViewportInteraction::ViewportScreenToWorldRay(m_cameraState, screenPosition);
     }
 
     float ViewportInteraction::DeviceScalingFactor()

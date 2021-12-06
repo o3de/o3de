@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiLayoutGridBus",
+            "base": "UiLayoutGridBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiLayoutGridBus",
+                "name": "UI Layout Grid",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "GetStartingDirection",
+                    "base": "GetStartingDirection",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Starting Direction"
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "SetHorizontalOrder",
+                    "base": "SetHorizontalOrder",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Horizontal Order"
@@ -57,7 +57,7 @@
                     ]
                 },
                 {
-                    "key": "SetCellSize",
+                    "base": "SetCellSize",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Cell Size"
@@ -81,7 +81,7 @@
                     ]
                 },
                 {
-                    "key": "SetSpacing",
+                    "base": "SetSpacing",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Spacing"
@@ -105,7 +105,7 @@
                     ]
                 },
                 {
-                    "key": "GetSpacing",
+                    "base": "GetSpacing",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Spacing"
@@ -128,7 +128,7 @@
                     ]
                 },
                 {
-                    "key": "GetCellSize",
+                    "base": "GetCellSize",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Cell Size"
@@ -151,7 +151,7 @@
                     ]
                 },
                 {
-                    "key": "GetPadding",
+                    "base": "GetPadding",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Padding"
@@ -174,7 +174,7 @@
                     ]
                 },
                 {
-                    "key": "SetPadding",
+                    "base": "SetPadding",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Padding"
@@ -198,7 +198,7 @@
                     ]
                 },
                 {
-                    "key": "GetHorizontalOrder",
+                    "base": "GetHorizontalOrder",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Horizontal Order"
@@ -221,7 +221,7 @@
                     ]
                 },
                 {
-                    "key": "GetVerticalOrder",
+                    "base": "GetVerticalOrder",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Vertical Order"
@@ -244,7 +244,7 @@
                     ]
                 },
                 {
-                    "key": "SetVerticalOrder",
+                    "base": "SetVerticalOrder",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Vertical Order"
@@ -268,7 +268,7 @@
                     ]
                 },
                 {
-                    "key": "SetStartingDirection",
+                    "base": "SetStartingDirection",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Starting Direction"

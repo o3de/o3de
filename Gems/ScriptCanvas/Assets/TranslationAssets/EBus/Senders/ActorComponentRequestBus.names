@@ -1,38 +1,38 @@
 {
     "entries": [
         {
-            "key": "ActorComponentRequestBus",
+            "base": "ActorComponentRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "ActorComponentRequestBus",
+                "name": "Actor",
                 "category": "Animation"
             },
             "methods": [
                 {
-                    "key": "GetRenderCharacter",
+                    "base": "GetRenderCharacter",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetRenderCharacter"
+                        "tooltip": "When signaled, this will invoke Get Render Character"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetRenderCharacter is invoked"
+                        "tooltip": "Signaled after Get Render Character is invoked"
                     },
                     "details": {
-                        "name": "GetRenderCharacter"
+                        "name": "Get Render Character"
                     },
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Enabled"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "DetachFromEntity",
+                    "base": "DetachFromEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Detach From Entity"
@@ -46,29 +46,29 @@
                     }
                 },
                 {
-                    "key": "GetRenderActorVisible",
+                    "base": "GetRenderActorVisible",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetRenderActorVisible"
+                        "tooltip": "When signaled, this will invoke Get Render Actor Visible"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetRenderActorVisible is invoked"
+                        "tooltip": "Signaled after Get Render Actor Visible is invoked"
                     },
                     "details": {
-                        "name": "GetRenderActorVisible"
+                        "name": "Get Render Actor Visible"
                     },
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Visible"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "AttachToEntity",
+                    "base": "AttachToEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Attach To Entity"
@@ -78,7 +78,8 @@
                         "tooltip": "Signaled after Attach To Entity is invoked"
                     },
                     "details": {
-                        "name": "Attach To Entity"
+                        "name": "Attach To Entity",
+                        "category": "Actor Animation"
                     },
                     "params": [
                         {
@@ -91,57 +92,59 @@
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Attachment Type",
+                                "tooltip": "0: Actor, 1: Skin"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetRenderCharacter",
+                    "base": "SetRenderCharacter",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetRenderCharacter"
+                        "tooltip": "When signaled, this will invoke Set Render Character"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetRenderCharacter is invoked"
+                        "tooltip": "Signaled after Set Render Character is invoked"
                     },
                     "details": {
-                        "name": "SetRenderCharacter"
+                        "name": "Set Render Character"
                     },
                     "params": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Enable"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetJointTransform",
+                    "base": "GetJointTransform",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetJointTransform"
+                        "tooltip": "When signaled, this will invoke Get Joint Transform"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetJointTransform is invoked"
+                        "tooltip": "Signaled after Get Joint Transform is invoked"
                     },
                     "details": {
-                        "name": "GetJointTransform"
+                        "name": "Get Joint Transform"
                     },
                     "params": [
                         {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "AZ::u64"
+                                "name": "Joint Index"
                             }
                         },
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Space",
+                                "tooltip": "0: Local, 1: Model, 2: World"
                             }
                         }
                     ],
@@ -155,45 +158,23 @@
                     ]
                 },
                 {
-                    "key": "DebugDrawRoot",
+                    "base": "GetJointIndexByName",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Debug Draw Root"
+                        "tooltip": "When signaled, this will invoke Get Joint Index By Name"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Debug Draw Root is invoked"
+                        "tooltip": "Signaled after Get Joint Index By Name is invoked"
                     },
                     "details": {
-                        "name": "Debug Draw Root"
-                    },
-                    "params": [
-                        {
-                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
-                            "details": {
-                                "name": "bool"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "GetJointIndexByName",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke GetJointIndexByName"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after GetJointIndexByName is invoked"
-                    },
-                    "details": {
-                        "name": "GetJointIndexByName"
+                        "name": "Get Joint Index By Name"
                     },
                     "params": [
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "char"
+                                "name": "Name"
                             }
                         }
                     ],
@@ -201,7 +182,7 @@
                         {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "AZ::u64"
+                                "name": "Joint Index"
                             }
                         }
                     ]

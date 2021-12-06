@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "UiDropdownNotificationBus",
+            "base": "UiDropdownNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,21 +10,21 @@
             },
             "methods": [
                 {
-                    "key": "OnDropdownExpanded",
+                    "base": "OnDropdownExpanded",
                     "details": {
                         "name": "On Dropdown Expanded",
                         "tooltip": "Executes when the dropdown is expanded"
                     }
                 },
                 {
-                    "key": "OnDropdownCollapsed",
+                    "base": "OnDropdownCollapsed",
                     "details": {
                         "name": "On Dropdown Collapsed",
                         "tooltip": "Executes when the dropdown is collapsed"
                     }
                 },
                 {
-                    "key": "OnDropdownValueChanged",
+                    "base": "OnDropdownValueChanged",
                     "details": {
                         "name": "On Dropdown Value Changed",
                         "tooltip": "Executes when an option is selected"

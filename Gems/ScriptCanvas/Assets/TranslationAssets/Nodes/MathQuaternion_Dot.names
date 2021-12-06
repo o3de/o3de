@@ -1,44 +1,43 @@
 {
     "entries": [
         {
-            "key": "{46366DEB-4F16-54AF-A618-073E0E2C1DA4}",
+            "base": "{46366DEB-4F16-54AF-A618-073E0E2C1DA4}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Dot",
                 "category": "Math/Quaternion",
-                "tooltip": "returns the Dot product of A and B",
-                "subtitle": "Quaternion"
+                "tooltip": "returns the Dot product of A and B"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Quaternion: A",
+                    "base": "DataInput_A_0",
                     "details": {
-                        "name": "Quaternion: A"
+                        "name": "A"
                     }
                 },
                 {
-                    "key": "DataInput_Quaternion: B",
+                    "base": "DataInput_B_1",
                     "details": {
-                        "name": "Quaternion: B"
+                        "name": "B"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Number",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Result: Number"
+                        "name": "Result"
                     }
                 }
             ]

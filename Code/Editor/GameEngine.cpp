@@ -35,7 +35,6 @@
 
 // CryCommon
 #include <CryCommon/INavigationSystem.h>
-#include <CryCommon/LyShine/ILyShine.h>
 #include <CryCommon/MainThreadRenderRequestBus.h>
 
 // Editor
@@ -157,20 +156,20 @@ struct SSystemUserCallback
         }
     }
 
-    int ShowMessage(const char* text, const char* caption, unsigned int uType) override
+    void ShowMessage(const char* text, const char* caption, unsigned int uType) override
     {
         if (CCryEditApp::instance()->IsInAutotestMode())
         {
-            return IDOK;
+            return;
         }
 
         const UINT kMessageBoxButtonMask = 0x000f;
         if (!GetIEditor()->IsInGameMode() && (uType == 0 || uType == MB_OK || !(uType & kMessageBoxButtonMask)))
         {
             static_cast<CEditorImpl*>(GetIEditor())->AddErrorMessage(text, caption);
-            return IDOK;
+            return;
         }
-        return CryMessageBox(text, caption, uType);
+        CryMessageBox(text, caption, uType);
     }
 
     void OnSplashScreenDone()
@@ -594,13 +593,6 @@ void CGameEngine::SwitchToInEditor()
 
     // Enable accelerators.
     GetIEditor()->EnableAcceleratos(true);
-
-
-    // reset UI system
-    if (gEnv->pLyShine)
-    {
-        gEnv->pLyShine->Reset();
-    }
 
     // [Anton] - order changed, see comments for CGameEngine::SetSimulationMode
     //! Send event to switch out of game.

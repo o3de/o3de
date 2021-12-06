@@ -1,38 +1,37 @@
 {
     "entries": [
         {
-            "key": "{6A4FE29F-3BAA-40D6-8BEE-CDE9CCBD7885}",
+            "base": "{6A4FE29F-3BAA-40D6-8BEE-CDE9CCBD7885}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Get Element",
                 "category": "Containers",
-                "tooltip": "Returns the element at the specified Index or Key",
-                "subtitle": "Containers"
+                "tooltip": "Returns the element at the specified Index or Key"
             },
             "slots": [
                 {
-                    "key": "DataInput_Source",
+                    "base": "DataInput_Source_0",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In",
                         "tooltip": "Input signal"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out",
                         "tooltip": "Output signal"
                     }
                 },
                 {
-                    "key": "Output_Key Not Found",
+                    "base": "Output_Key Not Found_1",
                     "details": {
                         "name": "Key Not Found",
                         "tooltip": "Triggered if the specified key was not found"

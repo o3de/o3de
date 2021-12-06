@@ -1,35 +1,29 @@
 {
     "entries": [
         {
-            "key": "IBlendShapeData",
+            "base": "IBlendShapeData",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "IBlendShapeData"
+                "name": "IBlend Shape Data",
+                "category": "Animation"
             },
             "methods": [
                 {
-                    "key": "GetNormal",
+                    "base": "GetNormal",
                     "context": "IBlendShapeData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetNormal"
+                        "tooltip": "When signaled, this will invoke Get Normal"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetNormal is invoked"
+                        "tooltip": "Signaled after Get Normal is invoked"
                     },
                     "details": {
-                        "name": "IBlendShapeData::GetNormal",
-                        "category": "Other"
+                        "name": "Get Normal"
                     },
                     "params": [
-                        {
-                            "typeid": "{55E7384D-9333-4C51-BC91-E90CAC2C30E2}",
-                            "details": {
-                                "name": "IBlendShapeData*"
-                            }
-                        },
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
@@ -41,33 +35,26 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "const Vector3&"
+                                "name": "const Vector 3&"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetFaceVertexIndex",
+                    "base": "GetFaceVertexIndex",
                     "context": "IBlendShapeData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetFaceVertexIndex"
+                        "tooltip": "When signaled, this will invoke Get Face Vertex Index"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetFaceVertexIndex is invoked"
+                        "tooltip": "Signaled after Get Face Vertex Index is invoked"
                     },
                     "details": {
-                        "name": "IBlendShapeData::GetFaceVertexIndex",
-                        "category": "Other"
+                        "name": "Get Face Vertex Index"
                     },
                     "params": [
-                        {
-                            "typeid": "{55E7384D-9333-4C51-BC91-E90CAC2C30E2}",
-                            "details": {
-                                "name": "IBlendShapeData*"
-                            }
-                        },
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
@@ -91,27 +78,20 @@
                     ]
                 },
                 {
-                    "key": "GetFaceInfo",
+                    "base": "GetFaceInfo",
                     "context": "IBlendShapeData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetFaceInfo"
+                        "tooltip": "When signaled, this will invoke Get Face Info"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetFaceInfo is invoked"
+                        "tooltip": "Signaled after Get Face Info is invoked"
                     },
                     "details": {
-                        "name": "IBlendShapeData::GetFaceInfo",
-                        "category": "Other"
+                        "name": "Get Face Info"
                     },
                     "params": [
-                        {
-                            "typeid": "{55E7384D-9333-4C51-BC91-E90CAC2C30E2}",
-                            "details": {
-                                "name": "IBlendShapeData*"
-                            }
-                        },
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
@@ -123,33 +103,26 @@
                         {
                             "typeid": "{C972EC9A-3A5C-47CD-9A92-ECB4C0C0451C}",
                             "details": {
-                                "name": "const SceneAPI::DataTypes::IBlendShapeData::Face&"
+                                "name": "const SceneAPI:: Data Types::I Blend Shape Data:: Face&"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetPosition",
+                    "base": "GetPosition",
                     "context": "IBlendShapeData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetPosition"
+                        "tooltip": "When signaled, this will invoke Get Position"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetPosition is invoked"
+                        "tooltip": "Signaled after Get Position is invoked"
                     },
                     "details": {
-                        "name": "IBlendShapeData::GetPosition",
-                        "category": "Other"
+                        "name": "Get Position"
                     },
                     "params": [
-                        {
-                            "typeid": "{55E7384D-9333-4C51-BC91-E90CAC2C30E2}",
-                            "details": {
-                                "name": "IBlendShapeData*"
-                            }
-                        },
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
@@ -161,33 +134,26 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "const Vector3&"
+                                "name": "const Vector 3&"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetUsedPointIndexForControlPoint",
+                    "base": "GetUsedPointIndexForControlPoint",
                     "context": "IBlendShapeData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetUsedPointIndexForControlPoint"
+                        "tooltip": "When signaled, this will invoke Get Used Point Index For Control Point"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetUsedPointIndexForControlPoint is invoked"
+                        "tooltip": "Signaled after Get Used Point Index For Control Point is invoked"
                     },
                     "details": {
-                        "name": "IBlendShapeData::GetUsedPointIndexForControlPoint",
-                        "category": "Other"
+                        "name": "Get Used Point Index For Control Point"
                     },
                     "params": [
-                        {
-                            "typeid": "{55E7384D-9333-4C51-BC91-E90CAC2C30E2}",
-                            "details": {
-                                "name": "IBlendShapeData*"
-                            }
-                        },
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
@@ -205,28 +171,19 @@
                     ]
                 },
                 {
-                    "key": "GetVertexCount",
+                    "base": "GetVertexCount",
                     "context": "IBlendShapeData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetVertexCount"
+                        "tooltip": "When signaled, this will invoke Get Vertex Count"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetVertexCount is invoked"
+                        "tooltip": "Signaled after Get Vertex Count is invoked"
                     },
                     "details": {
-                        "name": "IBlendShapeData::GetVertexCount",
-                        "category": "Other"
+                        "name": "Get Vertex Count"
                     },
-                    "params": [
-                        {
-                            "typeid": "{55E7384D-9333-4C51-BC91-E90CAC2C30E2}",
-                            "details": {
-                                "name": "IBlendShapeData*"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
@@ -237,28 +194,19 @@
                     ]
                 },
                 {
-                    "key": "GetFaceCount",
+                    "base": "GetFaceCount",
                     "context": "IBlendShapeData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetFaceCount"
+                        "tooltip": "When signaled, this will invoke Get Face Count"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetFaceCount is invoked"
+                        "tooltip": "Signaled after Get Face Count is invoked"
                     },
                     "details": {
-                        "name": "IBlendShapeData::GetFaceCount",
-                        "category": "Other"
+                        "name": "Get Face Count"
                     },
-                    "params": [
-                        {
-                            "typeid": "{55E7384D-9333-4C51-BC91-E90CAC2C30E2}",
-                            "details": {
-                                "name": "IBlendShapeData*"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
@@ -269,27 +217,20 @@
                     ]
                 },
                 {
-                    "key": "GetControlPointIndex",
+                    "base": "GetControlPointIndex",
                     "context": "IBlendShapeData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetControlPointIndex"
+                        "tooltip": "When signaled, this will invoke Get Control Point Index"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetControlPointIndex is invoked"
+                        "tooltip": "Signaled after Get Control Point Index is invoked"
                     },
                     "details": {
-                        "name": "IBlendShapeData::GetControlPointIndex",
-                        "category": "Other"
+                        "name": "Get Control Point Index"
                     },
                     "params": [
-                        {
-                            "typeid": "{55E7384D-9333-4C51-BC91-E90CAC2C30E2}",
-                            "details": {
-                                "name": "IBlendShapeData*"
-                            }
-                        },
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
@@ -307,33 +248,24 @@
                     ]
                 },
                 {
-                    "key": "GetUsedControlPointCount",
+                    "base": "GetUsedControlPointCount",
                     "context": "IBlendShapeData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetUsedControlPointCount"
+                        "tooltip": "When signaled, this will invoke Get Used Control Point Count"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetUsedControlPointCount is invoked"
+                        "tooltip": "Signaled after Get Used Control Point Count is invoked"
                     },
                     "details": {
-                        "name": "IBlendShapeData::GetUsedControlPointCount",
-                        "category": "Other"
+                        "name": "Get Used Control Point Count"
                     },
-                    "params": [
-                        {
-                            "typeid": "{55E7384D-9333-4C51-BC91-E90CAC2C30E2}",
-                            "details": {
-                                "name": "IBlendShapeData*"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "AZ::u64"
+                                "name": "AZ::u 64"
                             }
                         }
                     ]

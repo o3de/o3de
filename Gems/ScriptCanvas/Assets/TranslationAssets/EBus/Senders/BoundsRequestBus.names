@@ -1,53 +1,54 @@
 {
     "entries": [
         {
-            "key": "BoundsRequestBus",
+            "base": "BoundsRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "BoundsRequestBus"
+                "name": "Bounds",
+                "category": "Rendering"
             },
             "methods": [
                 {
-                    "key": "GetWorldBounds",
+                    "base": "GetWorldBounds",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetWorldBounds"
+                        "tooltip": "When signaled, this will invoke Get World Bounds"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetWorldBounds is invoked"
+                        "tooltip": "Signaled after Get World Bounds is invoked"
                     },
                     "details": {
-                        "name": "GetWorldBounds"
+                        "name": "Get World Bounds"
                     },
                     "results": [
                         {
                             "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
                             "details": {
-                                "name": "Aabb"
+                                "name": "AABB"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetLocalBounds",
+                    "base": "GetLocalBounds",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetLocalBounds"
+                        "tooltip": "When signaled, this will invoke Get Local Bounds"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetLocalBounds is invoked"
+                        "tooltip": "Signaled after Get Local Bounds is invoked"
                     },
                     "details": {
-                        "name": "GetLocalBounds"
+                        "name": "Get Local Bounds"
                     },
                     "results": [
                         {
                             "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
                             "details": {
-                                "name": "Aabb"
+                                "name": "AABB"
                             }
                         }
                     ]

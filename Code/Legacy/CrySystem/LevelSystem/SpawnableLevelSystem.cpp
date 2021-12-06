@@ -19,7 +19,6 @@
 #include <AzFramework/Input/Buses/Requests/InputChannelRequestBus.h>
 
 #include "MainThreadRenderRequestBus.h"
-#include <LyShine/ILyShine.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
@@ -558,15 +557,9 @@ namespace LegacyLevelSystem
         // Normally the GC step is triggered at the end of this method (by the ESYSTEM_EVENT_LEVEL_POST_UNLOAD event).
         EBUS_EVENT(AZ::ScriptSystemRequestBus, GarbageCollect);
 
-        // Perform level unload procedures for the LyShine UI system
-        if (gEnv && gEnv->pLyShine)
-        {
-            gEnv->pLyShine->OnLevelUnload();
-        }
-
         m_bLevelLoaded = false;
 
-        const AZ::TimeMs unloadTimeMs = AZ::GetRealElapsedTimeMs() - beginTimeMs;
+        [[maybe_unused]] const AZ::TimeMs unloadTimeMs = AZ::GetRealElapsedTimeMs() - beginTimeMs;
         AZ_TracePrintf("LevelSystem", "UnloadLevel End: %.1f sec\n", AZ::TimeMsToSeconds(unloadTimeMs));
 
         // Must be sent last.

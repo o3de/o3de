@@ -1,38 +1,37 @@
 {
     "entries": [
         {
-            "key": "{C98626B6-E60F-525C-8763-4A906AD31903}",
+            "base": "{C98626B6-E60F-525C-8763-4A906AD31903}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Extents",
                 "category": "Math/AABB",
-                "tooltip": "returns the Vector3(Source.Width, Source.Height, Source.Depth)",
-                "subtitle": "AABB"
+                "tooltip": "returns the Vector3(Source.Width, Source.Height, Source.Depth)"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_AABB: Source",
+                    "base": "DataInput_Source_0",
                     "details": {
-                        "name": "AABB: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector3",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Result: Vector3"
+                        "name": "Result"
                     }
                 }
             ]

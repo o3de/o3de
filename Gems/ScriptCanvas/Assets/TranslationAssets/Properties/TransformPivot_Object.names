@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "TransformPivot_Object",
+            "base": "TransformPivot_Object",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "TransformPivot_Object::Getter",
-                "category": "Constants"
-            }
+                "name": "Object",
+                "category": "Constants/Transform/Pivot"
+            },
+            "methods": [
+                {
+                    "base": "GetTransformPivot_Object",
+                    "details": {
+                        "name": "Object"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

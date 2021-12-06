@@ -1,38 +1,37 @@
 {
     "entries": [
         {
-            "key": "{BFC3DC19-979B-5277-8B42-00FCF0CCF52D}",
+            "base": "{BFC3DC19-979B-5277-8B42-00FCF0CCF52D}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "ToString",
+                "name": "To String",
                 "category": "Entity/Entity",
-                "tooltip": "returns a string representation of Source",
-                "subtitle": "Entity"
+                "tooltip": "returns a string representation of Source"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_EntityID: Source",
+                    "base": "DataInput_Source_0",
                     "details": {
-                        "name": "EntityID: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: String",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Result: String"
+                        "name": "Result"
                     }
                 }
             ]

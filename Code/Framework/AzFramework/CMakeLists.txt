@@ -6,6 +6,7 @@
 #
 #
 
+include(AzFramework/feature_options.cmake)
 
 ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
 ly_get_list_relative_pal_filename(common_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/Common)
@@ -33,6 +34,14 @@ ly_add_target(
             3rdParty::lz4
 )
 
+set(LY_SEARCH_MODE_DEFINE $<$<BOOL:"${LY_ARCHIVE_FILE_SEARCH_MODE}">:LY_ARCHIVE_FILE_SEARCH_MODE=${LY_ARCHIVE_FILE_SEARCH_MODE}>)
+
+ly_add_source_properties(
+    SOURCES
+        AzFramework/Archive/ArchiveVars.cpp
+    PROPERTY COMPILE_DEFINITIONS
+    VALUES ${LY_SEARCH_MODE_DEFINE})
+
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
     ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Tests/Platform/${PAL_PLATFORM_NAME})
@@ -43,6 +52,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         FILES_CMAKE
             Tests/framework_shared_tests_files.cmake
             AzFramework/Physics/physics_mock_files.cmake
+            Tests/terrain_mock_files.cmake
         INCLUDE_DIRECTORIES
             PUBLIC
                 Tests

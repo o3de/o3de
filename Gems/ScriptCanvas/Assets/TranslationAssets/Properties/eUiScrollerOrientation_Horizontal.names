@@ -1,13 +1,29 @@
 {
     "entries": [
         {
-            "key": "eUiScrollerOrientation_Horizontal",
+            "base": "eUiScrollerOrientation_Horizontal",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiScrollerOrientation_Horizontal::Getter",
-                "category": "Constants"
-            }
+                "name": "Horizontal",
+                "category": "Constants/UI/Scroller Orientation"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiScrollerOrientation_Horizontal",
+                    "details": {
+                        "name": "Horizontal"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

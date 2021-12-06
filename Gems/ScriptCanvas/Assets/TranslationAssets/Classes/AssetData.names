@@ -1,33 +1,33 @@
 {
     "entries": [
         {
-            "key": "AssetData",
+            "base": "AssetData",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "AssetData"
+                "name": "Asset Data",
+                "category": "Asset"
             },
             "methods": [
                 {
-                    "key": "GetUseCount",
+                    "base": "GetUseCount",
                     "context": "AssetData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetUseCount"
+                        "tooltip": "When signaled, this will invoke Get Use Count"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetUseCount is invoked"
+                        "tooltip": "Signaled after Get Use Count is invoked"
                     },
                     "details": {
-                        "name": "AssetData::GetUseCount",
-                        "category": "Other"
+                        "name": "Get Use Count"
                     },
                     "params": [
                         {
                             "typeid": "{AF3F7D32-1536-422A-89F3-A11E1F5B5A9C}",
                             "details": {
-                                "name": "AssetData*"
+                                "name": "Asset Data"
                             }
                         }
                     ],
@@ -35,37 +35,37 @@
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "int"
+                                "name": "Use Count"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "IsLoading",
+                    "base": "IsLoading",
                     "context": "AssetData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke IsLoading"
+                        "tooltip": "When signaled, this will invoke Is Loading"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after IsLoading is invoked"
+                        "tooltip": "Signaled after Is Loading is invoked"
                     },
                     "details": {
-                        "name": "AssetData::IsLoading",
+                        "name": "Is Loading",
                         "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{AF3F7D32-1536-422A-89F3-A11E1F5B5A9C}",
                             "details": {
-                                "name": "AssetData*"
+                                "name": "Asset Data"
                             }
                         },
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Include Queued"
                             }
                         }
                     ],
@@ -73,31 +73,30 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Is Loading"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "IsError",
+                    "base": "IsError",
                     "context": "AssetData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke IsError"
+                        "tooltip": "When signaled, this will invoke Is Error"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after IsError is invoked"
+                        "tooltip": "Signaled after Is Error is invoked"
                     },
                     "details": {
-                        "name": "AssetData::IsError",
-                        "category": "Other"
+                        "name": "Is Error"
                     },
                     "params": [
                         {
                             "typeid": "{AF3F7D32-1536-422A-89F3-A11E1F5B5A9C}",
                             "details": {
-                                "name": "AssetData*"
+                                "name": "Asset Data"
                             }
                         }
                     ],
@@ -105,31 +104,30 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Is Error"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "IsReady",
+                    "base": "IsReady",
                     "context": "AssetData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke IsReady"
+                        "tooltip": "When signaled, this will invoke Is Ready"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after IsReady is invoked"
+                        "tooltip": "Signaled after Is Ready is invoked"
                     },
                     "details": {
-                        "name": "AssetData::IsReady",
-                        "category": "Other"
+                        "name": "Is Ready"
                     },
                     "params": [
                         {
                             "typeid": "{AF3F7D32-1536-422A-89F3-A11E1F5B5A9C}",
                             "details": {
-                                "name": "AssetData*"
+                                "name": "Asset Data"
                             }
                         }
                     ],
@@ -137,31 +135,30 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Is Ready"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetId",
+                    "base": "GetId",
                     "context": "AssetData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetId"
+                        "tooltip": "When signaled, this will invoke Get Id"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetId is invoked"
+                        "tooltip": "Signaled after Get Id is invoked"
                     },
                     "details": {
-                        "name": "AssetData::GetId",
-                        "category": "Other"
+                        "name": "Get Id"
                     },
                     "params": [
                         {
                             "typeid": "{AF3F7D32-1536-422A-89F3-A11E1F5B5A9C}",
                             "details": {
-                                "name": "AssetData*"
+                                "name": "Asset Data"
                             }
                         }
                     ],
@@ -169,7 +166,7 @@
                         {
                             "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
                             "details": {
-                                "name": "const AssetId&"
+                                "name": "Asset Id"
                             }
                         }
                     ]

@@ -1,50 +1,49 @@
 {
     "entries": [
         {
-            "key": "{629BABFE-B9D2-5D29-BCC1-3E5CBDD7CAA4}",
+            "base": "{629BABFE-B9D2-5D29-BCC1-3E5CBDD7CAA4}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "IsClose",
+                "name": "Is Close",
                 "category": "Math/Color",
-                "tooltip": "returns true if A is within Tolerance of B, else false",
-                "subtitle": "Color"
+                "tooltip": "returns true if A is within Tolerance of B, else false"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Color: A",
+                    "base": "DataInput_A_0",
                     "details": {
-                        "name": "Color: A"
+                        "name": "A"
                     }
                 },
                 {
-                    "key": "DataInput_Color: B",
+                    "base": "DataInput_B_1",
                     "details": {
-                        "name": "Color: B"
+                        "name": "B"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Tolerance",
+                    "base": "DataInput_Tolerance_2",
                     "details": {
-                        "name": "Number: Tolerance"
+                        "name": "Tolerance"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Boolean",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Result: Boolean"
+                        "name": "Result"
                     }
                 }
             ]

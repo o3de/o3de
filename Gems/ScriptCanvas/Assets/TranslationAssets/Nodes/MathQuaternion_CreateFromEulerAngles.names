@@ -1,50 +1,49 @@
 {
     "entries": [
         {
-            "key": "{82FB60FB-2417-5BDC-ADF7-9C08DE88E793}",
+            "base": "{82FB60FB-2417-5BDC-ADF7-9C08DE88E793}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "CreateFromEulerAngles",
+                "name": "Create From Euler Angles",
                 "category": "Math/Quaternion",
-                "tooltip": "Returns a new Quaternion initialized with the specified Angles",
-                "subtitle": "Quaternion"
+                "tooltip": "Returns a new Quaternion initialized with the specified Angles"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Pitch",
+                    "base": "DataInput_Pitch_0",
                     "details": {
-                        "name": "Number: Pitch"
+                        "name": "Pitch"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Roll",
+                    "base": "DataInput_Roll_1",
                     "details": {
-                        "name": "Number: Roll"
+                        "name": "Roll"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Yaw",
+                    "base": "DataInput_Yaw_2",
                     "details": {
-                        "name": "Number: Yaw"
+                        "name": "Yaw"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Quaternion",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Result: Quaternion"
+                        "name": "Result"
                     }
                 }
             ]

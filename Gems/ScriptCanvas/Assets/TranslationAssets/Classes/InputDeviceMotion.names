@@ -1,12 +1,155 @@
 {
     "entries": [
         {
-            "key": "InputDeviceMotion",
+            "base": "InputDeviceMotion",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "InputDeviceMotion"
-            }
+                "name": "Input Device Motion",
+                "category": "Input"
+            },
+            "methods": [
+                {
+                    "base": "motion_orientation_current",
+                    "details": {
+                        "name": "motion_orientation_current"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "motion_rotation_rate_unbiased",
+                    "details": {
+                        "name": "motion_rotation_rate_unbiased"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "motion_rotation_rate_raw",
+                    "details": {
+                        "name": "motion_rotation_rate_raw"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "motion_magnetic_field_north",
+                    "details": {
+                        "name": "motion_magnetic_field_north"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "motion_acceleration_gravity",
+                    "details": {
+                        "name": "motion_acceleration_gravity"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Getname",
+                    "details": {
+                        "name": "Get Name"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "Name"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "motion_acceleration_raw",
+                    "details": {
+                        "name": "motion_acceleration_raw"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "motion_acceleration_user",
+                    "details": {
+                        "name": "motion_acceleration_user"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "motion_magnetic_field_raw",
+                    "details": {
+                        "name": "motion_magnetic_field_raw"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "motion_magnetic_field_unbiased",
+                    "details": {
+                        "name": "motion_magnetic_field_unbiased"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

@@ -1,38 +1,37 @@
 {
     "entries": [
         {
-            "key": "{631968DE-47B3-5214-B564-E14025135BAA}",
+            "base": "{631968DE-47B3-5214-B564-E14025135BAA}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "YExtent",
+                "name": "Y Extent",
                 "category": "Math/AABB",
-                "tooltip": "returns the Y extent (max Y - min Y) of Source",
-                "subtitle": "AABB"
+                "tooltip": "returns the Y extent (max Y - min Y) of Source"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_AABB: Source",
+                    "base": "DataInput_Source_0",
                     "details": {
-                        "name": "AABB: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Number",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Result: Number"
+                        "name": "Result"
                     }
                 }
             ]

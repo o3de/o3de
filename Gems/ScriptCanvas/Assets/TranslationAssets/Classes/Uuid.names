@@ -1,66 +1,62 @@
 {
     "entries": [
         {
-            "key": "Uuid",
+            "base": "Uuid",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "UUID",
+                "name": "Uuid",
                 "category": "Utilities"
             },
             "methods": [
                 {
-                    "key": "CreateRandom",
+                    "base": "CreateRandom",
                     "context": "Uuid",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke CreateRandom"
+                        "tooltip": "When signaled, this will invoke Create Random"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after CreateRandom is invoked"
+                        "tooltip": "Signaled after Create Random is invoked"
                     },
                     "details": {
-                        "name": "Uuid::CreateRandom",
-                        "category": "Utilities"
+                        "name": "Create Random"
                     },
                     "results": [
                         {
                             "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
                             "details": {
-                                "name": "UUID",
-                                "tooltip": "Universally Unique Identifier"
+                                "name": "Uuid"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "CreateNull",
+                    "base": "CreateNull",
                     "context": "Uuid",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke CreateNull"
+                        "tooltip": "When signaled, this will invoke Create Null"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after CreateNull is invoked"
+                        "tooltip": "Signaled after Create Null is invoked"
                     },
                     "details": {
-                        "name": "Uuid::CreateNull",
-                        "category": "Utilities"
+                        "name": "Create Null"
                     },
                     "results": [
                         {
                             "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
                             "details": {
-                                "name": "Null UUID",
-                                "tooltip": "Null Universally Unique Identifier"
+                                "name": "Uuid"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Create",
+                    "base": "Create",
                     "context": "Uuid",
                     "entry": {
                         "name": "In",
@@ -71,8 +67,7 @@
                         "tooltip": "Signaled after Create is invoked"
                     },
                     "details": {
-                        "name": "Uuid::Create",
-                        "category": "Utilities"
+                        "name": "Create"
                     },
                     "results": [
                         {
@@ -84,25 +79,24 @@
                     ]
                 },
                 {
-                    "key": "CreateName",
+                    "base": "CreateName",
                     "context": "Uuid",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke CreateName"
+                        "tooltip": "When signaled, this will invoke Create Name"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after CreateName is invoked"
+                        "tooltip": "Signaled after Create Name is invoked"
                     },
                     "details": {
-                        "name": "Uuid::CreateName",
-                        "category": "Utilities"
+                        "name": "Create Name"
                     },
                     "params": [
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "const char*"
+                                "name": "Name"
                             }
                         }
                     ],
@@ -116,7 +110,7 @@
                     ]
                 },
                 {
-                    "key": "Clone",
+                    "base": "Clone",
                     "context": "Uuid",
                     "entry": {
                         "name": "In",
@@ -127,14 +121,13 @@
                         "tooltip": "Signaled after Clone is invoked"
                     },
                     "details": {
-                        "name": "Uuid::Clone",
-                        "category": "Utilities"
+                        "name": "Clone"
                     },
                     "params": [
                         {
                             "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
                             "details": {
-                                "name": "const AZ::Uuid&"
+                                "name": "Uuid"
                             }
                         }
                     ],
@@ -148,31 +141,30 @@
                     ]
                 },
                 {
-                    "key": "LessThan",
+                    "base": "LessThan",
                     "context": "Uuid",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke LessThan"
+                        "tooltip": "When signaled, this will invoke Less Than"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after LessThan is invoked"
+                        "tooltip": "Signaled after Less Than is invoked"
                     },
                     "details": {
-                        "name": "Uuid::LessThan",
-                        "category": "Utilities"
+                        "name": "Less Than"
                     },
                     "params": [
                         {
                             "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
                             "details": {
-                                "name": "AZ::Uuid*"
+                                "name": "Uuid"
                             }
                         },
                         {
                             "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
                             "details": {
-                                "name": "const AZ::Uuid&"
+                                "name": "Uuid"
                             }
                         }
                     ],
@@ -180,32 +172,30 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "Boolean"
+                                "name": "Less Than"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "IsNull",
+                    "base": "IsNull",
                     "context": "Uuid",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke IsNull"
+                        "tooltip": "When signaled, this will invoke Is Null"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after IsNull is invoked"
+                        "tooltip": "Signaled after Is Null is invoked"
                     },
                     "details": {
-                        "name": "Uuid::IsNull",
-                        "category": "Utilities"
+                        "name": "Is Null"
                     },
                     "params": [
                         {
                             "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
                             "details": {
-                                "name": "UUID",
-                                "tooltip": "Universally Unique Identifier"
+                                "name": "Uuid"
                             }
                         }
                     ],
@@ -213,37 +203,36 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "Boolean"
+                                "name": "Is Null"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "CreateString",
+                    "base": "CreateString",
                     "context": "Uuid",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke CreateString"
+                        "tooltip": "When signaled, this will invoke Create String"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after CreateString is invoked"
+                        "tooltip": "Signaled after Create String is invoked"
                     },
                     "details": {
-                        "name": "Uuid::CreateString",
-                        "category": "Utilities"
+                        "name": "Create String"
                     },
                     "params": [
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "const char*"
+                                "name": "String"
                             }
                         },
                         {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "AZ::u64"
+                                "name": "Size"
                             }
                         }
                     ],
@@ -257,26 +246,24 @@
                     ]
                 },
                 {
-                    "key": "ToString",
+                    "base": "ToString",
                     "context": "Uuid",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke ToString"
+                        "tooltip": "When signaled, this will invoke To String"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after ToString is invoked"
+                        "tooltip": "Signaled after To String is invoked"
                     },
                     "details": {
-                        "name": "Uuid::ToString",
-                        "category": "Utilities"
+                        "name": "To String"
                     },
                     "params": [
                         {
                             "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
                             "details": {
-                                "name": "UUID",
-                                "tooltip": "Universally Unique Identifier"
+                                "name": "Uuid"
                             }
                         }
                     ],
@@ -290,7 +277,7 @@
                     ]
                 },
                 {
-                    "key": "Equal",
+                    "base": "Equal",
                     "context": "Uuid",
                     "entry": {
                         "name": "In",
@@ -301,22 +288,19 @@
                         "tooltip": "Signaled after Equal is invoked"
                     },
                     "details": {
-                        "name": "Uuid::Equal",
-                        "category": "Utilities"
+                        "name": "Equal"
                     },
                     "params": [
                         {
                             "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
                             "details": {
-                                "name": "UUID A",
-                                "tooltip": "Universally Unique Identifier A"
+                                "name": "Uuid"
                             }
                         },
                         {
                             "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
                             "details": {
-                                "name": "UUID B",
-                                "tooltip": "Universally Unique Identifier B"
+                                "name": "Uuid"
                             }
                         }
                     ],
@@ -324,7 +308,7 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "Boolean"
+                                "name": "Is Equal"
                             }
                         }
                     ]

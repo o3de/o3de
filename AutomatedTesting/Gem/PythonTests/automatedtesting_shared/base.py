@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 import os
 import logging
-import subprocess
+import sys
 import pytest
 import time
 
@@ -52,7 +52,7 @@ class TestAutomationBase:
         cls._kill_ly_processes()
 
     def _run_test(self, request, workspace, editor, testcase_module, extra_cmdline_args=[], batch_mode=True,
-                  autotest_mode=True, use_null_renderer=True):
+                  autotest_mode=True, use_null_renderer=True, enable_prefab_system=True):
         test_starttime = time.time()
         self.logger = logging.getLogger(__name__)
         errors = []
@@ -97,6 +97,11 @@ class TestAutomationBase:
             pycmd += ["-BatchMode"]
         if autotest_mode:
             pycmd += ["-autotest_mode"]
+        if enable_prefab_system:
+            pycmd += ["--regset=/Amazon/Preferences/EnablePrefabSystem=true"]
+        else:
+            pycmd += ["--regset=/Amazon/Preferences/EnablePrefabSystem=false"]
+
         pycmd += extra_cmdline_args
         editor.args.extend(pycmd) # args are added to the WinLauncher start command
         editor.start(backupFiles = False, launch_ap = False)
@@ -123,7 +128,8 @@ class TestAutomationBase:
             errors.append(TestRunError("FAILED TEST", error_str))
             if return_code and return_code != TestAutomationBase.TEST_FAIL_RETCODE: # Crashed
                 crash_info = "-- No crash log available --"
-                crash_log = os.path.join(workspace.paths.project_log(), 'error.log')
+                crash_log = workspace.paths.crash_log()
+
                 try:
                     waiter.wait_for(lambda: os.path.exists(crash_log), timeout=TestAutomationBase.WAIT_FOR_CRASH_LOG)
                 except AssertionError:                    

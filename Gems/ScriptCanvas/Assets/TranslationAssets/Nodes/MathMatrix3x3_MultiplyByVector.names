@@ -1,44 +1,43 @@
 {
     "entries": [
         {
-            "key": "{6FAEAA22-12D6-51E5-8600-F60103ECFF8C}",
+            "base": "{6FAEAA22-12D6-51E5-8600-F60103ECFF8C}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "MultiplyByVector",
+                "name": "Multiply By Vector",
                 "category": "Math/Matrix3x3",
-                "tooltip": "returns vector created by right left multiplying matrix by supplied vector",
-                "subtitle": "Matrix3x3"
+                "tooltip": "returns vector created by right left multiplying matrix by supplied vector"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Matrix3x3: Source",
+                    "base": "DataInput_Source_0",
                     "details": {
-                        "name": "Matrix3x3: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: Vector",
+                    "base": "DataInput_Vector_1",
                     "details": {
-                        "name": "Vector3: Vector"
+                        "name": "Vector"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector3",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Result: Vector3"
+                        "name": "Result"
                     }
                 }
             ]

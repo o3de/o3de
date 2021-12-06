@@ -1,38 +1,37 @@
 {
     "entries": [
         {
-            "key": "{35D8B012-2C19-5570-A606-4E644D01A9AD}",
+            "base": "{35D8B012-2C19-5570-A606-4E644D01A9AD}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "FromTranslation",
+                "name": "From Translation",
                 "category": "Math/Matrix4x4",
-                "tooltip": "returns a skew-symmetric cross product matrix based on supplied vector",
-                "subtitle": "Matrix4x4"
+                "tooltip": "returns a skew-symmetric cross product matrix based on supplied vector"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: Source",
+                    "base": "DataInput_Source_0",
                     "details": {
-                        "name": "Vector3: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Matrix4x4",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Result: Matrix4x4"
+                        "name": "Result"
                     }
                 }
             ]

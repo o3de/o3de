@@ -1,44 +1,43 @@
 {
     "entries": [
         {
-            "key": "{7379D5B4-787B-4C46-9394-288F16E5BF3A}",
+            "base": "{7379D5B4-787B-4C46-9394-288F16E5BF3A}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Divide",
                 "category": "Math/Number/Deprecated",
-                "tooltip": "Divide",
-                "subtitle": "Deprecated"
+                "tooltip": "Divide"
             },
             "slots": [
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }
                 },
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In",
                         "tooltip": "Signal to perform the evaluation when desired."
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out",
                         "tooltip": "Signaled after the arithmetic operation is done."
                     }
                 },
                 {
-                    "key": "DataInput_Value A",
+                    "base": "DataInput_Value A_0",
                     "details": {
                         "name": "Value A"
                     }
                 },
                 {
-                    "key": "DataInput_Value B",
+                    "base": "DataInput_Value B_1",
                     "details": {
                         "name": "Value B"
                     }

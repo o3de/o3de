@@ -92,6 +92,11 @@ namespace AZ
             const AZ::Matrix4x4& GetViewToWorldMatrix() const;
             const AZ::Matrix4x4& GetViewToClipMatrix() const;
             const AZ::Matrix4x4& GetWorldToClipMatrix() const;
+            const AZ::Matrix4x4& GetClipToWorldMatrix() const;
+
+            AZ::Matrix3x4 GetWorldToViewMatrixAsMatrix3x4() const;
+            AZ::Matrix3x4 GetViewToWorldMatrixAsMatrix3x4() const;
+
             //! Get the camera's world transform, converted from the viewToWorld matrix's native y-up to z-up
             AZ::Transform GetCameraTransform() const;
 
@@ -118,7 +123,6 @@ namespace AZ
             //! Update View's SRG values and compile. This should only be called once per frame before execute command lists.
             void UpdateSrg();
 
-            using MatrixChangedEvent = AZ::Event<const AZ::Matrix4x4&>;
             //! Notifies consumers when the world to view matrix has changed.
             void ConnectWorldToViewMatrixChangedHandler(MatrixChangedEvent::Handler& handler);
             //! Notifies consumers when the world to clip matrix has changed.
@@ -130,16 +134,21 @@ namespace AZ
             //! Returns the masked occlusion culling interface
             MaskedOcclusionCulling* GetMaskedOcclusionCulling();
 
+            //! This is called by RenderPipeline when this view is added to the pipeline.
+            void OnAddToRenderPipeline();
+
         private:
             View() = delete;
             View(const AZ::Name& name, UsageFlags usage);
-
 
             //! Sorts the finalized draw lists in this view
             void SortFinalizedDrawLists();
 
             //! Sorts a drawList using the sort function from a pass with the corresponding drawListTag
             void SortDrawList(RHI::DrawList& drawList, RHI::DrawListTag tag);
+
+            //! Attempt to create a shader resource group.
+            void TryCreateShaderResourceGroup();
 
             AZ::Name m_name;
             UsageFlags m_usageFlags;

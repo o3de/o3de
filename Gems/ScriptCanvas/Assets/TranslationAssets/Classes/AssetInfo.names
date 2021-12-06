@@ -1,12 +1,102 @@
 {
     "entries": [
         {
-            "key": "AssetInfo",
+            "base": "AssetInfo",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "AssetInfo"
-            }
+                "name": "Asset Info"
+            },
+            "methods": [
+                {
+                    "base": "GetassetId",
+                    "details": {
+                        "name": "Get Asset Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E6D8372B-8419-4287-B478-1353709A972F}",
+                            "details": {
+                                "name": "Asset Info"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "Asset Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetassetType",
+                    "details": {
+                        "name": "Get Asset Type"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E6D8372B-8419-4287-B478-1353709A972F}",
+                            "details": {
+                                "name": "Asset Info"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "Type"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetsizeBytes",
+                    "details": {
+                        "name": "Get Size Bytes"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E6D8372B-8419-4287-B478-1353709A972F}",
+                            "details": {
+                                "name": "Asset Info"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "Size"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetrelativePath",
+                    "details": {
+                        "name": "Get Relative Path"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E6D8372B-8419-4287-B478-1353709A972F}",
+                            "details": {
+                                "name": "Asset Info"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Relative Path"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

@@ -1,49 +1,48 @@
 {
     "entries": [
         {
-            "key": "{9A2FDC22-90E1-5A32-9670-156BB7EE8149}",
+            "base": "{9A2FDC22-90E1-5A32-9670-156BB7EE8149}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "MultiplyAndAdd",
-                "category": "Math",
-                "subtitle": "Math"
+                "name": "Multiply And Add",
+                "category": "Math"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Multiplicand",
+                    "base": "DataInput_Multiplicand_0",
                     "details": {
-                        "name": "Number: Multiplicand"
+                        "name": "Multiplicand"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Multiplier",
+                    "base": "DataInput_Multiplier_1",
                     "details": {
-                        "name": "Number: Multiplier"
+                        "name": "Multiplier"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Addend",
+                    "base": "DataInput_Addend_2",
                     "details": {
-                        "name": "Number: Addend"
+                        "name": "Addend"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Number",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Result: Number"
+                        "name": "Result"
                     }
                 }
             ]

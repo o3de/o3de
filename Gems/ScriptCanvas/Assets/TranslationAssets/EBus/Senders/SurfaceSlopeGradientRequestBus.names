@@ -1,15 +1,15 @@
 {
     "entries": [
         {
-            "key": "SurfaceSlopeGradientRequestBus",
+            "base": "SurfaceSlopeGradientRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "SurfaceSlopeGradientRequestBus"
+                "name": "Surface Slope Gradient"
             },
             "methods": [
                 {
-                    "key": "SetRampType",
+                    "base": "SetRampType",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetRampType"
@@ -31,7 +31,7 @@
                     ]
                 },
                 {
-                    "key": "GetTag",
+                    "base": "GetTag",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetTag"
@@ -61,7 +61,7 @@
                     ]
                 },
                 {
-                    "key": "AddTag",
+                    "base": "AddTag",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke AddTag"
@@ -83,7 +83,7 @@
                     ]
                 },
                 {
-                    "key": "SetSlopeMax",
+                    "base": "SetSlopeMax",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetSlopeMax"
@@ -105,7 +105,7 @@
                     ]
                 },
                 {
-                    "key": "GetNumTags",
+                    "base": "GetNumTags",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetNumTags"
@@ -127,7 +127,7 @@
                     ]
                 },
                 {
-                    "key": "RemoveTag",
+                    "base": "RemoveTag",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RemoveTag"
@@ -149,7 +149,7 @@
                     ]
                 },
                 {
-                    "key": "GetRampType",
+                    "base": "GetRampType",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetRampType"
@@ -171,7 +171,7 @@
                     ]
                 },
                 {
-                    "key": "GetSlopeMax",
+                    "base": "GetSlopeMax",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetSlopeMax"
@@ -193,7 +193,7 @@
                     ]
                 },
                 {
-                    "key": "SetSlopeMin",
+                    "base": "SetSlopeMin",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetSlopeMin"
@@ -215,7 +215,7 @@
                     ]
                 },
                 {
-                    "key": "GetSlopeMin",
+                    "base": "GetSlopeMin",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetSlopeMin"

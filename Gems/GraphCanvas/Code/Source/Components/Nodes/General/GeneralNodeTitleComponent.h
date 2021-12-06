@@ -19,7 +19,6 @@
 #include <GraphCanvas/Components/StyleBus.h>
 #include <GraphCanvas/Components/VisualBus.h>
 #include <GraphCanvas/Types/EntitySaveData.h>
-#include <GraphCanvas/Types/TranslationTypes.h>
 #include <Widgets/GraphCanvasLabel.h>
 
 namespace GraphCanvas

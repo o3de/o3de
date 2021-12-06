@@ -101,7 +101,11 @@ namespace AZ::IO
     }
 
     // native format observers
-    constexpr auto PathView::Native() const noexcept -> AZStd::string_view
+    constexpr auto PathView::Native() const noexcept -> const AZStd::string_view&
+    {
+        return m_path;
+    }
+    constexpr auto PathView::Native() noexcept -> AZStd::string_view&
     {
         return m_path;
     }
