@@ -37,7 +37,7 @@ namespace AZ
 
             ResourcePoolAssetType m_poolType = ResourcePoolAssetType::Unknown;
             AZStd::string m_poolName = "Unknown";
-            size_t m_budgetInBytes = 0;
+            int32_t m_budgetInBytes = 0;
 
             // Configuration for buffer pool
             RHI::HeapMemoryLevel m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;

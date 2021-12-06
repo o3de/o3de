@@ -117,7 +117,7 @@ namespace UnitTest
             m_index = index;
         }
 
-        size_t m_index;
+        int32_t m_index;
 
         ShaderByteCode m_byteCode;
 
