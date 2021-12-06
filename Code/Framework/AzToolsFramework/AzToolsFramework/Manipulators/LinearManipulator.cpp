@@ -239,8 +239,8 @@ namespace AzToolsFramework
 
             view->Draw(
                 GetManipulatorManagerId(), managerState, GetManipulatorId(),
-                { ApplySpace(localTransform), GetNonUniformScale(), AZ::Vector3::CreateZero(), MouseOver() }, debugDisplay, cameraState,
-                mouseInteraction);
+                ManipulatorState{ ApplySpace(localTransform), GetNonUniformScale(), AZ::Vector3::CreateZero(), MouseOver() }, debugDisplay,
+                cameraState, mouseInteraction);
         }
     }
 
