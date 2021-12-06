@@ -210,7 +210,7 @@ namespace AzToolsFramework
     void QtEventToAzInputMapper::SetEnabled(bool enabled)
     {
         m_enabled = enabled;
-        if (!m_enabled)
+        if (!enabled)
         {
             // Clear input channels to reset our input state if we're disabled.
             ClearInputChannels(nullptr);
