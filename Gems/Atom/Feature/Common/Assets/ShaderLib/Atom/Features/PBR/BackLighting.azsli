@@ -23,6 +23,7 @@ float3 TransmissionKernel(float t, float3 s)
     return 0.25 * (1.0 / exp(exponent) + 3.0 / exp(exponent / 3.0));
 }
 
+// [specific profile for SKIN (not used ATM)]
 // Analytical integation (approximation) of diffusion profile over radius, could be precomputed in a LUT
 float3 T(float s) 
 {
@@ -68,11 +69,15 @@ float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightI
                 float E = max(lightingData.angleOffset + dot(-surface.normal, dirToLight),0.0);
 
                 // Transmission distance computed from shadowmaps modulated by editor-exposed parameters
-                float s = transmissionDistance * surface.transmission.thickness * (100 - transmissionParams.w) * 10;
+                float s = transmissionDistance * surface.transmission.thickness * (100 - transmissionParams.w);
+                
+                // Use scattering color to weight thin object transmission color
+                const float3 invScattering = rcp(transmissionParams.xyz);
                 
                 // Albedo at front (surface point) is used to approximate irradiance at the back of the object
                 // See observation 4 in [Jimenez J. et al, 2010] 
-                result = T(s) * lightIntensity * surface.albedo * E;
+                result = TransmissionKernel(s, invScattering) * lightIntensity * surface.albedo * E;
+                // result = T(s) * lightIntensity * surface.albedo * E;
             }
             break;
     }
