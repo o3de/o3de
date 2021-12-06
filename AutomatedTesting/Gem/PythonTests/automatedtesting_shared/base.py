@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 import os
 import logging
-import subprocess
+import sys
 import pytest
 import time
 
@@ -128,7 +128,8 @@ class TestAutomationBase:
             errors.append(TestRunError("FAILED TEST", error_str))
             if return_code and return_code != TestAutomationBase.TEST_FAIL_RETCODE: # Crashed
                 crash_info = "-- No crash log available --"
-                crash_log = os.path.join(workspace.paths.project_log(), 'error.log')
+                crash_log = workspace.paths.crash_log()
+
                 try:
                     waiter.wait_for(lambda: os.path.exists(crash_log), timeout=TestAutomationBase.WAIT_FOR_CRASH_LOG)
                 except AssertionError:                    

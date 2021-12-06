@@ -411,7 +411,7 @@ def register_project_path(json_data: dict,
 
     if not remove:
         # registering a project has the additional step of setting the project.json 'engine' field
-        this_engine_json = manifest.get_engine_json_data(engine_path=manifest.get_this_engine_path())
+        this_engine_json = manifest.get_engine_json_data(engine_path=engine_path if engine_path else manifest.get_this_engine_path())
         if not this_engine_json:
             return 1
         project_json_data = manifest.get_project_json_data(project_path=project_path)

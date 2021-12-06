@@ -7,48 +7,47 @@
             "details": {
                 "name": "Spawn",
                 "category": "Spawning",
-                "tooltip": "Spawns a selected prefab, positioned using the provided transform inputs",
-                "subtitle": "Spawning"
+                "tooltip": "Spawns a selected prefab, positioned using the provided transform inputs"
             },
             "slots": [
                 {
-                    "base": "Input_Request Spawn",
+                    "base": "Input_Request Spawn_0",
                     "details": {
                         "name": "Request Spawn"
                     }
                 },
                 {
-                    "base": "DataInput_Translation",
+                    "base": "DataInput_Translation_0",
                     "details": {
                         "name": "Translation"
                     }
                 },
                 {
-                    "base": "DataInput_Rotation",
+                    "base": "DataInput_Rotation_1",
                     "details": {
                         "name": "Rotation"
                     }
                 },
                 {
-                    "base": "DataInput_Scale",
+                    "base": "DataInput_Scale_2",
                     "details": {
                         "name": "Scale"
                     }
                 },
                 {
-                    "base": "Output_Spawn Requested",
+                    "base": "Output_Spawn Requested_0",
                     "details": {
                         "name": "Spawn Requested"
                     }
                 },
                 {
-                    "base": "Output_On Spawn",
+                    "base": "Output_On Spawn_1",
                     "details": {
                         "name": "On Spawn"
                     }
                 },
                 {
-                    "base": "DataOutput_SpawnedEntitiesList",
+                    "base": "DataOutput_SpawnedEntitiesList_0",
                     "details": {
                         "name": "SpawnedEntitiesList"
                     }

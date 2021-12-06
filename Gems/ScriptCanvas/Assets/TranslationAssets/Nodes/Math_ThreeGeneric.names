@@ -5,58 +5,57 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "ThreeGeneric",
+                "name": "Three Generic",
                 "category": "Math",
-                "tooltip": "returns all columns from matrix",
-                "subtitle": "Math"
+                "tooltip": "returns all columns from matrix"
             },
             "slots": [
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "base": "DataInput_Vector3: One",
+                    "base": "DataInput_One_0",
                     "details": {
-                        "name": "Vector3: One"
+                        "name": "One"
                     }
                 },
                 {
-                    "base": "DataInput_String: Two",
+                    "base": "DataInput_Two_1",
                     "details": {
-                        "name": "String: Two"
+                        "name": "Two"
                     }
                 },
                 {
-                    "base": "DataInput_Boolean: Three",
+                    "base": "DataInput_Three_2",
                     "details": {
-                        "name": "Boolean: Three"
+                        "name": "Three"
                     }
                 },
                 {
-                    "base": "DataOutput_One: Vector3",
+                    "base": "DataOutput_One_0",
                     "details": {
-                        "name": "One: Vector3"
+                        "name": "One"
                     }
                 },
                 {
-                    "base": "DataOutput_Two: String",
+                    "base": "DataOutput_Two_1",
                     "details": {
-                        "name": "Two: String"
+                        "name": "Two"
                     }
                 },
                 {
-                    "base": "DataOutput_Three: Boolean",
+                    "base": "DataOutput_Three_2",
                     "details": {
-                        "name": "Three: Boolean"
+                        "name": "Three"
                     }
                 }
             ]

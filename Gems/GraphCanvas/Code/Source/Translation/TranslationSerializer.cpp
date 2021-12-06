@@ -15,39 +15,39 @@ namespace GraphCanvas
 
     void AddEntryToDatabase(const AZStd::string& baseKey, const AZStd::string& name, const rapidjson::Value& it, TranslationFormat* translationFormat)
     {
-        AZStd::string finalKey = baseKey;
         if (it.IsString())
         {
-            if (translationFormat->m_database.find(finalKey) == translationFormat->m_database.end())
+            auto translationDbItr = translationFormat->m_database.find(baseKey);
+            if (translationDbItr == translationFormat->m_database.end())
             {
-                translationFormat->m_database[finalKey] = it.GetString();
+                translationFormat->m_database[baseKey] = it.GetString();
             }
             else
             {
-                AZStd::string existingValue = translationFormat->m_database[finalKey.c_str()];
+                const AZStd::string& existingValue = translationDbItr->second;
 
                 // There is a name collision
-                AZStd::string error = AZStd::string::format("Unable to store key: %s with value: %s because that key already exists with value: %s (proposed: %s)", finalKey.c_str(), it.GetString(), existingValue.c_str(), it.GetString());
+                const AZStd::string error = AZStd::string::format("Unable to store key: %s with value: %s because that key already exists with value: %s (proposed: %s)", baseKey.c_str(), it.GetString(), existingValue.c_str(), it.GetString());
                 AZ_Error("TranslationSerializer", false, error.c_str());
             }
         }
         else if (it.IsObject())
         {
+            AZStd::string finalKey = baseKey;
             if (!name.empty())
             {
                 finalKey.append(".");
                 finalKey.append(name);
             }
 
-            AZStd::string itemKey = finalKey;
+            AZStd::string itemKey;
             for (auto objIt = it.MemberBegin(); objIt != it.MemberEnd(); ++objIt)
             {
+                itemKey = finalKey;
                 itemKey.append(".");
                 itemKey.append(objIt->name.GetString());
 
                 AddEntryToDatabase(itemKey, name, objIt->value, translationFormat);
-
-                itemKey = finalKey;
             }
 
         }
@@ -60,18 +60,21 @@ namespace GraphCanvas
                 key.append(name);
             }
 
-            AZStd::string itemKey = key;
+            AZStd::string itemKey;
 
             const rapidjson::Value& array = it;
             for (rapidjson::SizeType i = 0; i < array.Size(); ++i)
             {
+                itemKey = key;
+
                 // if there is a "base" member within the object, then use it, otherwise use the index
-                if (array[i].IsObject())
+                const auto& element = array[i];
+                if (element.IsObject())
                 {
-                    if (array[i].HasMember(Schema::Field::key))
+                    rapidjson::Value::ConstMemberIterator innerKeyItr = element.FindMember(Schema::Field::key);
+                    if (innerKeyItr != element.MemberEnd())
                     {
-                        AZStd::string innerKey = array[i].FindMember(Schema::Field::key)->value.GetString();
-                        itemKey.append(AZStd::string::format(".%s", innerKey.c_str()));
+                        itemKey.append(AZStd::string::format(".%s", innerKeyItr->value.GetString()));
                     }
                     else
                     {
@@ -79,9 +82,7 @@ namespace GraphCanvas
                     }
                 }
 
-                AddEntryToDatabase(itemKey, "", array[i], translationFormat);
-
-                itemKey = key;
+                AddEntryToDatabase(itemKey, "", element, translationFormat);
             }
         }
     }
@@ -114,42 +115,32 @@ namespace GraphCanvas
         {
             const rapidjson::Value::ConstMemberIterator entries = inputValue.FindMember(Schema::Field::entries);
 
+            AZStd::string keyStr;
+            AZStd::string contextStr;
+            AZStd::string variantStr;
+            AZStd::string baseKey;
+
             rapidjson::SizeType entryCount = entries->value.Size();
             for (rapidjson::SizeType i = 0; i < entryCount; ++i)
             {
                 const rapidjson::Value& entry = entries->value[i];
 
-                AZStd::string keyStr;
-                rapidjson::Value::ConstMemberIterator keyValue;
-                if (entry.HasMember(Schema::Field::key))
-                {
-                    keyValue = entry.FindMember(Schema::Field::key);
-                    keyStr = keyValue->value.GetString();
-                }
+                rapidjson::Value::ConstMemberIterator keyItr = entry.FindMember(Schema::Field::key);
+                keyStr = keyItr != entry.MemberEnd() ? keyItr->value.GetString() : "";
 
-                AZStd::string contextStr;
-                rapidjson::Value::ConstMemberIterator contextValue;
-                if (entry.HasMember(Schema::Field::context))
-                {
-                    contextValue = entry.FindMember(Schema::Field::context);
-                    contextStr = contextValue->value.GetString();
-                }
+                rapidjson::Value::ConstMemberIterator contextItr = entry.FindMember(Schema::Field::context);
+                contextStr = contextItr != entry.MemberEnd() ? contextItr->value.GetString() : "";
 
-                AZStd::string variantStr;
-                rapidjson::Value::ConstMemberIterator variantValue;
-                if (entry.HasMember(Schema::Field::variant))
-                {
-                    variantValue = entry.FindMember(Schema::Field::variant);
-                    variantStr = variantValue->value.GetString();
-                }
+                rapidjson::Value::ConstMemberIterator variantItr = entry.FindMember(Schema::Field::variant);
+                variantStr = variantItr != entry.MemberEnd() ? variantItr->value.GetString() : "";
 
-                AZStd::string baseKey = contextStr;
                 if (keyStr.empty())
                 {
-                    AZ_Error("TranslationDatabase", false, "Every entry in the Translation data must have a key: %s", baseKey.c_str());
+                    AZ_Error("TranslationDatabase", false, "Every entry in the Translation data must have a key: %s", contextStr.c_str());
                     return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unsupported, "Every entry in the Translation data must have a key");
                 }
 
+                baseKey = contextStr;
                 if (!baseKey.empty())
                 {
                     baseKey.append(".");
@@ -167,7 +158,7 @@ namespace GraphCanvas
                 for (auto it = entry.MemberBegin(); it != entry.MemberEnd(); ++it)
                 {
                     // Skip the fixed elements
-                    if (it == keyValue || it == contextValue || it == variantValue)
+                    if (it == keyItr || it == contextItr || it == variantItr)
                     {
                         continue;
                     }

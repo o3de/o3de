@@ -7,26 +7,25 @@
             "details": {
                 "name": "Extract Properties",
                 "category": "Utilities",
-                "tooltip": "Extracts property values from connected input",
-                "subtitle": "Utilities"
+                "tooltip": "Extracts property values from connected input"
             },
             "slots": [
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In",
                         "tooltip": "When signaled assigns property values using the supplied source input"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out",
                         "tooltip": "Signaled after all property haves have been pushed to the output slots"
                     }
                 },
                 {
-                    "base": "DataInput_Source",
+                    "base": "DataInput_Source_0",
                     "details": {
                         "name": "Source"
                     }
