@@ -103,7 +103,7 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_periodic",
       "CTEST_OPTIONS": "-L \"(SUITE_periodic)\"",
-      "TEST_RESULTS": "True"
+      "TEST_RESULTS": "False"
     }
   },
   "benchmark_test_profile": {
@@ -120,7 +120,7 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_benchmark",
       "CTEST_OPTIONS": "-L \"(SUITE_benchmark)\"",
-      "TEST_RESULTS": "True"
+      "TEST_RESULTS": "False"
     }
   },
   "release": {
