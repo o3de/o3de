@@ -64,7 +64,8 @@ namespace UnitTest
 
         // create the direct call manipulator viewport interaction and an immediate mode dispatcher
         AZStd::unique_ptr<AzManipulatorTestFramework::ManipulatorViewportInteraction> viewportManipulatorInteraction =
-            AZStd::make_unique<AzManipulatorTestFramework::DirectCallManipulatorViewportInteraction>();
+            AZStd::make_unique<AzManipulatorTestFramework::DirectCallManipulatorViewportInteraction>(
+                AZStd::make_shared<NullDebugDisplayRequests>());
         AZStd::unique_ptr<AzManipulatorTestFramework::ImmediateModeActionDispatcher> actionDispatcher =
             AZStd::make_unique<AzManipulatorTestFramework::ImmediateModeActionDispatcher>(
                 *viewportManipulatorInteraction);
