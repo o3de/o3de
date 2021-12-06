@@ -539,10 +539,6 @@ namespace AzToolsFramework
             model->setItem(row, 0, m_comboItems[row]);
         }
         m_gui->m_statusComboBox->setModel(model);
-        m_gui->m_statusComboBox->setStyleSheet("QComboBox {border: 0px; border-radius:3px; background-color:#555555; color:white}"
-            "QComboBox:on {background-color:#e9e9e9; color:black; border:0px}"
-            "QComboBox::down-arrow:on {image: url(:/stylesheet/img/dropdowns/black_down_arrow.png)}"
-            "QComboBox::drop-down {border-radius: 3p}");
         AzQtComponents::ComboBox::addCustomCheckStateStyle(m_gui->m_statusComboBox);
         EnableEditor(true);
         m_sceneIsNew = true;
