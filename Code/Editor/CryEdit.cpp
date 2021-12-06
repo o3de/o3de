@@ -2810,14 +2810,11 @@ void CCryEditApp::OpenProjectManager(const AZStd::string& screen)
 {
     // provide the current project path for in case we want to update the project
     AZ::IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
-#if !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
-    const char* argumentQuoteString = R"(")";
-#else
-    const char* argumentQuoteString = R"(\")";
-#endif
-    const AZStd::string commandLineOptions = AZStd::string::format(R"( --screen %s --project-path %s%s%s)",
-        screen.c_str(),
-        argumentQuoteString, projectPath.c_str(), argumentQuoteString);
+
+    const AZStd::vector<AZStd::string> commandLineOptions {
+        "--screen", screen,
+        "--project-path",AZStd::string::format(R"("%s")", projectPath.c_str()) };
+
     bool launchSuccess = AzFramework::ProjectManager::LaunchProjectManager(commandLineOptions);
     if (!launchSuccess)
     {

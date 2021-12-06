@@ -194,11 +194,11 @@ namespace AssetProcessor
         AZStd::vector<AZStd::string> params;
         params.emplace_back(AZStd::string::format(R"(-task="%s")", task));
         params.emplace_back(AZStd::string::format(R"(-id="%s")", builderGuid.c_str()));
-        params.emplace_back(AZStd::string::format(R"(-project-name="%s")", gameName.toUtf8().constData()));
+        params.emplace_back(AZStd::string::format(R"(-project-name="%s")", projectName.c_str()));
         params.emplace_back(AZStd::string::format(R"(-project-cache-path="%s")", projectCacheRoot.absolutePath().toUtf8().constData()));
-        params.emplace_back(AZStd::string::format(R"(-project-path="%s")", projectPath.toUtf8().constData()));
-        params.emplace_back(AZStd::string::format(R"(-engine-path="%s")", engineRoot.absolutePath().toUtf8().constData()));
-        params.emplace_back(AZStd::string::format("-port=%s", AZStd::to_string(portNumber)));
+        params.emplace_back(AZStd::string::format(R"(-project-path="%s")", projectPath.c_str()));
+        params.emplace_back(AZStd::string::format(R"(-engine-path="%s")", enginePath.c_str()));
+        params.emplace_back(AZStd::string::format("-port=%d", portNumber));
 
         if (moduleFilePath && moduleFilePath[0])
         {
@@ -207,8 +207,8 @@ namespace AssetProcessor
 
         if (!jobDescriptionFile.empty() && !jobResponseFile.empty())
         {
-            params.emplace_back(AZStd::string::format(R"(-input="%s")", jobDescriptionFile));
-            params.emplace_back(AZStd::string::format(R"(-output="%s")", jobResponseFile));
+            params.emplace_back(AZStd::string::format(R"(-input="%s")", jobDescriptionFile.c_str()));
+            params.emplace_back(AZStd::string::format(R"(-output="%s")", jobResponseFile.c_str()));
         }
 
         auto settingsRegistry = AZ::SettingsRegistry::Get();
@@ -221,13 +221,7 @@ namespace AssetProcessor
             for (size_t optionIndex = 0; optionIndex < commandOptionCount; ++optionIndex)
             {
                 const AZStd::string& optionValue = commandLine.GetSwitchValue(optionKey, optionIndex);
-                params.append(AZStd::string::format(
-#if !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
-                    R"( --%s="%s")",
-#else
-                    R"( --%s="\"%s\"")",
-#endif
-                    optionKey, optionValue.c_str()));
+                params.emplace_back(AZStd::string::format(R"( --%s="%s")", optionKey, optionValue.c_str()));
             }
         }
 
@@ -238,9 +232,10 @@ namespace AssetProcessor
     {
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
         processLaunchInfo.m_processExecutableString = fullExePath;
-        processLaunchInfo.m_commandlineParameters = AZStd::vector<AZStd::string>{ fullExePath };
-        auto& commandLineArray = AZStd::get<AZStd::vector<AZStd::string>>(processLaunchInfo.m_commandlineParameters);
+        
+        AZStd::vector<AZStd::string> commandLineArray{ fullExePath };
         commandLineArray.insert(commandLineArray.end(), params.begin(), params.end());
+        processLaunchInfo.m_commandlineParameters = AZStd::move(commandLineArray);
         processLaunchInfo.m_showWindow = false;
         processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_IDLE;
 
