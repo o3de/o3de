@@ -16,6 +16,7 @@
 #include <Prefab/PrefabSystemScriptingHandler.h>
 #include <Prefab/EditorPrefabComponent.h>
 #include <ToolsComponents/TransformComponent.h>
+#include <xxhash/xxhash.h>
 
 namespace AzToolsFramework::Prefab
 {
@@ -73,11 +74,23 @@ namespace AzToolsFramework::Prefab
         AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(result, &AzToolsFramework::ToolsApplicationRequestBus::Events::FindCommonRootInactive,
             entities, commonRoot, &topLevelEntities);
 
+
         auto containerEntity = AZStd::make_unique<AZ::Entity>();
-        containerEntity->CreateComponent<Components::TransformComponent>();
+
         containerEntity->CreateComponent<Components::EditorLockComponent>();
         containerEntity->CreateComponent<Components::EditorVisibilityComponent>();
         containerEntity->CreateComponent<Prefab::EditorPrefabComponent>();
+
+        {
+            auto transformComponent = containerEntity->CreateComponent<Components::TransformComponent>();
+            // Because procedural prefabs need to be deterministic we need to set the component ID to something unique and non-random
+            // The prefab that references the proc prefab will store a patch that references the transform component by it's component ID
+            // If this ID is not stable, the proc prefab will lose its position, parenting, etc data next time it is regenerated
+            auto hash = XXH64(filePath.data(), filePath.length(), 0);
+
+            transformComponent->SetId(hash);
+
+        }
 
         for (AZ::Entity* entity : topLevelEntities)
         {
@@ -92,7 +105,7 @@ namespace AzToolsFramework::Prefab
 
         auto prefab = m_prefabSystemComponentInterface->CreatePrefab(
             entities, {}, AZ::IO::PathView(AZStd::string_view(filePath)), AZStd::move(containerEntity));
-        
+
         if (!prefab)
         {
             AZ_Error("PrefabSystemComponenent", false, "Failed to create prefab %s", filePath.c_str());
