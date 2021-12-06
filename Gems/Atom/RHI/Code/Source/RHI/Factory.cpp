@@ -63,8 +63,9 @@ namespace AZ
 #if defined(USE_RENDERDOC)
             // If RenderDoc is requested, we need to load the library as early as possible (before device queries/factories are made)
             bool enableRenderDoc = RHI::QueryCommandLineOption("enableRenderDoc");
+#if defined(USE_PIX)
             s_pixGpuMarkersEnabled = s_pixGpuMarkersEnabled || enableRenderDoc;
-
+#endif
             if (enableRenderDoc && AZ_TRAIT_RENDERDOC_MODULE && !s_renderDocModule)
             {
                 s_renderDocModule = DynamicModuleHandle::Create(AZ_TRAIT_RENDERDOC_MODULE);

@@ -44,21 +44,22 @@ class WinLauncher(Launcher):
         Subclasses should call its parent's setup() before calling its own code, unless it changes configuration files
 
         :param backupFiles: Bool to backup setup files
-        :param lauch_ap: Bool to lauch the asset processor
+        :param launch_ap: Bool to lauch the asset processor
+        :param configure_settings: Bool to update settings caches
         :return: None
         """
         # Backup
         if backupFiles:
             self.backup_settings()
 
-        # Base setup defaults to None
+        # None reverts to function default
         if launch_ap is None:
             launch_ap = True
 
         # Modify and re-configure
         if configure_settings:
             self.configure_settings()
-        super(WinLauncher, self).setup(backupFiles, launch_ap)
+        super(WinLauncher, self).setup(backupFiles, launch_ap, configure_settings)
 
     def launch(self):
         """
@@ -161,7 +162,7 @@ class WinLauncher(Launcher):
 
     def configure_settings(self):
         """
-        Configures system level settings and syncs the launcher to the targeted console IP.
+        Configures system level settings
 
         :return: None
         """
@@ -169,7 +170,6 @@ class WinLauncher(Launcher):
         host_ip = '127.0.0.1'
         self.args.append(f'--regset="/Amazon/AzCore/Bootstrap/project_path={self.workspace.paths.project()}"')
         self.args.append(f'--regset="/Amazon/AzCore/Bootstrap/remote_ip={host_ip}"')
-        self.args.append('--regset="/Amazon/AzCore/Bootstrap/wait_for_connect=1"')
         self.args.append(f'--regset="/Amazon/AzCore/Bootstrap/allowed_list={host_ip}"')
 
         self.workspace.settings.modify_platform_setting("log_RemoteConsoleAllowedAddresses", host_ip)
@@ -177,20 +177,25 @@ class WinLauncher(Launcher):
 
 class DedicatedWinLauncher(WinLauncher):
 
-    def setup(self, backupFiles=True, launch_ap=False):
+    def setup(self, backupFiles=True, launch_ap=False, configure_settings=True):
         """
         Perform setup of this launcher, must be called before launching.
         Subclasses should call its parent's setup() before calling its own code, unless it changes configuration files
 
         :param backupFiles: Bool to backup setup files
-        :param lauch_ap: Bool to lauch the asset processor
+        :param launch_ap: Bool to launch the asset processor
+        :param configure_settings: Bool to update settings caches
         :return: None
         """
-        # Base setup defaults to None
+        # Backup
+        if backupFiles:
+            self.backup_settings()
+
+        # None reverts to function default
         if launch_ap is None:
             launch_ap = False
 
-        super(DedicatedWinLauncher, self).setup(backupFiles, launch_ap)
+        super(DedicatedWinLauncher, self).setup(backupFiles, launch_ap, configure_settings)
 
     def binary_path(self):
         """
