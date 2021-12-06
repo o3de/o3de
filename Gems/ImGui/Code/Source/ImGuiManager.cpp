@@ -430,31 +430,29 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
                 }
             }
         }
-        // Handle Keyboard Modifier Keys
-        else
-        {
-            if (inputChannelId == InputDeviceKeyboard::Key::ModifierShiftL
-                || inputChannelId == InputDeviceKeyboard::Key::ModifierShiftR)
-            {
-                io.KeyShift = inputChannel.IsActive();
-            }
-            else if (inputChannelId == InputDeviceKeyboard::Key::ModifierAltL
-                     || inputChannelId == InputDeviceKeyboard::Key::ModifierAltR)
-            {
-                io.KeyAlt = inputChannel.IsActive();
-            }
-            else if (inputChannelId == InputDeviceKeyboard::Key::ModifierCtrlL
-                     || inputChannelId == InputDeviceKeyboard::Key::ModifierCtrlR)
-            {
-                io.KeyCtrl = inputChannel.IsActive();
-            }
 
-            // Set Keydown Flag in ImGui Keys Array
-            const int keyIndex = GetAzKeyIndex(inputChannelId);
-            if (0 <= keyIndex  && keyIndex < AZ_ARRAY_SIZE(io.KeysDown))
-            {
-                io.KeysDown[keyIndex] = inputChannel.IsActive();
-            }
+        // Handle Keyboard Modifier Keys
+        if (inputChannelId == InputDeviceKeyboard::Key::ModifierShiftL
+            || inputChannelId == InputDeviceKeyboard::Key::ModifierShiftR)
+        {
+            io.KeyShift = inputChannel.IsActive();
+        }
+        else if (inputChannelId == InputDeviceKeyboard::Key::ModifierAltL
+                 || inputChannelId == InputDeviceKeyboard::Key::ModifierAltR)
+        {
+            io.KeyAlt = inputChannel.IsActive();
+        }
+        else if (inputChannelId == InputDeviceKeyboard::Key::ModifierCtrlL
+                 || inputChannelId == InputDeviceKeyboard::Key::ModifierCtrlR)
+        {
+            io.KeyCtrl = inputChannel.IsActive();
+        }
+
+        // Set Keydown Flag in ImGui Keys Array
+        const int keyIndex = GetAzKeyIndex(inputChannelId);
+        if (0 <= keyIndex  && keyIndex < AZ_ARRAY_SIZE(io.KeysDown))
+        {
+            io.KeysDown[keyIndex] = inputChannel.IsActive();
         }
     }
 
