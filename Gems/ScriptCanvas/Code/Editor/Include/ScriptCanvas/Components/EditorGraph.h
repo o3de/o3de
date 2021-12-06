@@ -34,6 +34,7 @@
 #include <GraphCanvas/Widgets/NodePropertyBus.h>
 
 #include <Editor/Include/ScriptCanvas/Components/GraphUpgrade.h>
+#include <Editor/Assets/ScriptCanvasUndoHelper.h>
 
 namespace ScriptCanvas
 {
@@ -380,6 +381,7 @@ namespace ScriptCanvasEditor
 
         GraphCanvas::NodeFocusCyclingHelper m_focusHelper;
         GraphStatisticsHelper m_statisticsHelper;
+        UndoHelper m_undoHelper;
 
         bool m_ignoreSaveRequests;
 

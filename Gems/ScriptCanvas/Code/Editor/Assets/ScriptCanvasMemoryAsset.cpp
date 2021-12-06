@@ -278,8 +278,6 @@ namespace ScriptCanvasEditor
 
         EditorGraphNotificationBus::Handler::BusDisconnect();
         EditorGraphNotificationBus::Handler::BusConnect(m_scriptCanvasId);
-
-        m_undoHelper = AZStd::make_unique<UndoHelper>(*this);
     }
 
     ScriptCanvasEditor::Widget::CanvasWidget* ScriptCanvasMemoryAsset::CreateView(QWidget* /*parent*/)
