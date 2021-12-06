@@ -333,10 +333,9 @@ namespace AzToolsFramework
         return AzFramework::InputChannelEventListener::GetPriorityLast();
     }
 
-    void QtEventToAzInputMapper::OnInputChannelEvent(const AzFramework::InputChannel& inputChannel,
-                                                     bool& o_hasBeenConsumed)
+    void QtEventToAzInputMapper::OnInputChannelEvent(const AzFramework::InputChannel& inputChannel, bool& hasBeenConsumed)
     {
-        if (o_hasBeenConsumed)
+        if (hasBeenConsumed)
         {
             m_lastConsumedInputChannelEvent = &inputChannel;
         }

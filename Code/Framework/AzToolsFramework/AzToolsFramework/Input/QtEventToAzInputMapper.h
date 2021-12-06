@@ -72,10 +72,9 @@ namespace AzToolsFramework
         void InputChannelUpdated(const AzFramework::InputChannel* channel, QEvent* event);
 
     protected:
-        //! \ref AzFramework::InputChannelNotifications::GetPriority
+        // AzFramework::InputChannelNotificationBus overrides ...
         AZ::s32 GetPriority() const override;
-        //! \ref AzFramework::InputChannelNotifications::OnInputChannelEvent
-        void OnInputChannelEvent(const AzFramework::InputChannel& inputChannel, bool& o_hasBeenConsumed) override;
+        void OnInputChannelEvent(const AzFramework::InputChannel& inputChannel, bool& hasBeenConsumed) override;
 
     private:
         // Gets an input channel of the specified type by ID.
