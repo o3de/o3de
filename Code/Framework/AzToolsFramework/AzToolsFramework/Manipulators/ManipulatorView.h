@@ -382,7 +382,8 @@ namespace AzToolsFramework
     // Helpers to create various manipulator views.
 
     AZStd::unique_ptr<ManipulatorViewQuad> CreateManipulatorViewQuad(
-        const PlanarManipulator& planarManipulator,
+        const AZ::Vector3& axis1,
+        const AZ::Vector3& axis2,
         const AZ::Color& axis1Color,
         const AZ::Color& axis2Color,
         const AZ::Vector3& offset,
