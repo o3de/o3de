@@ -29,10 +29,10 @@
         <Param Type="float" Name="SomeFloat" />
     </RemoteProcedure>
 
-    <RemoteProcedure Name="AuthorityToClientNoParams" InvokeFrom="Authority" HandleOn="Client" IsPublic="false" IsReliable="false" GenerateEventBindings="true" Description="" />
+    <RemoteProcedure Name="AuthorityToClientNoParams_PlaySomeSuperficialFx" InvokeFrom="Authority" HandleOn="Client" IsPublic="false" IsReliable="true" GenerateEventBindings="true" Description="" />
 
-    <RemoteProcedure Name="ServerToAuthority" InvokeFrom="Server" HandleOn="Authority" IsPublic="false" IsReliable="false" GenerateEventBindings="true" Description="" >
-        <Param Type="float" Name="SomeFloat" />
+    <RemoteProcedure Name="ServerToAuthority_DealDamage" InvokeFrom="Server" HandleOn="Authority" IsPublic="false" IsReliable="true" GenerateEventBindings="true" Description="" >
+        <Param Type="float" Name="damage" />
     </RemoteProcedure>
     
     <RemoteProcedure Name="ServerToAuthorityNoParam" InvokeFrom="Server" HandleOn="Authority" IsPublic="false" IsReliable="false" GenerateEventBindings="true" Description="" />

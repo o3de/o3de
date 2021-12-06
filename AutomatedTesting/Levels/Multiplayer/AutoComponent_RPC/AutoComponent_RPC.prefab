@@ -20,7 +20,9 @@
                 "Id": 14126657869720434043,
                 "Child Entity Order": [
                     "Entity_[1176639161715]",
-                    "Entity_[12685882829720]"
+                    "Entity_[12685882829720]",
+                    "Entity_[31145534614197]",
+                    "Entity_[31145534614197]"
                 ]
             },
             "Component_[15230859088967841193]": {
@@ -205,7 +207,7 @@
                     "Controller": {
                         "Configuration": {
                             "Field of View": 55.0,
-                            "EditorEntityId": 15661114386016447348
+                            "EditorEntityId": 11050384689878106598
                         }
                     }
                 },
@@ -620,6 +622,125 @@
                 "Component_[9550161640684119498]": {
                     "$type": "EditorEntityIconComponent",
                     "Id": 9550161640684119498
+                }
+            }
+        },
+        "Entity_[31145534614197]": {
+            "Id": "Entity_[31145534614197]",
+            "Name": "NetLevelEntity",
+            "Components": {
+                "Component_[12132849363414901338]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 12132849363414901338
+                },
+                "Component_[12302672911455629152]": {
+                    "$type": "SelectionComponent",
+                    "Id": 12302672911455629152
+                },
+                "Component_[14169903623243423134]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 14169903623243423134
+                },
+                "Component_[14300469789192169678]": {
+                    "$type": "GenericComponentWrapper",
+                    "Id": 14300469789192169678,
+                    "m_template": {
+                        "$type": "AutomatedTesting::NetworkTestPlayerComponent"
+                    }
+                },
+                "Component_[14607413934411389854]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 14607413934411389854
+                },
+                "Component_[15494977028055234270]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 15494977028055234270
+                },
+                "Component_[16325088972532345964]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 16325088972532345964
+                },
+                "Component_[1639017114849961416]": {
+                    "$type": "GenericComponentWrapper",
+                    "Id": 1639017114849961416,
+                    "m_template": {
+                        "$type": "Multiplayer::LocalPredictionPlayerInputComponent"
+                    }
+                },
+                "Component_[1986030426392465743]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 1986030426392465743
+                },
+                "Component_[4591476848838823508]": {
+                    "$type": "AZ::Render::EditorMeshComponent",
+                    "Id": 4591476848838823508,
+                    "Controller": {
+                        "Configuration": {
+                            "ModelAsset": {
+                                "assetId": {
+                                    "guid": "{80FA8BAF-4A5B-5937-9679-2E592E841A3A}",
+                                    "subId": 275306041
+                                },
+                                "assetHint": "assets/physics/collider_pxmeshautoassigned/spherebot/r0-b_body.azmodel"
+                            }
+                        }
+                    }
+                },
+                "Component_[7256163899440301540]": {
+                    "$type": "EditorScriptCanvasComponent",
+                    "Id": 7256163899440301540,
+                    "m_name": "AutoComponent_RPC_NetLevelEntity",
+                    "m_assetHolder": {
+                        "m_asset": {
+                            "assetId": {
+                                "guid": "{1D517006-AC01-5ECA-AE66-0E007871F0CD}"
+                            },
+                            "assetHint": "levels/multiplayer/autocomponent_rpc/autocomponent_rpc_netlevelentity.scriptcanvas"
+                        }
+                    },
+                    "runtimeDataIsValid": true,
+                    "runtimeDataOverrides": {
+                        "source": {
+                            "assetId": {
+                                "guid": "{1D517006-AC01-5ECA-AE66-0E007871F0CD}"
+                            },
+                            "assetHint": "levels/multiplayer/autocomponent_rpc/autocomponent_rpc_netlevelentity.scriptcanvas"
+                        }
+                    }
+                },
+                "Component_[731336627222243355]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 731336627222243355,
+                    "Parent Entity": "Entity_[1146574390643]",
+                    "Transform Data": {
+                        "Translate": [
+                            2.561863899230957,
+                            -1.038161277770996,
+                            0.1487259864807129
+                        ]
+                    }
+                },
+                "Component_[8012379125499217348]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 8012379125499217348
+                },
+                "Component_[8122568562140740597]": {
+                    "$type": "GenericComponentWrapper",
+                    "Id": 8122568562140740597,
+                    "m_template": {
+                        "$type": "Multiplayer::NetworkTransformComponent"
+                    }
+                },
+                "Component_[8805228647591404845]": {
+                    "$type": "GenericComponentWrapper",
+                    "Id": 8805228647591404845,
+                    "m_template": {
+                        "$type": "NetBindComponent"
+                    }
+                },
+                "Component_[9880860858035405475]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 9880860858035405475
                 }
             }
         }
