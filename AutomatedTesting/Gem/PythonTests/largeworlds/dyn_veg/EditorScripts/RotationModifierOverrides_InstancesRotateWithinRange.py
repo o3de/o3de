@@ -88,7 +88,7 @@ def RotationModifierOverrides_InstancesRotateWithinRange():
     # 2) Create vegetation entity and add components
     entity_position = math.Vector3(512.0, 512.0, 32.0)
     asset_path = os.path.join("Slices", "PurpleFlower.dynamicslice")
-    spawner_entity = dynveg.create_vegetation_area("Spawner Entity", entity_position, 16.0, 16.0, 16.0, asset_path)
+    spawner_entity = dynveg.create_vegetation_area_by_dynamic_slice_asset_path("Spawner Entity", entity_position, 16.0, 16.0, 16.0, asset_path)
     spawner_entity.add_component("Vegetation Rotation Modifier")
     # Our default vegetation settings places 20 instances per 16 meters, so we expect 20 * 20 total instances.
     num_expected = 20 * 20

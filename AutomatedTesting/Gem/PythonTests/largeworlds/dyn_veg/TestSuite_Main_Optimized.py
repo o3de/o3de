@@ -16,6 +16,21 @@ from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorSharedTest, E
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(EditorTestSuite):
+    class test_AltitudeFilter_ComponentAndOverrides_InstancesPlantAtSpecifiedAltitude(EditorParallelTest):
+        from .EditorScripts import AltitudeFilter_ComponentAndOverrides_InstancesPlantAtSpecifiedAltitude as test_module
+    
+    class test_AltitudeFilter_FilterStageToggle(EditorParallelTest):
+        from .EditorScripts import AltitudeFilter_FilterStageToggle as test_module
+
+    class test_AltitudeFilter_ShapeSample_InstancesPlantAtSpecifiedAltitude(EditorParallelTest):
+        from .EditorScripts import AltitudeFilter_ShapeSample_InstancesPlantAtSpecifiedAltitude as test_module
+
+
+@pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
+@pytest.mark.SUITE_main
+@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
+@pytest.mark.parametrize("project", ["AutomatedTesting"])
+class TestAutomation_PrefabNotEnabled(EditorTestSuite):
 
     enable_prefab_system = False
 
@@ -35,15 +50,6 @@ class TestAutomation(EditorTestSuite):
 
     class test_EmptyInstanceSpawner_EmptySpawnerWorks(EditorParallelTest):
         from .EditorScripts import EmptyInstanceSpawner_EmptySpawnerWorks as test_module
-
-    class test_AltitudeFilter_ComponentAndOverrides_InstancesPlantAtSpecifiedAltitude(EditorParallelTest):
-        from .EditorScripts import AltitudeFilter_ComponentAndOverrides_InstancesPlantAtSpecifiedAltitude as test_module
-
-    class test_AltitudeFilter_ShapeSample_InstancesPlantAtSpecifiedAltitude(EditorParallelTest):
-        from .EditorScripts import AltitudeFilter_ShapeSample_InstancesPlantAtSpecifiedAltitude as test_module
-
-    class test_AltitudeFilter_FilterStageToggle(EditorParallelTest):
-        from .EditorScripts import AltitudeFilter_FilterStageToggle as test_module
 
     class test_SpawnerSlices_SliceCreationAndVisibilityToggleWorks(EditorSingleTest):
         # Custom teardown to remove slice asset created during test

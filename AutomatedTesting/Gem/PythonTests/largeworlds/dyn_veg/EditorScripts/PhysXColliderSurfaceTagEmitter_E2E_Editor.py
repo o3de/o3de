@@ -91,7 +91,7 @@ def PhysXColliderSurfaceTagEmitter_E2E_Editor():
 
     # Create a new entity with required vegetation area components
     asset_path = os.path.join("Slices", "PinkFlower.dynamicslice")
-    spawner_entity = dynveg.create_vegetation_area("Veg Area", entity_center_point, 32.0, 32.0, 32.0, asset_path)
+    spawner_entity = dynveg.create_vegetation_area_by_dynamic_slice_asset_path("Veg Area", entity_center_point, 32.0, 32.0, 32.0, asset_path)
 
     # Add a Vegetation Surface Mask Filter component to the spawner entity and set it to include the "test" tag
     spawner_entity.add_component("Vegetation Surface Mask Filter")

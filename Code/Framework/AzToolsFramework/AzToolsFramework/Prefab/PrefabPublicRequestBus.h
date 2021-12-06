@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/IO/Path/Path.h>
@@ -27,6 +28,7 @@ namespace AzToolsFramework
         using InstantiatePrefabResult = AZ::Outcome<AZ::EntityId, AZStd::string>;
         using DuplicatePrefabResult = AZ::Outcome<EntityIdList, AZStd::string>;
         using PrefabOperationResult = AZ::Outcome<void, AZStd::string>;
+        using CreateSpawnableResult = AZ::Outcome<AZ::Data::AssetId, AZStd::string>;
 
         /**
         * The primary purpose of this bus is to facilitate writing automated tests for prefabs.
@@ -93,6 +95,18 @@ namespace AzToolsFramework
              * Returns the path to the prefab, or an empty path if the entity is owned by the level.
              */
             virtual AZStd::string GetOwningInstancePrefabPath(AZ::EntityId entityId) const = 0;
+
+            /**
+             * Convert a prefab on given file path with given name to in-memory temporary spawnable assets. 
+             * Returns the asset id of the produced spawnable if creation succeeded;
+             * on failure, it comes with an error message detailing the cause of the error.
+             */
+            virtual CreateSpawnableResult CreateTemporarySpawnableAssets(AZStd::string_view prefabFilePath, AZStd::string_view spawnableName) = 0;
+
+            /**
+             * Remove all the in-memory temporary spawnable assets.
+             */
+            virtual void RemoveAllTemporarySpawnableAssets() = 0;
         };
 
         using PrefabPublicRequestBus = AZ::EBus<PrefabPublicRequests>;

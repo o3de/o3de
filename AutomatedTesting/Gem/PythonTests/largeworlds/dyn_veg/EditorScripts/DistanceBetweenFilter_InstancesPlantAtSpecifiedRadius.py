@@ -70,7 +70,7 @@ def DistanceBetweenFilter_InstancesPlantAtSpecifiedRadius():
     # 2) Create a new entity with required vegetation area components
     spawner_center_point = math.Vector3(520.0, 520.0, 32.0)
     asset_path = os.path.join("Slices", "1m_cube.dynamicslice")
-    spawner_entity = dynveg.create_vegetation_area("Instance Spawner", spawner_center_point, 16.0, 16.0, 16.0,
+    spawner_entity = dynveg.create_vegetation_area_by_dynamic_slice_asset_path("Instance Spawner", spawner_center_point, 16.0, 16.0, 16.0,
                                                    asset_path)
 
     # 3) Create a surface to plant on

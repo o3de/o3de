@@ -100,7 +100,7 @@ def ScaleModifierOverrides_InstancesProperlyScale():
     # 2) Create a new entity with components "Vegetation Layer Spawner", "Vegetation Asset List", "Box Shape"
     entity_position = math.Vector3(512.0, 512.0, 32.0)
     asset_path = os.path.join("Slices", "PurpleFlower.dynamicslice")
-    spawner_entity = dynveg.create_vegetation_area("Spawner Entity", entity_position, 16.0, 16.0, 10.0, asset_path)
+    spawner_entity = dynveg.create_vegetation_area_by_dynamic_slice_asset_path("Spawner Entity", entity_position, 16.0, 16.0, 10.0, asset_path)
 
     # Create a surface to plant on and add a Vegetation Debugger Level component to allow refreshes
     dynveg.create_surface_entity("Surface Entity", entity_position, 20.0, 20.0, 1.0)

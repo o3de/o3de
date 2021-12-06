@@ -67,8 +67,8 @@ def AssetWeightSelector_InstancesExpressBasedOnWeight():
     # valid slice entity, and one set to None
     spawner_center_point = math.Vector3(512.0, 512.0, 32.0)
     asset_path = os.path.join("Slices", "PinkFlower.dynamicslice")
-    spawner_entity = dynveg.create_vegetation_area("Instance Spawner", spawner_center_point, 16.0, 16.0, 16.0,
-                                                   asset_path)
+    spawner_entity = dynveg.create_vegetation_area_by_dynamic_slice_asset_path("Instance Spawner", spawner_center_point, 16.0, 16.0, 16.0,
+                                                   dynamic_slice_asset_path=asset_path)
     desc_asset = hydra.get_component_property_value(spawner_entity.components[2],
                                                     "Configuration|Embedded Assets")[0]
     desc_list = [desc_asset, desc_asset]

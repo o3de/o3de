@@ -80,7 +80,7 @@ def DynamicSliceInstanceSpawner_Embedded_E2E():
     # 2) Create a new entity with required vegetation area components and Script Canvas component for launcher test
     center_point = math.Vector3(512.0, 512.0, 32.0)
     asset_path = os.path.join("Slices", "PinkFlower.dynamicslice")
-    spawner_entity = dynveg.create_vegetation_area("Instance Spawner", center_point, 16.0, 16.0, 1.0, asset_path)
+    spawner_entity = dynveg.create_vegetation_area_by_dynamic_slice_asset_path("Instance Spawner", center_point, 16.0, 16.0, 1.0, asset_path)
     spawner_entity.add_component("Script Canvas")
     instance_counter_path = os.path.join("scriptcanvas", "instance_counter.scriptcanvas")
     instance_counter_script = asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", instance_counter_path,

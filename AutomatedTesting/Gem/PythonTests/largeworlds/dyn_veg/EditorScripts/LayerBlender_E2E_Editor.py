@@ -86,14 +86,14 @@ def LayerBlender_E2E_Editor():
     # 2) Create 2 vegetation areas with different meshes
     purple_position = math.Vector3(504.0, 512.0, 32.0)
     purple_asset_path = os.path.join("Slices", "PurpleFlower.dynamicslice")
-    spawner_entity_1 = dynveg.create_vegetation_area("Purple Spawner",
+    spawner_entity_1 = dynveg.create_vegetation_area_by_dynamic_slice_asset_path("Purple Spawner",
                                                      purple_position,
                                                      16.0, 16.0, 1.0,
                                                      purple_asset_path)
 
     pink_position = math.Vector3(520.0, 512.0, 32.0)
     pink_asset_path = os.path.join("Slices", "PinkFlower.dynamicslice")
-    spawner_entity_2 = dynveg.create_vegetation_area("Pink Spawner",
+    spawner_entity_2 = dynveg.create_vegetation_area_by_dynamic_slice_asset_path("Pink Spawner",
                                                      pink_position,
                                                      16.0, 16.0, 1.0,
                                                      pink_asset_path)

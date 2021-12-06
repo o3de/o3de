@@ -51,19 +51,24 @@ def AltitudeFilter_ComponentAndOverrides_InstancesPlantAtSpecifiedAltitude():
 
     import os
 
+    import azlmbr.asset as asset
     import azlmbr.editor as editor
     import azlmbr.legacy.general as general
     import azlmbr.bus as bus
     import azlmbr.math as math
+    import azlmbr.prefab as prefab
 
     import editor_python_test_tools.hydra_editor_utils as hydra
+    from editor_python_test_tools.prefab_utils import Prefab
     from largeworlds.large_worlds_utils import editor_dynveg_test_helper as dynveg
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
 
     # 1) Open an existing simple level
     helper.init_idle()
-    helper.open_level("Physics", "Base")
+    helper.open_level("", "Base")
+
+    #helper.open_level("Physics", "Base")
 
     # Set view of planting area for visual debugging
     general.set_current_view_position(512.0, 500.0, 38.0)
@@ -71,13 +76,16 @@ def AltitudeFilter_ComponentAndOverrides_InstancesPlantAtSpecifiedAltitude():
 
     # 2) Create a new entity with required vegetation area components
     center_point = math.Vector3(512.0, 512.0, 32.0)
-    asset_path = os.path.join("Slices", "PinkFlower.dynamicslice")
-    spawner_entity = dynveg.create_vegetation_area("Instance Spawner", center_point, 32.0, 32.0, 32.0, asset_path)
+
+    flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
+    flower_prefab = dynveg.create_temp_mesh_prefab(flower_asset_path, "PinkFlower")[0]
+
+    spawner_entity = dynveg.create_vegetation_area_by_prefab("Instance Spawner", center_point, 32.0, 32.0, 32.0, flower_prefab)
 
     # Add a Vegetation Altitude Filter
     spawner_entity.add_component("Vegetation Altitude Filter")
 
-    # 3) Add surfaces to plant on
+    # 3) Add surfaces to plant onspawnable_asset_idspawnable_asset_id
     dynveg.create_surface_entity("Planting Surface", center_point, 32.0, 32.0, 1.0)
     elevated_surface_center_point = math.Vector3(512.0, 512.0, 36.0)
     dynveg.create_surface_entity("Planting Surface Elevated", elevated_surface_center_point, 32.0, 32.0, 1.0)

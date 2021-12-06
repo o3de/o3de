@@ -724,6 +724,7 @@ set(FILES
     Prefab/Spawnable/PrefabCatchmentProcessor.cpp
     Prefab/Spawnable/PrefabConversionPipeline.h
     Prefab/Spawnable/PrefabConversionPipeline.cpp
+    Prefab/Spawnable/PrefabConverterStackProfileNames.h
     Prefab/Spawnable/ProcesedObjectStore.h
     Prefab/Spawnable/ProcesedObjectStore.cpp
     Prefab/Spawnable/PrefabProcessor.h
@@ -733,6 +734,8 @@ set(FILES
     Prefab/Spawnable/SpawnableMetaDataBuilder.cpp
     Prefab/Spawnable/SpawnableUtils.h
     Prefab/Spawnable/SpawnableUtils.cpp
+    Prefab/Spawnable/TempSpawnableAssetsCache.h
+    Prefab/Spawnable/TempSpawnableAssetsCache.cpp
     Prefab/Template/Template.h
     Prefab/Template/Template.cpp
     UI/Outliner/EntityOutlinerDisplayOptionsMenu.h

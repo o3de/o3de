@@ -12,6 +12,7 @@
 #include <AzCore/RTTI/RTTI.h>
 
 #include <AzToolsFramework/Prefab/PrefabPublicRequestBus.h>
+#include <AzToolsFramework/Prefab/Spawnable/TempSpawnableAssetsCache.h>
 
 namespace AzToolsFramework
 {
@@ -37,9 +38,13 @@ namespace AzToolsFramework
             PrefabOperationResult DetachPrefab(const AZ::EntityId& containerEntityId) override;
             DuplicatePrefabResult DuplicateEntitiesInInstance(const EntityIdList& entityIds) override;
             AZStd::string GetOwningInstancePrefabPath(AZ::EntityId entityId) const override;
+            CreateSpawnableResult CreateTemporarySpawnableAssets(AZStd::string_view prefabFilePath, AZStd::string_view spawnableName) override;
+            void RemoveAllTemporarySpawnableAssets() override;
 
         private:
             PrefabPublicInterface* m_prefabPublicInterface = nullptr;
+            PrefabConversionUtils::TempSpawnableAssetsCache m_tempSpawnableAssetsCache;
+
         };
     } // namespace Prefab
 } // namespace AzToolsFramework
