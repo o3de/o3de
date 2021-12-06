@@ -102,9 +102,9 @@ def LayerSpawner_InstancesRefreshUsingCorrectViewportCamera():
     # Create the two vegetation areas
     test_slice_asset_path = os.path.join("Slices", "PurpleFlower.dynamicslice")
     first_veg_entity = dynveg.create_vegetation_area_by_dynamic_slice_asset_path("Veg Area 1", first_entity_center_point, box_size, box_size,
-                                                     box_size, test_slice_asset_path)
+                                                                                 box_size, test_slice_asset_path)
     second_veg_entity = dynveg.create_vegetation_area_by_dynamic_slice_asset_path("Veg Area 2", second_entity_center_point, box_size, box_size,
-                                                      box_size, test_slice_asset_path)
+                                                                                  box_size, test_slice_asset_path)
 
     # When the first viewport is active, the first area should be full of instances, and the second should be empty
     general.set_active_viewport(0)

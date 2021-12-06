@@ -75,7 +75,7 @@ def PositionModifier_AutoSnapToSurfaceWorks():
     spawner_center_point = math.Vector3(512.0, 512.0, 32.0)
     asset_path = os.path.join("Slices", "PinkFlower.dynamicslice")
     spawner_entity = dynveg.create_vegetation_area_by_dynamic_slice_asset_path("Instance Spawner", spawner_center_point, 16.0, 16.0, 16.0,
-                                                   asset_path)
+                                                                               asset_path)
 
     # Add a Vegetation Position Modifier and set offset values to 0
     spawner_entity.add_component("Vegetation Position Modifier")

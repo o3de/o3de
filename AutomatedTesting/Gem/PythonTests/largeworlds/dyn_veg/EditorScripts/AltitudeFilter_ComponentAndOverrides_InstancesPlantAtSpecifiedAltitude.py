@@ -68,8 +68,6 @@ def AltitudeFilter_ComponentAndOverrides_InstancesPlantAtSpecifiedAltitude():
     helper.init_idle()
     helper.open_level("", "Base")
 
-    #helper.open_level("Physics", "Base")
-
     # Set view of planting area for visual debugging
     general.set_current_view_position(512.0, 500.0, 38.0)
     general.set_current_view_rotation(-20.0, 0.0, 0.0)
@@ -85,7 +83,7 @@ def AltitudeFilter_ComponentAndOverrides_InstancesPlantAtSpecifiedAltitude():
     # Add a Vegetation Altitude Filter
     spawner_entity.add_component("Vegetation Altitude Filter")
 
-    # 3) Add surfaces to plant onspawnable_asset_idspawnable_asset_id
+    # 3) Add surfaces to plant on
     dynveg.create_surface_entity("Planting Surface", center_point, 32.0, 32.0, 1.0)
     elevated_surface_center_point = math.Vector3(512.0, 512.0, 36.0)
     dynveg.create_surface_entity("Planting Surface Elevated", elevated_surface_center_point, 32.0, 32.0, 1.0)

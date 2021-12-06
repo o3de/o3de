@@ -101,9 +101,9 @@ def SurfaceMaskFilter_InclusionList():
     entity_position = math.Vector3(512.0, 512.0, 32.0)
     asset_path = os.path.join("Slices", "PurpleFlower.dynamicslice")
     spawner_entity = dynveg.create_vegetation_area_by_dynamic_slice_asset_path("Instance Spawner",
-                                                   entity_position,
-                                                   10.0, 10.0, 10.0,
-                                                   asset_path)
+                                                                               entity_position,
+                                                                               10.0, 10.0, 10.0,
+                                                                               asset_path)
 
     # 3) Add a Vegetation Surface Mask Filter component to the entity.
     spawner_entity.add_component("Vegetation Surface Mask Filter")

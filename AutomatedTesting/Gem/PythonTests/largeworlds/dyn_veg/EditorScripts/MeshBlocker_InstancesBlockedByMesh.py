@@ -60,9 +60,9 @@ def MeshBlocker_InstancesBlockedByMesh():
     entity_position = math.Vector3(512.0, 512.0, 32.0)
     asset_path = os.path.join("Slices", "PurpleFlower.dynamicslice")
     spawner_entity = dynveg.create_vegetation_area_by_dynamic_slice_asset_path("Instance Spawner",
-                                                   entity_position,
-                                                   10.0, 10.0, 10.0,
-                                                   asset_path)
+                                                                               entity_position,
+                                                                               10.0, 10.0, 10.0,
+                                                                               asset_path)
 
     # Create surface entity to plant on
     dynveg.create_surface_entity("Surface Entity", entity_position, 10.0, 10.0, 1.0)

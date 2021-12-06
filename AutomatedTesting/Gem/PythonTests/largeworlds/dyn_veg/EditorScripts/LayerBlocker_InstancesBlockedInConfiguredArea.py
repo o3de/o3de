@@ -69,7 +69,7 @@ def LayerBlocker_InstancesBlockedInConfiguredArea():
     spawner_center_point = math.Vector3(512.0, 512.0, 32.0)
     asset_path = os.path.join("Slices", "PinkFlower.dynamicslice")
     spawner_entity = dynveg.create_vegetation_area_by_dynamic_slice_asset_path("Instance Spawner", spawner_center_point, 16.0, 16.0, 16.0,
-                                                   asset_path)
+                                                                               asset_path)
 
     # 3) Create surface for planting on
     dynveg.create_surface_entity("Surface Entity", spawner_center_point, 32.0, 32.0, 1.0)
