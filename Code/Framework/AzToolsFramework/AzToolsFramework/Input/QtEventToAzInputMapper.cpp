@@ -375,8 +375,14 @@ namespace AzToolsFramework
                 // reset the consumed event cache
                 m_lastConsumedInputChannelEvent = nullptr;
 
-                const bool buttonActive = (mouseEvent->type() != QEvent::Type::MouseButtonRelease);
-                buttonChannel->UpdateState(buttonActive);
+                if (mouseEvent->type() != QEvent::Type::MouseButtonRelease)
+                {
+                    buttonChannel->UpdateState(true);
+                }
+                else
+                {
+                    buttonChannel->UpdateState(false);
+                }
 
                 if (m_lastConsumedInputChannelEvent == buttonChannel)
                 {
@@ -497,8 +503,14 @@ namespace AzToolsFramework
 
                 if (keyChannel)
                 {
-                    const bool isKeyPressed = (eventType == QEvent::Type::KeyPress) || (eventType == QEvent::Type::ShortcutOverride);
-                    keyChannel->UpdateState(isKeyPressed);
+                    if (eventType == QEvent::Type::KeyPress || eventType == QEvent::Type::ShortcutOverride)
+                    {
+                        keyChannel->UpdateState(true);
+                    }
+                    else
+                    {
+                        keyChannel->UpdateState(false);
+                    }
                     NotifyUpdateChannelIfNotIdle(keyChannel, keyEvent);
                 }
             }
