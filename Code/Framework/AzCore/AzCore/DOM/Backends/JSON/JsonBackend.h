@@ -27,7 +27,7 @@ namespace AZ::Dom
             return Json::VisitSerializedJson<ParseFlags>({ buffer, size }, lifetime, visitor);
         }
 
-        Visitor::Result ReadFromBufferInPlace(char* buffer, Visitor& visitor) override
+        Visitor::Result ReadFromBufferInPlace(char* buffer, [[maybe_unused]] AZStd::optional<size_t> size, Visitor& visitor) override
         {
             return Json::VisitSerializedJsonInPlace<ParseFlags>(buffer, visitor);
         }

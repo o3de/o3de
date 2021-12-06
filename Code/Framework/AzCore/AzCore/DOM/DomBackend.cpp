@@ -10,8 +10,8 @@
 
 namespace AZ::Dom
 {
-    Visitor::Result Backend::ReadFromBufferInPlace(char* buffer, Visitor& visitor)
+    Visitor::Result Backend::ReadFromBufferInPlace(char* buffer, AZStd::optional<size_t> size, Visitor& visitor)
     {
-        return ReadFromBuffer(buffer, strlen(buffer), AZ::Dom::Lifetime::Persistent, visitor);
+        return ReadFromBuffer(buffer, size.value_or(strlen(buffer)), AZ::Dom::Lifetime::Persistent, visitor);
     }
 } // namespace AZ::Dom

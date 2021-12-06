@@ -19,7 +19,7 @@ namespace AZ::Dom::Utils
 
     Visitor::Result ReadFromStringInPlace(Backend& backend, AZStd::string& string, Visitor& visitor)
     {
-        return backend.ReadFromBufferInPlace(string.data(), visitor);
+        return backend.ReadFromBufferInPlace(string.data(), string.size(), visitor);
     }
 
     Visitor::Result WriteToString(Backend& backend, AZStd::string& buffer, Backend::WriteCallback writeCallback)

@@ -12,6 +12,7 @@
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/optional.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace AZ::Dom
@@ -32,7 +33,7 @@ namespace AZ::Dom
         //! - The string won't be deallocated until the visitor no longer needs the values and
         //! - The string is safe to modify in place.
         //! The base implementation simply calls ReadFromBuffer.
-        virtual Visitor::Result ReadFromBufferInPlace(char* buffer, Visitor& visitor);
+        virtual Visitor::Result ReadFromBufferInPlace(char* buffer, AZStd::optional<size_t> size, Visitor& visitor);
 
         //! A callback that accepts a Visitor, making DOM calls to inform the serializer, and returns an
         //! aggregate error code to indicate whether or not the operation succeeded.
