@@ -21,6 +21,7 @@
 #include <AzToolsFramework/Commands/EntityManipulatorCommand.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
 #include <AzToolsFramework/Entity/EditorEntityTransformBus.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
 #include <AzToolsFramework/Manipulators/RotationManipulators.h>
@@ -1019,6 +1020,7 @@ namespace AzToolsFramework
         EditorManipulatorCommandUndoRedoRequestBus::Handler::BusConnect(entityContextId);
         EditorContextMenuBus::Handler::BusConnect();
         ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusConnect(ViewportUi::DefaultViewportId);
+        ReadOnlyEntityPublicNotificationBus::Handler::BusConnect(entityContextId);
 
         CreateTransformModeSelectionCluster();
         CreateSpaceSelectionCluster();
@@ -1054,6 +1056,7 @@ namespace AzToolsFramework
 
         m_pivotOverrideFrame.Reset();
 
+        ReadOnlyEntityPublicNotificationBus::Handler::BusDisconnect();
         ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusDisconnect();
         EditorContextMenuBus::Handler::BusConnect();
         EditorManipulatorCommandUndoRedoRequestBus::Handler::BusDisconnect();
@@ -3623,6 +3626,22 @@ namespace AzToolsFramework
                 m_selectedEntityIds.erase(focusRoot);
             }
         }
+
+        // Do not create maniuplators for any entities marked as read only
+        if (auto readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get())
+        {
+            for (auto it = m_selectedEntityIds.begin(); it != m_selectedEntityIds.end();)
+            {
+                if (readOnlyEntityPublicInterface->IsReadOnly(*it))
+                {
+                    it = m_selectedEntityIds.erase(it);
+                }
+                else
+                {
+                    ++it;
+                }
+            }
+        }
     }
 
     void EditorTransformComponentSelection::OnTransformChanged(
@@ -3828,6 +3847,14 @@ namespace AzToolsFramework
     void EditorTransformComponentSelection::OnGridSnappingChanged([[maybe_unused]] const bool enabled)
     {
         m_snappingCluster.TrySetVisible(m_viewportUiVisible && !m_selectedEntityIds.empty());
+    }
+
+    void EditorTransformComponentSelection::OnReadOnlyEntityStatusChanged(const AZ::EntityId& entityId, [[maybe_unused]] bool readOnly)
+    {
+        if (IsEntitySelected(entityId))
+        {
+            RefreshSelectedEntityIdsAndRegenerateManipulators();
+        }
     }
 
     namespace ETCS
