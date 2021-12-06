@@ -57,13 +57,13 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
     {
         if (!IsActivated())
         {
-            return AZ::Failure(AZStd::string::format("Failed to create a prefab processing stack from key '% .*s'.", AZ_STRING_ARG(m_stockProfile)));
+            return AZ::Failure(AZStd::string::format("Failed to create a prefab processing stack from key '%.*s'.", AZ_STRING_ARG(m_stockProfile)));
         }
 
         TemplateReference templateReference = m_prefabSystemComponentInterface->FindTemplate(templateId);
         if (!templateReference.has_value())
         {
-            return AZ::Failure(AZStd::string::format("Could not get Template DOM given Template's id %u .", templateId));
+            return AZ::Failure(AZStd::string::format("Could not get Template DOM given Template's id %llu .", templateId));
         }
 
         // Use a random uuid as this is only a temporary source.
