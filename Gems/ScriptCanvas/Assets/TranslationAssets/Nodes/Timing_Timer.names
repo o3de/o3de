@@ -1,46 +1,60 @@
 {
     "entries": [
         {
-            "base": "{60CF8540-E51A-434D-A32C-461C41D68AF9}",
+            "base": "{32A4BEDC-C207-4472-61DE-9A716402620A}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Timer",
                 "category": "Timing",
-                "tooltip": "Provides a time value."
+                "tooltip": "While active, will signal the output at the given interval."
             },
             "slots": [
                 {
-                    "base": "DataOutput_Milliseconds",
+                    "base": "Input_Start_0",
+                    "details": {
+                        "name": "Start",
+                        "tooltip": "Starts the timer"
+                    }
+                },
+                {
+                    "base": "Output_On Start_0",
+                    "details": {
+                        "name": "On Start",
+                        "tooltip": "Starts the timer"
+                    }
+                },
+                {
+                    "base": "Input_Stop_1",
+                    "details": {
+                        "name": "Stop",
+                        "tooltip": "Stops the timer"
+                    }
+                },
+                {
+                    "base": "Output_On Stop_1",
+                    "details": {
+                        "name": "On Stop",
+                        "tooltip": "Stops the timer"
+                    }
+                },
+                {
+                    "base": "Output_On Tick_2",
+                    "details": {
+                        "name": "On Tick",
+                        "tooltip": "Signaled at each tick while the timer is in operation."
+                    }
+                },
+                {
+                    "base": "DataOutput_Milliseconds_0",
                     "details": {
                         "name": "Milliseconds"
                     }
                 },
                 {
-                    "base": "DataOutput_Seconds",
+                    "base": "DataOutput_Seconds_1",
                     "details": {
                         "name": "Seconds"
-                    }
-                },
-                {
-                    "base": "Input_Start",
-                    "details": {
-                        "name": "Start",
-                        "tooltip": "Starts the timer."
-                    }
-                },
-                {
-                    "base": "Input_Stop",
-                    "details": {
-                        "name": "Stop",
-                        "tooltip": "Stops the timer."
-                    }
-                },
-                {
-                    "base": "Output_Out",
-                    "details": {
-                        "name": "Out",
-                        "tooltip": "Signaled every frame while the timer is running."
                     }
                 }
             ]

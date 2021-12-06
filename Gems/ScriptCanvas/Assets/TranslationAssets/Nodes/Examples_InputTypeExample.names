@@ -5,62 +5,61 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "InputTypeExample",
-                "category": "Tests",
-                "tooltip": "Example of passing as input by value, pointer and reference.",
-                "subtitle": "Tests"
+                "name": "Input Type Example",
+                "category": "Examples",
+                "tooltip": "Example of passing as input by value, pointer and reference."
             },
             "slots": [
                 {
-                    "base": "Input_Clear By Value",
+                    "base": "Input_Clear By Value_0",
                     "details": {
                         "name": "Clear By Value"
                     }
                 },
                 {
-                    "base": "DataInput_Value Input",
+                    "base": "DataInput_Value Input_0",
                     "details": {
                         "name": "Value Input"
                     }
                 },
                 {
-                    "base": "Output_On Clear By Value",
+                    "base": "Output_On Clear By Value_0",
                     "details": {
                         "name": "On Clear By Value"
                     }
                 },
                 {
-                    "base": "Input_Clear By Pointer",
+                    "base": "Input_Clear By Pointer_1",
                     "details": {
                         "name": "Clear By Pointer"
                     }
                 },
                 {
-                    "base": "DataInput_Pointer Input",
+                    "base": "DataInput_Pointer Input_1",
                     "details": {
                         "name": "Pointer Input"
                     }
                 },
                 {
-                    "base": "Output_On Clear By Pointer",
+                    "base": "Output_On Clear By Pointer_1",
                     "details": {
                         "name": "On Clear By Pointer"
                     }
                 },
                 {
-                    "base": "Input_Clear By Reference",
+                    "base": "Input_Clear By Reference_2",
                     "details": {
                         "name": "Clear By Reference"
                     }
                 },
                 {
-                    "base": "DataInput_Reference Input",
+                    "base": "DataInput_Reference Input_2",
                     "details": {
                         "name": "Reference Input"
                     }
                 },
                 {
-                    "base": "Output_On Clear By Reference",
+                    "base": "Output_On Clear By Reference_2",
                     "details": {
                         "name": "On Clear By Reference"
                     }

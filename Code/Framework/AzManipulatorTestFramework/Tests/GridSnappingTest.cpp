@@ -26,7 +26,8 @@ namespace UnitTest
     {
     public:
         GridSnappingFixture()
-            : m_viewportManipulatorInteraction(AZStd::make_unique<AzManipulatorTestFramework::DirectCallManipulatorViewportInteraction>())
+            : m_viewportManipulatorInteraction(AZStd::make_unique<AzManipulatorTestFramework::DirectCallManipulatorViewportInteraction>(
+                  AZStd::make_shared<NullDebugDisplayRequests>()))
             , m_actionDispatcher(
                   AZStd::make_unique<AzManipulatorTestFramework::ImmediateModeActionDispatcher>(*m_viewportManipulatorInteraction))
         {
