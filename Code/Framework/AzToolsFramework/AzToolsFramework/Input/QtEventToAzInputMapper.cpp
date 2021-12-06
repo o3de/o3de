@@ -440,9 +440,6 @@ namespace AzToolsFramework
 
         // special handling for text events in edit mode
         {
-            static Qt::Key lastKey = key;
-            static bool consumeAsText = false;
-
             QString keyText = keyEvent->text();
             if (key == Qt::Key_Backspace)
             {
@@ -454,37 +451,17 @@ namespace AzToolsFramework
                 // key events are first sent as shortcuts, if accepted they are then resent as traditional key
                 // down events.  dispatching the key event as text on shortcut (and auto-repeat press) ensures
                 // all printable keys a fair chance at being consumed before processing elsewhere
-                if (eventType == QEvent::Type::ShortcutOverride ||
-                    (eventType == QEvent::Type::KeyPress && keyEvent->isAutoRepeat()))
+                if (eventType == QEvent::Type::ShortcutOverride || (eventType == QEvent::Type::KeyPress && keyEvent->isAutoRepeat()))
                 {
                     bool textConsumed = false;
                     AzFramework::InputTextNotificationBus::Broadcast(
-                        &AzFramework::InputTextNotifications::OnInputTextEvent,
-                        AZStd::string(keyText.toUtf8().data()),
-                        textConsumed
-                    );
-                    consumeAsText = textConsumed;
+                        &AzFramework::InputTextNotifications::OnInputTextEvent, AZStd::string(keyText.toUtf8().data()), textConsumed);
+                    if (textConsumed)
+                    {
+                        keyEvent->accept();
+                        return;
+                    }
                 }
-                // follow up events from accepting the previous key event also need to be accepted without
-                // dispatching the text event, otherwise the key event will be processed twice: once for the
-                // previous text event, then again as a normal key event which can lead to odd behaviour
-                // during text edit
-                else
-                {
-                    consumeAsText &= (lastKey == key);
-                }
-            }
-            else
-            {
-                consumeAsText = false;
-            }
-
-            lastKey = key;
-
-            if (consumeAsText)
-            {
-                keyEvent->accept();
-                return;
             }
         }
 
