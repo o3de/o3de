@@ -383,8 +383,8 @@ namespace AzToolsFramework
         debugDisplay.DrawLine(quadBoundVisual.m_corner1, quadBoundVisual.m_corner2);
 
         debugDisplay.SetColor(ViewColor(manipulatorState.m_mouseOver, m_axis2Color, m_mouseOverColor).GetAsVector4());
+        debugDisplay.DrawLine(quadBoundVisual.m_corner4, quadBoundVisual.m_corner1);
         debugDisplay.DrawLine(quadBoundVisual.m_corner2, quadBoundVisual.m_corner3);
-        debugDisplay.DrawLine(quadBoundVisual.m_corner1, quadBoundVisual.m_corner4);
 
         if (manipulatorState.m_mouseOver)
         {
@@ -738,15 +738,16 @@ namespace AzToolsFramework
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     AZStd::unique_ptr<ManipulatorViewQuad> CreateManipulatorViewQuad(
-        const PlanarManipulator& planarManipulator,
+        const AZ::Vector3& axis1,
+        const AZ::Vector3& axis2,
         const AZ::Color& axis1Color,
         const AZ::Color& axis2Color,
         const AZ::Vector3& offset,
         const float size)
     {
         AZStd::unique_ptr<ManipulatorViewQuad> viewQuad = AZStd::make_unique<ManipulatorViewQuad>();
-        viewQuad->m_axis1 = planarManipulator.GetAxis1();
-        viewQuad->m_axis2 = planarManipulator.GetAxis2();
+        viewQuad->m_axis1 = axis1;
+        viewQuad->m_axis2 = axis2;
         viewQuad->m_size = size;
         viewQuad->m_offset = offset;
         viewQuad->m_axis1Color = axis1Color;
