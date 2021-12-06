@@ -73,7 +73,9 @@ def Terrain_World_ConfigurationWorks():
         
         # 3) Load the level components
         terrain_world_component = hydra.add_level_component("Terrain World")
-        Report.critical_result(Tests.level_components_added, terrain_world_component is not None and hydra.add_level_component("Terrain World Renderer") is not None)
+        terrain_world_renderer = hydra.add_level_component("Terrain World Renderer")
+        Report.critical_result(Tests.level_components_added, 
+            terrain_world_component is not None and  terrain_world_renderer is not None)
  
         # 4) Create 2 test entities, one parent at 512.0, 512.0, 50.0 and one child at the default position and add the required components
         entity1_components_to_add = ["Axis Aligned Box Shape", "Terrain Layer Spawner", "Terrain Height Gradient List", "Terrain Physics Heightfield Collider"]
