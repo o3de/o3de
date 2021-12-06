@@ -21,10 +21,4 @@ namespace AZ::Dom::Utils
     {
         return backend.ReadFromBufferInPlace(string.data(), string.size(), visitor);
     }
-
-    Visitor::Result WriteToString(Backend& backend, AZStd::string& buffer, Backend::WriteCallback writeCallback)
-    {
-        AZ::IO::ByteContainerStream<AZStd::string> stream{ &buffer };
-        return backend.WriteToStream(stream, writeCallback);
-    }
 }

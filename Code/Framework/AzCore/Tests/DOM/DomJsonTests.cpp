@@ -71,7 +71,7 @@ namespace AZ::Dom::Tests
             {
                 AZStd::string serializedDocument;
                 JsonBackend backend;
-                auto result = Dom::Utils::WriteToString(backend, serializedDocument, visitDocumentFn);
+                auto result = backend.WriteToBuffer(serializedDocument, visitDocumentFn);
                 EXPECT_TRUE(result.IsSuccess());
                 EXPECT_EQ(canonicalSerializedDocument, serializedDocument);
             }
@@ -92,8 +92,8 @@ namespace AZ::Dom::Tests
             {
                 AZStd::string serializedDocument;
                 JsonBackend backend;
-                auto result = Dom::Utils::WriteToString(
-                    backend, serializedDocument,
+                auto result = backend.WriteToBuffer(
+                    serializedDocument,
                     [&backend, &canonicalSerializedDocument](AZ::Dom::Visitor& visitor)
                     {
                         return Dom::Utils::ReadFromString(backend, canonicalSerializedDocument, Lifetime::Temporary, visitor);

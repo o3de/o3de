@@ -10,6 +10,7 @@
 
 #include <AzCore/DOM/Backends/JSON/JsonSerializationUtils.h>
 #include <AzCore/DOM/DomBackend.h>
+#include <AzCore/IO/ByteContainerStream.h>
 
 namespace AZ::Dom
 {
@@ -32,8 +33,9 @@ namespace AZ::Dom
             return Json::VisitSerializedJsonInPlace<ParseFlags>(buffer, visitor);
         }
 
-        Visitor::Result WriteToStream(AZ::IO::GenericStream& stream, WriteCallback callback) override
+        Visitor::Result WriteToBuffer(AZStd::string& buffer, WriteCallback callback)
         {
+            AZ::IO::ByteContainerStream<AZStd::string> stream{ &buffer };
             AZStd::unique_ptr<Visitor> visitor = Json::CreateJsonStreamWriter(stream, WriteFormat);
             return callback(*visitor);
         }

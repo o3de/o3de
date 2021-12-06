@@ -38,7 +38,7 @@ namespace AZ::Dom
         //! A callback that accepts a Visitor, making DOM calls to inform the serializer, and returns an
         //! aggregate error code to indicate whether or not the operation succeeded.
         using WriteCallback = AZStd::function<Visitor::Result(Visitor&)>;
-        //! Attempt to write a value to a stream using a write callback.
-        virtual Visitor::Result WriteToStream(AZ::IO::GenericStream& stream, WriteCallback callback) = 0;
+        //! Attempt to write a value to the specified string using a write callback.
+        virtual Visitor::Result WriteToBuffer(AZStd::string& buffer, WriteCallback callback) = 0;
     };
 } // namespace AZ::Dom

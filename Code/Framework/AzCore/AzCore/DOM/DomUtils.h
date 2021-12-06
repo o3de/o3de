@@ -14,6 +14,4 @@ namespace AZ::Dom::Utils
 {
     Visitor::Result ReadFromString(Backend& backend, AZStd::string_view string, AZ::Dom::Lifetime lifetime, Visitor& visitor);
     Visitor::Result ReadFromStringInPlace(Backend& backend, AZStd::string& string, Visitor& visitor);
-
-    Visitor::Result WriteToString(Backend& backend, AZStd::string& buffer, Backend::WriteCallback writeCallback);
 } // namespace AZ::Dom::Utils
