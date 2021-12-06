@@ -1,41 +1,41 @@
 {
     "entries": [
         {
-            "key": "{AD815735-ED31-535E-BEEF-471259B271E3}",
+            "base": "{AD815735-ED31-535E-BEEF-471259B271E3}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Is Normalized",
                 "category": "Math/Vector2",
-                "tooltip": "Returns true if the length of the source is within tolerance of 1.0, else false"
+                "tooltip": "returns true if the length of the source is within tolerance of 1.0, else false"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Source",
+                    "base": "DataInput_Source_0",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Tolerance",
+                    "base": "DataInput_Tolerance_1",
                     "details": {
                         "name": "Tolerance"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

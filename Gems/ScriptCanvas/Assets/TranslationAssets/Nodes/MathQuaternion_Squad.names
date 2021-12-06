@@ -1,59 +1,59 @@
 {
     "entries": [
         {
-            "key": "{E7275C69-D728-5468-9402-C4FBA1ADDA97}",
+            "base": "{E7275C69-D728-5468-9402-C4FBA1ADDA97}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Squad",
                 "category": "Math/Quaternion",
-                "tooltip": "Returns the quadratic interpolation, that is: Squad(From, To, In, Out, T) = Slerp(Slerp(From, Out, T), Slerp(To, In, T), 2(1 - T)T)"
+                "tooltip": "returns the quadratic interpolation, that is: Squad(From, To, In, Out, T) = Slerp(Slerp(From, Out, T), Slerp(To, In, T), 2(1 - T)T)"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_From",
+                    "base": "DataInput_From_0",
                     "details": {
                         "name": "From"
                     }
                 },
                 {
-                    "key": "DataInput_To",
+                    "base": "DataInput_To_1",
                     "details": {
                         "name": "To"
                     }
                 },
                 {
-                    "key": "DataInput_In",
+                    "base": "DataInput_In_2",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "DataInput_Out",
+                    "base": "DataInput_Out_3",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_T",
+                    "base": "DataInput_T_4",
                     "details": {
                         "name": "T"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

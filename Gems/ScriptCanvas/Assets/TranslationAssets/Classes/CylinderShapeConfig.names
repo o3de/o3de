@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "CylinderShapeConfig",
+            "base": "CylinderShapeConfig",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "Cylinder Shape Config"
+                "name": "Cylinder Shape Config",
+                "category": "Rendering/Shapes"
             },
             "methods": [
                 {
-                    "key": "GetHeight",
+                    "base": "GetHeight",
                     "details": {
                         "name": "Get Height"
                     },
@@ -32,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "SetHeight",
+                    "base": "SetHeight",
                     "details": {
                         "name": "Set Height"
                     },
@@ -53,7 +54,7 @@
                     ]
                 },
                 {
-                    "key": "GetRadius",
+                    "base": "GetRadius",
                     "details": {
                         "name": "Get Radius"
                     },
@@ -76,7 +77,7 @@
                     ]
                 },
                 {
-                    "key": "SetRadius",
+                    "base": "SetRadius",
                     "details": {
                         "name": "Set Radius"
                     },

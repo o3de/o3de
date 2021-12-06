@@ -74,7 +74,7 @@ namespace EMotionFX
         return values[indexA].ToQuaternion().NLerp(values[indexB].ToQuaternion(), t);
     }
 
-    Transform NonUniformMotionData::SampleJointTransform(const SampleSettings& settings, size_t jointSkeletonIndex) const
+    Transform NonUniformMotionData::SampleJointTransform(const MotionDataSampleSettings& settings, size_t jointSkeletonIndex) const
     {
         const Actor* actor = settings.m_actorInstance->GetActor();
         const MotionLinkData* motionLinkData = FindMotionLinkData(actor);
@@ -131,7 +131,7 @@ namespace EMotionFX
         return result;
     }
 
-    void NonUniformMotionData::SamplePose(const SampleSettings& settings, Pose* outputPose) const
+    void NonUniformMotionData::SamplePose(const MotionDataSampleSettings& settings, Pose* outputPose) const
     {
         AZ_Assert(settings.m_actorInstance, "Expecting a valid actor instance.");
         const Actor* actor = settings.m_actorInstance->GetActor();

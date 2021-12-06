@@ -1,38 +1,37 @@
 {
     "entries": [
         {
-            "key": "{F269F2DB-F2D8-515D-BA5C-4C9E28A725E3}",
+            "base": "{F269F2DB-F2D8-515D-BA5C-4C9E28A725E3}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Length",
                 "category": "Deprecated",
-                "tooltip": "This node is deprecated, use the Length node, it provides contextual type and slot configurations",
-                "subtitle": "Deprecated"
+                "tooltip": "This node is deprecated, use the Length node, it provides contextual type and slot configurations"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Quaternion: Source",
+                    "base": "DataInput_Source_0",
                     "details": {
-                        "name": "Quaternion: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Number",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Result: Number"
+                        "name": "Result"
                     }
                 }
             ]

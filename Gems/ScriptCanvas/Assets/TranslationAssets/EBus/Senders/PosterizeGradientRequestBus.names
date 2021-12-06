@@ -1,15 +1,15 @@
 {
     "entries": [
         {
-            "key": "PosterizeGradientRequestBus",
+            "base": "PosterizeGradientRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "PosterizeGradientRequestBus"
+                "name": "Posterize Gradient"
             },
             "methods": [
                 {
-                    "key": "GetGradientSampler",
+                    "base": "GetGradientSampler",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetGradientSampler"
@@ -31,7 +31,7 @@
                     ]
                 },
                 {
-                    "key": "GetModeType",
+                    "base": "GetModeType",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetModeType"
@@ -53,7 +53,7 @@
                     ]
                 },
                 {
-                    "key": "SetModeType",
+                    "base": "SetModeType",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetModeType"
@@ -75,7 +75,7 @@
                     ]
                 },
                 {
-                    "key": "SetBands",
+                    "base": "SetBands",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetBands"
@@ -97,7 +97,7 @@
                     ]
                 },
                 {
-                    "key": "GetBands",
+                    "base": "GetBands",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetBands"

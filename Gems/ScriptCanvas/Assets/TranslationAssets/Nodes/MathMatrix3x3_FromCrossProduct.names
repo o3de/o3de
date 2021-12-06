@@ -1,35 +1,35 @@
 {
     "entries": [
         {
-            "key": "{06538E6D-FE44-5A9C-8081-083D5D19D4FC}",
+            "base": "{06538E6D-FE44-5A9C-8081-083D5D19D4FC}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "From Cross Product",
                 "category": "Math/Matrix3x3",
-                "tooltip": "Returns a skew-symmetric cross product matrix based on supplied vector"
+                "tooltip": "returns a skew-symmetric cross product matrix based on supplied vector"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Source",
+                    "base": "DataInput_Source_0",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

@@ -1,12 +1,147 @@
 {
     "entries": [
         {
-            "key": "SmoothStep",
+            "base": "SmoothStep",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "SmoothStep"
-            }
+                "name": "Smooth Step",
+                "category": "Rendering"
+            },
+            "methods": [
+                {
+                    "base": "GetfalloffMidpoint",
+                    "details": {
+                        "name": "Getfalloff Midpoint"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F392F061-BF40-43C5-89F6-7323D6EF11F4}",
+                            "details": {
+                                "name": "Smooth Step Gradient",
+                                "tooltip": "Smooth Step Gradient"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetfalloffMidpoint",
+                    "details": {
+                        "name": "Setfalloff Midpoint"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F392F061-BF40-43C5-89F6-7323D6EF11F4}",
+                            "details": {
+                                "name": "Smooth Step Gradient",
+                                "tooltip": "Smooth Step Gradient"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetfalloffRange",
+                    "details": {
+                        "name": "Getfalloff Range"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F392F061-BF40-43C5-89F6-7323D6EF11F4}",
+                            "details": {
+                                "name": "Smooth Step Gradient",
+                                "tooltip": "Smooth Step Gradient"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetfalloffRange",
+                    "details": {
+                        "name": "Setfalloff Range"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F392F061-BF40-43C5-89F6-7323D6EF11F4}",
+                            "details": {
+                                "name": "Smooth Step Gradient",
+                                "tooltip": "Smooth Step Gradient"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetfalloffStrength",
+                    "details": {
+                        "name": "Getfalloff Strength"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F392F061-BF40-43C5-89F6-7323D6EF11F4}",
+                            "details": {
+                                "name": "Smooth Step Gradient",
+                                "tooltip": "Smooth Step Gradient"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetfalloffStrength",
+                    "details": {
+                        "name": "Setfalloff Strength"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F392F061-BF40-43C5-89F6-7323D6EF11F4}",
+                            "details": {
+                                "name": "Smooth Step Gradient",
+                                "tooltip": "Smooth Step Gradient"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

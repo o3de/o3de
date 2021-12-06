@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "LightingPreset",
+            "base": "LightingPreset",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetshadowCatcherOpacity",
+                    "base": "GetshadowCatcherOpacity",
                     "details": {
                         "name": "Get Shadow Catcher Opacity"
                     },
@@ -31,7 +31,7 @@
                     ]
                 },
                 {
-                    "key": "SetshadowCatcherOpacity",
+                    "base": "SetshadowCatcherOpacity",
                     "details": {
                         "name": "Set Shadow Catcher Opacity"
                     },
@@ -51,7 +51,7 @@
                     ]
                 },
                 {
-                    "key": "GetskyboxExposure",
+                    "base": "GetskyboxExposure",
                     "details": {
                         "name": "Get Skybox Exposure"
                     },
@@ -73,7 +73,7 @@
                     ]
                 },
                 {
-                    "key": "SetskyboxExposure",
+                    "base": "SetskyboxExposure",
                     "details": {
                         "name": "Set Skybox Exposure"
                     },
@@ -93,7 +93,7 @@
                     ]
                 },
                 {
-                    "key": "Getlights",
+                    "base": "Getlights",
                     "details": {
                         "name": "Get Lights"
                     },
@@ -115,7 +115,7 @@
                     ]
                 },
                 {
-                    "key": "Setlights",
+                    "base": "Setlights",
                     "details": {
                         "name": "Set Lights"
                     },
@@ -135,7 +135,7 @@
                     ]
                 },
                 {
-                    "key": "GetiblExposure",
+                    "base": "GetiblExposure",
                     "details": {
                         "name": "Get IBL Exposure"
                     },
@@ -157,7 +157,7 @@
                     ]
                 },
                 {
-                    "key": "SetiblExposure",
+                    "base": "SetiblExposure",
                     "details": {
                         "name": "Set IBL Exposure"
                     },
@@ -177,7 +177,7 @@
                     ]
                 },
                 {
-                    "key": "GetskyboxImageAsset",
+                    "base": "GetskyboxImageAsset",
                     "details": {
                         "name": "Get Skybox Image Asset"
                     },
@@ -199,7 +199,7 @@
                     ]
                 },
                 {
-                    "key": "SetskyboxImageAsset",
+                    "base": "SetskyboxImageAsset",
                     "details": {
                         "name": "Set Skybox Image Asset"
                     },
@@ -219,7 +219,7 @@
                     ]
                 },
                 {
-                    "key": "GetiblSpecularImageAsset",
+                    "base": "GetiblSpecularImageAsset",
                     "details": {
                         "name": "Get IBL Specular Image Asset"
                     },
@@ -241,7 +241,7 @@
                     ]
                 },
                 {
-                    "key": "SetiblSpecularImageAsset",
+                    "base": "SetiblSpecularImageAsset",
                     "details": {
                         "name": "Set IBL Specular Image Asset"
                     },
@@ -261,7 +261,7 @@
                     ]
                 },
                 {
-                    "key": "GetdisplayName",
+                    "base": "GetdisplayName",
                     "details": {
                         "name": "Get Display Name"
                     },
@@ -283,7 +283,7 @@
                     ]
                 },
                 {
-                    "key": "SetdisplayName",
+                    "base": "SetdisplayName",
                     "details": {
                         "name": "Set Display Name"
                     },
@@ -303,7 +303,7 @@
                     ]
                 },
                 {
-                    "key": "GetalternateSkyboxImageAsset",
+                    "base": "GetalternateSkyboxImageAsset",
                     "details": {
                         "name": "Get Alternate Skybox Image Asset"
                     },
@@ -325,7 +325,7 @@
                     ]
                 },
                 {
-                    "key": "SetalternateSkyboxImageAsset",
+                    "base": "SetalternateSkyboxImageAsset",
                     "details": {
                         "name": "Set Alternate Skybox Image Asset"
                     },
@@ -345,7 +345,7 @@
                     ]
                 },
                 {
-                    "key": "GetiblDiffuseImageAsset",
+                    "base": "GetiblDiffuseImageAsset",
                     "details": {
                         "name": "Get IBL Diffuse Image Asset"
                     },
@@ -367,7 +367,7 @@
                     ]
                 },
                 {
-                    "key": "SetiblDiffuseImageAsset",
+                    "base": "SetiblDiffuseImageAsset",
                     "details": {
                         "name": "Set IBL Diffuse Image Asset"
                     },
@@ -387,7 +387,7 @@
                     ]
                 },
                 {
-                    "key": "Getexposure",
+                    "base": "Getexposure",
                     "details": {
                         "name": "Get Exposure"
                     },
@@ -409,7 +409,7 @@
                     ]
                 },
                 {
-                    "key": "Setexposure",
+                    "base": "Setexposure",
                     "details": {
                         "name": "Set Exposure"
                     },

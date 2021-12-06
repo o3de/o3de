@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "is_in_simulation_mode",
+            "base": "is_in_simulation_mode",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "is_in_simulation_mode",
+                    "base": "is_in_simulation_mode",
                     "context": "Global",
                     "entry": {
                         "name": "In",

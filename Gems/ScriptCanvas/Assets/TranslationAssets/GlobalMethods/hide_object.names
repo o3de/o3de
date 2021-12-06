@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "hide_object",
+            "base": "hide_object",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "hide_object",
+                    "base": "hide_object",
                     "context": "Global",
                     "entry": {
                         "name": "In",

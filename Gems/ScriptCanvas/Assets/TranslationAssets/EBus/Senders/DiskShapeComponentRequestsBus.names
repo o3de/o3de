@@ -1,25 +1,26 @@
 {
     "entries": [
         {
-            "key": "DiskShapeComponentRequestsBus",
+            "base": "DiskShapeComponentRequestsBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "DiskShapeComponentRequestsBus"
+                "name": "Disk Shape Component",
+                "category": "Rendering/Shapes"
             },
             "methods": [
                 {
-                    "key": "GetDiskConfiguration",
+                    "base": "GetDiskConfiguration",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetDiskConfiguration"
+                        "tooltip": "When signaled, this will invoke Get Disk Configuration"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetDiskConfiguration is invoked"
+                        "tooltip": "Signaled after Get Disk Configuration is invoked"
                     },
                     "details": {
-                        "name": "GetDiskConfiguration"
+                        "name": "Get Disk Configuration"
                     },
                     "results": [
                         {
@@ -32,17 +33,17 @@
                     ]
                 },
                 {
-                    "key": "SetRadius",
+                    "base": "SetRadius",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetRadius"
+                        "tooltip": "When signaled, this will invoke Set Radius"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetRadius is invoked"
+                        "tooltip": "Signaled after Set Radius is invoked"
                     },
                     "details": {
-                        "name": "SetRadius"
+                        "name": "Set Radius"
                     },
                     "params": [
                         {
@@ -54,17 +55,17 @@
                     ]
                 },
                 {
-                    "key": "GetRadius",
+                    "base": "GetRadius",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetRadius"
+                        "tooltip": "When signaled, this will invoke Get Radius"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetRadius is invoked"
+                        "tooltip": "Signaled after Get Radius is invoked"
                     },
                     "details": {
-                        "name": "GetRadius"
+                        "name": "Get Radius"
                     },
                     "results": [
                         {

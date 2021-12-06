@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "DefaultLodOverride",
+            "base": "DefaultLodOverride",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Default Lod Override"
+                "name": "Default Lod Override",
+                "category": "Constants/Defaults"
             },
             "methods": [
                 {
-                    "key": "GetDefaultLodOverride",
+                    "base": "GetDefaultLodOverride",
                     "details": {
                         "name": "Get Default Lod Override"
                     },

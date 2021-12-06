@@ -1,47 +1,47 @@
 {
     "entries": [
         {
-            "key": "{82F6EBA6-BBF5-5063-84E6-8C4BCEF7E4A3}",
+            "base": "{82F6EBA6-BBF5-5063-84E6-8C4BCEF7E4A3}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Is Close",
                 "category": "Math/Vector2",
-                "tooltip": "Returns true if the difference between A and B is less than tolerance, else false"
+                "tooltip": "returns true if the difference between A and B is less than tolerance, else false"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_A",
+                    "base": "DataInput_A_0",
                     "details": {
                         "name": "A"
                     }
                 },
                 {
-                    "key": "DataInput_B",
+                    "base": "DataInput_B_1",
                     "details": {
                         "name": "B"
                     }
                 },
                 {
-                    "key": "DataInput_Tolerance",
+                    "base": "DataInput_Tolerance_2",
                     "details": {
                         "name": "Tolerance"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

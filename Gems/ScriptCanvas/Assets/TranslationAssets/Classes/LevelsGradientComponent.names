@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "LevelsGradientComponent",
+            "base": "LevelsGradientComponent",
             "context": "BehaviorClass",
             "variant": "",
             "details": {

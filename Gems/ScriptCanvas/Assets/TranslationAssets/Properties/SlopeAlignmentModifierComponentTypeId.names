@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "SlopeAlignmentModifierComponentTypeId",
+            "base": "SlopeAlignmentModifierComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Slope Alignment Modifier Component Type Id"
+                "name": "Slope Alignment Modifier Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetSlopeAlignmentModifierComponentTypeId",
+                    "base": "GetSlopeAlignmentModifierComponentTypeId",
                     "details": {
                         "name": "Get Slope Alignment Modifier Component Type Id"
                     },

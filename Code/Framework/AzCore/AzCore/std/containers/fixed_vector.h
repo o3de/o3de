@@ -130,10 +130,11 @@ namespace AZStd::Internal
 
 
         //! Constructors
-        constexpr fixed_trivial_storage() = default;
+        fixed_trivial_storage() = default;
 
         template <typename U, typename = enable_if_t<is_convertible_v<U, T>>>
-        constexpr fixed_trivial_storage(AZStd::initializer_list<U> ilist) noexcept
+        fixed_trivial_storage(AZStd::initializer_list<U> ilist) noexcept
+            : m_size(aznumeric_caster(ilist.size()))
         {
             AZSTD_CONTAINER_ASSERT(ilist.size() <= capacity(), "Initializer list cannot be larger than storage capacity");
             size_t index{};
@@ -141,20 +142,19 @@ namespace AZStd::Internal
             {
                 m_data[index++] = element;
             }
-            resize_no_construct(ilist.size());
         }
 
-        constexpr pointer data() noexcept
+        pointer data() noexcept
         {
             return m_data;
         }
-        constexpr const_pointer data() const noexcept
+        const_pointer data() const noexcept
         {
             return m_data;
         }
 
         //! Number of elements currently stored.
-        constexpr size_type size() const noexcept
+        size_type size() const noexcept
         {
             return m_size;
         }
@@ -164,12 +164,12 @@ namespace AZStd::Internal
             return Capacity;
         }
         //! Is the storage empty?
-        constexpr bool empty() const noexcept
+        bool empty() const noexcept
         {
             return size() == 0;
         }
         //! Is the storage full?
-        constexpr bool full() const noexcept
+        bool full() const noexcept
         {
             return size() == capacity();
         }
@@ -186,7 +186,7 @@ namespace AZStd::Internal
         //! Increases size of the storage by one.
         //! Always fails for empty storage.
         template <typename... Args, typename = enable_if_t<is_constructible_v<T, Args...>>>
-        constexpr reference emplace_back(Args&&... args) noexcept
+        reference emplace_back(Args&&... args) noexcept
         {
             AZSTD_CONTAINER_ASSERT(!full(), "emplace_back cannot be invoked on full storage");
             reference new_element = *(data() + size());
@@ -196,7 +196,7 @@ namespace AZStd::Internal
         }
         //! Removes the last element of the storage.
         //! Precondition: size is not empty
-        constexpr void pop_back() noexcept
+        void pop_back() noexcept
         {
             AZSTD_CONTAINER_ASSERT(!empty(), "pop_back cannot be invoked on empty storage");
             resize_no_construct(size() - 1);
@@ -205,7 +205,7 @@ namespace AZStd::Internal
         //! removing elements (unsafe).
         //!
         //! Updates the size of the container while checking that the new size is less than capacity
-        constexpr void resize_no_construct(size_t new_size) noexcept
+        void resize_no_construct(size_t new_size) noexcept
         {
             AZSTD_CONTAINER_ASSERT(new_size <= capacity(), "New size cannot be larger than capacity");
             m_size = aznumeric_cast<size_type>(new_size);
@@ -215,19 +215,19 @@ namespace AZStd::Internal
         //! This does not modify the size of the storage
         //! This is a no-op for trivial types
         template <typename InputIt, typename = enable_if_t<Internal::is_input_iterator_v<InputIt>>>
-        constexpr void unsafe_destroy(InputIt, InputIt) noexcept
+        void unsafe_destroy(InputIt, InputIt) noexcept
         {
         }
 
         //! Destructs all elements of the storage.
         //! This does not modify the size of the storage
         //! This is a no-op for trivial types
-        constexpr void unsafe_destroy_all() noexcept
+        void unsafe_destroy_all() noexcept
         {
         }
 
     private:
-        T m_data[Capacity]{};
+        T m_data[Capacity];
         size_type m_size{};
     };
 
@@ -245,7 +245,7 @@ namespace AZStd::Internal
         using reference = T&;
         using const_reference = const T&;
 
-        constexpr fixed_non_trivial_storage() = default;
+        fixed_non_trivial_storage() = default;
 
         ~fixed_non_trivial_storage() noexcept
         {
@@ -253,7 +253,7 @@ namespace AZStd::Internal
         }
 
         template <typename U, typename = enable_if_t<is_convertible_v<U, T>>>
-        constexpr fixed_non_trivial_storage(AZStd::initializer_list<U> ilist) noexcept(noexcept(emplace_back(AZStd::declval<U>())))
+        fixed_non_trivial_storage(AZStd::initializer_list<U> ilist) noexcept(noexcept(emplace_back(AZStd::declval<U>())))
         {
             AZSTD_CONTAINER_ASSERT(ilist.size() <= capacity(), "Initializer list cannot be larger than storage capacity");
             for (const U& element : ilist)
@@ -272,7 +272,7 @@ namespace AZStd::Internal
         }
 
         //! Number of elements currently stored.
-        constexpr size_type size() const noexcept
+        size_type size() const noexcept
         {
             return m_size;
         }
@@ -282,12 +282,12 @@ namespace AZStd::Internal
             return Capacity;
         }
         //! Is the storage empty?
-        constexpr bool empty() const noexcept
+        bool empty() const noexcept
         {
             return size() == 0;
         }
         //! Is the storage full?
-        constexpr bool full() const noexcept
+        bool full() const noexcept
         {
             return size() == capacity();
         }
@@ -325,7 +325,7 @@ namespace AZStd::Internal
         //! removing elements (unsafe).
         //!
         //! Updates the size of the container while checking that the new size is less than capacity
-        constexpr void resize_no_construct(size_t new_size) noexcept
+        void resize_no_construct(size_t new_size) noexcept
         {
             AZSTD_CONTAINER_ASSERT(new_size <= capacity(), "New size cannot be larger than capacity");
             m_size = aznumeric_cast<size_type>(new_size);
@@ -402,23 +402,23 @@ namespace AZStd
 
         //////////////////////////////////////////////////////////////////////////
         // 23.2.4.1 construct/copy/destroy
-        constexpr fixed_vector() = default;
+        fixed_vector() = default;
 
-        constexpr explicit fixed_vector(size_type numElements, const_reference value = value_type())
+        explicit fixed_vector(size_type numElements, const_reference value = value_type())
         {
             resize_no_construct(numElements);
             AZStd::uninitialized_fill_n(data(), numElements, value);
         }
 
         template <class InputIt, typename = AZStd::enable_if_t<Internal::is_input_iterator_v<InputIt>>>
-        constexpr fixed_vector(InputIt first, InputIt last)
+        fixed_vector(InputIt first, InputIt last)
         {
             resize_no_construct(AZStd::distance(first, last));
             AZStd::uninitialized_copy(first, last, data());
         }
 
 
-        constexpr fixed_vector(const fixed_vector& rhs)
+        fixed_vector(const fixed_vector& rhs)
         {
             resize_no_construct(rhs.size());
             AZStd::uninitialized_copy(rhs.data(), rhs.data() + rhs.size(), data());
@@ -428,7 +428,7 @@ namespace AZStd
         // It performs an AZStd::move on each of the fixed_vector elements instead
         // of swapping pointers to the allocted memory address
         // as it is unable to perform that operations due to the storage being baked into the container
-        constexpr fixed_vector(fixed_vector&& rhs)
+        fixed_vector(fixed_vector&& rhs)
         {
             resize_no_construct(rhs.size());
             AZStd::uninitialized_move(rhs.data(), rhs.data() + rhs.size(), data());
@@ -440,7 +440,7 @@ namespace AZStd
         // into a fixed_vector given that the type in question isn't the same type as this fixed_vector type
         template <typename VectorContainer, typename = AZStd::enable_if_t<!AZStd::is_same_v<VectorContainer, fixed_vector>
             && !AZStd::is_convertible_v<VectorContainer, size_type>>>
-        constexpr fixed_vector(VectorContainer&& rhs)
+        fixed_vector(VectorContainer&& rhs)
         {
             constexpr bool is_const_or_lvalue_reference = AZStd::is_lvalue_reference_v<VectorContainer>
                 || AZStd::is_const_v<VectorContainer>;
@@ -459,12 +459,12 @@ namespace AZStd
             }
         }
 
-        constexpr fixed_vector(AZStd::initializer_list<value_type> ilist)
+        fixed_vector(AZStd::initializer_list<value_type> ilist)
             : base_type(ilist)
         {
         }
 
-        constexpr fixed_vector& operator=(const fixed_vector& rhs)
+        fixed_vector& operator=(const fixed_vector& rhs)
         {
             if (this == &rhs)
             {
@@ -475,7 +475,7 @@ namespace AZStd
             return assign_helper(rhs);
         }
 
-        constexpr fixed_vector& operator=(fixed_vector&& rhs)
+        fixed_vector& operator=(fixed_vector&& rhs)
         {
             if (this == &rhs)
             {
@@ -487,23 +487,23 @@ namespace AZStd
         }
 
         template <typename VectorContainer>
-        constexpr AZStd::enable_if_t<!AZStd::is_same_v<AZStd::remove_cvref_t<VectorContainer>, fixed_vector>, fixed_vector>& operator=(VectorContainer&& rhs)
+        AZStd::enable_if_t<!AZStd::is_same_v<AZStd::remove_cvref_t<VectorContainer>, fixed_vector>, fixed_vector>& operator=(VectorContainer&& rhs)
         {
             return assign_helper(AZStd::forward<VectorContainer>(rhs));
         }
 
-        constexpr iterator begin() { return iterator(data()); }
-        constexpr const_iterator begin() const { return const_iterator(data()); }
-        constexpr const_iterator cbegin() const { return const_iterator(data()); }
-        constexpr iterator end() { return iterator(data() + size()); }
-        constexpr const_iterator end() const { return const_iterator(data() + size()); }
-        constexpr const_iterator cend() const { return const_iterator(data() + size()); }
-        constexpr reverse_iterator rbegin() { return reverse_iterator(end()); }
-        constexpr const_reverse_iterator rbegin() const { return const_reverse_iterator(end()); }
-        constexpr const_reverse_iterator crbegin() const { return const_reverse_iterator(end()); }
-        constexpr reverse_iterator rend() { return reverse_iterator(begin()); }
-        constexpr const_reverse_iterator rend() const { return const_reverse_iterator(begin()); }
-        constexpr const_reverse_iterator crend() const { return const_reverse_iterator(begin()); }
+        iterator begin() { return iterator(data()); }
+        const_iterator begin() const { return const_iterator(data()); }
+        const_iterator cbegin() const { return const_iterator(data()); }
+        iterator end() { return iterator(data() + size()); }
+        const_iterator end() const { return const_iterator(data() + size()); }
+        const_iterator cend() const { return const_iterator(data() + size()); }
+        reverse_iterator rbegin() { return reverse_iterator(end()); }
+        const_reverse_iterator rbegin() const { return const_reverse_iterator(end()); }
+        const_reverse_iterator crbegin() const { return const_reverse_iterator(end()); }
+        reverse_iterator rend() { return reverse_iterator(begin()); }
+        const_reverse_iterator rend() const { return const_reverse_iterator(begin()); }
+        const_reverse_iterator crend() const { return const_reverse_iterator(begin()); }
 
         // bring in fixed_vector_storage functions into scope
         using base_type::data;
@@ -514,7 +514,7 @@ namespace AZStd
         // extension method
         using base_type::resize_no_construct;
 
-        constexpr size_type size() const noexcept
+        size_type size() const noexcept
         {
             return base_type::size();
         }
@@ -527,12 +527,12 @@ namespace AZStd
             return base_type::max_size();
         }
 
-        constexpr void resize(size_type newSize)
+        void resize(size_type newSize)
         {
             return resize(newSize, value_type{});
         }
 
-        constexpr void resize(size_type newSize, const_reference value)
+        void resize(size_type newSize, const_reference value)
         {
             size_type dataSize = size();
             if (dataSize < newSize)
@@ -547,7 +547,7 @@ namespace AZStd
 
         // Removes unused capacity - For fixed_vector this only asserts
         // that the supplied capacity is not longer than the fixed_vector capacity
-        constexpr void reserve(size_type newCapacity)
+        void reserve(size_type newCapacity)
         {
             // No-op - Implemented to provide consistent std::vector
             AZSTD_CONTAINER_ASSERT(newCapacity <= capacity(),
@@ -556,79 +556,79 @@ namespace AZStd
         }
 
         // Removes unused capacity - For fixed_vector this does nothing
-        constexpr void shrink_to_fit()
+        void shrink_to_fit()
         {
             // No-op - Implemented to provide consistent std::vector
         }
 
-        constexpr reference at(size_type position)
+        reference at(size_type position)
         {
             AZSTD_CONTAINER_ASSERT(position < size(), "AZStd::fixed_vector<>::at - position is out of range");
             return *(data() + position);
         }
-        constexpr const_reference at(size_type position) const
-        {
-            AZSTD_CONTAINER_ASSERT(position < size(), "AZStd::fixed_vector<>::at - position is out of range");
-            return *(data() + position);
-        }
-
-        constexpr reference operator[](size_type position)
-        {
-            AZSTD_CONTAINER_ASSERT(position < size(), "AZStd::fixed_vector<>::at - position is out of range");
-            return *(data() + position);
-        }
-        constexpr const_reference operator[](size_type position) const
+        const_reference at(size_type position) const
         {
             AZSTD_CONTAINER_ASSERT(position < size(), "AZStd::fixed_vector<>::at - position is out of range");
             return *(data() + position);
         }
 
-        constexpr reference front()
+        reference operator[](size_type position)
+        {
+            AZSTD_CONTAINER_ASSERT(position < size(), "AZStd::fixed_vector<>::at - position is out of range");
+            return *(data() + position);
+        }
+        const_reference operator[](size_type position) const
+        {
+            AZSTD_CONTAINER_ASSERT(position < size(), "AZStd::fixed_vector<>::at - position is out of range");
+            return *(data() + position);
+        }
+
+        reference front()
         {
             AZSTD_CONTAINER_ASSERT(!empty(), "AZStd::fixed_vector<>::front - container is empty!");
             return *data();
         }
-        constexpr const_reference front() const
+        const_reference front() const
         {
             AZSTD_CONTAINER_ASSERT(!empty(), "AZStd::fixed_vector<>::front - container is empty!");
             return *data();
         }
-        constexpr reference back()
+        reference back()
         {
             AZSTD_CONTAINER_ASSERT(!empty(), "AZStd::fixed_vector<>::back - container is empty!");
             return *(data() + size() - 1);
         }
-        constexpr const_reference back() const
+        const_reference back() const
         {
             AZSTD_CONTAINER_ASSERT(!empty(), "AZStd::fixed_vector<>::back - container is empty!");
             return *(data() + size() - 1);
         }
 
-        constexpr void push_back(const_reference value)
+        void push_back(const_reference value)
         {
             emplace_back(value);
         }
 
-        constexpr void assign(size_type numElements, const_reference value)
+        void assign(size_type numElements, const_reference value)
         {
             clear();
             insert(end(), numElements, value);
         }
 
         template <class InputIt, typename = AZStd::enable_if_t<Internal::is_input_iterator_v<InputIt>>>
-        constexpr void assign(InputIt first, InputIt last)
+        void assign(InputIt first, InputIt last)
         {
             clear();
             insert(end(), first, last);
         }
 
-        constexpr void assign(AZStd::initializer_list<value_type> ilist)
+        void assign(AZStd::initializer_list<value_type> ilist)
         {
             assign(ilist.begin(), ilist.end());
         }
 
         template <typename... Args, typename = AZStd::enable_if_t<is_constructible_v<T, Args...>>>
-        constexpr iterator emplace(const_iterator insertPos, Args&&... args)
+        iterator emplace(const_iterator insertPos, Args&&... args)
         {
             AZSTD_CONTAINER_ASSERT(!full(), "Cannot emplace on a full fixed_vector");
             AZSTD_CONTAINER_ASSERT(insertPos >= cbegin() && insertPos <= cend(), "insert position must be in range of container");
@@ -645,18 +645,18 @@ namespace AZStd
             AZStd::construct_at(insertPosPtr, AZStd::forward<Args>(args)...);
             return iterator(insertPosPtr);
         }
-        constexpr iterator insert(const_iterator insertPos, const_reference value)
+        iterator insert(const_iterator insertPos, const_reference value)
         {
             AZSTD_CONTAINER_ASSERT(insertPos >= cbegin() && insertPos <= cend(), "insert position must be in range of container");
             return emplace(insertPos, value);
         }
-        constexpr iterator insert(const_iterator insertPos, value_type&& value)
+        iterator insert(const_iterator insertPos, value_type&& value)
         {
             AZSTD_CONTAINER_ASSERT(insertPos >= cbegin() && insertPos <= cend(), "insert position must be in range of container");
             return emplace(insertPos, AZStd::move(value));
         }
 
-        constexpr void insert(const_iterator insertPos, size_type numElements, const_reference value)
+        void insert(const_iterator insertPos, size_type numElements, const_reference value)
         {
             if (numElements == 0)
             {
@@ -708,24 +708,24 @@ namespace AZStd
         }
 
         template<class InputIt, typename = AZStd::enable_if_t<Internal::is_input_iterator_v<InputIt>>>
-        constexpr void insert(const_iterator insertPos, InputIt first, InputIt last)
+        void insert(const_iterator insertPos, InputIt first, InputIt last)
         {
             // specialize for iterator categories.
             AZSTD_CONTAINER_ASSERT(insertPos >= cbegin() && insertPos <= cend(), "insert position must be in range of container");
             insert_iter(insertPos, first, last, typename iterator_traits<InputIt>::iterator_category());
         };
 
-        constexpr void insert(const_iterator insertPos, AZStd::initializer_list<value_type> ilist)
+        void insert(const_iterator insertPos, AZStd::initializer_list<value_type> ilist)
         {
             insert(insertPos, ilist.begin(), ilist.end());
         }
 
-        constexpr iterator erase(const_iterator elementIter)
+        iterator erase(const_iterator elementIter)
         {
             return erase(elementIter, elementIter + 1);
         }
 
-        constexpr iterator erase(const_iterator first, const_iterator last)
+        iterator erase(const_iterator first, const_iterator last)
         {
             AZSTD_CONTAINER_ASSERT(first >= cbegin() && last <= cend(), "erase iterator must be inside the range of fixed_vector container");
             iterator dataStart = begin();
@@ -741,12 +741,12 @@ namespace AZStd
             return dataStart + offset;
         }
 
-        constexpr void clear()
+        void clear()
         {
             base_type::unsafe_destroy_all();
             resize_no_construct(0);
         }
-        constexpr void swap(fixed_vector& rhs)
+        void swap(fixed_vector& rhs)
         {
             // Fixed containers cannot swap pointers, they need to do full copies.
             // The strategy is to extend the smaller fixed_vector to be the size
@@ -776,12 +776,12 @@ namespace AZStd
         }
 
         // Validate container status.
-        constexpr bool validate() const
+        bool validate() const
         {
             return size() <= max_size();
         }
         // Validate iterator.
-        constexpr int validate_iterator(const_iterator iter) const
+        int validate_iterator(const_iterator iter) const
         {
             const_pointer start = data();
             const_pointer end = data() + size();
@@ -799,19 +799,19 @@ namespace AZStd
         }
 
         // pushes back an empty without a provided instance.
-        constexpr void push_back()
+        void push_back()
         {
             emplace_back();
         }
 
-        constexpr void leak_and_reset()
+        void leak_and_reset()
         {
             resize_no_construct(0);
         }
 
     private:
         template <typename VectorContainer>
-        constexpr fixed_vector& assign_helper(VectorContainer&& rhs)
+        fixed_vector& assign_helper(VectorContainer&& rhs)
         {
             constexpr bool is_const_or_lvalue_reference = AZStd::is_lvalue_reference_v<VectorContainer>
                 || AZStd::is_const_v<VectorContainer>;
@@ -872,7 +872,7 @@ namespace AZStd
         }
 
         template<class Iterator>
-        constexpr void insert_iter(const_iterator insertPos, Iterator first, Iterator last, const forward_iterator_tag&)
+        void insert_iter(const_iterator insertPos, Iterator first, Iterator last, const forward_iterator_tag&)
         {
             size_type numElements = AZStd::distance(first, last);
             if (numElements == 0)
@@ -923,7 +923,7 @@ namespace AZStd
         }
 
         template<class Iterator>
-        constexpr void insert_iter(const_iterator insertPos, Iterator first, Iterator last, const input_iterator_tag&)
+        void insert_iter(const_iterator insertPos, Iterator first, Iterator last, const input_iterator_tag&)
         {
             iterator dataStart = data();
             size_type offset = AZStd::distance(dataStart, insertPos);
@@ -973,5 +973,23 @@ namespace AZStd
     constexpr bool operator>=(const fixed_vector<T, Capacity1>& a, const fixed_vector<T, Capacity2>& b)
     {
         return !operator<(a, b);
+    }
+
+    // C++20 erase free functions
+    template<class T, size_t Capacity, class U>
+    constexpr decltype(auto) erase(fixed_vector<T, Capacity>& container, const U& value)
+    {
+        auto iter = AZStd::remove(container.begin(), container.end(), value);
+        auto removedCount = AZStd::distance(iter, container.end());
+        container.erase(iter, container.end());
+        return removedCount;
+    }
+    template<class T, size_t Capacity, class Predicate>
+    constexpr decltype(auto) erase_if(fixed_vector<T, Capacity>& container, Predicate predicate)
+    {
+        auto iter = AZStd::remove_if(container.begin(), container.end(), predicate);
+        auto removedCount = AZStd::distance(iter, container.end());
+        container.erase(iter, container.end());
+        return removedCount;
     }
 }

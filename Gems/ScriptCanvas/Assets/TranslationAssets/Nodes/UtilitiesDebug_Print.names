@@ -1,31 +1,30 @@
 {
     "entries": [
         {
-            "key": "{E1940FB4-83FE-4594-9AFF-375FF7603338}",
+            "base": "{E1940FB4-83FE-4594-9AFF-375FF7603338}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Print",
                 "category": "Utilities/Debug",
-                "tooltip": "Formats and prints the provided text in the debug console.\nAny word within {} will create a data pin on this node.",
-                "subtitle": "Debug"
+                "tooltip": "Formats and prints the provided text in the debug console.\nAny word within {} will create a data pin on this node."
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In",
                         "tooltip": "Input signal"
                     }
                 },
                 {
-                    "key": "DataInput_Value",
+                    "base": "DataInput_Value_0",
                     "details": {
                         "name": "Value"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }

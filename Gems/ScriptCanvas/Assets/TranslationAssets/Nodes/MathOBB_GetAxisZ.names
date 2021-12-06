@@ -1,35 +1,35 @@
 {
     "entries": [
         {
-            "key": "{1A6BADCE-77F7-59F4-9F27-6C08B9D13374}",
+            "base": "{1A6BADCE-77F7-59F4-9F27-6C08B9D13374}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "Get Axis Z",
-                "category": "Math/Oriented Bounding Box",
-                "tooltip": "Returns the Z-Axis of Source"
+                "name": "Get AxisZ",
+                "category": "Math/OBB",
+                "tooltip": "returns the Z-Axis of Source"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Source",
+                    "base": "DataInput_Source_0",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

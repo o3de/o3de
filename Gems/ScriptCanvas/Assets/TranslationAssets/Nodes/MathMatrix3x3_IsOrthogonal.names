@@ -1,35 +1,35 @@
 {
     "entries": [
         {
-            "key": "{1A78319F-7924-5114-8D85-C09C6F8D701D}",
+            "base": "{1A78319F-7924-5114-8D85-C09C6F8D701D}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Is Orthogonal",
                 "category": "Math/Matrix3x3",
-                "tooltip": "Returns true if the matrix is orthogonal"
+                "tooltip": "returns true if the matrix is orthogonal"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Source",
+                    "base": "DataInput_Source_0",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

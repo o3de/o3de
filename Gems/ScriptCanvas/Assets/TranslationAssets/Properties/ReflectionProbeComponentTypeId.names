@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "ReflectionProbeComponentTypeId",
+            "base": "ReflectionProbeComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Reflection Probe Component Type Id"
+                "name": "Reflection Probe Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetReflectionProbeComponentTypeId",
+                    "base": "GetReflectionProbeComponentTypeId",
                     "details": {
                         "name": "Get Reflection Probe Component Type Id"
                     },

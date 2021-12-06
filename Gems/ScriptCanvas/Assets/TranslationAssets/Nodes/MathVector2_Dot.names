@@ -1,41 +1,41 @@
 {
     "entries": [
         {
-            "key": "{9F91A118-D85A-5357-ACE3-92A78AA2C4FC}",
+            "base": "{9F91A118-D85A-5357-ACE3-92A78AA2C4FC}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Dot",
                 "category": "Math/Vector2",
-                "tooltip": "Returns the vector dot product of A dot B"
+                "tooltip": "returns the vector dot product of A dot B"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_A",
+                    "base": "DataInput_A_0",
                     "details": {
                         "name": "A"
                     }
                 },
                 {
-                    "key": "DataInput_B",
+                    "base": "DataInput_B_1",
                     "details": {
                         "name": "B"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

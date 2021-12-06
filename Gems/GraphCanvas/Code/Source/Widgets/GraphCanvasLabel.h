@@ -16,7 +16,6 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
 AZ_POP_DISABLE_WARNING
 
 #include <GraphCanvas/Styling/StyleHelper.h>
-#include <GraphCanvas/Types/TranslationTypes.h>
 
 namespace GraphCanvas
 {

@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "DitherGradientComponentTypeId",
+            "base": "DitherGradientComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Dither Gradient Component Type Id"
+                "name": "Dither Gradient Component Type Id",
+                "category": "Constants/Editor/Component Type Id"
             },
             "methods": [
                 {
-                    "key": "GetDitherGradientComponentTypeId",
+                    "base": "GetDitherGradientComponentTypeId",
                     "details": {
                         "name": "Get Dither Gradient Component Type Id"
                     },

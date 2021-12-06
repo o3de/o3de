@@ -93,10 +93,6 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
 
 ShaderResourceGroup TerrainMaterialSrg : SRG_PerMaterial
 {
-    float m_detailTextureMultiplier;
-    float m_detailFadeDistance;
-    float m_detailFadeLength;
-
     Sampler m_sampler
     {
         AddressU = Wrap;
@@ -109,22 +105,11 @@ ShaderResourceGroup TerrainMaterialSrg : SRG_PerMaterial
 
     // Base Color
     float3 m_baseColor;
-    float m_baseColorFactor;
-    Texture2D m_baseColorMap;
 
-    // Normal
-    Texture2D m_normalMap;
-    bool m_flipNormalX;
-    bool m_flipNormalY;
-    float m_normalFactor;
-
-    // Roughness
-    Texture2D m_roughnessMap;
-    float m_roughnessFactor;
-
-    // Specular
-    Texture2D m_specularF0Map;
-    float m_specularF0Factor;
+    // Detail Material Properties    
+    float m_detailTextureMultiplier;
+    float m_detailFadeDistance;
+    float m_detailFadeLength;
 }
 
 option bool o_useTerrainSmoothing = false;

@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiHorizontalOrder_RightToLeft",
+            "base": "eUiHorizontalOrder_RightToLeft",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Horizontal Order_ Right To Left"
+                "name": "Right To Left",
+                "category": "Constants/UI/Order/Horizontal"
             },
             "methods": [
                 {
-                    "key": "GeteUiHorizontalOrder_RightToLeft",
+                    "base": "GeteUiHorizontalOrder_RightToLeft",
                     "details": {
-                        "name": "Gete Ui Horizontal Order_ Right To Left"
+                        "name": "Right To Left"
                     },
                     "results": [
                         {

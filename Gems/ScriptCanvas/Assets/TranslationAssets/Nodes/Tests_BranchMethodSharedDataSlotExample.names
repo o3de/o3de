@@ -1,72 +1,71 @@
 {
     "entries": [
         {
-            "key": "{131C7ECE-D083-F7CD-09FC-EE0FCF80AB86}",
+            "base": "{131C7ECE-D083-F7CD-09FC-EE0FCF80AB86}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "BranchMethodSharedDataSlotExample",
+                "name": "Branch Method Shared Data Slot Example",
                 "category": "Tests",
-                "tooltip": "Branch Test",
-                "subtitle": "Tests"
+                "tooltip": "Branch Test"
             },
             "slots": [
                 {
-                    "key": "Output_One String",
+                    "base": "Output_One String_0",
                     "details": {
                         "name": "One String"
                     }
                 },
                 {
-                    "key": "DataOutput_string",
+                    "base": "DataOutput_string_0",
                     "details": {
                         "name": "string"
                     }
                 },
                 {
-                    "key": "Output_Two Strings",
+                    "base": "Output_Two Strings_1",
                     "details": {
                         "name": "Two Strings"
                     }
                 },
                 {
-                    "key": "DataOutput_string1",
+                    "base": "DataOutput_string1_1",
                     "details": {
                         "name": "string1"
                     }
                 },
                 {
-                    "key": "DataOutput_string2",
+                    "base": "DataOutput_string2_2",
                     "details": {
                         "name": "string2"
                     }
                 },
                 {
-                    "key": "Output_Three Strings",
+                    "base": "Output_Three Strings_2",
                     "details": {
                         "name": "Three Strings"
                     }
                 },
                 {
-                    "key": "DataOutput_string3",
+                    "base": "DataOutput_string3_3",
                     "details": {
                         "name": "string3"
                     }
                 },
                 {
-                    "key": "Output_Square",
+                    "base": "Output_Square_3",
                     "details": {
                         "name": "Square"
                     }
                 },
                 {
-                    "key": "Output_Pants",
+                    "base": "Output_Pants_4",
                     "details": {
                         "name": "Pants"
                     }
                 },
                 {
-                    "key": "Output_Hello",
+                    "base": "Output_Hello_5",
                     "details": {
                         "name": "Hello"
                     }

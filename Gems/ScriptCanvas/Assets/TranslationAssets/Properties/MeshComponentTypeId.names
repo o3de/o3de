@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "MeshComponentTypeId",
+            "base": "MeshComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Mesh Component Type Id"
+                "name": "Mesh Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetMeshComponentTypeId",
+                    "base": "GetMeshComponentTypeId",
                     "details": {
                         "name": "Get Mesh Component Type Id"
                     },

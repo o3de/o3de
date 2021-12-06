@@ -1,41 +1,41 @@
 {
     "entries": [
         {
-            "key": "{6DE350DE-4FB9-5D7C-816A-48A3371613F3}",
+            "base": "{6DE350DE-4FB9-5D7C-816A-48A3371613F3}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Get Entity Right",
                 "category": "Entity/Entity",
-                "tooltip": "Returns the right direction vector from the specified entity's world transform, scaled by a given value (O3DE uses Z up, right handed)"
+                "tooltip": "returns the right direction vector from the specified entity's world transform, scaled by a given value (O3DE uses Z up, right handed)"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_EntityId",
+                    "base": "DataInput_EntityId_0",
                     "details": {
                         "name": "EntityId"
                     }
                 },
                 {
-                    "key": "DataInput_Scale",
+                    "base": "DataInput_Scale_1",
                     "details": {
                         "name": "Scale"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

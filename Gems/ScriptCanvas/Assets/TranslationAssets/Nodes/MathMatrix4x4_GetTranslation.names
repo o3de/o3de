@@ -1,35 +1,35 @@
 {
     "entries": [
         {
-            "key": "{B71EAC83-D0E9-5E1C-B694-6665896F49FE}",
+            "base": "{B71EAC83-D0E9-5E1C-B694-6665896F49FE}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "GetTranslation",
+                "name": "Get Translation",
                 "category": "Math/Matrix4x4",
                 "tooltip": "returns translation vector from the matrix"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Source",
+                    "base": "DataInput_Source_0",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

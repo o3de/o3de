@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiParticleInitialDirectionType_RelativeToEmitterCenter",
+            "base": "eUiParticleInitialDirectionType_RelativeToEmitterCenter",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Particle Initial Direction Type_ Relative To Emitter Center"
+                "name": "Relative To Emitter Center",
+                "category": "Constants/UI/Particle Initial Direction Type"
             },
             "methods": [
                 {
-                    "key": "GeteUiParticleInitialDirectionType_RelativeToEmitterCenter",
+                    "base": "GeteUiParticleInitialDirectionType_RelativeToEmitterCenter",
                     "details": {
-                        "name": "Gete Ui Particle Initial Direction Type_ Relative To Emitter Center"
+                        "name": "Relative To Emitter Center"
                     },
                     "results": [
                         {

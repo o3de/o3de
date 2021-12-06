@@ -1,41 +1,41 @@
 {
     "entries": [
         {
-            "key": "{E9902EB1-82B9-5EF2-B7B6-51BAFECA0B91}",
+            "base": "{E9902EB1-82B9-5EF2-B7B6-51BAFECA0B91}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Random Quaternion",
                 "category": "Math/Random",
-                "tooltip": "Returns a random quaternion"
+                "tooltip": "returns a random quaternion"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Min",
+                    "base": "DataInput_Min_0",
                     "details": {
                         "name": "Min"
                     }
                 },
                 {
-                    "key": "DataInput_Max",
+                    "base": "DataInput_Max_1",
                     "details": {
                         "name": "Max"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

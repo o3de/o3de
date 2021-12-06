@@ -1,65 +1,65 @@
 {
     "entries": [
         {
-            "key": "{A2D614BC-1636-5F54-868A-BF5544910967}",
+            "base": "{A2D614BC-1636-5F54-868A-BF5544910967}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Random Point In Wedge",
                 "category": "Math/Random",
-                "tooltip": "Returns a random point in the specified wedge"
+                "tooltip": "returns a random point in the specified wedge"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Origin",
+                    "base": "DataInput_Origin_0",
                     "details": {
                         "name": "Origin"
                     }
                 },
                 {
-                    "key": "DataInput_Direction",
+                    "base": "DataInput_Direction_1",
                     "details": {
                         "name": "Direction"
                     }
                 },
                 {
-                    "key": "DataInput_Normal",
+                    "base": "DataInput_Normal_2",
                     "details": {
                         "name": "Normal"
                     }
                 },
                 {
-                    "key": "DataInput_Radius",
+                    "base": "DataInput_Radius_3",
                     "details": {
                         "name": "Radius"
                     }
                 },
                 {
-                    "key": "DataInput_Height",
+                    "base": "DataInput_Height_4",
                     "details": {
                         "name": "Height"
                     }
                 },
                 {
-                    "key": "DataInput_Angle",
+                    "base": "DataInput_Angle_5",
                     "details": {
                         "name": "Angle"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

@@ -104,6 +104,8 @@
 #include <Editor/Nodes/UI/GradientPreviewThumbnailItem.h>
 #include <EditorLandscapeCanvasComponent.h>
 
+#include <LmbrCentral/Shape/ReferenceShapeComponentBus.h>
+
 namespace LandscapeCanvasEditor
 {
     static const int NODE_OFFSET_X_PIXELS = 350;
@@ -201,15 +203,34 @@ namespace LandscapeCanvasEditor
     {
         using namespace AzToolsFramework;
 
-        static const QStringList preferredCategories = {
-            "Vegetation",
-            "Atom"
-        };
+        // A map of category names with preferred component names.
+        // There may be multiple component names for a category, as long as they provide different services.
+        const AZStd::map<QString, AZStd::vector<QString>> preferredComponentsByCategory = { { "Shape", { "Shape Reference" } } };
+
+        // Scan through the preferred categories to see whether any exist in the componentDataTable.
+        for (const auto& preferredComponentPair : preferredComponentsByCategory)
+        {
+            auto candidateDataTablePair = componentDataTable.find(preferredComponentPair.first);
+            if (candidateDataTablePair != componentDataTable.end())
+            {
+                // Now check all the preferred components for that category, and return the first one that exists in the candidate componentDataTable.
+                for (const auto& preferredComponentName : preferredComponentPair.second)
+                {
+                    const auto& candidateComponent = candidateDataTablePair->second.find(preferredComponentName);
+                    if (candidateComponent != candidateDataTablePair->second.end())
+                    {
+                        return candidateComponent->second->m_typeId;
+                    }
+                }
+            }
+        }
 
         // There are a couple of cases where we prefer certain categories of Components
-        // to be added over others (e.g. a Vegetation Shape Reference instead of actual LmbrCentral shapes),
+        // to be added over others,
         // so if those there are components in those categories, then choose them first.
         // Otherwise, just pick the first one in the list.
+        static const QStringList preferredCategories = { "Vegetation", "Atom" };
+
         ComponentPaletteUtil::ComponentDataTable::const_iterator categoryIt;
         for (const auto& categoryName : preferredCategories)
         {
@@ -1303,7 +1324,7 @@ namespace LandscapeCanvasEditor
             }
 
             // Special case for the Vegetation Area Placement Bounds, the slot actually represents a separate
-            // Vegetation Reference Shape or actual Shape component on the same Entity
+            // Reference Shape or actual Shape component on the same Entity
             AZ::Component* component = nullptr;
             auto targetBaseNode = static_cast<LandscapeCanvas::BaseNode*>(targetNode.get());
             if (targetBaseNode->GetBaseNodeType() == LandscapeCanvas::BaseNode::BaseNodeType::VegetationArea && targetSlot->GetName() == LandscapeCanvas::PLACEMENT_BOUNDS_SLOT_ID)
@@ -1379,7 +1400,7 @@ namespace LandscapeCanvasEditor
                     AzToolsFramework::EditorDisabledCompositionRequestBus::Event(targetEntityId, &AzToolsFramework::EditorDisabledCompositionRequests::GetDisabledComponents, disabledComponents);
                     for (auto disabledComponent : disabledComponents)
                     {
-                        if (disabledComponent->RTTI_GetType() == Vegetation::EditorReferenceShapeComponentTypeId)
+                        if (disabledComponent->RTTI_GetType() == LmbrCentral::EditorReferenceShapeComponentTypeId)
                         {
                             component = disabledComponent;
 
@@ -1401,7 +1422,7 @@ namespace LandscapeCanvasEditor
                     // If 'component' is still null then that means there is no Reference Shape component on our Entity, so we need to add one
                     if (!component)
                     {
-                        AZ::ComponentId componentId = AddComponentTypeIdToEntity(targetEntityId, Vegetation::EditorReferenceShapeComponentTypeId);
+                        AZ::ComponentId componentId = AddComponentTypeIdToEntity(targetEntityId, LmbrCentral::EditorReferenceShapeComponentTypeId);
 
                         component = targetEntity->FindComponent(componentId);
                     }

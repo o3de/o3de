@@ -15,6 +15,7 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Debug/Budget.h>
+#include <AzCore/EBus/Event.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/containers/fixed_vector.h>
@@ -24,6 +25,8 @@ AZ_DECLARE_BUDGET(RPI);
 
 namespace AZ
 {
+    class Matrix4x4;
+
     namespace RHI
     {
         class ShaderResourceGroup;
@@ -51,6 +54,8 @@ namespace AZ
         class ViewportContext;
         using ViewportContextPtr = AZStd::shared_ptr<ViewportContext>;
         using ConstViewportContextPtr = AZStd::shared_ptr<const ViewportContext>;
+
+        using MatrixChangedEvent = Event<const AZ::Matrix4x4&>;
 
         //! The name used to identify a View within in a Scene.
         //! Note that the same View could have different tags in different RenderPipelines.

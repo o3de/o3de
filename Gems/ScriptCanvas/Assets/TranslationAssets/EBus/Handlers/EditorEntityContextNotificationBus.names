@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "EditorEntityContextNotificationBus",
+            "base": "EditorEntityContextNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "OnEditorEntityCreated",
+                    "base": "OnEditorEntityCreated",
                     "details": {
                         "name": "OnEditorEntityCreated"
                     },
@@ -24,7 +24,7 @@
                     ]
                 },
                 {
-                    "key": "OnEditorEntityDeleted",
+                    "base": "OnEditorEntityDeleted",
                     "details": {
                         "name": "OnEditorEntityDeleted"
                     },

@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "EditorDeferredFogComponentTypeId",
+            "base": "EditorDeferredFogComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Editor Deferred Fog Component Type Id"
+                "name": "Editor Deferred Fog Component Type Id",
+                "category": "Constants/Editor/Component Type Id"
             },
             "methods": [
                 {
-                    "key": "GetEditorDeferredFogComponentTypeId",
+                    "base": "GetEditorDeferredFogComponentTypeId",
                     "details": {
                         "name": "Get Editor Deferred Fog Component Type Id"
                     },

@@ -1,35 +1,35 @@
 {
     "entries": [
         {
-            "key": "{2FB31ABF-7712-5C5F-BE1B-409D1D0AC120}",
+            "base": "{2FB31ABF-7712-5C5F-BE1B-409D1D0AC120}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "To Scale",
                 "category": "Math/Matrix4x4",
-                "tooltip": "Returns scale part of the transformation matrix"
+                "tooltip": "returns scale part of the transformation matrix"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Source",
+                    "base": "DataInput_Source_0",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "BlendOp_Subtract",
+            "base": "BlendOp_Subtract",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Blend Op_ Subtract"
+                "name": "Subtract",
+                "category": "Constants/Blend Operation"
             },
             "methods": [
                 {
-                    "key": "GetBlendOp_Subtract",
+                    "base": "GetBlendOp_Subtract",
                     "details": {
-                        "name": "Get Blend Op_ Subtract"
+                        "name": "Get Subtract"
                     },
                     "results": [
                         {

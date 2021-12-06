@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{588E1C8F-D18E-5C00-AF13-C4FCD5A9519D}",
+            "base": "{588E1C8F-D18E-5C00-AF13-C4FCD5A9519D}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -11,49 +11,49 @@
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Pose",
+                    "base": "DataInput_Pose_0",
                     "details": {
                         "name": "Pose"
                     }
                 },
                 {
-                    "key": "DataInput_Height",
+                    "base": "DataInput_Height_1",
                     "details": {
                         "name": "Height"
                     }
                 },
                 {
-                    "key": "DataInput_Radius",
+                    "base": "DataInput_Radius_2",
                     "details": {
                         "name": "Radius"
                     }
                 },
                 {
-                    "key": "DataInput_Collision group",
+                    "base": "DataInput_Collision group_3",
                     "details": {
                         "name": "Collision group"
                     }
                 },
                 {
-                    "key": "DataInput_Ignore",
+                    "base": "DataInput_Ignore_4",
                     "details": {
                         "name": "Ignore"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

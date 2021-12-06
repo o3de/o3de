@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "DisplaySettings_HideTracks",
+            "base": "DisplaySettings_HideTracks",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Display Settings_ Hide Tracks"
+                "name": "Hide Tracks",
+                "category": "Constants/Display Settings"
             },
             "methods": [
                 {
-                    "key": "GetDisplaySettings_HideTracks",
+                    "base": "GetDisplaySettings_HideTracks",
                     "details": {
-                        "name": "Get Display Settings_ Hide Tracks"
+                        "name": "Get Hide Tracks"
                     },
                     "results": [
                         {

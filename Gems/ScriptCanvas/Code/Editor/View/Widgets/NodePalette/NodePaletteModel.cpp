@@ -611,8 +611,9 @@ namespace
                     {
                         categoryPath.append(details.m_name.c_str());
                     }
-                    else
+                    else if (categoryPath.contains("Other"))
                     {
+                        // Use the BehaviorEBus name to categorize within the 'Other' category
                         categoryPath.append(behaviorEbus.m_name.c_str());
                     }
                 }
@@ -657,8 +658,9 @@ namespace
             {
                 categoryPath.append(details.m_name.c_str());
             }
-            else
+            else if (categoryPath.contains("Other"))
             {
+                // Use the behavior EBus name to categorize within the 'Other' category
                 categoryPath.append(behaviorEbus.m_name.c_str());
             }
 
@@ -1021,13 +1023,15 @@ namespace ScriptCanvasEditor
 
             GraphCanvas::TranslationKey key;
 
+            AZStd::string context;
             AZStd::string updatedMethodName;
             if (propertyStatus != ScriptCanvas::PropertyStatus::None)
             {
                 updatedMethodName = (propertyStatus == ScriptCanvas::PropertyStatus::Getter) ? "Get" : "Set";
+                context = (propertyStatus == ScriptCanvas::PropertyStatus::Getter) ? "Getter" : "Setter";
             }
             updatedMethodName += methodName;
-            key << "BehaviorClass" << methodClass.c_str() << "methods" << updatedMethodName << "details";
+            key << "BehaviorClass" << context << methodClass << "methods" << updatedMethodName << "details";
 
             GraphCanvas::TranslationRequests::Details details;
             GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);

@@ -1,12 +1,80 @@
 {
     "entries": [
         {
-            "key": "PythonBehaviorInfo",
+            "base": "PythonBehaviorInfo",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "PythonBehaviorInfo"
-            }
+                "name": "Python Behavior Info"
+            },
+            "methods": [
+                {
+                    "base": "GetclassName",
+                    "details": {
+                        "name": "Getclass Name"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8055BD03-5B3B-490D-AEC5-1B1E2616D529}",
+                            "details": {
+                                "name": "const Python Behavior Info&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZ Std::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetclassUuid",
+                    "details": {
+                        "name": "Getclass Uuid"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8055BD03-5B3B-490D-AEC5-1B1E2616D529}",
+                            "details": {
+                                "name": "const Python Behavior Info&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZ Std::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetmethodList",
+                    "details": {
+                        "name": "Getmethod List"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8055BD03-5B3B-490D-AEC5-1B1E2616D529}",
+                            "details": {
+                                "name": "Python Behavior Info*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{99DAD0BC-740E-5E82-826B-8FC7968CC02C}",
+                            "details": {
+                                "name": "AZ Std::vector"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

@@ -1,35 +1,35 @@
 {
     "entries": [
         {
-            "key": "{FDE00D83-D0A6-5ACA-B48B-DD5E0415FF80}",
+            "base": "{FDE00D83-D0A6-5ACA-B48B-DD5E0415FF80}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "To Adjugate",
                 "category": "Math/Matrix3x3",
-                "tooltip": "Returns the transpose of Matrix of cofactors"
+                "tooltip": "returns the transpose of Matrix of cofactors"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Source",
+                    "base": "DataInput_Source_0",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "SliceInstantiationTicket",
+            "base": "SliceInstantiationTicket",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "Slice Instantiation Ticket"
+                "name": "Slice Instantiation Ticket",
+                "category": "Slices"
             },
             "methods": [
                 {
-                    "key": "Equal",
+                    "base": "Equal",
                     "context": "SliceInstantiationTicket",
                     "entry": {
                         "name": "In",
@@ -26,13 +27,7 @@
                         {
                             "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
                             "details": {
-                                "name": "Slice Instantiation Ticket*"
-                            }
-                        },
-                        {
-                            "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
-                            "details": {
-                                "name": "const  Slice Instantiation Ticket&"
+                                "name": "Slice Instantiation Ticket"
                             }
                         }
                     ],
@@ -40,13 +35,13 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "Equal"
+                                "name": "bool"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "ToString",
+                    "base": "ToString",
                     "context": "SliceInstantiationTicket",
                     "entry": {
                         "name": "In",
@@ -59,25 +54,17 @@
                     "details": {
                         "name": "To String"
                     },
-                    "params": [
-                        {
-                            "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
-                            "details": {
-                                "name": "Slice Instantiation Ticket*"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "String"
+                                "name": "AZ Std::basic_string<char, AZ Std::char_traits<char>, allocator>"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "IsValid",
+                    "base": "IsValid",
                     "context": "SliceInstantiationTicket",
                     "entry": {
                         "name": "In",
@@ -90,19 +77,11 @@
                     "details": {
                         "name": "Is Valid"
                     },
-                    "params": [
-                        {
-                            "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
-                            "details": {
-                                "name": "Slice Instantiation Ticket*"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "Is Valid"
+                                "name": "bool"
                             }
                         }
                     ]

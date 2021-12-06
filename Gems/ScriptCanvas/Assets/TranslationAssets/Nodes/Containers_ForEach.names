@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{31823035-A3FF-4B8D-A3A6-819519478B7C}",
+            "base": "{31823035-A3FF-4B8D-A3A6-819519478B7C}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -11,34 +11,34 @@
             },
             "slots": [
                 {
-                    "key": "DataInput_Source",
+                    "base": "DataInput_Source_0",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In",
                         "tooltip": "Signaled upon node entry"
                     }
                 },
                 {
-                    "key": "Input_Break",
+                    "base": "Input_Break_1",
                     "details": {
                         "name": "Break",
                         "tooltip": "Stops the iteration when signaled"
                     }
                 },
                 {
-                    "key": "Output_Each",
+                    "base": "Output_Each_0",
                     "details": {
                         "name": "Each",
                         "tooltip": "Signalled after each element of the container"
                     }
                 },
                 {
-                    "key": "Output_Finished",
+                    "base": "Output_Finished_1",
                     "details": {
                         "name": "Finished",
                         "tooltip": "The container has been fully iterated over"

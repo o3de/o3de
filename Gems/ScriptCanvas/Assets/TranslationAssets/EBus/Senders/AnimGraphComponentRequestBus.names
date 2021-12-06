@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AnimGraphComponentRequestBus",
+            "base": "AnimGraphComponentRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetVisualizeEnabled",
+                    "base": "GetVisualizeEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Visualize Enabled"
@@ -32,7 +32,7 @@
                     ]
                 },
                 {
-                    "key": "SetNamedParameterRotation",
+                    "base": "SetNamedParameterRotation",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Named Parameter Rotation"
@@ -60,7 +60,7 @@
                     ]
                 },
                 {
-                    "key": "SetParameterString",
+                    "base": "SetParameterString",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Parameter String"
@@ -88,7 +88,7 @@
                     ]
                 },
                 {
-                    "key": "GetNamedParameterString",
+                    "base": "GetNamedParameterString",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Named Parameter String"
@@ -118,7 +118,7 @@
                     ]
                 },
                 {
-                    "key": "GetNamedParameterVector2",
+                    "base": "GetNamedParameterVector2",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Named Parameter Vector2"
@@ -148,7 +148,7 @@
                     ]
                 },
                 {
-                    "key": "GetParameterFloat",
+                    "base": "GetParameterFloat",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Parameter Float"
@@ -178,7 +178,7 @@
                     ]
                 },
                 {
-                    "key": "SetParameterRotation",
+                    "base": "SetParameterRotation",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Parameter Rotation"
@@ -206,7 +206,7 @@
                     ]
                 },
                 {
-                    "key": "GetNamedParameterFloat",
+                    "base": "GetNamedParameterFloat",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Named Parameter Float"
@@ -236,7 +236,7 @@
                     ]
                 },
                 {
-                    "key": "SetParameterBool",
+                    "base": "SetParameterBool",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Parameter Bool"
@@ -264,7 +264,7 @@
                     ]
                 },
                 {
-                    "key": "FindParameterName",
+                    "base": "FindParameterName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Find Parameter Name"
@@ -294,7 +294,7 @@
                     ]
                 },
                 {
-                    "key": "GetNamedParameterBool",
+                    "base": "GetNamedParameterBool",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Named Parameter Bool"
@@ -324,7 +324,7 @@
                     ]
                 },
                 {
-                    "key": "SetParameterFloat",
+                    "base": "SetParameterFloat",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Parameter Float"
@@ -352,7 +352,7 @@
                     ]
                 },
                 {
-                    "key": "GetParameterVector2",
+                    "base": "GetParameterVector2",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Parameter Vector2"
@@ -382,7 +382,7 @@
                     ]
                 },
                 {
-                    "key": "GetParameterBool",
+                    "base": "GetParameterBool",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Parameter Bool"
@@ -412,7 +412,7 @@
                     ]
                 },
                 {
-                    "key": "SetNamedParameterVector3",
+                    "base": "SetNamedParameterVector3",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Named Parameter Vector3"
@@ -440,7 +440,7 @@
                     ]
                 },
                 {
-                    "key": "FindParameterIndex",
+                    "base": "FindParameterIndex",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Find Parameter Index"
@@ -470,7 +470,7 @@
                     ]
                 },
                 {
-                    "key": "SetNamedParameterString",
+                    "base": "SetNamedParameterString",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Named Parameter String"
@@ -498,7 +498,7 @@
                     ]
                 },
                 {
-                    "key": "SetParameterVector3",
+                    "base": "SetParameterVector3",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Parameter Vector3"
@@ -526,7 +526,7 @@
                     ]
                 },
                 {
-                    "key": "GetParameterVector3",
+                    "base": "GetParameterVector3",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Parameter Vector3"
@@ -556,7 +556,7 @@
                     ]
                 },
                 {
-                    "key": "SyncAnimGraph",
+                    "base": "SyncAnimGraph",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Sync Anim Graph"
@@ -579,7 +579,7 @@
                     ]
                 },
                 {
-                    "key": "SetParameterRotationEuler",
+                    "base": "SetParameterRotationEuler",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Parameter Rotation Euler"
@@ -607,7 +607,7 @@
                     ]
                 },
                 {
-                    "key": "GetParameterRotationEuler",
+                    "base": "GetParameterRotationEuler",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Parameter Rotation Euler"
@@ -637,7 +637,7 @@
                     ]
                 },
                 {
-                    "key": "GetParameterRotation",
+                    "base": "GetParameterRotation",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Parameter Rotation"
@@ -667,7 +667,7 @@
                     ]
                 },
                 {
-                    "key": "GetNamedParameterRotationEuler",
+                    "base": "GetNamedParameterRotationEuler",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Named Parameter Rotation Euler"
@@ -697,7 +697,7 @@
                     ]
                 },
                 {
-                    "key": "DesyncAnimGraph",
+                    "base": "DesyncAnimGraph",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Desync Anim Graph"
@@ -720,7 +720,7 @@
                     ]
                 },
                 {
-                    "key": "SetNamedParameterRotationEuler",
+                    "base": "SetNamedParameterRotationEuler",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Named Parameter Rotation Euler"
@@ -748,7 +748,7 @@
                     ]
                 },
                 {
-                    "key": "SetParameterVector2",
+                    "base": "SetParameterVector2",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Parameter Vector2"
@@ -776,7 +776,7 @@
                     ]
                 },
                 {
-                    "key": "GetNamedParameterRotation",
+                    "base": "GetNamedParameterRotation",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Named Parameter Rotation"
@@ -806,7 +806,7 @@
                     ]
                 },
                 {
-                    "key": "SetNamedParameterBool",
+                    "base": "SetNamedParameterBool",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Named Parameter Bool"
@@ -834,7 +834,7 @@
                     ]
                 },
                 {
-                    "key": "SetVisualizeEnabled",
+                    "base": "SetVisualizeEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Visualize Enabled"
@@ -856,7 +856,7 @@
                     ]
                 },
                 {
-                    "key": "SetNamedParameterFloat",
+                    "base": "SetNamedParameterFloat",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Named Parameter Float"
@@ -884,7 +884,7 @@
                     ]
                 },
                 {
-                    "key": "SetNamedParameterVector2",
+                    "base": "SetNamedParameterVector2",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Named Parameter Vector2"
@@ -912,7 +912,7 @@
                     ]
                 },
                 {
-                    "key": "GetNamedParameterVector3",
+                    "base": "GetNamedParameterVector3",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Named Parameter Vector3"
@@ -942,7 +942,7 @@
                     ]
                 },
                 {
-                    "key": "GetParameterString",
+                    "base": "GetParameterString",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Parameter String"

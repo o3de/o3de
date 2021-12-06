@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{D93538FF-3553-4C65-AB81-9089C5270214}",
+            "base": "{D93538FF-3553-4C65-AB81-9089C5270214}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -11,33 +11,33 @@
             },
             "slots": [
                 {
-                    "key": "DataInput_Duration",
+                    "base": "DataInput_Duration_0",
                     "details": {
                         "name": "Duration"
                     }
                 },
                 {
-                    "key": "DataOutput_Elapsed",
+                    "base": "DataOutput_Elapsed_0",
                     "details": {
                         "name": "Elapsed"
                     }
                 },
                 {
-                    "key": "Input_Start",
+                    "base": "Input_Start_0",
                     "details": {
                         "name": "Start",
                         "tooltip": "Starts the countdown"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out",
                         "tooltip": "Signaled every frame while the duration is active."
                     }
                 },
                 {
-                    "key": "Output_Done",
+                    "base": "Output_Done_1",
                     "details": {
                         "name": "Done",
                         "tooltip": "Signaled once the duration is complete."

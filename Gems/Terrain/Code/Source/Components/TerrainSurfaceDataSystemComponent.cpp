@@ -214,10 +214,10 @@ namespace Terrain
         {
             AZ_Assert((m_providerHandle != SurfaceData::InvalidSurfaceDataRegistryHandle), "Invalid surface data handle");
 
-            // Our terrain was valid before and after, it just changed in some way.  If we have a valid dirty region passed in
-            // then it's possible that the heightmap has been modified in the Editor.  Otherwise, just notify that the entire
-            // terrain has changed in some way.
-            if (dirtyRegion.IsValid())
+            // Our terrain was valid before and after, it just changed in some way.  If we have a valid dirty region, and the terrain
+            // bounds themselves haven't changed, just notify that our terrain data has changed within the bounds.  Otherwise, notify
+            // that the entire terrain provider needs to be updated, since it either has new bounds or the entire set of data is dirty.
+            if (dirtyRegion.IsValid() && m_terrainBounds.IsClose(terrainBoundsBeforeUpdate))
             {
                 SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
                     &SurfaceData::SurfaceDataSystemRequestBus::Events::RefreshSurfaceData, dirtyRegion);

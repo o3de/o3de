@@ -1,41 +1,41 @@
 {
     "entries": [
         {
-            "key": "{FB87C32E-BB06-5499-B210-4EE109C419DC}",
+            "base": "{FB87C32E-BB06-5499-B210-4EE109C419DC}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "Multiply By Vector4",
+                "name": "Multiply By Vector 4",
                 "category": "Math/Transform",
-                "tooltip": "Returns Source post multiplied by Multiplier"
+                "tooltip": "returns Source post multiplied by Multiplier"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Source",
+                    "base": "DataInput_Source_0",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Multiplier",
+                    "base": "DataInput_Multiplier_1",
                     "details": {
                         "name": "Multiplier"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

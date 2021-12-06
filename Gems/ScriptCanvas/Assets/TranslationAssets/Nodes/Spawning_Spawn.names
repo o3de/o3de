@@ -1,54 +1,53 @@
 {
     "entries": [
         {
-            "key": "{2447798B-B970-FDBA-A2E2-B563513663F0}",
+            "base": "{2447798B-B970-FDBA-A2E2-B563513663F0}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Spawn",
                 "category": "Spawning",
-                "tooltip": "Spawns a selected prefab, positioned using the provided transform inputs",
-                "subtitle": "Spawning"
+                "tooltip": "Spawns a selected prefab, positioned using the provided transform inputs"
             },
             "slots": [
                 {
-                    "key": "Input_Request Spawn",
+                    "base": "Input_Request Spawn_0",
                     "details": {
                         "name": "Request Spawn"
                     }
                 },
                 {
-                    "key": "DataInput_Translation",
+                    "base": "DataInput_Translation_0",
                     "details": {
                         "name": "Translation"
                     }
                 },
                 {
-                    "key": "DataInput_Rotation",
+                    "base": "DataInput_Rotation_1",
                     "details": {
                         "name": "Rotation"
                     }
                 },
                 {
-                    "key": "DataInput_Scale",
+                    "base": "DataInput_Scale_2",
                     "details": {
                         "name": "Scale"
                     }
                 },
                 {
-                    "key": "Output_Spawn Requested",
+                    "base": "Output_Spawn Requested_0",
                     "details": {
                         "name": "Spawn Requested"
                     }
                 },
                 {
-                    "key": "Output_On Spawn",
+                    "base": "Output_On Spawn_1",
                     "details": {
                         "name": "On Spawn"
                     }
                 },
                 {
-                    "key": "DataOutput_SpawnedEntitiesList",
+                    "base": "DataOutput_SpawnedEntitiesList_0",
                     "details": {
                         "name": "SpawnedEntitiesList"
                     }

@@ -1,35 +1,35 @@
 {
     "entries": [
         {
-            "key": "{A5BAEA40-C676-5C16-AEA0-D01C78E5918E}",
+            "base": "{A5BAEA40-C676-5C16-AEA0-D01C78E5918E}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Absolute",
                 "category": "Math/Vector4",
-                "tooltip": "Returns a vector with the absolute values of the elements of the source"
+                "tooltip": "returns a vector with the absolute values of the elements of the source"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Source",
+                    "base": "DataInput_Source_0",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

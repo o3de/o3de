@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiFillType_RadialCorner",
+            "base": "eUiFillType_RadialCorner",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Fill Type_ Radial Corner"
+                "name": "Radial Corner",
+                "category": "Constants/UI/Fill Type"
             },
             "methods": [
                 {
-                    "key": "GeteUiFillType_RadialCorner",
+                    "base": "GeteUiFillType_RadialCorner",
                     "details": {
-                        "name": "Gete Ui Fill Type_ Radial Corner"
+                        "name": "Radial Corner"
                     },
                     "results": [
                         {

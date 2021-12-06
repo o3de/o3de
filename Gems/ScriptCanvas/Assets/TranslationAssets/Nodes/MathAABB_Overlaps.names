@@ -1,44 +1,43 @@
 {
     "entries": [
         {
-            "key": "{CE4AF636-AB72-589D-92E9-A3C75A3F9C7F}",
+            "base": "{CE4AF636-AB72-589D-92E9-A3C75A3F9C7F}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Overlaps",
-                "category": "Math/Axis Aligned Bounding Box",
-                "tooltip": "returns true if A overlaps B, else false",
-                "subtitle": "Axis Aligned Bounding Box"
+                "category": "Math/AABB",
+                "tooltip": "returns true if A overlaps B, else false"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_AABB: A",
+                    "base": "DataInput_A_0",
                     "details": {
-                        "name": "AABB: A"
+                        "name": "A"
                     }
                 },
                 {
-                    "key": "DataInput_AABB: B",
+                    "base": "DataInput_B_1",
                     "details": {
-                        "name": "AABB: B"
+                        "name": "B"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Boolean",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Result: Boolean"
+                        "name": "Result"
                     }
                 }
             ]
