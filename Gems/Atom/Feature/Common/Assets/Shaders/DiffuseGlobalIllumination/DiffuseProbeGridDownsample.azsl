@@ -56,26 +56,27 @@ struct PSOutput
 PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
 {  
     uint2 screenCoords = IN.m_position.xy * PassSrg::m_outputImageScale;
+    uint2 closestScreenCoords = uint2(0, 0);
 
     float downsampledDepth = 0;
-    float4 downsampledEncodedNormal;
+
     for (uint y = 0; y < PassSrg::m_outputImageScale; ++y)
     {
         for (uint x = 0; x < PassSrg::m_outputImageScale; ++x)
         {
             float depth = PassSrg::m_depth.Load(screenCoords + int2(x, y), sampleIndex).r;
-            float4 encodedNormal = PassSrg::m_normal.Load(screenCoords + int2(x, y), sampleIndex);
 
             // take the closest depth sample to ensure we're getting the normal closest to the viewer 
             // (larger depth value due to reverse depth)
             if (depth > downsampledDepth)
             {
                 downsampledDepth = depth;
-                downsampledEncodedNormal = encodedNormal;
+                closestScreenCoords = uint2(x, y);
             }
         }
     }
 
+    float4 downsampledEncodedNormal = PassSrg::m_normal.Load(screenCoords + closestScreenCoords, sampleIndex);
     float3 downsampledNormal = DecodeNormalSignedOctahedron(downsampledEncodedNormal.rgb);
 
     PSOutput OUT;
