@@ -3627,7 +3627,7 @@ namespace AzToolsFramework
             }
         }
 
-        // Do not create maniuplators for any entities marked as read only
+        // Do not create manipulators for any entities marked as read only
         if (auto readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get())
         {
             for (auto it = m_selectedEntityIds.begin(); it != m_selectedEntityIds.end();)
