@@ -10,6 +10,7 @@
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Component/Component.h>
 #include <Prefab/PrefabTestFixture.h>
+#include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 
 namespace UnitTest
 {
