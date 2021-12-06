@@ -3630,17 +3630,13 @@ namespace AzToolsFramework
         // Do not create manipulators for any entities marked as read only
         if (auto readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get())
         {
-            for (auto it = m_selectedEntityIds.begin(); it != m_selectedEntityIds.end();)
-            {
-                if (readOnlyEntityPublicInterface->IsReadOnly(*it))
+            AZStd::erase_if(
+                m_selectedEntityIds,
+                [readOnlyEntityPublicInterface](auto entityId)
                 {
-                    it = m_selectedEntityIds.erase(it);
+                    return readOnlyEntityPublicInterface->IsReadOnly(entityId);
                 }
-                else
-                {
-                    ++it;
-                }
-            }
+            );
         }
     }
 
