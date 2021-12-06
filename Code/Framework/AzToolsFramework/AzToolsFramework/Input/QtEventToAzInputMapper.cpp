@@ -488,6 +488,7 @@ namespace AzToolsFramework
                     {
                         keyChannel->UpdateState(false);
                     }
+
                     NotifyUpdateChannelIfNotIdle(keyChannel, keyEvent);
                 }
             }
