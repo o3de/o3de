@@ -233,12 +233,12 @@ namespace AZ::Dom::Json
         if (buffer.data()[buffer.size()] == '\0')
         {
             NullDelimitedStringStream stream(buffer);
-            reader.Parse<static_cast<int>(parseFlags)>(stream, handler);
+            reader.Parse<aznumeric_cast<unsigned>(parseFlags)>(stream, handler);
         }
         else
         {
             rapidjson::MemoryStream stream(buffer.data(), buffer.size());
-            reader.Parse<static_cast<int>(parseFlags)>(stream, handler);
+            reader.Parse<aznumeric_cast<unsigned>(parseFlags)>(stream, handler);
         }
         return handler.TakeOutcome();
     }
@@ -250,7 +250,7 @@ namespace AZ::Dom::Json
         NullDelimitedStringStream stream(buffer);
         RapidJsonReadHandler handler(&visitor, Lifetime::Persistent);
 
-        reader.Parse<static_cast<int>(parseFlags) | rapidjson::kParseInsituFlag>(stream, handler);
+        reader.Parse<aznumeric_cast<unsigned>(parseFlags) | rapidjson::kParseInsituFlag>(stream, handler);
         return handler.TakeOutcome();
     }
 } // namespace AZ::Dom::Json

@@ -35,7 +35,7 @@ namespace AZ::Dom
         Visitor::Result WriteToStream(AZ::IO::GenericStream& stream, WriteCallback callback) override
         {
             AZStd::unique_ptr<Visitor> visitor = Json::CreateJsonStreamWriter(stream, WriteFormat);
-            return callback(*visitor.get());
+            return callback(*visitor);
         }
     };
 } // namespace AZ::Dom

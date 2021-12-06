@@ -95,18 +95,19 @@ namespace AZ::Dom::Json
             return VisitorFailure(VisitorErrorCode::InternalError, "EndObject called without a matching BeginObject call");
         }
 
-        if (!m_entryStack.front().m_isObject)
+        const ValueInfo& frontEntry = m_entryStack.front();
+        if (!frontEntry.m_isObject)
         {
             return VisitorFailure(VisitorErrorCode::InternalError, "Expected EndArray and received EndObject instead");
         }
 
-        if (m_entryStack.front().m_entryCount != attributeCount)
+        if (frontEntry.m_entryCount != attributeCount)
         {
             return VisitorFailure(
                 VisitorErrorCode::InternalError,
                 AZStd::string::format(
                     "EndObject: Expected %llu attributes but received %llu attributes instead", attributeCount,
-                    m_entryStack.front().m_entryCount));
+                    frontEntry.m_entryCount));
         }
 
         m_entryStack.pop_front();
@@ -149,17 +150,18 @@ namespace AZ::Dom::Json
             return VisitorFailure(VisitorErrorCode::InternalError, "EndArray called without a matching BeginArray call");
         }
 
-        if (m_entryStack.front().m_isObject)
+        const ValueInfo& frontEntry = m_entryStack.front();
+        if (frontEntry.m_isObject)
         {
             return VisitorFailure(VisitorErrorCode::InternalError, "Expected EndObject and received EndArray instead");
         }
 
-        if (m_entryStack.front().m_entryCount != elementCount)
+        if (frontEntry.m_entryCount != elementCount)
         {
             return VisitorFailure(
                 VisitorErrorCode::InternalError,
                 AZStd::string::format(
-                    "EndArray: Expected %llu elements but received %llu elements instead", elementCount, m_entryStack.front().m_entryCount));
+                    "EndArray: Expected %llu elements but received %llu elements instead", elementCount, frontEntry.m_entryCount));
         }
 
         m_entryStack.pop_front();
@@ -176,16 +178,17 @@ namespace AZ::Dom::Json
         // Retrieve the top value of the stack and replace it with a null value
         rapidjson::Value value;
         m_entryStack.front().m_value.Swap(value);
-        ++m_entryStack.front().m_entryCount;
+        ValueInfo& newEntry = m_entryStack.front();
+        ++newEntry.m_entryCount;
 
-        if (m_entryStack.front().m_key.IsString())
+        if (newEntry.m_key.IsString())
         {
-            m_entryStack.front().m_container.AddMember(m_entryStack.front().m_key.Move(), AZStd::move(value), m_allocator);
-            m_entryStack.front().m_key.SetNull();
+            newEntry.m_container.AddMember(m_entryStack.front().m_key.Move(), AZStd::move(value), m_allocator);
+            newEntry.m_key.SetNull();
         }
         else
         {
-            m_entryStack.front().m_container.PushBack(AZStd::move(value), m_allocator);
+            newEntry.m_container.PushBack(AZStd::move(value), m_allocator);
         }
 
         return VisitorSuccess();
@@ -358,11 +361,7 @@ namespace AZ::Dom::Json
 
     bool RapidJsonReadHandler::String(const char* str, rapidjson::SizeType length, bool copy)
     {
-        Lifetime lifetime = m_stringLifetime;
-        if (!copy)
-        {
-            lifetime = Lifetime::Temporary;
-        }
+        const Lifetime lifetime = copy ? m_stringLifetime : Lifetime::Temporary;
         return CheckResult(m_visitor->String(AZStd::string_view(str, length), lifetime));
     }
 
@@ -378,11 +377,7 @@ namespace AZ::Dom::Json
         {
             m_visitor->Key(AZ::Name(key));
         }
-        Lifetime lifetime = m_stringLifetime;
-        if (!copy)
-        {
-            lifetime = Lifetime::Temporary;
-        }
+        const Lifetime lifetime = copy ? m_stringLifetime : Lifetime::Temporary;
         return CheckResult(m_visitor->RawKey(key, lifetime));
     }
 
@@ -408,12 +403,15 @@ namespace AZ::Dom::Json
 
     bool RapidJsonReadHandler::CheckResult(Visitor::Result result)
     {
-        if (!result.IsSuccess())
+        if (result.IsSuccess())
+        {
+            return true;
+        }
+        else
         {
             m_outcome = AZStd::move(result);
             return false;
         }
-        return true;
     }
 
     //
