@@ -35,6 +35,7 @@ class QItemSelection;
 namespace Ui
 {
     class EntityOutlinerWidgetUI;
+    class ReadOnlyEntityPublicInterface;
 }
 
 namespace AzToolsFramework
@@ -43,6 +44,7 @@ namespace AzToolsFramework
     class EntityOutlinerListModel;
     class EntityOutlinerContainerProxyModel;
     class EntityOutlinerSortFilterProxyModel;
+    class ReadOnlyEntityPublicInterface;
 
     namespace EntityOutliner
     {
@@ -204,6 +206,7 @@ namespace AzToolsFramework
         bool m_sortContentQueued;
 
         EditorEntityUiInterface* m_editorEntityUiInterface = nullptr;
+        ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
     };
 
 }

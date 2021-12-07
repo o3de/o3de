@@ -117,8 +117,12 @@ namespace AzToolsFramework
         ContainerEntityNotificationBus::Handler::BusConnect(editorEntityContextId);
 
         m_editorEntityUiInterface = AZ::Interface<AzToolsFramework::EditorEntityUiInterface>::Get();
-        AZ_Assert(m_editorEntityUiInterface != nullptr,
-            "EntityOutlinerListModel requires a EditorEntityUiInterface instance on Initialize.");
+        AZ_Assert(m_editorEntityUiInterface != nullptr, "EntityOutlinerListModel requires a EditorEntityUiInterface instance on Initialize.");
+
+        m_readOnlyEntityPublicInterface = AZ::Interface<AzToolsFramework::ReadOnlyEntityPublicInterface>::Get();
+        AZ_Assert(
+            (m_readOnlyEntityPublicInterface != nullptr),
+            "EntityOutlinerListModel requires a ReadOnlyEntityPublicInterface instance on Initialize.");
     }
 
     int EntityOutlinerListModel::rowCount(const QModelIndex& parent) const
@@ -451,9 +455,15 @@ namespace AzToolsFramework
             if (value.canConvert<Qt::CheckState>())
             {
                 const auto entityId = GetEntityFromIndex(index);
-                auto entityUiHandler = m_editorEntityUiInterface->GetHandler(entityId);
 
-                if (!entityUiHandler || entityUiHandler->CanToggleLockVisibility(entityId))
+                // Disable lock and visibility toggling if the UI Handler blocked it.
+                auto entityUiHandler = m_editorEntityUiInterface->GetHandler(entityId);
+                bool canToggleLockVisibility = !entityUiHandler || entityUiHandler->CanToggleLockVisibility(entityId);
+
+                // Disable lock and visibility toggling for read-only entities.
+                bool isReadOnly = m_readOnlyEntityPublicInterface->IsReadOnly(entityId);
+
+                if (canToggleLockVisibility && !isReadOnly)
                 {
                     switch (index.column())
                     {
@@ -535,6 +545,15 @@ namespace AzToolsFramework
             return Qt::ItemIsDropEnabled;
         }
 
+        AZ::EntityId entityId = GetEntityFromIndex(index);
+
+        // Only allow renaming the entity if the UI Handler did not block it.
+        auto entityUiHandler = m_editorEntityUiInterface->GetHandler(entityId);
+        bool canRename = !entityUiHandler || entityUiHandler->CanRename(entityId);
+
+        // Disable renaming for read-only entities.
+        bool isReadOnly = m_readOnlyEntityPublicInterface->IsReadOnly(entityId);
+
         Qt::ItemFlags itemFlags = QAbstractItemModel::flags(index);
         switch (index.column())
         {
@@ -544,7 +563,21 @@ namespace AzToolsFramework
             break;
 
         case ColumnName:
-            itemFlags |= Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDropEnabled | Qt::ItemIsDragEnabled | Qt::ItemIsEditable;
+            if (canRename && !isReadOnly)
+            {
+                itemFlags |= Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDropEnabled | Qt::ItemIsDragEnabled | Qt::ItemIsEditable;
+            }
+            else
+            {
+                if (isReadOnly)
+                {
+                    itemFlags |= Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled;
+                }
+                else
+                {
+                    itemFlags |= Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDropEnabled | Qt::ItemIsDragEnabled;
+                }
+            }
             break;
 
         default:
@@ -552,7 +585,8 @@ namespace AzToolsFramework
             break;
         }
 
-        if (AZ::EntityId entityId = GetEntityFromIndex(index); !m_focusModeInterface->IsInFocusSubTree(entityId))
+        // Disable entities outside the focus subtree.
+        if (!m_focusModeInterface->IsInFocusSubTree(entityId))
         {
             itemFlags &= !Qt::ItemIsEnabled;
         }
@@ -773,10 +807,17 @@ namespace AzToolsFramework
         [[maybe_unused]] int column,
         const QModelIndex& parent) const
     {
-        // Disable dropping assets on closed container entities.
         AZ::EntityId parentId = GetEntityFromIndex(parent);
+
+        // Disable dropping assets on closed container entities.
         if (auto containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get();
             !containerEntityInterface->IsContainerOpen(parentId))
+        {
+            return false;
+        }
+
+        // Disable dropping assets on read-only entities.
+        if (m_readOnlyEntityPublicInterface->IsReadOnly(parentId))
         {
             return false;
         }
@@ -2210,6 +2251,13 @@ namespace AzToolsFramework
         QPalette checkboxPalette;
         QColor transparentColor(0, 0, 0, 0);
         checkboxPalette.setColor(QPalette::ColorRole::Window, transparentColor);
+
+        // Disable hover rendering for read-only entities
+        AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
+        if (m_readOnlyEntityPublicInterface->IsReadOnly(entityId))
+        {
+            isHovered = false;
+        }
 
         // We're only using these check boxes as renderers so their actual state doesn't matter.
         // We can set it right before we draw using information from the model data.
