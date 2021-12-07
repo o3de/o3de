@@ -9,60 +9,11 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/smart_ptr/scoped_ptr.h>
 #include <AzCore/std/parallel/thread.h>
-#include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzFramework/Process/ProcessCommunicator.h>
 
 namespace AzFramework
 {
-    namespace ProcessLauncher
-    {
-        AZStd::string ProcessLaunchInfo::GetCommandLineParametersAsString() const
-        {
-            struct CommandLineParametersVisitor
-            {
-                AZStd::string operator()(const AZStd::string& commandLine) const
-                {
-                    return commandLine;
-                }
-
-                AZStd::string operator()(const AZStd::vector<AZStd::string>& commandLineArray) const
-                {
-                    AZStd::string commandLineResult;
-#if AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
-                    // When re-constructing a command line from an argument list (on windows), if an argument
-                    // is double-quoted, then the double-quotes must be escaped properly otherwise
-                    // it will be absorbed by the native argument parser and possibly evaluated as
-                    // multiple values for arguments
-                    AZStd::string_view escapedDoubleQuote = R"("\")";
-
-                    AZStd::vector<AZStd::string> preprocessed_command_array;
-                    for (const auto& commandArg : commandLineArray)
-                    {
-                        AZStd::string replacedArg = commandArg;
-                        auto replacePos = replacedArg.find_first_of('"');
-                        while (replacePos != replacedArg.npos)
-                        {
-                            replacedArg.replace(replacePos, 1, escapedDoubleQuote.data(), escapedDoubleQuote.size());
-                            replacePos += escapedDoubleQuote.size();
-                            replacePos = replacedArg.find('"', replacePos);
-                        }
-                        preprocessed_command_array.emplace_back(replacedArg);
-                    }
-                    AzFramework::StringFunc::Join(
-                        commandLineResult, preprocessed_command_array.begin(), preprocessed_command_array.end(), " ");
-#else
-                    AzFramework::StringFunc::Join(commandLineResult, commandLineArray.begin(), commandLineArray.end(), " ");
-#endif // AZ_TRAIT_AZFRAMEWORK_DOUBLE_ESCAPE_COMMANDLINE_QUOTES
-
-                    return commandLineResult;
-                }
-            };
-
-            return AZStd::visit(CommandLineParametersVisitor{}, m_commandlineParameters);
-        }
-    }
-
     bool ProcessWatcher::LaunchProcessAndRetrieveOutput(const ProcessLauncher::ProcessLaunchInfo& processLaunchInfo, ProcessCommunicationType communicationType, AzFramework::ProcessOutput& outProcessOutput)
     {
         // launch the process

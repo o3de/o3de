@@ -10,7 +10,6 @@
 
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzFramework/Process/ProcessCommunicator.h>
-
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzCore/base.h>
@@ -421,6 +420,25 @@ namespace AzFramework
 
         kill(m_pWatcherData->m_childProcessId, SIGKILL);
         waitpid(m_pWatcherData->m_childProcessId, NULL, 0);
+    }
+
+    AZStd::string ProcessLauncher::ProcessLaunchInfo::GetCommandLineParametersAsString() const
+    {
+        struct CommandLineParametersVisitor
+        {
+            AZStd::string operator()(const AZStd::string& commandLine) const
+            {
+                return commandLine;
+            }
+
+            AZStd::string operator()(const AZStd::vector<AZStd::string>& commandLineArray) const
+            {
+                AZStd::string commandLineResult;
+                AzFramework::StringFunc::Join(commandLineResult, commandLineArray.begin(), commandLineArray.end(), " ");
+                return commandLineResult;
+            }
+        };
+        return AZStd::visit(CommandLineParametersVisitor{}, m_commandlineParameters);
     }
 } //namespace AzFramework
 

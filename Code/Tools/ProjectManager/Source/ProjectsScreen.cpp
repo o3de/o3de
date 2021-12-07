@@ -424,13 +424,12 @@ namespace O3DE::ProjectManager
                     return;
                 }
 
-                 AZStd::vector<AZStd::string> cmdPath = AZStd::vector<AZStd::string>{
+                AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
+                processLaunchInfo.m_commandlineParameters = AZStd::vector<AZStd::string>{
                     editorExecutablePath.String(),
                     AZStd::string::format(R"(--regset="/Amazon/AzCore/Bootstrap/project_path=%s")", fixedProjectPath.c_str())
                 };
-
-                AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-                processLaunchInfo.m_commandlineParameters = cmdPath;
+                ;
                 bool launchSucceeded = AzFramework::ProcessLauncher::LaunchUnwatchedProcess(processLaunchInfo);
                 if (!launchSucceeded)
                 {
