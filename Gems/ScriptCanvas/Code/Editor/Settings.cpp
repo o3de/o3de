@@ -92,13 +92,11 @@ namespace ScriptCanvasEditor
 
         // WorkspaceAssetSaveData
         EditorWorkspace::WorkspaceAssetSaveData::WorkspaceAssetSaveData()
-            : m_assetType(azrtti_typeid<ScriptCanvasAsset>())
         {
         }
 
-        EditorWorkspace::WorkspaceAssetSaveData::WorkspaceAssetSaveData(const AZ::Data::AssetId& assetId)
+        EditorWorkspace::WorkspaceAssetSaveData::WorkspaceAssetSaveData(SourceHandle assetId)
             : m_assetId(assetId)
-            , m_assetType(azrtti_typeid<ScriptCanvasAsset>())
         {
         }
 
@@ -108,7 +106,7 @@ namespace ScriptCanvasEditor
             {
                 AZStd::vector<WorkspaceAssetSaveData> assetSaveData;
                 AZStd::vector<AZ::Data::AssetId> assetIds;
-                auto subElement = rootDataElementNode.FindSubElement(AZ_CRC("ActiveAssetIds", 0xe445268a));
+                auto subElement = rootDataElementNode.FindSubElement(AZ_CRC_CE("ActiveAssetIds"));
 
                 if (subElement)
                 {
@@ -117,13 +115,19 @@ namespace ScriptCanvasEditor
                         assetSaveData.reserve(assetIds.size());
                         for (const AZ::Data::AssetId& assetId : assetIds)
                         {
-                            assetSaveData.emplace_back(assetId);
+                            assetSaveData.emplace_back(SourceHandle( nullptr, assetId.m_guid, "" ));
                         }
                     }
                 }
 
-                rootDataElementNode.RemoveElementByName(AZ_CRC("ActiveAssetIds", 0xe445268a));
+                rootDataElementNode.RemoveElementByName(AZ_CRC_CE("ActiveAssetIds"));
                 rootDataElementNode.AddElementWithData(context, "ActiveAssetData", assetSaveData);
+            }
+
+            if (rootDataElementNode.GetVersion() < 4)
+            {
+                rootDataElementNode.RemoveElementByName(AZ_CRC_CE("ActiveAssetIds"));
+                rootDataElementNode.RemoveElementByName(AZ_CRC_CE("FocusedAssetId"));
             }
 
             return true;
@@ -135,13 +139,12 @@ namespace ScriptCanvasEditor
             if (serialize)
             {
                 serialize->Class<WorkspaceAssetSaveData>()
-                    ->Version(1)
+                    ->Version(2)
                     ->Field("AssetId", &WorkspaceAssetSaveData::m_assetId)
-                    ->Field("AssetType", &WorkspaceAssetSaveData::m_assetType)
                 ;
 
                 serialize->Class<EditorWorkspace>()
-                    ->Version(3, &EditorWorkspace::VersionConverter)
+                    ->Version(4, &EditorWorkspace::VersionConverter)
                     ->Field("m_storedWindowState", &EditorWorkspace::m_storedWindowState)
                     ->Field("m_windowGeometry", &EditorWorkspace::m_windowGeometry)
                     ->Field("FocusedAssetId", &EditorWorkspace::m_focusedAssetId)
@@ -150,13 +153,13 @@ namespace ScriptCanvasEditor
             }
         }
 
-        void EditorWorkspace::ConfigureActiveAssets(AZ::Data::AssetId focussedAssetId, const AZStd::vector< WorkspaceAssetSaveData >& activeAssetData)
+        void EditorWorkspace::ConfigureActiveAssets(SourceHandle focussedAssetId, const AZStd::vector< WorkspaceAssetSaveData >& activeAssetData)
         {
             m_focusedAssetId = focussedAssetId;
             m_activeAssetData = activeAssetData;
         }
 
-        AZ::Data::AssetId EditorWorkspace::GetFocusedAssetId() const
+        SourceHandle EditorWorkspace::GetFocusedAssetId() const
         {
             return m_focusedAssetId;
         }

@@ -11,6 +11,8 @@
                 1.0,
                 1.0
             ],
+            "textureBlendMode": "Lerp",
+            "textureMap": "03_blue_sky_sRGB.tif",
             "useTexture": true
         }
     }
