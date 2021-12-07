@@ -7,12 +7,14 @@
  */
 #pragma once
 
-#include <AzCore/std/containers/unordered_map.h>
-#include <AzCore/std/parallel/mutex.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderVariantAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderVariantTreeAsset.h>
 #include <Atom/RPI.Reflect/Shader/IShaderVariantFinder.h>
+
+#include <AzCore/Interface/Interface.h>
+#include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/parallel/mutex.h>
 
 namespace AZ
 {

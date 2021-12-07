@@ -9,17 +9,26 @@
 
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/IO/IStreamerTypes.h>
-#include <AzCore/IO/IStreamer.h>
-#include <AzCore/std/containers/vector.h>
-#include <AzCore/std/parallel/condition_variable.h>
-#include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/Debug/Profiler.h>
+#include <AzCore/std/function/function_template.h>
+
+
+namespace AZStd
+{
+    template<class T, class Allocator>
+    class vector;
+}
 
 namespace AZ::Data
 {
+    namespace Internal
+    {
+        struct AssetDataStreamPrivate;
+    }
+
     class AssetDataStream : public AZ::IO::GenericStream
     {
     public:
+        using VectorDataSource = AZStd::vector<AZ::u8, AZStd::allocator>;
         // The default Generic Stream APIs in this class will only allow for a single sequential pass
         // through the data, no seeking.  Reads will block when pages aren't available yet, and
         // pages will be marked for recycling once reading has progressed beyond them.
@@ -29,10 +38,10 @@ namespace AZ::Data
         ~AssetDataStream() override;
 
         // Open the AssetDataStream and make a copy of the provided memory buffer.
-        void Open(const AZStd::vector<AZ::u8>& data);
+        void Open(const VectorDataSource& data);
 
         // Open the AssetDataStream and directly take ownership of a pre-populated memory buffer.
-        void Open(AZStd::vector<AZ::u8>&& data);
+        void Open(VectorDataSource&& data);
 
         // Open the AssetDataStream and load it via file streaming
         using OnCompleteCallback = AZStd::function<void(AZ::IO::IStreamerTypes::RequestStatus)>;
@@ -91,6 +100,8 @@ namespace AZ::Data
 
         void ClearInternalStateData();
 
+        Internal::AssetDataStreamPrivate* m_privateData;
+
         //! The allocator to use for allocating / deallocating asset buffers
         AZ::IO::IStreamerTypes::RequestMemoryAllocator* m_bufferAllocator{ nullptr };
 
@@ -106,9 +117,6 @@ namespace AZ::Data
         //! The amount of data that's expected to be loaded.
         size_t m_requestedAssetSize{ 0 };
 
-        //! Optional data buffer that's been directly passed in through Open(), instead of reading data from a file.
-        AZStd::vector<AZ::u8> m_preloadedData;
-
         //! The buffer that will hold the raw data after it's loaded from the file.
         void* m_buffer{ nullptr };
 
@@ -119,18 +127,11 @@ namespace AZ::Data
         //! The current offset representing how far we've read into the buffer.
         size_t m_curOffset{ 0 };
 
-        //! The current active streamer read request - tracked in case we need to cancel it prematurely
-        AZ::IO::FileRequestPtr m_curReadRequest{ nullptr };
-
         //! The current request deadline.  Used to avoid requesting a reschedule to the same (current) deadline.
         AZStd::chrono::milliseconds m_curDeadline{ AZ::IO::IStreamerTypes::s_noDeadline };
 
         //! The current request priority.  Used to avoid requesting a reschedule to the same (current) priority.
         AZ::IO::IStreamerTypes::Priority m_curPriority{ AZ::IO::IStreamerTypes::s_priorityMedium };
-
-        //! Synchronization for the read request, so that it's possible to block until completion.
-        AZStd::mutex m_readRequestMutex;
-        AZStd::condition_variable m_readRequestActive;
 
         //! Track whether or not the stream is currently open
         bool m_isOpen{ false };

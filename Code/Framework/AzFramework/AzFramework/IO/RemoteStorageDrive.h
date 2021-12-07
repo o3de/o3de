@@ -16,6 +16,15 @@
 #include <AzCore/std/chrono/clocks.h>
 #include <AzFramework/IO/RemoteFileIO.h>
 
+namespace AZ::IO
+{
+    class RequestPath;
+    namespace Requests
+    {
+        struct ReportData;
+    }
+}
+
 namespace AzFramework
 {
 
@@ -64,7 +73,7 @@ namespace AzFramework
             const AZ::IO::RequestPath*& activeFile) const;
         void FlushCache(const AZ::IO::RequestPath& filePath);
         void FlushEntireCache();
-        void Report(const AZ::IO::FileRequest::ReportData& data) const;
+        void Report(const AZ::IO::Requests::ReportData& data) const;
 
         AZ::IO::RemoteFileIO m_fileIO;
         AZ::IO::TimedAverageWindow<AZ::IO::s_statisticsWindowSize> m_fileOpenCloseTimeAverage;

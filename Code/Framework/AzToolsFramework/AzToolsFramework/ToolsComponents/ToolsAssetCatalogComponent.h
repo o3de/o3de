@@ -7,6 +7,7 @@
  */
 
 #pragma once
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Asset/AssetCommon.h>

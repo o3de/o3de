@@ -14,6 +14,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/IStreamer.h>
+#include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/string/conversions.h>

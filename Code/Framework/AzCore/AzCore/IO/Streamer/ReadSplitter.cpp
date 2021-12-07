@@ -118,7 +118,7 @@ namespace AZ::IO
             return;
         }
 
-        auto data = AZStd::get_if<FileRequest::ReadData>(&request->GetCommand());
+        auto data = AZStd::get_if<Requests::ReadData>(&request->GetCommand());
         if (data == nullptr)
         {
             StreamStackEntry::QueueRequest(request);
@@ -156,7 +156,7 @@ namespace AZ::IO
 
     void ReadSplitter::QueueAlignedRead(FileRequest* request)
     {
-        auto data = AZStd::get_if<FileRequest::ReadData>(&request->GetCommand());
+        auto data = AZStd::get_if<Requests::ReadData>(&request->GetCommand());
         AZ_Assert(data != nullptr, "Provided request to queue by the Read Splitter did not contain a read command.");
 
         if (data->m_size <= m_maxReadSize)
@@ -187,7 +187,7 @@ namespace AZ::IO
 
     bool ReadSplitter::QueueAlignedRead(PendingRead& pending)
     {
-        auto data = AZStd::get_if<FileRequest::ReadData>(&pending.m_request->GetCommand());
+        auto data = AZStd::get_if<Requests::ReadData>(&pending.m_request->GetCommand());
         AZ_Assert(data != nullptr, "Provided request to queue by the Read Splitter did not contain a read command.");
 
         while (pending.m_readSize > 0)
@@ -237,7 +237,7 @@ namespace AZ::IO
 
     void ReadSplitter::QueueBufferedRead(FileRequest* request)
     {
-        auto data = AZStd::get_if<FileRequest::ReadData>(&request->GetCommand());
+        auto data = AZStd::get_if<Requests::ReadData>(&request->GetCommand());
         AZ_Assert(data != nullptr, "Provided request to queue by the Read Splitter did not contain a read command.");
 
         PendingRead pendingRead;
@@ -262,7 +262,7 @@ namespace AZ::IO
 
     bool ReadSplitter::QueueBufferedRead(PendingRead& pending)
     {
-        auto data = AZStd::get_if<FileRequest::ReadData>(&pending.m_request->GetCommand());
+        auto data = AZStd::get_if<Requests::ReadData>(&pending.m_request->GetCommand());
         AZ_Assert(data != nullptr, "Provided request to queue by the Read Splitter did not contain a read command.");
 
         while (pending.m_readSize > 0)

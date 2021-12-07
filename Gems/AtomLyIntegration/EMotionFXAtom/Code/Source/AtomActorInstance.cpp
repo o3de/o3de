@@ -38,6 +38,8 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/base.h>
 
+#include <numeric>
+
 namespace AZ::Render
 {
     static constexpr uint32_t s_maxActiveWrinkleMasks = 16;
