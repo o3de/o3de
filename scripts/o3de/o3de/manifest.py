@@ -599,75 +599,90 @@ def get_registered(engine_name: str = None,
                 engine_path = pathlib.Path(engine).resolve()
 
             engine_json = engine_path / 'engine.json'
-            with engine_json.open('r') as f:
-                try:
-                    engine_json_data = json.load(f)
-                except json.JSONDecodeError as e:
-                    logger.warning(f'{engine_json} failed to load: {str(e)}')
-                else:
-                    this_engines_name = engine_json_data['engine_name']
-                    if this_engines_name == engine_name:
-                        return engine_path
+            if not pathlib.Path(engine_json).is_file():
+                logger.warning(f'{engine_json} does not exist')
+            else:
+                with engine_json.open('r') as f:
+                    try:
+                        engine_json_data = json.load(f)
+                    except json.JSONDecodeError as e:
+                        logger.warning(f'{engine_json} failed to load: {str(e)}')
+                    else:
+                        this_engines_name = engine_json_data['engine_name']
+                        if this_engines_name == engine_name:
+                            return engine_path
 
     elif isinstance(project_name, str):
         projects = get_all_projects()
         for project_path in projects:
             project_path = pathlib.Path(project_path).resolve()
             project_json = project_path / 'project.json'
-            with project_json.open('r') as f:
-                try:
-                    project_json_data = json.load(f)
-                except json.JSONDecodeError as e:
-                    logger.warning(f'{project_json} failed to load: {str(e)}')
-                else:
-                    this_projects_name = project_json_data['project_name']
-                    if this_projects_name == project_name:
-                        return project_path
+            if not pathlib.Path(project_json).is_file():
+                logger.warning(f'{project_json} does not exist')
+            else:
+                with project_json.open('r') as f:
+                    try:
+                        project_json_data = json.load(f)
+                    except json.JSONDecodeError as e:
+                        logger.warning(f'{project_json} failed to load: {str(e)}')
+                    else:
+                        this_projects_name = project_json_data['project_name']
+                        if this_projects_name == project_name:
+                            return project_path
 
     elif isinstance(gem_name, str):
         gems = get_all_gems(project_path)
         for gem_path in gems:
             gem_path = pathlib.Path(gem_path).resolve()
             gem_json = gem_path / 'gem.json'
-            with gem_json.open('r') as f:
-                try:
-                    gem_json_data = json.load(f)
-                except json.JSONDecodeError as e:
-                    logger.warning(f'{gem_json} failed to load: {str(e)}')
-                else:
-                    this_gems_name = gem_json_data['gem_name']
-                    if this_gems_name == gem_name:
-                        return gem_path
+            if not pathlib.Path(gem_json).is_file():
+                logger.warning(f'{gem_json} does not exist')
+            else:
+                with gem_json.open('r') as f:
+                    try:
+                        gem_json_data = json.load(f)
+                    except json.JSONDecodeError as e:
+                        logger.warning(f'{gem_json} failed to load: {str(e)}')
+                    else:
+                        this_gems_name = gem_json_data['gem_name']
+                        if this_gems_name == gem_name:
+                            return gem_path
 
     elif isinstance(template_name, str):
         templates = get_all_templates(project_path)
         for template_path in templates:
             template_path = pathlib.Path(template_path).resolve()
             template_json = template_path / 'template.json'
-            with template_json.open('r') as f:
-                try:
-                    template_json_data = json.load(f)
-                except json.JSONDecodeError as e:
-                    logger.warning(f'{template_path} failed to load: {str(e)}')
-                else:
-                    this_templates_name = template_json_data['template_name']
-                    if this_templates_name == template_name:
-                        return template_path
+            if not pathlib.Path(template_json).is_file():
+                logger.warning(f'{template_json} does not exist')
+            else:
+                with template_json.open('r') as f:
+                    try:
+                        template_json_data = json.load(f)
+                    except json.JSONDecodeError as e:
+                        logger.warning(f'{template_path} failed to load: {str(e)}')
+                    else:
+                        this_templates_name = template_json_data['template_name']
+                        if this_templates_name == template_name:
+                            return template_path
 
     elif isinstance(restricted_name, str):
         restricted = get_all_restricted(project_path)
         for restricted_path in restricted:
             restricted_path = pathlib.Path(restricted_path).resolve()
             restricted_json = restricted_path / 'restricted.json'
-            with restricted_json.open('r') as f:
-                try:
-                    restricted_json_data = json.load(f)
-                except json.JSONDecodeError as e:
-                    logger.warning(f'{restricted_json} failed to load: {str(e)}')
-                else:
-                    this_restricted_name = restricted_json_data['restricted_name']
-                    if this_restricted_name == restricted_name:
-                        return restricted_path
+            if not pathlib.Path(restricted_json).is_file():
+                logger.warning(f'{restricted_json} does not exist')
+            else:
+                with restricted_json.open('r') as f:
+                    try:
+                        restricted_json_data = json.load(f)
+                    except json.JSONDecodeError as e:
+                        logger.warning(f'{restricted_json} failed to load: {str(e)}')
+                    else:
+                        this_restricted_name = restricted_json_data['restricted_name']
+                        if this_restricted_name == restricted_name:
+                            return restricted_path
 
     elif isinstance(default_folder, str):
         if default_folder == 'engines':
