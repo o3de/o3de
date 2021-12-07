@@ -15,6 +15,8 @@
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <EditorModularViewportCameraComposer.h>
 
+#include <GotoPositionDlg.h>
+
 namespace UnitTest
 {
     class EditorCameraFixture : public ::testing::Test
