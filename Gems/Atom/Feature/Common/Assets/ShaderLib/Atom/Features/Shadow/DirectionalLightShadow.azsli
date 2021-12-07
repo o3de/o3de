@@ -231,7 +231,7 @@ float DirectionalLightShadow::GetVisibilityFromLightPcf()
         
         if (shadowCoord.x >= 0. && shadowCoord.x * size < size - PixelMargin &&
             shadowCoord.y >= 0. && shadowCoord.y * size < size - PixelMargin && 
-	    shadowCoord.z < 1. - DepthMargin)
+            shadowCoord.z < 1. - DepthMargin)
         {
             currentCascadeIndex = m_debugInfo.m_cascadeIndex = indexOfCascade;
             cascadeFound = true;
@@ -468,4 +468,3 @@ float DirectionalLightShadow::CalculateCascadeBlendAmount(const float3 texCoord)
     const float currentPixelsBlendBandLocation = min(min(texCoord.x, texCoord.y), distanceToOneMin);
     return currentPixelsBlendBandLocation / CascadeBlendArea;
 }
-
