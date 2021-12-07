@@ -18,6 +18,13 @@ LIGHT_TYPES = {
     'simple_spot': 7,
 }
 
+
+# Attenuation Radius Mode options for the Light component.
+ATTENUATION_RADIUS_MODE = {
+    'automatic': 1,
+    'explicit': 0,
+}
+
 # Qualiity Level settings for Diffuse Global Illumination level component
 GLOBAL_ILLUMINATION_QUALITY = {
     'Low': 0,
@@ -276,13 +283,27 @@ class AtomComponentProperties:
     def light(property: str = 'name') -> str:
         """
         Light component properties.
+          - 'Attenuation Radius Mode' controls whether the attenuation radius is calculated automatically or explicitly.
+          - 'Color' the RGB value to set for the color of the light.
+          - 'Enable shadow' toggle for enabling shadows for the light.
+          - 'Enable shutters' toggle for enabling shutters for the light.
+          - 'Inner angle' inner angle value for the shutters (in degrees)
+          - 'Intensity' the intensity of the light in the set photometric unit (float with no ceiling).
           - 'Light type' from atom_constants.py LIGHT_TYPES
+          - 'Outer angle' outer angle value for the shutters (in degrees)
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Light',
+            'Attenuation Radius Mode': 'Controller|Configuration|Attenuation radius|Mode',
+            'Color': 'Controller|Configuration|Color',
+            'Enable shadow': 'Controller|Configuration|Shadows|Enable shadow',
+            'Enable shutters': 'Controller|Configuration|Shutters|Enable shutters',
+            'Inner angle': 'Controller|Configuration|Shutters|Inner angle',
+            'Intensity': 'Controller|Configuration|Intensity',
             'Light type': 'Controller|Configuration|Light type',
+            'Outer angle': 'Controller|Configuration|Shutters|Outer angle',
         }
         return properties[property]
 
