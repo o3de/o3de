@@ -161,7 +161,7 @@ namespace Multiplayer
             
             networkInterface->Listen(sv_port);
 
-            AZLOG_INFO("Editor Server completed receiving the editor's level assets, responding to Editor...\n")
+            AZLOG_INFO("Editor Server completed receiving the editor's level assets, responding to Editor...")
             return connection->SendReliablePacket(MultiplayerEditorPackets::EditorServerReady());
         }
 

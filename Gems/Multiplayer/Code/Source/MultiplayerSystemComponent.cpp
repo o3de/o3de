@@ -857,7 +857,7 @@ namespace Multiplayer
             EnableAutonomousControl(controlledEntity, AzNetworking::InvalidConnectionId);
         }
         
-        AZLOG_INFO("Multiplayer operating in %s mode\n", GetEnumString(m_agentType));
+        AZLOG_INFO("Multiplayer operating in %s mode", GetEnumString(m_agentType));
     }
 
     void MultiplayerSystemComponent::AddClientMigrationStartEventHandler(ClientMigrationStartEvent::Handler& handler)

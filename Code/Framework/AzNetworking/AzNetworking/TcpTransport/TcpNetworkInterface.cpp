@@ -92,7 +92,7 @@ namespace AzNetworking
             return InvalidConnectionId;
         }
 
-        AZLOG_INFO("Adding new socket %d\n", static_cast<int32_t>(tcpSocket->GetSocketFd()));
+        AZLOG_INFO("Adding new socket %d", static_cast<int32_t>(tcpSocket->GetSocketFd()));
         connection->SendReliablePacket(CorePackets::InitiateConnectionPacket());
         m_connectionListener.OnConnect(connection.get());
         m_connectionSet.AddConnection(AZStd::move(connection));

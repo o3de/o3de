@@ -120,8 +120,8 @@ namespace AZ
     {
         constexpr AZStd::size_t MaxLogBufferSize = 1000;
         auto buffer = AZStd::fixed_string<MaxLogBufferSize>::format_arg(format, args);
-
         m_logEvent.Signal(level, buffer.c_str(), file, function, line);
+        buffer += '\n';
 
         switch (level)
         {
