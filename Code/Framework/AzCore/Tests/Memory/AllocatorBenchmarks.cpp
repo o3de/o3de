@@ -32,7 +32,7 @@ namespace Benchmark
         size_t GetMemorySize(void* memory);
     }
 
-    static AZ::Debug::DrillerManager* s_drillerManager = nullptr;
+    //static AZ::Debug::DrillerManager* s_drillerManager = nullptr;
 
     /// <summary>
     /// Test allocator wrapper that redirects the calls to the passed TAllocator by using AZ::AllocatorInstance.
@@ -47,14 +47,14 @@ namespace Benchmark
         {
             AZ::AllocatorInstance<TAllocator>::Create();
 
-            s_drillerManager = AZ::Debug::DrillerManager::Create();
-            s_drillerManager->Register(aznew AZ::Debug::MemoryDriller);
+            /*s_drillerManager = AZ::Debug::DrillerManager::Create();
+            s_drillerManager->Register(aznew AZ::Debug::MemoryDriller);*/
         }
 
         static void TearDown()
         {
-            AZ::Debug::DrillerManager::Destroy(s_drillerManager);
-            s_drillerManager = nullptr;
+            /*AZ::Debug::DrillerManager::Destroy(s_drillerManager);
+            s_drillerManager = nullptr;*/
 
             AZ::AllocatorInstance<TAllocator>::Destroy();
         }
@@ -89,51 +89,41 @@ namespace Benchmark
             return AZ::AllocatorInstance<TAllocator>::Get().NumAllocatedBytes() +
                 AZ::AllocatorInstance<TAllocator>::Get().GetUnAllocatedMemory();
         }
+
+        static size_t GetSize(void* ptr)
+        {
+            return AZ::AllocatorInstance<TAllocator>::Get().AllocationSize(ptr);
+        }
     };
 
     /// <summary>
     /// Basic allocator used as a baseline. This allocator is the most basic allocation possible with the OS (AZ_OS_MALLOC).
     /// MallocSchema cannot be used here because it has extra logic that we don't want to use as a baseline.
     /// </summary>
-    class TestRawMallocAllocator
-        : public AZ::AllocatorBase
-        , public AZ::IAllocatorAllocate
+    class TestRawMallocAllocator {};
+
+    template<>
+    class TestAllocatorWrapper<TestRawMallocAllocator>
     {
     public:
-        AZ_TYPE_INFO(TestMallocSchemaAllocator, "{08EB400A-D723-46C6-808E-D0844C8DE206}");
-
-        struct Descriptor {};
-
-        TestRawMallocAllocator()
-            : AllocatorBase(this, "TestRawMallocAllocator", "")
+        TestAllocatorWrapper()
         {
-            m_numAllocatedBytes = 0;
+            s_numAllocatedBytes = 0;
         }
 
-        bool Create(const Descriptor&)
+        static void SetUp()
         {
-            m_numAllocatedBytes = 0;
-            return true;
+            s_numAllocatedBytes = 0;
         }
 
-        // IAllocator
-        void Destroy() override
+        static void TearDown()
         {
-            m_numAllocatedBytes = 0;
-        }
-        AZ::AllocatorDebugConfig GetDebugConfig() override
-        {
-            return AZ::AllocatorDebugConfig();
-        }
-        AZ::IAllocatorAllocate* GetSchema() override
-        {
-            return nullptr;
         }
 
         // IAllocatorAllocate
-        void* Allocate(size_t byteSize, size_t alignment, int = 0, const char* = 0, const char* = 0, int = 0, unsigned int = 0) override
+        static void* Allocate(size_t byteSize, size_t alignment)
         {
-            m_numAllocatedBytes += byteSize;
+            s_numAllocatedBytes += byteSize;
             if (alignment)
             {
                 return AZ_OS_MALLOC(byteSize, alignment);
@@ -144,18 +134,18 @@ namespace Benchmark
             }
         }
 
-        void DeAllocate(void* ptr, size_t = 0, size_type = 0) override
+        static void DeAllocate(void* ptr, size_t = 0)
         {
-            m_numAllocatedBytes -= Platform::GetMemorySize(ptr);
+            s_numAllocatedBytes -= Platform::GetMemorySize(ptr);
             AZ_OS_FREE(ptr);
         }
 
-        void* ReAllocate(void* ptr, size_t newSize, size_t newAlignment) override
+        static void* ReAllocate(void* ptr, size_t newSize, size_t newAlignment)
         {
-            m_numAllocatedBytes -= Platform::GetMemorySize(ptr);
+            s_numAllocatedBytes -= Platform::GetMemorySize(ptr);
             AZ_OS_FREE(ptr);
 
-            m_numAllocatedBytes += newSize;
+            s_numAllocatedBytes += newSize;
             if (newAlignment)
             {
                 return AZ_OS_MALLOC(newSize, newAlignment);
@@ -166,7 +156,7 @@ namespace Benchmark
             }
         }
 
-        size_t Resize(void* ptr, size_t newSize) override
+        static size_t Resize(void* ptr, size_t newSize)
         {
             AZ_UNUSED(ptr);
             AZ_UNUSED(newSize);
@@ -174,44 +164,23 @@ namespace Benchmark
             return 0;
         }
 
-        size_t AllocationSize(void* ptr) override
+        static void GarbageCollect() {}
+
+        static size_t NumAllocatedBytes()
+        {
+            return s_numAllocatedBytes;
+        }
+
+        static size_t GetSize(void* ptr)
         {
             return Platform::GetMemorySize(ptr);
         }
 
-        void GarbageCollect() override {}
-
-        size_t NumAllocatedBytes() const override
-        {
-            return m_numAllocatedBytes;
-        }
-
-        size_t Capacity() const override
-        {
-            return AZ_CORE_MAX_ALLOCATOR_SIZE; // unused
-        }
-
-        size_t GetMaxAllocationSize() const override
-        {
-            return AZ_CORE_MAX_ALLOCATOR_SIZE; // unused
-        }
-
-        size_t GetMaxContiguousAllocationSize() const override
-        {
-            return AZ_CORE_MAX_ALLOCATOR_SIZE; // unused
-        }
-        size_t  GetUnAllocatedMemory(bool = false) const override
-        {
-            return 0; // unused
-        }
-        IAllocatorAllocate* GetSubAllocator() override
-        {
-            return nullptr; // unused
-        }
-
     private:
-        size_t m_numAllocatedBytes;
+        static size_t s_numAllocatedBytes;
     };
+
+    size_t TestAllocatorWrapper<TestRawMallocAllocator>::s_numAllocatedBytes = 0;
 
     // Here we require to implement this to be able to configure a name for the allocator, otherswise the AllocatorManager crashes when trying to configure the overrides
     class TestMallocSchemaAllocator : public AZ::SimpleSchemaAllocator<AZ::MallocSchema>
@@ -250,11 +219,14 @@ namespace Benchmark
         AZ_TYPE_INFO(TestSystemAllocator, "{360D4DAA-D65D-4D5C-A6FA-1A4C5261C35C}");
     };
 
-    // Allocated bytes reported by the allocator / actually requested bytes
-    static const char* s_counterAllocatorMemoryRatio = "Allocator_MemoryRatio";
+    // Allocated bytes reported by the allocator
+    static const char* s_counterAllocatorMemory = "Allocator_Memory";
 
-    // Allocated bytes reported by the process / actually requested bytes
-    static const char* s_counterProcessMemoryRatio = "Process_MemoryRatio";
+    // Allocated bytes reported by the process
+    static const char* s_counterProcessMemory = "Process_Memory";
+
+    // Allocated bytes as counted by the benchmark
+    static const char* s_counterBenchmarkMemory = "Benchmark_Memory";
 
     enum AllocationSize
     {
@@ -340,16 +312,6 @@ namespace Benchmark
         using base = AllocatorBenchmarkFixture<TAllocator>;
         using TestAllocatorType = typename base::TestAllocatorType;
 
-        void internalSetUp(const ::benchmark::State& state) override
-        {
-            AllocatorBenchmarkFixture<TAllocator>::internalSetUp(state);
-        }
-
-        void internalTearDown(const ::benchmark::State& state) override
-        {
-            AllocatorBenchmarkFixture<TAllocator>::internalTearDown(state);
-        }
-
     public:
         void Benchmark(benchmark::State& state)
         {
@@ -372,16 +334,9 @@ namespace Benchmark
                     state.PauseTiming();
                 }
 
-                // In allocation cases, s_counterAllocatorMemoryRatio is measuring how much over-allocation our allocators
-                // are doing to keep track of the memory and because of fragmentation/under-use of blocks. A ratio over 1 means
-                // that we are using more memory than requested. Ideally we would approximate to a ratio of 1.
-                state.counters[s_counterAllocatorMemoryRatio] = benchmark::Counter(
-                    static_cast<double>(TestAllocatorType::NumAllocatedBytes()) / static_cast<double>(totalAllocationSize),
-                    benchmark::Counter::kDefaults);
-                // s_counterProcessMemoryRatio is measuring the same ratio but using the OS to measure the used process memory
-                state.counters[s_counterProcessMemoryRatio] = benchmark::Counter(
-                    static_cast<double>(Platform::GetProcessMemoryUsageBytes() - processMemoryBaseline) / static_cast<double>(totalAllocationSize),
-                    benchmark::Counter::kDefaults);
+                state.counters[s_counterAllocatorMemory] = benchmark::Counter(static_cast<double>(TestAllocatorType::NumAllocatedBytes()), benchmark::Counter::kDefaults);
+                state.counters[s_counterProcessMemory] = benchmark::Counter(static_cast<double>(Platform::GetProcessMemoryUsageBytes() - processMemoryBaseline), benchmark::Counter::kDefaults);
+                state.counters[s_counterBenchmarkMemory] = benchmark::Counter(static_cast<double>(totalAllocationSize), benchmark::Counter::kDefaults);
 
                 for (size_t allocationIndex = 0; allocationIndex < numberOfAllocations; ++allocationIndex)
                 {
@@ -404,15 +359,6 @@ namespace Benchmark
         using base = AllocatorBenchmarkFixture<TAllocator>;
         using TestAllocatorType = typename base::TestAllocatorType;
 
-        void internalSetUp(const ::benchmark::State& state) override
-        {
-            AllocatorBenchmarkFixture<TAllocator>::internalSetUp(state);
-        }
-
-        void internalTearDown(const ::benchmark::State& state) override
-        {
-            AllocatorBenchmarkFixture<TAllocator>::internalTearDown(state);
-        }
     public:
         void Benchmark(benchmark::State& state)
         {
@@ -442,20 +388,181 @@ namespace Benchmark
                     perThreadAllocations[allocationIndex] = nullptr;
                 }
 
-                // In deallocation cases, s_counterAllocatorMemoryRatio is measuring how much "left-over" memory our allocators
-                // have after deallocations happen. This is memory that is not returned to the operative system. A ratio of 1 means
-                // that no memory was returned to the OS. A ratio over 1 means that we are holding more memory than requested. A ratio
-                // lower than 1 means that we have returned some memory.
-                state.counters[s_counterAllocatorMemoryRatio] = benchmark::Counter(
-                    static_cast<double>(TestAllocatorType::NumAllocatedBytes()) / static_cast<double>(totalAllocationSize),
-                    benchmark::Counter::kDefaults);
-                // s_counterProcessMemoryRatio is measuring the same ratio but using the OS to measure the used process memory
-                state.counters[s_counterProcessMemoryRatio] = benchmark::Counter(
-                    static_cast<double>(Platform::GetProcessMemoryUsageBytes() - processMemoryBaseline) / static_cast<double>(totalAllocationSize),
-                    benchmark::Counter::kDefaults);
+                state.counters[s_counterAllocatorMemory] = benchmark::Counter(static_cast<double>(TestAllocatorType::NumAllocatedBytes()), benchmark::Counter::kDefaults);
+                state.counters[s_counterProcessMemory] = benchmark::Counter(static_cast<double>(Platform::GetProcessMemoryUsageBytes() - processMemoryBaseline), benchmark::Counter::kDefaults);
+                state.counters[s_counterBenchmarkMemory] = benchmark::Counter(static_cast<double>(totalAllocationSize), benchmark::Counter::kDefaults);
 
                 state.SetItemsProcessed(numberOfAllocations);
 
+                TestAllocatorType::GarbageCollect();
+            }
+        }
+    };
+      
+    template<typename TAllocator>
+    class RecordedAllocationBenchmarkFixture : public AllocatorBenchmarkFixture<TAllocator>
+    {
+        using base = AllocatorBenchmarkFixture<TAllocator>;
+        using TestAllocatorType = typename base::TestAllocatorType;
+
+        struct AllocatorOperation
+        {
+            enum OperationType : unsigned int
+            {
+                ALLOCATE,
+                DEALLOCATE,
+                REALLOCATE,
+                RESIZE
+            };
+            OperationType m_operationType : 2;
+            size_t m_size : 46;
+            size_t m_alignment : 16;
+            void* m_ptr;
+            void* m_newptr; // required for resize
+        };
+
+    public:
+        void Benchmark(benchmark::State& state)
+        {
+            for (auto _ : state)
+            {
+                state.PauseTiming();
+
+                AZStd::unordered_map<void*, void*> pointerRemapping;
+                AZStd::unordered_map<void*, size_t> allocationSize;
+                constexpr size_t allocationOperationCount = 5 * 1024;
+                AZStd::array<AllocatorOperation, allocationOperationCount> m_operations = {};
+
+                FILE* file = nullptr;
+                fopen_s(&file, "memoryrecordings.bin", "rb");
+                if (!file)
+                {
+                    return;
+                }
+                size_t elementsRead = fread(&m_operations, sizeof(AllocatorOperation), allocationOperationCount, file);
+                size_t totalElementsRead = elementsRead;
+                const size_t processMemoryBaseline = Platform::GetProcessMemoryUsageBytes();
+                size_t totalAllocationSize = 0;
+
+                while (elementsRead > 0)
+                {
+                    for (size_t operationIndex = 0; operationIndex < elementsRead; ++operationIndex)
+                    {
+                        const AllocatorOperation& operation = m_operations[operationIndex];
+                        switch (operation.m_operationType)
+                        {
+                        case AllocatorOperation::ALLOCATE:
+                        {
+                            if (operation.m_ptr)
+                            {
+                                const auto it = pointerRemapping.emplace(operation.m_ptr, nullptr);
+                                if (it.second) // otherwise already allocated
+                                {
+                                    state.ResumeTiming();
+                                    void* ptr = TestAllocatorType::Allocate(operation.m_size, operation.m_alignment);
+                                    state.PauseTiming();
+                                    totalAllocationSize += operation.m_size;
+                                    it.first->second = ptr;
+                                    allocationSize[ptr] = operation.m_size;
+                                }
+                                else
+                                {
+                                    //AZ_Warning("RecordedAllocationBenchmarkFixture", false, "Allocation on %p was already made", operation.m_ptr);
+                                }
+                            }
+                            break;
+                        }
+                        case AllocatorOperation::DEALLOCATE:
+                        {
+                            if (operation.m_ptr) // some deallocate(nullptr) are recorded
+                            {
+                                const auto ptrIt = pointerRemapping.find(operation.m_ptr);
+                                if (ptrIt != pointerRemapping.end())
+                                {
+                                    totalAllocationSize -= allocationSize[ptrIt->second];
+                                    state.ResumeTiming();
+                                    TestAllocatorType::DeAllocate(ptrIt->second, /*operation.m_size*/ 0); // size is not correct after a resize, a 0 size deals with it
+                                    state.PauseTiming();
+                                    pointerRemapping.erase(ptrIt);
+                                }
+                            }
+                            else
+                            {
+                                // Just to account of the call of deallocate(nullptr);
+                                // totalAllocationSize -= 0; // No real deallocation happened
+                                state.ResumeTiming();
+                                TestAllocatorType::DeAllocate(operation.m_ptr, /*operation.m_size*/ 0);
+                                state.PauseTiming();
+                            }
+                            break;
+                        }
+                        case AllocatorOperation::REALLOCATE:
+                        {
+                            void* ptr = nullptr;
+                            if (operation.m_ptr)
+                            {
+                                AZ_Assert(operation.m_newptr, "Need to consider other cases?");
+                                const auto ptrIt = pointerRemapping.find(operation.m_ptr);
+                                AZ_Assert(ptrIt != pointerRemapping.end(), "Missing allocation for reallocation"); // In case the recording didnt catch something
+                                ptr = ptrIt->second;
+                                pointerRemapping.erase(ptrIt);
+                            }
+                            AZ_Assert(operation.m_newptr != nullptr, "Reallocation failed in the game");
+                            const auto it = pointerRemapping.emplace(operation.m_newptr, nullptr);
+                            if (it.second)
+                            {
+                                totalAllocationSize -= allocationSize[ptr];
+                                state.ResumeTiming();
+                                void* newPtr = TestAllocatorType::ReAllocate(ptr, operation.m_size, operation.m_alignment);
+                                state.PauseTiming();
+                                totalAllocationSize += operation.m_size;
+                                it.first->second = newPtr;
+                                allocationSize[newPtr] = operation.m_size;
+                            }
+                            else
+                            {
+                                totalAllocationSize -= allocationSize[ptr];
+                                state.ResumeTiming();
+                                TestAllocatorType::DeAllocate(ptr);
+                                state.PauseTiming();
+                            }
+                            break;
+                        }
+                        case AllocatorOperation::RESIZE:
+                        {
+                            const auto ptrIt = pointerRemapping.find(operation.m_ptr);
+                            AZ_Assert(ptrIt != pointerRemapping.end(), "Missing allocation for resize"); // In case the recording didnt catch something
+                            totalAllocationSize -= allocationSize[ptrIt->second];
+                            state.ResumeTiming();
+                            TestAllocatorType::Resize(ptrIt->second, operation.m_size);
+                            state.PauseTiming();
+                            totalAllocationSize += operation.m_size;
+                            if (operation.m_size == 0)
+                            {
+                                pointerRemapping.erase(ptrIt);
+                            }
+                            break;
+                        }
+                        }
+                    }
+
+                    elementsRead = fread(&m_operations, sizeof(AllocatorOperation), allocationOperationCount, file);
+                    totalElementsRead += elementsRead;
+                }
+                fclose(file);
+
+                state.counters[s_counterAllocatorMemory] = benchmark::Counter(static_cast<double>(TestAllocatorType::NumAllocatedBytes()), benchmark::Counter::kDefaults);
+                state.counters[s_counterProcessMemory] = benchmark::Counter(static_cast<double>(Platform::GetProcessMemoryUsageBytes() - processMemoryBaseline), benchmark::Counter::kDefaults);
+                state.counters[s_counterBenchmarkMemory] = benchmark::Counter(static_cast<double>(totalAllocationSize), benchmark::Counter::kDefaults);
+
+                state.SetItemsProcessed(totalElementsRead);
+
+                // Deallocate the remainder (since we stopped the recording middle-game)(there are leaks as well)
+                for (const auto& pointerMapping : pointerRemapping)
+                {
+                    TestAllocatorType::DeAllocate(pointerMapping.second);
+                }
+                pointerRemapping.clear();
                 TestAllocatorType::GarbageCollect();
             }
         }
@@ -468,6 +575,10 @@ namespace Benchmark
         {
             b->Arg((1 << i) * 100);
         }
+    }
+    static void RecordedRunRanges(benchmark::internal::Benchmark* b)
+    {
+        b->Arg(1);
     }
 
     // For threaded ranges, run just 200, multi-threaded will already multiply by thread
@@ -494,16 +605,17 @@ namespace Benchmark
 #define BM_REGISTER_ALLOCATOR(TESTNAME, ALLOCATORTYPE) \
     namespace TESTNAME \
     { \
-        BM_REGISTER_SIZE_FIXTURES(AllocationBenchmarkFixture, TESTNAME, ALLOCATORTYPE) \
-        BM_REGISTER_SIZE_FIXTURES(DeAllocationBenchmarkFixture, TESTNAME, ALLOCATORTYPE) \
+        BM_REGISTER_SIZE_FIXTURES(AllocationBenchmarkFixture, TESTNAME, ALLOCATORTYPE); \
+        BM_REGISTER_SIZE_FIXTURES(DeAllocationBenchmarkFixture, TESTNAME, ALLOCATORTYPE); \
+        BM_REGISTER_TEMPLATE(RecordedAllocationBenchmarkFixture, TESTNAME, ALLOCATORTYPE)->Apply(RecordedRunRanges); \
     }
 
     BM_REGISTER_ALLOCATOR(RawMallocAllocator, TestRawMallocAllocator);
     BM_REGISTER_ALLOCATOR(MallocSchemaAllocator, TestMallocSchemaAllocator);
-    BM_REGISTER_ALLOCATOR(HeapSchemaAllocator, TestHeapSchemaAllocator);
     BM_REGISTER_ALLOCATOR(HphaSchemaAllocator, TestHphaSchemaAllocator);
     BM_REGISTER_ALLOCATOR(SystemAllocator, TestSystemAllocator);
 
+    //BM_REGISTER_ALLOCATOR(HeapSchemaAllocator, TestHeapSchemaAllocator); // Requires to pre-allocate blocks and cannot work as a general-purpose allocator
     //BM_REGISTER_SCHEMA(BestFitExternalMapSchema); // Requires to implement AZ::IAllocatorAllocate
     //BM_REGISTER_SCHEMA(PoolSchema); // Requires special alignment requests while allocating
 
