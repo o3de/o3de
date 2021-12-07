@@ -563,6 +563,9 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                                 envVars = pipelineEnvVars + GetBuildEnvVars(platform.value.PIPELINE_ENV ?: EMPTY_JSON, platform.value.build_types[build_step].PIPELINE_ENV ?: EMPTY_JSON, pipelineName)
                                 try {
                                     CreateBuildStage(pipelineConfig,  platform.key, build_step, envVars).call()
+                                    if (build_job_name.toLowerCase().contains('asset') && env.IS_UPLOAD_AP_LOGS?.toBoolean()) {
+                                        CreateUploadAPLogsStage(platform.key, build_job_name, envVars['WORKSPACE'], platform.value.build_types[build_job_name].PARAMETERS).call()
+                                    }
                                 }
                                 catch (Exception e) {
                                     if (envVars['NONBLOCKING_STEP']?.toBoolean()) {
