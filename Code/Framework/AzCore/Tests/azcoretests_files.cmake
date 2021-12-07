@@ -69,7 +69,6 @@ set(FILES
     TickBusTest.cpp
     UUIDTests.cpp
     XML.cpp
-    Debug/AssetTracking.cpp
     Debug/LocalFileEventLoggerTests.cpp
     Debug/Trace.cpp
     Debug/UnhandledExceptions.cpp
@@ -214,6 +213,8 @@ set(FILES
     AZStd/Variant.cpp
     AZStd/VariantSerialization.cpp
     AZStd/VectorAndArray.cpp
+    DOM/DomJsonTests.cpp
+    DOM/DomJsonBenchmarks.cpp
 )
 
 # Prevent the following files from being grouped in UNITY builds

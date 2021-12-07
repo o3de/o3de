@@ -14,10 +14,10 @@ import pathlib
 import sys
 import urllib.parse
 
-from o3de import manifest, validation
+from o3de import manifest, validation, utils
 
-logger = logging.getLogger()
-logging.basicConfig()
+logger = logging.getLogger('o3de.print_registration')
+logging.basicConfig(format=utils.LOG_FORMAT)
 
 
 def get_project_path(project_path: pathlib.Path, project_name: str) -> pathlib.Path:

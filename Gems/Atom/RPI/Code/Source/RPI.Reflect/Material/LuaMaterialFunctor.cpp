@@ -18,8 +18,6 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
 #include <AzCore/Math/Color.h>
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace RPI
@@ -123,7 +121,7 @@ namespace AZ
 
         void LuaMaterialFunctor::Process(RuntimeContext& context)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RPI);
 
             InitScriptContext();
 
@@ -141,7 +139,7 @@ namespace AZ
 
         void LuaMaterialFunctor::Process(EditorContext& context)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RPI);
 
             InitScriptContext();
 

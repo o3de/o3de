@@ -67,6 +67,8 @@ struct TileLightData
     // If there is a pixel of opaque geometry there, we mark a bit in this bin.
     uint mask;
     uint logMaxBins;
+    // true if there are too many lights or decals assigned to this tile
+    bool overflow;    
 };
 
  
@@ -115,7 +117,8 @@ TileLightData Tile_UnpackData(uint4 pack)
     data.zFar               = asfloat( pack.y | NVLC_BINS_MASK );
     data.mask               = pack.z;
     data.logMaxBins         = pack.y & NVLC_BINS_MASK;
-
+    // unpack the "lights overflowed" bit
+    data.overflow           = pack.w >> 31; 
     return data;
 }
 

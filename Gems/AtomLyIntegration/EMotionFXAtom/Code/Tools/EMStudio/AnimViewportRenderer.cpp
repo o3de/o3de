@@ -128,6 +128,7 @@ namespace EMStudio
         m_groundEntity->CreateComponent(AZ::Render::MeshComponentTypeId);
         m_groundEntity->CreateComponent(AZ::Render::MaterialComponentTypeId);
         m_groundEntity->CreateComponent(azrtti_typeid<AzFramework::TransformComponent>());
+        m_groundEntity->Init();
         m_groundEntity->Activate();
 
         Reinit();

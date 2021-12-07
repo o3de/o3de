@@ -14,11 +14,8 @@
 #include <MultiplayerSystemComponent.h>
 #include <PythonEditorEventsBus.h>
 #include <Editor/MultiplayerEditorSystemComponent.h>
-#include <Source/AutoGen/Multiplayer.AutoPackets.h>
 
-#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Console/IConsole.h>
-#include <AzCore/Console/ILogger.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Utils/Utils.h>
@@ -63,6 +60,12 @@ namespace Multiplayer
 
     void PythonEditorFuncs::Reflect(AZ::ReflectContext* context)
     {
+        if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serialize->Class<PythonEditorFuncs, AZ::Component>()
+                ->Version(0);
+        }
+
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             // This will create static python methods in the 'azlmbr.multiplayer' module
@@ -133,6 +136,7 @@ namespace Multiplayer
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         AzFramework::GameEntityContextEventBus::Handler::BusDisconnect();
         MultiplayerEditorServerRequestBus::Handler::BusDisconnect();
+        AZ::TickBus::Handler::BusDisconnect();
     }
 
     void MultiplayerEditorSystemComponent::NotifyRegisterViews()
@@ -157,12 +161,20 @@ namespace Multiplayer
             [[fallthrough]];
         case eNotify_OnEndGameMode:
             // Kill the configured server if it's active
-            if (m_serverProcess)
+            AZ::TickBus::Handler::BusDisconnect();
+            if (m_serverProcessWatcher)
             {
-                m_serverProcess->TerminateProcess(0);
-                m_serverProcess = nullptr;
+                m_serverProcessWatcher->TerminateProcess(0);
+                if (m_serverProcessTracePrinter)
+                {
+                    m_serverProcessTracePrinter->Pump();
+                    m_serverProcessTracePrinter->WriteCurrentString(true);
+                    m_serverProcessTracePrinter->WriteCurrentString(false);
+                }
+                m_serverProcessWatcher = nullptr;
+                m_serverProcessTracePrinter = nullptr;
             }
-
+            
             if (INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpEditorInterfaceName)))
             {
                 editorNetworkInterface->Disconnect(m_editorConnId, AzNetworking::DisconnectReason::TerminatedByClient);
@@ -181,7 +193,7 @@ namespace Multiplayer
         }
     }
 
-    AzFramework::ProcessWatcher* LaunchEditorServer()
+    void MultiplayerEditorSystemComponent::LaunchEditorServer()
     {
         // Assemble the server's path
         AZ::CVarFixedString serverProcess = editorsv_process;
@@ -207,12 +219,22 @@ namespace Multiplayer
         {
             server_rhi = static_cast<AZ::CVarFixedString>(editorsv_rhi_override);
         }
+
+        const auto console = AZ::Interface<AZ::IConsole>::Get();
+        AZ::CVarFixedString sv_defaultPlayerSpawnAsset;
+
+        if (console->GetCvarValue("sv_defaultPlayerSpawnAsset", sv_defaultPlayerSpawnAsset) != AZ::GetValueResult::Success)
+        {
+            AZ_Assert( false,
+                "MultiplayerEditorSystemComponent::LaunchEditorServer failed! Could not find the sv_defaultPlayerSpawnAsset cvar; the editor-server "
+                "will fall back to using some other default player! Please update this code to use a valid cvar!")
+        }
         
         processLaunchInfo.m_commandlineParameters = AZStd::string::format(
             R"("%s" --project-path "%s" --editorsv_isDedicated true --sv_defaultPlayerSpawnAsset "%s" --rhi "%s")",
             serverPath.c_str(),
             AZ::Utils::GetProjectPath().c_str(),
-            static_cast<AZ::CVarFixedString>(sv_defaultPlayerSpawnAsset).c_str(),
+            sv_defaultPlayerSpawnAsset.c_str(),
             server_rhi.GetCStr()
         );
         processLaunchInfo.m_showWindow = true;
@@ -220,13 +242,21 @@ namespace Multiplayer
 
         // Launch the Server
         AzFramework::ProcessWatcher* outProcess = AzFramework::ProcessWatcher::LaunchProcess(
-            processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_NONE);
+            processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT);
 
         AZ_Error(
             "MultiplayerEditor", processLaunchInfo.m_launchResult != AzFramework::ProcessLauncher::ProcessLaunchResult::PLR_MissingFile,
             "LaunchEditorServer failed! The ServerLauncher binary is missing! (%s)  Please build server launcher.", serverPath.c_str())
 
-        return outProcess;
+        // Stop the previous server if one exists
+        if (m_serverProcessWatcher)
+        {
+            AZ::TickBus::Handler::BusDisconnect();
+            m_serverProcessWatcher->TerminateProcess(0);
+        }
+        m_serverProcessWatcher.reset(outProcess);
+        m_serverProcessTracePrinter = AZStd::make_unique<ProcessCommunicatorTracePrinter>(m_serverProcessWatcher->GetCommunicator(), "EditorServer");
+        AZ::TickBus::Handler::BusConnect();
     }
 
     void MultiplayerEditorSystemComponent::OnGameEntitiesStarted()
@@ -286,7 +316,7 @@ namespace Multiplayer
             editorNetworkInterface->Listen(editorsv_port);
 
             // Launch the editor-server
-            m_serverProcess = LaunchEditorServer();
+            LaunchEditorServer();
         }
         else
         {
@@ -393,4 +423,20 @@ namespace Multiplayer
     {
         return PyIsInGameMode();
     }
+
+    void MultiplayerEditorSystemComponent::OnTick(float, AZ::ScriptTimePoint)
+    {
+        if (m_serverProcessTracePrinter)
+        {
+            m_serverProcessTracePrinter->Pump();
+        }
+        else
+        {
+            AZ::TickBus::Handler::BusDisconnect();
+            AZ_Warning(
+                "MultiplayerEditorSystemComponent", false,
+                "The server process trace printer is NULL so we won't be able to pipe server logs to the editor. Please update the code to call AZ::TickBus::Handler::BusDisconnect whenever the editor-server is terminated.")
+        }
+    }
+
 }

@@ -42,7 +42,7 @@ RUN_CONFIGURE=1
 
 if [[ ! -z "$RUN_CONFIGURE" ]]; then
     # have to use eval since $CMAKE_OPTIONS (${EXTRA_CMAKE_OPTIONS}) contains quotes that need to be processed
-    echo [ci_build] ${CONFIGURE_CMD}
+    eval echo [ci_build] ${CONFIGURE_CMD}
     eval ${CONFIGURE_CMD}
     # Save the run only if success
     echo "${CONFIGURE_CMD}" > ${LAST_CONFIGURE_CMD_FILE}

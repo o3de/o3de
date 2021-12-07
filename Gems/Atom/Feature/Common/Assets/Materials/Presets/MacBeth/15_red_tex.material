@@ -1,8 +1,8 @@
 {
     "description": "",
-    "materialType": "Materials\\Types\\StandardPBR.materialtype",
-    "parentMaterial": "Materials\\Presets\\MacBeth\\15_red.material",
-    "propertyLayoutVersion": 3,
+    "parentMaterial": "15_red.material",
+    "materialType": "../../Types/StandardPBR.materialtype",
+    "materialTypeVersion": 4,
     "properties": {
         "baseColor": {
             "color": [
@@ -11,6 +11,8 @@
                 1.0,
                 1.0
             ],
+            "textureBlendMode": "Lerp",
+            "textureMap": "15_red_sRGB.tif",
             "useTexture": true
         }
     }

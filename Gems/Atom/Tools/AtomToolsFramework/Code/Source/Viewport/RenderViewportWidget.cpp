@@ -146,11 +146,17 @@ namespace AtomToolsFramework
         if (auto existingScene = scene->FindSubsystem<AZ::RPI::ScenePtr>())
         {
             m_viewportContext->SetRenderScene(*existingScene);
-            if (auto auxGeomFP = existingScene->get()->GetFeatureProcessor<AZ::RPI::AuxGeomFeatureProcessorInterface>())
+
+            // If we have a render pipeline, use it and ensure an AuxGeom feature processor is installed.
+            // Otherwise, fall through and ensure a render pipeline is installed for this scene.
+            if (m_viewportContext->GetCurrentPipeline())
             {
-                m_auxGeom = auxGeomFP->GetOrCreateDrawQueueForView(m_defaultCamera.get());
+                if (auto auxGeomFP = existingScene->get()->GetFeatureProcessor<AZ::RPI::AuxGeomFeatureProcessorInterface>())
+                {
+                    m_auxGeom = auxGeomFP->GetOrCreateDrawQueueForView(m_defaultCamera.get());
+                }
+                return;
             }
-            return;
         }
 
         AZ::RPI::ScenePtr atomScene;

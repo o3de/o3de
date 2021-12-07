@@ -27,6 +27,7 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Prefab/EditorPrefabComponent.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
@@ -565,9 +566,7 @@ namespace AzToolsFramework
                     EditorRequestBus::BroadcastResult(position, &EditorRequestBus::Events::GetWorldPositionAtViewportCenter);
                 }
 
-                // Instantiating from context menu always puts the instance at the root level
                 auto createPrefabOutcome = s_prefabPublicInterface->InstantiatePrefab(prefabFilePath, parentId, position);
-
                 if (!createPrefabOutcome.IsSuccess())
                 {
                     WarnUserOfError("Prefab Instantiation Error",createPrefabOutcome.GetError());
@@ -594,15 +593,13 @@ namespace AzToolsFramework
                 }
                 else
                 {
-                    // otherwise return since it needs to be inside an authored prefab
-                    return;
+                    EditorRequestBus::BroadcastResult(position, &EditorRequestBus::Events::GetWorldPositionAtViewportCenter);
                 }
 
-                // Instantiating from context menu always puts the instance at the root level
                 auto createPrefabOutcome = s_prefabPublicInterface->InstantiatePrefab(prefabAssetPath, parentId, position);
                 if (!createPrefabOutcome.IsSuccess())
                 {
-                    WarnUserOfError("Prefab Instantiation Error", createPrefabOutcome.GetError());
+                    WarnUserOfError("Procedural Prefab Instantiation Error", createPrefabOutcome.GetError());
                 }
             }
         }
@@ -1268,7 +1265,14 @@ namespace AzToolsFramework
             }
             else
             {
-                s_editorEntityUiInterface->RegisterEntity(entityId, m_prefabUiHandler.GetHandlerId());
+                if (s_prefabPublicInterface->IsOwnedByProceduralPrefabInstance(entityId))
+                {
+                    s_editorEntityUiInterface->RegisterEntity(entityId, m_proceduralPrefabUiHandler.GetHandlerId());
+                }
+                else
+                {
+                    s_editorEntityUiInterface->RegisterEntity(entityId, m_prefabUiHandler.GetHandlerId());
+                }
 
                 // Register entity as a container
                 s_containerEntityInterface->RegisterEntityAsContainer(entityId);

@@ -191,8 +191,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/Operators/Math/OperatorSub.cpp
     Include/ScriptCanvas/Libraries/Operators/Math/OperatorLerpNodeable.cpp
     Include/ScriptCanvas/Libraries/Operators/Math/OperatorLerpNodeableNode.cpp
-    Include/ScriptCanvas/Profiler/Aggregator.cpp
-    Include/ScriptCanvas/Profiler/DrillerEvents.cpp
     Include/ScriptCanvas/Serialization/BehaviorContextObjectSerializer.cpp
     Include/ScriptCanvas/Serialization/DatumSerializer.cpp
     Include/ScriptCanvas/Serialization/RuntimeVariableSerializer.cpp
