@@ -18,7 +18,6 @@
 
 namespace AzFramework
 {
-
     struct RemoteStorageDriveConfig final :
         public AZ::IO::IStreamerStackConfig
     {
