@@ -20,8 +20,8 @@ import re
 
 from o3de import manifest, register, validation, utils
 
-logger = logging.getLogger()
-logging.basicConfig()
+logger = logging.getLogger('o3de.engine_template')
+logging.basicConfig(format=utils.LOG_FORMAT)
 
 binary_file_ext = {
     '.pak',
@@ -85,6 +85,7 @@ restricted_platforms = {
 
 template_file_name = 'template.json'
 this_script_parent = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
+
 
 def _replace_license_text(source_data: str):
     while '{BEGIN_LICENSE}' in source_data:
@@ -181,7 +182,7 @@ def _execute_template_json(json_data: dict,
     # regular copy if not templated
     for copy_file in json_data['copyFiles']:
         # construct the input file name
-        in_file = template_path / 'Template' /copy_file['file']
+        in_file = template_path / 'Template' / copy_file['file']
 
         # the file can be marked as optional, if it is and it does not exist skip
         if copy_file['isOptional'] and copy_file['isOptional'] == 'true':
@@ -246,7 +247,7 @@ def _execute_restricted_template_json(json_data: dict,
     for copy_file in json_data['copyFiles']:
         # construct the input file name
         in_file = template_restricted_path / restricted_platform / template_restricted_platform_relative_path\
-                  / template_name / 'Template'/ copy_file['file']
+                  / template_name / 'Template' / copy_file['file']
 
         # the file can be marked as optional, if it is and it does not exist skip
         if copy_file['isOptional'] and copy_file['isOptional'] == 'true':
@@ -364,7 +365,7 @@ def create_template(source_path: pathlib.Path,
                     keep_restricted_in_template: bool = False,
                     keep_license_text: bool = False,
                     replace: list = None,
-                    force: bool = False)  -> int:
+                    force: bool = False) -> int:
     """
     Create a template from a source directory using replacement
 
@@ -1205,12 +1206,12 @@ def create_from_template(destination_path: pathlib.Path,
                 # something is wrong with either the --template-restricted-platform-relative or the template is.
                 if template_restricted_platform_relative_path != template_json_restricted_platform_relative_path:
                     logger.error(f'The supplied --template-restricted-platform-relative-path'
-                                f' "{template_restricted_platform_relative_path}" does not match the'
-                                f' templates.json  "restricted_platform_relative_path". Either'
-                                f' --template-restricted-platform-relative-path is incorrect or the templates'
-                                f' "restricted_platform_relative_path" is wrong. Note that since this template'
-                                f' specifies "restricted_platform_relative_path" it need not be supplied and'
-                                f' "{template_json_restricted_platform_relative_path}" will be used.')
+                                 f' "{template_restricted_platform_relative_path}" does not match the'
+                                 f' templates.json  "restricted_platform_relative_path". Either'
+                                 f' --template-restricted-platform-relative-path is incorrect or the templates'
+                                 f' "restricted_platform_relative_path" is wrong. Note that since this template'
+                                 f' specifies "restricted_platform_relative_path" it need not be supplied and'
+                                 f' "{template_json_restricted_platform_relative_path}" will be used.')
                     return 1
     else:
         # The user has not supplied --template-restricted-platform-relative-path, try to read it from
@@ -1306,7 +1307,7 @@ def create_from_template(destination_path: pathlib.Path,
             os.makedirs(destination_restricted_path, exist_ok=True)
 
             # read the restricted_name from the destination restricted.json
-            restricted_json = destination_restricted_path / restricted.json
+            restricted_json = destination_restricted_path / 'restricted.json'
             if not os.path.isfile(restricted_json):
                 with open(restricted_json, 'w') as s:
                     restricted_json_data = {}
@@ -1956,7 +1957,6 @@ def create_gem(gem_path: pathlib.Path,
     replacements.append(("${NameLower}", gem_name.lower()))
     replacements.append(("${SanitizedCppName}", sanitized_cpp_name))
 
-
     # module id is a uuid with { and -
     if module_id:
         replacements.append(("${ModuleClassId}", module_id))
@@ -2157,8 +2157,13 @@ def add_args(subparsers) -> None:
     call add_args and execute: python o3de.py create-gem --gem-path TestGem
     :param subparsers: the caller instantiates subparsers and passes it in here
     """
+
     # turn a directory into a template
     create_template_subparser = subparsers.add_parser('create-template')
+
+    # Sub-commands should declare their own verbosity flag, if desired
+    utils.add_verbosity_arg(create_template_subparser)
+
     create_template_subparser.add_argument('-sp', '--source-path', type=pathlib.Path, required=True,
                                            help='The path to the source that you want to make into a template')
     create_template_subparser.add_argument('-tp', '--template-path', type=pathlib.Path, required=False,
@@ -2233,6 +2238,10 @@ def add_args(subparsers) -> None:
 
     # create from template
     create_from_template_subparser = subparsers.add_parser('create-from-template')
+
+    # Sub-commands should declare their own verbosity flag, if desired
+    utils.add_verbosity_arg(create_from_template_subparser)
+
     create_from_template_subparser.add_argument('-dp', '--destination-path', type=pathlib.Path, required=True,
                                                 help='The path to where you want the template instantiated,'
                                                      ' can be absolute or relative to the current working directory.'
@@ -2316,6 +2325,10 @@ def add_args(subparsers) -> None:
 
     # creation of a project from a template (like create from template but makes project assumptions)
     create_project_subparser = subparsers.add_parser('create-project')
+
+    # Sub-commands should declare their own verbosity flag, if desired
+    utils.add_verbosity_arg(create_project_subparser)
+
     create_project_subparser.add_argument('-pp', '--project-path', type=pathlib.Path, required=True,
                                           help='The location of the project you wish to create from the template,'
                                                ' can be an absolute path or relative to the current working directory.'
@@ -2330,7 +2343,7 @@ def add_args(subparsers) -> None:
     group = create_project_subparser.add_mutually_exclusive_group(required=False)
     group.add_argument('-tp', '--template-path', type=pathlib.Path, required=False,
                        default=None,
-                       help='the path to the template you want to instance, can be absolute or'
+                       help='The path to the template you want to instance, can be absolute or'
                             ' relative to default templates path')
     group.add_argument('-tn', '--template-name', type=str, required=False,
                        default=None,
@@ -2340,7 +2353,7 @@ def add_args(subparsers) -> None:
     group = create_project_subparser.add_mutually_exclusive_group(required=False)
     group.add_argument('-prp', '--project-restricted-path', type=pathlib.Path, required=False,
                        default=None,
-                       help='path to the projects restricted folder, can be absolute or relative to'
+                       help='The path to the projects restricted folder, can be absolute or relative to'
                             ' the default restricted projects directory')
     group.add_argument('-prn', '--project-restricted-name', type=str, required=False,
                        default=None,
@@ -2351,7 +2364,7 @@ def add_args(subparsers) -> None:
     group.add_argument('-trp', '--template-restricted-path', type=pathlib.Path, required=False,
                        default=None,
                        help='The templates restricted path can be absolute or relative to'
-                             'the default restricted templates directory')
+                            ' the default restricted templates directory')
     group.add_argument('-trn', '--template-restricted-name', type=str, required=False,
                        default=None,
                        help='The name of the registered templates restricted path. If supplied this will resolve'
@@ -2413,6 +2426,10 @@ def add_args(subparsers) -> None:
 
     # creation of a gem from a template (like create from template but makes gem assumptions)
     create_gem_subparser = subparsers.add_parser('create-gem')
+
+    # Sub-commands should declare their own verbosity flag, if desired
+    utils.add_verbosity_arg(create_gem_subparser)
+
     create_gem_subparser.add_argument('-gp', '--gem-path', type=pathlib.Path, required=True,
                                       help='The gem path, can be absolute or relative to the current working directory')
     create_gem_subparser.add_argument('-gn', '--gem-name', type=str,
@@ -2512,16 +2529,18 @@ if __name__ == "__main__":
     the_parser = argparse.ArgumentParser()
 
     # add subparsers
-    the_subparsers = the_parser.add_subparsers(help='sub-command help', dest='command', required=True)
+    subparsers = the_parser.add_subparsers(help='To get help on a sub-command:\nengine_template.py <sub-command> -h',
+                                           title='Sub-Commands', dest='command', required=True)
 
-    # add args to the parser
-    add_args(the_subparsers)
+    # add args to the parsers
+    add_args(subparsers)
 
     # parse args
     the_args = the_parser.parse_args()
 
     # run
     ret = the_args.func(the_args) if hasattr(the_args, 'func') else 1
+    logger.info('Success!' if ret == 0 else 'Completed with issues: result {}'.format(ret))
 
     # return
     sys.exit(ret)

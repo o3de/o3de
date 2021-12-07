@@ -6,31 +6,30 @@
             "variant": "",
             "details": {
                 "name": "While",
-                "category": "Logic",
-                "subtitle": "Logic"
+                "category": "Logic"
             },
             "slots": [
                 {
-                    "base": "DataInput_Condition",
+                    "base": "DataInput_Condition_0",
                     "details": {
                         "name": "Condition"
                     }
                 },
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out",
                         "tooltip": "Signalled if the condition is false, or if the loop calls the break node"
                     }
                 },
                 {
-                    "base": "Output_Loop",
+                    "base": "Output_Loop_1",
                     "details": {
                         "name": "Loop",
                         "tooltip": "Signalled if the condition is true, and every time the last node of 'Loop' finishes"

@@ -21,6 +21,7 @@ namespace AZ
             static constexpr AZ::Crc32 ClassNameOverride = AZ_CRC_CE("ScriptClassNameOverride"); ///< Provide a custom name for script reflection, that doesn't match the behavior Context name
             static constexpr AZ::Crc32 MethodOverride = AZ_CRC_CE("ScriptFunctionOverride"); ///< Use a custom function in the attribute instead of the function  
             static constexpr AZ::Crc32 ConstructorOverride = AZ_CRC_CE("ConstructorOverride"); ///< You can provide a custom constructor to be called when created from Lua script
+            static constexpr AZ::Crc32 DefaultConstructorOverrideIndex = AZ_CRC_CE("DefaultConstructorOverrideIndex"); ///< Use a different class constructor as the default constructor in Lua
             static constexpr AZ::Crc32 EventHandlerCreationFunction = AZ_CRC_CE("EventHandlerCreationFunction"); ///< helps create a handler for any script target so that script functions can be used for AZ::Event signals
             static constexpr AZ::Crc32 GenericConstructorOverride = AZ_CRC_CE("GenericConstructorOverride"); ///< You can provide a custom constructor to be called when creating a script
             static constexpr AZ::Crc32 ReaderWriterOverride = AZ_CRC_CE("ReaderWriterOverride"); ///< paired with \ref ScriptContext::CustomReaderWriter allows you to customize read/write to Lua VM

@@ -75,7 +75,7 @@ namespace ScriptCanvasEditor
                 AZ_Assert(loadResult.m_runtimeAsset, "failed to load dependent asset");
 
                 AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> luaAssetOutcome = AZ::Failure(AZStd::string("lua asset creation for function failed"));
-                ScriptCanvasEditor::EditorAssetConversionBus::BroadcastResult(luaAssetOutcome, &ScriptCanvasEditor::EditorAssetConversionBusTraits::CreateLuaAsset, loadResult.m_editorAsset, loadResult.m_graphPath);
+                ScriptCanvasEditor::EditorAssetConversionBus::BroadcastResult(luaAssetOutcome, &ScriptCanvasEditor::EditorAssetConversionBusTraits::CreateLuaAsset, loadResult.m_editorAsset, loadResult.m_editorAsset.Path().c_str());
                 AZ_Assert(luaAssetOutcome.IsSuccess(), "failed to create Lua asset");
 
                 AZStd::string modulePath = namespacePath[0].data();
@@ -112,18 +112,19 @@ namespace ScriptCanvasEditor
 
     AZ_INLINE LoadTestGraphResult LoadTestGraph(AZStd::string_view graphPath)
     {
-        AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset> editorAsset;
-        ScriptCanvasEditor::EditorAssetConversionBus::BroadcastResult(editorAsset, &ScriptCanvasEditor::EditorAssetConversionBusTraits::LoadAsset, graphPath);
-
-        if (editorAsset.GetData())
+        if (auto loadFileOutcome = LoadFromFile(graphPath); loadFileOutcome.IsSuccess())
         {
-            AZ::Outcome< AZ::Data::Asset<ScriptCanvas::RuntimeAsset>, AZStd::string> assetOutcome = AZ::Failure(AZStd::string("asset creation failed"));
-            ScriptCanvasEditor::EditorAssetConversionBus::BroadcastResult(assetOutcome, &ScriptCanvasEditor::EditorAssetConversionBusTraits::CreateRuntimeAsset, editorAsset);
+            auto& source = loadFileOutcome.GetValue();
+            auto testableSource = SourceHandle(source, AZ::Uuid::CreateRandom(), source.Path().c_str());
+
+            AZ::Outcome<AZ::Data::Asset<ScriptCanvas::RuntimeAsset>, AZStd::string> assetOutcome(AZ::Failure(AZStd::string("asset create failed")));
+            ScriptCanvasEditor::EditorAssetConversionBus::BroadcastResult(assetOutcome
+                , &ScriptCanvasEditor::EditorAssetConversionBusTraits::CreateRuntimeAsset, testableSource);
+
             if (assetOutcome.IsSuccess())
             {
                 LoadTestGraphResult result;
-                result.m_graphPath = graphPath;
-                result.m_editorAsset = editorAsset;
+                result.m_editorAsset = AZStd::move(testableSource);
                 result.m_runtimeAsset = assetOutcome.GetValue();
                 result.m_entity = AZStd::make_unique<AZ::Entity>("Loaded Graph");
                 return result;
@@ -164,8 +165,7 @@ namespace ScriptCanvasEditor
             reporter.SetExecutionMode(mode);
 
             LoadTestGraphResult loadResult;
-            loadResult.m_graphPath = asset.GetHint().c_str();
-            loadResult.m_editorAsset = asset;
+            loadResult.m_editorAsset = SourceHandle(nullptr, assetId.m_guid, asset.GetHint());
             AZ::EntityId scriptCanvasId;
             loadResult.m_entity = AZStd::make_unique<AZ::Entity>("Loaded test graph");
             loadResult.m_runtimeAsset = runtimeAsset;
@@ -206,7 +206,8 @@ namespace ScriptCanvasEditor
             {
                 ScopedOutputSuppression outputSuppressor;
                 AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> luaAssetOutcome = AZ::Failure(AZStd::string("lua asset creation failed"));
-                ScriptCanvasEditor::EditorAssetConversionBus::BroadcastResult(luaAssetOutcome, &ScriptCanvasEditor::EditorAssetConversionBusTraits::CreateLuaAsset, loadResult.m_editorAsset, loadResult.m_graphPath);
+                ScriptCanvasEditor::EditorAssetConversionBus::BroadcastResult(luaAssetOutcome
+                    , &ScriptCanvasEditor::EditorAssetConversionBusTraits::CreateLuaAsset, loadResult.m_editorAsset, loadResult.m_editorAsset.Path().c_str());
                 reporter.MarkParseAttemptMade();
 
                 if (luaAssetOutcome.IsSuccess())
@@ -220,6 +221,8 @@ namespace ScriptCanvasEditor
                     {
                         RuntimeDataOverrides runtimeDataOverrides;
                         runtimeDataOverrides.m_runtimeAsset = loadResult.m_runtimeAsset;
+                        runtimeDataOverrides.m_runtimeAsset.SetHint("original");
+                        runtimeDataOverrides.m_runtimeAsset.Get()->m_runtimeData.m_script.SetHint("original");
 
 #if defined(LINUX) //////////////////////////////////////////////////////////////////////////
                         // Temporarily disable testing on the Linux build until the file name casing discrepancy
@@ -265,6 +268,10 @@ namespace ScriptCanvasEditor
 
                                 RuntimeDataOverrides dependencyRuntimeDataOverrides;
                                 dependencyRuntimeDataOverrides.m_runtimeAsset = dependency.runtimeAsset;
+                                AZStd::string dependencyHint = AZStd::string::format("dependency_%d", index);
+                                dependencyRuntimeDataOverrides.m_runtimeAsset.SetHint(dependencyHint);
+                                dependencyRuntimeDataOverrides.m_runtimeAsset.Get()->m_runtimeData.m_script.SetHint(dependencyHint);
+
                                 runtimeDataOverrides.m_dependencies.push_back(dependencyRuntimeDataOverrides);
 
                                 RuntimeData& dependencyData = dependencyDataBuffer[index];

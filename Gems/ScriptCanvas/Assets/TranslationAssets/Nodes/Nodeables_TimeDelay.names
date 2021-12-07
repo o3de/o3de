@@ -6,30 +6,30 @@
             "variant": "",
             "details": {
                 "name": "Time Delay",
-                "category": "Timing",
+                "category": "Nodeables",
                 "tooltip": "Delays all incoming execution for the specified number of ticks"
             },
             "slots": [
                 {
-                    "base": "Input_Start",
+                    "base": "Input_Start_0",
                     "details": {
                         "name": "Start"
                     }
                 },
                 {
-                    "base": "DataInput_Delay",
+                    "base": "DataInput_Delay_0",
                     "details": {
                         "name": "Delay"
                     }
                 },
                 {
-                    "base": "Output_On Start",
+                    "base": "Output_On Start_0",
                     "details": {
                         "name": "On Start"
                     }
                 },
                 {
-                    "base": "Output_Done",
+                    "base": "Output_Done_1",
                     "details": {
                         "name": "Done",
                         "tooltip": "Signaled after waiting for the specified amount of times."

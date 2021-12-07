@@ -8,6 +8,8 @@
 #include "VegetationTest.h"
 #include "VegetationMocks.h"
 
+#include <LmbrCentral/Shape/MockShapes.h>
+
 #include <AzTest/AzTest.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/Component/Entity.h>

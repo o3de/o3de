@@ -94,13 +94,13 @@ namespace AZ
 
         const bool Scope::IsStateSupportedByQueue(D3D12_RESOURCE_STATES state) const
         {
-            const D3D12_RESOURCE_STATES VALID_COMPUTE_QUEUE_RESOURCE_STATES =
+            constexpr D3D12_RESOURCE_STATES VALID_COMPUTE_QUEUE_RESOURCE_STATES =
                 (D3D12_RESOURCE_STATE_UNORDERED_ACCESS |
                  D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE |
                  D3D12_RESOURCE_STATE_COPY_DEST |
                  D3D12_RESOURCE_STATE_COPY_SOURCE);
 
-            const D3D12_RESOURCE_STATES VALID_GRAPHICS_QUEUE_RESOURCE_STATES =
+            constexpr D3D12_RESOURCE_STATES VALID_GRAPHICS_QUEUE_RESOURCE_STATES =
                 (D3D12_RESOURCE_STATES)DX12_RESOURCE_STATE_VALID_API_MASK;
 
             switch (GetHardwareQueueClass())
@@ -311,7 +311,7 @@ namespace AZ
 
             PIXBeginEvent(0xFFFF00FF, GetId().GetCStr());
 
-            if (RHI::Factory::Get().IsPixModuleLoaded() || RHI::Factory::Get().IsRenderDocModuleLoaded())
+            if (RHI::Factory::Get().PixGpuEventsEnabled())
             {
                 PIXBeginEvent(commandList.GetCommandList(), 0xFFFF00FF, GetId().GetCStr());
             }
@@ -428,7 +428,7 @@ namespace AZ
                 }
             }
 
-            if (RHI::Factory::Get().IsPixModuleLoaded() || RHI::Factory::Get().IsRenderDocModuleLoaded())
+            if (RHI::Factory::Get().PixGpuEventsEnabled())
             {
                 PIXEndEvent(commandList.GetCommandList());
             }

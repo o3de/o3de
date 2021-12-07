@@ -68,6 +68,8 @@ namespace AZ
             : Base(descriptor)
             , AzFramework::InputChannelEventListener(AzFramework::InputChannelEventListener::GetPriorityDebugUI() - 1) // Give ImGui manager priority over the pass
             , AzFramework::InputTextEventListener(AzFramework::InputTextEventListener::GetPriorityDebugUI() - 1) // Give ImGui manager priority over the pass
+            , m_tickHandlerFrameStart(*this)
+            , m_tickHandlerFrameEnd(*this)
         {
 
             const ImGuiPassData* imguiPassData = RPI::PassUtils::GetPassData<ImGuiPassData>(descriptor);
@@ -102,7 +104,6 @@ namespace AZ
             Init();
             ImGui::NewFrame();
 
-            TickBus::Handler::BusConnect();
             AzFramework::InputChannelEventListener::Connect();
             AzFramework::InputTextEventListener::Connect();
         }
@@ -127,7 +128,6 @@ namespace AZ
 
             AzFramework::InputTextEventListener::BusDisconnect();
             AzFramework::InputChannelEventListener::BusDisconnect();
-            TickBus::Handler::BusDisconnect();
         }
 
         ImGuiContext* ImGuiPass::GetContext()
@@ -140,12 +140,59 @@ namespace AZ
             m_drawData.push_back(drawData);
         }
 
-        void ImGuiPass::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint timePoint)
+        ImGuiPass::TickHandlerFrameStart::TickHandlerFrameStart(ImGuiPass& imGuiPass)
+            : m_imGuiPass(imGuiPass)
         {
-            auto imguiContextScope = ImguiContextScope(m_imguiContext);
+            TickBus::Handler::BusConnect();
+        }
+
+        int ImGuiPass::TickHandlerFrameStart::GetTickOrder()
+        {
+            return AZ::ComponentTickBus::TICK_PRE_RENDER;
+        }
+
+        void ImGuiPass::TickHandlerFrameStart::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint timePoint)
+        {
+            auto imguiContextScope = ImguiContextScope(m_imGuiPass.m_imguiContext);
+            ImGui::NewFrame();
 
             auto& io = ImGui::GetIO();
             io.DeltaTime = deltaTime;
+        }
+
+        ImGuiPass::TickHandlerFrameEnd::TickHandlerFrameEnd(ImGuiPass& imGuiPass)
+            : m_imGuiPass(imGuiPass)
+        {
+            TickBus::Handler::BusConnect();
+        }
+
+        int ImGuiPass::TickHandlerFrameEnd::GetTickOrder()
+        {
+            // ImGui::NewFrame() must be called (see ImGuiPass::TickHandlerFrameStart::OnTick) after populating
+            // ImGui::GetIO().NavInputs (see ImGuiPass::OnInputChannelEventFiltered), and paired with a call to
+            // ImGui::EndFrame() (see ImGuiPass::TickHandlerFrameEnd::OnTick); if this is not called explicitly
+            // then it will be called from inside ImGui::Render() (see ImGuiPass::SetupFrameGraphDependencies).
+            //
+            // ImGui::Render() gets called (indirectly) from OnSystemTick, so we cannot rely on it being paired
+            // with a matching call to ImGui::NewFrame() that gets called from OnTick, because OnSystemTick and
+            // OnTick can be called at different frequencies under some circumstances (namely from the editor).
+            //
+            // To account for this we must explicitly call ImGui::EndFrame() once a frame from OnTick to ensure
+            // that every call to ImGui::NewFrame() has been matched with a call to ImGui::EndFrame(), but only
+            // after ImGui::Render() has had the chance first (if so calling ImGui::EndFrame() again is benign).
+            //
+            // Because ImGui::Render() gets called (indirectly) from OnSystemTick, which usually happens at the
+            // start of every frame, we give TickHandlerFrameEnd::OnTick() the order of TICK_FIRST such that it
+            // will be called first on the regular tick bus, which is invoked immediately after the system tick.
+            //
+            // So while returning TICK_FIRST is incredibly counter-intuitive, hopefully that all explains why.
+            return AZ::ComponentTickBus::TICK_FIRST;
+        }
+
+        void ImGuiPass::TickHandlerFrameEnd::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint timePoint)
+        {
+            auto imguiContextScope = ImguiContextScope(m_imGuiPass.m_imguiContext);
+            ImGui::EndFrame();
         }
 
         bool ImGuiPass::OnInputTextEventFiltered(const AZStd::string& textUTF8)
@@ -413,6 +460,7 @@ namespace AZ
 
         void ImGuiPass::Init()
         {
+            auto imguiContextScope = ImguiContextScope(m_imguiContext);
             auto& io = ImGui::GetIO();
 
             // ImGui IO Setup
@@ -421,7 +469,6 @@ namespace AZ
                 {
                     io.KeyMap[static_cast<ImGuiKey_>(i)] = static_cast<int>(i);
                 }
-                io.NavActive = true;
 
                 // Touch input
                 const AzFramework::InputDevice* inputDevice = nullptr;
@@ -432,6 +479,17 @@ namespace AZ
                 if (inputDevice && inputDevice->IsSupported())
                 {
                     io.ConfigFlags |= ImGuiConfigFlags_IsTouchScreen;
+                }
+
+                // Gamepad input
+                inputDevice = nullptr;
+                AzFramework::InputDeviceRequestBus::EventResult(inputDevice,
+                    AzFramework::InputDeviceGamepad::IdForIndex0,
+                    &AzFramework::InputDeviceRequests::GetInputDevice);
+                if (inputDevice && inputDevice->IsSupported())
+                {
+                    io.BackendFlags |= ImGuiBackendFlags_HasGamepad;
+                    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
                 }
 
                 // Set initial display size to something reasonable (this will be updated in FramePrepare)
@@ -571,7 +629,6 @@ namespace AZ
             auto imguiContextScope = ImguiContextScope(m_imguiContext);
             ImGui::GetIO().MouseWheel = m_lastFrameMouseWheel;
             m_lastFrameMouseWheel = 0.0;
-            ImGui::NewFrame();
         }
 
         void ImGuiPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)

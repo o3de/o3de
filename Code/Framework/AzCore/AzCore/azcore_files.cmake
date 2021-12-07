@@ -125,8 +125,15 @@ set(FILES
     Debug/TraceMessagesDrillerBus.h
     Debug/TraceReflection.cpp
     Debug/TraceReflection.h
+    DOM/DomBackend.cpp
+    DOM/DomBackend.h
+    DOM/DomUtils.cpp
+    DOM/DomUtils.h
     DOM/DomVisitor.cpp
     DOM/DomVisitor.h
+    DOM/Backends/JSON/JsonBackend.h
+    DOM/Backends/JSON/JsonSerializationUtils.cpp
+    DOM/Backends/JSON/JsonSerializationUtils.h
     Driller/DefaultStringPool.h
     Driller/Driller.cpp
     Driller/Driller.h
