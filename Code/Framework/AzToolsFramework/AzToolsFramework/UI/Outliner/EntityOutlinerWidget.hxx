@@ -35,7 +35,6 @@ class QItemSelection;
 namespace Ui
 {
     class EntityOutlinerWidgetUI;
-    class ReadOnlyEntityPublicInterface;
 }
 
 namespace AzToolsFramework
