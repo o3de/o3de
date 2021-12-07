@@ -50,7 +50,7 @@ namespace AZ::MeshBuilder
         }
 
         // optimize the weight data
-        void Optimize(AZ::u32 maxNumWeightsPerVertex = 4, float weightThreshold = 0.0001f);
+        void Optimize(AZStd::vector<Influence>& influences, AZ::u32 maxNumWeightsPerVertex = 4, float weightThreshold = 0.0001f);
 
         // optimize weights
         static void OptimizeSkinningInfluences(AZStd::vector<Influence>& influences, float tolerance, size_t maxWeights);
