@@ -164,7 +164,7 @@ namespace AZ
             //! Reduces acne by biasing the shadowmap lookup along the geometric normal.
             virtual void SetNormalShadowBias(LightHandle handle, float normalShadowBias) = 0;
 
-			//! Setting whether or not blending between shadow map cascades is enabled.
+            //! Sets whether or not blending between shadow map cascades is enabled.
             virtual void SetCascadeBlendingEnabled(LightHandle handle, bool enable) = 0;
         };
     } // namespace Render
