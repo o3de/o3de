@@ -51,25 +51,19 @@ void ApplyPoylgonLight(ViewSrg::PolygonLight light, Surface surface, inout Light
     float radiusAttenuation = 1.0 - (falloff * falloff);
     radiusAttenuation = radiusAttenuation * radiusAttenuation;
 
-    float2 ltcCoords = LtcCoords(dot(surface.normal, lightingData.dirToCamera), surface.roughnessLinear);
-    float3x3 ltcMat = LtcMatrix(SceneSrg::m_ltcMatrix, ltcCoords);
-
     float diffuse = 0.0;
-    float specular = 0.0;
+    float3 specularRgb = 0.0;
 
-    LtcPolygonEvaluate(surface.position, surface.normal, lightingData.dirToCamera, ltcMat, ViewSrg::m_polygonLightPoints, startIndex, endIndex, diffuse, specular);
+    LtcPolygonEvaluate(surface, lightingData, SceneSrg::m_ltcMatrix, SceneSrg::m_ltcAmplification, ViewSrg::m_polygonLightPoints, startIndex, endIndex, diffuse, specularRgb);
+
     diffuse = doubleSided ? abs(diffuse) : max(0.0, diffuse);
-    specular = doubleSided ? abs(specular) : max(0.0, specular);
-
-    // Apply BRDF scale terms (BRDF magnitude and Schlick Fresnel)
-    float2 schlick = SceneSrg::m_ltcAmplification.Sample(PassSrg::LinearSampler, ltcCoords).xy;
-    float3 specularRGB = specular * (schlick.x + (1.0 - surface.specularF0) * schlick.y);
+    specularRgb = doubleSided ? abs(specularRgb) : max(0.0, specularRgb);
 
     // Scale by inverse surface area of hemisphere (1/2pi), attenuation, and light intensity
     float3 intensity = 0.5 * INV_PI * radiusAttenuation * abs(light.m_rgbIntensityNits);
 
     lightingData.diffuseLighting += surface.albedo * diffuse * intensity;
-    lightingData.specularLighting += surface.specularF0 * specularRGB * intensity;
+    lightingData.specularLighting += specularRgb * intensity;
 }
 
 void ApplyPolygonLights(Surface surface, inout LightingData lightingData)

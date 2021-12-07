@@ -1,44 +1,43 @@
 {
     "entries": [
         {
-            "base": "{C94009EE-73ED-5CA2-B1AC-026EB08D1EF5}",
+            "base": "{36F01867-D157-5540-ADB8-3E71F96D2187}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Subtract",
                 "category": "Deprecated",
-                "tooltip": "This node is deprecated, use Subtract (-), it provides contextual type and slots",
-                "subtitle": "Deprecated"
+                "tooltip": "This node is deprecated, use Subtract (-), it provides contextual type and slots"
             },
             "slots": [
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "base": "DataInput_Vector3: A",
+                    "base": "DataInput_A_0",
                     "details": {
-                        "name": "Vector3: A"
+                        "name": "A"
                     }
                 },
                 {
-                    "base": "DataInput_Vector3: B",
+                    "base": "DataInput_B_1",
                     "details": {
-                        "name": "Vector3: B"
+                        "name": "B"
                     }
                 },
                 {
-                    "base": "DataOutput_Result: Vector3",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Result: Vector3"
+                        "name": "Result"
                     }
                 }
             ]
