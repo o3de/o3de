@@ -89,40 +89,16 @@ namespace AZ::MeshBuilder
     }
 
     // optimize the weight data
-    void MeshBuilderSkinningInfo::Optimize([[maybe_unused]] AZ::u32 maxNumWeightsPerVertex, [[maybe_unused]] float weightThreshold)
+    void MeshBuilderSkinningInfo::Optimize(
+        AZStd::vector<Influence>& influences, [[maybe_unused]] AZ::u32 maxNumWeightsPerVertex, [[maybe_unused]] float weightThreshold)
     {
-        AZStd::vector<Influence> influences;
-
-        // for all vertices
-        const size_t numOrgVerts = GetNumOrgVertices();
-        for (size_t v = 0; v < numOrgVerts; ++v)
+        // gather all weights
+        const size_t numInfluences = influences.size();
+        if (numInfluences > 0)
         {
-            // gather all weights
-            const size_t numInfluences = GetNumInfluences(v);
-            if (numInfluences > 0)
-            {
-                influences.resize(numInfluences);
-                for (size_t i = 0; i < numInfluences; ++i)
-                {
-                    influences[i] = GetInfluence(v, i);
-                }
-
-                // optimize the weights and sort them from big to small weight
-                OptimizeSkinningInfluences(influences, weightThreshold, maxNumWeightsPerVertex);
-                SortInfluencesByWeight(influences);
-
-                // remove all influences
-                for (size_t i = 0; i < numInfluences; ++i)
-                {
-                    RemoveInfluence(v, 0);
-                }
-
-                // re-add them
-                for (const Influence& influence : influences)
-                {
-                    AddInfluence(v, influence);
-                }
-            }
+            // optimize the weights and sort them from big to small weight
+            OptimizeSkinningInfluences(influences, weightThreshold, maxNumWeightsPerVertex);
+            SortInfluencesByWeight(influences);
         }
     }
 } // namespace AZ::MeshBuilder
