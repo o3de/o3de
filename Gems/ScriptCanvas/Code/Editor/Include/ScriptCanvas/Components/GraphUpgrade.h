@@ -184,9 +184,9 @@ namespace ScriptCanvasEditor
         bool m_graphNeedsDirtying = false;
 
         Graph* m_graph = nullptr;
-        AZ::Data::Asset<AZ::Data::AssetData> m_asset;
+        SourceHandle m_asset;
 
-        void SetAsset(const AZ::Data::Asset<AZ::Data::AssetData>& asset);
+        void SetAsset(SourceHandle& assetasset);
 
         void OnComplete(IState::ExitStatus exitStatus) override;
 

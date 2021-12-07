@@ -13,10 +13,10 @@ import logging
 import os
 import pathlib
 
-from o3de import manifest
+from o3de import manifest, utils
 
-logger = logging.getLogger()
-logging.basicConfig()
+logger = logging.getLogger('o3de.cmake')
+logging.basicConfig(format=utils.LOG_FORMAT)
 
 enable_gem_start_marker = 'set(ENABLED_GEMS'
 enable_gem_end_marker = ')'

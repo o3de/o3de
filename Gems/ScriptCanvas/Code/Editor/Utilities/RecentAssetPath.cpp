@@ -15,7 +15,7 @@
 
 namespace ScriptCanvasEditor
 {
-    AZ::Data::AssetId ReadRecentAssetId()
+    SourceHandle ReadRecentAssetId()
     {
         QSettings settings(QSettings::IniFormat, QSettings::UserScope, 
             SCRIPTCANVASEDITOR_AZ_QCOREAPPLICATION_SETTINGS_ORGANIZATION_NAME);
@@ -26,20 +26,15 @@ namespace ScriptCanvasEditor
         recentOpenFileLocation = settings.value(SCRIPTCANVASEDITOR_SETTINGS_RECENT_OPEN_FILE_LOCATION_KEY).toString();
         settings.endGroup();
 
-        if (recentOpenFileLocation.isEmpty())
-        {
-            return {};
-        }
-        AZ::Data::AssetId assetId(recentOpenFileLocation.toUtf8().constData());
-        return assetId;
+        return { nullptr, {}, recentOpenFileLocation.toUtf8().constData() };
     }
 
-    void SetRecentAssetId(const AZ::Data::AssetId& assetId)
+    void SetRecentAssetId(SourceHandle assetId)
     {
         QSettings settings(QSettings::IniFormat, QSettings::UserScope, 
             SCRIPTCANVASEDITOR_AZ_QCOREAPPLICATION_SETTINGS_ORGANIZATION_NAME);
 
-        AZStd::string guidStr = assetId.m_guid.ToString<AZStd::string>();
+        AZStd::string guidStr = assetId.Id().ToString<AZStd::string>();
 
         settings.beginGroup(SCRIPTCANVASEDITOR_NAME_SHORT);
         settings.setValue(SCRIPTCANVASEDITOR_SETTINGS_RECENT_OPEN_FILE_LOCATION_KEY, 
