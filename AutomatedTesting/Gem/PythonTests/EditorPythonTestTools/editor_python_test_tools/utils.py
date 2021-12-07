@@ -56,8 +56,7 @@ class TestHelper:
         general.idle_wait_frames(200)
 
     @staticmethod
-    def enter_game_mode(msgtuple_success_fail : Tuple[str, str]):
-        # type: (tuple) -> None
+    def enter_game_mode(msgtuple_success_fail: Tuple[str, str]) -> None:
         """
         :param msgtuple_success_fail: The tuple with the expected/unexpected messages for entering game mode.
 
@@ -70,8 +69,7 @@ class TestHelper:
         Report.critical_result(msgtuple_success_fail, general.is_in_game_mode())
 
     @staticmethod
-    def multiplayer_enter_game_mode(msgtuple_success_fail : Tuple[str, str], sv_default_player_spawn_asset : str):
-        # type: (tuple) -> None
+    def multiplayer_enter_game_mode(msgtuple_success_fail: Tuple[str, str], sv_default_player_spawn_asset: str) -> None:
         """
         :param msgtuple_success_fail: The tuple with the expected/unexpected messages for entering game mode.
         :param sv_default_player_spawn_asset: The path to the network player prefab that will be automatically spawned upon entering gamemode.  The engine default is "prefabs/player.network.spawnable" 

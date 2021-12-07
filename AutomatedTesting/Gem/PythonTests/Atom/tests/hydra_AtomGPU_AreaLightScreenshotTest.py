@@ -79,8 +79,8 @@ def AtomGPU_LightComponent_AreaLightScreenshotsMatchGoldenImages():
     from editor_python_test_tools.utils import Report, Tracer, TestHelper
 
     from Atom.atom_utils.atom_constants import AtomComponentProperties, LIGHT_TYPES
-    from Atom.atom_utils.atom_component_helper import initial_viewport_setup, create_basic_atom_rendering_scene
-    from Atom.atom_utils.screenshot_utils import ScreenshotHelper
+    from Atom.atom_utils.atom_component_helper import (
+        initial_viewport_setup, create_basic_atom_rendering_scene, enter_exit_game_mode_take_screenshot)
 
     DEGREE_RADIAN_FACTOR = 0.0174533
 
@@ -129,11 +129,7 @@ def AtomGPU_LightComponent_AreaLightScreenshotsMatchGoldenImages():
                 AtomComponentProperties.light('Color')) == light_component_color_value)
 
         # 5. Enter game mode and take a screenshot then exit game mode.
-        TestHelper.enter_game_mode(Tests.enter_game_mode)
-        TestHelper.wait_for_condition(function=lambda: general.is_in_game_mode(), timeout_in_seconds=4.0)
-        ScreenshotHelper(general.idle_wait_frames).capture_screenshot_blocking("AreaLight_1.ppm")
-        TestHelper.exit_game_mode(Tests.exit_game_mode)
-        TestHelper.wait_for_condition(function=lambda: not general.is_in_game_mode(), timeout_in_seconds=4.0)
+        enter_exit_game_mode_take_screenshot("AreaLight_1.ppm", Tests.enter_game_mode, Tests.exit_game_mode)
 
         # 6. Set the Intensity property of the Light component to 0.0.
         light_component.set_component_property_value(AtomComponentProperties.light('Intensity'), 0.0)
@@ -148,11 +144,7 @@ def AtomGPU_LightComponent_AreaLightScreenshotsMatchGoldenImages():
             light_component.get_component_property_value(AtomComponentProperties.light('Attenuation Radius Mode')) == 1)
 
         # 8. Enter game mode and take a screenshot then exit game mode.
-        TestHelper.enter_game_mode(Tests.enter_game_mode)
-        TestHelper.wait_for_condition(function=lambda: general.is_in_game_mode(), timeout_in_seconds=4.0)
-        ScreenshotHelper(general.idle_wait_frames).capture_screenshot_blocking("AreaLight_2.ppm")
-        TestHelper.exit_game_mode(Tests.exit_game_mode)
-        TestHelper.wait_for_condition(function=lambda: not general.is_in_game_mode(), timeout_in_seconds=4.0)
+        enter_exit_game_mode_take_screenshot("AreaLight_2.ppm", Tests.enter_game_mode, Tests.exit_game_mode)
 
         # 9. Set the Intensity property of the Light component to 1000.0
         light_component.set_component_property_value(AtomComponentProperties.light('Intensity'), 1000.0)
@@ -161,11 +153,7 @@ def AtomGPU_LightComponent_AreaLightScreenshotsMatchGoldenImages():
             light_component.get_component_property_value(AtomComponentProperties.light('Intensity')) == 1000.0)
 
         # 10. Enter game mode and take a screenshot then exit game mode.
-        TestHelper.enter_game_mode(Tests.enter_game_mode)
-        TestHelper.wait_for_condition(function=lambda: general.is_in_game_mode(), timeout_in_seconds=4.0)
-        ScreenshotHelper(general.idle_wait_frames).capture_screenshot_blocking("AreaLight_3.ppm")
-        TestHelper.exit_game_mode(Tests.exit_game_mode)
-        TestHelper.wait_for_condition(function=lambda: not general.is_in_game_mode(), timeout_in_seconds=4.0)
+        enter_exit_game_mode_take_screenshot("AreaLight_3.ppm", Tests.enter_game_mode, Tests.exit_game_mode)
 
         # 11. Set the Light type property to Spot (disk) for the Light component &
         # rotate DEGREE_RADIAN_FACTOR * 90 degrees.
@@ -179,11 +167,7 @@ def AtomGPU_LightComponent_AreaLightScreenshotsMatchGoldenImages():
                 AtomComponentProperties.light('Light type')) == LIGHT_TYPES['spot_disk'])
 
         # 12. Enter game mode and take a screenshot then exit game mode.
-        TestHelper.enter_game_mode(Tests.enter_game_mode)
-        TestHelper.wait_for_condition(function=lambda: general.is_in_game_mode(), timeout_in_seconds=4.0)
-        ScreenshotHelper(general.idle_wait_frames).capture_screenshot_blocking("AreaLight_4.ppm")
-        TestHelper.exit_game_mode(Tests.exit_game_mode)
-        TestHelper.wait_for_condition(function=lambda: not general.is_in_game_mode(), timeout_in_seconds=4.0)
+        enter_exit_game_mode_take_screenshot("AreaLight_4.ppm", Tests.enter_game_mode, Tests.exit_game_mode)
 
         # 13. Set the Light type property to Point (sphere) instead of Spot (disk) for the Light component.
         light_component.set_component_property_value(
@@ -194,11 +178,7 @@ def AtomGPU_LightComponent_AreaLightScreenshotsMatchGoldenImages():
                 AtomComponentProperties.light('Light type')) == LIGHT_TYPES['sphere'])
 
         # 14. Enter game mode and take a screenshot then exit game mode.
-        TestHelper.enter_game_mode(Tests.enter_game_mode)
-        TestHelper.wait_for_condition(function=lambda: general.is_in_game_mode(), timeout_in_seconds=4.0)
-        ScreenshotHelper(general.idle_wait_frames).capture_screenshot_blocking("AreaLight_4.ppm")
-        TestHelper.exit_game_mode(Tests.exit_game_mode)
-        TestHelper.wait_for_condition(function=lambda: not general.is_in_game_mode(), timeout_in_seconds=4.0)
+        enter_exit_game_mode_take_screenshot("AreaLight_5.ppm", Tests.enter_game_mode, Tests.exit_game_mode)
 
         # 15. Delete the Area Light entity.
         area_light_entity.delete()

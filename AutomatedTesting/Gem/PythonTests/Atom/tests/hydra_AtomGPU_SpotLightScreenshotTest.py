@@ -101,8 +101,8 @@ def AtomGPU_LightComponent_SpotLightScreenshotsMatchGoldenImages():
     from editor_python_test_tools.utils import Report, Tracer, TestHelper
 
     from Atom.atom_utils.atom_constants import AtomComponentProperties, LIGHT_TYPES
-    from Atom.atom_utils.atom_component_helper import initial_viewport_setup, create_basic_atom_rendering_scene
-    from Atom.atom_utils.screenshot_utils import ScreenshotHelper
+    from Atom.atom_utils.atom_component_helper import (
+        initial_viewport_setup, create_basic_atom_rendering_scene, enter_exit_game_mode_take_screenshot)
 
     DEGREE_RADIAN_FACTOR = 0.0174533
 
@@ -164,11 +164,7 @@ def AtomGPU_LightComponent_SpotLightScreenshotsMatchGoldenImages():
                 AtomComponentProperties.light('Light type')) == LIGHT_TYPES['spot_disk'])
 
         # 7. Enter game mode and take a screenshot then exit game mode.
-        TestHelper.enter_game_mode(Tests.enter_game_mode)
-        TestHelper.wait_for_condition(function=lambda: general.is_in_game_mode(), timeout_in_seconds=4.0)
-        ScreenshotHelper(general.idle_wait_frames).capture_screenshot_blocking("SpotLight_1.ppm")
-        TestHelper.exit_game_mode(Tests.exit_game_mode)
-        TestHelper.wait_for_condition(function=lambda: not general.is_in_game_mode(), timeout_in_seconds=4.0)
+        enter_exit_game_mode_take_screenshot("SpotLight_1.ppm", Tests.enter_game_mode, Tests.exit_game_mode)
 
         # 8. Change the default material asset for the Ground Plane entity.
         ground_plane_name = "Ground Plane"
@@ -187,11 +183,7 @@ def AtomGPU_LightComponent_SpotLightScreenshotsMatchGoldenImages():
                 AtomComponentProperties.material('Material Asset')) == ground_plane_material_asset.id)
 
         # 9. Enter game mode and take a screenshot then exit game mode.
-        TestHelper.enter_game_mode(Tests.enter_game_mode)
-        TestHelper.wait_for_condition(function=lambda: general.is_in_game_mode(), timeout_in_seconds=4.0)
-        ScreenshotHelper(general.idle_wait_frames).capture_screenshot_blocking("SpotLight_2.ppm")
-        TestHelper.exit_game_mode(Tests.exit_game_mode)
-        TestHelper.wait_for_condition(function=lambda: not general.is_in_game_mode(), timeout_in_seconds=4.0)
+        enter_exit_game_mode_take_screenshot("SpotLight_2.ppm", Tests.enter_game_mode, Tests.exit_game_mode)
 
         # 10. Increase the Intensity value of the Light component.
         light_component.set_component_property_value(AtomComponentProperties.light('Intensity'), 800.0)
@@ -201,11 +193,7 @@ def AtomGPU_LightComponent_SpotLightScreenshotsMatchGoldenImages():
                 AtomComponentProperties.light('Intensity')) == 800.0)
 
         # 11. Enter game mode and take a screenshot then exit game mode.
-        TestHelper.enter_game_mode(Tests.enter_game_mode)
-        TestHelper.wait_for_condition(function=lambda: general.is_in_game_mode(), timeout_in_seconds=4.0)
-        ScreenshotHelper(general.idle_wait_frames).capture_screenshot_blocking("SpotLight_3.ppm")
-        TestHelper.exit_game_mode(Tests.exit_game_mode)
-        TestHelper.wait_for_condition(function=lambda: not general.is_in_game_mode(), timeout_in_seconds=4.0)
+        enter_exit_game_mode_take_screenshot("SpotLight_3.ppm", Tests.enter_game_mode, Tests.exit_game_mode)
 
         # 12. Change the Light component Color property value.
         color_value = azlmbr.math.Color(47.0 / 255.0, 75.0 / 255.0, 37.0 / 255.0, 255.0 / 255.0)
@@ -215,11 +203,7 @@ def AtomGPU_LightComponent_SpotLightScreenshotsMatchGoldenImages():
             light_component.get_component_property_value(AtomComponentProperties.light('Color')) == color_value)
 
         # 13. Enter game mode and take a screenshot then exit game mode.
-        TestHelper.enter_game_mode(Tests.enter_game_mode)
-        TestHelper.wait_for_condition(function=lambda: general.is_in_game_mode(), timeout_in_seconds=4.0)
-        ScreenshotHelper(general.idle_wait_frames).capture_screenshot_blocking("SpotLight_4.ppm")
-        TestHelper.exit_game_mode(Tests.exit_game_mode)
-        TestHelper.wait_for_condition(function=lambda: not general.is_in_game_mode(), timeout_in_seconds=4.0)
+        enter_exit_game_mode_take_screenshot("SpotLight_4.ppm", Tests.enter_game_mode, Tests.exit_game_mode)
 
         # 14. Change the Light component Enable shutters, Inner angle, and Outer angle property values.
         enable_shutters = True
@@ -240,11 +224,7 @@ def AtomGPU_LightComponent_SpotLightScreenshotsMatchGoldenImages():
             light_component.get_component_property_value(AtomComponentProperties.light('Outer angle')) == outer_angle)
 
         # 15. Enter game mode and take a screenshot then exit game mode.
-        TestHelper.enter_game_mode(Tests.enter_game_mode)
-        TestHelper.wait_for_condition(function=lambda: general.is_in_game_mode(), timeout_in_seconds=4.0)
-        ScreenshotHelper(general.idle_wait_frames).capture_screenshot_blocking("SpotLight_5.ppm")
-        TestHelper.exit_game_mode(Tests.exit_game_mode)
-        TestHelper.wait_for_condition(function=lambda: not general.is_in_game_mode(), timeout_in_seconds=4.0)
+        enter_exit_game_mode_take_screenshot("SpotLight_5.ppm", Tests.enter_game_mode, Tests.exit_game_mode)
 
         # 16. Change the Light component Enable shadow and slightly move Spot Light entity.
         light_component.set_component_property_value(AtomComponentProperties.light('Enable shadow'), True)
@@ -254,11 +234,7 @@ def AtomGPU_LightComponent_SpotLightScreenshotsMatchGoldenImages():
         spot_light_entity.set_world_rotation(azlmbr.math.Vector3(0.7, -2.0, 1.9))
 
         # 17. Enter game mode and take a screenshot then exit game mode.
-        TestHelper.enter_game_mode(Tests.enter_game_mode)
-        TestHelper.wait_for_condition(function=lambda: general.is_in_game_mode(), timeout_in_seconds=4.0)
-        ScreenshotHelper(general.idle_wait_frames).capture_screenshot_blocking("SpotLight_6.ppm")
-        TestHelper.exit_game_mode(Tests.exit_game_mode)
-        TestHelper.wait_for_condition(function=lambda: not general.is_in_game_mode(), timeout_in_seconds=4.0)
+        enter_exit_game_mode_take_screenshot("SpotLight_6.ppm", Tests.enter_game_mode, Tests.exit_game_mode)
 
         # 18. Look for errors.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)

@@ -126,6 +126,28 @@ def initial_viewport_setup(screen_width=1280, screen_height=720):
     general.update_viewport()
 
 
+def enter_exit_game_mode_take_screenshot(screenshot_name, enter_game_tuple, exit_game_tuple, timeout_in_seconds=4):
+    """
+    Enters game mode, takes a screenshot named screenshot_name (must include file extension), and exits game mode.
+    :param screenshot_name: string representing the name of the screenshot file, including file extension.
+    :param enter_game_tuple: tuple where the 1st string is success & 2nd string is failure for entering the game.
+    :param exit_game_tuple: tuple where the 1st string is success & 2nd string is failure for exiting the game.
+    :param timeout_in_seconds: int or float seconds to wait for entering/exiting game mode.
+    :return: None
+    """
+    import azlmbr.legacy.general as general
+
+    from editor_python_test_tools.utils import TestHelper
+
+    from Atom.atom_utils.screenshot_utils import ScreenshotHelper
+
+    TestHelper.enter_game_mode(enter_game_tuple)
+    TestHelper.wait_for_condition(function=lambda: general.is_in_game_mode(), timeout_in_seconds=timeout_in_seconds)
+    ScreenshotHelper(general.idle_wait_frames).capture_screenshot_blocking(screenshot_name)
+    TestHelper.exit_game_mode(exit_game_tuple)
+    TestHelper.wait_for_condition(function=lambda: not general.is_in_game_mode(), timeout_in_seconds=timeout_in_seconds)
+
+
 def create_basic_atom_rendering_scene():
     """
     Sets up a new scene inside the Editor for testing Atom rendering GPU output.
