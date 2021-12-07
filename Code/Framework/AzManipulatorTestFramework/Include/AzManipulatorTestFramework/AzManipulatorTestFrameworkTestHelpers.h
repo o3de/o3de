@@ -29,7 +29,8 @@ namespace UnitTest
         void SetUpEditorFixtureImpl() override
         {
             ToolsApplicationFixtureT::SetUpEditorFixtureImpl();
-            m_viewportManipulatorInteraction = AZStd::make_unique<IndirectCallManipulatorViewportInteraction>();
+            m_viewportManipulatorInteraction =
+                AZStd::make_unique<IndirectCallManipulatorViewportInteraction>(ToolsApplicationFixtureT::CreateDebugDisplayRequests());
             m_actionDispatcher = AZStd::make_unique<ImmediateModeActionDispatcher>(*m_viewportManipulatorInteraction);
             m_cameraState =
                 AzFramework::CreateIdentityDefaultCamera(AZ::Vector3::CreateZero(), AzManipulatorTestFramework::DefaultViewportSize);

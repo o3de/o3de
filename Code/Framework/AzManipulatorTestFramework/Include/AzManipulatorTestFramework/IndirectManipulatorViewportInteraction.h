@@ -21,7 +21,7 @@ namespace AzManipulatorTestFramework
     class IndirectCallManipulatorViewportInteraction : public ManipulatorViewportInteraction
     {
     public:
-        IndirectCallManipulatorViewportInteraction();
+        explicit IndirectCallManipulatorViewportInteraction(AZStd::shared_ptr<AzFramework::DebugDisplayRequests> debugDisplayRequests);
         ~IndirectCallManipulatorViewportInteraction();
 
         // ManipulatorViewportInteractionInterface ...
