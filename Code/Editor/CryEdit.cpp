@@ -2813,7 +2813,7 @@ void CCryEditApp::OpenProjectManager(const AZStd::string& screen)
 
     const AZStd::vector<AZStd::string> commandLineOptions {
         "--screen", screen,
-        "--project-path",AZStd::string::format(R"("%s")", projectPath.c_str()) };
+        "--project-path", AZStd::string::format(R"("%s")", projectPath.c_str()) };
 
     bool launchSuccess = AzFramework::ProjectManager::LaunchProjectManager(commandLineOptions);
     if (!launchSuccess)
