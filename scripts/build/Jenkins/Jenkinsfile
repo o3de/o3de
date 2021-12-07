@@ -472,7 +472,7 @@ def UploadTestArtifacts(String jobName, String workspace, String outputDirectory
 def PostBuildCommonSteps(String workspace, Map params, boolean mount = true) {
     echo 'Starting post-build common steps...'
     if (params && params.containsKey('OUTPUT_DIRECTORY')){
-        dir([workspace, ENGINE_REPOSITORY_NAME, params.outputDirectory].join('/')){
+        dir([workspace, ENGINE_REPOSITORY_NAME, params.OUTPUT_DIRECTORY].join('/')){
             // Clean up Testing directory
             palRmDir("Testing")
             // Recreate test runner xml directories that need to be pre generated
