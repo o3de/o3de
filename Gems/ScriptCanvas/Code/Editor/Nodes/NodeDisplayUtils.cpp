@@ -393,7 +393,7 @@ namespace ScriptCanvasEditor::Nodes
 
                 if (methodNode->HasBusID() && busId == slot.GetId() && slot.GetDescriptor() == ScriptCanvas::SlotDescriptors::DataIn())
                 {
-                    key = Translation::GlobalKeys::EBusSenderIDKey;
+                    key = ::Translation::GlobalKeys::EBusSenderIDKey;
                     GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key + ".details", details);
                 }
                 else
@@ -508,7 +508,7 @@ namespace ScriptCanvasEditor::Nodes
                 if (busNode->IsIDRequired() && slot->GetDescriptor() == ScriptCanvas::SlotDescriptors::DataIn())
                 {
                     GraphCanvas::TranslationKey key;
-                    key << Translation::GlobalKeys::EBusHandlerIDKey << "details";
+                    key << ::Translation::GlobalKeys::EBusHandlerIDKey << "details";
                     GraphCanvas::TranslationRequests::Details details;
                     details.m_name = slot->GetName();
                     details.m_tooltip = slot->GetToolTip();
@@ -726,7 +726,7 @@ namespace ScriptCanvasEditor::Nodes
                 if (busNode->IsIDRequired() && slot->GetDescriptor() == ScriptCanvas::SlotDescriptors::DataIn())
                 {
                     GraphCanvas::TranslationKey key;
-                    key << Translation::GlobalKeys::EBusHandlerIDKey << "details";
+                    key << ::Translation::GlobalKeys::EBusHandlerIDKey << "details";
                     GraphCanvas::TranslationRequests::Details details;
                     GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
                     GraphCanvas::SlotRequestBus::Event(gcSlotId, &GraphCanvas::SlotRequests::SetDetails, details.m_name, details.m_tooltip);
