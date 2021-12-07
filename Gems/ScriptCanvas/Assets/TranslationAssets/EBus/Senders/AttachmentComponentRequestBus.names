@@ -1,0 +1,86 @@
+{
+    "entries": [
+        {
+            "base": "AttachmentComponentRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Attachment",
+                "category": "Animation"
+            },
+            "methods": [
+                {
+                    "base": "Attach",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Attach"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Attach is invoked"
+                    },
+                    "details": {
+                        "name": "Attach"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Target Entity Id",
+                                "tooltip": "The Entity to attach"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "Target Bone Name"
+                            }
+                        },
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "Offset Transform"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Detach",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Detach"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Detach is invoked"
+                    },
+                    "details": {
+                        "name": "Detach"
+                    }
+                },
+                {
+                    "base": "SetAttachmentOffset",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetAttachmentOffset"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetAttachmentOffset is invoked"
+                    },
+                    "details": {
+                        "name": "Set Attachment Offset"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "Offset Transform"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

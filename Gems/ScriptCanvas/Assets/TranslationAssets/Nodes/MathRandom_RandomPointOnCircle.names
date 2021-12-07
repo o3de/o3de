@@ -1,0 +1,40 @@
+{
+    "entries": [
+        {
+            "base": "{D726B72F-9300-5D21-BE2C-8CB089BFDBA3}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Random Point On Circle",
+                "category": "Math/Random",
+                "tooltip": "returns a random point on the circumference of a circle"
+            },
+            "slots": [
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Radius_0",
+                    "details": {
+                        "name": "Radius"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result_0",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}
