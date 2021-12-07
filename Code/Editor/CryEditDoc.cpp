@@ -19,6 +19,7 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Time/ITime.h>
 #include <AzCore/Utils/Utils.h>
 #include <MathConversion.h>
 
@@ -50,7 +51,6 @@
 #include "GameExporter.h"
 #include "MainWindow.h"
 #include "LevelFileDialog.h"
-#include "StatObjBus.h"
 #include "Undo/Undo.h"
 
 #include <Atom/RPI.Public/ViewportContext.h>
@@ -245,9 +245,6 @@ void CCryEditDoc::DeleteContents()
 
     EBUS_EVENT(AzToolsFramework::EditorEntityContextRequestBus, ResetEditorContext);
 
-    // [LY-90904] move this to the EditorVegetationManager component
-    InstanceStatObjEventBus::Broadcast(&InstanceStatObjEventBus::Events::ReleaseData);
-
     //////////////////////////////////////////////////////////////////////////
     // Clear all undo info.
     //////////////////////////////////////////////////////////////////////////
@@ -307,8 +304,6 @@ void CCryEditDoc::Save(TDocMultiArchive& arrXmlAr)
 
             // Fog settings  ///////////////////////////////////////////////////////
             SerializeFogSettings((*arrXmlAr[DMAS_GENERAL]));
-
-            SerializeNameSelection((*arrXmlAr[DMAS_GENERAL]));
         }
     }
     AfterSave();
@@ -454,12 +449,6 @@ void CCryEditDoc::Load(TDocMultiArchive& arrXmlAr, const QString& szFilename)
             }
         }
 
-        if (!isPrefabEnabled)
-        {
-            // Name Selection groups
-            SerializeNameSelection((*arrXmlAr[DMAS_GENERAL]));
-        }
-
         {
             CAutoLogTime logtime("Post Load");
 
@@ -591,16 +580,6 @@ void CCryEditDoc::SerializeFogSettings(CXmlArchive& xmlAr)
         {
             CXmlTemplate::SetValues(m_fogTemplate, fog);
         }
-    }
-}
-
-void CCryEditDoc::SerializeNameSelection(CXmlArchive& xmlAr)
-{
-    IObjectManager* pObjManager = GetIEditor()->GetObjectManager();
-
-    if (pObjManager)
-    {
-        pObjManager->SerializeNameSelection(xmlAr.root, xmlAr.bLoading);
     }
 }
 
@@ -749,7 +728,9 @@ bool CCryEditDoc::OnOpenDocument(const QString& lpszPathName)
 
 bool CCryEditDoc::BeforeOpenDocument(const QString& lpszPathName, TOpenDocContext& context)
 {
-    CTimeValue loading_start_time = gEnv->pTimer->GetAsyncTime();
+    const AZ::TimeMs timeMs = AZ::GetRealElapsedTimeMs();
+    const double timeSec = AZ::TimeMsToSecondsDouble(timeMs);
+    const CTimeValue loading_start_time(timeSec);
 
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
@@ -790,7 +771,7 @@ bool CCryEditDoc::BeforeOpenDocument(const QString& lpszPathName, TOpenDocContex
 
 bool CCryEditDoc::DoOpenDocument(TOpenDocContext& context)
 {
-    CTimeValue& loading_start_time = context.loading_start_time;
+    const CTimeValue& loading_start_time = context.loading_start_time;
 
     bool isPrefabEnabled = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
@@ -860,7 +841,9 @@ bool CCryEditDoc::DoOpenDocument(TOpenDocContext& context)
 
     StartStreamingLoad();
 
-    CTimeValue loading_end_time = gEnv->pTimer->GetAsyncTime();
+    const AZ::TimeMs timeMs = AZ::GetRealElapsedTimeMs();
+    const double timeSec = AZ::TimeMsToSecondsDouble(timeMs);
+    const CTimeValue loading_end_time(timeSec);
 
     CLogFile::FormatLine("-----------------------------------------------------------");
     CLogFile::FormatLine("Successfully opened document %s", context.absoluteLevelPath.toUtf8().data());
@@ -1123,7 +1106,7 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
         const QString oldLevelPattern = QDir(oldLevelFolder).absoluteFilePath("*.*");
         const QString oldLevelName = Path::GetFile(GetLevelPathName());
         const QString oldLevelXml = Path::ReplaceExtension(oldLevelName, "xml");
-        AZ::IO::ArchiveFileIterator findHandle = pIPak->FindFirst(oldLevelPattern.toUtf8().data(), AZ::IO::IArchive::eFileSearchType_AllowOnDiskAndInZips);
+        AZ::IO::ArchiveFileIterator findHandle = pIPak->FindFirst(oldLevelPattern.toUtf8().data(), AZ::IO::FileSearchLocation::Any);
         if (findHandle)
         {
             do

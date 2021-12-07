@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "base": "PosterizeGradientComponent",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "PosterizeGradientComponent"
+            }
+        }
+    ]
+}

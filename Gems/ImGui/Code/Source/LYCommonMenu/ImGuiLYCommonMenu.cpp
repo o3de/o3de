@@ -44,11 +44,15 @@ namespace ImGui
         m_assetExplorer.Initialize();
         m_cameraMonitor.Initialize();
         m_entityOutliner.Initialize();
+
+        m_deltaTimeHistogram.Init("onTick Delta Time (Milliseconds)", 250, LYImGuiUtils::HistogramContainer::ViewType::Histogram, true, 0.0f, 60.0f);
+        AZ::TickBus::Handler::BusConnect();
     }
 
     void ImGuiLYCommonMenu::Shutdown()
     {
         // Disconnect EBusses
+        AZ::TickBus::Handler::BusDisconnect();
         ImGuiUpdateListenerBus::Handler::BusDisconnect();
 
         // shutdown sub menu objects
@@ -187,6 +191,10 @@ namespace ImGui
             // Main Open 3D Engine menu
             if (ImGui::BeginMenu("O3DE"))
             {
+                if (ImGui::MenuItem("Delta Time Graph"))
+                {
+                    m_showDeltaTimeGraphs = !m_showDeltaTimeGraphs;
+                }
                 // Asset Explorer
                 if (ImGui::MenuItem("Asset Explorer"))
                 {
@@ -628,6 +636,17 @@ namespace ImGui
         m_assetExplorer.ImGuiUpdate();
         m_cameraMonitor.ImGuiUpdate();
         m_entityOutliner.ImGuiUpdate();
+        if (m_showDeltaTimeGraphs)
+        {
+            ImGui::SetNextWindowSize({ 500, 200 }, ImGuiCond_Once);
+            if (ImGui::Begin(
+                    "Delta Time Graphs", &m_showDeltaTimeGraphs,
+                    ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_NoSavedSettings))
+            {
+                m_deltaTimeHistogram.Draw(ImGui::GetColumnWidth(), 100.0f);
+            }
+            ImGui::End();
+        }
     }
 
     void ImGuiLYCommonMenu::OnImGuiUpdate_DrawControllerLegend()
@@ -754,7 +773,6 @@ namespace ImGui
 
         // Set the timer and connect to tick bus to count down.
         m_telemetryCaptureTimeRemaining = m_telemetryCaptureTime;
-        AZ::TickBus::Handler::BusConnect();
 
         // Get the current ImGui Display state to restore it later.
         ImGuiManagerBus::BroadcastResult(m_telemetryCapturePreCaptureState, &IImGuiManager::GetClientMenuBarState);
@@ -774,16 +792,20 @@ namespace ImGui
 
         // Reset timer and disconnect tick bus
         m_telemetryCaptureTimeRemaining = 0.0f;
-        AZ::TickBus::Handler::BusDisconnect();
     }
 
     // OnTick just used for telemetry captures.
     void ImGuiLYCommonMenu::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
-        m_telemetryCaptureTimeRemaining -= deltaTime;
-        if (m_telemetryCaptureTimeRemaining <= 0.0f)
+        m_deltaTimeHistogram.PushValue(deltaTime*1000.0f); // convert to milliseconds
+
+        if (m_telemetryCaptureTimeRemaining > 0.0f)
         {
-            StopTelemetryCapture();
+            m_telemetryCaptureTimeRemaining -= deltaTime;
+            if (m_telemetryCaptureTimeRemaining <= 0.0f)
+            {
+                StopTelemetryCapture();
+            }
         }
     }
 } // namespace ImGui

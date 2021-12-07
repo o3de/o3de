@@ -157,6 +157,22 @@ namespace AZ::Statistics
             }
         }
 
+        void GetAllStatistics(AZStd::vector<NamedRunningStatistic*>& stats)
+        {
+            for (auto& iter : m_profilers)
+            {
+                iter.second.m_profiler.GetStatsManager().GetAllStatistics(stats);
+            }
+        }
+
+        void GetAllStatisticsOfUnits(AZStd::vector<NamedRunningStatistic*>& stats, const char* units)
+        {
+            for (auto& iter : m_profilers)
+            {
+                iter.second.m_profiler.GetStatsManager().GetAllStatisticsOfUnits(stats, units);
+            }
+        }
+
     private:
         struct ProfilerInfo
         {

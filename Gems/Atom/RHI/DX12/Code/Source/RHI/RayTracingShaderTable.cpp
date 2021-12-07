@@ -86,7 +86,7 @@ namespace AZ
 
                 AZStd::wstring shaderExportNameWstring;
                 AZStd::to_wstring(shaderExportNameWstring, record.m_shaderExportName.GetStringView());
-                void* shaderIdentifier = stateObjectProperties->GetShaderIdentifier(shaderExportNameWstring.c_str());
+                const void* shaderIdentifier = stateObjectProperties->GetShaderIdentifier(shaderExportNameWstring.c_str());
                 memcpy(mappedData, shaderIdentifier, D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
                 mappedData += D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
 

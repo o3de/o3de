@@ -1,0 +1,46 @@
+{
+    "entries": [
+        {
+            "base": "{6FA3AADA-3B14-5C7C-8F7C-75818C3AEC94}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "SetX",
+                "category": "Math/Vector2",
+                "tooltip": "returns a the vector(X, Source.Y)"
+            },
+            "slots": [
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Source_0",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "base": "DataInput_X_1",
+                    "details": {
+                        "name": "X"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result_0",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

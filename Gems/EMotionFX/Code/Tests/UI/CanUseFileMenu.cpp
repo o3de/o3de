@@ -330,6 +330,10 @@ namespace EMotionFX
             const QString animGraphFilename = GenerateTempAnimGraphFilename();
             SaveCurrentAnimGraph(animGraphFilename);
 
+            // Pretend editing the anim graph
+            EMotionFX::AnimGraph* animGraph = m_animGraphPlugin->GetActiveAnimGraph();
+            animGraph->SetDirtyFlag(true);
+
             // Prepare a watcher to press the ok button when the SaveDirtySettingsWindow appears.
             ModalPopupHandler saveDirtyPopupHandler;
 

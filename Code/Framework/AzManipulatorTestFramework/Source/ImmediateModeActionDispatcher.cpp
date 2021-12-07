@@ -29,8 +29,8 @@ namespace AzManipulatorTestFramework
     using KeyboardModifier = AzToolsFramework::ViewportInteraction::KeyboardModifier;
     using MouseInteractionEvent = AzToolsFramework::ViewportInteraction::MouseInteractionEvent;
 
-    ImmediateModeActionDispatcher::ImmediateModeActionDispatcher(ManipulatorViewportInteraction& viewportManipulatorInteraction)
-        : m_viewportManipulatorInteraction(viewportManipulatorInteraction)
+    ImmediateModeActionDispatcher::ImmediateModeActionDispatcher(ManipulatorViewportInteraction& manipulatorViewportInteraction)
+        : m_manipulatorViewportInteraction(manipulatorViewportInteraction)
     {
         AzToolsFramework::ViewportInteraction::EditorModifierKeyRequestBus::Handler::BusConnect();
         AzToolsFramework::ViewportInteraction::EditorViewportInputTimeNowRequestBus::Handler::BusConnect();
@@ -48,36 +48,34 @@ namespace AzManipulatorTestFramework
         // mouse down and mouse up event, to match the editor behavior we insert this event
         // to ensure the tests are simulating the same environment as the editor
         GetMouseInteractionEvent()->m_mouseEvent = AzToolsFramework::ViewportInteraction::MouseEvent::Move;
-        m_viewportManipulatorInteraction.GetManipulatorManager().ConsumeMouseInteractionEvent(*m_event);
+        m_manipulatorViewportInteraction.GetManipulatorManager().ConsumeMouseInteractionEvent(*m_event);
     }
 
     void ImmediateModeActionDispatcher::SetSnapToGridImpl(const bool enabled)
     {
-        m_viewportManipulatorInteraction.GetViewportInteraction().SetGridSnapping(enabled);
+        m_manipulatorViewportInteraction.GetViewportInteraction().SetGridSnapping(enabled);
     }
 
     void ImmediateModeActionDispatcher::SetStickySelectImpl(const bool enabled)
     {
-        m_viewportManipulatorInteraction.GetViewportInteraction().SetStickySelect(enabled);
+        m_manipulatorViewportInteraction.GetViewportInteraction().SetStickySelect(enabled);
     }
 
     void ImmediateModeActionDispatcher::GridSizeImpl(const float size)
     {
-        m_viewportManipulatorInteraction.GetViewportInteraction().SetGridSize(size);
+        m_manipulatorViewportInteraction.GetViewportInteraction().SetGridSize(size);
     }
 
     void ImmediateModeActionDispatcher::CameraStateImpl(const AzFramework::CameraState& cameraState)
     {
-        m_viewportManipulatorInteraction.GetViewportInteraction().SetCameraState(cameraState);
-        GetMouseInteractionEvent()->m_mouseInteraction.m_mousePick.m_rayOrigin = cameraState.m_position;
-        GetMouseInteractionEvent()->m_mouseInteraction.m_mousePick.m_rayDirection = cameraState.m_forward;
+        m_manipulatorViewportInteraction.GetViewportInteraction().SetCameraState(cameraState);
     }
 
     void ImmediateModeActionDispatcher::MouseLButtonDownImpl()
     {
         ToggleOn(GetMouseInteractionEvent()->m_mouseInteraction.m_mouseButtons.m_mouseButtons, MouseButton::Left);
         GetMouseInteractionEvent()->m_mouseEvent = AzToolsFramework::ViewportInteraction::MouseEvent::Down;
-        m_viewportManipulatorInteraction.GetManipulatorManager().ConsumeMouseInteractionEvent(*m_event);
+        m_manipulatorViewportInteraction.GetManipulatorManager().ConsumeMouseInteractionEvent(*m_event);
         // the mouse position will be the same as the previous event, thus the delta will be 0
         MouseMoveAfterButton();
     }
@@ -85,8 +83,26 @@ namespace AzManipulatorTestFramework
     void ImmediateModeActionDispatcher::MouseLButtonUpImpl()
     {
         GetMouseInteractionEvent()->m_mouseEvent = AzToolsFramework::ViewportInteraction::MouseEvent::Up;
-        m_viewportManipulatorInteraction.GetManipulatorManager().ConsumeMouseInteractionEvent(*m_event);
+        m_manipulatorViewportInteraction.GetManipulatorManager().ConsumeMouseInteractionEvent(*m_event);
         ToggleOff(GetMouseInteractionEvent()->m_mouseInteraction.m_mouseButtons.m_mouseButtons, MouseButton::Left);
+        // the mouse position will be the same as the previous event, thus the delta will be 0
+        MouseMoveAfterButton();
+    }
+
+    void ImmediateModeActionDispatcher::MouseMButtonDownImpl()
+    {
+        ToggleOn(GetMouseInteractionEvent()->m_mouseInteraction.m_mouseButtons.m_mouseButtons, MouseButton::Middle);
+        GetMouseInteractionEvent()->m_mouseEvent = AzToolsFramework::ViewportInteraction::MouseEvent::Down;
+        m_manipulatorViewportInteraction.GetManipulatorManager().ConsumeMouseInteractionEvent(*m_event);
+        // the mouse position will be the same as the previous event, thus the delta will be 0
+        MouseMoveAfterButton();
+    }
+
+    void ImmediateModeActionDispatcher::MouseMButtonUpImpl()
+    {
+        GetMouseInteractionEvent()->m_mouseEvent = AzToolsFramework::ViewportInteraction::MouseEvent::Up;
+        m_manipulatorViewportInteraction.GetManipulatorManager().ConsumeMouseInteractionEvent(*m_event);
+        ToggleOff(GetMouseInteractionEvent()->m_mouseInteraction.m_mouseButtons.m_mouseButtons, MouseButton::Middle);
         // the mouse position will be the same as the previous event, thus the delta will be 0
         MouseMoveAfterButton();
     }
@@ -95,7 +111,7 @@ namespace AzManipulatorTestFramework
     {
         GetMouseInteractionEvent()->m_mouseEvent = AzToolsFramework::ViewportInteraction::MouseEvent::DoubleClick;
         ToggleOn(GetMouseInteractionEvent()->m_mouseInteraction.m_mouseButtons.m_mouseButtons, MouseButton::Left);
-        m_viewportManipulatorInteraction.GetManipulatorManager().ConsumeMouseInteractionEvent(*m_event);
+        m_manipulatorViewportInteraction.GetManipulatorManager().ConsumeMouseInteractionEvent(*m_event);
         ToggleOff(GetMouseInteractionEvent()->m_mouseInteraction.m_mouseButtons.m_mouseButtons, MouseButton::Left);
         // the mouse position will be the same as the previous event, thus the delta will be 0
         MouseMoveAfterButton();
@@ -103,10 +119,10 @@ namespace AzManipulatorTestFramework
 
     void ImmediateModeActionDispatcher::MousePositionImpl(const AzFramework::ScreenPoint& position)
     {
-        const auto cameraState = m_viewportManipulatorInteraction.GetViewportInteraction().GetCameraState();
+        const auto cameraState = m_manipulatorViewportInteraction.GetViewportInteraction().GetCameraState();
         GetMouseInteractionEvent()->m_mouseInteraction.m_mousePick = BuildMousePick(position, cameraState);
         GetMouseInteractionEvent()->m_mouseEvent = AzToolsFramework::ViewportInteraction::MouseEvent::Move;
-        m_viewportManipulatorInteraction.GetManipulatorManager().ConsumeMouseInteractionEvent(*m_event);
+        m_manipulatorViewportInteraction.GetManipulatorManager().ConsumeMouseInteractionEvent(*m_event);
     }
 
     void ImmediateModeActionDispatcher::KeyboardModifierDownImpl(const KeyboardModifier& keyModifier)
@@ -146,7 +162,7 @@ namespace AzManipulatorTestFramework
         {
             m_event = AZStd::unique_ptr<MouseInteractionEvent>(AZStd::make_unique<MouseInteractionEvent>());
             m_event->m_mouseInteraction.m_interactionId.m_viewportId =
-                m_viewportManipulatorInteraction.GetViewportInteraction().GetViewportId();
+                m_manipulatorViewportInteraction.GetViewportInteraction().GetViewportId();
         }
 
         return m_event.get();
@@ -180,12 +196,12 @@ namespace AzManipulatorTestFramework
 
     void ImmediateModeActionDispatcher::ExpectManipulatorBeingInteractedImpl()
     {
-        EXPECT_TRUE(m_viewportManipulatorInteraction.GetManipulatorManager().ManipulatorBeingInteracted());
+        EXPECT_TRUE(m_manipulatorViewportInteraction.GetManipulatorManager().ManipulatorBeingInteracted());
     }
 
     void ImmediateModeActionDispatcher::ExpectManipulatorNotBeingInteractedImpl()
     {
-        EXPECT_FALSE(m_viewportManipulatorInteraction.GetManipulatorManager().ManipulatorBeingInteracted());
+        EXPECT_FALSE(m_manipulatorViewportInteraction.GetManipulatorManager().ManipulatorBeingInteracted());
     }
 
     ImmediateModeActionDispatcher* ImmediateModeActionDispatcher::ResetEvent()

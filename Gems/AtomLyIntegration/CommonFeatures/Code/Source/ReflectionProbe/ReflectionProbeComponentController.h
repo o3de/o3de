@@ -68,6 +68,9 @@ namespace AZ
             Data::Asset<RPI::StreamingImageAsset> m_bakedCubeMapAsset;
             Data::Asset<RPI::StreamingImageAsset> m_authoredCubeMapAsset;
             AZ::u64 m_entityId{ EntityId::InvalidEntityId };
+
+            float m_renderExposure = 0.0f;
+            float m_bakeExposure = 0.0f;
         };
 
         class ReflectionProbeComponentController final
@@ -98,6 +101,9 @@ namespace AZ
 
             // returns the outer extent Aabb for this reflection
             AZ::Aabb GetAabb() const;
+
+            // set the exposure to use when baking the cubemap
+            void SetBakeExposure(float bakeExposure);
 
             // initiate the reflection probe bake, invokes callback when complete
             void BakeReflectionProbe(BuildCubeMapCallback callback, const AZStd::string& relativePath);

@@ -18,6 +18,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UnitTest/UnitTest.h>
+#include <AzCore/UnitTest/Mocks/MockITime.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzNetworking/Serialization/NetworkInputSerializer.h>
 #include <AzNetworking/Serialization/NetworkOutputSerializer.h>
@@ -117,8 +118,7 @@ namespace Multiplayer
             ON_CALL(*m_mockNetworkEntityManager, GetEntity(_)).WillByDefault(Invoke(this, &HierarchyTests::GetEntity));
             ON_CALL(*m_mockNetworkEntityManager, GetNetEntityIdById(_)).WillByDefault(Invoke(this, &HierarchyTests::GetNetEntityIdById));
 
-            m_mockTime = AZStd::make_unique<NiceMock<MockTime>>();
-            AZ::Interface<AZ::ITime>::Register(m_mockTime.get());
+            m_mockTime = AZStd::make_unique<AZ::NiceTimeSystemMock>();
 
             m_eventScheduler = AZStd::make_unique<AZ::EventSchedulerSystemComponent>();
 
@@ -168,7 +168,6 @@ namespace Multiplayer
             m_networkEntityAuthorityTracker.reset();
 
             AZ::Interface<INetworkTime>::Unregister(m_mockNetworkTime.get());
-            AZ::Interface<AZ::ITime>::Unregister(m_mockTime.get());
             AZ::Interface<INetworkEntityManager>::Unregister(m_mockNetworkEntityManager.get());
             AZ::Interface<IMultiplayer>::Unregister(m_mockMultiplayer.get());
             AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(m_mockComponentApplicationRequests.get());
@@ -207,8 +206,8 @@ namespace Multiplayer
 
         AZStd::unique_ptr<NiceMock<MockMultiplayer>> m_mockMultiplayer;
         AZStd::unique_ptr<MockNetworkEntityManager> m_mockNetworkEntityManager;
-        AZStd::unique_ptr<NiceMock<MockTime>> m_mockTime;
         AZStd::unique_ptr<AZ::EventSchedulerSystemComponent> m_eventScheduler;
+        AZStd::unique_ptr<AZ::NiceTimeSystemMock> m_mockTime;
         AZStd::unique_ptr<NiceMock<MockNetworkTime>> m_mockNetworkTime;
 
         AZStd::unique_ptr<NiceMock<IMultiplayerConnectionMock>> m_mockConnection;

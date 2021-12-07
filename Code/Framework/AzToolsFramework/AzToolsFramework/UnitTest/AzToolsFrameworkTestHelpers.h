@@ -15,12 +15,14 @@
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzTest/AzTest.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
 #include <AZTestShared/Utils/Utils.h>
+#include <AzFramework/UnitTest/TestDebugDisplayRequests.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
@@ -158,7 +160,10 @@ namespace UnitTest
             {
                 // Create & Start a new ToolsApplication if there's no existing one
                 m_app = CreateTestApplication();
-                m_app->Start(AzFramework::Application::Descriptor());
+                AZ::ComponentApplication::StartupParameters startupParameters;
+                startupParameters.m_loadAssetCatalog = false;
+
+                m_app->Start(AzFramework::Application::Descriptor(), startupParameters);
             }
 
             // without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
@@ -230,6 +235,13 @@ namespace UnitTest
             auto* toolsApp = azdynamic_cast<AzToolsFramework::ToolsApplication*>(app);
             AZ_Assert(!app || toolsApp, "ComponentApplication must be the ToolsApplication here. Unsuccessful dynamic_cast.");
             return toolsApp;
+        }
+
+        //! It is possible to override this in classes deriving from ToolsApplicationFixture to provide alternate
+        //! implementations of the DebugDisplayRequests interface (e.g. TestDebugDisplayRequests).
+        virtual AZStd::shared_ptr<AzFramework::DebugDisplayRequests> CreateDebugDisplayRequests()
+        {
+            return AZStd::make_shared<NullDebugDisplayRequests>();
         }
 
     protected:

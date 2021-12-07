@@ -29,8 +29,6 @@ else:
     from io import StringIO
 
 import validator_data_LEGAL_REVIEW_REQUIRED # pull in the data we need to configure this tool
-sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'build', 'package'))
-from glob_to_regex import generate_include_exclude_regexes
 
 class Validator(object):
     """Class to contain the validator program"""
@@ -212,9 +210,6 @@ class Validator(object):
     # TODO: Perhaps the directories to skip should become a parameter so we can use the validator
     # on non-Lumberyard trees.
     def validate_directory_tree(self, root, platform):
-        prohibited_platforms = validator_data_LEGAL_REVIEW_REQUIRED.get_prohibited_platforms_for_package(self.options.package_platform)
-        (includes, excludes) = generate_include_exclude_regexes(self.options.package_platform, self.options.package_type, root, prohibited_platforms)
-
         """Walk from root to find all files to validate and call the validator on each file.
         Return 0 if no problems where found, and 1 if any validation failures occured."""
         counter = 0
@@ -227,28 +222,22 @@ class Validator(object):
             # First deal with the files in the current directory
             for filename in filenames:
                 filepath = os.path.join(dirname, filename)
-                include_match = includes.match(filepath)
-                exclude_match = excludes.match(filepath)
-                allowed = include_match and not exclude_match
-
-                if self.options.all or allowed:
-                    scanned += 1
-                    file_failed = self.validate_file(os.path.normpath(filepath))
-                    if file_failed:
-                        platform_failed = file_failed
-                    else:
-                        validations += 1
-                counter += 1
+                scanned += 1
+                file_failed = self.validate_file(os.path.normpath(filepath))
+                if file_failed:
+                    platform_failed = file_failed
+                else:
+                    validations += 1
 
             # Trim out allowlisted subdirectories in the current directory if allowed
             for name in bypassed_directories:
                 if name in dirnames:
                     dirnames.remove(name)
-        if counter == 0 or scanned == 0:
+        if scanned == 0:
             logging.error('No files scanned at target search directory: %s', root)
             platform_failed = 1
         else:
-            print('validated {} of {} package files ({} non-package files skipped)'.format(validations, scanned, counter - scanned))
+            print('validated {} of {} files'.format(validations, scanned))
         return platform_failed
 
 
@@ -387,8 +376,6 @@ def parse_options():
                       choices=platform_choices,
                       dest='package_platform',
                       help='Package platform to validate. Must be one of {}.'.format(platform_choices))
-    parser.add_option('--package_type', action='store', type='string', default='all', dest='package_type',
-                      help='Package type to validate.')
     parser.add_option('-s', '--store-exceptions', action='store', type='string', default='',
                       dest='exception_file',
                       help='Store list of lines that the validator gave exceptions to by matching accepted use patterns. These can be diffed with prior runs to see what is changing.')
@@ -430,7 +417,6 @@ def main():
 
     package_failed = 0
     package_platform = validator.options.package_platform
-    package_type = validator.options.package_type
     prohibited_platforms = validator_data_LEGAL_REVIEW_REQUIRED.get_prohibited_platforms_for_package(package_platform)
 
     if validator.options.exception_file != '':
@@ -441,18 +427,19 @@ def main():
             sys.exit(1)
 
     for platform in prohibited_platforms:
-        print('validating {} against {} for package platform {} package type {}'.format(args[0], platform, package_platform, package_type))
+        print('validating {} against {} for package platform {}'.format(args[0], platform, package_platform))
         platform_failed = validator.validate(platform)
         if platform_failed:
-            print('{} FAILED validation against {} for package platform {} package type {}'.format(args[0], platform, package_platform, package_type))
+            print('{} FAILED validation against {} for package platform {}'.format(args[0], platform, package_platform))
             package_failed = platform_failed
         else:
-            print('{} is VALIDATED against {} for package platform {} package type {}'.format(args[0], platform, package_platform, package_type))
+            print('{} is VALIDATED against {} for package platform {}'.format(args[0], platform, package_platform))
 
     if validator.options.exception_file != '':
         validator.exceptions_output.close()
 
     return package_failed
+
 
 if __name__ == '__main__':
     # pylint: disable-msg=C0103

@@ -178,21 +178,21 @@ void CrySleep(unsigned int dwMilliseconds)
 }
 
 //////////////////////////////////////////////////////////////////////////
-int CryMessageBox([[maybe_unused]] const char* lpText, [[maybe_unused]] const char* lpCaption, [[maybe_unused]] unsigned int uType)
+void CryMessageBox([[maybe_unused]] const char* lpText, [[maybe_unused]] const char* lpCaption, [[maybe_unused]] unsigned int uType)
 {
 #ifdef WIN32
     ICVar* const pCVar = gEnv && gEnv->pConsole ? gEnv->pConsole->GetCVar("sys_no_crash_dialog") : NULL;
     if ((pCVar && pCVar->GetIVal() != 0) || (gEnv && gEnv->bNoAssertDialog))
     {
-        return 0;
+        return;
     }
     AZStd::wstring lpTextW;
     AZStd::to_wstring(lpTextW, lpText);
     AZStd::wstring lpCaptionW;
     AZStd::to_wstring(lpCaptionW, lpCaption);
-    return MessageBoxW(NULL, lpTextW.c_str(), lpCaptionW.c_str(), uType);
+    MessageBoxW(NULL, lpTextW.c_str(), lpCaptionW.c_str(), uType);
 #else
-    return 0;
+    return;
 #endif
 }
 
@@ -281,12 +281,6 @@ int64 CryGetTicks()
     return li.QuadPart;
 }
 
-int64 CryGetTicksPerSec()
-{
-    LARGE_INTEGER li;
-    QueryPerformanceFrequency(&li);
-    return li.QuadPart;
-}
 #endif
 
 

@@ -11,9 +11,10 @@
 #include <AzTest/AzTest.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzFramework/Archive/ArchiveVars.h>
 #include <AzFramework/Archive/INestedArchive.h>
 #include <AzFramework/Archive/IArchive.h>
-
+#include <CryCommon/platform.h>
 
 struct CryPakMock
     : AZ::IO::IArchive
@@ -52,11 +53,11 @@ struct CryPakMock
     MOCK_METHOD1(PoolMalloc, void*(size_t size));
     MOCK_METHOD1(PoolFree, void(void* p));
     MOCK_METHOD3(PoolAllocMemoryBlock, AZStd::intrusive_ptr<AZ::IO::MemoryBlock> (size_t nSize, const char* sUsage, size_t nAlign));
-    MOCK_METHOD2(FindFirst, AZ::IO::ArchiveFileIterator(AZStd::string_view pDir, AZ::IO::IArchive::EFileSearchType));
+    MOCK_METHOD2(FindFirst, AZ::IO::ArchiveFileIterator(AZStd::string_view pDir, AZ::IO::FileSearchLocation));
     MOCK_METHOD1(FindNext, AZ::IO::ArchiveFileIterator(AZ::IO::ArchiveFileIterator handle));
     MOCK_METHOD1(FindClose, bool(AZ::IO::ArchiveFileIterator));
     MOCK_METHOD1(GetModificationTime, AZ::IO::IArchive::FileTime(AZ::IO::HandleType f));
-    MOCK_METHOD2(IsFileExist, bool(AZStd::string_view sFilename, EFileSearchLocation));
+    MOCK_METHOD2(IsFileExist, bool(AZStd::string_view sFilename, AZ::IO::FileSearchLocation));
     MOCK_METHOD1(IsFolder, bool(AZStd::string_view sPath));
     MOCK_METHOD1(GetFileSizeOnDisk, AZ::IO::IArchive::SignedFileSize(AZStd::string_view filename));
     MOCK_METHOD4(OpenArchive, AZStd::intrusive_ptr<AZ::IO::INestedArchive> (AZStd::string_view szPath, AZStd::string_view bindRoot, uint32_t nFlags, AZStd::intrusive_ptr<AZ::IO::MemoryBlock> pData));
@@ -72,7 +73,7 @@ struct CryPakMock
     MOCK_METHOD1(UnregisterFileAccessSink, void(AZ::IO::IArchiveFileAccessSink * pSink));
     MOCK_METHOD1(DisableRuntimeFileAccess, void(bool status));
     MOCK_METHOD2(DisableRuntimeFileAccess, bool(bool status, AZStd::thread_id threadId));
-    MOCK_CONST_METHOD0(GetPakPriority, AZ::IO::ArchiveLocationPriority());
+    MOCK_CONST_METHOD0(GetPakPriority, AZ::IO::FileSearchPriority());
     MOCK_CONST_METHOD1(GetFileOffsetOnMedia, uint64_t(AZStd::string_view szName));
     MOCK_CONST_METHOD1(GetFileMediaType, EStreamSourceMediaType(AZStd::string_view szName));
     MOCK_METHOD0(GetLevelPackOpenEvent, auto()->LevelPackOpenEvent*);

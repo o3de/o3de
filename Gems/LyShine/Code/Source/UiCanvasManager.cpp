@@ -12,7 +12,6 @@
 #include "UiCanvasComponent.h"
 #include "UiGameEntityContext.h"
 
-#include <IRenderer.h>
 #include <CryCommon/StlUtils.h>
 #include <LyShine/UiSerializeHelpers.h>
 

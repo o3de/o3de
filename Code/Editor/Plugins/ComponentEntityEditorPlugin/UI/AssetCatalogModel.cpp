@@ -18,7 +18,6 @@
 
 #include <LmbrCentral/Rendering/LensFlareAsset.h>
 #include <LmbrCentral/Rendering/MeshAsset.h>
-#include <LmbrCentral/Rendering/MaterialAsset.h>
 
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/RTTI/TypeInfo.h>
@@ -135,14 +134,6 @@ AssetCatalogModel::AssetCatalogModel(QObject* parent)
             }
         }
     }
-
-    //  Special cases for SimpleAssets. If these get full-fledged AssetData types, these cases can be removed.
-    QString textureExtensions = LmbrCentral::TextureAsset::GetFileFilter();
-    m_extensionToAssetType.insert(AZStd::make_pair(textureExtensions.replace("*", "").replace(" ", "").toStdString().c_str(), AZStd::vector<AZ::Uuid> { AZ::AzTypeInfo<LmbrCentral::TextureAsset>::Uuid() }));
-    QString materialExtensions = LmbrCentral::MaterialAsset::GetFileFilter();
-    m_extensionToAssetType.insert(AZStd::make_pair(materialExtensions.replace("*", "").replace(" ", "").toStdString().c_str(), AZStd::vector<AZ::Uuid> { AZ::AzTypeInfo<LmbrCentral::MaterialAsset>::Uuid() }));
-    QString dccMaterialExtensions = LmbrCentral::DccMaterialAsset::GetFileFilter();
-    m_extensionToAssetType.insert(AZStd::make_pair(dccMaterialExtensions.replace("*", "").replace(" ", "").toStdString().c_str(), AZStd::vector<AZ::Uuid> { AZ::AzTypeInfo<LmbrCentral::DccMaterialAsset>::Uuid() }));
 
     AZ::SerializeContext* serializeContext = nullptr;
     EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);

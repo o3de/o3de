@@ -1,0 +1,285 @@
+{
+    "entries": [
+        {
+            "base": "EditorTransformComponentSelectionRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Editor Transform Component Selection",
+                "category": "Editor"
+            },
+            "methods": [
+                {
+                    "base": "CopyTranslationToSelectedEntitiesGroup",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Copy Translation To Selected Entities Group"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Copy Translation To Selected Entities Group is invoked"
+                    },
+                    "details": {
+                        "name": "Copy Translation To Selected Entities Group"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Translation"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "CopyOrientationToSelectedEntitiesIndividual",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Copy Orientation To Selected Entities Individual"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Copy Orientation To Selected Entities Individual is invoked"
+                    },
+                    "details": {
+                        "name": "Copy Orientation To Selected Entities Individual"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "CopyOrientationToSelectedEntitiesGroup",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Copy Orientation To Selected Entities Group"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Copy Orientation To Selected Entities Group is invoked"
+                    },
+                    "details": {
+                        "name": "Copy Orientation To Selected Entities Group"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "CopyTranslationToSelectedEntitiesIndividual",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Copy Translation To Selected Entities Individual"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Copy Translation To Selected Entities Individual is invoked"
+                    },
+                    "details": {
+                        "name": "Copy Translation To Selected Entities Individual"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Translation"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "CopyScaleToSelectedEntitiesIndividualLocal",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Copy Scale To Selected Entities Individual Local"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Copy Scale To Selected Entities Individual Local is invoked"
+                    },
+                    "details": {
+                        "name": "Copy Scale To Selected Entities Individual Local"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OverrideManipulatorTranslation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Override Manipulator Translation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Override Manipulator Translation is invoked"
+                    },
+                    "details": {
+                        "name": "Override Manipulator Translation"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector 3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "RefreshManipulators",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Refresh Manipulators"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Refresh Manipulators is invoked"
+                    },
+                    "details": {
+                        "name": "Refresh Manipulators"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OverrideManipulatorOrientation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Override Manipulator Orientation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Override Manipulator Orientation is invoked"
+                    },
+                    "details": {
+                        "name": "Override Manipulator Orientation"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetTransformMode",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Transform Mode"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Transform Mode is invoked"
+                    },
+                    "details": {
+                        "name": "Get Transform Mode"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "CopyScaleToSelectedEntitiesIndividualWorld",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Copy Scale To Selected Entities Individual World"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Copy Scale To Selected Entities Individual World is invoked"
+                    },
+                    "details": {
+                        "name": "Copy Scale To Selected Entities Individual World"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetTransformMode",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Transform Mode"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Transform Mode is invoked"
+                    },
+                    "details": {
+                        "name": "Set Transform Mode"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ResetTranslationForSelectedEntitiesLocal",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Reset Translation For Selected Entities Local"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Reset Translation For Selected Entities Local is invoked"
+                    },
+                    "details": {
+                        "name": "Reset Translation For Selected Entities Local"
+                    }
+                },
+                {
+                    "base": "ResetOrientationForSelectedEntitiesLocal",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Reset Orientation For Selected Entities Local"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Reset Orientation For Selected Entities Local is invoked"
+                    },
+                    "details": {
+                        "name": "Reset Orientation For Selected Entities Local"
+                    }
+                }
+            ]
+        }
+    ]
+}

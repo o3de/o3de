@@ -21,6 +21,7 @@ set(FILES
     Archive/ArchiveFindData.cpp
     Archive/ArchiveFindData.h
     Archive/ArchiveVars.h
+    Archive/ArchiveVars.cpp
     Archive/Codec.h
     Archive/IArchive.h
     Archive/INestedArchive.h
@@ -78,6 +79,7 @@ set(FILES
     CommandLine/CommandLine.h
     CommandLine/CommandRegistrationBus.h
     Debug/DebugCameraBus.h
+    feature_options.cmake
     Viewport/ViewportBus.h
     Viewport/ViewportBus.cpp
     Viewport/ViewportColors.h
@@ -229,6 +231,7 @@ set(FILES
     Physics/Configuration/SystemConfiguration.h
     Physics/Configuration/SystemConfiguration.cpp
     Physics/HeightfieldProviderBus.h
+    Physics/HeightfieldProviderBus.cpp
     Physics/SimulatedBodies/RigidBody.h
     Physics/SimulatedBodies/RigidBody.cpp
     Physics/SimulatedBodies/StaticRigidBody.h
@@ -274,6 +277,8 @@ set(FILES
     Process/ProcessWatcher.cpp
     Process/ProcessWatcher.h
     Process/ProcessCommon_fwd.h
+    Process/ProcessCommunicatorTracePrinter.cpp
+    Process/ProcessCommunicatorTracePrinter.h
     ProjectManager/ProjectManager.h
     ProjectManager/ProjectManager.cpp
     Render/GameIntersectorComponent.h

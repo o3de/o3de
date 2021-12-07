@@ -1,0 +1,52 @@
+{
+    "entries": [
+        {
+            "base": "{1FC1ABCB-220E-5CBF-AE38-14E7389D0AE4}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Direction To",
+                "category": "Math/Vector4",
+                "tooltip": "Returns a direction vector between two points and the distance between them, by default the direction will be normalized, but it may be optionally scaled using the Scale parameter if different from 1.0"
+            },
+            "slots": [
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_From_0",
+                    "details": {
+                        "name": "From"
+                    }
+                },
+                {
+                    "base": "DataInput_To_1",
+                    "details": {
+                        "name": "To"
+                    }
+                },
+                {
+                    "base": "DataInput_Scale_2",
+                    "details": {
+                        "name": "Scale"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result_0",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

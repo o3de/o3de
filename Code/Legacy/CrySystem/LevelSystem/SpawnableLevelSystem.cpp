@@ -19,13 +19,12 @@
 #include <AzFramework/Input/Buses/Requests/InputChannelRequestBus.h>
 
 #include "MainThreadRenderRequestBus.h"
-#include <LyShine/ILyShine.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
-
 #include <AzCore/Script/ScriptSystemBus.h>
+#include <AzCore/Time/ITime.h>
 
 namespace LegacyLevelSystem
 {
@@ -368,7 +367,9 @@ namespace LegacyLevelSystem
         // This work not required in-editor.
         if (!gEnv || !gEnv->IsEditor())
         {
-            m_levelLoadStartTime = gEnv->pTimer->GetAsyncTime();
+            const AZ::TimeMs timeMs = AZ::GetRealElapsedTimeMs();
+            const double timeSec = AZ::TimeMsToSecondsDouble(timeMs);
+            m_levelLoadStartTime = CTimeValue(timeSec);
 
             // switched to level heap, so now imm start the loading screen (renderer will be reinitialized in the levelheap)
             gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_LOAD_START_LOADINGSCREEN, 0, 0);
@@ -409,7 +410,8 @@ namespace LegacyLevelSystem
             gEnv->pCryPak->RecordFileOpen(AZ::IO::IArchive::RFOM_Level);
         }
 
-        m_fLastTime = gEnv->pTimer->GetAsyncCurTime();
+        const AZ::TimeMs timeMs = AZ::GetRealElapsedTimeMs();
+        m_fLastTime = AZ::TimeMsToSeconds(timeMs);
 
         GetISystem()->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_LOAD_START, 0, 0);
 
@@ -433,7 +435,9 @@ namespace LegacyLevelSystem
     //------------------------------------------------------------------------
     void SpawnableLevelSystem::OnLoadingComplete(const char* levelName)
     {
-        CTimeValue t = gEnv->pTimer->GetAsyncTime();
+        const AZ::TimeMs timeMs = AZ::GetRealElapsedTimeMs();
+        const double timeSec = AZ::TimeMsToSecondsDouble(timeMs);
+        const CTimeValue t(timeSec);
         m_fLastLevelLoadTime = (t - m_levelLoadStartTime).GetSeconds();
 
         LogLoadingTime();
@@ -532,7 +536,7 @@ namespace LegacyLevelSystem
             gEnv->pCryPak->DisableRuntimeFileAccess(false);
         }
 
-        CTimeValue tBegin = gEnv->pTimer->GetAsyncTime();
+        const AZ::TimeMs beginTimeMs = AZ::GetRealElapsedTimeMs();
 
         // Clear level entities and prefab instances.
         EBUS_EVENT(AzFramework::GameEntityContextRequestBus, ResetGameContext);
@@ -553,16 +557,10 @@ namespace LegacyLevelSystem
         // Normally the GC step is triggered at the end of this method (by the ESYSTEM_EVENT_LEVEL_POST_UNLOAD event).
         EBUS_EVENT(AZ::ScriptSystemRequestBus, GarbageCollect);
 
-        // Perform level unload procedures for the LyShine UI system
-        if (gEnv && gEnv->pLyShine)
-        {
-            gEnv->pLyShine->OnLevelUnload();
-        }
-
         m_bLevelLoaded = false;
 
-        CTimeValue tUnloadTime = gEnv->pTimer->GetAsyncTime() - tBegin;
-        AZ_TracePrintf("LevelSystem", "UnloadLevel End: %.1f sec\n", tUnloadTime.GetSeconds());
+        [[maybe_unused]] const AZ::TimeMs unloadTimeMs = AZ::GetRealElapsedTimeMs() - beginTimeMs;
+        AZ_TracePrintf("LevelSystem", "UnloadLevel End: %.1f sec\n", AZ::TimeMsToSeconds(unloadTimeMs));
 
         // Must be sent last.
         // Cleanup all containers

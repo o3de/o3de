@@ -18,7 +18,9 @@
 #include <Range.h>
 #include <AnimKey.h>
 #include <ISplines.h>
-#include <Cry_Camera.h>
+
+#define DEFAULT_NEAR 0.2f
+#define DEFAULT_FOV (75.0f * gf_PI / 180.0f)
 
 // forward declaration.
 struct IAnimTrack;

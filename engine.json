@@ -90,6 +90,7 @@
         "AutomatedTesting"
     ],
     "templates": [
+        "Templates/GemRepo",
         "Templates/AssetGem",
         "Templates/DefaultGem",
         "Templates/DefaultProject",

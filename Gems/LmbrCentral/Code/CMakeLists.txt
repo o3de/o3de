@@ -13,6 +13,7 @@ ly_add_target(
     NAME LmbrCentral.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
+        lmbrcentral_headers_files.cmake
         lmbrcentral_files.cmake
         ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
@@ -25,6 +26,16 @@ ly_add_target(
         PRIVATE
             Legacy::CryCommon
             AZ::AzFramework
+)
+
+ly_add_target(
+    NAME LmbrCentral.API HEADERONLY
+    NAMESPACE Gem
+    FILES_CMAKE
+        lmbrcentral_headers_files.cmake
+    INCLUDE_DIRECTORIES
+        INTERFACE
+            include
 )
 
 ly_add_target(

@@ -276,30 +276,6 @@ struct Matrix44_tpl
         m32 = m.m32;
         m33 = m.m33;
     }
-    //CONSTRUCTOR for identical types which converts between double/float
-    //Matrix44 m=m44r;
-    //Matrix44r m=m44;
-    template<class F1>
-    ILINE Matrix44_tpl<F>(const Matrix44_tpl<F1>&m)
-    {
-        assert(m.IsValid());
-        m00 = F(m.m00);
-        m01 = F(m.m01);
-        m02 = F(m.m02);
-        m03 = F(m.m03);
-        m10 = F(m.m10);
-        m11 = F(m.m11);
-        m12 = F(m.m12);
-        m13 = F(m.m13);
-        m20 = F(m.m20);
-        m21 = F(m.m21);
-        m22 = F(m.m22);
-        m23 = F(m.m23);
-        m30 = F(m.m30);
-        m31 = F(m.m31);
-        m32 = F(m.m32);
-        m33 = F(m.m33);
-    }
 
     //---------------------------------------------------------------------
 
@@ -662,13 +638,6 @@ struct Matrix44_tpl
 ///////////////////////////////////////////////////////////////////////////////
 
 typedef Matrix44_tpl<f32>  Matrix44;   //always 32 bit
-typedef Matrix44_tpl<f64>  Matrix44d;  //always 64 bit
-typedef Matrix44_tpl<real> Matrix44r;  //variable float precision. depending on the target system it can be between 32, 64 or 80 bit
-#if AZ_COMPILER_MSVC
-    typedef __declspec(align(16)) Matrix44_tpl<f32> Matrix44A;
-#elif AZ_COMPILER_CLANG
-    typedef Matrix44_tpl<f32> __attribute__((aligned(16))) Matrix44A;
-#endif
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------

@@ -38,6 +38,7 @@ namespace AzToolsFramework
 {
     class EditorEntityUiInterface;
     class FocusModeInterface;
+    class ReadOnlyEntityPublicInterface;
 
     namespace EntityOutliner
     {
@@ -344,6 +345,9 @@ namespace AzToolsFramework
         // Paint the entity name using rich text
         void PaintEntityNameAsRichText(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
 
+        // Paint the read-only icon on the entity
+        void PaintReadOnlyIcon(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
+
         struct CheckboxGroup
         {
             EntityOutlinerCheckBox m_default;
@@ -372,10 +376,17 @@ namespace AzToolsFramework
         // this is a cache, and is hence mutable
         mutable QRect m_cachedBoundingRectOfTallCharacter;
 
-        const QColor m_selectedColor = QColor(255, 255, 255, 45);
-        const QColor m_hoverColor = QColor(255, 255, 255, 30);
+        inline static const QColor s_selectedColor = QColor(255, 255, 255, 45);
+        inline static const QColor s_hoverColor = QColor(255, 255, 255, 30);
+
+        inline static const QColor s_readOnlyBackgroundColor = QColor("#444444");
+        inline static const QPoint s_readOnlyOffset = QPoint(10, 10);
+        inline static const int s_readOnlyRadius = 6;
+
+        QIcon s_readOnlyIcon = QIcon(QString(":/Entity/readonly.svg"));
 
         EditorEntityUiInterface* m_editorEntityFrameworkInterface = nullptr;
+        ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
     };
 
 }

@@ -202,18 +202,16 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
     endforeach()
     list(JOIN INCLUDE_DIRECTORIES_PLACEHOLDER "\n" INCLUDE_DIRECTORIES_PLACEHOLDER)
 
-    string(REPEAT " " 8 PLACEHOLDER_INDENT)
-    get_target_property(RUNTIME_DEPENDENCIES_PLACEHOLDER ${TARGET_NAME} MANUALLY_ADDED_DEPENDENCIES)
-    if(RUNTIME_DEPENDENCIES_PLACEHOLDER) # not found properties return the name of the variable with a "-NOTFOUND" at the end, here we set it to empty if not found
-        set(RUNTIME_DEPENDENCIES_PLACEHOLDER "${PLACEHOLDER_INDENT}${RUNTIME_DEPENDENCIES_PLACEHOLDER}")
-        list(JOIN RUNTIME_DEPENDENCIES_PLACEHOLDER "\n${PLACEHOLDER_INDENT}" RUNTIME_DEPENDENCIES_PLACEHOLDER)
-    else()
-        unset(RUNTIME_DEPENDENCIES_PLACEHOLDER)
-    endif()
-
     string(REPEAT " " 12 PLACEHOLDER_INDENT)
     get_property(interface_build_dependencies_props TARGET ${TARGET_NAME} PROPERTY LY_DELAYED_LINK)
     unset(INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER)
+    # We can have private build dependencies that contains direct or indirect runtime dependencies.
+    # Since imported targets cannot contain build dependencies, we need another way to propagate the runtime dependencies.
+    # We dont want to put such dependencies in the interface because a user can mistakenly use a symbol that is not available 
+    # when using the engine from source (and that the author of the target didn't want to set public). 
+    # To overcome this, we will actually expose the private build dependencies as runtime dependencies. Our runtime dependency
+    # algorithm will walk recursively also through static libraries and will only copy binaries to the output.
+    unset(RUNTIME_DEPENDENCIES_PLACEHOLDER) 
     if(interface_build_dependencies_props)
         cmake_parse_arguments(build_deps "" "" "PRIVATE;PUBLIC;INTERFACE" ${interface_build_dependencies_props})
         # Interface and public dependencies should always be exposed
@@ -226,6 +224,14 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
         if("${target_type}" STREQUAL "STATIC_LIBRARY")
             set(build_deps_target "${build_deps_target};${build_deps_PRIVATE}")
         endif()
+
+        # But we will also pass the private dependencies as runtime dependencies (as long as they are targets, note the comment above)
+        foreach(build_dep_private IN LISTS build_deps_PRIVATE)
+            if(TARGET ${build_dep_private})
+                list(APPEND RUNTIME_DEPENDENCIES_PLACEHOLDER "${build_dep_private}")
+            endif()
+        endforeach()
+        
         foreach(build_dependency IN LISTS build_deps_target)
             # Skip wrapping produced when targets are not created in the same directory
             if(build_dependency)
@@ -234,6 +240,18 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
         endforeach()
     endif()
     list(JOIN INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER "\n" INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER)
+
+    string(REPEAT " " 8 PLACEHOLDER_INDENT)
+    get_target_property(manually_added_dependencies ${TARGET_NAME} MANUALLY_ADDED_DEPENDENCIES)
+    if(manually_added_dependencies) # not found properties return the name of the variable with a "-NOTFOUND" at the end, here we set it to empty if not found
+        list(APPEND RUNTIME_DEPENDENCIES_PLACEHOLDER ${manually_added_dependencies})
+    endif()
+    if(RUNTIME_DEPENDENCIES_PLACEHOLDER)   
+        set(RUNTIME_DEPENDENCIES_PLACEHOLDER "${PLACEHOLDER_INDENT}${RUNTIME_DEPENDENCIES_PLACEHOLDER}")
+        list(JOIN RUNTIME_DEPENDENCIES_PLACEHOLDER "\n${PLACEHOLDER_INDENT}" RUNTIME_DEPENDENCIES_PLACEHOLDER)
+    else()
+        unset(RUNTIME_DEPENDENCIES_PLACEHOLDER)
+    endif()
 
     string(REPEAT " " 8 PLACEHOLDER_INDENT)
     # If a target has an LY_PROJECT_NAME property, forward that property to new target
@@ -557,9 +575,13 @@ function(ly_setup_runtime_dependencies)
             string(TOUPPER ${conf} UCONF)
             ly_install(CODE
 "function(ly_copy source_file target_directory)
-    cmake_path(GET source_file FILENAME file_name)
-    if(NOT EXISTS \${target_directory}/\${file_name})
-        file(COPY \"\${source_file}\" DESTINATION \"\${target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS})
+    cmake_path(GET source_file FILENAME target_filename)
+    cmake_path(APPEND full_target_directory \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}\" \"\${target_directory}\")
+    cmake_path(APPEND target_file \"\${full_target_directory}\" \"\${target_filename}\")
+    if(\"\${source_file}\" IS_NEWER_THAN \"\${target_file}\")
+        message(STATUS \"Copying \${source_file} to \${full_target_directory}...\")
+        file(COPY \"\${source_file}\" DESTINATION \"\${full_target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS} FOLLOW_SYMLINK_CHAIN)
+        file(TOUCH_NOCREATE \"${target_file}\")
     endif()
 endfunction()"
                 COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
@@ -584,12 +606,7 @@ endfunction()"
         endif()
 
         # runtime dependencies that need to be copied to the output
-        # Anywhere CMAKE_INSTALL_PREFIX is used, it has to be escaped so it is baked into the cmake_install.cmake script instead
-        # of baking the path. This is needed so `cmake --install --prefix <someprefix>` works regardless of the CMAKE_INSTALL_PREFIX
-        # used to generate the solution.
-        # CMAKE_INSTALL_PREFIX is still used when building the INSTALL target
-        set(install_output_folder "\${CMAKE_INSTALL_PREFIX}/${runtime_output_directory}")
-        set(target_file_dir "${install_output_folder}/${target_runtime_output_subdirectory}")
+        set(target_file_dir "${runtime_output_directory}/${target_runtime_output_subdirectory}")
         ly_get_runtime_dependencies(runtime_dependencies ${target})
         foreach(runtime_dependency ${runtime_dependencies})
             unset(runtime_command)

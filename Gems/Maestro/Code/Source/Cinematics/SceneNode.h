@@ -13,6 +13,7 @@
 #pragma once
 
 #include <AzCore/std/containers/map.h>
+#include <AzCore/Time/ITime.h>
 
 #include "AnimNode.h"
 #include "SoundTrack.h"
@@ -149,7 +150,8 @@ private:
 
     std::vector<SSoundInfo> m_SoundInfo;
 
-    ICVar* m_cvar_t_FixedStep;
+    AZ::TimeMs m_simulationTickOverrideBackup = AZ::Time::ZeroTimeMs;
+    float m_timeScaleBackup = 1.0f;
 };
 
 #endif // CRYINCLUDE_CRYMOVIE_SCENENODE_H
