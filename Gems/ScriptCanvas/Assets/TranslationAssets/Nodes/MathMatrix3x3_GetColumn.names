@@ -1,0 +1,46 @@
+{
+    "entries": [
+        {
+            "base": "{50724E19-5472-5E35-9F88-F226ABB37D1A}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Get Column",
+                "category": "Math/Matrix3x3",
+                "tooltip": "Returns vector from matrix corresponding to the Column index"
+            },
+            "slots": [
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Source",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "base": "DataInput_Column",
+                    "details": {
+                        "name": "Column"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

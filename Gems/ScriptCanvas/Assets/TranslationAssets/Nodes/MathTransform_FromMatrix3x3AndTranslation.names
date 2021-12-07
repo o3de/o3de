@@ -1,0 +1,46 @@
+{
+    "entries": [
+        {
+            "base": "{D2321D1F-C3B8-516E-AFE2-3A536A89BCAB}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "From Matrix3x3 And Translation",
+                "category": "Math/Transform",
+                "tooltip": "Returns a transform from the 3x3 matrix and the translation"
+            },
+            "slots": [
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Matrix",
+                    "details": {
+                        "name": "Matrix"
+                    }
+                },
+                {
+                    "base": "DataInput_Translation",
+                    "details": {
+                        "name": "Translation"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

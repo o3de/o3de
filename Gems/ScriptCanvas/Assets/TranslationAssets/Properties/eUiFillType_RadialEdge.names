@@ -1,0 +1,29 @@
+{
+    "entries": [
+        {
+            "base": "eUiFillType_RadialEdge",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Radial Edge",
+                "category": "Constants/UI/Fill Type"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiFillType_RadialEdge",
+                    "details": {
+                        "name": "Radial Edge"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

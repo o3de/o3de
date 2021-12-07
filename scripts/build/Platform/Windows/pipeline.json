@@ -1,7 +1,7 @@
 {
     "ENV": {
         "NODE_LABEL": "windows-b3c8994f1",
-        "LY_3RDPARTY_PATH": "C:/ly/3rdParty",
+        "LY_3RDPARTY_PATH": "D:/workspace/3rdParty",
         "TIMEOUT": 30,
         "WORKSPACE": "D:/workspace",
         "MOUNT_VOLUME": true

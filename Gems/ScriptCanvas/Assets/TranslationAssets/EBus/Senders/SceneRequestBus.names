@@ -1,0 +1,70 @@
+{
+    "entries": [
+        {
+            "base": "SceneRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Scene"
+            },
+            "methods": [
+                {
+                    "base": "CutSelection",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CutSelection"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CutSelection is invoked"
+                    },
+                    "details": {
+                        "name": "CutSelection"
+                    }
+                },
+                {
+                    "base": "CopySelection",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CopySelection"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CopySelection is invoked"
+                    },
+                    "details": {
+                        "name": "CopySelection"
+                    }
+                },
+                {
+                    "base": "Paste",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Paste"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Paste is invoked"
+                    },
+                    "details": {
+                        "name": "Paste"
+                    }
+                },
+                {
+                    "base": "DuplicateSelection",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke DuplicateSelection"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after DuplicateSelection is invoked"
+                    },
+                    "details": {
+                        "name": "DuplicateSelection"
+                    }
+                }
+            ]
+        }
+    ]
+}

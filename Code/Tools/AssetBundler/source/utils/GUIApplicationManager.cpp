@@ -346,9 +346,7 @@ namespace AssetBundler
         }
 
         // Determine the enabled platforms
-        const char* appRoot = nullptr;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(appRoot, &AzFramework::ApplicationRequests::GetAppRoot);
-        m_enabledPlatforms = GetEnabledPlatformFlags(GetEngineRoot(), appRoot, AZ::Utils::GetProjectPath().c_str());
+        m_enabledPlatforms = GetEnabledPlatformFlags(GetEngineRoot(), AZStd::string_view(AZ::Utils::GetProjectPath()));
 
         // Determine which Gems are enabled for the current project
         if (!AzFramework::GetGemsInfo(m_gemInfoList, *m_settingsRegistry))

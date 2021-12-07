@@ -1,0 +1,60 @@
+{
+    "entries": [
+        {
+            "base": "{197D0BAA-FCAF-4922-872B-3A95BEA574B2}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Replace String",
+                "category": "String",
+                "tooltip": "Allows replacing a substring from a given string.",
+                "subtitle": "String"
+            },
+            "slots": [
+                {
+                    "base": "DataInput_Source",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "base": "DataInput_Replace",
+                    "details": {
+                        "name": "Replace"
+                    }
+                },
+                {
+                    "base": "DataInput_With",
+                    "details": {
+                        "name": "With"
+                    }
+                },
+                {
+                    "base": "DataInput_Case Sensitive",
+                    "details": {
+                        "name": "Case Sensitive"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                },
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In",
+                        "tooltip": "Input signal"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                }
+            ]
+        }
+    ]
+}

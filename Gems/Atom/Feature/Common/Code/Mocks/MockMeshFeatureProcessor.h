@@ -19,7 +19,7 @@ namespace UnitTest
         MOCK_METHOD1(CloneMesh, MeshHandle(const MeshHandle&));
         MOCK_CONST_METHOD1(GetModel, AZStd::intrusive_ptr<AZ::RPI::Model>(const MeshHandle&));
         MOCK_CONST_METHOD1(GetModelAsset, AZ::Data::Asset<AZ::RPI::ModelAsset>(const MeshHandle&));
-        MOCK_CONST_METHOD1(GetObjectSrg, AZStd::intrusive_ptr<AZ::RPI::ShaderResourceGroup>(const MeshHandle&));
+        MOCK_CONST_METHOD1(GetObjectSrgs, const AZStd::vector<AZStd::intrusive_ptr<AZ::RPI::ShaderResourceGroup>>&(const MeshHandle&));
         MOCK_CONST_METHOD1(QueueObjectSrgForCompile, void(const MeshHandle&));
         MOCK_CONST_METHOD1(GetMaterialAssignmentMap, const AZ::Render::MaterialAssignmentMap&(const MeshHandle&));
         MOCK_METHOD2(ConnectModelChangeEventHandler, void(const MeshHandle&, ModelChangedEvent::Handler&));

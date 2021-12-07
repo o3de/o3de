@@ -168,9 +168,12 @@ namespace AZ::AtomBridge
         void DrawSolidCone(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius, float height, bool drawShaded) override;
         void DrawWireCylinder(const AZ::Vector3& center, const AZ::Vector3& axis, float radius, float height) override;
         void DrawSolidCylinder(const AZ::Vector3& center, const AZ::Vector3& axis, float radius, float height, bool drawShaded) override;
+        void DrawWireCylinderNoEnds(const AZ::Vector3& center, const AZ::Vector3& axis, float radius, float height) override;
+        void DrawSolidCylinderNoEnds(const AZ::Vector3& center, const AZ::Vector3& axis, float radius, float height, bool drawShaded) override;
         void DrawWireCapsule(const AZ::Vector3& center, const AZ::Vector3& axis, float radius, float heightStraightSection) override;
         void DrawWireSphere(const AZ::Vector3& pos, float radius) override;
         void DrawWireSphere(const AZ::Vector3& pos, const AZ::Vector3 radius) override;
+        void DrawWireHemisphere(const AZ::Vector3& pos, const AZ::Vector3& axis, float radius) override;
         void DrawWireDisk(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius) override;
         void DrawBall(const AZ::Vector3& pos, float radius, bool drawShaded) override;
         void DrawDisk(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius) override;

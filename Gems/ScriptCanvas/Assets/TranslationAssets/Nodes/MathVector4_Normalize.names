@@ -1,0 +1,40 @@
+{
+    "entries": [
+        {
+            "base": "{9337FBC7-20D8-51C7-8D69-D9E53B739BD7}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Normalize",
+                "category": "Math/Vector4",
+                "tooltip": "Returns a unit length vector in the same direction as the source, or (1,0,0,0) if the source length is too small"
+            },
+            "slots": [
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Source",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

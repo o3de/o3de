@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include <AzCore/Asset/AssetCommon.h>
-
 #if !defined(Q_MOC_RUN)
+#include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Asset/AssetManagerBus.h>
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 #endif
 
@@ -20,21 +20,25 @@ namespace AZ
     {
         namespace SharedPreviewUtils
         {
-            //! Get assetId by assetType that belongs to either source or product thumbnail key
-            Data::AssetId GetAssetId(
-                AzToolsFramework::Thumbnailer::SharedThumbnailKey key,
-                const Data::AssetType& assetType,
-                const Data::AssetId& defaultAssetId = {});
-
-            //! Word wrap function for previewer QLabel, since by default it does not break long words such as filenames, so manual word
-            //! wrap needed
-            QString WordWrap(const QString& string, int maxLength);
-
             //! Get the set of all asset types supported by the shared preview
-            AZStd::unordered_set<AZ::Uuid> GetSupportedAssetTypes();
+            AZStd::vector<AZ::Uuid> GetSupportedAssetTypes();
 
             //! Determine if a thumbnail key has an asset supported by the shared preview
             bool IsSupportedAssetType(AzToolsFramework::Thumbnailer::SharedThumbnailKey key);
+
+            //! Get assetInfo of source or product thumbnail key if asset type is supported by the shared preview
+            AZ::Data::AssetInfo GetSupportedAssetInfo(AzToolsFramework::Thumbnailer::SharedThumbnailKey key);
+
+            //! Get assetId of source or product thumbnail key if asset type is supported by the shared preview
+            AZ::Data::AssetId GetSupportedAssetId(
+                AzToolsFramework::Thumbnailer::SharedThumbnailKey key, const AZ::Data::AssetId& defaultAssetId = {});
+
+            //! Wraps AZ::RPI::AssetUtils::GetAssetIdForProductPath to handle empty productPath
+            AZ::Data::AssetId GetAssetIdForProductPath(const AZStd::string_view productPath);
+
+            //! Inserts new line characters into a string whenever the maximum number of characters per line is exceeded
+            QString WordWrap(const QString& string, int maxLength);
+
         } // namespace SharedPreviewUtils
     } // namespace LyIntegration
 } // namespace AZ

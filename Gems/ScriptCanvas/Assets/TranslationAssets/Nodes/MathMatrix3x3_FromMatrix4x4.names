@@ -1,0 +1,40 @@
+{
+    "entries": [
+        {
+            "base": "{5E5DA784-9D18-595F-BB1E-FA3AC8BA7DD6}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "From Matrix4x4",
+                "category": "Math/Matrix3x3",
+                "tooltip": "Returns a matrix from the first 3 rows of a Matrix3x3"
+            },
+            "slots": [
+                {
+                    "base": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Source",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

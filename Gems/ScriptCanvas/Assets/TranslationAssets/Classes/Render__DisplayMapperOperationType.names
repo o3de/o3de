@@ -1,0 +1,99 @@
+{
+    "entries": [
+        {
+            "base": "Render::DisplayMapperOperationType",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Display Mapper Operation Type",
+                "category": "Rendering"
+            },
+            "methods": [
+                {
+                    "base": "GetDisplayMapperOperationType_GammaSRGB",
+                    "details": {
+                        "name": "Get Display Mapper Operation Type_ GammaSRGB"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetDisplayMapperOperationType_Invalid",
+                    "details": {
+                        "name": "Get Display Mapper Operation Type_ Invalid"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetDisplayMapperOperationType_Passthrough",
+                    "details": {
+                        "name": "Get Display Mapper Operation Type_ Passthrough"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetDisplayMapperOperationType_Reinhard",
+                    "details": {
+                        "name": "Get Display Mapper Operation Type_ Reinhard"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetDisplayMapperOperationType_Aces",
+                    "details": {
+                        "name": "Get Display Mapper Operation Type_ Aces"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetDisplayMapperOperationType_AcesLut",
+                    "details": {
+                        "name": "Get Display Mapper Operation Type_ Aces Lut"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

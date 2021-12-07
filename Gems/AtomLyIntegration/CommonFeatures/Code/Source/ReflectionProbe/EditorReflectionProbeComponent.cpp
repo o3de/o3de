@@ -40,6 +40,7 @@ namespace AZ
                     ->Field("bakedCubeMapQualityLevel", &EditorReflectionProbeComponent::m_bakedCubeMapQualityLevel)
                     ->Field("bakedCubeMapRelativePath", &EditorReflectionProbeComponent::m_bakedCubeMapRelativePath)
                     ->Field("authoredCubeMapAsset", &EditorReflectionProbeComponent::m_authoredCubeMapAsset)
+                    ->Field("bakeExposure", &EditorReflectionProbeComponent::m_bakeExposure)
                 ;
 
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
@@ -61,6 +62,13 @@ namespace AZ
                                 ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
                                 ->Attribute(AZ::Edit::Attributes::ButtonText, "Bake Reflection Probe")
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorReflectionProbeComponent::BakeReflectionProbe)
+                                ->Attribute(AZ::Edit::Attributes::Visibility, &EditorReflectionProbeComponent::GetBakedCubemapVisibilitySetting)
+                            ->DataElement(AZ::Edit::UIHandlers::Slider, &EditorReflectionProbeComponent::m_bakeExposure, "Bake Exposure", "Exposure to use when baking the cubemap")
+                                ->Attribute(AZ::Edit::Attributes::SoftMin, -16.0f)
+                                ->Attribute(AZ::Edit::Attributes::SoftMax, 16.0f)
+                                ->Attribute(AZ::Edit::Attributes::Min, -20.0f)
+                                ->Attribute(AZ::Edit::Attributes::Max, 20.0f)
+                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorReflectionProbeComponent::OnBakeExposureChanged)
                                 ->Attribute(AZ::Edit::Attributes::Visibility, &EditorReflectionProbeComponent::GetBakedCubemapVisibilitySetting)
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Cubemap")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
@@ -111,6 +119,11 @@ namespace AZ
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &ReflectionProbeComponentConfig::m_showVisualization, "Show Visualization", "Show the reflection probe visualization sphere")
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                            ->DataElement(AZ::Edit::UIHandlers::Slider, &ReflectionProbeComponentConfig::m_renderExposure, "Exposure", "Exposure to use when rendering meshes with the cubemap")
+                                ->Attribute(AZ::Edit::Attributes::SoftMin, -5.0f)
+                                ->Attribute(AZ::Edit::Attributes::SoftMax, 5.0f)
+                                ->Attribute(AZ::Edit::Attributes::Min, -20.0f)
+                                ->Attribute(AZ::Edit::Attributes::Max, 20.0f)
                         ;
                 }
             }
@@ -271,6 +284,13 @@ namespace AZ
 
             // refresh currently displayed cubemap
             m_controller.UpdateCubeMap();
+
+            return AZ::Edit::PropertyRefreshLevels::None;
+        }
+
+        AZ::u32 EditorReflectionProbeComponent::OnBakeExposureChanged()
+        {
+            m_controller.SetBakeExposure(m_bakeExposure);
 
             return AZ::Edit::PropertyRefreshLevels::None;
         }

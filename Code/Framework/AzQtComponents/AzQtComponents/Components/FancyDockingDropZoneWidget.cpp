@@ -19,7 +19,7 @@
 
 namespace AzQtComponents
 {
-    static FancyDockingDropZoneConstants g_Constants;
+    static const FancyDockingDropZoneConstants g_Constants;
 
     FancyDockingDropZoneConstants::FancyDockingDropZoneConstants()
     {

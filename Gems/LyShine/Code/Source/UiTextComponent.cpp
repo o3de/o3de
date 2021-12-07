@@ -598,7 +598,6 @@ namespace
         int curChar = 0;
         float curLineWidth = 0.0f;
         float biggestLineWidth = 0.0f;
-        float widthSum = 0.0f;
 
         // When iterating over batches, we need to know the previous
         // character, which we can only obtain if we keep track of the last
@@ -690,7 +689,6 @@ namespace
                     {
                         // Reset the current line width to account for newline
                         curLineWidth = curCharWidth;
-                        widthSum += curLineWidth;
                     }
                     else if ((lastSpace > 0) && ((curChar - lastSpace) < 16) && (curChar - lastSpace >= 0)) // 16 is the default threshold
                     {
@@ -703,7 +701,6 @@ namespace
                         }
 
                         curLineWidth = curLineWidth - lastSpaceWidth + curCharWidth;
-                        widthSum += curLineWidth;
                     }
                     else
                     {
@@ -723,7 +720,6 @@ namespace
                             biggestLineWidth = curLineWidth;
                         }
 
-                        widthSum += curLineWidth;
                         curLineWidth = curCharWidth;
                     }
 
@@ -4936,7 +4932,7 @@ AZStd::string UiTextComponent::GetLocalizedText([[maybe_unused]] const AZStd::st
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 AZ::Vector2 UiTextComponent::CalculateAlignedPositionWithYOffset(const UiTransformInterface::RectPoints& points)
 {
-    AZ::Vector2 pos;
+    AZ::Vector2 pos = AZ::Vector2::CreateZero();
     const DrawBatchLines& drawBatchLines = GetDrawBatchLines();
     size_t numLinesOfText = drawBatchLines.batchLines.size();
 
