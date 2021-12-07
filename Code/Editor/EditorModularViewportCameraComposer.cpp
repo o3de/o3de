@@ -134,6 +134,8 @@ namespace SandboxEditor
                 AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Event(
                     viewportId, &AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Events::BeginCursorCapture);
             }
+
+            AZ_Printf("debug", "look begin\n");
         };
 
         const auto showCursor = [viewportId = m_viewportId]
@@ -143,6 +145,8 @@ namespace SandboxEditor
                 AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Event(
                     viewportId, &AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Events::EndCursorCapture);
             }
+
+            AZ_Printf("debug", "look end\n");
         };
 
         const auto trackingTransform = [viewportId = m_viewportId]
@@ -233,6 +237,18 @@ namespace SandboxEditor
         m_firstPersonFocusCamera->SetPivotFn(pivotFn);
 
         m_orbitCamera = AZStd::make_shared<AzFramework::OrbitCameraInput>(SandboxEditor::CameraOrbitChannelId());
+
+        m_orbitCamera->SetActivationBeganFn(
+            []
+            {
+                AZ_Printf("debug", "orbit begin\n");
+            });
+
+        m_orbitCamera->SetActivationEndedFn(
+            []
+            {
+                AZ_Printf("debug", "orbit end\n");
+            });
 
         m_orbitCamera->SetPivotFn(
             [this, pivotFn](const AZ::Vector3& position, const AZ::Vector3& direction)
