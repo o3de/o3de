@@ -69,7 +69,6 @@ set(FILES
     TickBusTest.cpp
     UUIDTests.cpp
     XML.cpp
-    Debug/AssetTracking.cpp
     Debug/LocalFileEventLoggerTests.cpp
     Debug/Trace.cpp
     Debug/UnhandledExceptions.cpp

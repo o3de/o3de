@@ -23,7 +23,6 @@
 #include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
 #include <AtomCore/Instance/Instance.h>
 #include <AzCore/Math/MatrixUtils.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Math/Obb.h>
 
 namespace AZ

@@ -17,8 +17,6 @@
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/PipelineState.h>
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace Render

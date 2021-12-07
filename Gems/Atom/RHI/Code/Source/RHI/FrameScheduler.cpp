@@ -24,7 +24,6 @@
 #include <Atom/RHI/ResourcePoolDatabase.h>
 #include <Atom/RHI/RayTracingShaderTable.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Jobs/Algorithms.h>
 #include <AzCore/Jobs/JobCompletion.h>

@@ -11,7 +11,6 @@
 
 #include <Atom/RPI.Public/Scene.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Math/Obb.h>
 #include <AzCore/Math/Matrix4x4.h>
 #include <AzCore/std/functional.h>
