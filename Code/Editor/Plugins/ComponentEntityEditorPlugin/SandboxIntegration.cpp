@@ -41,6 +41,7 @@
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
 #include <AzToolsFramework/Slice/SliceRequestBus.h>
 #include <AzToolsFramework/Slice/SliceUtilities.h>
@@ -207,6 +208,9 @@ void SandboxIntegrationManager::Setup()
 
     m_editorEntityAPI = AZ::Interface<AzToolsFramework::EditorEntityAPI>::Get();
     AZ_Assert(m_editorEntityAPI, "SandboxIntegrationManager requires an EditorEntityAPI instance to be present on Setup().");
+
+    m_readOnlyEntityPublicInterface = AZ::Interface<AzToolsFramework::ReadOnlyEntityPublicInterface>::Get();
+    AZ_Assert(m_readOnlyEntityPublicInterface, "SandboxIntegrationManager requires an ReadOnlyEntityPublicInterface instance to be present on Setup().");
 
     AzToolsFramework::Layers::EditorLayerComponentNotificationBus::Handler::BusConnect();
 }
@@ -658,15 +662,17 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
     // when a single entity is selected, entity is created as its child
     else if (selected.size() == 1)
     {
+        AZ::EntityId selectedEntityId = selected.front();
+        bool selectedEntityIsReadOnly = m_readOnlyEntityPublicInterface->IsReadOnly(selectedEntityId);
         auto containerEntityInterface = AZ::Interface<AzToolsFramework::ContainerEntityInterface>::Get();
-        if (!prefabSystemEnabled || (containerEntityInterface && containerEntityInterface->IsContainerOpen(selected.front())))
+        if (!prefabSystemEnabled || (containerEntityInterface && containerEntityInterface->IsContainerOpen(selectedEntityId) && !selectedEntityIsReadOnly))
         {
             action = menu->addAction(QObject::tr("Create entity"));
             QObject::connect(
                 action, &QAction::triggered, action,
-                [selected]
+                [selectedEntityId]
                 {
-                    AzToolsFramework::EditorRequestBus::Broadcast(&AzToolsFramework::EditorRequestBus::Handler::CreateNewEntityAsChild, selected.front());
+                    AzToolsFramework::EditorRequestBus::Broadcast(&AzToolsFramework::EditorRequestBus::Handler::CreateNewEntityAsChild, selectedEntityId);
                 }
             );
         }
@@ -691,11 +697,27 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
         SetupSliceContextMenu(menu);
     }
 
-    action = menu->addAction(QObject::tr("Duplicate"));
-    QObject::connect(action, &QAction::triggered, action, [this] { ContextMenu_Duplicate(); });
-    if (selected.size() == 0)
+    if (!selected.empty())
     {
-        action->setDisabled(true);
+        // Don't allow duplication if any of the selected entities are direct desendants of a read-only entity
+        bool selectionContainsDescendantOfReadOnlyEntity = false;
+        for (const auto& entityId : selected)
+        {
+            AZ::EntityId parentEntityId;
+            AZ::TransformBus::EventResult(parentEntityId, entityId, &AZ::TransformBus::Events::GetParentId);
+
+            if (parentEntityId.IsValid() && m_readOnlyEntityPublicInterface->IsReadOnly(parentEntityId))
+            {
+                selectionContainsDescendantOfReadOnlyEntity = true;
+                break;
+            }
+        }
+
+        if (!selectionContainsDescendantOfReadOnlyEntity)
+        {
+            action = menu->addAction(QObject::tr("Duplicate"));
+            QObject::connect(action, &QAction::triggered, action, [this] { ContextMenu_Duplicate(); });
+        }
     }
 
     if (!prefabSystemEnabled)
