@@ -10,11 +10,11 @@
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/PlatformIncl.h>
+#include <AzCore/StringFunc/StringFunc.h>
 
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzFramework/Process/ProcessCommunicator.h>
 #include <AzFramework/Process/ProcessCommon.h>
-#include <AzFramework/StringFunc/StringFunc.h>
 
 #include <iostream>
 
@@ -357,47 +357,40 @@ namespace AzFramework
         }
     }
 
-        namespace ProcessLauncher
+    AZStd::string ProcessLauncher::ProcessLaunchInfo::GetCommandLineParametersAsString() const
     {
-        AZStd::string ProcessLaunchInfo::GetCommandLineParametersAsString() const
+        struct CommandLineParametersVisitor
         {
-            struct CommandLineParametersVisitor
+            AZStd::string operator()(const AZStd::string& commandLine) const
             {
-                AZStd::string operator()(const AZStd::string& commandLine) const
+                return commandLine;
+            }
+
+            AZStd::string operator()(const AZStd::vector<AZStd::string>& commandLineArray) const
+            {
+                AZStd::string commandLineResult;
+
+                // When re-constructing a command line from an argument list (on windows), if an argument
+                // is double-quoted, then the double-quotes must be escaped properly otherwise
+                // it will be absorbed by the native argument parser and possibly evaluated as
+                // multiple values for arguments
+                AZStd::string_view escapedDoubleQuote = R"("\")";
+
+                AZStd::vector<AZStd::string> preprocessedCommandArray;
+
+                for (const auto& commandArg : commandLineArray)
                 {
-                    return commandLine;
+                    AZStd::string replacedArg = commandArg;
+                    AZ::StringFunc::Replace(replacedArg, R"(")", R"("\")", false, true, true);
+                    preprocessedCommandArray.emplace_back(replacedArg);
                 }
+                AZ::StringFunc::Join(commandLineResult, preprocessedCommandArray.begin(), preprocessedCommandArray.end(), " ");
 
-                AZStd::string operator()(const AZStd::vector<AZStd::string>& commandLineArray) const
-                {
-                    AZStd::string commandLineResult;
+                return commandLineResult;
+            }
+        };
 
-                    // When re-constructing a command line from an argument list (on windows), if an argument
-                    // is double-quoted, then the double-quotes must be escaped properly otherwise
-                    // it will be absorbed by the native argument parser and possibly evaluated as
-                    // multiple values for arguments
-                    AZStd::string_view escapedDoubleQuote = R"("\")";
-
-                    AZStd::vector<AZStd::string> preprocessed_command_array;
-                    for (const auto& commandArg : commandLineArray)
-                    {
-                        AZStd::string replacedArg = commandArg;
-                        auto replacePos = replacedArg.find_first_of('"');
-                        while (replacePos != replacedArg.npos)
-                        {
-                            replacedArg.replace(replacePos, 1, escapedDoubleQuote.data(), escapedDoubleQuote.size());
-                            replacePos += escapedDoubleQuote.size();
-                            replacePos = replacedArg.find('"', replacePos);
-                        }
-                        preprocessed_command_array.emplace_back(replacedArg);
-                    }
-                    AzFramework::StringFunc::Join(commandLineResult, preprocessed_command_array.begin(), preprocessed_command_array.end(), " ");
-
-                    return commandLineResult;
-                }
-            };
-
-            return AZStd::visit(CommandLineParametersVisitor{}, m_commandlineParameters);
-        }
+        return AZStd::visit(CommandLineParametersVisitor{}, m_commandlineParameters);
     }
+
 } // namespace AzFramework

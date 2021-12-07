@@ -9,7 +9,6 @@
 
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
-#include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzFramework/Process/ProcessCommunicatorTracePrinter.h>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>

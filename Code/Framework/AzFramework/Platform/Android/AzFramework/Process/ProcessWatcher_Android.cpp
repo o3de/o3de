@@ -6,9 +6,9 @@
  *
  */
 
+#include <AzCore/StringFunc/StringFunc.h>
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzFramework/Process/ProcessCommunicator.h>
-#include <AzFramework/StringFunc/StringFunc.h>
 
 namespace AzFramework
 {
@@ -96,7 +96,7 @@ namespace AzFramework
             AZStd::string operator()(const AZStd::vector<AZStd::string>& commandLineArray) const
             {
                 AZStd::string commandLineResult;
-                AzFramework::StringFunc::Join(commandLineResult, commandLineArray.begin(), commandLineArray.end(), " ");
+                AZ::StringFunc::Join(commandLineResult, commandLineArray.begin(), commandLineArray.end(), " ");
                 return commandLineResult;
             }
         };

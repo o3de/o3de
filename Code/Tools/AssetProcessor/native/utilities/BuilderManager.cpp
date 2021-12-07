@@ -221,7 +221,7 @@ namespace AssetProcessor
             for (size_t optionIndex = 0; optionIndex < commandOptionCount; ++optionIndex)
             {
                 const AZStd::string& optionValue = commandLine.GetSwitchValue(optionKey, optionIndex);
-                params.emplace_back(AZStd::string::format(R"( --%s="%s")", optionKey, optionValue.c_str()));
+                params.emplace_back(AZStd::string::format(R"(--%s="%s")", optionKey, optionValue.c_str()));
             }
         }
 

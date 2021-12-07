@@ -9,12 +9,12 @@
 
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzFramework/Process/ProcessCommunicator.h>
-#include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzCore/base.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/StringFunc/StringFunc.h>
 
 #include <iostream>
 #include <errno.h>
@@ -480,7 +480,7 @@ namespace AzFramework
             AZStd::string operator()(const AZStd::vector<AZStd::string>& commandLineArray) const
             {
                 AZStd::string commandLineResult;
-                AzFramework::StringFunc::Join(commandLineResult, commandLineArray.begin(), commandLineArray.end(), " ");
+                AZ::StringFunc::Join(commandLineResult, commandLineArray.begin(), commandLineArray.end(), " ");
                 return commandLineResult;
             }
         };
