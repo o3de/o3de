@@ -28,6 +28,9 @@ set(FILES
     Entity/EditorEntitySearchComponentTests.cpp
     Entity/EditorEntitySelectionTests.cpp
     Entity/EntityUtilityComponentTests.cpp
+    Entity/ReadOnly/ReadOnlyEntityFixture.cpp
+    Entity/ReadOnly/ReadOnlyEntityFixture.h
+    Entity/ReadOnly/ReadOnlyEntityTests.cpp
     EntityIdQLabelTests.cpp
     EntityInspectorTests.cpp
     EntityOwnershipService/EntityOwnershipServiceTestFixture.cpp
@@ -66,6 +69,7 @@ set(FILES
     Prefab/PrefabFocus/PrefabFocusTests.cpp
     Prefab/MockPrefabFileIOActionValidator.cpp
     Prefab/MockPrefabFileIOActionValidator.h
+    Prefab/PrefabDeleteTests.cpp
     Prefab/PrefabDuplicateTests.cpp
     Prefab/PrefabEntityAliasTests.cpp
     Prefab/PrefabInstanceToTemplatePropagatorTests.cpp
@@ -100,6 +104,7 @@ set(FILES
     Prefab/SpawnableSortEntitiesTests.cpp
     Prefab/PrefabScriptingTests.cpp
     Prefab/ProceduralPrefabAssetTests.cpp
+    PropertyIntCtrlCommonTests.cpp
     PropertyIntCtrlCommonTests.h
     PropertyIntSliderCtrlTests.cpp
     PropertyIntSpinCtrlTests.cpp
@@ -135,5 +140,6 @@ set(FILES
     Viewport/ViewportUiDisplayTests.cpp
     Viewport/ViewportUiManagerTests.cpp
     Viewport/ViewportUiWidgetManagerTests.cpp
+    Viewport/ViewportInteractionTests.cpp
     Visibility/EditorVisibilityTests.cpp
 )

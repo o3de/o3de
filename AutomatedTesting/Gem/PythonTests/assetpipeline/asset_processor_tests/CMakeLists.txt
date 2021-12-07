@@ -104,6 +104,19 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_pytest(
+        NAME AssetPipelineTests.BundleMode
+        PATH ${CMAKE_CURRENT_LIST_DIR}/bundle_mode_tests.py
+        EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+        TEST_SERIAL
+        TEST_SUITE periodic
+        RUNTIME_DEPENDENCIES
+            AZ::AssetProcessor
+            AZ::AssetBundlerBatch
+            Legacy::Editor
+            AutomatedTesting.Assets
+    )
+
+    ly_add_pytest(
         NAME AssetPipelineTests.AssetBuilder
         PATH ${CMAKE_CURRENT_LIST_DIR}/asset_builder_tests.py
         EXCLUDE_TEST_RUN_TARGET_FROM_IDE

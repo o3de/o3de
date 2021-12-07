@@ -70,6 +70,9 @@ namespace Camera
         //! Used by the Editor to disable undesirable camera changes in edit mode.
         void SetShouldActivateFunction(AZStd::function<bool()> shouldActivateFunction);
 
+        //! Defines a callback for determining whether this camera is currently locked by its transform.
+        void SetIsLockedFunction(AZStd::function<bool()> isLockedFunction);
+
         // Controller interface
         static void Reflect(AZ::ReflectContext* context);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
@@ -136,5 +139,6 @@ namespace Camera
         bool m_isActiveView = false;
 
         AZStd::function<bool()> m_shouldActivateFn;
+        AZStd::function<bool()> m_isLockedFn = []{ return false; };
     };
 } // namespace Camera

@@ -47,4 +47,71 @@ namespace UnitTest
     {
         this->HandlerMinMaxLessLimit_ModifyHandler_ExpectSuccessAndValidLessLimitToolTipString();
     }
+
+    struct PropertyEditorHandler
+        : public AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler
+    {
+        PropertyEditorHandler()
+        {
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::BusConnect();
+        }
+
+        ~PropertyEditorHandler()
+        {
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::BusDisconnect();
+        }
+
+        // AzToolsFramework::PropertyEditorGUIMessages::Bus overrides ...
+        void RequestWrite([[maybe_unused]] QWidget* editorGUI) override
+        {
+            m_requestWriteCallCount++;
+        }
+
+        void RequestRefresh([[maybe_unused]] PropertyModificationRefreshLevel level) override
+        {
+        }
+
+        void AddElementsToParentContainer(
+            [[maybe_unused]] QWidget* editorGUI,
+            [[maybe_unused]] size_t numElements,
+            [[maybe_unused]] const InstanceDataNode::FillDataClassCallback& fillDataCallback) override
+        {
+        }
+
+        void RequestPropertyNotify([[maybe_unused]] QWidget* editorGUI) override
+        {
+        }
+
+        void OnEditingFinished([[maybe_unused]]QWidget* editorGUI) override
+        {
+            m_onEditingFinishedCallCount++;
+        }
+
+        int m_requestWriteCallCount = 0;
+        int m_onEditingFinishedCallCount = 0;
+    };
+
+    TYPED_TEST(PropertySpinCtrlFixture, SpinBoxWidgetValueChangedInvokesPropertyEditorGUIMessages)
+    {
+        // setup the event handler
+        PropertyEditorHandler eventHandler;
+
+        // trigger the QT signal
+        this->EmitWidgetValueChanged();
+
+        // there should be at least 1 call to RequestWrite.
+        EXPECT_GT(eventHandler.m_requestWriteCallCount, 0);
+    }
+
+    TYPED_TEST(PropertySpinCtrlFixture, SpinBoxWidgetEditingFinishedInvokesPropertyEditorGUIMessages)
+    {
+        // setup the event handler
+        PropertyEditorHandler eventHandler;
+
+        // trigger the QT signal
+        this->EmitWidgetEditingFinished();
+
+        // there should be at least 1 call to OnEditingFinished.
+        EXPECT_GT(eventHandler.m_onEditingFinishedCallCount, 0);
+    }
 } // namespace UnitTest

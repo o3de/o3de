@@ -277,7 +277,7 @@ class AbstractResourceLocator(object):
     def get_shader_compiler_path(self):
         """
         Return path to shader compiler executable
-        ex. engine_root/dev/windows_vs2019/bin/profile/CrySCompileServer
+        ex. engine_root/dev/windows/bin/profile/CrySCompileServer
         :return: path to CrySCompileServer executable
         """
         return os.path.join(self.build_directory(), 'CrySCompileServer')
@@ -313,7 +313,7 @@ class AbstractResourceLocator(object):
     def shader_compiler_config_file(self):
         """
         Return path to the Shader Compiler config file
-        ex. engine_root/dev/windows_vs2019/bin/profile/config.ini
+        ex. engine_root/dev/windows/bin/profile/config.ini
         :return: path to the Shader Compiler config file
         """
         return os.path.join(self.build_directory(), 'config.ini')
@@ -321,7 +321,7 @@ class AbstractResourceLocator(object):
     def shader_cache(self):
         """
         Return path to the shader cache for the current build
-        ex. engine_root/dev/windows_vs2019/bin/profile/Cache
+        ex. engine_root/dev/windows/bin/profile/Cache
         :return: path to the shader cache for the current build
         """
         return os.path.join(self.build_directory(), 'Cache')
