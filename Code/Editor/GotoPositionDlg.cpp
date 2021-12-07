@@ -6,7 +6,6 @@
  *
  */
 
-
 #include "GotoPositionDlg.h"
 #include "EditorDefs.h"
 
@@ -65,7 +64,8 @@ void GotoPositionDialog::OnInitDialog()
     m_ui->m_dymZ->setValue(cameraTranslation.GetZ());
 
     // rotation
-    m_ui->m_dymAnglePitch->setRange(-180.0, 180.0);
+    const auto [pitchMinRadians, pitchMaxRadians] = AzFramework::CameraPitchMinMaxRadians();
+    m_ui->m_dymAnglePitch->setRange(AZ::RadToDeg(pitchMinRadians), AZ::RadToDeg(pitchMaxRadians));
     m_ui->m_dymAnglePitch->setValue(pitchDegrees);
 
     m_ui->m_dymAngleYaw->setRange(-180.0, 180.0);
@@ -108,12 +108,14 @@ void GotoPositionDialog::OnUpdateNumbers()
 
 void GotoPositionDialog::accept()
 {
+    const auto pitchRadians = AzFramework::ClampPitchRotation(AZ::DegToRad(aznumeric_cast<float>(m_ui->m_dymAnglePitch->value())));
+    const auto yawRadians = AZ::DegToRad(aznumeric_cast<float>(m_ui->m_dymAngleYaw->value()));
+
     SandboxEditor::InterpolateDefaultViewportCameraToTransform(
         AZ::Vector3(
             aznumeric_cast<float>(m_ui->m_dymX->value()), aznumeric_cast<float>(m_ui->m_dymY->value()),
             aznumeric_cast<float>(m_ui->m_dymZ->value())),
-        AZ::DegToRad(aznumeric_cast<float>(m_ui->m_dymAnglePitch->value())),
-        AZ::DegToRad(aznumeric_cast<float>(m_ui->m_dymAngleYaw->value())));
+        pitchRadians, yawRadians);
 
     QDialog::accept();
 }
