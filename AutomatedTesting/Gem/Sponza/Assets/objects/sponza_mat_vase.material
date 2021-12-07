@@ -1,0 +1,46 @@
+{
+    "description": "",
+    "parentMaterial": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 4,
+    "properties": {
+        "baseColor": {
+            "textureMap": "../Textures/vase_1k_basecolor.png"
+        },
+        "general": {
+            "applySpecularAA": true
+        },
+        "irradiance": {
+            "color": [
+                1.0,
+                0.8713664412498474,
+                0.6021667718887329,
+                1.0
+            ]
+        },
+        "metallic": {
+            "textureMap": "../Textures/vase_1k_metallic.png"
+        },
+        "normal": {
+            "textureMap": "../Textures/vase_1k_normal.jpg"
+        },
+        "occlusion": {
+            "diffuseTextureMap": "../Textures/vase_1k_ao.png"
+        },
+        "opacity": {
+            "factor": 1.0
+        },
+        "parallax": {
+            "factor": 0.027000000700354576,
+            "pdo": true,
+            "quality": "High",
+            "useTexture": false
+        },
+        "roughness": {
+            "textureMap": "../Textures/vase_1k_roughness.png"
+        },
+        "specularF0": {
+            "enableMultiScatterCompensation": true
+        }
+    }
+}

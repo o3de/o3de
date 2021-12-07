@@ -1,0 +1,36 @@
+{
+    "description": "",
+    "parentMaterial": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 4,
+    "properties": {
+        "baseColor": {
+            "color": [
+                0.800000011920929,
+                0.800000011920929,
+                0.800000011920929,
+                1.0
+            ],
+            "textureBlendMode": "Lerp",
+            "textureMap": "../Textures/vasePlant_1k_basecolor.png"
+        },
+        "general": {
+            "applySpecularAA": true,
+            "doubleSided": true
+        },
+        "irradiance": {
+            "color": [
+                0.09086747467517853,
+                0.4111391007900238,
+                0.0474097803235054,
+                1.0
+            ]
+        },
+        "opacity": {
+            "alphaSource": "Split",
+            "factor": 0.23999999463558197,
+            "mode": "Cutout",
+            "textureMap": "../Textures/vasePlant_1k_alpha.png"
+        }
+    }
+}

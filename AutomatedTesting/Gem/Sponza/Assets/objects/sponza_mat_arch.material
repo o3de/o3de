@@ -1,0 +1,40 @@
+{
+    "description": "",
+    "parentMaterial": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 4,
+    "properties": {
+        "baseColor": {
+            "textureMap": "../Textures/arch_1k_basecolor.png"
+        },
+        "general": {
+            "applySpecularAA": true
+        },
+        "irradiance": {
+            "color": [
+                0.2663614749908447,
+                0.2383916974067688,
+                0.18117037415504456,
+                1.0
+            ]
+        },
+        "normal": {
+            "textureMap": "../Textures/arch_1k_normal.jpg"
+        },
+        "occlusion": {
+            "diffuseTextureMap": "../Textures/arch_1k_ao.png"
+        },
+        "opacity": {
+            "factor": 1.0
+        },
+        "parallax": {
+            "factor": 0.050999999046325684,
+            "pdo": true,
+            "quality": "High",
+            "useTexture": false
+        },
+        "roughness": {
+            "textureMap": "../Textures/arch_1k_roughness.png"
+        }
+    }
+}

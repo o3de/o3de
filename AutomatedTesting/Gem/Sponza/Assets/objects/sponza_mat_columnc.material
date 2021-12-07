@@ -1,0 +1,45 @@
+{
+    "description": "",
+    "parentMaterial": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 4,
+    "properties": {
+        "baseColor": {
+            "textureMap": "../Textures/columnC_1k_basecolor.png"
+        },
+        "clearCoat": {
+            "factor": 0.5,
+            "normalMap": "../Textures/columnC_1k_normal.jpg",
+            "roughness": 0.30000001192092896
+        },
+        "general": {
+            "applySpecularAA": true
+        },
+        "irradiance": {
+            "color": [
+                0.32314029335975647,
+                0.29176774621009827,
+                0.24228274822235107,
+                1.0
+            ]
+        },
+        "normal": {
+            "textureMap": "../Textures/columnC_1k_normal.jpg"
+        },
+        "occlusion": {
+            "diffuseTextureMap": "../Textures/columnC_1k_ao.png"
+        },
+        "opacity": {
+            "factor": 1.0
+        },
+        "parallax": {
+            "factor": 0.014000000432133675,
+            "pdo": true,
+            "quality": "High",
+            "useTexture": false
+        },
+        "roughness": {
+            "textureMap": "../Textures/columnC_1k_roughness.png"
+        }
+    }
+}

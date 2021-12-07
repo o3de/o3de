@@ -1,0 +1,45 @@
+{
+    "description": "",
+    "parentMaterial": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 4,
+    "properties": {
+        "baseColor": {
+            "textureMap": "../Textures/bricks_1k_basecolor.png"
+        },
+        "clearCoat": {
+            "factor": 0.5,
+            "normalMap": "../Textures/bricks_1k_normal.jpg",
+            "roughness": 0.5
+        },
+        "general": {
+            "applySpecularAA": true
+        },
+        "irradiance": {
+            "color": [
+                0.27467766404151917,
+                0.27467766404151917,
+                0.270496666431427,
+                1.0
+            ]
+        },
+        "normal": {
+            "textureMap": "../Textures/bricks_1k_normal.jpg"
+        },
+        "occlusion": {
+            "diffuseTextureMap": "../Textures/bricks_1k_ao.png"
+        },
+        "opacity": {
+            "factor": 1.0
+        },
+        "parallax": {
+            "algorithm": "ContactRefinement",
+            "factor": 0.03500000014901161,
+            "quality": "Medium",
+            "useTexture": false
+        },
+        "roughness": {
+            "textureMap": "../Textures/bricks_1k_roughness.png"
+        }
+    }
+}

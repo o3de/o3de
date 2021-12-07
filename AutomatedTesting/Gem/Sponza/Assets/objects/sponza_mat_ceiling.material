@@ -1,0 +1,36 @@
+{
+    "description": "",
+    "parentMaterial": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 4,
+    "properties": {
+        "baseColor": {
+            "textureMap": "../Textures/ceiling_1k_basecolor.png"
+        },
+        "emissive": {
+            "color": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ]
+        },
+        "irradiance": {
+            "color": [
+                0.29176774621009827,
+                0.27888914942741394,
+                0.2501564025878906,
+                1.0
+            ]
+        },
+        "normal": {
+            "textureMap": "../Textures/ceiling_1k_normal.png"
+        },
+        "opacity": {
+            "factor": 1.0
+        },
+        "roughness": {
+            "textureMap": "../Textures/ceiling_1k_roughness.png"
+        }
+    }
+}

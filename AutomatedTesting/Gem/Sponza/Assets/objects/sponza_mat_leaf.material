@@ -1,0 +1,43 @@
+{
+    "description": "",
+    "parentMaterial": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 4,
+    "properties": {
+        "baseColor": {
+            "textureMap": "../Textures/thorn_basecolor.png"
+        },
+        "clearCoat": {
+            "factor": 0.05000000074505806,
+            "normalMap": "../Textures/thorn_normal.jpg",
+            "roughness": 0.10000000149011612
+        },
+        "general": {
+            "applySpecularAA": true,
+            "doubleSided": true
+        },
+        "irradiance": {
+            "color": [
+                0.46506446599960327,
+                1.0,
+                0.3944609761238098,
+                1.0
+            ]
+        },
+        "normal": {
+            "textureMap": "../Textures/thorn_normal.jpg"
+        },
+        "opacity": {
+            "alphaSource": "Split",
+            "factor": 0.20000000298023224,
+            "mode": "Cutout",
+            "textureMap": "../Textures/thorn_alpha.png"
+        },
+        "parallax": {
+            "useTexture": false
+        },
+        "roughness": {
+            "textureMap": "../Textures/thorn_roughness.png"
+        }
+    }
+}

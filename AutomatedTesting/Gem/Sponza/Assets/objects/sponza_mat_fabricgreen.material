@@ -1,0 +1,39 @@
+{
+    "description": "",
+    "parentMaterial": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 4,
+    "properties": {
+        "baseColor": {
+            "textureMap": "../Textures/fabricGreen_1k_basecolor.png"
+        },
+        "general": {
+            "applySpecularAA": true
+        },
+        "irradiance": {
+            "color": [
+                0.0,
+                0.15292592346668243,
+                0.0012207217514514923,
+                1.0
+            ],
+            "factor": 0.30000001192092896
+        },
+        "metallic": {
+            "textureMap": "../Textures/fabric_metallic.png"
+        },
+        "normal": {
+            "factor": 0.5,
+            "textureMap": "../Textures/fabric_normal.jpg"
+        },
+        "occlusion": {
+            "diffuseTextureMap": "../Textures/fabric_ao.png"
+        },
+        "opacity": {
+            "factor": 1.0
+        },
+        "roughness": {
+            "textureMap": "../Textures/fabric_roughness.png"
+        }
+    }
+}

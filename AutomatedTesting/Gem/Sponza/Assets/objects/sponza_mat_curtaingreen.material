@@ -1,0 +1,38 @@
+{
+    "description": "",
+    "parentMaterial": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 4,
+    "properties": {
+        "baseColor": {
+            "textureMap": "../Textures/curtainGreen_1k_basecolor.png"
+        },
+        "general": {
+            "applySpecularAA": true
+        },
+        "irradiance": {
+            "color": [
+                0.0,
+                0.15294118225574493,
+                0.0,
+                1.0
+            ]
+        },
+        "metallic": {
+            "textureMap": "../Textures/curtain_metallic.png"
+        },
+        "normal": {
+            "factor": 0.5,
+            "textureMap": "../Textures/curtain_normal.jpg"
+        },
+        "occlusion": {
+            "diffuseTextureMap": "../Textures/curtain_ao.png"
+        },
+        "opacity": {
+            "factor": 1.0
+        },
+        "roughness": {
+            "textureMap": "../Textures/curtain_roughness.png"
+        }
+    }
+}
