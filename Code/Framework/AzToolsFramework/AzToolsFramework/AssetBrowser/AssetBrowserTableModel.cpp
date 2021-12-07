@@ -30,6 +30,7 @@ namespace AzToolsFramework
             connect(m_filterModel, &QAbstractItemModel::rowsRemoved, this, &AssetBrowserTableModel::UpdateTableModelMaps);
             connect(m_filterModel, &QAbstractItemModel::layoutChanged, this, &AssetBrowserTableModel::UpdateTableModelMaps);
             connect(m_filterModel, &AssetBrowserFilterModel::filterChanged, this, &AssetBrowserTableModel::beginResetModel);
+            connect(m_filterModel, &AssetBrowserFilterModel::filterChanged, this, &AssetBrowserTableModel::UpdateTableModelMaps);
             connect(m_filterModel, &QAbstractItemModel::dataChanged, this, &AssetBrowserTableModel::SourceDataChanged);
         }
 

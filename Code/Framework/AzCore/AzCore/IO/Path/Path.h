@@ -78,7 +78,8 @@ namespace AZ::IO
 
         // native format observers
         //! Returns string_view stored within the PathView
-        constexpr AZStd::string_view Native() const noexcept;
+        constexpr const AZStd::string_view& Native() const noexcept;
+        constexpr AZStd::string_view& Native() noexcept;
         //! Conversion operator to retrieve string_view stored within the PathView
         constexpr explicit operator AZStd::string_view() const noexcept;
 
@@ -321,7 +322,6 @@ namespace AZ::IO
         using const_iterator = const PathIterator<BasicPath>;
         using iterator = const_iterator;
         friend PathIterator<BasicPath>;
-        friend struct PathReflection;
 
         // constructors and destructor
         constexpr BasicPath() = default;
@@ -665,6 +665,7 @@ namespace AZ::IO
 namespace AZ
 {
     AZ_TYPE_INFO_SPECIALIZE(AZ::IO::Path, "{88E0A40F-3085-4CAB-8B11-EF5A2659C71A}");
+    AZ_TYPE_INFO_SPECIALIZE(AZ::IO::FixedMaxPath, "{FA6CA49F-376A-417C-9767-DD50744DF203}");
 }
 
 namespace AZ::IO
