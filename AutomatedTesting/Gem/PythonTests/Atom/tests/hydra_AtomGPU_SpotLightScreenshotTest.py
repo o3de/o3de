@@ -123,22 +123,22 @@ def AtomGPU_LightComponent_SpotLightScreenshotsMatchGoldenImages():
 
         # Test steps begin.
         # 1. Find the Directional Light entity then disable its Directional Light component.
-        directional_light_name = AtomComponentProperties.directional_light()
-        directional_light_entity = EditorEntity.find_editor_entity(directional_light_name)
-        directional_light_component = directional_light_entity.get_components_of_type([directional_light_name])[0]
+        directional_light_entity = EditorEntity.find_editor_entity(AtomComponentProperties.directional_light())
+        directional_light_component = directional_light_entity.get_components_of_type(
+            [AtomComponentProperties.directional_light()])[0]
         directional_light_component.disable_component()
         Report.critical_result(Tests.directional_light_component_disabled, not directional_light_component.is_enabled())
 
         # 2. Disable Global Skylight (IBL) component on the Global Skylight (IBL) entity.
-        global_skylight_name = AtomComponentProperties.global_skylight()
-        global_skylight_entity = EditorEntity.find_editor_entity(global_skylight_name)
-        global_skylight_component = global_skylight_entity.get_components_of_type([global_skylight_name])[0]
+        global_skylight_entity = EditorEntity.find_editor_entity(AtomComponentProperties.global_skylight())
+        global_skylight_component = global_skylight_entity.get_components_of_type(
+            [AtomComponentProperties.global_skylight()])[0]
         global_skylight_component.disable_component()
         Report.critical_result(Tests.global_skylight_component_disabled, not global_skylight_component.is_enabled())
 
         # 3. Disable HDRi Skybox component on the Global Skylight (IBL) entity.
-        hdri_skybox_name = AtomComponentProperties.hdri_skybox()
-        hdri_skybox_component = global_skylight_entity.get_components_of_type([hdri_skybox_name])[0]
+        hdri_skybox_component = global_skylight_entity.get_components_of_type(
+            [AtomComponentProperties.hdri_skybox()])[0]
         hdri_skybox_component.disable_component()
         Report.critical_result(Tests.hdri_skybox_component_disabled, not hdri_skybox_component.is_enabled())
 
@@ -151,8 +151,7 @@ def AtomGPU_LightComponent_SpotLightScreenshotsMatchGoldenImages():
         Report.critical_result(Tests.spot_light_entity_created, spot_light_entity.exists())
 
         # 5. Attach a Light component to the Spot Light entity.
-        light_name = AtomComponentProperties.light()
-        light_component = spot_light_entity.add_component(light_name)
+        light_component = spot_light_entity.add_component(AtomComponentProperties.light())
         Report.critical_result(Tests.light_component_added, light_component.is_enabled())
 
         # 6. Set the Light component Light Type to Spot (disk).
