@@ -213,20 +213,6 @@ namespace AZ::SceneGenerationComponents
         }
     }
 
-    struct InfluenceAccumulator
-    {
-        AZStd::unordered_map<size_t, float> m_accumulatedInfluences;
-        float m_totalWeldedVertexCount = 1.0f;
-
-        void AddInfluence(size_t jointId, float weight)
-        {
-            //clean this up and add unit tests
-            auto iter = m_accumulatedInfluences.insert(AZStd::pair<size_t, float>(jointId, 0.0f)).first;
-            iter->second = ((iter->second * (m_totalWeldedVertexCount - 1.0f)) + weight) / m_totalWeldedVertexCount;
-        }
-    };
-
-
     static AZStd::vector<AZ::MeshBuilder::MeshBuilderSkinningInfo::Influence> ExtractSkinningInfo(
         const AZStd::vector<MeshBuilder::MeshBuilderVertexAttributeLayerSkinInfluence*>& skinningInfluencesLayers,
         const AZ::MeshBuilder::MeshBuilderVertexLookup& vertexLookup,
