@@ -102,8 +102,8 @@ file(GLOB _artifacts
     "${_cpack_wix_out_dir}/*.msi" 
     "${_cpack_wix_out_dir}/*.cab"
     "${_cpack_wix_out_dir}/*.exe"
-    "${CPACK_TOPLEVEL_DIRECTORY}/*.txt"
-    "${CPACK_TOPLEVEL_DIRECTORY}/*.json"
+    "${CPACK_3P_LICENSE_FILE}"
+    "${CPACK_3P_MANIFEST_FILE}"
 )
 file(COPY ${_artifacts}
     DESTINATION ${CPACK_UPLOAD_DIRECTORY}
