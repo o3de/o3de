@@ -115,7 +115,7 @@ namespace AZ
             //! Reduces shadow acne by applying a small amount of offset along shadow-space z.
             float m_shadowBias = 0.0f;
 
-			// If true, sample between two adjacent shadow map cascades in a small boundary area to smooth out the transition.
+            // If true, sample between two adjacent shadow map cascades in a small boundary area to smooth out the transition.
             bool m_cascadeBlendingEnabled = false;
 
             bool IsSplitManual() const;
