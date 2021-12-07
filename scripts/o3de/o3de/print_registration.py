@@ -153,6 +153,21 @@ def print_engine_external_subdirectories(verbose: int) -> int:
 
 
 # Project output methods
+def print_project_engine_name(verbose: int, project_path: pathlib.Path, project_name: str) -> int:
+    project_path = get_project_path(project_path, project_name)
+    if not project_path:
+        return 1
+
+    engine_name = manifest.get_project_engine_name(project_path)
+    if engine_name:
+        print(f'Project\'s engine name:\n{engine_name}')
+        return 0
+
+    if verbose > 0:
+        logger.info(f'project.json at path "{project_path}" contains no registered "engine" field')
+    return 1
+
+
 def print_project_gems(verbose: int, project_path: pathlib.Path, project_name: str) -> int:
     project_path = get_project_path(project_path, project_name)
     if not project_path:
@@ -401,6 +416,8 @@ def _run_register_show(args: argparse) -> int:
         return print_project_templates(args.verbose, args.project_path, args.project_name)
     elif args.project_restricted:
         return print_project_restricted(args.verbose, args.project_path, args.project_name)
+    elif args.project_engine_name:
+        return print_project_engine_name(args.verbose, args.project_path, args.project_name)
 
     elif args.all_projects:
         return print_all_projects(args.verbose)
@@ -479,6 +496,9 @@ def add_parser_args(parser):
     group.add_argument('-pes', '--project-external-subdirectories', action='store_true',
                        default=False,
                        help='Returns the external subdirectories register with the project.json.')
+    group.add_argument('-pen', '--project-engine-name', action='store_true',
+                       default=False,
+                       help='Returns the "engine" name identifier registered with the project.json.')
 
     group.add_argument('-ap', '--all-projects', action='store_true', required=False,
                        default=False,
