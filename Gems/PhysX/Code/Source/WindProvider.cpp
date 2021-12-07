@@ -177,7 +177,7 @@ namespace PhysX
         AZStd::vector<EntityTransformHandler> m_entityTransformHandlers;
         AZStd::vector<AZ::Aabb> m_pendingAabbUpdates;
         ChangeCallback m_changeCallback;
-        bool m_changed = false;
+        bool m_changed = true;
     };
 
     WindProvider::WindProvider()
