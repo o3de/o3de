@@ -33,6 +33,3 @@ class TestAutomation(EditorTestSuite):
         
     class test_TerrainSystem_VegetationSpawnsOnTerrainSurfaces(EditorSharedTest):
         from .EditorScripts import TerrainSystem_VegetationSpawnsOnTerrainSurfaces as test_module
-
-    class test_TerrainWorld_ConfigurationWorks(EditorSharedTest):
-        from .EditorScripts import Terrain_World_ConfigurationWorks as test_module
