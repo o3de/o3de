@@ -94,7 +94,7 @@ float IntegrateEdge(float3 v1, float3 v2)
 
     if (cosTheta < 0.0)
     {
-        theta_sinTheta = PI * saturate(rsqrt(saturate(1.0 - cosTheta * cosTheta))) - theta_sinTheta;
+        theta_sinTheta = PI * rsqrt(clamp(1.0 - cosTheta * cosTheta, EPSILON, 1.0)) - theta_sinTheta;
     }
 
     return theta_sinTheta * cross(v1, v2).z;
@@ -110,7 +110,7 @@ float IntegrateEdgeDiffuse(float3 v1, float3 v2)
     float theta_sinTheta = 1.5708 + (-0.879406 + 0.308609 * absCosTheta) * absCosTheta;
     if (cosTheta < 0.0)
     {
-        theta_sinTheta = PI * saturate(rsqrt(saturate(1.0 - cosTheta * cosTheta))) - theta_sinTheta;
+        theta_sinTheta = PI * rsqrt(clamp(1.0 - cosTheta * cosTheta, EPSILON, 1.0)) - theta_sinTheta;
     }
 
     return theta_sinTheta * cross(v1, v2).z;
