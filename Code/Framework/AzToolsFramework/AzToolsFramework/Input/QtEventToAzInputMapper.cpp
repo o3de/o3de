@@ -328,7 +328,7 @@ namespace AzToolsFramework
     {
         if (m_enabled && hasBeenConsumed)
         {
-            m_lastConsumedInputChannelEvent = &inputChannel;
+            m_lastConsumedInputChannelIdCrc32 = inputChannel.GetInputChannelId().GetNameCrc32();
         }
     }
 
@@ -373,7 +373,7 @@ namespace AzToolsFramework
             if (buttonChannel)
             {
                 // reset the consumed event cache
-                m_lastConsumedInputChannelEvent = nullptr;
+                m_lastConsumedInputChannelIdCrc32 = 0;
 
                 if (mouseEvent->type() != QEvent::Type::MouseButtonRelease)
                 {
@@ -384,7 +384,7 @@ namespace AzToolsFramework
                     buttonChannel->UpdateState(false);
                 }
 
-                if (m_lastConsumedInputChannelEvent == buttonChannel)
+                if (m_lastConsumedInputChannelIdCrc32 == buttonChannel->GetInputChannelId().GetNameCrc32())
                 {
                     // a standard az-input handler consumed the event so mark it as such
                     mouseEvent->accept();
@@ -508,11 +508,11 @@ namespace AzToolsFramework
         }
 
         // reset the consumed event cache
-        m_lastConsumedInputChannelEvent = nullptr;
+        m_lastConsumedInputChannelIdCrc32 = 0;
 
         cursorZChannel->ProcessRawInputEvent(aznumeric_cast<float>(wheelAngle));
 
-        if (m_lastConsumedInputChannelEvent == cursorZChannel)
+        if (m_lastConsumedInputChannelIdCrc32 == cursorZChannel->GetInputChannelId().GetNameCrc32())
         {
             // a standard az-input handler consumed the event so mark it as such
             wheelEvent->accept();
