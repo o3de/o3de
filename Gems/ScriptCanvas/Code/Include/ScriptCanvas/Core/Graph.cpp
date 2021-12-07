@@ -52,6 +52,7 @@ namespace GraphCpp
         VariablePanelSymantics,
         AddVersionData,
         RemoveFunctionGraphMarker,
+        FixupVersionDataTypeId,
         // label your version above
         Current
     };
@@ -71,9 +72,17 @@ namespace ScriptCanvas
             componentElementNode.AddElementWithData(context, "m_assetType", azrtti_typeid<RuntimeAsset>());
         }
 
-        if (componentElementNode.GetVersion() < GraphCpp::GraphVersion::RemoveFunctionGraphMarker)
+        if (auto subElement = componentElementNode.FindElement(AZ_CRC_CE("isFunctionGraph")); subElement > 0)
         {
-            componentElementNode.RemoveElementByName(AZ_CRC_CE("isFunctionGraph"));
+            componentElementNode.RemoveElement(subElement);
+        }
+
+        if (auto subElement = componentElementNode.FindSubElement(AZ_CRC_CE("versionData")))
+        {
+            if (subElement->GetId() == azrtti_typeid<SlotId>())
+            {
+                componentElementNode.RemoveElementByName(AZ_CRC_CE("versionData"));
+            }
         }
 
         return true;
@@ -1188,11 +1197,6 @@ namespace ScriptCanvas
     void Graph::SetIsGraphObserved(bool isObserved)
     {
         m_isObserved = isObserved;
-    }
-
-    AZ::Data::AssetType Graph::GetAssetType() const
-    {
-        return m_assetType;
     }
 
     void Graph::VersioningRemoveSlot(ScriptCanvas::Node& scriptCanvasNode, const SlotId& slotId)
