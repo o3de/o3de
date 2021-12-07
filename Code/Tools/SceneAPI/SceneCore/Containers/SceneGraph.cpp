@@ -294,7 +294,7 @@ namespace AZ
                 node.m_parentIndex = parentIndex;
                 m_hierarchy.push_back(node);
 
-                AZ_Assert(IsValidName(name), "Name '%s' for SceneGraph sibling contains invalid characters", name);
+                //AZ_Assert(IsValidName(name), "Name '%s' for SceneGraph sibling contains invalid characters", name);
 
                 AZStd::string fullName;
                 size_t nameOffset;
