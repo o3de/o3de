@@ -259,4 +259,35 @@ namespace UnitTest
         EXPECT_THAT(interpolating, ::testing::IsFalse());
         EXPECT_THAT(nextInterpolationBegan, ::testing::IsTrue());
     }
+
+    TEST(GotoPositionPitchConstraints, GoToPositionPitchIsSetToPlusOrMinusNinetyDegrees)
+    {
+        float minPitch = 0.0f;
+        float maxPitch = 0.0f;
+
+        GotoPositionPitchConstraints m_gotoPositionContraints;
+        m_gotoPositionContraints.DeterminePitchRange(
+            [&minPitch, &maxPitch](const float minPitchDegrees, const float maxPitchDegrees)
+            {
+                minPitch = minPitchDegrees;
+                maxPitch = maxPitchDegrees;
+            });
+
+        using ::testing::FloatNear;
+        EXPECT_THAT(minPitch, FloatNear(-90.0f, AZ::Constants::FloatEpsilon));
+        EXPECT_THAT(maxPitch, FloatNear(90.0f, AZ::Constants::FloatEpsilon));
+    }
+
+    TEST(GotoPositionPitchConstraints, GoToPositionPitchClampsFinalPitchValueWithTolerance)
+    {
+        const auto [expectedMinPitchRadians, expectedMaxPitchRadians] = AzFramework::CameraPitchMinMaxRadiansWithTolerance();
+
+        GotoPositionPitchConstraints m_gotoPositionContraints;
+        const float minClampedPitchRadians = m_gotoPositionContraints.PitchClampedRadians(-90.0f);
+        const float maxClampedPitchRadians = m_gotoPositionContraints.PitchClampedRadians(90.0f);
+
+        using ::testing::FloatNear;
+        EXPECT_THAT(minClampedPitchRadians, FloatNear(expectedMinPitchRadians, AZ::Constants::FloatEpsilon));
+        EXPECT_THAT(maxClampedPitchRadians, FloatNear(expectedMaxPitchRadians, AZ::Constants::FloatEpsilon));
+    }
 } // namespace UnitTest
