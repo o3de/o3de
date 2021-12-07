@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "OcclusionCullingPlaneComponentTypeId",
+            "base": "OcclusionCullingPlaneComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetOcclusionCullingPlaneComponentTypeId",
+                    "base": "GetOcclusionCullingPlaneComponentTypeId",
                     "details": {
                         "name": "Get Occlusion Culling Plane Component Type Id"
                     },

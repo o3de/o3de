@@ -1275,6 +1275,11 @@ namespace AZStd
         return !(left == right);
     }
 
+    template<class T, class Allocator, class U>
+    decltype(auto) erase(forward_list<T, Allocator>& container, const U& value)
+    {
+        return container.remove(value);
+    }
     template<class T, class Allocator, class Predicate>
     decltype(auto) erase_if(forward_list<T, Allocator>& container, Predicate predicate)
     {

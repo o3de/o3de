@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiFillCornerOrigin_TopLeft",
+            "base": "eUiFillCornerOrigin_TopLeft",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiFillCornerOrigin_TopLeft",
+                    "base": "GeteUiFillCornerOrigin_TopLeft",
                     "details": {
                         "name": "Top Left"
                     },

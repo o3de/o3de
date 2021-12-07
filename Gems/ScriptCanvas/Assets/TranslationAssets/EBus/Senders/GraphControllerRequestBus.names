@@ -1,15 +1,15 @@
 {
     "entries": [
         {
-            "key": "GraphControllerRequestBus",
+            "base": "GraphControllerRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "GraphControllerRequestBus"
+                "name": "Graph Controller"
             },
             "methods": [
                 {
-                    "key": "RemoveConnection",
+                    "base": "RemoveConnection",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RemoveConnection"
@@ -39,7 +39,7 @@
                     ]
                 },
                 {
-                    "key": "AddConnection",
+                    "base": "AddConnection",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke AddConnection"
@@ -75,7 +75,7 @@
                     ]
                 },
                 {
-                    "key": "WrapNode",
+                    "base": "WrapNode",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke WrapNode"
@@ -103,7 +103,7 @@
                     ]
                 },
                 {
-                    "key": "AddConnectionBySlotId",
+                    "base": "AddConnectionBySlotId",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke AddConnectionBySlotId"
@@ -151,7 +151,7 @@
                     ]
                 },
                 {
-                    "key": "AddNode",
+                    "base": "AddNode",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke AddNode"
@@ -188,7 +188,7 @@
                     ]
                 },
                 {
-                    "key": "RemoveNode",
+                    "base": "RemoveNode",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RemoveNode"
@@ -218,7 +218,7 @@
                     ]
                 },
                 {
-                    "key": "ExtendSlot",
+                    "base": "ExtendSlot",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke ExtendSlot"

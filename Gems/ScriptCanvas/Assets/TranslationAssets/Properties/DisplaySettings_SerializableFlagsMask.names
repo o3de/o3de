@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "DisplaySettings_SerializableFlagsMask",
+            "base": "DisplaySettings_SerializableFlagsMask",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetDisplaySettings_SerializableFlagsMask",
+                    "base": "GetDisplaySettings_SerializableFlagsMask",
                     "details": {
                         "name": "Get Serializable Flags Mask"
                     },

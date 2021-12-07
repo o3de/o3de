@@ -5,16 +5,8 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
+
 class Tests:
-    camera_creation = (
-        "Camera Entity successfully created",
-        "Camera Entity failed to be created")
-    camera_component_added = (
-        "Camera component was added to entity",
-        "Camera component failed to be added to entity")
-    camera_component_check = (
-        "Entity has a Camera component",
-        "Entity failed to find Camera component")
     creation_undo = (
         "UNDO Entity creation success",
         "UNDO Entity creation failed")
@@ -39,6 +31,12 @@ class Tests:
     is_hidden = (
         "Entity is hidden",
         "Entity was not hidden")
+    ldr_color_grading_lut = (
+        "LDR color Grading LUT asset set",
+        "LDR color Grading LUT asset could not be set")
+    enable_ldr_color_grading_lut = (
+        "Enable LDR color grading LUT set",
+        "Enable LDR color grading LUT could not be set")
     entity_deleted = (
         "Entity deleted",
         "Entity was not deleted")
@@ -68,19 +66,23 @@ def AtomEditorComponents_DisplayMapper_AddedToEntity():
     2) Add Display Mapper component to Display Mapper entity.
     3) UNDO the entity creation and component addition.
     4) REDO the entity creation and component addition.
-    5) Enter/Exit game mode.
-    6) Test IsHidden.
-    7) Test IsVisible.
-    8) Delete Display Mapper entity.
-    9) UNDO deletion.
-    10) REDO deletion.
-    11) Look for errors and asserts.
+    5) Set LDR color Grading LUT asset.
+    6) Set Enable LDR color grading LUT property True
+    7) Enter/Exit game mode.
+    8) Test IsHidden.
+    9) Test IsVisible.
+    10) Delete Display Mapper entity.
+    11) UNDO deletion.
+    12) REDO deletion.
+    13) Look for errors and asserts.
 
     :return: None
     """
+    import os
 
     import azlmbr.legacy.general as general
 
+    from editor_python_test_tools.asset_utils import Asset
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Report, Tracer, TestHelper
     from Atom.atom_utils.atom_constants import AtomComponentProperties
@@ -97,7 +99,7 @@ def AtomEditorComponents_DisplayMapper_AddedToEntity():
         Report.critical_result(Tests.display_mapper_creation, display_mapper_entity.exists())
 
         # 2. Add Display Mapper component to Display Mapper entity.
-        display_mapper_entity.add_component(AtomComponentProperties.display_mapper())
+        display_mapper_component = display_mapper_entity.add_component(AtomComponentProperties.display_mapper())
         Report.critical_result(
             Tests.display_mapper_component,
             display_mapper_entity.has_component(AtomComponentProperties.display_mapper()))
@@ -126,33 +128,51 @@ def AtomEditorComponents_DisplayMapper_AddedToEntity():
         general.idle_wait_frames(1)
         Report.result(Tests.creation_redo, display_mapper_entity.exists())
 
-        # 5. Enter/Exit game mode.
+        # 5. Set LDR color Grading LUT asset.
+        display_mapper_asset_path = os.path.join("TestData", "test.lightingpreset.azasset")
+        display_mapper_asset = Asset.find_asset_by_path(display_mapper_asset_path, False)
+        display_mapper_component.set_component_property_value(
+            AtomComponentProperties.display_mapper("LDR color Grading LUT"), display_mapper_asset.id)
+        Report.result(
+            Tests.ldr_color_grading_lut,
+            display_mapper_component.get_component_property_value(
+                AtomComponentProperties.display_mapper("LDR color Grading LUT")) == display_mapper_asset.id)
+
+        # 6. Set Enable LDR color grading LUT property True
+        display_mapper_component.set_component_property_value(
+            AtomComponentProperties.display_mapper('Enable LDR color grading LUT'), True)
+        Report.result(
+            Tests.enable_ldr_color_grading_lut,
+            display_mapper_component.get_component_property_value(
+                AtomComponentProperties.display_mapper('Enable LDR color grading LUT')) is True)
+
+        # 7. Enter/Exit game mode.
         TestHelper.enter_game_mode(Tests.enter_game_mode)
         general.idle_wait_frames(1)
         TestHelper.exit_game_mode(Tests.exit_game_mode)
 
-        # 6. Test IsHidden.
+        # 8. Test IsHidden.
         display_mapper_entity.set_visibility_state(False)
         Report.result(Tests.is_hidden, display_mapper_entity.is_hidden() is True)
 
-        # 7. Test IsVisible.
+        # 9. Test IsVisible.
         display_mapper_entity.set_visibility_state(True)
         general.idle_wait_frames(1)
         Report.result(Tests.is_visible, display_mapper_entity.is_visible() is True)
 
-        # 8. Delete Display Mapper entity.
+        # 10. Delete Display Mapper entity.
         display_mapper_entity.delete()
         Report.result(Tests.entity_deleted, not display_mapper_entity.exists())
 
-        # 9. UNDO deletion.
+        # 11. UNDO deletion.
         general.undo()
         Report.result(Tests.deletion_undo, display_mapper_entity.exists())
 
-        # 10. REDO deletion.
+        # 12. REDO deletion.
         general.redo()
         Report.result(Tests.deletion_redo, not display_mapper_entity.exists())
 
-        # 11. Look for errors and asserts.
+        # 13. Look for errors and asserts.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
             Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")

@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "BoxShapeConfig",
+            "base": "BoxShapeConfig",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "Box Shape Config"
+                "name": "Box Shape Config",
+                "category": "Rendering/Shapes"
             },
             "methods": [
                 {
-                    "key": "GetDimensions",
+                    "base": "GetDimensions",
                     "details": {
                         "name": "Get Dimensions"
                     },
@@ -32,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "SetDimensions",
+                    "base": "SetDimensions",
                     "details": {
                         "name": "Set Dimensions"
                     },

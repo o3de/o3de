@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SystemConfigSpec_Medium",
+            "base": "SystemConfigSpec_Medium",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetSystemConfigSpec_Medium",
+                    "base": "GetSystemConfigSpec_Medium",
                     "details": {
                         "name": "Medium"
                     },

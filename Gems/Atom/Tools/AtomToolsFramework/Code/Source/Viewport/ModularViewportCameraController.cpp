@@ -86,7 +86,7 @@ namespace AtomToolsFramework
         }
     }
 
-    void ModularCameraViewportContextImpl::ConnectViewMatrixChangedHandler(AZ::RPI::ViewportContext::MatrixChangedEvent::Handler& handler)
+    void ModularCameraViewportContextImpl::ConnectViewMatrixChangedHandler(AZ::RPI::MatrixChangedEvent::Handler& handler)
     {
         if (auto viewportContext = RetrieveViewportContext(m_viewportId))
         {
@@ -185,7 +185,7 @@ namespace AtomToolsFramework
             }
         };
 
-        m_cameraViewMatrixChangeHandler = AZ::RPI::ViewportContext::MatrixChangedEvent::Handler(handleCameraChange);
+        m_cameraViewMatrixChangeHandler = AZ::RPI::MatrixChangedEvent::Handler(handleCameraChange);
         m_modularCameraViewportContext->ConnectViewMatrixChangedHandler(m_cameraViewMatrixChangeHandler);
 
         ModularViewportCameraControllerRequestBus::Handler::BusConnect(viewportId);
@@ -323,11 +323,11 @@ namespace AtomToolsFramework
     void PlaceholderModularCameraViewportContextImpl::SetCameraTransform(const AZ::Transform& transform)
     {
         m_cameraTransform = transform;
-        m_viewMatrixChangedEvent.Signal(AzFramework::CameraViewFromCameraTransform(Matrix4x4FromTransform(transform)));
+        m_viewMatrixChangedEvent.Signal(
+            AZ::Matrix4x4::CreateFromMatrix3x4(AzFramework::CameraViewFromCameraTransform(AZ::Matrix3x4::CreateFromTransform(transform))));
     }
 
-    void PlaceholderModularCameraViewportContextImpl::ConnectViewMatrixChangedHandler(
-        AZ::RPI::ViewportContext::MatrixChangedEvent::Handler& handler)
+    void PlaceholderModularCameraViewportContextImpl::ConnectViewMatrixChangedHandler(AZ::RPI::MatrixChangedEvent::Handler& handler)
     {
         handler.Connect(m_viewMatrixChangedEvent);
     }

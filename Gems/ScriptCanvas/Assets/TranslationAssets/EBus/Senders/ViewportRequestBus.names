@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ViewportRequestBus",
+            "base": "ViewportRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "SetCameraTransform",
+                    "base": "SetCameraTransform",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Camera Transform"
@@ -32,7 +32,7 @@
                     ]
                 },
                 {
-                    "key": "GetCameraProjectionMatrix",
+                    "base": "GetCameraProjectionMatrix",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Camera Projection Matrix"
@@ -54,7 +54,7 @@
                     ]
                 },
                 {
-                    "key": "SetCameraViewMatrix",
+                    "base": "SetCameraViewMatrix",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Camera View Matrix"
@@ -76,7 +76,7 @@
                     ]
                 },
                 {
-                    "key": "GetCameraViewMatrix",
+                    "base": "GetCameraViewMatrix",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Camera View Matrix"
@@ -98,7 +98,7 @@
                     ]
                 },
                 {
-                    "key": "SetCameraProjectionMatrix",
+                    "base": "SetCameraProjectionMatrix",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Camera Projection Matrix"
@@ -120,7 +120,7 @@
                     ]
                 },
                 {
-                    "key": "GetCameraTransform",
+                    "base": "GetCameraTransform",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Camera Transform"

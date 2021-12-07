@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiDynamicContentDBColorType_Paid",
+            "base": "eUiDynamicContentDBColorType_Paid",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiDynamicContentDBColorType_Paid",
+                    "base": "GeteUiDynamicContentDBColorType_Paid",
                     "details": {
                         "name": "Color Type Paid"
                     },

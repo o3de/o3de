@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ShapeAreaFalloffGradientComponentTypeId",
+            "base": "ShapeAreaFalloffGradientComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetShapeAreaFalloffGradientComponentTypeId",
+                    "base": "GetShapeAreaFalloffGradientComponentTypeId",
                     "details": {
                         "name": "Get Shape Area Falloff Gradient Component Type Id"
                     },

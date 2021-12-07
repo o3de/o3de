@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AcesParameterOverrides",
+            "base": "AcesParameterOverrides",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "LoadPreset",
+                    "base": "LoadPreset",
                     "context": "AcesParameterOverrides",
                     "entry": {
                         "name": "In",
@@ -33,9 +33,9 @@
                     ]
                 },
                 {
-                    "key": "GetOutputDeviceTransformType_4000Nits",
+                    "base": "GetOutputDeviceTransformType_4000Nits",
                     "details": {
-                        "name": "Get Output Device Transform Type_ 4000 Nits"
+                        "name": "Get Output Device Transform Type 4000 Nits"
                     },
                     "results": [
                         {
@@ -47,9 +47,9 @@
                     ]
                 },
                 {
-                    "key": "GetOutputDeviceTransformType_2000Nits",
+                    "base": "GetOutputDeviceTransformType_2000Nits",
                     "details": {
-                        "name": "Get Output Device Transform Type_ 2000 Nits"
+                        "name": "Get Output Device Transform Type 2000 Nits"
                     },
                     "results": [
                         {
@@ -61,15 +61,15 @@
                     ]
                 },
                 {
-                    "key": "GetapplyCATD60toD65",
+                    "base": "GetapplyCATD60toD65",
                     "details": {
-                        "name": "GetapplyCATD 60toD 65"
+                        "name": "Get Apply CATD 60 to D65"
                     },
                     "params": [
                         {
                             "typeid": "{3EE8C0D4-3792-46C0-B91C-B89A81C36B91}",
                             "details": {
-                                "name": ""
+                                "name": "Aces Parameter Overrides"
                             }
                         }
                     ],
@@ -77,35 +77,35 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": ""
+                                "name": "Result"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetapplyCATD60toD65",
+                    "base": "SetapplyCATD60toD65",
                     "details": {
-                        "name": "SetapplyCATD 60toD 65"
+                        "name": "Set Apply CATD 60 to D65"
                     },
                     "params": [
                         {
                             "typeid": "{3EE8C0D4-3792-46C0-B91C-B89A81C36B91}",
                             "details": {
-                                "name": ""
+                                "name": "Aces Parameter Overrides"
                             }
                         },
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": ""
+                                "name": "Result"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetOutputDeviceTransformType_48Nits",
+                    "base": "GetOutputDeviceTransformType_48Nits",
                     "details": {
-                        "name": "Get Output Device Transform Type_ 48 Nits"
+                        "name": "Get Output Device Transform Type 48 Nits"
                     },
                     "results": [
                         {
@@ -117,9 +117,9 @@
                     ]
                 },
                 {
-                    "key": "GetOutputDeviceTransformType_NumOutputDeviceTransformTypes",
+                    "base": "GetOutputDeviceTransformType_NumOutputDeviceTransformTypes",
                     "details": {
-                        "name": "Get Output Device Transform Type_ Num Output Device Transform Types"
+                        "name": "Get Output Device Transform Type Num Output Device Transform Types"
                     },
                     "results": [
                         {
@@ -131,9 +131,9 @@
                     ]
                 },
                 {
-                    "key": "GetOutputDeviceTransformType_1000Nits",
+                    "base": "GetOutputDeviceTransformType_1000Nits",
                     "details": {
-                        "name": "Get Output Device Transform Type_ 1000 Nits"
+                        "name": "Get Output Device Transform Type 1000 Nits"
                     },
                     "results": [
                         {
@@ -145,15 +145,15 @@
                     ]
                 },
                 {
-                    "key": "GetapplyDesaturation",
+                    "base": "GetapplyDesaturation",
                     "details": {
-                        "name": "Getapply Desaturation"
+                        "name": "Get Apply Desaturation"
                     },
                     "params": [
                         {
                             "typeid": "{3EE8C0D4-3792-46C0-B91C-B89A81C36B91}",
                             "details": {
-                                "name": ""
+                                "name": "Aces Parameter Overrides"
                             }
                         }
                     ],
@@ -161,13 +161,13 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": ""
+                                "name": "Result"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetapplyDesaturation",
+                    "base": "SetapplyDesaturation",
                     "details": {
                         "name": "Setapply Desaturation"
                     },
@@ -175,19 +175,19 @@
                         {
                             "typeid": "{3EE8C0D4-3792-46C0-B91C-B89A81C36B91}",
                             "details": {
-                                "name": ""
+                                "name": "Aces Parameter Overrides"
                             }
                         },
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": ""
+                                "name": "Result"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Getpreset",
+                    "base": "Getpreset",
                     "details": {
                         "name": "Getpreset"
                     },
@@ -195,7 +195,7 @@
                         {
                             "typeid": "{3EE8C0D4-3792-46C0-B91C-B89A81C36B91}",
                             "details": {
-                                "name": ""
+                                "name": "Aces Parameter Overrides"
                             }
                         }
                     ],
@@ -203,13 +203,13 @@
                         {
                             "typeid": "{B94085B7-C0D4-466A-A791-188A4559EC8D}",
                             "details": {
-                                "name": ""
+                                "name": "Result"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Setpreset",
+                    "base": "Setpreset",
                     "details": {
                         "name": "Setpreset"
                     },
@@ -217,19 +217,19 @@
                         {
                             "typeid": "{3EE8C0D4-3792-46C0-B91C-B89A81C36B91}",
                             "details": {
-                                "name": ""
+                                "name": "Aces Parameter Overrides"
                             }
                         },
                         {
                             "typeid": "{B94085B7-C0D4-466A-A791-188A4559EC8D}",
                             "details": {
-                                "name": ""
+                                "name": "Result"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetalterSurround",
+                    "base": "GetalterSurround",
                     "details": {
                         "name": "Getalter Surround"
                     },
@@ -237,7 +237,7 @@
                         {
                             "typeid": "{3EE8C0D4-3792-46C0-B91C-B89A81C36B91}",
                             "details": {
-                                "name": ""
+                                "name": "Aces Parameter Overrides"
                             }
                         }
                     ],
@@ -245,13 +245,13 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": ""
+                                "name": "Result"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetalterSurround",
+                    "base": "SetalterSurround",
                     "details": {
                         "name": "Setalter Surround"
                     },
@@ -259,19 +259,19 @@
                         {
                             "typeid": "{3EE8C0D4-3792-46C0-B91C-B89A81C36B91}",
                             "details": {
-                                "name": ""
+                                "name": "Aces Parameter Overrides"
                             }
                         },
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": ""
+                                "name": "Result"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetoverrideDefaults",
+                    "base": "GetoverrideDefaults",
                     "details": {
                         "name": "Getoverride Defaults"
                     },
@@ -279,7 +279,7 @@
                         {
                             "typeid": "{3EE8C0D4-3792-46C0-B91C-B89A81C36B91}",
                             "details": {
-                                "name": ""
+                                "name": "Aces Parameter Overrides"
                             }
                         }
                     ],
@@ -287,13 +287,13 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": ""
+                                "name": "Result"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetoverrideDefaults",
+                    "base": "SetoverrideDefaults",
                     "details": {
                         "name": "Setoverride Defaults"
                     },
@@ -301,13 +301,13 @@
                         {
                             "typeid": "{3EE8C0D4-3792-46C0-B91C-B89A81C36B91}",
                             "details": {
-                                "name": ""
+                                "name": "Aces Parameter Overrides"
                             }
                         },
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": ""
+                                "name": "Result"
                             }
                         }
                     ]

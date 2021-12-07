@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "BlendShapeDataFace",
+            "base": "BlendShapeDataFace",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "Blend Shape Data Face"
+                "name": "Blend Shape Data Face",
+                "category": "Rendering"
             },
             "methods": [
                 {
-                    "key": "GetVertexIndex",
+                    "base": "GetVertexIndex",
                     "context": "BlendShapeDataFace",
                     "entry": {
                         "name": "In",

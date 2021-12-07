@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiTransformBus",
+            "base": "UiTransformBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "Ui Transform Bus"
+                "name": "UI Transform",
+                "category": "UI"
             },
             "methods": [
                 {
-                    "key": "GetPivotY",
+                    "base": "GetPivotY",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get PivotY"
@@ -31,7 +32,7 @@
                     ]
                 },
                 {
-                    "key": "GetScaleX",
+                    "base": "GetScaleX",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get ScaleX"
@@ -53,7 +54,7 @@
                     ]
                 },
                 {
-                    "key": "GetScale",
+                    "base": "GetScale",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Scale"
@@ -75,7 +76,7 @@
                     ]
                 },
                 {
-                    "key": "SetLocalPositionX",
+                    "base": "SetLocalPositionX",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Local PositionX"
@@ -97,7 +98,7 @@
                     ]
                 },
                 {
-                    "key": "SetScaleX",
+                    "base": "SetScaleX",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set ScaleX"
@@ -119,7 +120,7 @@
                     ]
                 },
                 {
-                    "key": "SetZRotation",
+                    "base": "SetZRotation",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetZ Rotation"
@@ -141,7 +142,7 @@
                     ]
                 },
                 {
-                    "key": "GetScaleToDeviceMode",
+                    "base": "GetScaleToDeviceMode",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Scale To Device Mode"
@@ -163,7 +164,7 @@
                     ]
                 },
                 {
-                    "key": "SetPivot",
+                    "base": "SetPivot",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Pivot"
@@ -185,7 +186,7 @@
                     ]
                 },
                 {
-                    "key": "GetScaleY",
+                    "base": "GetScaleY",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get ScaleY"
@@ -207,7 +208,7 @@
                     ]
                 },
                 {
-                    "key": "MoveLocalPositionBy",
+                    "base": "MoveLocalPositionBy",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Move Local Position By"
@@ -229,7 +230,7 @@
                     ]
                 },
                 {
-                    "key": "SetLocalPositionY",
+                    "base": "SetLocalPositionY",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Local PositionY"
@@ -251,7 +252,7 @@
                     ]
                 },
                 {
-                    "key": "SetViewportPosition",
+                    "base": "SetViewportPosition",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Viewport Position"
@@ -273,7 +274,7 @@
                     ]
                 },
                 {
-                    "key": "SetScaleToDeviceMode",
+                    "base": "SetScaleToDeviceMode",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Scale To Device Mode"
@@ -295,7 +296,7 @@
                     ]
                 },
                 {
-                    "key": "GetLocalPositionX",
+                    "base": "GetLocalPositionX",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Local PositionX"
@@ -317,7 +318,7 @@
                     ]
                 },
                 {
-                    "key": "MoveCanvasPositionBy",
+                    "base": "MoveCanvasPositionBy",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Move Canvas Position By"
@@ -339,7 +340,7 @@
                     ]
                 },
                 {
-                    "key": "SetPivotX",
+                    "base": "SetPivotX",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set PivotX"
@@ -361,7 +362,7 @@
                     ]
                 },
                 {
-                    "key": "MoveViewportPositionBy",
+                    "base": "MoveViewportPositionBy",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Move Viewport Position By"
@@ -383,7 +384,7 @@
                     ]
                 },
                 {
-                    "key": "SetPivotY",
+                    "base": "SetPivotY",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set PivotY"
@@ -405,7 +406,7 @@
                     ]
                 },
                 {
-                    "key": "GetViewportPosition",
+                    "base": "GetViewportPosition",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Viewport Position"
@@ -427,7 +428,7 @@
                     ]
                 },
                 {
-                    "key": "SetScale",
+                    "base": "SetScale",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Scale"
@@ -449,7 +450,7 @@
                     ]
                 },
                 {
-                    "key": "SetLocalPosition",
+                    "base": "SetLocalPosition",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Local Position"
@@ -471,7 +472,7 @@
                     ]
                 },
                 {
-                    "key": "GetCanvasPosition",
+                    "base": "GetCanvasPosition",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Canvas Position"
@@ -493,7 +494,7 @@
                     ]
                 },
                 {
-                    "key": "GetPivotX",
+                    "base": "GetPivotX",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get PivotX"
@@ -515,7 +516,7 @@
                     ]
                 },
                 {
-                    "key": "GetZRotation",
+                    "base": "GetZRotation",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetZ Rotation"
@@ -537,7 +538,7 @@
                     ]
                 },
                 {
-                    "key": "GetLocalPosition",
+                    "base": "GetLocalPosition",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Local Position"
@@ -559,7 +560,7 @@
                     ]
                 },
                 {
-                    "key": "SetScaleY",
+                    "base": "SetScaleY",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set ScaleY"
@@ -581,7 +582,7 @@
                     ]
                 },
                 {
-                    "key": "GetPivot",
+                    "base": "GetPivot",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Pivot"
@@ -603,7 +604,7 @@
                     ]
                 },
                 {
-                    "key": "SetCanvasPosition",
+                    "base": "SetCanvasPosition",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Canvas Position"
@@ -625,7 +626,7 @@
                     ]
                 },
                 {
-                    "key": "GetLocalPositionY",
+                    "base": "GetLocalPositionY",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Local PositionY"

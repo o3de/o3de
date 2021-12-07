@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "DisplayMapperComponentTypeId",
+            "base": "DisplayMapperComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetDisplayMapperComponentTypeId",
+                    "base": "GetDisplayMapperComponentTypeId",
                     "details": {
                         "name": "Get Display Mapper Component Type Id"
                     },

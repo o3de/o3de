@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "FrameCaptureResult_FileWriteError",
+            "base": "FrameCaptureResult_FileWriteError",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetFrameCaptureResult_FileWriteError",
+                    "base": "GetFrameCaptureResult_FileWriteError",
                     "details": {
                         "name": "File Write Error"
                     },

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "UiImageComponent",
+            "base": "UiImageComponent",
             "context": "BehaviorClass",
             "variant": "",
             "details": {

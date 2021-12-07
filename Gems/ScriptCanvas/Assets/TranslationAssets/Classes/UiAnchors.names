@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiAnchors",
+            "base": "UiAnchors",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "Ui Anchors"
+                "name": "UI Anchors",
+                "category": "UI"
             },
             "methods": [
                 {
-                    "key": "SetBottom",
+                    "base": "SetBottom",
                     "context": "UiAnchors",
                     "entry": {
                         "name": "In",
@@ -38,7 +39,7 @@
                     ]
                 },
                 {
-                    "key": "SetRight",
+                    "base": "SetRight",
                     "context": "UiAnchors",
                     "entry": {
                         "name": "In",
@@ -67,7 +68,7 @@
                     ]
                 },
                 {
-                    "key": "SetTop",
+                    "base": "SetTop",
                     "context": "UiAnchors",
                     "entry": {
                         "name": "In",
@@ -96,7 +97,7 @@
                     ]
                 },
                 {
-                    "key": "SetLeft",
+                    "base": "SetLeft",
                     "context": "UiAnchors",
                     "entry": {
                         "name": "In",
@@ -125,7 +126,7 @@
                     ]
                 },
                 {
-                    "key": "SetAnchors",
+                    "base": "SetAnchors",
                     "context": "UiAnchors",
                     "entry": {
                         "name": "In",
@@ -172,7 +173,7 @@
                     ]
                 },
                 {
-                    "key": "Getleft",
+                    "base": "Getleft",
                     "details": {
                         "name": "Getleft"
                     },
@@ -180,7 +181,7 @@
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": ""
+                                "name": "Anchors"
                             }
                         }
                     ],
@@ -188,13 +189,13 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": ""
+                                "name": "float"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Setleft",
+                    "base": "Setleft",
                     "details": {
                         "name": "Setleft"
                     },
@@ -202,19 +203,19 @@
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": ""
+                                "name": "Anchors"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": ""
+                                "name": "float"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Gettop",
+                    "base": "Gettop",
                     "details": {
                         "name": "Gettop"
                     },
@@ -222,7 +223,7 @@
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": ""
+                                "name": "Anchors"
                             }
                         }
                     ],
@@ -230,13 +231,13 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": ""
+                                "name": "float"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Settop",
+                    "base": "Settop",
                     "details": {
                         "name": "Settop"
                     },
@@ -244,19 +245,19 @@
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": ""
+                                "name": "Anchors"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": ""
+                                "name": "float"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Getright",
+                    "base": "Getright",
                     "details": {
                         "name": "Getright"
                     },
@@ -264,7 +265,7 @@
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": ""
+                                "name": "Anchors"
                             }
                         }
                     ],
@@ -272,13 +273,13 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": ""
+                                "name": "float"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Setright",
+                    "base": "Setright",
                     "details": {
                         "name": "Setright"
                     },
@@ -286,19 +287,19 @@
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": ""
+                                "name": "Anchors"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": ""
+                                "name": "float"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Getbottom",
+                    "base": "Getbottom",
                     "details": {
                         "name": "Getbottom"
                     },
@@ -306,7 +307,7 @@
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": ""
+                                "name": "Anchors"
                             }
                         }
                     ],
@@ -314,13 +315,13 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": ""
+                                "name": "float"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Setbottom",
+                    "base": "Setbottom",
                     "details": {
                         "name": "Setbottom"
                     },
@@ -328,13 +329,13 @@
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": ""
+                                "name": "Anchors"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": ""
+                                "name": "float"
                             }
                         }
                     ]

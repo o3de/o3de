@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiTextOverflowMode_ClipText",
+            "base": "eUiTextOverflowMode_ClipText",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiTextOverflowMode_ClipText",
+                    "base": "GeteUiTextOverflowMode_ClipText",
                     "details": {
                         "name": "Clip Text"
                     },

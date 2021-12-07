@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ConstantGradientComponentTypeId",
+            "base": "ConstantGradientComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetConstantGradientComponentTypeId",
+                    "base": "GetConstantGradientComponentTypeId",
                     "details": {
                         "name": "Get Constant Gradient Component Type Id"
                     },

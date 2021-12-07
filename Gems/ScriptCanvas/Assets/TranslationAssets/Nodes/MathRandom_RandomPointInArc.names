@@ -1,59 +1,59 @@
 {
     "entries": [
         {
-            "key": "{3A668745-A312-5849-A2D3-AEF533F2CE3D}",
+            "base": "{3A668745-A312-5849-A2D3-AEF533F2CE3D}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Random Point In Arc",
                 "category": "Math/Random",
-                "tooltip": "Returns a random point in the specified arc"
+                "tooltip": "returns a random point in the specified arc"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Origin",
+                    "base": "DataInput_Origin_0",
                     "details": {
                         "name": "Origin"
                     }
                 },
                 {
-                    "key": "DataInput_Direction",
+                    "base": "DataInput_Direction_1",
                     "details": {
                         "name": "Direction"
                     }
                 },
                 {
-                    "key": "DataInput_Normal",
+                    "base": "DataInput_Normal_2",
                     "details": {
                         "name": "Normal"
                     }
                 },
                 {
-                    "key": "DataInput_Radius",
+                    "base": "DataInput_Radius_3",
                     "details": {
                         "name": "Radius"
                     }
                 },
                 {
-                    "key": "DataInput_Angle",
+                    "base": "DataInput_Angle_4",
                     "details": {
                         "name": "Angle"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

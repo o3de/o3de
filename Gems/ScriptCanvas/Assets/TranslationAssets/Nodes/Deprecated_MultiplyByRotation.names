@@ -1,44 +1,43 @@
 {
     "entries": [
         {
-            "key": "{F2A25BFC-41AA-5F9F-ABDF-48B662349AD6}",
+            "base": "{F2A25BFC-41AA-5F9F-ABDF-48B662349AD6}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "MultiplyByRotation",
+                "name": "Multiply By Rotation",
                 "category": "Deprecated",
-                "tooltip": "This node is deprecated, use Multiply (*), it provides contextual type and slots",
-                "subtitle": "Deprecated"
+                "tooltip": "This node is deprecated, use Multiply (*), it provides contextual type and slots"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Quaternion: A",
+                    "base": "DataInput_A_0",
                     "details": {
-                        "name": "Quaternion: A"
+                        "name": "A"
                     }
                 },
                 {
-                    "key": "DataInput_Quaternion: B",
+                    "base": "DataInput_B_1",
                     "details": {
-                        "name": "Quaternion: B"
+                        "name": "B"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Quaternion",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Result: Quaternion"
+                        "name": "Result"
                     }
                 }
             ]

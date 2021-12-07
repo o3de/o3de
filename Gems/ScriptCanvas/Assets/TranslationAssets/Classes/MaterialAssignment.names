@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "MaterialAssignment",
+            "base": "MaterialAssignment",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "ToString",
+                    "base": "ToString",
                     "context": "MaterialAssignment",
                     "entry": {
                         "name": "In",
@@ -27,21 +27,21 @@
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::basic_string<char, AZ Std::char_traits<char>, allocator>"
+                                "name": "String"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetmaterialAsset",
+                    "base": "GetmaterialAsset",
                     "details": {
-                        "name": "Getmaterial Asset"
+                        "name": "Get Material Asset"
                     },
                     "params": [
                         {
                             "typeid": "{C66E5214-A24B-4722-B7F0-5991E6F8F163}",
                             "details": {
-                                "name": ""
+                                "name": "Material Assignment"
                             }
                         }
                     ],
@@ -49,41 +49,41 @@
                         {
                             "typeid": "{834DC049-5EC3-5C29-B621-5F0046864DC4}",
                             "details": {
-                                "name": ""
+                                "name": "Material Asset"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetmaterialAsset",
+                    "base": "SetmaterialAsset",
                     "details": {
-                        "name": "Setmaterial Asset"
+                        "name": "Set Material Asset"
                     },
                     "params": [
                         {
                             "typeid": "{C66E5214-A24B-4722-B7F0-5991E6F8F163}",
                             "details": {
-                                "name": ""
+                                "name": "Material Assignment"
                             }
                         },
                         {
                             "typeid": "{834DC049-5EC3-5C29-B621-5F0046864DC4}",
                             "details": {
-                                "name": ""
+                                "name": "Material Asset"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetpropertyOverrides",
+                    "base": "GetpropertyOverrides",
                     "details": {
-                        "name": "Getproperty Overrides"
+                        "name": "Get Property Overrides"
                     },
                     "params": [
                         {
                             "typeid": "{C66E5214-A24B-4722-B7F0-5991E6F8F163}",
                             "details": {
-                                "name": ""
+                                "name": "Material Assignment"
                             }
                         }
                     ],
@@ -91,27 +91,27 @@
                         {
                             "typeid": "{6E6962E1-04C9-56F9-89C4-361031CC1384}",
                             "details": {
-                                "name": ""
+                                "name": "Override"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetpropertyOverrides",
+                    "base": "SetpropertyOverrides",
                     "details": {
-                        "name": "Setproperty Overrides"
+                        "name": "Set Property Overrides"
                     },
                     "params": [
                         {
                             "typeid": "{C66E5214-A24B-4722-B7F0-5991E6F8F163}",
                             "details": {
-                                "name": ""
+                                "name": "Material Assignment"
                             }
                         },
                         {
                             "typeid": "{6E6962E1-04C9-56F9-89C4-361031CC1384}",
                             "details": {
-                                "name": ""
+                                "name": "Override"
                             }
                         }
                     ]

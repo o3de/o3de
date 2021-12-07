@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "EditorPrefabComponentTypeId",
+            "base": "EditorPrefabComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetEditorPrefabComponentTypeId",
+                    "base": "GetEditorPrefabComponentTypeId",
                     "details": {
                         "name": "Get Editor Prefab Component Type Id"
                     },

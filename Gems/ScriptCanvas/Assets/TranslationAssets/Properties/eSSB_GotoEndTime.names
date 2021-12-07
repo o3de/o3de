@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eSSB_GotoEndTime",
+            "base": "eSSB_GotoEndTime",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteSSB_GotoEndTime",
+                    "base": "GeteSSB_GotoEndTime",
                     "details": {
                         "name": "Goto End Time"
                     },

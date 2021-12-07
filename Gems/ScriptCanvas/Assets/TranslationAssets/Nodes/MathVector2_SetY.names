@@ -1,41 +1,41 @@
 {
     "entries": [
         {
-            "key": "{2969A368-000E-5723-8821-1B97790917E7}",
+            "base": "{2969A368-000E-5723-8821-1B97790917E7}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "Set Y",
+                "name": "SetY",
                 "category": "Math/Vector2",
-                "tooltip": "Returns a the vector(Source.X, Y)"
+                "tooltip": "returns a the vector(Source.X, Y)"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Source",
+                    "base": "DataInput_Source_0",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Y",
+                    "base": "DataInput_Y_1",
                     "details": {
                         "name": "Y"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

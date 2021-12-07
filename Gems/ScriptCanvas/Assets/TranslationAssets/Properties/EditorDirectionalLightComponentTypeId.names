@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "EditorDirectionalLightComponentTypeId",
+            "base": "EditorDirectionalLightComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetEditorDirectionalLightComponentTypeId",
+                    "base": "GetEditorDirectionalLightComponentTypeId",
                     "details": {
                         "name": "Get Editor Directional Light Component Type Id"
                     },

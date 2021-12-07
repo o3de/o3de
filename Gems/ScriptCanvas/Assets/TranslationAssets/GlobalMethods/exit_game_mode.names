@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "exit_game_mode",
+            "base": "exit_game_mode",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "exit_game_mode",
+                    "base": "exit_game_mode",
                     "context": "Global",
                     "entry": {
                         "name": "In",

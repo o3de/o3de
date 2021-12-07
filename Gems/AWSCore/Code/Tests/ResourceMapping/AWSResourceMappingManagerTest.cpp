@@ -121,7 +121,7 @@ public:
 
     void SetUp() override
     {
-        AWSCoreFixture::SetUp();
+        AWSCoreFixture::SetUpFixture(false);
 
         m_normalizedSourceProjectFolder = AZStd::string::format("%s/%s%s/", AZ::Test::GetCurrentExecutablePath().c_str(),
             "AWSResourceMappingManager", AZ::Uuid::CreateRandom().ToString<AZStd::string>(false, false).c_str());
@@ -142,7 +142,7 @@ public:
         m_resourceMappingManager->DeactivateManager();
         m_resourceMappingManager.reset();
 
-        AWSCoreFixture::TearDown();
+        AWSCoreFixture::TearDownFixture(false);
     }
 
     // AWSCoreInternalRequestBus interface implementation

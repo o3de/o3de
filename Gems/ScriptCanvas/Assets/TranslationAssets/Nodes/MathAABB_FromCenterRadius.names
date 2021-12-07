@@ -1,44 +1,43 @@
 {
     "entries": [
         {
-            "key": "{2AC22BD2-2150-58C2-8C0A-F9B83E2559F5}",
+            "base": "{2AC22BD2-2150-58C2-8C0A-F9B83E2559F5}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "From Center Radius",
-                "category": "Math/Axis Aligned Bounding Box",
-                "tooltip": "returns the AABB with Min = Center - Vector3(radius, radius, radius), Max = Center + Vector3(radius, radius, radius)",
-                "subtitle": "Axis Aligned Bounding Box"
+                "category": "Math/AABB",
+                "tooltip": "returns the AABB with Min = Center - Vector3(radius, radius, radius), Max = Center + Vector3(radius, radius, radius)"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: Center",
+                    "base": "DataInput_Center_0",
                     "details": {
                         "name": "Center"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Radius",
+                    "base": "DataInput_Radius_1",
                     "details": {
                         "name": "Radius"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: AABB",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "AABB"
+                        "name": "Result"
                     }
                 }
             ]

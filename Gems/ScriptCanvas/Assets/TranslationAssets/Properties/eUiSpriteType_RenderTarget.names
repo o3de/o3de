@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiSpriteType_RenderTarget",
+            "base": "eUiSpriteType_RenderTarget",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiSpriteType_RenderTarget",
+                    "base": "GeteUiSpriteType_RenderTarget",
                     "details": {
                         "name": "Render Target"
                     },

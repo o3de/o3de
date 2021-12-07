@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "MaterialAssignmentId",
+            "base": "MaterialAssignmentId",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "ToString",
+                    "base": "ToString",
                     "context": "MaterialAssignmentId",
                     "entry": {
                         "name": "In",
@@ -27,13 +27,13 @@
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::basic_string<char, AZ Std::char_traits<char>, allocator>"
+                                "name": "String"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "IsAssetOnly",
+                    "base": "IsAssetOnly",
                     "context": "MaterialAssignmentId",
                     "entry": {
                         "name": "In",
@@ -50,13 +50,13 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Is Asset Only"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "IsSlotIdOnly",
+                    "base": "IsSlotIdOnly",
                     "context": "MaterialAssignmentId",
                     "entry": {
                         "name": "In",
@@ -73,13 +73,13 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Is Slot Id Only"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "IsLodAndSlotId",
+                    "base": "IsLodAndSlotId",
                     "context": "MaterialAssignmentId",
                     "entry": {
                         "name": "In",
@@ -96,13 +96,13 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Is Lod And Slot Id"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "IsDefault",
+                    "base": "IsDefault",
                     "context": "MaterialAssignmentId",
                     "entry": {
                         "name": "In",
@@ -119,13 +119,13 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Is Default"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "IsLodAndAsset",
+                    "base": "IsLodAndAsset",
                     "context": "MaterialAssignmentId",
                     "entry": {
                         "name": "In",
@@ -142,21 +142,21 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Is Lod And Asset"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetlodIndex",
+                    "base": "GetlodIndex",
                     "details": {
-                        "name": "Getlod Index"
+                        "name": "Get LOD Index"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": ""
+                                "name": "Material Assignment Id"
                             }
                         }
                     ],
@@ -164,41 +164,41 @@
                         {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": ""
+                                "name": "Value"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetlodIndex",
+                    "base": "SetlodIndex",
                     "details": {
-                        "name": "Setlod Index"
+                        "name": "Set LOD Index"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": ""
+                                "name": "Material Assignment Id"
                             }
                         },
                         {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": ""
+                                "name": "Value"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetmaterialSlotStableId",
+                    "base": "GetmaterialSlotStableId",
                     "details": {
-                        "name": "Getmaterial Slot Stable Id"
+                        "name": "Get Material Slot Stable Id"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": ""
+                                "name": "Material Assignment Id"
                             }
                         }
                     ],
@@ -206,27 +206,27 @@
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": ""
+                                "name": "Value"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetmaterialSlotStableId",
+                    "base": "SetmaterialSlotStableId",
                     "details": {
-                        "name": "Setmaterial Slot Stable Id"
+                        "name": "Set Material Slot Stable Id"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": ""
+                                "name": "Material Assignment Id"
                             }
                         },
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": ""
+                                "name": "Value"
                             }
                         }
                     ]

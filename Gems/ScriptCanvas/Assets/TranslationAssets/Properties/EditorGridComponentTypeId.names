@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "EditorGridComponentTypeId",
+            "base": "EditorGridComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetEditorGridComponentTypeId",
+                    "base": "GetEditorGridComponentTypeId",
                     "details": {
                         "name": "Get Editor Grid Component Type Id"
                     },

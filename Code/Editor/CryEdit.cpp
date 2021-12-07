@@ -33,6 +33,7 @@ AZ_POP_DISABLE_WARNING
 #include <QScopedValueRollback>
 #include <QClipboard>
 #include <QMenuBar>
+#include <QMessageBox>
 #include <QDialogButtonBox>
 
 // Aws Native SDK
@@ -911,13 +912,9 @@ namespace
     QWidget* g_splashScreen = nullptr;
 }
 
-QString FormatVersion(const SFileVersion& v)
+QString FormatVersion([[maybe_unused]] const SFileVersion& v)
 {
-#if defined(LY_BUILD)
-    return QObject::tr("Version %1.%2.%3.%4 - Build %5").arg(v[3]).arg(v[2]).arg(v[1]).arg(v[0]).arg(LY_BUILD);
-#else
-    return QObject::tr("Version %1.%2.%3.%4").arg(v[3]).arg(v[2]).arg(v[1]).arg(v[0]);
-#endif
+    return QObject::tr("Version %1").arg(LY_VERSION_BUILD_NUMBER);
 }
 
 QString FormatRichTextCopyrightNotice()
@@ -4020,7 +4017,7 @@ void CCryEditApp::OnError(AzFramework::AssetSystem::AssetSystemErrors error)
         break;
     }
 
-    CryMessageBox(errorMessage.c_str(), "Error", MB_OK | MB_ICONERROR | MB_SETFOREGROUND);
+    QMessageBox::critical(nullptr,"Error",errorMessage.c_str());
 }
 
 void CCryEditApp::OnOpenProceduralMaterialEditor()

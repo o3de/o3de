@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{82FB60FB-2417-5BDC-ADF7-9C08DE88E793}",
+            "base": "{82FB60FB-2417-5BDC-ADF7-9C08DE88E793}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -11,37 +11,37 @@
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Pitch",
+                    "base": "DataInput_Pitch_0",
                     "details": {
                         "name": "Pitch"
                     }
                 },
                 {
-                    "key": "DataInput_Roll",
+                    "base": "DataInput_Roll_1",
                     "details": {
                         "name": "Roll"
                     }
                 },
                 {
-                    "key": "DataInput_Yaw",
+                    "base": "DataInput_Yaw_2",
                     "details": {
                         "name": "Yaw"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

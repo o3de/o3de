@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "EntityReferenceComponentTypeId",
+            "base": "EntityReferenceComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetEntityReferenceComponentTypeId",
+                    "base": "GetEntityReferenceComponentTypeId",
                     "details": {
                         "name": "Get Entity Reference Component Type Id"
                     },

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "MultiPositionBehaviorType_Separate",
+            "base": "MultiPositionBehaviorType_Separate",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetMultiPositionBehaviorType_Separate",
+                    "base": "GetMultiPositionBehaviorType_Separate",
                     "details": {
                         "name": "Separate"
                     },

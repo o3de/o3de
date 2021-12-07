@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiFillType_Linear",
+            "base": "eUiFillType_Linear",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiFillType_Linear",
+                    "base": "GeteUiFillType_Linear",
                     "details": {
                         "name": "Linear"
                     },

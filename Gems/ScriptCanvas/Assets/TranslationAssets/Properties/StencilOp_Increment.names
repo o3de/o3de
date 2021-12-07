@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "StencilOp_Increment",
+            "base": "StencilOp_Increment",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetStencilOp_Increment",
+                    "base": "GetStencilOp_Increment",
                     "details": {
                         "name": "Increment"
                     },

@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "Contact",
+            "base": "Contact",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "Contact"
+                "name": "Contact",
+                "category": "Physics"
             },
             "methods": [
                 {
-                    "key": "GetPosition",
+                    "base": "GetPosition",
                     "details": {
                         "name": "Get Position"
                     },
@@ -25,13 +26,13 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Position"
+                                "name": "Vector 3"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetPosition",
+                    "base": "SetPosition",
                     "details": {
                         "name": "Set Position"
                     },
@@ -45,13 +46,13 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Position"
+                                "name": "Vector 3"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetNormal",
+                    "base": "GetNormal",
                     "details": {
                         "name": "Get Normal"
                     },
@@ -67,13 +68,13 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Normal"
+                                "name": "Vector 3"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetNormal",
+                    "base": "SetNormal",
                     "details": {
                         "name": "Set Normal"
                     },
@@ -87,13 +88,13 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Normal"
+                                "name": "Vector 3"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetImpulse",
+                    "base": "GetImpulse",
                     "details": {
                         "name": "Get Impulse"
                     },
@@ -109,13 +110,13 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Impulse"
+                                "name": "Vector 3"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetImpulse",
+                    "base": "SetImpulse",
                     "details": {
                         "name": "Set Impulse"
                     },
@@ -129,13 +130,13 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Impulse"
+                                "name": "Vector 3"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetSeparation",
+                    "base": "GetSeparation",
                     "details": {
                         "name": "Get Separation"
                     },
@@ -151,13 +152,13 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Separation"
+                                "name": "float"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetSeparation",
+                    "base": "SetSeparation",
                     "details": {
                         "name": "Set Separation"
                     },
@@ -171,7 +172,7 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Separation"
+                                "name": "float"
                             }
                         }
                     ]

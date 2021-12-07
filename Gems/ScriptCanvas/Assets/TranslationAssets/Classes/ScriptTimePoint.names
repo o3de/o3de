@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "ScriptTimePoint",
+            "base": "ScriptTimePoint",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "Script Time Point"
+                "name": "Script Time Point",
+                "category": "Timing"
             },
             "methods": [
                 {
-                    "key": "ToString",
+                    "base": "ToString",
                     "context": "ScriptTimePoint",
                     "entry": {
                         "name": "In",
@@ -22,14 +23,6 @@
                     "details": {
                         "name": "To String"
                     },
-                    "params": [
-                        {
-                            "typeid": "{4C0F6AD4-0D4F-4354-AD4A-0C01E948245C}",
-                            "details": {
-                                "name": "Script Time Point"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
@@ -40,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "GetSeconds",
+                    "base": "GetSeconds",
                     "context": "ScriptTimePoint",
                     "entry": {
                         "name": "In",
@@ -53,14 +46,6 @@
                     "details": {
                         "name": "Get Seconds"
                     },
-                    "params": [
-                        {
-                            "typeid": "{4C0F6AD4-0D4F-4354-AD4A-0C01E948245C}",
-                            "details": {
-                                "name": "Script Time Point"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
@@ -71,7 +56,7 @@
                     ]
                 },
                 {
-                    "key": "GetMilliseconds",
+                    "base": "GetMilliseconds",
                     "context": "ScriptTimePoint",
                     "entry": {
                         "name": "In",
@@ -84,14 +69,6 @@
                     "details": {
                         "name": "Get Milliseconds"
                     },
-                    "params": [
-                        {
-                            "typeid": "{4C0F6AD4-0D4F-4354-AD4A-0C01E948245C}",
-                            "details": {
-                                "name": "Script Time Point"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",

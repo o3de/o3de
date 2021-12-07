@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiFlipbookAnimationLoopType_None",
+            "base": "eUiFlipbookAnimationLoopType_None",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiFlipbookAnimationLoopType_None",
+                    "base": "GeteUiFlipbookAnimationLoopType_None",
                     "details": {
                         "name": "None"
                     },

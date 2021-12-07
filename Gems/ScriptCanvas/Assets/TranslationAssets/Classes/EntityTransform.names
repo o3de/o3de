@@ -1,0 +1,46 @@
+{
+    "entries": [
+        {
+            "base": "Entity Transform",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Entity Transform",
+                "category": "Entity/Transform"
+            },
+            "methods": [
+                {
+                    "base": "Rotate",
+                    "context": "Entity Transform",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Rotate"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Rotate is invoked"
+                    },
+                    "details": {
+                        "name": "Rotate"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity",
+                                "tooltip": "The entity to apply the rotation on."
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Euler Angles",
+                                "tooltip": "Euler angles, Pitch/Yaw/Roll."
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

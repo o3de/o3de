@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AttachmentComponentRequestBus",
+            "base": "AttachmentComponentRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "Attach",
+                    "base": "Attach",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Attach"
@@ -45,7 +45,7 @@
                     ]
                 },
                 {
-                    "key": "Detach",
+                    "base": "Detach",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Detach"
@@ -59,7 +59,7 @@
                     }
                 },
                 {
-                    "key": "SetAttachmentOffset",
+                    "base": "SetAttachmentOffset",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetAttachmentOffset"

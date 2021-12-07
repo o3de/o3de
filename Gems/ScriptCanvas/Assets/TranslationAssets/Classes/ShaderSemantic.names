@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ShaderSemantic",
+            "base": "ShaderSemantic",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "ToString",
+                    "base": "ToString",
                     "context": "ShaderSemantic",
                     "entry": {
                         "name": "In",
@@ -27,21 +27,21 @@
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::basic_string<char, AZ Std::char_traits<char>, allocator>"
+                                "name": "String"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Getname",
+                    "base": "Getname",
                     "details": {
-                        "name": "Getname"
+                        "name": "Get Name"
                     },
                     "params": [
                         {
                             "typeid": "{C6FFF25F-FE52-4D08-8D96-D04C14048816}",
                             "details": {
-                                "name": ""
+                                "name": "Shader Semantic"
                             }
                         }
                     ],
@@ -49,41 +49,41 @@
                         {
                             "typeid": "{3D2B920C-9EFD-40D5-AAE0-DF131C3D4931}",
                             "details": {
-                                "name": ""
+                                "name": "Name"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Setname",
+                    "base": "Setname",
                     "details": {
-                        "name": "Setname"
+                        "name": "Set Name"
                     },
                     "params": [
                         {
                             "typeid": "{C6FFF25F-FE52-4D08-8D96-D04C14048816}",
                             "details": {
-                                "name": ""
+                                "name": "Shader Semantic"
                             }
                         },
                         {
                             "typeid": "{3D2B920C-9EFD-40D5-AAE0-DF131C3D4931}",
                             "details": {
-                                "name": ""
+                                "name": "Name"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Getindex",
+                    "base": "Getindex",
                     "details": {
-                        "name": "Getindex"
+                        "name": "Get Index"
                     },
                     "params": [
                         {
                             "typeid": "{C6FFF25F-FE52-4D08-8D96-D04C14048816}",
                             "details": {
-                                "name": ""
+                                "name": "Shader Semantic"
                             }
                         }
                     ],
@@ -91,27 +91,27 @@
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": ""
+                                "name": "Index"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Setindex",
+                    "base": "Setindex",
                     "details": {
-                        "name": "Setindex"
+                        "name": "Set Index"
                     },
                     "params": [
                         {
                             "typeid": "{C6FFF25F-FE52-4D08-8D96-D04C14048816}",
                             "details": {
-                                "name": ""
+                                "name": "Shader Semantic"
                             }
                         },
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": ""
+                                "name": "Index"
                             }
                         }
                     ]

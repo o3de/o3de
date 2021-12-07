@@ -45,6 +45,7 @@
 #include <AzCore/Module/Module.h>
 #include <AzCore/Module/ModuleManager.h>
 
+#include <AzCore/IO/Path/PathReflect.h>
 #include <AzCore/IO/SystemFile.h>
 
 #include <AzCore/Driller/Driller.h>
@@ -485,9 +486,11 @@ namespace AZ
 
         // Merge Command Line arguments
         constexpr bool executeRegDumpCommands = false;
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_settingsRegistry, m_commandLine, executeRegDumpCommands);
 
+#if defined(AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD)
+        // Skip over merging the User Registry in non-debug and profile configurations
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(*m_settingsRegistry, AZ_TRAIT_OS_PLATFORM_CODENAME, {});
+#endif
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_settingsRegistry, m_commandLine, executeRegDumpCommands);
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*m_settingsRegistry);
 
@@ -1547,7 +1550,7 @@ namespace AZ
         // reflect name dictionary.
         Name::Reflect(context);
         // reflect path
-        IO::PathReflection::Reflect(context);
+        IO::PathReflect(context);
 
         // reflect the SettingsRegistryInterface, SettignsRegistryImpl and the global Settings Registry
         // instance (AZ::SettingsRegistry::Get()) into the Behavior Context

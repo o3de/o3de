@@ -1,47 +1,47 @@
 {
     "entries": [
         {
-            "key": "{87F8C39D-47CC-5E63-B02A-675F2F1EE56E}",
+            "base": "{87F8C39D-47CC-5E63-B02A-675F2F1EE56E}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Is Close",
                 "category": "Math/Matrix3x3",
-                "tooltip": "Returns true if each element of both Matrix are equal within some tolerance"
+                "tooltip": "returns true if each element of both Matrix are equal within some tolerance"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_A",
+                    "base": "DataInput_A_0",
                     "details": {
                         "name": "A"
                     }
                 },
                 {
-                    "key": "DataInput_B",
+                    "base": "DataInput_B_1",
                     "details": {
                         "name": "B"
                     }
                 },
                 {
-                    "key": "DataInput_Tolerance",
+                    "base": "DataInput_Tolerance_2",
                     "details": {
                         "name": "Tolerance"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

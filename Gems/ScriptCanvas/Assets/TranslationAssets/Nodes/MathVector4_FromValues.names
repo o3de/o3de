@@ -1,53 +1,53 @@
 {
     "entries": [
         {
-            "key": "{DFDC391C-782D-58D9-BF81-C7B13A0F4CFC}",
+            "base": "{DFDC391C-782D-58D9-BF81-C7B13A0F4CFC}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "From Values",
                 "category": "Math/Vector4",
-                "tooltip": "Returns a vector from elements"
+                "tooltip": "returns a vector from elements"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_X",
+                    "base": "DataInput_X_0",
                     "details": {
                         "name": "X"
                     }
                 },
                 {
-                    "key": "DataInput_Y",
+                    "base": "DataInput_Y_1",
                     "details": {
                         "name": "Y"
                     }
                 },
                 {
-                    "key": "DataInput_Z",
+                    "base": "DataInput_Z_2",
                     "details": {
                         "name": "Z"
                     }
                 },
                 {
-                    "key": "DataInput_W",
+                    "base": "DataInput_W_3",
                     "details": {
                         "name": "W"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

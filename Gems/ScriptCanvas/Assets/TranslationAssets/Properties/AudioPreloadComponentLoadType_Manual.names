@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AudioPreloadComponentLoadType_Manual",
+            "base": "AudioPreloadComponentLoadType_Manual",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetAudioPreloadComponentLoadType_Manual",
+                    "base": "GetAudioPreloadComponentLoadType_Manual",
                     "details": {
                         "name": "Load Type Manual"
                     },

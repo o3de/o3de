@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "BlendFactor_AlphaDest",
+            "base": "BlendFactor_AlphaDest",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetBlendFactor_AlphaDest",
+                    "base": "GetBlendFactor_AlphaDest",
                     "details": {
                         "name": "Get Alpha Dest"
                     },

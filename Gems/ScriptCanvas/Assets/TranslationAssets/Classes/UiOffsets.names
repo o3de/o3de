@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "UiOffsets",
+            "base": "UiOffsets",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,182 +10,332 @@
             },
             "methods": [
                 {
-                    "key": "SetBottom",
+                    "base": "SetBottom",
                     "context": "UiOffsets",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetBottom"
+                        "tooltip": "When signaled, this will invoke Set Bottom"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetBottom is invoked"
+                        "tooltip": "Signaled after Set Bottom is invoked"
                     },
                     "details": {
-                        "name": "UiOffsets::SetBottom",
-                        "category": "UI"
+                        "name": "Set Bottom"
                     },
                     "params": [
                         {
                             "typeid": "{F681BA9D-245C-4630-B20E-05DD752FAD57}",
                             "details": {
-                                "name": "Offsets",
-                                "tooltip": "The Offsets for which to set the bottom offset"
+                                "name": "Offsets"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Bottom",
-                                "tooltip": "The offset from the anchors to the bottom edge of the element"
+                                "name": "Value"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetRight",
+                    "base": "SetRight",
                     "context": "UiOffsets",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetRight"
+                        "tooltip": "When signaled, this will invoke Set Right"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetRight is invoked"
+                        "tooltip": "Signaled after Set Right is invoked"
                     },
                     "details": {
-                        "name": "UiOffsets::SetRight",
-                        "category": "UI"
+                        "name": "Set Right"
                     },
                     "params": [
                         {
                             "typeid": "{F681BA9D-245C-4630-B20E-05DD752FAD57}",
                             "details": {
-                                "name": "Offsets",
-                                "tooltip": "The offsets for which to set the right offset"
+                                "name": "Offsets"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Right",
-                                "tooltip": "The offset from the anchors to the right edge of the element"
+                                "name": "Value"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetOffsets",
+                    "base": "SetOffsets",
                     "context": "UiOffsets",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetOffsets"
+                        "tooltip": "When signaled, this will invoke Set Offsets"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetOffsets is invoked"
+                        "tooltip": "Signaled after Set Offsets is invoked"
                     },
                     "details": {
-                        "name": "UiOffsets::SetOffsets",
-                        "category": "UI"
+                        "name": "Set Offsets"
                     },
                     "params": [
                         {
                             "typeid": "{F681BA9D-245C-4630-B20E-05DD752FAD57}",
                             "details": {
-                                "name": "Offsets",
-                                "tooltip": "The offsets to set"
+                                "name": "Offsets"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Left",
-                                "tooltip": "The offset from the anchors to the left edge of the element"
+                                "name": "Left"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Top",
-                                "tooltip": "The offset from the anchors to the top edge of the element"
+                                "name": "Top"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Right",
-                                "tooltip": "The offset from the anchors to the right edge of the element"
+                                "name": "Right"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Bottom",
-                                "tooltip": "The offset from the anchors to the bottom edge of the element"
+                                "name": "Bottom"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetTop",
+                    "base": "SetTop",
                     "context": "UiOffsets",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetTop"
+                        "tooltip": "When signaled, this will invoke Set Top"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetTop is invoked"
+                        "tooltip": "Signaled after Set Top is invoked"
                     },
                     "details": {
-                        "name": "UiOffsets::SetTop",
-                        "category": "UI"
+                        "name": "Set Top"
                     },
                     "params": [
                         {
                             "typeid": "{F681BA9D-245C-4630-B20E-05DD752FAD57}",
                             "details": {
-                                "name": "Offsets",
-                                "tooltip": "The offsets for which to set the top offset"
+                                "name": "Offsets"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Top",
-                                "tooltip": "The offset from the anchors to the top edge of the element"
+                                "name": "Value"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetLeft",
+                    "base": "SetLeft",
                     "context": "UiOffsets",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetLeft"
+                        "tooltip": "When signaled, this will invoke Set Left"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetLeft is invoked"
+                        "tooltip": "Signaled after Set Left is invoked"
                     },
                     "details": {
-                        "name": "UiOffsets::SetLeft",
-                        "category": "UI"
+                        "name": "Set Left"
                     },
                     "params": [
                         {
                             "typeid": "{F681BA9D-245C-4630-B20E-05DD752FAD57}",
                             "details": {
-                                "name": "Offsets",
-                                "tooltip": "The offsets for which to set the left offset"
+                                "name": "Offsets"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Left",
-                                "tooltip": "The offset from the anchors to the left edge of the element"
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Getleft",
+                    "details": {
+                        "name": "Get Left"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F681BA9D-245C-4630-B20E-05DD752FAD57}",
+                            "details": {
+                                "name": "Offsets"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Setleft",
+                    "details": {
+                        "name": "Set Left"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F681BA9D-245C-4630-B20E-05DD752FAD57}",
+                            "details": {
+                                "name": "Offsets"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Gettop",
+                    "details": {
+                        "name": "Get Top"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F681BA9D-245C-4630-B20E-05DD752FAD57}",
+                            "details": {
+                                "name": "Offsets"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Settop",
+                    "details": {
+                        "name": "Set Top"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F681BA9D-245C-4630-B20E-05DD752FAD57}",
+                            "details": {
+                                "name": "Offsets"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Getright",
+                    "details": {
+                        "name": "Get Right"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F681BA9D-245C-4630-B20E-05DD752FAD57}",
+                            "details": {
+                                "name": "Offsets"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Setright",
+                    "details": {
+                        "name": "Set Right"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F681BA9D-245C-4630-B20E-05DD752FAD57}",
+                            "details": {
+                                "name": "Offsets"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Getbottom",
+                    "details": {
+                        "name": "Get Bottom"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F681BA9D-245C-4630-B20E-05DD752FAD57}",
+                            "details": {
+                                "name": "Offsets"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Setbottom",
+                    "details": {
+                        "name": "Set Bottom"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F681BA9D-245C-4630-B20E-05DD752FAD57}",
+                            "details": {
+                                "name": "Offsets"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
                             }
                         }
                     ]

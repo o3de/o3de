@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiImageType_Stretched",
+            "base": "eUiImageType_Stretched",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiImageType_Stretched",
+                    "base": "GeteUiImageType_Stretched",
                     "details": {
                         "name": "Stretched"
                     },

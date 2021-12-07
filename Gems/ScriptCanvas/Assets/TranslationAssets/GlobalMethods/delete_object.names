@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "delete_object",
+            "base": "delete_object",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "delete_object",
+                    "base": "delete_object",
                     "context": "Global",
                     "entry": {
                         "name": "In",

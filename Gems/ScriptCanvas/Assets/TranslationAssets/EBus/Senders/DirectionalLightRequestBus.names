@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "DirectionalLightRequestBus",
+            "base": "DirectionalLightRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetNormalShadowBias",
+                    "base": "GetNormalShadowBias",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Normal Shadow Bias"
@@ -32,7 +32,7 @@
                     ]
                 },
                 {
-                    "key": "GetShadowBias",
+                    "base": "GetShadowBias",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Shadow Bias"
@@ -54,7 +54,7 @@
                     ]
                 },
                 {
-                    "key": "SetAngularDiameter",
+                    "base": "SetAngularDiameter",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Angular Diameter"
@@ -76,7 +76,7 @@
                     ]
                 },
                 {
-                    "key": "GetShadowFarClipDistance",
+                    "base": "GetShadowFarClipDistance",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Shadow Far Clip Distance"
@@ -98,7 +98,7 @@
                     ]
                 },
                 {
-                    "key": "SetShadowBias",
+                    "base": "SetShadowBias",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Shadow Bias"
@@ -120,7 +120,7 @@
                     ]
                 },
                 {
-                    "key": "SetIntensity",
+                    "base": "SetIntensity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Intensity"
@@ -142,7 +142,7 @@
                     ]
                 },
                 {
-                    "key": "SetSplitRatio",
+                    "base": "SetSplitRatio",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Split Ratio"
@@ -164,7 +164,7 @@
                     ]
                 },
                 {
-                    "key": "GetFilteringSampleCount",
+                    "base": "GetFilteringSampleCount",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Filtering Sample Count"
@@ -186,7 +186,7 @@
                     ]
                 },
                 {
-                    "key": "GetShadowFilterMethod",
+                    "base": "GetShadowFilterMethod",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Shadow Filter Method"
@@ -208,7 +208,7 @@
                     ]
                 },
                 {
-                    "key": "GetCameraEntityId",
+                    "base": "GetCameraEntityId",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Camera Entity Id"
@@ -231,7 +231,7 @@
                     ]
                 },
                 {
-                    "key": "SetDebugColoringEnabled",
+                    "base": "SetDebugColoringEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Debug Coloring Enabled"
@@ -253,7 +253,7 @@
                     ]
                 },
                 {
-                    "key": "GetDebugColoringEnabled",
+                    "base": "GetDebugColoringEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Debug Coloring Enabled"
@@ -275,7 +275,7 @@
                     ]
                 },
                 {
-                    "key": "GetViewFrustumCorrectionEnabled",
+                    "base": "GetViewFrustumCorrectionEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get View Frustum Correction Enabled"
@@ -297,7 +297,7 @@
                     ]
                 },
                 {
-                    "key": "SetViewFrustumCorrectionEnabled",
+                    "base": "SetViewFrustumCorrectionEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set View Frustum Correction Enabled"
@@ -319,7 +319,7 @@
                     ]
                 },
                 {
-                    "key": "SetGroundHeight",
+                    "base": "SetGroundHeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Ground Height"
@@ -341,7 +341,7 @@
                     ]
                 },
                 {
-                    "key": "GetShadowReceiverPlaneBiasEnabled",
+                    "base": "GetShadowReceiverPlaneBiasEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Shadow Receiver Plane Bias Enabled"
@@ -363,7 +363,7 @@
                     ]
                 },
                 {
-                    "key": "SetShadowmapSize",
+                    "base": "SetShadowmapSize",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Shadowmap Size"
@@ -385,7 +385,7 @@
                     ]
                 },
                 {
-                    "key": "SetShadowFarClipDistance",
+                    "base": "SetShadowFarClipDistance",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Shadow Far Clip Distance"
@@ -407,7 +407,7 @@
                     ]
                 },
                 {
-                    "key": "SetCameraEntityId",
+                    "base": "SetCameraEntityId",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Camera Entity Id"
@@ -430,7 +430,7 @@
                     ]
                 },
                 {
-                    "key": "GetColor",
+                    "base": "GetColor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Color"
@@ -452,7 +452,7 @@
                     ]
                 },
                 {
-                    "key": "SetSplitAutomatic",
+                    "base": "SetSplitAutomatic",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Split Automatic"
@@ -474,7 +474,7 @@
                     ]
                 },
                 {
-                    "key": "SetCascadeFarDepth",
+                    "base": "SetCascadeFarDepth",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Cascade Far Depth"
@@ -496,7 +496,7 @@
                     ]
                 },
                 {
-                    "key": "GetSplitAutomatic",
+                    "base": "GetSplitAutomatic",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Split Automatic"
@@ -518,7 +518,7 @@
                     ]
                 },
                 {
-                    "key": "GetGroundHeight",
+                    "base": "GetGroundHeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Ground Height"
@@ -540,7 +540,7 @@
                     ]
                 },
                 {
-                    "key": "SetCascadeCount",
+                    "base": "SetCascadeCount",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Cascade Count"
@@ -562,7 +562,7 @@
                     ]
                 },
                 {
-                    "key": "SetFilteringSampleCount",
+                    "base": "SetFilteringSampleCount",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Filtering Sample Count"
@@ -584,7 +584,7 @@
                     ]
                 },
                 {
-                    "key": "GetCascadeCount",
+                    "base": "GetCascadeCount",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Cascade Count"
@@ -606,7 +606,7 @@
                     ]
                 },
                 {
-                    "key": "GetIntensity",
+                    "base": "GetIntensity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Intensity"
@@ -628,7 +628,7 @@
                     ]
                 },
                 {
-                    "key": "SetNormalShadowBias",
+                    "base": "SetNormalShadowBias",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Normal Shadow Bias"
@@ -650,7 +650,7 @@
                     ]
                 },
                 {
-                    "key": "GetShadowmapSize",
+                    "base": "GetShadowmapSize",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Shadowmap Size"
@@ -672,7 +672,7 @@
                     ]
                 },
                 {
-                    "key": "GetAngularDiameter",
+                    "base": "GetAngularDiameter",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Angular Diameter"
@@ -694,7 +694,7 @@
                     ]
                 },
                 {
-                    "key": "SetShadowFilterMethod",
+                    "base": "SetShadowFilterMethod",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Shadow Filter Method"
@@ -716,7 +716,7 @@
                     ]
                 },
                 {
-                    "key": "SetShadowReceiverPlaneBiasEnabled",
+                    "base": "SetShadowReceiverPlaneBiasEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Shadow Receiver Plane Bias Enabled"
@@ -738,7 +738,7 @@
                     ]
                 },
                 {
-                    "key": "GetSplitRatio",
+                    "base": "GetSplitRatio",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Split Ratio"
@@ -760,7 +760,7 @@
                     ]
                 },
                 {
-                    "key": "GetCascadeFarDepth",
+                    "base": "GetCascadeFarDepth",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Cascade Far Depth"
@@ -782,7 +782,7 @@
                     ]
                 },
                 {
-                    "key": "SetColor",
+                    "base": "SetColor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Color"

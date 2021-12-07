@@ -13,4 +13,29 @@
     <NetworkInput Type="float" Name="FwdBack" Init="0.0f" ExposeToScript="true"/>
     <NetworkInput Type="float" Name="LeftRight" Init="0.0f" ExposeToScript="true"/>
 
+    <RemoteProcedure Name="AutonomousToAuthority" InvokeFrom="Autonomous" HandleOn="Authority" IsPublic="false" IsReliable="false" GenerateEventBindings="true" Description="" >
+        <Param Type="float" Name="SomeFloat" />
+    </RemoteProcedure>
+  
+    <RemoteProcedure Name="AutonomousToAuthorityNoParams" InvokeFrom="Autonomous" HandleOn="Authority" IsPublic="false" IsReliable="false" GenerateEventBindings="true" Description="" />
+
+    <RemoteProcedure Name="AuthorityToAutonomous" InvokeFrom="Authority" HandleOn="Autonomous" IsPublic="false" IsReliable="false" GenerateEventBindings="true" Description="" >
+        <Param Type="float" Name="SomeFloat" />
+    </RemoteProcedure>
+    
+    <RemoteProcedure Name="AuthorityToAutonomousNoParams" InvokeFrom="Authority" HandleOn="Autonomous" IsPublic="false" IsReliable="false" GenerateEventBindings="true" Description="" />
+
+    <RemoteProcedure Name="AuthorityToClient" InvokeFrom="Authority" HandleOn="Client" IsPublic="false" IsReliable="false" GenerateEventBindings="true" Description="" >
+        <Param Type="float" Name="SomeFloat" />
+    </RemoteProcedure>
+
+    <RemoteProcedure Name="AuthorityToClientNoParams" InvokeFrom="Authority" HandleOn="Client" IsPublic="false" IsReliable="false" GenerateEventBindings="true" Description="" />
+
+    <RemoteProcedure Name="ServerToAuthority" InvokeFrom="Server" HandleOn="Authority" IsPublic="false" IsReliable="false" GenerateEventBindings="true" Description="" >
+        <Param Type="float" Name="SomeFloat" />
+    </RemoteProcedure>
+    
+    <RemoteProcedure Name="ServerToAuthorityNoParam" InvokeFrom="Server" HandleOn="Authority" IsPublic="false" IsReliable="false" GenerateEventBindings="true" Description="" />
+
+
 </Component>

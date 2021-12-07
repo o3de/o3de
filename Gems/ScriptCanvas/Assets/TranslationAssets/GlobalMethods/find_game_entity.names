@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "find_game_entity",
+            "base": "find_game_entity",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "find_game_entity",
+                    "base": "find_game_entity",
                     "context": "Global",
                     "entry": {
                         "name": "In",

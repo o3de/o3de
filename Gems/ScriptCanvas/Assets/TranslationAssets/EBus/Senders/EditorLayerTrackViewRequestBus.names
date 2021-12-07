@@ -1,15 +1,15 @@
 {
     "entries": [
         {
-            "key": "EditorLayerTrackViewRequestBus",
+            "base": "EditorLayerTrackViewRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "EditorLayerTrackViewRequestBus"
+                "name": "Editor Layer TrackView"
             },
             "methods": [
                 {
-                    "key": "NewSequence",
+                    "base": "NewSequence",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke NewSequence"
@@ -37,7 +37,7 @@
                     ]
                 },
                 {
-                    "key": "SetRecording",
+                    "base": "SetRecording",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetRecording"
@@ -59,7 +59,7 @@
                     ]
                 },
                 {
-                    "key": "GetNumSequences",
+                    "base": "GetNumSequences",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetNumSequences"
@@ -81,7 +81,7 @@
                     ]
                 },
                 {
-                    "key": "GetSequenceName",
+                    "base": "GetSequenceName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetSequenceName"
@@ -111,7 +111,7 @@
                     ]
                 },
                 {
-                    "key": "GetSequenceTimeRange",
+                    "base": "GetSequenceTimeRange",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetSequenceTimeRange"
@@ -141,7 +141,7 @@
                     ]
                 },
                 {
-                    "key": "PlaySequence",
+                    "base": "PlaySequence",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke PlaySequence"
@@ -155,7 +155,7 @@
                     }
                 },
                 {
-                    "key": "GetNodeName",
+                    "base": "GetNodeName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetNodeName"
@@ -191,7 +191,7 @@
                     ]
                 },
                 {
-                    "key": "SetSequenceTimeRange",
+                    "base": "SetSequenceTimeRange",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetSequenceTimeRange"
@@ -225,7 +225,7 @@
                     ]
                 },
                 {
-                    "key": "DeleteSequence",
+                    "base": "DeleteSequence",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke DeleteSequence"
@@ -247,7 +247,7 @@
                     ]
                 },
                 {
-                    "key": "GetKeyValue",
+                    "base": "GetKeyValue",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetKeyValue"
@@ -301,7 +301,7 @@
                     ]
                 },
                 {
-                    "key": "StopSequence",
+                    "base": "StopSequence",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke StopSequence"
@@ -315,7 +315,7 @@
                     }
                 },
                 {
-                    "key": "AddSelectedEntities",
+                    "base": "AddSelectedEntities",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke AddSelectedEntities"
@@ -329,7 +329,7 @@
                     }
                 },
                 {
-                    "key": "GetNumTrackKeys",
+                    "base": "GetNumTrackKeys",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetNumTrackKeys"
@@ -377,7 +377,7 @@
                     ]
                 },
                 {
-                    "key": "AddLayerNode",
+                    "base": "AddLayerNode",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke AddLayerNode"
@@ -391,7 +391,7 @@
                     }
                 },
                 {
-                    "key": "DeleteNode",
+                    "base": "DeleteNode",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke DeleteNode"
@@ -419,7 +419,7 @@
                     ]
                 },
                 {
-                    "key": "GetInterpolatedValue",
+                    "base": "GetInterpolatedValue",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetInterpolatedValue"
@@ -473,7 +473,7 @@
                     ]
                 },
                 {
-                    "key": "GetNumNodes",
+                    "base": "GetNumNodes",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetNumNodes"
@@ -503,7 +503,7 @@
                     ]
                 },
                 {
-                    "key": "AddNode",
+                    "base": "AddNode",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke AddNode"
@@ -531,7 +531,7 @@
                     ]
                 },
                 {
-                    "key": "AddTrack",
+                    "base": "AddTrack",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke AddTrack"
@@ -565,7 +565,7 @@
                     ]
                 },
                 {
-                    "key": "DeleteTrack",
+                    "base": "DeleteTrack",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke DeleteTrack"
@@ -605,7 +605,7 @@
                     ]
                 },
                 {
-                    "key": "SetCurrentSequence",
+                    "base": "SetCurrentSequence",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetCurrentSequence"
@@ -627,7 +627,7 @@
                     ]
                 },
                 {
-                    "key": "SetTime",
+                    "base": "SetTime",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetTime"

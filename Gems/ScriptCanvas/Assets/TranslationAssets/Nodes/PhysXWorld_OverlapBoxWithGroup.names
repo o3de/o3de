@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{B4F46A1B-7C2F-553F-BAE8-867066A365FA}",
+            "base": "{B4F46A1B-7C2F-553F-BAE8-867066A365FA}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -11,43 +11,43 @@
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Pose",
+                    "base": "DataInput_Pose_0",
                     "details": {
                         "name": "Pose"
                     }
                 },
                 {
-                    "key": "DataInput_Dimensions",
+                    "base": "DataInput_Dimensions_1",
                     "details": {
                         "name": "Dimensions"
                     }
                 },
                 {
-                    "key": "DataInput_Collision group",
+                    "base": "DataInput_Collision group_2",
                     "details": {
                         "name": "Collision group"
                     }
                 },
                 {
-                    "key": "DataInput_Ignore",
+                    "base": "DataInput_Ignore_3",
                     "details": {
                         "name": "Ignore"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

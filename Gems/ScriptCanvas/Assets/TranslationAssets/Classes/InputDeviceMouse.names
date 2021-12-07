@@ -1,12 +1,141 @@
 {
     "entries": [
         {
-            "key": "InputDeviceMouse",
+            "base": "InputDeviceMouse",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "InputDeviceMouse"
-            }
+                "name": "Input Device Mouse",
+                "category": "Input"
+            },
+            "methods": [
+                {
+                    "base": "mouse_delta_z",
+                    "details": {
+                        "name": "mouse_delta_z"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "mouse_button_other2",
+                    "details": {
+                        "name": "mouse_button_other 2"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "mouse_delta_x",
+                    "details": {
+                        "name": "mouse_delta_x"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "mouse_button_middle",
+                    "details": {
+                        "name": "mouse_button_middle"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "mouse_delta_y",
+                    "details": {
+                        "name": "mouse_delta_y"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "mouse_button_right",
+                    "details": {
+                        "name": "mouse_button_right"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "mouse_button_left",
+                    "details": {
+                        "name": "mouse_button_left"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Getname",
+                    "details": {
+                        "name": "Get Name"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "Name"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "mouse_button_other1",
+                    "details": {
+                        "name": "mouse_button_other 1"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

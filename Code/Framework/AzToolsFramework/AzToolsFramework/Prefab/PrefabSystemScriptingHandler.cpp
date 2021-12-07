@@ -8,10 +8,12 @@
 
 #include <API/ToolsApplicationAPI.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Component/Entity.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzToolsFramework/ToolsComponents/EditorLockComponent.h>
+#include <AzToolsFramework/ToolsComponents/EditorVisibilityComponent.h>
 #include <Prefab/PrefabSystemComponentInterface.h>
 #include <Prefab/PrefabSystemScriptingHandler.h>
-#include <AzCore/Component/Entity.h>
 #include <Prefab/EditorPrefabComponent.h>
 #include <ToolsComponents/TransformComponent.h>
 
@@ -72,6 +74,9 @@ namespace AzToolsFramework::Prefab
             entities, commonRoot, &topLevelEntities);
 
         auto containerEntity = AZStd::make_unique<AZ::Entity>();
+        containerEntity->CreateComponent<Components::TransformComponent>();
+        containerEntity->CreateComponent<Components::EditorLockComponent>();
+        containerEntity->CreateComponent<Components::EditorVisibilityComponent>();
         containerEntity->CreateComponent<Prefab::EditorPrefabComponent>();
 
         for (AZ::Entity* entity : topLevelEntities)

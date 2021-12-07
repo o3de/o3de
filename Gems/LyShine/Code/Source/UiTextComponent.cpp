@@ -598,7 +598,6 @@ namespace
         int curChar = 0;
         float curLineWidth = 0.0f;
         float biggestLineWidth = 0.0f;
-        float widthSum = 0.0f;
 
         // When iterating over batches, we need to know the previous
         // character, which we can only obtain if we keep track of the last
@@ -690,7 +689,6 @@ namespace
                     {
                         // Reset the current line width to account for newline
                         curLineWidth = curCharWidth;
-                        widthSum += curLineWidth;
                     }
                     else if ((lastSpace > 0) && ((curChar - lastSpace) < 16) && (curChar - lastSpace >= 0)) // 16 is the default threshold
                     {
@@ -703,7 +701,6 @@ namespace
                         }
 
                         curLineWidth = curLineWidth - lastSpaceWidth + curCharWidth;
-                        widthSum += curLineWidth;
                     }
                     else
                     {
@@ -723,7 +720,6 @@ namespace
                             biggestLineWidth = curLineWidth;
                         }
 
-                        widthSum += curLineWidth;
                         curLineWidth = curCharWidth;
                     }
 
@@ -1055,6 +1051,23 @@ namespace
         // div by zero checks etc.
         maxLinesElementCanHold = AZStd::GetMax<int>(maxLinesElementCanHold, 1);
         return maxLinesElementCanHold;
+    }
+
+    //! Converts the vertex format used by FFont to the format being used by the dynamic draw context in LyShine.
+    //!
+    //! Note that the formats are currently identical, but this may change with the removal of more legacy code
+    void FontVertexToUiVertex(const SVF_P2F_C4B_T2F_F4B* fontVertices, LyShine::UiPrimitiveVertex* uiVertices, int numVertices)
+    {
+        for (int i = 0; i < numVertices; ++i)
+        {
+            uiVertices[i].xy = fontVertices[i].xy;
+            uiVertices[i].color.dcolor = fontVertices[i].color.dcolor;
+            uiVertices[i].st = fontVertices[i].st;
+            uiVertices[i].texIndex = fontVertices[i].texIndex;
+            uiVertices[i].texHasColorChannel = fontVertices[i].texHasColorChannel;
+            uiVertices[i].texIndex2 = fontVertices[i].texIndex2;
+            uiVertices[i].pad = fontVertices[i].pad;
+        }
     }
 
 }   // anonymous namespace
@@ -1827,7 +1840,7 @@ void UiTextComponent::Render(LyShine::IRenderGraph* renderGraph)
 
         for (UiTransformInterface::RectPoints& rect : rectPoints)
         {
-            DynUiPrimitive* primitive = renderGraph->GetDynamicQuadPrimitive(rect.pt, packedColor);
+            LyShine::UiPrimitive* primitive = renderGraph->GetDynamicQuadPrimitive(rect.pt, packedColor);
             primitive->m_next = nullptr;
 
             LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
@@ -4082,16 +4095,19 @@ void UiTextComponent::RenderDrawBatchLines(
                     cacheBatch->m_font = drawBatch.font;
                     cacheBatch->m_color = batchColor;
 
-                    cacheBatch->m_cachedPrimitive.m_vertices = new SVF_P2F_C4B_T2F_F4B[numQuads * 4];
+                    cacheBatch->m_cachedPrimitive.m_vertices = new LyShine::UiPrimitiveVertex[numQuads * 4];
                     cacheBatch->m_cachedPrimitive.m_indices = new uint16[numQuads * 6];
 
+                    AZStd::vector<SVF_P2F_C4B_T2F_F4B> vertices(numQuads * 4);
                     uint32 numQuadsWritten = cacheBatch->m_font->WriteTextQuadsToBuffers(
-                        cacheBatch->m_cachedPrimitive.m_vertices, cacheBatch->m_cachedPrimitive.m_indices, numQuads,
+                        vertices.data(), cacheBatch->m_cachedPrimitive.m_indices, numQuads,
                         cacheBatch->m_position.GetX(), cacheBatch->m_position.GetY(), 1.0f, cacheBatch->m_text.c_str(), true, fontContext);
 
                     AZ_Assert(numQuadsWritten <= numQuads, "value returned from WriteTextQuadsToBuffers is larger than size allocated");
 
-                    cacheBatch->m_cachedPrimitive.m_numVertices = numQuadsWritten * 4;
+                    int numVertices = numQuadsWritten * 4;
+                    FontVertexToUiVertex(vertices.data(), cacheBatch->m_cachedPrimitive.m_vertices, numVertices);
+                    cacheBatch->m_cachedPrimitive.m_numVertices = numVertices;
                     cacheBatch->m_cachedPrimitive.m_numIndices = numQuadsWritten * 6;
 
                     cacheBatch->m_fontTextureVersion = drawBatch.font->GetFontTextureVersion();
@@ -4152,7 +4168,7 @@ void UiTextComponent::RenderDrawBatchLines(
 
                 cacheImageBatch->m_texture = drawBatch.image->m_texture;
 
-                cacheImageBatch->m_cachedPrimitive.m_vertices = new SVF_P2F_C4B_T2F_F4B[4];
+                cacheImageBatch->m_cachedPrimitive.m_vertices = new LyShine::UiPrimitiveVertex[4];
                 for (int i = 0; i < 4; ++i)
                 {
                     cacheImageBatch->m_cachedPrimitive.m_vertices[i].xy = Vec2(imageQuad[i].GetX(), imageQuad[i].GetY());
@@ -4201,15 +4217,19 @@ void UiTextComponent::UpdateTextRenderBatchesForFontTextureChange()
                 delete [] cacheBatch->m_cachedPrimitive.m_vertices;
                 delete [] cacheBatch->m_cachedPrimitive.m_indices;
 
-                cacheBatch->m_cachedPrimitive.m_vertices = new SVF_P2F_C4B_T2F_F4B[numQuads * 4];
+                cacheBatch->m_cachedPrimitive.m_vertices = new LyShine::UiPrimitiveVertex[numQuads * 4];
                 cacheBatch->m_cachedPrimitive.m_indices = new uint16[numQuads * 6];
             }
 
+            AZStd::vector<SVF_P2F_C4B_T2F_F4B> vertices(numQuads * 4);
             uint32 numQuadsWritten = cacheBatch->m_font->WriteTextQuadsToBuffers(
-                cacheBatch->m_cachedPrimitive.m_vertices, cacheBatch->m_cachedPrimitive.m_indices, numQuads,
+                vertices.data(), cacheBatch->m_cachedPrimitive.m_indices, numQuads,
                 cacheBatch->m_position.GetX(), cacheBatch->m_position.GetY(), 1.0f, cacheBatch->m_text.c_str(), true, fontContext);
 
-            cacheBatch->m_cachedPrimitive.m_numVertices = numQuadsWritten * 4;
+            int numVertices = numQuadsWritten * 4;
+            FontVertexToUiVertex(vertices.data(), cacheBatch->m_cachedPrimitive.m_vertices, numVertices);
+
+            cacheBatch->m_cachedPrimitive.m_numVertices = numVertices;
             cacheBatch->m_cachedPrimitive.m_numIndices = numQuadsWritten * 6;
 
             cacheBatch->m_fontTextureVersion = cacheBatch->m_font->GetFontTextureVersion();

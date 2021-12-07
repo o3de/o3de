@@ -1,25 +1,26 @@
 {
     "entries": [
         {
-            "key": "PostFxLayerRequestBus",
+            "base": "PostFxLayerRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "PostFxLayerRequestBus"
+                "name": "Post Fx Layer",
+                "category": "Rendering"
             },
             "methods": [
                 {
-                    "key": "SetPriority",
+                    "base": "SetPriority",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetPriority"
+                        "tooltip": "When signaled, this will invoke Set Priority"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetPriority is invoked"
+                        "tooltip": "Signaled after Set Priority is invoked"
                     },
                     "details": {
-                        "name": "SetPriority"
+                        "name": "Set Priority"
                     },
                     "params": [
                         {
@@ -31,17 +32,17 @@
                     ]
                 },
                 {
-                    "key": "GetPriority",
+                    "base": "GetPriority",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetPriority"
+                        "tooltip": "When signaled, this will invoke Get Priority"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetPriority is invoked"
+                        "tooltip": "Signaled after Get Priority is invoked"
                     },
                     "details": {
-                        "name": "GetPriority"
+                        "name": "Get Priority"
                     },
                     "results": [
                         {
@@ -53,17 +54,17 @@
                     ]
                 },
                 {
-                    "key": "SetOverrideFactor",
+                    "base": "SetOverrideFactor",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetOverrideFactor"
+                        "tooltip": "When signaled, this will invoke Set Override Factor"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetOverrideFactor is invoked"
+                        "tooltip": "Signaled after Set Override Factor is invoked"
                     },
                     "details": {
-                        "name": "SetOverrideFactor"
+                        "name": "Set Override Factor"
                     },
                     "params": [
                         {
@@ -75,17 +76,17 @@
                     ]
                 },
                 {
-                    "key": "GetOverrideFactor",
+                    "base": "GetOverrideFactor",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetOverrideFactor"
+                        "tooltip": "When signaled, this will invoke Get Override Factor"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetOverrideFactor is invoked"
+                        "tooltip": "Signaled after Get Override Factor is invoked"
                     },
                     "details": {
-                        "name": "GetOverrideFactor"
+                        "name": "Get Override Factor"
                     },
                     "results": [
                         {

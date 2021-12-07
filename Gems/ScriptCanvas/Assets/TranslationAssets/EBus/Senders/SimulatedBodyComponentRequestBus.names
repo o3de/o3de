@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SimulatedBodyComponentRequestBus",
+            "base": "SimulatedBodyComponentRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetAabb",
+                    "base": "GetAabb",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get AABB"
@@ -31,7 +31,7 @@
                     ]
                 },
                 {
-                    "key": "IsPhysicsEnabled",
+                    "base": "IsPhysicsEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsPhysicsEnabled"
@@ -53,7 +53,7 @@
                     ]
                 },
                 {
-                    "key": "RayCast",
+                    "base": "RayCast",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RayCast"
@@ -84,7 +84,7 @@
                     ]
                 },
                 {
-                    "key": "DisablePhysics",
+                    "base": "DisablePhysics",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Disable Physics"
@@ -98,7 +98,7 @@
                     }
                 },
                 {
-                    "key": "EnablePhysics",
+                    "base": "EnablePhysics",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke EnablePhysics"

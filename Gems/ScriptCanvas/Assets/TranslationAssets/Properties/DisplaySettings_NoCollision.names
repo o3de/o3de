@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "DisplaySettings_NoCollision",
+            "base": "DisplaySettings_NoCollision",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetDisplaySettings_NoCollision",
+                    "base": "GetDisplaySettings_NoCollision",
                     "details": {
                         "name": "Get No Collision"
                     },

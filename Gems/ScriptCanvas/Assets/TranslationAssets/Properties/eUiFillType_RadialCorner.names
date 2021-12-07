@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "eUiFillType_RadialCorner",
+            "base": "eUiFillType_RadialCorner",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GeteUiFillType_RadialCorner",
+                    "base": "GeteUiFillType_RadialCorner",
                     "details": {
                         "name": "Radial Corner"
                     },

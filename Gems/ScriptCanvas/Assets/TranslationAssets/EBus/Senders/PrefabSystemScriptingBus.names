@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "PrefabSystemScriptingBus",
+            "base": "PrefabSystemScriptingBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "CreatePrefab",
+                    "base": "CreatePrefab",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Create Prefab"

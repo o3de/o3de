@@ -1,35 +1,35 @@
 {
     "entries": [
         {
-            "key": "{AC6712AA-0494-5879-B7F8-4B04352924DE}",
+            "base": "{AC6712AA-0494-5879-B7F8-4B04352924DE}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "To Scale",
                 "category": "Math/Transform",
-                "tooltip": "Returns the uniform scale of the Source"
+                "tooltip": "returns the uniform scale of the Source"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Source",
+                    "base": "DataInput_Source_0",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

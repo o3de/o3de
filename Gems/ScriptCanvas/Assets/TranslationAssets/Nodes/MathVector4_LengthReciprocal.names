@@ -1,35 +1,35 @@
 {
     "entries": [
         {
-            "key": "{60E6D939-6105-53CB-865B-4F401A1B487B}",
+            "base": "{60E6D939-6105-53CB-865B-4F401A1B487B}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Length Reciprocal",
                 "category": "Math/Vector4",
-                "tooltip": "Returns the 1 / magnitude of the source"
+                "tooltip": "returns the 1 / magnitude of the source"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Source",
+                    "base": "DataInput_Source_0",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

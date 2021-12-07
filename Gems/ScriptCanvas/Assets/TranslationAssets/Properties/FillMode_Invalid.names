@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "FillMode_Invalid",
+            "base": "FillMode_Invalid",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetFillMode_Invalid",
+                    "base": "GetFillMode_Invalid",
                     "details": {
                         "name": "Invalid"
                     },

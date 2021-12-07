@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "TransformMode_Scale",
+            "base": "TransformMode_Scale",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetTransformMode_Scale",
+                    "base": "GetTransformMode_Scale",
                     "details": {
                         "name": "Scale"
                     },

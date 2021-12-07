@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ScaleModifierComponentTypeId",
+            "base": "ScaleModifierComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetScaleModifierComponentTypeId",
+                    "base": "GetScaleModifierComponentTypeId",
                     "details": {
                         "name": "Get Scale Modifier Component Type Id"
                     },
