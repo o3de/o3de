@@ -36,8 +36,6 @@ set(FILES
     Source/Editor/EditorMeshBlockerComponent.h
     Source/Editor/EditorPositionModifierComponent.cpp
     Source/Editor/EditorPositionModifierComponent.h
-    Source/Editor/EditorReferenceShapeComponent.cpp
-    Source/Editor/EditorReferenceShapeComponent.h
     Source/Editor/EditorRotationModifierComponent.cpp
     Source/Editor/EditorRotationModifierComponent.h
     Source/Editor/EditorScaleModifierComponent.cpp

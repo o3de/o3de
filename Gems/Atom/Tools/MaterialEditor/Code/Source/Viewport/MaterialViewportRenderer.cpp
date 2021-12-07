@@ -306,7 +306,6 @@ namespace MaterialEditor
     {
         if (!preset)
         {
-            AZ_Warning("MaterialViewportRenderer", false, "Attempting to set invalid lighting preset.");
             return;
         }
 
@@ -347,7 +346,6 @@ namespace MaterialEditor
     {
         if (!preset)
         {
-            AZ_Warning("MaterialViewportRenderer", false, "Attempting to set invalid model preset.");
             return;
         }
 

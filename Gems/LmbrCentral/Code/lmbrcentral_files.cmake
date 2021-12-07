@@ -87,6 +87,8 @@ set(FILES
     Source/Shape/PolygonPrismShapeComponent.cpp
     Source/Shape/TubeShapeComponent.h
     Source/Shape/TubeShapeComponent.cpp
+    Source/Shape/ReferenceShapeComponent.h
+    Source/Shape/ReferenceShapeComponent.cpp
     Source/Shape/ShapeComponentConverters.h
     Source/Shape/ShapeComponentConverters.cpp
     Source/Shape/ShapeComponentConverters.inl

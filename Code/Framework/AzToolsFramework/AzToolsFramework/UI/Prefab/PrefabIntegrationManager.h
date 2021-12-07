@@ -18,10 +18,11 @@
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/UI/Prefab/LevelRootUiHandler.h>
-
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationBus.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
 #include <AzToolsFramework/UI/Prefab/PrefabUiHandler.h>
+#include <AzToolsFramework/UI/Prefab/Procedural/ProceduralPrefabReadOnlyHandler.h>
+#include <AzToolsFramework/UI/Prefab/Procedural/ProceduralPrefabUiHandler.h>
 
 #include <AzQtComponents/Components/Widgets/Card.h>
 
@@ -92,11 +93,17 @@ namespace AzToolsFramework
             void ExecuteSavePrefabDialog(TemplateId templateId, bool useSaveAllPrefabsPreference) override;
 
         private:
-            // Used to handle the UI for the level root
+            // Used to handle the UI for the level root.
             LevelRootUiHandler m_levelRootUiHandler;
 
-            // Used to handle the UI for prefab entities
+            // Used to handle the UI for prefab entities.
             PrefabUiHandler m_prefabUiHandler;
+
+            // Used to handle the UI for procedural prefab entities.
+            ProceduralPrefabUiHandler m_proceduralPrefabUiHandler;
+
+            // Ensures entities owned by procedural prefab instances are marked as read-only correctly.
+            ProceduralPrefabReadOnlyHandler m_proceduralPrefabReadOnlyHandler;
 
             // Context menu item handlers
             static void ContextMenu_CreatePrefab(AzToolsFramework::EntityIdList selectedEntities);
