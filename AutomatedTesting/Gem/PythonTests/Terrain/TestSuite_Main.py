@@ -34,3 +34,5 @@ class TestAutomation(EditorTestSuite):
     class test_TerrainSystem_VegetationSpawnsOnTerrainSurfaces(EditorSharedTest):
         from .EditorScripts import TerrainSystem_VegetationSpawnsOnTerrainSurfaces as test_module
 
+    class test_TerrainMacroMaterialComponent_MacroMaterialActivates(EditorSharedTest):
+         from .EditorScripts import TerrainMacroMaterialComponent_MacroMaterialActivates as test_module
