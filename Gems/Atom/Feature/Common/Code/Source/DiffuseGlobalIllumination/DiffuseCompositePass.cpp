@@ -32,7 +32,7 @@ namespace AZ
             {
                 return false;
             }
-			DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor =
+            DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor =
                 scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
             if (!diffuseProbeGridFeatureProcessor || diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids().empty())
             {
