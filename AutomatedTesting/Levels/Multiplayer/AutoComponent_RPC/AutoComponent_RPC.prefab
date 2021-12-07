@@ -21,7 +21,6 @@
                 "Child Entity Order": [
                     "Entity_[1176639161715]",
                     "Entity_[12685882829720]",
-                    "Entity_[31145534614197]",
                     "Entity_[31145534614197]"
                 ]
             },
@@ -641,16 +640,16 @@
                     "$type": "EditorVisibilityComponent",
                     "Id": 14169903623243423134
                 },
-                "Component_[14300469789192169678]": {
-                    "$type": "GenericComponentWrapper",
-                    "Id": 14300469789192169678,
-                    "m_template": {
-                        "$type": "AutomatedTesting::NetworkTestPlayerComponent"
-                    }
-                },
                 "Component_[14607413934411389854]": {
                     "$type": "EditorInspectorComponent",
                     "Id": 14607413934411389854
+                },
+                "Component_[15396284312416541768]": {
+                    "$type": "GenericComponentWrapper",
+                    "Id": 15396284312416541768,
+                    "m_template": {
+                        "$type": "Multiplayer::LocalPredictionPlayerInputComponent"
+                    }
                 },
                 "Component_[15494977028055234270]": {
                     "$type": "EditorDisabledCompositionComponent",
@@ -659,13 +658,6 @@
                 "Component_[16325088972532345964]": {
                     "$type": "EditorLockComponent",
                     "Id": 16325088972532345964
-                },
-                "Component_[1639017114849961416]": {
-                    "$type": "GenericComponentWrapper",
-                    "Id": 1639017114849961416,
-                    "m_template": {
-                        "$type": "Multiplayer::LocalPredictionPlayerInputComponent"
-                    }
                 },
                 "Component_[1986030426392465743]": {
                     "$type": "EditorEntitySortComponent",
@@ -736,6 +728,13 @@
                     "Id": 8805228647591404845,
                     "m_template": {
                         "$type": "NetBindComponent"
+                    }
+                },
+                "Component_[9816897251206708579]": {
+                    "$type": "GenericComponentWrapper",
+                    "Id": 9816897251206708579,
+                    "m_template": {
+                        "$type": "AutomatedTesting::NetworkTestPlayerComponent"
                     }
                 },
                 "Component_[9880860858035405475]": {
