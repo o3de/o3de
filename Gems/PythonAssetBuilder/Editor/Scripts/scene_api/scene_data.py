@@ -98,31 +98,48 @@ class SceneGraph:
 
 class ColorChannel(IntEnum):
     RED = 0
+    """ Red color channel """
     GREEN = 1
+    """ Green color channel """
     BLUE = 2
+    """ Blue color channel """
     ALPHA = 3
+    """ Alpha color channel """
 
 
 class TangentSpaceSource(IntEnum):
     SCENE = 0
+    """ Extract the tangents and bitangents directly from the source scene file. """
     MIKKT_GENERATION = 1
+    """ Use MikkT algorithm to generate tangents """
 
 
 class TangentSpaceMethod(IntEnum):
     TSPACE = 0
+    """ Generates the tangents and bitangents with their true magnitudes which can be used for relief mapping effects. 
+        It calculates the 'real' bitangent which may not be perpendicular to the tangent. 
+        However, both, the tangent and bitangent are perpendicular to the vertex normal.
+    """
     TSPACE_BASIC = 1
+    """ Calculates unit vector tangents and bitangents at pixel/vertex level which are sufficient for basic normal mapping. """
 
 
 class PrimitiveShape(IntEnum):
     BEST_FIT = 0
+    """ The algorithm will determine which of the shapes fits best. """
     SPHERE = 1
+    """ Sphere shape """
     BOX = 2
+    """ Box shape """
     CAPSULE = 3
+    """ Capsule shape """
 
 
 class DecompositionMode(IntEnum):
     VOXEL = 0
+    """ Voxel-based approximate convex decomposition """
     TETRAHEDRON = 1
+    """ Tetrahedron-based approximate convex decomposition """
 
 
 # Contains a dictionary to contain and export AZ.SceneAPI.Containers.SceneManifest
