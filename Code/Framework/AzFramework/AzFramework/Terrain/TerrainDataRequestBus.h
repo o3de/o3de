@@ -178,19 +178,19 @@ namespace AzFramework
             {
                 return GetMaxSurfaceWeightFromVector2(inPosition, sampleFilter, nullptr);
             }
-            SurfaceData::SurfaceTagWeightList& BehaviorContextGetSurfaceWeights(
+            SurfaceData::SurfaceTagWeightList BehaviorContextGetSurfaceWeights(
                 const AZ::Vector3& inPosition,
                 Sampler sampleFilter = Sampler::DEFAULT)
             {
-                static SurfaceData::SurfaceTagWeightList list;
+                SurfaceData::SurfaceTagWeightList list;
                 GetSurfaceWeights(inPosition, list, sampleFilter, nullptr);
                 return list;
             }
-            SurfaceData::SurfaceTagWeightList& BehaviorContextGetSurfaceWeightsFromVector2(
+            SurfaceData::SurfaceTagWeightList BehaviorContextGetSurfaceWeightsFromVector2(
                 const AZ::Vector2& inPosition,
                 Sampler sampleFilter = Sampler::DEFAULT)
             {
-                static SurfaceData::SurfaceTagWeightList list;
+                SurfaceData::SurfaceTagWeightList list;
                 GetSurfaceWeightsFromVector2(inPosition, list, sampleFilter, nullptr);
                 return list;
             }
