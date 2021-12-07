@@ -111,10 +111,9 @@ file(COPY ${_artifacts}
 message(STATUS "Artifacts copied to ${CPACK_UPLOAD_DIRECTORY}")
 
 if(CPACK_UPLOAD_URL)
-    file(TO_NATIVE_PATH "${_cpack_wix_out_dir}" _cpack_wix_out_dir)
     ly_upload_to_url(
         ${CPACK_UPLOAD_URL}
-        ${_cpack_wix_out_dir}
+        ${CPACK_UPLOAD_DIRECTORY}
         ".*(.cab|.exe|.msi|.txt|.json)$"
     )
 
