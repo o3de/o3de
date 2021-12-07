@@ -191,10 +191,6 @@ class SceneManifest:
             Mesh group to apply the selection to.
         node_name :
             Path of the node.
-            
-
-        Returns
-        -------
 
         """
         mesh_group['nodeSelectionList']['selectedNodes'].append(node_name)
@@ -208,10 +204,6 @@ class SceneManifest:
             Mesh group to apply the selection to.
         node_name :
             Path of the node.
-            
-
-        Returns
-        -------
 
         """
         mesh_group['nodeSelectionList']['unselectedNodes'].append(node_name)
@@ -237,9 +229,6 @@ class SceneManifest:
         scale :
             Sets the scale offset of the processed mesh.
 
-        Returns
-        -------
-
         """
         origin_rule = {
             '$type': 'CoordinateSystemRule',
@@ -264,10 +253,6 @@ class SceneManifest:
         comment :
             Text for the comment rule.
             
-
-        Returns
-        -------
-
         """
         comment_rule = {
             '$type': 'CommentRule',
@@ -309,10 +294,6 @@ class SceneManifest:
             Color channel (index) for backstop offset value
         backstop_radius_channel :
             Color channel (index) for backstop radius value
-            
-
-        Returns
-        -------
 
         """
         cloth_rule = {
@@ -384,10 +365,6 @@ class SceneManifest:
             LOD level to add the node to.
         selected_node :
             Path of the node.
-            
-
-        Returns
-        -------
 
         """
         lod['selectedNodes'].append(selected_node)
@@ -401,10 +378,6 @@ class SceneManifest:
             LOD rule to add the node to.
         unselected_node :
             Path of the node.
-            
-
-        Returns
-        -------
 
         """
         lod['unselectedNodes'].append(unselected_node)
@@ -428,9 +401,6 @@ class SceneManifest:
             True = use normals from DCC tool.  False = average normals.
         vertex_color_stream :
             Color stream name to use for Vertex Coloring.
-
-        Returns
-        -------
 
         """
         rule = {
@@ -457,9 +427,6 @@ class SceneManifest:
         weight_threshold :
             Weight values below this value will be treated as 0.
 
-        Returns
-        -------
-
         """
         rule = {
             '$type': 'SkinRule',
@@ -482,9 +449,6 @@ class SceneManifest:
             Tangent space source. 0 = Scene, 1 = MikkT Tangent Generation.
         tspace_method :
             MikkT Generation method. 0 = TSpace, 1 = TSpaceBasic.
-
-        Returns
-        -------
 
         """
         rule = {
@@ -731,10 +695,6 @@ class SceneManifest:
         project_hull_vertices :
             Project the output convex hull vertices onto the original source mesh to increase
             the floating point accuracy of the results.
-
-        Returns
-        -------
-
         """
         mesh_group['DecomposeMeshes'] = True
         mesh_group['ConvexDecompositionParams'] = {
@@ -761,11 +721,6 @@ class SceneManifest:
             Mesh group to add to.
         node :
             Node path to add.
-            
-
-        Returns
-        -------
-
         """
         mesh_group['NodeSelectionList']['selectedNodes'].append(node)
 
@@ -778,11 +733,6 @@ class SceneManifest:
             Mesh group to add to.
         node :
             Node path to add.
-            
-
-        Returns
-        -------
-
         """
         mesh_group['NodeSelectionList']['unselectedNodes'].append(node)
 
@@ -798,11 +748,6 @@ class SceneManifest:
             List of node paths to add to the selected list.
         unselected :
             List of node paths to add to the unselected list.
-            
-
-        Returns
-        -------
-
         """
         mesh_group['NodeSelectionList']['selectedNodes'].extend(selected)
         mesh_group['NodeSelectionList']['unselectedNodes'].extend(unselected)
@@ -816,11 +761,6 @@ class SceneManifest:
             Mesh group to add the rule to.
         comment :
             Comment string.
-            
-
-        Returns
-        -------
-
         """
         rule = {
             "$type": "CommentRule",
