@@ -86,7 +86,7 @@ namespace PhysX
     private:
         //! Initializes the PhysX SDK.
         //! This sets up the PhysX Foundation, Cooking, and other PhysX sub-systems.
-        //! @param cookingParams The cooking params to use when setting up PhysX cooking interface. 
+        //! @param cookingParams The cooking params to use when setting up PhysX cooking interface.
         void InitializePhysXSdk(const physx::PxCookingParams& cookingParams);
         void ShutdownPhysXSdk();
         bool LoadMaterialLibrary();
