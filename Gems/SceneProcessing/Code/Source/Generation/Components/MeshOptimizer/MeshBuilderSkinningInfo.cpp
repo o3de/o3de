@@ -68,17 +68,6 @@ namespace AZ::MeshBuilder
         }
     }
 
-    // sort influences on ids, from small to big
-    void MeshBuilderSkinningInfo::SortInfluencesById(AZStd::vector<Influence>& influences)
-    {
-        AZStd::sort(
-            begin(influences), end(influences),
-            [](const auto& lhs, const auto& rhs)
-            {
-                return lhs.mNodeNr <= rhs.mNodeNr;
-            });
-    }
-
     // sort influences on weights, from big to small
     void MeshBuilderSkinningInfo::SortInfluencesByWeight(AZStd::vector<Influence>& influences)
     {
