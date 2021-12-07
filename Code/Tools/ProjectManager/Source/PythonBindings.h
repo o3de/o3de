@@ -88,7 +88,7 @@ namespace O3DE::ProjectManager
         ProjectTemplateInfo ProjectTemplateInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath);
         AZ::Outcome<void, AZStd::string> GemRegistration(const QString& gemPath, const QString& projectPath, bool remove = false);
         bool StopPython();
-        AZStd::pair<AZStd::string, AZStd::string> GetSimpleDetailedErrorPair();
+        IPythonBindings::ErrorPair GetErrorPair();
 
 
         bool m_pythonStarted = false;
