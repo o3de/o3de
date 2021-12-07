@@ -76,8 +76,8 @@ namespace AZ
         void MeshFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
         {
             AZ_PROFILE_SCOPE(RPI, "MeshFeatureProcessor: Simulate");
-            AZ_UNUSED(packet);
 
+            AZ::Job* parentJob = packet.m_parentJob;
             AZStd::concurrency_check_scope scopeCheck(m_meshDataChecker);
 
             const auto iteratorRanges = m_modelData.GetParallelRanges();
@@ -86,6 +86,8 @@ namespace AZ
             {
                 const auto jobLambda = [&]() -> void
                 {
+                    AZ_PROFILE_SCOPE(AzRender, "MeshFeatureProcessor: Simulate: Job");
+
                     for (auto meshDataIter = iteratorRange.first; meshDataIter != iteratorRange.second; ++meshDataIter)
                     {
                         if (!meshDataIter->m_model)
@@ -113,24 +115,22 @@ namespace AZ
                         {
                             meshDataIter->BuildCullable();
                         }
+
+                        if (meshDataIter->m_cullBoundsNeedsUpdate)
+                        {
+                            meshDataIter->UpdateCullBounds(m_transformService);
+                        }
                     }
                 };
                 Job* executeGroupJob = aznew JobFunction<decltype(jobLambda)>(jobLambda, true, nullptr); // Auto-deletes
-                executeGroupJob->SetDependent(&jobCompletion);
-                executeGroupJob->Start();
+                parentJob->StartAsChild(executeGroupJob);
             }
-            jobCompletion.StartAndWaitForCompletion();
+            {
+                AZ_PROFILE_SCOPE(AzRender, "MeshFeatureProcessor: Simulate: WaitForChildren");
+                parentJob->WaitForChildren();
+            }
 
             m_forceRebuildDrawPackets = false;
-
-            // CullingSystem::RegisterOrUpdateCullable() is not threadsafe, so need to do those updates in a single thread
-            for (ModelDataInstance& modelDataInstance : m_modelData)
-            {
-                if (modelDataInstance.m_model && modelDataInstance.m_cullBoundsNeedsUpdate)
-                {
-                    modelDataInstance.UpdateCullBounds(m_transformService);
-                }
-            }
         }
 
         void MeshFeatureProcessor::OnBeginPrepareRender()
@@ -1037,7 +1037,6 @@ namespace AZ
 
         void ModelDataInstance::UpdateDrawPackets(bool forceUpdate /*= false*/)
         {
-            AZ_PROFILE_SCOPE(AzRender, "ModelDataInstance:: UpdateDrawPackets");
             for (auto& drawPacketList : m_drawPacketListsByLod)
             {
                 for (auto& drawPacket : drawPacketList)
@@ -1052,7 +1051,6 @@ namespace AZ
 
         void ModelDataInstance::BuildCullable()
         {
-            AZ_PROFILE_SCOPE(AzRender, "ModelDataInstance: BuildCullable");
             AZ_Assert(m_cullableNeedsRebuild, "This function only needs to be called if the cullable to be rebuilt");
             AZ_Assert(m_model, "The model has not finished loading yet");
 
@@ -1129,7 +1127,6 @@ namespace AZ
 
         void ModelDataInstance::UpdateCullBounds(const TransformServiceFeatureProcessor* transformService)
         {
-            AZ_PROFILE_SCOPE(AzRender, "ModelDataInstance: UpdateCullBounds");
             AZ_Assert(m_cullBoundsNeedsUpdate, "This function only needs to be called if the culling bounds need to be rebuilt");
             AZ_Assert(m_model, "The model has not finished loading yet");
 

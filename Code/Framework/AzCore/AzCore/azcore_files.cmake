@@ -113,8 +113,15 @@ set(FILES
     Debug/TraceMessageBus.h
     Debug/TraceReflection.cpp
     Debug/TraceReflection.h
+    DOM/DomBackend.cpp
+    DOM/DomBackend.h
+    DOM/DomUtils.cpp
+    DOM/DomUtils.h
     DOM/DomVisitor.cpp
     DOM/DomVisitor.h
+    DOM/Backends/JSON/JsonBackend.h
+    DOM/Backends/JSON/JsonSerializationUtils.cpp
+    DOM/Backends/JSON/JsonSerializationUtils.h
     EBus/BusImpl.h
     EBus/EBus.h
     EBus/EBusEnvironment.cpp
