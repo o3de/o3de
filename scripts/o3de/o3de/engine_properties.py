@@ -15,8 +15,9 @@ import logging
 
 from o3de import manifest, utils
 
-logger = logging.getLogger()
-logging.basicConfig()
+logger = logging.getLogger('o3de.engine_properties')
+logging.basicConfig(format=utils.LOG_FORMAT)
+
 
 def edit_engine_props(engine_path: pathlib.Path = None,
                       engine_name: str = None,
