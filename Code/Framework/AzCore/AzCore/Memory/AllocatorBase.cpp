@@ -11,7 +11,7 @@
 
 using namespace AZ;
 
-#define RECORDING_ENABLED 1
+#define RECORDING_ENABLED 0
 
 #if RECORDING_ENABLED
 
@@ -44,18 +44,22 @@ namespace
         }
     };
 
-    struct AllocatorOperation
+    #pragma pack(push, 1)
+    struct alignas(1) AllocatorOperation
     {
-        enum OperationType : unsigned int
+        enum OperationType : size_t
         {
             ALLOCATE,
             DEALLOCATE
         };
         OperationType m_type: 1;
-        unsigned int m_size : 28; // Can represent up to 256Mb requests
-        unsigned int m_alignment : 7; // Can represent up to 128 alignment
-        unsigned int m_recordId : 28; // Can represent up to 256M simultaneous requests, we reuse ids
+        size_t m_size : 28; // Can represent up to 256Mb requests
+        size_t m_alignment : 7; // Can represent up to 128 alignment
+        size_t m_recordId : 28; // Can represent up to 256M simultaneous requests, we reuse ids
     };
+    #pragma pack(pop)
+    static_assert(sizeof(AllocatorOperation) == 8);
+
     static AZStd::mutex s_operationsMutex = {};
 
     static constexpr size_t s_maxNumberOfAllocationsToRecord = 16384;
@@ -76,7 +80,12 @@ namespace
         if (s_operationCounter == s_allocationOperationCount)
         {
             AZ::IO::SystemFile file;
-            file.Open("memoryrecordings.bin", AZ::IO::SystemFile::OpenMode::SF_OPEN_APPEND);
+            int mode = AZ::IO::SystemFile::OpenMode::SF_OPEN_APPEND | AZ::IO::SystemFile::OpenMode::SF_OPEN_WRITE_ONLY;
+            if (!file.Exists("memoryrecordings.bin"))
+            {
+                mode |= AZ::IO::SystemFile::OpenMode::SF_OPEN_CREATE;
+            }
+            file.Open("memoryrecordings.bin", mode);
             if (file.IsOpen())
             {
                 file.Write(&s_operations, sizeof(AllocatorOperation) * s_allocationOperationCount);
