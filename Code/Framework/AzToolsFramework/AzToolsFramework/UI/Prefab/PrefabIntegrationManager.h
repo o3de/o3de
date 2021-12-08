@@ -29,6 +29,7 @@
 namespace AzToolsFramework
 {
     class ContainerEntityInterface;
+    class ReadOnlyEntityPublicInterface;
 
     namespace Prefab
     {
@@ -169,6 +170,8 @@ namespace AzToolsFramework
             static PrefabLoaderInterface* s_prefabLoaderInterface;
             static PrefabPublicInterface* s_prefabPublicInterface;
             static PrefabSystemComponentInterface* s_prefabSystemComponentInterface;
+
+            ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
         };
     }
 }
