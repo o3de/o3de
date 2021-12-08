@@ -14,8 +14,6 @@
 
 namespace UnitTest
 {
-    const QSize WidgetSize = QSize(1920, 1080);
-
     static bool IsMouseButton(const AzFramework::InputChannelId& inputChannelId)
     {
         const auto& buttons = AzFramework::InputDeviceMouse::Button::All;
@@ -29,6 +27,7 @@ namespace UnitTest
         , public AzFramework::InputTextNotificationBus::Handler
     {
     public:
+        static inline constexpr QSize WidgetSize = QSize(1920, 1080);
         static inline constexpr int TestDeviceIdSeed = 4321;
 
         void SetUp() override
@@ -80,7 +79,7 @@ namespace UnitTest
 
         void OnInputChannelEvent(const AzFramework::InputChannel& inputChannel, bool& hasBeenConsumed) override
         {
-            ASSERT_FALSE(hasBeenConsumed);
+            AZ_Assert(hasBeenConsumed == false, "Unexpected input event consumed elsewhere during QtEventToAzInputMapper tests");
 
             const AzFramework::InputChannelId& inputChannelId = inputChannel.GetInputChannelId();
             const AzFramework::InputDeviceId& inputDeviceId = inputChannel.GetInputDevice().GetInputDeviceId();
@@ -105,14 +104,15 @@ namespace UnitTest
             }
         }
 
-        void OnInputTextEvent(const AZStd::string& textUTF8, bool& hasBeenConsumed) override
+        void OnInputTextEvent(const AZStd::string& textUtf8, bool& hasBeenConsumed) override
         {
-            ASSERT_FALSE(hasBeenConsumed);
+            AZ_Assert(hasBeenConsumed == false, "Unexpected text event consumed elsewhere during QtEventToAzInputMapper tests");
 
-            m_azTextEvents.push_back(textUTF8);
+            m_azTextEvents.push_back(textUtf8);
             hasBeenConsumed = m_captureTextEvents;
         }
 
+        // simple structure for caching minimal QtEvent data necessary for testing
         struct QtEventInfo
         {
             explicit QtEventInfo(QMouseEvent* mouseEvent)
@@ -139,6 +139,7 @@ namespace UnitTest
             int m_key{ 0 };
         };
 
+        // simple structure for caching minimal AzInput event data necessary for testing
         struct AzEventInfo
         {
             AzEventInfo() = delete;
@@ -167,6 +168,7 @@ namespace UnitTest
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    // Qt event forwarding through the internal signal handler test
     TEST_F(QtEventToAzInputMapperFixture, MouseWheel_NoAzHandlers_ReceivedThreeSignalAndZeroAzChannelEvents)
     {
         // setup
@@ -191,6 +193,7 @@ namespace UnitTest
         EXPECT_EQ(m_azChannelEvents.size(), 0);
     }
 
+    // Qt event to AzInput event conversion test
     TEST_F(QtEventToAzInputMapperFixture, MouseWheel_AzHandlerNotCaptured_ReceivedThreeSignalAndThreeAzChannelEvents)
     {
         // setup
@@ -221,15 +224,14 @@ namespace UnitTest
         ASSERT_EQ(m_azChannelEvents.size(), 3);
 
         EXPECT_STREQ(m_azChannelEvents[0].m_inputChannelId.GetName(), mouseWheelChannelName);
-
         EXPECT_STREQ(m_azChannelEvents[1].m_inputChannelId.GetName(), mouseWheelChannelName);
-
         EXPECT_STREQ(m_azChannelEvents[2].m_inputChannelId.GetName(), mouseWheelChannelName);
 
         // cleanup
         AzFramework::InputChannelNotificationBus::Handler::BusDisconnect();
     }
 
+    // AzInput event handler consumption test
     TEST_F(QtEventToAzInputMapperFixture, MouseWheel_AzHandlerCaptured_ReceivedZeroSignalAndThreeAzChannelEvents)
     {
         // setup
@@ -251,9 +253,7 @@ namespace UnitTest
         ASSERT_EQ(m_azChannelEvents.size(), 3);
 
         EXPECT_STREQ(m_azChannelEvents[0].m_inputChannelId.GetName(), mouseWheelChannelName);
-
         EXPECT_STREQ(m_azChannelEvents[1].m_inputChannelId.GetName(), mouseWheelChannelName);
-
         EXPECT_STREQ(m_azChannelEvents[2].m_inputChannelId.GetName(), mouseWheelChannelName);
 
         // cleanup
@@ -274,6 +274,7 @@ namespace UnitTest
     {
     };
 
+    // Qt event forwarding through the internal signal handler test
     TEST_P(MouseButtonParamQtEventToAzInputMapperFixture, MouseClick_NoAzHandlers_ReceivedTwoSignalAndZeroAzChannelEvents)
     {
         // setup
@@ -295,6 +296,7 @@ namespace UnitTest
         EXPECT_EQ(m_azChannelEvents.size(), 0);
     }
 
+    // Qt event to AzInput event conversion test
     TEST_P(MouseButtonParamQtEventToAzInputMapperFixture, MouseClick_AzHandlerNotCaptured_ReceivedTwoSignalAndTwoAzChannelEvents)
     {
         // setup
@@ -328,6 +330,7 @@ namespace UnitTest
         AzFramework::InputChannelNotificationBus::Handler::BusDisconnect();
     }
 
+    // AzInput event handler consumption test
     TEST_P(MouseButtonParamQtEventToAzInputMapperFixture, MouseClick_AzHandlerCaptured_ReceivedZeroSignalAndTwoAzChannelEvents)
     {
         // setup
@@ -381,6 +384,7 @@ namespace UnitTest
     {
     };
 
+    // Qt event forwarding through the internal signal handler test
     TEST_P(PrintableKeyEventParamQtEventToAzInputMapperFixture, KeyClick_NoAzHandlers_ReceivedTwoSignalAndZeroAzEvents)
     {
         // setup
@@ -403,6 +407,7 @@ namespace UnitTest
         EXPECT_EQ(m_azTextEvents.size(), 0);
     }
 
+    // Qt event to AzInput event conversion test
     TEST_P(PrintableKeyEventParamQtEventToAzInputMapperFixture, KeyClick_AzHandlersNotCaptured_ReceivedTwoSignalAndThreeAzEvents)
     {
         // setup
