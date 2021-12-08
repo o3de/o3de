@@ -32,8 +32,24 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 
     bool PrefabProcessorContext::AddPrefab(AZStd::string prefabName, PrefabDom prefab)
     {
-        auto result = m_prefabs.emplace(AZStd::move(prefabName), AZStd::move(prefab));
-        return result.second;
+        if (!m_isIterating)
+        {
+            auto result = m_prefabs.emplace(AZStd::move(prefabName), AZStd::move(prefab));
+            return result.second;
+        }
+        else
+        {
+            auto it = m_prefabs.find(prefabName);
+            if (it == m_prefabs.end())
+            {
+                auto result = m_pendingPrefabAdditions.emplace(AZStd::move(prefabName), AZStd::move(prefab));
+                return result.second;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 
     void PrefabProcessorContext::ListPrefabs(const AZStd::function<void(AZStd::string_view, PrefabDom&)>& callback)
@@ -43,7 +59,13 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         {
             callback(it.first, it.second);
         }
+
         m_isIterating = false;
+        for (auto& prefab : m_pendingPrefabAdditions)
+        {
+            m_prefabs.emplace(AZStd::move(prefab.first), AZStd::move(prefab.second));
+        }
+        m_pendingPrefabAdditions.clear();
     }
 
     void PrefabProcessorContext::ListPrefabs(const AZStd::function<void(AZStd::string_view, const PrefabDom&)>& callback) const

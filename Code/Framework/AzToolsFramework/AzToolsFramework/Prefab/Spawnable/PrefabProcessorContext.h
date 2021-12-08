@@ -134,6 +134,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         AZ::Data::AssetLoadBehavior ToAssetLoadBehavior(EntityAliasSpawnableLoadBehavior loadBehavior) const;
 
         NamedPrefabContainer m_prefabs;
+        NamedPrefabContainer m_pendingPrefabAdditions;
         SpawnableEntityAliasStore m_entityAliases;
         ProcessedObjectStoreContainer m_products;
         ProductAssetDependencyContainer m_registeredProductAssetDependencies;
