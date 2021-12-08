@@ -3240,7 +3240,7 @@ namespace AzToolsFramework
     {
         // Don't show the Toggle Pivot option if any read-only entities are in the current selection
         // We need to request the selected entities instead of just using the m_selectedEntities variable
-        // because we filter out any read-only entities from the m_selectedEntities so that the maniuplators
+        // because we filter out any read-only entities from the m_selectedEntities so that the manipulators
         // will be hidden
         EntityIdList selectedEntityIds;
         ToolsApplicationRequests::Bus::BroadcastResult(selectedEntityIds, &ToolsApplicationRequests::GetSelectedEntities);
