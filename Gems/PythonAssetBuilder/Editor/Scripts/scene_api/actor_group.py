@@ -9,6 +9,7 @@ import json
 import uuid
 import os, sys
 import scene_api.physics_data
+from scene_api.common_rules import RuleEncoder, BaseRule, SceneNodeSelectionList, CommentRule, CoordinateSystemRule
 
 class ActorGroup():
     """
@@ -84,116 +85,10 @@ class ActorGroup():
         out['rules'] = ruleList
         return out
 
-    def to_json(self) -> any:
+    def to_json(self, i = 0) -> any:
         jsonDOM = self.to_dict()
-        return json.dumps(jsonDOM, cls=RuleEncoder, indent=1)
+        return json.dumps(jsonDOM, cls=RuleEncoder, indent=i)
 
-class RuleEncoder(json.JSONEncoder):
-    """
-    A helper class to encode the Python classes with to a Python dictionary
-
-    Methods
-    -------
-
-    encode(obj)
-        Converts contents to a Python dictionary for the JSONEncoder
-
-    """
-    def encode(self, obj):
-        chunk = obj
-        if isinstance(obj, BaseRule):
-            chunk = obj.to_dict()
-        elif isinstance(obj, dict):
-            chunk = obj
-        elif hasattr(obj, 'to_dict'):
-            chunk = obj.to_dict()
-        else:
-            chunk = obj.__dict__
-
-        return super().encode(chunk)
-
-class BaseRule():
-    """
-    Base class of the actor rules to help encode the type name of abstract rules
-
-    Parameters
-    ----------
-    typename : str
-        A typename the $type will be in the JSON chunk object
-
-    Attributes
-    ----------
-    typename: str
-        The type name of the abstract classes to be serialized
-
-    id: UUID
-        a unique ID for the rule
-
-    Methods
-    -------
-    to_dict()
-        Converts contents to a Python dictionary
-        Adds the '$type' member
-        Adds a random 'id' member
-    """
-    def __init__(self, typename):
-        self.typename = typename
-        self.id = uuid.uuid4()
-
-    def __eq__(self, other):
-        return self.id.__eq__(other.id)
-
-    def __ne__(self, other):
-        return self.__eq__(other) is False
-
-    def __hash__(self):
-        return self.id.__hash__()
-
-    def to_dict(self):
-        data = self.__dict__
-        data['id'] = f"{{{str(self.id)}}}"
-        # rename 'typename' to '$type'
-        data['$type'] = self.typename
-        data.pop('typename')
-        return data
-
-class SceneNodeSelectionList(BaseRule):
-    """
-    Contains a list of node names to include (selectedNodes) and to exclude (unselectedNodes)
-
-    Attributes
-    ----------
-    selectedNodes: `list` of str
-        The node names to include for this group rule
-
-    unselectedNodes: `list` of str
-        The node names to exclude for this group rule
-
-    Methods
-    -------
-    convert_selection(self, container, key):
-        this adds its contents to an existing dictionary container at a key position
-
-    select_targets(self, selectedList, allNodesList:list)
-        helper function to include a small list of node names from list of all the node names
-
-    to_dict()
-        Converts contents to a Python dictionary
-    """
-    def __init__(self):
-        super().__init__('SceneNodeSelectionList')
-        self.selectedNodes = []
-        self.unselectedNodes = []
-
-    def convert_selection(self, container, key):
-        container[key] = self.to_dict()
-
-    def select_targets(self, selectedList, allNodesList:list):
-        self.selectedNodes = selectedList
-        self.unselectedNodes = allNodesList.copy()
-        for node in selectedList:
-            if node in self.unselectedNodes:
-                self.unselectedNodes.remove(node)
 
 class LodNodeSelectionList(SceneNodeSelectionList):
     """
@@ -252,10 +147,10 @@ class PhysicsAnimationConfiguration():
         Converts contents to a Python dictionary
     """
     def __init__(self):
-        self.hitDetectionConfig = physics_data.CharacterColliderConfiguration()
-        self.ragdollConfig = physics_data.RagdollConfiguration()
-        self.clothConfig = physics_data.CharacterColliderConfiguration()
-        self.simulatedObjectColliderConfig = physics_data.CharacterColliderConfiguration()
+        self.hitDetectionConfig = scene_api.physics_data.CharacterColliderConfiguration()
+        self.ragdollConfig = scene_api.physics_data.RagdollConfiguration()
+        self.clothConfig = scene_api.physics_data.CharacterColliderConfiguration()
+        self.simulatedObjectColliderConfig = scene_api.physics_data.CharacterColliderConfiguration()
 
     def to_dict(self):
         data = {}
@@ -358,45 +253,6 @@ class ActorScaleRule(BaseRule):
         super().__init__('ActorScaleRule')
         self.scaleFactor = 1.0
 
-class CoordinateSystemRule(BaseRule):
-    """
-    Modify the target coordinate system, applying a transformation to all data (transforms and vertex data if it exists).
-
-    Attributes
-    ----------
-    targetCoordinateSystem: int
-        Change the direction the actor/motion will face by applying a post transformation to the data.
-
-    useAdvancedData: bool
-        If True, use advanced settings
-
-    originNodeName: str
-        Select a Node from the scene as the origin for this export.
-
-    rotation: [float, float, float, float]
-        Sets the orientation offset of the processed mesh in degrees. Rotates (yaw, pitch, roll) the group after translation.
-
-    translation: [float, float, float]
-        Moves the group along the given vector3.
-
-    scale: float
-        Sets the scale offset of the processed mesh.
-
-    Methods
-    -------
-
-    to_dict()
-        Converts contents to a Python dictionary
-    """
-    def __init__(self):
-        super().__init__('CoordinateSystemRule')
-        self.targetCoordinateSystem = 0
-        self.useAdvancedData = False
-        self.originNodeName = ''
-        self.rotation = [0.0, 0.0, 0.0, 1.0]
-        self.translation = [0.0, 0.0, 0.0]
-        self.scale = 1.0
-
 class SkeletonOptimizationRule(BaseRule):
     """
     Advanced skeleton optimization rule.
@@ -497,21 +353,3 @@ class MorphTargetRule(BaseRule):
         self.targets.convert_selection(data, 'targets')
         return data
 
-class CommentRule(BaseRule):
-    """
-    Add an optional comment to the asset's properties.
-
-    Attributes
-    ----------
-    text: str
-        Text for the comment.
-
-    Methods
-    -------
-
-    to_dict()
-        Converts contents to a Python dictionary
-    """
-    def __init__(self):
-        super().__init__('CommentRule')
-        self.text = ''
