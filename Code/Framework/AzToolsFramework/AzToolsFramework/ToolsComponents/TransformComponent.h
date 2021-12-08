@@ -242,6 +242,9 @@ namespace AzToolsFramework
             // element is used rather than a data element.
             bool m_addNonUniformScaleButton = false;
 
+            // Used to check whether entity was just created vs manually reactivated. Set true after OnEntityActivated is called the first time.
+            bool m_initialized = false;
+
             // Deprecated
             AZ::InterpolationMode m_interpolatePosition;
             AZ::InterpolationMode m_interpolateRotation;

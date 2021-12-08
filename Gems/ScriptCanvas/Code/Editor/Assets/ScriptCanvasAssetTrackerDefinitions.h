@@ -18,22 +18,11 @@ namespace ScriptCanvasEditor
     namespace Callbacks
     {
         //! Callback used to know when a save operation failed or succeeded
-        using OnSave = AZStd::function<void(bool saveSuccess, AZ::Data::AssetPtr, AZ::Data::AssetId previousFileAssetId)>;
+        using OnSave = AZStd::function<void(bool saveSuccess, const SourceHandle& attempt, const SourceHandle& previous)>;
 
         using OnAssetReadyCallback = AZStd::function<void(ScriptCanvasMemoryAsset&)>;
         using OnAssetCreatedCallback = OnAssetReadyCallback;
     }
 
-    namespace Tracker
-    {
-        enum class ScriptCanvasFileState : AZ::s32
-        {
-            NEW,
-            MODIFIED,
-            UNMODIFIED,
-            SOURCE_REMOVED,
-            INVALID = -1
-        };
-    }
 
 }

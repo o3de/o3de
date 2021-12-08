@@ -8,6 +8,7 @@
 
 #include "UserTypes.h"
 #include <AzCore/std/typetraits/internal/is_template_copy_constructible.h>
+#include <AzCore/std/containers/forward_list.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/containers/map.h>

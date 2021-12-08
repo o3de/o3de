@@ -11,8 +11,10 @@
 #include <ACES/Aces.h>
 #include <Atom/Feature/Utils/LightingPreset.h>
 #include <Atom/Feature/Utils/ModelPreset.h>
+#include <Atom/RPI.Reflect/System/AnyAsset.h>
 #include <Atom/Viewport/MaterialViewportRequestBus.h>
 #include <Atom/Viewport/MaterialViewportSettings.h>
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
 
@@ -22,6 +24,7 @@ namespace MaterialEditor
     class MaterialViewportComponent
         : public AZ::Component
         , private MaterialViewportRequestBus::Handler
+        , private AZ::Data::AssetBus::MultiHandler
         , private AzFramework::AssetCatalogEventBus::Handler
     {
     public:
@@ -45,6 +48,8 @@ namespace MaterialEditor
         void Activate() override;
         void Deactivate() override;
         ////////////////////////////////////////////////////////////////////////
+
+        void ClearContent();
 
         ////////////////////////////////////////////////////////////////////////
         // MaterialViewportRequestBus::Handler overrides ...
@@ -83,13 +88,20 @@ namespace MaterialEditor
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////
+        // AZ::Data::AssetBus::MultiHandler overrides ...
+        void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+        ////////////////////////////////////////////////////////////////////////
+
+        ////////////////////////////////////////////////////////////////////////
         // AzFramework::AssetCatalogEventBus::Handler overrides ...
         void OnCatalogLoaded(const char* catalogFile) override;
         ////////////////////////////////////////////////////////////////////////
 
+        AZStd::unordered_map<AZ::Data::AssetId, AZ::Data::Asset<AZ::RPI::AnyAsset>> m_lightingPresetAssets;
         AZ::Render::LightingPresetPtrVector m_lightingPresetVector;
         AZ::Render::LightingPresetPtr m_lightingPresetSelection;
 
+        AZStd::unordered_map<AZ::Data::AssetId, AZ::Data::Asset<AZ::RPI::AnyAsset>> m_modelPresetAssets;
         AZ::Render::ModelPresetPtrVector m_modelPresetVector;
         AZ::Render::ModelPresetPtr m_modelPresetSelection;
 

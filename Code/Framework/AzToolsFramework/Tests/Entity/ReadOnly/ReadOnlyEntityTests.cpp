@@ -96,4 +96,22 @@ namespace AzToolsFramework
         // Verify the child entity is no longer marked as read-only
         EXPECT_FALSE(m_readOnlyEntityPublicInterface->IsReadOnly(m_entityMap[ChildEntityName]));
     }
+
+    TEST_F(ReadOnlyEntityFixture, EnsureCacheIsClearedCorrectlyEvenIfUnchanged)
+    {
+        // Create a handler that sets all entities to read-only.
+        ReadOnlyHandlerAlwaysTrue alwaysTrueHandler;
+
+        {
+            // Create a handler that sets the child entity to read-only.
+            ReadOnlyHandlerEntityId entityIdHandler(m_entityMap[ChildEntityName]);
+
+            // Verify the child entity is marked as read-only
+            EXPECT_TRUE(m_readOnlyEntityPublicInterface->IsReadOnly(m_entityMap[ChildEntityName]));
+        }
+        // When the handler goes out of scope, it calls RefreshReadOnlyStateForAllEntities and refreshes the cache.
+
+        // Verify the child entity is still marked as read-only
+        EXPECT_TRUE(m_readOnlyEntityPublicInterface->IsReadOnly(m_entityMap[ChildEntityName]));
+    }
 }

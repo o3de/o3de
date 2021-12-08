@@ -19,7 +19,6 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/std/typetraits/is_base_of.h>
-#include <AzCore/Debug/AssetTracking.h>
 #include <AzCore/IO/Streamer/FileRequest.h>
 
 namespace AZ
@@ -581,7 +580,6 @@ namespace AZ
             template<typename Bus>
             using ConnectionPolicy = AssetConnectionPolicy<Bus>;
 
-            using EventProcessingPolicy = Debug::AssetTrackingEventProcessingPolicy<>;
             //////////////////////////////////////////////////////////////////////////
 
             virtual ~AssetEvents() {}

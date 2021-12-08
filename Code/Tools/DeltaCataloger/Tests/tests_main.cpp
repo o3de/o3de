@@ -52,7 +52,6 @@ protected:
 
         AZ::ComponentApplication::Descriptor desc;
         desc.m_useExistingAllocator = true;
-        desc.m_enableDrilling = false; // we already created a memory driller for the test (AllocatorsFixture)
         app.Start(desc);
 
         // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is

@@ -351,9 +351,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/Operators/Math/OperatorSub.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Operators/Math/OperatorLerpNodeable.h
     Include/ScriptCanvas/Libraries/Operators/Math/OperatorLerpNodeableNode.h
-    Include/ScriptCanvas/Profiler/Driller.h
-    Include/ScriptCanvas/Profiler/Aggregator.h
-    Include/ScriptCanvas/Profiler/DrillerEvents.h
     Include/ScriptCanvas/Serialization/BehaviorContextObjectSerializer.h
     Include/ScriptCanvas/Serialization/DatumSerializer.h
     Include/ScriptCanvas/Serialization/RuntimeVariableSerializer.h
