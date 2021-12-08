@@ -1,16 +1,14 @@
-"""
-Copyright (c) Contributors to the Open 3D Engine Project.
-For complete copyright and license terms please see the LICENSE at the root of this distribution.
-
-SPDX-License-Identifier: Apache-2.0 OR MIT
-"""
-
+#
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+#
 import json
 import uuid
 import os, sys
-
-sys.path.append(os.path.dirname(__file__))
-import physics_data
+import scene_api.physics_data
 
 class ActorGroup():
     """
@@ -18,10 +16,10 @@ class ActorGroup():
 
     Attributes
     ----------
-    name: 
+    name:
         Name for the group. This name will also be used as the name for the generated file.
 
-    selectedRootBone: 
+    selectedRootBone:
         The root bone of the animation that will be exported.
 
     rules: `list` of actor rules (derived from BaseRule)
@@ -111,7 +109,7 @@ class RuleEncoder(json.JSONEncoder):
             chunk = obj.to_dict()
         else:
             chunk = obj.__dict__
-        
+
         return super().encode(chunk)
 
 class BaseRule():
@@ -141,7 +139,7 @@ class BaseRule():
     def __init__(self, typename):
         self.typename = typename
         self.id = uuid.uuid4()
-        
+
     def __eq__(self, other):
         return self.id.__eq__(other.id)
 
@@ -150,7 +148,7 @@ class BaseRule():
 
     def __hash__(self):
         return self.id.__hash__()
-    
+
     def to_dict(self):
         data = self.__dict__
         data['id'] = f"{{{str(self.id)}}}"
@@ -167,7 +165,7 @@ class SceneNodeSelectionList(BaseRule):
     ----------
     selectedNodes: `list` of str
         The node names to include for this group rule
-        
+
     unselectedNodes: `list` of str
         The node names to exclude for this group rule
 
@@ -189,7 +187,7 @@ class SceneNodeSelectionList(BaseRule):
 
     def convert_selection(self, container, key):
         container[key] = self.to_dict()
-        
+
     def select_targets(self, selectedList, allNodesList:list):
         self.selectedNodes = selectedList
         self.unselectedNodes = allNodesList.copy()
@@ -200,7 +198,7 @@ class SceneNodeSelectionList(BaseRule):
 class LodNodeSelectionList(SceneNodeSelectionList):
     """
     Level of Detail node selection list
-    
+
     The selected nodes should be joints with BoneData
     derived from SceneNodeSelectionList
     see also LodRule
@@ -258,7 +256,7 @@ class PhysicsAnimationConfiguration():
         self.ragdollConfig = physics_data.RagdollConfiguration()
         self.clothConfig = physics_data.CharacterColliderConfiguration()
         self.simulatedObjectColliderConfig = physics_data.CharacterColliderConfiguration()
-        
+
     def to_dict(self):
         data = {}
         data["hitDetectionConfig"] = self.hitDetectionConfig.to_dict()
@@ -288,8 +286,8 @@ class EMotionFXPhysicsSetup():
         self.config = PhysicsAnimationConfiguration()
 
     def to_dict(self):
-        return { 
-            "config" : self.config.to_dict() 
+        return {
+            "config" : self.config.to_dict()
         }
 
 class ActorPhysicsSetupRule(BaseRule):
@@ -323,7 +321,7 @@ class ActorPhysicsSetupRule(BaseRule):
     def __init__(self):
         super().__init__('ActorPhysicsSetupRule')
         self.data = EMotionFXPhysicsSetup()
-        
+
     def set_hit_detection_config(self, hitDetectionConfig) -> None:
         self.data.config.hitDetectionConfig = hitDetectionConfig
 
@@ -339,7 +337,7 @@ class ActorPhysicsSetupRule(BaseRule):
     def to_dict(self):
         data = super().to_dict()
         data["data"] = self.data.to_dict()
-        return data       
+        return data
 
 class ActorScaleRule(BaseRule):
     """
@@ -358,7 +356,7 @@ class ActorScaleRule(BaseRule):
     """
     def __init__(self):
         super().__init__('ActorScaleRule')
-        self.scaleFactor = 1.0           
+        self.scaleFactor = 1.0
 
 class CoordinateSystemRule(BaseRule):
     """
@@ -378,7 +376,7 @@ class CoordinateSystemRule(BaseRule):
     rotation: [float, float, float, float]
         Sets the orientation offset of the processed mesh in degrees. Rotates (yaw, pitch, roll) the group after translation.
 
-    translation: [float, float, float] 
+    translation: [float, float, float]
         Moves the group along the given vector3.
 
     scale: float
@@ -436,8 +434,8 @@ class LodRule(BaseRule):
     Set up the level of detail for the meshes in this group.
 
     The engine supports 6 total lods.
-    1 for the base model then 5 more lods.  
-    The rule only captures lods past level 0 so this is set to 5. 
+    1 for the base model then 5 more lods.
+    The rule only captures lods past level 0 so this is set to 5.
 
     Attributes
     ----------
@@ -458,7 +456,7 @@ class LodRule(BaseRule):
     def __init__(self):
         super().__init__('{3CB103B3-CEAF-49D7-A9DC-5A31E2DF15E4} LodRule')
         self.nodeSelectionList = [] # list of LodNodeSelectionList
-        
+
     def add_lod_level(self, lodLevel, selectedNodes=None, unselectedNodes=None) -> LodNodeSelectionList:
         lodNodeSelection = LodNodeSelectionList()
         lodNodeSelection.selectedNodes = selectedNodes
@@ -466,13 +464,13 @@ class LodRule(BaseRule):
         lodNodeSelection.lodLevel = lodLevel
         self.nodeSelectionList.append(lodNodeSelection)
         return lodNodeSelection
-        
+
     def to_dict(self):
         data = super().to_dict()
         selectionListList = data.pop('nodeSelectionList')
         data['nodeSelectionList'] = []
         for nodeList in selectionListList:
-            data['nodeSelectionList'].append(nodeList.to_dict())        
+            data['nodeSelectionList'].append(nodeList.to_dict())
         return data
 
 class MorphTargetRule(BaseRule):

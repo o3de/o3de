@@ -1,11 +1,20 @@
-"""
-Copyright (c) Contributors to the Open 3D Engine Project.
-For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+#
+import traceback, sys, uuid, os, json, logging
 
-SPDX-License-Identifier: Apache-2.0 OR MIT
-"""
+def log_exception_traceback():
+    """
+    Outputs an exception stacktrace.
+    """
+    data = traceback.format_exc()
+    logger = logging.getLogger('python')
+    logger.error(data)
 
-import json, uuid
 
 class BaseRule():
     """
@@ -31,12 +40,12 @@ class BaseRule():
         Adds the '$type' member
         Adds a random 'id' member
         Note: Override this method if a derviced class needs to return a custom dictionary
-        
+
     """
     def __init__(self, typename):
         self.typename = typename
         self.id = uuid.uuid4()
-        
+
     def __eq__(self, other):
         return self.id.__eq__(other.id)
 
@@ -45,7 +54,7 @@ class BaseRule():
 
     def __hash__(self):
         return self.id.__hash__()
-    
+
     def to_dict(self):
         data = vars(self)
         data['id'] = f"{{{str(self.id)}}}"
@@ -53,8 +62,8 @@ class BaseRule():
         data['$type'] = self.typename
         data.pop('typename')
         return data
-    
-def convert_rule__to_json(rule:BaseRule, indentValue=0):
+
+def convert_rule_to_json(rule:BaseRule, indentValue=0):
     """
     Helper function to convert a BaseRule into a JSON string
 
@@ -62,7 +71,7 @@ def convert_rule__to_json(rule:BaseRule, indentValue=0):
     ----------
     obj : any
         The object to convert to a JSON string as long as the obj class has an *to_dict* method
-        
+
     indentValue : int
         The number of spaces to indent between each JSON block/value
     """
@@ -96,7 +105,7 @@ class SceneNodeSelectionList(BaseRule):
     ----------
     selectedNodes: `list` of str
         The node names to include for this group rule
-        
+
     unselectedNodes: `list` of str
         The node names to exclude for this group rule
 
@@ -118,7 +127,7 @@ class SceneNodeSelectionList(BaseRule):
 
     def convert_selection(self, container, key):
         container[key] = self.to_dict()
-        
+
     def select_targets(self, selectedList, allNodesList:list):
         self.selectedNodes = selectedList
         self.unselectedNodes = allNodesList.copy()
@@ -145,7 +154,7 @@ class CoordinateSystemRule(BaseRule):
     rotation: [float, float, float, float]
         Sets the orientation offset of the processed mesh in degrees. Rotates (yaw, pitch, roll) the group after translation.
 
-    translation: [float, float, float] 
+    translation: [float, float, float]
         Moves the group along the given vector3.
 
     scale: float
@@ -172,7 +181,7 @@ class TypeId():
     """
     def __init__(self):
         self.value = uuid.UUID('{00000000-0000-0000-0000-000000000000}')
-        
+
     def __str__(self):
         return f"{{{str(self.value)}}}"
 
@@ -197,7 +206,7 @@ class RuleEncoder(json.JSONEncoder):
         elif hasattr(obj, 'to_json_value'):
             return obj.to_json_value()
         return super().default(obj)
-    
+
     def encode(self, obj):
         chunk = obj
         if isinstance(obj, BaseRule):
@@ -208,5 +217,5 @@ class RuleEncoder(json.JSONEncoder):
             chunk = obj.to_dict()
         else:
             chunk = obj.__dict__
-        
+
         return super().encode(chunk)

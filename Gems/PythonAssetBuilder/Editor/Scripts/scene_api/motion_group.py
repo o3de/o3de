@@ -1,10 +1,10 @@
-"""
-Copyright (c) Contributors to the Open 3D Engine Project.
-For complete copyright and license terms please see the LICENSE at the root of this distribution.
-
-SPDX-License-Identifier: Apache-2.0 OR MIT
-"""
-
+#
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+#
 from enum import Enum
 import scene_api.common_rules
 
@@ -15,12 +15,12 @@ class MotionGroup(scene_api.common_rules.BaseRule):
     Attributes
     ----------
     name: str
-        Name for the group. 
+        Name for the group.
         This name will also be used as the name for the generated file.
-        
+
     selectedRootBone: str
         The root bone of the animation that will be exported.
-        
+
     rules: list of BaseRule
         Add or remove rules to fine-tune the export process.
         List of rules for a motion group including:
@@ -29,14 +29,14 @@ class MotionGroup(scene_api.common_rules.BaseRule):
             MotionRangeRule
             MotionAdditiveRule
             MotionSamplingRule
-        
+
     """
     def __init__(self):
         super().__init__('MotionGroup')
         self.name = ''
         self.selectedRootBone = ''
         self.rules = set()
-        
+
     def add_rule(self, rule) -> bool:
         if (rule not in self.rules):
             self.rules.add(rule)
@@ -50,7 +50,7 @@ class MotionGroup(scene_api.common_rules.BaseRule):
 
     def remove_rule(self, type) -> None:
         self.rules.discard(rule)
-        
+
     def to_dict(self) -> dict:
         out = super().to_dict()
         out['name'] = self.name
@@ -65,7 +65,7 @@ class MotionGroup(scene_api.common_rules.BaseRule):
     def to_json(self) -> str:
         jsonDOM = self.to_dict()
         return json.dumps(jsonDOM, cls=RuleEncoder)
-    
+
 
 class MotionCompressionSettingsRule(scene_api.common_rules.BaseRule):
     """
@@ -74,9 +74,9 @@ class MotionCompressionSettingsRule(scene_api.common_rules.BaseRule):
     Attributes
     ----------
     maxTranslationError: float
-        Maximum error allowed in translation. 
+        Maximum error allowed in translation.
         Min 0.0, Max 0.1
-        
+
     maxRotationError: float
         Maximum error allowed in rotation.
         Min 0.0, Max 0.1
@@ -145,22 +145,22 @@ class SampleRateMethod(Enum):
 
     Attributes
     ----------
-    
+
     FromSourceScene: int, value = 0
         Use the source scene's sample rate
-    
-    
+
+
     Custom: int, value = 1
         Use the use a custom sample rate
     """
     FromSourceScene = 0
     Custom = 1
-    
+
     def to_json_value(self):
         if(self == SampleRateMethod.FromSourceScene):
             return 0
         return 1
-        
+
 
 class MotionSamplingRule(scene_api.common_rules.BaseRule):
     """
@@ -169,11 +169,11 @@ class MotionSamplingRule(scene_api.common_rules.BaseRule):
     Attributes
     ----------
     motionDataType: scene_api.common_rules.TypeId()
-        The motion data type to use. This defines how the motion data is stored. 
+        The motion data type to use. This defines how the motion data is stored.
         This can have an effect on performance and memory usage.
 
     sampleRateMethod: SampleRateMethod
-        Either use the sample rate from the source scene file or use a custom sample rate. 
+        Either use the sample rate from the source scene file or use a custom sample rate.
         The sample rate is automatically limited to the rate from source scene file (e.g. FBX)
 
     customSampleRate: float
@@ -193,7 +193,7 @@ class MotionSamplingRule(scene_api.common_rules.BaseRule):
         Min: 1.0, Max 100.0
 
     allowedSizePercentage: float
-        The percentage of extra memory usage allowed compared to the smallest size. 
+        The percentage of extra memory usage allowed compared to the smallest size.
         For example a value of 10 means we are allowed 10 percent more memory worst case, in trade for extra performance.
         Allow 15 percent larger size, in trade for performance (in Automatic mode, so when m_motionDataType is a Null typeId).
         Min: 0.0, Max 100.0

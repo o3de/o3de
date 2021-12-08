@@ -8,6 +8,7 @@
 import traceback, sys, uuid, os, json
 
 import scene_export_utils
+import scene_api.motion_group
 
 #
 # Example for exporting MotionGroup scene rules
@@ -17,12 +18,26 @@ def update_manifest(scene):
     import azlmbr.scene.graph
     import scene_api.scene_data
 
-    graph = scene_api.scene_data.SceneGraph(scene.graph)
-    mesh_name_list, all_node_paths = scene_export_utils.get_node_names(graph, 'MeshData')
-    scene_manifest = scene_api.scene_data.SceneManifest()
+    # create a SceneManifest
+    sceneManifest = scene_api.scene_data.SceneManifest()
+
+    # create a MotionGroup
+    motionGroup = scene_api.motion_group.MotionGroup()
+    motionGroup.name = os.path.basename(scene.sourceFilename.replace('.', '_'))
+
+    motionAdditiveRule = scene_api.motion_group.MotionAdditiveRule()
+    motionAdditiveRule.sampleFrame = 2
+    motionGroup.add_rule(motionAdditiveRule)
+
+    motionScaleRule = motionGroup.create_rule(scene_api.motion_group.MotionScaleRule())
+    motionScaleRule.scaleFactor = 1.1
+    motionGroup.add_rule(motionScaleRule)
+
+    # add motion group to scene manifest
+    sceneManifest.add_motion_group(motionGroup)
 
     # Convert the manifest to a JSON string and return it
-    return scene_manifest.export()
+    return sceneManifest.export()
 
 sceneJobHandler = None
 
@@ -32,9 +47,9 @@ def on_update_manifest(args):
         return update_manifest(scene)
     except RuntimeError as err:
         print (f'ERROR - {err}')
-        log_exception_traceback()
+        scene_export_utils.log_exception_traceback()
     except:
-        log_exception_traceback()
+        scene_export_utils.log_exception_traceback()
 
     global sceneJobHandler
     sceneJobHandler.disconnect()
