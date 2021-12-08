@@ -629,23 +629,25 @@ void UiCanvasManager::RenderLoadedCanvases()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasManager::DestroyLoadedCanvases(bool keepCrossLevelCanvases)
 {
-    // Delete all the canvases loaded in game (but not loaded in editor)
+    // Find all the canvases loaded in game (but not loaded in editor) that need destroying
+    AZStd::vector<AZ::EntityId> canvasesToUnload;
+    canvasesToUnload.reserve(m_loadedCanvases.size());
     for (auto iter = m_loadedCanvases.begin(); iter != m_loadedCanvases.end(); ++iter)
     {
         auto canvas = *iter;
 
         if (!(keepCrossLevelCanvases && canvas->GetKeepLoadedOnLevelUnload()))
         {
-            // no longer used by game so delete the canvas
-            delete canvas->GetEntity();
-            *iter = nullptr;    // mark for removal from container
+            canvasesToUnload.push_back(canvas->GetEntityId());
         }
     }
 
-    // now remove the nullptr entries
-    m_loadedCanvases.erase(
-        std::remove(m_loadedCanvases.begin(), m_loadedCanvases.end(), nullptr),
-        m_loadedCanvases.end());
+    // Unload the canvases. This will also send the OnCanvasUnloaded notification which
+    // ensures that components such as UiCanvasAsserRefComponent can clean up properly
+    for (auto canvasEntityId : canvasesToUnload)
+    {
+        UnloadCanvas(canvasEntityId);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
