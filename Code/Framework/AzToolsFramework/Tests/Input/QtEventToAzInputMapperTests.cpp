@@ -23,6 +23,22 @@ namespace UnitTest
         return it != buttons.cend();
     }
 
+    void SimulateMouseWheelEvent(QWidget* widget)
+    {
+        const QPoint eventPos = QPoint(WidgetSize.width() / 2, WidgetSize.height() / 2);
+        const QPoint delta = QPoint(10, 10);
+        const QPoint zero = QPoint();
+
+        QWheelEvent wheelEventBegin(eventPos, zero, zero, delta, Qt::NoButton, Qt::NoModifier, Qt::ScrollBegin, false);
+        QApplication::sendEvent(widget, &wheelEventBegin);
+
+        QWheelEvent wheelEventUpdate(eventPos, zero, zero, delta, Qt::NoButton, Qt::NoModifier, Qt::ScrollUpdate, false);
+        QApplication::sendEvent(widget, &wheelEventUpdate);
+
+        QWheelEvent wheelEventEnd(eventPos, zero, zero, zero, Qt::NoButton, Qt::NoModifier, Qt::ScrollEnd, false);
+        QApplication::sendEvent(widget, &wheelEventEnd);
+    }
+
     AZStd::string QtKeyToString(Qt::Key key, Qt::KeyboardModifiers modifiers)
     {
         QKeySequence keySequence = QKeySequence(key);
@@ -61,7 +77,7 @@ namespace UnitTest
 
             // listen for events signaled from QtEventToAzInputMapper and forward to the controller list
             QObject::connect(m_inputChannelMapper.get(), &AzToolsFramework::QtEventToAzInputMapper::InputChannelUpdated, m_rootWidget.get(),
-                [this]([[maybe_unused]] const AzFramework::InputChannel* inputChannel, [[maybe_unused]] QEvent* event)
+                [this]([[maybe_unused]] const AzFramework::InputChannel* inputChannel, QEvent* event)
                 {
                     const QEvent::Type eventType = event->type();
 
@@ -70,6 +86,11 @@ namespace UnitTest
                         eventType == QEvent::Type::MouseButtonDblClick)
                     {
                         m_signalEvents.push_back(QtEventInfo(static_cast<QMouseEvent*>(event)));
+                        event->accept();
+                    }
+                    else if (eventType == QEvent::Type::Wheel)
+                    {
+                        m_signalEvents.push_back(QtEventInfo(static_cast<QWheelEvent*>(event)));
                         event->accept();
                     }
                     else if (eventType == QEvent::Type::KeyPress ||
@@ -105,6 +126,11 @@ namespace UnitTest
                     m_azChannelEvents.push_back(AzEventInfo(inputChannel));
                     hasBeenConsumed = m_captureAzEvents;
                 }
+                else if (inputChannelId == AzFramework::InputDeviceMouse::Movement::Z)
+                {
+                    m_azChannelEvents.push_back(AzEventInfo(inputChannel));
+                    hasBeenConsumed = m_captureAzEvents;
+                }
             }
             else if (AzFramework::InputDeviceKeyboard::IsKeyboardDevice(inputDeviceId))
             {
@@ -113,7 +139,7 @@ namespace UnitTest
             }
         }
 
-        void OnInputTextEvent([[maybe_unused]] const AZStd::string& textUTF8, [[maybe_unused]] bool& hasBeenConsumed) override
+        void OnInputTextEvent(const AZStd::string& textUTF8, bool& hasBeenConsumed) override
         {
             ASSERT_FALSE(hasBeenConsumed);
 
@@ -129,6 +155,12 @@ namespace UnitTest
             {
             }
 
+            explicit QtEventInfo(QWheelEvent* mouseWheelEvent)
+                : m_eventType(mouseWheelEvent->type())
+                , m_scrollPhase(mouseWheelEvent->phase())
+            {
+            }
+
             explicit QtEventInfo(QKeyEvent* keyEvent)
                 : m_eventType(keyEvent->type())
                 , m_key(keyEvent->key())
@@ -137,6 +169,7 @@ namespace UnitTest
 
             QEvent::Type m_eventType{ QEvent::None };
             Qt::MouseButton m_button{ Qt::NoButton };
+            Qt::ScrollPhase m_scrollPhase{ Qt::NoScrollPhase };
             int m_key{ 0 };
         };
 
@@ -165,6 +198,92 @@ namespace UnitTest
         bool m_captureAzEvents{ false };
         bool m_captureTextEvents{ false };
     };
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    TEST_F(QtEventToAzInputMapperFixture, MouseWheel_NoAzHandlers_ReceivedThreeSignalAndZeroAzChannelEvents)
+    {
+        // setup
+        SimulateMouseWheelEvent(m_rootWidget.get());
+
+        // qt validation
+        ASSERT_EQ(m_signalEvents.size(), 3);
+
+        EXPECT_EQ(m_signalEvents[0].m_eventType, QEvent::Type::Wheel);
+        EXPECT_EQ(m_signalEvents[0].m_scrollPhase, Qt::ScrollBegin);
+
+        EXPECT_EQ(m_signalEvents[1].m_eventType, QEvent::Type::Wheel);
+        EXPECT_EQ(m_signalEvents[1].m_scrollPhase, Qt::ScrollUpdate);
+
+        EXPECT_EQ(m_signalEvents[2].m_eventType, QEvent::Type::Wheel);
+        EXPECT_EQ(m_signalEvents[2].m_scrollPhase, Qt::ScrollEnd);
+
+        // az validation
+        EXPECT_EQ(m_azChannelEvents.size(), 0);
+    }
+
+    TEST_F(QtEventToAzInputMapperFixture, MouseWheel_AzHandlerNotCaptured_ReceivedThreeSignalAndThreeAzChannelEvents)
+    {
+        // setup
+        const AzFramework::InputChannelId mouseWheelId = AzFramework::InputDeviceMouse::Movement::Z;
+        const char* mouseWheelChannelName = mouseWheelId.GetName();
+
+        AzFramework::InputChannelNotificationBus::Handler::BusConnect();
+        m_captureAzEvents = false;
+
+        SimulateMouseWheelEvent(m_rootWidget.get());
+
+        // qt validation
+        ASSERT_EQ(m_signalEvents.size(), 3);
+
+        EXPECT_EQ(m_signalEvents[0].m_eventType, QEvent::Type::Wheel);
+        EXPECT_EQ(m_signalEvents[0].m_scrollPhase, Qt::ScrollBegin);
+
+        EXPECT_EQ(m_signalEvents[1].m_eventType, QEvent::Type::Wheel);
+        EXPECT_EQ(m_signalEvents[1].m_scrollPhase, Qt::ScrollUpdate);
+
+        EXPECT_EQ(m_signalEvents[2].m_eventType, QEvent::Type::Wheel);
+        EXPECT_EQ(m_signalEvents[2].m_scrollPhase, Qt::ScrollEnd);
+
+        // az validation
+        ASSERT_EQ(m_azChannelEvents.size(), 3);
+
+        EXPECT_STREQ(m_azChannelEvents[0].m_inputChannelId.GetName(), mouseWheelChannelName);
+
+        EXPECT_STREQ(m_azChannelEvents[1].m_inputChannelId.GetName(), mouseWheelChannelName);
+
+        EXPECT_STREQ(m_azChannelEvents[2].m_inputChannelId.GetName(), mouseWheelChannelName);
+
+        // cleanup
+        AzFramework::InputChannelNotificationBus::Handler::BusDisconnect();
+    }
+
+    TEST_F(QtEventToAzInputMapperFixture, MouseWheel_AzHandlerCaptured_ReceivedZeroSignalAndThreeAzChannelEvents)
+    {
+        // setup
+        const AzFramework::InputChannelId mouseWheelId = AzFramework::InputDeviceMouse::Movement::Z;
+        const char* mouseWheelChannelName = mouseWheelId.GetName();
+
+        AzFramework::InputChannelNotificationBus::Handler::BusConnect();
+        m_captureAzEvents = true;
+
+        SimulateMouseWheelEvent(m_rootWidget.get());
+
+        // qt validation
+        EXPECT_EQ(m_signalEvents.size(), 0);
+
+        // az validation
+        ASSERT_EQ(m_azChannelEvents.size(), 3);
+
+        EXPECT_STREQ(m_azChannelEvents[0].m_inputChannelId.GetName(), mouseWheelChannelName);
+
+        EXPECT_STREQ(m_azChannelEvents[1].m_inputChannelId.GetName(), mouseWheelChannelName);
+
+        EXPECT_STREQ(m_azChannelEvents[2].m_inputChannelId.GetName(), mouseWheelChannelName);
+
+        // cleanup
+        AzFramework::InputChannelNotificationBus::Handler::BusDisconnect();
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
