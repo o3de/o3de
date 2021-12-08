@@ -36,3 +36,6 @@ class TestAutomation(EditorTestSuite):
 
     class test_TerrainMacroMaterialComponent_MacroMaterialActivates(EditorSharedTest):
          from .EditorScripts import TerrainMacroMaterialComponent_MacroMaterialActivates as test_module
+
+    class test_TerrainWorld_ConfigurationWorks(EditorSharedTest):
+        from .EditorScripts import Terrain_World_ConfigurationWorks as test_module

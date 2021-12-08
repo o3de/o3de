@@ -874,7 +874,7 @@ namespace AZ
                 BeginCullingJobs(views);
             }
 
-#if AZ_CULL_DEBUG_ENABLED
+#ifdef AZ_CULL_DEBUG_ENABLED
             AuxGeomDrawPtr auxGeom;
             if (m_debugCtx.m_debugDraw)
             {
