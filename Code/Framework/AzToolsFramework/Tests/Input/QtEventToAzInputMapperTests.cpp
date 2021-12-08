@@ -16,45 +16,11 @@ namespace UnitTest
 {
     const QSize WidgetSize = QSize(1920, 1080);
 
-    bool IsMouseButton(const AzFramework::InputChannelId& inputChannelId)
+    static bool IsMouseButton(const AzFramework::InputChannelId& inputChannelId)
     {
         const auto& buttons = AzFramework::InputDeviceMouse::Button::All;
         const auto& it = AZStd::find(buttons.cbegin(), buttons.cend(), inputChannelId);
         return it != buttons.cend();
-    }
-
-    void SimulateMouseWheelEvent(QWidget* widget)
-    {
-        const QPoint eventPos = QPoint(WidgetSize.width() / 2, WidgetSize.height() / 2);
-        const QPoint delta = QPoint(10, 10);
-        const QPoint zero = QPoint();
-
-        QWheelEvent wheelEventBegin(eventPos, zero, zero, delta, Qt::NoButton, Qt::NoModifier, Qt::ScrollBegin, false);
-        QApplication::sendEvent(widget, &wheelEventBegin);
-
-        QWheelEvent wheelEventUpdate(eventPos, zero, zero, delta, Qt::NoButton, Qt::NoModifier, Qt::ScrollUpdate, false);
-        QApplication::sendEvent(widget, &wheelEventUpdate);
-
-        QWheelEvent wheelEventEnd(eventPos, zero, zero, zero, Qt::NoButton, Qt::NoModifier, Qt::ScrollEnd, false);
-        QApplication::sendEvent(widget, &wheelEventEnd);
-    }
-
-    AZStd::string QtKeyToString(Qt::Key key, Qt::KeyboardModifiers modifiers)
-    {
-        QKeySequence keySequence = QKeySequence(key);
-        QString keyText = keySequence.toString();
-
-        // QKeySequence seems to uppercase alpha keys regardless of shift-modifier
-        if (modifiers == Qt::NoModifier && keyText.isUpper())
-        {
-            keyText = keyText.toLower();
-        }
-        else if (modifiers != Qt::ShiftModifier)
-        {
-            keyText = QString();
-        }
-
-        return AZStd::string(keyText.toUtf8().data());
     }
 
     class QtEventToAzInputMapperFixture
@@ -204,7 +170,10 @@ namespace UnitTest
     TEST_F(QtEventToAzInputMapperFixture, MouseWheel_NoAzHandlers_ReceivedThreeSignalAndZeroAzChannelEvents)
     {
         // setup
-        SimulateMouseWheelEvent(m_rootWidget.get());
+        const QPoint mouseEventPos = QPoint(WidgetSize.width() / 2, WidgetSize.height() / 2);
+        const QPoint scrollDelta = QPoint(10, 10);
+
+        MouseScroll(m_rootWidget.get(), mouseEventPos, scrollDelta);
 
         // qt validation
         ASSERT_EQ(m_signalEvents.size(), 3);
@@ -231,7 +200,10 @@ namespace UnitTest
         AzFramework::InputChannelNotificationBus::Handler::BusConnect();
         m_captureAzEvents = false;
 
-        SimulateMouseWheelEvent(m_rootWidget.get());
+        const QPoint mouseEventPos = QPoint(WidgetSize.width() / 2, WidgetSize.height() / 2);
+        const QPoint scrollDelta = QPoint(10, 10);
+
+        MouseScroll(m_rootWidget.get(), mouseEventPos, scrollDelta);
 
         // qt validation
         ASSERT_EQ(m_signalEvents.size(), 3);
@@ -267,7 +239,10 @@ namespace UnitTest
         AzFramework::InputChannelNotificationBus::Handler::BusConnect();
         m_captureAzEvents = true;
 
-        SimulateMouseWheelEvent(m_rootWidget.get());
+        const QPoint mouseEventPos = QPoint(WidgetSize.width() / 2, WidgetSize.height() / 2);
+        const QPoint scrollDelta = QPoint(10, 10);
+
+        MouseScroll(m_rootWidget.get(), mouseEventPos, scrollDelta);
 
         // qt validation
         EXPECT_EQ(m_signalEvents.size(), 0);
@@ -304,7 +279,7 @@ namespace UnitTest
         // setup
         const MouseButtonIdsParam mouseButtonIds = GetParam();
 
-        auto mouseEventPos = QPoint(WidgetSize.width() / 2, WidgetSize.height() / 2);
+        const QPoint mouseEventPos = QPoint(WidgetSize.width() / 2, WidgetSize.height() / 2);
         QTest::mouseClick(m_rootWidget.get(), mouseButtonIds.m_qt, Qt::NoModifier, mouseEventPos);
 
         // qt validation
@@ -328,7 +303,7 @@ namespace UnitTest
         AzFramework::InputChannelNotificationBus::Handler::BusConnect();
         m_captureAzEvents = false;
 
-        auto mouseEventPos = QPoint(WidgetSize.width() / 2, WidgetSize.height() / 2);
+        const QPoint mouseEventPos = QPoint(WidgetSize.width() / 2, WidgetSize.height() / 2);
         QTest::mouseClick(m_rootWidget.get(), mouseButtonIds.m_qt, Qt::NoModifier, mouseEventPos);
 
         // qt validation
@@ -361,7 +336,7 @@ namespace UnitTest
         AzFramework::InputChannelNotificationBus::Handler::BusConnect();
         m_captureAzEvents = true;
 
-        auto mouseEventPos = QPoint(WidgetSize.width() / 2, WidgetSize.height() / 2);
+        const QPoint mouseEventPos = QPoint(WidgetSize.width() / 2, WidgetSize.height() / 2);
         QTest::mouseClick(m_rootWidget.get(), mouseButtonIds.m_qt, Qt::NoModifier, mouseEventPos);
 
         // qt validation
@@ -434,7 +409,7 @@ namespace UnitTest
         const KeyEventIdsParam keyEventIds = GetParam();
         const Qt::KeyboardModifiers modifiers = Qt::NoModifier;
 
-        AZStd::string keyAsText = QtKeyToString(keyEventIds.m_qt, modifiers);
+        AZStd::string keyAsText = QtKeyToAzString(keyEventIds.m_qt, modifiers);
 
         AzFramework::InputChannelNotificationBus::Handler::BusConnect();
         m_captureAzEvents = false;
