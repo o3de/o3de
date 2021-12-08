@@ -10,6 +10,7 @@
 
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
+#include <Atom/RPI/Math.azsli>
 #include "Shadow.azsli"
 #include "ShadowmapAtlasLib.azsli"
 #include "BicubicPcfFilters.azsli"
@@ -462,9 +463,7 @@ float3 DirectionalLightShadow::AddDebugColoring(
 
 float DirectionalLightShadow::CalculateCascadeBlendAmount(const float3 texCoord)
 {
-    const float3 distanceToOne = float3(1.0f - texCoord.x, 1.0f - texCoord.y, 1.0f - texCoord.z);
-    const float distanceToOneMin = min(distanceToOne.x, min(distanceToOne.y, distanceToOne.z));
-
+    const float distanceToOneMin = min3(1.0f - texCoord);
     const float currentPixelsBlendBandLocation = min(min(texCoord.x, texCoord.y), distanceToOneMin);
     return currentPixelsBlendBandLocation / CascadeBlendArea;
 }
