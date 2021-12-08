@@ -80,7 +80,7 @@ def palRmDir(path) {
     } else {
         def win_path = path.replace('/','\\')
         bat label: "Removing ${win_path}",
-            script: "IF exists ${win_path} rd /s /q ${win_path}"
+            script: "IF exist ${win_path} rd /s /q ${win_path}"
     }
 }
 
