@@ -63,11 +63,24 @@ namespace Multiplayer
             auto serverValueIter = serverMap.find(iter->first);
             if (clientValueIter == clientMap.end() || serverValueIter == serverMap.end())
             {
-                AZLOG_ERROR("    %s (Not found in server and/or client value map!)", iter->first.c_str());
+                AZStd::string errorMsg;
+                if (clientValueIter == clientMap.end() && serverValueIter == serverMap.end())
+                {
+                    errorMsg = "%s not found in server and client value map!";
+                }
+                else if (clientValueIter == clientMap.end())
+                {
+                    errorMsg = "%s not found in client value map!";
+                }
+                else
+                {
+                    errorMsg = "%s not found in server value map!";
+                }
+                AZLOG_ERROR(errorMsg.c_str(), iter->first.c_str());
                 if (detail)
                 {
                     detail->elements.emplace_back(AZStd::make_unique<MultiplayerAuditingDatum<AZStd::string>>(
-                        AZStd::string::format("%s not found in server and/or client value map!", iter->first.c_str())));
+                        AZStd::string::format(errorMsg.c_str(), iter->first.c_str())));
                 }
                 continue;
             }
