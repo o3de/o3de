@@ -41,6 +41,9 @@ namespace Multiplayer
         // Automated testing listens for these logs
         if (editorsv_isDedicated)
         {
+            // Server logs piped to the editor. Change the buffering policy to ensure every write to stdout is flushed.
+            setvbuf(stdout, NULL, _IONBF, 0);
+
             // If the settings registry is not available at this point,
             // then something catastrophic has happened in the application startup.
             // That should have been caught and messaged out earlier in startup.
@@ -235,5 +238,4 @@ namespace Multiplayer
     {
         return MultiplayerEditorPackets::DispatchPacket(connection, packetHeader, serializer, *this);
     }
-    
 }
