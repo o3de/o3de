@@ -27,6 +27,7 @@ class LightCullingTileIterator
         tileLightDataTex.GetDimensions(tileWidth, tileHeight);
                     
         TileLightData tileLightData = Tile_UnpackData(tileLightDataTex[tileId]);
+        m_overflow = tileLightData.overflow;
         uint bin = NVLC_GetBin(viewz, tileLightData); 
         m_readIndex = ((tileId.y * tileWidth + tileId.x) * NVLC_MAX_BINS + bin) * NVLC_MAX_POSSIBLE_LIGHTS_PER_BIN; 
         m_value = 0;               
@@ -53,6 +54,10 @@ class LightCullingTileIterator
     }
 
     uint m_readIndex;
-    uint m_value;    
+    uint m_value;   
+
+    // true if the maximum number of lights per tile is exceeded
+    // lights will probably flicker if this happens
+    bool m_overflow;
     StructuredBuffer<uint> m_lightListRemapped;
 };

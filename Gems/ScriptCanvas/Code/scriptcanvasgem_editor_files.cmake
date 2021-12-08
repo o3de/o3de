@@ -27,7 +27,9 @@ set(FILES
     Editor/Assets/ScriptCanvasAsset.cpp
     Editor/Include/ScriptCanvas/Assets/ScriptCanvasAssetBus.h
     Editor/Include/ScriptCanvas/Assets/ScriptCanvasAssetTypes.h
+    Editor/Include/ScriptCanvas/Assets/ScriptCanvasFileHandling.h
     Editor/Include/ScriptCanvas/Assets/ScriptCanvasAssetHandler.h
+    Editor/Assets/ScriptCanvasFileHandling.cpp
     Editor/Assets/ScriptCanvasAssetHandler.cpp
     Editor/Assets/ScriptCanvasAssetHolder.h
     Editor/Assets/ScriptCanvasAssetHolder.cpp
@@ -55,6 +57,8 @@ set(FILES
     Editor/Components/EditorGraphVariableManagerComponent.cpp
     Editor/Include/ScriptCanvas/Components/EditorScriptCanvasComponent.h
     Editor/Components/EditorScriptCanvasComponent.cpp
+    Editor/Include/ScriptCanvas/Components/EditorScriptCanvasComponentSerializer.h
+    Editor/Include/ScriptCanvas/Components/EditorScriptCanvasComponentSerializer.cpp
     Editor/Components/IconComponent.h
     Editor/Components/IconComponent.cpp
     Editor/Include/ScriptCanvas/GraphCanvas/DynamicSlotBus.h
@@ -178,6 +182,8 @@ set(FILES
     Editor/View/Widgets/ScriptCanvasNodePaletteDockWidget.h
     Editor/View/Widgets/ScriptCanvasNodePaletteDockWidget.cpp
     Editor/View/Widgets/ScriptCanvasNodePaletteToolbar.ui
+    Editor/View/Widgets/SourceHandlePropertyAssetCtrl.h
+    Editor/View/Widgets/SourceHandlePropertyAssetCtrl.cpp
     Editor/View/Widgets/WidgetBus.h
     Editor/View/Widgets/DataTypePalette/DataTypePaletteModel.cpp
     Editor/View/Widgets/DataTypePalette/DataTypePaletteModel.h

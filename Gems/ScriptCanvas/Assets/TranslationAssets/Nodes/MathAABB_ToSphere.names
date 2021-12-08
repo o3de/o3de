@@ -6,39 +6,38 @@
             "variant": "",
             "details": {
                 "name": "To Sphere",
-                "category": "Math/Axis Aligned Bounding Box",
-                "tooltip": "returns the center and radius of smallest sphere that contains Source",
-                "subtitle": "Axis Aligned Bounding Box"
+                "category": "Math/AABB",
+                "tooltip": "returns the center and radius of smallest sphere that contains Source"
             },
             "slots": [
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "base": "DataInput_AABB: Source",
+                    "base": "DataInput_Source_0",
                     "details": {
-                        "name": "AABB: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "base": "DataOutput_Center: Vector3",
+                    "base": "DataOutput_Center_0",
                     "details": {
-                        "name": "Center: Vector3"
+                        "name": "Center"
                     }
                 },
                 {
-                    "base": "DataOutput_Radius: Number",
+                    "base": "DataOutput_Radius_1",
                     "details": {
-                        "name": "Radius: Number"
+                        "name": "Radius"
                     }
                 }
             ]

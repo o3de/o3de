@@ -270,8 +270,7 @@ namespace UnitTest
 
         void SetUp() override
         {
-            m_drillerManager = AZ::Debug::DrillerManager::Create();
-            m_drillerManager->Register(aznew AZ::Debug::MemoryDriller);
+            AZ::AllocatorManager::Instance().EnterProfilingMode();
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
 
             if (azrtti_typeid<AllocatorType>() != azrtti_typeid<AZ::SystemAllocator>()) // simplifies instead of template specialization
@@ -292,7 +291,7 @@ namespace UnitTest
                 // Other allocators need the SystemAllocator in order to work
                 AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
             }
-            AZ::Debug::DrillerManager::Destroy(m_drillerManager);
+            AZ::AllocatorManager::Instance().ExitProfilingMode();
 
             m_busRedirector.BusDisconnect();
             EXPECT_EQ(m_leakExpected, m_leakDetected);
@@ -352,7 +351,6 @@ namespace UnitTest
         };
 
         BusRedirector m_busRedirector;
-        AZ::Debug::DrillerManager* m_drillerManager = nullptr;
         bool m_leakDetected = false;
         bool m_leakExpected = false;
     };

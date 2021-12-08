@@ -10,11 +10,11 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzFramework/Process/ProcessWatcher.h>
+#include <AzFramework/Process/ProcessCommunicatorTracePrinter.h>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <QString>
 #include <QByteArray>
-#include <native/utilities/CommunicatorTracePrinter.h>
 #include <native/utilities/assetUtils.h>
 #include <QDir>  // used in the inl file.
 
@@ -103,8 +103,8 @@ namespace AssetProcessor
         //! Sets the connection id and signals that the builder has connected
         void SetConnection(AZ::u32 connId);
 
-        AZStd::string BuildParams(const char* task, const char* moduleFilePath, const AZStd::string& builderGuid, const AZStd::string& jobDescriptionFile, const AZStd::string& jobResponseFile) const;
-        AZStd::unique_ptr<AzFramework::ProcessWatcher> LaunchProcess(const char* fullExePath, const AZStd::string& params) const;
+        AZStd::vector<AZStd::string> BuildParams(const char* task, const char* moduleFilePath, const AZStd::string& builderGuid, const AZStd::string& jobDescriptionFile, const AZStd::string& jobResponseFile) const;
+        AZStd::unique_ptr<AzFramework::ProcessWatcher> LaunchProcess(const char* fullExePath, const AZStd::vector<AZStd::string>& params) const;
 
         //! Waits for the builder exe to send the job response and pumps stdout/err
         BuilderRunJobOutcome WaitForBuilderResponse(AssetBuilderSDK::JobCancelListener* jobCancelListener, AZ::u32 processTimeoutLimitInSeconds, AZStd::binary_semaphore* waitEvent) const;
@@ -127,7 +127,7 @@ namespace AssetProcessor
         AZStd::unique_ptr<AzFramework::ProcessWatcher> m_processWatcher = nullptr;
 
         //! Optional communicator, only available if we have a process watcher
-        AZStd::unique_ptr<CommunicatorTracePrinter> m_tracePrinter = nullptr;
+        AZStd::unique_ptr<ProcessCommunicatorTracePrinter> m_tracePrinter = nullptr;
 
         const AssetUtilities::QuitListener& m_quitListener;
     };

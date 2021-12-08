@@ -52,7 +52,6 @@
 #include <AzFramework/Archive/ArchiveFileIO.h>
 
 #include <LoadScreenBus.h>
-#include <LyShine/Bus/UiSystemBus.h>
 #include <AzFramework/Logging/MissingAssetLogger.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
 #include <AzCore/Interface/Interface.h>
@@ -77,7 +76,6 @@
 #include <IAudioSystem.h>
 #include <ICmdLine.h>
 #include <IProcess.h>
-#include <LyShine/ILyShine.h>
 
 #include <AzFramework/Archive/Archive.h>
 #include "XConsole.h"
@@ -737,7 +735,17 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
 
     m_pCmdLine = new CCmdLine(startupParams.szSystemCmdLine);
 
-    AZCoreLogSink::Connect();
+    // Init AZCoreLogSink. Don't suppress system output if we're running as an editor-server
+    bool suppressSystemOutput = true;
+    if (const ICmdLineArg* isEditorServerArg = m_pCmdLine->FindArg(eCLAT_Pre, "editorsv_isDedicated"))
+    {
+        bool editorsv_isDedicated = false;
+        if (isEditorServerArg->GetBoolValue(editorsv_isDedicated) && editorsv_isDedicated)
+        {
+            suppressSystemOutput = false;
+        }
+    }
+    AZCoreLogSink::Connect(suppressSystemOutput);
 
     // Registers all AZ Console Variables functors specified within CrySystem
     if (auto azConsole = AZ::Interface<AZ::IConsole>::Get(); azConsole)
@@ -1094,11 +1102,6 @@ AZ_POP_DISABLE_WARNING
         }
 
         InlineInitializationProcessing("CSystem::Init Level System");
-
-        if (m_env.pLyShine)
-        {
-            m_env.pLyShine->PostInit();
-        }
 
         InlineInitializationProcessing("CSystem::Init InitLmbrAWS");
 

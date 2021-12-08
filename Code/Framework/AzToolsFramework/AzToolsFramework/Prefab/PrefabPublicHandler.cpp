@@ -18,6 +18,7 @@
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/Prefab/EditorPrefabComponent.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityIdMapper.h>
@@ -521,21 +522,18 @@ namespace AzToolsFramework
                 nestedInstanceLink.has_value(),
                 "A valid link was not found for one of the instances provided as input for the CreatePrefab operation.");    
 
-            PrefabDomReference nestedInstanceLinkDom = nestedInstanceLink->get().GetLinkDom();
-            AZ_Assert(
-                nestedInstanceLinkDom.has_value(),
-                "A valid DOM was not found for the link corresponding to one of the instances provided as input for the "
-                "CreatePrefab operation.");
-
-            PrefabDomValueReference nestedInstanceLinkPatches =
-                PrefabDomUtils::FindPrefabDomValue(nestedInstanceLinkDom->get(), PrefabDomUtils::PatchesName);
-            AZ_Assert(
-                nestedInstanceLinkPatches.has_value(),
-                "A valid DOM for patches was not found for the link corresponding to one of the instances provided as input for the "
-                "CreatePrefab operation.");
-
             PrefabDom patchesCopyForUndoSupport;
-            patchesCopyForUndoSupport.CopyFrom(nestedInstanceLinkPatches->get(), patchesCopyForUndoSupport.GetAllocator());
+            PrefabDomReference nestedInstanceLinkDom = nestedInstanceLink->get().GetLinkDom();
+            if (nestedInstanceLinkDom.has_value())
+            {
+                PrefabDomValueReference nestedInstanceLinkPatches =
+                    PrefabDomUtils::FindPrefabDomValue(nestedInstanceLinkDom->get(), PrefabDomUtils::PatchesName);
+                if (nestedInstanceLinkPatches.has_value())
+                {
+                    patchesCopyForUndoSupport.CopyFrom(nestedInstanceLinkPatches->get(), patchesCopyForUndoSupport.GetAllocator());
+                }
+            }
+
             PrefabUndoHelpers::RemoveLink(
                 sourceInstance->GetTemplateId(), targetTemplateId, sourceInstance->GetInstanceAlias(), sourceInstance->GetLinkId(),
                 AZStd::move(patchesCopyForUndoSupport), undoBatch);
@@ -584,7 +582,15 @@ namespace AzToolsFramework
                     "Cannot add entity because the parent entity (id '%llu') is a closed container entity.",
                     static_cast<AZ::u64>(parentId)));
             }
-            
+
+            // If the parent entity is marked as read only, bail.
+            if (auto readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get(); readOnlyEntityPublicInterface->IsReadOnly(parentId))
+            {
+                return AZ::Failure(AZStd::string::format(
+                    "Cannot add entity because the parent entity (id '%llu') is marked as read only.",
+                    static_cast<AZ::u64>(parentId)));
+            }
+
             EntityAlias entityAlias = Instance::GenerateEntityAlias();
 
             AliasPath absoluteEntityPath = owningInstanceOfParentEntity->get().GetAbsoluteInstanceAliasPath();
@@ -921,6 +927,18 @@ namespace AzToolsFramework
             }
         }
 
+        bool PrefabPublicHandler::IsOwnedByProceduralPrefabInstance(AZ::EntityId entityId) const
+        {
+            if (InstanceOptionalReference instanceReference = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
+                instanceReference.has_value())
+            {
+                TemplateReference templateReference = m_prefabSystemComponentInterface->FindTemplate(instanceReference->get().GetTemplateId());
+                return (templateReference.has_value()) && (templateReference->get().IsProcedural());
+            }
+
+            return false;
+        }
+
         bool PrefabPublicHandler::IsInstanceContainerEntity(AZ::EntityId entityId) const
         {
             InstanceOptionalReference owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
@@ -1199,6 +1217,27 @@ namespace AzToolsFramework
             if (&m_prefabFocusInterface->GetFocusedPrefabInstance(editorEntityContextId)->get() != &commonOwningInstance->get())
             {
                 return AZ::Failure(AZStd::string("Cannot delete entities belonging to an instance that is not being edited."));
+            }
+
+            // None of the specified entities can be marked as read only, otherwise this operation is invalid.
+            if (auto readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get())
+            {
+                AZ::EntityId readOnlyEntityId;
+                for (const auto& entityId : entityIdsNoFocusContainer)
+                {
+                    if (readOnlyEntityPublicInterface->IsReadOnly(entityId))
+                    {
+                        readOnlyEntityId = entityId;
+                        break;
+                    }
+                }
+
+                if (readOnlyEntityId.IsValid())
+                {
+                    return AZ::Failure(AZStd::string::format(
+                        "Cannot delete entities because entity (id '%llu') is marked as read only.",
+                        static_cast<AZ::u64>(readOnlyEntityId)));
+                }
             }
 
             // Retrieve entityList from entityIds

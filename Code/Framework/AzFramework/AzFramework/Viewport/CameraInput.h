@@ -25,6 +25,9 @@ namespace AzFramework
 
     struct WindowSize;
 
+    //! Tolerance to use when limiting pitch to avoid reaching +/-Pi/2 exactly.
+    constexpr float CameraPitchTolerance = 1.0e-4f;
+
     //! Returns Euler angles (pitch, roll, yaw) for the incoming orientation.
     //! @note Order of rotation is Z, Y, X.
     AZ::Vector3 EulerAngles(const AZ::Matrix3x3& orientation);
@@ -318,11 +321,26 @@ namespace AzFramework
         return m_handlingEvents;
     }
 
-    //! Clamps pitch to be +/-90 degrees (-Pi/2, Pi/2).
+    //! Returns min/max values for camera pitch (in radians).
+    inline AZStd::tuple<float, float> CameraPitchMinMaxRadians()
+    {
+        return { -AZ::Constants::HalfPi, AZ::Constants::HalfPi };
+    }
+
+    //! Returns min/max values for camera pitch (in radians) including a small tolerance at each
+    //! extreme (looking directly up or down) to avoid floating point accuracy issues.
+    inline AZStd::tuple<float, float> CameraPitchMinMaxRadiansWithTolerance()
+    {
+        const auto [pitchMinRadians, pitchMaxRadians] = CameraPitchMinMaxRadians();
+        return { pitchMinRadians + CameraPitchTolerance, pitchMaxRadians - CameraPitchTolerance };
+    }
+
+    //! Clamps pitch to be +/-90 degrees (-Pi/2, Pi/2) with a minor tolerance at each extreme.
     //! @param pitch Pitch angle in radians.
     inline float ClampPitchRotation(const float pitch)
     {
-        return AZ::GetClamp(pitch, -AZ::Constants::HalfPi, AZ::Constants::HalfPi);
+        const auto [pitchMin, pitchMax] = CameraPitchMinMaxRadiansWithTolerance();
+        return AZ::GetClamp(pitch, pitchMin, pitchMax);
     }
 
     //! Ensures yaw wraps between 0 and 360 degrees (0, 2Pi).

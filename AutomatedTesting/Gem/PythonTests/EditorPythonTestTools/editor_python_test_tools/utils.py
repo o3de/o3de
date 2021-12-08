@@ -35,6 +35,38 @@ class TestHelper:
         # general.idle_wait_frames(1)
 
     @staticmethod
+    def create_level(level_name: str) -> bool:
+        """
+        :param level_name: The name of the level to be created
+        :return: True if ECreateLevelResult returns 0, False otherwise with logging to report reason
+        """
+        Report.info(f"Creating level {level_name}")
+
+        # Use these hardcoded values to pass expected values for old terrain system until new create_level API is
+        # available
+        heightmap_resolution = 1024
+        heightmap_meters_per_pixel = 1
+        terrain_texture_resolution = 4096
+        use_terrain = False
+
+        result = general.create_level_no_prompt(level_name, heightmap_resolution, heightmap_meters_per_pixel,
+                                                terrain_texture_resolution, use_terrain)
+
+        # Result codes are ECreateLevelResult defined in CryEdit.h
+        if result == 1:
+            Report.info(f"{level_name} level already exists")
+        elif result == 2:
+            Report.info("Failed to create directory")
+        elif result == 3:
+            Report.info("Directory length is too long")
+        elif result != 0:
+            Report.info("Unknown error, failed to create level")
+        else:
+            Report.info(f"{level_name} level created successfully")
+
+        return result == 0
+
+    @staticmethod
     def open_level(directory : str, level : str):
         # type: (str, str) -> None
         """
@@ -56,8 +88,7 @@ class TestHelper:
         general.idle_wait_frames(200)
 
     @staticmethod
-    def enter_game_mode(msgtuple_success_fail : Tuple[str, str]):
-        # type: (tuple) -> None
+    def enter_game_mode(msgtuple_success_fail: Tuple[str, str]) -> None:
         """
         :param msgtuple_success_fail: The tuple with the expected/unexpected messages for entering game mode.
 
@@ -70,8 +101,7 @@ class TestHelper:
         Report.critical_result(msgtuple_success_fail, general.is_in_game_mode())
 
     @staticmethod
-    def multiplayer_enter_game_mode(msgtuple_success_fail : Tuple[str, str], sv_default_player_spawn_asset : str):
-        # type: (tuple) -> None
+    def multiplayer_enter_game_mode(msgtuple_success_fail: Tuple[str, str], sv_default_player_spawn_asset: str) -> None:
         """
         :param msgtuple_success_fail: The tuple with the expected/unexpected messages for entering game mode.
         :param sv_default_player_spawn_asset: The path to the network player prefab that will be automatically spawned upon entering gamemode.  The engine default is "prefabs/player.network.spawnable" 
