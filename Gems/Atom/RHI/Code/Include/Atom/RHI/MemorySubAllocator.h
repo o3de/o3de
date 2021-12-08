@@ -11,6 +11,7 @@
 #include <Atom/RHI/PoolAllocator.h>
 #include <Atom/RHI/MemoryAllocation.h>
 #include <Atom/RHI.Reflect/MemoryEnums.h>
+#include <AzCore/Debug/Profiler.h>
 
 namespace AZ
 {
