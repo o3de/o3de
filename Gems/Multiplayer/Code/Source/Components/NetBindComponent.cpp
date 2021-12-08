@@ -34,8 +34,8 @@ namespace Multiplayer
         {
             serializeContext->Class<NetBindComponent, AZ::Component>()
                 ->Version(2)
-                ->Field("PrefabEntityId", &NetBindComponent::m_prefabEntityId)
-                ->Field("PrefabAssetId", &NetBindComponent::m_prefabAssetId)
+                ->Field("prefabEntityId", &NetBindComponent::m_prefabEntityId)
+                ->Field("prefabAssetId", &NetBindComponent::m_prefabAssetId)
                 ;
 
             AZ::EditContext* editContext = serializeContext->GetEditContext();
