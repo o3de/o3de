@@ -191,7 +191,7 @@ namespace AZ
             behaviorContext->Class<Vector2>()->
                 Attribute(Script::Attributes::Scope, Script::Attributes::ScopeFlags::Common)->
                 Attribute(Script::Attributes::Module, "math")->
-                Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
+                Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::ListOnly)->
                 Constructor<float>()->
                 Constructor<float, float>()->
                 Attribute(Script::Attributes::Storage, Script::Attributes::StorageType::Value)->
