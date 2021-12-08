@@ -104,6 +104,7 @@ set(FILES
     Prefab/SpawnableSortEntitiesTests.cpp
     Prefab/PrefabScriptingTests.cpp
     Prefab/ProceduralPrefabAssetTests.cpp
+    Prefab/ProceduralPrefabSystemComponentTests.cpp
     PropertyIntCtrlCommonTests.cpp
     PropertyIntCtrlCommonTests.h
     PropertyIntSliderCtrlTests.cpp

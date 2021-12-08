@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Prefab/ProceduralPrefabSystemComponentInterface.h>
+#include <AzFramework/Asset/AssetCatalogBus.h>
 
 namespace AzToolsFramework
 {

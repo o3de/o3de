@@ -18,7 +18,7 @@ namespace AzToolsFramework
     {
         void ProceduralPrefabSystemComponent::Reflect(AZ::ReflectContext* context)
         {
-            if (auto serializationContext = azdynamic_cast<AZ::SerializeContext*>(context))
+            if (auto serializationContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializationContext->Class<ProceduralPrefabSystemComponent>();
             }
@@ -88,6 +88,10 @@ namespace AzToolsFramework
                         AZ_STRING_ARG(assetPath), readPrefabFileResult.GetError().c_str());
                     return;
                 }
+
+                AZ::IO::Path relativePath = AZ::Interface<PrefabLoaderInterface>::Get()->GenerateRelativePath(assetPath.c_str());
+                PrefabDomPath sourcePath = PrefabDomPath((AZStd::string("/") + PrefabDomUtils::SourceName).c_str());
+                sourcePath.Set(readPrefabFileResult.GetValue(), relativePath.Native().c_str());
 
                 prefabSystemComponentInterface->UpdatePrefabTemplate(templateId, readPrefabFileResult.TakeValue());
             }
