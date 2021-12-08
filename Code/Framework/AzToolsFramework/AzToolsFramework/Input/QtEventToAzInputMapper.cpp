@@ -448,9 +448,9 @@ namespace AzToolsFramework
 
             if (!keyText.isEmpty())
             {
-                // key events are first sent as shortcuts, if accepted they are then resent as traditional key
-                // down events.  dispatching the key event as text on shortcut (and auto-repeat press) ensures
-                // all printable keys a fair chance at being consumed before processing elsewhere
+                // key events are first sent as shortcuts, if accepted they are then re-sent as traditional key
+                // down events.  dispatching the key event as text during a shortcut (and auto-repeat press)
+                // ensures all printable keys a fair chance at being consumed before processing elsewhere
                 if (eventType == QEvent::Type::ShortcutOverride || (eventType == QEvent::Type::KeyPress && keyEvent->isAutoRepeat()))
                 {
                     bool textConsumed = false;
