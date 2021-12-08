@@ -76,7 +76,7 @@ def palRm(path) {
 def palRmDir(path) {
     if (env.IS_UNIX) {
         sh label: "Removing ${path}",
-           script: "if test -d ${path}; rm -rf ${path} fi"
+           script: "if [ -d ${path} ]; then rm -rf ${path}; fi"
     } else {
         def win_path = path.replace('/','\\')
         bat label: "Removing ${win_path}",
