@@ -23,6 +23,11 @@ Follow cmake instructions to configure your project, for example:
 2. At this point, double check that the O3DE engine's python environment gets set up under *<ENGINE_ROOT_PATH>/python/runtime* directory
 
 3. Build the project with **AWSCore.Editor** (or **AWSCore.ResourceMappingTool**, or **Editor**) target to generate the required Qt binaries.
+   * Windows
+   ```
+   $ cmake --build <BUILD_FOLDER> --target AWSCore.Editor --config <CONFIG> /m
+   ```
+   * Linux
    ```
    $ cmake --build <BUILD_FOLDER> --target AWSCore.Editor --config <CONFIG> -j <NUM_JOBS>
    ```
