@@ -8,6 +8,7 @@
 
 #include "AtomViewportDisplayIconsSystemComponent.h"
 
+#include <AzCore/Math/VectorConversions.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
@@ -117,8 +118,7 @@ namespace AZ::Render
             return;
         }
 
-        auto perViewportDynamicDrawInterface =
-            AtomBridge::PerViewportDynamicDraw::Get();
+        auto perViewportDynamicDrawInterface = AtomBridge::PerViewportDynamicDraw::Get();
         if (!perViewportDynamicDrawInterface)
         {
             return;
@@ -131,7 +131,7 @@ namespace AZ::Render
             return;
         }
 
-        // Find our icon, falling back on a grey placeholder if its image is unavailable
+        // Find our icon, falling back on a gray placeholder if its image is unavailable
         AZ::Data::Instance<AZ::RPI::Image> image = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::Grey);
         if (auto iconIt = m_iconData.find(drawParameters.m_icon); iconIt != m_iconData.end())
         {
@@ -172,13 +172,16 @@ namespace AZ::Render
         }
         else if (drawParameters.m_positionSpace == CoordinateSpace::WorldSpace)
         {
+            // Calculate the ndc point (0 -> 1 range) including depth
+            const AZ::Vector3 ndcPoint = AzFramework::WorldToScreenNdc(
+                drawParameters.m_position, viewportContext->GetCameraViewMatrixAsMatrix3x4(),
+                viewportContext->GetCameraProjectionMatrix());
+
             // Calculate our screen space position using the viewport size
             // We want this instead of RenderViewportWidget::WorldToScreen which works in QWidget virtual coordinate space
-            const AzFramework::ScreenPoint position = AzFramework::WorldToScreen(
-                drawParameters.m_position, viewportContext->GetCameraViewMatrixAsMatrix3x4(),
-                viewportContext->GetCameraProjectionMatrix(), viewportSize);
-            screenPosition.SetX(aznumeric_cast<float>(position.m_x));
-            screenPosition.SetY(aznumeric_cast<float>(position.m_y));
+            const AzFramework::ScreenPoint screenPoint = AzFramework::ScreenPointFromNdc(AZ::Vector3ToVector2(ndcPoint), viewportSize);
+
+            screenPosition = AZ::Vector2ToVector3(AzFramework::Vector2FromScreenPoint(screenPoint), ndcPoint.GetZ());
         }
 
         struct Vertex
@@ -363,10 +366,12 @@ namespace AZ::Render
 
                 Data::Instance<RPI::Shader> shader = RPI::Shader::FindOrCreate(shaderAsset);
                 drawContext->InitShader(shader);
-                drawContext->InitVertexFormat(
-                    { {"POSITION", RHI::Format::R32G32B32_FLOAT},
-                     {"COLOR", RHI::Format::R8G8B8A8_UNORM},
-                     {"TEXCOORD", RHI::Format::R32G32_FLOAT} });
+                drawContext->InitVertexFormat({ { "POSITION", RHI::Format::R32G32B32_FLOAT },
+                                                { "COLOR", RHI::Format::R8G8B8A8_UNORM },
+                                                { "TEXCOORD", RHI::Format::R32G32_FLOAT } });
+                drawContext->AddDrawStateOptions(
+                    AZ::RPI::DynamicDrawContext::DrawStateOptions::PrimitiveType |
+                    AZ::RPI::DynamicDrawContext::DrawStateOptions::BlendMode | AZ::RPI::DynamicDrawContext::DrawStateOptions::DepthState);
                 drawContext->EndInit();
             });
 

@@ -3420,10 +3420,9 @@ namespace AzToolsFramework
 
         const AzFramework::CameraState cameraState = GetCameraState(viewportInfo.m_viewportId);
 
-        const auto entityFilter = [this](AZ::EntityId entityId)
+        const auto entityFilter = [this](const AZ::EntityId entityId)
         {
             const bool entityHasManipulator = m_entityIdManipulators.m_lookups.find(entityId) != m_entityIdManipulators.m_lookups.end();
-
             return !entityHasManipulator;
         };
 
