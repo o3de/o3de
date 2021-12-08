@@ -127,8 +127,12 @@ set(FILES
     Debug/TraceReflection.h
     DOM/DomBackend.cpp
     DOM/DomBackend.h
+    DOM/DomDocument.cpp
+    DOM/DomDocument.h
     DOM/DomUtils.cpp
     DOM/DomUtils.h
+    DOM/DomValue.cpp
+    DOM/DomValue.h
     DOM/DomVisitor.cpp
     DOM/DomVisitor.h
     DOM/Backends/JSON/JsonBackend.h
