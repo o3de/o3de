@@ -23,17 +23,6 @@ namespace AzToolsFramework
 {
     AzFramework::EntityContextId PrefabUiHandler::s_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
 
-    const QColor PrefabUiHandler::m_backgroundColor = QColor("#444444");
-    const QColor PrefabUiHandler::m_backgroundHoverColor = QColor("#5A5A5A");
-    const QColor PrefabUiHandler::m_backgroundSelectedColor = QColor("#656565");
-    const QColor PrefabUiHandler::m_prefabCapsuleColor = QColor("#1E252F");
-    const QColor PrefabUiHandler::m_prefabCapsuleDisabledColor = QColor("#35383C");
-    const QColor PrefabUiHandler::m_prefabCapsuleEditColor = QColor("#4A90E2");
-    const QString PrefabUiHandler::m_prefabIconPath = QString(":/Entity/prefab.svg");
-    const QString PrefabUiHandler::m_prefabEditIconPath = QString(":/Entity/prefab_edit.svg");
-    const QString PrefabUiHandler::m_prefabEditOpenIconPath = QString(":/Entity/prefab_edit_open.svg");
-    const QString PrefabUiHandler::m_prefabEditCloseIconPath = QString(":/Entity/prefab_edit_close.svg");
-
     PrefabUiHandler::PrefabUiHandler()
     {
         m_prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();

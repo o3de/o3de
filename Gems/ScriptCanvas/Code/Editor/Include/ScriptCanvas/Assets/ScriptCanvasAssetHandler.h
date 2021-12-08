@@ -20,11 +20,6 @@ namespace AZ
 
 namespace ScriptCanvasEditor
 {
-    AZ::Outcome<void, AZStd::string> LoadScriptCanvasDataFromJson
-        ( ScriptCanvas::ScriptCanvasData& dataTarget
-        , AZStd::string_view source
-        , AZ::SerializeContext& serializeContext);
-
     /**
     * Manages editor Script Canvas graph assets.
     */

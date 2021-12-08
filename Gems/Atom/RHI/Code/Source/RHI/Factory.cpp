@@ -123,7 +123,8 @@ namespace AZ
             //Pix dll can still be injected even if we do not pass in enablePixGPU. This can be done if we launch the app from Pix.
             s_isPixGpuCaptureDllLoaded = Platform::IsPixDllInjected(AZ_TRAIT_PIX_MODULE);
 
-            s_pixGpuMarkersEnabled = s_pixGpuMarkersEnabled || RHI::QueryCommandLineOption("enablePixGpuMarkers");
+            s_pixGpuMarkersEnabled =
+                s_pixGpuMarkersEnabled || RHI::QueryCommandLineOption("enablePixGpuMarkers") || s_isPixGpuCaptureDllLoaded;
 #endif
         }
 

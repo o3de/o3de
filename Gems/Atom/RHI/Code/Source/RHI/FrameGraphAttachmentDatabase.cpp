@@ -12,8 +12,6 @@
 #include <Atom/RHI/BufferScopeAttachment.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/SwapChain.h>
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace RHI

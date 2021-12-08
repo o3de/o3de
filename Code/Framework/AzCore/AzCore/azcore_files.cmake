@@ -92,10 +92,6 @@ set(FILES
     Compression/Compression.h
     Compression/zstd_compression.cpp
     Compression/zstd_compression.h
-    Debug/AssetTracking.cpp
-    Debug/AssetTracking.h
-    Debug/AssetTrackingTypesImpl.h
-    Debug/AssetTrackingTypes.h
     Debug/Budget.h
     Debug/Budget.cpp
     Debug/BudgetTracker.h
@@ -111,30 +107,21 @@ set(FILES
     Debug/ProfilerReflection.cpp
     Debug/ProfilerReflection.h
     Debug/StackTracer.h
-    Debug/EventTrace.h
-    Debug/EventTrace.cpp
-    Debug/EventTraceDriller.h
-    Debug/EventTraceDriller.cpp
-    Debug/EventTraceDrillerBus.h
     Debug/Timer.h
     Debug/Trace.cpp
     Debug/Trace.h
     Debug/TraceMessageBus.h
-    Debug/TraceMessagesDriller.cpp
-    Debug/TraceMessagesDriller.h
-    Debug/TraceMessagesDrillerBus.h
     Debug/TraceReflection.cpp
     Debug/TraceReflection.h
+    DOM/DomBackend.cpp
+    DOM/DomBackend.h
+    DOM/DomUtils.cpp
+    DOM/DomUtils.h
     DOM/DomVisitor.cpp
     DOM/DomVisitor.h
-    Driller/DefaultStringPool.h
-    Driller/Driller.cpp
-    Driller/Driller.h
-    Driller/DrillerBus.cpp
-    Driller/DrillerBus.h
-    Driller/DrillerRootHandler.h
-    Driller/Stream.cpp
-    Driller/Stream.h
+    DOM/Backends/JSON/JsonBackend.h
+    DOM/Backends/JSON/JsonSerializationUtils.cpp
+    DOM/Backends/JSON/JsonSerializationUtils.h
     EBus/BusImpl.h
     EBus/EBus.h
     EBus/EBusEnvironment.cpp
@@ -171,7 +158,6 @@ set(FILES
     IO/CompressorZStd.h
     IO/FileIO.cpp
     IO/FileIO.h
-    IO/FileIOEventBus.h
     IO/FileReader.cpp
     IO/FileReader.h
     IO/IOUtils.h
@@ -397,16 +383,12 @@ set(FILES
     Memory/Memory.h
     Memory/MemoryComponent.cpp
     Memory/MemoryComponent.h
-    Memory/MemoryDriller.cpp
-    Memory/MemoryDriller.h
-    Memory/MemoryDrillerBus.h
     Memory/nedmalloc.inl
     Memory/NewAndDelete.inl
     Memory/OSAllocator.cpp
     Memory/OSAllocator.h
     Memory/OverrunDetectionAllocator.cpp
     Memory/OverrunDetectionAllocator.h
-    Memory/PlatformMemoryInstrumentation.h
     Memory/PoolAllocator.h
     Memory/PoolSchema.cpp
     Memory/PoolSchema.h
