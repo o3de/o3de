@@ -25,6 +25,30 @@
 
 namespace AzToolsFramework
 {
+    static bool HandleTextEvent(QEvent::Type eventType, Qt::Key key, QString keyText, bool isAutoRepeat)
+    {
+        bool textConsumed = false;
+
+        if (key == Qt::Key_Backspace)
+        {
+            keyText = "\b";
+        }
+
+        if (!keyText.isEmpty())
+        {
+            // key events are first sent as shortcuts, if accepted they are then re-sent as traditional key
+            // down events.  dispatching the key event as text during a shortcut (and auto-repeat press)
+            // ensures all printable keys a fair chance at being consumed before processing elsewhere
+            if (eventType == QEvent::Type::ShortcutOverride || (eventType == QEvent::Type::KeyPress && isAutoRepeat))
+            {
+                AzFramework::InputTextNotificationBus::Broadcast(
+                    &AzFramework::InputTextNotifications::OnInputTextEvent, AZStd::string(keyText.toUtf8().data()), textConsumed);
+            }
+        }
+
+        return textConsumed;
+    }
+
     void QtEventToAzInputMapper::InitializeKeyMappings()
     {
         // This assumes modifier keys (ctrl/shift/alt) map to the left control/shift/alt keys as Qt provides no way to disambiguate
@@ -439,30 +463,10 @@ namespace AzToolsFramework
         const QEvent::Type eventType = keyEvent->type();
 
         // special handling for text events in edit mode
+        if (HandleTextEvent(eventType, key, keyEvent->text(), keyEvent->isAutoRepeat()))
         {
-            QString keyText = keyEvent->text();
-            if (key == Qt::Key_Backspace)
-            {
-                keyText = "\b";
-            }
-
-            if (!keyText.isEmpty())
-            {
-                // key events are first sent as shortcuts, if accepted they are then re-sent as traditional key
-                // down events.  dispatching the key event as text during a shortcut (and auto-repeat press)
-                // ensures all printable keys a fair chance at being consumed before processing elsewhere
-                if (eventType == QEvent::Type::ShortcutOverride || (eventType == QEvent::Type::KeyPress && keyEvent->isAutoRepeat()))
-                {
-                    bool textConsumed = false;
-                    AzFramework::InputTextNotificationBus::Broadcast(
-                        &AzFramework::InputTextNotifications::OnInputTextEvent, AZStd::string(keyText.toUtf8().data()), textConsumed);
-                    if (textConsumed)
-                    {
-                        keyEvent->accept();
-                        return;
-                    }
-                }
-            }
+            keyEvent->accept();
+            return;
         }
 
         // Ignore key repeat events for non-text, they're unrelated to actual physical button presses.
