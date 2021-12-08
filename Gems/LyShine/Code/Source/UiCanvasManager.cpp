@@ -632,10 +632,8 @@ void UiCanvasManager::DestroyLoadedCanvases(bool keepCrossLevelCanvases)
     // Find all the canvases loaded in game (but not loaded in editor) that need destroying
     AZStd::vector<AZ::EntityId> canvasesToUnload;
     canvasesToUnload.reserve(m_loadedCanvases.size());
-    for (auto iter = m_loadedCanvases.begin(); iter != m_loadedCanvases.end(); ++iter)
+    for (auto canvas : m_loadedCanvases)
     {
-        auto canvas = *iter;
-
         if (!(keepCrossLevelCanvases && canvas->GetKeepLoadedOnLevelUnload()))
         {
             canvasesToUnload.push_back(canvas->GetEntityId());
