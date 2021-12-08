@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <AzCore/Interface/Interface.h>
 #include <AzCore/RTTI/RTTI.h>
+#include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 
 namespace AzToolsFramework
 {
@@ -25,7 +25,7 @@ namespace AzToolsFramework
             // Registers a procedural prefab file + templateId so the system can track changes and handle updates
             virtual void RegisterProceduralPrefab(const AZStd::string& prefabFilePath, TemplateId templateId) = 0;
         };
-        
+
     } // namespace Prefab
 } // namespace AzToolsFramework
 
