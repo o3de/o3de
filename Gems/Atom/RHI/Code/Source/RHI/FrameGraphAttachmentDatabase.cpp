@@ -249,7 +249,7 @@ namespace AZ
                     return *findIter;
                 }
 
-                AZ_Error("AttachmentDatabase", false, "Couldnt fine Scopeattachment %s with the same view and usage for scope %s", attachmentId.GetCStr(), scopeId.GetCStr());
+                AZ_Error("AttachmentDatabase", false, "Couldnt find ScopeAttachment %s with the same view and usage for scope %s", attachmentId.GetCStr(), scopeId.GetCStr());
                 return nullptr;
             }
             else
@@ -289,7 +289,7 @@ namespace AZ
                     return *findIter;
                 }
 
-                AZ_Error("AttachmentDatabase", false, "Couldnt fine Scopeattachment %s with the same view and usage for scope %s", attachmentId.GetCStr(), scopeId.GetCStr());
+                AZ_Error("AttachmentDatabase", false, "Couldnt find ScopeAttachment %s with the same view and usage for scope %s", attachmentId.GetCStr(), scopeId.GetCStr());
                 return nullptr;
             }
             else

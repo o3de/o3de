@@ -45,7 +45,7 @@ namespace AZ
             const size_t GetScopeAttachmentCount(const AttachmentId& attachmentId) const;
 
             //! Returns the buffer view associated with the scope attachment.
-            const BufferView* GetBufferView(const ScopeAttachment* scopeAttacment) const;
+            const BufferView* GetBufferView(const ScopeAttachment* scopeAttachment) const;
 
             //! Returns the buffer view associated with the attachmentId.
             const BufferView* GetBufferView(const AttachmentId& attachmentId) const;
