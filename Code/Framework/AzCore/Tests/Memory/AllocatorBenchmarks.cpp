@@ -9,9 +9,8 @@
 #if defined(HAVE_BENCHMARK)
 
 #include <AzCore/PlatformIncl.h>
+#include <AzCore/IO/SystemFile.h>
 #include <AzCore/RTTI/TypeInfo.h>
-#include <AzCore/Driller/Driller.h>
-#include <AzCore/Memory/MemoryDriller.h>
 #include <AzCore/Memory/BestFitExternalMapSchema.h>
 #include <AzCore/Memory/HeapSchema.h>
 #include <AzCore/Memory/HphaSchema.h>
@@ -21,6 +20,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/Utils/Utils.h>
 
 #include <benchmark/benchmark.h>
 
@@ -32,11 +32,9 @@ namespace Benchmark
         size_t GetMemorySize(void* memory);
     }
 
-    //static AZ::Debug::DrillerManager* s_drillerManager = nullptr;
-
     /// <summary>
     /// Test allocator wrapper that redirects the calls to the passed TAllocator by using AZ::AllocatorInstance.
-    /// It also creates/destroys the TAllocator type and connects the driller (to reflect what happens at runtime)
+    /// It also creates/destroys the TAllocator type (to reflect what happens at runtime)
     /// </summary>
     /// <typeparam name="TAllocator">Allocator type to wrap</typeparam>
     template<typename TAllocator>
@@ -46,16 +44,10 @@ namespace Benchmark
         static void SetUp()
         {
             AZ::AllocatorInstance<TAllocator>::Create();
-
-            /*s_drillerManager = AZ::Debug::DrillerManager::Create();
-            s_drillerManager->Register(aznew AZ::Debug::MemoryDriller);*/
         }
 
         static void TearDown()
         {
-            /*AZ::Debug::DrillerManager::Destroy(s_drillerManager);
-            s_drillerManager = nullptr;*/
-
             AZ::AllocatorInstance<TAllocator>::Destroy();
         }
 
@@ -410,15 +402,12 @@ namespace Benchmark
             enum OperationType : unsigned int
             {
                 ALLOCATE,
-                DEALLOCATE,
-                REALLOCATE,
-                RESIZE
+                DEALLOCATE
             };
-            OperationType m_operationType : 2;
-            size_t m_size : 46;
-            size_t m_alignment : 16;
-            void* m_ptr;
-            void* m_newptr; // required for resize
+            OperationType m_type : 1;
+            unsigned int m_size : 28; // Can represent up to 256Mb requests
+            unsigned int m_alignment : 7; // Can represent up to 128 alignment
+            unsigned int m_recordId : 28; // Can represent up to 256M simultaneous requests, we reuse ids
         };
 
     public:
@@ -428,18 +417,18 @@ namespace Benchmark
             {
                 state.PauseTiming();
 
-                AZStd::unordered_map<void*, void*> pointerRemapping;
-                AZStd::unordered_map<void*, size_t> allocationSize;
+                AZStd::unordered_map<unsigned int, void*> pointerRemapping;
                 constexpr size_t allocationOperationCount = 5 * 1024;
                 AZStd::array<AllocatorOperation, allocationOperationCount> m_operations = {};
 
-                FILE* file = nullptr;
-                fopen_s(&file, "memoryrecordings.bin", "rb");
-                if (!file)
+                AZ::IO::SystemFile file;
+                AZ::IO::FixedMaxPathString filePath = AZ::Utils::GetExecutableDirectory();
+                filePath += "/Tests/AzCore/Memory/AllocatorBenchmarkRecordings.bin";
+                if (!file.Open(filePath.c_str(), AZ::IO::SystemFile::OpenMode::SF_OPEN_READ_ONLY))
                 {
                     return;
                 }
-                size_t elementsRead = fread(&m_operations, sizeof(AllocatorOperation), allocationOperationCount, file);
+                size_t elementsRead = file.Read(sizeof(AllocatorOperation) * allocationOperationCount, &m_operations);
                 size_t totalElementsRead = elementsRead;
                 const size_t processMemoryBaseline = Platform::GetProcessMemoryUsageBytes();
                 size_t totalAllocationSize = 0;
@@ -449,107 +438,54 @@ namespace Benchmark
                     for (size_t operationIndex = 0; operationIndex < elementsRead; ++operationIndex)
                     {
                         const AllocatorOperation& operation = m_operations[operationIndex];
-                        switch (operation.m_operationType)
+                        if (operation.m_type == AllocatorOperation::ALLOCATE)
                         {
-                        case AllocatorOperation::ALLOCATE:
-                        {
-                            if (operation.m_ptr)
+                            const auto it = pointerRemapping.emplace(operation.m_recordId, nullptr);
+                            if (it.second) // otherwise already allocated
                             {
-                                const auto it = pointerRemapping.emplace(operation.m_ptr, nullptr);
-                                if (it.second) // otherwise already allocated
-                                {
-                                    state.ResumeTiming();
-                                    void* ptr = TestAllocatorType::Allocate(operation.m_size, operation.m_alignment);
-                                    state.PauseTiming();
-                                    totalAllocationSize += operation.m_size;
-                                    it.first->second = ptr;
-                                    allocationSize[ptr] = operation.m_size;
-                                }
-                                else
-                                {
-                                    //AZ_Warning("RecordedAllocationBenchmarkFixture", false, "Allocation on %p was already made", operation.m_ptr);
-                                }
+                                state.ResumeTiming();
+                                void* ptr = TestAllocatorType::Allocate(operation.m_size, operation.m_alignment);
+                                state.PauseTiming();
+                                totalAllocationSize += operation.m_size;
+                                it.first->second = ptr;
                             }
-                            break;
-                        }
-                        case AllocatorOperation::DEALLOCATE:
-                        {
-                            if (operation.m_ptr) // some deallocate(nullptr) are recorded
+                            else
                             {
-                                const auto ptrIt = pointerRemapping.find(operation.m_ptr);
+                                // Doing a resize, dont account for this memory change, this operation is rare and we dont have
+                                // the size of the previous allocation
+                                state.ResumeTiming();
+                                TestAllocatorType::Resize(it.first->second, operation.m_size);
+                                state.PauseTiming();
+                            }
+                        }
+                        else // AllocatorOperation::DEALLOCATE:
+                        {
+                            if (operation.m_recordId) 
+                            {
+                                const auto ptrIt = pointerRemapping.find(operation.m_recordId);
                                 if (ptrIt != pointerRemapping.end())
                                 {
-                                    totalAllocationSize -= allocationSize[ptrIt->second];
+                                    totalAllocationSize -= operation.m_size;
                                     state.ResumeTiming();
                                     TestAllocatorType::DeAllocate(ptrIt->second, /*operation.m_size*/ 0); // size is not correct after a resize, a 0 size deals with it
                                     state.PauseTiming();
                                     pointerRemapping.erase(ptrIt);
                                 }
                             }
-                            else
+                            else // deallocate(nullptr) are recorded
                             {
                                 // Just to account of the call of deallocate(nullptr);
-                                // totalAllocationSize -= 0; // No real deallocation happened
                                 state.ResumeTiming();
-                                TestAllocatorType::DeAllocate(operation.m_ptr, /*operation.m_size*/ 0);
+                                TestAllocatorType::DeAllocate(nullptr, /*operation.m_size*/ 0);
                                 state.PauseTiming();
                             }
-                            break;
-                        }
-                        case AllocatorOperation::REALLOCATE:
-                        {
-                            void* ptr = nullptr;
-                            if (operation.m_ptr)
-                            {
-                                AZ_Assert(operation.m_newptr, "Need to consider other cases?");
-                                const auto ptrIt = pointerRemapping.find(operation.m_ptr);
-                                AZ_Assert(ptrIt != pointerRemapping.end(), "Missing allocation for reallocation"); // In case the recording didnt catch something
-                                ptr = ptrIt->second;
-                                pointerRemapping.erase(ptrIt);
-                            }
-                            AZ_Assert(operation.m_newptr != nullptr, "Reallocation failed in the game");
-                            const auto it = pointerRemapping.emplace(operation.m_newptr, nullptr);
-                            if (it.second)
-                            {
-                                totalAllocationSize -= allocationSize[ptr];
-                                state.ResumeTiming();
-                                void* newPtr = TestAllocatorType::ReAllocate(ptr, operation.m_size, operation.m_alignment);
-                                state.PauseTiming();
-                                totalAllocationSize += operation.m_size;
-                                it.first->second = newPtr;
-                                allocationSize[newPtr] = operation.m_size;
-                            }
-                            else
-                            {
-                                totalAllocationSize -= allocationSize[ptr];
-                                state.ResumeTiming();
-                                TestAllocatorType::DeAllocate(ptr);
-                                state.PauseTiming();
-                            }
-                            break;
-                        }
-                        case AllocatorOperation::RESIZE:
-                        {
-                            const auto ptrIt = pointerRemapping.find(operation.m_ptr);
-                            AZ_Assert(ptrIt != pointerRemapping.end(), "Missing allocation for resize"); // In case the recording didnt catch something
-                            totalAllocationSize -= allocationSize[ptrIt->second];
-                            state.ResumeTiming();
-                            TestAllocatorType::Resize(ptrIt->second, operation.m_size);
-                            state.PauseTiming();
-                            totalAllocationSize += operation.m_size;
-                            if (operation.m_size == 0)
-                            {
-                                pointerRemapping.erase(ptrIt);
-                            }
-                            break;
-                        }
                         }
                     }
 
-                    elementsRead = fread(&m_operations, sizeof(AllocatorOperation), allocationOperationCount, file);
+                    elementsRead = file.Read(sizeof(AllocatorOperation) * allocationOperationCount, &m_operations);
                     totalElementsRead += elementsRead;
                 }
-                fclose(file);
+                file.Close();
 
                 state.counters[s_counterAllocatorMemory] = benchmark::Counter(static_cast<double>(TestAllocatorType::NumAllocatedBytes()), benchmark::Counter::kDefaults);
                 state.counters[s_counterProcessMemory] = benchmark::Counter(static_cast<double>(Platform::GetProcessMemoryUsageBytes() - processMemoryBaseline), benchmark::Counter::kDefaults);
@@ -579,6 +515,7 @@ namespace Benchmark
     static void RecordedRunRanges(benchmark::internal::Benchmark* b)
     {
         b->Arg(1);
+        b->Iterations(100);
     }
 
     // For threaded ranges, run just 200, multi-threaded will already multiply by thread

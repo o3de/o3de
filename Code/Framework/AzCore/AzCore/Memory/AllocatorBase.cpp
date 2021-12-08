@@ -11,47 +11,142 @@
 
 using namespace AZ;
 
-#define RECORDING_ENABLED 0
+#define RECORDING_ENABLED 1
 
 #if RECORDING_ENABLED
 
-struct AllocatorOperation
-{
-    enum OperationType : unsigned int
-    {
-        ALLOCATE,
-        DEALLOCATE,
-        REALLOCATE,
-        RESIZE
-    };
-    OperationType m_operationType : 2;
-    size_t m_size : 46;
-    size_t m_alignment : 16;
-    void* m_ptr;
-    void* m_newptr; // required for resize
-};
-static constexpr size_t s_allocationOperationCount = 5 * 1024;
-static AZStd::array<AllocatorOperation, s_allocationOperationCount> s_operations = {};
-static uint64_t s_operationCounter = 0;
-static AZStd::mutex s_operationsMutex;
+#include <AzCore/std/containers/map.h>
+#include <AzCore/IO/SystemFile.h>
+#include <AzCore/std/parallel/mutex.h>
+#include <AzCore/std/parallel/scoped_lock.h>
 
-AllocatorOperation& GetNextAllocatorOperation()
+namespace
 {
-    AZStd::scoped_lock<AZStd::mutex> lock(s_operationsMutex);
-    if (s_operationCounter == s_allocationOperationCount)
+    class DebugAllocator
     {
-        FILE* file = nullptr;
-        fopen_s(&file, "memoryrecordings.bin", "ab");
-        if (file)
+    public:
+        typedef void* pointer_type;
+        typedef AZStd::size_t size_type;
+        typedef AZStd::ptrdiff_t difference_type;
+        typedef AZStd::false_type allow_memory_leaks; ///< Regular allocators should not leak.
+
+        AZ_FORCE_INLINE pointer_type allocate(size_t byteSize, size_t alignment, int = 0)
         {
-            fwrite(&s_operations, sizeof(AllocatorOperation), s_allocationOperationCount, file);
-            fclose(file);
+            return AZ_OS_MALLOC(byteSize, alignment);
         }
-        s_operationCounter = 0;
-    }
-    return s_operations[s_operationCounter++];
-}
+        AZ_FORCE_INLINE size_type resize(pointer_type, size_type)
+        {
+            return 0;
+        }
+        AZ_FORCE_INLINE void deallocate(pointer_type ptr, size_type, size_type)
+        {
+            AZ_OS_FREE(ptr);
+        }
+    };
 
+    struct AllocatorOperation
+    {
+        enum OperationType : unsigned int
+        {
+            ALLOCATE,
+            DEALLOCATE
+        };
+        OperationType m_type: 1;
+        unsigned int m_size : 28; // Can represent up to 256Mb requests
+        unsigned int m_alignment : 7; // Can represent up to 128 alignment
+        unsigned int m_recordId : 28; // Can represent up to 256M simultaneous requests, we reuse ids
+    };
+    static AZStd::mutex s_operationsMutex = {};
+
+    static constexpr size_t s_maxNumberOfAllocationsToRecord = 16384;
+    static size_t s_numberOfAllocationsRecorded = 0;
+    static constexpr size_t s_allocationOperationCount = 5 * 1024;
+    static AZStd::array<AllocatorOperation, s_allocationOperationCount> s_operations = {};
+    static uint64_t s_operationCounter = 0;
+
+    static unsigned int s_nextRecordId = 1;
+    using AllocatorOperationByAddress = AZStd::map<void*, AllocatorOperation, AZStd::less<void*>, DebugAllocator>;
+    static AllocatorOperationByAddress s_allocatorOperationByAddress;
+    using AvailableRecordIds = AZStd::vector<unsigned int, DebugAllocator>;
+    AvailableRecordIds s_availableRecordIds;
+
+    void RecordAllocatorOperation(AllocatorOperation::OperationType type, void* ptr, size_t size = 0, size_t alignment = 0)
+    {
+        AZStd::scoped_lock<AZStd::mutex> lock(s_operationsMutex);
+        if (s_operationCounter == s_allocationOperationCount)
+        {
+            AZ::IO::SystemFile file;
+            file.Open("memoryrecordings.bin", AZ::IO::SystemFile::OpenMode::SF_OPEN_APPEND);
+            if (file.IsOpen())
+            {
+                file.Write(&s_operations, sizeof(AllocatorOperation) * s_allocationOperationCount);
+                file.Close();
+            }
+            s_operationCounter = 0;
+        }
+        AllocatorOperation& operation = s_operations[s_operationCounter++];
+        operation.m_type = type;
+        if (type == AllocatorOperation::OperationType::ALLOCATE)
+        {
+            if (s_numberOfAllocationsRecorded > s_maxNumberOfAllocationsToRecord)
+            {
+                // reached limit of allocations, dont record anymore
+                --s_operationCounter;
+                return;
+            }
+            ++s_numberOfAllocationsRecorded;
+            operation.m_size = size;
+            operation.m_alignment = alignment;
+            unsigned int recordId = 0;
+            if (!s_availableRecordIds.empty())
+            {
+                recordId = s_availableRecordIds.back();
+                s_availableRecordIds.pop_back();
+            }
+            else
+            {
+                recordId = s_nextRecordId;
+                ++s_nextRecordId;
+            }
+            operation.m_recordId = recordId;
+            auto it = s_allocatorOperationByAddress.emplace(ptr, operation);
+            if (!it.second)
+            {
+                // double alloc or resize, leave the current record and return the id
+                operation = it.first->second;
+                s_availableRecordIds.emplace_back(recordId);
+            }                
+        }
+        else
+        {
+            if (ptr == nullptr)
+            {
+                // common scenario, just record the operation
+                operation.m_size = 0;
+                operation.m_alignment = 0;
+                operation.m_recordId = 0; // recordId = 0 will flag this case
+            }
+            else
+            {
+                auto it = s_allocatorOperationByAddress.find(ptr);
+                if (it != s_allocatorOperationByAddress.end())
+                {
+                    operation.m_size = it->second.m_size;
+                    operation.m_alignment = it->second.m_alignment;
+                    operation.m_recordId = it->second.m_recordId;
+                    s_availableRecordIds.push_back(it->second.m_recordId);
+                    s_allocatorOperationByAddress.erase(it);
+                }
+                else
+                {
+                    // just dont record this operation
+                    --s_operationCounter;
+                }
+            }
+        }
+    
+    }
+}
 #endif
 
 AllocatorBase::AllocatorBase(IAllocatorAllocate* allocationSource, const char* name, const char* desc) :
@@ -188,13 +283,7 @@ void AllocatorBase::ProfileAllocation(void* ptr, size_t byteSize, size_t alignme
     }
 
 #if RECORDING_ENABLED
-    {
-        AllocatorOperation& op = GetNextAllocatorOperation();
-        op.m_operationType = AllocatorOperation::ALLOCATE;
-        op.m_size = byteSize;
-        op.m_alignment = alignment;
-        op.m_ptr = ptr;
-    }
+    RecordAllocatorOperation(AllocatorOperation::ALLOCATE, ptr, byteSize, alignment);
 #endif
 }
 
@@ -209,13 +298,7 @@ void AllocatorBase::ProfileDeallocation(void* ptr, size_t byteSize, size_t align
         }
     }
 #if RECORDING_ENABLED
-    {
-        AllocatorOperation& op = GetNextAllocatorOperation();
-        op.m_operationType = AllocatorOperation::DEALLOCATE;
-        op.m_size = byteSize;
-        op.m_alignment = alignment;
-        op.m_ptr = ptr;
-    }
+    RecordAllocatorOperation(AllocatorOperation::DEALLOCATE, ptr, byteSize, alignment);
 #endif
 }
 
@@ -232,14 +315,8 @@ void AllocatorBase::ProfileReallocationEnd(void* ptr, void* newPtr, size_t newSi
         ProfileAllocation(newPtr, newSize, newAlignment, info.m_name, info.m_fileName, info.m_lineNum, 0);
     }
 #if RECORDING_ENABLED
-    {
-        AllocatorOperation& op = GetNextAllocatorOperation();
-        op.m_operationType = AllocatorOperation::REALLOCATE;
-        op.m_size = newSize;
-        op.m_alignment = newAlignment;
-        op.m_ptr = ptr;
-        op.m_newptr = newPtr;
-    }
+    RecordAllocatorOperation(AllocatorOperation::DEALLOCATE, ptr);
+    RecordAllocatorOperation(AllocatorOperation::ALLOCATE, newPtr, newSize, newAlignment);
 #endif
 }
 
@@ -259,13 +336,7 @@ void AllocatorBase::ProfileResize(void* ptr, size_t newSize)
         }
     }
 #if RECORDING_ENABLED
-    {
-        AllocatorOperation& op = GetNextAllocatorOperation();
-        op.m_operationType = AllocatorOperation::RESIZE;
-        op.m_size = newSize;
-        op.m_alignment = 0;
-        op.m_ptr = ptr;
-    }
+    RecordAllocatorOperation(AllocatorOperation::ALLOCATE, ptr, newSize);
 #endif
 }
 
