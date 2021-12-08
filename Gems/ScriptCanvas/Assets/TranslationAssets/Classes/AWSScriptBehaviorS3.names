@@ -1,0 +1,155 @@
+{
+    "entries": [
+        {
+            "base": "AWSScriptBehaviorS3",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "AWS S3",
+                "category": "AWS Core"
+            },
+            "methods": [
+                {
+                    "base": "GetObject",
+                    "context": "AWSScriptBehaviorS3",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetObject"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetObject is invoked"
+                    },
+                    "details": {
+                        "name": "Get Object"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Bucket Resource Key"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Object Key"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "File"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetObjectRaw",
+                    "context": "AWSScriptBehaviorS3",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetObjectRaw"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetObjectRaw is invoked"
+                    },
+                    "details": {
+                        "name": "Get Object Raw"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Bucket"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Object Key"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Region"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "File"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "HeadObject",
+                    "context": "AWSScriptBehaviorS3",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke HeadObject"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after HeadObject is invoked"
+                    },
+                    "details": {
+                        "name": "Head Object"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Bucket Resource Key"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "OBject Key"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "HeadObjectRaw",
+                    "context": "AWSScriptBehaviorS3",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke HeadObjectRaw"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after HeadObjectRaw is invoked"
+                    },
+                    "details": {
+                        "name": "Head Object Raw"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Bucket"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Object Key"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Region"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

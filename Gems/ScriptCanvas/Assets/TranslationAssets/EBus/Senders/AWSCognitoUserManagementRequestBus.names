@@ -1,0 +1,224 @@
+{
+    "entries": [
+        {
+            "base": "AWSCognitoUserManagementRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "AWS Cognito User Management",
+                "category": "AWS Client Auth"
+            },
+            "methods": [
+                {
+                    "base": "EnableMFAAsync",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Enable MFA Async"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Enable MFA Async is invoked"
+                    },
+                    "details": {
+                        "name": "Enable MFA Async"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Access token",
+                                "tooltip": "The MFA access token"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ConfirmSignUpAsync",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Confirm Sign Up Async"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Confirm Sign Up Async is invoked"
+                    },
+                    "details": {
+                        "name": "Confirm Sign Up Async"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Username",
+                                "tooltip": "The client's username"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Confirmation code",
+                                "tooltip": "The client's confirmation code"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "PhoneSignUpAsync",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Phone Sign Up Async"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Phone Sign Up Async is invoked"
+                    },
+                    "details": {
+                        "name": "Phone Sign Up Async"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Username",
+                                "tooltip": "The client's username"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Password",
+                                "tooltip": "The client's password"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Phone number",
+                                "tooltip": "The phone number used to sign up"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "EmailSignUpAsync",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Email Sign Up Async"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Email Sign Up Async is invoked"
+                    },
+                    "details": {
+                        "name": "Email Sign Up Async"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Username",
+                                "tooltip": "The client's username"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Password",
+                                "tooltip": "The client's password"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Email",
+                                "tooltip": "The email address used to sign up"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ConfirmForgotPasswordAsync",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Confirm Forgot Password Async"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Confirm Forgot Password Async is invoked"
+                    },
+                    "details": {
+                        "name": "Confirm Forgot Password Async"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Username",
+                                "tooltip": "The client's username"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Confirmation code",
+                                "tooltip": "The client's confirmation code"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "New password",
+                                "tooltip": "The new password for the client"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Initialize",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Initialize"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Initialize is invoked"
+                    },
+                    "details": {
+                        "name": "Initialize"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Initialized"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ForgotPasswordAsync",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Forgot Password Async"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Forgot Password Async is invoked"
+                    },
+                    "details": {
+                        "name": "Forgot Password Async"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Username",
+                                "tooltip": "The client's username"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

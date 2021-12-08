@@ -1,0 +1,346 @@
+{
+    "entries": [
+        {
+            "base": "UiAnchors",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "UI Anchors",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "base": "SetBottom",
+                    "context": "UiAnchors",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Bottom"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Bottom is invoked"
+                    },
+                    "details": {
+                        "name": "Set Bottom"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
+                            "details": {
+                                "name": "Anchors"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetRight",
+                    "context": "UiAnchors",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Right"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Right is invoked"
+                    },
+                    "details": {
+                        "name": "Set Right"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
+                            "details": {
+                                "name": "Anchors"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetTop",
+                    "context": "UiAnchors",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Top"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Top is invoked"
+                    },
+                    "details": {
+                        "name": "Set Top"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
+                            "details": {
+                                "name": "Anchors"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetLeft",
+                    "context": "UiAnchors",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Left"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Left is invoked"
+                    },
+                    "details": {
+                        "name": "Set Left"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
+                            "details": {
+                                "name": "Anchors"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetAnchors",
+                    "context": "UiAnchors",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Anchors"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Anchors is invoked"
+                    },
+                    "details": {
+                        "name": "Set Anchors"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
+                            "details": {
+                                "name": "Anchors"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Getleft",
+                    "details": {
+                        "name": "Getleft"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
+                            "details": {
+                                "name": "Anchors"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Setleft",
+                    "details": {
+                        "name": "Setleft"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
+                            "details": {
+                                "name": "Anchors"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Gettop",
+                    "details": {
+                        "name": "Gettop"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
+                            "details": {
+                                "name": "Anchors"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Settop",
+                    "details": {
+                        "name": "Settop"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
+                            "details": {
+                                "name": "Anchors"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Getright",
+                    "details": {
+                        "name": "Getright"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
+                            "details": {
+                                "name": "Anchors"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Setright",
+                    "details": {
+                        "name": "Setright"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
+                            "details": {
+                                "name": "Anchors"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Getbottom",
+                    "details": {
+                        "name": "Getbottom"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
+                            "details": {
+                                "name": "Anchors"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Setbottom",
+                    "details": {
+                        "name": "Setbottom"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
+                            "details": {
+                                "name": "Anchors"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

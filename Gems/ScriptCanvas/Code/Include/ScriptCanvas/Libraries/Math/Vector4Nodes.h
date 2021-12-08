@@ -19,7 +19,7 @@ namespace ScriptCanvas
     {
         using namespace MathNodeUtilities;
         using namespace Data;
-        static const char* k_categoryName = "Math/Vector4";
+        static constexpr const char* k_categoryName = "Math/Vector4";
 
         AZ_INLINE Vector4Type Absolute(const Vector4Type source)
         {

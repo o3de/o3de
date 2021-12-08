@@ -1,0 +1,29 @@
+{
+    "entries": [
+        {
+            "base": "JsonMergePatch",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Json Merge Patch",
+                "category": "Constants/Json"
+            },
+            "methods": [
+                {
+                    "base": "GetJsonMergePatch",
+                    "details": {
+                        "name": "Get Json Merge Patch"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

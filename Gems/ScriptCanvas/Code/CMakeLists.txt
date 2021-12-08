@@ -154,6 +154,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 .
                 Editor/Include
                 Editor/Static/Include
+                Editor/Assets
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzCore
@@ -172,6 +173,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             scriptcanvasgem_editor_files.cmake
             scriptcanvasgem_editor_asset_files.cmake
             scriptcanvasgem_editor_builder_files.cmake
+            scriptcanvasgem_editor_tools_files.cmake
         COMPILE_DEFINITIONS
             PUBLIC
                 SCRIPTCANVAS_ERRORS_ENABLED
@@ -182,6 +184,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 .
                 Editor
+                Tools
                 Editor/Include
                 ${SCRIPT_CANVAS_AUTOGEN_BUILD_DIR}
         BUILD_DEPENDENCIES  
