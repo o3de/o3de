@@ -10,7 +10,6 @@
 #include <AzCore/Memory/BestFitExternalMapSchema.h>
 
 #include <AzCore/Memory/AllocationRecords.h>
-#include <AzCore/Memory/MemoryDrillerBus.h>
 
 #include <AzCore/std/functional.h>
 
@@ -79,8 +78,14 @@ AllocatorDebugConfig BestFitExternalMapAllocator::GetDebugConfig()
 // Allocate
 // [1/28/2011]
 //=========================================================================
-BestFitExternalMapAllocator::pointer_type
-BestFitExternalMapAllocator::Allocate(size_type byteSize, size_type alignment, int flags, const char* name, const char* fileName, int lineNum, unsigned int suppressStackRecord)
+BestFitExternalMapAllocator::pointer_type BestFitExternalMapAllocator::Allocate(
+    size_type byteSize,
+    size_type alignment,
+    int flags,
+    [[maybe_unused]] const char* name,
+    [[maybe_unused]] const char* fileName,
+    [[maybe_unused]] int lineNum,
+    unsigned int suppressStackRecord)
 {
     (void)suppressStackRecord;
 
@@ -89,17 +94,6 @@ BestFitExternalMapAllocator::Allocate(size_type byteSize, size_type alignment, i
     byteSize = MemorySizeAdjustedUp(byteSize);
 
     BestFitExternalMapAllocator::pointer_type address = m_schema->Allocate(byteSize, alignment, flags);
-    if (address == nullptr)
-    {
-        if (!OnOutOfMemory(byteSize, alignment, flags, name, fileName, lineNum))
-        {
-            if (GetRecords())
-            {
-                EBUS_EVENT(Debug::MemoryDrillerBus, DumpAllAllocations);
-            }
-        }
-    }
-
     AZ_Assert(address != nullptr, "BestFitExternalMapAllocator: Failed to allocate %d bytes aligned on %d (flags: 0x%08x) %s : %s (%d)!", byteSize, alignment, flags, name ? name : "(no name)", fileName ? fileName : "(no file name)", lineNum);
     AZ_MEMORY_PROFILE(ProfileAllocation(address, byteSize, alignment, name, fileName, lineNum, suppressStackRecord + 1));
 

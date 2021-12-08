@@ -12,17 +12,18 @@ import sys
 
 from o3de import manifest
 
+
 def _run_get_registered(args: argparse) -> str or pathlib.Path:
     if args.override_home_folder:
         manifest.override_home_folder = args.override_home_folder
 
     return manifest.get_registered(args.engine_name,
-                          args.project_name,
-                          args.gem_name,
-                          args.template_name,
-                          args.default_folder,
-                          args.repo_name,
-                          args.restricted_name)
+                                   args.project_name,
+                                   args.gem_name,
+                                   args.template_name,
+                                   args.default_folder,
+                                   args.repo_name,
+                                   args.restricted_name)
 
 
 def add_parser_args(parser):

@@ -12,8 +12,6 @@
 #include <Atom/RHI/MemoryAllocation.h>
 #include <Atom/RHI.Reflect/MemoryEnums.h>
 
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace RHI
@@ -96,7 +94,7 @@ namespace AZ
         template <class Traits>
         typename MemorySubAllocator<Traits>::memory_allocation MemorySubAllocator<Traits>::Allocate(size_t sizeInBytes, size_t alignmentInBytes)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             if (RHI::AlignUp(sizeInBytes, alignmentInBytes) > m_descriptor.m_capacityInBytes)
             {
                 return memory_allocation();

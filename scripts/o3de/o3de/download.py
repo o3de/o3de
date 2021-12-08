@@ -24,8 +24,9 @@ from datetime import datetime
 
 from o3de import manifest, repo, utils, validation, register
 
-logger = logging.getLogger()
-logging.basicConfig()
+logger = logging.getLogger('o3de.download')
+logging.basicConfig(format=utils.LOG_FORMAT)
+
 
 def unzip_manifest_json_data(download_zip_path: pathlib.Path, zip_file_name: str) -> dict:
     json_data = {}
@@ -37,6 +38,7 @@ def unzip_manifest_json_data(download_zip_path: pathlib.Path, zip_file_name: str
                 logger.error(f'UnZip exception:{str(e)}')
 
     return json_data
+
 
 def validate_downloaded_zip_sha256(download_uri_json_data: dict, download_zip_path: pathlib.Path,
                                    manifest_json_name) -> int:

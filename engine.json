@@ -7,7 +7,6 @@
     "O3DEBuildNumber": 0,
     "external_subdirectories": [
         "Gems/Achievements",
-        "Gems/AssetMemoryAnalyzer",
         "Gems/AssetValidation",
         "Gems/Atom",
         "Gems/AtomContent",
