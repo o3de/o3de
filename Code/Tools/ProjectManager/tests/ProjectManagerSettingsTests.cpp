@@ -9,6 +9,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
+#include <AzCore/Serialization/Json/JsonSystemComponent.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzTest/Utils.h>
 
@@ -40,11 +41,19 @@ namespace O3DE::ProjectManager
             m_registry->SetContext(m_serializeContext.get());
             m_registry->SetContext(m_registrationContext.get());
 
+            AZ::JsonSystemComponent::Reflect(m_registrationContext.get());
+
+            m_serializeContext->RegisterGenericType<AZStd::set<AZStd::string>>();
+
             m_projectInfo.m_path = "Z:/ProjectTestPath";
         }
 
         void TearDown() override
         {
+            m_registrationContext->EnableRemoveReflection();
+            AZ::JsonSystemComponent::Reflect(m_registrationContext.get());
+            m_registrationContext->DisableRemoveReflection();
+
             m_registrationContext.reset();
             m_serializeContext.reset();
 
@@ -167,9 +176,9 @@ namespace O3DE::ProjectManager
     TEST_F(ProjectManagerSettingsTests, PMSettings_SetProjectBuiltUnsuccessfully_ReturnsFalse)
     {
         // Don't save to disk in test
-        EXPECT_TRUE(PMSettings::SetProjectBuiltSuccessfully(m_projectInfo, true, /*saveToDisk*/ false));
+        EXPECT_TRUE(PMSettings::SetProjectBuiltSuccessfully(m_projectInfo, false, /*saveToDisk*/ false));
 
-        bool buildResult = true;
+        bool buildResult = false;
         EXPECT_TRUE(PMSettings::GetProjectBuiltSuccessfully(buildResult, m_projectInfo));
         EXPECT_FALSE(buildResult);
     }
