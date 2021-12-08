@@ -16,7 +16,10 @@
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Asset/AssetCommon.h>
 
+#include <ScriptCanvas/Core/Core.h>
 #include <Editor/Assets/ScriptCanvasAssetTracker.h>
+#include <ScriptCanvas/Bus/RequestBus.h>
+
 #endif
 
 class QGraphicsView;
@@ -26,17 +29,18 @@ namespace ScriptCanvasEditor
 {
     namespace Widget
     {
+        class CanvasWidget;
+
         struct GraphTabMetadata
         {
-            AZ::Data::AssetId m_assetId;
+            SourceHandle m_assetId;
             QWidget* m_hostWidget = nullptr;
-            QString m_tabName;
+            CanvasWidget* m_canvasWidget = nullptr;
             Tracker::ScriptCanvasFileState m_fileState = Tracker::ScriptCanvasFileState::INVALID;
         };
 
         class GraphTabBar
             : public AzQtComponents::TabBar
-            , public MemoryAssetNotificationBus::MultiHandler
         {
             Q_OBJECT
 
@@ -45,29 +49,38 @@ namespace ScriptCanvasEditor
             GraphTabBar(QWidget* parent = nullptr);
             ~GraphTabBar() override = default;
 
-            void AddGraphTab(const AZ::Data::AssetId& assetId);
-            int InsertGraphTab(int tabIndex, const AZ::Data::AssetId& assetId);
-            bool SelectTab(const AZ::Data::AssetId& assetId);
+            AZStd::optional<GraphTabMetadata> GetTabData(int index) const;
+            AZStd::optional<GraphTabMetadata> GetTabData(ScriptCanvasEditor::SourceHandle assetId) const;
+            void SetTabData(const GraphTabMetadata& data, int index);
+            void SetTabData(const GraphTabMetadata& data, ScriptCanvasEditor::SourceHandle assetId);
 
-            void ConfigureTab(int tabIndex, AZ::Data::AssetId fileAssetId, const AZStd::string& tabName);
-
-            int FindTab(const AZ::Data::AssetId& assetId) const;
-            AZ::Data::AssetId FindAssetId(int tabIndex);
-
+            void AddGraphTab(ScriptCanvasEditor::SourceHandle assetId, Tracker::ScriptCanvasFileState fileState);
             void CloseTab(int index);
             void CloseAllTabs();
+
+            int InsertGraphTab(int tabIndex, ScriptCanvasEditor::SourceHandle assetId, Tracker::ScriptCanvasFileState fileState);
+            bool SelectTab(ScriptCanvasEditor::SourceHandle assetId);
+
+            int FindTab(ScriptCanvasEditor::SourceHandle assetId) const;
+            int FindTab(ScriptCanvasEditor::GraphPtrConst graph) const;
+            int FindSaveOverMatch(ScriptCanvasEditor::SourceHandle assetId) const;
+            ScriptCanvasEditor::SourceHandle FindTabByPath(AZStd::string_view path) const;
+            ScriptCanvasEditor::SourceHandle FindAssetId(int tabIndex);
+            ScriptCanvas::ScriptCanvasId FindScriptCanvasIdFromGraphCanvasId(const GraphCanvas::GraphId& graphCanvasGraphId) const;
+
+            void ClearTabView(int tabIndex);
+            CanvasWidget* ModOrCreateTabView(int tabIndex);
+            CanvasWidget* ModTabView(int tabIndex);
 
             void OnContextMenu(const QPoint& point);
 
             void mouseReleaseEvent(QMouseEvent* event) override;
 
-            // MemoryAssetNotifications
-            void OnFileStateChanged(Tracker::ScriptCanvasFileState fileState) override;
-            ////
-
             // Updates the tab at the supplied index with the GraphTabMetadata
             // The host widget field of the tabMetadata is not used and will not overwrite the tab data
             void SetTabText(int tabIndex, const QString& path, Tracker::ScriptCanvasFileState fileState = Tracker::ScriptCanvasFileState::INVALID);
+
+            void UpdateFileState(const ScriptCanvasEditor::SourceHandle& assetId, Tracker::ScriptCanvasFileState fileState);
 
         Q_SIGNALS:
             void TabInserted(int index);
@@ -92,8 +105,6 @@ namespace ScriptCanvasEditor
             // Called when the selected tab changes
             void currentChangedTab(int index);
             
-            void SetFileState(AZ::Data::AssetId assetId, Tracker::ScriptCanvasFileState fileState);
-
             int m_signalSaveOnChangeTo = -1;
         };
     }

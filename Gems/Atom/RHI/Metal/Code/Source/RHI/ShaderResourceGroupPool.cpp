@@ -6,7 +6,6 @@
  *
  */
 
-#include <AzCore/Debug/EventTrace.h>
 #include <RHI/ArgumentBuffer.h>
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>

@@ -10,8 +10,6 @@
 #include <Atom/RHI/DeviceObject.h>
 #include <RHI/Device.h>
 #include <RHI/MemoryTypeView.h>
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace Vulkan
@@ -108,8 +106,7 @@ namespace AZ
         template<typename SubAllocator, typename View>
         View MemoryTypeAllocator<SubAllocator, View>::Allocate(size_t sizeInBytes, size_t alignmentInBytes, bool forceUnique /*=false*/)
         {
-            AZ_TRACE_METHOD();
-
+            AZ_PROFILE_FUNCTION(RHI);
 
             View memoryView;
 
@@ -155,7 +152,7 @@ namespace AZ
         template<typename SubAllocator, typename View>
         View MemoryTypeAllocator<SubAllocator, View>::AllocateUnique(const uint64_t sizeInBytes)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             auto memory = const_cast<typename PageAllocator::ObjectFactoryType&>(m_pageAllocator.GetFactory()).CreateObject(sizeInBytes);
             if (!memory)
             {
