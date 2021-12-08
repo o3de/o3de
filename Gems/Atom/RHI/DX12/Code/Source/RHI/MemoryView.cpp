@@ -5,9 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #include <RHI/MemoryView.h>
 
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/conversions.h>
 
