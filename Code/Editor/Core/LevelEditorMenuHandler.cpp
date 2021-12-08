@@ -374,7 +374,6 @@ QMenu* LevelEditorMenuHandler::CreateFileMenu()
     {
         DisableActionWhileLevelChanges(fileOpenSlice, e);
     }));
-#endif
 
     // Save Selected Slice
     auto saveSelectedSlice = fileMenu.AddAction(ID_FILE_SAVE_SELECTED_SLICE);
@@ -391,7 +390,7 @@ QMenu* LevelEditorMenuHandler::CreateFileMenu()
     {
         HideActionWhileEntitiesDeselected(saveSliceToRoot, e);
     }));
-
+#endif
     // Open Recent
     m_mostRecentLevelsMenu = fileMenu.AddMenu(tr("Open Recent"));
     connect(m_mostRecentLevelsMenu, &QMenu::aboutToShow, this, &LevelEditorMenuHandler::UpdateMRUFiles);
@@ -439,9 +438,10 @@ QMenu* LevelEditorMenuHandler::CreateFileMenu()
     // Show Log File
     fileMenu.AddAction(ID_FILE_EDITLOGFILE);
 
+#ifdef ENABLE_SLICE_EDITOR
     fileMenu.AddSeparator();
-
     fileMenu.AddAction(ID_FILE_RESAVESLICES);
+#endif
 
     fileMenu.AddSeparator();
 
