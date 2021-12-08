@@ -7,9 +7,8 @@
  */
 #pragma once
 
-#include <IRenderer.h>
-#include <ITexture.h>
 #include <LyShine/UiBase.h>
+#include <LyShine/UiRenderFormats.h>
 
 namespace AZ
 {
@@ -42,10 +41,6 @@ namespace LyShine
         //! End the setup of a mask render node, this marks the end of adding child primitives
         virtual void EndMask() = 0;
 
-        //! Begin rendering to a texture
-        virtual void BeginRenderToTexture(int renderTargetHandle, SDepthTexture* renderTargetDepthSurface,
-            const AZ::Vector2& viewportTopLeft, const AZ::Vector2& viewportSize, const AZ::Color& clearColor) = 0;
-
         //! End rendering to a texture
         virtual void EndRenderToTexture() = 0;
 
@@ -53,7 +48,7 @@ namespace LyShine
         //! The graph handles the allocation of this DynUiPrimitive and deletes it when the graph is reset
         //! This can be used if the UI component doesn't want to own the storage of the primitive. Used infrequently,
         //! e.g. for the selection rect on a text component.
-        virtual DynUiPrimitive* GetDynamicQuadPrimitive(const AZ::Vector2* positions, uint32 packedColor) = 0;
+        virtual LyShine::UiPrimitive* GetDynamicQuadPrimitive(const AZ::Vector2* positions, uint32 packedColor) = 0;
 
         //---- Functions for supporting masking (used during creation of the graph, not rendering ) ----
 

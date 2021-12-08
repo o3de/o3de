@@ -21,6 +21,7 @@
 #include <AzToolsFramework/Commands/EntityManipulatorCommand.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
 #include <AzToolsFramework/Entity/EditorEntityTransformBus.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
 #include <AzToolsFramework/Manipulators/RotationManipulators.h>
@@ -33,6 +34,7 @@
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
+#include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/ViewportSelection/EditorVisibleEntityDataCache.h>
 #include <Entity/EditorEntityContextBus.h>
@@ -1018,6 +1020,7 @@ namespace AzToolsFramework
         EditorManipulatorCommandUndoRedoRequestBus::Handler::BusConnect(entityContextId);
         EditorContextMenuBus::Handler::BusConnect();
         ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusConnect(ViewportUi::DefaultViewportId);
+        ReadOnlyEntityPublicNotificationBus::Handler::BusConnect(entityContextId);
 
         CreateTransformModeSelectionCluster();
         CreateSpaceSelectionCluster();
@@ -1053,6 +1056,7 @@ namespace AzToolsFramework
 
         m_pivotOverrideFrame.Reset();
 
+        ReadOnlyEntityPublicNotificationBus::Handler::BusDisconnect();
         ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusDisconnect();
         EditorContextMenuBus::Handler::BusConnect();
         EditorManipulatorCommandUndoRedoRequestBus::Handler::BusDisconnect();
@@ -1376,7 +1380,7 @@ namespace AzToolsFramework
         // view
         rotationManipulators->SetLocalAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ());
         rotationManipulators->ConfigureView(
-            2.0f, AzFramework::ViewportColors::XAxisColor, AzFramework::ViewportColors::YAxisColor,
+            RotationManipulatorRadius(), AzFramework::ViewportColors::XAxisColor, AzFramework::ViewportColors::YAxisColor,
             AzFramework::ViewportColors::ZAxisColor);
 
         struct SharedRotationState
@@ -1535,7 +1539,8 @@ namespace AzToolsFramework
             RecalculateAverageManipulatorTransform(m_entityIdManipulators.m_lookups, m_pivotOverrideFrame, m_pivotMode, m_referenceFrame));
 
         scaleManipulators->SetAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ());
-        scaleManipulators->ConfigureView(2.0f, AZ::Color::CreateOne(), AZ::Color::CreateOne(), AZ::Color::CreateOne());
+        scaleManipulators->ConfigureView(
+            LinearManipulatorAxisLength(), AZ::Color::CreateOne(), AZ::Color::CreateOne(), AZ::Color::CreateOne());
 
         struct SharedScaleState
         {
@@ -3621,6 +3626,18 @@ namespace AzToolsFramework
                 m_selectedEntityIds.erase(focusRoot);
             }
         }
+
+        // Do not create manipulators for any entities marked as read only
+        if (auto readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get())
+        {
+            AZStd::erase_if(
+                m_selectedEntityIds,
+                [readOnlyEntityPublicInterface](auto entityId)
+                {
+                    return readOnlyEntityPublicInterface->IsReadOnly(entityId);
+                }
+            );
+        }
     }
 
     void EditorTransformComponentSelection::OnTransformChanged(
@@ -3826,6 +3843,14 @@ namespace AzToolsFramework
     void EditorTransformComponentSelection::OnGridSnappingChanged([[maybe_unused]] const bool enabled)
     {
         m_snappingCluster.TrySetVisible(m_viewportUiVisible && !m_selectedEntityIds.empty());
+    }
+
+    void EditorTransformComponentSelection::OnReadOnlyEntityStatusChanged(const AZ::EntityId& entityId, [[maybe_unused]] bool readOnly)
+    {
+        if (IsEntitySelected(entityId))
+        {
+            RefreshSelectedEntityIdsAndRegenerateManipulators();
+        }
     }
 
     namespace ETCS

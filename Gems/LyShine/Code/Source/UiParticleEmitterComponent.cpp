@@ -833,7 +833,7 @@ void UiParticleEmitterComponent::Render(LyShine::IRenderGraph* renderGraph)
     // particlesToRender is the max particles we will render, we could render less if some have zero alpha
     for (AZ::u32 i = 0; i < particlesToRender; ++i)
     {
-        SVF_P2F_C4B_T2F_F4B* firstVertexOfParticle = &m_cachedPrimitive.m_vertices[totalVerticesInserted];
+        LyShine::UiPrimitiveVertex* firstVertexOfParticle = &m_cachedPrimitive.m_vertices[totalVerticesInserted];
 
         if (m_particleContainer[i].FillVertices(firstVertexOfParticle, renderParameters, transform))
         {
@@ -1845,7 +1845,7 @@ void UiParticleEmitterComponent::ResetParticleBuffers()
     {
         delete [] m_cachedPrimitive.m_vertices;
     }
-    m_cachedPrimitive.m_vertices = new SVF_P2F_C4B_T2F_F4B[numVertices];
+    m_cachedPrimitive.m_vertices = new LyShine::UiPrimitiveVertex[numVertices];
 
     m_particleContainer.clear();
     m_particleContainer.reserve(m_particleBufferSize);

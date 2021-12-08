@@ -5,6 +5,7 @@
     "materialTypeVersion": 4,
     "properties": {
         "baseColor": {
+            "textureBlendMode": "Lerp",
             "textureMap": "00_illuminant_sRGB.tif"
         }
     }

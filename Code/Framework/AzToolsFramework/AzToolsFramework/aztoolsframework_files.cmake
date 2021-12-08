@@ -506,6 +506,8 @@ set(FILES
     Viewport/ViewportMessages.cpp
     Viewport/ViewportTypes.h
     Viewport/ViewportTypes.cpp
+    Viewport/ViewportSettings.h
+    Viewport/ViewportSettings.cpp
     ViewportUi/Button.h
     ViewportUi/Button.cpp
     ViewportUi/ButtonGroup.h
@@ -766,6 +768,10 @@ set(FILES
     UI/Prefab/PrefabUiHandler.cpp
     UI/Prefab/PrefabViewportFocusPathHandler.h
     UI/Prefab/PrefabViewportFocusPathHandler.cpp
+    UI/Prefab/Procedural/ProceduralPrefabReadOnlyHandler.h
+    UI/Prefab/Procedural/ProceduralPrefabReadOnlyHandler.cpp
+    UI/Prefab/Procedural/ProceduralPrefabUiHandler.h
+    UI/Prefab/Procedural/ProceduralPrefabUiHandler.cpp
     UI/Notifications/ToastNotificationsView.cpp
     UI/Notifications/ToastNotificationsView.h
     UI/Notifications/ToastBus.h

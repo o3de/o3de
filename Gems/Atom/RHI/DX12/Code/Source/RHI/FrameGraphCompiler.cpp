@@ -479,8 +479,7 @@ namespace AZ
                 return;
             }
 
-            D3D12_RESOURCE_TRANSITION_BARRIER transition;
-            memset(&transition, 0, sizeof(D3D12_RESOURCE_TRANSITION_BARRIER)); // C4701 potentially unitialized local variable 'transition' used
+            D3D12_RESOURCE_TRANSITION_BARRIER transition = {0};
             transition.pResource = image.GetMemoryView().GetMemory();
 
             Scope& firstScope = static_cast<Scope&>(scopeAttachment->GetScope());
