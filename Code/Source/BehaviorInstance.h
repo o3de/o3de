@@ -39,15 +39,15 @@ namespace EMotionFX
             AZ_RTTI(BehaviorInstance, "{1ED03AD8-0FB2-431B-AF01-02F7E930EB73}")
             AZ_CLASS_ALLOCATOR_DECL
 
+            virtual ~BehaviorInstance();
+
             struct EMFX_API InitSettings
             {
                 ActorInstance* m_actorInstance = nullptr;
                 Behavior* m_behavior = nullptr;
             };
-
-            virtual ~BehaviorInstance();
-
             void Init(const InitSettings& settings);
+            
             void DebugDraw();
 
             void Update(float timePassedInSeconds, const AZ::Vector3& targetPos, const AZ::Vector3& targetFacingDir, TrajectoryQuery::EMode mode, float pathRadius, float pathSpeed);

@@ -36,6 +36,7 @@ namespace EMotionFX
         class Frame;
         class FrameDatabase;
         class BehaviorInstance;
+        class TrajectoryQuery;
 
         class EMFX_API Feature
         {
@@ -53,27 +54,36 @@ namespace EMotionFX
             };
             virtual bool Init(const InitSettings& settings) = 0;
 
-            struct EMFX_API ExtractFrameContext
+            struct EMFX_API ExtractFeatureContext
             {
-                ExtractFrameContext(FeatureMatrix& featureMatrix)
+                ExtractFeatureContext(FeatureMatrix& featureMatrix)
                     : m_featureMatrix(featureMatrix)
                 {
                 }
 
-                size_t m_frameIndex = InvalidIndex;
-                size_t m_nextFrameIndex = InvalidIndex;
-                size_t m_prevFrameIndex = InvalidIndex;
-                FrameDatabase* m_data = nullptr;
-                MotionInstance* m_motionInstance = nullptr;
-                const Pose* m_pose = nullptr;
-                const Pose* m_previousPose = nullptr;
-                const Pose* m_nextPose = nullptr;
-                float m_timeDelta = 0.0f;
-                ActorInstance* m_actorInstance = nullptr;
-
+                FrameDatabase* m_frameDatabase = nullptr;
                 FeatureMatrix& m_featureMatrix;
+
+                size_t m_frameIndex = InvalidIndex;
+                const Pose* m_framePose = nullptr; //! Pre-sampled pose for the given frame.
+
+                ActorInstance* m_actorInstance = nullptr;
             };
-            virtual void ExtractFeatureValues(const ExtractFrameContext& context) = 0;
+            virtual void ExtractFeatureValues(const ExtractFeatureContext& context) = 0;
+
+            struct EMFX_API FrameCostContext
+            {
+                FrameCostContext(const FeatureMatrix& featureMatrix, const Pose& currentPose)
+                    : m_featureMatrix(featureMatrix)
+                    , m_currentPose(currentPose)
+                {
+                }
+
+                const FeatureMatrix& m_featureMatrix;
+                const ActorInstance* m_actorInstance = nullptr;
+                const Pose& m_currentPose; //! Current actor instance pose.
+                const TrajectoryQuery* m_trajectoryQuery;
+            };
 
             virtual void DebugDraw([[maybe_unused]] AzFramework::DebugDisplayRequests& debugDisplay,
                 [[maybe_unused]] BehaviorInstance* behaviorInstance,
@@ -95,13 +105,13 @@ namespace EMotionFX
             size_t GetRelativeToNodeIndex() const { return m_relativeToNodeIndex; }
             void SetId(const AZ::TypeId& id);
             void SetRelativeToNodeIndex(size_t nodeIndex);
-            void SetData(FrameDatabase* data);
-            FrameDatabase* GetData() const;
+            void SetFrameDatabase(FrameDatabase* frameDatabase);
+            FrameDatabase* GetFrameDatabase() const;
 
             static void Reflect(AZ::ReflectContext* context);
-            static void SamplePose(float sampleTime, const Pose* bindPose, Motion* sourceMotion, MotionInstance* motionInstance, Pose* samplePose);
             static void CalculateVelocity(size_t jointIndex, const Pose* curPose, const Pose* nextPose, float timeDelta, AZ::Vector3& outVelocity);
             static void CalculateVelocity(size_t jointIndex, size_t relativeToJointIndex, MotionInstance* motionInstance, AZ::Vector3& outVelocity);
+            static void CalculateVelocity(const ActorInstance* actorInstance, size_t jointIndex, size_t relativeToJointIndex, const Frame& frame, AZ::Vector3& outVelocity);
 
         protected:
             /**
@@ -118,7 +128,7 @@ namespace EMotionFX
             float GetNormalizedDirectionDifference(const AZ::Vector3& directionA, const AZ::Vector3& directionB) const;
 
             AZ::TypeId m_id = AZ::TypeId::CreateRandom(); /**< The frame data id. Use this instead of the RTTI class Id. This is because we can have multiple of the same types. */
-            FrameDatabase* m_data = nullptr; /**< The data we point into. This class does not own the data. */
+            FrameDatabase* m_frameDatabase = nullptr; /**< The frame database from which the feature got calculated from and belongs to. */
             size_t m_relativeToNodeIndex = 0; /**< Make the data relative to this node (default=0). */
             AZ::Color m_debugColor = AZ::Colors::Green; /**< The debug drawing color. */
             bool m_debugDrawEnabled = false; /**< Is debug drawing enabled for this data? */

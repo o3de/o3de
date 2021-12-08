@@ -52,7 +52,7 @@ namespace EMotionFX
 
             void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay, BehaviorInstance* behaviorInstance) override;
 
-            size_t FindLowestCostFrameIndex(BehaviorInstance* behaviorInstance, const Pose& inputPose, const Pose& previousPose, size_t currentFrameIndex, float timeDelta) override;
+            size_t FindLowestCostFrameIndex(BehaviorInstance* behaviorInstance, const Pose& currentPose, size_t currentFrameIndex) override;
 
             static void Reflect(AZ::ReflectContext* context);
 

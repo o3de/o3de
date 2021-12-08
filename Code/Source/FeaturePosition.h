@@ -46,22 +46,11 @@ namespace EMotionFX
 
             bool Init(const InitSettings& settings) override;
 
-            void ExtractFeatureValues(const ExtractFrameContext& context) override;
+            void ExtractFeatureValues(const ExtractFeatureContext& context) override;
             void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
                 BehaviorInstance* behaviorInstance,
                 size_t frameIndex) override;
 
-            struct EMFX_API FrameCostContext
-            {
-                FrameCostContext(const Pose& pose, const FeatureMatrix& featureMatrix)
-                    : m_pose(pose)
-                    , m_featureMatrix(featureMatrix)
-                {
-                }
-
-                const Pose& m_pose;
-                const FeatureMatrix& m_featureMatrix;
-            };
             float CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const;
 
             void FillQueryFeatureValues(size_t startIndex, AZStd::vector<float>& queryFeatureValues, const FrameCostContext& context);

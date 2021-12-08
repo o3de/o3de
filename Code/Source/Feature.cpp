@@ -17,6 +17,7 @@
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <EMotionFX/Source/MotionInstance.h>
 #include <Feature.h>
+#include <Frame.h>
 #include <EMotionFX/Source/Pose.h>
 #include <EMotionFX/Source/TransformData.h>
 
@@ -52,26 +53,19 @@ namespace EMotionFX
             return m_debugDrawEnabled;
         }
 
-        void Feature::SetData(FrameDatabase* data)
+        void Feature::SetFrameDatabase(FrameDatabase* frameDatabase)
         {
-            m_data = data;
+            m_frameDatabase = frameDatabase;
         }
 
-        FrameDatabase* Feature::GetData() const
+        FrameDatabase* Feature::GetFrameDatabase() const
         {
-            return m_data;
+            return m_frameDatabase;
         }
 
         void Feature::SetRelativeToNodeIndex(size_t nodeIndex)
         {
             m_relativeToNodeIndex = nodeIndex;
-        }
-
-        void Feature::SamplePose(float sampleTime, const Pose* bindPose, Motion* sourceMotion, MotionInstance* motionInstance, Pose* samplePose)
-        {
-            motionInstance->SetMotion(sourceMotion);
-            motionInstance->SetCurrentTime(sampleTime, true);
-            sourceMotion->Update(bindPose, samplePose, motionInstance);
         }
 
         void Feature::CalculateVelocity(size_t jointIndex, const Pose* curPose, const Pose* nextPose, float timeDelta, AZ::Vector3& outVelocity)
@@ -144,6 +138,46 @@ namespace EMotionFX
             outVelocity = accumulatedVelocity / aznumeric_cast<float>(numSamples);
 
             motionInstance->SetCurrentTime(originalTime); // set back to what it was
+
+            posePool.FreePose(prevPose);
+            posePool.FreePose(currentPose);
+        }
+
+        void Feature::CalculateVelocity(const ActorInstance* actorInstance, size_t jointIndex, size_t relativeToJointIndex, const Frame& frame, AZ::Vector3& outVelocity)
+        {
+            AnimGraphPosePool& posePool = GetEMotionFX().GetThreadData(actorInstance->GetThreadIndex())->GetPosePool();
+            AnimGraphPose* prevPose = posePool.RequestPose(actorInstance);
+            AnimGraphPose* currentPose = posePool.RequestPose(actorInstance);
+
+            const size_t numSamples = 3;
+            const float timeRange = 0.05f; // secs
+            const float halfTimeRange = timeRange * 0.5f;
+            const float frameDelta = timeRange / numSamples;
+
+            AZ::Vector3 accumulatedVelocity = AZ::Vector3::CreateZero();
+
+            for (size_t sampleIndex = 0; sampleIndex < numSamples + 1; ++sampleIndex)
+            {
+                float sampleTimeOffset = (-halfTimeRange) + sampleIndex * frameDelta;
+
+                if (sampleIndex == 0)
+                {
+                    frame.SamplePose(&prevPose->GetPose(), (float)sampleTimeOffset);
+                    continue;
+                }
+
+                frame.SamplePose(&currentPose->GetPose(), sampleTimeOffset);
+                const Transform inverseJointWorldTransform = currentPose->GetPose().GetWorldSpaceTransform(relativeToJointIndex).Inversed();
+
+                // Calculate the velocity.
+                AZ::Vector3 velocity;
+                CalculateVelocity(jointIndex, &prevPose->GetPose(), &currentPose->GetPose(), frameDelta, velocity);
+                accumulatedVelocity += inverseJointWorldTransform.TransformVector(velocity);
+
+                *prevPose = *currentPose;
+            }
+
+            outVelocity = accumulatedVelocity / aznumeric_cast<float>(numSamples);
 
             posePool.FreePose(prevPose);
             posePool.FreePose(currentPose);

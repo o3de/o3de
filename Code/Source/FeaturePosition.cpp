@@ -56,18 +56,18 @@ namespace EMotionFX
 
         void FeaturePosition::FillQueryFeatureValues(size_t startIndex, AZStd::vector<float>& queryFeatureValues, const FrameCostContext& context)
         {
-            const Transform invRootTransform = context.m_pose.GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
-            const AZ::Vector3 worldInputPosition = context.m_pose.GetWorldSpaceTransform(m_nodeIndex).m_position;
+            const Transform invRootTransform = context.m_currentPose.GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
+            const AZ::Vector3 worldInputPosition = context.m_currentPose.GetWorldSpaceTransform(m_nodeIndex).m_position;
             const AZ::Vector3 relativeInputPosition = invRootTransform.TransformPoint(worldInputPosition);
             queryFeatureValues[startIndex + 0] = relativeInputPosition.GetX();
             queryFeatureValues[startIndex + 1] = relativeInputPosition.GetY();
             queryFeatureValues[startIndex + 2] = relativeInputPosition.GetZ();
         }
 
-        void FeaturePosition::ExtractFeatureValues(const ExtractFrameContext& context)
+        void FeaturePosition::ExtractFeatureValues(const ExtractFeatureContext& context)
         {
-            const Transform invRootTransform = context.m_pose->GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
-            const AZ::Vector3 nodeWorldPosition = context.m_pose->GetWorldSpaceTransform(m_nodeIndex).m_position;
+            const Transform invRootTransform = context.m_framePose->GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
+            const AZ::Vector3 nodeWorldPosition = context.m_framePose->GetWorldSpaceTransform(m_nodeIndex).m_position;
             const AZ::Vector3 position = invRootTransform.TransformPoint(nodeWorldPosition);
             SetFeatureData(context.m_featureMatrix, context.m_frameIndex, position);
         }
@@ -93,8 +93,8 @@ namespace EMotionFX
 
         float FeaturePosition::CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const
         {
-            const Transform invRootTransform = context.m_pose.GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
-            const AZ::Vector3 worldInputPosition = context.m_pose.GetWorldSpaceTransform(m_nodeIndex).m_position;
+            const Transform invRootTransform = context.m_currentPose.GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
+            const AZ::Vector3 worldInputPosition = context.m_currentPose.GetWorldSpaceTransform(m_nodeIndex).m_position;
             const AZ::Vector3 relativeInputPosition = invRootTransform.TransformPoint(worldInputPosition);
             const AZ::Vector3 framePosition = GetFeatureData(context.m_featureMatrix, frameIndex); // This is already relative to the root node
             return (framePosition - relativeInputPosition).GetLength();

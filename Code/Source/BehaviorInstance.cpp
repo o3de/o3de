@@ -51,11 +51,7 @@ namespace EMotionFX
 
         MotionInstance* BehaviorInstance::CreateMotionInstance() const
         {
-            MotionInstance* result = GetMotionInstancePool().RequestNew(m_behavior->GetData().GetFrame(0).GetSourceMotion(), m_actorInstance);
-            /*if (!result->GetIsReadyForSampling())
-            {
-                result->InitForSampling();
-            }*/
+            MotionInstance* result = GetMotionInstancePool().RequestNew(m_behavior->GetFrameDatabase().GetFrame(0).GetSourceMotion(), m_actorInstance);
             return result;
         }
 
@@ -89,7 +85,7 @@ namespace EMotionFX
 
             m_actorInstance = settings.m_actorInstance;
             m_behavior = settings.m_behavior;
-            if (settings.m_behavior->GetData().GetNumFrames() == 0)
+            if (settings.m_behavior->GetFrameDatabase().GetNumFrames() == 0)
             {
                 return;
             }
@@ -161,7 +157,7 @@ namespace EMotionFX
             }
 
             const size_t lowestCostFrame = GetLowestCostFrameIndex();
-            if (m_behavior->GetData().GetNumFrames() == 0 || lowestCostFrame == InvalidIndex)
+            if (m_behavior->GetFrameDatabase().GetNumFrames() == 0 || lowestCostFrame == InvalidIndex)
             {
                 m_motionExtractionDelta.Identity();
                 return;
@@ -182,7 +178,7 @@ namespace EMotionFX
             }
 
             const size_t lowestCostFrame = GetLowestCostFrameIndex();
-            if (m_behavior->GetData().GetNumFrames() == 0 || lowestCostFrame == InvalidIndex)
+            if (m_behavior->GetFrameDatabase().GetNumFrames() == 0 || lowestCostFrame == InvalidIndex)
             {
                 outputPose.InitFromBindPose(m_actorInstance);
                 return;
@@ -289,9 +285,10 @@ namespace EMotionFX
             if (GetTimeSinceLastFrameSwitch() >= GetLowestCostSearchFrequency())
             {
                 const Pose* currentPose = m_actorInstance->GetTransformData()->GetCurrentPose();
-                const size_t lowestCostFrameIndex = m_behavior->FindLowestCostFrameIndex(this, *currentPose, m_blendTargetPose, currentFrameIndex, timePassedInSeconds); // m_blendTargetPose is the pose we are basically currently in.
-                const Frame& currentFrame = m_behavior->GetData().GetFrame(currentFrameIndex);
-                const Frame& lowestCostFrame = m_behavior->GetData().GetFrame(lowestCostFrameIndex);
+                const size_t lowestCostFrameIndex = m_behavior->FindLowestCostFrameIndex(this, *currentPose, currentFrameIndex);
+                const FrameDatabase& frameDatabase = m_behavior->GetFrameDatabase();
+                const Frame& currentFrame = frameDatabase.GetFrame(currentFrameIndex);
+                const Frame& lowestCostFrame = frameDatabase.GetFrame(lowestCostFrameIndex);
                 const bool sameMotion = (currentFrame.GetSourceMotion() == lowestCostFrame.GetSourceMotion());
                 const float timeBetweenFrames = newMotionTime - lowestCostFrame.GetSampleTime();
                 //        const float timeBetweenFrames = lowestCostFrame.GetSampleTime() - currentFrame.GetSampleTime();

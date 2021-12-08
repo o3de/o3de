@@ -64,23 +64,11 @@ namespace EMotionFX
             ~FeatureTrajectory() override = default;
 
             bool Init(const InitSettings& settings) override;
-            void ExtractFeatureValues(const ExtractFrameContext& context) override;
+            void ExtractFeatureValues(const ExtractFeatureContext& context) override;
             void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
                 BehaviorInstance* behaviorInstance,
                 size_t frameIndex) override;
 
-            struct EMFX_API FrameCostContext
-            {
-                FrameCostContext(const FeatureMatrix& featureMatrix)
-                    : m_featureMatrix(featureMatrix)
-                {
-                }
-
-                const FeatureMatrix& m_featureMatrix;
-                const Pose* m_pose;
-                const TrajectoryQuery* m_trajectoryQuery;
-                const ActorInstance* m_actorInstance = nullptr;
-            };
             float CalculateFutureFrameCost(size_t frameIndex, const FrameCostContext& context) const;
             float CalculatePastFrameCost(size_t frameIndex, const FrameCostContext& context) const;
 
