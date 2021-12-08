@@ -18,6 +18,7 @@
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/Prefab/EditorPrefabComponent.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityIdMapper.h>
@@ -581,7 +582,15 @@ namespace AzToolsFramework
                     "Cannot add entity because the parent entity (id '%llu') is a closed container entity.",
                     static_cast<AZ::u64>(parentId)));
             }
-            
+
+            // If the parent entity is marked as read only, bail.
+            if (auto readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get(); readOnlyEntityPublicInterface->IsReadOnly(parentId))
+            {
+                return AZ::Failure(AZStd::string::format(
+                    "Cannot add entity because the parent entity (id '%llu') is marked as read only.",
+                    static_cast<AZ::u64>(parentId)));
+            }
+
             EntityAlias entityAlias = Instance::GenerateEntityAlias();
 
             AliasPath absoluteEntityPath = owningInstanceOfParentEntity->get().GetAbsoluteInstanceAliasPath();
@@ -1208,6 +1217,27 @@ namespace AzToolsFramework
             if (&m_prefabFocusInterface->GetFocusedPrefabInstance(editorEntityContextId)->get() != &commonOwningInstance->get())
             {
                 return AZ::Failure(AZStd::string("Cannot delete entities belonging to an instance that is not being edited."));
+            }
+
+            // None of the specified entities can be marked as read only, otherwise this operation is invalid.
+            if (auto readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get())
+            {
+                AZ::EntityId readOnlyEntityId;
+                for (const auto& entityId : entityIdsNoFocusContainer)
+                {
+                    if (readOnlyEntityPublicInterface->IsReadOnly(entityId))
+                    {
+                        readOnlyEntityId = entityId;
+                        break;
+                    }
+                }
+
+                if (readOnlyEntityId.IsValid())
+                {
+                    return AZ::Failure(AZStd::string::format(
+                        "Cannot delete entities because entity (id '%llu') is marked as read only.",
+                        static_cast<AZ::u64>(readOnlyEntityId)));
+                }
             }
 
             // Retrieve entityList from entityIds
