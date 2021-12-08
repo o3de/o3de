@@ -10,17 +10,13 @@
 *
 */
 
+#include <AzCore/Debug/Timer.h>
 #include <Allocators.h>
 #include <EMotionFX/Source/Actor.h>
 #include <EMotionFX/Source/ActorInstance.h>
 #include <EMotionFX/Source/AnimGraphPose.h>
 #include <EMotionFX/Source/AnimGraphPosePool.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
-#include <EMotionFX/Source/Motion.h>
-#include <EMotionFX/Source/MotionInstance.h>
-#include <EMotionFX/Source/MotionInstancePool.h>
-#include <EMotionFX/Source/TransformData.h>
-
 #include <FeatureDatabase.h>
 #include <FrameDatabase.h>
 #include <KdTree.h>
@@ -93,6 +89,8 @@ namespace EMotionFX
         bool FeatureDatabase::ExtractFeatures(ActorInstance* actorInstance, FrameDatabase* frameDatabase, size_t maxKdTreeDepth, size_t minFramesPerKdTreeNode)
         {
             AZ_PROFILE_SCOPE(Animation, "FeatureDatabase::ExtractFeatures");
+            AZ::Debug::Timer timer;
+            timer.Stamp();
 
             const size_t numFrames = frameDatabase->GetNumFrames();
             if (numFrames == 0)
@@ -111,7 +109,7 @@ namespace EMotionFX
 
                 Feature::InitSettings frameSettings;
                 frameSettings.m_actorInstance = actorInstance;
-                feature->SetData(frameDatabase);
+                feature->SetFrameDatabase(frameDatabase);
                 if (!feature->Init(frameSettings))
                 {
                     return false;
@@ -127,85 +125,34 @@ namespace EMotionFX
             m_featureMatrix.resize(/*rows=*/numFrames, /*columns=*/featureComponentCount);
 
             // Iterate over all frames and extract the data for this frame.
-            const Pose* bindPose = actorInstance->GetTransformData()->GetBindPose();
-            MotionInstancePool& motionInstancePool = GetMotionInstancePool();
-            MotionInstance* motionInstance = motionInstancePool.RequestNew(frames[0].GetSourceMotion(), actorInstance);
-            MotionInstance* motionInstanceNext = motionInstancePool.RequestNew(frames[0].GetSourceMotion(), actorInstance);
             AnimGraphPosePool& posePool = GetEMotionFX().GetThreadData(actorInstance->GetThreadIndex())->GetPosePool();
             AnimGraphPose* pose = posePool.RequestPose(actorInstance);
-            AnimGraphPose* previousPose = posePool.RequestPose(actorInstance);
-            AnimGraphPose* nextPose = posePool.RequestPose(actorInstance);
-            Motion* previousSourceMotion = nullptr;
 
-            Feature::ExtractFrameContext context(m_featureMatrix);
-            context.m_pose = &pose->GetPose();
-            context.m_previousPose = &previousPose->GetPose();
-            context.m_nextPose = &nextPose->GetPose();
-            context.m_motionInstance = motionInstance;
+            Feature::ExtractFeatureContext context(m_featureMatrix);
+            context.m_frameDatabase = frameDatabase;
+            context.m_framePose = &pose->GetPose();
             context.m_actorInstance = actorInstance;
 
-            bool lastNextValid = false;
             for (const Frame& frame : frames)
             {
-                // Sample the pose.
-                if (lastNextValid)
-                {
-                    *pose = *nextPose;
-                }
-                else
-                {
-                    motionInstance->SetMirrorMotion(frame.GetMirrored());
-                    Feature::SamplePose(frame.GetSampleTime(), bindPose, frame.GetSourceMotion(), motionInstance, const_cast<Pose*>(context.m_pose));
-                }
-
-                size_t nextFrameIndex = frame.GetFrameIndex() + 1;
-                if (frame.GetFrameIndex() > frames.size() - 2 || frames[nextFrameIndex].GetSourceMotion() != frame.GetSourceMotion())
-                {
-                    *nextPose = *pose;
-                    lastNextValid = false;
-                    context.m_nextFrameIndex = frame.GetFrameIndex();
-                }
-                else
-                {
-                    const Frame& nextFrame = frames[nextFrameIndex];
-                    motionInstanceNext->SetMirrorMotion(nextFrame.GetMirrored());
-                    Feature::SamplePose(nextFrame.GetSampleTime(), bindPose, nextFrame.GetSourceMotion(), motionInstanceNext, const_cast<Pose*>(context.m_nextPose));
-                    lastNextValid = true;
-                    context.m_timeDelta = nextFrame.GetSampleTime() - frame.GetSampleTime();
-                    context.m_nextFrameIndex = nextFrame.GetFrameIndex();
-                }
-
-                context.m_data = frameDatabase;
                 context.m_frameIndex = frame.GetFrameIndex();
-                if (frame.GetFrameIndex() == 0 || frame.GetSourceMotion() != previousSourceMotion)
-                {
-                    *previousPose = *pose;
-                    context.m_prevFrameIndex = frame.GetFrameIndex();
-                }
-                else
-                {
-                    context.m_prevFrameIndex = frame.GetFrameIndex() - 1;
-                }
+
+                // Pre-sample the frame pose as that will be needed by many of the feature extraction calculations.
+                frame.SamplePose(const_cast<Pose*>(context.m_framePose));
 
                 // Extract all features for the given frame.
                 {
                     for (Feature* feature : m_features)
                     {
-                        context.m_motionInstance->SetMirrorMotion(frame.GetMirrored());
-                        context.m_motionInstance->SetCurrentTime(frame.GetSampleTime());
                         feature->ExtractFeatureValues(context);
                     }
                 }
-
-                *previousPose = *pose;
-                previousSourceMotion = frame.GetSourceMotion();
             }
 
             posePool.FreePose(pose);
-            posePool.FreePose(previousPose);
-            posePool.FreePose(nextPose);
-            motionInstancePool.Free(motionInstance);
-            motionInstancePool.Free(motionInstanceNext);
+
+            const float extractFeaturesTime = timer.GetDeltaTimeInSeconds();
+            timer.Stamp();
 
             // Initialize the kd-tree used to accelerate the searches.
             if (!m_kdTree->Init(*frameDatabase, *this, maxKdTreeDepth, minFramesPerKdTreeNode)) // Internally automatically clears any existing contents.
@@ -214,10 +161,14 @@ namespace EMotionFX
                 return false;
             }
 
-            AZ_Printf("MotionMatching", "Feature matrix (%zu, %zu) uses %.2f MB.",
+            const float initKdTreeTimer = timer.GetDeltaTimeInSeconds();
+
+            AZ_Printf("MotionMatching", "Feature matrix (%zu, %zu) uses %.2f MB and took %.2f ms to initialize (KD-Tree %.2f ms).",
                 m_featureMatrix.rows(),
                 m_featureMatrix.cols(),
-                static_cast<float>(m_featureMatrix.CalcMemoryUsageInBytes()) / 1024.0f / 1024.0f);
+                static_cast<float>(m_featureMatrix.CalcMemoryUsageInBytes()) / 1024.0f / 1024.0f,
+                extractFeaturesTime * 1000.0f,
+                initKdTreeTimer * 1000.0f);
 
             return true;
         }
@@ -292,7 +243,7 @@ namespace EMotionFX
 
             m_featureMatrix.SaveAsCsv(filename, columnNames);
         }
-        
+
         size_t FeatureDatabase::CalcNumDataDimensionsForKdTree(const FeatureDatabase& featureDatabase) const
         {
             size_t result = 0;

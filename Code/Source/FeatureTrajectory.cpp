@@ -117,7 +117,7 @@ namespace EMotionFX
             return { position, facingDirection };
         }
 
-        void FeatureTrajectory::ExtractFeatureValues(const ExtractFrameContext& context)
+        void FeatureTrajectory::ExtractFeatureValues(const ExtractFeatureContext& context)
         {
             const ActorInstance* actorInstance = context.m_actorInstance;
             AnimGraphPosePool& posePool = GetEMotionFX().GetThreadData(actorInstance->GetThreadIndex())->GetPosePool();
@@ -125,13 +125,13 @@ namespace EMotionFX
             AnimGraphPose* nextSamplePose = posePool.RequestPose(actorInstance);
 
             const size_t frameIndex = context.m_frameIndex;
-            const Frame& currentFrame = context.m_data->GetFrame(context.m_frameIndex);
+            const Frame& currentFrame = context.m_frameDatabase->GetFrame(context.m_frameIndex);
 
             // Inverse of the root transform for the frame that we want to extract data from.
-            const Transform invRootTransform = context.m_pose->GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
+            const Transform invRootTransform = context.m_framePose->GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
 
             const size_t midSampleIndex = CalcMidFrameIndex();
-            const Sample midSample = GetSampleFromPose(*context.m_pose, invRootTransform);
+            const Sample midSample = GetSampleFromPose(*context.m_framePose, invRootTransform);
             SetFeatureData(context.m_featureMatrix, frameIndex, midSampleIndex, midSample);
 
             // Sample the past.
@@ -333,14 +333,14 @@ namespace EMotionFX
         float FeatureTrajectory::CalculateFutureFrameCost(size_t frameIndex, const FrameCostContext& context) const
         {
             AZ_Assert(context.m_trajectoryQuery->GetFutureControlPoints().size() == m_numFutureSamples, "Number of future control points does not match trajecotry frame data number of future points.");
-            const Transform invRootTransform = context.m_pose->GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
+            const Transform invRootTransform = context.m_currentPose.GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
             return CalculateCost(context.m_featureMatrix, frameIndex, invRootTransform, context.m_trajectoryQuery->GetFutureControlPoints(), AZStd::bind(&FeatureTrajectory::CalcFutureFrameIndex, this, AZStd::placeholders::_1));
         }
 
         float FeatureTrajectory::CalculatePastFrameCost(size_t frameIndex, const FrameCostContext& context) const
         {
             AZ_Assert(context.m_trajectoryQuery->GetPastControlPoints().size() == m_numPastSamples, "Number of past control points does not match trajecotry frame data number of past points.");
-            const Transform invRootTransform = context.m_pose->GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
+            const Transform invRootTransform = context.m_currentPose.GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
             return CalculateCost(context.m_featureMatrix, frameIndex, invRootTransform, context.m_trajectoryQuery->GetPastControlPoints(), AZStd::bind(&FeatureTrajectory::CalcPastFrameIndex, this, AZStd::placeholders::_1));
         }
 

@@ -158,7 +158,7 @@ namespace EMotionFX
 
             // Find the frame index in the frame database that belongs to the currently used pose.
             MotionInstance* motionInstance = behaviorInstance->GetMotionInstance();
-            const size_t currentFrame = m_data.FindFrameIndex(motionInstance->GetMotion(), motionInstance->GetCurrentTime());
+            const size_t currentFrame = m_frameDatabase.FindFrameIndex(motionInstance->GetMotion(), motionInstance->GetCurrentTime());
             if (currentFrame != InvalidIndex)
             {
                 m_features.DebugDraw(debugDisplay, behaviorInstance, currentFrame);
@@ -174,28 +174,24 @@ namespace EMotionFX
             trajectoryHistory.DebugDraw(debugDisplay, trajectoryQueryColor, m_rootTrajectoryData->GetPastTimeRange());
         }
 
-        size_t LocomotionBehavior::FindLowestCostFrameIndex(BehaviorInstance* behaviorInstance, const Pose& inputPose, [[maybe_unused]] const Pose& previousPose, size_t currentFrameIndex, [[maybe_unused]] float timeDelta)
+        size_t LocomotionBehavior::FindLowestCostFrameIndex(BehaviorInstance* behaviorInstance, const Pose& currentPose, size_t currentFrameIndex)
         {
             AZ::Debug::Timer timer;
             timer.Stamp();
 
             AZ_PROFILE_SCOPE(Animation, "LocomotionBehavior::FindLowestCostFrameIndex");
 
-            // Prepare our current pose data.
-            const Frame& currentFrame = m_data.GetFrame(currentFrameIndex);
             MotionInstance* motionInstance = behaviorInstance->GetMotionInstance();
-            FeaturePosition::FrameCostContext leftFootPosContext(inputPose, m_features.GetFeatureMatrix());
-            FeaturePosition::FrameCostContext rightFootPosContext(inputPose, m_features.GetFeatureMatrix());
-            FeatureTrajectory::FrameCostContext rootTrajectoryContext(m_features.GetFeatureMatrix());
             FeatureVelocity::FrameCostContext leftFootVelocityContext(m_features.GetFeatureMatrix());
             FeatureVelocity::FrameCostContext rightFootVelocityContext(m_features.GetFeatureMatrix());
             FeatureVelocity::FrameCostContext pelvisVelocityContext(m_features.GetFeatureMatrix());
             Feature::CalculateVelocity(m_leftFootNodeIndex, m_rootNodeIndex, motionInstance, leftFootVelocityContext.m_velocity);
-            Feature::CalculateVelocity(m_rightFootNodeIndex, m_rootNodeIndex, motionInstance, rightFootVelocityContext.m_velocity); // TODO: group this with left foot for faster performance
+            Feature::CalculateVelocity(m_rightFootNodeIndex, m_rootNodeIndex, motionInstance, rightFootVelocityContext.m_velocity);
             Feature::CalculateVelocity(m_pelvisNodeIndex, m_rootNodeIndex, motionInstance, pelvisVelocityContext.m_velocity);
-            rootTrajectoryContext.m_pose = &inputPose;
-            rootTrajectoryContext.m_trajectoryQuery = &behaviorInstance->GetTrajectoryQuery();
-            rootTrajectoryContext.m_actorInstance = behaviorInstance->GetActorInstance();
+
+            Feature::FrameCostContext frameCostContext(m_features.GetFeatureMatrix(), currentPose);
+            frameCostContext.m_trajectoryQuery = &behaviorInstance->GetTrajectoryQuery();
+            frameCostContext.m_actorInstance = behaviorInstance->GetActorInstance();
 
             // 1. Broad-phase search using KD-tree
             {
@@ -205,11 +201,11 @@ namespace EMotionFX
                 AZStd::vector<float>& queryFeatureValues = behaviorInstance->GetQueryFeatureValues();
 
                 // Left foot position.
-                m_leftFootPositionData->FillQueryFeatureValues(startOffset, queryFeatureValues, leftFootPosContext);
+                m_leftFootPositionData->FillQueryFeatureValues(startOffset, queryFeatureValues, frameCostContext);
                 startOffset += m_leftFootPositionData->GetNumDimensions();
 
                 // Right foot position.
-                m_rightFootPositionData->FillQueryFeatureValues(startOffset, queryFeatureValues, rightFootPosContext);
+                m_rightFootPositionData->FillQueryFeatureValues(startOffset, queryFeatureValues, frameCostContext);
                 startOffset += m_rightFootPositionData->GetNumDimensions();
 
                 // Left foot velocity.
@@ -244,22 +240,22 @@ namespace EMotionFX
 
             for (const size_t frameIndex : behaviorInstance->GetNearestFrames())
             {
-                const Frame& frame = m_data.GetFrame(frameIndex);
+                const Frame& frame = m_frameDatabase.GetFrame(frameIndex);
 
                 if (frame.GetSampleTime() >= frame.GetSourceMotion()->GetDuration() - 1.0f)
                 {
                     continue;
                 }
 
-                const float leftFootPositionCost = m_leftFootPositionData->CalculateFrameCost(frameIndex, leftFootPosContext);
-                const float rightFootPositionCost = m_rightFootPositionData->CalculateFrameCost(frameIndex, rightFootPosContext);
+                const float leftFootPositionCost = m_leftFootPositionData->CalculateFrameCost(frameIndex, frameCostContext);
+                const float rightFootPositionCost = m_rightFootPositionData->CalculateFrameCost(frameIndex, frameCostContext);
                 
                 const float leftFootVelocityCost = m_leftFootVelocityData->CalculateFrameCost(frameIndex, leftFootVelocityContext);
                 const float rightFootVelocityCost = m_rightFootVelocityData->CalculateFrameCost(frameIndex, rightFootVelocityContext);
                 const float pelvisVelocityCost = m_pelvisVelocityData->CalculateFrameCost(frameIndex, pelvisVelocityContext);
-            
-                const float trajectoryPastCost = m_rootTrajectoryData->CalculatePastFrameCost(frameIndex, rootTrajectoryContext);
-                const float trajectoryFutureCost = m_rootTrajectoryData->CalculateFutureFrameCost(frameIndex, rootTrajectoryContext);
+
+                const float trajectoryPastCost = m_rootTrajectoryData->CalculatePastFrameCost(frameIndex, frameCostContext);
+                const float trajectoryFutureCost = m_rootTrajectoryData->CalculateFutureFrameCost(frameIndex, frameCostContext);
 
                 float totalCost =
                     m_factorWeights.m_footPositionFactor * leftFootPositionCost + m_factorWeights.m_footPositionFactor * rightFootPositionCost + // foot position
@@ -267,6 +263,7 @@ namespace EMotionFX
                     pelvisVelocityCost + // pelvis velocity
                     m_factorWeights.m_rootPastFactor * trajectoryPastCost + m_factorWeights.m_rootFutureFactor * trajectoryFutureCost; // trajectory
 
+                const Frame& currentFrame = m_frameDatabase.GetFrame(currentFrameIndex);
                 if (frame.GetSourceMotion() != currentFrame.GetSourceMotion())
                 {
                     totalCost *= m_factorWeights.m_differentMotionFactor;
@@ -311,8 +308,8 @@ namespace EMotionFX
             //AZ_Printf("EMotionFX", "Frame %d = %f    %f/%f   %d nearest",
             //    minCostFrameIndex,
             //    minCost,
-            //    m_data.GetFrame(minCostFrameIndex).GetSampleTime(),
-            //    m_data.GetFrame(minCostFrameIndex).GetSourceMotion()->GetMaxTime(),
+            //    m_frameDatabase.GetFrame(minCostFrameIndex).GetSampleTime(),
+            //    m_frameDatabase.GetFrame(minCostFrameIndex).GetSourceMotion()->GetMaxTime(),
             //    behaviorInstance->GetNearestFrames().size()
             //);
             return minCostFrameIndex;

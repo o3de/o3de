@@ -40,13 +40,13 @@ namespace EMotionFX
             {
                 size_t numFrames = 0;
                 size_t numDiscarded = 0;
-                std::tie(numFrames, numDiscarded) = m_data.ImportFrames(motion, settings.m_frameImportSettings, false);
+                std::tie(numFrames, numDiscarded) = m_frameDatabase.ImportFrames(motion, settings.m_frameImportSettings, false);
                 totalNumFramesImported += numFrames;
                 totalNumFramesDiscarded += numDiscarded;
 
                 if (settings.m_importMirrored)
                 {
-                    std::tie(numFrames, numDiscarded) = m_data.ImportFrames(motion, settings.m_frameImportSettings, true);
+                    std::tie(numFrames, numDiscarded) = m_frameDatabase.ImportFrames(motion, settings.m_frameImportSettings, true);
                     totalNumFramesImported += numFrames;
                     totalNumFramesDiscarded += numDiscarded;
                 }
@@ -64,7 +64,7 @@ namespace EMotionFX
             }
 
             // Now build the per frame data (slow).
-            if (!m_features.ExtractFeatures(settings.m_actorInstance, &m_data, settings.m_maxKdTreeDepth, settings.m_minFramesPerKdTreeNode))
+            if (!m_features.ExtractFeatures(settings.m_actorInstance, &m_frameDatabase, settings.m_maxKdTreeDepth, settings.m_minFramesPerKdTreeNode))
             {
                 AZ_Error("EMotionFX", false, "Failed to generate frame datas inside motion matching behavior.");
                 return false;

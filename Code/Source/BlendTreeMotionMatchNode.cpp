@@ -138,7 +138,7 @@ namespace EMotionFX
             m_behaviorInstance->Init(initSettings);
 
             const float initTime = timer.GetDeltaTimeInSeconds();
-            const size_t memUsage = m_behavior->GetData().CalcMemoryUsageInBytes();
+            const size_t memUsage = m_behavior->GetFrameDatabase().CalcMemoryUsageInBytes();
             AZ_Printf("EMotionFX", "[MotionMatching] Finished in %.2f seconds (mem usage=%d bytes or %.2f mb)", initTime, memUsage, memUsage / (float)(1024 * 1024));
             //---------------------------------
 

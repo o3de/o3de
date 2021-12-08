@@ -58,11 +58,50 @@ namespace EMotionFX
             queryFeatureValues[startIndex + 2] = context.m_velocity.GetZ();
         }
 
-        void FeatureVelocity::ExtractFeatureValues(const ExtractFrameContext& context)
+        void FeatureVelocity::ExtractFeatureValues(const ExtractFeatureContext& context)
         {
             AZ::Vector3 velocity;
-            CalculateVelocity(m_nodeIndex, m_relativeToNodeIndex, context.m_motionInstance, velocity);
+            CalculateVelocity(context.m_actorInstance, m_nodeIndex, m_relativeToNodeIndex, context.m_frameDatabase->GetFrame(context.m_frameIndex), velocity);
+            
             SetFeatureData(context.m_featureMatrix, context.m_frameIndex, velocity);
+        }
+
+        void FeatureVelocity::DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
+            BehaviorInstance* behaviorInstance,
+            const AZ::Vector3& velocity,
+            size_t jointIndex,
+            size_t relativeToJointIndex,
+            const AZ::Color& color)
+        {
+            // Don't visualize joints that remain motionless (zero velocity).
+            if (velocity.GetLength() < AZ::Constants::FloatEpsilon)
+            {
+                return;
+            }
+
+            const float scale = 0.15f;
+            const ActorInstance* actorInstance = behaviorInstance->GetActorInstance();
+            const Pose* pose = actorInstance->GetTransformData()->GetCurrentPose();
+            const Transform jointModelTM = pose->GetModelSpaceTransform(jointIndex);
+            const Transform relativeToWorldTM = pose->GetWorldSpaceTransform(relativeToJointIndex);
+            const AZ::Vector3 jointPosition = relativeToWorldTM.TransformPoint(jointModelTM.m_position);
+            const AZ::Vector3 velocityWorldSpace = relativeToWorldTM.TransformVector(velocity * scale);
+            const AZ::Vector3 arrowPosition = jointPosition + velocityWorldSpace;
+
+            debugDisplay.DepthTestOff();
+            debugDisplay.SetColor(color);
+
+            debugDisplay.DrawSolidCylinder(/*center=*/(arrowPosition + jointPosition) * 0.5f,
+                /*direction=*/(arrowPosition - jointPosition).GetNormalizedSafe(),
+                /*radius=*/0.003f,
+                /*height=*/(arrowPosition - jointPosition).GetLength(),
+                /*drawShaded=*/false);
+
+            debugDisplay.DrawSolidCone(jointPosition + velocityWorldSpace,
+                velocityWorldSpace ,
+                0.1f * scale,
+                scale * 0.5f,
+                /*drawShaded=*/false);
         }
 
         void FeatureVelocity::DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
@@ -76,36 +115,7 @@ namespace EMotionFX
 
             const Behavior* behavior = behaviorInstance->GetBehavior();
             const AZ::Vector3 velocity = GetFeatureData(behavior->GetFeatures().GetFeatureMatrix(), frameIndex);
-
-            // Don't visualize joints that remain motionless (zero velocity).
-            if (velocity.GetLength() < AZ::Constants::FloatEpsilon)
-            {
-                return;
-            }
-
-            const float scale = 0.15f;
-            const ActorInstance* actorInstance = behaviorInstance->GetActorInstance();
-            const Pose* pose = actorInstance->GetTransformData()->GetCurrentPose();
-            const Transform jointModelTM = pose->GetModelSpaceTransform(m_nodeIndex);
-            const Transform relativeToWorldTM = pose->GetWorldSpaceTransform(m_relativeToNodeIndex);
-            const AZ::Vector3 jointPosition = relativeToWorldTM.TransformPoint(jointModelTM.m_position);
-            const AZ::Vector3 velocityWorldSpace = relativeToWorldTM.TransformVector(velocity * scale);
-            const AZ::Vector3 arrowPosition = jointPosition + velocityWorldSpace;
-
-            debugDisplay.DepthTestOff();
-            debugDisplay.SetColor(m_debugColor);
-
-            debugDisplay.DrawSolidCylinder(/*center=*/(arrowPosition + jointPosition) * 0.5f,
-                /*direction=*/(arrowPosition - jointPosition).GetNormalizedSafe(),
-                /*radius=*/0.003f,
-                /*height=*/(arrowPosition - jointPosition).GetLength(),
-                /*drawShaded=*/false);
-
-            debugDisplay.DrawSolidCone(jointPosition + velocityWorldSpace,
-                velocityWorldSpace ,
-                0.1f * scale,
-                scale * 0.5f,
-                /*drawShaded=*/false);
+            DebugDraw(debugDisplay, behaviorInstance, velocity, m_nodeIndex, m_relativeToNodeIndex, m_debugColor);
         }
 
         float FeatureVelocity::CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const

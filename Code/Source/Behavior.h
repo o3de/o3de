@@ -64,19 +64,19 @@ namespace EMotionFX
                 [[maybe_unused]] BehaviorInstance* behaviorInstance) {}
             virtual FeatureTrajectory* GetTrajectoryFeature() const = 0;
 
-            virtual size_t FindLowestCostFrameIndex(BehaviorInstance* behaviorInstance, const Pose& inputPose, const Pose& previousPose, size_t currentFrameIndex, float timeDelta) = 0;
+            virtual size_t FindLowestCostFrameIndex(BehaviorInstance* behaviorInstance, const Pose& currentPose, size_t currentFrameIndex) = 0;
 
             static void Reflect(AZ::ReflectContext* context);
             static Behavior* CreateBehaviorByType(const AZ::TypeId& typeId);
 
-            AZ_INLINE const FrameDatabase& GetData() const { return m_data; }
-            AZ_INLINE FrameDatabase& GetData() { return m_data; }
+            const FrameDatabase& GetFrameDatabase() const { return m_frameDatabase; }
+            FrameDatabase& GetFrameDatabase() { return m_frameDatabase; }
 
             const FeatureDatabase& GetFeatures() const { return m_features; }
             FeatureDatabase& GetFeatures() { return m_features; }
 
         protected:
-            FrameDatabase m_data; /**< The frames and their data. */
+            FrameDatabase m_frameDatabase; /**< The frames and their data. */
             FeatureDatabase m_features;
             float m_newMotionTime = 0.0f; /**< New motion instance time before sync. */
         };

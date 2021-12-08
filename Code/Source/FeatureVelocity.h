@@ -43,7 +43,15 @@ namespace EMotionFX
             ~FeatureVelocity() override = default;
 
             bool Init(const InitSettings& settings) override;
-            void ExtractFeatureValues(const ExtractFrameContext& context) override;
+            void ExtractFeatureValues(const ExtractFeatureContext& context) override;
+
+            static void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
+                BehaviorInstance* behaviorInstance,
+                const AZ::Vector3& velocity, // in world space
+                size_t jointIndex,
+                size_t relativeToJointIndex,
+                const AZ::Color& color);
+
             void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
                 BehaviorInstance* behaviorInstance,
                 size_t frameIndex) override;
