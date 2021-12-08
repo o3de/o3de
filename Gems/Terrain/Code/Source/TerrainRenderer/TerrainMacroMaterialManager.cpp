@@ -5,11 +5,3 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#pragma once
-
-// Please review README.md to understand how this file is used in ViewSrg.azsrg generation
-
-#ifdef AZ_COLLECTING_PARTIAL_SRGS
-#include <Atom/Feature/Common/Assets/ShaderResourceGroups/ViewSrg.azsli>
-#endif

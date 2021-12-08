@@ -6,6 +6,7 @@
  */
 
 #include <Atom/Features/SrgSemantics.azsli>
+#include <scenesrg.srgi>
 #include <viewsrg.srgi>
 #include "TerrainCommon.azsli"
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
@@ -18,9 +19,29 @@ struct VSDepthOutput
 VSDepthOutput MainVS(in VertexInput input)
 {
     VSDepthOutput output;
-    ObjectSrg::TerrainData terrainData = ObjectSrg::m_terrainData;
 
-    float2 origUv = lerp(terrainData.m_uvMin, terrainData.m_uvMax, input.m_uv);
-    output.m_position = GetTerrainProjectedPosition(terrainData, input.m_position, origUv);
+    HeightContext heightContext;
+    heightContext.Initialize(SceneSrg::m_heightmapImage, input.m_position, ObjectSrg::m_patchData, SceneSrg::m_terrainWorldData.m_min, SceneSrg::m_terrainWorldData.m_max);
+
+    if (heightContext.IsVertexOutsideOfTerrainBounds())
+    {
+        output.m_position = 1.0 / 0.0;
+        return output;
+    }
+
+    float height = 0.0;
+
+    if (o_useTerrainSmoothing)
+    {
+        height = heightContext.GetSmoothedHeight(SceneSrg::m_heightmapImage, SceneSrg::HeightmapSampler);
+    }
+    else
+    {
+        height = heightContext.GetHeight(SceneSrg::m_heightmapImage);
+    }
+
+    float3 worldPosition = float3(heightContext.m_xyPosition, height);
+    output.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPosition, 1.0));
+    
     return output;
 }
