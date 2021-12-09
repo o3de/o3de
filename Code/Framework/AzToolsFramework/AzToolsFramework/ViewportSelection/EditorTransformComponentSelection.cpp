@@ -2504,6 +2504,29 @@ namespace AzToolsFramework
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
+        // Do not create manipulators for the container entity of the focused prefab.
+        if (auto prefabFocusPublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusPublicInterface>::Get())
+        {
+            AzFramework::EntityContextId editorEntityContextId = GetEntityContextId();
+            if (AZ::EntityId focusRoot = prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId);
+                focusRoot.IsValid())
+            {
+                m_selectedEntityIds.erase(focusRoot);
+            }
+        }
+
+        // Do not create manipulators for any entities marked as read only
+        if (auto readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get())
+        {
+            AZStd::erase_if(
+                m_selectedEntityIds,
+                [readOnlyEntityPublicInterface](auto entityId)
+            {
+                return readOnlyEntityPublicInterface->IsReadOnly(entityId);
+            }
+            );
+        }
+
         // note: create/destroy pattern to be addressed
         DestroyManipulators(m_entityIdManipulators);
         CreateEntityIdManipulators();
@@ -3635,29 +3658,6 @@ namespace AzToolsFramework
         m_selectedEntityIds.clear();
         m_selectedEntityIds.reserve(selectedEntityIds.size());
         AZStd::copy(selectedEntityIds.begin(), selectedEntityIds.end(), AZStd::inserter(m_selectedEntityIds, m_selectedEntityIds.end()));
-
-        // Do not create manipulators for the container entity of the focused prefab.
-        if (auto prefabFocusPublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusPublicInterface>::Get())
-        {
-            AzFramework::EntityContextId editorEntityContextId = GetEntityContextId();
-            if (AZ::EntityId focusRoot = prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId);
-                focusRoot.IsValid())
-            {
-                m_selectedEntityIds.erase(focusRoot);
-            }
-        }
-
-        // Do not create manipulators for any entities marked as read only
-        if (auto readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get())
-        {
-            AZStd::erase_if(
-                m_selectedEntityIds,
-                [readOnlyEntityPublicInterface](auto entityId)
-                {
-                    return readOnlyEntityPublicInterface->IsReadOnly(entityId);
-                }
-            );
-        }
     }
 
     void EditorTransformComponentSelection::OnTransformChanged(
