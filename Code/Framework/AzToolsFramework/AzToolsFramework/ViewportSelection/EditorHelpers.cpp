@@ -213,6 +213,8 @@ namespace AzToolsFramework
                         screenCoords.m_y >= screenPosition.m_y - iconRange && screenCoords.m_y <= screenPosition.m_y + iconRange &&
                         ndcPoint.GetZ() < closestDistance)
                     {
+                        // use ndc z value for distance here which is in 0-1 range so will most likely 'win' when it comes to the
+                        // distance check (this is what we want as the cursor should always favor icons if they are hovered)
                         closestDistance = ndcPoint.GetZ();
                         entityIdUnderCursor = entityId;
                     }
