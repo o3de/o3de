@@ -1254,9 +1254,9 @@
                     "displayName": "    Scale",
                     "description": "Strength of transmission",
                     "type": "float",
-                    "defaultValue": 3.0,
+                    "defaultValue": 0.01,
                     "min": 0.0,
-                    "softMax": 100.0
+                    "softMax": 1.0
                 }
             ],
             "detailLayerGroup": [

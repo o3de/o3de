@@ -65,18 +65,18 @@ float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightI
             
             {
                 // Irradiance arround surface point. 
-                // Begin the transmittance dot product slightly before it would with the regular dot(N,L)
-                float E = max(lightingData.angleOffset + dot(-surface.normal, dirToLight),0.0);
+                // Increase angle of influence (angle(N,L) -> angle(N,L) + acos(angleOffset)) to smoothen transition regions
+                float3 E = surface.albedo * max(lightingData.angleOffset + dot(-surface.normal, dirToLight),0.0);
 
-                // Transmission distance computed from shadowmaps modulated by editor-exposed parameters
-                float s = transmissionDistance * surface.transmission.thickness * (100 - transmissionParams.w);
+                // Transmission distance modulated by editor-exposed scale parameter
+                float s = transmissionDistance / (transmissionParams.w * transmissionParams.w);
                 
                 // Use scattering color to weight thin object transmission color
                 const float3 invScattering = rcp(transmissionParams.xyz);
                 
                 // Albedo at front (surface point) is used to approximate irradiance at the back of the object
                 // See observation 4 in [Jimenez J. et al, 2010] 
-                result = TransmissionKernel(s, invScattering) * lightIntensity * surface.albedo * E;
+                result = TransmissionKernel(s, invScattering) * lightIntensity * E;
                 // result = T(s) * lightIntensity * surface.albedo * E;
             }
             break;
