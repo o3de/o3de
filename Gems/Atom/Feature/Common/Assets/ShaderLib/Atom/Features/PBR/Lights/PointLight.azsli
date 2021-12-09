@@ -104,7 +104,7 @@ void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingD
             }
             else if (o_transmission_mode == TransmissionMode::ThinObject)
             {
-                transmissionDistance = ProjectedShadow::GetThickness(shadowIndex, surface.position - lightingData.shrinkFactor * surface.normal);
+                transmissionDistance = ProjectedShadow::GetThickness(shadowIndex, surface.position - lightingData.shrinkFactor * surface.vertexNormal);
             }                   
         }
 
