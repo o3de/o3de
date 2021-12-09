@@ -79,7 +79,7 @@ namespace AZ::MeshBuilder
 
     // optimize the weight data
     void MeshBuilderSkinningInfo::Optimize(
-        AZStd::vector<Influence>& influences, [[maybe_unused]] AZ::u32 maxNumWeightsPerVertex, [[maybe_unused]] float weightThreshold)
+        AZStd::vector<Influence>& influences, AZ::u32 maxNumWeightsPerVertex, float weightThreshold)
     {
         // gather all weights
         const size_t numInfluences = influences.size();
