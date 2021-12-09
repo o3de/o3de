@@ -31,7 +31,7 @@ namespace ScriptCanvasEditor
                 , AZStd::vector<SourceHandle>&& assets
                 , AZStd::function<void()> onComplete);
 
-            virtual ~Modifier();
+            ~Modifier();
 
             const ModificationResults& GetResult() const;
             ModificationResults&& TakeResult();

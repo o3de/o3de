@@ -295,6 +295,8 @@ namespace ScriptCanvasEditor
         EditorScriptCanvasComponentLoggingBus::Handler::BusConnect(entityId);
         EditorLoggingComponentNotificationBus::Broadcast(&EditorLoggingComponentNotifications::OnEditorScriptCanvasComponentActivated, GetNamedEntityId(), GetGraphIdentifier());
 
+        CompleteDescriptionInPlace(m_sourceHandle);
+
         AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree_NewContent);
     }
 
