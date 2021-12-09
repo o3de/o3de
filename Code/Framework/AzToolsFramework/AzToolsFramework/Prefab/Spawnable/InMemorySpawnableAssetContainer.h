@@ -38,7 +38,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         };
         using SpawnableAssets = AZStd::unordered_map<AZStd::string, SpawnableAssetData>;
 
-        virtual ~InMemorySpawnableAssetContainer();
+        ~InMemorySpawnableAssetContainer();
 
         bool Activate(AZStd::string_view stackProfile);
         void Deactivate();

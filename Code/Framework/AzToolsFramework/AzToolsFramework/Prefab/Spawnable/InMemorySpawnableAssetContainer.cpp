@@ -23,13 +23,14 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 
     bool InMemorySpawnableAssetContainer::Activate(AZStd::string_view stackProfile)
     {
-        AZ_Assert(!IsActivated(), "TempSpawnableAssetsCache - TempSpawnableAssetsCache is currently activated");
+        AZ_Assert(!IsActivated(),
+            "InMemorySpawnableAssetContainer - Unable to activate an instance of InMemorySpawnableAssetContainer as the instance is already active.");
 
         m_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
-        AZ_Assert(m_prefabSystemComponentInterface, "TempSpawnableAssetsCache - Could not retrieve instance of PrefabSystemComponentInterface");
+        AZ_Assert(m_prefabSystemComponentInterface, "InMemorySpawnableAssetContainer - Could not retrieve instance of PrefabSystemComponentInterface");
 
         m_loaderInterface = AZ::Interface<Prefab::PrefabLoaderInterface>::Get();
-        AZ_Assert(m_loaderInterface, "TempSpawnableAssetsCache - Could not retrieve instance of PrefabLoaderInterface");
+        AZ_Assert(m_loaderInterface, "InMemorySpawnableAssetContainer - Could not retrieve instance of PrefabLoaderInterface");
 
         m_stockProfile = stackProfile;
         return m_converter.LoadStackProfile(m_stockProfile);
@@ -71,7 +72,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         }
     }
 
-    InMemorySpawnableAssetContainer::RemoveSpawnableResult InMemorySpawnableAssetContainer::RemoveInMemorySpawnableAsset(AZStd::string_view spawnableName)
+    auto InMemorySpawnableAssetContainer::RemoveInMemorySpawnableAsset(AZStd::string_view spawnableName) -> RemoveSpawnableResult
     {
         auto found = m_spawnableAssets.find(spawnableName);
         if (found == m_spawnableAssets.end())
@@ -127,12 +128,13 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         size_t targetSpawnableIndex = NoTargetSpawnable;
         AZStd::vector<AZ::Data::AssetId> assetIds;
         SpawnableAssetData spawnableAssetData;
-        AZStd::string rootProductId = AZStd::string::format("%.*s.%s", AZ_STRING_ARG(spawnableName), AzFramework::Spawnable::FileExtension);
+        AZStd::string rootProductId(spawnableName);
+        rootProductId += AzFramework::Spawnable::DotFileExtension;
 
         // Create temporary assets from the processed data.
         for (auto& product : context.GetProcessedObjects())
         {
-            if (product.GetAssetType() == AZ::AzTypeInfo<AzFramework::Spawnable>::Uuid() && product.GetId() == rootProductId)
+            if (product.GetAssetType() == azrtti_typeid<AzFramework::Spawnable>() && product.GetId() == rootProductId)
             {
                 targetSpawnableIndex = spawnableAssetData.m_assets.size();
             }

@@ -7,16 +7,17 @@
             {
                 "Processing":
                 {
-                    "Stack": {
-                        "PlayInEditor": 
+                    "Stack":
+                    {
+                        "PlayInEditor":
                         [
                             { "$type": "AzToolsFramework::Prefab::PrefabConversionUtils::EditorInfoRemover" },
                             { "$type": "AzToolsFramework::Prefab::PrefabConversionUtils::PrefabCatchmentProcessor" }
                         ],
-                        "GameObjectCreation": 
+                        "GameObjectCreation":
                         [
                             { "$type": "AzToolsFramework::Prefab::PrefabConversionUtils::EditorInfoRemover" },
-                            {
+                            { 
                                 "$type": "AzToolsFramework::Prefab::PrefabConversionUtils::PrefabCatchmentProcessor",
                                 "SerializationFormat": "Binary" // Options are "Binary" (default) or "Text". Prefer "Binary" for performance.
                             }
