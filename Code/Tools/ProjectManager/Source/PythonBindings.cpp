@@ -688,24 +688,8 @@ namespace O3DE::ProjectManager
             auto createProjectResult = m_engineTemplate.attr("create_project")(
                 projectPath,
                 QString_To_Py_String(projectInfo.m_projectName), // project_path
-                QString_To_Py_Path(projectTemplatePath), // template_path
-                pybind11::none(), // template_name
-                pybind11::none(), // project_restricted_path
-                pybind11::none(), // project_restricted_name
-                pybind11::none(), // template_restricted_path
-                pybind11::none(), // template_restricted_name
-                pybind11::none(), // project_restricted_platform_relative_path
-                pybind11::none(), // template_restricted_platform_relative_path
-                pybind11::none(), // keep_restricted_in_project
-                pybind11::none(), // keep_license_text
-                pybind11::none(), // replace
-                pybind11::none(), // force
-                pybind11::none(), // no_register
-                pybind11::none(), // system_component_class_id
-                pybind11::none(), // editor_system_component_class_id
-                pybind11::none(), // module_id
-                QString_To_Py_String(projectInfo.m_id) // project_id
-                );
+                QString_To_Py_Path(projectTemplatePath)          // template_path
+            );
             if (createProjectResult.cast<int>() == 0)
             {
                 createdProjectInfo = ProjectInfoFromPath(projectPath);

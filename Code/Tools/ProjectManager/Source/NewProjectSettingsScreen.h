@@ -47,7 +47,6 @@ namespace O3DE::ProjectManager
     private:
         QString GetDefaultProjectName();
         QString GetDefaultProjectPath();
-        QString GenerateNewProjectId();
         QString GetProjectAutoPath();
         QFrame* CreateTemplateDetails(int margin);
         void UpdateTemplateDetails(const ProjectTemplateInfo& templateInfo);

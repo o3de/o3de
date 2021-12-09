@@ -33,13 +33,16 @@ namespace O3DE::ProjectManager
     public slots:
         void UpdateProjectPreviewPath();
         void PreviewPathChanged();
+        void OnProjectIdUpdated();
 
     protected:
         bool ValidateProjectPath() override;
         virtual bool ValidateProjectPreview();
+        bool ValidateProjectId();
 
         FormBrowseEditWidget* m_projectPreview;
         QLabel* m_projectPreviewImage;
+        FormLineEditWidget* m_projectId;
 
         ProjectInfo m_projectInfo;
         bool m_userChangedPreview; //! Did the user change the project preview path

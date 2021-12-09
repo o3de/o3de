@@ -45,6 +45,10 @@ namespace O3DE::ProjectManager
         previewExtrasLayout->addWidget(m_projectPreviewImage);
 
         m_verticalLayout->addLayout(previewExtrasLayout);
+
+        m_projectId = new FormLineEditWidget(tr("Project ID"), "", this);
+        connect(m_projectId->lineEdit(), &QLineEdit::textChanged, this, &UpdateProjectSettingsScreen::OnProjectIdUpdated);
+        m_verticalLayout->addWidget(m_projectId);
     }
 
     ProjectManagerScreen UpdateProjectSettingsScreen::GetScreenEnum()
@@ -90,7 +94,7 @@ namespace O3DE::ProjectManager
 
     bool UpdateProjectSettingsScreen::Validate()
     {
-        return ProjectSettingsScreen::Validate() && ValidateProjectPreview();
+        return ProjectSettingsScreen::Validate() && ValidateProjectPreview() && ValidateProjectId();
     }
 
     void UpdateProjectSettingsScreen::ResetProjectPreviewPath()
@@ -106,6 +110,11 @@ namespace O3DE::ProjectManager
         // Update with latest image
         m_projectPreviewImage->setPixmap(
             QPixmap(m_projectPreview->lineEdit()->text()).scaled(m_projectPreviewImage->size(), Qt::KeepAspectRatioByExpanding));
+    }
+
+    void UpdateProjectSettingsScreen::OnProjectIdUpdated()
+    {
+        ValidateProjectId();
     }
 
     bool UpdateProjectSettingsScreen::ValidateProjectPath()
@@ -155,6 +164,19 @@ namespace O3DE::ProjectManager
 
         m_projectPreview->setErrorLabelVisible(!projectPreviewIsValid);
         return projectPreviewIsValid;
+    }
+
+    bool UpdateProjectSettingsScreen::ValidateProjectId()
+    {
+        bool projectIdIsValid = true;
+        if (m_projectId->lineEdit()->text().isEmpty())
+        {
+            projectIdIsValid = false;
+            m_projectId->setErrorLabelText(tr("Project ID cannot be empty."));
+        }
+
+        m_projectId->setErrorLabelVisible(!projectIdIsValid);
+        return projectIdIsValid;
     }
 
 } // namespace O3DE::ProjectManager
