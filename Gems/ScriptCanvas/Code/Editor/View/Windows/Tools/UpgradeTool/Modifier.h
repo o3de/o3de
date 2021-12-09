@@ -9,17 +9,23 @@
 #pragma once
 
 #include <AzCore/Component/TickBus.h>
+#include <AzFramework/Asset/AssetSystemBus.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/FileSaver.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/ModelTraits.h>
 #include <ScriptCanvas/Core/Core.h>
+
+// probably not needed if using the asset system bus
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
 namespace ScriptCanvasEditor
 {
     namespace VersionExplorer
     {
-        class Modifier
-            : private AZ::SystemTickBus::Handler
-            , private ModificationNotificationsBus::Handler
+        class Modifier final
+            : public AZ::SystemTickBus::Handler
+            , public ModificationNotificationsBus::Handler
+            , public AzToolsFramework::AssetSystemBus::Handler
+            , public AzFramework::AssetSystemInfoBus::Handler
         {
         public:
             AZ_CLASS_ALLOCATOR(Modifier, AZ::SystemAllocator, 0);
@@ -28,6 +34,8 @@ namespace ScriptCanvasEditor
                 ( const ModifyConfiguration& modification
                 , AZStd::vector<SourceHandle>&& assets
                 , AZStd::function<void()> onComplete);
+
+            virtual ~Modifier();
 
             const ModificationResults& GetResult() const;
             ModificationResults&& TakeResult();
@@ -56,6 +64,8 @@ namespace ScriptCanvasEditor
             enum class ModifyState
             {
                 Idle,
+                WaitingForDependencyProcessing,
+                StartModification,
                 InProgress,
                 Saving,
                 ReportResult
@@ -82,13 +92,27 @@ namespace ScriptCanvasEditor
             ModificationResults m_results;
             AZStd::unique_ptr<FileSaver> m_fileSaver;
             FileSaveResult m_fileSaveResult;
+            AZStd::unordered_set<AZ::Uuid> m_attemptedAssets;
+            AZStd::unordered_set<AZ::Uuid> m_assetsCompletedByAP;
+            AZStd::unordered_set<AZ::Uuid> m_assetsFailedByAP;
+            AZStd::chrono::system_clock::time_point m_waitLogTimeStamp;
+            AZStd::chrono::system_clock::time_point m_waitTimeStamp;
+            AZStd::unordered_set<AZStd::string> m_successNotifications;
+            AZStd::unordered_set<AZStd::string> m_failureNotifications;
 
-            size_t GetCurrentIndex() const;
+            bool AllDependenciesCleared(const AZStd::unordered_set<size_t>& dependencies) const;
+            bool AnyDependenciesFailed(const AZStd::unordered_set<size_t>& dependencies) const;
+            AZStd::sys_time_t CalculateRemainingWaitTime(const AZStd::unordered_set<size_t>& dependencies) const;
+            void CheckDependencies();
             void GatherDependencies();
+            size_t GetCurrentIndex() const;
+            const AZStd::unordered_set<size_t>* GetDependencies(size_t index) const;
             AZStd::unordered_set<size_t>& GetOrCreateDependencyIndexSet();
+            void InitializeResult();
             void LoadAsset();
             void ModifyCurrentAsset();
-            void ModifyNextAsset();
+            void NextAsset();
+            void NextModification();
             void ModificationComplete(const ModificationResult& result) override;
             void ReleaseCurrentAsset();
             void ReportModificationError(AZStd::string_view report);
@@ -96,10 +120,20 @@ namespace ScriptCanvasEditor
             void ReportSaveResult();
             void SaveModifiedGraph(const ModificationResult& result);
             void SortGraphsByDependencies();
+
+
+            /// use all this to track the success of dependencies
+            void SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
+            void SourceFileFailed(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
+            void AssetCompilationSuccess(const AZStd::string& assetPath) override;
+            void AssetCompilationFailed(const AZStd::string& assetPath) override;
+            void ProcessNotifications();
+
             void OnFileSaveComplete(const FileSaveResult& result);
             void OnSystemTick() override;
             void TickGatherDependencies();
             void TickUpdateGraph();
+            void WaitForDependencies();
         };
     }
 }
