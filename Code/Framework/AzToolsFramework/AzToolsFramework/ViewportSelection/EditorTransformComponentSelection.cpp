@@ -2504,7 +2504,7 @@ namespace AzToolsFramework
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-        // Do not create manipulators for the container entity of the focused prefab.
+        // do not create manipulators for the container entity of the focused prefab.
         if (auto prefabFocusPublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusPublicInterface>::Get())
         {
             AzFramework::EntityContextId editorEntityContextId = GetEntityContextId();
@@ -2515,7 +2515,7 @@ namespace AzToolsFramework
             }
         }
 
-        // Do not create manipulators for any entities marked as read only
+        // do not create manipulators for any entities marked as read only
         if (auto readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get())
         {
             AZStd::erase_if(
