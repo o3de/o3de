@@ -11,7 +11,7 @@
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/RTTI/TypeInfo.h>
-#include <AzCore/Memory/BestFitExternalMapSchema.h>
+#include <AzCore/Memory/BestFitExternalMapAllocator.h>
 #include <AzCore/Memory/HeapSchema.h>
 #include <AzCore/Memory/HphaSchema.h>
 #include <AzCore/Memory/MallocSchema.h>
@@ -92,10 +92,10 @@ namespace Benchmark
     /// Basic allocator used as a baseline. This allocator is the most basic allocation possible with the OS (AZ_OS_MALLOC).
     /// MallocSchema cannot be used here because it has extra logic that we don't want to use as a baseline.
     /// </summary>
-    class TestRawMallocAllocator {};
+    class RawMallocAllocator {};
 
     template<>
-    class TestAllocatorWrapper<TestRawMallocAllocator>
+    class TestAllocatorWrapper<RawMallocAllocator>
     {
     public:
         TestAllocatorWrapper()
@@ -113,17 +113,11 @@ namespace Benchmark
         }
 
         // IAllocatorAllocate
-        static void* Allocate(size_t byteSize, size_t alignment)
+        static void* Allocate(size_t byteSize, size_t)
         {
             s_numAllocatedBytes += byteSize;
-            if (alignment)
-            {
-                return AZ_OS_MALLOC(byteSize, alignment);
-            }
-            else
-            {
-                return AZ_OS_MALLOC(byteSize, 1);
-            }
+            // Don't pass an alignment since we wont be able to get the memory size without also passing the alignment
+            return AZ_OS_MALLOC(byteSize, 1);
         }
 
         static void DeAllocate(void* ptr, size_t = 0)
@@ -132,20 +126,13 @@ namespace Benchmark
             AZ_OS_FREE(ptr);
         }
 
-        static void* ReAllocate(void* ptr, size_t newSize, size_t newAlignment)
+        static void* ReAllocate(void* ptr, size_t newSize, size_t)
         {
             s_numAllocatedBytes -= Platform::GetMemorySize(ptr);
             AZ_OS_FREE(ptr);
 
             s_numAllocatedBytes += newSize;
-            if (newAlignment)
-            {
-                return AZ_OS_MALLOC(newSize, newAlignment);
-            }
-            else
-            {
-                return AZ_OS_MALLOC(newSize, 1);
-            }
+            return AZ_OS_MALLOC(newSize, 1);
         }
 
         static size_t Resize(void* ptr, size_t newSize)
@@ -172,50 +159,46 @@ namespace Benchmark
         static size_t s_numAllocatedBytes;
     };
 
-    size_t TestAllocatorWrapper<TestRawMallocAllocator>::s_numAllocatedBytes = 0;
+    size_t TestAllocatorWrapper<RawMallocAllocator>::s_numAllocatedBytes = 0;
 
-    // Here we require to implement this to be able to configure a name for the allocator, otherswise the AllocatorManager crashes when trying to configure the overrides
-    class TestMallocSchemaAllocator : public AZ::SimpleSchemaAllocator<AZ::MallocSchema>
+    // Some allocator are not fully declared, those we simply setup from the schema
+    class MallocSchemaAllocator : public AZ::SimpleSchemaAllocator<AZ::MallocSchema>
     {
     public:
-        AZ_TYPE_INFO(TestMallocSchemaAllocator, "{3E68224F-E676-402C-8276-CE4B49C05E89}");
+        AZ_TYPE_INFO(MallocSchemaAllocator, "{3E68224F-E676-402C-8276-CE4B49C05E89}");
 
-        TestMallocSchemaAllocator()
-            : AZ::SimpleSchemaAllocator<AZ::MallocSchema>("TestMallocSchemaAllocator", "")
+        MallocSchemaAllocator()
+            : AZ::SimpleSchemaAllocator<AZ::MallocSchema>("MallocSchemaAllocator", "")
         {}
     };
 
-    class TestHeapSchemaAllocator : public AZ::SimpleSchemaAllocator<AZ::HeapSchema>
+    // We use both this HphaSchemaAllocator and the SystemAllocator configured with Hpha because the SystemAllocator
+    // has extra things
+    class HphaSchemaAllocator : public AZ::SimpleSchemaAllocator<AZ::HphaSchema>
     {
     public:
-        AZ_TYPE_INFO(TestHeapSchemaAllocator, "{456E6C30-AA84-488F-BE47-5C1E6AF636B7}");
+        AZ_TYPE_INFO(HphaSchemaAllocator, "{6563AB4B-A68E-4499-8C98-D61D640D1F7F}");
 
-        TestHeapSchemaAllocator()
-            : AZ::SimpleSchemaAllocator<AZ::HeapSchema>("TestHeapSchemaAllocator", "")
-        {}
-    };
-
-    class TestHphaSchemaAllocator : public AZ::SimpleSchemaAllocator<AZ::HphaSchema>
-    {
-    public:
-        AZ_TYPE_INFO(TestHphaSchemaAllocator, "{6563AB4B-A68E-4499-8C98-D61D640D1F7F}");
-
-        TestHphaSchemaAllocator()
+        HphaSchemaAllocator()
             : AZ::SimpleSchemaAllocator<AZ::HphaSchema>("TestHphaSchemaAllocator", "")
         {}
     };
 
+    // For the SystemAllocator we inherit so we have a different stack. The SystemAllocator is used globally so we dont want
+    // to get that data affecting the benchmark
     class TestSystemAllocator : public AZ::SystemAllocator
     {
     public:
         AZ_TYPE_INFO(TestSystemAllocator, "{360D4DAA-D65D-4D5C-A6FA-1A4C5261C35C}");
+
+        TestSystemAllocator()
+            : AZ::SystemAllocator()
+        {
+        }
     };
 
     // Allocated bytes reported by the allocator
     static const char* s_counterAllocatorMemory = "Allocator_Memory";
-
-    // Allocated bytes reported by the process
-    static const char* s_counterProcessMemory = "Process_Memory";
 
     // Allocated bytes as counted by the benchmark
     static const char* s_counterBenchmarkMemory = "Benchmark_Memory";
@@ -310,8 +293,7 @@ namespace Benchmark
             for (auto _ : state)
             {
                 state.PauseTiming();
-                const size_t processMemoryBaseline = Platform::GetProcessMemoryUsageBytes();
-
+                
                 AZStd::vector<void*>& perThreadAllocations = base::GetPerThreadAllocations(state.thread_index);
                 const size_t numberOfAllocations = perThreadAllocations.size();
                 size_t totalAllocationSize = 0;
@@ -327,7 +309,6 @@ namespace Benchmark
                 }
 
                 state.counters[s_counterAllocatorMemory] = benchmark::Counter(static_cast<double>(TestAllocatorType::NumAllocatedBytes()), benchmark::Counter::kDefaults);
-                state.counters[s_counterProcessMemory] = benchmark::Counter(static_cast<double>(Platform::GetProcessMemoryUsageBytes() - processMemoryBaseline), benchmark::Counter::kDefaults);
                 state.counters[s_counterBenchmarkMemory] = benchmark::Counter(static_cast<double>(totalAllocationSize), benchmark::Counter::kDefaults);
 
                 for (size_t allocationIndex = 0; allocationIndex < numberOfAllocations; ++allocationIndex)
@@ -358,7 +339,6 @@ namespace Benchmark
             {
                 state.PauseTiming();
                 AZStd::vector<void*>& perThreadAllocations = base::GetPerThreadAllocations(state.thread_index);
-                const size_t processMemoryBaseline = Platform::GetProcessMemoryUsageBytes();
 
                 const size_t numberOfAllocations = perThreadAllocations.size();
                 size_t totalAllocationSize = 0;
@@ -381,7 +361,6 @@ namespace Benchmark
                 }
 
                 state.counters[s_counterAllocatorMemory] = benchmark::Counter(static_cast<double>(TestAllocatorType::NumAllocatedBytes()), benchmark::Counter::kDefaults);
-                state.counters[s_counterProcessMemory] = benchmark::Counter(static_cast<double>(Platform::GetProcessMemoryUsageBytes() - processMemoryBaseline), benchmark::Counter::kDefaults);
                 state.counters[s_counterBenchmarkMemory] = benchmark::Counter(static_cast<double>(totalAllocationSize), benchmark::Counter::kDefaults);
 
                 state.SetItemsProcessed(numberOfAllocations);
@@ -452,11 +431,10 @@ namespace Benchmark
                 AZStd::array<AllocatorOperation, allocationOperationCount> m_operations = {};
                 [[maybe_unused]] const size_t operationSize = sizeof(AllocatorOperation);
 
-                const size_t processMemoryBaseline = Platform::GetProcessMemoryUsageBytes();
                 size_t totalAllocationSize = 0;
                 size_t itemsProcessed = 0;
 
-                for (size_t i = 0; i < 100; ++i) // replay the recording, this way we can keep a smaller recording
+                for (size_t i = 0; i < 100; ++i) // play the recording multiple times to get a good stable sample, this way we can keep a smaller recording
                 {
                     AZ::IO::SystemFile file;
                     AZ::IO::FixedMaxPathString filePath = AZ::Utils::GetExecutableDirectory();
@@ -538,7 +516,6 @@ namespace Benchmark
                 }
 
                 state.counters[s_counterAllocatorMemory] = benchmark::Counter(static_cast<double>(TestAllocatorType::NumAllocatedBytes()), benchmark::Counter::kDefaults);
-                state.counters[s_counterProcessMemory] = benchmark::Counter(static_cast<double>(Platform::GetProcessMemoryUsageBytes() - processMemoryBaseline), benchmark::Counter::kDefaults);
                 state.counters[s_counterBenchmarkMemory] = benchmark::Counter(static_cast<double>(totalAllocationSize), benchmark::Counter::kDefaults);
 
                 state.SetItemsProcessed(itemsProcessed);
@@ -583,7 +560,7 @@ namespace Benchmark
     BM_REGISTER_TEMPLATE(FIXTURE, TESTNAME##_MIXED_THREADED, ALLOCATORTYPE, MIXED)->ThreadRange(2, MaxThreadRange)->Apply(ThreadedRunRanges);
 
 #define BM_REGISTER_ALLOCATOR(TESTNAME, ALLOCATORTYPE) \
-    namespace TESTNAME \
+    namespace BM_##TESTNAME \
     { \
         BM_REGISTER_SIZE_FIXTURES(AllocationBenchmarkFixture, TESTNAME, ALLOCATORTYPE); \
         BM_REGISTER_SIZE_FIXTURES(DeAllocationBenchmarkFixture, TESTNAME, ALLOCATORTYPE); \
@@ -593,15 +570,15 @@ namespace Benchmark
     /// Warm up benchmark used to prepare the OS for allocations. Most OS keep allocations for a process somehow
     /// reserved. So the first allocations run always get a bigger impact in a process. This warm up allocator runs
     /// all the benchmarks and is just used for the the next allocators to report more consistent results.
-    BM_REGISTER_ALLOCATOR(WarmUpAllocator, TestRawMallocAllocator);
+    BM_REGISTER_ALLOCATOR(WarmUpAllocator, RawMallocAllocator);
 
-    BM_REGISTER_ALLOCATOR(RawMallocAllocator, TestRawMallocAllocator);
-    BM_REGISTER_ALLOCATOR(MallocSchemaAllocator, TestMallocSchemaAllocator);
-    BM_REGISTER_ALLOCATOR(HphaSchemaAllocator, TestHphaSchemaAllocator);
+    BM_REGISTER_ALLOCATOR(RawMallocAllocator, RawMallocAllocator);
+    BM_REGISTER_ALLOCATOR(MallocSchemaAllocator, MallocSchemaAllocator);
+    BM_REGISTER_ALLOCATOR(HphaSchemaAllocator, HphaSchemaAllocator);
     BM_REGISTER_ALLOCATOR(SystemAllocator, TestSystemAllocator);
-
+    
+    //BM_REGISTER_ALLOCATOR(BestFitExternalMapAllocator, BestFitExternalMapAllocator); // Requires to pre-allocate blocks and cannot work as a general-purpose allocator
     //BM_REGISTER_ALLOCATOR(HeapSchemaAllocator, TestHeapSchemaAllocator); // Requires to pre-allocate blocks and cannot work as a general-purpose allocator
-    //BM_REGISTER_SCHEMA(BestFitExternalMapSchema); // Requires to implement AZ::IAllocatorAllocate
     //BM_REGISTER_SCHEMA(PoolSchema); // Requires special alignment requests while allocating
 
 #undef BM_REGISTER_ALLOCATOR
