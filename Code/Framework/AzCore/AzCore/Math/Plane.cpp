@@ -142,7 +142,7 @@ namespace AZ
         if (behaviorContext)
         {
             behaviorContext->Class<Plane>()->
-                Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)->
+                Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::ListOnly)->
                 Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)->
                 Attribute(AZ::Script::Attributes::GenericConstructorOverride, &Internal::PlaneDefaultConstructor)->
                 Method("ToString", &Internal::PlaneToString)->

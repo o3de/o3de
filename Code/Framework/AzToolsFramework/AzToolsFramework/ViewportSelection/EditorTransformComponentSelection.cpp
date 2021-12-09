@@ -3238,13 +3238,34 @@ namespace AzToolsFramework
     void EditorTransformComponentSelection::PopulateEditorGlobalContextMenu(
         QMenu* menu, [[maybe_unused]] const AZ::Vector2& point, [[maybe_unused]] int flags)
     {
-        QAction* action = menu->addAction(QObject::tr(TogglePivotTitleRightClick));
-        QObject::connect(
-            action, &QAction::triggered, action,
-            [this]
+        // Don't show the Toggle Pivot option if any read-only entities are in the current selection
+        // We need to request the selected entities instead of just using the m_selectedEntities variable
+        // because we filter out any read-only entities from the m_selectedEntities so that the manipulators
+        // will be hidden
+        EntityIdList selectedEntityIds;
+        ToolsApplicationRequests::Bus::BroadcastResult(selectedEntityIds, &ToolsApplicationRequests::GetSelectedEntities);
+
+        auto readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get();
+        bool readOnlyEntityInSelection = false;
+        for (const auto& entityId : selectedEntityIds)
+        {
+            if (readOnlyEntityPublicInterface->IsReadOnly(entityId))
+            {
+                readOnlyEntityInSelection = true;
+                break;
+            }
+        }
+
+        if (!readOnlyEntityInSelection)
+        {
+            QAction* action = menu->addAction(QObject::tr(TogglePivotTitleRightClick));
+            QObject::connect(
+                action, &QAction::triggered, action,
+                [this]
             {
                 ToggleCenterPivotSelection();
             });
+        }
     }
 
     void EditorTransformComponentSelection::BeforeEntitySelectionChanged()
