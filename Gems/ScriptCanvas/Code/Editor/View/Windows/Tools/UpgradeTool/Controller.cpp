@@ -189,6 +189,11 @@ namespace ScriptCanvasEditor
             OnButtonPressUpgradeImplementation(info);
         }
 
+        void Controller::OnUpgradeDependencyWaitInterval([[maybe_unused]] const SourceHandle& info)
+        {
+            AddLogEntries();
+        }
+
         void Controller::OnUpgradeModificationBegin([[maybe_unused]] const ModifyConfiguration& config, const SourceHandle& info)
         {
             for (auto* item : FindTableItems(info))
