@@ -6,21 +6,22 @@
  *
  */
 
-#include <AzToolsFramework/Prefab/Spawnable/TempSpawnableAssetsCache.h>
+#include <AzToolsFramework/Prefab/Spawnable/InMemorySpawnableAssetContainer.h>
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzToolsFramework/Prefab/PrefabLoader.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
+#include <AzToolsFramework/Prefab/Spawnable/PrefabConverterStackProfileNames.h>
 
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
-    TempSpawnableAssetsCache::~TempSpawnableAssetsCache()
+    InMemorySpawnableAssetContainer::~InMemorySpawnableAssetContainer()
     {
         Deactivate();
     }
 
-    bool TempSpawnableAssetsCache::Activate(AZStd::string_view stackProfile)
+    bool InMemorySpawnableAssetContainer::Activate(AZStd::string_view stackProfile)
     {
         AZ_Assert(!IsActivated(), "TempSpawnableAssetsCache - TempSpawnableAssetsCache is currently activated");
 
@@ -34,36 +35,78 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         return m_converter.LoadStackProfile(m_stockProfile);
     }
 
-    void TempSpawnableAssetsCache::Deactivate()
+    void InMemorySpawnableAssetContainer::Deactivate()
     {
-        ClearAllTempSpawnableRelatedAssets();
+        ClearAllInMemorySpawnableAssets();
         m_stockProfile = "";
         m_loaderInterface = nullptr;
         m_prefabSystemComponentInterface = nullptr;
     }
 
-    bool TempSpawnableAssetsCache::IsActivated() const
+    bool InMemorySpawnableAssetContainer::IsActivated() const
     {
         return m_converter.IsLoaded();
     }
 
-    AZStd::string_view TempSpawnableAssetsCache::GetStockProfile() const
+    AZStd::string_view InMemorySpawnableAssetContainer::GetStockProfile() const
     {
         return m_stockProfile;
     }
 
-    TempSpawnableAssetsCache::CreateSpawnableResult TempSpawnableAssetsCache::CreateTempSpawnableAsset(
-        AzToolsFramework::Prefab::TemplateId templateId, AZStd::string_view spawnableName, bool loadCreatedAssets)
+    bool InMemorySpawnableAssetContainer::HasInMemorySpawnableAsset(AZStd::string_view spawnableName) const
+    {
+        return m_spawnableAssets.find(spawnableName) != m_spawnableAssets.end();
+    }
+
+    AZ::Data::AssetId InMemorySpawnableAssetContainer::GetInMemorySpawnableAssetId(AZStd::string_view spawnableName) const
+    {
+        auto found = m_spawnableAssets.find(spawnableName);
+        if (found != m_spawnableAssets.end())
+        {
+            return found->second.m_spawnableAssetId;
+        }
+        else
+        {
+            return  AZ::Data::AssetId();
+        }
+    }
+
+    InMemorySpawnableAssetContainer::RemoveSpawnableResult InMemorySpawnableAssetContainer::RemoveInMemorySpawnableAsset(AZStd::string_view spawnableName)
+    {
+        auto found = m_spawnableAssets.find(spawnableName);
+        if (found == m_spawnableAssets.end())
+        {
+            return AZ::Failure(AZStd::string::format("In-memory Spawnable '%.*s' doesn't exists.", AZ_STRING_ARG(spawnableName)));
+        }
+
+        for (auto& asset : found->second.m_assets)
+        {
+            asset.Release();
+            AZ::Data::AssetCatalogRequestBus::Broadcast(
+                &AZ::Data::AssetCatalogRequestBus::Events::UnregisterAsset, asset.GetId());
+        }
+
+        m_spawnableAssets.erase(found);
+        return AZ::Success();
+    }
+
+    InMemorySpawnableAssetContainer::CreateSpawnableResult InMemorySpawnableAssetContainer::CreateInMemorySpawnableAsset(
+        AzToolsFramework::Prefab::TemplateId templateId, AZStd::string_view spawnableName, bool loadReferencedAssets)
     {
         if (!IsActivated())
         {
             return AZ::Failure(AZStd::string::format("Failed to create a prefab processing stack from key '%.*s'.", AZ_STRING_ARG(m_stockProfile)));
         }
 
+        if (HasInMemorySpawnableAsset(spawnableName))
+        {
+            return AZ::Failure(AZStd::string::format("In-memory Spawnable '%.*s' already exists.", AZ_STRING_ARG(spawnableName)));
+        }
+
         TemplateReference templateReference = m_prefabSystemComponentInterface->FindTemplate(templateId);
         if (!templateReference.has_value())
         {
-            return AZ::Failure(AZStd::string::format("Could not get Template DOM given Template's id %llu .", templateId));
+            return AZ::Failure(AZStd::string::format("Could not get Template DOM for given Template's id %llu .", templateId));
         }
 
         // Use a random uuid as this is only a temporary source.
@@ -75,23 +118,23 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 
         if (!context.HasCompletedSuccessfully() || context.GetProcessedObjects().empty())
         {
-            return AZ::Failure(AZStd::string(
-                "Failed to convert the prefab into assets."
-                "Please confirm that the 'TempSpawnables' prefab processor stack is capable of producing a usable product asset."));
+            return AZ::Failure(AZStd::string::format(
+                "Failed to convert the prefab into assets. Please confirm that the '%.*s' prefab processor stack is capable of producing a usable product asset.",
+                AZ_STRING_ARG(PrefabConversionUtils::IntegrationTests)));
         }
 
         static constexpr size_t NoTargetSpawnable = AZStd::numeric_limits<size_t>::max();
         size_t targetSpawnableIndex = NoTargetSpawnable;
         AZStd::vector<AZ::Data::AssetId> assetIds;
+        SpawnableAssetData spawnableAssetData;
+        AZStd::string rootProductId = AZStd::string::format("%.*s.%s", AZ_STRING_ARG(spawnableName), AzFramework::Spawnable::FileExtension);
 
         // Create temporary assets from the processed data.
         for (auto& product : context.GetProcessedObjects())
         {
-            if (product.GetAssetType() == AZ::AzTypeInfo<AzFramework::Spawnable>::Uuid() &&
-                product.GetId() ==
-                AZStd::string::format("%s.%s", spawnableName.data(), AzFramework::Spawnable::FileExtension))
+            if (product.GetAssetType() == AZ::AzTypeInfo<AzFramework::Spawnable>::Uuid() && product.GetId() == rootProductId)
             {
-                targetSpawnableIndex = m_assets.size();
+                targetSpawnableIndex = spawnableAssetData.m_assets.size();
             }
 
             AZ::Data::AssetInfo info;
@@ -101,7 +144,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 
             AZ::Data::AssetCatalogRequestBus::Broadcast(
                 &AZ::Data::AssetCatalogRequestBus::Events::RegisterAsset, info.m_assetId, info);
-            m_assets.emplace_back(product.ReleaseAsset().release(), AZ::Data::AssetLoadBehavior::Default);
+            spawnableAssetData.m_assets.emplace_back(product.ReleaseAsset().release(), AZ::Data::AssetLoadBehavior::Default);
 
             // Ensure the product asset is registered with the AssetManager
             // Hold on to the returned asset to keep ref count alive until we assign it the latest data
@@ -109,15 +152,15 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
                 AZ::Data::AssetManager::Instance().FindOrCreateAsset(info.m_assetId, info.m_assetType, AZ::Data::AssetLoadBehavior::Default);
 
             // Update the asset registered in the AssetManager with the data of our product from the Prefab Processor
-            AZ::Data::AssetManager::Instance().AssignAssetData(m_assets.back());
+            AZ::Data::AssetManager::Instance().AssignAssetData(spawnableAssetData.m_assets.back());
         }
 
         if (targetSpawnableIndex == NoTargetSpawnable)
         {
-            return AZ::Failure(AZStd::string("Failed to produce the target spawnable '%.*s'", AZ_STRING_ARG(spawnableName)));
+            return AZ::Failure(AZStd::string::format("Failed to produce the target spawnable '%.*s'.", AZ_STRING_ARG(spawnableName)));
         }
         
-        if (loadCreatedAssets)
+        if (loadReferencedAssets)
         {
             for (auto& product : context.GetProcessedObjects())
             {
@@ -125,11 +168,13 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
             }
         }
 
-        return AZ::Success(m_assets[targetSpawnableIndex]);
+        auto& spawnableAssetDataAdded = m_spawnableAssets.emplace(spawnableName, spawnableAssetData).first->second;
+        spawnableAssetDataAdded.m_spawnableAssetId = spawnableAssetDataAdded.m_assets[targetSpawnableIndex].GetId();
+        return AZ::Success(spawnableAssetDataAdded.m_assets[targetSpawnableIndex]);
     }
 
-    TempSpawnableAssetsCache::CreateSpawnableResult TempSpawnableAssetsCache::CreateTempSpawnableAsset(
-        AZStd::string_view prefabFilePath, AZStd::string_view spawnableName, bool loadCreatedAssets)
+    InMemorySpawnableAssetContainer::CreateSpawnableResult InMemorySpawnableAssetContainer::CreateInMemorySpawnableAsset(
+        AZStd::string_view prefabFilePath, AZStd::string_view spawnableName, bool loadReferencedAssets)
     {
         AZ::IO::Path relativePath = m_loaderInterface->GenerateRelativePath(prefabFilePath);
         auto templateId = m_prefabSystemComponentInterface->GetTemplateIdFromFilePath(relativePath);
@@ -138,32 +183,35 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
             return AZ::Failure(AZStd::string::format("Template with source path '%.*s' is not found.", AZ_STRING_ARG(prefabFilePath)));
         }
 
-        return CreateTempSpawnableAsset(templateId, spawnableName, loadCreatedAssets);
+        return CreateInMemorySpawnableAsset(templateId, spawnableName, loadReferencedAssets);
     }
 
-    void TempSpawnableAssetsCache::ClearAllTempSpawnableRelatedAssets()
+    void InMemorySpawnableAssetContainer::ClearAllInMemorySpawnableAssets()
     {
-        for (auto& asset : m_assets)
+        for (auto& [spawnableName, spawnableAssetData] : m_spawnableAssets)
         {
-            asset.Release();
-            AZ::Data::AssetCatalogRequestBus::Broadcast(
-                &AZ::Data::AssetCatalogRequestBus::Events::UnregisterAsset, asset.GetId());
+            for (auto& asset : spawnableAssetData.m_assets)
+            {
+                asset.Release();
+                AZ::Data::AssetCatalogRequestBus::Broadcast(
+                    &AZ::Data::AssetCatalogRequestBus::Events::UnregisterAsset, asset.GetId());
+            }
         }
-
-        m_assets.clear();
+        
+        m_spawnableAssets.clear();
     }
 
-    TempSpawnableAssetsCache::Assets&& TempSpawnableAssetsCache::MoveAllTempSpawnableRelatedAssets()
+    InMemorySpawnableAssetContainer::SpawnableAssets&& InMemorySpawnableAssetContainer::MoveAllInMemorySpawnableAssets()
     {
-        return AZStd::move(m_assets);
+        return AZStd::move(m_spawnableAssets);
     }
 
-    const TempSpawnableAssetsCache::Assets& TempSpawnableAssetsCache::GetAllTempSpawnableAsset() const
+    const InMemorySpawnableAssetContainer::SpawnableAssets& InMemorySpawnableAssetContainer::GetAllInMemorySpawnableAssets() const
     {
-        return m_assets;
+        return m_spawnableAssets;
     }
 
-    void TempSpawnableAssetsCache::LoadReferencedAssets(AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& referencedAssets)
+    void InMemorySpawnableAssetContainer::LoadReferencedAssets(AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& referencedAssets)
     {
         // Start our loads on all assets by calling GetAsset from the AssetManager
         for (AZ::Data::Asset<AZ::Data::AssetData>& asset : referencedAssets)
@@ -194,7 +242,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         }
 
         // For all Preload assets we block until they're ready
-        // We do this as a seperate pass so that we don't interrupt queuing up all other asset loads
+        // We do this as a separate pass so that we don't interrupt queuing up all other asset loads
         for (AZ::Data::Asset<AZ::Data::AssetData>& asset : referencedAssets)
         {
             if (!asset.GetId().IsValid())

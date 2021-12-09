@@ -12,7 +12,7 @@
 #include <AzCore/RTTI/RTTI.h>
 
 #include <AzToolsFramework/Prefab/PrefabPublicRequestBus.h>
-#include <AzToolsFramework/Prefab/Spawnable/TempSpawnableAssetsCache.h>
+#include <AzToolsFramework/Prefab/Spawnable/InMemorySpawnableAssetContainer.h>
 
 namespace AzToolsFramework
 {
@@ -38,12 +38,15 @@ namespace AzToolsFramework
             PrefabOperationResult DetachPrefab(const AZ::EntityId& containerEntityId) override;
             DuplicatePrefabResult DuplicateEntitiesInInstance(const EntityIdList& entityIds) override;
             AZStd::string GetOwningInstancePrefabPath(AZ::EntityId entityId) const override;
-            CreateSpawnableResult CreateTemporarySpawnableAssets(AZStd::string_view prefabFilePath, AZStd::string_view spawnableName) override;
-            void RemoveAllTemporarySpawnableAssets() override;
+            CreateSpawnableResult CreateInMemorySpawnableAsset(AZStd::string_view prefabFilePath, AZStd::string_view spawnableName) override;
+            PrefabOperationResult RemoveInMemorySpawnableAsset(AZStd::string_view spawnableName) override;
+            bool HasInMemorySpawnableAsset(AZStd::string_view spawnableName) const override;
+            AZ::Data::AssetId GetInMemorySpawnableAssetId(AZStd::string_view spawnableName) const override;
+            void RemoveAllInMemorySpawnableAssets() override;
 
         private:
             PrefabPublicInterface* m_prefabPublicInterface = nullptr;
-            PrefabConversionUtils::TempSpawnableAssetsCache m_tempSpawnableAssetsCache;
+            PrefabConversionUtils::InMemorySpawnableAssetContainer m_spawnableAssetContainer;
 
         };
     } // namespace Prefab

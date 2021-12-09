@@ -380,9 +380,9 @@ namespace AzToolsFramework
         return m_rootInstance ? m_rootInstance->GetTemplateId() : Prefab::InvalidTemplateId;
     }
 
-    const AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& PrefabEditorEntityOwnershipService::GetPlayInEditorAssetData()
+    const Prefab::PrefabConversionUtils::InMemorySpawnableAssetContainer::SpawnableAssets& PrefabEditorEntityOwnershipService::GetPlayInEditorAssetData() const
     {
-        return m_playInEditorData.m_assetsCache.GetAllTempSpawnableAsset();
+        return m_playInEditorData.m_assetsCache.GetAllInMemorySpawnableAssets();
     }
 
     void PrefabEditorEntityOwnershipService::OnEntityRemoved(AZ::EntityId entityId)
@@ -422,7 +422,7 @@ namespace AzToolsFramework
                 return;
             }
 
-            auto createRootSpawnableResult = m_playInEditorData.m_assetsCache.CreateTempSpawnableAsset(m_rootInstance->GetTemplateId(), DefaultMainSpawnableName, true);
+            auto createRootSpawnableResult = m_playInEditorData.m_assetsCache.CreateInMemorySpawnableAsset(m_rootInstance->GetTemplateId(), DefaultMainSpawnableName, true);
             if (createRootSpawnableResult.IsSuccess())
             {
                 // make sure that PRE_NOTIFY assets get their notify before we activate, so that we can preserve the order of 
@@ -468,7 +468,7 @@ namespace AzToolsFramework
 
             m_playInEditorData.m_entities.DespawnAllEntities();
             m_playInEditorData.m_entities.Alert(
-                [assets = m_playInEditorData.m_assetsCache.MoveAllTempSpawnableRelatedAssets(),
+                [allSpawnableAssetData = m_playInEditorData.m_assetsCache.MoveAllInMemorySpawnableAssets(),
                  deactivatedEntities = AZStd::move(m_playInEditorData.m_deactivatedEntities)]([[maybe_unused]] uint32_t generation) mutable
                 {
                     auto end = deactivatedEntities.rend();
@@ -478,11 +478,10 @@ namespace AzToolsFramework
                         (*it)->Activate();
                     }
 
-                    for (auto& asset : assets)
+                    for (auto& [spawnableName, spawnableAssetData] : allSpawnableAssetData)
                     {
-                        if (asset)
+                        for (auto& asset : spawnableAssetData.m_assets)
                         {
-                            // Explicitly release because this needs to happen before the asset is unregistered.
                             asset.Release();
                             AZ::Data::AssetCatalogRequestBus::Broadcast(
                                 &AZ::Data::AssetCatalogRequestBus::Events::UnregisterAsset, asset.GetId());

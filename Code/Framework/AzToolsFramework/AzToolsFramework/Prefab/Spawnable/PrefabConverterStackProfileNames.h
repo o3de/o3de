@@ -15,6 +15,6 @@
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
     inline static constexpr AZStd::string_view PlayInEditor = "PlayInEditor";
-    inline static constexpr AZStd::string_view TempSpawnables = "TempSpawnables";
+    inline static constexpr AZStd::string_view IntegrationTests = "IntegrationTests";
 
 } // namespace AzToolsFramework::Prefab::PrefabConversionUtils

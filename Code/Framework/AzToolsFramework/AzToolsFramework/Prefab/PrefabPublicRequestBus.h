@@ -97,16 +97,32 @@ namespace AzToolsFramework
             virtual AZStd::string GetOwningInstancePrefabPath(AZ::EntityId entityId) const = 0;
 
             /**
-             * Convert a prefab on given file path with given name to in-memory temporary spawnable assets. 
+             * Convert a prefab on given file path with given name to in-memory spawnable asset. 
              * Returns the asset id of the produced spawnable if creation succeeded;
              * on failure, it comes with an error message detailing the cause of the error.
              */
-            virtual CreateSpawnableResult CreateTemporarySpawnableAssets(AZStd::string_view prefabFilePath, AZStd::string_view spawnableName) = 0;
+            virtual CreateSpawnableResult CreateInMemorySpawnableAsset(AZStd::string_view prefabFilePath, AZStd::string_view spawnableName) = 0;
 
             /**
-             * Remove all the in-memory temporary spawnable assets.
+             * Remove in-memory spawnable asset with given name.
+             * Return an outcome object; on failure, it comes with an error message detailing the cause of the error.
              */
-            virtual void RemoveAllTemporarySpawnableAssets() = 0;
+            virtual PrefabOperationResult RemoveInMemorySpawnableAsset(AZStd::string_view spawnableName) = 0;
+
+            /**
+             * Return whether an in-memory spawnable with given name exists or not.
+             */
+            virtual bool HasInMemorySpawnableAsset(AZStd::string_view spawnableName) const = 0;
+
+            /**
+             * Return an asset id of a spawnalbe with given name. Invalid asset id will be returned if the spawnable doesn't exist.
+             */
+            virtual AZ::Data::AssetId GetInMemorySpawnableAssetId(AZStd::string_view spawnableName) const = 0;
+
+            /**
+             * Remove all the in-memory spawnable assets.
+             */
+            virtual void RemoveAllInMemorySpawnableAssets() = 0;
         };
 
         using PrefabPublicRequestBus = AZ::EBus<PrefabPublicRequests>;

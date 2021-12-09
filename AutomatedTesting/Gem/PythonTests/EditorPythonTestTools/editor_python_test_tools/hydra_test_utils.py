@@ -8,6 +8,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import logging
 import os
 import psutil
+from os import path
 
 import ly_test_tools.log.log_monitor
 import ly_test_tools.environment.process_utils as process_utils
@@ -58,7 +59,9 @@ def launch_and_validate_results(request, test_directory, editor, editor_script, 
     if null_renderer:
         editor.args.extend(["-rhi=Null"])
     if enable_prefab_system:
-        editor.args.extend(["--regset=/Amazon/Preferences/EnablePrefabSystem=true"])
+        editor.args.extend([
+            "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
+            f"--regset-file={path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"])
     else:
         editor.args.extend(["--regset=/Amazon/Preferences/EnablePrefabSystem=false"])
 

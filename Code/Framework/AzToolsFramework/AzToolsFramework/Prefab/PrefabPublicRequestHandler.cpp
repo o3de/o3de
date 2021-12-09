@@ -37,8 +37,11 @@ namespace AzToolsFramework
                     ->Event("DetachPrefab", &PrefabPublicRequests::DetachPrefab)
                     ->Event("DuplicateEntitiesInInstance", &PrefabPublicRequests::DuplicateEntitiesInInstance)
                     ->Event("GetOwningInstancePrefabPath", &PrefabPublicRequests::GetOwningInstancePrefabPath)
-                    ->Event("CreateTemporarySpawnableAssets", &PrefabPublicRequests::CreateTemporarySpawnableAssets)
-                    ->Event("RemoveAllTemporarySpawnableAssets", &PrefabPublicRequests::RemoveAllTemporarySpawnableAssets)
+                    ->Event("CreateInMemorySpawnableAsset", &PrefabPublicRequests::CreateInMemorySpawnableAsset)
+                    ->Event("RemoveInMemorySpawnableAsset", &PrefabPublicRequests::RemoveInMemorySpawnableAsset)
+                    ->Event("HasInMemorySpawnableAsset", &PrefabPublicRequests::HasInMemorySpawnableAsset)
+                    ->Event("GetInMemorySpawnableAssetId", &PrefabPublicRequests::GetInMemorySpawnableAssetId)
+                    ->Event("RemoveAllInMemorySpawnableAssets", &PrefabPublicRequests::RemoveAllInMemorySpawnableAssets)
                     ;
             }
         }
@@ -47,14 +50,17 @@ namespace AzToolsFramework
         {
             m_prefabPublicInterface = AZ::Interface<PrefabPublicInterface>::Get();
             AZ_Assert(m_prefabPublicInterface, "PrefabPublicRequestHandler - Could not retrieve instance of PrefabPublicInterface");
-            m_tempSpawnableAssetsCache.Activate(PrefabConversionUtils::TempSpawnables);
+
+            const bool activated = m_spawnableAssetContainer.Activate(PrefabConversionUtils::IntegrationTests);
+            AZ_Assert(activated, "PrefabPublicRequestHandler - Failed to activate Spawnable Asset Container");
+
             PrefabPublicRequestBus::Handler::BusConnect();
         }
 
         void PrefabPublicRequestHandler::Disconnect()
         {
             PrefabPublicRequestBus::Handler::BusDisconnect();
-            m_tempSpawnableAssetsCache.Deactivate();
+            m_spawnableAssetContainer.Deactivate();
             m_prefabPublicInterface = nullptr;
         }
 
@@ -88,9 +94,9 @@ namespace AzToolsFramework
             return m_prefabPublicInterface->GetOwningInstancePrefabPath(entityId).Native();
         }
 
-        CreateSpawnableResult PrefabPublicRequestHandler::CreateTemporarySpawnableAssets(AZStd::string_view prefabFilePath, AZStd::string_view spawnableName)
+        CreateSpawnableResult PrefabPublicRequestHandler::CreateInMemorySpawnableAsset(AZStd::string_view prefabFilePath, AZStd::string_view spawnableName)
         {
-            auto result = m_tempSpawnableAssetsCache.CreateTempSpawnableAsset(prefabFilePath, spawnableName);
+            auto result = m_spawnableAssetContainer.CreateInMemorySpawnableAsset(prefabFilePath, spawnableName);
             if (result.IsSuccess())
             {
                 return AZ::Success(result.GetValue().GetId());
@@ -101,9 +107,32 @@ namespace AzToolsFramework
             }
         }
 
-        void PrefabPublicRequestHandler::RemoveAllTemporarySpawnableAssets()
+        PrefabOperationResult PrefabPublicRequestHandler::RemoveInMemorySpawnableAsset(AZStd::string_view spawnableName)
         {
-            m_tempSpawnableAssetsCache.ClearAllTempSpawnableRelatedAssets();
+            auto result = m_spawnableAssetContainer.RemoveInMemorySpawnableAsset(spawnableName);
+            if (result.IsSuccess())
+            {
+                return AZ::Success();
+            }
+            else
+            {
+                return AZ::Failure(result.TakeError());
+            }
+        }
+
+        bool PrefabPublicRequestHandler::HasInMemorySpawnableAsset(AZStd::string_view spawnableName) const
+        {
+            return m_spawnableAssetContainer.HasInMemorySpawnableAsset(spawnableName);
+        }
+
+        AZ::Data::AssetId PrefabPublicRequestHandler::GetInMemorySpawnableAssetId(AZStd::string_view spawnableName) const
+        {
+            return m_spawnableAssetContainer.GetInMemorySpawnableAssetId(spawnableName);
+        }
+
+        void PrefabPublicRequestHandler::RemoveAllInMemorySpawnableAssets()
+        {
+            m_spawnableAssetContainer.ClearAllInMemorySpawnableAssets();
         }
 
     } // namespace Prefab

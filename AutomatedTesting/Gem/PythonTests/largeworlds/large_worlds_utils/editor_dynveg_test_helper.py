@@ -125,18 +125,27 @@ def create_vegetation_area_by_prefab(name, center_point, box_size_x, box_size_y,
         print(f"'{spawner_entity.name}' created")
     spawner_entity.get_set_test(1, "Box Shape|Box Configuration|Dimensions", math.Vector3(box_size_x, box_size_y,
                                                                                           box_size_z))
+    # Get the in-memory spawnable asset id if exists
+    spawnable_name = Path(target_prefab.file_path).stem
+    spawnable_asset_id = prefab.PrefabPublicRequestBus(bus.Broadcast, 'GetInMemorySpawnableAssetId', 
+                                                      spawnable_name)
 
-    # Create the temporary spawnable asset from given prefab
-    create_spawnable_result = prefab.PrefabPublicRequestBus(bus.Broadcast, 'CreateTemporarySpawnableAssets', 
-                                                            target_prefab.file_path, 
-                                                            Path(target_prefab.file_path).stem)
-    assert create_spawnable_result.IsSuccess(), \
-        f"Prefab operation 'CreateTemporarySpawnableAssets' failed. Error: {create_spawnable_result.GetError()}"
+    from editor_python_test_tools.utils import Report
+    Report.info(f"spawnable_asset_id: {spawnable_asset_id}")
+
+    # Create the in-memory spawnable asset from given prefab if the spawnable does not exist
+    if not spawnable_asset_id.is_valid():
+        create_spawnable_result = prefab.PrefabPublicRequestBus(bus.Broadcast, 'CreateInMemorySpawnableAsset', 
+                                                                target_prefab.file_path, 
+                                                                spawnable_name)
+        assert create_spawnable_result.IsSuccess(), \
+            f"Prefab operation 'CreateInMemorySpawnableAssets' failed. Error: {create_spawnable_result.GetError()}"
+        spawnable_asset_id = create_spawnable_result.GetValue()
 
     # Set the vegetation area to a prefab instance spawner with a specific prefab asset selected
     descriptor = hydra.get_component_property_value(spawner_entity.components[2], 'Configuration|Embedded Assets|[0]')
     prefab_spawner = vegetation.PrefabInstanceSpawner()
-    prefab_spawner.SetPrefabAssetId(create_spawnable_result.GetValue())
+    prefab_spawner.SetPrefabAssetId(spawnable_asset_id)
     descriptor.spawner = prefab_spawner
     spawner_entity.get_set_test(2, "Configuration|Embedded Assets|[0]", descriptor)
     return spawner_entity

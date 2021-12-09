@@ -720,6 +720,8 @@ set(FILES
     Prefab/Spawnable/EditorOnlyEntityHandler/UiEditorOnlyEntityHandler.cpp
     Prefab/Spawnable/EditorOnlyEntityHandler/WorldEditorOnlyEntityHandler.h
     Prefab/Spawnable/EditorOnlyEntityHandler/WorldEditorOnlyEntityHandler.cpp
+    Prefab/Spawnable/InMemorySpawnableAssetContainer.h
+    Prefab/Spawnable/InMemorySpawnableAssetContainer.cpp
     Prefab/Spawnable/PrefabCatchmentProcessor.h
     Prefab/Spawnable/PrefabCatchmentProcessor.cpp
     Prefab/Spawnable/PrefabConversionPipeline.h
@@ -734,8 +736,6 @@ set(FILES
     Prefab/Spawnable/SpawnableMetaDataBuilder.cpp
     Prefab/Spawnable/SpawnableUtils.h
     Prefab/Spawnable/SpawnableUtils.cpp
-    Prefab/Spawnable/TempSpawnableAssetsCache.h
-    Prefab/Spawnable/TempSpawnableAssetsCache.cpp
     Prefab/Template/Template.h
     Prefab/Template/Template.cpp
     UI/Outliner/EntityOutlinerDisplayOptionsMenu.h
