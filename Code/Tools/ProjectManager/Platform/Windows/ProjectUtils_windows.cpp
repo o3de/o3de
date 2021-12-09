@@ -107,7 +107,7 @@ namespace O3DE::ProjectManager
 
             return AZ::Failure(QObject::tr("Visual Studio 2019 version 16.9.2 or higher not found.<br><br>"
                 "A compatible version of Visual Studio is required to build this project.<br>"
-                " Refer to the <a href='https://o3de.org/docs/welcome-guide/requirements/#microsoft-visual-studio'>Visual Studio requirements</a> for more information."));
+                "Refer to the <a href='https://o3de.org/docs/welcome-guide/requirements/#microsoft-visual-studio'>Visual Studio requirements</a> for more information."));
         }
 
         AZ::Outcome<void, QString> OpenCMakeGUI(const QString& projectPath)
