@@ -282,6 +282,8 @@ namespace AzToolsFramework
                 }
             }
 
+            bool itemWasShown = false;
+
             // Create Prefab
             {
                 if (!selectedEntities.empty())
@@ -317,33 +319,43 @@ namespace AzToolsFramework
                             QObject::connect(createAction, &QAction::triggered, createAction, [selectedEntities] {
                                 ContextMenu_CreatePrefab(selectedEntities);
                             });
+
+                            itemWasShown = true;
                         }
                     }
                 }
             }
 
             // Instantiate Prefab
+            if (!readOnlyEntityInSelection)
             {
                 QAction* instantiateAction = menu->addAction(QObject::tr("Instantiate Prefab..."));
                 instantiateAction->setToolTip(QObject::tr("Instantiates a prefab file in the scene."));
 
                 QObject::connect(
                     instantiateAction, &QAction::triggered, instantiateAction, [] { ContextMenu_InstantiatePrefab(); });
+
+                itemWasShown = true;
             }
 
             // Instantiate Procedural Prefab
-            if (AZ::Prefab::ProceduralPrefabAsset::UseProceduralPrefabs())
+            if (AZ::Prefab::ProceduralPrefabAsset::UseProceduralPrefabs() && !readOnlyEntityInSelection)
             {
                 QAction* action = menu->addAction(QObject::tr("Instantiate Procedural Prefab..."));
                 action->setToolTip(QObject::tr("Instantiates a procedural prefab file in a prefab."));
 
                 QObject::connect(
                     action, &QAction::triggered, action, [] { ContextMenu_InstantiateProceduralPrefab(); });
+
+                itemWasShown = true;
             }
 
-            menu->addSeparator();
+            if (itemWasShown)
+            {
+                menu->addSeparator();
+            }
 
-            bool itemWasShown = false;
+            itemWasShown = false;
 
             // Edit/Save Prefab
             {

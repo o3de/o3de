@@ -7,10 +7,13 @@
  */
 #pragma once
 
+#include <AzCore/Debug/Profiler.h>
 #include <Atom/RHI/FreeListAllocator.h>
 #include <Atom/RHI/PoolAllocator.h>
 #include <Atom/RHI/MemoryAllocation.h>
 #include <Atom/RHI.Reflect/MemoryEnums.h>
+
+AZ_DECLARE_BUDGET(RHI);
 
 namespace AZ
 {
