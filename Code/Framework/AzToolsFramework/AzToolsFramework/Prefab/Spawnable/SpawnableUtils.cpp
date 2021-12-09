@@ -86,7 +86,9 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
                 entityData.has_value(), "SpawnbleUtils were unable to locate entity '%.*s' in Instance '%s' for replacing.",
                 AZ_STRING_ARG(alias), source.GetTemplateSourcePath().c_str());
             auto placeholder = AZStd::make_unique<AZ::Entity>(entityData->get().GetId(), entityData->get().GetName());
-            return instance->ReplaceEntity(AZStd::move(placeholder), alias);
+            AZStd::unique_ptr<AZ::Entity> result = instance->ReplaceEntity(AZStd::move(placeholder), alias);
+            result->SetId(AZ::Entity::MakeId());
+            return result;
         }
 
         AZStd::unique_ptr<AZ::Entity> ReplaceEntityWithPlaceholder(AZ::EntityId entityId, AzFramework::Spawnable& source)
@@ -102,7 +104,7 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
                 aznumeric_cast<AZ::u64>(entityId));
 
             source.GetEntities()[index] = AZStd::make_unique<AZ::Entity>(original->GetId(), original->GetName());
-            
+            original->SetId(AZ::Entity::MakeId());
             return original;
         }
 
@@ -123,10 +125,9 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
             case PCU::EntityAliasType::Replace:
                 return ResultPair(ReplaceEntityWithPlaceholder(entityId, source), AzFramework::Spawnable::EntityAliasType::Replace);
             case PCU::EntityAliasType::Additional:
-                ResultPair(AZStd::make_unique<AZ::Entity>(AZ::Entity::MakeId()), AzFramework::Spawnable::EntityAliasType::Additional);
+                ResultPair(AZStd::make_unique<AZ::Entity>(), AzFramework::Spawnable::EntityAliasType::Additional);
             case PCU::EntityAliasType::Merge:
-                // Use the same entity id as the original entity so at runtime the entity ids can be verified to match.
-                ResultPair(AZStd::make_unique<AZ::Entity>(entityId), AzFramework::Spawnable::EntityAliasType::Merge);
+                ResultPair(AZStd::make_unique<AZ::Entity>(), AzFramework::Spawnable::EntityAliasType::Merge);
             default:
                 AZ_Assert(
                     false, "Invalid PrefabProcessorContext::EntityAliasType type (%i) provided.", aznumeric_cast<uint64_t>(aliasType));
