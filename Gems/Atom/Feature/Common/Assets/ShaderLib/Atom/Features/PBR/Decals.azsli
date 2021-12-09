@@ -54,6 +54,8 @@ void ApplyDecal(uint currDecalIndex, inout Surface surface)
     localPos = mul(decalRot, localPos);
 
     float3 decalUVW = localPos * rcp(decal.m_halfSize);
+    
+    [branch]
     if(decalUVW.x >= -1.0f && decalUVW.x <= 1.0f &&
        decalUVW.y >= -1.0f && decalUVW.y <= 1.0f &&
        decalUVW.z >= -1.0f && decalUVW.z <= 1.0f)
@@ -72,6 +74,7 @@ void ApplyDecal(uint currDecalIndex, inout Surface surface)
         float2 normalMap = 0;
         // Each texture array handles a size permutation. 
         // e.g. it could be that tex array 0 handles 256x256 and tex array 1 handles 512x64, etc.
+        [branch]
         switch(textureArrayIndex)
         {
             case 0:

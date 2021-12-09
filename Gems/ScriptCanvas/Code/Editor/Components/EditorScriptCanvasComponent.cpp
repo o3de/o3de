@@ -433,16 +433,6 @@ namespace ScriptCanvasEditor
         AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree_NewContent);
     }
 
-    void EditorScriptCanvasComponent::OnStartPlayInEditor()
-    {
-        ScriptCanvas::Execution::PerformanceStatisticsEBus::Broadcast(&ScriptCanvas::Execution::PerformanceStatisticsBus::ClearSnaphotStatistics);
-    }
-
-    void EditorScriptCanvasComponent::OnStopPlayInEditor()
-    {
-        AZ::ScriptSystemRequestBus::Broadcast(&AZ::ScriptSystemRequests::GarbageCollect);
-    }
-
     void EditorScriptCanvasComponent::SetAssetId(const SourceHandle& assetId)
     {
         if (m_sourceHandle.Describe() != assetId.Describe())

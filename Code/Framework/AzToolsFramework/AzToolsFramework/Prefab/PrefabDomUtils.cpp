@@ -150,7 +150,7 @@ namespace AzToolsFramework
                 return result.GetOutcome() == AZ::JsonSerializationResult::Outcomes::Success;
             }
 
-            // some assets may come in from the JSON serialzier with no AssetID, but have an asset hint
+            // some assets may come in from the JSON serializer with no AssetID, but have an asset hint
             // this attempts to fix up the assets using the assetHint field
             void FixUpInvalidAssets(AZ::Data::Asset<AZ::Data::AssetData>& asset)
             {
