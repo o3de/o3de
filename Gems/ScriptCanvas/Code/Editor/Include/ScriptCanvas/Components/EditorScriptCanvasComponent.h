@@ -96,9 +96,7 @@ namespace ScriptCanvasEditor
 
         //=====================================================================
         // EditorEntityContextNotificationBus
-        void OnStartPlayInEditor() override;
-
-        void OnStopPlayInEditor() override;
+        
 
     protected:
         static void Reflect(AZ::ReflectContext* context);
