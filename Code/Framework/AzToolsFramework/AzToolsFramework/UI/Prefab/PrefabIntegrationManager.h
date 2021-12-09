@@ -24,12 +24,19 @@
 #include <AzToolsFramework/UI/Prefab/Procedural/ProceduralPrefabReadOnlyHandler.h>
 #include <AzToolsFramework/UI/Prefab/Procedural/ProceduralPrefabUiHandler.h>
 
+#include <AzQtComponents/Buses/DragAndDrop.h>
 #include <AzQtComponents/Components/Widgets/Card.h>
 
 namespace AzToolsFramework
 {
     class ContainerEntityInterface;
     class ReadOnlyEntityPublicInterface;
+
+    namespace AssetBrowser
+    {
+        class SourceAssetBrowserEntry;
+        class ProductAssetBrowserEntry;
+    }
 
     namespace Prefab
     {
@@ -60,6 +67,7 @@ namespace AzToolsFramework
             , public PrefabIntegrationInterface
             , public QObject
             , private EditorEntityContextNotificationBus::Handler
+            , protected AzQtComponents::DragAndDropEventsBus::Handler
         {
         public:
             AZ_CLASS_ALLOCATOR(PrefabIntegrationManager, AZ::SystemAllocator, 0);
@@ -92,6 +100,16 @@ namespace AzToolsFramework
             AZ::EntityId CreateNewEntityAtPosition(const AZ::Vector3& position, AZ::EntityId parentId) override;
             int ExecuteClosePrefabDialog(TemplateId templateId) override;
             void ExecuteSavePrefabDialog(TemplateId templateId, bool useSaveAllPrefabsPreference) override;
+
+        protected:
+            // DragAndDropEventsBus override ...
+            int GetPriority() const override;
+            void DragEnter(QDragEnterEvent* event, AzQtComponents::DragAndDropContextBase& context) override;
+            void DragMove(QDragMoveEvent* event, AzQtComponents::DragAndDropContextBase& context) override;
+            void DragLeave(QDragLeaveEvent* event) override;
+            void Drop(QDropEvent* event, AzQtComponents::DragAndDropContextBase& context) override;
+
+            bool IsFocusedPrefabContainerEntityReadOnly();
 
         private:
             // Used to handle the UI for the level root.
@@ -170,8 +188,7 @@ namespace AzToolsFramework
             static PrefabLoaderInterface* s_prefabLoaderInterface;
             static PrefabPublicInterface* s_prefabPublicInterface;
             static PrefabSystemComponentInterface* s_prefabSystemComponentInterface;
-
-            ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
+            static ReadOnlyEntityPublicInterface* s_readOnlyEntityPublicInterface;
         };
     }
 }

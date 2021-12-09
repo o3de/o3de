@@ -40,16 +40,21 @@ AssetImporterDragAndDropHandler::~AssetImporterDragAndDropHandler()
     AzQtComponents::DragAndDropEventsBus::Handler::BusDisconnect(AzQtComponents::DragAndDropContexts::EditorMainWindow);
 }
 
-void AssetImporterDragAndDropHandler::DragEnter(QDragEnterEvent* event, AzQtComponents::DragAndDropContextBase& /*context*/)
+void AssetImporterDragAndDropHandler::DragEnter(QDragEnterEvent* event, AzQtComponents::DragAndDropContextBase& context)
 {
-    if (!m_isAssetImporterRunning)
+    if (!m_isAssetImporterRunning && !context.m_isHandled)
     {
-        ProcessDragEnter(event);
+        ProcessDragEnter(event, context);
     }
 }
 
-void AssetImporterDragAndDropHandler::Drop(QDropEvent* event, AzQtComponents::DragAndDropContextBase& /*context*/)
+void AssetImporterDragAndDropHandler::Drop(QDropEvent* event, AzQtComponents::DragAndDropContextBase& context)
 {
+    if (context.m_isHandled)
+    {
+        return;
+    }
+
     if (!m_dragAccepted)
     {
         return;
@@ -66,14 +71,14 @@ void AssetImporterDragAndDropHandler::Drop(QDropEvent* event, AzQtComponents::Dr
     m_dragAccepted = false;
 }
 
-void AssetImporterDragAndDropHandler::ProcessDragEnter(QDragEnterEvent* event)
+void AssetImporterDragAndDropHandler::ProcessDragEnter(QDragEnterEvent* event, AzQtComponents::DragAndDropContextBase& context)
 {
     m_dragAccepted = false;
 
     const QMimeData* mimeData = event->mimeData();
 
-    // if the event hasn't been accepted already and the mimeData hasUrls()
-    if (event->isAccepted() || !mimeData->hasUrls())
+    // check if the mimeData hasUrls()
+    if (!mimeData->hasUrls())
     {
         return;
     }
@@ -141,6 +146,7 @@ void AssetImporterDragAndDropHandler::ProcessDragEnter(QDragEnterEvent* event)
     if (m_dragAccepted)
     {
         event->acceptProposedAction();
+        context.m_isHandled = true;
     }
 }
 

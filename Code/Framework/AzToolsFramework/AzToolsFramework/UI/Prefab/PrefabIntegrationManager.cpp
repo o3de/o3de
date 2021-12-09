@@ -22,6 +22,7 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
+#include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
@@ -43,11 +44,13 @@
 #include <AzQtComponents/Components/FlowLayout.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
+#include <AzQtComponents/DragAndDrop/ViewportDragAndDrop.h>
 
 #include <QApplication>
 #include <QCheckBox>
 #include <QDialog>
 #include <QDialogButtonBox>
+#include <QDropEvent>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QFrame>
@@ -73,6 +76,7 @@ namespace AzToolsFramework
         PrefabLoaderInterface* PrefabIntegrationManager::s_prefabLoaderInterface = nullptr;
         PrefabPublicInterface* PrefabIntegrationManager::s_prefabPublicInterface = nullptr;
         PrefabSystemComponentInterface* PrefabIntegrationManager::s_prefabSystemComponentInterface = nullptr;
+        ReadOnlyEntityPublicInterface* PrefabIntegrationManager::s_readOnlyEntityPublicInterface = nullptr;
 
         const AZStd::string PrefabIntegrationManager::s_prefabFileExtension = ".prefab";
         
@@ -85,7 +89,6 @@ namespace AzToolsFramework
         static const char* const SavePrefabDialog = "SavePrefabDialog";
         static const char* const UnsavedPrefabFileName = "UnsavedPrefabFileName";
         
-
         void PrefabUserSettings::Reflect(AZ::ReflectContext* context)
         {
             AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
@@ -142,8 +145,8 @@ namespace AzToolsFramework
                 return;
             }
 
-            m_readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get();
-            AZ_Assert(m_readOnlyEntityPublicInterface, "Prefab - could not get ReadOnlyEntityPublicInterface on PrefabIntegrationManager construction.");
+            s_readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get();
+            AZ_Assert(s_readOnlyEntityPublicInterface, "Prefab - could not get ReadOnlyEntityPublicInterface on PrefabIntegrationManager construction.");
 
             // Get EditorEntityContextId
             EditorEntityContextRequestBus::BroadcastResult(s_editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
@@ -158,6 +161,7 @@ namespace AzToolsFramework
             AZ::Interface<PrefabIntegrationInterface>::Register(this);
             AssetBrowser::AssetBrowserSourceDropBus::Handler::BusConnect(s_prefabFileExtension);
             EditorEntityContextNotificationBus::Handler::BusConnect();
+            AzQtComponents::DragAndDropEventsBus::Handler::BusConnect(AzQtComponents::DragAndDropContexts::EditorViewport);
 
             InitializeShortcuts();
         }
@@ -166,6 +170,7 @@ namespace AzToolsFramework
         {
             UninitializeShortcuts();
 
+            AzQtComponents::DragAndDropEventsBus::Handler::BusDisconnect();
             EditorEntityContextNotificationBus::Handler::BusDisconnect();
             AssetBrowser::AssetBrowserSourceDropBus::Handler::BusDisconnect();
             AZ::Interface<PrefabIntegrationInterface>::Unregister(this);
@@ -270,7 +275,7 @@ namespace AzToolsFramework
             bool readOnlyEntityInSelection = false;
             for (const auto& entityId : selectedEntities)
             {
-                if (m_readOnlyEntityPublicInterface->IsReadOnly(entityId))
+                if (s_readOnlyEntityPublicInterface->IsReadOnly(entityId))
                 {
                     readOnlyEntityInSelection = true;
                     break;
@@ -1552,6 +1557,82 @@ namespace AzToolsFramework
             unsavedPrefabsContainer->setContentWidget(unsavedPrefabsScrollArea);
 
             return AZStd::move(unsavedPrefabsContainer);
+        }
+
+        int PrefabIntegrationManager::GetPriority() const
+        {
+            return AZStd::numeric_limits<int>::max();
+        }
+
+        void PrefabIntegrationManager::DragEnter(QDragEnterEvent* event, AzQtComponents::DragAndDropContextBase& context)
+        {
+            if (!event || context.m_isHandled)
+            {
+                return;
+            }
+
+            // If the editor is focusing on a prefab whose container entity is read-only, don't allow asset drops.
+            if (IsFocusedPrefabContainerEntityReadOnly())
+            {
+                context.m_isHandled = true;
+                event->ignore();
+            }
+        }
+
+        void PrefabIntegrationManager::DragMove(QDragMoveEvent* event, AzQtComponents::DragAndDropContextBase& context)
+        {
+            if (!event || context.m_isHandled)
+            {
+                return;
+            }
+
+            // If the editor is focusing on a prefab whose container entity is read-only, don't allow asset drops.
+            if (IsFocusedPrefabContainerEntityReadOnly())
+            {
+                context.m_isHandled = true;
+                event->ignore();
+            }
+        }
+
+        void PrefabIntegrationManager::DragLeave(QDragLeaveEvent* event)
+        {
+            if (!event)
+            {
+                return;
+            }
+
+            // If the editor is focusing on a prefab whose container entity is read-only, don't allow asset drops.
+            if (IsFocusedPrefabContainerEntityReadOnly())
+            {
+                event->ignore();
+            }
+        }
+
+        void PrefabIntegrationManager::Drop(QDropEvent* event, AzQtComponents::DragAndDropContextBase& context)
+        {
+            if (!event || context.m_isHandled)
+            {
+                return;
+            }
+
+            // If the editor is focusing on a prefab whose container entity is read-only, don't allow asset drops.
+            if (IsFocusedPrefabContainerEntityReadOnly())
+            {
+                context.m_isHandled = true;
+                event->ignore();
+            }
+        }
+
+        bool PrefabIntegrationManager::IsFocusedPrefabContainerEntityReadOnly()
+        {
+            AZ::EntityId focusedPrefabContainerEntityId =
+                s_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(s_editorEntityContextId);
+            if (s_readOnlyEntityPublicInterface->IsReadOnly(focusedPrefabContainerEntityId))
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

@@ -45,7 +45,7 @@ public:
     void DragEnter(QDragEnterEvent* event, AzQtComponents::DragAndDropContextBase& context) override;
     void Drop(QDropEvent* event, AzQtComponents::DragAndDropContextBase& context) override;
 
-    static void ProcessDragEnter(QDragEnterEvent* event);
+    static void ProcessDragEnter(QDragEnterEvent* event, AzQtComponents::DragAndDropContextBase& context);
     static QStringList GetFileList(QDropEvent* event);
 
 Q_SIGNALS:

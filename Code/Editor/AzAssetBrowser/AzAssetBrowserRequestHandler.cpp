@@ -211,8 +211,8 @@ AzAssetBrowserRequestHandler::AzAssetBrowserRequestHandler()
 
 AzAssetBrowserRequestHandler::~AzAssetBrowserRequestHandler()
 {
-    AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
     AzQtComponents::DragAndDropEventsBus::Handler::BusDisconnect();
+    AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
 }
 
 void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu* menu, const AZStd::vector<AzToolsFramework::AssetBrowser::AssetBrowserEntry*>& entries)
@@ -364,7 +364,7 @@ bool AzAssetBrowserRequestHandler::CanAcceptDragAndDropEvent(
 
     // if a listener with a higher priority already claimed this event, do not touch it.
     ViewportDragContext* viewportDragContext = azrtti_cast<ViewportDragContext*>(&context);
-    if ((!event) || (!event->mimeData()) || (event->isAccepted()) || (!viewportDragContext))
+    if ((!event) || (!event->mimeData()) || (event->isAccepted()) || (!viewportDragContext) || context.m_isHandled)
     {
         return false;
     }
@@ -417,6 +417,7 @@ void AzAssetBrowserRequestHandler::DragEnter(QDragEnterEvent* event, AzQtCompone
     {
         event->setDropAction(Qt::CopyAction);
         event->setAccepted(true);
+        context.m_isHandled = true;
     }
 }
 
@@ -426,6 +427,7 @@ void AzAssetBrowserRequestHandler::DragMove(QDragMoveEvent* event, AzQtComponent
     {
         event->setDropAction(Qt::CopyAction);
         event->setAccepted(true);
+        context.m_isHandled = true;
     }
 }
 
@@ -457,6 +459,7 @@ void AzAssetBrowserRequestHandler::Drop(QDropEvent* event, AzQtComponents::DragA
 
     event->setDropAction(Qt::CopyAction);
     event->setAccepted(true);
+    context.m_isHandled = true;
 
     EntityIdList spawnedEntities;
     AzFramework::SliceInstantiationTicket spawnTicket;

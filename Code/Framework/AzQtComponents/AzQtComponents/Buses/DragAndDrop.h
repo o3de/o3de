@@ -22,8 +22,8 @@ namespace AzQtComponents
     * DragAndDropContext is used to communicate to listener(s) about drag and drop operations.
     * Every time something happens with drag and drop, the context will be filled with the appropriate
     * information before calls are made.
-    * every listener should check the current drag result before overriding it.  
-    * only the first may actually answer - the rest are still told about the event occurring so that they can respond appropriately
+    * Every listener should check the current drag result before overriding it.  
+    * Only the first may actually answer - the rest are still told about the event occurring so that they can respond appropriately.
     */
     class DragAndDropContextBase
     {
@@ -34,6 +34,8 @@ namespace AzQtComponents
 
         AZ_RTTI(DragAndDropContextBase, "{F9F9CC31-1D1D-4FFE-B2F1-F8104D38E632}");
         virtual ~DragAndDropContextBase() {}
+
+        bool m_isHandled = false;
     };
 
     /**
@@ -45,9 +47,9 @@ namespace AzQtComponents
      *
      * In general, to use this system, listen on the bus at the address of one of the contexts (see files in AzQtComponents/DragAndDrop/ for contexts)
      * Each time you get any of the events, always check if the event has already been consumed by some other system
-     * by examining the event's "isAccepted()" bool property.  If its already accepted by someone, do not do anything yourself.
+     * by examining the context's m_isHandled bool property. If its already handled by someone, do not do anything yourself.
      * otherwise you may examine the mimeData attached in event->mimeData() and decide whether its relevant or not to your handler.
-     * if it is, accept the event yourself.
+     * if it is, handle the event yourself.
      * The context is intentionally not const, allowing higher priority handlers to fill the context so that later ones can use it.
      */
     class DragAndDropEvents

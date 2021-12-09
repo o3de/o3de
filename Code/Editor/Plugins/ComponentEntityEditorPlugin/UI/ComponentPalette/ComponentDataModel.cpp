@@ -378,7 +378,7 @@ bool ComponentDataModel::CanAcceptDragAndDropEvent(QDropEvent* event, AzQtCompon
     using namespace AzQtComponents;
 
     // if a listener with a higher priority already claimed this event, do not touch it.
-    if ((!event) || (event->isAccepted()) || (!event->mimeData()))
+    if ((!event) || (event->isAccepted()) || (!event->mimeData()) || context.m_isHandled)
     {
         return false;
     }
@@ -400,6 +400,7 @@ void ComponentDataModel::DragEnter(QDragEnterEvent* event, AzQtComponents::DragA
     {
         event->setDropAction(Qt::CopyAction);
         event->setAccepted(true);
+        context.m_isHandled = true;
         // opportunities to show special highlights, or ghosted entities or previews here.
     }
 }
@@ -410,6 +411,7 @@ void ComponentDataModel::DragMove(QDragMoveEvent* event, AzQtComponents::DragAnd
     {
         event->setDropAction(Qt::CopyAction);
         event->setAccepted(true);
+        context.m_isHandled = true;
         // opportunities to update special highlights, or ghosted entities or previews here.
     }
 }
@@ -438,6 +440,7 @@ void ComponentDataModel::Drop(QDropEvent* event, AzQtComponents::DragAndDropCont
     // we don't get given this action by Qt unless we already returned accepted from one of the other ones (such as drag move of drag enter)
     event->setDropAction(Qt::CopyAction);
     event->setAccepted(true);
+    context.m_isHandled = true;
 
     AzToolsFramework::ScopedUndoBatch undo("Create entity from components");
     const AZStd::string name = AZStd::string::format("Entity%d", GetIEditor()->GetObjectManager()->GetObjectCount());

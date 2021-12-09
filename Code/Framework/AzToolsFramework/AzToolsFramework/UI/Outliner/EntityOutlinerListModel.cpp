@@ -816,6 +816,16 @@ namespace AzToolsFramework
             return false;
         }
 
+        // If no id is set, the new entity is going to be parented to the focus root, so we need to test it for read-only.
+        if (!parentId.IsValid())
+        {
+            AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+            AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+                editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
+
+            parentId = m_focusModeInterface->GetFocusRoot(editorEntityContextId);
+        }
+
         // Disable dropping assets on read-only entities.
         if (m_readOnlyEntityPublicInterface->IsReadOnly(parentId))
         {
