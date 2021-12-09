@@ -170,11 +170,32 @@ namespace EMStudio
                 targetPosition.GetX() - CameraDistance, targetPosition.GetY() + CameraDistance, targetPosition.GetZ() + CameraDistance);
             break;
         }
+
         GetViewportContext()->SetCameraTransform(AZ::Transform::CreateLookAt(cameraPosition, targetPosition));
+
+        AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+            GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetCameraOffset,
+            AZ::Vector3::CreateAxisY(-CameraDistance));
     }
 
     void AnimViewportWidget::SetFollowCharacter(bool follow)
     {
+        if (follow)
+        {
+            AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetCameraOffset,
+                AZ::Vector3::CreateAxisY(-CameraDistance));
+        }
+        else
+        {
+            AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetCameraOffset,
+                AZ::Vector3::CreateZero());
+            AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetCameraPivotAttached,
+                GetViewportContext()->GetCameraTransform().GetTranslation());
+        }
+
         m_followCharacter = follow;
     }
 
@@ -190,7 +211,7 @@ namespace EMStudio
     {
         auto viewportContext = GetViewportContext();
         auto windowSize = viewportContext->GetViewportSize();
-        // Prevent devided by zero
+        // Prevent divided by zero
         const float height = AZStd::max<float>(aznumeric_cast<float>(windowSize.m_height), 1.0f);
         const float aspectRatio = aznumeric_cast<float>(windowSize.m_width) / height;
 
@@ -216,14 +237,10 @@ namespace EMStudio
     {
         if (m_followCharacter)
         {
-            // When follow charater move is enabled, we are adding the delta of the character movement to the camera per frame.
-            AZ::Vector3 camPos = GetViewportContext()->GetCameraTransform().GetTranslation();
-            camPos += m_renderer->GetCharacterCenter() - m_prevCharacterPos;
-            AZ::Transform newCamTransform = GetViewportContext()->GetCameraTransform();
-            newCamTransform.SetTranslation(camPos);
-            GetViewportContext()->SetCameraTransform(newCamTransform);
+            AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetCameraPivotAttached,
+                m_renderer->GetCharacterCenter());
         }
-        m_prevCharacterPos = m_renderer->GetCharacterCenter();
     }
 
     void AnimViewportWidget::ToggleRenderFlag(EMotionFX::ActorRenderFlag flag)

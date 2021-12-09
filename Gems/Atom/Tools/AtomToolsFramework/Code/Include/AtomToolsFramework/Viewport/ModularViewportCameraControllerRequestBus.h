@@ -29,25 +29,31 @@ namespace AtomToolsFramework
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
-        //! Begin a smooth transition of the camera to the requested transform.
+        //! Begins a smooth transition of the camera to the requested transform.
         //! @param worldFromLocal The transform of where the camera should end up.
         //! @return Returns true if the call began an interpolation and false otherwise. Calls to InterpolateToTransform
         //! will have no effect if an interpolation is currently in progress.
         virtual bool InterpolateToTransform(const AZ::Transform& worldFromLocal) = 0;
-
         //! Returns if the camera is currently interpolating to a new transform.
         virtual bool IsInterpolating() const = 0;
-
-        //! Start tracking a transform.
+        //! Starts tracking a transform.
         //! Store the current camera transform and move to the next camera transform.
         virtual void StartTrackingTransform(const AZ::Transform& worldFromLocal) = 0;
-
-        //! Stop tracking the set transform.
+        //! Stops tracking the set transform.
         //! The previously stored camera transform is restored.
         virtual void StopTrackingTransform() = 0;
-
-        //! Return if the tracking transform is set.
+        //! Returns if the tracking transform is set.
         virtual bool IsTrackingTransform() const = 0;
+        //! Sets the current camera pivot, moving the camera offset with it (the camera appears
+        //! to follow the pivot, staying the same distance away from it).
+        virtual void SetCameraPivotAttached(const AZ::Vector3& pivot) = 0;
+        //! Sets the current camera pivot, leaving the camera offset in-place (the camera will
+        //! stay fixed and the pivot will appear to move around on its own).
+        virtual void SetCameraPivotDetached(const AZ::Vector3& pivot) = 0;
+        //! Set the current camera offset from the pivot.
+        //! @note The offset value is in the current space of the camera, not world space. Setting
+        //! a negative Z value will move the camera backwards from the pivot.
+        virtual void SetCameraOffset(const AZ::Vector3& offset) = 0;
 
     protected:
         ~ModularViewportCameraControllerRequests() = default;
