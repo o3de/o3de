@@ -21,7 +21,7 @@ cd %~dp0
 PUSHD %~dp0
 
 :: if the user has set up a custom env call it
-IF EXIST "%~dp0Env_Dev.bat" CALL %~dp0Env_Dev.bat
+IF EXIST "%~dp0..\Env_Dev.bat" CALL %~dp0..\Env_Dev.bat
 
 :: Constant Vars (Global)
 :: global debug (propogates)
@@ -44,30 +44,30 @@ IF "%DCCSI_LOGLEVEL%"=="" (set DCCSI_LOGLEVEL=10)
 echo     DCCSI_LOGLEVEL = %DCCSI_LOGLEVEL%
 
 :: Initialize env
-CALL %~dp0\Env_Core.bat
-CALL %~dp0\Env_Python.bat
-CALL %~dp0\Env_Qt.bat
-CALL %~dp0\Env_Maya.bat
-CALL %~dp0\Env_Substance.bat
-CALL %~dp0\Env_WingIDE.bat
+CALL %~dp0\..\Env_Core.bat
+CALL %~dp0\..\Env_Python.bat
+CALL %~dp0\..\Env_WingIDE.bat
+CALL %~dp0\..\Env_Maya.bat
+
 echo.
 echo _____________________________________________________________________
 echo.
 echo ~ WingIDE Version %DCCSI_WING_VERSION_MAJOR%.%DCCSI_WING_VERSION_MINOR%
 echo ~ Launching O3DE %O3DE_PROJECT% project in WingIDE %DCCSI_WING_VERSION_MAJOR%.%DCCSI_WING_VERSION_MINOR% ...
+echo ~ MayaPy.exe (default python interpreter)
 echo _____________________________________________________________________
 echo.
 
 echo     O3DE_DEV = %O3DE_DEV%
 
-:: shared location for default O3DE python location
-set O3DE_PYTHON_INSTALL=%O3DE_DEV%\Python
-echo     O3DE_PYTHON_INSTALL = %O3DE_PYTHON_INSTALL%
+:: ide and debugger plug
+set DCCSI_PY_DEFAULT=%DCCSI_PY_MAYA%
+echo     DCCSI_PY_DEFAULT = %DCCSI_PY_DEFAULT%
 
 echo.
 
 :: Change to root dir
-CD /D %O3DE_PROJECT_PATH%
+CD /D %PATH_O3DE_PROJECT%
 
 IF EXIST "%WINGHOME%\bin\wing.exe" (
     start "" "%WINGHOME%\bin\wing.exe" "%WING_PROJ%"

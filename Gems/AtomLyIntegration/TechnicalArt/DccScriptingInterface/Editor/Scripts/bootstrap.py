@@ -39,9 +39,9 @@ _LOGGER = _logging.getLogger(_MODULENAME)
 
 # we need to set up basic access to the DCCsi
 _MODULE_PATH = os.path.realpath(__file__)  # To Do: what if frozen?
-_DCCSI_PATH = os.path.normpath(os.path.join(_MODULE_PATH, '../../..'))
-_DCCSI_PATH = os.getenv('DCCSI_PATH', _DCCSI_PATH)
-site.addsitedir(_DCCSI_PATH)
+_PATH_DCCSIG = os.path.normpath(os.path.join(_MODULE_PATH, '../../..'))
+_PATH_DCCSIG = os.getenv('PATH_DCCSIG', _PATH_DCCSIG)
+site.addsitedir(_PATH_DCCSIG)
 
 # now we have azpy api access
 from azpy.env_bool import env_bool
@@ -65,13 +65,13 @@ _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 
 # -------------------------------------------------------------------------
 # _settings.setenv()  # doing this will add the additional DYNACONF_ envars
-def get_dccsi_config(DCCSI_PATH=_DCCSI_PATH):
+def get_dccsi_config(PATH_DCCSIG=_PATH_DCCSIG):
     """Convenience method to set and retreive settings directly from module."""
     
     # we can go ahead and just make sure the the DCCsi env is set
     # _config is SO generic this ensures we are importing a specific one
     _spec_dccsi_config = importlib.util.spec_from_file_location("dccsi._config",
-                                                                Path(DCCSI_PATH,
+                                                                Path(PATH_DCCSIG,
                                                                      "config.py"))
     _dccsi_config = importlib.util.module_from_spec(_spec_dccsi_config)
     _spec_dccsi_config.loader.exec_module(_dccsi_config)
@@ -162,19 +162,19 @@ if __name__ == '__main__':
             _config.attach_debugger()  # attempts to start debugger
         
         if _DCCSI_GDEBUG:
-            _LOGGER.info(f'DCCSI_PATH: {_settings.DCCSI_PATH}')
+            _LOGGER.info(f'PATH_DCCSIG: {_settings.PATH_DCCSIG}')
             _LOGGER.info(f'DCCSI_G_DEBUG: {_settings.DCCSI_GDEBUG}')
             _LOGGER.info(f'DCCSI_DEV_MODE: {_settings.DCCSI_DEV_MODE}')
         
             _LOGGER.info(f'DCCSI_OS_FOLDER: {_settings.DCCSI_OS_FOLDER}')
             _LOGGER.info(f'O3DE_PROJECT: {_settings.O3DE_PROJECT}')
-            _LOGGER.info(f'O3DE_PROJECT_PATH: {_settings.O3DE_PROJECT_PATH}')
+            _LOGGER.info(f'PATH_O3DE_PROJECT: {_settings.PATH_O3DE_PROJECT}')
             _LOGGER.info(f'O3DE_DEV: {_settings.O3DE_DEV}')
-            _LOGGER.info(f'O3DE_BUILD_PATH: {_settings.O3DE_BUILD_PATH}')
-            _LOGGER.info(f'O3DE_BIN_PATH: {_settings.O3DE_BIN_PATH}')
+            _LOGGER.info(f'PATH_O3DE_BUILD: {_settings.PATH_O3DE_BUILD}')
+            _LOGGER.info(f'PATH_O3DE_BIN: {_settings.PATH_O3DE_BIN}')
             
-            _LOGGER.info(f'DCCSI_PATH: {_settings.DCCSI_PATH}')
-            _LOGGER.info(f'DCCSI_PYTHON_LIB_PATH: {_settings.DCCSI_PYTHON_LIB_PATH}')
+            _LOGGER.info(f'PATH_DCCSIG: {_settings.PATH_DCCSIG}')
+            _LOGGER.info(f'PATH_DCCSI_PYTHON_LIB: {_settings.PATH_DCCSI_PYTHON_LIB}')
             _LOGGER.info(f'DCCSI_PY_BASE: {_settings.DCCSI_PY_BASE}')
 
         if _DCCSI_GDEBUG or args.test_pyside2:
@@ -186,7 +186,7 @@ if __name__ == '__main__':
                 import PySide2
 
             _LOGGER.info(f'PySide2: {PySide2}')
-            _LOGGER.info(f'O3DE_BIN_PATH: {_settings.O3DE_BIN_PATH}')
+            _LOGGER.info(f'PATH_O3DE_BIN: {_settings.PATH_O3DE_BIN}')
             _LOGGER.info(f'QT_PLUGIN_PATH: {_settings.QT_PLUGIN_PATH}')
             _LOGGER.info(f'QT_QPA_PLATFORM_PLUGIN_PATH: {_settings.QT_QPA_PLATFORM_PLUGIN_PATH}')
             

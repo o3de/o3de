@@ -25,7 +25,7 @@ echo     DCCSI_GDEBUG = %DCCSI_GDEBUG%
 IF "%DCCSI_DEV_MODE%"=="" (set DCCSI_DEV_MODE=True)
 echo     DCCSI_DEV_MODE = %DCCSI_DEV_MODE%
 :: sets debugger, options: WING, PYCHARM
-IF "%DCCSI_GDEBUGGER%"=="" (set DCCSI_GDEBUGGER=WING)
+IF "%DCCSI_GDEBUGGER%"=="" (set DCCSI_GDEBUGGER=PYCHARM)
 echo     DCCSI_GDEBUGGER = %DCCSI_GDEBUGGER%
 :: Default level logger will handle
 :: CRITICAL:50
@@ -37,11 +37,11 @@ echo     DCCSI_GDEBUGGER = %DCCSI_GDEBUGGER%
 IF "%DCCSI_LOGLEVEL%"=="" (set DCCSI_LOGLEVEL=10)
 echo     DCCSI_LOGLEVEL = %DCCSI_LOGLEVEL%
 
-:: Initialize env
-CALL %~dp0\Env_PyCharm.bat
-
 :: if the user has set up a custom env call it
-IF EXIST "%~dp0Env_Dev.bat" CALL %~dp0Env_Dev.bat
+IF EXIST "%~dp0..\Env_Dev.bat" CALL %~dp0..\Env_Dev.bat
+
+:: Initialize env
+CALL %~dp0\..\Env_PyCharm.bat
 
 echo.
 echo _____________________________________________________________________

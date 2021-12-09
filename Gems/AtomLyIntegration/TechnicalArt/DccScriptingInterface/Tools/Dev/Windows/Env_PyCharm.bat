@@ -17,30 +17,25 @@ IF "%DCCSI_ENV_PYCHARM_INIT%"=="1" GOTO :END_OF_FILE
 cd %~dp0
 PUSHD %~dp0
 
+:: version Year
+IF "%PYCHARM_VERSION_YEAR%"=="" (set PYCHARM_VERSION_YEAR=2020)
 :: version Major
-SET PYCHARM_VERSION_YEAR=2020
-:: version Major
-SET PYCHARM_VERSION_MAJOR=2
+IF "%PYCHARM_VERSION_MAJOR%"=="" (set PYCHARM_VERSION_MAJOR=3)
+:: version Minor
+IF "%PYCHARM_VERSION_MINOR%"=="" (set PYCHARM_VERSION_MINOR=2)
 
 ::"C:\Program Files\JetBrains\PyCharm 2019.1.3\bin"
 ::"C:\Program Files\JetBrains\PyCharm Community Edition 2018.3.5\bin\pycharm64.exe"
 
 :: put project env variables/paths here
-set PYCHARM_HOME=%PROGRAMFILES%\JetBrains\PyCharm %PYCHARM_VERSION_YEAR%.%PYCHARM_VERSION_MAJOR%
+set PYCHARM_HOME=%PROGRAMFILES%\JetBrains\PyCharm %PYCHARM_VERSION_YEAR%.%PYCHARM_VERSION_MAJOR%.%PYCHARM_VERSION_MINOR%
 
 :: Initialize env
 CALL %~dp0\Env_Core.bat
 CALL %~dp0\Env_Python.bat
 CALL %~dp0\Env_Qt.bat
 
-:: Wing and other IDEs probably prefer access directly to the python.exe
-set DCCSI_PY_IDE = %O3DE_PYTHON_INSTALL%\runtime\python-3.7.10-rev2-windows\python
-echo     DCCSI_PY_IDE = %DCCSI_PY_IDE%
-
-:: ide and debugger plug
-set DCCSI_PY_DEFAULT=%DCCSI_PY_IDE%\python.exe
-
-SET PYCHARM_PROJ=%DCCSIG_PATH%\Solutions
+SET PYCHARM_PROJ=%PATH_DCCSIG%\Tools\Dev\Windows\Solutions
 
 echo.
 echo _____________________________________________________________________
