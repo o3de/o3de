@@ -70,7 +70,7 @@ namespace AzToolsFramework
         return helpersVisible;
     }
 
-    // calculate the icon scale based on how far away it is (distanceSq) from a given point
+    // calculate the icon scale based on how far away it is from a given point
     // note: this is mostly likely distance from the camera
     static float GetIconScale(const float distanceFromCamera)
     {
