@@ -360,7 +360,7 @@ namespace ScriptCanvasEditor
     template <typename Traits>
     void ScriptCanvasEditor::State<Traits>::Log(const char* format, ...)
     {
-        if (GetVerbose())
+        if (m_stateMachine->GetVerbose())
         {
             char sBuffer[2048];
             va_list ArgList;

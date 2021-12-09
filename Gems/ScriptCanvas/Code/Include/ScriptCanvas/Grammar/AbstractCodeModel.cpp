@@ -2384,9 +2384,8 @@ namespace ScriptCanvas
                         AZ_TracePrintf("ScriptCanvas", "%s", pretty.data());
                         AZ_TracePrintf("ScriptCanvas", "SubgraphInterface:");
                         AZ_TracePrintf("ScriptCanvas", ToString(m_subgraphInterface).data());
+                        AZ_TracePrintf("Script Canvas", "Parse Duration: %8.4f ms\n", m_parseDuration / 1000.0);
                     }
-
-                    AZ_TracePrintf("Script Canvas", "Parse Duration: %8.4f ms\n", m_parseDuration / 1000.0);
                 }
             }
         }
