@@ -131,7 +131,6 @@ def create_vegetation_area_by_prefab(name, center_point, box_size_x, box_size_y,
                                                       spawnable_name)
 
     from editor_python_test_tools.utils import Report
-    Report.info(f"spawnable_asset_id: {spawnable_asset_id}")
 
     # Create the in-memory spawnable asset from given prefab if the spawnable does not exist
     if not spawnable_asset_id.is_valid():
