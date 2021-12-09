@@ -21,4 +21,4 @@ namespace AZ::Dom::Utils
     {
         return backend.ReadFromBufferInPlace(string.data(), string.size(), visitor);
     }
-}
+} // namespace AZ::Dom::Utils
