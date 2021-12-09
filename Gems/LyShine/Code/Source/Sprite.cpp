@@ -699,7 +699,7 @@ CSprite* CSprite::CreateSprite(const AZStd::string& renderTargetName)
     // create Sprite object
     CSprite* sprite = new CSprite;
 
-#ifdef LYSHINE_ATOM_TODO // [LYN-3359] Support RTT using Atom
+#ifdef LYSHINE_ATOM_TODO // [GHI #6270] Support RTT using Atom
     // the render target texture may not exist yet in which case we will need to load it later
     sprite->m_texture = gEnv->pRenderer->EF_GetTextureByName(renderTargetName.c_str());
     if (sprite->m_texture)

@@ -455,7 +455,7 @@ void UiFaderComponent::CreateOrResizeRenderTarget(const AZ::Vector2& pixelAligne
     m_viewportTopLeft = pixelAlignedTopLeft;
     m_viewportSize = renderTargetSize;
 
-    // [LYSHINE_ATOM_TODO][LYN-8718] Optimize by reusing existing render targets
+    // [LYSHINE_ATOM_TODO][GHI #6271] Optimize by reusing existing render targets
     DestroyRenderTarget();
 
     // Create a render target that this element and its children will be rendered to

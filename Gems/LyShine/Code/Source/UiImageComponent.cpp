@@ -465,7 +465,7 @@ void UiImageComponent::Render(LyShine::IRenderGraph* renderGraph)
             }
         }
 
-#ifdef LYSHINE_ATOM_TODO // [LYN-3359] Support RTT using Atom
+#ifdef LYSHINE_ATOM_TODO // [GHI #6270] Support RTT using Atom
         ITexture* texture = (sprite) ? sprite->GetTexture() : nullptr;
         bool isClampTextureMode = m_imageType == ImageType::Tiled ? false : true;
         bool isTextureSRGB = IsSpriteTypeRenderTarget() && m_isRenderTargetSRGB;
