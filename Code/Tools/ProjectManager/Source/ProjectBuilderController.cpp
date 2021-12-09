@@ -9,9 +9,7 @@
 #include <ProjectBuilderController.h>
 #include <ProjectBuilderWorker.h>
 #include <ProjectButtonWidget.h>
-#include <ProjectManagerSettings.h>
-
-#include <AzCore/Settings/SettingsRegistry.h>
+#include <SettingsInterface.h>
 
 #include <QMessageBox>
 #include <QDesktopServices>
@@ -30,7 +28,7 @@ namespace O3DE::ProjectManager
         m_worker->moveToThread(&m_workerThread);
 
         // Remove key here in case Project Manager crashing while building that causes HandleResults to not be called
-        PMSettings::SetProjectBuiltSuccessfully(m_projectInfo, false);
+        SettingsInterface::Get()->SetProjectBuiltSuccessfully(m_projectInfo, false);
 
         connect(&m_workerThread, &QThread::finished, m_worker, &ProjectBuilderWorker::deleteLater);
         connect(&m_workerThread, &QThread::started, m_worker, &ProjectBuilderWorker::BuildProject);
@@ -114,7 +112,7 @@ namespace O3DE::ProjectManager
                 emit NotifyBuildProject(m_projectInfo);
             }
 
-            PMSettings::SetProjectBuiltSuccessfully(m_projectInfo, false);
+            SettingsInterface::Get()->SetProjectBuiltSuccessfully(m_projectInfo, false);
 
             emit Done(false);
             return;
@@ -123,7 +121,7 @@ namespace O3DE::ProjectManager
         {
             m_projectInfo.m_buildFailed = false;
 
-            PMSettings::SetProjectBuiltSuccessfully(m_projectInfo, true);
+            SettingsInterface::Get()->SetProjectBuiltSuccessfully(m_projectInfo, true);
         }
 
         emit Done(true);

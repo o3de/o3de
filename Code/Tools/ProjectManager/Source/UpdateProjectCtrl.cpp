@@ -16,7 +16,7 @@
 #include <UpdateProjectSettingsScreen.h>
 #include <ProjectUtils.h>
 #include <DownloadController.h>
-#include <ProjectManagerSettings.h>
+#include <SettingsInterface.h>
 
 #include <QDialogButtonBox>
 #include <QMessageBox>
@@ -307,8 +307,9 @@ namespace O3DE::ProjectManager
             {
                 // Remove project build successfully paths for both old and new project names
                 // because a full rebuild is required when moving projects
-                PMSettings::SetProjectBuiltSuccessfully(m_projectInfo, false);
-                PMSettings::SetProjectBuiltSuccessfully(newProjectSettings, false);
+                auto settings = SettingsInterface::Get();
+                settings->SetProjectBuiltSuccessfully(m_projectInfo, false);
+                settings->SetProjectBuiltSuccessfully(newProjectSettings, false);
             }
 
             if (!newProjectSettings.m_newPreviewImagePath.isEmpty())

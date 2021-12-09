@@ -111,6 +111,14 @@ namespace O3DE::ProjectManager
             }
         }
 
+        m_settings = AZStd::make_unique<Settings>();
+        AZ_Assert(m_settings, "Failed to create Settings");
+
+        if (!m_settings->IsInitialized())
+        {
+            return false;
+        }
+
         const AZ::CommandLine* commandLine = GetCommandLine();
         AZ_Assert(commandLine, "Failed to get command line");
 

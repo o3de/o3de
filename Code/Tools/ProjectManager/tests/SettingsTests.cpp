@@ -13,15 +13,15 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzTest/Utils.h>
 
-#include <ProjectManagerSettings.h>
+#include <Settings.h>
 
 namespace O3DE::ProjectManager
 {
-    class ProjectManagerSettingsTests 
+    class SettingsTests 
         : public ::UnitTest::ScopedAllocatorSetupFixture
     {
     public:
-        ~ProjectManagerSettingsTests() override = default;
+        ~SettingsTests() override = default;
         void SetUp() override
         {
             UnitTest::ScopedAllocatorSetupFixture::SetUp();
@@ -45,11 +45,15 @@ namespace O3DE::ProjectManager
 
             m_serializeContext->RegisterGenericType<AZStd::set<AZStd::string>>();
 
+            m_settings = AZStd::make_unique<Settings>(/*saveToDisk*/ false);
+
             m_projectInfo.m_path = "Z:/ProjectTestPath";
         }
 
         void TearDown() override
         {
+            m_settings.reset();
+
             m_registrationContext->EnableRemoveReflection();
             AZ::JsonSystemComponent::Reflect(m_registrationContext.get());
             m_registrationContext->DisableRemoveReflection();
@@ -70,6 +74,7 @@ namespace O3DE::ProjectManager
         }
 
     protected:
+        AZStd::unique_ptr<Settings> m_settings;
         const QString m_settingsPath = "/Testing/TestKey";
         const QString m_newSettingsPath = "/Testing/NewTestKey";
         ProjectInfo m_projectInfo;
@@ -81,105 +86,110 @@ namespace O3DE::ProjectManager
         AZStd::unique_ptr<AZ::JsonRegistrationContext> m_registrationContext;
     };
 
-    TEST_F(ProjectManagerSettingsTests, PMSettings_GetUnsetPathBool_ReturnsFalse)
+    TEST_F(SettingsTests, Settings_IsIntialized_Success)
+    {
+        EXPECT_TRUE(m_settings->IsInitialized());
+    }
+
+    TEST_F(SettingsTests, Settings_GetUnsetPathBool_ReturnsFalse)
     {
         bool settingsResult = false;
-        EXPECT_FALSE(PMSettings::GetProjectManagerKey(settingsResult, m_settingsPath));
+        EXPECT_FALSE(m_settings->Get(settingsResult, m_settingsPath));
         EXPECT_FALSE(settingsResult);
     }
 
-    TEST_F(ProjectManagerSettingsTests, PMSettings_SetAndGetValueBool_Success)
+    TEST_F(SettingsTests, Settings_SetAndGetValueBool_Success)
     {
         bool settingsResult = false;
-        EXPECT_FALSE(PMSettings::GetProjectManagerKey(settingsResult, m_settingsPath));
+        EXPECT_FALSE(m_settings->Get(settingsResult, m_settingsPath));
 
         // Don't save to disk in test
-        EXPECT_TRUE(PMSettings::SetProjectManagerKey(m_settingsPath, true, /*saveToDisk*/ false));
+        EXPECT_TRUE(m_settings->Set(m_settingsPath, true));
 
         settingsResult = false;
-        EXPECT_TRUE(PMSettings::GetProjectManagerKey(settingsResult, m_settingsPath));
+        EXPECT_TRUE(m_settings->Get(settingsResult, m_settingsPath));
         EXPECT_TRUE(settingsResult);
     }
 
-    TEST_F(ProjectManagerSettingsTests, PMSettings_GetUnsetPathString_ReturnsFalse)
+    TEST_F(SettingsTests, Settings_GetUnsetPathString_ReturnsFalse)
     {
         QString settingsResult;
-        EXPECT_FALSE(PMSettings::GetProjectManagerKey(settingsResult, m_settingsPath));
+        EXPECT_FALSE(m_settings->Get(settingsResult, m_settingsPath));
         EXPECT_TRUE(settingsResult.isEmpty());
     }
 
-    TEST_F(ProjectManagerSettingsTests, PMSettings_SetAndGetValueString_Success)
+    TEST_F(SettingsTests, Settings_SetAndGetValueString_Success)
     {
         QString settingsResult;
-        EXPECT_FALSE(PMSettings::GetProjectManagerKey(settingsResult, m_settingsPath));
+        EXPECT_FALSE(m_settings->Get(settingsResult, m_settingsPath));
 
         QString settingsValue = "TestValue";
 
         // Don't save to disk in test
-        EXPECT_TRUE(PMSettings::SetProjectManagerKey(m_settingsPath, settingsValue, /*saveToDisk*/ false));
+        EXPECT_TRUE(m_settings->Set(m_settingsPath, settingsValue));
 
-        EXPECT_TRUE(PMSettings::GetProjectManagerKey(settingsResult, m_settingsPath));
+        EXPECT_TRUE(m_settings->Get(settingsResult, m_settingsPath));
         EXPECT_TRUE(settingsResult == settingsValue);
     }
 
-    TEST_F(ProjectManagerSettingsTests, PMSettings_CopyStringRemoveOriginal_SuccessAndRemovesOriginal)
+    TEST_F(SettingsTests, Settings_CopyStringRemoveOriginal_SuccessAndRemovesOriginal)
     {
         QString settingsResult;
-        EXPECT_FALSE(PMSettings::GetProjectManagerKey(settingsResult, m_newSettingsPath));
+        EXPECT_FALSE(m_settings->Get(settingsResult, m_newSettingsPath));
 
         QString settingsValue = "TestValue";
 
         // Don't save to disk in test
-        EXPECT_TRUE(PMSettings::SetProjectManagerKey(m_settingsPath, settingsValue, /*saveToDisk*/ false));
+        EXPECT_TRUE(m_settings->Set(m_settingsPath, settingsValue));
 
-        EXPECT_TRUE(PMSettings::CopyProjectManagerKeyString(m_settingsPath, m_newSettingsPath, /*removeOrig*/ true, /*saveToDisk*/ false));
+        EXPECT_TRUE(m_settings->Copy(m_settingsPath, m_newSettingsPath, /*removeOrig*/ true));
 
         // Check that old path value is removed
-        EXPECT_FALSE(PMSettings::GetProjectManagerKey(settingsResult, m_settingsPath));
+        EXPECT_FALSE(m_settings->Get(settingsResult, m_settingsPath));
 
-        EXPECT_TRUE(PMSettings::GetProjectManagerKey(settingsResult, m_newSettingsPath));
+        EXPECT_TRUE(m_settings->Get(settingsResult, m_newSettingsPath));
         EXPECT_TRUE(settingsResult == settingsValue);
     }
 
-    TEST_F(ProjectManagerSettingsTests, PMSettings_RemoveProjectManagerKey_RemovesKey)
+    TEST_F(SettingsTests, Settings_RemoveProjectManagerKey_RemovesKey)
     {
         QString settingsResult;
-        EXPECT_FALSE(PMSettings::GetProjectManagerKey(settingsResult, m_settingsPath));
+        EXPECT_FALSE(m_settings->Get(settingsResult, m_settingsPath));
 
         QString settingsValue = "TestValue";
 
         // Don't save to disk in test
-        EXPECT_TRUE(PMSettings::SetProjectManagerKey(m_settingsPath, settingsValue, /*saveToDisk*/ false));
-        EXPECT_TRUE(PMSettings::GetProjectManagerKey(settingsResult, m_settingsPath));
+        EXPECT_TRUE(m_settings->Set(m_settingsPath, settingsValue));
+        EXPECT_TRUE(m_settings->Get(settingsResult, m_settingsPath));
 
-        EXPECT_TRUE(PMSettings::RemoveProjectManagerKey(m_settingsPath, /*saveToDisk*/ false));
-        EXPECT_FALSE(PMSettings::GetProjectManagerKey(settingsResult, m_settingsPath));
+        EXPECT_TRUE(m_settings->Remove(m_settingsPath));
+        EXPECT_FALSE(m_settings->Get(settingsResult, m_settingsPath));
     }
 
-    TEST_F(ProjectManagerSettingsTests, PMSettings_GetUnsetBuildPath_ReturnsFalse)
+    TEST_F(SettingsTests, Settings_GetUnsetBuildPath_ReturnsFalse)
     {
         bool buildResult = true;
-        EXPECT_FALSE(PMSettings::GetProjectBuiltSuccessfully(buildResult, m_projectInfo));
+        EXPECT_FALSE(m_settings->GetProjectBuiltSuccessfully(buildResult, m_projectInfo));
         EXPECT_FALSE(buildResult);
     }
 
-    TEST_F(ProjectManagerSettingsTests, PMSettings_SetProjectBuiltSuccessfully_ReturnsTrue)
+    TEST_F(SettingsTests, Settings_SetProjectBuiltSuccessfully_ReturnsTrue)
     {
         // Don't save to disk in test
-        EXPECT_TRUE(PMSettings::SetProjectBuiltSuccessfully(m_projectInfo, true, /*saveToDisk*/ false));
+        EXPECT_TRUE(m_settings->SetProjectBuiltSuccessfully(m_projectInfo, true));
 
         bool buildResult = false;
-        EXPECT_TRUE(PMSettings::GetProjectBuiltSuccessfully(buildResult, m_projectInfo));
+        EXPECT_TRUE(m_settings->GetProjectBuiltSuccessfully(buildResult, m_projectInfo));
         EXPECT_TRUE(buildResult);
     }
 
-    TEST_F(ProjectManagerSettingsTests, PMSettings_SetProjectBuiltUnsuccessfully_ReturnsFalse)
+    TEST_F(SettingsTests, Settings_SetProjectBuiltUnsuccessfully_ReturnsFalse)
     {
         // Don't save to disk in test
-        EXPECT_TRUE(PMSettings::SetProjectBuiltSuccessfully(m_projectInfo, false, /*saveToDisk*/ false));
+        EXPECT_TRUE(m_settings->SetProjectBuiltSuccessfully(m_projectInfo, false));
 
         bool buildResult = false;
-        EXPECT_TRUE(PMSettings::GetProjectBuiltSuccessfully(buildResult, m_projectInfo));
+        EXPECT_TRUE(m_settings->GetProjectBuiltSuccessfully(buildResult, m_projectInfo));
         EXPECT_FALSE(buildResult);
     }
 }

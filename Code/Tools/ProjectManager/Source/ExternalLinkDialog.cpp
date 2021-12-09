@@ -8,7 +8,7 @@
 
 #include <ExternalLinkDialog.h>
 #include <LinkWidget.h>
-#include <ProjectManagerSettings.h>
+#include <SettingsInterface.h>
 
 #include <QDialogButtonBox>
 #include <QLabel>
@@ -85,6 +85,7 @@ namespace O3DE::ProjectManager
 
     void ExternalLinkDialog::SetSkipDialogSetting(bool state)
     {
-        PMSettings::SetProjectManagerKey(PMSettings::GetExternalLinkWarningKey(), state);
+        auto settings = SettingsInterface::Get();
+        settings->Set(QString(settings->ExternalLinkWarningKey), state);
     }
 } // namespace O3DE::ProjectManager

@@ -14,7 +14,7 @@
 #include <ProjectUtils.h>
 #include <ProjectBuilderController.h>
 #include <ScreensCtrl.h>
-#include <ProjectManagerSettings.h>
+#include <SettingsInterface.h>
 
 #include <AzQtComponents/Components/FlowLayout.h>
 #include <AzCore/Platform.h>
@@ -292,7 +292,7 @@ namespace O3DE::ProjectManager
                 if (currentButton)
                 {
                     bool projectBuiltSuccessfully = false;
-                    PMSettings::GetProjectBuiltSuccessfully(projectBuiltSuccessfully, project);
+                    SettingsInterface::Get()->GetProjectBuiltSuccessfully(projectBuiltSuccessfully, project);
 
                     if (!projectBuiltSuccessfully)
                     {

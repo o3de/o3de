@@ -11,7 +11,7 @@ set(FILES
     Resources/ProjectManager.qss
     tests/ApplicationTests.cpp
     tests/GemCatalogTests.cpp
-    tests/ProjectManagerSettingsTests.cpp
+    tests/SettingsTests.cpp
     tests/PythonBindingsTests.cpp
     tests/main.cpp
     tests/UtilsTests.cpp
