@@ -12,6 +12,7 @@
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QLabel)
+QT_FORWARD_DECLARE_CLASS(QPushButton)
 
 namespace O3DE::ProjectManager
 {
@@ -39,10 +40,16 @@ namespace O3DE::ProjectManager
         bool ValidateProjectPath() override;
         virtual bool ValidateProjectPreview();
         bool ValidateProjectId();
+        void UpdateAdvancedSettingsCollapseState();
+
+        inline constexpr static int s_collapseButtonSize = 24;
 
         FormBrowseEditWidget* m_projectPreview;
         QLabel* m_projectPreviewImage;
         FormLineEditWidget* m_projectId;
+
+        QPushButton* m_advancedSettingsCollapseButton = nullptr;
+        QWidget* m_advancedSettingWidget = nullptr;
 
         ProjectInfo m_projectInfo;
         bool m_userChangedPreview; //! Did the user change the project preview path

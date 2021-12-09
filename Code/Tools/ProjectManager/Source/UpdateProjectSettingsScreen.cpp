@@ -16,6 +16,7 @@
 #include <QDir>
 #include <QLabel>
 #include <QFileInfo>
+#include <QPushButton>
 
 namespace O3DE::ProjectManager
 {
@@ -31,12 +32,10 @@ namespace O3DE::ProjectManager
         m_verticalLayout->addWidget(m_projectPreview);
 
         QVBoxLayout* previewExtrasLayout = new QVBoxLayout(this);
-        previewExtrasLayout->setAlignment(Qt::AlignLeft);
-        previewExtrasLayout->setContentsMargins(50, 0, 0, 0);
+        previewExtrasLayout->setAlignment(Qt::AlignTop);
+        previewExtrasLayout->setContentsMargins(30, 45, 30, 0);
 
-        QLabel* projectPreviewLabel = new QLabel(tr("Select an image (PNG). Minimum %1 x %2 pixels.")
-            .arg(QString::number(ProjectPreviewImageWidth), QString::number(ProjectPreviewImageHeight)));
-        projectPreviewLabel->setObjectName("projectPreviewLabel");
+        QLabel* projectPreviewLabel = new QLabel(tr("Project Preview"));
         previewExtrasLayout->addWidget(projectPreviewLabel);
 
         m_projectPreviewImage = new QLabel(this);
@@ -44,11 +43,56 @@ namespace O3DE::ProjectManager
         m_projectPreviewImage->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
         previewExtrasLayout->addWidget(m_projectPreviewImage);
 
-        m_verticalLayout->addLayout(previewExtrasLayout);
+        QLabel* projectPreviewInfoLabel = new QLabel(tr("Select an image (PNG). Minimum %1 x %2 pixels.")
+            .arg(QString::number(ProjectPreviewImageWidth), QString::number(ProjectPreviewImageHeight)));
+        projectPreviewInfoLabel->setObjectName("projectSmallInfoLabel");
+        projectPreviewInfoLabel->setWordWrap(true);
+        previewExtrasLayout->addWidget(projectPreviewInfoLabel);
 
-        m_projectId = new FormLineEditWidget(tr("Project ID"), "", this);
-        connect(m_projectId->lineEdit(), &QLineEdit::textChanged, this, &UpdateProjectSettingsScreen::OnProjectIdUpdated);
-        m_verticalLayout->addWidget(m_projectId);
+        m_horizontalLayout->addLayout(previewExtrasLayout);
+
+        m_verticalLayout->addSpacing(10);
+
+        // Collapse button
+        QHBoxLayout* advancedCollapseLayout = new QHBoxLayout();
+        advancedCollapseLayout->setContentsMargins(50, 0, 0, 0);
+
+        m_advancedSettingsCollapseButton = new QPushButton();
+        m_advancedSettingsCollapseButton->setCheckable(true);
+        m_advancedSettingsCollapseButton->setChecked(true);
+        m_advancedSettingsCollapseButton->setFlat(true);
+        m_advancedSettingsCollapseButton->setFocusPolicy(Qt::NoFocus);
+        m_advancedSettingsCollapseButton->setFixedWidth(s_collapseButtonSize);
+        connect(m_advancedSettingsCollapseButton, &QPushButton::clicked, this, [=]()
+            {
+                UpdateAdvancedSettingsCollapseState();
+            });
+        advancedCollapseLayout->addWidget(m_advancedSettingsCollapseButton);
+
+        // Category title
+        QLabel* advancedLabel = new QLabel("Advanced Settings");
+        advancedLabel->setObjectName("p");
+        advancedCollapseLayout->addWidget(advancedLabel);
+        m_verticalLayout->addLayout(advancedCollapseLayout);
+
+        m_verticalLayout->addSpacing(5);
+
+        // Everything in the advanced settings widget will be collapsed/uncollapsed
+        {
+            m_advancedSettingWidget = new QWidget();
+            m_verticalLayout->addWidget(m_advancedSettingWidget);
+
+            QVBoxLayout* advancedSettingsLayout = new QVBoxLayout();
+            advancedSettingsLayout->setMargin(0);
+            advancedSettingsLayout->setAlignment(Qt::AlignTop);
+            m_advancedSettingWidget->setLayout(advancedSettingsLayout);
+
+            m_projectId = new FormLineEditWidget(tr("Project ID"), "", this);
+            connect(m_projectId->lineEdit(), &QLineEdit::textChanged, this, &UpdateProjectSettingsScreen::OnProjectIdUpdated);
+            advancedSettingsLayout->addWidget(m_projectId);
+        }
+
+        UpdateAdvancedSettingsCollapseState();
     }
 
     ProjectManagerScreen UpdateProjectSettingsScreen::GetScreenEnum()
@@ -177,6 +221,20 @@ namespace O3DE::ProjectManager
 
         m_projectId->setErrorLabelVisible(!projectIdIsValid);
         return projectIdIsValid;
+    }
+
+    void UpdateProjectSettingsScreen::UpdateAdvancedSettingsCollapseState()
+    {
+        if (m_advancedSettingsCollapseButton->isChecked())
+        {
+            m_advancedSettingsCollapseButton->setIcon(QIcon(":/ArrowDownLine.svg"));
+            m_advancedSettingWidget->hide();
+        }
+        else
+        {
+            m_advancedSettingsCollapseButton->setIcon(QIcon(":/ArrowUpLine.svg"));
+            m_advancedSettingWidget->show();
+        }
     }
 
 } // namespace O3DE::ProjectManager

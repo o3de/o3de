@@ -23,7 +23,7 @@ namespace O3DE::ProjectManager
 
         static constexpr char ProjectManagerKeyPrefix[] = "/O3DE/ProjectManager";
         static constexpr char ExternalLinkWarningKey[] = "/O3DE/ProjectManager/SkipExternalLinkWarning";
-        static constexpr char ProjectsBuiltSuccessfullyKey[] = "/O3DE/ProjectManager/SkipExternalLinkWarning";
+        static constexpr char ProjectsBuiltSuccessfullyKey[] = "/O3DE/ProjectManager/SuccessfulBuildPaths";
 
         ISettings() = default;
         virtual ~ISettings() = default;
