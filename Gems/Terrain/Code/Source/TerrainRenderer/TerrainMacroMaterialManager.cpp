@@ -38,21 +38,11 @@ namespace Terrain
         {
             m_bindlessImageHandler = bindlessImageHandler;
 
-            // Find any macro materials that have already been created.
-            TerrainMacroMaterialRequestBus::EnumerateHandlers(
-                [&](TerrainMacroMaterialRequests* handler)
-                {
-                    MacroMaterialData macroMaterial = handler->GetTerrainMacroMaterialData();
-                    AZ::EntityId entityId = *(Terrain::TerrainMacroMaterialRequestBus::GetCurrentBusId());
-                    OnTerrainMacroMaterialCreated(entityId, macroMaterial);
-                    return true;
-                }
-            );
-            TerrainMacroMaterialNotificationBus::Handler::BusConnect();
-
             OnTerrainDataChanged(AZ::Aabb::CreateNull(), TerrainDataChangedMask::Settings);
             AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
-
+            TerrainMacroMaterialNotificationBus::Handler::BusConnect();
+            
+            m_terrainSizeChanged = true;
             m_isInitialized = true;
         }
     }
@@ -61,7 +51,6 @@ namespace Terrain
     {
         m_isInitialized = false;
 
-        m_terrainSrg = {};
         m_macroMaterialDataBuffer = {};
 
         m_macroMaterialShaderData.clear();
@@ -83,9 +72,7 @@ namespace Terrain
     
     bool TerrainMacroMaterialManager::SetTerrainSrg(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg)
     {
-        m_terrainSrg = terrainSrg;
-
-        const AZ::RHI::ShaderResourceGroupLayout* terrainSrgLayout = m_terrainSrg->GetLayout();
+        const AZ::RHI::ShaderResourceGroupLayout* terrainSrgLayout = terrainSrg->GetLayout();
             
         m_macroMaterialGridIndex = terrainSrgLayout->FindShaderInputConstantIndex(AZ::Name(TerrainSrgInputs::MacroMaterialGrid));
         AZ_Error(TerrainMacroMaterialManagerName, m_macroMaterialGridIndex.IsValid(), "Failed to find terrain srg input constant %s.", TerrainSrgInputs::MacroMaterialGrid);
@@ -349,7 +336,7 @@ namespace Terrain
         }
     }
 
-    void TerrainMacroMaterialManager::Update()
+    void TerrainMacroMaterialManager::Update(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg)
     {
         if (m_terrainSizeChanged)
         {
@@ -392,10 +379,10 @@ namespace Terrain
             macroMaterialGridShaderData.m_resolution = (m_tilesX << 16) | m_tilesY;
             macroMaterialGridShaderData.m_tileSize = MacroMaterialGridSize;
 
-            if (m_terrainSrg)
+            if (terrainSrg)
             {   
-                m_macroMaterialDataBuffer.UpdateSrg(m_terrainSrg.get());
-                m_terrainSrg->SetConstant(m_macroMaterialGridIndex, macroMaterialGridShaderData);
+                m_macroMaterialDataBuffer.UpdateSrg(terrainSrg.get());
+                terrainSrg->SetConstant(m_macroMaterialGridIndex, macroMaterialGridShaderData);
             }
         }
     }

@@ -157,7 +157,7 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
     const float macroSpecularF0 = 0.5;
     const float macroMetalness = 0.0;
 
-    if (false && hasDetailSurface)
+    if (hasDetailSurface)
     {
         float3 blendedColor = lerp(detailSurface.m_color, macroColor, detailFactor);
         float blendedSpecularF0 = lerp(detailSurface.m_specularF0, macroSpecularF0, detailFactor);

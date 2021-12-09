@@ -31,7 +31,7 @@ namespace Terrain
         void Reset();
         bool IsInitialized();
 
-        void Update();
+        void Update(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
 
     private:
         
@@ -105,7 +105,6 @@ namespace Terrain
         AZStd::shared_ptr<AZ::Render::BindlessImageArrayHandler> m_bindlessImageHandler;
         AZ::Render::GpuBufferHandler m_macroMaterialDataBuffer;
 
-        AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_terrainSrg;
         AZ::RHI::ShaderInputConstantIndex m_macroMaterialGridIndex;
 
         bool m_terrainSizeChanged{ false };

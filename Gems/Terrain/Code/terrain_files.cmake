@@ -30,6 +30,8 @@ set(FILES
     Source/TerrainRenderer/Components/TerrainSurfaceMaterialsListComponent.h
     Source/TerrainRenderer/Components/TerrainMacroMaterialComponent.cpp
     Source/TerrainRenderer/Components/TerrainMacroMaterialComponent.h
+    Source/TerrainRenderer/Aabb2i.cpp
+    Source/TerrainRenderer/Aabb2i.h
     Source/TerrainRenderer/TerrainFeatureProcessor.cpp
     Source/TerrainRenderer/TerrainFeatureProcessor.h
     Source/TerrainRenderer/TerrainDetailMaterialManager.cpp
@@ -43,6 +45,8 @@ set(FILES
     Source/TerrainRenderer/TerrainAreaMaterialRequestBus.h
     Source/TerrainRenderer/TerrainMacroMaterialBus.cpp
     Source/TerrainRenderer/TerrainMacroMaterialBus.h
+    Source/TerrainRenderer/Vector2i.cpp
+    Source/TerrainRenderer/Vector2i.h
     Source/TerrainSystem/TerrainSystem.cpp
     Source/TerrainSystem/TerrainSystem.h
     Source/TerrainSystem/TerrainSystemBus.h
