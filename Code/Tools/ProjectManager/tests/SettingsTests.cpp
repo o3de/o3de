@@ -86,11 +86,6 @@ namespace O3DE::ProjectManager
         AZStd::unique_ptr<AZ::JsonRegistrationContext> m_registrationContext;
     };
 
-    TEST_F(SettingsTests, Settings_IsIntialized_Success)
-    {
-        EXPECT_TRUE(m_settings->IsInitialized());
-    }
-
     TEST_F(SettingsTests, Settings_GetUnsetPathBool_ReturnsFalse)
     {
         bool settingsResult = false;
@@ -103,7 +98,6 @@ namespace O3DE::ProjectManager
         bool settingsResult = false;
         EXPECT_FALSE(m_settings->Get(settingsResult, m_settingsPath));
 
-        // Don't save to disk in test
         EXPECT_TRUE(m_settings->Set(m_settingsPath, true));
 
         settingsResult = false;
@@ -125,7 +119,6 @@ namespace O3DE::ProjectManager
 
         QString settingsValue = "TestValue";
 
-        // Don't save to disk in test
         EXPECT_TRUE(m_settings->Set(m_settingsPath, settingsValue));
 
         EXPECT_TRUE(m_settings->Get(settingsResult, m_settingsPath));
@@ -139,7 +132,6 @@ namespace O3DE::ProjectManager
 
         QString settingsValue = "TestValue";
 
-        // Don't save to disk in test
         EXPECT_TRUE(m_settings->Set(m_settingsPath, settingsValue));
 
         EXPECT_TRUE(m_settings->Copy(m_settingsPath, m_newSettingsPath, /*removeOrig*/ true));
@@ -158,7 +150,6 @@ namespace O3DE::ProjectManager
 
         QString settingsValue = "TestValue";
 
-        // Don't save to disk in test
         EXPECT_TRUE(m_settings->Set(m_settingsPath, settingsValue));
         EXPECT_TRUE(m_settings->Get(settingsResult, m_settingsPath));
 
@@ -175,7 +166,6 @@ namespace O3DE::ProjectManager
 
     TEST_F(SettingsTests, Settings_SetProjectBuiltSuccessfully_ReturnsTrue)
     {
-        // Don't save to disk in test
         EXPECT_TRUE(m_settings->SetProjectBuiltSuccessfully(m_projectInfo, true));
 
         bool buildResult = false;
@@ -185,7 +175,6 @@ namespace O3DE::ProjectManager
 
     TEST_F(SettingsTests, Settings_SetProjectBuiltUnsuccessfully_ReturnsFalse)
     {
-        // Don't save to disk in test
         EXPECT_TRUE(m_settings->SetProjectBuiltSuccessfully(m_projectInfo, false));
 
         bool buildResult = false;

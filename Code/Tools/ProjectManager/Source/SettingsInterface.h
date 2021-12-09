@@ -29,12 +29,6 @@ namespace O3DE::ProjectManager
         virtual ~ISettings() = default;
 
         /**
-         * This checks if Settings is in a usable state
-         * @return true Settings is ready to be used, false otherwise
-         */
-        virtual bool IsInitialized() = 0;
-
-        /**
          * Get the value for a string settings key
          * @param result Store string result in this variable
          * @param settingsKey The key to get the value in

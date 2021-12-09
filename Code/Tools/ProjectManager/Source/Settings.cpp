@@ -22,12 +22,6 @@ namespace O3DE::ProjectManager
         AZ_Assert(m_settingsRegistry, "Failed to create Settings");
     }
 
-    bool Settings::IsInitialized()
-    {
-        // Settings intialized correctly if it successfuly got the SettingsRegistry
-        return m_settingsRegistry;
-    }
-
     bool Settings::Save()
     {
         AZ::SettingsRegistryMergeUtils::DumperSettings dumperSettings;
@@ -61,6 +55,18 @@ namespace O3DE::ProjectManager
         return saved;
     }
 
+    bool Settings::OnSettingsChanged()
+    {
+        if (m_saveToDisk)
+        {
+            return Save();
+        }
+        else
+        {
+            return true;
+        }
+    }
+
     bool Settings::Get(QString& result, const QString& settingsKey)
     {
         bool success = false;
@@ -82,10 +88,7 @@ namespace O3DE::ProjectManager
         bool success = false;
 
         success = m_settingsRegistry->Set(settingsKey.toStdString().c_str(), settingsValue.toStdString().c_str());
-        if (m_saveToDisk)
-        {
-            Save();
-        }
+        OnSettingsChanged();
 
         return success;
     }
@@ -95,10 +98,7 @@ namespace O3DE::ProjectManager
         bool success = false;
 
         success = m_settingsRegistry->Set(settingsKey.toStdString().c_str(), settingsValue);
-        if (m_saveToDisk)
-        {
-            Save();
-        }
+        OnSettingsChanged();
 
         return success;
     }
@@ -108,10 +108,7 @@ namespace O3DE::ProjectManager
         bool success = false;
 
         success = m_settingsRegistry->Remove(settingsKey.toStdString().c_str());
-        if (m_saveToDisk)
-        {
-            Save();
-        }
+        OnSettingsChanged();
 
         return success;
     }
@@ -132,10 +129,7 @@ namespace O3DE::ProjectManager
                 {
                     success = m_settingsRegistry->Remove(settingsKeyOrig.toStdString().c_str());
                 }
-                if (m_saveToDisk)
-                {
-                    Save();
-                }
+                OnSettingsChanged();
             }
         }
 
@@ -190,10 +184,7 @@ namespace O3DE::ProjectManager
         }
 
         success = m_settingsRegistry->SetObject<AZStd::set<AZStd::string>>(ProjectsBuiltSuccessfullyKey, builtPathsResult);
-        if (m_saveToDisk)
-        {
-            Save();
-        }
+        OnSettingsChanged();
 
         return success;
     }

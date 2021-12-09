@@ -70,8 +70,8 @@ namespace O3DE::ProjectManager
         advancedCollapseLayout->addWidget(m_advancedSettingsCollapseButton);
 
         // Category title
-        QLabel* advancedLabel = new QLabel("Advanced Settings");
-        advancedLabel->setObjectName("p");
+        QLabel* advancedLabel = new QLabel(tr("Advanced Settings"));
+        advancedLabel->setObjectName("projectSettingsSectionTitle");
         advancedCollapseLayout->addWidget(advancedLabel);
         m_verticalLayout->addLayout(advancedCollapseLayout);
 

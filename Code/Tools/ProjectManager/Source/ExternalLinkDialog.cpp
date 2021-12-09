@@ -85,7 +85,6 @@ namespace O3DE::ProjectManager
 
     void ExternalLinkDialog::SetSkipDialogSetting(bool state)
     {
-        auto settings = SettingsInterface::Get();
-        settings->Set(QString(settings->ExternalLinkWarningKey), state);
+        SettingsInterface::Get()->Set(QString(ISettings::ExternalLinkWarningKey), state);
     }
 } // namespace O3DE::ProjectManager

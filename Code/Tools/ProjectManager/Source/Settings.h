@@ -25,8 +25,6 @@ namespace O3DE::ProjectManager
     public:
         Settings(bool saveToDisk = true);
 
-        bool IsInitialized() override;
-
         bool Get(QString& result, const QString& settingsKey) override;
         bool Get(bool& result, const QString& settingsKey) override;
         bool Set(const QString& settingsKey, const QString& settingsValue) override;
@@ -41,6 +39,7 @@ namespace O3DE::ProjectManager
 
     private:
         bool Save();
+        bool OnSettingsChanged();
 
         bool GetBuiltSuccessfullyPaths(AZStd::set<AZStd::string>& result);
 

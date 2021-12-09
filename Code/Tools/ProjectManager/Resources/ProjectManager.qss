@@ -250,7 +250,6 @@ QTabBar::tab:focus {
     margin-top:30px;
 }
 
-
 #projectTemplate {
     margin: 25px 0 0 50px;
 }
