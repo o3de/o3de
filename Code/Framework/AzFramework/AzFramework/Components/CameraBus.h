@@ -9,6 +9,7 @@
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Transform.h>
+#include <AzFramework/Viewport/ScreenGeometry.h>
 
 namespace Camera
 {
@@ -129,6 +130,13 @@ namespace Camera
                 GetFrustumHeight()
             };
         }
+
+        //! Unprojects a position in screen space pixel coordinates to world space.
+        //! Note: The position returned will be on the near clip plane of the camera in world space.
+        virtual AZ::Vector3 ScreenToWorld(const AzFramework::ScreenPoint& screenPosition) = 0;
+
+        //! Projects a position in world space to screen space for the given camera.
+        virtual AzFramework::ScreenPoint WorldToScreen(const AZ::Vector3& worldPosition) = 0;
     };
     using CameraRequestBus = AZ::EBus<CameraComponentRequests>;
 

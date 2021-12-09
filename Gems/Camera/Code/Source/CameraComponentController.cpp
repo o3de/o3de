@@ -16,6 +16,8 @@
 
 #include <AzCore/Component/EntityBus.h>
 
+#include <AzFramework/Viewport/ViewportScreen.h>
+
 namespace Camera
 {
     void CameraComponentConfig::Reflect(AZ::ReflectContext* context)
@@ -410,6 +412,32 @@ namespace Camera
     bool CameraComponentController::IsActiveView()
     {
         return m_isActiveView;
+    }
+
+    AZ::Vector3 CameraComponentController::ScreenToWorld(const AzFramework::ScreenPoint& screenPosition)
+    {
+        return AzFramework::ScreenToWorld(screenPosition, GetCameraState());
+    }
+
+    AzFramework::ScreenPoint CameraComponentController::WorldToScreen(const AZ::Vector3& worldPosition)
+    {
+        return AzFramework::WorldToScreen(worldPosition, GetCameraState());
+    }
+
+    AzFramework::CameraState CameraComponentController::GetCameraState()
+    {
+        auto viewportContext = GetViewportContext();
+        if (!m_atomCamera || ! viewportContext)
+        {
+            return AzFramework::CameraState();
+        }
+
+        auto windowSize = viewportContext->GetViewportSize();
+        auto viewportSize = AzFramework::Vector2FromScreenSize(AzFramework::ScreenSize(windowSize.m_width, windowSize.m_height));
+
+        AzFramework::CameraState cameraState = AzFramework::CreateDefaultCamera(m_atomCamera->GetCameraTransform(), viewportSize);
+        AzFramework::SetCameraClippingVolumeFromPerspectiveFovMatrixRH(cameraState, m_atomCamera->GetViewToClipMatrix());
+        return cameraState;
     }
 
     void CameraComponentController::OnTransformChanged([[maybe_unused]] const AZ::Transform& local, const AZ::Transform& world)
