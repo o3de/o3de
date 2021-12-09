@@ -31,13 +31,11 @@ namespace ScriptCanvasEditor
             ModelNotificationsBus::Broadcast(&ModelNotificationsTraits::OnUpgradeBegin, modification, m_assets);
             AZ::SystemTickBus::Handler::BusConnect();
             AzFramework::AssetSystemInfoBus::Handler::BusConnect();
-            AzFramework::AssetSystemInfoBus::Handler::BusConnect();
             m_result.asset = m_assets[GetCurrentIndex()];
         }
 
         Modifier::~Modifier()
         {
-            AzFramework::AssetSystemInfoBus::Handler::BusDisconnect();
             AzFramework::AssetSystemInfoBus::Handler::BusDisconnect();
         }
 
@@ -73,58 +71,6 @@ namespace ScriptCanvasEditor
             return false;
         }
 
-        AZStd::sys_time_t Modifier::CalculateRemainingWaitTime(const AZStd::unordered_set<size_t>& dependencies) const
-        {
-            auto maxSeconds = AZStd::chrono::seconds(dependencies.size() * m_config.perDependencyWaitSecondsMax);
-            auto waitedSeconds = AZStd::chrono::seconds(AZStd::chrono::system_clock::now() - m_waitTimeStamp);
-            return (maxSeconds - waitedSeconds).count();
-        }
-
-        void Modifier::SourceFileChanged(AZStd::string relativePath, [[maybe_unused]] AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid fileAssetId)
-        {
-            AZ_TracePrintf("SC", "received SourceFileChanged: %s", relativePath.c_str());
-            VE_LOG("received SourceFileChanged: %s", relativePath.c_str());
-        }
-
-        void Modifier::SourceFileFailed(AZStd::string relativePath, [[maybe_unused]] AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid fileAssetId)
-        {
-            AZ_TracePrintf("SC", "received SourceFileFailed: %s", relativePath.c_str());
-            VE_LOG("received SourceFileFailed: %s", relativePath.c_str());
-        }
-
-        void Modifier::ProcessNotifications()
-        {
-            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
-
-            for (const auto& assetPath : m_successNotifications)
-            {
-                VE_LOG("received AssetCompilationSuccess: %s", assetPath.c_str());
-                SourceHandle sourceHandle(nullptr, {}, assetPath.c_str());
-                CompleteDescriptionInPlace(sourceHandle);
-
-                if (m_attemptedAssets.contains(sourceHandle.Id()))
-                {
-                    m_assetsCompletedByAP.insert(sourceHandle.Id());
-                }
-            }
-
-            m_successNotifications.clear();
-
-            for (const auto& assetPath : m_failureNotifications)
-            {
-                VE_LOG("received AssetCompilationFailed: %s", assetPath.c_str());
-                SourceHandle sourceHandle(nullptr, {}, assetPath.c_str());
-                CompleteDescriptionInPlace(sourceHandle);
-
-                if (m_attemptedAssets.contains(sourceHandle.Id()))
-                {
-                    m_assetsFailedByAP.insert(sourceHandle.Id());
-                }
-            }
-
-            m_failureNotifications.clear();
-        }
-
         void Modifier::AssetCompilationSuccess([[maybe_unused]] const AZStd::string& assetPath)
         {
             AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
@@ -135,6 +81,13 @@ namespace ScriptCanvasEditor
         {
             AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
             m_failureNotifications.insert(assetPath);
+        }
+
+        AZStd::sys_time_t Modifier::CalculateRemainingWaitTime(const AZStd::unordered_set<size_t>& dependencies) const
+        {
+            auto maxSeconds = AZStd::chrono::seconds(dependencies.size() * m_config.perDependencyWaitSecondsMax);
+            auto waitedSeconds = AZStd::chrono::seconds(AZStd::chrono::system_clock::now() - m_waitTimeStamp);
+            return (maxSeconds - waitedSeconds).count();
         }
 
         void Modifier::CheckDependencies()
@@ -249,6 +202,18 @@ namespace ScriptCanvasEditor
             return m_results;
         }
 
+        void Modifier::InitializeResult()
+        {
+            m_result = {};
+
+            if (m_assetIndex != m_assets.size())
+            {
+                m_result.asset = m_assets[GetCurrentIndex()];
+                CompleteDescriptionInPlace(m_result.asset);
+                m_attemptedAssets.insert(m_result.asset.Id());
+            }
+        }
+
         void Modifier::LoadAsset()
         {
             auto& handle = m_result.asset;
@@ -294,18 +259,6 @@ namespace ScriptCanvasEditor
             }
         }
 
-        void Modifier::InitializeResult()
-        {
-            m_result = {};
-
-            if (m_assetIndex != m_assets.size())
-            {
-                m_result.asset = m_assets[GetCurrentIndex()];
-                CompleteDescriptionInPlace(m_result.asset);
-                m_attemptedAssets.insert(m_result.asset.Id());
-            }
-        }
-
         void Modifier::NextAsset()
         {
             ++m_assetIndex;
@@ -319,6 +272,72 @@ namespace ScriptCanvasEditor
             NextAsset();
             m_fileSaveResult = {};
             m_modifyState = ModifyState::Idle;
+        }
+
+        void Modifier::OnFileSaveComplete(const FileSaveResult& result)
+        {
+            if (!result.tempFileRemovalError.empty())
+            {
+                VE_LOG
+                ("Temporary file not removed for %s: %s"
+                    , m_result.asset.Path().c_str()
+                    , result.tempFileRemovalError.c_str());
+            }
+
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
+            m_modifyState = ModifyState::ReportResult;
+            m_fileSaver.reset();
+            m_fileSaveResult = result;
+        }
+
+        void Modifier::OnSystemTick()
+        {
+            switch (m_state)
+            {
+            case State::GatheringDependencies:
+                TickGatherDependencies();
+                break;
+
+            case State::ModifyingGraphs:
+                TickUpdateGraph();
+                break;
+            }
+
+            AZ::Data::AssetManager::Instance().DispatchEvents();
+            AZ::SystemTickBus::ExecuteQueuedEvents();
+        }
+
+        void Modifier::ProcessNotifications()
+        {
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
+
+            for (const auto& assetPath : m_successNotifications)
+            {
+                VE_LOG("received AssetCompilationSuccess: %s", assetPath.c_str());
+                SourceHandle sourceHandle(nullptr, {}, assetPath.c_str());
+                CompleteDescriptionInPlace(sourceHandle);
+
+                if (m_attemptedAssets.contains(sourceHandle.Id()))
+                {
+                    m_assetsCompletedByAP.insert(sourceHandle.Id());
+                }
+            }
+
+            m_successNotifications.clear();
+
+            for (const auto& assetPath : m_failureNotifications)
+            {
+                VE_LOG("received AssetCompilationFailed: %s", assetPath.c_str());
+                SourceHandle sourceHandle(nullptr, {}, assetPath.c_str());
+                CompleteDescriptionInPlace(sourceHandle);
+
+                if (m_attemptedAssets.contains(sourceHandle.Id()))
+                {
+                    m_assetsFailedByAP.insert(sourceHandle.Id());
+                }
+            }
+
+            m_failureNotifications.clear();
         }
 
         void Modifier::ReleaseCurrentAsset()
@@ -358,39 +377,6 @@ namespace ScriptCanvasEditor
             {
                 ReportModificationError(m_fileSaveResult.fileSaveError);
             }
-        }
-
-        void Modifier::OnFileSaveComplete(const FileSaveResult& result)
-        {
-            if (!result.tempFileRemovalError.empty())
-            {
-                VE_LOG
-                    ( "Temporary file not removed for %s: %s"
-                    , m_result.asset.Path().c_str()
-                    , result.tempFileRemovalError.c_str());
-            }
-
-            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
-            m_modifyState = ModifyState::ReportResult;
-            m_fileSaver.reset();
-            m_fileSaveResult = result;
-        }
-
-        void Modifier::OnSystemTick()
-        {
-            switch (m_state)
-            {
-            case State::GatheringDependencies:
-                TickGatherDependencies();
-                break;
-
-            case State::ModifyingGraphs:
-                TickUpdateGraph();
-                break;
-            }
-
-            AZ::Data::AssetManager::Instance().DispatchEvents();
-            AZ::SystemTickBus::ExecuteQueuedEvents();
         }
 
         void Modifier::SaveModifiedGraph(const ModificationResult& result)
