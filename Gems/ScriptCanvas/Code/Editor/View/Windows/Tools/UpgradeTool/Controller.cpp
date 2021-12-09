@@ -216,6 +216,8 @@ namespace ScriptCanvasEditor
             else
             {
                 VE_LOG("Failed to modify %s: %s", result.asset.Path().c_str(), result.errorMessage.data());
+                AZ_Warning(ScriptCanvas::k_VersionExplorerWindow.data()
+                    , false, "Failed to modify %s: %s", result.asset.Path().c_str(), result.errorMessage.data());
             }
 
             for (auto* item : FindTableItems(info))

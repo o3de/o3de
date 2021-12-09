@@ -83,7 +83,7 @@ namespace ScriptCanvasEditor
         {
             AZStd::string name = asset.Path().c_str();
 
-            if ((m_config.filter && m_config.filter(asset) == ScanConfiguration::Filter::Exclude) || !name.contains("LY_SC_UnitTest_FunctionContainer"))
+            if (m_config.filter && m_config.filter(asset) == ScanConfiguration::Filter::Exclude)
             {
                 VE_LOG("Scanner: Excluded: %s ", ModCurrentAsset().Path().c_str());
                 m_result.m_filteredAssets.push_back(ModCurrentAsset().Describe());

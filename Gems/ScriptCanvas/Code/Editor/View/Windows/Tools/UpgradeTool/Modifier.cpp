@@ -128,8 +128,7 @@ namespace ScriptCanvasEditor
         void Modifier::AssetCompilationSuccess([[maybe_unused]] const AZStd::string& assetPath)
         {
             AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
-            // test failure path m_successNotifications.insert(assetPath);
-            m_failureNotifications.insert(assetPath);
+            m_successNotifications.insert(assetPath);
         }
 
         void Modifier::AssetCompilationFailed(const AZStd::string& assetPath)
