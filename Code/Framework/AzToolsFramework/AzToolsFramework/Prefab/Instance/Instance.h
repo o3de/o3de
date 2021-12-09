@@ -80,8 +80,8 @@ namespace AzToolsFramework
             void SetTemplateId(TemplateId templateId);
 
             const AZ::IO::Path& GetTemplateSourcePath() const;
-            void SetTemplateSourcePath(AZ::IO::PathView sourcePath);
-            void SetContainerEntityName(AZStd::string_view containerName);
+            void SetTemplateSourcePath(AZ::IO::Path sourcePath);
+            void SetContainerEntityName(AZStd::string containerName);
 
             bool AddEntity(AZ::Entity& entity);
             bool AddEntity(AZStd::unique_ptr<AZ::Entity>&& entity);

@@ -142,14 +142,14 @@ namespace AzToolsFramework
             return m_templateSourcePath;
         }
 
-        void Instance::SetTemplateSourcePath(AZ::IO::PathView sourcePath)
+        void Instance::SetTemplateSourcePath(AZ::IO::Path sourcePath)
         {
-            m_templateSourcePath = sourcePath;
+            m_templateSourcePath = AZStd::move(sourcePath);
         }
 
-        void Instance::SetContainerEntityName(AZStd::string_view containerName)
+        void Instance::SetContainerEntityName(AZStd::string containerName)
         {
-            m_containerEntity->SetName(containerName);
+            m_containerEntity->SetName(AZStd::move(containerName));
         }
 
         bool Instance::AddEntity(AZ::Entity& entity)

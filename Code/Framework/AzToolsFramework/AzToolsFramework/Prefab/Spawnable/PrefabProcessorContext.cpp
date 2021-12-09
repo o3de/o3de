@@ -154,6 +154,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
     {
         using namespace AzToolsFramework::Prefab;
 
+        // Resolve prefab links into spawnable links for the provided spawnable.
         for (EntityAliasStore& entityAlias : m_entityAliases)
         {
             auto sourcePrefab = AZStd::get_if<EntityAliasPrefabLink>(&entityAlias.m_source);
