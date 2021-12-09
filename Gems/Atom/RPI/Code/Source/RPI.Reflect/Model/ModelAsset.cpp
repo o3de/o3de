@@ -9,7 +9,6 @@
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelKdTree.h>
 #include <AzCore/Asset/AssetSerializer.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Math/IntersectSegment.h>
 #include <AzCore/std/limits.h>
@@ -137,7 +136,7 @@ namespace AZ
                 // For runtime approach is to do this during asset processing and serialized spatial information alongside with mesh model assets
                 const auto jobLambda = [&]() -> void
                 {
-                    AZ_TRACE_METHOD();
+                    AZ_PROFILE_FUNCTION(RPI);
 
                     AZStd::unique_ptr<ModelKdTree> tree = AZStd::make_unique<ModelKdTree>();
                     tree->Build(this);

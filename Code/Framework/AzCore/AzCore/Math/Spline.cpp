@@ -98,7 +98,7 @@ namespace AZ
         if (BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context))
         {
             behaviorContext->Class<SplineAddress>()->
-                Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::List)->
+                Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::ListOnly)->
                 Constructor<u64, float>()->
                 Attribute(Script::Attributes::Storage, Script::Attributes::StorageType::Value)->
                 Attribute(Script::Attributes::ConstructorOverride, &Internal::SplineAddressScriptConstructor)->
@@ -118,7 +118,7 @@ namespace AZ
                 Property("rayDistance", [](RaySplineQueryResult* thisPtr) { return thisPtr->m_rayDistance; }, nullptr);
 
             behaviorContext->Class<Spline>()->
-                Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::List)->
+                Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::ListOnly)->
                 Attribute(Script::Attributes::Storage, Script::Attributes::StorageType::RuntimeOwn)->
                 Method("GetNearestAddressRay", &Spline::GetNearestAddressRay)->
                 Method("GetNearestAddressPosition", &Spline::GetNearestAddressPosition)->

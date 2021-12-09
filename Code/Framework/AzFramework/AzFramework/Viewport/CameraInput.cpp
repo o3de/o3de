@@ -335,10 +335,13 @@ namespace AzFramework
         Camera nextCamera = targetCamera;
 
         const float rotateSpeed = m_rotateSpeedFn();
-        nextCamera.m_pitch -= float(cursorDelta.m_y) * rotateSpeed * Invert(m_invertPitchFn());
-        nextCamera.m_yaw -= float(cursorDelta.m_x) * rotateSpeed * Invert(m_invertYawFn());
+        const float deltaPitch = aznumeric_cast<float>(cursorDelta.m_y) * rotateSpeed * Invert(m_invertPitchFn());
+        const float deltaYaw = aznumeric_cast<float>(cursorDelta.m_x) * rotateSpeed * Invert(m_invertYawFn());
 
+        nextCamera.m_pitch -= deltaPitch;
+        nextCamera.m_yaw -= deltaYaw;
         nextCamera.m_yaw = WrapYawRotation(nextCamera.m_yaw);
+
         if (m_constrainPitch())
         {
             nextCamera.m_pitch = ClampPitchRotation(nextCamera.m_pitch);

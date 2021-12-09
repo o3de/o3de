@@ -7,6 +7,7 @@
  */
 #include <Atom/RHI/DrawListContext.h>
 
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/std/sort.h>
 
 namespace AZ
@@ -86,6 +87,7 @@ namespace AZ
 
         void DrawListContext::FinalizeLists()
         {
+            AZ_PROFILE_SCOPE(RHI, "DrawListContext: FinalizeLists");
             for (size_t i = 0; i < m_mergedListsByTag.size(); ++i)
             {
                 if (m_drawListMask[i])
