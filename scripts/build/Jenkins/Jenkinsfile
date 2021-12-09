@@ -457,11 +457,11 @@ def UploadAPLogs(String platformName, String jobName, String workspace, Map para
     }
 }
 
-def UploadTestArtifacts(String jobName, String workspace, String outputDirectory) {
+def UploadTestArtifacts(String workspace, String outputDirectory) {
     catchError(message: "Error archiving test artifacts (this won't fail the build)", buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
         def cmakeBuildDir = [workspace, ENGINE_REPOSITORY_NAME, outputDirectory].join('/')
         echo "Uploading Test Artifacts: ${cmakeBuildDir}/Testing"
-        ArchiveArtifactsOnS3("${cmakeBuildDir}/Testing", "test_artifacts/${jobName}", true)
+        ArchiveArtifactsOnS3("${cmakeBuildDir}/Testing", "test_artifacts", true)
     }
 }
 
@@ -548,7 +548,7 @@ def CreateUploadAPLogsStage(String platformName, String jobName, String workspac
 def CreateUploadTestArtifactStage(String jobName, String workspace, String outputDirectory) {
     return {
         stage("${jobName}_upload_test_artifacts") {
-            UploadTestArtifacts(jobName, workspace, outputDirectory)
+            UploadTestArtifacts(workspace, outputDirectory)
         }
     }
 }
