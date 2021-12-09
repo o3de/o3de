@@ -11,8 +11,9 @@
 #include <AzCore/Component/Component.h>
 
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
-#include <TerrainRenderer/TerrainMacroMaterialBus.h>
+#include <TerrainRenderer/BindlessImageArrayHandler.h>
 #include <TerrainRenderer/TerrainAreaMaterialRequestBus.h>
+#include <TerrainRenderer/TerrainMacroMaterialManager.h>
 #include <TerrainRenderer/TerrainMeshManager.h>
 
 #include <Atom/RPI.Public/FeatureProcessor.h>
@@ -42,7 +43,6 @@ namespace Terrain
         : public AZ::RPI::FeatureProcessor
         , private AZ::RPI::MaterialReloadNotificationBus::Handler
         , private AzFramework::Terrain::TerrainDataNotificationBus::Handler
-        , private TerrainMacroMaterialNotificationBus::Handler
         , private TerrainAreaMaterialNotificationBus::Handler
     {
     public:
@@ -63,18 +63,10 @@ namespace Terrain
         void SetWorldSize(AZ::Vector2 sizeInMeters);
 
     private:
-        
+
+        static constexpr auto InvalidImageIndex = AZ::Render::BindlessImageArrayHandler::InvalidImageIndex;
         using MaterialInstance = AZ::Data::Instance<AZ::RPI::Material>;
         
-        static constexpr uint16_t InvalidImageIndex = 0xFFFF;
-
-        enum MacroMaterialShaderFlags : uint32_t
-        {
-            IsUsed           = 0b0000'0000'0000'0000'0000'0000'0000'0001,
-            FlipMacroNormalX = 0b0000'0000'0000'0000'0000'0000'0000'0010,
-            FlipMacroNormalY = 0b0000'0000'0000'0000'0000'0000'0000'0100,
-        };
-
         enum DetailTextureFlags : uint32_t
         {
             UseTextureBaseColor =  0b0000'0000'0000'0000'0000'0000'0000'0001,
@@ -101,32 +93,6 @@ namespace Terrain
             float padding1{ 0.0f };
             AZStd::array<float, 3> m_max{ 0.0f, 0.0f, 0.0f };
             float padding2{ 0.0f };
-        };
-
-        struct MacroMaterial
-        {
-            MacroMaterialData m_data;
-            uint16_t m_colorIndex{ 0xFFFF };
-            uint16_t m_normalIndex{ 0xFFFF };
-        };
-
-        struct MacroMaterialGridShaderData
-        {
-            uint32_t m_resolution; // How many x/y tiles in grid. x & y stored in 16 bits each. Total number of entries in m_macroMaterialData will be x * y
-            float m_tileSize; // Size of a tile in meters.
-            AZStd::array<float, 2> m_offset; // x/y offset of min x/y corner of grid.
-        };
-
-        struct MacroMaterialShaderData
-        {
-            MacroMaterialShaderFlags m_flags;
-            uint32_t m_colorMapId{InvalidImageIndex};
-            uint32_t m_normalMapId{InvalidImageIndex};
-            float m_normalFactor;
-
-            // macro material bounds in world space
-            AZStd::array<float, 2> m_boundsMin{ 0.0f, 0.0f };
-            AZStd::array<float, 2> m_boundsMax{ 0.0f, 0.0f };
         };
 
         struct DetailMaterialShaderData
@@ -230,9 +196,6 @@ namespace Terrain
             bool IsValid() const;
         };
         
-        static constexpr float MacroMaterialGridSize = 64.0f;
-        static constexpr uint16_t MacroMaterialsPerTile = 4;
-
         // AZ::RPI::MaterialReloadNotificationBus::Handler overrides...
         void OnMaterialReinitialized(const MaterialInstance& material) override;
 
@@ -240,12 +203,6 @@ namespace Terrain
         void OnTerrainDataDestroyBegin() override;
         void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
 
-        // TerrainMacroMaterialNotificationBus overrides...
-        void OnTerrainMacroMaterialCreated(AZ::EntityId entityId, const MacroMaterialData& material) override;
-        void OnTerrainMacroMaterialChanged(AZ::EntityId entityId, const MacroMaterialData& material) override;
-        void OnTerrainMacroMaterialRegionChanged(AZ::EntityId entityId, const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion) override;
-        void OnTerrainMacroMaterialDestroyed(AZ::EntityId entityId) override;
-        
         // TerrainAreaMaterialNotificationBus overrides...
         void OnTerrainSurfaceMaterialMappingCreated(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag, MaterialInstance material) override;
         void OnTerrainSurfaceMaterialMappingDestroyed(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag) override;
@@ -262,9 +219,6 @@ namespace Terrain
 
         void TerrainHeightOrSettingsUpdated(const AZ::Aabb& dirtyRegion);
         void TerrainSurfaceDataUpdated(const AZ::Aabb& dirtyRegion);
-
-        void UpdateMacroMaterialShaderEntry(uint16_t shaderDataIdx, const MacroMaterial& macroMaterialData);
-        void RemoveMacroMaterialShaderEntry(uint16_t shaderDataIdx);
 
         uint16_t CreateOrUpdateDetailMaterial(MaterialInstance material);
         void CheckDetailMaterialForDeletion(uint16_t detailMaterialId);
@@ -286,19 +240,15 @@ namespace Terrain
 
         void CacheForwardPass();
 
-        template<typename Callback>
-        void ForMacroMaterialsInBounds(const AZ::Aabb& bounds, Callback callback);
-
-        uint16_t AppendBindlessImage(const AZ::RHI::ImageView* imageView);
-        void UpdateBindlessImage(uint16_t index, const AZ::RHI::ImageView* imageView);
-        void RemoveBindlessImage(uint16_t index);
-
         // System-level parameters
         static constexpr int32_t DetailTextureSize{ 1024 };
         static constexpr int32_t DetailTextureSizeHalf{ DetailTextureSize / 2 };
         static constexpr float DetailTextureScale{ 0.5f };
         
         TerrainMeshManager m_meshManager;
+        TerrainMacroMaterialManager m_macroMaterialManager;
+
+        AZStd::shared_ptr<AZ::Render::BindlessImageArrayHandler> m_imageArrayHandler;
 
         AZStd::unique_ptr<AZ::RPI::AssetUtils::AsyncAssetLoader> m_materialAssetLoader;
         MaterialInstance m_materialInstance;
@@ -309,8 +259,6 @@ namespace Terrain
 
         AZ::RHI::ShaderInputImageIndex m_heightmapPropertyIndex;
         AZ::RHI::ShaderInputConstantIndex m_worldDataIndex;
-        AZ::RHI::ShaderInputImageUnboundedArrayIndex m_texturesIndex;
-        AZ::RHI::ShaderInputConstantIndex m_macroMaterialGridIndex;
         AZ::RHI::ShaderInputImageIndex m_detailMaterialIdPropertyIndex;
         AZ::RHI::ShaderInputBufferIndex m_detailMaterialDataIndex;
         AZ::RHI::ShaderInputConstantIndex m_detailCenterPropertyIndex;
@@ -326,7 +274,6 @@ namespace Terrain
         float m_sampleSpacing{ 0.0f };
         
         bool m_heightmapNeedsUpdate{ false };
-        bool m_macroMaterialBufferNeedsUpdate{ false };
         bool m_detailMaterialBufferNeedsUpdate{ false };
         bool m_forceRebuildDrawPackets{ false };
         bool m_imageBindingsNeedUpdate{ false };
@@ -336,23 +283,11 @@ namespace Terrain
         Vector2i m_detailTextureCenter;
         AZ::RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler m_handleGlobalShaderOptionUpdate;
 
-        // Macro materials stored in a grid of (MacroMaterialGridCount * MacroMaterialGridCount) where each tile in the grid covers
-        // an area of (MacroMaterialGridSize * MacroMaterialGridSize) and each tile can hold MacroMaterialsPerTile macro materials
-        AZStd::vector<MacroMaterialShaderData> m_macroMaterialShaderData;
-        AZStd::vector<AZ::EntityId> m_macroMaterialEntities; // Same as above, but used to track entity ids which aren't needed by the shader.
-        AZStd::map<AZ::EntityId, MacroMaterial> m_macroMaterial; // Used for looking up macro materials by entity id when the data isn't provided by a bus.
-        AZ::Render::GpuBufferHandler m_macroMaterialDataBuffer;
-        uint16_t m_macroMaterialTilesX{ 0 };
-        uint16_t m_macroMaterialTilesY{ 0 };
-
         AZ::Render::IndexedDataVector<DetailMaterialData> m_detailMaterials;
         AZ::Render::IndexedDataVector<DetailMaterialListRegion> m_detailMaterialRegions;
         AZ::Render::SparseVector<DetailMaterialShaderData> m_detailMaterialShaderData;
         AZ::Render::GpuBufferHandler m_detailMaterialDataBuffer;
 
         AZ::RPI::RenderPass* m_forwardPass;
-
-        AZStd::vector<const AZ::RHI::ImageView*> m_bindlessImageViews;
-        AZStd::vector<uint16_t> m_bindlessImageViewFreeList;
     };
 }

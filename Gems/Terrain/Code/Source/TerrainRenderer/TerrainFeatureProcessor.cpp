@@ -61,8 +61,6 @@ namespace Terrain
 
     namespace TerrainSrgInputs
     {
-        static const char* const MacroMaterialData("m_macroMaterialData");
-        static const char* const MacroMaterialGrid("m_macroMaterialGrid");
         static const char* const DetailMaterialIdImage("m_detailMaterialIdImage");
         static const char* const DetailMaterialData("m_detailMaterialData");
         static const char* const DetailMaterialIdImageCenter("m_detailMaterialIdImageCenter");
@@ -146,6 +144,7 @@ namespace Terrain
         // Load indices for the View Srg.
 
         m_meshManager.Initialize();
+        m_imageArrayHandler = AZStd::make_shared<AZ::Render::BindlessImageArrayHandler>();
 
         auto sceneSrgLayout = AZ::RPI::RPISystemInterface::Get()->GetSceneSrgLayout();
         
@@ -183,19 +182,17 @@ namespace Terrain
 
     void TerrainFeatureProcessor::Deactivate()
     {
-        TerrainMacroMaterialNotificationBus::Handler::BusDisconnect();
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
         AZ::RPI::MaterialReloadNotificationBus::Handler::BusDisconnect();
         
         DisableSceneNotification();
         OnTerrainDataDestroyBegin();
 
-        m_macroMaterialShaderData.clear();
-        m_macroMaterialEntities.clear();
         m_materialAssetLoader = {};
         m_materialInstance = {};
 
         m_meshManager.Reset();
+        m_macroMaterialManager.Reset();
     }
 
     void TerrainFeatureProcessor::Render(const AZ::RPI::FeatureProcessor::RenderPacket& packet)
@@ -250,210 +247,6 @@ namespace Terrain
         m_dirtyDetailRegion.AddAabb(dirtyRegion);
     }
 
-    void TerrainFeatureProcessor::OnTerrainMacroMaterialCreated(AZ::EntityId entityId, const MacroMaterialData& newMaterialData)
-    {
-        AZ_Assert(!m_macroMaterial.contains(entityId),
-            "OnTerrainMacroMaterialCreated called for a macro material that already exists. This indicates that either the bus is incorrectly sending out "
-            "OnCreated announcements for existing materials, or the terrain feature processor isn't properly cleaning up macro materials.");
-
-        MacroMaterial& macroMaterial = m_macroMaterial[entityId];
-        macroMaterial.m_data = newMaterialData;
-        if (newMaterialData.m_colorImage)
-        {
-            macroMaterial.m_colorIndex = AppendBindlessImage(newMaterialData.m_colorImage->GetImageView());
-        }
-        if (newMaterialData.m_normalImage)
-        {
-            macroMaterial.m_normalIndex = AppendBindlessImage(newMaterialData.m_normalImage->GetImageView());
-        }
-
-        ForMacroMaterialsInBounds(newMaterialData.m_bounds,
-            [&](uint16_t idx, [[maybe_unused]] const AZ::Vector2& corner)
-            {
-                for (uint16_t offset = 0; offset < MacroMaterialsPerTile; ++offset)
-                {
-                    MacroMaterialShaderData& macroMaterialShaderData = m_macroMaterialShaderData.at(idx + offset);
-                    if ((macroMaterialShaderData.m_flags & MacroMaterialShaderFlags::IsUsed) == 0)
-                    {
-                        UpdateMacroMaterialShaderEntry(idx + offset, macroMaterial);
-                        break;
-                    }
-                    AZ_Assert(m_macroMaterialEntities.at(idx + offset) != entityId, "Found existing macro material tile for what should be a completely new macro material.");
-                }
-            }
-        );
-
-        m_macroMaterialBufferNeedsUpdate = true;
-    }
-
-    void TerrainFeatureProcessor::OnTerrainMacroMaterialChanged(AZ::EntityId entityId, const MacroMaterialData& newMaterialData)
-    {
-        AZ_Assert(m_macroMaterial.contains(entityId),
-            "OnTerrainMacroMaterialChanged called for a macro material that TerrainFeatureProcessor isn't tracking. This indicates that either the bus is sending out "
-            "Changed announcements for materials that haven't had a OnCreated event sent, or the terrain feature processor isn't properly tracking macro materials.");
-        
-        MacroMaterial& macroMaterial = m_macroMaterial[entityId];
-        macroMaterial.m_data = newMaterialData;
-
-        auto UpdateImageIndex = [&](uint16_t& indexRef, const AZ::Data::Instance<AZ::RPI::Image>& imageView)
-        {
-            if (indexRef)
-            {
-                if (imageView)
-                {
-                    UpdateBindlessImage(indexRef, imageView->GetImageView());
-                }
-                else
-                {
-                    RemoveBindlessImage(indexRef);
-                    indexRef = 0xFFFF;
-                }
-            }
-            else if (imageView)
-            {
-                indexRef = AppendBindlessImage(imageView->GetImageView());
-            }
-        };
-
-        UpdateImageIndex(macroMaterial.m_colorIndex, newMaterialData.m_colorImage);
-        UpdateImageIndex(macroMaterial.m_normalIndex, newMaterialData.m_normalImage);
-        
-        ForMacroMaterialsInBounds(newMaterialData.m_bounds,
-            [&](uint16_t idx, [[maybe_unused]] const AZ::Vector2& corner)
-            {
-                for (uint16_t offset = 0; offset < MacroMaterialsPerTile; ++offset)
-                {
-                    if (m_macroMaterialEntities.at(idx + offset) == entityId)
-                    {
-                        UpdateMacroMaterialShaderEntry(idx + offset, macroMaterial);
-                        break;
-                    }
-                }
-            }
-        );
-        
-        m_macroMaterialBufferNeedsUpdate = true;
-    }
-    
-    void TerrainFeatureProcessor::OnTerrainMacroMaterialRegionChanged(
-        AZ::EntityId entityId, [[maybe_unused]] const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion)
-    {
-        AZ_Assert(m_macroMaterial.contains(entityId),
-            "OnTerrainMacroMaterialChanged called for a macro material that TerrainFeatureProcessor isn't tracking. This indicates that either the bus is sending out "
-            "Changed announcements for materials that haven't had a OnCreated event sent, or the terrain feature processor isn't properly tracking macro materials.");
-        
-        MacroMaterial& macroMaterial = m_macroMaterial[entityId];
-        macroMaterial.m_data.m_bounds = newRegion;
-
-        AZ::Aabb changedRegion = oldRegion;
-        changedRegion.AddAabb(newRegion);
-
-        ForMacroMaterialsInBounds(changedRegion,
-            [&](uint16_t idx, const AZ::Vector2& corner)
-            {
-                AZ::Aabb tileAabb = AZ::Aabb::CreateFromMinMaxValues(
-                    corner.GetX(), corner.GetY(), m_terrainBounds.GetMin().GetZ(),
-                    corner.GetX() + MacroMaterialGridSize, corner.GetY() + MacroMaterialGridSize, m_terrainBounds.GetMax().GetZ());
-
-                bool overlapsNew = tileAabb.Overlaps(newRegion);
-                uint16_t end = idx + MacroMaterialsPerTile;
-
-                for (; idx < end; ++idx)
-                {
-                    if (m_macroMaterialEntities.at(idx) == entityId)
-                    {
-                        if (overlapsNew)
-                        {
-                            // Update the macro material entry from this tile.
-                            UpdateMacroMaterialShaderEntry(idx, macroMaterial);
-                        }
-                        else
-                        {
-                            // Remove the macro material entry from this tile.
-                            RemoveMacroMaterialShaderEntry(idx);
-                        }
-                        break;
-                    }
-                    else if (overlapsNew && (m_macroMaterialShaderData.at(idx).m_flags & MacroMaterialShaderFlags::IsUsed) == 0)
-                    {
-                        // Add a macro material entry from this tile. (!overlapsOld && overlapsNew)
-                        UpdateMacroMaterialShaderEntry(idx, macroMaterial);
-                        break;
-                    }
-                }
-            }
-        );
-        
-        m_macroMaterialBufferNeedsUpdate = true;
-    }
-
-    void TerrainFeatureProcessor::OnTerrainMacroMaterialDestroyed(AZ::EntityId entityId)
-    {
-        AZ_Assert(m_macroMaterial.contains(entityId),
-            "OnTerrainMacroMaterialChanged called for a macro material that TerrainFeatureProcessor isn't tracking. This indicates that either the bus is sending out "
-            "Changed announcements for materials that haven't had a OnCreated event sent, or the terrain feature processor isn't properly tracking macro materials.");
-        
-        const MacroMaterial& macroMateiral = m_macroMaterial[entityId];
-        
-        ForMacroMaterialsInBounds(macroMateiral.m_data.m_bounds,
-            [&](uint16_t idx, [[maybe_unused]] const AZ::Vector2& corner)
-            {
-                uint16_t end = idx + MacroMaterialsPerTile;
-
-                for (; idx < end; ++idx)
-                {
-                    if (m_macroMaterialEntities.at(idx) == entityId)
-                    {
-                        RemoveMacroMaterialShaderEntry(idx);
-                    }
-                }
-            }
-        );
-
-        if (macroMateiral.m_colorIndex != 0xFFFF)
-        {
-            RemoveBindlessImage(macroMateiral.m_colorIndex);
-        }
-        if (macroMateiral.m_normalIndex != 0xFFFF)
-        {
-            RemoveBindlessImage(macroMateiral.m_normalIndex);
-        }
-
-        m_macroMaterial.erase(entityId);
-        m_macroMaterialBufferNeedsUpdate = true;
-    }
-    
-    void TerrainFeatureProcessor::UpdateMacroMaterialShaderEntry(uint16_t shaderDataIdx, const MacroMaterial& macroMaterial)
-    {
-        m_macroMaterialEntities.at(shaderDataIdx) = macroMaterial.m_data.m_entityId;
-        MacroMaterialShaderData& macroMaterialShaderData = m_macroMaterialShaderData.at(shaderDataIdx);
-
-        macroMaterialShaderData.m_flags = (MacroMaterialShaderFlags)(
-            MacroMaterialShaderFlags::IsUsed |
-            (macroMaterial.m_data.m_normalFlipX ? MacroMaterialShaderFlags::FlipMacroNormalX : 0) |
-            (macroMaterial.m_data.m_normalFlipY ? MacroMaterialShaderFlags::FlipMacroNormalY : 0)
-        );
-
-        macroMaterialShaderData.m_normalFactor = macroMaterial.m_data.m_normalFactor;
-        macroMaterialShaderData.m_boundsMin = { macroMaterial.m_data.m_bounds.GetMin().GetX(), macroMaterial.m_data.m_bounds.GetMin().GetY() };
-        macroMaterialShaderData.m_boundsMax = { macroMaterial.m_data.m_bounds.GetMax().GetX(), macroMaterial.m_data.m_bounds.GetMax().GetY() };
-        macroMaterialShaderData.m_colorMapId = macroMaterial.m_colorIndex;
-        macroMaterialShaderData.m_normalMapId = macroMaterial.m_normalIndex;
-    }
-
-    void TerrainFeatureProcessor::RemoveMacroMaterialShaderEntry(uint16_t shaderDataIdx)
-    {
-        // Remove the macro material entry from this tile by copying the remaining entries on top.
-        for (++shaderDataIdx; shaderDataIdx % MacroMaterialsPerTile != 0; ++shaderDataIdx)
-        {
-            m_macroMaterialEntities.at(shaderDataIdx - 1) = m_macroMaterialEntities.at(shaderDataIdx);
-            m_macroMaterialShaderData.at(shaderDataIdx - 1) = m_macroMaterialShaderData.at(shaderDataIdx);
-        }
-        // Disable the last entry.
-        m_macroMaterialEntities.at(shaderDataIdx - 1) = AZ::EntityId();
-        m_macroMaterialShaderData.at(shaderDataIdx - 1).m_flags = MacroMaterialShaderFlags(0);
-    }
-
     void TerrainFeatureProcessor::OnTerrainSurfaceMaterialMappingCreated(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag, MaterialInstance material)
     {
         DetailMaterialListRegion& materialRegion = FindOrCreateByEntityId(entityId, m_detailMaterialRegions);
@@ -500,8 +293,7 @@ namespace Terrain
             {
                 if (imageIndex != InvalidImageIndex)
                 {
-                    m_bindlessImageViews.at(imageIndex) = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::Magenta)->GetImageView();
-                    m_bindlessImageViewFreeList.push_back(imageIndex);
+                    m_imageArrayHandler->RemoveBindlessImage(imageIndex);
                     m_detailImagesNeedUpdate = true;
                 }
             }
@@ -652,17 +444,17 @@ namespace Terrain
             {
                 if (imageIndex == InvalidImageIndex)
                 {
-                    imageIndex = AppendBindlessImage(ref->GetImageView());
+                    imageIndex = m_imageArrayHandler->AppendBindlessImage(ref->GetImageView());
                 }
                 else
                 {
-                    UpdateBindlessImage(imageIndex, ref->GetImageView());
+                    m_imageArrayHandler->UpdateBindlessImage(imageIndex, ref->GetImageView());
                 }
                 m_detailImagesNeedUpdate = true;
             }
             else if (imageIndex != InvalidImageIndex)
             {
-                RemoveBindlessImage(imageIndex);
+                m_imageArrayHandler->RemoveBindlessImage(imageIndex);
                 m_detailImagesNeedUpdate = true;
                 imageIndex = InvalidImageIndex;
             }
@@ -1026,24 +818,6 @@ namespace Terrain
             // World size changed, so the whole height map needs updating.
             m_dirtyRegion = m_terrainBounds;
             m_imageBindingsNeedUpdate = true;
-            
-            m_macroMaterialTilesX = aznumeric_cast<uint16_t>(ceil(float(heightmapSize.m_width) / MacroMaterialGridSize));
-            m_macroMaterialTilesY = aznumeric_cast<uint16_t>(ceil(float(heightmapSize.m_height) / MacroMaterialGridSize));
-            const uint32_t macroMaterialTileCount = m_macroMaterialTilesX * m_macroMaterialTilesY * MacroMaterialsPerTile;
-            
-            // Rebuild the macro material tiles.
-            m_macroMaterial.clear();
-            m_macroMaterialShaderData.resize(macroMaterialTileCount);
-            m_macroMaterialEntities.resize(macroMaterialTileCount);
-            TerrainMacroMaterialRequestBus::EnumerateHandlers(
-                [&](TerrainMacroMaterialRequests* handler)
-                {
-                    MacroMaterialData macroMaterial = handler->GetTerrainMacroMaterialData();
-                    AZ::EntityId entityId = *(Terrain::TerrainMacroMaterialRequestBus::GetCurrentBusId());
-                    OnTerrainMacroMaterialCreated(entityId, macroMaterial);
-                    return true;
-                }
-            );
         }
 
         if (!m_dirtyRegion.IsValid())
@@ -1118,6 +892,9 @@ namespace Terrain
     void TerrainFeatureProcessor::PrepareMaterialData()
     {
         m_terrainSrg = {};
+        m_macroMaterialManager.Reset();
+        m_imageArrayHandler->Reset();
+
         for (auto& shaderItem : m_materialInstance->GetShaderCollection())
         {
             if (shaderItem.GetShaderAsset()->GetDrawListName() == AZ::Name("forward"))
@@ -1133,11 +910,11 @@ namespace Terrain
 
         if (m_terrainSrg)
         {
+            m_imageArrayHandler->Initialize(m_terrainSrg, AZ::Name(TerrainSrgInputs::Textures));
+            m_macroMaterialManager.Initialize(m_imageArrayHandler, m_terrainSrg);
+
             const AZ::RHI::ShaderResourceGroupLayout* terrainSrgLayout = m_terrainSrg->GetLayout();
             
-            m_macroMaterialGridIndex = terrainSrgLayout->FindShaderInputConstantIndex(AZ::Name(TerrainSrgInputs::MacroMaterialGrid));
-            AZ_Error(TerrainFPName, m_detailMaterialIdPropertyIndex.IsValid(), "Failed to find terrain srg input constant %s.", TerrainSrgInputs::MacroMaterialGrid);
-        
             m_detailMaterialIdPropertyIndex = terrainSrgLayout->FindShaderInputImageIndex(AZ::Name(TerrainSrgInputs::DetailMaterialIdImage));
             AZ_Error(TerrainFPName, m_detailMaterialIdPropertyIndex.IsValid(), "Failed to find terrain srg input constant %s.", TerrainSrgInputs::DetailMaterialIdImage);
         
@@ -1150,19 +927,8 @@ namespace Terrain
             m_detailAabbPropertyIndex = terrainSrgLayout->FindShaderInputConstantIndex(AZ::Name(TerrainSrgInputs::DetailAabb));
             AZ_Error(TerrainFPName, m_detailAabbPropertyIndex.IsValid(), "Failed to find terrain srg input constant %s.", TerrainSrgInputs::DetailAabb);
 
-            m_texturesIndex = terrainSrgLayout->FindShaderInputImageUnboundedArrayIndex(AZ::Name(TerrainSrgInputs::Textures));
-            AZ_Error(TerrainFPName, m_texturesIndex.IsValid(), "Failed to find terrain srg input constant %s.", TerrainSrgInputs::Textures);
-            
-            AZ::Render::GpuBufferHandler::Descriptor desc;
-
-            // Set up the gpu buffer for macro material data
-            desc.m_bufferName = "Macro Material Data";
-            desc.m_bufferSrgName = TerrainSrgInputs::MacroMaterialData;
-            desc.m_elementSize = sizeof(MacroMaterialShaderData);
-            desc.m_srgLayout = terrainSrgLayout;
-            m_macroMaterialDataBuffer = AZ::Render::GpuBufferHandler(desc);
-
             // Set up the gpu buffer for detail material data
+            AZ::Render::GpuBufferHandler::Descriptor desc;
             desc.m_bufferName = "Detail Material Data";
             desc.m_bufferSrgName = TerrainSrgInputs::DetailMaterialData;
             desc.m_elementSize = sizeof(DetailMaterialShaderData);
@@ -1170,21 +936,6 @@ namespace Terrain
             m_detailMaterialDataBuffer = AZ::Render::GpuBufferHandler(desc);
         }
 
-        if (!TerrainMacroMaterialNotificationBus::Handler::BusIsConnected())
-        {
-            // Find any macro materials that have already been created.
-            TerrainMacroMaterialRequestBus::EnumerateHandlers(
-                [&](TerrainMacroMaterialRequests* handler)
-                {
-                    MacroMaterialData macroMaterial = handler->GetTerrainMacroMaterialData();
-                    AZ::EntityId entityId = *(Terrain::TerrainMacroMaterialRequestBus::GetCurrentBusId());
-                    OnTerrainMacroMaterialCreated(entityId, macroMaterial);
-                    return true;
-                }
-            );
-            TerrainMacroMaterialNotificationBus::Handler::BusConnect();
-        }
-        
         // Find any detail material areas that have already been created.
         TerrainAreaMaterialRequestBus::EnumerateHandlers(
             [&](TerrainAreaMaterialRequests* handler)
@@ -1214,10 +965,9 @@ namespace Terrain
     {
         AZ_PROFILE_FUNCTION(AzRender);
         
-        const AZ::Aabb& terrainBounds = m_terrainBounds;
         constexpr auto GridMeters = TerrainMeshManager::GridMeters;
 
-        if (!terrainBounds.IsValid())
+        if (!m_terrainBounds.IsValid())
         {
             return;
         }
@@ -1236,21 +986,9 @@ namespace Terrain
             }
             m_forceRebuildDrawPackets = false;
 
-            if (m_macroMaterialBufferNeedsUpdate)
+            if (m_macroMaterialManager.IsInitialized())
             {
-                m_macroMaterialBufferNeedsUpdate = false;
-                m_macroMaterialDataBuffer.UpdateBuffer(m_macroMaterialShaderData.data(), aznumeric_cast<uint32_t>(m_macroMaterialShaderData.size()));
-
-                MacroMaterialGridShaderData macroMaterialGridShaderData;
-                macroMaterialGridShaderData.m_offset = { m_terrainBounds.GetMin().GetX(), m_terrainBounds.GetMin().GetY() };
-                macroMaterialGridShaderData.m_resolution = (m_macroMaterialTilesX << 16) | m_macroMaterialTilesY;
-                macroMaterialGridShaderData.m_tileSize = MacroMaterialGridSize;
-
-                if (m_terrainSrg)
-                {   
-                    m_macroMaterialDataBuffer.UpdateSrg(m_terrainSrg.get());
-                    m_terrainSrg->SetConstant(m_macroMaterialGridIndex, macroMaterialGridShaderData);
-                }
+                m_macroMaterialManager.Update();
             }
 
             if (m_heightmapNeedsUpdate)
@@ -1317,13 +1055,10 @@ namespace Terrain
                 }
             }
 
-            // Currently there seems to be a bug in unbounded image arrays where flickering can occur if this isn't updated every frame.
-            if (m_terrainSrg/* && m_detailImagesUpdated*/)
+            if (m_imageArrayHandler->IsInitialized())
             {
-                AZStd::array_view<const AZ::RHI::ImageView*> imageViews(m_bindlessImageViews.data(), m_bindlessImageViews.size());
-                [[maybe_unused]] bool result = m_terrainSrg->SetImageViewUnboundedArray(m_texturesIndex, imageViews);
+                bool result = m_imageArrayHandler->UpdateSrg();
                 AZ_Error(TerrainFPName, result, "Failed to set image view unbounded array into shader resource group.");
-                m_detailImagesNeedUpdate = false;
             }
 
         }
@@ -1366,7 +1101,6 @@ namespace Terrain
         m_forceRebuildDrawPackets = true;
         m_imageBindingsNeedUpdate = true;
         m_detailImagesNeedUpdate = true;
-        m_macroMaterialBufferNeedsUpdate = true;
     }
 
     void TerrainFeatureProcessor::SetWorldSize([[maybe_unused]] AZ::Vector2 sizeInMeters)
@@ -1440,63 +1174,6 @@ namespace Terrain
         );
     }
     
-    template<typename Callback>
-    void TerrainFeatureProcessor::ForMacroMaterialsInBounds(const AZ::Aabb& bounds, Callback callback)
-    {
-        // Get the macro material bounds relative to the terrain
-        float yStart = bounds.GetMin().GetY() - m_terrainBounds.GetMin().GetY();
-        float yEnd = bounds.GetMax().GetY() - m_terrainBounds.GetMin().GetY();
-        float xStart = bounds.GetMin().GetX() - m_terrainBounds.GetMin().GetX();
-        float xEnd = bounds.GetMax().GetX() - m_terrainBounds.GetMin().GetX();
-
-        // Clamp the bounds to the terrain
-        uint16_t yStartIdx = yStart > 0.0f ? uint16_t(yStart / MacroMaterialGridSize) : 0;
-        uint16_t yEndIdx = yEnd > 0.0f ? AZStd::GetMin<uint16_t>(uint16_t(yEnd / MacroMaterialGridSize) + 1, m_macroMaterialTilesY) : 0;
-        uint16_t xStartIdx = xStart > 0.0f ? uint16_t(xStart / MacroMaterialGridSize) : 0;
-        uint16_t xEndIdx = xEnd > 0.0f ? AZStd::GetMin<uint16_t>(uint16_t(xEnd / MacroMaterialGridSize) + 1, m_macroMaterialTilesX) : 0;
-
-        AZ::Vector2 gridCorner = AZ::Vector2(
-            floor(m_terrainBounds.GetMin().GetX() / MacroMaterialGridSize) * MacroMaterialGridSize,
-            floor(m_terrainBounds.GetMin().GetY() / MacroMaterialGridSize) * MacroMaterialGridSize);
-
-        for (uint16_t y = yStartIdx; y < yEndIdx; ++y)
-        {
-            for (uint16_t x = xStartIdx; x < xEndIdx; ++x)
-            {
-                uint16_t idx = (y * m_macroMaterialTilesX + x) * MacroMaterialsPerTile;
-                const AZ::Vector2 corner = gridCorner + AZ::Vector2(x * MacroMaterialGridSize, y * MacroMaterialGridSize);
-                callback(idx, corner);
-            }
-        }
-    }
-    
-    uint16_t TerrainFeatureProcessor::AppendBindlessImage(const AZ::RHI::ImageView* imageView)
-    {
-        uint16_t imageIndex = 0xFFFF;
-        if (m_bindlessImageViewFreeList.size() > 0)
-        {
-            imageIndex = m_bindlessImageViewFreeList.back();
-            m_bindlessImageViewFreeList.pop_back();
-        }
-        else
-        {
-            imageIndex = aznumeric_cast<uint16_t>(m_bindlessImageViews.size());
-            m_bindlessImageViews.push_back(imageView);
-        }
-        return imageIndex;
-    }
-
-    void TerrainFeatureProcessor::UpdateBindlessImage(uint16_t index, const AZ::RHI::ImageView* imageView)
-    {
-        m_bindlessImageViews.at(index) = imageView;
-    }
-
-    void TerrainFeatureProcessor::RemoveBindlessImage(uint16_t index)
-    {
-        m_bindlessImageViews.at(index) = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::Magenta)->GetImageView();
-        m_bindlessImageViewFreeList.push_back(index);
-    }
-
     auto TerrainFeatureProcessor::Vector2i::operator+(const Vector2i& rhs) const -> Vector2i
     {
         Vector2i offsetPoint = *this;

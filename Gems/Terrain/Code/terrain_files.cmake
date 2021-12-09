@@ -38,6 +38,8 @@ set(FILES
     Source/TerrainRenderer/TerrainMacroMaterialManager.h
     Source/TerrainRenderer/TerrainMeshManager.cpp
     Source/TerrainRenderer/TerrainMeshManager.h
+    Source/TerrainRenderer/BindlessImageArrayHandler.cpp
+    Source/TerrainRenderer/BindlessImageArrayHandler.h
     Source/TerrainRenderer/TerrainAreaMaterialRequestBus.h
     Source/TerrainRenderer/TerrainMacroMaterialBus.cpp
     Source/TerrainRenderer/TerrainMacroMaterialBus.h
