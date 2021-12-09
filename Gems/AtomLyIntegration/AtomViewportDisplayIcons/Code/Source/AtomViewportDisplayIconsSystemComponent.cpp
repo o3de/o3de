@@ -172,7 +172,7 @@ namespace AZ::Render
         }
         else if (drawParameters.m_positionSpace == CoordinateSpace::WorldSpace)
         {
-            // Calculate the ndc point (0 -> 1 range) including depth
+            // Calculate the ndc point (0.0-1.0 range) including depth
             const AZ::Vector3 ndcPoint = AzFramework::WorldToScreenNdc(
                 drawParameters.m_position, viewportContext->GetCameraViewMatrixAsMatrix3x4(),
                 viewportContext->GetCameraProjectionMatrix());
@@ -213,7 +213,11 @@ namespace AZ::Render
             createVertex(-0.5f, 0.5f,  0.f, 1.f)
         };
         AZStd::array<Indice, 6> indices = {0, 1, 2, 0, 2, 3};
-        dynamicDraw->DrawIndexed(&vertices, static_cast<uint32_t>(vertices.size()), &indices, static_cast<uint32_t>(indices.size()), RHI::IndexFormat::Uint16, drawSrg);
+
+        dynamicDraw->SetSortKey(aznumeric_cast<int64_t>(screenPosition.GetZ() * AZStd::numeric_limits<int64_t>::max()));
+        dynamicDraw->DrawIndexed(
+            &vertices, static_cast<uint32_t>(vertices.size()), &indices, static_cast<uint32_t>(indices.size()), RHI::IndexFormat::Uint16,
+            drawSrg);
     }
 
     QString AtomViewportDisplayIconsSystemComponent::FindAssetPath(const QString& path) const
@@ -357,7 +361,7 @@ namespace AZ::Render
     {
         // Once the shader is loaded, register it with the dynamic draw context
         Data::Asset<RPI::ShaderAsset> shaderAsset = asset;
-        AtomBridge::PerViewportDynamicDraw::Get()->RegisterDynamicDrawContext(m_drawContextName, [shaderAsset](RPI::Ptr<RPI::DynamicDrawContext> drawContext)
+        AtomBridge::PerViewportDynamicDraw::Get()->RegisterDynamicDrawContext(m_drawContextName, [shaderAsset](RPI::Ptr<RPI::DynamicDrawContext> dynamicDraw)
             {
                 AZ_Assert(shaderAsset->IsReady(), "Attempting to register the AtomViewportDisplayIconsSystemComponent"
                     " dynamic draw context before the shader asset is loaded. The shader should be loaded first"
@@ -365,14 +369,14 @@ namespace AZ::Render
                     " will be executed during scene processing and there may be multiple scenes executing in parallel.");
 
                 Data::Instance<RPI::Shader> shader = RPI::Shader::FindOrCreate(shaderAsset);
-                drawContext->InitShader(shader);
-                drawContext->InitVertexFormat({ { "POSITION", RHI::Format::R32G32B32_FLOAT },
+                dynamicDraw->InitShader(shader);
+                dynamicDraw->InitVertexFormat({ { "POSITION", RHI::Format::R32G32B32_FLOAT },
                                                 { "COLOR", RHI::Format::R8G8B8A8_UNORM },
                                                 { "TEXCOORD", RHI::Format::R32G32_FLOAT } });
-                drawContext->AddDrawStateOptions(
+                dynamicDraw->AddDrawStateOptions(
                     AZ::RPI::DynamicDrawContext::DrawStateOptions::PrimitiveType |
                     AZ::RPI::DynamicDrawContext::DrawStateOptions::BlendMode | AZ::RPI::DynamicDrawContext::DrawStateOptions::DepthState);
-                drawContext->EndInit();
+                dynamicDraw->EndInit();
             });
 
         m_drawContextRegistered = true;

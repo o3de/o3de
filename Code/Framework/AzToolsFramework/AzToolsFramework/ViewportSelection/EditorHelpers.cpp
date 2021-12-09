@@ -10,7 +10,6 @@
 
 #include <AzCore/Console/Console.h>
 #include <AzCore/Math/VectorConversions.h>
-#include <AzCore/std/sort.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
@@ -292,40 +291,8 @@ namespace AzToolsFramework
 
         if (HelpersVisible())
         {
-            struct ViewportEntity
+            for (size_t entityCacheIndex = 0; entityCacheIndex < m_entityDataCache->VisibleEntityDataCount(); ++entityCacheIndex)
             {
-                ViewportEntity() = default;
-                ViewportEntity(const AZ::Vector3& worldPosition, int entityCacheIndex, float distanceSqFromCamera)
-                    : m_worldPosition(worldPosition)
-                    , m_entityCacheIndex(entityCacheIndex)
-                    , m_distanceSqFromCamera(distanceSqFromCamera)
-                {
-                }
-
-                AZ::Vector3 m_worldPosition;
-                int m_entityCacheIndex;
-                float m_distanceSqFromCamera;
-            };
-
-            AZStd::vector<ViewportEntity> viewportEntities;
-            viewportEntities.reserve(m_entityDataCache->VisibleEntityDataCount());
-            for (int entityCacheIndex = 0; entityCacheIndex < m_entityDataCache->VisibleEntityDataCount(); ++entityCacheIndex)
-            {
-                const AZ::Vector3& entityPosition = m_entityDataCache->GetVisibleEntityPosition(entityCacheIndex);
-                const float distanceSqFromCamera = cameraState.m_position.GetDistanceSq(entityPosition);
-                viewportEntities.emplace_back(entityPosition, entityCacheIndex, distanceSqFromCamera);
-            }
-
-            AZStd::sort(
-                viewportEntities.rbegin(), viewportEntities.rend(),
-                [](const auto& lhs, const auto& rhs)
-                {
-                    return lhs.m_distanceSqFromCamera < rhs.m_distanceSqFromCamera;
-                });
-
-            for (const auto& viewportEntity : viewportEntities)
-            {
-                const auto entityCacheIndex = viewportEntity.m_entityCacheIndex;
                 const AZ::EntityId entityId = m_entityDataCache->GetVisibleEntityId(entityCacheIndex);
 
                 if (!m_entityDataCache->IsVisibleEntityVisible(entityCacheIndex) || !IsSelectableInViewport(entityId))
@@ -346,7 +313,7 @@ namespace AzToolsFramework
                 EditorEntityIconComponentRequestBus::EventResult(
                     iconTextureId, entityId, &EditorEntityIconComponentRequests::GetEntityIconTextureId);
 
-                const AZ::Vector3& entityPosition = viewportEntity.m_worldPosition;
+                const AZ::Vector3& entityPosition = m_entityDataCache->GetVisibleEntityPosition(entityCacheIndex);
                 const float distanceFromCamera = cameraState.m_position.GetDistance(entityPosition);
 
                 const float iconScale = GetIconScale(distanceFromCamera);
