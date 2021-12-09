@@ -31,7 +31,6 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             3rdParty::SQLite
-            3rdParty::xxhash
             AZ::AzCore
         PUBLIC
             3rdParty::Qt::Core

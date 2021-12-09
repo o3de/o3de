@@ -16,7 +16,6 @@
 #include <Prefab/PrefabSystemScriptingHandler.h>
 #include <Prefab/EditorPrefabComponent.h>
 #include <ToolsComponents/TransformComponent.h>
-#include <xxhash/xxhash.h>
 
 namespace AzToolsFramework::Prefab
 {
@@ -86,9 +85,9 @@ namespace AzToolsFramework::Prefab
             // Because procedural prefabs need to be deterministic we need to set the component ID to something unique and non-random
             // The prefab that references the proc prefab will store a patch that references the transform component by it's component ID
             // If this ID is not stable, the proc prefab will lose its position, parenting, etc data next time it is regenerated
-            auto hash = XXH64(filePath.data(), filePath.length(), 0);
+            auto hash = TypeHash64(reinterpret_cast<const uint8_t*>(filePath.data()), filePath.length(), AZ::HashValue64{0});
 
-            transformComponent->SetId(hash);
+            transformComponent->SetId(static_cast<AZ::ComponentId>(hash));
 
         }
 
