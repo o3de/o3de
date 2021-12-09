@@ -87,30 +87,28 @@ def AtomEditorComponents_ReflectionProbe_AddedToEntity():
     """
 
     import azlmbr.legacy.general as general
-    import azlmbr.math as math
     import azlmbr.render as render
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
-    from editor_python_test_tools.utils import Report, Tracer, TestHelper as helper
+    from editor_python_test_tools.utils import Report, Tracer, TestHelper
+    from Atom.atom_utils.atom_constants import AtomComponentProperties
 
     with Tracer() as error_tracer:
         # Test setup begins.
         # Setup: Wait for Editor idle loop before executing Python hydra scripts then open "Base" level.
-        helper.init_idle()
-        helper.open_level("", "Base")
+        TestHelper.init_idle()
+        TestHelper.open_level("", "Base")
 
         # Test steps begin.
         # 1. Create a Reflection Probe entity with no components.
-        reflection_probe_name = "Reflection Probe"
-        reflection_probe_entity = EditorEntity.create_editor_entity_at(
-            math.Vector3(512.0, 512.0, 34.0), reflection_probe_name)
+        reflection_probe_entity = EditorEntity.create_editor_entity(AtomComponentProperties.reflection_probe())
         Report.critical_result(Tests.reflection_probe_creation, reflection_probe_entity.exists())
 
         # 2. Add a Reflection Probe component to Reflection Probe entity.
-        reflection_probe_component = reflection_probe_entity.add_component(reflection_probe_name)
+        reflection_probe_component = reflection_probe_entity.add_component(AtomComponentProperties.reflection_probe())
         Report.critical_result(
             Tests.reflection_probe_component,
-            reflection_probe_entity.has_component(reflection_probe_name))
+            reflection_probe_entity.has_component(AtomComponentProperties.reflection_probe()))
 
         # 3. UNDO the entity creation and component addition.
         # -> UNDO component addition.
@@ -139,18 +137,27 @@ def AtomEditorComponents_ReflectionProbe_AddedToEntity():
         # 5. Verify Reflection Probe component not enabled.
         Report.result(Tests.reflection_probe_disabled, not reflection_probe_component.is_enabled())
 
-        # 6. Add Box Shape component since it is required by the Reflection Probe component.
-        box_shape = "Box Shape"
-        reflection_probe_entity.add_component(box_shape)
-        Report.result(Tests.box_shape_component, reflection_probe_entity.has_component(box_shape))
+        # 6. Add Shape component since it is required by the Reflection Probe component.
+        for shape in AtomComponentProperties.reflection_probe('shapes'):
+            reflection_probe_entity.add_component(shape)
+            test_shape = (
+                f"Entity has a {shape} component",
+                f"Entity did not have a {shape} component")
+            Report.result(test_shape, reflection_probe_entity.has_component(shape))
 
-        # 7. Verify Reflection Probe component is enabled.
-        Report.result(Tests.reflection_probe_enabled, reflection_probe_component.is_enabled())
+            # 7. Check if required shape allows Reflection Probe to be enabled
+            Report.result(Tests.reflection_probe_enabled, reflection_probe_component.is_enabled())
+
+            # Undo to remove each added shape except the last one and verify Reflection Probe is not enabled.
+            if not (shape == AtomComponentProperties.reflection_probe('shapes')[-1]):
+                general.undo()
+                TestHelper.wait_for_condition(lambda: not reflection_probe_entity.has_component(shape), 1.0)
+                Report.result(Tests.reflection_probe_disabled, not reflection_probe_component.is_enabled())
 
         # 8. Enter/Exit game mode.
-        helper.enter_game_mode(Tests.enter_game_mode)
+        TestHelper.enter_game_mode(Tests.enter_game_mode)
         general.idle_wait_frames(1)
-        helper.exit_game_mode(Tests.exit_game_mode)
+        TestHelper.exit_game_mode(Tests.exit_game_mode)
 
         # 9. Test IsHidden.
         reflection_probe_entity.set_visibility_state(False)
@@ -165,8 +172,9 @@ def AtomEditorComponents_ReflectionProbe_AddedToEntity():
         render.EditorReflectionProbeBus(azlmbr.bus.Event, "BakeReflectionProbe", reflection_probe_entity.id)
         Report.result(
             Tests.reflection_map_generated,
-            helper.wait_for_condition(
-                lambda: reflection_probe_component.get_component_property_value("Cubemap|Baked Cubemap Path") != "",
+            TestHelper.wait_for_condition(
+                lambda: reflection_probe_component.get_component_property_value(
+                            AtomComponentProperties.reflection_probe('Baked Cubemap Path')) != "",
                 20.0))
 
         # 12. Delete Reflection Probe entity.
@@ -182,7 +190,7 @@ def AtomEditorComponents_ReflectionProbe_AddedToEntity():
         Report.result(Tests.deletion_redo, not reflection_probe_entity.exists())
 
         # 15. Look for errors or asserts.
-        helper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
+        TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
             Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")
         for assert_info in error_tracer.asserts:

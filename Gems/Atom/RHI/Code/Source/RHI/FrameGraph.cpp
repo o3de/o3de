@@ -17,8 +17,6 @@
 #include <Atom/RHI/Scope.h>
 #include <Atom/RHI/SwapChain.h>
 #include <Atom/RHI/SwapChainFrameAttachment.h>
-#include <AzCore/Debug/EventTrace.h>
-#include <AzCore/std/sort.h>
 
 namespace AZ
 {
@@ -61,7 +59,7 @@ namespace AZ
 
         void FrameGraph::Begin()
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             AZ_Assert(m_isBuilding == false, "FrameGraph::Begin called, but End was never called on the previous build cycle!");
             AZ_Assert(m_isCompiled == false, "FrameGraph::Clear must be called before reuse.");

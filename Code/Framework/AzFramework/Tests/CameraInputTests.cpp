@@ -322,6 +322,17 @@ namespace UnitTest
         EXPECT_THAT(m_camera.m_offset, IsClose(AZ::Vector3::CreateZero()));
     }
 
+    TEST(CameraInput, CameraPitchIsClampedWithExpectedTolerance)
+    {
+        const auto [expectedMinPitch, expectedMaxPitch] = AzFramework::CameraPitchMinMaxRadiansWithTolerance();
+        const float minPitch = AzFramework::ClampPitchRotation(-AZ::Constants::HalfPi);
+        const float maxPitch = AzFramework::ClampPitchRotation(AZ::Constants::HalfPi);
+
+        using ::testing::FloatNear;
+        EXPECT_THAT(minPitch, FloatNear(expectedMinPitch, AzFramework::CameraPitchTolerance));
+        EXPECT_THAT(maxPitch, FloatNear(expectedMaxPitch, AzFramework::CameraPitchTolerance));
+    }
+
     TEST_F(CameraInputFixture, OrbitRotateCameraInputRotatesPitchOffsetByNinetyDegreesWithRequiredPixelDelta)
     {
         const auto cameraStartingPosition = AZ::Vector3::CreateAxisY(-20.0f);

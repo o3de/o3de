@@ -19,6 +19,8 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Jobs/JobCompletion.h>
+#include <AzCore/Jobs/JobFunction.h>
 #include <Atom_RPI_Traits_Platform.h>
 
 #if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
@@ -216,6 +218,16 @@ namespace AZ
             return m_viewToWorldMatrix;
         }
 
+        AZ::Matrix3x4 View::GetWorldToViewMatrixAsMatrix3x4() const
+        {
+            return AZ::Matrix3x4::UnsafeCreateFromMatrix4x4(m_worldToViewMatrix);
+        }
+
+        AZ::Matrix3x4 View::GetViewToWorldMatrixAsMatrix3x4() const
+        {
+            return AZ::Matrix3x4::UnsafeCreateFromMatrix4x4(m_viewToWorldMatrix);
+        }
+
         const AZ::Matrix4x4& View::GetViewToClipMatrix() const
         {
             return m_viewToClipMatrix;
@@ -250,15 +262,25 @@ namespace AZ
 
         void View::SortFinalizedDrawLists()
         {
+            AZ_PROFILE_SCOPE(RPI, "View: SortFinalizedDrawLists");
             RHI::DrawListsByTag& drawListsByTag = m_drawListContext.GetMergedDrawListsByTag();
 
+            AZ::JobCompletion jobCompletion;
             for (size_t idx = 0; idx < drawListsByTag.size(); ++idx)
             {
                 if (drawListsByTag[idx].size() > 1)
                 {
-                    SortDrawList(drawListsByTag[idx], RHI::DrawListTag(idx));
+                    auto jobLambda = [this, &drawListsByTag, idx]()
+                    {
+                        AZ_PROFILE_SCOPE(RPI, "View: SortDrawList Job");
+                        SortDrawList(drawListsByTag[idx], RHI::DrawListTag(idx));
+                    };
+                    Job* jobSortDrawList = aznew JobFunction<decltype(jobLambda)>(jobLambda, true, nullptr); // Auto-deletes
+                    jobSortDrawList->SetDependent(&jobCompletion);
+                    jobSortDrawList->Start();
                 }
             }
+            jobCompletion.StartAndWaitForCompletion();
         }
 
         void View::SortDrawList(RHI::DrawList& drawList, RHI::DrawListTag tag)
@@ -267,12 +289,12 @@ namespace AZ
             passWithDrawListTag->SortDrawList(drawList);
         }
 
-        void View::ConnectWorldToViewMatrixChangedHandler(View::MatrixChangedEvent::Handler& handler)
+        void View::ConnectWorldToViewMatrixChangedHandler(MatrixChangedEvent::Handler& handler)
         {
             handler.Connect(m_onWorldToViewMatrixChange);
         }
 
-        void View::ConnectWorldToClipMatrixChangedHandler(View::MatrixChangedEvent::Handler& handler)
+        void View::ConnectWorldToClipMatrixChangedHandler(MatrixChangedEvent::Handler& handler)
         {
             handler.Connect(m_onWorldToClipMatrixChange);
         }
@@ -423,6 +445,7 @@ namespace AZ
         void View::BeginCulling()
         {
 #if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
+            AZ_PROFILE_SCOPE(RPI, "View: ClearMaskedOcclusionBuffer");
             m_maskedOcclusionCulling->ClearBuffer();
 #endif
         }

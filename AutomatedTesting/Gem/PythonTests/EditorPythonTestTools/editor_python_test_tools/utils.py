@@ -14,7 +14,10 @@ from typing import Callable, Tuple
 
 import azlmbr
 import azlmbr.legacy.general as general
+import azlmbr.multiplayer as multiplayer
 import azlmbr.debug
+import ly_test_tools.environment.waiter as waiter
+import ly_test_tools.environment.process_utils as process_utils
 
 
 class FailFast(Exception):
@@ -30,6 +33,38 @@ class TestHelper:
         general.idle_enable(True)
         # JIRA: SPEC-2880
         # general.idle_wait_frames(1)
+
+    @staticmethod
+    def create_level(level_name: str) -> bool:
+        """
+        :param level_name: The name of the level to be created
+        :return: True if ECreateLevelResult returns 0, False otherwise with logging to report reason
+        """
+        Report.info(f"Creating level {level_name}")
+
+        # Use these hardcoded values to pass expected values for old terrain system until new create_level API is
+        # available
+        heightmap_resolution = 1024
+        heightmap_meters_per_pixel = 1
+        terrain_texture_resolution = 4096
+        use_terrain = False
+
+        result = general.create_level_no_prompt(level_name, heightmap_resolution, heightmap_meters_per_pixel,
+                                                terrain_texture_resolution, use_terrain)
+
+        # Result codes are ECreateLevelResult defined in CryEdit.h
+        if result == 1:
+            Report.info(f"{level_name} level already exists")
+        elif result == 2:
+            Report.info("Failed to create directory")
+        elif result == 3:
+            Report.info("Directory length is too long")
+        elif result != 0:
+            Report.info("Unknown error, failed to create level")
+        else:
+            Report.info(f"{level_name} level created successfully")
+
+        return result == 0
 
     @staticmethod
     def open_level(directory : str, level : str):
@@ -53,8 +88,7 @@ class TestHelper:
         general.idle_wait_frames(200)
 
     @staticmethod
-    def enter_game_mode(msgtuple_success_fail : Tuple[str, str]):
-        # type: (tuple) -> None
+    def enter_game_mode(msgtuple_success_fail: Tuple[str, str]) -> None:
         """
         :param msgtuple_success_fail: The tuple with the expected/unexpected messages for entering game mode.
 
@@ -65,6 +99,55 @@ class TestHelper:
         
         TestHelper.wait_for_condition(lambda : general.is_in_game_mode(), 1.0)
         Report.critical_result(msgtuple_success_fail, general.is_in_game_mode())
+
+    @staticmethod
+    def multiplayer_enter_game_mode(msgtuple_success_fail: Tuple[str, str], sv_default_player_spawn_asset: str) -> None:
+        """
+        :param msgtuple_success_fail: The tuple with the expected/unexpected messages for entering game mode.
+        :param sv_default_player_spawn_asset: The path to the network player prefab that will be automatically spawned upon entering gamemode.  The engine default is "prefabs/player.network.spawnable" 
+
+        :return: None
+        """
+
+        # looks for an expected line in a list of tracers lines
+        # lines: the tracer list of lines to search. options are section_tracer.warnings, section_tracer.errors, section_tracer.asserts, section_tracer.prints
+        # return: true if the line is found, otherwise false
+        def find_expected_line(expected_line, lines):
+            found_lines = [printInfo.message.strip() for printInfo in lines]
+            return expected_line in found_lines
+
+        def wait_for_critical_expected_line(expected_line, lines, time_out):
+            TestHelper.wait_for_condition(lambda : find_expected_line(expected_line, lines), time_out)
+            Report.critical_result(("Found expected line: " + expected_line, "Failed to find expected line: " + expected_line), find_expected_line(expected_line, lines))
+
+        def wait_for_critical_unexpected_line(unexpected_line, lines, time_out):
+            TestHelper.wait_for_condition(lambda : find_expected_line(unexpected_line, lines), time_out)
+            Report.critical_result(("Unexpected line not found: " + unexpected_line, "Unexpected line found: " + unexpected_line), not find_expected_line(unexpected_line, lines))
+
+
+        Report.info("Entering game mode")
+        if sv_default_player_spawn_asset :
+            general.set_cvar("sv_defaultPlayerSpawnAsset", sv_default_player_spawn_asset)
+
+        with Tracer() as section_tracer:
+            # enter game-mode. 
+            # game-mode in multiplayer will also launch ServerLauncher.exe and connect to the editor
+            multiplayer.PythonEditorFuncs_enter_game_mode()
+
+            # make sure the server launcher binary exists
+            wait_for_critical_unexpected_line("LaunchEditorServer failed! The ServerLauncher binary is missing!", section_tracer.errors, 0.5)
+
+            # make sure the server launcher is running
+            waiter.wait_for(lambda: process_utils.process_exists("AutomatedTesting.ServerLauncher", ignore_extensions=True), timeout=5.0, exc=AssertionError("AutomatedTesting.ServerLauncher has NOT launched!"), interval=1.0)
+
+            # make sure the editor connects to the editor-server and sends the level data packet
+            wait_for_critical_expected_line("Editor is sending the editor-server the level data packet.", section_tracer.prints, 5.0)
+
+            # make sure the editor finally connects to the editor-server network simulation
+            wait_for_critical_expected_line("Editor-server ready. Editor has successfully connected to the editor-server's network simulation.", section_tracer.prints, 5.0)
+
+        TestHelper.wait_for_condition(lambda : multiplayer.PythonEditorFuncs_is_in_game_mode(), 5.0)
+        Report.critical_result(msgtuple_success_fail, multiplayer.PythonEditorFuncs_is_in_game_mode())
 
     @staticmethod
     def exit_game_mode(msgtuple_success_fail : Tuple[str, str]):

@@ -194,8 +194,8 @@ namespace AZ
             // This function is called every time scene's render pipelines change.
             void RebuildPipelineStatesLookup();
 
-            // Helper function to wait for end of TaskGraph
-            void WaitTGEvent(AZ::TaskGraphEvent& completionTGEvent, AZStd::atomic_bool* workToWaitOn = nullptr);
+            // Helper function to wait for end of TaskGraph and then delete the TaskGraphEvent
+            void WaitAndCleanTGEvent(AZStd::unique_ptr<AZ::TaskGraphEvent>&& completionTGEvent);
 
             // Helper function for wait and clean up a completion job
             void WaitAndCleanCompletionJob(AZ::JobCompletion*& completionJob);
@@ -224,8 +224,7 @@ namespace AZ
             AZStd::vector<RenderPipelinePtr> m_pipelines;
 
             // CPU simulation TaskGraphEvent to wait for completion of all the simulation tasks
-            AZ::TaskGraphEvent m_simulationFinishedTGEvent;
-            AZStd::atomic_bool m_simulationFinishedWorkActive = false;
+            AZStd::unique_ptr<AZ::TaskGraphEvent> m_simulationFinishedTGEvent;
 
             // CPU simulation job completion for track all feature processors' simulation jobs
             AZ::JobCompletion* m_simulationCompletion = nullptr;

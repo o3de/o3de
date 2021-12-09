@@ -15,7 +15,6 @@
         "SDK"
     ],
     "icon_path": "preview.png",
-    "requirements": "",
     "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/aws/aws-client-auth/",
     "dependencies": [
         "AWSCore",

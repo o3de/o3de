@@ -22,9 +22,6 @@
 #include <ISystem.h>
 #include <ILog.h>
 #include <IConsole.h>
-#include <ITimer.h>
-#include <IRenderer.h>
-#include <IViewSystem.h>
 
 //////////////////////////////////////////////////////////////////////////
 namespace
@@ -98,7 +95,7 @@ UiAnimationSystem::UiAnimationSystem()
     m_pCallback = NULL;
     m_bPaused = false;
     m_sequenceStopBehavior = eSSB_GotoEndTime;
-    m_lastUpdateTime.SetValue(0);
+    m_lastUpdateTime = AZ::Time::ZeroTimeUs;
 
     m_nextSequenceId = 1;
 }
@@ -615,20 +612,6 @@ bool UiAnimationSystem::InternalStopSequence(IUiAnimSequence* pSequence, bool bA
 //////////////////////////////////////////////////////////////////////////
 bool UiAnimationSystem::AbortSequence(IUiAnimSequence* pSequence, bool bLeaveTime)
 {
-    assert(pSequence);
-
-    // to avoid any camera blending after aborting a cut scene
-    IViewSystem* pViewSystem = gEnv->pSystem->GetIViewSystem();
-    if (pViewSystem)
-    {
-        pViewSystem->SetBlendParams(0, 0, 0);
-        IView* pView = pViewSystem->GetActiveView();
-        if (pView)
-        {
-            pView->ResetBlending();
-        }
-    }
-
     return InternalStopSequence(pSequence, true, !bLeaveTime);
 }
 
@@ -742,24 +725,27 @@ void UiAnimationSystem::StillUpdate()
 //////////////////////////////////////////////////////////////////////////
 void UiAnimationSystem::ShowPlayedSequencesDebug()
 {
-    //f32 green[4] = {0, 1, 0, 1};
-    //f32 purple[4] = {1, 0, 1, 1};
-    //f32 white[4] = {1, 1, 1, 1};
+    constexpr f32 green[4] = {0, 1, 0, 1};
+    constexpr f32 purple[4] = {1, 0, 1, 1};
+    constexpr f32 white[4] = {1, 1, 1, 1};
     float y = 10.0f;
     AZStd::vector<AZStd::string> names;
+
+    //TODO: needs an implementation
+    auto Draw2dLabel = [](float /*x*/,float /*y*/,float /*depth*/,const f32* /*color*/,bool /*center*/, const char* /*fmt*/, ...) {};
 
     for (PlayingSequences::iterator it = m_playingSequences.begin(); it != m_playingSequences.end(); ++it)
     {
         PlayingUIAnimSequence& playingSequence = *it;
 
-        if (playingSequence.sequence == NULL)
+        if (playingSequence.sequence == nullptr)
         {
             continue;
         }
 
         AZ_Assert(false,"gEnv->pRenderer is always null so it can't be used here");
-        //const char* fullname = playingSequence.sequence->GetName();
-        //gEnv->pRenderer->Draw2dLabel(1.0f, y, 1.3f, green, false, "Sequence %s : %f (x %f)", fullname, playingSequence.currentTime, playingSequence.currentSpeed);
+const char* fullname = playingSequence.sequence->GetName();
+Draw2dLabel(1.0f, y, 1.3f, green, false, "Sequence %s : %f (x %f)", fullname, playingSequence.currentTime, playingSequence.currentSpeed);
 
         y += 16.0f;
 
@@ -778,7 +764,7 @@ void UiAnimationSystem::ShowPlayedSequencesDebug()
                 names.push_back(name);
             }
 
-            //gEnv->pRenderer->Draw2dLabel((21.0f + 100.0f * i), ((i % 2) ? (y + 8.0f) : y), 1.0f, alreadyThere ? white : purple, false, "%s", name.c_str());
+Draw2dLabel((21.0f + 100.0f * i), ((i % 2) ? (y + 8.0f) : y), 1.0f, alreadyThere ? white : purple, false, "%s", name.c_str());
         }
 
         y += 32.0f;
@@ -808,7 +794,7 @@ void UiAnimationSystem::UpdateInternal(const float deltaTime, const bool bPreUpd
     }
 
     // don't update more than once if dt==0.0
-    CTimeValue curTime = gEnv->pTimer->GetFrameStartTime();
+    const AZ::TimeUs curTime = AZ::GetElapsedTimeUs();
     if (deltaTime == 0.0f && curTime == m_lastUpdateTime && !gEnv->IsEditor())
     {
         return;

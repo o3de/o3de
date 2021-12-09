@@ -28,6 +28,9 @@ set(FILES
     Entity/EditorEntitySearchComponentTests.cpp
     Entity/EditorEntitySelectionTests.cpp
     Entity/EntityUtilityComponentTests.cpp
+    Entity/ReadOnly/ReadOnlyEntityFixture.cpp
+    Entity/ReadOnly/ReadOnlyEntityFixture.h
+    Entity/ReadOnly/ReadOnlyEntityTests.cpp
     EntityIdQLabelTests.cpp
     EntityInspectorTests.cpp
     EntityOwnershipService/EntityOwnershipServiceTestFixture.cpp
@@ -60,14 +63,18 @@ set(FILES
     Prefab/Benchmark/PrefabLoadBenchmarks.cpp
     Prefab/Benchmark/PrefabUpdateInstancesBenchmarks.cpp
     Prefab/Benchmark/SpawnableCreateBenchmarks.cpp
+    Prefab/Benchmark/Spawnable/SpawnableBenchmarkFixture.h
+    Prefab/Benchmark/Spawnable/SpawnableBenchmarkFixture.cpp
+    Prefab/Benchmark/Spawnable/SpawnAllEntitiesBenchmarks.cpp
     Prefab/PrefabFocus/PrefabFocusTests.cpp
     Prefab/MockPrefabFileIOActionValidator.cpp
     Prefab/MockPrefabFileIOActionValidator.h
+    Prefab/PrefabDeleteTests.cpp
     Prefab/PrefabDuplicateTests.cpp
     Prefab/PrefabEntityAliasTests.cpp
     Prefab/PrefabInstanceToTemplatePropagatorTests.cpp
     Prefab/PrefabInstantiateTests.cpp
-    Prefab/PrefabInstantiateTests.cpp
+    Prefab/PrefabAssetFixupTests.cpp
     Prefab/PrefabLoadTemplateTests.cpp
     Prefab/PrefabTestComponent.cpp
     Prefab/PrefabTestComponent.h
@@ -97,6 +104,7 @@ set(FILES
     Prefab/SpawnableSortEntitiesTests.cpp
     Prefab/PrefabScriptingTests.cpp
     Prefab/ProceduralPrefabAssetTests.cpp
+    PropertyIntCtrlCommonTests.cpp
     PropertyIntCtrlCommonTests.h
     PropertyIntSliderCtrlTests.cpp
     PropertyIntSpinCtrlTests.cpp
@@ -132,5 +140,6 @@ set(FILES
     Viewport/ViewportUiDisplayTests.cpp
     Viewport/ViewportUiManagerTests.cpp
     Viewport/ViewportUiWidgetManagerTests.cpp
+    Viewport/ViewportInteractionTests.cpp
     Visibility/EditorVisibilityTests.cpp
 )

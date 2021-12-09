@@ -125,7 +125,7 @@
             </size>
            </property>
            <property name="text">
-            <string>Stable 21.11</string>
+            <string>development</string>
            </property>
            <property name="textFormat">
             <enum>Qt::AutoText</enum>

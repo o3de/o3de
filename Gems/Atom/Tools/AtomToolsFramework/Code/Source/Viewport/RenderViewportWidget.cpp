@@ -141,6 +141,24 @@ namespace AtomToolsFramework
             m_viewportContext->SetRenderScene(nullptr);
             return;
         }
+
+        // Check if the scene already has an atom scene attached. In this case we don't need to create a new atom scene.
+        if (auto existingScene = scene->FindSubsystem<AZ::RPI::ScenePtr>())
+        {
+            m_viewportContext->SetRenderScene(*existingScene);
+
+            // If we have a render pipeline, use it and ensure an AuxGeom feature processor is installed.
+            // Otherwise, fall through and ensure a render pipeline is installed for this scene.
+            if (m_viewportContext->GetCurrentPipeline())
+            {
+                if (auto auxGeomFP = existingScene->get()->GetFeatureProcessor<AZ::RPI::AuxGeomFeatureProcessorInterface>())
+                {
+                    m_auxGeom = auxGeomFP->GetOrCreateDrawQueueForView(m_defaultCamera.get());
+                }
+                return;
+            }
+        }
+
         AZ::RPI::ScenePtr atomScene;
         auto initializeScene = [&](AZ::Render::Bootstrap::Request* bootstrapRequests)
         {
@@ -383,4 +401,11 @@ namespace AtomToolsFramework
     {
         return 1;
     }
+
+    // Editor ignores requests to change the sync interval
+    bool RenderViewportWidget::SetSyncInterval(uint32_t /*ignored*/)
+    {
+        return false;
+    }
+
 } //namespace AtomToolsFramework

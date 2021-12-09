@@ -1,0 +1,100 @@
+{
+    "entries": [
+        {
+            "base": "{FF1EE92C-FD34-51E9-B128-00595ABB78E6}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Sphere Cast With Group",
+                "category": "PhysX/World",
+                "tooltip": "SphereCast"
+            },
+            "slots": [
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Distance_0",
+                    "details": {
+                        "name": "Distance"
+                    }
+                },
+                {
+                    "base": "DataInput_Pose_1",
+                    "details": {
+                        "name": "Pose"
+                    }
+                },
+                {
+                    "base": "DataInput_Direction_2",
+                    "details": {
+                        "name": "Direction"
+                    }
+                },
+                {
+                    "base": "DataInput_Radius_3",
+                    "details": {
+                        "name": "Radius"
+                    }
+                },
+                {
+                    "base": "DataInput_Collision group_4",
+                    "details": {
+                        "name": "Collision group"
+                    }
+                },
+                {
+                    "base": "DataInput_Ignore_5",
+                    "details": {
+                        "name": "Ignore"
+                    }
+                },
+                {
+                    "base": "DataOutput_Object Hit_0",
+                    "details": {
+                        "name": "Object Hit"
+                    }
+                },
+                {
+                    "base": "DataOutput_Position_1",
+                    "details": {
+                        "name": "Position"
+                    }
+                },
+                {
+                    "base": "DataOutput_Normal_2",
+                    "details": {
+                        "name": "Normal"
+                    }
+                },
+                {
+                    "base": "DataOutput_Distance_3",
+                    "details": {
+                        "name": "Distance"
+                    }
+                },
+                {
+                    "base": "DataOutput_EntityId_4",
+                    "details": {
+                        "name": "EntityId"
+                    }
+                },
+                {
+                    "base": "DataOutput_Surface_5",
+                    "details": {
+                        "name": "Surface"
+                    }
+                }
+            ]
+        }
+    ]
+}

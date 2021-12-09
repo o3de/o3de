@@ -148,7 +148,9 @@ TEST_F(AWSCognitoAuthorizationControllerTest, RequestAWSCredentials_Fail_GetIdEr
     EXPECT_CALL(*m_cognitoIdentityClientMock, GetCredentialsForIdentity(testing::_)).Times(0);
     EXPECT_CALL(m_awsCognitoAuthorizationNotificationsBusMock, OnRequestAWSCredentialsSuccess(testing::_)).Times(0);
     EXPECT_CALL(m_awsCognitoAuthorizationNotificationsBusMock, OnRequestAWSCredentialsFail(testing::_)).Times(1);
+    AZ_TEST_START_TRACE_SUPPRESSION;
     m_mockController->RequestAWSCredentialsAsync();
+    AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
 }
 
 TEST_F(AWSCognitoAuthorizationControllerTest, RequestAWSCredentials_Fail_GetCredentialsForIdentityError)
@@ -182,7 +184,9 @@ TEST_F(AWSCognitoAuthorizationControllerTest, RequestAWSCredentials_Fail_GetCred
     EXPECT_CALL(*m_cognitoIdentityClientMock, GetCredentialsForIdentity(testing::_)).Times(1).WillOnce(testing::Return(outcome));
     EXPECT_CALL(m_awsCognitoAuthorizationNotificationsBusMock, OnRequestAWSCredentialsSuccess(testing::_)).Times(0);
     EXPECT_CALL(m_awsCognitoAuthorizationNotificationsBusMock, OnRequestAWSCredentialsFail(testing::_)).Times(1);
+    AZ_TEST_START_TRACE_SUPPRESSION;
     m_mockController->RequestAWSCredentialsAsync();
+    AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
 }
 
 TEST_F(AWSCognitoAuthorizationControllerTest, AddRemoveLogins_Succuess)
@@ -339,8 +343,10 @@ TEST_F(AWSCognitoAuthorizationControllerTest, GetCredentialsProvider_NoPersisted
     EXPECT_CALL(*m_cognitoIdentityClientMock, GetCredentialsForIdentity(testing::_)).Times(0);
 
     std::shared_ptr<Aws::Auth::AWSCredentialsProvider> actualCredentialsProvider;
+    AZ_TEST_START_TRACE_SUPPRESSION;
     AWSCore::AWSCredentialRequestBus::BroadcastResult(
         actualCredentialsProvider, &AWSCore::AWSCredentialRequests::GetCredentialsProvider);
+    AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
     EXPECT_TRUE(actualCredentialsProvider == nullptr);
 }
 

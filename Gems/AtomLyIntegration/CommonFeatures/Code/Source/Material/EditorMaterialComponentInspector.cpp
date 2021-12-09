@@ -314,12 +314,21 @@ namespace AZ
 
                             AtomToolsFramework::ConvertToPropertyConfig(propertyConfig, propertyDefinition);
 
+                            const auto& propertyIndex =
+                                m_editData.m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyConfig.m_id);
+
                             propertyConfig.m_groupName = groupDisplayName;
-                            const auto& propertyIndex = m_editData.m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyConfig.m_id);
                             propertyConfig.m_showThumbnail = true;
-                            propertyConfig.m_defaultValue = AtomToolsFramework::ConvertToEditableType(m_editData.m_materialTypeAsset->GetDefaultPropertyValues()[propertyIndex.GetIndex()]);
-                            propertyConfig.m_parentValue = AtomToolsFramework::ConvertToEditableType(m_editData.m_materialTypeAsset->GetDefaultPropertyValues()[propertyIndex.GetIndex()]);
-                            propertyConfig.m_originalValue = AtomToolsFramework::ConvertToEditableType(m_editData.m_materialAsset->GetPropertyValues()[propertyIndex.GetIndex()]);
+
+                            propertyConfig.m_defaultValue = AtomToolsFramework::ConvertToEditableType(
+                                m_editData.m_materialTypeAsset->GetDefaultPropertyValues()[propertyIndex.GetIndex()]);
+
+                            // There is no explicit parent material here. Material instance property overrides replace the values from the
+                            // assigned material asset. Its values should be treated as parent, for comparison, in this case.
+                            propertyConfig.m_parentValue = AtomToolsFramework::ConvertToEditableType(
+                                m_editData.m_materialAsset->GetPropertyValues()[propertyIndex.GetIndex()]);
+                            propertyConfig.m_originalValue = AtomToolsFramework::ConvertToEditableType(
+                                m_editData.m_materialAsset->GetPropertyValues()[propertyIndex.GetIndex()]);
                             group.m_properties.emplace_back(propertyConfig);
                         }
                     }

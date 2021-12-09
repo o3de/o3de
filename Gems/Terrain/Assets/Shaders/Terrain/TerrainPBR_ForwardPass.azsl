@@ -7,8 +7,11 @@
  */
 
 #include <Atom/Features/SrgSemantics.azsli>
+
 #include <viewsrg.srgi>
+#include <TerrainSrg.azsli>
 #include <TerrainCommon.azsli>
+#include <TerrainDetailHelpers.azsli>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include <Atom/Features/PBR/ForwardPassSrg.azsli>
 #include <Atom/Features/PBR/ForwardPassOutput.azsli>
@@ -68,9 +71,9 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
 {
     // ------- Surface -------
     Surface surface;
-    
-    // Position
     surface.position = IN.m_worldPosition.xyz;
+    surface.vertexNormal = normalize(IN.m_normal);
+
     float viewDistance = length(ViewSrg::m_worldPosition - surface.position);
     float detailFactor = saturate((viewDistance - TerrainMaterialSrg::m_detailFadeDistance) / max(TerrainMaterialSrg::m_detailFadeLength, EPSILON));
     float2 detailUv = IN.m_uv * TerrainMaterialSrg::m_detailTextureMultiplier;
@@ -106,36 +109,55 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
                 {
                     bool flipX = ObjectSrg::m_macroMaterialData[i].m_flipNormalX;
                     bool flipY = ObjectSrg::m_macroMaterialData[i].m_flipNormalY;
-                    bool factor = ObjectSrg::m_macroMaterialData[i].m_normalFactor;
-                    macroNormal = GetNormalInputTS(ObjectSrg::m_macroNormalMap[i], TerrainMaterialSrg::m_sampler, 
-                        macroUv, flipX, flipY, CreateIdentity3x3(), true, factor);
+                    float factor = ObjectSrg::m_macroMaterialData[i].m_normalFactor;
+                    
+                    float2 sampledValue = SampleNormalXY(ObjectSrg::m_macroNormalMap[i], TerrainMaterialSrg::m_sampler, macroUv, flipX, flipY);
+                    macroNormal = normalize(GetTangentSpaceNormal_Unnormalized(sampledValue.xy, factor));
                 }
                 break;
             }
         }
     }
-
-    float3 detailNormal = GetNormalInputTS(TerrainMaterialSrg::m_normalMap, TerrainMaterialSrg::m_sampler, 
-        detailUv, TerrainMaterialSrg::m_flipNormalX, TerrainMaterialSrg::m_flipNormalY, CreateIdentity3x3(), o_normal_useTexture, TerrainMaterialSrg::m_normalFactor);
-
-    detailNormal = ReorientTangentSpaceNormal(macroNormal, detailNormal);
-    surface.normal = lerp(detailNormal, macroNormal, detailFactor);
-    surface.normal = normalize(surface.normal);
-    surface.vertexNormal = normalize(IN.m_normal);
-
+    
     // ------- Base Color -------
-    float3 detailColor = GetBaseColorInput(TerrainMaterialSrg::m_baseColorMap, TerrainMaterialSrg::m_sampler, detailUv, TerrainMaterialSrg::m_baseColor.rgb, o_baseColor_useTexture);
-    float3 blendedColor = BlendBaseColor(lerp(detailColor, TerrainMaterialSrg::m_baseColor.rgb, detailFactor), macroColor, TerrainMaterialSrg::m_baseColorFactor, o_baseColorTextureBlendMode, o_baseColor_useTexture);
 
-    // ------- Specular -------
-    float specularF0Factor = GetSpecularInput(TerrainMaterialSrg::m_specularF0Map, TerrainMaterialSrg::m_sampler, detailUv, TerrainMaterialSrg::m_specularF0Factor, o_specularF0_useTexture);
-    specularF0Factor = lerp(specularF0Factor, 0.5, detailFactor);
-    surface.SetAlbedoAndSpecularF0(blendedColor, specularF0Factor, 0.0);
+    DetailSurface detailSurface = GetDefaultDetailSurface();
+    float2 detailRegionMin = TerrainSrg::m_detailAabb.xy;
+    float2 detailRegionMax = TerrainSrg::m_detailAabb.zw;
+    float2 detailRegionUv = (surface.position.xy - detailRegionMin) / (detailRegionMax - detailRegionMin);
+    bool hasDetailSurface = false;
 
-    // ------- Roughness -------
-    surface.roughnessLinear = GetRoughnessInput(TerrainMaterialSrg::m_roughnessMap, TerrainMaterialSrg::m_sampler, detailUv, TerrainMaterialSrg::m_roughnessFactor, 0.0, 1.0, o_roughness_useTexture);
-    surface.roughnessLinear = lerp(surface.roughnessLinear, 1.0, detailFactor);
-    surface.CalculateRoughnessA();
+    // Check to make sure we're inside the detail texture's bounds and within where detail textures should be drawn.
+    if (detailFactor < 1.0 && all(detailRegionUv > TerrainSrg::m_detailHalfPixelUv) && all(detailRegionUv < 1.0 - TerrainSrg::m_detailHalfPixelUv))
+    {
+        detailRegionUv += TerrainSrg::m_detailMaterialIdImageCenter - 0.5;
+        hasDetailSurface = GetDetailSurface(detailSurface, detailRegionUv, detailUv);
+    }
+
+    const float macroRoughness = 1.0;
+    const float macroSpecularF0 = 0.5;
+    const float macroMetalness = 0.0;
+
+    if (hasDetailSurface)
+    {
+        float3 blendedColor = lerp(detailSurface.m_color, macroColor, detailFactor);
+        float blendedSpecularF0 = lerp(detailSurface.m_specularF0, macroSpecularF0, detailFactor);
+        surface.SetAlbedoAndSpecularF0(blendedColor, blendedSpecularF0, detailSurface.m_metalness * (1.0 - detailFactor));
+
+        surface.roughnessLinear = lerp(detailSurface.m_roughness, macroRoughness, detailFactor);
+        surface.CalculateRoughnessA();
+
+        detailSurface.m_normal = ReorientTangentSpaceNormal(macroNormal, detailSurface.m_normal);
+        surface.normal = lerp(detailSurface.m_normal, macroNormal, detailFactor);
+        surface.normal = normalize(surface.normal);
+    }
+    else
+    {
+        surface.normal = macroNormal;
+        surface.SetAlbedoAndSpecularF0(macroColor, macroSpecularF0, macroMetalness);
+        surface.roughnessLinear = macroRoughness;
+        surface.CalculateRoughnessA();
+    }
 
     // Clear Coat, Transmission (Not used for terrain)
     surface.clearCoat.InitializeToZero();
@@ -151,6 +173,7 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
 
     // Shadow, Occlusion
     lightingData.shadowCoords = IN.m_shadowCoords;
+    lightingData.diffuseAmbientOcclusion = detailSurface.m_occlusion;
 
     // Diffuse and Specular response
     lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);

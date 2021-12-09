@@ -10,9 +10,9 @@
 
 #include <ImGuiCpuProfiler.h>
 
-#include <Profiler/ProfilerBus.h>
 #include <CpuProfilerImpl.h>
 
+#include <AzCore/Debug/ProfilerBus.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/JSON/filereadstream.h>
 #include <AzCore/Outcome/Outcome.h>
@@ -23,10 +23,12 @@
 #include <AzCore/std/sort.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/time.h>
+#include <AzCore/Time/ITime.h>
 
 namespace Profiler
 {
-    static constexpr const char* defaultSaveLocation = "@user@/Profiler";
+    constexpr AZStd::sys_time_t ProfilerViewEdgePadding = 5000;
+    constexpr size_t InitialCpuTimingStatsAllocation = 8;
 
     namespace CpuProfilerImGuiHelper
     {
@@ -156,16 +158,7 @@ namespace Profiler
 
         if (m_captureToFile)
         {
-            AZStd::string timeString;
-            AZStd::to_string(timeString, AZStd::GetTimeNowSecond());
-
-            const AZStd::string frameDataFilePath = AZStd::string::format("%s/cpu_single_%s.json", defaultSaveLocation, timeString.c_str());
-
-            char resolvedPath[AZ::IO::MaxPathLength];
-            AZ::IO::FileIOBase::GetInstance()->ResolvePath(frameDataFilePath.c_str(), resolvedPath, AZ::IO::MaxPathLength);
-            m_lastCapturedFilePath = resolvedPath;
-
-            ProfilerRequestBus::Broadcast(&ProfilerRequestBus::Events::CaptureCpuProfilingStatistics, frameDataFilePath);
+            AZ::Debug::ProfilerSystemInterface::Get()->CaptureFrame(GenerateOutputFile("single"));
         }
         m_captureToFile = false;
 
@@ -206,24 +199,15 @@ namespace Profiler
         bool isInProgress = CpuProfiler::Get()->IsContinuousCaptureInProgress();
         if (ImGui::Button(isInProgress ? "End" : "Begin"))
         {
+            auto profilerSystem = AZ::Debug::ProfilerSystemInterface::Get();
             if (isInProgress)
             {
-                AZStd::string timeString;
-                AZStd::to_string(timeString, AZStd::GetTimeNowSecond());
-
-                const AZStd::string frameDataFilePath = AZStd::string::format("%s/cpu_multi_%s.json", defaultSaveLocation, timeString.c_str());
-
-                char resolvedPath[AZ::IO::MaxPathLength];
-                AZ::IO::FileIOBase::GetInstance()->ResolvePath(frameDataFilePath.c_str(), resolvedPath, AZ::IO::MaxPathLength);
-                m_lastCapturedFilePath = resolvedPath;
-
-                ProfilerRequestBus::Broadcast(&ProfilerRequestBus::Events::EndContinuousCpuProfilingCapture, frameDataFilePath);
-
+                profilerSystem->EndCapture();
                 m_paused = true;
             }
             else
             {
-                ProfilerRequestBus::Broadcast(&ProfilerRequestBus::Events::BeginContinuousCpuProfilingCapture);
+                profilerSystem->StartCapture(GenerateOutputFile("multi"));
             }
         }
 
@@ -235,8 +219,10 @@ namespace Profiler
             // Only update the cached file list when opened so that we aren't making IO calls on every frame.
             m_cachedCapturePaths.clear();
 
+            AZ::IO::FixedMaxPathString captureOutput = AZ::Debug::GetProfilerCaptureLocation();
+
             auto* base = AZ::IO::FileIOBase::GetInstance();
-            base->FindFiles(defaultSaveLocation, "*.json",
+            base->FindFiles(captureOutput.c_str(), "*.json",
                 [&paths = m_cachedCapturePaths](const char* path) -> bool
                 {
                     auto foundPath = AZ::IO::Path(path);
@@ -418,6 +404,18 @@ namespace Profiler
         ImGui::End();
     }
 
+    AZStd::string ImGuiCpuProfiler::GenerateOutputFile(const char* nameHint)
+    {
+        AZ::IO::FixedMaxPathString captureOutput = AZ::Debug::GetProfilerCaptureLocation();
+
+        const AZ::IO::FixedMaxPathString frameDataFilePath =
+            AZ::IO::FixedMaxPathString::format("%s/cpu_%s_%lld.json", captureOutput.c_str(), nameHint, AZStd::GetTimeNowSecond());
+
+        AZ::IO::FileIOBase::GetInstance()->ResolvePath(m_lastCapturedFilePath, frameDataFilePath.c_str());
+
+        return m_lastCapturedFilePath.String();
+    }
+
     void ImGuiCpuProfiler::LoadFile()
     {
         const AZ::IO::Path& pathToLoad = m_cachedCapturePaths[m_currentFileIndex];
@@ -441,6 +439,11 @@ namespace Profiler
         m_tableData.clear();
         m_groupRegionMap.clear();
 
+        // Since we don't serialize the frame boundaries, we will use "Component application simulation tick" from
+        // ComponentApplication::Tick as a heuristic.
+        static const AZ::Name::Hash frameBoundaryHash = AZ::Name("Component application simulation tick").GetHash();
+
+        AZStd::sys_time_t frameTime = 0;
         for (const auto& entry : deserializedData)
         {
             const auto [groupNameItr, wasGroupNameInserted] = m_deserializedStringPool.emplace(entry.m_groupName.GetCStr());
@@ -451,10 +454,12 @@ namespace Profiler
             const CachedTimeRegion newRegion(*groupRegionNameItr, entry.m_stackDepth, entry.m_startTick, entry.m_endTick);
             m_savedData[entry.m_threadId].push_back(newRegion);
 
-            // Since we don't serialize the frame boundaries, we need to use the RPI's OnSystemTick event as a heuristic.
-            const static AZ::Name frameBoundaryName = AZ::Name("RPISystem: OnSystemTick");
-            if (entry.m_regionName == frameBoundaryName)
+            if (entry.m_regionName.GetHash() == frameBoundaryHash)
             {
+                if (!m_frameEndTicks.empty())
+                {
+                    frameTime = entry.m_endTick - m_frameEndTicks.back();
+                }
                 m_frameEndTicks.push_back(entry.m_endTick);
             }
 
@@ -468,9 +473,9 @@ namespace Profiler
             m_groupRegionMap[*groupNameItr][*regionNameItr].RecordRegion(newRegion, entry.m_threadId);
         }
 
-        // Update viewport bounds with some added UX fudge factor
-        m_viewportStartTick = deserializedData.back().m_startTick - 1000;
-        m_viewportEndTick = deserializedData.back().m_endTick + 1000;
+        // Update viewport bounds to the estimated final frame time with some padding
+        m_viewportStartTick = m_frameEndTicks.back() - frameTime - ProfilerViewEdgePadding;
+        m_viewportEndTick = m_frameEndTicks.back() + ProfilerViewEdgePadding;
 
         // Invariant: each vector in m_savedData must be sorted so that we can efficiently cull region data.
         for (auto& [threadId, singleThreadData] : m_savedData)
@@ -648,21 +653,13 @@ namespace Profiler
         m_cpuTimingStatisticsWhenPause.clear();
         if (auto statsProfiler = AZ::Interface<StatisticalProfilerProxy>::Get(); statsProfiler)
         {
-            auto& rhiMetrics = statsProfiler->GetProfiler(AZ_CRC_CE("RHI"));
-
-            const NamedRunningStatistic* frameTimeMetric = rhiMetrics.GetStatistic(AZ_CRC_CE("Frame to Frame Time"));
-            if (frameTimeMetric)
-            {
-                m_frameToFrameTime = static_cast<AZStd::sys_time_t>(frameTimeMetric->GetMostRecentSample());
-            }
-
             AZStd::vector<NamedRunningStatistic*> statistics;
-            rhiMetrics.GetStatsManager().GetAllStatistics(statistics);
+            statistics.reserve(InitialCpuTimingStatsAllocation);
 
+            statsProfiler->GetAllStatisticsOfUnits(statistics, "clocks");
             for (NamedRunningStatistic* stat : statistics)
             {
                 m_cpuTimingStatisticsWhenPause.push_back({ stat->GetName(), stat->GetMostRecentSample() });
-                stat->Reset();
             }
         }
     }
@@ -737,7 +734,11 @@ namespace Profiler
 
     void ImGuiCpuProfiler::CullFrameData()
     {
-        const AZStd::sys_time_t deleteBeforeTick = AZStd::GetTimeNowTicks() - m_frameToFrameTime * m_framesToCollect;
+        const AZ::TimeUs delta = AZ::GetRealTickDeltaTimeUs();
+        const float deltaTimeInSeconds = AZ::TimeUsToSeconds(delta);
+        const AZStd::sys_time_t frameToFrameTime = static_cast<AZStd::sys_time_t>(deltaTimeInSeconds * AZStd::GetTimeTicksPerSecond());
+
+        const AZStd::sys_time_t deleteBeforeTick = AZStd::GetTimeNowTicks() - frameToFrameTime * m_framesToCollect;
 
         // Remove old frame boundary data
         auto firstBoundaryToKeepItr = AZStd::upper_bound(m_frameEndTicks.begin(), m_frameEndTicks.end(), deleteBeforeTick);

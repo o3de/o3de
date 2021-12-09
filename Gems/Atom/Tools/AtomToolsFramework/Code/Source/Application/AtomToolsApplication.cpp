@@ -175,7 +175,8 @@ namespace AtomToolsFramework
 
         Base::StartCommon(systemEntity);
 
-        m_traceLogger.PrepareLogFile(GetBuildTargetName() + ".log");
+        const bool clearLogFile = GetSettingOrDefault("/O3DE/AtomToolsFramework/Application/ClearLogOnStart", false);
+        m_traceLogger.OpenLogFile(GetBuildTargetName() + ".log", clearLogFile);
 
         AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusConnect();
         AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotificationBus::Broadcast(
@@ -460,10 +461,10 @@ namespace AtomToolsFramework
         return false;
     }
 
-    void AtomToolsApplication::Tick(float deltaOverride)
+    void AtomToolsApplication::Tick()
     {
         TickSystem();
-        Base::Tick(deltaOverride);
+        Base::Tick();
 
         if (WasExitMainLoopRequested())
         {

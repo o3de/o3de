@@ -33,6 +33,7 @@ AZ_POP_DISABLE_WARNING
 #include <QScopedValueRollback>
 #include <QClipboard>
 #include <QMenuBar>
+#include <QMessageBox>
 #include <QDialogButtonBox>
 
 // Aws Native SDK
@@ -80,7 +81,6 @@ AZ_POP_DISABLE_WARNING
 #include <AzQtComponents/Utilities/QtPluginPaths.h>
 
 // CryCommon
-#include <CryCommon/ITimer.h>
 #include <CryCommon/ILevelSystem.h>
 
 // Editor
@@ -546,7 +546,6 @@ public:
             { "BatchMode", m_bConsoleMode },
             { "NullRenderer", m_bNullRenderer },
             { "devmode", m_bDeveloperMode },
-            { "VTUNE", dummy },
             { "runpython", m_bRunPythonScript },
             { "runpythontest", m_bRunPythonTestScript },
             { "version", m_bShowVersionInfo },
@@ -2811,14 +2810,11 @@ void CCryEditApp::OpenProjectManager(const AZStd::string& screen)
 {
     // provide the current project path for in case we want to update the project
     AZ::IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
-#if !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
-    const char* argumentQuoteString = R"(")";
-#else
-    const char* argumentQuoteString = R"(\")";
-#endif
-    const AZStd::string commandLineOptions = AZStd::string::format(R"( --screen %s --project-path %s%s%s)",
-        screen.c_str(),
-        argumentQuoteString, projectPath.c_str(), argumentQuoteString);
+
+    const AZStd::vector<AZStd::string> commandLineOptions {
+        "--screen", screen,
+        "--project-path", AZStd::string::format(R"("%s")", projectPath.c_str()) };
+
     bool launchSuccess = AzFramework::ProjectManager::LaunchProjectManager(commandLineOptions);
     if (!launchSuccess)
     {
@@ -3818,7 +3814,8 @@ void CCryEditApp::OnOpenQuickAccessBar()
     }
 
     QRect geo = m_pQuickAccessBar->geometry();
-    geo.moveCenter(MainWindow::instance()->geometry().center());
+    auto mainWindow = MainWindow::instance();
+    geo.moveCenter(mainWindow->mapToGlobal(mainWindow->geometry().center()));
     m_pQuickAccessBar->setGeometry(geo);
     m_pQuickAccessBar->setVisible(true);
     m_pQuickAccessBar->setFocus();
@@ -3830,7 +3827,7 @@ void CCryEditApp::SetEditorWindowTitle(QString sTitleStr, QString sPreTitleStr, 
     {
         if (sTitleStr.isEmpty())
         {
-            sTitleStr = QObject::tr("O3DE Editor [Stable 21.11]");
+            sTitleStr = QObject::tr("O3DE Editor [Developer Preview]");
         }
 
         if (!sPreTitleStr.isEmpty())
@@ -4017,7 +4014,7 @@ void CCryEditApp::OnError(AzFramework::AssetSystem::AssetSystemErrors error)
         break;
     }
 
-    CryMessageBox(errorMessage.c_str(), "Error", MB_OK | MB_ICONERROR | MB_SETFOREGROUND);
+    QMessageBox::critical(nullptr,"Error",errorMessage.c_str());
 }
 
 void CCryEditApp::OnOpenProceduralMaterialEditor()
@@ -4132,7 +4129,15 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
     AzQtComponents::Utilities::HandleDpiAwareness(AzQtComponents::Utilities::SystemDpiAware);
     Editor::EditorQtApplication* app = Editor::EditorQtApplication::newInstance(argc, argv);
 
-    if (app->arguments().contains("-autotest_mode"))
+    QStringList qArgs = app->arguments();
+    const bool is_automated_test = AZStd::any_of(qArgs.begin(), qArgs.end(),
+        [](const QString& elem)
+        {
+            return elem.endsWith("autotest_mode") || elem.endsWith("runpythontest");
+        }
+    );
+
+    if (is_automated_test)
     {
         // Nullroute all stdout to null for automated tests, this way we make sure
         // that the test result output is not polluted with unrelated output data.

@@ -138,6 +138,14 @@ class PrefabInstance:
         self.container_entity = reparented_container_entity
         current_instance_prefab.instances.add(self)
 
+    def get_direct_child_entities(self):
+        """
+        Returns the entities only contained in the current prefab instance.
+        This function does not return entities contained in other child instances
+        """
+        return self.container_entity.get_children()
+
+
 # This is a helper class which contains some of the useful information about a prefab template.
 class Prefab:
 

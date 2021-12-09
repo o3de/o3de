@@ -576,7 +576,6 @@ void MainWindow::closeEvent(QCloseEvent* event)
     }
     // Close all edit panels.
     GetIEditor()->ClearSelection();
-    GetIEditor()->GetObjectManager()->EndEditParams();
 
     // force clean up of all deferred deletes, so that we don't have any issues with windows from plugins not being deleted yet
     qApp->sendPostedEvents(nullptr, QEvent::DeferredDelete);
@@ -1050,7 +1049,7 @@ void MainWindow::InitActions()
     if (emfxEnabled.value)
     {
         QAction* action = am->AddAction(ID_OPEN_EMOTIONFX_EDITOR, tr("Animation Editor"))
-            .SetToolTip(tr("Open Animation Editor (PREVIEW)"))
+            .SetToolTip(tr("Open Animation Editor"))
             .SetIcon(QIcon(":/EMotionFX/EMFX_icon_32x32.png"));
         QObject::connect(action, &QAction::triggered, this, []() {
             QtViewPaneManager::instance()->OpenPane(LyViewPane::AnimationEditor);

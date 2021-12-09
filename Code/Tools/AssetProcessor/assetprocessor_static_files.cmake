@@ -29,6 +29,9 @@ set(FILES
     native/AssetManager/SourceFileRelocator.h
     native/AssetManager/ControlRequestHandler.cpp
     native/AssetManager/ControlRequestHandler.h
+    native/AssetManager/ExcludedFolderCache.cpp
+    native/AssetManager/ExcludedFolderCache.h
+    native/AssetManager/ExcludedFolderCacheInterface.h
     native/assetprocessor.h
     native/connection/connection.cpp
     native/connection/connection.h
@@ -89,8 +92,6 @@ set(FILES
     native/utilities/BuilderManager.inl
     native/utilities/ByteArrayStream.cpp
     native/utilities/ByteArrayStream.h
-    native/utilities/CommunicatorTracePrinter.cpp
-    native/utilities/CommunicatorTracePrinter.h
     native/utilities/IniConfiguration.cpp
     native/utilities/IniConfiguration.h
     native/utilities/JobDiagnosticTracker.cpp
@@ -102,6 +103,8 @@ set(FILES
     native/utilities/PlatformConfiguration.cpp
     native/utilities/PlatformConfiguration.h
     native/utilities/PotentialDependencies.h
+    native/utilities/StatsCapture.cpp
+    native/utilities/StatsCapture.h
     native/utilities/SpecializedDependencyScanner.h
     native/utilities/ThreadHelper.cpp
     native/utilities/ThreadHelper.h

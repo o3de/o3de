@@ -8,7 +8,6 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
-#include <CryCommon/ITimer.h>
 #include <CryCommon/ISystem.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -44,7 +43,7 @@ inline void Gestures::RecognizerDrag::Config::Reflect(AZ::ReflectContext* contex
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 inline Gestures::RecognizerDrag::RecognizerDrag(const Config& config)
     : m_config(config)
-    , m_startTime(0)
+    , m_startTime(AZ::Time::ZeroTimeMs)
     , m_startPosition()
     , m_currentPosition()
     , m_currentState(State::Idle)
@@ -68,7 +67,7 @@ inline bool Gestures::RecognizerDrag::OnPressedEvent(const AZ::Vector2& screenPo
     {
     case State::Idle:
     {
-        m_startTime = (gEnv && gEnv->pTimer) ? gEnv->pTimer->GetFrameStartTime().GetValue() : 0;
+        m_startTime = AZ::GetRealElapsedTimeMs();
         m_startPosition = screenPosition;
         m_currentPosition = screenPosition;
         m_currentState = State::Pressed;
@@ -101,11 +100,11 @@ inline bool Gestures::RecognizerDrag::OnDownEvent(const AZ::Vector2& screenPosit
     {
     case State::Pressed:
     {
-        const CTimeValue currentTime = (gEnv && gEnv->pTimer) ? gEnv->pTimer->GetFrameStartTime() : CTimeValue();
-        if ((currentTime.GetDifferenceInSeconds(m_startTime) >= m_config.minSecondsHeld) &&
+        const AZ::TimeMs currentTime = AZ::GetRealElapsedTimeMs();
+        if ((AZ::TimeMsToSeconds(currentTime - m_startTime) >= m_config.minSecondsHeld) &&
             (GetDistance() >= m_config.minPixelsMoved))
         {
-            m_startTime = currentTime.GetValue();
+            m_startTime = currentTime;
             m_startPosition = m_currentPosition;
             OnContinuousGestureInitiated();
             m_currentState = State::Dragging;

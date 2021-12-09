@@ -41,6 +41,7 @@
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
 #include <AzToolsFramework/Slice/SliceRequestBus.h>
 #include <AzToolsFramework/Slice/SliceUtilities.h>
@@ -207,6 +208,9 @@ void SandboxIntegrationManager::Setup()
 
     m_editorEntityAPI = AZ::Interface<AzToolsFramework::EditorEntityAPI>::Get();
     AZ_Assert(m_editorEntityAPI, "SandboxIntegrationManager requires an EditorEntityAPI instance to be present on Setup().");
+
+    m_readOnlyEntityPublicInterface = AZ::Interface<AzToolsFramework::ReadOnlyEntityPublicInterface>::Get();
+    AZ_Assert(m_readOnlyEntityPublicInterface, "SandboxIntegrationManager requires an ReadOnlyEntityPublicInterface instance to be present on Setup().");
 
     AzToolsFramework::Layers::EditorLayerComponentNotificationBus::Handler::BusConnect();
 }
@@ -447,7 +451,7 @@ void SandboxIntegrationManager::OnEndUndo(const char* label, bool changed)
     // Add the undo only after we know it's got a legit change, we can't remove undos from the cry undo system so we do it here instead of OnBeginUndo
     if (changed && CUndo::IsRecording())
     {
-        CUndo::Record(new CToolsApplicationUndoLink(label));
+        CUndo::Record(new CToolsApplicationUndoLink());
     }
     if (m_startedUndoRecordingNestingLevel)
     {
@@ -498,13 +502,11 @@ void SandboxIntegrationManager::EntityParentChanged(
     // before finally being saved, it will result in all of those layers saving, too.
     AZ::EntityId oldAncestor = oldParentId;
 
-    bool wasNotInLayer = false;
     AZ::EntityId oldLayer;
     do
     {
         if (!oldAncestor.IsValid())
         {
-            wasNotInLayer = true;
             break;
         }
 
@@ -530,13 +532,11 @@ void SandboxIntegrationManager::EntityParentChanged(
 
     AZ::EntityId newAncestor = newParentId;
 
-    bool isGoingToRootScene = false;
     AZ::EntityId newLayer;
     do
     {
         if (!newAncestor.IsValid())
         {
-            isGoingToRootScene = true;
             break;
         }
 
@@ -662,15 +662,17 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
     // when a single entity is selected, entity is created as its child
     else if (selected.size() == 1)
     {
+        AZ::EntityId selectedEntityId = selected.front();
+        bool selectedEntityIsReadOnly = m_readOnlyEntityPublicInterface->IsReadOnly(selectedEntityId);
         auto containerEntityInterface = AZ::Interface<AzToolsFramework::ContainerEntityInterface>::Get();
-        if (!prefabSystemEnabled || (containerEntityInterface && containerEntityInterface->IsContainerOpen(selected.front())))
+        if (!prefabSystemEnabled || (containerEntityInterface && containerEntityInterface->IsContainerOpen(selectedEntityId) && !selectedEntityIsReadOnly))
         {
             action = menu->addAction(QObject::tr("Create entity"));
             QObject::connect(
                 action, &QAction::triggered, action,
-                [selected]
+                [selectedEntityId]
                 {
-                    AzToolsFramework::EditorRequestBus::Broadcast(&AzToolsFramework::EditorRequestBus::Handler::CreateNewEntityAsChild, selected.front());
+                    AzToolsFramework::EditorRequestBus::Broadcast(&AzToolsFramework::EditorRequestBus::Handler::CreateNewEntityAsChild, selectedEntityId);
                 }
             );
         }
@@ -695,11 +697,27 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
         SetupSliceContextMenu(menu);
     }
 
-    action = menu->addAction(QObject::tr("Duplicate"));
-    QObject::connect(action, &QAction::triggered, action, [this] { ContextMenu_Duplicate(); });
-    if (selected.size() == 0)
+    if (!selected.empty())
     {
-        action->setDisabled(true);
+        // Don't allow duplication if any of the selected entities are direct desendants of a read-only entity
+        bool selectionContainsDescendantOfReadOnlyEntity = false;
+        for (const auto& entityId : selected)
+        {
+            AZ::EntityId parentEntityId;
+            AZ::TransformBus::EventResult(parentEntityId, entityId, &AZ::TransformBus::Events::GetParentId);
+
+            if (parentEntityId.IsValid() && m_readOnlyEntityPublicInterface->IsReadOnly(parentEntityId))
+            {
+                selectionContainsDescendantOfReadOnlyEntity = true;
+                break;
+            }
+        }
+
+        if (!selectionContainsDescendantOfReadOnlyEntity)
+        {
+            action = menu->addAction(QObject::tr("Duplicate"));
+            QObject::connect(action, &QAction::triggered, action, [this] { ContextMenu_Duplicate(); });
+        }
     }
 
     if (!prefabSystemEnabled)
@@ -1400,7 +1418,7 @@ void SandboxIntegrationManager::ContextMenu_NewEntity()
     {
         worldPosition = AzToolsFramework::FindClosestPickIntersection(
             view->GetViewportId(), AzFramework::ScreenPointFromVector2(m_contextMenuViewPoint), AzToolsFramework::EditorPickRayLength,
-            GetDefaultEntityPlacementDistance());
+            AzToolsFramework::GetDefaultEntityPlacementDistance());
     }
 
     CreateNewEntityAtPosition(worldPosition);

@@ -30,16 +30,17 @@
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/osstring.h>
 
+
 namespace AZ
 {
     class BehaviorContext;
     class IConsole;
     class Module;
     class ModuleManager;
+    class TimeSystem;
 }
 namespace AZ::Debug
 {
-    class DrillerManager;
     class LocalFileEventLogger;
 }
 
@@ -141,7 +142,6 @@ namespace AZ
             AZ::u64         m_reservedDebug;            //!< Reserved memory for Debugging (allocation,etc.). Used only when m_grabAllMemory is set to true. (default: 0)
             Debug::AllocationRecords::Mode m_recordingMode; //!< When to record stack traces (default: AZ::Debug::AllocationRecords::RECORD_STACK_IF_NO_FILE_LINE)
             AZ::u64         m_stackRecordLevels;        //!< If stack recording is enabled, how many stack levels to record. (default: 5)
-            bool            m_enableDrilling;           //!< True to enabled drilling support for the application. RegisterDrillers will be called. Ignored in release. (default: true)
             bool            m_useOverrunDetection;      //!< True to use the overrun detection memory management scheme. Only available on some platforms; greatly increases memory consumption.
             bool            m_useMalloc;                //!< True to use malloc instead of the internal memory manager. Intended for debugging purposes only.
 
@@ -237,7 +237,7 @@ namespace AZ
         /**
          * Ticks all components using the \ref AZ::TickBus during simulation time. May not tick if the application is not active (i.e. not in focus)
          */
-        virtual void Tick(float deltaOverride = -1.f);
+        virtual void Tick();
 
         /**
         * Ticks all using the \ref AZ::SystemTickBus at all times. Should always tick even if the application is not active.
@@ -359,8 +359,6 @@ namespace AZ
             }
         }
 
-        AZStd::chrono::system_clock::time_point     m_currentTime{ AZStd::chrono::system_clock::time_point::max() };
-        float                                       m_deltaTime{ 0.0f };
         AZStd::unique_ptr<ModuleManager>            m_moduleManager;
         AZStd::unique_ptr<SettingsRegistryInterface> m_settingsRegistry;
         EntityAddedEvent                            m_entityAddedEvent;
@@ -380,6 +378,8 @@ namespace AZ
         AZ::SettingsRegistryInterface::NotifyEventHandler m_projectPathChangedHandler;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_projectNameChangedHandler;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_commandLineUpdatedHandler;
+
+        AZStd::unique_ptr<AZ::TimeSystem> m_timeSystem;
 
         // ConsoleFunctorHandle is responsible for unregistering the Settings Registry Console
         // from the m_console member when it goes out of scope

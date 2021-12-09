@@ -7,7 +7,6 @@
  */
 
 #include <Decals/DecalTextureArrayFeatureProcessor.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/Material/Material.h>

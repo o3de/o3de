@@ -12,7 +12,6 @@
 
 #include <AzCore/Debug/StackTracer.h>
 #include <AzCore/Debug/TraceMessageBus.h>
-#include <AzCore/Debug/TraceMessagesDrillerBus.h>
 #include <AzCore/Debug/IEventLogger.h>
 #include <AzCore/Interface/Interface.h>
 
@@ -27,25 +26,20 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/std/chrono/chrono.h>
 
-namespace AZ 
+namespace AZ::Debug
 {
-    namespace Debug
+    struct StackFrame;
+
+    namespace Platform
     {
-        struct StackFrame;
-
-        namespace Platform
-        {
 #if defined(AZ_ENABLE_DEBUG_TOOLS)
-            bool AttachDebugger();
-            bool IsDebuggerPresent();
-            void HandleExceptions(bool isEnabled);
-            void DebugBreak();
+        bool AttachDebugger();
+        bool IsDebuggerPresent();
+        void HandleExceptions(bool isEnabled);
+        void DebugBreak();
 #endif
-            void Terminate(int exitCode);
-        }
+        void Terminate(int exitCode);
     }
-
-    using namespace AZ::Debug;
 
     namespace DebugInternal
     {
@@ -60,7 +54,7 @@ namespace AZ
     // Globals
     const int       g_maxMessageLength = 4096;
     static const char*    g_dbgSystemWnd = "System";
-    Trace Debug::g_tracer;
+    Trace g_tracer;
     void* g_exceptionInfo = nullptr;
 
     // Environment var needed to track ignored asserts across systems and disable native UI under certain conditions
@@ -83,6 +77,7 @@ namespace AZ
     constexpr LogLevel DefaultLogLevel = LogLevel::Info;
 
     AZ_CVAR_SCOPED(int, bg_traceLogLevel, DefaultLogLevel, nullptr, ConsoleFunctorFlags::Null, "Enable trace message logging in release mode.  0=disabled, 1=errors, 2=warnings, 3=info.");
+    AZ_CVAR_SCOPED(bool, bg_alwaysShowCallstack, false, nullptr, ConsoleFunctorFlags::Null, "Force stack trace output without allowing ebus interception.");
 
     /**
      * If any listener returns true, store the result so we don't outputs detailed information.
@@ -280,10 +275,15 @@ namespace AZ
             logger->Flush(); // Flush as an assert may indicate a crash is imminent.
         }
 
-        EBUS_EVENT(TraceMessageDrillerBus, OnPreAssert, fileName, line, funcName, message);
-
         TraceMessageResult result;
         EBUS_EVENT_RESULT(result, TraceMessageBus, OnPreAssert, fileName, line, funcName, message);
+
+        if (bg_alwaysShowCallstack)
+        {
+            // If we're always showing the callstack, print it now before there's any chance of an ebus handler interrupting
+            PrintCallstack(g_dbgSystemWnd, 1);
+        }
+
         if (result.m_value)
         {
             g_alreadyHandlingAssertOrFatal = false;
@@ -299,7 +299,6 @@ namespace AZ
             azstrcat(message, g_maxMessageLength, "\n");
             Output(g_dbgSystemWnd, message);
 
-            EBUS_EVENT(TraceMessageDrillerBus, OnAssert, message);
             EBUS_EVENT_RESULT(result, TraceMessageBus, OnAssert, message);
             if (result.m_value)
             {
@@ -309,7 +308,10 @@ namespace AZ
             }
 
             Output(g_dbgSystemWnd, "------------------------------------------------\n");
-            PrintCallstack(g_dbgSystemWnd, 1);
+            if (!bg_alwaysShowCallstack)
+            {
+                PrintCallstack(g_dbgSystemWnd, 1);
+            }
             Output(g_dbgSystemWnd, "==================================================================\n");
 
             char dialogBoxText[g_maxMessageLength];
@@ -399,8 +401,6 @@ namespace AZ
             logger->RecordStringEvent(ErrorEventId, message);
         }
 
-        EBUS_EVENT(TraceMessageDrillerBus, OnPreError, window, fileName, line, funcName, message);
-
         TraceMessageResult result;
         EBUS_EVENT_RESULT(result, TraceMessageBus, OnPreError, window, fileName, line, funcName, message);
         if (result.m_value)
@@ -415,7 +415,6 @@ namespace AZ
         azstrcat(message, g_maxMessageLength, "\n");
         Output(window, message);
 
-        EBUS_EVENT(TraceMessageDrillerBus, OnError, window, message);
         EBUS_EVENT_RESULT(result, TraceMessageBus, OnError, window, message);
         Output(window, "==================================================================\n");
         if (result.m_value)
@@ -451,8 +450,6 @@ namespace AZ
             logger->RecordStringEvent(WarningEventId, message);
         }
 
-        EBUS_EVENT(TraceMessageDrillerBus, OnPreWarning, window, fileName, line, funcName, message);
-
         TraceMessageResult result;
         EBUS_EVENT_RESULT(result, TraceMessageBus, OnPreWarning, window, fileName, line, funcName, message);
         if (result.m_value)
@@ -466,7 +463,6 @@ namespace AZ
         azstrcat(message, g_maxMessageLength, "\n");
         Output(window, message);
 
-        EBUS_EVENT(TraceMessageDrillerBus, OnWarning, window, message);
         EBUS_EVENT_RESULT(result, TraceMessageBus, OnWarning, window, message);
         Output(window, "==================================================================\n");
     }
@@ -494,8 +490,6 @@ namespace AZ
         {
             logger->RecordStringEvent(PrintfEventId, message);
         }
-
-        EBUS_EVENT(TraceMessageDrillerBus, OnPrintf, window, message);
 
         TraceMessageResult result;
         EBUS_EVENT_RESULT(result, TraceMessageBus, OnPrintf, window, message);
@@ -525,7 +519,6 @@ namespace AZ
             // only call into Ebusses if we are not in a recursive-exception situation as that
             // would likely just lead to even more exceptions.
             
-            EBUS_EVENT(TraceMessageDrillerBus, OnOutput, window, message);
             TraceMessageResult result;
             EBUS_EVENT_RESULT(result, TraceMessageBus, OnOutput, window, message);
             if (result.m_value)
@@ -534,6 +527,16 @@ namespace AZ
             }
         }
 
+        RawOutput(window, message);
+    }
+
+    void Trace::RawOutput(const char* window, const char* message)
+    {
+        if (!window)
+        {
+            window = g_dbgSystemWnd;
+        }
+        
         // printf on Windows platforms seem to have a buffer length limit of 4096 characters
         // Therefore fwrite is used directly to write the window and message to stdout
         AZStd::string_view windowView{ window };
@@ -577,9 +580,19 @@ namespace AZ
                 }
 
                 azstrcat(lines[i], AZ_ARRAY_SIZE(lines[i]), "\n");
+
                 // Use Output instead of AZ_Printf to be consistent with the exception output code and avoid
                 // this accidentally being suppressed as a normal message
-                Output(window, lines[i]);
+
+                if (bg_alwaysShowCallstack)
+                {
+                    // Use Raw Output as this cannot be suppressed
+                    RawOutput(window, lines[i]);
+                }
+                else
+                {
+                    Output(window, lines[i]);
+                }
             }
         }
     }
@@ -616,4 +629,4 @@ namespace AZ
             val.Set(level);
         }
     }
-} // namspace AZ
+} // namspace AZ::Debug

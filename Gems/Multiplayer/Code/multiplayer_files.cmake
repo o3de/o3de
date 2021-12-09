@@ -13,6 +13,7 @@ set(FILES
     Include/Multiplayer/MultiplayerConstants.h
     Include/Multiplayer/MultiplayerStats.h
     Include/Multiplayer/MultiplayerTypes.h
+    Include/Multiplayer/MultiplayerEditorServerBus.h
     Include/Multiplayer/Components/LocalPredictionPlayerInputComponent.h
     Include/Multiplayer/Components/MultiplayerComponent.h
     Include/Multiplayer/Components/MultiplayerComponentRegistry.h
@@ -94,6 +95,8 @@ set(FILES
     Source/Editor/MultiplayerEditorConnection.h
     Source/EntityDomains/FullOwnershipEntityDomain.cpp
     Source/EntityDomains/FullOwnershipEntityDomain.h
+    Source/EntityDomains/NullEntityDomain.cpp
+    Source/EntityDomains/NullEntityDomain.h
     Source/MultiplayerStats.cpp
     Source/MultiplayerSystemComponent.cpp
     Source/MultiplayerSystemComponent.h

@@ -82,6 +82,7 @@ namespace AzFramework
         //
 
         void OnRootSpawnableAssigned(AZ::Data::Asset<Spawnable> rootSpawnable, uint32_t generation) override;
+        void OnRootSpawnableReady(AZ::Data::Asset<Spawnable> rootSpawnable, uint32_t generation) override;
         void OnRootSpawnableReleased(uint32_t generation) override;
         
     protected:

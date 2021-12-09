@@ -75,17 +75,16 @@ void CImageEx::ReverseUpDown()
     }
 
     uint32* pPixData = GetData();
-    uint32* pReversePix = new uint32[GetWidth() * GetHeight()];
-
-    for (int i = GetHeight() - 1, i2 = 0; i >= 0; i--, i2++)
+    const int height = GetHeight();
+    const int width = GetWidth(); 
+    for (int i = 0; i < height / 2; i++)
     {
-        for (int k = 0; k < GetWidth(); k++)
+        for (int j = 0; j < width; j++)
         {
-            pReversePix[i2 * GetWidth() + k] = pPixData[i * GetWidth() + k];
+            AZStd::swap(pPixData[i * width + j], pPixData[(height - 1 - i) * width + j]);
         }
     }
 
-    Attach(pReversePix, GetWidth(), GetHeight());
 }
 
 void CImageEx::FillAlpha(unsigned char value)

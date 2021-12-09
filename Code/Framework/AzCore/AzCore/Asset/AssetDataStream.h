@@ -70,6 +70,9 @@ namespace AZ::Data
 
         const char* GetFilename() const override { return m_filePath.c_str(); }
 
+        AZStd::chrono::milliseconds GetStreamingDeadline() const { return m_curDeadline; }
+        AZ::IO::IStreamerTypes::Priority GetStreamingPriority() const { return m_curPriority; }
+
         // AssetDataStream specific APIs
 
         //! Whether or not all data has been loaded.

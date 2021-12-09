@@ -11,7 +11,6 @@
 
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Memory/AllocationRecords.h>
-#include <AzCore/Memory/MemoryDrillerBus.h>
 
 #include <AzCore/std/functional.h>
 
@@ -248,14 +247,6 @@ SystemAllocator::Allocate(size_type byteSize, size_type alignment, int flags, co
     if (address == nullptr)
     {
         byteSize = MemorySizeAdjustedDown(byteSize);  // restore original size
-
-        if (!OnOutOfMemory(byteSize, alignment, flags, name, fileName, lineNum))
-        {
-            if (GetRecords())
-            {
-                EBUS_EVENT(Debug::MemoryDrillerBus, DumpAllAllocations);
-            }
-        }
     }
 
     AZ_Assert(address != nullptr, "SystemAllocator: Failed to allocate %d bytes aligned on %d (flags: 0x%08x) %s : %s (%d)!", byteSize, alignment, flags, name ? name : "(no name)", fileName ? fileName : "(no file name)", lineNum);

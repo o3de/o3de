@@ -100,7 +100,7 @@ namespace AZ
                     ->Field("pipelineStateType", &ShaderAsset::m_pipelineStateType)
                     ->Field("shaderOptionGroupLayout", &ShaderAsset::m_shaderOptionGroupLayout)
                     ->Field("drawListName", &ShaderAsset::m_drawListName)
-                    ->Field("shaderAssetBuildTimestamp", &ShaderAsset::m_shaderAssetBuildTimestamp)
+                    ->Field("shaderAssetBuildTimestamp", &ShaderAsset::m_buildTimestamp)
                     ->Field("perAPIShaderData", &ShaderAsset::m_perAPIShaderData)
                     ;
             }
@@ -133,11 +133,11 @@ namespace AZ
             return m_drawListName;
         }
 
-        AZStd::sys_time_t ShaderAsset::GetShaderAssetBuildTimestamp() const
+        AZStd::sys_time_t ShaderAsset::GetBuildTimestamp() const
         {
-            return m_shaderAssetBuildTimestamp;
+            return m_buildTimestamp;
         }
-
+        
         void ShaderAsset::SetReady()
         {
             m_status = AssetStatus::Ready;
@@ -255,7 +255,7 @@ namespace AZ
                 }
                 return GetRootVariant(supervariantIndex);
             }
-            else if (variant->GetBuildTimestamp() >= m_shaderAssetBuildTimestamp)
+            else if (variant->GetBuildTimestamp() >= m_buildTimestamp)
             {
                 return variant;
             }

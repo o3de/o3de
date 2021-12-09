@@ -81,7 +81,7 @@ namespace AZ::SceneAPI::Behaviors
         m_exportEventHandler.reset();
     }
 
-    AZStd::unique_ptr<rapidjson::Document> PrefabGroupBehavior::CreateProductAssetData(const SceneData::PrefabGroup* prefabGroup) const
+    AZStd::unique_ptr<rapidjson::Document> PrefabGroupBehavior::CreateProductAssetData(const SceneData::PrefabGroup* prefabGroup, const AZ::IO::Path& relativePath) const
     {
         using namespace AzToolsFramework::Prefab;
 
@@ -109,8 +109,12 @@ namespace AZ::SceneAPI::Behaviors
             return {};
         }
 
-        // validate the PrefabDom will make a valid Prefab template instance
-        auto templateId = prefabLoaderInterface->LoadTemplateFromString(sb.GetString(), prefabGroup->GetName().c_str());
+        // The originPath we pass to LoadTemplateFromString must be the relative path of the file
+        AZ::IO::Path templateName(prefabGroup->GetName());
+        templateName.ReplaceExtension(AZ::Prefab::PrefabGroupAssetHandler::s_Extension);
+        templateName = relativePath / templateName;
+
+        auto templateId = prefabLoaderInterface->LoadTemplateFromString(sb.GetString(), templateName.Native().c_str());
         if (templateId == InvalidTemplateId)
         {
             AZ_Error("prefab", false, "PrefabGroup(%s) Could not write load template", prefabGroup->GetName().c_str());
@@ -136,22 +140,8 @@ namespace AZ::SceneAPI::Behaviors
         const SceneData::PrefabGroup* prefabGroup,
         const rapidjson::Document& doc) const
     {
-        // Retrieve source asset info so we can get a string with the relative path to the asset
-        bool assetInfoResult;
-        Data::AssetInfo info;
-        AZStd::string watchFolder;
-        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-            assetInfoResult,
-            &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath,
-            context.GetScene().GetSourceFilename().c_str(),
-            info,
-            watchFolder);
-
-        AZ::IO::FixedMaxPath assetPath(info.m_relativePath);
-        assetPath.ReplaceFilename(prefabGroup->GetName().c_str());
-
         AZStd::string filePath = AZ::SceneAPI::Utilities::FileUtilities::CreateOutputFileName(
-            assetPath.c_str(),
+            prefabGroup->GetName().c_str(),
             context.GetOutputDirectory(),
             AZ::Prefab::PrefabGroupAssetHandler::s_Extension);
 
@@ -174,7 +164,7 @@ namespace AZ::SceneAPI::Behaviors
         const auto bytesWritten = fileStream.Write(sb.GetSize(), sb.GetString());
         if (bytesWritten > 1)
         {
-            AZ::u32 subId = AZ::Crc32(assetPath.c_str());
+            AZ::u32 subId = AZ::Crc32(prefabGroup->GetName().c_str());
             context.GetProductList().AddProduct(
                 filePath,
                 context.GetScene().GetSourceGuid(),
@@ -206,9 +196,14 @@ namespace AZ::SceneAPI::Behaviors
             return AZ::SceneAPI::Events::ProcessingResult::Ignored;
         }
 
+        // Get the relative path of the source and then take just the path portion of it (no file name)
+        AZ::IO::Path relativePath = context.GetScene().GetSourceFilename();
+        relativePath = relativePath.LexicallyRelative(AZStd::string_view(context.GetScene().GetWatchFolder()));
+        relativePath = relativePath.ParentPath();
+
         for (const auto* prefabGroup : prefabGroupCollection)
         {
-            auto result = CreateProductAssetData(prefabGroup);
+            auto result = CreateProductAssetData(prefabGroup, relativePath);
             if (!result)
             {
                 return Events::ProcessingResult::Failure;

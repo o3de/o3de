@@ -27,7 +27,10 @@ namespace EMStudio
 
     AtomRenderPlugin::~AtomRenderPlugin()
     {
-
+        GetCommandManager()->RemoveCommandCallback(m_importActorCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_removeActorCallback, false);
+        delete m_importActorCallback;
+        delete m_removeActorCallback;
     }
 
     const char* AtomRenderPlugin::GetName() const
@@ -75,6 +78,11 @@ namespace EMStudio
         return EMStudioPlugin::PLUGINTYPE_RENDERING;
     }
 
+    QWidget* AtomRenderPlugin::GetInnerWidget()
+    {
+        return m_innerWidget;
+    }
+
     void AtomRenderPlugin::ReinitRenderer()
     {
         m_animViewportWidget->Reinit();
@@ -82,6 +90,8 @@ namespace EMStudio
 
     bool AtomRenderPlugin::Init()
     {
+        LoadRenderOptions();
+
         m_innerWidget = new QWidget();
         m_dock->setWidget(m_innerWidget);
 
@@ -90,12 +100,14 @@ namespace EMStudio
         verticalLayout->setSpacing(1);
         verticalLayout->setMargin(0);
 
+        // Add the viewport widget
+        m_animViewportWidget = new AnimViewportWidget(this);
+
         // Add the tool bar
         AnimViewportToolBar* toolBar = new AnimViewportToolBar(m_innerWidget);
-        verticalLayout->addWidget(toolBar);
+        toolBar->SetRenderFlags(m_animViewportWidget->GetRenderFlags());
 
-        // Add the viewport widget
-        m_animViewportWidget = new AnimViewportWidget(m_innerWidget);
+        verticalLayout->addWidget(toolBar);
         verticalLayout->addWidget(m_animViewportWidget);
 
         // Register command callbacks.
@@ -105,6 +117,19 @@ namespace EMStudio
         EMStudioManager::GetInstance()->GetCommandManager()->RegisterCommandCallback("RemoveActor", m_removeActorCallback);
 
         return true;
+    }
+
+    void AtomRenderPlugin::LoadRenderOptions()
+    {
+        AZStd::string renderOptionsFilename(GetManager()->GetAppDataFolder());
+        renderOptionsFilename += "EMStudioRenderOptions.cfg";
+        QSettings settings(renderOptionsFilename.c_str(), QSettings::IniFormat, this);
+        m_renderOptions = RenderOptions::Load(&settings);
+    }
+
+    const RenderOptions* AtomRenderPlugin::GetRenderOptions() const
+    {
+        return &m_renderOptions;
     }
 
     // Command callbacks

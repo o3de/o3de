@@ -432,6 +432,7 @@ public:
 class CCrySingleDocTemplate
     : public QObject
 {
+    Q_OBJECT
 private:
     explicit CCrySingleDocTemplate(const QMetaObject* pDocClass)
         : QObject()

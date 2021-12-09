@@ -25,13 +25,13 @@ namespace AWSGameLift
         AWSGameLiftSearchSessionsRequest() = default;
         virtual ~AWSGameLiftSearchSessionsRequest() = default;
 
-        // A unique identifier for the alias associated with the fleet to search for active game sessions.
+        //! A unique identifier for the alias associated with the fleet to search for active game sessions.
         AZStd::string m_aliasId;
 
-        // A unique identifier for the fleet to search for active game sessions.
+        //! A unique identifier for the fleet to search for active game sessions.
         AZStd::string m_fleetId;
 
-        // A fleet location to search for game sessions.
+        //! A fleet location to search for game sessions.
         AZStd::string m_location;
     };
 } // namespace AWSGameLift

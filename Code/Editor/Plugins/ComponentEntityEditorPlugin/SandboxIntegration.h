@@ -76,6 +76,7 @@ namespace AzToolsFramework
 {
     class EditorEntityAPI;
     class EditorEntityUiInterface;
+    class ReadOnlyEntityPublicInterface;
 
     namespace AssetBrowser
     {
@@ -295,6 +296,7 @@ private:
     AzToolsFramework::EditorEntityUiInterface* m_editorEntityUiInterface = nullptr;
     AzToolsFramework::Prefab::PrefabIntegrationInterface* m_prefabIntegrationInterface = nullptr;
     AzToolsFramework::EditorEntityAPI* m_editorEntityAPI = nullptr;
+    AzToolsFramework::ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
 
     // Overrides UI styling and behavior for Layer Entities
     AzToolsFramework::LayerUiHandler m_layerUiOverrideHandler;
@@ -306,19 +308,13 @@ class CToolsApplicationUndoLink
 {
 public:
 
-    CToolsApplicationUndoLink(const char* description)
-        : m_description(description)
+    CToolsApplicationUndoLink()
     {
     }
 
     int GetSize() override
     {
         return 0;
-    }
-
-    QString GetDescription() override
-    {
-        return m_description.c_str();
     }
 
     void Undo(bool bUndo = true) override
@@ -354,8 +350,6 @@ public:
             w->setFocus(Qt::OtherFocusReason);
         }
     }
-
-    AZStd::string m_description;
 };
 
 #endif // CRYINCLUDE_COMPONENTENTITYEDITORPLUGIN_SANDBOXINTEGRATION_H

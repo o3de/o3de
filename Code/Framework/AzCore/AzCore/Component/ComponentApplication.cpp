@@ -45,12 +45,9 @@
 #include <AzCore/Module/Module.h>
 #include <AzCore/Module/ModuleManager.h>
 
+#include <AzCore/IO/Path/PathReflect.h>
 #include <AzCore/IO/SystemFile.h>
 
-#include <AzCore/Driller/Driller.h>
-#include <AzCore/Memory/MemoryDriller.h>
-#include <AzCore/Debug/TraceMessagesDriller.h>
-#include <AzCore/Debug/EventTraceDriller.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Script/ScriptSystemBus.h>
 
@@ -72,6 +69,7 @@
 
 #include <AzCore/Module/Environment.h>
 #include <AzCore/std/string/conversions.h>
+#include <AzCore/Time/TimeSystem.h>
 
 static void PrintEntityName(const AZ::ConsoleCommandContainer& arguments)
 {
@@ -154,7 +152,6 @@ namespace AZ
         m_reservedDebug = 0;
         m_recordingMode = Debug::AllocationRecords::RECORD_STACK_IF_NO_FILE_LINE;
         m_stackRecordLevels = 5;
-        m_enableDrilling = false;
         m_useOverrunDetection = false;
         m_useMalloc = false;
     }
@@ -326,7 +323,6 @@ namespace AZ
                 ->Field("blockSize", &Descriptor::m_memoryBlocksByteSize)
                 ->Field("reservedOS", &Descriptor::m_reservedOS)
                 ->Field("reservedDebug", &Descriptor::m_reservedDebug)
-                ->Field("enableDrilling", &Descriptor::m_enableDrilling)
                 ->Field("useOverrunDetection", &Descriptor::m_useOverrunDetection)
                 ->Field("useMalloc", &Descriptor::m_useMalloc)
                 ->Field("allocatorRemappings", &Descriptor::m_allocatorRemappings)
@@ -365,7 +361,6 @@ namespace AZ
                         ->Attribute(Edit::Attributes::Step, &Descriptor::m_pageSize)
                     ->DataElement(Edit::UIHandlers::SpinBox, &Descriptor::m_reservedOS, "OS reserved memory", "System memory reserved for OS (used only when 'Allocate all memory at startup' is true)")
                     ->DataElement(Edit::UIHandlers::SpinBox, &Descriptor::m_reservedDebug, "Memory reserved for debugger", "System memory reserved for Debug allocator, like memory tracking (used only when 'Allocate all memory at startup' is true)")
-                    ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_enableDrilling, "Enable Driller", "Enable Drilling support for the application (ignored in Release builds)")
                     ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_useOverrunDetection, "Use Overrun Detection", "Use the overrun detection memory manager (only available on some platforms, ignored in Release builds)")
                     ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_useMalloc, "Use Malloc", "Use malloc for memory allocations (for memory debugging only, ignored in Release builds)")
                     ;
@@ -416,6 +411,7 @@ namespace AZ
 
     ComponentApplication::ComponentApplication(int argC, char** argV)
         : m_eventLogger{}
+        , m_timeSystem(AZStd::make_unique<TimeSystem>())
     {
         if (Interface<ComponentApplicationRequests>::Get() == nullptr)
         {
@@ -483,9 +479,11 @@ namespace AZ
 
         // Merge Command Line arguments
         constexpr bool executeRegDumpCommands = false;
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_settingsRegistry, m_commandLine, executeRegDumpCommands);
 
+#if defined(AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD)
+        // Skip over merging the User Registry in non-debug and profile configurations
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(*m_settingsRegistry, AZ_TRAIT_OS_PLATFORM_CODENAME, {});
+#endif
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_settingsRegistry, m_commandLine, executeRegDumpCommands);
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*m_settingsRegistry);
 
@@ -573,7 +571,6 @@ namespace AZ
 
         DestroyAllocator();
     }
-
 
     void ReportBadEngineRoot()
     {
@@ -677,7 +674,6 @@ namespace AZ
 
         ComponentApplicationBus::Handler::BusConnect();
 
-        m_currentTime = AZStd::chrono::system_clock::now();
         TickRequestBus::Handler::BusConnect();
 
 #if defined(AZ_ENABLE_DEBUG_TOOLS)
@@ -1413,31 +1409,23 @@ namespace AZ
 #endif
     }
 
-    void ComponentApplication::Tick(float deltaOverride /*= -1.f*/)
+    void ComponentApplication::Tick()
     {
+        AZ_PROFILE_SCOPE(System, "Component application simulation tick");
+
         {
-            AZ_PROFILE_SCOPE(System, "Component application simulation tick");
-
-            AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
-
-            m_deltaTime = 0.0f;
-
-            if (now >= m_currentTime)
-            {
-                AZStd::chrono::duration<float> delta = now - m_currentTime;
-                m_deltaTime = deltaOverride >= 0.f ? deltaOverride : delta.count();
-            }
-
-            {
-                AZ_PROFILE_SCOPE(AzCore, "ComponentApplication::Tick:ExecuteQueuedEvents");
-                TickBus::ExecuteQueuedEvents();
-            }
-            m_currentTime = now;
-            {
-                AZ_PROFILE_SCOPE(AzCore, "ComponentApplication::Tick:OnTick");
-                EBUS_EVENT(TickBus, OnTick, m_deltaTime, ScriptTimePoint(now));
-            }
+            AZ_PROFILE_SCOPE(AzCore, "ComponentApplication::Tick:ExecuteQueuedEvents");
+            TickBus::ExecuteQueuedEvents();
         }
+
+        {
+            AZ_PROFILE_SCOPE(AzCore, "ComponentApplication::Tick:OnTick");
+            const AZ::TimeUs deltaTimeUs = m_timeSystem->AdvanceTickDeltaTimes();
+            const float deltaTimeSeconds = AZ::TimeUsToSeconds(deltaTimeUs);
+            AZ::TickBus::Broadcast(&TickEvents::OnTick, deltaTimeSeconds, GetTimeAtCurrentTick());
+        }
+
+        m_timeSystem->ApplyTickRateLimiterIfNeeded();
     }
 
     void ComponentApplication::TickSystem()
@@ -1519,13 +1507,10 @@ namespace AZ
         appType.m_maskValue = AZ::ApplicationTypeQuery::Masks::Invalid;
     }
 
-    //=========================================================================
-    // GetFrameTime
-    // [1/22/2016]
-    //=========================================================================
     float ComponentApplication::GetTickDeltaTime()
     {
-        return m_deltaTime;
+        const AZ::TimeUs gameTickTime = m_timeSystem->GetSimulationTickDeltaTimeUs();
+        return AZ::TimeUsToSeconds(gameTickTime);
     }
 
     //=========================================================================
@@ -1534,7 +1519,8 @@ namespace AZ
     //=========================================================================
     ScriptTimePoint ComponentApplication::GetTimeAtCurrentTick()
     {
-        return ScriptTimePoint(m_currentTime);
+        const AZ::TimeUs lastGameTickTime = m_timeSystem->GetLastSimulationTickTime();
+        return ScriptTimePoint(AZ::TimeUsToChrono(lastGameTickTime));
     }
 
     //=========================================================================
@@ -1557,7 +1543,7 @@ namespace AZ
         // reflect name dictionary.
         Name::Reflect(context);
         // reflect path
-        IO::PathReflection::Reflect(context);
+        IO::PathReflect(context);
 
         // reflect the SettingsRegistryInterface, SettignsRegistryImpl and the global Settings Registry
         // instance (AZ::SettingsRegistry::Get()) into the Behavior Context

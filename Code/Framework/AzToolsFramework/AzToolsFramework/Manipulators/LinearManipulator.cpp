@@ -207,7 +207,7 @@ namespace AzToolsFramework
             ? AZ::Transform::CreateFromQuaternionAndTranslation(m_visualOrientationOverride, GetLocalPosition())
             : GetLocalTransform();
 
-        if (cl_manipulatorDrawDebug)
+        if (ed_manipulatorDrawDebug)
         {
             if (PerformingAction())
             {
@@ -239,8 +239,8 @@ namespace AzToolsFramework
 
             view->Draw(
                 GetManipulatorManagerId(), managerState, GetManipulatorId(),
-                { ApplySpace(localTransform), GetNonUniformScale(), AZ::Vector3::CreateZero(), MouseOver() }, debugDisplay, cameraState,
-                mouseInteraction);
+                ManipulatorState{ ApplySpace(localTransform), GetNonUniformScale(), AZ::Vector3::CreateZero(), MouseOver() }, debugDisplay,
+                cameraState, mouseInteraction);
         }
     }
 

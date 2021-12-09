@@ -130,6 +130,15 @@ struct MultiplatformPathDependencyTest
     void SetUp() override;
 };
 
+struct WildcardSourceDependencyTest
+    :  AssetProcessorManagerTest
+{
+    bool Test(const AZStd::string& dependencyPath, AZStd::vector<AZStd::string>& resolvedPaths);
+    AZStd::vector<AZStd::string> FileAddedTest(const QString& path);
+
+    void SetUp() override;
+};
+
 struct MockBuilderInfoHandler
     : public AssetProcessor::AssetBuilderInfoBus::Handler
 {

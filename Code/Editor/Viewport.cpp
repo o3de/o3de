@@ -14,14 +14,11 @@
 // Qt
 #include <QPainter>
 
-// AzCore
-#include <AzCore/Console/IConsole.h>
-
 // AzQtComponents
 #include <AzQtComponents/DragAndDrop/ViewportDragAndDrop.h>
 
+// AzToolsFramework
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
-#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
@@ -41,19 +38,6 @@
 #undef LoadCursor
 #endif
 
-AZ_CVAR(
-    float,
-    ed_defaultEntityPlacementDistance,
-    10.0f,
-    nullptr,
-    AZ::ConsoleFunctorFlags::Null,
-    "The default distance to place an entity from the camera if no intersection is found");
-
-float GetDefaultEntityPlacementDistance()
-{
-    return ed_defaultEntityPlacementDistance;
-}
-
 //////////////////////////////////////////////////////////////////////
 // Viewport drag and drop support
 //////////////////////////////////////////////////////////////////////
@@ -63,7 +47,7 @@ void QtViewport::BuildDragDropContext(
 {
     context.m_hitLocation = AzToolsFramework::FindClosestPickIntersection(
         viewportId, AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(point), AzToolsFramework::EditorPickRayLength,
-        GetDefaultEntityPlacementDistance());
+        AzToolsFramework::GetDefaultEntityPlacementDistance());
 }
 
 void QtViewport::dragEnterEvent(QDragEnterEvent* event)
@@ -1062,11 +1046,6 @@ Vec3 QtViewport::SnapToGrid(const Vec3& vec)
     return vec;
 }
 
-float QtViewport::GetGridStep() const
-{
-    return 0.0f;
-}
-
 //////////////////////////////////////////////////////////////////////////
 void QtViewport::BeginUndo()
 {
@@ -1119,30 +1098,6 @@ bool QtViewport::IsBoundsVisible([[maybe_unused]] const AABB& box) const
 {
     // Always visible in standard implementation.
     return true;
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool QtViewport::HitTestLine(const Vec3& lineP1, const Vec3& lineP2, const QPoint& hitpoint, int pixelRadius, float* pToCameraDistance) const
-{
-    float dist = GetDistanceToLine(lineP1, lineP2, hitpoint);
-    if (dist <= pixelRadius)
-    {
-        if (pToCameraDistance)
-        {
-            Vec3 raySrc, rayDir;
-            ViewToWorldRay(hitpoint, raySrc, rayDir);
-            Vec3 rayTrg = raySrc + rayDir * 10000.0f;
-
-            Vec3 pa, pb;
-            float mua, mub;
-            LineLineIntersect(lineP1, lineP2, raySrc, rayTrg, pa, pb, mua, mub);
-            *pToCameraDistance = mub;
-        }
-
-        return true;
-    }
-
-    return false;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1223,6 +1178,69 @@ void QtViewport::ProcessRenderLisneters(DisplayContext& rstDisplayContext)
 }
 //////////////////////////////////////////////////////////////////////////
 #if defined(AZ_PLATFORM_WINDOWS)
+// Note: Both CreateAnglesYPR and CreateOrientationYPR were copied verbatim from Cry_Camera.h which has been removed.
+// 
+// Description
+//   <PRE>
+//   x-YAW
+//   y-PITCH (negative=looking down / positive=looking up)
+//   z-ROLL
+//   </PRE>
+// Note: If we are looking along the z-axis, its not possible to specify the x and z-angle
+inline Ang3 CreateAnglesYPR(const Matrix33& m)
+{
+    assert(m.IsOrthonormal());
+    float l = Vec3(m.m01, m.m11, 0.0f).GetLength();
+    if (l > 0.0001)
+    {
+        return Ang3(atan2f(-m.m01 / l, m.m11 / l), atan2f(m.m21, l), atan2f(-m.m20 / l, m.m22 / l));
+    }
+    else
+    {
+        return Ang3(0, atan2f(m.m21, l), 0);
+    }
+}
+
+// Description
+//  This function builds a 3x3 orientation matrix using YPR-angles
+//  Rotation order for the orientation-matrix is Z-X-Y. (Zaxis=YAW / Xaxis=PITCH / Yaxis=ROLL)
+//
+// <PRE>
+//  COORDINATE-SYSTEM
+//
+//  z-axis
+//    ^
+//    |
+//    |  y-axis
+//    |  /
+//    | /
+//    |/
+//    +--------------->   x-axis
+// </PRE>
+//
+//  Example:
+//      Matrix33 orientation=CreateOrientationYPR( Ang3(1,2,3) );
+inline Matrix33 CreateOrientationYPR(const Ang3& ypr)
+{
+    f32 sz, cz;
+    sincos_tpl(ypr.x, &sz, &cz);            //Zaxis = YAW
+    f32 sx, cx;
+    sincos_tpl(ypr.y, &sx, &cx);            //Xaxis = PITCH
+    f32 sy, cy;
+    sincos_tpl(ypr.z, &sy, &cy);            //Yaxis = ROLL
+    Matrix33 c;
+    c.m00 = cy * cz - sy * sz * sx;
+    c.m01 = -sz * cx;
+    c.m02 = sy * cz + cy * sz * sx;
+    c.m10 = cy * sz + sy * sx * cz;
+    c.m11 = cz * cx;
+    c.m12 = sy * sz - cy * sx * cz;
+    c.m20 = -sy * cx;
+    c.m21 = sx;
+    c.m22 = cy * cx;
+    return c;
+}
+
 void QtViewport::OnRawInput([[maybe_unused]] UINT wParam, HRAWINPUT lParam)
 {
     static C3DConnexionDriver* p3DConnexionDriver = 0;
@@ -1266,12 +1284,12 @@ void QtViewport::OnRawInput([[maybe_unused]] UINT wParam, HRAWINPUT lParam)
                     t *= sys_scale3DMouseTranslation->GetFVal();
 
                     float as = 0.001f * gSettings.cameraMoveSpeed;
-                    Ang3 ypr = CCamera::CreateAnglesYPR(Matrix33(viewTM));
+                    Ang3 ypr = CreateAnglesYPR(Matrix33(viewTM));
                     ypr.x += -all6DOFs[5] * as * fScaleYPR;
                     ypr.y = AZStd::clamp(ypr.y + all6DOFs[3] * as * fScaleYPR, -1.5f, 1.5f); // to keep rotation in reasonable range
                     ypr.z = 0;                                                  // to have camera always upward
 
-                    viewTM = Matrix34(CCamera::CreateOrientationYPR(ypr), viewTM.GetTranslation());
+                    viewTM = Matrix34(CreateOrientationYPR(ypr), viewTM.GetTranslation());
                     viewTM = viewTM * Matrix34::CreateTranslationMat(t);
 
                     SetViewTM(viewTM);
@@ -1286,19 +1304,13 @@ float QtViewport::GetFOV() const
 {
     return gSettings.viewports.fDefaultFov;
 }
+
 //////////////////////////////////////////////////////////////////////////
 void QtViewport::setRay(QPoint& vp, Vec3& raySrc, Vec3& rayDir)
 {
     m_vp = vp;
     m_raySrc = raySrc;
     m_rayDir = rayDir;
-}
-////////////////////////////////////////////////////////////////////////
-void QtViewport::setHitcontext(QPoint& vp, Vec3& raySrc, Vec3& rayDir)
-{
-    vp = m_vp;
-    raySrc = m_raySrc;
-    rayDir = m_rayDir;
 }
 
 #include <moc_Viewport.cpp>

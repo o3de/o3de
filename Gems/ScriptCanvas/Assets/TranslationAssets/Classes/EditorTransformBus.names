@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "base": "EditorTransformBus",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "EditorTransformBus"
+            }
+        }
+    ]
+}

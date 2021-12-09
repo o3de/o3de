@@ -9,8 +9,6 @@
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Debug/EventTrace.h>
-
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI/ImagePool.h>

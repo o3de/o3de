@@ -36,7 +36,6 @@ set(FILES
     include/LmbrCentral/Rendering/MaterialHandle.h
     include/LmbrCentral/Rendering/MeshAsset.h
     include/LmbrCentral/Rendering/MeshModificationBus.h
-    include/LmbrCentral/Rendering/RenderNodeBus.h
     include/LmbrCentral/Rendering/GiRegistrationBus.h
     include/LmbrCentral/Rendering/RenderBoundsBus.h
     include/LmbrCentral/Scripting/EditorTagComponentBus.h
@@ -57,6 +56,7 @@ set(FILES
     include/LmbrCentral/Shape/SplineComponentBus.h
     include/LmbrCentral/Shape/PolygonPrismShapeComponentBus.h
     include/LmbrCentral/Shape/TubeShapeComponentBus.h
+    include/LmbrCentral/Shape/ReferenceShapeComponentBus.h
     include/LmbrCentral/Shape/SplineAttribute.h
     include/LmbrCentral/Shape/SplineAttribute.inl
     include/LmbrCentral/Terrain/TerrainSystemRequestBus.h

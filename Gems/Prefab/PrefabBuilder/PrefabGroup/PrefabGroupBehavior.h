@@ -12,6 +12,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/IO/Path/Path.h>
 #include <SceneAPI/SceneCore/Events/ProcessingResult.h>
 #include <SceneAPI/SceneCore/Components/BehaviorComponent.h>
 #include <AzCore/JSON/rapidjson.h>
@@ -42,7 +43,7 @@ namespace AZ::SceneAPI::Behaviors
 
     private:
         Events::ProcessingResult OnPrepareForExport(Events::PreExportEventContext& context) const;
-        AZStd::unique_ptr<rapidjson::Document> CreateProductAssetData(const SceneData::PrefabGroup* prefabGroup) const;
+        AZStd::unique_ptr<rapidjson::Document> CreateProductAssetData(const SceneData::PrefabGroup* prefabGroup, const AZ::IO::Path& relativePath) const;
 
         bool WriteOutProductAsset(
             Events::PreExportEventContext& context,

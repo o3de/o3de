@@ -9,53 +9,51 @@
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Asset/AssetManagerBus.h>
+#include <ScriptCanvas/Core/Core.h>
 
 namespace ScriptCanvasEditor
 {
     namespace VersionExplorer
     {
-        struct WorkingAsset
-        {
-            AZ::Data::Asset<AZ::Data::AssetData> asset;
-            AZ::Data::AssetInfo info;
-        };
-
-        using WorkingAssets = AZStd::vector<WorkingAsset>;
-
         struct ModifyConfiguration
         {
-            AZStd::function<void(AZ::Data::Asset<AZ::Data::AssetData>)> modification;
+            AZStd::function<void(SourceHandle&)> modification;
             AZStd::function<bool()> onReadOnlyFile;
-            AZ::Data::AssetInfo modifySingleAsset;
+            SourceHandle modifySingleAsset;
             bool backupGraphBeforeModification = false;
             bool successfulDependencyUpgradeRequired = true;
         };
 
         struct ModificationResult
         {
-            AZ::Data::Asset<AZ::Data::AssetData> asset;
-            AZ::Data::AssetInfo assetInfo;
+            SourceHandle asset;
             AZStd::string errorMessage;
         };
 
         struct ModificationResults
         {
-            AZStd::vector<AZ::Data::AssetInfo> m_successes;
+            AZStd::vector<SourceHandle> m_successes;
             AZStd::vector<ModificationResult> m_failures;
         };
 
         struct ScanConfiguration
         {
-            AZStd::function<bool(AZ::Data::Asset<AZ::Data::AssetData>)> filter;
+            enum class Filter
+            {
+                Include,
+                Exclude
+            };
+
+            AZStd::function<Filter(const SourceHandle&)> filter;
             bool reportFilteredGraphs = false;
         };
 
         struct ScanResult
         {
-            AZStd::vector<AZ::Data::AssetInfo> m_catalogAssets;
-            WorkingAssets m_unfiltered;
-            AZStd::vector<AZ::Data::AssetInfo> m_filteredAssets;
-            AZStd::vector<AZ::Data::AssetInfo> m_loadErrors;
+            AZStd::vector<SourceHandle> m_catalogAssets;
+            AZStd::vector<SourceHandle> m_unfiltered;
+            AZStd::vector<SourceHandle> m_filteredAssets;
+            AZStd::vector<SourceHandle> m_loadErrors;
         };
 
         enum Result
@@ -88,20 +86,20 @@ namespace ScriptCanvasEditor
         public:
             virtual void OnScanBegin(size_t assetCount) = 0;
             virtual void OnScanComplete(const ScanResult& result) = 0;
-            virtual void OnScanFilteredGraph(const AZ::Data::AssetInfo& info) = 0;
-            virtual void OnScanLoadFailure(const AZ::Data::AssetInfo& info) = 0;
-            virtual void OnScanUnFilteredGraph(const AZ::Data::AssetInfo& info) = 0;
+            virtual void OnScanFilteredGraph(const SourceHandle& info) = 0;
+            virtual void OnScanLoadFailure(const SourceHandle& info) = 0;
+            virtual void OnScanUnFilteredGraph(const SourceHandle& info) = 0;
 
-            virtual void OnUpgradeBegin(const ModifyConfiguration& config, const WorkingAssets& assets) = 0;
+            virtual void OnUpgradeBegin(const ModifyConfiguration& config, const AZStd::vector<SourceHandle>& assets) = 0;
             virtual void OnUpgradeComplete(const ModificationResults& results) = 0;
-            virtual void OnUpgradeDependenciesGathered(const AZ::Data::AssetInfo& info, Result result) = 0;
-            virtual void OnUpgradeDependencySortBegin(const ModifyConfiguration& config, const WorkingAssets& assets) = 0;
+            virtual void OnUpgradeDependenciesGathered(const SourceHandle& info, Result result) = 0;
+            virtual void OnUpgradeDependencySortBegin(const ModifyConfiguration& config, const AZStd::vector<SourceHandle>& assets) = 0;
             virtual void OnUpgradeDependencySortEnd
                 ( const ModifyConfiguration& config
-                , const WorkingAssets& assets
+                , const AZStd::vector<SourceHandle>& assets
                 , const AZStd::vector<size_t>& sortedOrder) = 0;
-            virtual void OnUpgradeModificationBegin(const ModifyConfiguration& config, const AZ::Data::AssetInfo& info) = 0;
-            virtual void OnUpgradeModificationEnd(const ModifyConfiguration& config, const AZ::Data::AssetInfo& info, ModificationResult result) = 0;
+            virtual void OnUpgradeModificationBegin(const ModifyConfiguration& config, const SourceHandle& info) = 0;
+            virtual void OnUpgradeModificationEnd(const ModifyConfiguration& config, const SourceHandle& info, ModificationResult result) = 0;
         };
         using ModelNotificationsBus = AZ::EBus<ModelNotificationsTraits>;
     }

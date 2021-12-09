@@ -14,8 +14,6 @@
 #include <RHI/Device.h>
 #include <RHI/Image.h>
 #include <RHI/ImageView.h>
-#include <AzCore/Debug/EventTrace.h>
-
 
 namespace AZ
 {

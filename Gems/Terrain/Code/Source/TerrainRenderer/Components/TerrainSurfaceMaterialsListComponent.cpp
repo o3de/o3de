@@ -126,6 +126,9 @@ namespace Terrain
                 AZ::Data::AssetBus::MultiHandler::BusConnect(surfaceMaterialMapping.m_materialAsset.GetId());
             }
         }
+
+        // Announce initial shape using OnShapeChanged
+        OnShapeChanged(LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
     }
 
     void TerrainSurfaceMaterialsListComponent::Deactivate()
@@ -273,12 +276,14 @@ namespace Terrain
              &TerrainAreaMaterialNotificationBus::Events::OnTerrainSurfaceMaterialMappingRegionChanged, GetEntityId(), oldAabb,
              m_cachedAabb);
      }
-
-    const AZStd::vector<TerrainSurfaceMaterialMapping>& TerrainSurfaceMaterialsListComponent::GetSurfaceMaterialMappings(
-         AZ::Aabb& region) const
+    
+    const AZ::Aabb& TerrainSurfaceMaterialsListComponent::GetTerrainSurfaceMaterialRegion() const
     {
-        region = m_cachedAabb;
+        return m_cachedAabb;
+    }
 
+    const AZStd::vector<TerrainSurfaceMaterialMapping>& TerrainSurfaceMaterialsListComponent::GetSurfaceMaterialMappings() const
+    {
         return m_configuration.m_surfaceMaterials;
     }
 

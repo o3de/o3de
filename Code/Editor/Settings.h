@@ -305,7 +305,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     bool m_showCircularDependencyError;
     bool bAutoloadLastLevelAtStartup;
     bool bMuteAudio;
-    bool bEnableGameModeVR;
 
     //! Speed of camera movement.
     float cameraMoveSpeed;

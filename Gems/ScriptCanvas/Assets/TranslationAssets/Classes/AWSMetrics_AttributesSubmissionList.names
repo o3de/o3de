@@ -1,0 +1,57 @@
+{
+    "entries": [
+        {
+            "base": "AWSMetrics_AttributesSubmissionList",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Attributes Submission List",
+                "category": "AWS Metrics"
+            },
+            "methods": [
+                {
+                    "base": "Getattributes",
+                    "details": {
+                        "name": "Get Attributes"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{B1106C14-D22B-482F-B33E-B6E154A53798}",
+                            "details": {
+                                "name": "Attribute Submission List"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{1C1ABE6D-94D2-5CFD-A502-8813300FEC8D}",
+                            "details": {
+                                "name": "Metrics Attribute"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Setattributes",
+                    "details": {
+                        "name": "Set Attributes"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{B1106C14-D22B-482F-B33E-B6E154A53798}",
+                            "details": {
+                                "name": "Attribute Submission List"
+                            }
+                        },
+                        {
+                            "typeid": "{1C1ABE6D-94D2-5CFD-A502-8813300FEC8D}",
+                            "details": {
+                                "name": "Metrics Attribute"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
