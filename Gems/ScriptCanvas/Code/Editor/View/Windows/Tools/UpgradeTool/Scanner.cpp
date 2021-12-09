@@ -81,8 +81,6 @@ namespace ScriptCanvasEditor
 
         void Scanner::FilterAsset(SourceHandle asset)
         {
-            AZStd::string name = asset.Path().c_str();
-
             if (m_config.filter && m_config.filter(asset) == ScanConfiguration::Filter::Exclude)
             {
                 VE_LOG("Scanner: Excluded: %s ", ModCurrentAsset().Path().c_str());

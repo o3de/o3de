@@ -14,9 +14,6 @@
 #include <Editor/View/Windows/Tools/UpgradeTool/ModelTraits.h>
 #include <ScriptCanvas/Core/Core.h>
 
-// probably not needed if using the asset system bus
-#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-
 namespace ScriptCanvasEditor
 {
     namespace VersionExplorer
@@ -24,7 +21,6 @@ namespace ScriptCanvasEditor
         class Modifier final
             : public AZ::SystemTickBus::Handler
             , public ModificationNotificationsBus::Handler
-            , public AzToolsFramework::AssetSystemBus::Handler
             , public AzFramework::AssetSystemInfoBus::Handler
         {
         public:
@@ -86,12 +82,13 @@ namespace ScriptCanvasEditor
             // dependency indices by asset info index (only exist if graphs have them)
             AZStd::unordered_map<size_t, AZStd::unordered_set<size_t>> m_dependencies;
             AZStd::unordered_map<AZ::Uuid, size_t> m_assetInfoIndexById;
-            AZStd::vector<size_t> m_failures;
             ModifyConfiguration m_config;
             ModificationResult m_result;
             ModificationResults m_results;
             AZStd::unique_ptr<FileSaver> m_fileSaver;
             FileSaveResult m_fileSaveResult;
+            // m_attemptedAssets is assets attempted to be processed by modification, as opposed to
+            // those processed by the AP as a result of one of their dependencies being processed.
             AZStd::unordered_set<AZ::Uuid> m_attemptedAssets;
             AZStd::unordered_set<AZ::Uuid> m_assetsCompletedByAP;
             AZStd::unordered_set<AZ::Uuid> m_assetsFailedByAP;
@@ -102,6 +99,8 @@ namespace ScriptCanvasEditor
 
             bool AllDependenciesCleared(const AZStd::unordered_set<size_t>& dependencies) const;
             bool AnyDependenciesFailed(const AZStd::unordered_set<size_t>& dependencies) const;
+            void AssetCompilationSuccess(const AZStd::string& assetPath) override;
+            void AssetCompilationFailed(const AZStd::string& assetPath) override;
             AZStd::sys_time_t CalculateRemainingWaitTime(const AZStd::unordered_set<size_t>& dependencies) const;
             void CheckDependencies();
             void GatherDependencies();
@@ -110,27 +109,19 @@ namespace ScriptCanvasEditor
             AZStd::unordered_set<size_t>& GetOrCreateDependencyIndexSet();
             void InitializeResult();
             void LoadAsset();
+            void ModificationComplete(const ModificationResult& result) override;
             void ModifyCurrentAsset();
             void NextAsset();
             void NextModification();
-            void ModificationComplete(const ModificationResult& result) override;
+            void OnFileSaveComplete(const FileSaveResult& result);
+            void OnSystemTick() override;
+            void ProcessNotifications();
             void ReleaseCurrentAsset();
             void ReportModificationError(AZStd::string_view report);
             void ReportModificationSuccess();
             void ReportSaveResult();
             void SaveModifiedGraph(const ModificationResult& result);
             void SortGraphsByDependencies();
-
-
-            /// use all this to track the success of dependencies
-            void SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
-            void SourceFileFailed(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
-            void AssetCompilationSuccess(const AZStd::string& assetPath) override;
-            void AssetCompilationFailed(const AZStd::string& assetPath) override;
-            void ProcessNotifications();
-
-            void OnFileSaveComplete(const FileSaveResult& result);
-            void OnSystemTick() override;
             void TickGatherDependencies();
             void TickUpdateGraph();
             void WaitForDependencies();
