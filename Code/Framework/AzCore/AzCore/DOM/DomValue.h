@@ -8,13 +8,13 @@
 
 #pragma once
 
+#include <AzCore/DOM/DomBackend.h>
 #include <AzCore/DOM/DomVisitor.h>
-
 #include <AzCore/Memory/Memory.h>
+#include <AzCore/std/containers/stack.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/std/containers/stack.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 
 namespace AZ::Dom
@@ -72,24 +72,33 @@ namespace AZ::Dom
     class Node
     {
     public:
+        Node() = default;
+        Node(AZ::Name name);
+        Node(const Node&) = default;
+        Node(Node&&) = default;
+
+        Node& operator=(const Node&) = default;
+        Node& operator=(Node&&) = default;
+
         AZ::Name GetName() const;
         void SetName(AZ::Name name);
 
-        ObjectPtr GetMutableProperties();
-        ConstObjectPtr GetProperties() const;
+        Object::ContainerType& GetProperties();
+        const Object::ContainerType& GetProperties() const;
 
-        ArrayPtr GetMutableChildren();
-        ConstArrayPtr GetChildren() const;
-
-        bool operator==(const Node& rhs) const;
+        Array::ContainerType& GetChildren();
+        const Array::ContainerType& GetChildren() const;
 
     private:
         AZ::Name m_name;
-        ArrayPtr m_array;
-        ObjectPtr m_object;
+        Object::ContainerType m_properties;
+        Array::ContainerType m_children;
 
         friend class Value;
     };
+
+    using NodePtr = AZStd::shared_ptr<Node>;
+    using ConstNodePtr = AZStd::shared_ptr<Node>;
 
     class Value
     {
@@ -252,8 +261,13 @@ namespace AZ::Dom
 
         // Visitor API
         Visitor::Result Accept(Visitor& visitor, bool copyStrings) const;
+        AZStd::unique_ptr<Visitor> GetWriteHandler();
+
+        bool DeepCompareIsEqual(const Value& other) const;
 
     private:
+        const Node& GetNodeInternal() const;
+        Node& GetNodeInternal();
         const Object::ContainerType& GetObjectInternal() const;
         Object::ContainerType& GetObjectInternal();
         const Array::ContainerType& GetArrayInternal() const;
@@ -284,53 +298,10 @@ namespace AZ::Dom
             // ArrayType
             ArrayPtr,
             // NodeType
-            Node,
+            NodePtr,
             // OpaqueType
             AZStd::any*>;
 
         ValueType m_value;
     };
-
-    class ValueWriter : public Visitor
-    {
-    public:
-        ValueWriter(Value& outputValue);
-
-        VisitorFlags GetVisitorFlags() const override;
-        Result Null() override;
-        Result Bool(bool value) override;
-        Result Int64(AZ::s64 value) override;
-        Result Uint64(AZ::u64 value) override;
-        Result Double(double value) override;
-
-        Result String(AZStd::string_view value, Lifetime lifetime) override;
-        Result StartObject() override;
-        Result EndObject(AZ::u64 attributeCount) override;
-        Result Key(AZ::Name key) override;
-        Result RawKey(AZStd::string_view key, Lifetime lifetime) override;
-        Result StartArray() override;
-        Result EndArray(AZ::u64 elementCount) override;
-        Result StartNode(AZ::Name name) override;
-        Result RawStartNode(AZStd::string_view name, Lifetime lifetime) override;
-        Result EndNode(AZ::u64 attributeCount, AZ::u64 elementCount) override;
-
-    private:
-        Result FinishWrite();
-        Value& CurrentValue();
-        Visitor::Result EndContainer(Type containerType, AZ::u64 attributeCount, AZ::u64 elementCount);
-
-        struct ValueInfo
-        {
-            ValueInfo(Value& container);
-
-            KeyType m_key;
-            Value m_value;
-            Value& m_container;
-            AZ::u64 m_attributeCount = 0;
-            AZ::u64 m_elementCount = 0;
-        };
-
-        Value& m_result;
-        AZStd::stack<ValueInfo> m_entryStack;
-    };
-    } // namespace AZ::Dom
+} // namespace AZ::Dom
