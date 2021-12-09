@@ -211,7 +211,7 @@ namespace EMStudio
     {
         auto viewportContext = GetViewportContext();
         auto windowSize = viewportContext->GetViewportSize();
-        // Prevent divided by zero
+        // Prevent division by zero
         const float height = AZStd::max<float>(aznumeric_cast<float>(windowSize.m_height), 1.0f);
         const float aspectRatio = aznumeric_cast<float>(windowSize.m_width) / height;
 

@@ -50,7 +50,7 @@ namespace AtomToolsFramework
         //! Sets the current camera pivot, leaving the camera offset in-place (the camera will
         //! stay fixed and the pivot will appear to move around on its own).
         virtual void SetCameraPivotDetached(const AZ::Vector3& pivot) = 0;
-        //! Set the current camera offset from the pivot.
+        //! Sets the current camera offset from the pivot.
         //! @note The offset value is in the current space of the camera, not world space. Setting
         //! a negative Z value will move the camera backwards from the pivot.
         virtual void SetCameraOffset(const AZ::Vector3& offset) = 0;
