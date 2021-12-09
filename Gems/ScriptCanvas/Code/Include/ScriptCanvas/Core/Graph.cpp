@@ -85,6 +85,18 @@ namespace ScriptCanvas
             }
         }
 
+        if (componentElementNode.GetVersion() < GraphCpp::GraphVersion::FixupVersionDataTypeId)
+        {
+            if (auto subElement = componentElementNode.FindSubElement(AZ_CRC_CE("versionData")))
+            {
+                if (subElement->GetId() == azrtti_typeid<SlotId>())
+                {
+                    componentElementNode.RemoveElementByName(AZ_CRC_CE("versionData"));
+                    componentElementNode.AddElementWithData(context, "versionData", VersionData());
+                }
+            }
+        }
+        
         return true;
     }
 

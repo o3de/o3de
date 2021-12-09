@@ -93,9 +93,7 @@ namespace ScriptCanvasEditor
 
         //=====================================================================
         // EditorEntityContextNotificationBus
-        void OnStartPlayInEditor() override;
-
-        void OnStopPlayInEditor() override;
+        
 
     protected:
         enum class SourceChangeDescription : AZ::u8

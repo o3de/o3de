@@ -34,6 +34,7 @@
 #include <ScriptCanvas/Core/Datum.h>
 #include <ScriptCanvas/Data/DataRegistry.h>
 #include <ScriptCanvas/Libraries/Libraries.h>
+#include <ScriptCanvas/PerformanceStatisticsBus.h>
 #include <ScriptCanvas/Variable/VariableCore.h>
 #include <ScriptCanvas/View/EditCtrls/GenericLineEditCtrl.h>
 
@@ -337,9 +338,19 @@ namespace ScriptCanvasEditor
                         , SourceHandle(nullptr, sourceUUIDInCall, ""), Tracker::ScriptCanvasFileState::UNMODIFIED, -1);
                 }
             };
- 
-            openers.push_back({ "O3DE_ScriptCanvasEditor", "Open In Script Canvas Editor...", QIcon(), scriptCanvasEditorCallback });
-         }
+
+            openers.push_back({ "O3DE_ScriptCanvasEditor", "Open In Script Canvas Editor...", QIcon(ScriptCanvasAssetDescription().GetIconPathImpl()), scriptCanvasEditorCallback });
+        }
+    }
+
+    void SystemComponent::OnStartPlayInEditor()
+    {
+        ScriptCanvas::Execution::PerformanceStatisticsEBus::Broadcast(&ScriptCanvas::Execution::PerformanceStatisticsBus::ClearSnaphotStatistics);
+    }
+
+    void SystemComponent::OnStopPlayInEditor()
+    {
+        AZ::ScriptSystemRequestBus::Broadcast(&AZ::ScriptSystemRequests::GarbageCollect);
     }
 
     void SystemComponent::OnUserSettingsActivated()
