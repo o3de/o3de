@@ -209,7 +209,7 @@ namespace AZ::SceneGenerationComponents
         auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
         {
-            serializeContext->Class<MeshOptimizerComponent, GenerationComponent>()->Version(10);
+            serializeContext->Class<MeshOptimizerComponent, GenerationComponent>()->Version(11);
         }
     }
 
@@ -219,7 +219,7 @@ namespace AZ::SceneGenerationComponents
         AZ::u32 maxWeightsPerVertex,
         float weightThreshold)
     {
-        auto skinningInfo = AZStd::make_unique<AZ::MeshBuilder::MeshBuilderSkinningInfo>(aznumeric_cast<AZ::u32>(1));
+        AZ::MeshBuilder::MeshBuilderSkinningInfo skinningInfo(1);
 
         AZStd::vector<AZ::MeshBuilder::MeshBuilderSkinningInfo::Influence> influences;
         for (const auto& skinLayer : skinningInfluencesLayers)
@@ -228,7 +228,7 @@ namespace AZ::SceneGenerationComponents
             influences.push_back({ aznumeric_caster(link.boneId), link.weight });
         }
 
-        skinningInfo->Optimize(influences, maxWeightsPerVertex, weightThreshold);
+        skinningInfo.Optimize(influences, maxWeightsPerVertex, weightThreshold);
         return influences;
     }
 
@@ -587,7 +587,9 @@ namespace AZ::SceneGenerationComponents
                     skinInfluenceLayer->SetCurrentVertexValue(ISkinWeightData::Link{ 0, 0.0f });
                 }
 
+#if defined(AZ_ENABLE_TRACING)
                 bool influencesFoundForThisVertex = false;
+#endif
                 // Set any real weights, if they exist
                 for (const auto& skinWeightData : skinWeights)
                 {
@@ -595,19 +597,22 @@ namespace AZ::SceneGenerationComponents
                     AZ_Assert(
                         linkCount <= skinningInfluencesLayers.size(),
                         "MeshOptimizer - The previously calculated maximum influence count is less than the current link count.");
-                    if (linkCount > 0)
-                    {
-                        AZ_Assert(
-                            influencesFoundForThisVertex == false,
-                            "Two different skinWeightData instances in skinWeights apply to the same vertex. "
-                            "The mesh optimizer assumes there will only ever be one skinWeightData that impacts a given vertex.");
-                        influencesFoundForThisVertex = true;
 
-                        for (size_t linkIndex = 0; linkIndex < linkCount; ++linkIndex)
-                        {
-                            const ISkinWeightData::Link& link = skinWeightData.get().GetLink(vertexIndex, linkIndex);
-                            skinningInfluencesLayers[linkIndex]->SetCurrentVertexValue(link);
-                        }
+                    // Check that either the current skinWeightData doesn't have any influences for this vertex,
+                    // or that none of the ones which came before it had any influences for this vertex.
+                    AZ_Assert(
+                        linkCount == 0 || influencesFoundForThisVertex == false,
+                        "Two different skinWeightData instances in skinWeights apply to the same vertex. "
+                        "The mesh optimizer assumes there will only ever be one skinWeightData that impacts a given vertex.");
+#if defined(AZ_ENABLE_TRACING)
+                    // Mark that at least one influence has been found for this vertex
+                    influencesFoundForThisVertex |= linkCount > 0;
+#endif
+
+                    for (size_t linkIndex = 0; linkIndex < linkCount; ++linkIndex)
+                    {
+                        const ISkinWeightData::Link& link = skinWeightData.get().GetLink(vertexIndex, linkIndex);
+                        skinningInfluencesLayers[linkIndex]->SetCurrentVertexValue(link);
                     }
                 }
                 AZ_POP_DISABLE_WARNING
@@ -624,7 +629,7 @@ namespace AZ::SceneGenerationComponents
 
         meshBuilder.GenerateSubMeshVertexOrders();
 
-        size_t optimizedVertexCount = meshBuilder.CalcNumVertices();
+        const size_t optimizedVertexCount = meshBuilder.CalcNumVertices();
 
         // Create the resulting nodes
         struct ResultingType
@@ -702,7 +707,7 @@ namespace AZ::SceneGenerationComponents
                     AZStd::vector<AZ::MeshBuilder::MeshBuilderSkinningInfo::Influence> influences =
                         ExtractSkinningInfo(skinningInfluencesLayers, vertexLookup, maxWeightsPerVertex, weightThreshold);
 
-                    for (auto influence : influences)
+                    for (const auto& influence : influences)
                     {
                         const int boneId =
                             optimizedSkinWeights->GetBoneId(skinWeights[0].get().GetBoneName(aznumeric_caster(influence.mNodeNr)));

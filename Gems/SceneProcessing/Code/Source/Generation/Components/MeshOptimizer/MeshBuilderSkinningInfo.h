@@ -55,9 +55,6 @@ namespace AZ::MeshBuilder
         // optimize weights
         static void OptimizeSkinningInfluences(AZStd::vector<Influence>& influences, float tolerance, size_t maxWeights);
 
-        // sort the influences, starting with the smallest id
-        static void SortInfluencesById(AZStd::vector<Influence>& influences);
-
         // sort the influences, starting with the biggest weight
         static void SortInfluencesByWeight(AZStd::vector<Influence>& influences);
 

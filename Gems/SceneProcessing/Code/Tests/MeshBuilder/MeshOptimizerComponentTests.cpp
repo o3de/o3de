@@ -122,7 +122,7 @@ namespace SceneProcessing
                 for (const auto& link : sourceLinks[vertexIndex])
                 {
                     // Make sure the bone is added to the skin weights
-                    skinWeights->GetBoneId(AZStd::string::format("%d", link.boneId));
+                    skinWeights->GetBoneId(AZStd::to_string(link.boneId));
 
                     skinWeights->AppendLink(vertexIndex, link);
                 }
