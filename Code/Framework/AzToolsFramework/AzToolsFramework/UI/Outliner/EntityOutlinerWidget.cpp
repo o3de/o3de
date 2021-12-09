@@ -26,6 +26,7 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/UI/ComponentPalette/ComponentPaletteUtil.hxx>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiHandlerBase.h>
@@ -155,6 +156,11 @@ namespace AzToolsFramework
 
         m_editorEntityUiInterface = AZ::Interface<AzToolsFramework::EditorEntityUiInterface>::Get();
         AZ_Assert(m_editorEntityUiInterface != nullptr, "EntityOutlinerWidget requires a EditorEntityUiInterface instance on Initialize.");
+
+        m_readOnlyEntityPublicInterface = AZ::Interface<AzToolsFramework::ReadOnlyEntityPublicInterface>::Get();
+        AZ_Assert(
+            (m_readOnlyEntityPublicInterface != nullptr),
+            "EntityOutlinerListModel requires a ReadOnlyEntityPublicInterface instance on Initialize.");
 
         m_gui = new Ui::EntityOutlinerWidgetUI();
         m_gui->setupUi(this);
@@ -585,9 +591,15 @@ namespace AzToolsFramework
             if (m_selectedEntityIds.size() == 1)
             {
                 auto entityId = m_selectedEntityIds.front();
-                auto entityUiHandler = m_editorEntityUiInterface->GetHandler(entityId);
 
-                if (!entityUiHandler || entityUiHandler->CanRename(entityId))
+                // Only allow renaming the entity if the UI Handler did not block it.
+                auto entityUiHandler = m_editorEntityUiInterface->GetHandler(entityId);
+                bool canRename = !entityUiHandler || entityUiHandler->CanRename(entityId);
+
+                // Disable renaming for read-only entities.
+                bool isReadOnly = m_readOnlyEntityPublicInterface->IsReadOnly(entityId);
+
+                if (canRename && !isReadOnly)
                 {
                     contextMenu->addAction(m_actionToRenameSelection);
                 }
@@ -717,9 +729,15 @@ namespace AzToolsFramework
         if (m_selectedEntityIds.size() == 1)
         {
             auto entityId = m_selectedEntityIds.front();
-            auto entityUiHandler = m_editorEntityUiInterface->GetHandler(entityId);
 
-            if (!entityUiHandler || entityUiHandler->CanRename(entityId))
+            // Only allow renaming the entity if the UI Handler did not block it.
+            auto entityUiHandler = m_editorEntityUiInterface->GetHandler(entityId);
+            bool canRename = !entityUiHandler || entityUiHandler->CanRename(entityId);
+
+            // Disable renaming for read-only entities.
+            bool isReadOnly = m_readOnlyEntityPublicInterface->IsReadOnly(entityId);
+
+            if (canRename && !isReadOnly)
             {
                 const QModelIndex proxyIndex = GetIndexFromEntityId(entityId);
                 if (proxyIndex.isValid())

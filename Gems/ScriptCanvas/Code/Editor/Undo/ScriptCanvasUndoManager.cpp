@@ -28,9 +28,9 @@ namespace ScriptCanvasEditor
     // SceneUndoState
 
     SceneUndoState::SceneUndoState(AzToolsFramework::UndoSystem::IUndoNotify* undoNotify)
-        : m_undoStack(AZStd::make_unique<AzToolsFramework::UndoSystem::UndoStack>(c_undoLimit, undoNotify))
-        , m_undoCache(AZStd::make_unique<UndoCache>())
     {
+        m_undoStack = AZStd::make_unique<AzToolsFramework::UndoSystem::UndoStack>(c_undoLimit, undoNotify);
+        m_undoCache = AZStd::make_unique<UndoCache>();
     }
 
     void SceneUndoState::BeginUndoBatch(AZStd::string_view label)

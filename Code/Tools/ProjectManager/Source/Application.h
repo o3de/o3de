@@ -34,6 +34,7 @@ namespace O3DE::ProjectManager
 
     private:
         bool InitLog(const char* logName);
+        bool RegisterEngine(bool interactive);
 
         AZStd::unique_ptr<PythonBindings> m_pythonBindings;
         QSharedPointer<QCoreApplication> m_app;

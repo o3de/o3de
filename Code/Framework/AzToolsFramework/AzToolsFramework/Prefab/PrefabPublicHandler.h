@@ -54,6 +54,7 @@ namespace AzToolsFramework
             
             PrefabOperationResult GenerateUndoNodesForEntityChangeAndUpdateCache(AZ::EntityId entityId, UndoSystem::URSequencePoint* parentUndoBatch) override;
 
+            bool IsOwnedByProceduralPrefabInstance(AZ::EntityId entityId) const override;
             bool IsInstanceContainerEntity(AZ::EntityId entityId) const override;
             bool IsLevelInstanceContainerEntity(AZ::EntityId entityId) const override;
             AZ::EntityId GetInstanceContainerEntityId(AZ::EntityId entityId) const override;

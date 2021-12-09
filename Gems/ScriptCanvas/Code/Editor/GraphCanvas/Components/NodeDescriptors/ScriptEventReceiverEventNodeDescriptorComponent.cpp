@@ -190,7 +190,7 @@ namespace ScriptCanvasEditor
                     {
                         scriptCanvasSlot = eventHandler->GetSlot(slotId);
 
-                        int& index = (scriptCanvasSlot->IsData() && scriptCanvasSlot->IsInput()) ? paramIndex : outputIndex;
+                        int& index = (scriptCanvasSlot && scriptCanvasSlot->IsData() && scriptCanvasSlot->IsInput()) ? paramIndex : outputIndex;
 
                         if (scriptCanvasSlot && scriptCanvasSlot->IsVisible())
                         {
