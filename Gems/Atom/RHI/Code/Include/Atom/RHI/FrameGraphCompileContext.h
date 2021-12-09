@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/AttachmentId.h>
+#include <Atom/RHI.Reflect/AttachmentEnums.h>
 #include <Atom/RHI.Reflect/ScopeId.h>
 
 namespace AZ
@@ -19,8 +20,10 @@ namespace AZ
         class BufferView;
         class Image;
         class ImageView;
+        class ScopeAttachment;
         struct BufferDescriptor;
         struct ImageDescriptor;
+        struct ImageViewDescriptor;
 
          //! FrameGraphCompileContext provides access to compiled image and buffer views
          //! associated with the provided scope id, along with other query methods for
