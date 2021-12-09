@@ -100,9 +100,7 @@ class TestAutomationBase:
         if autotest_mode:
             pycmd += ["-autotest_mode"]
         if enable_prefab_system:
-            pycmd += [
-                "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
-                f"--regset-file={path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
+            pycmd += ["--regset=/Amazon/Preferences/EnablePrefabSystem=true"]
         else:
             pycmd += ["--regset=/Amazon/Preferences/EnablePrefabSystem=false"]
 
