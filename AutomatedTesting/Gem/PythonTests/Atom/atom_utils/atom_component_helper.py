@@ -93,161 +93,165 @@ def compare_screenshot_similarity(
     return result
 
 
-def create_basic_atom_level(level_name):
+def compare_screenshot_to_golden_image(
+        screenshot_directory, test_screenshots, golden_images, similarity_threshold=0.99):
     """
-    Creates a new level inside the Editor matching level_name & adds the following:
-    1. "default_level" entity to hold all other entities.
-    2. Adds Grid, Global Skylight (IBL), ground Mesh, Directional Light, Sphere w/ material+mesh, & Camera components.
-    3. Each of these components has its settings tweaked slightly to match the ideal scene to test Atom rendering.
-    :param level_name: name of the level to create and apply this basic setup to.
+    Compares a list of test_screenshots to a list of golden_images and return True if they match within the
+    similarity threshold set. Otherwise, it will raise ImageComparisonTestFailure with a failure message.
+    :param screenshot_directory: path to the directory containing screenshots for creating .zip archives.
+    :param test_screenshots: list of test screenshot path strings.
+    :param golden_images: list of golden image path strings.
+    :param similarity_threshold: float threshold tolerance to set when comparing screenshots to golden images.
+    """
+    for test_screenshot, golden_image in zip(test_screenshots, golden_images):
+        screenshot_comparison_result = compare_screenshot_similarity(
+            test_screenshot, golden_image, similarity_threshold, True, screenshot_directory)
+        if screenshot_comparison_result != "Screenshots match":
+            raise ImageComparisonTestFailure(f"Screenshot test failed: {screenshot_comparison_result}")
+
+    return True
+
+
+def initial_viewport_setup(screen_width=1280, screen_height=720):
+    """
+    For setting up the initial viewport resolution to expected default values before running a screenshot test.
+    Defaults to 1280 x 720 resolution (in pixels).
+    :param screen_width: Width in pixels to set the viewport width size to.
+    :param screen_height: Height in pixels to set the viewport height size to.
     :return: None
     """
-    import azlmbr.asset as asset
-    import azlmbr.bus as bus
-    import azlmbr.camera as camera
-    import azlmbr.editor as editor
-    import azlmbr.entity as entity
     import azlmbr.legacy.general as general
-    import azlmbr.math as math
-    import azlmbr.object
 
-    import editor_python_test_tools.hydra_editor_utils as hydra
-    from editor_python_test_tools.editor_test_helper import EditorTestHelper
-
-    helper = EditorTestHelper(log_prefix="Atom_EditorTestHelper")
-
-    # Wait for Editor idle loop before executing Python hydra scripts.
-    general.idle_enable(True)
-
-    # Basic setup for opened level.
-    helper.open_level(level_name="Base")
-    general.idle_wait(1.0)
-    general.update_viewport()
-    general.idle_wait(0.5)  # half a second is more than enough for updating the viewport.
-
-    # Close out problematic windows, FPS meters, and anti-aliasing.
-    if general.is_helpers_shown():  # Turn off the helper gizmos if visible
-        general.toggle_helpers()
-        general.idle_wait(1.0)
-    if general.is_pane_visible("Error Report"):  # Close Error Report windows that block focus.
-        general.close_pane("Error Report")
-    if general.is_pane_visible("Error Log"):  # Close Error Log windows that block focus.
-        general.close_pane("Error Log")
-    general.idle_wait(1.0)
-    general.run_console("r_displayInfo=0")
-    general.idle_wait(1.0)
-
-    # Delete all existing entities & create default_level entity
-    search_filter = azlmbr.entity.SearchFilter()
-    all_entities = entity.SearchBus(azlmbr.bus.Broadcast, "SearchEntities", search_filter)
-    editor.ToolsApplicationRequestBus(bus.Broadcast, "DeleteEntities", all_entities)
-    default_level = hydra.Entity("default_level")
-    default_position = math.Vector3(0.0, 0.0, 0.0)
-    default_level.create_entity(default_position, ["Grid"])
-    default_level.get_set_test(0, "Controller|Configuration|Secondary Grid Spacing", 1.0)
-
-    # Set the viewport up correctly after adding the parent default_level entity.
-    screen_width = 1280
-    screen_height = 720
-    degree_radian_factor = 0.0174533  # Used by "Rotation" property for the Transform component.
     general.set_viewport_size(screen_width, screen_height)
     general.update_viewport()
-    helper.wait_for_condition(
-        function=lambda: helper.isclose(a=general.get_viewport_size().x, b=screen_width, rel_tol=0.1)
-        and helper.isclose(a=general.get_viewport_size().y, b=screen_height, rel_tol=0.1),
-        timeout_in_seconds=4.0
-    )
-    result = helper.isclose(a=general.get_viewport_size().x, b=screen_width, rel_tol=0.1) and helper.isclose(
-        a=general.get_viewport_size().y, b=screen_height, rel_tol=0.1)
-    general.log(general.get_viewport_size().x)
-    general.log(general.get_viewport_size().y)
-    general.log(general.get_viewport_size().z)
-    general.log(f"Viewport is set to the expected size: {result}")
-    general.log("Basic level created")
-    general.run_console("r_DisplayInfo = 0")
 
-    # Create global_skylight entity and set the properties
-    global_skylight = hydra.Entity("global_skylight")
-    global_skylight.create_entity(
-        entity_position=default_position,
-        components=["HDRi Skybox", "Global Skylight (IBL)"],
-        parent_id=default_level.id)
-    global_skylight_asset_path = os.path.join("LightingPresets", "default_iblskyboxcm.exr.streamingimage")
-    global_skylight_asset_value = asset.AssetCatalogRequestBus(
-        bus.Broadcast, "GetAssetIdByPath", global_skylight_asset_path, math.Uuid(), False)
-    global_skylight.get_set_test(0, "Controller|Configuration|Cubemap Texture", global_skylight_asset_value)
-    global_skylight.get_set_test(1, "Controller|Configuration|Diffuse Image", global_skylight_asset_value)
-    global_skylight.get_set_test(1, "Controller|Configuration|Specular Image", global_skylight_asset_value)
 
-    # Create ground_plane entity and set the properties
-    ground_plane = hydra.Entity("ground_plane")
-    ground_plane.create_entity(
-        entity_position=default_position,
-        components=["Material"],
-        parent_id=default_level.id)
-    azlmbr.components.TransformBus(azlmbr.bus.Event, "SetLocalUniformScale", ground_plane.id, 32.0)
+def enter_exit_game_mode_take_screenshot(screenshot_name, enter_game_tuple, exit_game_tuple, timeout_in_seconds=4):
+    """
+    Enters game mode, takes a screenshot named screenshot_name (must include file extension), and exits game mode.
+    :param screenshot_name: string representing the name of the screenshot file, including file extension.
+    :param enter_game_tuple: tuple where the 1st string is success & 2nd string is failure for entering the game.
+    :param exit_game_tuple: tuple where the 1st string is success & 2nd string is failure for exiting the game.
+    :param timeout_in_seconds: int or float seconds to wait for entering/exiting game mode.
+    :return: None
+    """
+    import azlmbr.legacy.general as general
 
-    # Work around to add the correct Atom Mesh component and asset.
-    mesh_type_id = azlmbr.globals.property.EditorMeshComponentTypeId
-    ground_plane.components.append(
-        editor.EditorComponentAPIBus(
-            bus.Broadcast, "AddComponentsOfType", ground_plane.id, [mesh_type_id]
-        ).GetValue()[0]
-    )
+    from editor_python_test_tools.utils import TestHelper
+
+    from Atom.atom_utils.screenshot_utils import ScreenshotHelper
+
+    TestHelper.enter_game_mode(enter_game_tuple)
+    TestHelper.wait_for_condition(function=lambda: general.is_in_game_mode(), timeout_in_seconds=timeout_in_seconds)
+    ScreenshotHelper(general.idle_wait_frames).capture_screenshot_blocking(screenshot_name)
+    TestHelper.exit_game_mode(exit_game_tuple)
+    TestHelper.wait_for_condition(function=lambda: not general.is_in_game_mode(), timeout_in_seconds=timeout_in_seconds)
+
+
+def create_basic_atom_rendering_scene():
+    """
+    Sets up a new scene inside the Editor for testing Atom rendering GPU output.
+    Setup: Deletes all existing entities before creating the scene.
+    The created scene includes:
+    1. "Default Level" entity that holds all of the other entities.
+    2. "Grid" entity: Contains a Grid component.
+    3. "Global Skylight (IBL)" entity: Contains HDRI Skybox & Global Skylight (IBL) components.
+    4. "Ground Plane" entity: Contains Material & Mesh components.
+    5. "Directional Light" entity: Contains Directional Light component.
+    6. "Sphere" entity: Contains Material & Mesh components.
+    7. "Camera" entity: Contains Camera component.
+    :return: None
+    """
+    import azlmbr.math as math
+    import azlmbr.paths
+
+    from editor_python_test_tools.asset_utils import Asset
+    from editor_python_test_tools.editor_entity_utils import EditorEntity
+
+    from Atom.atom_utils.atom_constants import AtomComponentProperties
+
+    DEGREE_RADIAN_FACTOR = 0.0174533
+
+    # Setup: Deletes all existing entities before creating the scene.
+    search_filter = azlmbr.entity.SearchFilter()
+    all_entities = azlmbr.entity.SearchBus(azlmbr.bus.Broadcast, "SearchEntities", search_filter)
+    azlmbr.editor.ToolsApplicationRequestBus(azlmbr.bus.Broadcast, "DeleteEntities", all_entities)
+
+    # 1. "Default Level" entity that holds all of the other entities.
+    default_level_entity_name = "Default Level"
+    default_level_entity = EditorEntity.create_editor_entity_at(math.Vector3(0.0, 0.0, 0.0), default_level_entity_name)
+
+    # 2. "Grid" entity: Contains a Grid component.
+    grid_entity = EditorEntity.create_editor_entity(AtomComponentProperties.grid(), default_level_entity.id)
+    grid_component = grid_entity.add_component(AtomComponentProperties.grid())
+    secondary_grid_spacing_value = 1.0
+    grid_component.set_component_property_value(
+        AtomComponentProperties.grid('Secondary Grid Spacing'), secondary_grid_spacing_value)
+
+    # 3. "Global Skylight (IBL)" entity: Contains HDRI Skybox & Global Skylight (IBL) components.
+    global_skylight_entity = EditorEntity.create_editor_entity(
+        AtomComponentProperties.global_skylight(), default_level_entity.id)
+    hdri_skybox_component = global_skylight_entity.add_component(AtomComponentProperties.hdri_skybox())
+    global_skylight_component = global_skylight_entity.add_component(AtomComponentProperties.global_skylight())
+    global_skylight_image_asset_path = os.path.join("LightingPresets", "default_iblskyboxcm.exr.streamingimage")
+    global_skylight_image_asset = Asset.find_asset_by_path(global_skylight_image_asset_path, False)
+    hdri_skybox_component.set_component_property_value(
+        AtomComponentProperties.hdri_skybox('Cubemap Texture'), global_skylight_image_asset.id)
+    global_skylight_diffuse_image_asset_path = os.path.join(
+        "LightingPresets", "default_iblskyboxcm_ibldiffuse.exr.streamingimage")
+    global_skylight_diffuse_image_asset = Asset.find_asset_by_path(global_skylight_diffuse_image_asset_path, False)
+    global_skylight_component.set_component_property_value(
+        AtomComponentProperties.global_skylight('Diffuse Image'), global_skylight_diffuse_image_asset.id)
+    global_skylight_specular_image_asset_path = os.path.join(
+        "LightingPresets", "default_iblskyboxcm_iblspecular.exr.streamingimage")
+    global_skylight_specular_image_asset = Asset.find_asset_by_path(
+        global_skylight_specular_image_asset_path, False)
+    global_skylight_component.set_component_property_value(
+        AtomComponentProperties.global_skylight('Specular Image'), global_skylight_specular_image_asset.id)
+
+    # 4. "Ground Plane" entity: Contains Material & Mesh components.
+    ground_plane_name = "Ground Plane"
+    ground_plane_entity = EditorEntity.create_editor_entity(ground_plane_name, default_level_entity.id)
+    ground_plane_material_component = ground_plane_entity.add_component(AtomComponentProperties.material())
+    ground_plane_entity.set_local_uniform_scale(32.0)
+    ground_plane_mesh_component = ground_plane_entity.add_component(AtomComponentProperties.mesh())
     ground_plane_mesh_asset_path = os.path.join("TestData", "Objects", "plane.azmodel")
-    ground_plane_mesh_asset_value = asset.AssetCatalogRequestBus(
-        bus.Broadcast, "GetAssetIdByPath", ground_plane_mesh_asset_path, math.Uuid(), False)
-    ground_plane.get_set_test(1, "Controller|Configuration|Mesh Asset", ground_plane_mesh_asset_value)
-
-    # Add Atom Material component and asset.
+    ground_plane_mesh_asset = Asset.find_asset_by_path(ground_plane_mesh_asset_path, False)
+    ground_plane_mesh_component.set_component_property_value(
+        AtomComponentProperties.mesh('Mesh Asset'), ground_plane_mesh_asset.id)
     ground_plane_material_asset_path = os.path.join("Materials", "Presets", "PBR", "metal_chrome.azmaterial")
-    ground_plane_material_asset_value = asset.AssetCatalogRequestBus(
-        bus.Broadcast, "GetAssetIdByPath", ground_plane_material_asset_path, math.Uuid(), False)
-    ground_plane.get_set_test(0, "Default Material|Material Asset", ground_plane_material_asset_value)
+    ground_plane_material_asset = Asset.find_asset_by_path(ground_plane_material_asset_path, False)
+    ground_plane_material_component.set_component_property_value(
+        AtomComponentProperties.material('Material Asset'), ground_plane_material_asset.id)
 
-    # Create directional_light entity and set the properties
-    directional_light = hydra.Entity("directional_light")
-    directional_light.create_entity(
-        entity_position=math.Vector3(0.0, 0.0, 10.0),
-        components=["Directional Light"],
-        parent_id=default_level.id)
-    directional_light_rotation = math.Vector3(degree_radian_factor * -90.0, 0.0, 0.0)
-    azlmbr.components.TransformBus(
-        azlmbr.bus.Event, "SetLocalRotation", directional_light.id, directional_light_rotation)
+    # 5. "Directional Light" entity: Contains Directional Light component.
+    directional_light_entity = EditorEntity.create_editor_entity_at(
+        math.Vector3(0.0, 0.0, 10.0), AtomComponentProperties.directional_light(), default_level_entity.id)
+    directional_light_entity.add_component(AtomComponentProperties.directional_light())
+    directional_light_entity_rotation = math.Vector3(DEGREE_RADIAN_FACTOR * -90.0, 0.0, 0.0)
+    directional_light_entity.set_local_rotation(directional_light_entity_rotation)
 
-    # Create sphere entity and set the properties
-    sphere_entity = hydra.Entity("sphere")
-    sphere_entity.create_entity(
-        entity_position=math.Vector3(0.0, 0.0, 1.0),
-        components=["Material"],
-        parent_id=default_level.id)
-
-    # Work around to add the correct Atom Mesh component and asset.
-    sphere_entity.components.append(
-        editor.EditorComponentAPIBus(
-            bus.Broadcast, "AddComponentsOfType", sphere_entity.id, [mesh_type_id]
-        ).GetValue()[0]
-    )
+    # 6. "Sphere" entity: Contains Material & Mesh components.
+    sphere_entity = EditorEntity.create_editor_entity_at(
+        math.Vector3(0.0, 0.0, 1.0), "Sphere", default_level_entity.id)
+    sphere_mesh_component = sphere_entity.add_component(AtomComponentProperties.mesh())
     sphere_mesh_asset_path = os.path.join("Models", "sphere.azmodel")
-    sphere_mesh_asset_value = asset.AssetCatalogRequestBus(
-        bus.Broadcast, "GetAssetIdByPath", sphere_mesh_asset_path, math.Uuid(), False)
-    sphere_entity.get_set_test(1, "Controller|Configuration|Mesh Asset", sphere_mesh_asset_value)
-
-    # Add Atom Material component and asset.
+    sphere_mesh_asset = Asset.find_asset_by_path(sphere_mesh_asset_path, False)
+    sphere_mesh_component.set_component_property_value(
+        AtomComponentProperties.mesh('Mesh Asset'), sphere_mesh_asset.id)
+    sphere_material_component = sphere_entity.add_component(AtomComponentProperties.material())
     sphere_material_asset_path = os.path.join("Materials", "Presets", "PBR", "metal_brass_polished.azmaterial")
-    sphere_material_asset_value = asset.AssetCatalogRequestBus(
-        bus.Broadcast, "GetAssetIdByPath", sphere_material_asset_path, math.Uuid(), False)
-    sphere_entity.get_set_test(0, "Default Material|Material Asset", sphere_material_asset_value)
+    sphere_material_asset = Asset.find_asset_by_path(sphere_material_asset_path, False)
+    sphere_material_component.set_component_property_value(
+        AtomComponentProperties.material('Material Asset'), sphere_material_asset.id)
 
-    # Create camera component and set the properties
-    camera_entity = hydra.Entity("camera")
-    camera_entity.create_entity(
-        entity_position=math.Vector3(5.5, -12.0, 9.0),
-        components=["Camera"],
-        parent_id=default_level.id)
-    rotation = math.Vector3(
-        degree_radian_factor * -27.0, degree_radian_factor * -12.0, degree_radian_factor * 25.0
-    )
-    azlmbr.components.TransformBus(azlmbr.bus.Event, "SetLocalRotation", camera_entity.id, rotation)
-    camera_entity.get_set_test(0, "Controller|Configuration|Field of view", 60.0)
-    camera.EditorCameraViewRequestBus(azlmbr.bus.Event, "ToggleCameraAsActiveView", camera_entity.id)
+    # 7. "Camera" entity: Contains Camera component.
+    camera_entity = EditorEntity.create_editor_entity_at(
+        math.Vector3(5.5, -12.0, 9.0), AtomComponentProperties.camera(), default_level_entity.id)
+    camera_component = camera_entity.add_component(AtomComponentProperties.camera())
+    camera_entity_rotation = math.Vector3(
+        DEGREE_RADIAN_FACTOR * -27.0, DEGREE_RADIAN_FACTOR * -12.0, DEGREE_RADIAN_FACTOR * 25.0)
+    camera_entity.set_local_rotation(camera_entity_rotation)
+    camera_fov_value = 60.0
+    camera_component.set_component_property_value(AtomComponentProperties.camera('Field of view'), camera_fov_value)
+    azlmbr.camera.EditorCameraViewRequestBus(azlmbr.bus.Event, "ToggleCameraAsActiveView", camera_entity.id)

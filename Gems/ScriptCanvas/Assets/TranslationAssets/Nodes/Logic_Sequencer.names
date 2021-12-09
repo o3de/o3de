@@ -11,82 +11,82 @@
             },
             "slots": [
                 {
-                    "base": "DataInput_Index",
+                    "base": "DataInput_Index_0",
                     "details": {
                         "name": "Index"
                     }
                 },
                 {
-                    "base": "DataInput_Order",
+                    "base": "DataInput_Order_1",
                     "details": {
                         "name": "Order"
                     }
                 },
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In",
                         "tooltip": "Input signal"
                     }
                 },
                 {
-                    "base": "Input_Next",
+                    "base": "Input_Next_1",
                     "details": {
                         "name": "Next",
                         "tooltip": "When next is activated, it enables the next output"
                     }
                 },
                 {
-                    "base": "Output_Out0",
+                    "base": "Output_Out0_0",
                     "details": {
                         "name": "Out0",
                         "tooltip": "Output 0"
                     }
                 },
                 {
-                    "base": "Output_Out1",
+                    "base": "Output_Out1_1",
                     "details": {
                         "name": "Out1",
                         "tooltip": "Output 1"
                     }
                 },
                 {
-                    "base": "Output_Out2",
+                    "base": "Output_Out2_2",
                     "details": {
                         "name": "Out2",
                         "tooltip": "Output 2"
                     }
                 },
                 {
-                    "base": "Output_Out3",
+                    "base": "Output_Out3_3",
                     "details": {
                         "name": "Out3",
                         "tooltip": "Output 3"
                     }
                 },
                 {
-                    "base": "Output_Out4",
+                    "base": "Output_Out4_4",
                     "details": {
                         "name": "Out4",
                         "tooltip": "Output 4"
                     }
                 },
                 {
-                    "base": "Output_Out5",
+                    "base": "Output_Out5_5",
                     "details": {
                         "name": "Out5",
                         "tooltip": "Output 5"
                     }
                 },
                 {
-                    "base": "Output_Out6",
+                    "base": "Output_Out6_6",
                     "details": {
                         "name": "Out6",
                         "tooltip": "Output 6"
                     }
                 },
                 {
-                    "base": "Output_Out7",
+                    "base": "Output_Out7_7",
                     "details": {
                         "name": "Out7",
                         "tooltip": "Output 7"

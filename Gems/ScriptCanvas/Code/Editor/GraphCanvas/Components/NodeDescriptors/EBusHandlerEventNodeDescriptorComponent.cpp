@@ -188,7 +188,7 @@ namespace ScriptCanvasEditor
 
                         if (scriptCanvasSlot && scriptCanvasSlot->IsVisible())
                         {
-                            auto graphCanvasSlotId = Nodes::DisplayScriptCanvasSlot(GetEntityId(), (*scriptCanvasSlot));
+                            auto graphCanvasSlotId = Nodes::DisplayScriptCanvasSlot(GetEntityId(), (*scriptCanvasSlot), 0);
 
                             GraphCanvas::TranslationKey key;
                             key << "EBusHandler" << eventHandler->GetEBusName() << "methods" << m_eventName;
@@ -219,8 +219,9 @@ namespace ScriptCanvasEditor
 
                             if (scriptCanvasSlot && scriptCanvasSlot->IsVisible())
                             {
-                                auto graphCanvasSlotId = Nodes::DisplayScriptCanvasSlot(GetEntityId(), (*scriptCanvasSlot));
                                 int& index = (scriptCanvasSlot->IsData() && scriptCanvasSlot->IsOutput()) ? paramIndex : outputIndex;
+
+                                auto graphCanvasSlotId = Nodes::DisplayScriptCanvasSlot(GetEntityId(), (*scriptCanvasSlot), index);
 
                                 GraphCanvas::TranslationRequests::Details details;
 
@@ -254,7 +255,7 @@ namespace ScriptCanvasEditor
 
                             if (scriptCanvasSlot && scriptCanvasSlot->IsVisible())
                             {
-                                Nodes::DisplayScriptCanvasSlot(GetEntityId(), (*scriptCanvasSlot));
+                                Nodes::DisplayScriptCanvasSlot(GetEntityId(), (*scriptCanvasSlot), 0);
                             }
                         }
                         

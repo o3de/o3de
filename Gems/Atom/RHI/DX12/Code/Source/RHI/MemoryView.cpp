@@ -7,10 +7,12 @@
  */
 #include <RHI/MemoryView.h>
 
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Casting/numeric_cast.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/conversions.h>
+
+AZ_DECLARE_BUDGET(RHI);
 
 namespace AZ
 {
@@ -55,7 +57,7 @@ namespace AZ
 
         CpuVirtualAddress MemoryView::Map(RHI::HostMemoryAccess hostAccess) const
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             CpuVirtualAddress cpuAddress = nullptr;
             D3D12_RANGE readRange = {};

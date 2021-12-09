@@ -11,10 +11,13 @@
 #include <AzFramework/Visibility/EntityVisibilityQuery.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFramework.h>
 
+namespace AzFramework
+{
+    class DebugDisplayRequests;
+}
+
 namespace AzManipulatorTestFramework
 {
-    class NullDebugDisplayRequests;
-
     //! Implementation of the viewport interaction model to handle viewport interaction requests.
     class ViewportInteraction
         : public ViewportInteractionInterface
@@ -23,7 +26,7 @@ namespace AzManipulatorTestFramework
         , private AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler
     {
     public:
-        ViewportInteraction();
+        explicit ViewportInteraction(AZStd::shared_ptr<AzFramework::DebugDisplayRequests> debugDisplayRequests);
         ~ViewportInteraction();
 
         // ViewportInteractionInterface overrides ...
@@ -63,7 +66,7 @@ namespace AzManipulatorTestFramework
         static constexpr AzFramework::ViewportId m_viewportId = 1234; //!< Arbitrary viewport id for manipulator tests.
 
         AzFramework::EntityVisibilityQuery m_entityVisibilityQuery;
-        AZStd::unique_ptr<NullDebugDisplayRequests> m_nullDebugDisplayRequests;
+        AZStd::shared_ptr<AzFramework::DebugDisplayRequests> m_debugDisplayRequests;
         AzFramework::CameraState m_cameraState;
         bool m_gridSnapping = false;
         bool m_angularSnapping = false;

@@ -10,18 +10,24 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/EBusFindAssetTypeByName.h>
 
+#if !defined(Q_MOC_RUN)
+AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
+#include <QRegExp>
+AZ_POP_DISABLE_WARNING
+#endif
+
 namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
         namespace
         {
-            FilterConstType ProductsNoFoldersFilter()
+            FilterConstType EntryTypeNoFoldersFilter(AssetBrowserEntry::AssetEntryType entryType = AssetBrowserEntry::AssetEntryType::Product)
             {
-                EntryTypeFilter* productFilter = new EntryTypeFilter();
-                productFilter->SetEntryType(AssetBrowserEntry::AssetEntryType::Product);
+                EntryTypeFilter* entryTypeFilter = new EntryTypeFilter();
+                entryTypeFilter->SetEntryType(entryType);
                 // in case entry is a source or folder, it may still contain relevant product
-                productFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
+                entryTypeFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
 
                 EntryTypeFilter* foldersFilter = new EntryTypeFilter();
                 foldersFilter->SetEntryType(AssetBrowserEntry::AssetEntryType::Folder);
@@ -30,7 +36,7 @@ namespace AzToolsFramework
                 noFoldersFilter->SetFilter(FilterConstType(foldersFilter));
 
                 CompositeFilter* compFilter = new CompositeFilter(CompositeFilter::LogicOperatorType::AND);
-                compFilter->AddFilter(FilterConstType(productFilter));
+                compFilter->AddFilter(FilterConstType(entryTypeFilter));
                 compFilter->AddFilter(FilterConstType(noFoldersFilter));
 
                 return FilterConstType(compFilter);
@@ -79,13 +85,37 @@ namespace AzToolsFramework
 
         void AssetSelectionModel::SetSelectedAssetIds(const AZStd::vector<AZ::Data::AssetId>& selectedAssetIds)
         {
+            m_selectedFilePaths.clear();
+
             m_selectedAssetIds = selectedAssetIds;
         }
 
         void AssetSelectionModel::SetSelectedAssetId(const AZ::Data::AssetId& selectedAssetId)
         {
+            m_selectedFilePaths.clear();
+
             m_selectedAssetIds.clear();
             m_selectedAssetIds.push_back(selectedAssetId);
+        }
+
+        const AZStd::vector<AZStd::string>& AssetSelectionModel::GetSelectedFilePaths() const
+        {
+            return m_selectedFilePaths;
+        }
+
+        void AssetSelectionModel::SetSelectedFilePaths(const AZStd::vector<AZStd::string>& selectedFilePaths)
+        {
+            m_selectedAssetIds.clear();
+
+            m_selectedFilePaths = selectedFilePaths;
+        }
+
+        void AssetSelectionModel::SetSelectedFilePath(const AZStd::string& selectedFilePath)
+        {
+            m_selectedAssetIds.clear();
+
+            m_selectedFilePaths.clear();
+            m_selectedFilePaths.push_back(selectedFilePath);
         }
 
         void AssetSelectionModel::SetDefaultDirectory(AZStd::string_view defaultDirectory)
@@ -136,7 +166,7 @@ namespace AzToolsFramework
 
             CompositeFilter* compFilter = new CompositeFilter(CompositeFilter::LogicOperatorType::AND);
             compFilter->AddFilter(assetTypeFilterPtr);
-            compFilter->AddFilter(ProductsNoFoldersFilter());
+            compFilter->AddFilter(EntryTypeNoFoldersFilter());
 
             selection.SetSelectionFilter(FilterConstType(compFilter));
             selection.SetMultiselect(multiselect);
@@ -169,7 +199,7 @@ namespace AzToolsFramework
 
             CompositeFilter* compFilter = new CompositeFilter(CompositeFilter::LogicOperatorType::AND);
             compFilter->AddFilter(anyAssetTypeFilterPtr);
-            compFilter->AddFilter(ProductsNoFoldersFilter());
+            compFilter->AddFilter(EntryTypeNoFoldersFilter());
 
             selection.SetSelectionFilter(FilterConstType(compFilter));
             selection.SetMultiselect(multiselect);
@@ -190,7 +220,28 @@ namespace AzToolsFramework
 
             CompositeFilter* compFilter = new CompositeFilter(CompositeFilter::LogicOperatorType::AND);
             compFilter->AddFilter(assetGroupFilterPtr);
-            compFilter->AddFilter(ProductsNoFoldersFilter());
+            compFilter->AddFilter(EntryTypeNoFoldersFilter());
+
+            selection.SetSelectionFilter(FilterConstType(compFilter));
+            selection.SetMultiselect(multiselect);
+
+            return selection;
+        }
+
+        AssetSelectionModel AssetSelectionModel::SourceAssetTypeSelection(const QString& pattern, bool multiselect)
+        {
+            AssetSelectionModel selection;
+
+            RegExpFilter* patternFilter = new RegExpFilter();
+            patternFilter->SetFilterPattern(pattern);
+            patternFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
+            auto patternFilterPtr = FilterConstType(patternFilter);
+
+            selection.SetDisplayFilter(patternFilterPtr);
+
+            CompositeFilter* compFilter = new CompositeFilter(CompositeFilter::LogicOperatorType::AND);
+            compFilter->AddFilter(patternFilterPtr);
+            compFilter->AddFilter(EntryTypeNoFoldersFilter(AssetBrowserEntry::AssetEntryType::Source));
 
             selection.SetSelectionFilter(FilterConstType(compFilter));
             selection.SetMultiselect(multiselect);
@@ -204,7 +255,7 @@ namespace AzToolsFramework
          
             CompositeFilter* compFilter = new CompositeFilter(CompositeFilter::LogicOperatorType::OR);
             selection.SetDisplayFilter(FilterConstType(compFilter));
-            selection.SetSelectionFilter(ProductsNoFoldersFilter());
+            selection.SetSelectionFilter(EntryTypeNoFoldersFilter());
             selection.SetMultiselect(multiselect);
 
             return selection;

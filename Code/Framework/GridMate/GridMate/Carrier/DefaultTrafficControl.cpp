@@ -591,9 +591,6 @@ DefaultTrafficControl::Update()
         //AZ_TracePrintf("GridMate","Traffic control: Connection %s LifeTime(rtt %.2f packetLoss %.2f) LastSecond(rtt %.2f packetLoss %.2f)\n",
         //  cd.m_address.c_str(),cd.m_sdLifetime.m_rtt,cd.m_sdLifetime.m_packetLoss,cd.m_sdLastSecond.m_rtt,cd.m_sdLastSecond.m_packetLoss);
 
-        // send new statistics event
-        EBUS_EVENT(Debug::CarrierDrillerBus, OnUpdateStatistics, cd.m_address, cd.m_sdLastSecond, cd.m_sdLifetime, cd.m_sdEffectiveLastSecond, cd.m_sdEffectiveLifetime);
-
         cd.m_sdCurrentSecond.Reset();
         cd.m_sdCurrentSecond.m_rtt = cd.m_sdLastSecond.m_rtt;
         //cd.sdCurrentSecond.flow = 1.0f; // Good

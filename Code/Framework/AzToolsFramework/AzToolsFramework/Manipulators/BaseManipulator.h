@@ -28,7 +28,7 @@ namespace AzFramework
 
 namespace AzToolsFramework
 {
-    AZ_CVAR_EXTERNED(bool, cl_manipulatorDrawDebug);
+    AZ_CVAR_EXTERNED(bool, ed_manipulatorDrawDebug);
 
     namespace UndoSystem
     {
