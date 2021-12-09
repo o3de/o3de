@@ -9,7 +9,7 @@
 #pragma once
 
 #include <AzCore/DOM/DomValue.h>
-
+#include <AzCore/DOM/DomValueWriter.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 
 namespace AZ::Dom
@@ -26,6 +26,11 @@ namespace AZ::Dom
         return refCountedPointer;
     }
 
+    Node::Node(AZ::Name name)
+        : m_name(name)
+    {
+    }
+
     AZ::Name Node::GetName() const
     {
         return m_name;
@@ -36,31 +41,24 @@ namespace AZ::Dom
         m_name = name;
     }
 
-    ObjectPtr Node::GetMutableProperties()
+    Object::ContainerType& Node::GetProperties()
     {
-        CheckCopyOnWrite(m_object);
-        return m_object;
+        return m_properties;
     }
 
-    ConstObjectPtr Node::GetProperties() const
+    const Object::ContainerType& Node::GetProperties() const
     {
-        return m_object;
+        return m_properties;
     }
 
-    ArrayPtr Node::GetMutableChildren()
+    Array::ContainerType& Node::GetChildren()
     {
-        CheckCopyOnWrite(m_array);
-        return m_array;
+        return m_children;
     }
 
-    ConstArrayPtr Node::GetChildren() const
+    const Array::ContainerType& Node::GetChildren() const
     {
-        return m_array;
-    }
-
-    bool Node::operator==(const Node& rhs) const
-    {
-        return m_name == rhs.m_name && m_array == rhs.m_array && m_object == rhs.m_object;
+        return m_children;
     }
 
     Value::Value()
@@ -187,7 +185,7 @@ namespace AZ::Dom
             return Type::ObjectType;
         case 8: // ArrayPtr
             return Type::ArrayType;
-        case 9: // Node
+        case 9: // NodePtr
             return Type::NodeType;
         case 10: // AZStd::any*
             return Type::OpaqueType;
@@ -267,18 +265,31 @@ namespace AZ::Dom
         return *this;
     }
 
+    const Node& Value::GetNodeInternal() const
+    {
+        AZ_Assert(GetType() == Type::NodeType, "AZ::Dom::Value: attempted to retrieve a node from a non-node value");
+        return *AZStd::get<NodePtr>(m_value);
+    }
+
+    Node& Value::GetNodeInternal()
+    {
+        AZ_Assert(GetType() == Type::NodeType, "AZ::Dom::Value: attempted to retrieve a node from a non-node value");
+        return *CheckCopyOnWrite(AZStd::get<NodePtr>(m_value));
+    }
+
     const Object::ContainerType& Value::GetObjectInternal() const
     {
         const Type type = GetType();
         AZ_Assert(
-            type == Type::ObjectType || type == Type::NodeType, "AZ::Dom::Value: attempted to retrieve an object from a non-object value");
+            type == Type::ObjectType || type == Type::NodeType,
+            "AZ::Dom::Value: attempted to retrieve an object from a value that isn't an object or a node");
         if (type == Type::ObjectType)
         {
             return AZStd::get<ObjectPtr>(m_value)->m_values;
         }
         else
         {
-            return AZStd::get<Node>(m_value).GetProperties()->m_values;
+            return AZStd::get<NodePtr>(m_value)->GetProperties();
         }
     }
 
@@ -286,14 +297,15 @@ namespace AZ::Dom
     {
         const Type type = GetType();
         AZ_Assert(
-            type == Type::ObjectType || type == Type::NodeType, "AZ::Dom::Value: attempted to retrieve an object from a non-object value");
+            type == Type::ObjectType || type == Type::NodeType,
+            "AZ::Dom::Value: attempted to retrieve an object from a value that isn't an object or a node");
         if (type == Type::ObjectType)
         {
             return CheckCopyOnWrite(AZStd::get<ObjectPtr>(m_value))->m_values;
         }
         else
         {
-            return AZStd::get<Node>(m_value).GetMutableProperties()->m_values;
+            return CheckCopyOnWrite(AZStd::get<NodePtr>(m_value))->GetProperties();
         }
     }
 
@@ -301,14 +313,15 @@ namespace AZ::Dom
     {
         const Type type = GetType();
         AZ_Assert(
-            type == Type::ArrayType || type == Type::NodeType, "AZ::Dom::Value: attempted to retrieve an array from a non-array value");
+            type == Type::ArrayType || type == Type::NodeType,
+            "AZ::Dom::Value: attempted to retrieve an array from a value that isn't an array or a node");
         if (type == Type::ObjectType)
         {
             return AZStd::get<ArrayPtr>(m_value)->m_values;
         }
         else
         {
-            return AZStd::get<Node>(m_value).GetChildren()->m_values;
+            return AZStd::get<NodePtr>(m_value)->GetChildren();
         }
     }
 
@@ -316,14 +329,15 @@ namespace AZ::Dom
     {
         const Type type = GetType();
         AZ_Assert(
-            type == Type::ArrayType || type == Type::NodeType, "AZ::Dom::Value: attempted to retrieve an array from a non-array value");
+            type == Type::ArrayType || type == Type::NodeType,
+            "AZ::Dom::Value: attempted to retrieve an array from a value that isn't an array or node");
         if (type == Type::ObjectType)
         {
             return CheckCopyOnWrite(AZStd::get<ArrayPtr>(m_value))->m_values;
         }
         else
         {
-            return AZStd::get<Node>(m_value).GetMutableChildren()->m_values;
+            return CheckCopyOnWrite(AZStd::get<NodePtr>(m_value))->GetChildren();
         }
     }
 
@@ -627,6 +641,67 @@ namespace AZ::Dom
         return GetArrayInternal();
     }
 
+    void Value::SetNode(AZ::Name name)
+    {
+        m_value = AZStd::make_shared<Node>(name);
+    }
+
+    void Value::SetNode(AZStd::string_view name)
+    {
+        SetNode(AZ::Name(name));
+    }
+
+    AZ::Name Value::GetNodeName() const
+    {
+        return GetNodeInternal().GetName();
+    }
+
+    void Value::SetNodeName(AZ::Name name)
+    {
+        GetNodeInternal().SetName(name);
+    }
+
+    void Value::SetNodeName(AZStd::string_view name)
+    {
+        SetNodeName(AZ::Name(name));
+    }
+
+    void Value::SetNodeValue(Value value)
+    {
+        AZ_Assert(GetType() == Type::NodeType, "AZ::Dom::Value: Attempted to set value for non-node type");
+        Array::ContainerType& nodeChildren = GetArrayInternal();
+
+        // Set the first non-node child, if one is found
+        for (Value& entry : nodeChildren)
+        {
+            if (entry.GetType() != Type::NodeType)
+            {
+                entry = AZStd::move(value);
+                return;
+            }
+        }
+
+        // Otherwise, append the value entry
+        nodeChildren.push_back(AZStd::move(value));
+    }
+
+    Value Value::GetNodeValue() const
+    {
+        AZ_Assert(GetType() == Type::NodeType, "AZ::Dom::Value: Attempted to get value for non-node type");
+        const Array::ContainerType& nodeChildren = GetArrayInternal();
+
+        // Get the first non-node child, if one is found
+        for (const Value& entry : nodeChildren)
+        {
+            if (entry.GetType() != Type::NodeType)
+            {
+                return entry;
+            }
+        }
+
+        return Value();
+    }
+
     int64_t Value::GetInt() const
     {
         switch (m_value.index())
@@ -812,9 +887,9 @@ namespace AZ::Dom
                         result = visitor.EndArray(arrayContainer.size());
                     }
                 }
-                else if constexpr (AZStd::is_same_v<Alternative, Node>)
+                else if constexpr (AZStd::is_same_v<Alternative, NodePtr>)
                 {
-                    const Node& node = AZStd::get<Node>(m_value);
+                    const Node& node = *AZStd::get<NodePtr>(m_value);
                     result = visitor.StartNode(node.GetName());
                     if (result.IsSuccess())
                     {
@@ -850,204 +925,124 @@ namespace AZ::Dom
         return result;
     }
 
-    ValueWriter::ValueWriter(Value& outputValue)
-        : m_result(outputValue)
+    AZStd::unique_ptr<Visitor> Value::GetWriteHandler()
     {
+        return AZStd::make_unique<ValueWriter>(*this);
     }
 
-    VisitorFlags ValueWriter::GetVisitorFlags() const
+    bool Value::DeepCompareIsEqual(const Value& other) const
     {
-        return VisitorFlags::SupportsRawKeys | VisitorFlags::SupportsArrays | VisitorFlags::SupportsObjects | VisitorFlags::SupportsNodes;
-    }
-
-    ValueWriter::ValueInfo::ValueInfo(Value& container)
-        : m_container(container)
-    {
-    }
-
-    Visitor::Result ValueWriter::Null()
-    {
-        CurrentValue().SetNull();
-        return FinishWrite();
-    }
-
-    Visitor::Result ValueWriter::Bool(bool value)
-    {
-        CurrentValue().SetBool(value);
-        return FinishWrite();
-    }
-
-    Visitor::Result ValueWriter::Int64(AZ::s64 value)
-    {
-        CurrentValue().SetInt(value);
-        return FinishWrite();
-    }
-
-    Visitor::Result ValueWriter::Uint64(AZ::u64 value)
-    {
-        CurrentValue().SetUint(value);
-        return FinishWrite();
-    }
-
-    Visitor::Result ValueWriter::Double(double value)
-    {
-        CurrentValue().SetDouble(value);
-        return FinishWrite();
-    }
-
-    Visitor::Result ValueWriter::String(AZStd::string_view value, Lifetime lifetime)
-    {
-        if (lifetime == Lifetime::Persistent)
+        if (m_value.index() != other.m_value.index())
         {
-            CurrentValue().SetString(value);
-        }
-        else
-        {
-            CurrentValue().CopyFromString(value);
-        }
-        return FinishWrite();
-    }
-
-    Visitor::Result ValueWriter::StartObject()
-    {
-        CurrentValue().SetObject();
-
-        m_entryStack.emplace(CurrentValue());
-        return VisitorSuccess();
-    }
-
-    Visitor::Result ValueWriter::EndContainer(Type containerType, AZ::u64 attributeCount, AZ::u64 elementCount)
-    {
-        const char* endMethodName;
-        switch (containerType)
-        {
-        case Type::ObjectType:
-            endMethodName = "EndObject";
-            break;
-        case Type::ArrayType:
-            endMethodName = "EndArray";
-            break;
-        case Type::NodeType:
-            endMethodName = "EndNode";
-            break;
-        default:
-            AZ_Assert(false, "Invalid container type specified");
-            return VisitorFailure(VisitorErrorCode::InternalError, "AZ::Dom::ValueWriter: EndContainer called with invalid container type");
+            return false;
         }
 
-        if (m_entryStack.empty())
-        {
-            return VisitorFailure(
-                VisitorErrorCode::InternalError,
-                AZStd::string::format("AZ::Dom::ValueWriter: %s called without a matching call", endMethodName));
-        }
+        return AZStd::visit(
+            [&](auto&& ourValue) -> bool
+            {
+                using Alternative = AZStd::decay_t<decltype(ourValue)>;
+                auto&& theirValue = AZStd::get<AZStd::remove_cvref_t<decltype(ourValue)>>(other.m_value);
 
-        const ValueInfo& topEntry = m_entryStack.top();
-        if (topEntry.m_container.GetType() != containerType)
-        {
-            return VisitorFailure(
-                VisitorErrorCode::InternalError,
-                AZStd::string::format("AZ::Dom::ValueWriter: %s called from within a different container type", endMethodName));
-        }
+                if constexpr (AZStd::is_same_v<Alternative, AZStd::monostate>)
+                {
+                    return true;
+                }
+                else if constexpr (AZStd::is_same_v<Alternative, ObjectPtr>)
+                {
+                    if (ourValue == theirValue)
+                    {
+                        return true;
+                    }
 
-        if (topEntry.m_attributeCount != attributeCount)
-        {
-            return VisitorFailure(
-                VisitorErrorCode::InternalError,
-                AZStd::string::format(
-                    "AZ::Dom::ValueWriter: %s expected %llu attributes but received %llu attributes instead", endMethodName, attributeCount,
-                    topEntry.m_attributeCount));
-        }
+                    if (ourValue->m_values.size() != theirValue->m_values.size())
+                    {
+                        return false;
+                    }
 
-        if (topEntry.m_elementCount != elementCount)
-        {
-            return VisitorFailure(
-                VisitorErrorCode::InternalError,
-                AZStd::string::format(
-                    "AZ::Dom::ValueWriter: %s expected %llu elements but received %llu elements instead", endMethodName, elementCount,
-                    topEntry.m_elementCount));
-        }
+                    for (size_t i = 0; i < ourValue->m_values.size(); ++i)
+                    {
+                        const Object::EntryType& lhs = ourValue->m_values[i];
+                        const Object::EntryType& rhs = theirValue->m_values[i];
+                        if (lhs.first != rhs.first || !lhs.second.DeepCompareIsEqual(rhs.second))
+                        {
+                            return false;
+                        }
+                    }
 
-        m_entryStack.pop();
-        return FinishWrite();
-    }
+                    return true;
+                }
+                else if constexpr (AZStd::is_same_v<Alternative, ArrayPtr>)
+                {
+                    if (ourValue == theirValue)
+                    {
+                        return true;
+                    }
 
-    Visitor::Result ValueWriter::EndObject(AZ::u64 attributeCount)
-    {
-        return EndContainer(Type::ObjectType, attributeCount, 0);
-    }
+                    if (ourValue->m_values.size() != theirValue->m_values.size())
+                    {
+                        return false;
+                    }
 
-    Visitor::Result ValueWriter::Key(AZ::Name key)
-    {
-        AZ_Assert(!m_entryStack.empty(), "Attempmted to push a key with no object");
-        AZ_Assert(!m_entryStack.top().m_container.IsArray(), "Attempted to push a key to an array");
-        m_entryStack.top().m_key = key;
-        return VisitorSuccess();
-    }
+                    for (size_t i = 0; i < ourValue->m_values.size(); ++i)
+                    {
+                        const Value& lhs = ourValue->m_values[i];
+                        const Value& rhs = theirValue->m_values[i];
+                        if (!lhs.DeepCompareIsEqual(rhs))
+                        {
+                            return false;
+                        }
+                    }
 
-    Visitor::Result ValueWriter::RawKey(AZStd::string_view key, [[maybe_unused]] Lifetime lifetime)
-    {
-        return Key(AZ::Name(key));
-    }
+                    return true;
+                }
+                else if constexpr (AZStd::is_same_v<Alternative, NodePtr>)
+                {
+                    if (ourValue == theirValue)
+                    {
+                        return true;
+                    }
 
-    Visitor::Result ValueWriter::StartArray()
-    {
-        CurrentValue().SetArray();
+                    const Node& ourNode = *ourValue;
+                    const Node& theirNode = *theirValue;
 
-        m_entryStack.emplace(CurrentValue());
-        return VisitorSuccess();
-    }
+                    const Object::ContainerType& ourProperties = ourNode.GetProperties();
+                    const Object::ContainerType& theirProperties = theirNode.GetProperties();
 
-    Visitor::Result ValueWriter::EndArray(AZ::u64 elementCount)
-    {
-        return EndContainer(Type::ArrayType, 0, elementCount);
-    }
+                    if (ourProperties.size() != theirProperties.size())
+                    {
+                        return false;
+                    }
 
-    Visitor::Result ValueWriter::StartNode(AZ::Name name)
-    {
-        CurrentValue().SetNode(name);
+                    for (size_t i = 0; i < ourProperties.size(); ++i)
+                    {
+                        const Object::EntryType& lhs = ourProperties[i];
+                        const Object::EntryType& rhs = theirProperties[i];
+                        if (lhs.first != rhs.first || !lhs.second.DeepCompareIsEqual(rhs.second))
+                        {
+                            return false;
+                        }
+                    }
 
-        m_entryStack.emplace(CurrentValue());
-        return VisitorSuccess();
-    }
+                    const Array::ContainerType& ourChildren = ourNode.GetChildren();
+                    const Array::ContainerType& theirChildren = theirNode.GetChildren();
 
-    Visitor::Result ValueWriter::EndNode(AZ::u64 attributeCount, AZ::u64 elementCount)
-    {
-        return EndContainer(Type::NodeType, attributeCount, elementCount);
-    }
+                    for (size_t i = 0; i < ourChildren.size(); ++i)
+                    {
+                        const Value& lhs = ourChildren[i];
+                        const Value& rhs = theirChildren[i];
+                        if (!lhs.DeepCompareIsEqual(rhs))
+                        {
+                            return false;
+                        }
+                    }
 
-    Visitor::Result ValueWriter::FinishWrite()
-    {
-        if (m_entryStack.empty())
-        {
-            return VisitorSuccess();
-        }
-
-        Value value;
-        m_entryStack.top().m_value.Swap(value);
-        ValueInfo& newEntry = m_entryStack.top();
-
-        if (!newEntry.m_key.IsEmpty())
-        {
-            newEntry.m_container.AddMember(newEntry.m_key, AZStd::move(value));
-            newEntry.m_key = AZ::Name();
-            ++newEntry.m_attributeCount;
-        }
-        else
-        {
-            newEntry.m_container.PushBack(AZStd::move(value));
-            ++newEntry.m_elementCount;
-        }
-
-        return VisitorSuccess();
-    }
-
-    Value& ValueWriter::CurrentValue()
-    {
-        if (m_entryStack.empty())
-        {
-            return m_result;
-        }
-        return m_entryStack.top().m_value;
+                    return true;
+                }
+                else
+                {
+                    return ourValue == theirValue;
+                }
+            },
+            m_value);
     }
 } // namespace AZ::Dom
