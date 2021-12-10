@@ -11,11 +11,13 @@
 #include <AzCore/DOM/DomBackend.h>
 #include <AzCore/DOM/DomVisitor.h>
 #include <AzCore/Memory/Memory.h>
+#include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/std/containers/stack.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/std/containers/array.h>
 
 namespace AZ::Dom
 {
@@ -34,6 +36,22 @@ namespace AZ::Dom
         OpaqueType = 8,
     };
 
+    class ValueAllocator final : public ThreadPoolBase<ValueAllocator, false>
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(ValueAllocator, SystemAllocator, 0);
+        AZ_TYPE_INFO(ValueAllocator, "{5BC8B389-72C7-459E-B502-12E74D61869F}");
+
+        ValueAllocator()
+            : ThreadPoolBase<ValueAllocator, false>("DomValueAllocator", "Allocator for AZ::Dom::Value")
+        {
+        }
+    };
+
+    // class ValueAllocator : public Internal::PoolAllocatorHelper<PoolScema
+
+    // using ValueAllocator = ThreadPoolAllocator;
+
     class Value;
 
     class Array
@@ -42,6 +60,7 @@ namespace AZ::Dom
         using ContainerType = AZStd::vector<Value>;
         using Iterator = ContainerType::iterator;
         using ConstIterator = ContainerType::const_iterator;
+        static constexpr const size_t ReserveIncrement = 4;
 
     private:
         ContainerType m_values;
@@ -59,6 +78,7 @@ namespace AZ::Dom
         using ContainerType = AZStd::vector<EntryType>;
         using Iterator = ContainerType::iterator;
         using ConstIterator = ContainerType::const_iterator;
+        static constexpr const size_t ReserveIncrement = 8;
 
     private:
         ContainerType m_values;
@@ -293,6 +313,18 @@ namespace AZ::Dom
 
         explicit Value(AZStd::any* opaqueValue);
 
+        static constexpr const size_t ShortStringSize = sizeof(AZStd::string_view) - sizeof(size_t);
+        struct ShortStringType
+        {
+            AZStd::array<char, ShortStringSize> m_data;
+            size_t m_size;
+
+            bool operator==(const ShortStringType& other) const
+            {
+                return m_size == other.m_size ? memcmp(m_data.data(), other.m_data.data(), m_size) == 0 : false;
+            }
+        };
+
         // If using the the copy on write model, anything stored internally as a shared_ptr will
         // detach and copy when doing a mutating operation if use_count() > 1.
 
@@ -311,6 +343,7 @@ namespace AZ::Dom
             // StringType
             AZStd::string_view,
             AZStd::shared_ptr<AZStd::string>,
+            ShortStringType,
             // ObjectType
             ObjectPtr,
             // ArrayType
@@ -319,6 +352,10 @@ namespace AZ::Dom
             NodePtr,
             // OpaqueType
             AZStd::any*>;
+
+        static_assert(
+            sizeof(ValueType) == sizeof(AZStd::variant<ShortStringType>),
+            "ValueType should have no members larger than ShortStringType");
 
         ValueType m_value;
     };

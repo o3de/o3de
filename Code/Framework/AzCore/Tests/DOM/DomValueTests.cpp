@@ -25,12 +25,14 @@ namespace AZ::Dom::Tests
         {
             UnitTest::AllocatorsFixture::SetUp();
             NameDictionary::Create();
+            AZ::AllocatorInstance<ValueAllocator>::Create();
         }
 
         void TearDown() override
         {
             m_value = Value();
 
+            AZ::AllocatorInstance<ValueAllocator>::Destroy();
             NameDictionary::Destroy();
             UnitTest::AllocatorsFixture::TearDown();
         }
@@ -279,19 +281,24 @@ namespace AZ::Dom::Tests
 
     TEST_F(DomValueTests, String)
     {
+        const char* s1 = "reference string long enough to avoid SSO";
+        const char* s2 = "copy string long enough to avoid SSO";
+
         m_value.SetObject();
-        AZStd::string stringToReference = "foo";
+        AZStd::string stringToReference = s1;
         m_value["no_copy"] = Value(stringToReference, false);
-        AZStd::string stringToCopy = "bar";
+        AZStd::string stringToCopy = s2;
         m_value["copy"] = Value(stringToCopy, true);
 
         EXPECT_EQ(m_value["no_copy"].GetType(), Type::StringType);
-        EXPECT_EQ(m_value["no_copy"].GetString(), stringToReference);
-        EXPECT_EQ(m_value["no_copy"].GetString().data(), stringToReference.data());
+        EXPECT_EQ(m_value["no_copy"].GetString(), s1);
+        stringToReference.at(0) = 'F';
+        EXPECT_NE(m_value["no_copy"].GetString(), s1);
 
         EXPECT_EQ(m_value["copy"].GetType(), Type::StringType);
-        EXPECT_EQ(m_value["copy"].GetString(), stringToCopy);
-        EXPECT_NE(m_value["copy"].GetString().data(), stringToCopy.data());
+        EXPECT_EQ(m_value["copy"].GetString(), s2);
+        stringToCopy.at(0) = 'F';
+        EXPECT_EQ(m_value["copy"].GetString(), s2);
 
         PerformValueChecks();
     }
