@@ -51,7 +51,7 @@ namespace PhysX
                 AzPhysics::SceneHandle sceneHandle,
                 AzPhysics::SimulatedBodyHandle parentBodyHandle,
                 AzPhysics::SimulatedBodyHandle childBodyHandle);
-                
+
             PxJointUniquePtr CreatePxHingeJoint(const PhysX::HingeJointConfiguration& configuration,
                 AzPhysics::SceneHandle sceneHandle,
                 AzPhysics::SimulatedBodyHandle parentBodyHandle,

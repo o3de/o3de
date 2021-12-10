@@ -435,7 +435,7 @@ namespace Audio
                     }
 
                     // Format: "relative/path/filename.ext (230 KiB) [2]"
-                    auxGeom.Draw2dLabel(positionX, positionY, entryDrawSize, color, false, 
+                    auxGeom.Draw2dLabel(positionX, positionY, entryDrawSize, color, false,
                         "%s (%zu %s) [%zu]",
                         audioFileEntry->m_filePath.c_str(),
                         fileSize,
@@ -626,7 +626,7 @@ namespace Audio
             }
         }
     }
-    
+
     ///////////////////////////////////////////////////////////////////////////////////////////////
     bool CFileCacheManager::AllocateMemoryBlockInternal(CATLAudioFileEntry* const audioFileEntry)
     {

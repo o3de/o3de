@@ -227,7 +227,7 @@ namespace AZ::IO
             {
                 auto parentReadRequest = next->GetCommandFromChain<FileRequest::ReadRequestData>();
                 AZ_Assert(parentReadRequest != nullptr, "The issued read request can't be found for the (compressed) read command.");
-                
+
                 size_t size = parentReadRequest->m_size;
                 if (parentReadRequest->m_output == nullptr)
                 {
@@ -266,7 +266,7 @@ namespace AZ::IO
                     m_processingStartTime = AZStd::chrono::system_clock::now();
                 }
 #endif
-                
+
                 if constexpr (AZStd::is_same_v<Command, FileRequest::ReadData>)
                 {
                     m_threadData.m_lastFilePath = args.m_path;
@@ -411,7 +411,7 @@ namespace AZ::IO
                 ++pendingIt;
             }
         }
-        
+
         m_threadData.m_streamStack->QueueRequest(request);
     }
 

@@ -53,7 +53,7 @@ namespace PhysX
         void RemoveSimulatedBodies(AzPhysics::SimulatedBodyHandleList& bodyHandles) override;
         void EnableSimulationOfBody(AzPhysics::SimulatedBodyHandle bodyHandle) override;
         void DisableSimulationOfBody(AzPhysics::SimulatedBodyHandle bodyHandle) override;
-        AzPhysics::JointHandle AddJoint(const AzPhysics::JointConfiguration* jointConfig, 
+        AzPhysics::JointHandle AddJoint(const AzPhysics::JointConfiguration* jointConfig,
             AzPhysics::SimulatedBodyHandle parentBody, AzPhysics::SimulatedBodyHandle childBody) override;
         AzPhysics::Joint* GetJointFromHandle(AzPhysics::JointHandle jointHandle) override;
         void RemoveJoint(AzPhysics::JointHandle jointHandle) override;
