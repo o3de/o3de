@@ -304,8 +304,8 @@ namespace EMotionFX
                     // Store the current motion instance state, so we can sample this as source pose.
                     m_prevMotionInstance->SetMotion(m_motionInstance->GetMotion());
                     m_prevMotionInstance->SetMirrorMotion(m_motionInstance->GetMirrorMotion());
-                    m_prevMotionInstance->SetCurrentTime(m_motionInstance->GetCurrentTime(), true);
-                    m_prevMotionInstance->SetLastCurrentTime(m_prevMotionInstance->GetCurrentTime() - timePassedInSeconds);
+                    m_prevMotionInstance->SetCurrentTime(m_motionInstance->GetCurrentTime() + timePassedInSeconds, true);
+                    m_prevMotionInstance->SetLastCurrentTime(m_prevMotionInstance->GetCurrentTime());
 
                     m_lowestCostFrameIndex = lowestCostFrameIndex;
 
@@ -315,8 +315,8 @@ namespace EMotionFX
                     // The new motion time will become the current time after this frame while the current time
                     // becomes the last current time. As we just start playing at the search frame, calculate
                     // the last time based on the time delta.
-                    m_motionInstance->SetCurrentTime(lowestCostFrame.GetSampleTime() - timePassedInSeconds, true);
-                    SetNewMotionTime(lowestCostFrame.GetSampleTime());
+                    m_motionInstance->SetCurrentTime(lowestCostFrame.GetSampleTime(), true);
+                    SetNewMotionTime(lowestCostFrame.GetSampleTime() + timePassedInSeconds);
                 }
 
                 // Do this always, elsewise we search for the lowest cost frame index too many times.

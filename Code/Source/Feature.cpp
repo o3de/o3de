@@ -158,11 +158,11 @@ namespace EMotionFX
 
             for (size_t sampleIndex = 0; sampleIndex < numSamples + 1; ++sampleIndex)
             {
-                float sampleTimeOffset = (-halfTimeRange) + sampleIndex * frameDelta;
+                const float sampleTimeOffset = (-halfTimeRange) + sampleIndex * frameDelta;
 
                 if (sampleIndex == 0)
                 {
-                    frame.SamplePose(&prevPose->GetPose(), (float)sampleTimeOffset);
+                    frame.SamplePose(&prevPose->GetPose(), sampleTimeOffset);
                     continue;
                 }
 
