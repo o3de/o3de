@@ -25,7 +25,7 @@ pushd $GEM_DIRECTORY/$GEM_NAME/cdk
 # Revert the CDK application code to a stable state using the provided commit ID
 if ! git checkout $COMMIT_ID -- .;
 then
-    echo [git_checkout] Failed to checkout the CDK application for the %GEM_NAME% gem using commit ID $COMMIT_ID
+    echo [git_checkout] Failed to checkout the CDK application for the $GEM_NAME gem using commit ID $COMMIT_ID
     popd
     return 1
 fi

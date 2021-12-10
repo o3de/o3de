@@ -9,7 +9,7 @@
 ## Deploy CDK Applications
 1. Go to the AWS IAM console and create an IAM role called o3de-automation-tests which adds your own account as as a trusted entity and uses the "AdministratorAccess" permissions policy.
 2. Copy the following deployment script to your engine root folder:
-    * Windows
+    * Windows (Command Prompt)
         ```
             {engine_root}\scripts\build\Platform\Windows\deploy_cdk_applications.cmd
         ```
