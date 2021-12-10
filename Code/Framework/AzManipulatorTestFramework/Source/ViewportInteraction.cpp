@@ -148,4 +148,14 @@ namespace AzManipulatorTestFramework
     {
         return 1.0f;
     }
+
+    bool ViewportInteraction::IconsVisible() const
+    {
+        return m_iconsVisible;
+    }
+
+    bool ViewportInteraction::HelpersVisible() const
+    {
+        return m_helpersVisible;
+    }
 } // namespace AzManipulatorTestFramework

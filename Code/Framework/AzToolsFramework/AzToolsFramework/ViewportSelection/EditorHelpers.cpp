@@ -63,11 +63,21 @@ namespace AzToolsFramework
     static const float s_iconFarDist = 40.f; // distance at which icons are at minimum scale
 
     // helper function to wrap EBus call to check if helpers are being displayed
-    static bool HelpersVisible()
+    static bool HelpersVisible(const AzFramework::ViewportId viewportId)
     {
         bool helpersVisible = false;
-        EditorRequestBus::BroadcastResult(helpersVisible, &EditorRequestBus::Events::DisplayHelpersVisible);
+        ViewportInteraction::ViewportSettingsRequestBus::EventResult(
+            helpersVisible, viewportId, &ViewportInteraction::ViewportSettingsRequestBus::Events::HelpersVisible);
         return helpersVisible;
+    }
+
+    // helper function to wrap EBus call to check if icons are being displayed
+    static bool IconsVisible(const AzFramework::ViewportId viewportId)
+    {
+        bool iconsVisible = false;
+        ViewportInteraction::ViewportSettingsRequestBus::EventResult(
+            iconsVisible, viewportId, &ViewportInteraction::ViewportSettingsRequestBus::Events::IconsVisible);
+        return iconsVisible;
     }
 
     float GetIconScale(const float distance)
@@ -171,7 +181,7 @@ namespace AzToolsFramework
 
         const int viewportId = mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId;
 
-        const bool helpersVisible = HelpersVisible();
+        const bool iconsVisible = IconsVisible(viewportId);
 
         const AZ::Matrix3x4 cameraView = AzFramework::CameraView(cameraState);
         const AZ::Matrix4x4 cameraProjection = AzFramework::CameraProjection(cameraState);
@@ -188,8 +198,7 @@ namespace AzToolsFramework
                 continue;
             }
 
-            // 2d screen space selection - did we click an icon
-            if (helpersVisible)
+            if (iconsVisible)
             {
                 // some components choose to hide their icons (e.g. meshes)
                 // we also do not want to test against icons that may not be showing as they're inside a 'closed' entity container
@@ -290,53 +299,78 @@ namespace AzToolsFramework
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-        if (HelpersVisible())
+        const bool iconsVisible = IconsVisible(viewportInfo.m_viewportId);
+        const bool helpersVisible = HelpersVisible(viewportInfo.m_viewportId);
+
+        auto displayCheck = [this](const size_t entityCacheIndex, const AZ::EntityId entityId)
+        {
+            if (!m_entityDataCache->IsVisibleEntityVisible(entityCacheIndex) || !IsSelectableInViewport(entityId))
+            {
+                return false;
+            }
+            return true;
+        };
+
+        if (helpersVisible)
         {
             for (size_t entityCacheIndex = 0; entityCacheIndex < m_entityDataCache->VisibleEntityDataCount(); ++entityCacheIndex)
             {
-                const AZ::EntityId entityId = m_entityDataCache->GetVisibleEntityId(entityCacheIndex);
-
-                if (!m_entityDataCache->IsVisibleEntityVisible(entityCacheIndex) || !IsSelectableInViewport(entityId))
+                if (const AZ::EntityId entityId = m_entityDataCache->GetVisibleEntityId(entityCacheIndex);
+                    displayCheck(entityCacheIndex, entityId))
                 {
-                    continue;
+                    // notify components to display
+                    DisplayComponents(entityId, viewportInfo, debugDisplay);
                 }
+            }
+        }
 
-                // notify components to display
-                DisplayComponents(entityId, viewportInfo, debugDisplay);
+        if (iconsVisible)
+        {
+            auto editorViewportIconDisplay = EditorViewportIconDisplay::Get();
+            if (!editorViewportIconDisplay)
+            {
+                return;
+            }
 
-                if (m_entityDataCache->IsVisibleEntityIconHidden(entityCacheIndex) ||
-                    (m_entityDataCache->IsVisibleEntitySelected(entityCacheIndex) && !showIconCheck(entityId)))
+            for (size_t entityCacheIndex = 0; entityCacheIndex < m_entityDataCache->VisibleEntityDataCount(); ++entityCacheIndex)
+            {
+                if (const AZ::EntityId entityId = m_entityDataCache->GetVisibleEntityId(entityCacheIndex);
+                    displayCheck(entityCacheIndex, entityId))
                 {
-                    continue;
-                }
-
-                int iconTextureId = 0;
-                EditorEntityIconComponentRequestBus::EventResult(
-                    iconTextureId, entityId, &EditorEntityIconComponentRequests::GetEntityIconTextureId);
-
-                using ComponentEntityAccentType = Components::EditorSelectionAccentSystemComponent::ComponentEntityAccentType;
-                const AZ::Color iconHighlight = [this, entityCacheIndex]()
-                {
-                    if (m_entityDataCache->IsVisibleEntityLocked(entityCacheIndex))
+                    if (m_entityDataCache->IsVisibleEntityIconHidden(entityCacheIndex) ||
+                        (m_entityDataCache->IsVisibleEntitySelected(entityCacheIndex) && !showIconCheck(entityId)))
                     {
-                        return AZ::Color(AZ::u8(100), AZ::u8(100), AZ::u8(100), AZ::u8(255));
+                        continue;
                     }
 
-                    if (m_entityDataCache->GetVisibleEntityAccent(entityCacheIndex) == ComponentEntityAccentType::Hover)
+                    int iconTextureId = 0;
+                    EditorEntityIconComponentRequestBus::EventResult(
+                        iconTextureId, entityId, &EditorEntityIconComponentRequests::GetEntityIconTextureId);
+
+                    using ComponentEntityAccentType = Components::EditorSelectionAccentSystemComponent::ComponentEntityAccentType;
+                    const AZ::Color iconHighlight = [this, entityCacheIndex]()
                     {
-                        return AZ::Color(AZ::u8(255), AZ::u8(120), AZ::u8(0), AZ::u8(204));
-                    }
+                        if (m_entityDataCache->IsVisibleEntityLocked(entityCacheIndex))
+                        {
+                            return AZ::Color(AZ::u8(100), AZ::u8(100), AZ::u8(100), AZ::u8(255));
+                        }
 
-                    return AZ::Color(1.0f, 1.0f, 1.0f, 1.0f);
-                }();
+                        if (m_entityDataCache->GetVisibleEntityAccent(entityCacheIndex) == ComponentEntityAccentType::Hover)
+                        {
+                            return AZ::Color(AZ::u8(255), AZ::u8(120), AZ::u8(0), AZ::u8(204));
+                        }
 
-                const AZ::Vector3& entityPosition = m_entityDataCache->GetVisibleEntityPosition(entityCacheIndex);
-                const float distanceFromCamera = cameraState.m_position.GetDistance(entityPosition);
-                const float iconSize = GetIconSize(distanceFromCamera);
+                        return AZ::Color(1.0f, 1.0f, 1.0f, 1.0f);
+                    }();
 
-                EditorViewportIconDisplay::Get()->DrawIcon({ viewportInfo.m_viewportId, iconTextureId, iconHighlight, entityPosition,
-                                                             EditorViewportIconDisplayInterface::CoordinateSpace::WorldSpace,
-                                                             AZ::Vector2{ iconSize, iconSize } });
+                    const AZ::Vector3& entityPosition = m_entityDataCache->GetVisibleEntityPosition(entityCacheIndex);
+                    const float distanceFromCamera = cameraState.m_position.GetDistance(entityPosition);
+                    const float iconSize = GetIconSize(distanceFromCamera);
+
+                    editorViewportIconDisplay->DrawIcon({ viewportInfo.m_viewportId, iconTextureId, iconHighlight, entityPosition,
+                                                          EditorViewportIconDisplayInterface::CoordinateSpace::WorldSpace,
+                                                          AZ::Vector2{ iconSize, iconSize } });
+                }
             }
         }
     }
