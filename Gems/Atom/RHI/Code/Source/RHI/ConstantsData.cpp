@@ -273,6 +273,21 @@ namespace AZ
             return false;
         }
 
+        template <>
+        bool ConstantsData::SetConstant<Color>(ShaderInputConstantIndex inputIndex, const Color& value)
+        {
+            constexpr size_t sizeOfColor = 16;
+            if (ValidateConstantAccess(inputIndex, ValidateConstantAccessExpect::Complete, 0, aznumeric_caster(sizeOfColor)))
+            {
+                const Interval interval = GetLayout()->GetInterval(inputIndex);
+                float* vectorValue = reinterpret_cast<float*>(&m_constantData[interval.m_min]);
+                value.StoreToFloat4(vectorValue);
+
+                return true;
+            }
+            return false;
+        }
+
         bool ConstantsData::SetConstantMatrixRows(ShaderInputConstantIndex inputIndex, const Matrix3x3& value, uint32_t rowCount)
         {
             // See the packing comments in ConstantsData::SetConstant<Matrix3x3> for an explanation of why we only use
@@ -387,6 +402,18 @@ namespace AZ
                 return Vector4::CreateFromFloat4(reinterpret_cast<const float*>(constantBytes.data()));
             }
             return Vector4();
+        }
+
+        template <>
+        Color ConstantsData::GetConstant<Color>(ShaderInputConstantIndex inputIndex) const
+        {
+            constexpr size_t colorSize = 16;
+            if (ValidateConstantAccess(inputIndex, ValidateConstantAccessExpect::Complete, 0, aznumeric_caster(colorSize)))
+            {
+                AZStd::array_view<uint8_t> constantBytes = GetConstantRaw(inputIndex);
+                return Color::CreateFromFloat4(reinterpret_cast<const float*>(constantBytes.data()));
+            }
+            return Color();
         }
 
         AZStd::array_view<uint8_t> ConstantsData::GetConstantRaw(ShaderInputConstantIndex inputIndex) const
