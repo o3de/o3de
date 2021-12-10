@@ -84,7 +84,6 @@ namespace UnitTest
             m_fileIOHelper->m_fileIO.SetAlias("@engroot@", m_engineRoot.c_str());
 
             AzFramework::Application::Descriptor appDesc;
-            appDesc.m_enableDrilling = false;
             m_app.Create(appDesc);
 
             AzFramework::ApplicationRequests::Bus::Handler::BusConnect();

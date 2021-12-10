@@ -25,6 +25,7 @@ set(FILES
     PALDetection_windows.cmake
     Install_windows.cmake
     Packaging_windows.cmake
+    PackagingCodeSign_windows.cmake
     PackagingPostBuild_windows.cmake
     PackagingPreBuild_windows.cmake
     Packaging/Bootstrapper.wxs

@@ -7,8 +7,8 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 def DetachPrefab_UnderAnotherPrefab():
 
-    CAR_PREFAB_FILE_NAME = 'car_prefab'
-    WHEEL_PREFAB_FILE_NAME = 'wheel_prefab'
+    CAR_PREFAB_FILE_NAME = 'car_prefab2'
+    WHEEL_PREFAB_FILE_NAME = 'wheel_prefab2'
 
     import editor_python_test_tools.pyside_utils as pyside_utils
 

@@ -15,8 +15,6 @@
 // Using ebus as a temporary workaround
 #include <AzFramework/Components/CameraBus.h>
 
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace Render

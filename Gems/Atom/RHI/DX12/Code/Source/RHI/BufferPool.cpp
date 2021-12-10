@@ -14,7 +14,6 @@
 #include <RHI/Device.h>
 #include <RHI/ResourcePoolResolver.h>
 #include <Atom/RHI.Reflect/DX12/BufferPoolDescriptor.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Casting/lossy_cast.h>
 
 #include <algorithm>
@@ -54,7 +53,7 @@ namespace AZ
 
             CpuVirtualAddress MapBuffer(const RHI::BufferMapRequest& request)
             {
-                AZ_TRACE_METHOD();
+                AZ_PROFILE_FUNCTION(RHI);
 
                 MemoryView stagingMemory = m_device->AcquireStagingMemory(request.m_byteCount, Alignment::Buffer);
 
@@ -247,7 +246,7 @@ namespace AZ
 
         RHI::ResultCode BufferPool::InitBufferInternal(RHI::Buffer& bufferBase, const RHI::BufferDescriptor& bufferDescriptor)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             // We need respect the buffer's alignment if the buffer is used for SRV or UAV
             bool useBufferAlignment = RHI::CheckBitsAny(bufferDescriptor.m_bindFlags,
@@ -307,7 +306,7 @@ namespace AZ
 
         RHI::ResultCode BufferPool::MapBufferInternal(const RHI::BufferMapRequest& request, RHI::BufferMapResponse& response)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             const RHI::BufferPoolDescriptor& poolDescriptor = GetDescriptor();
             Buffer& buffer = *static_cast<Buffer*>(request.m_buffer);

@@ -28,6 +28,9 @@ set(FILES
     Entity/EditorEntitySearchComponentTests.cpp
     Entity/EditorEntitySelectionTests.cpp
     Entity/EntityUtilityComponentTests.cpp
+    Entity/ReadOnly/ReadOnlyEntityFixture.cpp
+    Entity/ReadOnly/ReadOnlyEntityFixture.h
+    Entity/ReadOnly/ReadOnlyEntityTests.cpp
     EntityIdQLabelTests.cpp
     EntityInspectorTests.cpp
     EntityOwnershipService/EntityOwnershipServiceTestFixture.cpp
@@ -45,6 +48,7 @@ set(FILES
     FocusMode/EditorFocusModeSelectionTests.cpp
     FocusMode/EditorFocusModeTests.cpp
     GenericComponentWrapperTest.cpp
+    Input/QtEventToAzInputMapperTests.cpp
     InstanceDataHierarchy.cpp
     IntegerPrimtitiveTestConfig.h
     LogLines.cpp
@@ -66,11 +70,12 @@ set(FILES
     Prefab/PrefabFocus/PrefabFocusTests.cpp
     Prefab/MockPrefabFileIOActionValidator.cpp
     Prefab/MockPrefabFileIOActionValidator.h
+    Prefab/PrefabDeleteTests.cpp
     Prefab/PrefabDuplicateTests.cpp
     Prefab/PrefabEntityAliasTests.cpp
     Prefab/PrefabInstanceToTemplatePropagatorTests.cpp
     Prefab/PrefabInstantiateTests.cpp
-    Prefab/PrefabInstantiateTests.cpp
+    Prefab/PrefabAssetFixupTests.cpp
     Prefab/PrefabLoadTemplateTests.cpp
     Prefab/PrefabTestComponent.cpp
     Prefab/PrefabTestComponent.h

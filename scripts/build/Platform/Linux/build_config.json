@@ -84,7 +84,7 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all",
       "CTEST_OPTIONS": "-E (AutomatedTesting::Atom_TestSuite_Main|AutomatedTesting::TerrainTests_Main|Gem::EMotionFX.Editor.Tests) -L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error",
-      "TEST_RESULTS": "True"
+      "TEST_RESULTS": "False"
     }
   },
   "test_profile_nounity": {
@@ -97,7 +97,7 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all",
       "CTEST_OPTIONS": "-E (AutomatedTesting::Atom_TestSuite_Main|AutomatedTesting::TerrainTests_Main|Gem::EMotionFX.Editor.Tests) -L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error",
-      "TEST_RESULTS": "True"
+      "TEST_RESULTS": "False"
     }
   },
   "asset_profile": {
@@ -146,7 +146,7 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_periodic",
       "CTEST_OPTIONS": "-L (SUITE_periodic) --no-tests=error",
-      "TEST_RESULTS": "True"
+      "TEST_RESULTS": "False"
     }
   },
   "sandbox_test_profile": {
@@ -182,7 +182,7 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_benchmark",
       "CTEST_OPTIONS": "-L (SUITE_benchmark) --no-tests=error",
-      "TEST_RESULTS": "True"
+      "TEST_RESULTS": "False"
     }
   },
   "release": {
@@ -230,6 +230,9 @@
       "nightly-clean",
       "nightly-installer"
     ],
+    "PIPELINE_ENV":{
+      "NODE_LABEL":"linux-707531fc7-packaging"
+    },
     "COMMAND": "build_installer_linux.sh",
     "PARAMETERS": {
         "CONFIGURATION": "profile",

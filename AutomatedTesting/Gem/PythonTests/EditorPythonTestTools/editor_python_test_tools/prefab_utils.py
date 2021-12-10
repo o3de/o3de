@@ -39,7 +39,6 @@ def get_prefab_file_path(prefab_path):
         prefab_path = name + ".prefab"
     return prefab_path
 
-
 def get_all_entity_ids():
     return entity.SearchBus(bus.Broadcast, 'SearchEntities', entity.SearchFilter())
 

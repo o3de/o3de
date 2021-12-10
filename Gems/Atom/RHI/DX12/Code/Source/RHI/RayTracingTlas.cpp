@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Math/Matrix3x4.h>
 #include <RHI/RayTracingTlas.h>
 #include <RHI/RayTracingBlas.h>

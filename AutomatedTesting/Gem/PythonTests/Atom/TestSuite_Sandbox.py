@@ -12,6 +12,7 @@ import pytest
 import ly_test_tools.environment.file_system as file_system
 import editor_python_test_tools.hydra_test_utils as hydra
 
+from ly_test_tools.o3de.editor_test import EditorSharedTest, EditorTestSuite
 from Atom.atom_utils.atom_constants import LIGHT_TYPES
 
 logger = logging.getLogger(__name__)
@@ -159,3 +160,17 @@ class TestMaterialEditorBasicTests(object):
             enable_prefab_system=False,
         )
 
+
+@pytest.mark.parametrize("project", ["AutomatedTesting"])
+@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
+class TestAutomation(EditorTestSuite):
+
+    enable_prefab_system = False
+
+    @pytest.mark.test_case_id("C36529666")
+    class AtomEditorComponentsLevel_DiffuseGlobalIlluminationAdded(EditorSharedTest):
+        from Atom.tests import hydra_AtomEditorComponentsLevel_DiffuseGlobalIlluminationAdded as test_module
+
+    @pytest.mark.test_case_id("C36525660")
+    class AtomEditorComponentsLevel_DisplayMapperAdded(EditorSharedTest):
+        from Atom.tests import hydra_AtomEditorComponentsLevel_DisplayMapperAdded as test_module

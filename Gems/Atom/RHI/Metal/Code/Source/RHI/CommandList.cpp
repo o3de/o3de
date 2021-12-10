@@ -7,7 +7,6 @@
  */
 
 #include <Atom/RHI.Reflect/Bits.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/std/algorithm.h>
 #include <RHI/ArgumentBuffer.h>
 #include <RHI/Buffer.h>
@@ -177,7 +176,7 @@ namespace AZ
         
         void CommandList::Submit(const RHI::DispatchItem& dispatchItem)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             
             CreateEncoder(CommandEncoderType::Compute);
             bool bindResourceSuccessfull = CommitShaderResources<RHI::PipelineStateType::Dispatch>(dispatchItem);
@@ -479,7 +478,7 @@ namespace AZ
         
         void CommandList::Submit(const RHI::DrawItem& drawItem)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             
             CreateEncoder(CommandEncoderType::Render);
             
@@ -582,7 +581,7 @@ namespace AZ
         {
             if (m_state.m_pipelineState != pipelineState)
             {
-                AZ_TRACE_METHOD();
+                AZ_PROFILE_FUNCTION(RHI);
                 m_state.m_pipelineState = pipelineState;
 
                 switch (pipelineState->GetType())
@@ -732,7 +731,7 @@ namespace AZ
                 return;
             }
             
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             const auto& viewports = m_state.m_viewportState.m_states;
             MTLViewport metalViewports[viewports.size()];
 
