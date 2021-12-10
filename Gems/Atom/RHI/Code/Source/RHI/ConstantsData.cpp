@@ -164,10 +164,10 @@ namespace AZ
                 // when values[0] == 205, will instead set 'fourByteValue' is assigned to '205', instead of '1'.
                 // In debug builds, and other microsoft compilers (debug+release), this type of optimization doesnt
                 // occur and we get the expected results instead
-                const unsigned char* byteValue = reinterpret_cast<const unsigned char*>(values.data());
+                const unsigned char* byteValues = reinterpret_cast<const unsigned char*>(values.data());
                 for (size_t i = 0; i < values.size(); i++)
                 {
-                    const uint32_t fourByteValue = byteValue[i] ? 1 : 0;
+                    const uint32_t fourByteValue = byteValues[i] ? 1 : 0;
                     const bool isValid = SetConstantRaw(inputIndex, &fourByteValue, offset, elementSize);
 
                     isValidAll &= isValid;
