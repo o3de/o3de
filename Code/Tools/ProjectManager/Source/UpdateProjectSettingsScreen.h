@@ -40,7 +40,6 @@ namespace O3DE::ProjectManager
         bool ValidateProjectPath() override;
         virtual bool ValidateProjectPreview();
         bool ValidateProjectId();
-        void UpdateAdvancedSettingsCollapseState();
 
         inline constexpr static int s_collapseButtonSize = 24;
 
@@ -53,6 +52,9 @@ namespace O3DE::ProjectManager
 
         ProjectInfo m_projectInfo;
         bool m_userChangedPreview; //! Did the user change the project preview path
+
+    protected slots:
+        void UpdateAdvancedSettingsCollapseState();
     };
 
 } // namespace O3DE::ProjectManager

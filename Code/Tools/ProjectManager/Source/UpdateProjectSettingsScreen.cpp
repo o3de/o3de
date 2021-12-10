@@ -63,10 +63,7 @@ namespace O3DE::ProjectManager
         m_advancedSettingsCollapseButton->setFlat(true);
         m_advancedSettingsCollapseButton->setFocusPolicy(Qt::NoFocus);
         m_advancedSettingsCollapseButton->setFixedWidth(s_collapseButtonSize);
-        connect(m_advancedSettingsCollapseButton, &QPushButton::clicked, this, [=]()
-            {
-                UpdateAdvancedSettingsCollapseState();
-            });
+        connect(m_advancedSettingsCollapseButton, &QPushButton::clicked, this, &UpdateProjectSettingsScreen::UpdateAdvancedSettingsCollapseState);
         advancedCollapseLayout->addWidget(m_advancedSettingsCollapseButton);
 
         // Category title

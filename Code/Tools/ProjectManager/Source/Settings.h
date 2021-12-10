@@ -38,8 +38,8 @@ namespace O3DE::ProjectManager
         bool SetProjectBuiltSuccessfully(const ProjectInfo& projectInfo, bool successfullyBuilt) override;
 
     private:
-        bool Save();
-        bool OnSettingsChanged();
+        void Save();
+        void OnSettingsChanged();
 
         bool GetBuiltSuccessfullyPaths(AZStd::set<AZStd::string>& result);
 

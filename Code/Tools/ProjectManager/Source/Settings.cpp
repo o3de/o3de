@@ -22,7 +22,7 @@ namespace O3DE::ProjectManager
         AZ_Assert(m_settingsRegistry, "Failed to create Settings");
     }
 
-    bool Settings::Save()
+    void Settings::Save()
     {
         AZ::SettingsRegistryMergeUtils::DumperSettings dumperSettings;
         dumperSettings.m_prettifyOutput = true;
@@ -34,7 +34,7 @@ namespace O3DE::ProjectManager
                 *m_settingsRegistry, ProjectManagerKeyPrefix, stringStream, dumperSettings))
         {
             AZ_Warning("ProjectManager", false, "Could not save Project Manager settings to stream");
-            return false;
+            return;
         }
 
         AZ::IO::FixedMaxPath o3deUserPath = AZ::Utils::GetO3deManifestDirectory();
@@ -52,18 +52,13 @@ namespace O3DE::ProjectManager
         }
 
         AZ_Warning("ProjectManager", saved, "Unable to save Project Manager registry file to path: %s", o3deUserPath.c_str());
-        return saved;
     }
 
-    bool Settings::OnSettingsChanged()
+    void Settings::OnSettingsChanged()
     {
         if (m_saveToDisk)
         {
-            return Save();
-        }
-        else
-        {
-            return true;
+            Save();
         }
     }
 

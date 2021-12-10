@@ -31,7 +31,7 @@ namespace O3DE::ProjectManager
         {
             // Check if user request not to be shown external link warning dialog
             bool skipDialog = false;
-            SettingsInterface::Get()->Get(skipDialog, QString(ISettings::ExternalLinkWarningKey));
+            SettingsInterface::Get()->Get(skipDialog, ISettings::ExternalLinkWarningKey);
 
             if (!skipDialog)
             {
