@@ -281,7 +281,8 @@ namespace ScriptCanvasBuilder
                 }
                 else
                 {
-                    if (AzFramework::StringFunc::Find(fileNameOnly, s_unitTestParseErrorPrefix) != AZStd::string::npos)
+                    if (!ScriptCanvas::Grammar::g_processingErrorsForUnitTestsEnabled
+                        && AzFramework::StringFunc::Find(fileNameOnly, s_unitTestParseErrorPrefix) != AZStd::string::npos)
                     {
                         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
                     }

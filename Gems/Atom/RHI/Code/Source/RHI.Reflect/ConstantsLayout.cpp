@@ -142,9 +142,6 @@ namespace AZ
                 }
             }
 
-            // [GFX TODO][ATOM-1669]: Review if it's needed to validate
-            // overlapping of ranges.
-
             return true;
         }
 

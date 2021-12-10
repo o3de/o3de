@@ -12,6 +12,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Debug/TraceMessageBus.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 #include <AzToolsFramework/Application/ToolsApplication.h>
@@ -63,6 +64,11 @@ namespace DisplaySettingsPythonBindingsUnitTests
 
             m_app.Start(appDesc);
             m_app.RegisterComponentDescriptor(AzToolsFramework::DisplaySettingsComponent::CreateDescriptor());
+
+            // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
+            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
+            // in the unit tests.
+            AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
         }
 
         void TearDown() override
