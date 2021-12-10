@@ -70,15 +70,16 @@ namespace AzToolsFramework
         return helpersVisible;
     }
 
-    // calculate the icon scale based on how far away it is from a given point
-    // note: this is mostly likely distance from the camera
-    static float GetIconScale(const float distanceFromCamera)
+    float GetIconScale(const float distance)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
-
         return s_iconMinScale +
             (s_iconMaxScale - s_iconMinScale) *
-            (1.0f - AZ::GetClamp(AZ::GetMax(0.0f, distanceFromCamera - s_iconCloseDist) / s_iconFarDist, 0.0f, 1.0f));
+            (1.0f - AZ::GetClamp(AZ::GetMax(0.0f, distance - s_iconCloseDist) / (s_iconFarDist - s_iconCloseDist), 0.0f, 1.0f));
+    }
+
+    float GetIconSize(const float distance)
+    {
+        return GetIconScale(distance) * s_iconSize;
     }
 
     static void DisplayComponents(
@@ -204,8 +205,8 @@ namespace AzToolsFramework
                         AzFramework::ScreenPointFromNdc(AZ::Vector3ToVector2(ndcPoint), cameraState.m_viewportSize);
 
                     const float distanceFromCamera = cameraState.m_position.GetDistance(entityPosition);
-                    const auto iconRange = static_cast<float>(GetIconScale(distanceFromCamera) * s_iconSize * 0.5f);
-                    const auto& screenCoords = mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates;
+                    const auto iconRange = GetIconSize(distanceFromCamera) * 0.5f;
+                    const auto screenCoords = mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates;
 
                     // 2d screen space selection - did we click an icon
                     if (screenCoords.m_x >= screenPosition.m_x - iconRange && screenCoords.m_x <= screenPosition.m_x + iconRange &&
@@ -313,12 +314,6 @@ namespace AzToolsFramework
                 EditorEntityIconComponentRequestBus::EventResult(
                     iconTextureId, entityId, &EditorEntityIconComponentRequests::GetEntityIconTextureId);
 
-                const AZ::Vector3& entityPosition = m_entityDataCache->GetVisibleEntityPosition(entityCacheIndex);
-                const float distanceFromCamera = cameraState.m_position.GetDistance(entityPosition);
-
-                const float iconScale = GetIconScale(distanceFromCamera);
-                const float iconSize = s_iconSize * iconScale;
-
                 using ComponentEntityAccentType = Components::EditorSelectionAccentSystemComponent::ComponentEntityAccentType;
                 const AZ::Color iconHighlight = [this, entityCacheIndex]()
                 {
@@ -334,6 +329,10 @@ namespace AzToolsFramework
 
                     return AZ::Color(1.0f, 1.0f, 1.0f, 1.0f);
                 }();
+
+                const AZ::Vector3& entityPosition = m_entityDataCache->GetVisibleEntityPosition(entityCacheIndex);
+                const float distanceFromCamera = cameraState.m_position.GetDistance(entityPosition);
+                const float iconSize = GetIconSize(distanceFromCamera);
 
                 EditorViewportIconDisplay::Get()->DrawIcon({ viewportInfo.m_viewportId, iconTextureId, iconHighlight, entityPosition,
                                                              EditorViewportIconDisplayInterface::CoordinateSpace::WorldSpace,

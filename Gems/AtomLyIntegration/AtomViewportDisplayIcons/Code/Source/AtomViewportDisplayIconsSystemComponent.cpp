@@ -181,7 +181,7 @@ namespace AZ::Render
             // We want this instead of RenderViewportWidget::WorldToScreen which works in QWidget virtual coordinate space
             const AzFramework::ScreenPoint screenPoint = AzFramework::ScreenPointFromNdc(AZ::Vector3ToVector2(ndcPoint), viewportSize);
 
-            screenPosition = AZ::Vector2ToVector3(AzFramework::Vector2FromScreenPoint(screenPoint), ndcPoint.GetZ());
+            screenPosition = AzFramework::Vector3FromScreenPoint(screenPoint, ndcPoint.GetZ());
         }
 
         struct Vertex
@@ -373,9 +373,6 @@ namespace AZ::Render
                 dynamicDraw->InitVertexFormat({ { "POSITION", RHI::Format::R32G32B32_FLOAT },
                                                 { "COLOR", RHI::Format::R8G8B8A8_UNORM },
                                                 { "TEXCOORD", RHI::Format::R32G32_FLOAT } });
-                dynamicDraw->AddDrawStateOptions(
-                    AZ::RPI::DynamicDrawContext::DrawStateOptions::PrimitiveType |
-                    AZ::RPI::DynamicDrawContext::DrawStateOptions::BlendMode | AZ::RPI::DynamicDrawContext::DrawStateOptions::DepthState);
                 dynamicDraw->EndInit();
             });
 

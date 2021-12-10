@@ -203,6 +203,12 @@ namespace AzFramework
         return AZ::Vector2(aznumeric_cast<float>(screenPoint.m_x), aznumeric_cast<float>(screenPoint.m_y));
     }
 
+    //! Return an AZ::Vector3 from a ScreenPoint (including z/depth value, defaulting to 0.0f).
+    inline AZ::Vector3 Vector3FromScreenPoint(const ScreenPoint& screenPoint, const float z = 0.0f)
+    {
+        return AZ::Vector3(aznumeric_cast<float>(screenPoint.m_x), aznumeric_cast<float>(screenPoint.m_y), z);
+    }
+
     //! Return an AZ::Vector2 from a ScreenVector.
     inline AZ::Vector2 Vector2FromScreenVector(const ScreenVector& screenVector)
     {
