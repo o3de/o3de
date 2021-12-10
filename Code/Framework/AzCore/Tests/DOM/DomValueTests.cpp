@@ -295,4 +295,90 @@ namespace AZ::Dom::Tests
 
         PerformValueChecks();
     }
+
+    TEST_F(DomValueTests, CopyOnWrite_Object)
+    {
+        Value v1(Type::ObjectType);
+        v1["foo"] = 5;
+
+        Value nestedObject(Type::ObjectType);
+        v1["obj"] = nestedObject;
+
+        Value v2 = v1;
+        EXPECT_EQ(&v1.GetObject(), &v2.GetObject());
+        EXPECT_EQ(&v1.FindMember("obj")->second.GetObject(), &v2.FindMember("obj")->second.GetObject());
+
+        v2["foo"] = 0;
+
+        EXPECT_NE(&v1.GetObject(), &v2.GetObject());
+        EXPECT_EQ(&v1.FindMember("obj")->second.GetObject(), &v2.FindMember("obj")->second.GetObject());
+
+        v2["obj"]["key"] = true;
+
+        EXPECT_NE(&v1.GetObject(), &v2.GetObject());
+        EXPECT_NE(&v1.FindMember("obj")->second.GetObject(), &v2.FindMember("obj")->second.GetObject());
+
+        v2 = v1;
+
+        EXPECT_EQ(&v1.GetObject(), &v2.GetObject());
+        EXPECT_EQ(&v1.FindMember("obj")->second.GetObject(), &v2.FindMember("obj")->second.GetObject());
+    }
+
+    TEST_F(DomValueTests, CopyOnWrite_Array)
+    {
+        Value v1(Type::ArrayType);
+        v1.PushBack(1);
+        v1.PushBack(2);
+
+        Value nestedArray(Type::ArrayType);
+        v1.PushBack(nestedArray);
+        Value v2 = v1;
+
+        EXPECT_EQ(&v1.GetArray(), &v2.GetArray());
+        EXPECT_EQ(&v1.At(2).GetArray(), &v2.At(2).GetArray());
+
+        v2[0] = 0;
+
+        EXPECT_NE(&v1.GetArray(), &v2.GetArray());
+        EXPECT_EQ(&v1.At(2).GetArray(), &v2.At(2).GetArray());
+
+        v2[2].PushBack(42);
+
+        EXPECT_NE(&v1.GetArray(), &v2.GetArray());
+        EXPECT_NE(&v1.At(2).GetArray(), &v2.At(2).GetArray());
+
+        v2 = v1;
+
+        EXPECT_EQ(&v1.GetArray(), &v2.GetArray());
+        EXPECT_EQ(&v1.At(2).GetArray(), &v2.At(2).GetArray());
+    }
+
+    TEST_F(DomValueTests, CopyOnWrite_Node)
+    {
+        Value v1;
+        v1.SetNode("TopLevel");
+
+        v1.PushBack(1);
+        v1.PushBack(2);
+        v1["obj"].SetNode("Nested");
+        Value v2 = v1;
+
+        EXPECT_EQ(&v1.GetNode(), &v2.GetNode());
+        EXPECT_EQ(&v1["obj"].GetNode(), &v2["obj"].GetNode());
+
+        v2[0] = 0;
+
+        EXPECT_NE(&v1.GetNode(), &v2.GetNode());
+        EXPECT_EQ(&v1["obj"].GetNode(), &v2["obj"].GetNode());
+
+        v2["obj"].PushBack(42);
+
+        EXPECT_NE(&v1.GetNode(), &v2.GetNode());
+        EXPECT_NE(&v1["obj"].GetNode(), &v2["obj"].GetNode());
+
+        v2 = v1;
+
+        EXPECT_EQ(&v1.GetNode(), &v2.GetNode());
+        EXPECT_EQ(&v1["obj"].GetNode(), &v2["obj"].GetNode());
+    }
 } // namespace AZ::Dom::Tests
