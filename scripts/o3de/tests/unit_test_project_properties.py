@@ -16,7 +16,7 @@ from o3de import project_properties
 TEST_PROJECT_JSON_PAYLOAD = '''
 {
     "project_name": "TestProject",
-    "project_id": "{24114e69-306d-4de6-b3b4-4cb1a3eca58e}"
+    "project_id": "{24114e69-306d-4de6-b3b4-4cb1a3eca58e}",
     "origin": "The primary repo for TestProject goes here: i.e. http://www.mydomain.com",
     "license": "What license TestProject uses goes here: i.e. https://opensource.org/licenses/MIT",
     "display_name": "TestProject",
@@ -57,8 +57,8 @@ class TestEditProjectProperties:
         'B', 'D E F', 1)
         ]
     )
-    def test_edit_project_properties(self, project_path, project_name, project_new_name, project_origin, project_id,
-                                     project_display,project_summary, project_icon, add_tags,
+    def test_edit_project_properties(self, project_path, project_name, project_new_name, project_id, project_origin,
+                                     project_display, project_summary, project_icon, add_tags,
                                      delete_tags, replace_tags, expected_result):
 
         def get_project_json_data(project_name: str, project_path) -> dict:
