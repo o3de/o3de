@@ -85,9 +85,9 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
             AZ_Assert(
                 entityData.has_value(), "SpawnbleUtils were unable to locate entity '%.*s' in Instance '%s' for replacing.",
                 AZ_STRING_ARG(alias), source.GetTemplateSourcePath().c_str());
-            auto placeholder = AZStd::make_unique<AZ::Entity>(entityData->get().GetId(), entityData->get().GetName());
+            // A new entity id can be used for the placeholder as `ReplaceEntity` will swap the entity ids.
+            auto placeholder = AZStd::make_unique<AZ::Entity>(AZ::Entity::MakeId(), entityData->get().GetName());
             AZStd::unique_ptr<AZ::Entity> result = instance->ReplaceEntity(AZStd::move(placeholder), alias);
-            result->SetId(AZ::Entity::MakeId());
             return result;
         }
 

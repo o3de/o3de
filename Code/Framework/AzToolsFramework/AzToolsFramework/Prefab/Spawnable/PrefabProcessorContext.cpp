@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Component/EntityUtils.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabProcessorContext.h>
@@ -253,6 +254,29 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
             
             // Register the dependency between the two spawnables.
             RegisterProductAssetDependency(source->m_spawnable.GetId(), target->m_spawnable.GetId(), loadBehavior);
+
+            // Patch up all entity ids so the alias points to the same entity id if needed.
+            switch (alias.m_aliasType)
+            {
+            case AzFramework::Spawnable::EntityAliasType::Original:
+                continue;
+            case AzFramework::Spawnable::EntityAliasType::Disable:
+                continue;
+            case AzFramework::Spawnable::EntityAliasType::Replace:
+                break; // Requires entity id for alias in source and target spawnable matches.
+            case AzFramework::Spawnable::EntityAliasType::Additional:
+                continue;
+            case AzFramework::Spawnable::EntityAliasType::Merge:
+                break; // Requires entity id for alias in source and target spawnable matches.
+            default:
+                continue;
+            }
+
+            auto entityIdMapper = [source, target](const AZ::EntityId& originalId, bool /*isEntityId*/) -> AZ::EntityId
+            {
+                return  originalId == target->m_index ? source->m_index : originalId;
+            };
+            AZ::EntityUtils::ReplaceEntityIdsAndEntityRefs(&target->m_spawnable, entityIdMapper);
         }
     }
 
