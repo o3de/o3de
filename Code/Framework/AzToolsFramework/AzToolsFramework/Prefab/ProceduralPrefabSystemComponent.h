@@ -11,6 +11,7 @@
 #include <AzCore/Component/Component.h>
 #include <Prefab/ProceduralPrefabSystemComponentInterface.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
+#include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 
 namespace AzToolsFramework
 {
