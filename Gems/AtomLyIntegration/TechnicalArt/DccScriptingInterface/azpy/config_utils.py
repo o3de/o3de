@@ -8,6 +8,25 @@
 #
 #
 # note: this module should reamin py2.7 compatible (Maya) so no f'strings
+"""@module docstring
+This module is part of the O3DE DccScriptingInterface Gem
+This module is a set of utils related to config.py, it hase several methods
+that can fullfil discovery of paths for use in standing up a synthetic env.
+This is particularly useful when the config is used outside of O3DE,
+in an external standalone tool with PySide2(Qt).  Foe example, these paths
+are discoverable so that we can synthetically derive code access to various
+aspects of O3DE outside of the executables.
+
+return_stub_dir()          :discover path by walking from module to file stub
+get_stub_check_path()      :discover by walking from known path to file stub
+get_o3de_engine_root()     :combines multiple methods to discover engine root
+get_o3de_build_path()      :searches for the build path using file stub
+get_dccsi_config()         :convenience method to get the dccsi config
+get_current_project_cfg()  :will be depricated (don't use)
+get_check_global_project() :get global project path from user .o3de data
+get_o3de_project_path()    :get the project path while within editor
+bootstrap_dccsi_py_libs()  :extends code access (mainly used in Maya py27)
+"""
 # --------------------------------------------------------------------------
 import sys
 import os
@@ -182,8 +201,10 @@ def get_os():
 
 # -------------------------------------------------------------------------
 def return_stub_dir(stub_file='dccsi_stub'):
+    '''discover and return path by walking from module to file stub
+    Input: a file name (stub_file)
+    Output: returns the directory of the file (stub_file)'''
     _dir_to_last_file = None
-    '''Take a file name (stub_file) and returns the directory of the file (stub_file)'''
     # To Do: refactor to use pathlib object oriented Path
     if _dir_to_last_file is None:
         path = os.path.abspath(__file__)
@@ -208,9 +229,12 @@ def return_stub_dir(stub_file='dccsi_stub'):
 def get_stub_check_path(in_path=os.getcwd(), check_stub=STUB_O3DE_DEV):
     '''
     Returns the branch root directory of the dev\\'engine.json'
-    (... or you can pass it another known stub)
-
-    so we can safely build relative filepaths within that branch.
+    (... or you can pass it another known stub) so we can safely build
+    relative filepaths within that branch.
+    
+    Input:  a starting directory, default is os.getcwd()
+    Input:  a file name stub (to search for)
+    Output: a path (the stubs parent directory)
 
     If the stub is not found, it returns None
     '''
@@ -232,6 +256,10 @@ def get_stub_check_path(in_path=os.getcwd(), check_stub=STUB_O3DE_DEV):
 
 # -------------------------------------------------------------------------
 def get_o3de_engine_root(check_stub=STUB_O3DE_DEV):
+    '''Discovers the engine root
+    Input:  a file name stub, default engine.json 
+    Output: engine root path (if found)
+    '''
     # get the O3DE engine root folder
     # if we are running within O3DE we can ensure which engine is running
     _O3DE_DEV = None
@@ -256,7 +284,11 @@ def get_o3de_engine_root(check_stub=STUB_O3DE_DEV):
 # -------------------------------------------------------------------------
 def get_o3de_build_path(root_directory=get_o3de_engine_root(),
                         marker='CMakeCache.txt'):
-    """Returns a PAth for the O3DE\build root"""
+    """Returns a path for the O3DE\build root if found. Searchs down from a 
+    known engine root path.
+    Input:  a root directory, default is to discover the engine root
+    Output: the path of the build folder (if found)
+    """
     
     if _DCCSI_GDEBUG:
         import time
@@ -371,8 +403,7 @@ def get_check_global_project():
 
 # -------------------------------------------------------------------------
 def get_o3de_project_path():
-    """figures out the o3de project path
-    if not found defaults to the engine folder"""
+    """figures out the o3de project path if not found defaults to the engine folder"""
     _PATH_O3DE_PROJECT = None
     try:
         import azlmbr  # this file will fail outside of O3DE
@@ -468,26 +499,32 @@ if __name__ == '__main__':
     _LOGGER.info("# {0} #".format('-' * 72))
     _LOGGER.info('~ config_utils.py ... Running script as __main__')
     _LOGGER.info("# {0} #".format('-' * 72))
+    
+    from pathlib import Path
 
     # built in simple tests and info from commandline
     _LOGGER.info('Current Work dir: {0}'.format(os.getcwd()))
 
     _LOGGER.info('OS: {}'.format(get_os()))
-
-    _LOGGER.info('PATH_DCCSIG: {}'.format(return_stub_dir('dccsi_stub')))
-
-    _LOGGER.info('O3DE_DEV: {}'.format(get_o3de_engine_root(check_stub=STUB_O3DE_DEV).resolve()))
     
-    _LOGGER.info('PATH_O3DE_BUILD: {}'.format(get_o3de_build_path(get_o3de_engine_root(check_stub=STUB_O3DE_DEV).resolve(),
-                                                                  'CMakeCache.txt')))
+    _PATH_DCCSIG = Path(return_stub_dir('dccsi_stub'))
+    _LOGGER.info('PATH_DCCSIG: {}'.format(_PATH_DCCSIG.resolve()))
+
+    _O3DE_DEV = get_o3de_engine_root(check_stub='engine.json')
+    _LOGGER.info('O3DE_DEV: {}'.format(_O3DE_DEV.resolve()))
+    
+    _PATH_O3DE_BUILD = get_o3de_build_path(_O3DE_DEV, 'CMakeCache.txt')
+    _LOGGER.info('PATH_O3DE_BUILD: {}'.format(_PATH_O3DE_BUILD.resolve()))
 
     # new o3de version
-    _LOGGER.info('PATH_O3DE_PROJECT: {}'.format(get_check_global_project()))
+    _PATH_O3DE_PROJECT = get_check_global_project()
+    _LOGGER.info('PATH_O3DE_PROJECT: {}'.format(_PATH_O3DE_PROJECT.resolve()))
 
-    _LOGGER.info('PATH_DCCSI_PYTHON_LIB: {}'.format(bootstrap_dccsi_py_libs(return_stub_dir('dccsi_stub'))))
+    _PATH_DCCSI_PYTHON_LIB = bootstrap_dccsi_py_libs(_PATH_DCCSIG)
+    _LOGGER.info('PATH_DCCSI_PYTHON_LIB: {}'.format(_PATH_DCCSI_PYTHON_LIB.resolve()))
 
-    _config = get_dccsi_config()
-    _LOGGER.info('PATH_DCCSI_CONFIG: {}'.format(_config))
+    _DCCSI_CONFIG = get_dccsi_config()
+    _LOGGER.info('PATH_DCCSI_CONFIG: {}'.format(_DCCSI_CONFIG))
 
     # custom prompt
     sys.ps1 = "[azpy]>>"
