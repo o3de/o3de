@@ -39,7 +39,7 @@ In the same CLI window, run the following CLI command:
     ```
     * Linux
     ```
-        pytho/python.sh -m pytest {path_to_the_test_file} --build-directory {directory_to_the_profile_build}
+        python/python.sh -m pytest {path_to_the_test_file} --build-directory {directory_to_the_profile_build}
     ```
 
 ### Pycharm
