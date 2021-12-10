@@ -14,15 +14,15 @@ Or follow **AWS CLI** configuration directions which can be reused by the boto3 
 
 ## Python Environment Setup Options
 ### 1. Use Engine python environment (Including Editor)
-1. In order to use the O3DE engine's python environment, this tool requires linking the Qt binaries.
+1. In order to use the Open 3D engine's python environment, this tool requires linking the Qt binaries.
 Follow cmake instructions to configure your project, for example:
    ```
    $ cmake -B <BUILD_FOLDER> -S . -G "Visual Studio 16 2019" -DLY_PROJECTS=<PROJECT_NAME>
    ```
 
-2. At this point, double check that the O3DE engine's python environment gets set up under *<ENGINE_ROOT_PATH>/python/runtime* directory
+2. At this point, double check that the Open 3D engine's python environment gets set up under *<ENGINE_ROOT_PATH>/python/runtime* directory
 
-3. Build the project with **AWSCore.Editor** (or **AWSCore.ResourceMappingTool**, or **Editor**) target to generate the required Qt binaries.
+3. Build the project with the **AWSCore.Editor** (or **AWSCore.ResourceMappingTool**, or **Editor**) target to generate the required Qt binaries.
    * Windows
    ```
    $ cmake --build <BUILD_FOLDER> --target AWSCore.Editor --config <CONFIG> /m
@@ -54,7 +54,7 @@ Follow cmake instructions to configure your project, for example:
       $ python/python.sh Gems/AWSCore/Code/Tools/ResourceMappingTool/resource_mapping_tool.py --binaries_path <PATH_TO_BUILD_FOLDER>/bin/debug/AWSCoreEditorQtBin
       ```
       
-* Note - the Editor is integrated with the same engine python environment to launch the Resource Mapping Tool. If it fails to launch the tool from the Editor, please follow above steps to make sure expected scripts and binaries are present.
+* Note - the engine Editor is integrated with the same python environment used to launch the Resource Mapping Tool. If the tool fails to launch from the Editor, please double check that you have completed all of the above steps and that the expected scripts and binaries are present in the expected directories.
 
 ### 2. Use a separate python virtual environment
 This project is set up like a standard Python project. The initialization
@@ -113,3 +113,19 @@ you can create the virtualenv manually.
                     if not provided tool will store logging under tool source code directory.
 * `--profile`       **[Optional]** Named AWS profile to use for querying AWS resources,
                     if not provided tool will use `default` aws profile.
+
+
+## Running tests
+
+How to run the unit tests for the project:
+
+1. If not already activated, activate the project's python environment as explained above.
+2. Use `pytest` to run one or more tests (command paths formatted as if run from this directory):
+   * Run all the tests
+   ```
+   python -m pytest -vv .
+   ```
+   * Run a specific test file or directory:
+   ```
+   python -m pytest tests\unit\model\test_basic_resource_attributes.py
+   ```
