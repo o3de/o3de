@@ -13,7 +13,8 @@
 
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     # Only enable AWS automated tests on Windows
-    if(NOT "${PAL_PLATFORM_NAME}" STREQUAL "Windows")
+    set(SUPPORTED_PLATFORMS "Windows" "Linux")
+    if (NOT "${PAL_PLATFORM_NAME}" IN_LIST SUPPORTED_PLATFORMS)
         return()
     endif()
 
@@ -23,7 +24,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         TEST_SERIAL
         PATH ${CMAKE_CURRENT_LIST_DIR}/${PAL_PLATFORM_NAME}/
         RUNTIME_DEPENDENCIES
-            Legacy::Editor
             AZ::AssetProcessor
             AutomatedTesting.GameLauncher
             AutomatedTesting.Assets
