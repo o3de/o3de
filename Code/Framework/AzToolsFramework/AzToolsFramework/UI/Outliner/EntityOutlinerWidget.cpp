@@ -616,7 +616,7 @@ namespace AzToolsFramework
             {
                 AZ::EntityId entityId = m_selectedEntityIds[0];
 
-                // Don't allow to move the entity if it's the focus root.
+                // Don't allow moving the entity if it's the focus root.
                 if (m_focusModeInterface->GetFocusRoot(m_editorEntityContextId) != entityId)
                 {
                     AZ::EntityId parentId;
