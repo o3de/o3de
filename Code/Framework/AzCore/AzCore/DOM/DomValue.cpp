@@ -407,7 +407,22 @@ namespace AZ::Dom
 
     Value& Value::operator[](KeyType name)
     {
-        return FindMember(name)->second;
+        Object::ContainerType& object = GetObjectInternal();
+        auto existingEntry = AZStd::find_if(
+            object.begin(), object.end(),
+            [&name](const Object::EntryType& entry)
+            {
+                return entry.first == name;
+            });
+        if (existingEntry != object.end())
+        {
+            return existingEntry->second;
+        }
+        else
+        {
+            object.emplace_back(name, Value());
+            return object[object.size() - 1].second;
+        }
     }
 
     const Value& Value::operator[](KeyType name) const
@@ -923,6 +938,10 @@ namespace AZ::Dom
                 else if constexpr (AZStd::is_same_v<Alternative, double>)
                 {
                     result = visitor.Double(arg);
+                }
+                else if constexpr (AZStd::is_same_v<Alternative, bool>)
+                {
+                    result = visitor.Bool(arg);
                 }
                 else if constexpr (AZStd::is_same_v<Alternative, AZStd::string_view>)
                 {
