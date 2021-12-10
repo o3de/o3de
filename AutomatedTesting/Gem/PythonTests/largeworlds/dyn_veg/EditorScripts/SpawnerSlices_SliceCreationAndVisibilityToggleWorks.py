@@ -66,7 +66,7 @@ def SpawnerSlices_SliceCreationAndVisibilityToggleWorks():
     # 2.1) Create basic vegetation entity
     position = math.Vector3(512.0, 512.0, 32.0)
     asset_path = os.path.join("Slices", "PinkFlower.dynamicslice")
-    veg_1 = dynveg.create_vegetation_area_by_dynamic_slice_asset_path("vegetation_1", position, 16.0, 16.0, 16.0, asset_path)
+    veg_1 = dynveg.create_dynamic_slice_vegetation_area("vegetation_1", position, 16.0, 16.0, 16.0, asset_path)
 
     # 2.2) Create slice from the entity
     slice_path = os.path.join("slices", "TestSlice_1.slice")
@@ -94,7 +94,7 @@ def SpawnerSlices_SliceCreationAndVisibilityToggleWorks():
 
     # 4) C2627905 A slice containing the Vegetation Layer Blender component can be created.
     # 4.1) Create another vegetation entity to add to blender component
-    veg_2 = dynveg.create_vegetation_area_by_dynamic_slice_asset_path("vegetation_2", position, 1.0, 1.0, 1.0, "")
+    veg_2 = dynveg.create_dynamic_slice_vegetation_area("vegetation_2", position, 1.0, 1.0, 1.0, "")
 
     # 4.2) Create entity with Vegetation Layer Blender
     components_to_add = ["Box Shape", "Vegetation Layer Blender"]

@@ -93,7 +93,7 @@ def create_mesh_surface_entity_with_slopes(name, center_point, uniform_scale):
     return surface_entity
 
 
-def create_vegetation_area_by_dynamic_slice_asset_path(name, center_point, box_size_x, box_size_y, box_size_z, dynamic_slice_asset_path):
+def create_dynamic_slice_vegetation_area(name, center_point, box_size_x, box_size_y, box_size_z, dynamic_slice_asset_path):
     # Create a vegetation area entity to use as our test vegetation spawner
     spawner_entity = hydra.Entity(name)
     spawner_entity.create_entity(
@@ -114,7 +114,7 @@ def create_vegetation_area_by_dynamic_slice_asset_path(name, center_point, box_s
     return spawner_entity
 
 
-def create_vegetation_area_by_prefab(name, center_point, box_size_x, box_size_y, box_size_z, target_prefab):
+def create_prefab_vegetation_area(name, center_point, box_size_x, box_size_y, box_size_z, target_prefab):
     # Create a vegetation area entity to use as our test vegetation spawner
     spawner_entity = hydra.Entity(name)
     spawner_entity.create_entity(
@@ -129,8 +129,6 @@ def create_vegetation_area_by_prefab(name, center_point, box_size_x, box_size_y,
     spawnable_name = Path(target_prefab.file_path).stem
     spawnable_asset_id = prefab.PrefabPublicRequestBus(bus.Broadcast, 'GetInMemorySpawnableAssetId', 
                                                       spawnable_name)
-
-    from editor_python_test_tools.utils import Report
 
     # Create the in-memory spawnable asset from given prefab if the spawnable does not exist
     if not spawnable_asset_id.is_valid():

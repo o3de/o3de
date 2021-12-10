@@ -55,7 +55,7 @@ def SystemSettings_SectorPointDensity():
     # Create basic vegetation entity
     position = math.Vector3(512.0, 512.0, 32.0)
     asset_path = os.path.join("Slices", "PinkFlower.dynamicslice")
-    dynveg.create_vegetation_area_by_dynamic_slice_asset_path("vegetation", position, 16.0, 16.0, 1.0, asset_path)
+    dynveg.create_dynamic_slice_vegetation_area("vegetation", position, 16.0, 16.0, 1.0, asset_path)
     dynveg.create_surface_entity("Surface_Entity", position, 16.0, 16.0, 1.0)
 
     # Count the number of vegetation instances in the vegetation area

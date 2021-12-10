@@ -57,7 +57,7 @@ def ShapeIntersectionFilter_FilterStageToggle():
     # Create basic vegetation entity
     position = math.Vector3(512.0, 512.0, 32.0)
     asset_path = os.path.join("Slices", "PinkFlower.dynamicslice")
-    vegetation = dynveg.create_vegetation_area_by_dynamic_slice_asset_path("vegetation", position, 16.0, 16.0, 16.0, asset_path)
+    vegetation = dynveg.create_dynamic_slice_vegetation_area("vegetation", position, 16.0, 16.0, 16.0, asset_path)
 
     # Create Surface for instances to plant on
     dynveg.create_surface_entity("Surface_Entity_Parent", position, 16.0, 16.0, 1.0)

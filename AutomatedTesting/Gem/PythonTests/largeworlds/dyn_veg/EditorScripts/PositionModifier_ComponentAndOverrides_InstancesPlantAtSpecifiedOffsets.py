@@ -111,7 +111,7 @@ def PositionModifier_ComponentAndOverrides_InstancesPlantAtSpecifiedOffsets():
     # 2) Create a new entity with required vegetation area components
     spawner_center_point = math.Vector3(16.0, 16.0, 32.0)
     asset_path = os.path.join("Slices", "PinkFlower.dynamicslice")
-    spawner_entity = dynveg.create_vegetation_area_by_dynamic_slice_asset_path("Instance Spawner", spawner_center_point, 1.0, 1.0, 1.0, asset_path)
+    spawner_entity = dynveg.create_dynamic_slice_vegetation_area("Instance Spawner", spawner_center_point, 1.0, 1.0, 1.0, asset_path)
 
     # Add a Vegetation Position Modifier and set offset values to 0
     spawner_entity.add_component("Vegetation Position Modifier")

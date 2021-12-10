@@ -62,7 +62,7 @@ def LayerSpawner_InstancesPlantInAllSupportedShapes():
     # 2) Create basic vegetation area entity and set the properties
     entity_position = math.Vector3(125.0, 136.0, 32.0)
     asset_path = os.path.join("Slices", "PurpleFlower.dynamicslice")
-    vegetation = dynveg.create_vegetation_area_by_dynamic_slice_asset_path("Instance Spawner",
+    vegetation = dynveg.create_dynamic_slice_vegetation_area("Instance Spawner",
                                                                            entity_position,
                                                                            10.0, 10.0, 10.0,
                                                                            asset_path)

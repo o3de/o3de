@@ -94,7 +94,7 @@ def ScaleModifier_InstancesProperlyScale():
     # Vegetation Scale Modifier
     entity_position = math.Vector3(512.0, 512.0, 32.0)
     asset_path = os.path.join("Slices", "PurpleFlower.dynamicslice")
-    spawner_entity = dynveg.create_vegetation_area_by_dynamic_slice_asset_path("Spawner Entity", entity_position, 16.0, 16.0, 16.0,
+    spawner_entity = dynveg.create_dynamic_slice_vegetation_area("Spawner Entity", entity_position, 16.0, 16.0, 16.0,
                                                                                asset_path)
     spawner_entity.add_component("Vegetation Scale Modifier")
 

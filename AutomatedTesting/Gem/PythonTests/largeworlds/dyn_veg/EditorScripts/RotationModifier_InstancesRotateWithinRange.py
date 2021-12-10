@@ -126,7 +126,7 @@ def RotationModifier_InstancesRotateWithinRange():
 
     # 2) Set up vegetation entities
     asset_path = os.path.join("Slices", "PurpleFlower.dynamicslice")
-    spawner_entity = dynveg.create_vegetation_area_by_dynamic_slice_asset_path("Spawner Entity", LEVEL_CENTER, 2.0, 2.0, 2.0, asset_path)
+    spawner_entity = dynveg.create_dynamic_slice_vegetation_area("Spawner Entity", LEVEL_CENTER, 2.0, 2.0, 2.0, asset_path)
 
     additional_components = [
         "Vegetation Rotation Modifier"
