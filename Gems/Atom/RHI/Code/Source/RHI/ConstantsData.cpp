@@ -276,7 +276,7 @@ namespace AZ
         template <>
         bool ConstantsData::SetConstant<Color>(ShaderInputConstantIndex inputIndex, const Color& value)
         {
-            constexpr size_t sizeOfColor = 16;
+            constexpr size_t sizeOfColor = sizeof(Color);
             if (ValidateConstantAccess(inputIndex, ValidateConstantAccessExpect::Complete, 0, aznumeric_caster(sizeOfColor)))
             {
                 const Interval interval = GetLayout()->GetInterval(inputIndex);
@@ -407,7 +407,7 @@ namespace AZ
         template <>
         Color ConstantsData::GetConstant<Color>(ShaderInputConstantIndex inputIndex) const
         {
-            constexpr size_t colorSize = 16;
+            constexpr size_t colorSize = sizeof(Color);
             if (ValidateConstantAccess(inputIndex, ValidateConstantAccessExpect::Complete, 0, aznumeric_caster(colorSize)))
             {
                 AZStd::array_view<uint8_t> constantBytes = GetConstantRaw(inputIndex);
