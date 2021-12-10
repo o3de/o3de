@@ -6,10 +6,14 @@
  *
  */
 
+#include <AssetCatalog/PlatformAddressedAssetCatalogBus.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzToolsFramework/Prefab/ProceduralPrefabSystemComponent.h>
+#include <Prefab/PrefabDomUtils.h>
+#include <Prefab/PrefabLoaderInterface.h>
+#include <Prefab/PrefabSystemComponentInterface.h>
 #include <Prefab/Procedural/ProceduralPrefabAsset.h>
 
 namespace AzToolsFramework
