@@ -10,6 +10,7 @@
 
 #include <SettingsInterface.h>
 
+#include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/set.h>
 
 namespace AZ
