@@ -70,7 +70,7 @@ namespace WwiseBuilder
                 // Init bank wasn't found, which likely means it was modified by hand. However, every bank is dependent
                 // on init.bnk (other than itself), so force-add it as a dependency here and return a warning message.
                 AZStd::string dependencyWarning;
-                if (fileNames.size() == 0)
+                if (fileNames.empty())
                 {
                     dependencyWarning = AZStd::string::format(
                         "Dependencies array is empty - the .bankdeps file may have been manually edited.  "
