@@ -30,7 +30,6 @@
 #include <ScriptCanvas/Components/EditorGraph.h>
 #include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
 #include <ScriptCanvas/Components/EditorScriptCanvasComponent.h>
-#include <ScriptCanvas/Components/EditorScriptCanvasComponentSerializer.h>
 #include <ScriptCanvas/Components/EditorUtils.h>
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/PerformanceStatisticsBus.h>
@@ -295,6 +294,8 @@ namespace ScriptCanvasEditor
         EditorScriptCanvasComponentLoggingBus::Handler::BusConnect(entityId);
         EditorLoggingComponentNotificationBus::Broadcast(&EditorLoggingComponentNotifications::OnEditorScriptCanvasComponentActivated, GetNamedEntityId(), GetGraphIdentifier());
 
+        CompleteDescriptionInPlace(m_sourceHandle);
+
         AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree_NewContent);
     }
 
@@ -315,6 +316,7 @@ namespace ScriptCanvasEditor
     void EditorScriptCanvasComponent::BuildGameEntityData()
     {
         using namespace ScriptCanvasBuilder;
+        CompleteDescriptionInPlace(m_sourceHandle);
 
         m_runtimeDataIsValid = false;
 

@@ -720,10 +720,13 @@ set(FILES
     Prefab/Spawnable/EditorOnlyEntityHandler/UiEditorOnlyEntityHandler.cpp
     Prefab/Spawnable/EditorOnlyEntityHandler/WorldEditorOnlyEntityHandler.h
     Prefab/Spawnable/EditorOnlyEntityHandler/WorldEditorOnlyEntityHandler.cpp
+    Prefab/Spawnable/InMemorySpawnableAssetContainer.h
+    Prefab/Spawnable/InMemorySpawnableAssetContainer.cpp
     Prefab/Spawnable/PrefabCatchmentProcessor.h
     Prefab/Spawnable/PrefabCatchmentProcessor.cpp
     Prefab/Spawnable/PrefabConversionPipeline.h
     Prefab/Spawnable/PrefabConversionPipeline.cpp
+    Prefab/Spawnable/PrefabConverterStackProfileNames.h
     Prefab/Spawnable/ProcesedObjectStore.h
     Prefab/Spawnable/ProcesedObjectStore.cpp
     Prefab/Spawnable/PrefabProcessor.h

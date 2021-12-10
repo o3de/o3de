@@ -34,7 +34,7 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<DiffuseProbeGridComponentConfig>()
-                    ->Version(0)
+                    ->Version(1)
                     ->Field("ProbeSpacing", &DiffuseProbeGridComponentConfig::m_probeSpacing)
                     ->Field("Extents", &DiffuseProbeGridComponentConfig::m_extents)
                     ->Field("AmbientMultiplier", &DiffuseProbeGridComponentConfig::m_ambientMultiplier)
@@ -44,12 +44,10 @@ namespace AZ
                     ->Field("RuntimeMode", &DiffuseProbeGridComponentConfig::m_runtimeMode)
                     ->Field("BakedIrradianceTextureRelativePath", &DiffuseProbeGridComponentConfig::m_bakedIrradianceTextureRelativePath)
                     ->Field("BakedDistanceTextureRelativePath", &DiffuseProbeGridComponentConfig::m_bakedDistanceTextureRelativePath)
-                    ->Field("BakedRelocationTextureRelativePath", &DiffuseProbeGridComponentConfig::m_bakedRelocationTextureRelativePath)
-                    ->Field("BakedClassificationTextureRelativePath", &DiffuseProbeGridComponentConfig::m_bakedClassificationTextureRelativePath)
+                    ->Field("BakedProbeDataTextureRelativePath", &DiffuseProbeGridComponentConfig::m_bakedProbeDataTextureRelativePath)
                     ->Field("BakedIrradianceTextureAsset", &DiffuseProbeGridComponentConfig::m_bakedIrradianceTextureAsset)
                     ->Field("BakedDistanceTextureAsset", &DiffuseProbeGridComponentConfig::m_bakedDistanceTextureAsset)
-                    ->Field("BakedRelocationTextureAsset", &DiffuseProbeGridComponentConfig::m_bakedRelocationTextureAsset)
-                    ->Field("BakedClassificationTextureAsset", &DiffuseProbeGridComponentConfig::m_bakedClassificationTextureAsset)
+                    ->Field("BakedProbeDataTextureAsset", &DiffuseProbeGridComponentConfig::m_bakedProbeDataTextureAsset)
                     ;
             }
         }
@@ -121,19 +119,16 @@ namespace AZ
             if (m_featureProcessor->AreBakedTexturesReferenced(
                     m_configuration.m_bakedIrradianceTextureRelativePath,
                     m_configuration.m_bakedDistanceTextureRelativePath,
-                    m_configuration.m_bakedRelocationTextureRelativePath,
-                    m_configuration.m_bakedClassificationTextureRelativePath))
+                    m_configuration.m_bakedProbeDataTextureRelativePath))
             {
                 // clear the baked texture paths and assets, since they belong to the original entity (not the clone)
                 m_configuration.m_bakedIrradianceTextureRelativePath.clear();
                 m_configuration.m_bakedDistanceTextureRelativePath.clear();
-                m_configuration.m_bakedRelocationTextureRelativePath.clear();
-                m_configuration.m_bakedClassificationTextureRelativePath.clear();
+                m_configuration.m_bakedProbeDataTextureRelativePath.clear();
 
                 m_configuration.m_bakedIrradianceTextureAsset.Reset();
                 m_configuration.m_bakedDistanceTextureAsset.Reset();
-                m_configuration.m_bakedRelocationTextureAsset.Reset();
-                m_configuration.m_bakedClassificationTextureAsset.Reset();
+                m_configuration.m_bakedProbeDataTextureAsset.Reset();
             }
 
             // add this diffuse probe grid to the feature processor
@@ -147,25 +142,22 @@ namespace AZ
             // load the baked texture assets, but only if they are all valid
             if (m_configuration.m_bakedIrradianceTextureAsset.GetId().IsValid() &&
                 m_configuration.m_bakedDistanceTextureAsset.GetId().IsValid() &&
-                m_configuration.m_bakedRelocationTextureAsset.GetId().IsValid() &&
-                m_configuration.m_bakedClassificationTextureAsset.GetId().IsValid())
+                m_configuration.m_bakedProbeDataTextureAsset.GetId().IsValid())
             {
                 Data::AssetBus::MultiHandler::BusConnect(m_configuration.m_bakedIrradianceTextureAsset.GetId());
                 Data::AssetBus::MultiHandler::BusConnect(m_configuration.m_bakedDistanceTextureAsset.GetId());
-                Data::AssetBus::MultiHandler::BusConnect(m_configuration.m_bakedRelocationTextureAsset.GetId());
-                Data::AssetBus::MultiHandler::BusConnect(m_configuration.m_bakedClassificationTextureAsset.GetId());
+                Data::AssetBus::MultiHandler::BusConnect(m_configuration.m_bakedProbeDataTextureAsset.GetId());
 
                 m_configuration.m_bakedIrradianceTextureAsset.QueueLoad();
                 m_configuration.m_bakedDistanceTextureAsset.QueueLoad();
-                m_configuration.m_bakedRelocationTextureAsset.QueueLoad();
-                m_configuration.m_bakedClassificationTextureAsset.QueueLoad();
+                m_configuration.m_bakedProbeDataTextureAsset.QueueLoad();
             }
             else if (m_configuration.m_runtimeMode == DiffuseProbeGridMode::Baked ||
                      m_configuration.m_runtimeMode == DiffuseProbeGridMode::AutoSelect ||
                      m_configuration.m_editorMode == DiffuseProbeGridMode::Baked ||
                      m_configuration.m_editorMode == DiffuseProbeGridMode::AutoSelect)
             {
-                AZ_Error("DiffuseProbeGrid", false, "DiffuseProbeGrid mdoe is set to Baked or Auto-Select, but it does not have baked texture assets. Please re-bake this DiffuseProbeGrid.");
+                AZ_Error("DiffuseProbeGrid", false, "DiffuseProbeGrid mode is set to Baked or Auto-Select, but it does not have baked texture assets. Please re-bake this DiffuseProbeGrid.");
             }
 
             m_featureProcessor->SetMode(m_handle, m_configuration.m_runtimeMode);
@@ -191,13 +183,11 @@ namespace AZ
             // if all assets are ready we can set the baked texture images
             if (m_configuration.m_bakedIrradianceTextureAsset.IsReady() &&
                 m_configuration.m_bakedDistanceTextureAsset.IsReady() &&
-                m_configuration.m_bakedRelocationTextureAsset.IsReady() &&
-                m_configuration.m_bakedClassificationTextureAsset.IsReady())
+                m_configuration.m_bakedProbeDataTextureAsset.IsReady())
             {
                 Data::AssetBus::MultiHandler::BusDisconnect(m_configuration.m_bakedIrradianceTextureAsset.GetId());
                 Data::AssetBus::MultiHandler::BusDisconnect(m_configuration.m_bakedDistanceTextureAsset.GetId());
-                Data::AssetBus::MultiHandler::BusDisconnect(m_configuration.m_bakedRelocationTextureAsset.GetId());
-                Data::AssetBus::MultiHandler::BusDisconnect(m_configuration.m_bakedClassificationTextureAsset.GetId());
+                Data::AssetBus::MultiHandler::BusDisconnect(m_configuration.m_bakedProbeDataTextureAsset.GetId());
 
                 UpdateBakedTextures();
             }
@@ -365,8 +355,7 @@ namespace AZ
                 callback,
                 m_configuration.m_bakedIrradianceTextureRelativePath,
                 m_configuration.m_bakedDistanceTextureRelativePath,
-                m_configuration.m_bakedRelocationTextureRelativePath,
-                m_configuration.m_bakedClassificationTextureRelativePath);
+                m_configuration.m_bakedProbeDataTextureRelativePath);
         }
 
         void DiffuseProbeGridComponentController::UpdateBakedTextures()
@@ -381,12 +370,8 @@ namespace AZ
            bakedTextures.m_irradianceImageRelativePath = m_configuration.m_bakedIrradianceTextureRelativePath;
            bakedTextures.m_distanceImage = RPI::StreamingImage::FindOrCreate(m_configuration.m_bakedDistanceTextureAsset);
            bakedTextures.m_distanceImageRelativePath = m_configuration.m_bakedDistanceTextureRelativePath;
-           bakedTextures.m_relocationImageDescriptor = m_configuration.m_bakedRelocationTextureAsset->GetImageDescriptor();
-           bakedTextures.m_relocationImageData = m_configuration.m_bakedRelocationTextureAsset->GetSubImageData(0, 0);
-           bakedTextures.m_relocationImageRelativePath = m_configuration.m_bakedRelocationTextureRelativePath;
-           bakedTextures.m_classificationImageDescriptor = m_configuration.m_bakedClassificationTextureAsset->GetImageDescriptor();
-           bakedTextures.m_classificationImageData = m_configuration.m_bakedClassificationTextureAsset->GetSubImageData(0, 0);
-           bakedTextures.m_classificationImageRelativePath = m_configuration.m_bakedClassificationTextureRelativePath;
+           bakedTextures.m_probeDataImage = RPI::StreamingImage::FindOrCreate(m_configuration.m_bakedProbeDataTextureAsset);
+           bakedTextures.m_probeDataImageRelativePath = m_configuration.m_bakedProbeDataTextureRelativePath;
 
            m_featureProcessor->SetBakedTextures(m_handle, bakedTextures);
         }
