@@ -14,6 +14,7 @@
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AzCore/std/numeric.h>
 
 namespace AZ::Dom::Tests
 {
@@ -205,6 +206,92 @@ namespace AZ::Dom::Tests
             EXPECT_EQ(childNode["foo"].GetInt32(), i);
             EXPECT_EQ(childNode["bar"].GetString(), "test");
         }
+
+        PerformValueChecks();
+    }
+
+    TEST_F(DomValueTests, Int64)
+    {
+        m_value.SetObject();
+        m_value["int64_min"] = AZStd::numeric_limits<int64_t>::min();
+        m_value["int64_max"] = AZStd::numeric_limits<int64_t>::max();
+
+        EXPECT_EQ(m_value["int64_min"].GetType(), Type::NumberType);
+        EXPECT_EQ(m_value["int64_min"].GetInt64(), AZStd::numeric_limits<int64_t>::min());
+        EXPECT_EQ(m_value["int64_max"].GetType(), Type::NumberType);
+        EXPECT_EQ(m_value["int64_max"].GetInt64(), AZStd::numeric_limits<int64_t>::max());
+
+        PerformValueChecks();
+    }
+
+    TEST_F(DomValueTests, Uint64)
+    {
+        m_value.SetObject();
+        m_value["uint64_min"] = AZStd::numeric_limits<uint64_t>::min();
+        m_value["uint64_max"] = AZStd::numeric_limits<uint64_t>::max();
+
+        EXPECT_EQ(m_value["uint64_min"].GetType(), Type::NumberType);
+        EXPECT_EQ(m_value["uint64_min"].GetInt64(), AZStd::numeric_limits<uint64_t>::min());
+        EXPECT_EQ(m_value["uint64_max"].GetType(), Type::NumberType);
+        EXPECT_EQ(m_value["uint64_max"].GetInt64(), AZStd::numeric_limits<uint64_t>::max());
+
+        PerformValueChecks();
+    }
+
+    TEST_F(DomValueTests, Double)
+    {
+        m_value.SetObject();
+        m_value["double_min"] = AZStd::numeric_limits<double>::min();
+        m_value["double_max"] = AZStd::numeric_limits<double>::max();
+
+        EXPECT_EQ(m_value["double_min"].GetType(), Type::NumberType);
+        EXPECT_EQ(m_value["double_min"].GetDouble(), AZStd::numeric_limits<double>::min());
+        EXPECT_EQ(m_value["double_max"].GetType(), Type::NumberType);
+        EXPECT_EQ(m_value["double_max"].GetDouble(), AZStd::numeric_limits<double>::max());
+
+        PerformValueChecks();
+    }
+
+    TEST_F(DomValueTests, Null)
+    {
+        m_value.SetObject();
+        m_value["null_value"] = Value(Type::NullType);
+
+        EXPECT_EQ(m_value["null_value"].GetType(), Type::NullType);
+        EXPECT_EQ(m_value["null_type"], Value());
+
+        PerformValueChecks();
+    }
+
+    TEST_F(DomValueTests, Bool)
+    {
+        m_value.SetObject();
+        m_value["true_value"] = true;
+        m_value["false_value"] = false;
+
+        EXPECT_EQ(m_value["true_value"].GetType(), Type::TrueType);
+        EXPECT_EQ(m_value["true_value"].GetBool(), true);
+        EXPECT_EQ(m_value["false_value"].GetType(), Type::FalseType);
+        EXPECT_EQ(m_value["false_value"].GetBool(), false);
+
+        PerformValueChecks();
+    }
+
+    TEST_F(DomValueTests, String)
+    {
+        m_value.SetObject();
+        AZStd::string stringToReference = "foo";
+        m_value["no_copy"] = Value(stringToReference, false);
+        AZStd::string stringToCopy = "bar";
+        m_value["copy"] = Value(stringToCopy, true);
+
+        EXPECT_EQ(m_value["no_copy"].GetType(), Type::StringType);
+        EXPECT_EQ(m_value["no_copy"].GetString(), stringToReference);
+        EXPECT_EQ(m_value["no_copy"].GetString().data(), stringToReference.data());
+
+        EXPECT_EQ(m_value["copy"].GetType(), Type::StringType);
+        EXPECT_EQ(m_value["copy"].GetString(), stringToCopy);
+        EXPECT_NE(m_value["copy"].GetString().data(), stringToCopy.data());
 
         PerformValueChecks();
     }
