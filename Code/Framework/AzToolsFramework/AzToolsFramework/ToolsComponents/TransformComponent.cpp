@@ -670,21 +670,6 @@ namespace AzToolsFramework
                 return;
             }
 
-            // Don't allow read-only entities to be re-parented at all.
-            // Also don't allow entities to be parented under read-only entities.
-            if (auto readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get();
-                readOnlyEntityPublicInterface->IsReadOnly(GetEntityId()) || readOnlyEntityPublicInterface->IsReadOnly(parentId))
-            {
-                return;
-            }
-
-            // Don't allow entities to be parented under closed containers.
-            if (auto containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get();
-                !containerEntityInterface->IsContainerOpen(parentId))
-            {
-                return;
-            }
-
             auto oldParentId = m_parentEntityId;
 
             bool canChangeParent = true;
