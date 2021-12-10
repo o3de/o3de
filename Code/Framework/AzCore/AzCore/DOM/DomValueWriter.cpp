@@ -39,13 +39,13 @@ namespace AZ::Dom
 
     Visitor::Result ValueWriter::Int64(AZ::s64 value)
     {
-        CurrentValue().SetInt(value);
+        CurrentValue().SetInt64(value);
         return FinishWrite();
     }
 
     Visitor::Result ValueWriter::Uint64(AZ::u64 value)
     {
-        CurrentValue().SetUint(value);
+        CurrentValue().SetUint64(value);
         return FinishWrite();
     }
 
