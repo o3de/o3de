@@ -48,6 +48,7 @@ set(FILES
     FocusMode/EditorFocusModeSelectionTests.cpp
     FocusMode/EditorFocusModeTests.cpp
     GenericComponentWrapperTest.cpp
+    Input/QtEventToAzInputMapperTests.cpp
     InstanceDataHierarchy.cpp
     IntegerPrimtitiveTestConfig.h
     LogLines.cpp
