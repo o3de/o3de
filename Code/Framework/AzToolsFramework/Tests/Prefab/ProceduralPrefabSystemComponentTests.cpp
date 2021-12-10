@@ -235,7 +235,7 @@ namespace UnitTest
 
     TEST_F(ProceduralPrefabSystemComponentTests, RegisteredPrefabUpdates)
     {
-        const AZStd::string prefabFile = (m_temporaryDirectory / "test.prefab").string().c_str();
+        const AZStd::string prefabFile = (AZ::IO::Path(m_temporaryDirectory.GetDirectory()) / "test.prefab").Native();
         MockCatalog catalog(prefabFile.c_str());
 
         auto proceduralPrefabSystemComponentInterface = AZ::Interface<ProceduralPrefabSystemComponentInterface>::Get();
