@@ -153,9 +153,21 @@ namespace AZ
             {
                 bool isValidAll = true;
                 uint32_t offset = 0;
+
+                // Rather than doing the direct validation against values directly, we have to convert the array_view 
+                // to a raw byte array, and then check against the bytes to determine whether or not to set the 
+                // uint32 value to 1 (true) or 0 (false). Clang when building in non-debug builds was optimizing out 
+                // the actual 1 and 0 values, so an expression like:
+                //
+                // const uint32_t fourByteValue = values[i] ? 1 : 0;
+                // 
+                // when values[0] == 205, will instead set 'fourByteValue' is assigned to '205', instead of '1'.
+                // In debug builds, and other microsoft compilers (debug+release), this type of optimization doesnt
+                // occur and we get the expected results instead
+                const AZ::u8* byteValues = reinterpret_cast<const AZ::u8*>(values.data());
                 for (size_t i = 0; i < values.size(); i++)
                 {
-                    const uint32_t fourByteValue = values[i] ? 1 : 0;
+                    const uint32_t fourByteValue = byteValues[i] ? 1 : 0;
                     const bool isValid = SetConstantRaw(inputIndex, &fourByteValue, offset, elementSize);
 
                     isValidAll &= isValid;
@@ -263,6 +275,21 @@ namespace AZ
         {
             constexpr size_t sizeOfVector4 = 16;
             if (ValidateConstantAccess(inputIndex, ValidateConstantAccessExpect::Complete, 0, aznumeric_caster(sizeOfVector4)))
+            {
+                const Interval interval = GetLayout()->GetInterval(inputIndex);
+                float* vectorValue = reinterpret_cast<float*>(&m_constantData[interval.m_min]);
+                value.StoreToFloat4(vectorValue);
+
+                return true;
+            }
+            return false;
+        }
+
+        template <>
+        bool ConstantsData::SetConstant<Color>(ShaderInputConstantIndex inputIndex, const Color& value)
+        {
+            constexpr size_t sizeOfColor = sizeof(Color);
+            if (ValidateConstantAccess(inputIndex, ValidateConstantAccessExpect::Complete, 0, aznumeric_caster(sizeOfColor)))
             {
                 const Interval interval = GetLayout()->GetInterval(inputIndex);
                 float* vectorValue = reinterpret_cast<float*>(&m_constantData[interval.m_min]);
@@ -387,6 +414,18 @@ namespace AZ
                 return Vector4::CreateFromFloat4(reinterpret_cast<const float*>(constantBytes.data()));
             }
             return Vector4();
+        }
+
+        template <>
+        Color ConstantsData::GetConstant<Color>(ShaderInputConstantIndex inputIndex) const
+        {
+            constexpr size_t colorSize = sizeof(Color);
+            if (ValidateConstantAccess(inputIndex, ValidateConstantAccessExpect::Complete, 0, aznumeric_caster(colorSize)))
+            {
+                AZStd::array_view<uint8_t> constantBytes = GetConstantRaw(inputIndex);
+                return Color::CreateFromFloat4(reinterpret_cast<const float*>(constantBytes.data()));
+            }
+            return Color();
         }
 
         AZStd::array_view<uint8_t> ConstantsData::GetConstantRaw(ShaderInputConstantIndex inputIndex) const

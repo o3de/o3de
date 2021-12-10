@@ -242,11 +242,7 @@ namespace UnitTest
             ExpectEqual<uint32_t>({ 0 /*false*/, 1 /*true*/ }, resultInUint);
         }
     }
-#if AZ_TRAIT_DISABLE_FAILED_ATOM_RPI_TESTS
-    TEST_F(ShaderResourceGroupConstantBufferTests, DISABLED_SetConstant_GetConstant_FalsePackedInGarbage_Bool)
-#else
     TEST_F(ShaderResourceGroupConstantBufferTests, SetConstant_GetConstant_FalsePackedInGarbage_Bool)
-#endif // AZ_TRAIT_DISABLE_FAILED_ATOM_RPI_TESTS
     {
         using namespace AZ;
 
