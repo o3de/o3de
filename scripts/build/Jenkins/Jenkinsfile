@@ -879,7 +879,7 @@ finally {
                     "build_number": env.BUILD_NUMBER,
                     "repository_name": env.REPOSITORY_NAME,
                     "branch_name": env.BRANCH_NAME,
-                    "pipeline_name": GetRunningPipelineName(env.JOB_NAME),
+                    "pipeline_name": GetRunningPipelineName(env.JOB_NAME)[1],
                     "build_result": "${currentBuild.currentResult}",
                     "build_failure": buildFailure,
                     "recreate_volume": env.RECREATE_VOLUME,
