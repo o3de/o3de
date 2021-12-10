@@ -17,7 +17,7 @@ namespace AZ
      * Internally uses use dlmalloc or version of it (nedmalloc, ptmalloc3).
      */
     class HeapSchema
-        : public IAllocatorAllocate
+        : public IAllocatorSchema
     {
     public:
         typedef void*       pointer_type;
@@ -52,7 +52,6 @@ namespace AZ
         size_type       Capacity() const override                        { return m_capacity; }
         size_type       GetMaxAllocationSize() const override;
         size_type       GetMaxContiguousAllocationSize() const override;
-        IAllocatorAllocate* GetSubAllocator() override                   { return m_subAllocator; }
         void GarbageCollect() override                                   {}
 
     private:
@@ -62,7 +61,7 @@ namespace AZ
         Descriptor      m_desc;
         size_type       m_capacity;         ///< Capacity in bytes.
         size_type       m_used;             ///< Number of bytes in use.
-        IAllocatorAllocate* m_subAllocator;
+        IAllocatorSchema* m_subAllocator;
         bool            m_ownMemoryBlock[Descriptor::m_maxNumBlocks];
     };
 }

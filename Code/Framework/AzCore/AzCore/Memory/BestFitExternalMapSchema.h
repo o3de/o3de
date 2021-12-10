@@ -21,7 +21,7 @@ namespace AZ
      * External map allows us to use this allocator with uncached memory,
      * because the tracking node is stored outside the main chunk.
      */
-    class BestFitExternalMapSchema
+    class BestFitExternalMapSchema : public IAllocatorSchema
     {
     public:
         typedef void*       pointer_type;
@@ -45,26 +45,27 @@ namespace AZ
             static const int        m_memoryBlockAlignment = 16;
             void*                   m_memoryBlock;              ///< Pointer to memory to allocate from. Can be uncached.
             unsigned int            m_memoryBlockByteSize;      ///< Sizes if the memory block.
-            IAllocatorAllocate*     m_mapAllocator;             ///< Allocator for the free chunks map. If null the SystemAllocator will be used.
+            IAllocator*             m_mapAllocator;             ///< Allocator for the free chunks map. If null the SystemAllocator will be used.
         };
 
         BestFitExternalMapSchema(const Descriptor& desc);
 
-        pointer_type    Allocate(size_type byteSize, size_type alignment, int flags);
-        void            DeAllocate(pointer_type ptr);
-        size_type       AllocationSize(pointer_type ptr);
+        pointer_type Allocate(size_type byteSize, size_type alignment, int flags = 0, const char* name = 0, const char* fileName = 0, int lineNum = 0, unsigned int suppressStackRecord = 0) override;
+        void DeAllocate(pointer_type ptr, size_type byteSize = 0, size_type alignment = 0) override;
+        size_type Resize(pointer_type ptr, size_type newSize) override;
+        pointer_type ReAllocate(pointer_type ptr, size_type newSize, size_type newAlignment) override;
+        size_type AllocationSize(pointer_type ptr) override;
 
-        AZ_FORCE_INLINE size_type           NumAllocatedBytes() const               { return m_used; }
-        AZ_FORCE_INLINE size_type           Capacity() const                        { return m_desc.m_memoryBlockByteSize; }
-        size_type                           GetMaxAllocationSize() const;
-        size_type                           GetMaxContiguousAllocationSize() const;
-        AZ_FORCE_INLINE IAllocatorAllocate* GetSubAllocator() const                 { return m_desc.m_mapAllocator; }
+        AZ_FORCE_INLINE size_type           NumAllocatedBytes() const override      { return m_used; }
+        AZ_FORCE_INLINE size_type           Capacity() const override               { return m_desc.m_memoryBlockByteSize; }
+        size_type                           GetMaxAllocationSize() const override;
+        size_type                           GetMaxContiguousAllocationSize() const override;
 
         /**
-         * Since we don't consolidate chucnks at free time (too expensive) we will do it as we need or when we can't
+         * Since we don't consolidate chunks at free time (too expensive) we will do it as we need or when we can't
          * allocate memory. This function is at least O(nlogn) where 'n' are the free chunks.
          */
-        void                                GarbageCollect();
+        void GarbageCollect() override;
 
     private:
         AZ_FORCE_INLINE size_type ChunckSize(pointer_type ptr);

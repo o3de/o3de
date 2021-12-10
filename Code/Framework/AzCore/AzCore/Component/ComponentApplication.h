@@ -142,10 +142,6 @@ namespace AZ
             AZ::u64         m_reservedDebug;            //!< Reserved memory for Debugging (allocation,etc.). Used only when m_grabAllMemory is set to true. (default: 0)
             Debug::AllocationRecords::Mode m_recordingMode; //!< When to record stack traces (default: AZ::Debug::AllocationRecords::RECORD_STACK_IF_NO_FILE_LINE)
             AZ::u64         m_stackRecordLevels;        //!< If stack recording is enabled, how many stack levels to record. (default: 5)
-            bool            m_useOverrunDetection;      //!< True to use the overrun detection memory management scheme. Only available on some platforms; greatly increases memory consumption.
-            bool            m_useMalloc;                //!< True to use malloc instead of the internal memory manager. Intended for debugging purposes only.
-
-            AllocatorRemappings m_allocatorRemappings;  //!< List of remappings of allocators to perform, so that they can alias each other.
 
             ModuleDescriptorList m_modules;             //!< Dynamic modules used by the application.
                                                         //!< These will be loaded on startup.
@@ -159,7 +155,7 @@ namespace AZ
 
             //! If set, this allocator is used to allocate the temporary bootstrap memory, as well as the main \ref SystemAllocator heap.
             //! If it's left nullptr (default), the \ref OSAllocator will be used.
-            IAllocatorAllocate* m_allocator = nullptr;
+            IAllocator* m_allocator = nullptr;
 
             //! Callback to create AZ::Modules for the static libraries linked by this application.
             //! Leave null if the application uses no static AZ::Modules.
@@ -372,7 +368,7 @@ namespace AZ
         bool                                        m_isOSAllocatorOwner{ false };
         bool                                        m_ownsConsole{};
         void*                                       m_fixedMemoryBlock{ nullptr }; //!< Pointer to the memory block allocator, so we can free it OnDestroy.
-        IAllocatorAllocate*                         m_osAllocator{ nullptr };
+        IAllocator*                                 m_osAllocator{ nullptr };
         EntitySetType                               m_entities;
 
         AZ::SettingsRegistryInterface::NotifyEventHandler m_projectPathChangedHandler;

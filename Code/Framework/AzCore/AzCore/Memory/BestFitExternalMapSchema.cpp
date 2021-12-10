@@ -30,6 +30,7 @@ BestFitExternalMapSchema::BestFitExternalMapSchema(const Descriptor& desc)
     //if( m_desc.m_memoryBlock == NULL) there is no point to automate this cause we need to flag this memory special, otherwise there is no point to use this allocator at all
     //  m_desc.m_memoryBlock = azmalloc(SystemAllocator,m_desc.m_memoryBlockByteSize,16);
     m_freeChunksMap.insert(AZStd::make_pair(m_desc.m_memoryBlockByteSize, reinterpret_cast<char*>(m_desc.m_memoryBlock)));
+    
 }
 
 //=========================================================================
@@ -37,7 +38,7 @@ BestFitExternalMapSchema::BestFitExternalMapSchema(const Descriptor& desc)
 // [1/28/2011]
 //=========================================================================
 BestFitExternalMapSchema::pointer_type
-BestFitExternalMapSchema::Allocate(size_type byteSize, size_type alignment, int flags)
+BestFitExternalMapSchema::Allocate(size_type byteSize, size_type alignment, int flags, const char*, const char*, int, unsigned int)
 {
     (void)flags;
     char* address = nullptr;
@@ -91,8 +92,7 @@ BestFitExternalMapSchema::Allocate(size_type byteSize, size_type alignment, int 
 // DeAllocate
 // [1/28/2011]
 //=========================================================================
-void
-BestFitExternalMapSchema::DeAllocate(pointer_type ptr)
+void BestFitExternalMapSchema::DeAllocate(pointer_type ptr, size_type, size_type)
 {
     if (ptr == nullptr)
     {
@@ -120,6 +120,20 @@ BestFitExternalMapSchema::AllocationSize(pointer_type ptr)
         return iter->second;
     }
     return 0;
+}
+
+BestFitExternalMapSchema::size_type
+BestFitExternalMapSchema::Resize(pointer_type, size_type)
+{
+    AZ_Assert(false, AZ_FUNCTION_SIGNATURE " unsupported");
+    return 0;
+}
+
+BestFitExternalMapSchema::pointer_type
+BestFitExternalMapSchema::ReAllocate(pointer_type, size_type, size_type)
+{
+    AZ_Assert(false, AZ_FUNCTION_SIGNATURE " unsupported");
+    return nullptr;
 }
 
 //=========================================================================

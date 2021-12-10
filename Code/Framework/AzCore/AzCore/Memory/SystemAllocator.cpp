@@ -51,9 +51,8 @@ static bool g_isSystemSchemaUsed = false;
 // [9/2/2009]
 //=========================================================================
 SystemAllocator::SystemAllocator()
-    : AllocatorBase(this, "SystemAllocator", "Fundamental generic memory allocator")
+    : AllocatorBase(nullptr, "SystemAllocator", "Fundamental generic memory allocator")
     , m_isCustom(false)
-    , m_allocator(nullptr)
     , m_ownsOSAllocator(false)
 {
 }
@@ -93,7 +92,7 @@ SystemAllocator::Create(const Descriptor& desc)
     if (desc.m_custom)
     {
         m_isCustom = true;
-        m_allocator = desc.m_custom;
+        m_schema = desc.m_custom;
         isReady = true;
     }
     else
@@ -121,9 +120,9 @@ SystemAllocator::Create(const Descriptor& desc)
             AZ_Assert(!g_isSystemSchemaUsed, "AZ::SystemAllocator MUST be created first! It's the source of all allocations!");
 
 #if AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HPHA
-            m_allocator = new(&g_systemSchema)HphaSchema(heapDesc);
+            m_schema = new (&g_systemSchema) HphaSchema(heapDesc);
 #elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC
-            m_allocator = new(&g_systemSchema)MallocSchema(heapDesc);
+            m_schema = new (&g_systemSchema) MallocSchema(heapDesc);
 #endif
             g_isSystemSchemaUsed = true;
             isReady = true;
@@ -134,11 +133,11 @@ SystemAllocator::Create(const Descriptor& desc)
             AZ_Assert(AllocatorInstance<SystemAllocator>::IsReady(), "System allocator must be created before any other allocator! They allocate from it.");
 
 #if AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HPHA
-            m_allocator = azcreate(HphaSchema, (heapDesc), SystemAllocator);
+            m_schema = azcreate(HphaSchema, (heapDesc), SystemAllocator);
 #elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC
-            m_allocator = azcreate(MallocSchema, (heapDesc), SystemAllocator);
+            m_schema = azcreate(MallocSchema, (heapDesc), SystemAllocator);
 #endif
-            if (m_allocator == nullptr)
+            if (m_schema == nullptr)
             {
                 isReady = false;
             }
@@ -167,18 +166,18 @@ SystemAllocator::Destroy()
 
     if (!m_isCustom)
     {
-        if ((void*)m_allocator == (void*)&g_systemSchema)
+        if ((void*)m_schema == (void*)&g_systemSchema)
         {
 #if AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HPHA
-            static_cast<HphaSchema*>(m_allocator)->~HphaSchema();
+            static_cast<HphaSchema*>(m_schema)->~HphaSchema();
 #elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC
-            static_cast<MallocSchema*>(m_allocator)->~MallocSchema();
+            static_cast<MallocSchema*>(m_schema)->~MallocSchema();
 #endif
             g_isSystemSchemaUsed = false;
         }
         else
         {
-            azdestroy(m_allocator);
+            azdestroy(m_schema);
         }
     }
 
@@ -198,11 +197,6 @@ AllocatorDebugConfig SystemAllocator::GetDebugConfig()
         .ExcludeFromDebugging(!m_desc.m_allocationRecords);
 }
 
-IAllocatorAllocate* SystemAllocator::GetSchema()
-{
-    return m_allocator;
-}
-
 //=========================================================================
 // Allocate
 // [9/2/2009]
@@ -218,14 +212,14 @@ SystemAllocator::Allocate(size_type byteSize, size_type alignment, int flags, co
     AZ_Assert((alignment & (alignment - 1)) == 0, "Alignment must be power of 2!");
 
     byteSize = MemorySizeAdjustedUp(byteSize);
-    SystemAllocator::pointer_type address = m_allocator->Allocate(byteSize, alignment, flags, name, fileName, lineNum, suppressStackRecord + 1);
+    SystemAllocator::pointer_type address = m_schema->Allocate(byteSize, alignment, flags, name, fileName, lineNum, suppressStackRecord + 1);
 
     if (address == nullptr)
     {
         // Free all memory we can and try again!
         AllocatorManager::Instance().GarbageCollect();
 
-        address = m_allocator->Allocate(byteSize, alignment, flags, name, fileName, lineNum, suppressStackRecord + 1);
+        address = m_schema->Allocate(byteSize, alignment, flags, name, fileName, lineNum, suppressStackRecord + 1);
     }
 
     if (address == nullptr)
@@ -251,7 +245,7 @@ SystemAllocator::DeAllocate(pointer_type ptr, size_type byteSize, size_type alig
     byteSize = MemorySizeAdjustedUp(byteSize);
     AZ_PROFILE_MEMORY_FREE(MemoryReserved, ptr);
     AZ_MEMORY_PROFILE(ProfileDeallocation(ptr, byteSize, alignment, nullptr));
-    m_allocator->DeAllocate(ptr, byteSize, alignment);
+    m_schema->DeAllocate(ptr, byteSize, alignment);
 }
 
 //=========================================================================
@@ -265,7 +259,7 @@ SystemAllocator::ReAllocate(pointer_type ptr, size_type newSize, size_type newAl
 
     AZ_MEMORY_PROFILE(ProfileReallocationBegin(ptr, newSize));
     AZ_PROFILE_MEMORY_FREE(MemoryReserved, ptr);
-    pointer_type newAddress = m_allocator->ReAllocate(ptr, newSize, newAlignment);
+    pointer_type newAddress = m_schema->ReAllocate(ptr, newSize, newAlignment);
     AZ_PROFILE_MEMORY_ALLOC(MemoryReserved, newAddress, newSize, "SystemAllocator realloc");
     AZ_MEMORY_PROFILE(ProfileReallocationEnd(ptr, newAddress, newSize, newAlignment));
 
@@ -280,7 +274,7 @@ SystemAllocator::size_type
 SystemAllocator::Resize(pointer_type ptr, size_type newSize)
 {
     newSize = MemorySizeAdjustedUp(newSize);
-    size_type resizedSize = m_allocator->Resize(ptr, newSize);
+    size_type resizedSize = m_schema->Resize(ptr, newSize);
 
     AZ_MEMORY_PROFILE(ProfileResize(ptr, resizedSize));
 
@@ -294,7 +288,7 @@ SystemAllocator::Resize(pointer_type ptr, size_type newSize)
 SystemAllocator::size_type
 SystemAllocator::AllocationSize(pointer_type ptr)
 {
-    size_type allocSize = MemorySizeAdjustedDown(m_allocator->AllocationSize(ptr));
+    size_type allocSize = MemorySizeAdjustedDown(m_schema->AllocationSize(ptr));
 
     return allocSize;
 }

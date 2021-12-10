@@ -19,7 +19,7 @@ namespace AZ
     * Heap allocator schema, based on Dimitar Lazarov "High Performance Heap Allocator".
     */
     class HphaSchema
-        : public IAllocatorAllocate
+        : public IAllocatorSchema
     {
     public:
         /**
@@ -47,7 +47,7 @@ namespace AZ
             unsigned int            m_isPoolAllocations : 1;                ///< True to allow allocations from pools, otherwise false.
             size_t                  m_fixedMemoryBlockByteSize;             ///< Memory block size, if 0 we use the OS memory allocation functions.
             void*                   m_fixedMemoryBlock;                     ///< Can be NULL if so the we will allocate memory from the subAllocator if m_memoryBlocksByteSize is != 0.
-            IAllocatorAllocate*     m_subAllocator;                         ///< Allocator that m_memoryBlocks memory was allocated from or should be allocated (if NULL).
+            IAllocatorSchema*       m_subAllocator;                         ///< Allocator that m_memoryBlocks memory was allocated from or should be allocated (if NULL).
             size_t                  m_systemChunkSize;                      ///< Size of chunk to request from the OS when more memory is needed (defaults to m_pageSize)
             size_t                  m_capacity;                             ///< Max size this allocator can grow to
         };
@@ -68,7 +68,6 @@ namespace AZ
         size_type       GetMaxAllocationSize() const override;
         size_type       GetMaxContiguousAllocationSize() const override;
         size_type       GetUnAllocatedMemory(bool isPrint = false) const override;
-        IAllocatorAllocate* GetSubAllocator() override                       { return m_desc.m_subAllocator; }
 
         /// Return unused memory to the OS (if we don't use fixed block). Don't call this unless you really need free memory, it is slow.
         void            GarbageCollect() override;

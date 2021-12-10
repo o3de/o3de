@@ -18,7 +18,7 @@ namespace AZ
 {
     namespace RHI
     {
-        void DrawPacketBuilder::Begin(IAllocatorAllocate* allocator)
+        void DrawPacketBuilder::Begin(IAllocator* allocator)
         {
             m_allocator = allocator ? allocator : &AllocatorInstance<SystemAllocator>::Get();
         }

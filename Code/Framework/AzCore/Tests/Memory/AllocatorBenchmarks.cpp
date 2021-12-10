@@ -112,7 +112,6 @@ namespace Benchmark
         {
         }
 
-        // IAllocatorAllocate
         static void* Allocate(size_t byteSize, size_t)
         {
             s_numAllocatedBytes += byteSize;
@@ -580,6 +579,7 @@ namespace Benchmark
     //BM_REGISTER_ALLOCATOR(BestFitExternalMapAllocator, BestFitExternalMapAllocator); // Requires to pre-allocate blocks and cannot work as a general-purpose allocator
     //BM_REGISTER_ALLOCATOR(HeapSchemaAllocator, TestHeapSchemaAllocator); // Requires to pre-allocate blocks and cannot work as a general-purpose allocator
     //BM_REGISTER_SCHEMA(PoolSchema); // Requires special alignment requests while allocating
+    // BM_REGISTER_ALLOCATOR(OSAllocator, OSAllocator); // Requires special treatment to initialize since it will be already initialized, maybe creating a different instance?
 
 #undef BM_REGISTER_ALLOCATOR
 #undef BM_REGISTER_SIZE_FIXTURES

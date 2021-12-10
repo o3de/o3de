@@ -1400,7 +1400,7 @@ namespace UnitTest
     {
         using ContainerType = ContainerTemplate<int32_t, AZStd::hash<int32_t>, AZStd::equal_to<int32_t>, AZ::AZStdIAllocator>;
 
-        static ContainerType Create(std::initializer_list<typename ContainerType::value_type> intList, AZ::IAllocatorAllocate* allocatorInstance)
+        static ContainerType Create(std::initializer_list<typename ContainerType::value_type> intList, AZ::IAllocator* allocatorInstance)
         {
             ContainerType allocatorSet(intList, AZStd::hash<int32_t>{}, AZStd::equal_to<int32_t>{}, AZ::AZStdIAllocator{ allocatorInstance });
             return allocatorSet;
@@ -1798,7 +1798,7 @@ namespace UnitTest
     {
         using ContainerType = ContainerTemplate<int32_t, int32_t, AZStd::hash<int32_t>, AZStd::equal_to<int32_t>, AZ::AZStdIAllocator>;
 
-        static ContainerType Create(std::initializer_list<typename ContainerType::value_type> intList, AZ::IAllocatorAllocate* allocatorInstance)
+        static ContainerType Create(std::initializer_list<typename ContainerType::value_type> intList, AZ::IAllocator* allocatorInstance)
         {
             ContainerType allocatorMap(intList, AZStd::hash<int32_t>{}, AZStd::equal_to<int32_t>{}, AZ::AZStdIAllocator{ allocatorInstance });
             return allocatorMap;

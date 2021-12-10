@@ -152,8 +152,6 @@ namespace AZ
         m_reservedDebug = 0;
         m_recordingMode = Debug::AllocationRecords::RECORD_STACK_IF_NO_FILE_LINE;
         m_stackRecordLevels = 5;
-        m_useOverrunDetection = false;
-        m_useMalloc = false;
     }
 
     bool AppDescriptorConverter(SerializeContext& serialize, SerializeContext::DataElementNode& node)
@@ -323,9 +321,6 @@ namespace AZ
                 ->Field("blockSize", &Descriptor::m_memoryBlocksByteSize)
                 ->Field("reservedOS", &Descriptor::m_reservedOS)
                 ->Field("reservedDebug", &Descriptor::m_reservedDebug)
-                ->Field("useOverrunDetection", &Descriptor::m_useOverrunDetection)
-                ->Field("useMalloc", &Descriptor::m_useMalloc)
-                ->Field("allocatorRemappings", &Descriptor::m_allocatorRemappings)
                 ->Field("modules", &Descriptor::m_modules)
                 ;
 
@@ -361,8 +356,6 @@ namespace AZ
                         ->Attribute(Edit::Attributes::Step, &Descriptor::m_pageSize)
                     ->DataElement(Edit::UIHandlers::SpinBox, &Descriptor::m_reservedOS, "OS reserved memory", "System memory reserved for OS (used only when 'Allocate all memory at startup' is true)")
                     ->DataElement(Edit::UIHandlers::SpinBox, &Descriptor::m_reservedDebug, "Memory reserved for debugger", "System memory reserved for Debug allocator, like memory tracking (used only when 'Allocate all memory at startup' is true)")
-                    ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_useOverrunDetection, "Use Overrun Detection", "Use the overrun detection memory manager (only available on some platforms, ignored in Release builds)")
-                    ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_useMalloc, "Use Malloc", "Use malloc for memory allocations (for memory debugging only, ignored in Release builds)")
                     ;
             }
         }
@@ -879,7 +872,7 @@ namespace AZ
             AZ::AllocatorInstance<AZ::SystemAllocator>::Create(desc);
             AZ::Debug::Trace::Instance().Init();
 
-            AZ::Debug::AllocationRecords* records = AllocatorInstance<SystemAllocator>::GetAllocator().GetRecords();
+            AZ::Debug::AllocationRecords* records = AllocatorInstance<SystemAllocator>::Get().GetRecords();
             if (records)
             {
                 records->SetMode(m_descriptor.m_recordingMode);
@@ -891,35 +884,6 @@ namespace AZ
 
             m_isSystemAllocatorOwner = true;
         }
-
-#ifndef RELEASE
-        if (m_descriptor.m_useOverrunDetection)
-        {
-            OverrunDetectionSchema::Descriptor overrunDesc(false);
-            s_overrunDetectionSchema = Environment::CreateVariable<OverrunDetectionSchema>(AzTypeInfo<OverrunDetectionSchema>::Name(), overrunDesc);
-            OverrunDetectionSchema* schemaPtr = &s_overrunDetectionSchema.Get();
-
-            AZ::AllocatorManager::Instance().SetOverrideAllocatorSource(schemaPtr);
-        }
-
-        if (m_descriptor.m_useMalloc)
-        {
-            AZ_Printf("Malloc", "WARNING: Malloc override is enabled. Registered allocators will use malloc instead of their normal allocation schemas.");
-            s_mallocSchema = Environment::CreateVariable<MallocSchema>(AzTypeInfo<MallocSchema>::Name());
-            MallocSchema* schemaPtr = &s_mallocSchema.Get();
-
-            AZ::AllocatorManager::Instance().SetOverrideAllocatorSource(schemaPtr);
-        }
-#endif
-
-        AllocatorManager& allocatorManager = AZ::AllocatorManager::Instance();
-
-        for (const auto& remapping : m_descriptor.m_allocatorRemappings)
-        {
-            allocatorManager.AddAllocatorRemapping(remapping.m_from.c_str(), remapping.m_to.c_str());
-        }
-
-        allocatorManager.FinalizeConfiguration();
     }
 
     void ComponentApplication::MergeSettingsToRegistry(SettingsRegistryInterface& registry)

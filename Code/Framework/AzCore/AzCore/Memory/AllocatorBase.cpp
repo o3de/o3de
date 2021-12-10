@@ -158,10 +158,10 @@ namespace
 }
 #endif
 
-AllocatorBase::AllocatorBase(IAllocatorAllocate* allocationSource, const char* name, const char* desc) :
-    IAllocator(allocationSource),
-    m_name(name),
-    m_desc(desc)
+AllocatorBase::AllocatorBase(IAllocatorSchema* allocationSchema, const char* name, const char* desc)
+    : IAllocator(allocationSchema)
+    , m_name(name)
+    , m_desc(desc)
 {
 }
 
@@ -180,11 +180,6 @@ const char* AllocatorBase::GetDescription() const
     return m_desc;
 }
 
-IAllocatorAllocate* AllocatorBase::GetSchema()
-{
-    return nullptr;
-}
-
 Debug::AllocationRecords* AllocatorBase::GetRecords()
 {
     return m_records;
@@ -199,11 +194,6 @@ void AllocatorBase::SetRecords(Debug::AllocationRecords* records)
 bool AllocatorBase::IsReady() const
 {
     return m_isReady;
-}
-
-bool AllocatorBase::CanBeOverridden() const
-{
-    return m_canBeOverridden;
 }
 
 void AllocatorBase::PostCreate()
@@ -266,11 +256,6 @@ bool AllocatorBase::IsProfilingActive() const
     return m_isProfilingActive;
 }
 
-void AllocatorBase::DisableOverriding()
-{
-    m_canBeOverridden = false;
-}
-
 void AllocatorBase::DisableRegistration()
 {
     m_registrationEnabled = false;
@@ -278,12 +263,12 @@ void AllocatorBase::DisableRegistration()
 
 void AllocatorBase::ProfileAllocation(void* ptr, size_t byteSize, size_t alignment, const char* name, const char* fileName, int lineNum, int suppressStackRecord)
 {
-#if defined(AZ_HAS_VARIADIC_TEMPLATES) && defined(AZ_DEBUG_BUILD)
-    ++suppressStackRecord; // one more for the fact the ebus is a function
-#endif // AZ_HAS_VARIADIC_TEMPLATES
-
     if (m_isProfilingActive)
     {
+#if defined(AZ_HAS_VARIADIC_TEMPLATES) && defined(AZ_DEBUG_BUILD)
+        ++suppressStackRecord; // one more for the fact the ebus is a function
+#endif // AZ_HAS_VARIADIC_TEMPLATES
+
         auto records = GetRecords();
         if (records)
         {

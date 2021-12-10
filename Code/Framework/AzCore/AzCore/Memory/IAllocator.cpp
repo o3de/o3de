@@ -9,23 +9,12 @@
 
 namespace AZ
 {
-    IAllocator::IAllocator(IAllocatorAllocate* allocationSource)
-        : m_allocationSource(allocationSource)
-        , m_originalAllocationSource(allocationSource)
+    IAllocator::IAllocator(IAllocatorSchema* schema)
+        : m_schema(schema)
     {
     }
 
     IAllocator::~IAllocator()
     {
-    }
-
-    void IAllocator::SetAllocationSource(IAllocatorAllocate* allocationSource)
-    {
-        m_allocationSource = allocationSource;
-    }
-
-    void IAllocator::ResetAllocationSource()
-    {
-        m_allocationSource = m_originalAllocationSource;
     }
 }

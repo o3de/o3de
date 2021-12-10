@@ -28,17 +28,16 @@ namespace AZ
     class AllocatorManager;
 
     /**
-     * Allocator alloc/free basic interface. It is separate because it can be used
-     * for user provided allocators overrides
+     * Allocator schema interface
      */
-    class IAllocatorAllocate
+    class IAllocatorSchema
     {
     public:
         typedef void*           pointer_type;
         typedef size_t          size_type;
         typedef ptrdiff_t       difference_type;
 
-        virtual ~IAllocatorAllocate() {}
+        virtual ~IAllocatorSchema() {}
 
         virtual pointer_type            Allocate(size_type byteSize, size_type alignment, int flags = 0, const char* name = 0, const char* fileName = 0, int lineNum = 0, unsigned int suppressStackRecord = 0) = 0;
         virtual void                    DeAllocate(pointer_type ptr, size_type byteSize = 0, size_type alignment = 0) = 0;
@@ -70,8 +69,6 @@ namespace AZ
          * that will be reported.
          */
         virtual size_type               GetUnAllocatedMemory(bool isPrint = false) const { (void)isPrint; return 0; }
-        /// Returns a pointer to a sub-allocator or NULL.
-        virtual IAllocatorAllocate*     GetSubAllocator() = 0;
     };
 
     /**
@@ -100,56 +97,19 @@ namespace AZ
     /**
      * Interface class for all allocators.
      */
-    class IAllocator
+    class IAllocator : public IAllocatorSchema
     {
     public:
-        IAllocator(IAllocatorAllocate* allocationSource);
+        IAllocator(IAllocatorSchema* schema = nullptr);
         virtual ~IAllocator();
 
-        // @{ Every system allocator is required to provide name this is how
+        // Every system allocator is required to provide name this is how
         // it will be registered with the allocator manager.
         virtual const char* GetName() const = 0;
         virtual const char* GetDescription() const = 0;
-        // @}
 
-        //---------------------------------------------------------------------
-        // Code releating to the allocation source is made concrete within this 
-        // interface as a performance optimization.
-        //---------------------------------------------------------------------
-
-        /// Returns the current allocation source, which may be used to perform memory allocations.
-        AZ_FORCE_INLINE IAllocatorAllocate* GetAllocationSource() const
-        {
-            return m_allocationSource;
-        }
-
-        /// Returns the original allocation source. Generally only used for debugging purposes.
-        AZ_FORCE_INLINE IAllocatorAllocate* GetOriginalAllocationSource() const
-        {
-            return m_originalAllocationSource;
-        }
-
-        /// Returns true if the allocation source has changed from its original value.
-        AZ_FORCE_INLINE bool IsAllocationSourceChanged() const
-        {
-            return m_allocationSource != m_originalAllocationSource;
-        }
-
-        /// Sets the allocation source, effectively overriding the allocator.
-        /// Be very careful doing this, as existing allocations will be deallocated through the new source,
-        /// typically leading to unwanted effects (such as crashes).
-        void SetAllocationSource(IAllocatorAllocate* allocationSource);
-
-        /// Restores the allocation source to its original value.
-        /// Be very careful doing this, as allocations that came from the new source will now be deallocated
-        /// through the original source, typically leading to unwanted effects (such as crashes).
-        void ResetAllocationSource();
-
-        //---------------------------------------------------------------------
-
-        /// Returns the schema, if the allocator uses one. Returns nullptr if the allocator does not use a schema.
-        /// This is mainly used when debugging to determine if allocators alias each other under the hood.
-        virtual IAllocatorAllocate* GetSchema() = 0;
+        /// Returns the schema
+        AZ_FORCE_INLINE IAllocatorSchema* GetSchema() const { return m_schema; };
 
         /// Returns the debug configuration for this allocator.
         virtual AllocatorDebugConfig GetDebugConfig() = 0;
@@ -162,11 +122,6 @@ namespace AZ
 
         /// Returns true if this allocator is ready to use.
         virtual bool IsReady() const = 0;
-
-        /// Returns true if this allocator can be overridden with a different source.
-        /// Almost all allocators should return true. There are very few minor exceptions, such as the OS Allocator, that are required for direct
-        /// interfacing with the kernel and must never be overridden under any circumstances.
-        virtual bool CanBeOverridden() const = 0;
 
         /// Returns true if the allocator was lazily created. Exposed primarily for testing systems that need to verify the state of allocators.
         virtual bool IsLazilyCreated() const = 0;
@@ -195,9 +150,7 @@ namespace AZ
         virtual void Destroy() = 0;
 
     protected:
-        // The allocation source is made a direct member of the interface as a performance optimization.
-        IAllocatorAllocate * m_allocationSource;
-        IAllocatorAllocate* m_originalAllocationSource;
+        IAllocatorSchema* m_schema;
 
         template<class Allocator>
         friend class AllocatorStorage::StoragePolicyBase;

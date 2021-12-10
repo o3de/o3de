@@ -141,9 +141,9 @@ void* operator new[](std::size_t, const AZ::Internal::AllocatorDummy*);
  */
 #define azfree(...)         AZ_MACRO_SPECIALIZE(azfree_, AZ_VA_NUM_ARGS(__VA_ARGS__), (__VA_ARGS__))
 
-/// Returns allocation size, based on it's pointer \ref AZ::IAllocatorAllocate::AllocationSize.
+/// Returns allocation size, based on it's pointer \ref AZ::IAllocatorSchema::AllocationSize.
 #define azallocsize(_Ptr, _Allocator)    AZ::AllocatorInstance< _Allocator >::Get().AllocationSize(_Ptr)
-/// Returns the new expanded size or 0 if NOT supported by the allocator \ref AZ::IAllocatorAllocate::Resize.
+/// Returns the new expanded size or 0 if NOT supported by the allocator \ref AZ::IAllocatorSchema::Resize.
 #define azallocresize(_Ptr, _NewSize, _Allocator) AZ::AllocatorInstance< _Allocator >::Get().Resize(_Ptr, _NewSize)
 
 namespace AZ {
@@ -734,12 +734,15 @@ namespace AZ
         public:
             typedef typename Allocator::Descriptor Descriptor;
 
-            AZ_FORCE_INLINE static IAllocatorAllocate& Get()
+            // Maintained for backwards compatibility, prefer to use Get() instead.
+            // Get was previously used to get the the schema, however, that bypases what the allocators are doing.
+            // If the schema is needed, call Get().GetSchema()
+            AZ_FORCE_INLINE static IAllocator& GetAllocator()
             {
-                return *GetAllocator().GetAllocationSource();
+                return StoragePolicy::GetAllocator();
             }
 
-            AZ_FORCE_INLINE static IAllocator& GetAllocator()
+            AZ_FORCE_INLINE static IAllocator& Get() 
             {
                 return StoragePolicy::GetAllocator();
             }
@@ -781,7 +784,7 @@ namespace AZ
     // structure of another allocator
     template <class ParentAllocator>
     class ChildAllocatorSchema
-        : public IAllocatorAllocate
+        : public IAllocatorSchema
     {
     public:
         // No descriptor is necessary, as the parent allocator is expected to already
@@ -792,7 +795,7 @@ namespace AZ
         ChildAllocatorSchema(const Descriptor&) {}
 
         //---------------------------------------------------------------------
-        // IAllocatorAllocate
+        // IAllocatorSchema
         //---------------------------------------------------------------------
         pointer_type Allocate(size_type byteSize, size_type alignment, int flags = 0, const char* name = 0, const char* fileName = 0, int lineNum = 0, unsigned int suppressStackRecord = 0) override
         {
@@ -848,11 +851,6 @@ namespace AZ
         {
             return AZ::AllocatorInstance<Parent>::Get().GetUnAllocatedMemory(isPrint);
         }
-
-        IAllocatorAllocate*     GetSubAllocator() override
-        {
-            return AZ::AllocatorInstance<Parent>::Get().GetSubAllocator();
-        }
     };
 
     /**
@@ -873,7 +871,7 @@ namespace AZ
         {
             if (AllocatorInstance<Allocator>::IsReady())
             {
-                m_name = AllocatorInstance<Allocator>::GetAllocator().GetName();
+                m_name = AllocatorInstance<Allocator>::Get().GetName();
             }
             else
             {
@@ -932,7 +930,7 @@ namespace AZ
         typedef AZStd::ptrdiff_t    difference_type;
         typedef AZStd::false_type   allow_memory_leaks;         ///< Regular allocators should not leak.
 
-        AZ_FORCE_INLINE AZStdIAllocator(IAllocatorAllocate* allocator, const char* name = "AZ::AZStdIAllocator")
+        AZ_FORCE_INLINE AZStdIAllocator(IAllocator* allocator, const char* name = "AZ::AZStdIAllocator")
             : m_allocator(allocator)
             , m_name(name)
         {
@@ -965,7 +963,7 @@ namespace AZ
         AZ_FORCE_INLINE bool operator==(const AZStdIAllocator& rhs) const { return m_allocator == rhs.m_allocator; }
         AZ_FORCE_INLINE bool operator!=(const AZStdIAllocator& rhs) const { return m_allocator != rhs.m_allocator; }
     private:
-        IAllocatorAllocate* m_allocator;
+        IAllocator* m_allocator;
         const char* m_name;
     };
 
@@ -982,8 +980,8 @@ namespace AZ
         using size_type = AZStd::size_t;
         using difference_type = AZStd::ptrdiff_t;
         using allow_memory_leaks = AZStd::false_type; ///< Regular allocators should not leak.
-        using functor_type = IAllocatorAllocate&(*)(); ///< Function Pointer must return IAllocatorAllocate&.
-                                                       ///< function pointers do not support covariant return types
+        using functor_type = IAllocator&(*)(); ///< Function Pointer must return IAllocator&.
+                                               ///< function pointers do not support covariant return types
 
         constexpr AZStdFunctorAllocator(functor_type allocatorFunctor, const char* name = "AZ::AZStdFunctorAllocator")
             : m_allocatorFunctor(allocatorFunctor)

@@ -1081,7 +1081,7 @@ namespace AZ {
         const size_t m_treePageAlignment;
         const size_t m_poolPageSize;
         bool         m_isPoolAllocations;
-        IAllocatorAllocate* m_subAllocator;
+        IAllocatorSchema* m_subAllocator;
 
 #if !defined (USE_MUTEX_PER_BUCKET)
         mutable AZStd::mutex m_mutex;

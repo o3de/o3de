@@ -62,7 +62,7 @@ namespace O3DELauncher
 
         ResourceLimitUpdater m_updateResourceLimits = nullptr; //!< callback for updating system resources, if necessary
         OnPostApplicationStart m_onPostAppStart = nullptr;  //!< callback notifying the platform specific entry point that AzGameFramework::GameApplication::Start has been called
-        AZ::IAllocatorAllocate* m_allocator = nullptr; //!< Used to allocate the temporary bootstrap memory, as well as the main \ref SystemAllocator heap. If null, OSAllocator will be used
+        AZ::IAllocator* m_allocator = nullptr; //!< Used to allocate the temporary bootstrap memory, as well as the main \ref SystemAllocator heap. If null, OSAllocator will be used
 
         const char* m_appResourcesPath = "."; //!< Path to the device specific assets, default is equivalent to blank path in ParseEngineConfig
         const char* m_appWriteStoragePath = nullptr; //!< Path to writeable storage if different than assets path, used to override userPath and logPath

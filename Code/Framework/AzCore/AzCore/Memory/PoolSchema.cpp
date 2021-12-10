@@ -163,7 +163,7 @@ namespace AZ
         }
 
         using AllocatorType = PoolAllocation<PoolSchemaImpl>;
-        IAllocatorAllocate*                 m_pageAllocator;
+        IAllocatorSchema*                   m_pageAllocator;
         AllocatorType                       m_allocator;
         void*                               m_staticDataBlock;
         unsigned int                        m_numStaticPages;
@@ -295,7 +295,7 @@ namespace AZ
         FreePagesType               m_freePages;
         AZStd::vector<ThreadPoolData*> m_threads;           ///< Array with all separate thread data. Used to traverse end free elements.
 
-        IAllocatorAllocate*         m_pageAllocator;
+        IAllocatorSchema*           m_pageAllocator;
         void*                       m_staticDataBlock;
         size_t                      m_numStaticPages;
         size_t                      m_pageSize;
@@ -732,17 +732,6 @@ PoolSchema::Capacity() const
     return m_impl->m_numStaticPages * m_impl->m_pageSize;
 }
 
-//=========================================================================
-// GetPageAllocator
-// [11/17/2010]
-//=========================================================================
-IAllocatorAllocate*
-PoolSchema::GetSubAllocator()
-{
-    return m_impl->m_pageAllocator;
-}
-
-
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 // PollAllocator Implementation
@@ -1088,16 +1077,6 @@ ThreadPoolSchema::size_type
 ThreadPoolSchema::Capacity() const
 {
     return m_impl->m_numStaticPages * m_impl->m_pageSize;
-}
-
-//=========================================================================
-// GetPageAllocator
-// [11/17/2010]
-//=========================================================================
-IAllocatorAllocate*
-ThreadPoolSchema::GetSubAllocator()
-{
-    return m_impl->m_pageAllocator;
 }
 
 

@@ -19,7 +19,6 @@ namespace AZ
         , m_custom(nullptr)
         , m_numAllocatedBytes(0)
     {
-        DisableOverriding();
     }
 
     //=========================================================================

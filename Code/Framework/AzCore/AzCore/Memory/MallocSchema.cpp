@@ -22,31 +22,15 @@ namespace AZ::Internal
 
 namespace AZ
 {
+    static constexpr size_t DEFAULT_ALIGNMENT = sizeof(void*) * 2; // Default malloc alignment
+
     //---------------------------------------------------------------------
     // MallocSchema methods
     //---------------------------------------------------------------------
 
-    MallocSchema::MallocSchema(const Descriptor& desc)
+    MallocSchema::MallocSchema(const Descriptor&)
         : m_bytesAllocated(0)
     {
-        if (desc.m_useAZMalloc)
-        {
-            static const int DEFAULT_ALIGNMENT = sizeof(void*) * 2; // Default malloc alignment
-
-            m_mallocFn = [](size_t byteSize)
-            {
-                return AZ_OS_MALLOC(byteSize, DEFAULT_ALIGNMENT);
-            };
-            m_freeFn = [](void* ptr)
-            {
-                AZ_OS_FREE(ptr);
-            };
-        }
-        else
-        {
-            m_mallocFn = &malloc;
-            m_freeFn = &free;
-        }
     }
 
     MallocSchema::~MallocSchema()
@@ -84,7 +68,7 @@ namespace AZ
             ((alignment > sizeof(double))
                  ? alignment
                  : 0); // Malloc will align to a minimum boundary for native objects, so we only pad if aligning to a large value
-        void* data = (*m_mallocFn)(required);
+        void* data = AZ_OS_MALLOC(required, DEFAULT_ALIGNMENT);
         void* result = PointerAlignUp(reinterpret_cast<void*>(reinterpret_cast<size_t>(data) + sizeof(Internal::Header)), alignment);
         Internal::Header* header = PointerAlignDown<Internal::Header>(
             (Internal::Header*)(reinterpret_cast<size_t>(result) - sizeof(Internal::Header)), AZStd::alignment_of<Internal::Header>::value);
@@ -112,7 +96,7 @@ namespace AZ
         void* freePtr = reinterpret_cast<void*>(reinterpret_cast<size_t>(ptr) - static_cast<size_t>(header->offset));
 
         m_bytesAllocated -= header->size;
-        (*m_freeFn)(freePtr);
+        AZ_OS_FREE(freePtr);
     }
 
     MallocSchema::pointer_type MallocSchema::ReAllocate(pointer_type ptr, size_type newSize, size_type newAlignment)
@@ -164,11 +148,6 @@ namespace AZ
     MallocSchema::size_type MallocSchema::GetMaxContiguousAllocationSize() const
     {
         return AZ_CORE_MAX_ALLOCATOR_SIZE;
-    }
-
-    IAllocatorAllocate* MallocSchema::GetSubAllocator()
-    {
-        return nullptr;
     }
 
     void MallocSchema::GarbageCollect()

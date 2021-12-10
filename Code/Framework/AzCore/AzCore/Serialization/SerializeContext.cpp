@@ -3245,7 +3245,7 @@ namespace AZ
         return genericClassInfoFoundIt != m_moduleLocalGenericClassInfos.end() ? genericClassInfoFoundIt->second : nullptr;
     }
 
-    AZ::IAllocatorAllocate& SerializeContext::PerModuleGenericClassInfo::GetAllocator()
+    AZ::IAllocator& SerializeContext::PerModuleGenericClassInfo::GetAllocator()
     {
         return m_moduleOSAllocator;
     }

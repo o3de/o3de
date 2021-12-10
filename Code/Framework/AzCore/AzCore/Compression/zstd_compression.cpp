@@ -16,7 +16,7 @@
 
 using namespace AZ;
 
-ZStd::ZStd(IAllocatorAllocate* workMemAllocator)
+ZStd::ZStd(IAllocator* workMemAllocator)
 {
     m_workMemoryAllocator = workMemAllocator;
     if (!m_workMemoryAllocator)
@@ -41,13 +41,13 @@ ZStd::~ZStd()
 
 void* ZStd::AllocateMem(void* userData, size_t size)
 {
-    IAllocatorAllocate* allocator = reinterpret_cast<IAllocatorAllocate*>(userData);
+    IAllocator* allocator = reinterpret_cast<IAllocator*>(userData);
     return allocator->Allocate(size, 4, 0, "ZStandard", __FILE__, __LINE__);
 }
 
 void ZStd::FreeMem(void* userData, void* address)
 {
-    IAllocatorAllocate* allocator = reinterpret_cast<IAllocatorAllocate*>(userData);
+    IAllocator* allocator = reinterpret_cast<IAllocator*>(userData);
     allocator->DeAllocate(address);
 }
 

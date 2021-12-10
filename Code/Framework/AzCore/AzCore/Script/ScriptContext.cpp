@@ -1456,7 +1456,7 @@ using namespace AZ;
 static void* LuaMemoryHook(void* userData, void* ptr, size_t osize, size_t nsize)
 {
     (void)osize;
-    IAllocatorAllocate* allocator = reinterpret_cast<IAllocatorAllocate*>(userData);
+    IAllocator* allocator = reinterpret_cast<IAllocator*>(userData);
     if (nsize == 0)
     {
         if (ptr)
@@ -4274,7 +4274,7 @@ LUA_API const Node* lua_getDummyNode()
             AZ_CLASS_ALLOCATOR(ScriptContextImpl, AZ::SystemAllocator, 0);
 
             //////////////////////////////////////////////////////////////////////////
-            ScriptContextImpl(ScriptContext* owner, IAllocatorAllocate* allocator, lua_State* nativeContext)
+            ScriptContextImpl(ScriptContext* owner, IAllocator* allocator, lua_State* nativeContext)
                 : m_owner(owner)
                 , m_context(nullptr)
                 , m_debug(nullptr)
@@ -5827,7 +5827,7 @@ LUA_API const Node* lua_getDummyNode()
         };
     } // namespace AZ
 
-    ScriptContext::ScriptContext(ScriptContextId id, IAllocatorAllocate* allocator, lua_State* nativeContext)
+    ScriptContext::ScriptContext(ScriptContextId id, IAllocator* allocator, lua_State* nativeContext)
     {
         m_id = id;
         m_impl = aznew ScriptContextImpl(this, allocator, nativeContext);

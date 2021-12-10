@@ -84,17 +84,6 @@ namespace AZ
         /// Especially for great code and engines...
         void    SetAllocatorLeaking(bool allowLeaking)  { m_isAllocatorLeaking = allowLeaking; }
 
-        /// Set an override allocator
-        /// All allocators registered with the AllocatorManager will automatically redirect to this allocator
-        /// if set.
-        void    SetOverrideAllocatorSource(IAllocatorAllocate* source, bool overrideExistingAllocators = true);
-
-        /// Retrieve the override schema
-        IAllocatorAllocate* GetOverrideAllocatorSource() const  { return m_overrideSource; }
-
-        void AddAllocatorRemapping(const char* fromName, const char* toName);
-        void FinalizeConfiguration();
-
         /// Enter or exit profiling mode; calls to Enter must be matched with calls to Exit
         void EnterProfilingMode();
         void ExitProfilingMode();
@@ -113,19 +102,17 @@ namespace AZ
 
         struct AllocatorStats
         {
-            AllocatorStats(const char* name, const char* aliasOrDescription, size_t allocatedBytes, size_t capacityBytes, bool isAlias)
+            AllocatorStats(const char* name, const char* aliasOrDescription, size_t allocatedBytes, size_t capacityBytes)
                 : m_name(name)
                 , m_aliasOrDescription(aliasOrDescription)
                 , m_allocatedBytes(allocatedBytes)
                 , m_capacityBytes(capacityBytes)
-                , m_isAlias(isAlias)
             {}
 
             AZStd::string m_name;
             AZStd::string m_aliasOrDescription;
             size_t m_allocatedBytes;
             size_t m_capacityBytes;
-            bool   m_isAlias;
         };
 
         void GetAllocatorStats(size_t& usedBytes, size_t& reservedBytes, AZStd::vector<AllocatorStats>* outStats = nullptr);
@@ -157,7 +144,6 @@ namespace AZ
 
     private:
         void InternalDestroy();
-        void ConfigureAllocatorOverrides(IAllocator* alloc);
         void DebugBreak(void* address, const Debug::AllocationInfo& info);
         AZ::MallocSchema* CreateMallocSchema();
 
@@ -172,14 +158,9 @@ namespace AZ
         MemoryBreak         m_memoryBreak[MaxNumMemoryBreaks];
         char                m_activeBreaks;
         AZStd::mutex        m_allocatorListMutex;
-        IAllocatorAllocate* m_overrideSource;
 
         DumpInfo            m_dumpInfo[m_maxNumAllocators];
 
-        struct InternalData;
-
-        InternalData*       m_data;
-        bool                m_configurationFinalized;
         AZStd::atomic<int>  m_profilingRefcount;
 
         AZ::Debug::AllocationRecords::Mode m_defaultTrackingRecordMode;
