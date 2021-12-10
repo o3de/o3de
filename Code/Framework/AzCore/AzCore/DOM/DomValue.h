@@ -109,10 +109,15 @@ namespace AZ::Dom
         Value(Value&&) noexcept;
         Value(AZStd::string_view string, bool copy);
 
-        explicit Value(int64_t value);
-        explicit Value(uint64_t value);
-        explicit Value(double value);
-        explicit Value(bool value);
+        Value(int32_t value);
+        Value(uint32_t value);
+        Value(int64_t value);
+        Value(uint64_t value);
+        Value(float value);
+        Value(double value);
+        Value(bool value);
+
+        explicit Value(Type type);
 
         static Value FromOpaqueValue(AZStd::any& value);
 
@@ -226,12 +231,16 @@ namespace AZ::Dom
         Value GetNodeValue() const;
 
         // int API...
-        int64_t GetInt() const;
-        void SetInt(int64_t);
+        int64_t GetInt64() const;
+        void SetInt64(int64_t);
+        int32_t GetInt32() const;
+        void SetInt32(int32_t);
 
         // uint API...
-        uint64_t GetUint() const;
-        void SetUint(uint64_t);
+        uint64_t GetUint64() const;
+        void SetUint64(uint64_t);
+        uint32_t GetUint32() const;
+        void SetUint32(uint32_t);
 
         // bool API...
         bool GetBool() const;
@@ -240,6 +249,8 @@ namespace AZ::Dom
         // double API...
         double GetDouble() const;
         void SetDouble(double);
+        float GetFloat() const;
+        void SetFloat(float);
 
         // string API...
         AZStd::string_view GetString() const;
@@ -264,6 +275,7 @@ namespace AZ::Dom
         AZStd::unique_ptr<Visitor> GetWriteHandler();
 
         bool DeepCompareIsEqual(const Value& other) const;
+        Value DeepCopy(bool copyStrings = true) const;
 
     private:
         const Node& GetNodeInternal() const;

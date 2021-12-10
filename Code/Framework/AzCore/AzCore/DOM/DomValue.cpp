@@ -97,6 +97,16 @@ namespace AZ::Dom
         return Value(&value);
     }
 
+    Value::Value(int32_t value)
+        : m_value(aznumeric_cast<int64_t>(value))
+    {
+    }
+
+    Value::Value(uint32_t value)
+        : m_value(aznumeric_cast<uint64_t>(value))
+    {
+    }
+
     Value::Value(int64_t value)
         : m_value(value)
     {
@@ -104,6 +114,11 @@ namespace AZ::Dom
 
     Value::Value(uint64_t value)
         : m_value(value)
+    {
+    }
+
+    Value::Value(float value)
+        : m_value(aznumeric_cast<double>(value))
     {
     }
 
@@ -115,6 +130,40 @@ namespace AZ::Dom
     Value::Value(bool value)
         : m_value(value)
     {
+    }
+
+    Value::Value(Type type)
+    {
+        switch (type)
+        {
+        case Type::NullType:
+            // Null is the default initialized value
+            break;
+        case Type::FalseType:
+            m_value = false;
+            break;
+        case Type::TrueType:
+            m_value = true;
+            break;
+        case Type::ObjectType:
+            SetObject();
+            break;
+        case Type::ArrayType:
+            SetArray();
+            break;
+        case Type::StringType:
+            SetString("");
+            break;
+        case Type::NumberType:
+            m_value = 0.0;
+            break;
+        case Type::NodeType:
+            SetNode("");
+            break;
+        case Type::OpaqueType:
+            AZ_Assert(false, "AZ::Dom::Value may not be constructed with an empty opaque type");
+            break;
+        }
     }
 
     Value& Value::operator=(const Value& other)
@@ -139,11 +188,11 @@ namespace AZ::Dom
         {
             if (IsInt())
             {
-                return GetInt() == rhs.GetInt();
+                return GetInt64() == rhs.GetInt64();
             }
             else if (IsUint())
             {
-                return GetUint() == rhs.GetUint();
+                return GetUint64() == rhs.GetUint64();
             }
             else
             {
@@ -315,7 +364,7 @@ namespace AZ::Dom
         AZ_Assert(
             type == Type::ArrayType || type == Type::NodeType,
             "AZ::Dom::Value: attempted to retrieve an array from a value that isn't an array or a node");
-        if (type == Type::ObjectType)
+        if (type == Type::ArrayType)
         {
             return AZStd::get<ArrayPtr>(m_value)->m_values;
         }
@@ -331,7 +380,7 @@ namespace AZ::Dom
         AZ_Assert(
             type == Type::ArrayType || type == Type::NodeType,
             "AZ::Dom::Value: attempted to retrieve an array from a value that isn't an array or node");
-        if (type == Type::ObjectType)
+        if (type == Type::ArrayType)
         {
             return CheckCopyOnWrite(AZStd::get<ArrayPtr>(m_value))->m_values;
         }
@@ -702,7 +751,7 @@ namespace AZ::Dom
         return Value();
     }
 
-    int64_t Value::GetInt() const
+    int64_t Value::GetInt64() const
     {
         switch (m_value.index())
         {
@@ -717,12 +766,22 @@ namespace AZ::Dom
         return {};
     }
 
-    void Value::SetInt(int64_t value)
+    void Value::SetInt64(int64_t value)
     {
         m_value = value;
     }
 
-    uint64_t Value::GetUint() const
+    int32_t Value::GetInt32() const
+    {
+        return aznumeric_cast<int32_t>(GetInt64());
+    }
+
+    void Value::SetInt32(int32_t value)
+    {
+        m_value = aznumeric_cast<int64_t>(value);
+    }
+
+    uint64_t Value::GetUint64() const
     {
         switch (m_value.index())
         {
@@ -737,9 +796,19 @@ namespace AZ::Dom
         return {};
     }
 
-    void Value::SetUint(uint64_t value)
+    void Value::SetUint64(uint64_t value)
     {
         m_value = value;
+    }
+
+    uint32_t Value::GetUint32() const
+    {
+        return aznumeric_cast<uint32_t>(GetUint64());
+    }
+
+    void Value::SetUint32(uint32_t value)
+    {
+        m_value = aznumeric_cast<uint64_t>(value);
     }
 
     bool Value::GetBool() const
@@ -775,6 +844,16 @@ namespace AZ::Dom
     void Value::SetDouble(double value)
     {
         m_value = value;
+    }
+
+    float Value::GetFloat() const
+    {
+        return aznumeric_cast<float>(GetDouble());
+    }
+
+    void Value::SetFloat(float value)
+    {
+        m_value = aznumeric_cast<double>(value);
     }
 
     AZStd::string_view Value::GetString() const
@@ -861,6 +940,11 @@ namespace AZ::Dom
                         const Object::ContainerType& object = GetObjectInternal();
                         for (const Object::EntryType& entry : object)
                         {
+                            result = visitor.Key(entry.first);
+                            if (!result.IsSuccess())
+                            {
+                                return;
+                            }
                             result = entry.second.Accept(visitor, copyStrings);
                             if (!result.IsSuccess())
                             {
@@ -896,6 +980,11 @@ namespace AZ::Dom
                         const Object::ContainerType& object = GetObjectInternal();
                         for (const Object::EntryType& entry : object)
                         {
+                            result = visitor.Key(entry.first);
+                            if (!result.IsSuccess())
+                            {
+                                return;
+                            }
                             result = entry.second.Accept(visitor, copyStrings);
                             if (!result.IsSuccess())
                             {
@@ -932,6 +1021,16 @@ namespace AZ::Dom
 
     bool Value::DeepCompareIsEqual(const Value& other) const
     {
+        if (IsString() && other.IsString())
+        {
+            // If we both hold the same ref counted string we don't need to do a full comparison
+            if (AZStd::holds_alternative<AZStd::shared_ptr<AZStd::string>>(m_value) && m_value == other.m_value)
+            {
+                return true;
+            }
+            return GetString() == other.GetString();
+        }
+
         if (m_value.index() != other.m_value.index())
         {
             return false;
@@ -1044,5 +1143,13 @@ namespace AZ::Dom
                 }
             },
             m_value);
+    }
+
+    Value Value::DeepCopy(bool copyStrings) const
+    {
+        Value newValue;
+        AZStd::unique_ptr<Visitor> writer = newValue.GetWriteHandler();
+        Accept(*writer, copyStrings);
+        return newValue;
     }
 } // namespace AZ::Dom
