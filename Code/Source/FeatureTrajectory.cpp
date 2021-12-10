@@ -320,7 +320,8 @@ namespace EMotionFX
                     const float facingDirectionCost = GetNormalizedDirectionDifference(sample.m_facingDirection,
                         controlPointFacingDirRelativeSpace);
 
-                    cost += posDistance + posDeltaDistance + facingDirectionCost;
+                    // As we got two different costs for the position, double the cost of the facing direction to equal out the influence.
+                    cost += posDistance + posDeltaDistance + facingDirectionCost * 2.0f;
                 }
 
                 lastControlPoint = controlPointPos;
