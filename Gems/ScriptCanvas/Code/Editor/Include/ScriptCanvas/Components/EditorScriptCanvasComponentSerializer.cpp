@@ -27,23 +27,72 @@ namespace AZ
             , "EditorScriptCanvasComponentSerializer Load against output typeID that was not EditorScriptCanvasComponent");
         AZ_Assert(outputValue, "EditorScriptCanvasComponentSerializer Load against null output");
 
+        // load as parent class
         auto outputComponent = reinterpret_cast<ScriptCanvasEditor::EditorScriptCanvasComponent*>(outputValue);
-        JsonSerializationResult::ResultCode result = BaseJsonSerializer::Load(outputValue, outputValueTypeId, inputValue, context);
+        JsonSerializationResult::ResultCode result = BaseJsonSerializer::Load(outputValue
+            , azrtti_typeid<AzToolsFramework::Components::EditorComponentBase>(), inputValue, context);
+
+        // load child data one by one...
+        result.Combine(BaseJsonSerializer::Load(outputValue, outputValueTypeId, inputValue, context));
 
         if (result.GetProcessing() != JSR::Processing::Halted)
         {
-            auto assetHolderMember = inputValue.FindMember("m_assetHolder");
-            if (assetHolderMember != inputValue.MemberEnd())
-            {
-                ScriptCanvasEditor::ScriptCanvasAssetHolder assetHolder;
-                result.Combine
-                    ( ContinueLoading(&assetHolder
-                        , azrtti_typeid<ScriptCanvasEditor::ScriptCanvasAssetHolder>(), assetHolderMember->value, context));
+            result.Combine(ContinueLoadingFromJsonObjectField
+                ( &outputComponent->m_name
+                , azrtti_typeid(outputComponent->m_name)
+                , inputValue
+                , "m_name"
+                , context));
 
-                if (result.GetProcessing() != JSR::Processing::Halted)
+            result.Combine(ContinueLoadingFromJsonObjectField
+                ( &outputComponent->m_runtimeDataIsValid
+                , azrtti_typeid(outputComponent->m_runtimeDataIsValid)
+                , inputValue
+                , "runtimeDataIsValid"
+                , context));
+
+            result.Combine(ContinueLoadingFromJsonObjectField
+                ( &outputComponent->m_variableOverrides
+                , azrtti_typeid(outputComponent->m_variableOverrides)
+                , inputValue
+                , "runtimeDataOverrides"
+                , context));
+
+            auto assetHolderMember = inputValue.FindMember("m_assetHolder");
+            if (assetHolderMember == inputValue.MemberEnd())
+            {
+                // file was saved with SourceHandle data
+                result.Combine(ContinueLoadingFromJsonObjectField
+                    ( &outputComponent->m_sourceHandle
+                    , azrtti_typeid(outputComponent->m_sourceHandle)
+                    , inputValue
+                    , "sourceHandle"
+                    , context));
+            }
+            else
+            {
+                // manually load the old asset info data
+                const rapidjson::Value& assetHolderValue = assetHolderMember->value;
+                if (auto assetMember = assetHolderValue.FindMember("m_asset"); assetMember != assetHolderValue.MemberEnd())
                 {
-                    outputComponent->InitializeSource
-                        ( ScriptCanvasEditor::SourceHandle(nullptr, assetHolder.GetAssetId().m_guid, assetHolder.GetAssetHint()));
+                    const rapidjson::Value& assetValue = assetMember->value;
+
+                    AZ::Data::AssetId assetId{};
+                    if (auto assetIdMember = assetValue.FindMember("assetId"); assetIdMember != assetValue.MemberEnd())
+                    {
+                        result.Combine(ContinueLoading(&assetId, azrtti_typeid(assetId), assetIdMember->value, context));
+                    }
+
+                    AZStd::string path{};
+                    if (auto pathMember = assetValue.FindMember("assetHint"); pathMember != assetValue.MemberEnd())
+                    {
+                        result.Combine(ContinueLoading(&path, azrtti_typeid(path), pathMember->value, context));
+                    }
+
+                    if (result.GetProcessing() != JSR::Processing::Halted)
+                    {
+                        outputComponent->InitializeSource(ScriptCanvasEditor::SourceHandle(nullptr, assetId.m_guid, path));
+                    }
                 }
             }
         }
