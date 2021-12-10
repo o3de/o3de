@@ -162,10 +162,10 @@ namespace AZ::Dom
         Object::Iterator MemberBegin();
         Object::Iterator MemberEnd();
 
+        Object::Iterator FindMutableMember(KeyType name);
+        Object::Iterator FindMutableMember(AZStd::string_view name);
         Object::ConstIterator FindMember(KeyType name) const;
         Object::ConstIterator FindMember(AZStd::string_view name) const;
-        Object::Iterator FindMember(KeyType name);
-        Object::Iterator FindMember(AZStd::string_view name);
 
         Value& MemberReserve(size_t newCapacity);
         bool HasMember(KeyType name) const;
@@ -185,7 +185,7 @@ namespace AZ::Dom
         Object::Iterator EraseMember(KeyType name);
         Object::Iterator EraseMember(AZStd::string_view name);
 
-        Object::ContainerType& GetObject();
+        Object::ContainerType& GetMutableObject();
         const Object::ContainerType& GetObject() const;
 
         // Array API (also used by Node)...
@@ -199,6 +199,9 @@ namespace AZ::Dom
         Value& operator[](size_t index);
         const Value& operator[](size_t index) const;
 
+        Value& MutableAt(size_t index);
+        const Value& At(size_t index) const;
+
         Array::ConstIterator Begin() const;
         Array::ConstIterator End() const;
         Array::Iterator Begin();
@@ -211,7 +214,7 @@ namespace AZ::Dom
         Array::Iterator Erase(Array::ConstIterator pos);
         Array::Iterator Erase(Array::ConstIterator first, Array::ConstIterator last);
 
-        Array::ContainerType& GetArray();
+        Array::ContainerType& GetMutableArray();
         const Array::ContainerType& GetArray() const;
 
         // Node API (supports both object + array API, plus a dedicated NodeName)...
@@ -229,6 +232,9 @@ namespace AZ::Dom
         void SetNodeValue(Value value);
         //! Convenience method, gets the first non-node element of a Node.
         Value GetNodeValue() const;
+
+        Node& GetMutableNode();
+        const Node& GetNode() const;
 
         // int API...
         int64_t GetInt64() const;

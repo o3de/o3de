@@ -476,7 +476,7 @@ namespace AZ::Dom
         return FindMember(AZ::Name(name));
     }
 
-    Object::Iterator Value::FindMember(KeyType name)
+    Object::Iterator Value::FindMutableMember(KeyType name)
     {
         Object::ContainerType& object = GetObjectInternal();
         return AZStd::find_if(
@@ -487,9 +487,9 @@ namespace AZ::Dom
             });
     }
 
-    Object::Iterator Value::FindMember(AZStd::string_view name)
+    Object::Iterator Value::FindMutableMember(AZStd::string_view name)
     {
-        return FindMember(AZ::Name(name));
+        return FindMutableMember(AZ::Name(name));
     }
 
     Value& Value::MemberReserve(size_t newCapacity)
@@ -511,7 +511,7 @@ namespace AZ::Dom
     Value& Value::AddMember(KeyType name, const Value& value)
     {
         Object::ContainerType& object = GetObjectInternal();
-        if (auto memberIt = FindMember(name); memberIt != object.end())
+        if (auto memberIt = FindMutableMember(name); memberIt != object.end())
         {
             memberIt->second = value;
         }
@@ -530,7 +530,7 @@ namespace AZ::Dom
     Value& Value::AddMember(AZ::Name name, Value&& value)
     {
         Object::ContainerType& object = GetObjectInternal();
-        if (auto memberIt = FindMember(name); memberIt != object.end())
+        if (auto memberIt = FindMutableMember(name); memberIt != object.end())
         {
             memberIt->second = value;
         }
@@ -601,7 +601,7 @@ namespace AZ::Dom
         return EraseMember(AZ::Name(name));
     }
 
-    Object::ContainerType& Value::GetObject()
+    Object::ContainerType& Value::GetMutableObject()
     {
         return GetObjectInternal();
     }
@@ -645,6 +645,16 @@ namespace AZ::Dom
     const Value& Value::operator[](size_t index) const
     {
         return GetArrayInternal()[index];
+    }
+
+    Value& Value::MutableAt(size_t index)
+    {
+        return operator[](index);
+    }
+
+    const Value& Value::At(size_t index) const
+    {
+        return operator[](index);
     }
 
     Array::ConstIterator Value::Begin() const
@@ -695,7 +705,7 @@ namespace AZ::Dom
         return GetArrayInternal().erase(first, last);
     }
 
-    Array::ContainerType& Value::GetArray()
+    Array::ContainerType& Value::GetMutableArray()
     {
         return GetArrayInternal();
     }
@@ -764,6 +774,16 @@ namespace AZ::Dom
         }
 
         return Value();
+    }
+
+    Node& Value::GetMutableNode()
+    {
+        return GetNodeInternal();
+    }
+
+    const Node& Value::GetNode() const
+    {
+        return GetNodeInternal();
     }
 
     int64_t Value::GetInt64() const
