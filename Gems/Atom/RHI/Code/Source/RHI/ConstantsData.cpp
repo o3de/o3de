@@ -153,9 +153,21 @@ namespace AZ
             {
                 bool isValidAll = true;
                 uint32_t offset = 0;
+
+                // Rather than doing the direct validation against values directly, we have to convert the array_view 
+                // to a raw byte array, and then check against the bytes to determine whether or not to set the 
+                // uint32 value to 1 (true) or 0 (false). Clang when building in non-debug builds was optimizing out 
+                // the actual 1 and 0 values, so an expression like:
+                //
+                // const uint32_t fourByteValue = values[i] ? 1 : 0;
+                // 
+                // when values[0] == 205, will instead set 'fourByteValue' is assigned to '205', instead of '1'.
+                // In debug builds, and other microsoft compilers (debug+release), this type of optimization doesnt
+                // occur and we get the expected results instead
+                const unsigned char* byteValue = reinterpret_cast<const unsigned char*>(values.data());
                 for (size_t i = 0; i < values.size(); i++)
                 {
-                    const uint32_t fourByteValue = values[i] ? 1 : 0;
+                    const uint32_t fourByteValue = byteValue[i] ? 1 : 0;
                     const bool isValid = SetConstantRaw(inputIndex, &fourByteValue, offset, elementSize);
 
                     isValidAll &= isValid;
