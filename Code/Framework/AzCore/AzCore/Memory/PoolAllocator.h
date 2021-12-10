@@ -25,12 +25,12 @@ namespace AZ
         * Template you can use to create your own thread pool allocators, as you can't inherit from ThreadPoolAllocator.
         * This is the case because we use tread local storage and we need separate "static" instance for each allocator.
         */
-        template<class Schema>
+        template<class Schema, bool ProfileAllocations>
         class PoolAllocatorHelper
-            : public SimpleSchemaAllocator<Schema, typename Schema::Descriptor, /* ProfileAllocations */ true, /* ReportOutOfMemory */ false>
+            : public SimpleSchemaAllocator<Schema, typename Schema::Descriptor, ProfileAllocations, /* ReportOutOfMemory */ false>
         {
         public:
-            using Base = SimpleSchemaAllocator<Schema, typename Schema::Descriptor, true, false>;
+            using Base = SimpleSchemaAllocator<Schema, typename Schema::Descriptor, ProfileAllocations, false>;
             using pointer_type = typename Base::pointer_type;
             using size_type = typename Base::size_type;
             using difference_type = typename Base::difference_type;
@@ -140,13 +140,13 @@ namespace AZ
      * use PoolAllocatorThreadSafe or do the sync yourself.
      */
     class PoolAllocator
-        : public Internal::PoolAllocatorHelper<PoolSchema>
+        : public Internal::PoolAllocatorHelper<PoolSchema, /*ProfileAllocations*/ true>
     {
     public:
         AZ_CLASS_ALLOCATOR(PoolAllocator, SystemAllocator, 0);
         AZ_TYPE_INFO(PoolAllocator, "{D3DC61AF-0949-4BFA-87E0-62FA03A4C025}");
 
-        using Base = Internal::PoolAllocatorHelper<PoolSchema>;
+        using Base = Internal::PoolAllocatorHelper<PoolSchema, true>;
 
         PoolAllocator(const char* name = "PoolAllocator", const char* desc = "Generic pool allocator for small objects")
             : Base(name, desc)
@@ -154,21 +154,21 @@ namespace AZ
         }
     };
 
-    template<class Allocator>
-    using ThreadPoolBase = Internal::PoolAllocatorHelper<ThreadPoolSchemaHelper<Allocator> >;
+    template<class Allocator, bool ProfileAllocations = true>
+    using ThreadPoolBase = Internal::PoolAllocatorHelper<ThreadPoolSchemaHelper<Allocator>, ProfileAllocations >;
 
     /*!
      * Thread safe pool allocator. If you want to create your own thread pool heap,
      * inherit from ThreadPoolBase, as we need unique static variable for allocator type.
      */
     class ThreadPoolAllocator final
-        : public ThreadPoolBase<ThreadPoolAllocator>
+        : public ThreadPoolBase<ThreadPoolAllocator, /*ProfileAllocations*/ true>
     {
     public:
         AZ_CLASS_ALLOCATOR(ThreadPoolAllocator, SystemAllocator, 0);
         AZ_TYPE_INFO(ThreadPoolAllocator, "{05B4857F-CD06-4942-99FD-CA6A7BAE855A}");
 
-        using Base = ThreadPoolBase<ThreadPoolAllocator>;
+        using Base = ThreadPoolBase<ThreadPoolAllocator, true>;
 
         ThreadPoolAllocator()
             : Base("PoolAllocatorThreadSafe", "Generic thread safe pool allocator for small objects")

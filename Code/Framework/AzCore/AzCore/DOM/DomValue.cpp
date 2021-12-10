@@ -19,7 +19,7 @@ namespace AZ::Dom
     {
         if (refCountedPointer.use_count() > 1)
         {
-            AZStd::shared_ptr<T> newPointer = AZStd::make_shared<T>();
+            AZStd::shared_ptr<T> newPointer = AZStd::allocate_shared<T>(AZStdAlloc<ValueAllocator>());
             *newPointer = *refCountedPointer;
             refCountedPointer = AZStd::move(newPointer);
         }
@@ -71,8 +71,8 @@ namespace AZ::Dom
     }
 
     Value::Value(Value&& value) noexcept
-        : m_value(value.m_value)
     {
+        operator=(value);
     }
 
     Value::Value(AZStd::string_view string, bool copy)
@@ -174,7 +174,7 @@ namespace AZ::Dom
 
     Value& Value::operator=(Value&& other) noexcept
     {
-        m_value = other.m_value;
+        m_value.swap(other.m_value);
         return *this;
     }
 
@@ -212,7 +212,7 @@ namespace AZ::Dom
 
     void Value::Swap(Value& other) noexcept
     {
-        AZStd::swap(m_value, other.m_value);
+        m_value.swap(other.m_value);
     }
 
     Type Dom::Value::GetType() const
@@ -229,14 +229,15 @@ namespace AZ::Dom
             return AZStd::get<bool>(m_value) ? Type::TrueType : Type::FalseType;
         case 5: // AZStd::string_view
         case 6: // AZStd::shared_ptr<AZStd::string>
+        case 7: // ShortStringType
             return Type::StringType;
-        case 7: // ObjectPtr
+        case 8: // ObjectPtr
             return Type::ObjectType;
-        case 8: // ArrayPtr
+        case 9: // ArrayPtr
             return Type::ArrayType;
-        case 9: // NodePtr
+        case 10: // NodePtr
             return Type::NodeType;
-        case 10: // AZStd::any*
+        case 11: // AZStd::any*
             return Type::OpaqueType;
         }
         AZ_Assert(false, "AZ::Dom::Value::GetType: m_value has an unexpected type");
@@ -310,7 +311,7 @@ namespace AZ::Dom
 
     Value& Value::SetObject()
     {
-        m_value = AZStd::make_shared<Object>();
+        m_value = AZStd::allocate_shared<Object>(AZStdAlloc<ValueAllocator>());
         return *this;
     }
 
@@ -511,6 +512,7 @@ namespace AZ::Dom
     Value& Value::AddMember(KeyType name, const Value& value)
     {
         Object::ContainerType& object = GetObjectInternal();
+        object.reserve((object.size() / Object::ReserveIncrement + 1) * Object::ReserveIncrement);
         if (auto memberIt = FindMutableMember(name); memberIt != object.end())
         {
             memberIt->second = value;
@@ -613,7 +615,7 @@ namespace AZ::Dom
 
     Value& Value::SetArray()
     {
-        m_value = AZStd::make_shared<Array>();
+        m_value = AZStd::allocate_shared<Array>(AZStdAlloc<ValueAllocator>());
         return *this;
     }
 
@@ -685,7 +687,9 @@ namespace AZ::Dom
 
     Value& Value::PushBack(Value value)
     {
-        GetArrayInternal().push_back(AZStd::move(value));
+        Array::ContainerType& array = GetArrayInternal();
+        array.reserve((array.size() / Array::ReserveIncrement + 1) * Array::ReserveIncrement);
+        array.push_back(AZStd::move(value));
         return *this;
     }
 
@@ -717,7 +721,7 @@ namespace AZ::Dom
 
     void Value::SetNode(AZ::Name name)
     {
-        m_value = AZStd::make_shared<Node>(name);
+        m_value = AZStd::allocate_shared<Node>(AZStdAlloc<ValueAllocator>(), name);
     }
 
     void Value::SetNode(AZStd::string_view name)
@@ -899,6 +903,11 @@ namespace AZ::Dom
             return AZStd::get<AZStd::string_view>(m_value);
         case 6: // AZStd::shared_ptr<AZStd::string>
             return *AZStd::get<AZStd::shared_ptr<AZStd::string>>(m_value);
+        case 7: // ShortStringType
+            {
+                const ShortStringType& ShortString = AZStd::get<ShortStringType>(m_value);
+                return { ShortString.m_data.data(), ShortString.m_size };
+            }
         }
         AZ_Assert(false, "AZ::Dom::Value: Called GetString on a non-string type");
         return {};
@@ -911,12 +920,26 @@ namespace AZ::Dom
 
     void Value::SetString(AZStd::string_view value)
     {
+        if (value.size() <= ShortStringSize)
+        {
+            ShortStringType buffer;
+            buffer.m_size = value.size();
+            memcpy(buffer.m_data.data(), value.data(), buffer.m_size);
+            m_value = buffer;
+        }
         m_value = value;
     }
 
     void Value::CopyFromString(AZStd::string_view value)
     {
-        m_value = AZStd::make_shared<AZStd::string>(value);
+        if (value.size() <= ShortStringSize)
+        {
+            SetString(value);
+        }
+        else
+        {
+            m_value = AZStd::allocate_shared<AZStd::string>(AZStdAlloc<ValueAllocator>(), value);
+        }
     }
 
     AZStd::any& Value::GetOpaqueValue() const

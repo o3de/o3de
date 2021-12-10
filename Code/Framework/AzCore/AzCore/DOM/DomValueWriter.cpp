@@ -103,33 +103,66 @@ namespace AZ::Dom
         }
 
         const ValueInfo& topEntry = m_entryStack.top();
-        if (topEntry.m_container.GetType() != containerType)
+        Value& container = topEntry.m_container;
+        ValueBuffer& buffer = GetValueBuffer();
+
+        if (container.GetType() != containerType)
         {
             return VisitorFailure(
                 VisitorErrorCode::InternalError,
                 AZStd::string::format("AZ::Dom::ValueWriter: %s called from within a different container type", endMethodName));
         }
 
-        if (topEntry.m_attributeCount != attributeCount)
+        if (buffer.m_attributes.size() != attributeCount)
         {
             return VisitorFailure(
                 VisitorErrorCode::InternalError,
                 AZStd::string::format(
                     "AZ::Dom::ValueWriter: %s expected %llu attributes but received %llu attributes instead", endMethodName, attributeCount,
-                    topEntry.m_attributeCount));
+                    buffer.m_attributes.size()));
         }
 
-        if (topEntry.m_elementCount != elementCount)
+        if (buffer.m_elements.size() != elementCount)
         {
             return VisitorFailure(
                 VisitorErrorCode::InternalError,
                 AZStd::string::format(
                     "AZ::Dom::ValueWriter: %s expected %llu elements but received %llu elements instead", endMethodName, elementCount,
-                    topEntry.m_elementCount));
+                    buffer.m_elements.size()));
+        }
+        if (buffer.m_attributes.size() > 0)
+        {
+            container.MemberReserve(buffer.m_attributes.size());
+            for (AZStd::pair<AZ::Name, Value>& entry : buffer.m_attributes)
+            {
+                container.AddMember(AZStd::move(entry.first), AZStd::move(entry.second));
+            }
+            buffer.m_attributes.clear();
+        }
+
+        if(buffer.m_elements.size() > 0)
+        {
+            container.Reserve(buffer.m_elements.size());
+            for (Value& entry : buffer.m_elements)
+            {
+                container.PushBack(AZStd::move(entry));
+            }
+            buffer.m_elements.clear();
         }
 
         m_entryStack.pop();
         return FinishWrite();
+    }
+
+    ValueWriter::ValueBuffer& ValueWriter::GetValueBuffer()
+    {
+        if (m_entryStack.size() <= m_valueBuffers.size())
+        {
+            return m_valueBuffers[m_entryStack.size() - 1];
+        }
+
+        m_valueBuffers.resize(m_entryStack.size());
+        return m_valueBuffers[m_entryStack.size() - 1];
     }
 
     Visitor::Result ValueWriter::EndObject(AZ::u64 attributeCount)
@@ -192,16 +225,16 @@ namespace AZ::Dom
         m_entryStack.top().m_value.Swap(value);
         ValueInfo& newEntry = m_entryStack.top();
 
+        constexpr const size_t reserveSize = 8;
+
         if (!newEntry.m_key.IsEmpty())
         {
-            newEntry.m_container.AddMember(newEntry.m_key, AZStd::move(value));
+            GetValueBuffer().m_attributes.emplace_back(AZStd::move(newEntry.m_key), AZStd::move(value));
             newEntry.m_key = AZ::Name();
-            ++newEntry.m_attributeCount;
         }
         else
         {
-            newEntry.m_container.PushBack(AZStd::move(value));
-            ++newEntry.m_elementCount;
+            GetValueBuffer().m_elements.emplace_back(AZStd::move(value));
         }
 
         return VisitorSuccess();

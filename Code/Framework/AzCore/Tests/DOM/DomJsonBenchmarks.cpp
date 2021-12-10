@@ -8,9 +8,10 @@
 
 #if defined(HAVE_BENCHMARK)
 
-#include <AzCore/DOM/DomUtils.h>
 #include <AzCore/DOM/Backends/JSON/JsonBackend.h>
 #include <AzCore/DOM/Backends/JSON/JsonSerializationUtils.h>
+#include <AzCore/DOM/DomUtils.h>
+#include <AzCore/DOM/DomValue.h>
 #include <AzCore/JSON/document.h>
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
@@ -25,22 +26,26 @@ namespace Benchmark
         {
             UnitTest::AllocatorsBenchmarkFixture::SetUp(st);
             AZ::NameDictionary::Create();
+            AZ::AllocatorInstance<AZ::Dom::ValueAllocator>::Create();
         }
 
         void SetUp(::benchmark::State& st) override
         {
             UnitTest::AllocatorsBenchmarkFixture::SetUp(st);
             AZ::NameDictionary::Create();
+            AZ::AllocatorInstance<AZ::Dom::ValueAllocator>::Create();
         }
 
         void TearDown(::benchmark::State& st) override
         {
+            AZ::AllocatorInstance<AZ::Dom::ValueAllocator>::Destroy();
             AZ::NameDictionary::Destroy();
             UnitTest::AllocatorsBenchmarkFixture::TearDown(st);
         }
 
         void TearDown(const ::benchmark::State& st) override
         {
+            AZ::AllocatorInstance<AZ::Dom::ValueAllocator>::Destroy();
             AZ::NameDictionary::Destroy();
             UnitTest::AllocatorsBenchmarkFixture::TearDown(st);
         }
@@ -143,6 +148,30 @@ namespace Benchmark
     }
     BENCHMARK_REGISTER_JSON(DomJsonBenchmark, DomDeserializeToDocumentInPlace)
 
+    BENCHMARK_DEFINE_F(DomJsonBenchmark, DomDeserializeToDomValueInPlace)(benchmark::State& state)
+    {
+        AZ::Dom::JsonBackend backend;
+        AZStd::string serializedPayload = GenerateDomJsonBenchmarkPayload(state.range(0), state.range(1));
+
+        for (auto _ : state)
+        {
+            state.PauseTiming();
+            AZStd::string payloadCopy = serializedPayload;
+            state.ResumeTiming();
+
+            auto result = AZ::Dom::Utils::WriteToValue(
+                [&](AZ::Dom::Visitor& visitor)
+                {
+                    return AZ::Dom::Utils::ReadFromStringInPlace(backend, payloadCopy, visitor);
+                });
+
+            benchmark::DoNotOptimize(result.GetValue());
+        }
+
+        state.SetBytesProcessed(serializedPayload.size() * state.iterations());
+    }
+    BENCHMARK_REGISTER_JSON(DomJsonBenchmark, DomDeserializeToDomValueInPlace)
+
     BENCHMARK_DEFINE_F(DomJsonBenchmark, DomDeserializeToDocument)(benchmark::State& state)
     {
         AZ::Dom::JsonBackend backend;
@@ -178,6 +207,17 @@ namespace Benchmark
         state.SetBytesProcessed(serializedPayload.size() * state.iterations());
     }
     BENCHMARK_REGISTER_JSON(DomJsonBenchmark, JsonUtilsDeserializeToDocument)
+
+    BENCHMARK_DEFINE_F(DomJsonBenchmark, RapidjsonPayloadGeneration)(benchmark::State& state)
+    {
+        for (auto _ : state)
+        {
+            benchmark::DoNotOptimize(GenerateDomJsonBenchmarkPayload(state.range(0), state.range(1)));
+        }
+
+        state.SetItemsProcessed(state.range(0) * state.range(0) * state.iterations());
+    }
+    BENCHMARK_REGISTER_JSON(DomJsonBenchmark, RapidjsonPayloadGeneration)
 
 #undef BENCHMARK_REGISTER_JSON
 } // namespace Benchmark

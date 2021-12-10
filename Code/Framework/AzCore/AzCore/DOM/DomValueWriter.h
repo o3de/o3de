@@ -48,11 +48,18 @@ namespace AZ::Dom
             KeyType m_key;
             Value m_value;
             Value& m_container;
-            AZ::u64 m_attributeCount = 0;
-            AZ::u64 m_elementCount = 0;
         };
+
+        struct ValueBuffer
+        {
+            AZStd::vector<Value> m_elements;
+            AZStd::vector<AZStd::pair<AZ::Name, Value>> m_attributes;
+        };
+
+        ValueBuffer& GetValueBuffer();
 
         Value& m_result;
         AZStd::stack<ValueInfo> m_entryStack;
+        AZStd::vector<ValueBuffer> m_valueBuffers;
     };
 } // namespace AZ::Dom
