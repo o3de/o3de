@@ -67,6 +67,7 @@ uint ComputeShadowIndex(const ViewSrg::PointLight light, const Surface surface)
 void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingData lightingData)
 {
     float3 posToLight = light.m_position - surface.position;
+    float posToLightDist = length(posToLight);
     float d2 = dot(posToLight, posToLight); // light distance squared
     float falloff = d2 * light.m_invAttenuationRadiusSquared;
     
@@ -112,7 +113,12 @@ void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingD
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, normalize(posToLight)) * litRatio;
 
         // Transmission contribution
-        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, lightIntensity, normalize(posToLight), transmissionDistance);
+        float3 backLighting = GetBackLighting(surface, lightingData, lightIntensity, normalize(posToLight), transmissionDistance);
+        
+        // Attenuation applied to hide artifacts due to low-res shadow maps (might need some work in the future)
+        float attenuation = 1.0 / pow(max(1.0, posToLightDist), lightingData.distanceAttenuation + 1.0);
+        
+        lightingData.translucentBackLighting += backLighting * attenuation;
 
         // Adjust the light direcion for specular based on bulb size
 

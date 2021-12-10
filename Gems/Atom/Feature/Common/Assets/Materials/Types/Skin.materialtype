@@ -653,7 +653,7 @@
                 {
                     "name": "angleOffset",
                     "displayName": "    Angle Offset",
-                    "description": "Angle to accept below (N . L = 0) in scattering through thin objects",
+                    "description": "cosine of angle to extend below (N . L = 0) in scattering through thin objects",
                     "type": "float",
                     "defaultValue": 0.1,
                     "min": -1.0,
@@ -661,6 +661,19 @@
                     "connection": {
                         "type": "ShaderInput",
                         "name": "m_angleOffset"
+                    }
+                },
+                {
+                    "name": "distanceAttenuation",
+                    "displayName": "    Distance Attenuation",
+                    "description": "Attenuation applied to hide artifacts due to low-res shadow maps (e.g. objects far to the camera when using directional lights or objects far to the light when using sphere/disk lights",
+                    "type": "float",
+                    "defaultValue": 4.0,
+                    "min": 0.0,
+                    "softMax": 10.0,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "name": "m_distanceAttenuation"
                     }
                 },
                 {

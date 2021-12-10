@@ -73,6 +73,7 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
     uint m_transmissionThicknessMapUvIndex;
     float m_shrinkFactor;
     float m_angleOffset;
+    float m_distanceAttenuation;
     
     Texture2D m_wrinkle_baseColor_texture1;
     Texture2D m_wrinkle_baseColor_texture2;

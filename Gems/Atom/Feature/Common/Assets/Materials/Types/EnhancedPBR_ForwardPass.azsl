@@ -283,6 +283,9 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     // Shrink (absolute) offset towards the normal opposite direction to ensure correct shadow map projection
     lightingData.shrinkFactor = MaterialSrg::m_shrinkFactor;
 
+    // Attenuation applied to hide artifacts due to low-res shadow maps 
+    lightingData.distanceAttenuation = MaterialSrg::m_distanceAttenuation;
+
     // ------- Clearcoat -------
     
     // [GFX TODO][ATOM-14603]: Clean up the double uses of these clear coat flags

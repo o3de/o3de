@@ -349,6 +349,9 @@ PbrLightingOutput SkinPS_Common(VSOutput IN)
     // Shrink (absolute) offset towards the normal opposite direction to ensure correct shadow map projection
     lightingData.shrinkFactor = MaterialSrg::m_shrinkFactor;
 
+    // Attenuation applied to hide artifacts due to low-res shadow maps 
+    lightingData.distanceAttenuation = MaterialSrg::m_distanceAttenuation;
+
     // ------- Occlusion -------
     
     lightingData.diffuseAmbientOcclusion = GetOcclusionInput(MaterialSrg::m_diffuseOcclusionMap, MaterialSrg::m_sampler, IN.m_uv[MaterialSrg::m_diffuseOcclusionMapUvIndex], MaterialSrg::m_diffuseOcclusionFactor, o_diffuseOcclusion_useTexture);

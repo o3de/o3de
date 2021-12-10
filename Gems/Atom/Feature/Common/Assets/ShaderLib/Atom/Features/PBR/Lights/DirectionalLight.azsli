@@ -18,7 +18,7 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
     // Shadowed check
     const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
     float litRatio = 1.0f;
-
+    float camToSurfDist = distance(ViewSrg::m_worldPosition, surface.position);
     // Transmission distance inside object
     float transmissionDistance = 0.0f;
 
@@ -84,7 +84,13 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
         
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight) * currentLitRatio;
         lightingData.specularLighting += GetSpecularLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight) * currentLitRatio;
-        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight, currentTransmissionDistance);
+        
+        float3 backLighting = GetBackLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight, currentTransmissionDistance);
+        
+        // Attenuation applied to hide artifacts due to low-res shadow maps (might need some work in the future)
+        float attenuation = 1.0 / pow(max(1.0, camToSurfDist/2.0), lightingData.distanceAttenuation + 1.0);
+        
+        lightingData.translucentBackLighting += backLighting * attenuation;
     }
     
     // Add debug coloring for directional light shadow
