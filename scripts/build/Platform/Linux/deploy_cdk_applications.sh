@@ -79,6 +79,8 @@ AWS_SECRET_ACCESS_KEY=$(echo "$credentials" | cut -d' ' -f1)
 AWS_SESSION_TOKEN=$(echo "$credentials" | cut -d' ' -f2)
 AWS_ACCESS_KEY_ID=$(echo "$credentials" | cut -d' ' -f3)
 
+O3DE_AWS_DEPLOY_ACCOUNT=$(echo "$ASSUME_ROLE_ARN" | cut -d':' -f5)
+
 # Bootstrap and deploy the CDK applications
 echo [cdk_bootstrap] Bootstrap CDK
 if ! cdk bootstrap aws://$O3DE_AWS_DEPLOY_ACCOUNT/$O3DE_AWS_DEPLOY_REGION;

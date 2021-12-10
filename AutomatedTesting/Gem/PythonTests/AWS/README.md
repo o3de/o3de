@@ -18,17 +18,15 @@
         ```
            Set O3DE_AWS_PROJECT_NAME=AWSAUTO
            Set O3DE_AWS_DEPLOY_REGION=us-east-1
-           Set O3DE_AWS_DEPLOY_ACCOUNT={your_aws_account_id}
            Set ASSUME_ROLE_ARN=arn:aws:iam::{your_aws_account_id}:role/o3de-automation-tests
            Set COMMIT_ID=HEAD
         ```
     * Linux
         ```
-           Export O3DE_AWS_PROJECT_NAME=AWSAUTO
-           Export O3DE_AWS_DEPLOY_REGION=us-east-1
-           Export O3DE_AWS_DEPLOY_ACCOUNT={your_aws_account_id}
-           Export ASSUME_ROLE_ARN=arn:aws:iam::{your_aws_account_id}:role/o3de-automation-tests
-           Export COMMIT_ID=HEAD
+           export O3DE_AWS_PROJECT_NAME=AWSAUTO
+           export O3DE_AWS_DEPLOY_REGION=us-east-1
+           export ASSUME_ROLE_ARN=arn:aws:iam::{your_aws_account_id}:role/o3de-automation-tests
+           export COMMIT_ID=HEAD
         ```
 4. In the same CLI window, Deploy the CDK applications for AWS gems by running deploy_cdk_applications.cmd.
    
