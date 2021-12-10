@@ -70,8 +70,8 @@ def ShapeIntersectionFilter_InstancesPlantInAssignedShape():
     # 2) Create a new entity with required vegetation area components and Vegetation Shape Intersection Filter
     center_point = math.Vector3(512.0, 512.0, 32.0)
     asset_path = os.path.join("Slices", "PinkFlower.dynamicslice")
-    spawner_entity = dynveg.create_vegetation_area("Instance Spawner", center_point, 16.0, 16.0, 1.0,
-                                                   asset_path)
+    spawner_entity = dynveg.create_dynamic_slice_vegetation_area("Instance Spawner", center_point, 16.0, 16.0, 1.0,
+                                                                               asset_path)
     spawner_entity.add_component("Vegetation Shape Intersection Filter")
 
     # Create a planting surface

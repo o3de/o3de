@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/IO/Path/Path.h>
@@ -27,6 +28,7 @@ namespace AzToolsFramework
         using InstantiatePrefabResult = AZ::Outcome<AZ::EntityId, AZStd::string>;
         using DuplicatePrefabResult = AZ::Outcome<EntityIdList, AZStd::string>;
         using PrefabOperationResult = AZ::Outcome<void, AZStd::string>;
+        using CreateSpawnableResult = AZ::Outcome<AZ::Data::AssetId, AZStd::string>;
 
         /**
         * The primary purpose of this bus is to facilitate writing automated tests for prefabs.
@@ -93,6 +95,34 @@ namespace AzToolsFramework
              * Returns the path to the prefab, or an empty path if the entity is owned by the level.
              */
             virtual AZStd::string GetOwningInstancePrefabPath(AZ::EntityId entityId) const = 0;
+
+            /**
+             * Convert a prefab on given file path with given name to in-memory spawnable asset. 
+             * Returns the asset id of the produced spawnable if creation succeeded;
+             * on failure, it comes with an error message detailing the cause of the error.
+             */
+            virtual CreateSpawnableResult CreateInMemorySpawnableAsset(AZStd::string_view prefabFilePath, AZStd::string_view spawnableName) = 0;
+
+            /**
+             * Remove in-memory spawnable asset with given name.
+             * Return an outcome object; on failure, it comes with an error message detailing the cause of the error.
+             */
+            virtual PrefabOperationResult RemoveInMemorySpawnableAsset(AZStd::string_view spawnableName) = 0;
+
+            /**
+             * Return whether an in-memory spawnable with given name exists or not.
+             */
+            virtual bool HasInMemorySpawnableAsset(AZStd::string_view spawnableName) const = 0;
+
+            /**
+             * Return an asset id of a spawnalbe with given name. Invalid asset id will be returned if the spawnable doesn't exist.
+             */
+            virtual AZ::Data::AssetId GetInMemorySpawnableAssetId(AZStd::string_view spawnableName) const = 0;
+
+            /**
+             * Remove all the in-memory spawnable assets.
+             */
+            virtual void RemoveAllInMemorySpawnableAssets() = 0;
         };
 
         using PrefabPublicRequestBus = AZ::EBus<PrefabPublicRequests>;
