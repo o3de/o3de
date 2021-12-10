@@ -112,20 +112,9 @@ void EditorPreferencesDialog::showEvent(QShowEvent* event)
     QDialog::showEvent(event);
 }
 
-
 void EditorPreferencesDialog::keyPressEvent(QKeyEvent* event)
 {
-    if (event->key() != Qt::Key::Key_Enter && event->key() != Qt::Key::Key_Return)
-    {
-        QDialog::keyPressEvent(event);
-    }
-    else
-    {
-        if( QWidget* widget = QApplication::focusWidget(); widget != nullptr)
-        {
-            widget->clearFocus();
-        }
-    }
+    WidgetHandleKeyPressEvent(this, event);
 }
 
 void EditorPreferencesDialog::OnTreeCurrentItemChanged()
