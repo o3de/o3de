@@ -27,7 +27,7 @@ namespace O3DE::ProjectManager
         m_worker = new ProjectBuilderWorker(m_projectInfo);
         m_worker->moveToThread(&m_workerThread);
 
-        // Remove key here in case Project Manager crashing while building that causes HandleResults to not be called
+        // Remove key here in case Project Manager crashed while building because that causes HandleResults to not be called
         SettingsInterface::Get()->SetProjectBuiltSuccessfully(m_projectInfo, false);
 
         connect(&m_workerThread, &QThread::finished, m_worker, &ProjectBuilderWorker::deleteLater);

@@ -70,7 +70,7 @@ namespace O3DE::ProjectManager
         }
 
         m_pythonBindings = AZStd::make_unique<PythonBindings>(GetEngineRoot());
-        AZ_Assert(m_pythonBindings, "Failed to create PythonBindings");
+
         if (!m_pythonBindings->PythonStarted())
         {
             if (!interactive)
@@ -113,7 +113,6 @@ namespace O3DE::ProjectManager
         }
 
         m_settings = AZStd::make_unique<Settings>();
-        AZ_Assert(m_settings, "Failed to create Settings");
 
         if (!RegisterEngine(interactive))
         {
