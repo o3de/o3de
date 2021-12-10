@@ -20,8 +20,6 @@
 #include <Atom/RHI/BufferScopeAttachment.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/ResolveScopeAttachment.h>
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace DX12
@@ -305,7 +303,7 @@ namespace AZ
             uint32_t commandListCount) const
         {
             AZ_UNUSED(commandListCount);
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             commandList.GetValidator().BeginScope(*this);
 
@@ -387,7 +385,7 @@ namespace AZ
             uint32_t commandListIndex,
             uint32_t commandListCount) const
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             const bool isEpilogue = (commandListIndex + 1) == commandListCount;
             if (isEpilogue)

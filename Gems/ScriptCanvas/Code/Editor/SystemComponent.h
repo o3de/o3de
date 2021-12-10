@@ -23,6 +23,7 @@
 #include <Editor/View/Windows/Tools/UpgradeTool/Model.h>
 #include <ScriptCanvas/Bus/ScriptCanvasBus.h>
 #include <ScriptCanvas/Bus/ScriptCanvasExecutionBus.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
 namespace ScriptCanvasEditor
 {
@@ -36,6 +37,8 @@ namespace ScriptCanvasEditor
         , private AZ::Data::AssetBus::MultiHandler
         , private AzToolsFramework::AssetSeedManagerRequests::Bus::Handler
         , private AzToolsFramework::EditorContextMenuBus::Handler
+        , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
+
     {
     public:
         AZ_COMPONENT(SystemComponent, "{1DE7A120-4371-4009-82B5-8140CB1D7B31}");
@@ -97,7 +100,12 @@ namespace ScriptCanvasEditor
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////
-        
+
+    protected:
+        void OnStartPlayInEditor() override;
+
+        void OnStopPlayInEditor() override;
+
     private:
         SystemComponent(const SystemComponent&) = delete;
 

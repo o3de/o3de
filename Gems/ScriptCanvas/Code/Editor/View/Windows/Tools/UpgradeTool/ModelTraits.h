@@ -22,6 +22,7 @@ namespace ScriptCanvasEditor
             SourceHandle modifySingleAsset;
             bool backupGraphBeforeModification = false;
             bool successfulDependencyUpgradeRequired = true;
+            AZ::s32 perDependencyWaitSecondsMax = 20;
         };
 
         struct ModificationResult
@@ -98,6 +99,7 @@ namespace ScriptCanvasEditor
                 ( const ModifyConfiguration& config
                 , const AZStd::vector<SourceHandle>& assets
                 , const AZStd::vector<size_t>& sortedOrder) = 0;
+            virtual void OnUpgradeDependencyWaitInterval(const SourceHandle& info) = 0;
             virtual void OnUpgradeModificationBegin(const ModifyConfiguration& config, const SourceHandle& info) = 0;
             virtual void OnUpgradeModificationEnd(const ModifyConfiguration& config, const SourceHandle& info, ModificationResult result) = 0;
         };

@@ -10,7 +10,6 @@
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/IO/FileIO.h>
-#include <AzCore/IO/FileIOEventBus.h>
 #include <AzCore/Script/ScriptAsset.h>
 #include <AzCore/Script/ScriptContext.h>
 #include <AzFramework/API/ApplicationAPI.h>
@@ -268,7 +267,7 @@ namespace ScriptCanvasEditor
 
                                 RuntimeDataOverrides dependencyRuntimeDataOverrides;
                                 dependencyRuntimeDataOverrides.m_runtimeAsset = dependency.runtimeAsset;
-                                AZStd::string dependencyHint = AZStd::string::format("dependency_%d", index);
+                                AZStd::string dependencyHint = AZStd::string::format("dependency_%zu", index);
                                 dependencyRuntimeDataOverrides.m_runtimeAsset.SetHint(dependencyHint);
                                 dependencyRuntimeDataOverrides.m_runtimeAsset.Get()->m_runtimeData.m_script.SetHint(dependencyHint);
 

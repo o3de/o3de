@@ -18,7 +18,6 @@
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/View.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Jobs/JobEmpty.h>
@@ -115,6 +114,7 @@ namespace AZ
             if (m_taskGraphActive)
             {
                 WaitAndCleanTGEvent(AZStd::move(m_simulationFinishedTGEvent));
+                m_simulationFinishedTGEvent.reset();
             }
             else
             {
@@ -384,7 +384,9 @@ namespace AZ
                     simulationTGDesc,
                     [this, featureProcessor]()
                     {
-                        featureProcessor->Simulate(m_simulatePacket);
+                        FeatureProcessor::SimulatePacket jobPacket = m_simulatePacket;
+                        jobPacket.m_parentJob = nullptr;
+                        featureProcessor->Simulate(jobPacket);
                     });
             }
             simulationTG.Detach();
@@ -424,6 +426,7 @@ namespace AZ
             if (m_taskGraphActive)
             {
                 WaitAndCleanTGEvent(AZStd::move(m_simulationFinishedTGEvent));
+                m_simulationFinishedTGEvent.reset();
             }
             else
             {
@@ -610,9 +613,9 @@ namespace AZ
             {
                 finalizeDrawListsTG.AddTask(
                     finalizeDrawListsTGDesc,
-                    [view]()
+                    [view, &finalizeDrawListsTGEvent]()
                     {
-                        view->FinalizeDrawLists();
+                        view->FinalizeDrawListsTG(finalizeDrawListsTGEvent);
                     });
             }
             finalizeDrawListsTG.Submit(&finalizeDrawListsTGEvent);
@@ -624,9 +627,9 @@ namespace AZ
             AZ::JobCompletion* finalizeDrawListsCompletion = aznew AZ::JobCompletion();
             for (auto& view : m_renderPacket.m_views)
             {
-                const auto finalizeDrawListsLambda = [view]()
+                const auto finalizeDrawListsLambda = [view](AZ::Job& job)
                 {
-                    view->FinalizeDrawLists();
+                    view->FinalizeDrawListsJob(&job);
                 };
 
                 AZ::Job* finalizeDrawListsJob = AZ::CreateJobFunction(AZStd::move(finalizeDrawListsLambda), true, nullptr);     //auto-deletes
@@ -643,6 +646,7 @@ namespace AZ
             if (m_taskGraphActive)
             {
                 WaitAndCleanTGEvent(AZStd::move(m_simulationFinishedTGEvent));
+                m_simulationFinishedTGEvent.reset();
             }
             else
             {
@@ -744,7 +748,7 @@ namespace AZ
                 {
                     for (auto& view : m_renderPacket.m_views)
                     {
-                        view->FinalizeDrawLists();
+                        view->FinalizeDrawListsJob(nullptr);
                     }
                 }
                 else

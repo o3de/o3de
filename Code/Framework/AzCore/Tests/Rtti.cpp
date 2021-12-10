@@ -17,6 +17,7 @@
 #include <AzCore/std/containers/fixed_unordered_map.h>
 #include <AzCore/std/containers/fixed_unordered_set.h>
 #include <AzCore/std/containers/fixed_vector.h>
+#include <AzCore/std/containers/forward_list.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/unordered_map.h>

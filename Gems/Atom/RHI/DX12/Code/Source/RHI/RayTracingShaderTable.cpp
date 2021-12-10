@@ -12,7 +12,6 @@
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
 #include <Atom/RHI/Factory.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <Atom/RHI/BufferPool.h>
 #include <Atom/RHI/RayTracingBufferPools.h>
 #include <RHI/ShaderResourceGroup.h>

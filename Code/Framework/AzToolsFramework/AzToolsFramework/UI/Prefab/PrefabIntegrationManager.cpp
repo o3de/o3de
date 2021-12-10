@@ -25,6 +25,7 @@
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/Prefab/EditorPrefabComponent.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
@@ -140,6 +141,9 @@ namespace AzToolsFramework
                 AZ_Assert(false, "Prefab - could not get PrefabFocusPublicInterface on PrefabIntegrationManager construction.");
                 return;
             }
+
+            m_readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get();
+            AZ_Assert(m_readOnlyEntityPublicInterface, "Prefab - could not get ReadOnlyEntityPublicInterface on PrefabIntegrationManager construction.");
 
             // Get EditorEntityContextId
             EditorEntityContextRequestBus::BroadcastResult(s_editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
@@ -263,6 +267,18 @@ namespace AzToolsFramework
             AzFramework::ApplicationRequests::Bus::BroadcastResult(
                 prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
 
+            bool readOnlyEntityInSelection = false;
+            for (const auto& entityId : selectedEntities)
+            {
+                if (m_readOnlyEntityPublicInterface->IsReadOnly(entityId))
+                {
+                    readOnlyEntityInSelection = true;
+                    break;
+                }
+            }
+
+            bool itemWasShown = false;
+
             // Create Prefab
             {
                 if (!selectedEntities.empty())
@@ -289,7 +305,8 @@ namespace AzToolsFramework
                         }
 
                         // Layers can't be in prefabs.
-                        if (!layerInSelection)
+                        // Also don't allow to create a prefab if any of the selected entities are read-only
+                        if (!layerInSelection && !readOnlyEntityInSelection)
                         {
                             QAction* createAction = menu->addAction(QObject::tr("Create Prefab..."));
                             createAction->setToolTip(QObject::tr("Creates a prefab out of the currently selected entities."));
@@ -297,33 +314,43 @@ namespace AzToolsFramework
                             QObject::connect(createAction, &QAction::triggered, createAction, [selectedEntities] {
                                 ContextMenu_CreatePrefab(selectedEntities);
                             });
+
+                            itemWasShown = true;
                         }
                     }
                 }
             }
 
             // Instantiate Prefab
+            if (!readOnlyEntityInSelection)
             {
                 QAction* instantiateAction = menu->addAction(QObject::tr("Instantiate Prefab..."));
                 instantiateAction->setToolTip(QObject::tr("Instantiates a prefab file in the scene."));
 
                 QObject::connect(
                     instantiateAction, &QAction::triggered, instantiateAction, [] { ContextMenu_InstantiatePrefab(); });
+
+                itemWasShown = true;
             }
 
             // Instantiate Procedural Prefab
-            if (AZ::Prefab::ProceduralPrefabAsset::UseProceduralPrefabs())
+            if (AZ::Prefab::ProceduralPrefabAsset::UseProceduralPrefabs() && !readOnlyEntityInSelection)
             {
                 QAction* action = menu->addAction(QObject::tr("Instantiate Procedural Prefab..."));
                 action->setToolTip(QObject::tr("Instantiates a procedural prefab file in a prefab."));
 
                 QObject::connect(
                     action, &QAction::triggered, action, [] { ContextMenu_InstantiateProceduralPrefab(); });
+
+                itemWasShown = true;
             }
 
-            menu->addSeparator();
+            if (itemWasShown)
+            {
+                menu->addSeparator();
+            }
 
-            bool itemWasShown = false;
+            itemWasShown = false;
 
             // Edit/Save Prefab
             {
@@ -383,14 +410,13 @@ namespace AzToolsFramework
                 menu->addSeparator();
             }
 
-            QAction* deleteAction = menu->addAction(QObject::tr("Delete"));
-            QObject::connect(deleteAction, &QAction::triggered, deleteAction, [] { ContextMenu_DeleteSelected(); });
-
-            if (selectedEntities.empty() ||
-                (selectedEntities.size() == 1 &&
-                 selectedEntities[0] == s_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(s_editorEntityContextId)))
+            if (!selectedEntities.empty() &&
+                (selectedEntities.size() != 1 ||
+                 selectedEntities[0] != s_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(s_editorEntityContextId)) &&
+                !readOnlyEntityInSelection)
             {
-                deleteAction->setDisabled(true);
+                QAction* deleteAction = menu->addAction(QObject::tr("Delete"));
+                QObject::connect(deleteAction, &QAction::triggered, deleteAction, [] { ContextMenu_DeleteSelected(); });
             }
 
             // Detach Prefab

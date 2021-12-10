@@ -102,9 +102,6 @@ namespace ScriptCanvasEditor
         void Log(const char* format, ...);
 
     private:
-
-        bool m_verbose = true;
-
         StateMachine* m_stateMachine;
     };
 
@@ -363,7 +360,7 @@ namespace ScriptCanvasEditor
     template <typename Traits>
     void ScriptCanvasEditor::State<Traits>::Log(const char* format, ...)
     {
-        if (m_verbose)
+        if (m_stateMachine->GetVerbose())
         {
             char sBuffer[2048];
             va_list ArgList;

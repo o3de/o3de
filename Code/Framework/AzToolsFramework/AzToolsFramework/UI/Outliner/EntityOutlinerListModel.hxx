@@ -290,6 +290,7 @@ namespace AzToolsFramework
         
         EditorEntityUiInterface* m_editorEntityUiInterface = nullptr;
         FocusModeInterface* m_focusModeInterface = nullptr;
+        ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
     };
 
     class EntityOutlinerCheckBox

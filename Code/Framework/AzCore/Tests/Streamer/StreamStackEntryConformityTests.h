@@ -97,7 +97,7 @@ namespace AZ::IO
     TYPED_TEST_P(StreamStackEntryConformityTests, SetContext_ContextIsForwardedToNext_SetContextOnMockIsCalled)
     {
         using ::testing::_;
-        
+
         auto mock = AZStd::make_shared<StreamStackEntryMock>();
         auto entry = this->m_description.CreateInstance();
         entry.SetNext(mock);
@@ -194,14 +194,14 @@ namespace AZ::IO
     TYPED_TEST_P(StreamStackEntryConformityTests, UpdateStatus_ForwardsCallToNext_NextRecievedCall)
     {
         using ::testing::_;
-        
+
         auto mock = AZStd::make_shared<StreamStackEntryMock>();
         auto entry = this->m_description.CreateInstance();
         entry.SetNext(mock);
 
         EXPECT_CALL(*mock, UpdateStatus(_))
             .Times(1);
-            
+
         StreamStackEntry::Status status;
         entry.UpdateStatus(status);
     }
@@ -241,7 +241,7 @@ namespace AZ::IO
     TYPED_TEST_P(StreamStackEntryConformityTests, UpdateStatus_NextHasSmallerNumSlots_ReturnsSmallestNumSlots)
     {
         using ::testing::_;
-        
+
         if (this->m_description.UsesSlots())
         {
             auto mock = AZStd::make_shared<StreamStackEntryMock>();
@@ -264,7 +264,7 @@ namespace AZ::IO
     TYPED_TEST_P(StreamStackEntryConformityTests, UpdateStatus_NextHasLargerNumSlots_ReturnsSmallestNumSlots)
     {
         using ::testing::_;
-        
+
         if (this->m_description.UsesSlots())
         {
             auto mock = AZStd::make_shared<StreamStackEntryMock>();
@@ -289,7 +289,7 @@ namespace AZ::IO
     TYPED_TEST_P(StreamStackEntryConformityTests, UpdateCompletionEstimates_ForwardsCallToNext_NextRecievedCall)
     {
         using ::testing::_;
-        
+
         auto mock = AZStd::make_shared<StreamStackEntryMock>();
         auto entry = this->m_description.CreateInstance();
         entry.SetNext(mock);

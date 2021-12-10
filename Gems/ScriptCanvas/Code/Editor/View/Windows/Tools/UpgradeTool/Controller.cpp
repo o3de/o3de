@@ -17,7 +17,6 @@
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/TickBus.h>
-#include <AzCore/IO/FileIOEventBus.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/UserSettings/UserSettingsProvider.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
@@ -189,6 +188,11 @@ namespace ScriptCanvasEditor
             OnButtonPressUpgradeImplementation(info);
         }
 
+        void Controller::OnUpgradeDependencyWaitInterval([[maybe_unused]] const SourceHandle& info)
+        {
+            AddLogEntries();
+        }
+
         void Controller::OnUpgradeModificationBegin([[maybe_unused]] const ModifyConfiguration& config, const SourceHandle& info)
         {
             for (auto* item : FindTableItems(info))
@@ -211,6 +215,8 @@ namespace ScriptCanvasEditor
             else
             {
                 VE_LOG("Failed to modify %s: %s", result.asset.Path().c_str(), result.errorMessage.data());
+                AZ_Warning(ScriptCanvas::k_VersionExplorerWindow.data()
+                    , false, "Failed to modify %s: %s", result.asset.Path().c_str(), result.errorMessage.data());
             }
 
             for (auto* item : FindTableItems(info))

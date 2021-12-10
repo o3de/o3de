@@ -19,7 +19,6 @@
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/Casting/numeric_cast.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Jobs/Job.h>
 #include <AzCore/Task/TaskGraph.h>
@@ -875,7 +874,7 @@ namespace AZ
                 BeginCullingJobs(views);
             }
 
-#if AZ_CULL_DEBUG_ENABLED
+#ifdef AZ_CULL_DEBUG_ENABLED
             AuxGeomDrawPtr auxGeom;
             if (m_debugCtx.m_debugDraw)
             {

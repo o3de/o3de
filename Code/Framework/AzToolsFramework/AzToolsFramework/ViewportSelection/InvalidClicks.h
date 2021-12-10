@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
 
 namespace AzFramework

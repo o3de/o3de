@@ -330,6 +330,11 @@ def get_engine_restricted() -> list:
 
 
 # project.json queries
+def get_project_engine_name(project_path: pathlib.Path) -> str or None:
+    project_object = get_project_json_data(project_path=project_path)
+    return project_object.get('engine', None) if project_object else None
+
+
 def get_project_gems(project_path: pathlib.Path) -> list:
     return get_gems_from_subdirectories(get_project_external_subdirectories(project_path))
 

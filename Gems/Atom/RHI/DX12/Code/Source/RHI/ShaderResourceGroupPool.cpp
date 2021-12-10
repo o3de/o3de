@@ -14,8 +14,6 @@
 #include <RHI/Device.h>
 #include <RHI/Image.h>
 #include <RHI/ImageView.h>
-#include <AzCore/Debug/EventTrace.h>
-
 
 namespace AZ
 {
@@ -204,23 +202,19 @@ namespace AZ
         {
             ShaderResourceGroup& group = static_cast<ShaderResourceGroup&>(groupBase);
             auto& device = static_cast<Device&>(GetDevice());
-            group.m_compiledDataIndex = (group.m_compiledDataIndex + 1) % RHI::Limits::Device::FrameCountMax;
 
             if (!groupData.IsAnyResourceTypeUpdated())
             {
                 return RHI::ResultCode::Success;
             }
 
-            if (m_constantBufferSize &&
-                groupData.IsResourceTypeEnabledForCompilation(static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::ConstantDataMask)))
+            group.m_compiledDataIndex = (group.m_compiledDataIndex + 1) % RHI::Limits::Device::FrameCountMax;
+            if (m_constantBufferSize)
             {
                 memcpy(group.GetCompiledData().m_cpuConstantAddress, groupData.GetConstantData().data(), groupData.GetConstantData().size());
             }
 
-            if (m_viewsDescriptorTableSize &&
-                groupData.IsResourceTypeEnabledForCompilation(
-                    static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::ImageViewMask) |
-                    static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::BufferViewMask)))
+            if (m_viewsDescriptorTableSize)
             {
                 //Lazy initialization for cbv/srv/uav Descriptor Tables
                 if (!group.m_viewsDescriptorTable.IsValid())
@@ -245,17 +239,12 @@ namespace AZ
                 UpdateViewsDescriptorTable(descriptorTable, groupData);
             }
 
-            if (m_unboundedArrayCount &&
-                groupData.IsResourceTypeEnabledForCompilation(
-                    static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::ImageViewUnboundedArrayMask) |
-                    static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::BufferViewUnboundedArrayMask)))
+            if (m_unboundedArrayCount)
             {
                 UpdateUnboundedArrayDescriptorTables(group, groupData);
             }
 
-            if (m_samplersDescriptorTableSize &&
-                groupData.IsResourceTypeEnabledForCompilation(
-                    static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::SamplerMask)))
+            if (m_samplersDescriptorTableSize)
             {
                 const DescriptorTable descriptorTable(
                     group.m_samplersDescriptorTable.GetOffset() + group.m_compiledDataIndex * m_samplersDescriptorTableSize,
