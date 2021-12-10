@@ -549,7 +549,8 @@ namespace AzNetworking
                 const uint32_t nextChunkSize = AZStd::min(bytesRemaining, chunkSize);
                 chunkBuffer.CopyValues(chunkStart, nextChunkSize);
                 CorePackets::FragmentedPacket fragmentedPacket(ToSequenceId(localPacketId), fragmentedSequence, aznumeric_cast<uint8_t>(chunkIndex), aznumeric_cast<uint8_t>(numChunks), chunkBuffer);
-                const SequenceId chunkReliableId = (reliabilityType == ReliabilityType::Reliable) ? connection.m_reliableQueue.GetNextSequenceId() : InvalidSequenceId;
+                // Fragments are always reliable so original packet can be reconstructed 
+                const SequenceId chunkReliableId =  connection.m_reliableQueue.GetNextSequenceId();
                 SendPacket(connection, fragmentedPacket, chunkReliableId);
                 bytesRemaining -= nextChunkSize;
                 chunkStart += nextChunkSize;
