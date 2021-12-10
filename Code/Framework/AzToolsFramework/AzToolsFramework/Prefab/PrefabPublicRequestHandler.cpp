@@ -51,9 +51,6 @@ namespace AzToolsFramework
             m_prefabPublicInterface = AZ::Interface<PrefabPublicInterface>::Get();
             AZ_Assert(m_prefabPublicInterface, "PrefabPublicRequestHandler - Could not retrieve instance of PrefabPublicInterface");
 
-            const bool activated = m_spawnableAssetContainer.Activate(PrefabConversionUtils::IntegrationTests);
-            AZ_Assert(activated, "PrefabPublicRequestHandler - Failed to activate Spawnable Asset Container");
-
             PrefabPublicRequestBus::Handler::BusConnect();
         }
 
@@ -94,8 +91,24 @@ namespace AzToolsFramework
             return m_prefabPublicInterface->GetOwningInstancePrefabPath(entityId).Native();
         }
 
+        bool PrefabPublicRequestHandler::TryActivateSpawnableAssetContainer()
+        {
+            bool activated = m_spawnableAssetContainer.IsActivated();
+            if (!activated)
+            {
+                activated = m_spawnableAssetContainer.Activate(PrefabConversionUtils::IntegrationTests);
+            }
+
+            return activated;
+        }
+
         CreateSpawnableResult PrefabPublicRequestHandler::CreateInMemorySpawnableAsset(AZStd::string_view prefabFilePath, AZStd::string_view spawnableName)
         {
+            if (!TryActivateSpawnableAssetContainer())
+            {
+                return AZ::Failure(AZStd::string("Failed to activate Spawnable Asset Container"));
+            }
+
             auto result = m_spawnableAssetContainer.CreateInMemorySpawnableAsset(prefabFilePath, spawnableName);
             if (result.IsSuccess())
             {

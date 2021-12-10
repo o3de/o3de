@@ -747,7 +747,9 @@ class EditorTestSuite():
         if test_spec.wait_for_debugger:
             test_cmdline_args += ["--wait-for-debugger"]
         if self.enable_prefab_system:
-            test_cmdline_args += ["--regset=/Amazon/Preferences/EnablePrefabSystem=true"]
+            test_cmdline_args += [
+                "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
+                f"--regset-file={path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
         else:
             test_cmdline_args += ["--regset=/Amazon/Preferences/EnablePrefabSystem=false"]
 
@@ -814,7 +816,9 @@ class EditorTestSuite():
         if any([t.wait_for_debugger for t in test_spec_list]):
             test_cmdline_args += ["--wait-for-debugger"]
         if self.enable_prefab_system:
-            test_cmdline_args += ["--regset=/Amazon/Preferences/EnablePrefabSystem=true"]
+            test_cmdline_args += [
+                "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
+                f"--regset-file={path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
         else:
             test_cmdline_args += ["--regset=/Amazon/Preferences/EnablePrefabSystem=false"]
 

@@ -14,11 +14,6 @@
                             { "$type": "AzToolsFramework::Prefab::PrefabConversionUtils::EditorInfoRemover" },
                             { "$type": "AzToolsFramework::Prefab::PrefabConversionUtils::PrefabCatchmentProcessor" }
                         ],
-                        "IntegrationTests": 
-                        [
-                            { "$type": "AzToolsFramework::Prefab::PrefabConversionUtils::EditorInfoRemover" },
-                            { "$type": "AzToolsFramework::Prefab::PrefabConversionUtils::PrefabCatchmentProcessor" }
-                        ],
                         "GameObjectCreation":
                         [
                             { "$type": "AzToolsFramework::Prefab::PrefabConversionUtils::EditorInfoRemover" },

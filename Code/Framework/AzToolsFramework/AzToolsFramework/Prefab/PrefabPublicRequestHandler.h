@@ -45,8 +45,10 @@ namespace AzToolsFramework
             void RemoveAllInMemorySpawnableAssets() override;
 
         private:
-            PrefabPublicInterface* m_prefabPublicInterface = nullptr;
+            bool TryActivateSpawnableAssetContainer();
+
             PrefabConversionUtils::InMemorySpawnableAssetContainer m_spawnableAssetContainer;
+            PrefabPublicInterface* m_prefabPublicInterface = nullptr;
 
         };
     } // namespace Prefab
