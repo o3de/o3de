@@ -45,6 +45,7 @@ namespace Terrain
             AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
         bool IsInitialized() const;
         void Reset();
+        bool UpdateSrgIndices(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& srg);
 
         void Update(const AZ::Vector3& cameraPosition, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
 
@@ -164,7 +165,6 @@ namespace Terrain
         void OnTerrainSurfaceMaterialMappingChanged(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag, MaterialInstance material) override;
         void OnTerrainSurfaceMaterialMappingRegionChanged(AZ::EntityId entityId, const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion) override;
 
-        bool SetTerrainSrg(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
         void RemoveAllImages();
 
         uint16_t CreateOrUpdateDetailMaterial(MaterialInstance material);

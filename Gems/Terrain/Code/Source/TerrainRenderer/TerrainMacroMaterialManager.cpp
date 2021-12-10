@@ -34,7 +34,7 @@ namespace Terrain
             return;
         }
         
-        if (SetTerrainSrg(terrainSrg))
+        if (UpdateSrgIndices(terrainSrg))
         {
             m_bindlessImageHandler = bindlessImageHandler;
 
@@ -70,7 +70,7 @@ namespace Terrain
         return m_isInitialized;
     }
     
-    bool TerrainMacroMaterialManager::SetTerrainSrg(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg)
+    bool TerrainMacroMaterialManager::UpdateSrgIndices(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg)
     {
         const AZ::RHI::ShaderResourceGroupLayout* terrainSrgLayout = terrainSrg->GetLayout();
             
@@ -85,6 +85,8 @@ namespace Terrain
         desc.m_elementSize = sizeof(MacroMaterialShaderData);
         desc.m_srgLayout = terrainSrgLayout;
         m_macroMaterialDataBuffer = AZ::Render::GpuBufferHandler(desc);
+
+        m_bufferNeedsUpdate = true;
 
         return m_macroMaterialDataBuffer.IsValid() && m_macroMaterialGridIndex.IsValid();
     }

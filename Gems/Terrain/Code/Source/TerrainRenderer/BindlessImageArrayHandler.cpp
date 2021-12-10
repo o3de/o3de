@@ -19,29 +19,18 @@ namespace AZ::Render
 
     void BindlessImageArrayHandler::Initialize(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& srg, const AZ::Name& propertyName)
     {
-        if (!m_isInitialized && srg)
+        if (!m_isInitialized)
         {
-            m_texturesIndex = srg->GetLayout()->FindShaderInputImageUnboundedArrayIndex(propertyName);
-            if (m_texturesIndex.IsValid())
-            {
-                m_srg = srg;
-                m_isInitialized = true;
-            }
-            else
-            {
-                AZ_Error(BindlessImageArrayHandlerName, m_texturesIndex.IsValid(), "Failed to find srg input constant %s.", propertyName.GetCStr());
-            }
+            m_isInitialized = UpdateSrgIndices(srg, propertyName);
         }
         else
         {
-            AZ_Error(BindlessImageArrayHandlerName, !m_isInitialized, "Already initialized.");
-            AZ_Error(BindlessImageArrayHandlerName, srg, "Cannot initialize using a null shader resource group.");
+            AZ_Error(BindlessImageArrayHandlerName, false, "Already initialized.");
         }
     }
 
     void BindlessImageArrayHandler::Reset()
     {
-        m_srg = {};
         m_texturesIndex = {};
         m_isInitialized = false;
     }
@@ -50,7 +39,21 @@ namespace AZ::Render
     {
         return m_isInitialized;
     }
-    
+
+    bool BindlessImageArrayHandler::UpdateSrgIndices(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& srg, const AZ::Name& propertyName)
+    {
+        if (srg)
+        {
+            m_texturesIndex = srg->GetLayout()->FindShaderInputImageUnboundedArrayIndex(propertyName);
+            AZ_Error(BindlessImageArrayHandlerName, m_texturesIndex.IsValid(), "Failed to find srg input constant %s.", propertyName.GetCStr());
+        }
+        else
+        {
+            AZ_Error(BindlessImageArrayHandlerName, false, "Cannot initialize using a null shader resource group.");
+        }
+        return m_texturesIndex.IsValid();
+    }
+
     uint16_t BindlessImageArrayHandler::AppendBindlessImage(const AZ::RHI::ImageView* imageView)
     {
         uint16_t imageIndex = 0xFFFF;
@@ -83,16 +86,16 @@ namespace AZ::Render
         m_bindlessImageViewFreeList.push_back(index);
     }
 
-    bool BindlessImageArrayHandler::UpdateSrg() const
+    bool BindlessImageArrayHandler::UpdateSrg(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& srg) const
     {
         if (!m_isInitialized)
         {
-            AZ_Error("BindlessImageArrayHandler", false, "m_srgIndex must b")
+            AZ_Error("BindlessImageArrayHandler", false, "BindlessImageArrayHandler not initialized")
             return false;
         }
 
         AZStd::array_view<const AZ::RHI::ImageView*> imageViews(m_bindlessImageViews.data(), m_bindlessImageViews.size());
-        return m_srg->SetImageViewUnboundedArray(m_texturesIndex, imageViews);
+        return srg->SetImageViewUnboundedArray(m_texturesIndex, imageViews);
     }
 
 }

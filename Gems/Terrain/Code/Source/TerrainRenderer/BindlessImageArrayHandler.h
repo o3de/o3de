@@ -28,16 +28,16 @@ namespace AZ::Render
             void Initialize(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& srg, const AZ::Name& propertyName);
             void Reset();
             bool IsInitialized() const;
-    
+            bool UpdateSrgIndices(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& srg, const AZ::Name& propertyName);
+
             uint16_t AppendBindlessImage(const RHI::ImageView* imageView);
             void UpdateBindlessImage(uint16_t index, const RHI::ImageView* imageView);
             void RemoveBindlessImage(uint16_t index);
 
-            bool UpdateSrg() const;
+            bool UpdateSrg(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& srg) const;
             
         private:
 
-            AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_srg;
             AZStd::vector<const RHI::ImageView*> m_bindlessImageViews;
             AZStd::vector<uint16_t> m_bindlessImageViewFreeList;
             RHI::ShaderInputImageUnboundedArrayIndex m_texturesIndex;

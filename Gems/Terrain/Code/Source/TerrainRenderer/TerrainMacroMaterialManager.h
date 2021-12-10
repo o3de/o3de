@@ -30,7 +30,8 @@ namespace Terrain
             AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
         void Reset();
         bool IsInitialized();
-
+        bool UpdateSrgIndices(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
+        
         void Update(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
 
     private:
@@ -80,8 +81,6 @@ namespace Terrain
         void OnTerrainMacroMaterialChanged(AZ::EntityId entityId, const MacroMaterialData& material) override;
         void OnTerrainMacroMaterialRegionChanged(AZ::EntityId entityId, const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion) override;
         void OnTerrainMacroMaterialDestroyed(AZ::EntityId entityId) override;
-        
-        bool SetTerrainSrg(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
         
         void UpdateMacroMaterialShaderEntry(uint16_t shaderDataIdx, const MacroMaterial& macroMaterialData);
         void RemoveMacroMaterialShaderEntry(uint16_t shaderDataIdx);

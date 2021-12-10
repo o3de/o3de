@@ -75,6 +75,14 @@ namespace Terrain
         AZ::ConsoleFunctorFlags::Null,
         "Turns on debugging for detail material ids for terrain."
     );
+    
+    AZ_CVAR(bool,
+        r_terrainDebugDetailImageUpdates,
+        false,
+        nullptr,
+        AZ::ConsoleFunctorFlags::Null,
+        "Turns on debugging for detail material update regions for terrain."
+    );
 
     void TerrainDetailMaterialManager::Initialize(
         const AZStd::shared_ptr<AZ::Render::BindlessImageArrayHandler>& bindlessImageHandler,
@@ -89,7 +97,7 @@ namespace Terrain
             return;
         }
         
-        if (SetTerrainSrg(terrainSrg))
+        if (UpdateSrgIndices(terrainSrg))
         {
             m_bindlessImageHandler = bindlessImageHandler;
             
@@ -127,7 +135,7 @@ namespace Terrain
         }
     }
     
-    bool TerrainDetailMaterialManager::SetTerrainSrg(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg)
+    bool TerrainDetailMaterialManager::UpdateSrgIndices(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg)
     {
         const AZ::RHI::ShaderResourceGroupLayout* terrainSrgLayout = terrainSrg->GetLayout();
             
@@ -156,6 +164,9 @@ namespace Terrain
             m_detailCenterPropertyIndex.IsValid() &&
             m_detailHalfPixelUvPropertyIndex.IsValid() &&
             m_detailAabbPropertyIndex.IsValid();
+
+        m_detailImageNeedsUpdate = true;
+        m_detailMaterialBufferNeedsUpdate = true;
 
         return IndicesValid && m_detailMaterialDataBuffer.IsValid();
     }
@@ -224,9 +235,15 @@ namespace Terrain
         
         if (m_dirtyDetailRegion.IsValid() || !cameraPosition.IsClose(m_previousCameraPosition) || m_detailImageNeedsUpdate)
         {
+            if (r_terrainDebugDetailImageUpdates)
+            {
+                AZ_Printf("TerrainDetailMaterialManager", "Previous Camera: (%f, %f, %f) New Cameara: (%f, %f, %f)",
+                    m_previousCameraPosition.GetX(), m_previousCameraPosition.GetY(), m_previousCameraPosition.GetZ(),
+                    cameraPosition.GetX(), cameraPosition.GetY(), cameraPosition.GetZ());
+            }
             int32_t newDetailTexturePosX = aznumeric_cast<int32_t>(AZStd::roundf(cameraPosition.GetX() / DetailTextureScale));
             int32_t newDetailTexturePosY = aznumeric_cast<int32_t>(AZStd::roundf(cameraPosition.GetY() / DetailTextureScale));
-                
+            
             Aabb2i newBounds;
             newBounds.m_min.m_x = newDetailTexturePosX - DetailTextureSizeHalf;
             newBounds.m_min.m_y = newDetailTexturePosY - DetailTextureSizeHalf;
@@ -574,6 +591,13 @@ namespace Terrain
     
     void TerrainDetailMaterialManager::CheckUpdateDetailTexture(const Aabb2i& newBounds, const Vector2i& newCenter)
     {
+        if (r_terrainDebugDetailImageUpdates)
+        {
+            AZ_Printf("TerrainDetailMaterialManager", "Old Bounds: m(%i, %i)M(%i, %i) New Bounds: m(%i, %i)M(%i, %i)",
+                m_detailTextureBounds.m_min.m_x, m_detailTextureBounds.m_min.m_y, m_detailTextureBounds.m_max.m_x, m_detailTextureBounds.m_max.m_y,
+                newBounds.m_min.m_x, newBounds.m_min.m_y, newBounds.m_max.m_x, newBounds.m_max.m_y
+            );
+        }
         if (!m_detailTextureImage)
         {
             // If the m_detailTextureImage doesn't exist, create it and populate the entire texture
@@ -610,6 +634,12 @@ namespace Terrain
                 }
                 updateBounds.m_min.m_y = newBounds.m_min.m_y;
                 updateBounds.m_max.m_y = newBounds.m_max.m_y;
+                
+                if (r_terrainDebugDetailImageUpdates)
+                {
+                    AZ_Printf("TerrainDetailMaterialManager", "Updating horizontal edge: m(%i, %i)M(%i, %i)",
+                        updateBounds.m_min.m_x, updateBounds.m_min.m_y, updateBounds.m_max.m_x, updateBounds.m_max.m_y);
+                }
                 UpdateDetailTexture(updateBounds, newBounds, newCenter);
             }
 
@@ -630,11 +660,22 @@ namespace Terrain
                     updateBounds.m_min.m_y = m_detailTextureBounds.m_max.m_y;
                     updateBounds.m_max.m_y = newBounds.m_max.m_y;
                 }
+                
+                if (r_terrainDebugDetailImageUpdates)
+                {
+                    AZ_Printf("TerrainDetailMaterialManager", "Updating vertical edge: m(%i, %i)M(%i, %i)",
+                        updateBounds.m_min.m_x, updateBounds.m_min.m_y, updateBounds.m_max.m_x, updateBounds.m_max.m_y);
+                }
                 UpdateDetailTexture(updateBounds, newBounds, newCenter);
             }
 
             if (m_dirtyDetailRegion.IsValid())
             {
+                if (r_terrainDebugDetailImageUpdates)
+                {
+                    AZ_Printf("TerrainDetailMaterialManager", "m_dirtyDetailRegion: m(%f, %f)M(%f, %f)",
+                        m_dirtyDetailRegion.GetMin().GetX(), m_dirtyDetailRegion.GetMin().GetY(), m_dirtyDetailRegion.GetMax().GetX(), m_dirtyDetailRegion.GetMax().GetY());
+                }
                 // If any regions are marked as dirty, then they should be updated.
 
                 AZ::Vector3 currentMin = AZ::Vector3(newBounds.m_min.m_x * DetailTextureScale, newBounds.m_min.m_y * DetailTextureScale, -0.5f);
@@ -659,6 +700,12 @@ namespace Terrain
                     updateBounds.m_max.m_y = aznumeric_cast<int32_t>(AZStd::roundf(clampedCoverage.GetMax().GetY() / DetailTextureScale));
                     if (updateBounds.m_min.m_x < updateBounds.m_max.m_x && updateBounds.m_min.m_y < updateBounds.m_max.m_y)
                     {
+                        
+                        if (r_terrainDebugDetailImageUpdates)
+                        {
+                            AZ_Printf("TerrainDetailMaterialManager", "Updating dirty region: m(%i, %i)M(%i, %i)",
+                                updateBounds.m_min.m_x, updateBounds.m_min.m_y, updateBounds.m_max.m_x, updateBounds.m_max.m_y);
+                        }
                         UpdateDetailTexture(updateBounds, newBounds, newCenter);
                     }
                 }

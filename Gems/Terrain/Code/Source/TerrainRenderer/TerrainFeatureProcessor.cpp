@@ -47,8 +47,6 @@ namespace Terrain
         static const char* const Textures("m_textures");
     }
 
-
-
     void TerrainFeatureProcessor::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
@@ -76,8 +74,6 @@ namespace Terrain
 
     void TerrainFeatureProcessor::Initialize()
     {
-        // Load indices for the Scene Srg.
-
         m_meshManager.Initialize();
         m_imageArrayHandler = AZStd::make_shared<AZ::Render::BindlessImageArrayHandler>();
 
@@ -263,9 +259,7 @@ namespace Terrain
             imageUpdateRequest.m_sourceSubresourceLayout.m_bytesPerRow = updateWidth * BytesPerPixel;
             imageUpdateRequest.m_sourceSubresourceLayout.m_bytesPerImage = updateWidth * updateHeight * BytesPerPixel;
             imageUpdateRequest.m_sourceSubresourceLayout.m_rowCount = updateHeight;
-            imageUpdateRequest.m_sourceSubresourceLayout.m_size.m_width = updateWidth;
-            imageUpdateRequest.m_sourceSubresourceLayout.m_size.m_height = updateHeight;
-            imageUpdateRequest.m_sourceSubresourceLayout.m_size.m_depth = 1;
+            imageUpdateRequest.m_sourceSubresourceLayout.m_size = AZ::RHI::Size(updateWidth, updateHeight, 1);
             imageUpdateRequest.m_sourceData = pixels.data();
             imageUpdateRequest.m_image = m_heightmapImage->GetRHIImage();
 
@@ -278,9 +272,6 @@ namespace Terrain
     void TerrainFeatureProcessor::PrepareMaterialData()
     {
         m_terrainSrg = {};
-        m_imageArrayHandler->Reset();
-        m_macroMaterialManager.Reset();
-        m_detailMaterialManager.Reset();
 
         for (auto& shaderItem : m_materialInstance->GetShaderCollection())
         {
@@ -297,12 +288,39 @@ namespace Terrain
 
         if (m_terrainSrg)
         {
-            m_imageArrayHandler->Initialize(m_terrainSrg, AZ::Name(TerrainSrgInputs::Textures));
-            m_macroMaterialManager.Initialize(m_imageArrayHandler, m_terrainSrg);
-            m_detailMaterialManager.Initialize(m_imageArrayHandler, m_terrainSrg);
+            if (m_imageArrayHandler->IsInitialized())
+            {
+                m_imageArrayHandler->UpdateSrgIndices(m_terrainSrg, AZ::Name(TerrainSrgInputs::Textures));
+            }
+            else
+            {
+                m_imageArrayHandler->Initialize(m_terrainSrg, AZ::Name(TerrainSrgInputs::Textures));
+            }
+
+            if (m_macroMaterialManager.IsInitialized())
+            {
+                m_macroMaterialManager.UpdateSrgIndices(m_terrainSrg);
+            }
+            else
+            {
+                m_macroMaterialManager.Initialize(m_imageArrayHandler, m_terrainSrg);
+            }
+            
+            if (m_detailMaterialManager.IsInitialized())
+            {
+                m_detailMaterialManager.UpdateSrgIndices(m_terrainSrg);
+            }
+            else
+            {
+                m_detailMaterialManager.Initialize(m_imageArrayHandler, m_terrainSrg);
+            }
         }
-
-
+        else
+        {
+            m_imageArrayHandler->Reset();
+            m_macroMaterialManager.Reset();
+            m_detailMaterialManager.Reset();
+        }
     }
 
     void TerrainFeatureProcessor::ProcessSurfaces(const FeatureProcessor::RenderPacket& process)
@@ -360,7 +378,7 @@ namespace Terrain
             
             if (m_imageArrayHandler->IsInitialized())
             {
-                bool result = m_imageArrayHandler->UpdateSrg();
+                bool result = m_imageArrayHandler->UpdateSrg(m_terrainSrg);
                 AZ_Error(TerrainFPName, result, "Failed to set image view unbounded array into shader resource group.");
             }
         }
