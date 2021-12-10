@@ -9,6 +9,7 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/Path/PathReflect.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
+#include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <Prefab/PrefabTestFixture.h>
