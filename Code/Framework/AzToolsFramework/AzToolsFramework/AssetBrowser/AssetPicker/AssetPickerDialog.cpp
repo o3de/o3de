@@ -99,6 +99,18 @@ namespace AzToolsFramework
                 }
             }
 
+            if (selection.GetSelectedAssetIds().empty())
+            {
+                for (auto& filePath : selection.GetSelectedFilePaths())
+                {
+                    if (!filePath.empty())
+                    {
+                        selectedAsset = true;
+                        m_ui->m_assetBrowserTreeViewWidget->SelectFileAtPath(filePath);
+                    }
+                }
+            }
+
             if (!selectedAsset)
             {
                 m_ui->m_assetBrowserTreeViewWidget->SelectFolder(selection.GetDefaultDirectory());

@@ -35,6 +35,7 @@ namespace O3DE::ProjectManager
 
     private:
         bool InitLog(const char* logName);
+        bool RegisterEngine(bool interactive);
 
         AZStd::unique_ptr<PythonBindings> m_pythonBindings;
         AZStd::unique_ptr<Settings> m_settings;

@@ -7,8 +7,6 @@
  */
 #include <Atom/RHI/ShaderResourceGroupInvalidateRegistry.h>
 #include <Atom/RHI/ShaderResourceGroup.h>
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace RHI
@@ -60,7 +58,7 @@ namespace AZ
 
         ResultCode ShaderResourceGroupInvalidateRegistry::OnResourceInvalidate()
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             AZ_Assert(m_compileGroupFunction, "No compile function set");
             const Resource* resource = *ResourceInvalidateBus::GetCurrentBusId();
 

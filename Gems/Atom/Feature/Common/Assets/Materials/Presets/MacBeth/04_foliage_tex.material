@@ -11,6 +11,7 @@
                 1.0,
                 1.0
             ],
+            "textureBlendMode": "Lerp",
             "textureMap": "04_foliage_sRGB.tif"
         }
     }

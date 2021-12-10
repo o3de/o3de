@@ -54,8 +54,8 @@ namespace AZ
             }
 
             m_descriptorSetAllocator = RHI::Ptr<DescriptorSetAllocator>(aznew DescriptorSetAllocator);
-            // [GFX_TODO] ATOM-679 Set a proper pool size.
-            const uint32_t descriptorSetsPerPool = 100;
+            // [GFX_TODO] ATOM-16891 - Refactor Descriptor management system
+            const uint32_t descriptorSetsPerPool = 20;
             DescriptorSetAllocator::Descriptor allocatorDescriptor;
             allocatorDescriptor.m_device = &device;
             allocatorDescriptor.m_layout = m_descriptorSetLayout.get();

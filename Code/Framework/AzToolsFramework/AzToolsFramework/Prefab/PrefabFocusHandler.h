@@ -22,6 +22,7 @@ namespace AzToolsFramework
 {
     class ContainerEntityInterface;
     class FocusModeInterface;
+    class ReadOnlyEntityQueryInterface;
 }
 
 namespace AzToolsFramework::Prefab
@@ -93,6 +94,7 @@ namespace AzToolsFramework::Prefab
         ContainerEntityInterface* m_containerEntityInterface = nullptr;
         FocusModeInterface* m_focusModeInterface = nullptr;
         InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
+        ReadOnlyEntityQueryInterface* m_readOnlyEntityQueryInterface = nullptr;
     };
 
 } // namespace AzToolsFramework::Prefab

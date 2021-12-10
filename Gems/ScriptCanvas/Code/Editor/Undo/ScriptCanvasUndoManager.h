@@ -61,6 +61,7 @@ namespace ScriptCanvasEditor
     public:
         AZ_CLASS_ALLOCATOR(SceneUndoState, AZ::SystemAllocator, 0);
 
+        SceneUndoState() = default;
         SceneUndoState(AzToolsFramework::UndoSystem::IUndoNotify* undoNotify);
         ~SceneUndoState();
 
