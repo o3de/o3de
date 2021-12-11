@@ -361,7 +361,7 @@ namespace AZ::Dom::Json
 
     bool RapidJsonReadHandler::String(const char* str, rapidjson::SizeType length, bool copy)
     {
-        const Lifetime lifetime = copy ? m_stringLifetime : Lifetime::Temporary;
+        const Lifetime lifetime = !copy ? m_stringLifetime : Lifetime::Temporary;
         return CheckResult(m_visitor->String(AZStd::string_view(str, length), lifetime));
     }
 
@@ -377,7 +377,7 @@ namespace AZ::Dom::Json
         {
             m_visitor->Key(AZ::Name(key));
         }
-        const Lifetime lifetime = copy ? m_stringLifetime : Lifetime::Temporary;
+        const Lifetime lifetime = !copy ? m_stringLifetime : Lifetime::Temporary;
         return CheckResult(m_visitor->RawKey(key, lifetime));
     }
 
