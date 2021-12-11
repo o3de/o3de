@@ -39,6 +39,9 @@ namespace ImageProcessingAtom
             //required for CTSquisher
             AZ::Vector3 rgbWeight = AZ::Vector3(0.3333f, 0.3334f, 0.3333f);
             bool discardAlpha = false;
+            // required for HDR profile on android vulkan 1.1 and other platform differences
+            AZStd::string platform = "";
+
         };
 
     public:

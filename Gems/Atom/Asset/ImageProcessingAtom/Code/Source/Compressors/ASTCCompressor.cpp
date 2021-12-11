@@ -78,7 +78,7 @@ namespace ImageProcessingAtom
         return true;
     }
 
-    astcenc_profile GetAstcProfile(bool isSrgb, EPixelFormat pixelFormat)
+    astcenc_profile GetAstcProfile(bool isSrgb, EPixelFormat pixelFormat, const AZStd::string& platform = "")
     {
         // select profile depends on LDR or HDR, SRGB or Linear
         //      ASTCENC_PRF_LDR
@@ -87,12 +87,13 @@ namespace ImageProcessingAtom
         //      ASTCENC_PRF_HDR
         
         auto formatInfo = CPixelFormats::GetInstance().GetPixelFormatInfo(pixelFormat);
-        bool isHDR = formatInfo->eSampleType == ESampleType::eSampleType_Half || formatInfo->eSampleType == ESampleType::eSampleType_Float;
+        bool isHDR = (formatInfo->eSampleType == ESampleType::eSampleType_Half || formatInfo->eSampleType == ESampleType::eSampleType_Float) && platform != "android";
         astcenc_profile profile;
         if (isHDR)
         {
             // HDR is not support in core vulkan 1.1 for android.
             // https://arm-software.github.io/vulkan-sdk/_a_s_t_c.html
+            // The check for isHDR takes this into account, setting false for android platform
             profile = isSrgb?ASTCENC_PRF_HDR_RGB_LDR_A:ASTCENC_PRF_HDR;
         }
         else
@@ -170,7 +171,7 @@ namespace ImageProcessingAtom
         auto dstFormatInfo = CPixelFormats::GetInstance().GetPixelFormatInfo(fmtDst);
 
         const float quality = GetAstcCompressQuality(compressOption->compressQuality);
-        const astcenc_profile profile = GetAstcProfile(srcImage->HasImageFlags(EIF_SRGBRead), fmtSrc);
+        const astcenc_profile profile = GetAstcProfile(srcImage->HasImageFlags(EIF_SRGBRead), fmtSrc, compressOption->platform);
 
         astcenc_config config;
         astcenc_error status;

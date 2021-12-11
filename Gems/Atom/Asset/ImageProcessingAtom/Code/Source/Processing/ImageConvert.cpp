@@ -534,6 +534,7 @@ namespace ImageProcessingAtom
         m_image->GetCompressOption().compressQuality = quality;
         m_image->GetCompressOption().rgbWeight = m_input->m_presetSetting.GetColorWeight();
         m_image->GetCompressOption().discardAlpha = m_input->m_presetSetting.m_discardAlpha;
+        m_image->GetCompressOption().platform = m_input->m_platform;
 
         m_image->ConvertFormat(m_input->m_presetSetting.m_pixelFormat);
 
