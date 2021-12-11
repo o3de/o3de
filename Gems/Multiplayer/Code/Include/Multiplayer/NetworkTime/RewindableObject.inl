@@ -73,6 +73,12 @@ namespace Multiplayer
     }
 
     template <typename BASE_TYPE, AZStd::size_t REWIND_SIZE>
+    inline const BASE_TYPE& RewindableObject<BASE_TYPE, REWIND_SIZE>::GetAuthority() const
+    {
+        return GetValueForTime(m_authIndex);
+    }
+
+    template <typename BASE_TYPE, AZStd::size_t REWIND_SIZE>
     inline BASE_TYPE& RewindableObject<BASE_TYPE, REWIND_SIZE>::Modify()
     {
         const HostFrameId frameTime = GetCurrentTimeForProperty();
@@ -110,6 +116,10 @@ namespace Multiplayer
         if (serializer.Serialize(value, "Element") && (serializer.GetSerializerMode() == AzNetworking::SerializerMode::WriteToObject))
         {
             SetValueForTime(value, frameTime);
+            if (m_headTime == frameTime)
+            {
+                m_authIndex = m_headIndex;
+            }
         }
         return serializer.IsValid();
     }

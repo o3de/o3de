@@ -109,6 +109,16 @@ namespace Multiplayer
         return logs;
     }
 
+    const AZStd::string NetworkInput::GetOwnerName() const
+    {
+        const AZ::Entity* owner = m_owner.GetEntity();
+        if (owner != nullptr)
+        {
+            return owner->GetName();
+        }
+        return "null owner";
+    }
+
     void NetworkInput::AttachNetBindComponent(NetBindComponent* netBindComponent)
     {
         m_wasAttached = true;

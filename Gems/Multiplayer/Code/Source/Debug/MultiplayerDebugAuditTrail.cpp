@@ -23,7 +23,7 @@ namespace Multiplayer
 {
     constexpr char DESYNC_TITLE[] = "Desync on %s";
     constexpr char INPUT_TITLE[] = "%s Inputs";
-    constexpr char EVENT_TITLE[] = "Developer Event: %s";
+    constexpr char EVENT_TITLE[] = "DevEvent on %s";
 
     MultiplayerDebugAuditTrail::MultiplayerDebugAuditTrail()
         : m_updateDebugOverlay([this]() { UpdateDebugOverlay(); }, AZ::Name("UpdateAuditTrail"))
@@ -84,7 +84,29 @@ namespace Multiplayer
                     const char* nodeTitle = elem->m_category == MultiplayerAuditCategory::MP_AUDIT_DESYNC
                         ? DESYNC_TITLE
                         : (elem->m_category == MultiplayerAuditCategory::MP_AUDIT_INPUT ? INPUT_TITLE : EVENT_TITLE);
-                    if (ImGui::TreeNodeEx(
+
+                    // Draw Events as a single line entry, they should only have one line item
+                    if (elem->m_category == MultiplayerAuditCategory::MP_AUDIT_EVENT)
+                    {
+                        if (elem->m_children.size() > 0 && elem->m_children.front().elements.size() > 0)
+                        {
+                            AZStd::pair<AZStd::string, AZStd::string> cliServValues =
+                                elem->m_children.front().elements.front()->GetClientServerValues();
+                            ImGui::TreeNodeEx(
+                                AZStd::string::format(nodeTitle, elem->m_name.c_str()).c_str(),
+                                (ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_SpanFullWidth));
+                            ImGui::TableNextColumn();
+                            ImGui::Text("%s", cliServValues.first.c_str());
+                            ImGui::TableNextColumn();
+                            ImGui::Text("%s", cliServValues.second.c_str());
+                            ImGui::TableNextColumn();
+                            ImGui::Text("%d", elem->m_inputId);
+                            ImGui::TableNextColumn();
+                            ImGui::Text("%d", elem->m_hostFrameId);
+                        }
+                    }
+                    // Draw desyncs and inputs as a collapsable node, they can contain multiple line items
+                    else if (ImGui::TreeNodeEx(
                             AZStd::string::format(nodeTitle, elem->m_name.c_str()).c_str(),
                             ImGuiTreeNodeFlags_SpanFullWidth))
                     {

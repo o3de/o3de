@@ -64,6 +64,10 @@ namespace Multiplayer
         //! @return value in const base type form
         const BASE_TYPE& GetPrevious() const;
 
+        //! Const base type retriever for value at last known authoritative update or the nearest to it.
+        //! @return value in const base type form
+        const BASE_TYPE& GetAuthority() const;
+
         //! Base type retriever.
         //! @return value in base type form
         BASE_TYPE& Modify();
@@ -111,6 +115,7 @@ namespace Multiplayer
         AzNetworking::ConnectionId m_owningConnectionId = AzNetworking::InvalidConnectionId;
         HostFrameId m_headTime = HostFrameId{0};
         uint32_t m_headIndex = 0;
+        uint32_t m_authIndex = 0;
     };
 }
 

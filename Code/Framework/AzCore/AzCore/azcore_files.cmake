@@ -298,6 +298,8 @@ set(FILES
     Math/MathReflection.h
     Math/MathScriptHelpers.cpp
     Math/MathScriptHelpers.h
+    Math/MathStringConversions.cpp
+    Math/MathStringConversions.h
     Math/MathUtils.cpp
     Math/MathUtils.h
     Math/MathMatrixSerializer.h

@@ -10,6 +10,7 @@
 
 #include <Multiplayer/NetworkEntity/NetworkEntityHandle.h>
 #include <Multiplayer/NetworkInput/IMultiplayerComponentInput.h>
+#include <Multiplayer/IMultiplayerDebug.h>
 #include <Multiplayer/NetworkTime/INetworkTime.h>
 #include <AzCore/RTTI/TypeSafeIntegral.h>
 
@@ -54,6 +55,8 @@ namespace Multiplayer
 
         void LogComponentInputDelta() const;
         AZStd::vector<MultiplayerAuditingElement> GetComponentInputDeltaLogs() const;
+
+        const AZStd::string GetOwnerName() const;
 
         const IMultiplayerComponentInput* FindComponentInput(NetComponentId componentId) const;
         IMultiplayerComponentInput* FindComponentInput(NetComponentId componentId);
