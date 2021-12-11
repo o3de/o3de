@@ -31,7 +31,8 @@
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/std/string/conversions.h>
 
-using namespace AZ;
+namespace AZ
+{
 
 /**
  * Script lifecycle:
@@ -44,17 +45,16 @@ using namespace AZ;
  *      If the script was loaded by a ScriptComponent, Load will be called once reload is complete.
  */
 
-namespace
-{
-    // Called when a module has already been loaded
-    static int LuaRequireLoadedModule(lua_State* l)
-    {
-        // Push value to top of stack
-        lua_pushvalue(l, lua_upvalueindex(1));
 
-        return 1;
-    }
+// Called when a module has already been loaded
+static int LuaRequireLoadedModule(lua_State* l)
+{
+    // Push value to top of stack
+    lua_pushvalue(l, lua_upvalueindex(1));
+
+    return 1;
 }
+
 
 //=========================================================================
 // ScriptSystemComponent
@@ -996,4 +996,5 @@ void ScriptSystemComponent::Reflect(ReflectContext* reflection)
     }
 }
 
+} // namespace AZ
 #endif // #if !defined(AZCORE_EXCLUDE_LUA)

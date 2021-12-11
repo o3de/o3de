@@ -25,10 +25,8 @@ extern "C" {
 
 namespace AZ
 {
+    
     void LuaHook(lua_State* l, lua_Debug* ar);
-}
-
-using namespace AZ;
 
 /**
  * A temp class that will override the current script context error handler and store the error (without any messages)
@@ -597,7 +595,7 @@ static ScriptContextDebug::BreakpointId MakeBreakpointId(const char* sourceName,
 // LuaHook
 // [6/28/2012]
 //=========================================================================
-void AZ::LuaHook(lua_State* l, lua_Debug* ar)
+void LuaHook(lua_State* l, lua_Debug* ar)
 {
     // Read contexts
     lua_rawgeti(l, LUA_REGISTRYINDEX, AZ_LUA_SCRIPT_CONTEXT_REF);
@@ -1535,5 +1533,7 @@ ScriptContextDebug::SetValue(const DebugValue& sourceValue)
 
     return true;
 }
+
+} // namespace AZ
 
 #endif // #if !defined(AZCORE_EXCLUDE_LUA)
