@@ -250,10 +250,10 @@ float DirectionalLightShadow::GetVisibilityFromLightPcf()
             float currentPixelsBlendBandLocation;
             const float blendBetweenCascadesAmount = CalculateCascadeBlendAmount(m_shadowCoords[currentCascadeIndex].xyz);
 
+            const int nextCascadeIndex = currentCascadeIndex + 1;
             [branch]
-            if (blendBetweenCascadesAmount < 1.0f)
+            if (blendBetweenCascadesAmount < 1.0f && nextCascadeIndex < cascadeCount)
             {
-                const int nextCascadeIndex = min ( cascadeCount - 1, currentCascadeIndex + 1 ); 
                 const float nextLit = SamplePcfBicubic(m_shadowCoords[nextCascadeIndex], nextCascadeIndex);
                 lit = lerp(nextLit, lit, blendBetweenCascadesAmount);             
             }
