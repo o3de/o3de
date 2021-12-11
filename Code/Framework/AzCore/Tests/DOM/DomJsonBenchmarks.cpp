@@ -50,7 +50,7 @@ namespace Benchmark
             UnitTest::AllocatorsBenchmarkFixture::TearDown(st);
         }
 
-        AZStd::string GenerateDomJsonBenchmarkPayload(int64_t entryCount, int64_t stringTemplateLength)
+        rapidjson::Document GenerateDomJsonBenchmarkDocument(int64_t entryCount, int64_t stringTemplateLength)
         {
             rapidjson::Document document;
             document.SetObject();
@@ -108,6 +108,13 @@ namespace Benchmark
             document.SetObject();
             document.AddMember("entries", createObject(), document.GetAllocator());
 
+            return document;
+        }
+
+        AZStd::string GenerateDomJsonBenchmarkPayload(int64_t entryCount, int64_t stringTemplateLength)
+        {
+            rapidjson::Document document = GenerateDomJsonBenchmarkDocument(entryCount, stringTemplateLength);
+
             AZStd::string serializedJson;
             auto result = AZ::JsonSerializationUtils::WriteJsonString(document, serializedJson);
             AZ_Assert(result.IsSuccess(), "Failed to serialize generated JSON");
@@ -124,7 +131,7 @@ namespace Benchmark
         ->Args({ 100, 500 })                                                                                                               \
         ->Unit(benchmark::kMillisecond);
 
-    BENCHMARK_DEFINE_F(DomJsonBenchmark, DomDeserializeToDocumentInPlace)(benchmark::State& state)
+    BENCHMARK_DEFINE_F(DomJsonBenchmark, AzDomDeserializeToRapidjsonInPlace)(benchmark::State& state)
     {
         AZ::Dom::JsonBackend backend;
         AZStd::string serializedPayload = GenerateDomJsonBenchmarkPayload(state.range(0), state.range(1));
@@ -146,9 +153,9 @@ namespace Benchmark
 
         state.SetBytesProcessed(serializedPayload.size() * state.iterations());
     }
-    BENCHMARK_REGISTER_JSON(DomJsonBenchmark, DomDeserializeToDocumentInPlace)
+    BENCHMARK_REGISTER_JSON(DomJsonBenchmark, AzDomDeserializeToRapidjsonInPlace)
 
-    BENCHMARK_DEFINE_F(DomJsonBenchmark, DomDeserializeToDomValueInPlace)(benchmark::State& state)
+    BENCHMARK_DEFINE_F(DomJsonBenchmark, AzDomDeserializeToAzDomValueInPlace)(benchmark::State& state)
     {
         AZ::Dom::JsonBackend backend;
         AZStd::string serializedPayload = GenerateDomJsonBenchmarkPayload(state.range(0), state.range(1));
@@ -170,9 +177,9 @@ namespace Benchmark
 
         state.SetBytesProcessed(serializedPayload.size() * state.iterations());
     }
-    BENCHMARK_REGISTER_JSON(DomJsonBenchmark, DomDeserializeToDomValueInPlace)
+    BENCHMARK_REGISTER_JSON(DomJsonBenchmark, AzDomDeserializeToAzDomValueInPlace)
 
-    BENCHMARK_DEFINE_F(DomJsonBenchmark, DomDeserializeToDocument)(benchmark::State& state)
+    BENCHMARK_DEFINE_F(DomJsonBenchmark, AzDomDeserializeToRapidjson)(benchmark::State& state)
     {
         AZ::Dom::JsonBackend backend;
         AZStd::string serializedPayload = GenerateDomJsonBenchmarkPayload(state.range(0), state.range(1));
@@ -190,9 +197,29 @@ namespace Benchmark
 
         state.SetBytesProcessed(serializedPayload.size() * state.iterations());
     }
-    BENCHMARK_REGISTER_JSON(DomJsonBenchmark, DomDeserializeToDocument)
+    BENCHMARK_REGISTER_JSON(DomJsonBenchmark, AzDomDeserializeToRapidjson)
 
-    BENCHMARK_DEFINE_F(DomJsonBenchmark, JsonUtilsDeserializeToDocument)(benchmark::State& state)
+    BENCHMARK_DEFINE_F(DomJsonBenchmark, AzDomDeserializeToAzDomValue)(benchmark::State& state)
+    {
+        AZ::Dom::JsonBackend backend;
+        AZStd::string serializedPayload = GenerateDomJsonBenchmarkPayload(state.range(0), state.range(1));
+
+        for (auto _ : state)
+        {
+            auto result = AZ::Dom::Utils::WriteToValue(
+                [&](AZ::Dom::Visitor& visitor)
+                {
+                    return AZ::Dom::Utils::ReadFromString(backend, serializedPayload, AZ::Dom::Lifetime::Temporary, visitor);
+                });
+
+            benchmark::DoNotOptimize(result.GetValue());
+        }
+
+        state.SetBytesProcessed(serializedPayload.size() * state.iterations());
+    }
+    BENCHMARK_REGISTER_JSON(DomJsonBenchmark, AzDomDeserializeToAzDomValue)
+
+    BENCHMARK_DEFINE_F(DomJsonBenchmark, RapidjsonDeserializeToRapidjson)(benchmark::State& state)
     {
         AZ::Dom::JsonBackend backend;
         AZStd::string serializedPayload = GenerateDomJsonBenchmarkPayload(state.range(0), state.range(1));
@@ -206,9 +233,9 @@ namespace Benchmark
 
         state.SetBytesProcessed(serializedPayload.size() * state.iterations());
     }
-    BENCHMARK_REGISTER_JSON(DomJsonBenchmark, JsonUtilsDeserializeToDocument)
+    BENCHMARK_REGISTER_JSON(DomJsonBenchmark, RapidjsonDeserializeToRapidjson)
 
-    BENCHMARK_DEFINE_F(DomJsonBenchmark, RapidjsonPayloadGeneration)(benchmark::State& state)
+    BENCHMARK_DEFINE_F(DomJsonBenchmark, RapidjsonMakeComplexObject)(benchmark::State& state)
     {
         for (auto _ : state)
         {
@@ -217,7 +244,44 @@ namespace Benchmark
 
         state.SetItemsProcessed(state.range(0) * state.range(0) * state.iterations());
     }
-    BENCHMARK_REGISTER_JSON(DomJsonBenchmark, RapidjsonPayloadGeneration)
+    BENCHMARK_REGISTER_JSON(DomJsonBenchmark, RapidjsonMakeComplexObject)
+
+    BENCHMARK_DEFINE_F(DomJsonBenchmark, RapidjsonLookupMemberByString)(benchmark::State& state)
+    {
+        rapidjson::Document document(rapidjson::kObjectType);
+        AZStd::vector<AZStd::string> keys;
+        for (int64_t i = 0; i < state.range(0); ++i)
+        {
+            AZStd::string key(AZStd::string::format("key%" PRId64, i));
+            keys.push_back(key);
+            document.AddMember(rapidjson::Value(key.data(), static_cast<rapidjson::SizeType>(key.size()), document.GetAllocator()), rapidjson::Value(i), document.GetAllocator());
+        }
+
+        for (auto _ : state)
+        {
+            for (const AZStd::string& key : keys)
+            {
+                benchmark::DoNotOptimize(document.FindMember(key.data()));
+            }
+        }
+
+        state.SetItemsProcessed(state.iterations() * state.range(0));
+    }
+    BENCHMARK_REGISTER_F(DomJsonBenchmark, RapidjsonLookupMemberByString)->Arg(100)->Arg(1000)->Arg(10000)->Unit(benchmark::kMillisecond);
+
+    BENCHMARK_DEFINE_F(DomJsonBenchmark, RapidjsonDeepCopy)(benchmark::State& state)
+    {
+        rapidjson::Document original = GenerateDomJsonBenchmarkDocument(state.range(0), state.range(1));
+
+        for (auto _ : state)
+        {
+            rapidjson::Document copy;
+            original.Accept(copy);
+        }
+
+        state.SetItemsProcessed(state.iterations());
+    }
+    BENCHMARK_REGISTER_JSON(DomJsonBenchmark, RapidjsonDeepCopy)
 
 #undef BENCHMARK_REGISTER_JSON
 } // namespace Benchmark
