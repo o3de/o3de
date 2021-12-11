@@ -127,6 +127,7 @@ namespace AZ::Dom
         Value(const Value&);
         Value(Value&&) noexcept;
         Value(AZStd::string_view string, bool copy);
+        Value(AZStd::shared_ptr<AZStd::string> string);
 
         Value(int32_t value);
         Value(uint32_t value);
@@ -281,6 +282,7 @@ namespace AZ::Dom
         AZStd::string_view GetString() const;
         size_t GetStringLength() const;
         void SetString(AZStd::string_view);
+        void SetString(AZStd::shared_ptr<AZStd::string>);
         void CopyFromString(AZStd::string_view);
 
         // opaque type API...

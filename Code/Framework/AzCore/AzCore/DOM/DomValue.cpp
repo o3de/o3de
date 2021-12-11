@@ -61,6 +61,11 @@ namespace AZ::Dom
         return m_children;
     }
 
+    Value::Value(AZStd::shared_ptr<AZStd::string> string)
+        : m_value(string)
+    {
+    }
+
     Value::Value()
     {
     }
@@ -895,6 +900,11 @@ namespace AZ::Dom
         m_value = aznumeric_cast<double>(value);
     }
 
+    void Value::SetString(AZStd::shared_ptr<AZStd::string> string)
+    {
+        m_value = string;
+    }
+
     AZStd::string_view Value::GetString() const
     {
         switch (m_value.index())
@@ -992,7 +1002,7 @@ namespace AZ::Dom
                 }
                 else if constexpr (AZStd::is_same_v<Alternative, AZStd::shared_ptr<AZStd::string>>)
                 {
-                    result = visitor.String(*arg, copyStrings ? Lifetime::Temporary : Lifetime::Persistent);
+                    result = visitor.RefCountedString(arg, copyStrings ? Lifetime::Temporary : Lifetime::Persistent);
                 }
                 else if constexpr (AZStd::is_same_v<Alternative, ObjectPtr>)
                 {

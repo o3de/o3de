@@ -105,6 +105,11 @@ namespace AZ::Dom
         return VisitorSuccess();
     }
 
+    Visitor::Result Visitor::RefCountedString(AZStd::shared_ptr<AZStd::string> value, Lifetime lifetime)
+    {
+        return String(*value, lifetime);
+    }
+
     Visitor::Result Visitor::OpaqueValue([[maybe_unused]] const OpaqueType& value, [[maybe_unused]] Lifetime lifetime)
     {
         if (!SupportsOpaqueValues())

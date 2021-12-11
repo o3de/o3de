@@ -9,6 +9,7 @@
 #include <AzCore/DOM/DomValue.h>
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <cinttypes>
 
 namespace AZ::Dom::Benchmark
 {
@@ -99,7 +100,7 @@ namespace AZ::Dom::Benchmark
         }
     };
 
-    BENCHMARK_DEFINE_F(DomValueBenchmark, ValuePayloadGeneration)(benchmark::State& state)
+    BENCHMARK_DEFINE_F(DomValueBenchmark, AzDomValueMakeComplexObject)(benchmark::State& state)
     {
         for (auto _ : state)
         {
@@ -108,10 +109,115 @@ namespace AZ::Dom::Benchmark
 
         state.SetItemsProcessed(state.range(0) * state.range(0) * state.iterations());
     }
-    BENCHMARK_REGISTER_F(DomValueBenchmark, ValuePayloadGeneration)
+    BENCHMARK_REGISTER_F(DomValueBenchmark, AzDomValueMakeComplexObject)
         ->Args({ 10, 5 })
         ->Args({ 10, 500 })
         ->Args({ 100, 5 })
         ->Args({ 100, 500 })
         ->Unit(benchmark::kMillisecond);
+
+    BENCHMARK_DEFINE_F(DomValueBenchmark, AzDomValueShallowCopy)(benchmark::State& state)
+    {
+        Value original = GenerateDomBenchmarkPayload(state.range(0), state.range(1));
+
+        for (auto _ : state)
+        {
+            Value copy = original;
+            benchmark::DoNotOptimize(copy);
+        }
+
+        state.SetItemsProcessed(state.iterations());
+    }
+    BENCHMARK_REGISTER_F(DomValueBenchmark, AzDomValueShallowCopy)
+        ->Args({ 10, 5 })
+        ->Args({ 10, 500 })
+        ->Args({ 100, 5 })
+        ->Args({ 100, 500 })
+        ->Unit(benchmark::kNanosecond);
+
+    BENCHMARK_DEFINE_F(DomValueBenchmark, AzDomValueShallowCopyAndMutate)(benchmark::State& state)
+    {
+        Value original = GenerateDomBenchmarkPayload(state.range(0), state.range(1));
+
+        for (auto _ : state)
+        {
+            Value copy = original;
+            copy["entries"]["Key0"].PushBack(42);
+            benchmark::DoNotOptimize(copy);
+        }
+
+        state.SetItemsProcessed(state.iterations());
+    }
+    BENCHMARK_REGISTER_F(DomValueBenchmark, AzDomValueShallowCopyAndMutate)
+        ->Args({ 10, 5 })
+        ->Args({ 10, 500 })
+        ->Args({ 100, 5 })
+        ->Args({ 100, 500 })
+        ->Unit(benchmark::kNanosecond);
+
+    BENCHMARK_DEFINE_F(DomValueBenchmark, AzDomValueDeepCopy)(benchmark::State& state)
+    {
+        Value original = GenerateDomBenchmarkPayload(state.range(0), state.range(1));
+
+        for (auto _ : state)
+        {
+            Value copy = original.DeepCopy();
+            benchmark::DoNotOptimize(copy);
+        }
+
+        state.SetItemsProcessed(state.iterations());
+    }
+    BENCHMARK_REGISTER_F(DomValueBenchmark, AzDomValueDeepCopy)
+        ->Args({ 10, 5 })
+        ->Args({ 10, 500 })
+        ->Args({ 100, 5 })
+        ->Args({ 100, 500 })
+        ->Unit(benchmark::kMillisecond);
+
+    BENCHMARK_DEFINE_F(DomValueBenchmark, LookupMemberByName)(benchmark::State& state)
+    {
+        Value value(Type::ObjectType);
+        AZStd::vector<AZ::Name> keys;
+        for (int64_t i = 0; i < state.range(0); ++i)
+        {
+            AZ::Name key(AZStd::string::format("key%" PRId64, i));
+            keys.push_back(key);
+            value[key] = i;
+        }
+
+        for (auto _ : state)
+        {
+            for (const AZ::Name& key : keys)
+            {
+                benchmark::DoNotOptimize(value[key]);
+            }
+        }
+
+        state.SetItemsProcessed(state.iterations() * state.range(0));
+    }
+    BENCHMARK_REGISTER_F(DomValueBenchmark, LookupMemberByName)->Arg(100)->Arg(1000)->Arg(10000)->Unit(benchmark::kMillisecond);
+
+    BENCHMARK_DEFINE_F(DomValueBenchmark, LookupMemberByString)(benchmark::State& state)
+    {
+        Value value(Type::ObjectType);
+        AZStd::vector<AZStd::string> keys;
+        for (int64_t i = 0; i < state.range(0); ++i)
+        {
+            AZStd::string key(AZStd::string::format("key%" PRId64, i));
+            keys.push_back(key);
+            value[key] = i;
+        }
+
+        for (auto _ : state)
+        {
+            for (const AZStd::string& key : keys)
+            {
+                benchmark::DoNotOptimize(value[key]);
+            }
+        }
+
+        state.SetItemsProcessed(state.iterations() * state.range(0));
+    }
+    BENCHMARK_REGISTER_F(DomValueBenchmark, LookupMemberByString)->Arg(100)->Arg(1000)->Arg(10000)->Unit(benchmark::kMillisecond);
+
 } // namespace AZ::Dom::Benchmark

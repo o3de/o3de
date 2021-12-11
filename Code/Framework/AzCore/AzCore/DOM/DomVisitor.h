@@ -12,6 +12,7 @@
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/any.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 
 namespace AZ::Dom
 {
@@ -170,6 +171,7 @@ namespace AZ::Dom
         //! Operates on a string value. As strings are a reference type.
         //! Storage semantics are provided to indicate where the value may be stored persistently or requires a copy.
         virtual Result String(AZStd::string_view value, Lifetime lifetime);
+        virtual Result RefCountedString(AZStd::shared_ptr<AZStd::string> value, Lifetime lifetime);
         //! Operates on an opaque value. As opaque values are a reference type, storage semantics are provided to
         //! indicate where the value may be stored persistently or requires a copy.
         //! The base implementation of OpaqueValue rejects the operation, as opaque values are meant for special
