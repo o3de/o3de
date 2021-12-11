@@ -12,6 +12,7 @@
 #include <AzCore/DOM/DomVisitor.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/PoolAllocator.h>
+#include <AzCore/Memory/HphaSchema.h>
 #include <AzCore/std/containers/stack.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/variant.h>
@@ -36,21 +37,19 @@ namespace AZ::Dom
         OpaqueType = 8,
     };
 
-    class ValueAllocator final : public ThreadPoolBase<ValueAllocator, false>
+    class ValueAllocator final : public SimpleSchemaAllocator<AZ::HphaSchema, AZ::HphaSchema::Descriptor, false, false>
     {
     public:
-        AZ_CLASS_ALLOCATOR(ValueAllocator, SystemAllocator, 0);
         AZ_TYPE_INFO(ValueAllocator, "{5BC8B389-72C7-459E-B502-12E74D61869F}");
 
+        using Base = SimpleSchemaAllocator<AZ::HphaSchema, AZ::HphaSchema::Descriptor, false, false>;
+
         ValueAllocator()
-            : ThreadPoolBase<ValueAllocator, false>("DomValueAllocator", "Allocator for AZ::Dom::Value")
+            : Base("DomValueAllocator", "Allocator for AZ::Dom::Value")
         {
+            DisableOverriding();
         }
     };
-
-    // class ValueAllocator : public Internal::PoolAllocatorHelper<PoolScema
-
-    // using ValueAllocator = ThreadPoolAllocator;
 
     class Value;
 
