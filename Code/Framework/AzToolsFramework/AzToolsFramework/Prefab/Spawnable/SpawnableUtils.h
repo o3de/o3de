@@ -41,23 +41,7 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
         AzToolsFramework::Prefab::PrefabConversionUtils::EntityAliasSpawnableLoadBehavior loadBehavior,
         uint32_t tag,
         AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext& context);
-    AZ::Entity* CreateEntityAlias(
-        AZStd::string sourcePrefabName,
-        AzToolsFramework::Prefab::Instance& source,
-        AzFramework::Spawnable& target,
-        AZ::EntityId entityId,
-        AzToolsFramework::Prefab::PrefabConversionUtils::EntityAliasType aliasType,
-        AzToolsFramework::Prefab::PrefabConversionUtils::EntityAliasSpawnableLoadBehavior loadBehavior,
-        uint32_t tag,
-        AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext& context);
-    AZ::Entity* CreateEntityAlias(
-        AzFramework::Spawnable& source,
-        AzFramework::Spawnable& target,
-        AZ::EntityId entityId,
-        AzToolsFramework::Prefab::PrefabConversionUtils::EntityAliasType aliasType,
-        AzToolsFramework::Prefab::PrefabConversionUtils::EntityAliasSpawnableLoadBehavior loadBehavior,
-        uint32_t tag,
-        AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext& context);
+    void PatchParents(const AzToolsFramework::Prefab::Instance& source, AzToolsFramework::Prefab::Instance& target);
 
     uint32_t FindEntityIndex(AZ::EntityId entity, const AzFramework::Spawnable& spawnable);
 
