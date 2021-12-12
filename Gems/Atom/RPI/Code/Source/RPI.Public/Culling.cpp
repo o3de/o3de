@@ -267,7 +267,7 @@ namespace AZ
             return m_visScene->GetEntryCount();
         }
 
-        
+
         struct WorklistData
         {
             CullingDebugContext* m_debugCtx = nullptr;
@@ -296,13 +296,13 @@ namespace AZ
 #endif
             return worklistData;
         }
-            
+
         constexpr size_t WorkListCapacity = 5;
         using WorkListType = AZStd::fixed_vector<AzFramework::IVisibilityScene::NodeData, WorkListCapacity>;
 
 #if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
         static MaskedOcclusionCulling::CullingResult TestOcclusionCulling(
-                    const AZStd::shared_ptr<WorklistData>& worklistData, 
+                    const AZStd::shared_ptr<WorklistData>& worklistData,
                     AzFramework::VisibilityEntry* visibleEntry);
 #endif
 
@@ -320,8 +320,8 @@ namespace AZ
             for (const AzFramework::IVisibilityScene::NodeData& nodeData : worklist)
             {
                 //If a node is entirely contained within the frustum, then we can skip the fine grained culling.
-                bool nodeIsContainedInFrustum = 
-                    !worklistData->m_debugCtx->m_enableFrustumCulling || 
+                bool nodeIsContainedInFrustum =
+                    !worklistData->m_debugCtx->m_enableFrustumCulling ||
                     ShapeIntersection::Contains(worklistData->m_frustum, nodeData.m_bounds);
 
 #ifdef AZ_CULL_PROFILE_VERBOSE
@@ -460,12 +460,14 @@ namespace AZ
                 cullStats.m_numVisibleCullables += numVisibleCullables;
                 ++cullStats.m_numJobs;
             }
+#else
+            (void)numDrawPackets; // prevent unused variable warning->error
 #endif //AZ_CULL_DEBUG_ENABLED
         }
 
 #if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
         static MaskedOcclusionCulling::CullingResult TestOcclusionCulling(
-            const AZStd::shared_ptr<WorklistData>& worklistData, 
+            const AZStd::shared_ptr<WorklistData>& worklistData,
             AzFramework::VisibilityEntry* visibleEntry)
         {
             if (!worklistData->m_maskedOcclusionCulling)
@@ -527,9 +529,9 @@ namespace AZ
 #endif
 
         void CullingScene::ProcessCullablesCommon(
-            const Scene& scene [[maybe_unused]], 
-            View& view, 
-            AZ::Frustum& frustum [[maybe_unused]], 
+            const Scene& scene [[maybe_unused]],
+            View& view,
+            AZ::Frustum& frustum [[maybe_unused]],
             void*& maskedOcclusionCulling [[maybe_unused]])
         {
             AZ_PROFILE_SCOPE(RPI, "CullingScene::ProcessCullablesCommon() - %s", view.GetName().GetCStr());
@@ -898,7 +900,7 @@ namespace AZ
                         {
                             const Matrix4x4& worldToClip = viewPtr->GetWorldToClipMatrix();
                             Frustum frustum = Frustum::CreateFromMatrixColumnMajor(worldToClip, Frustum::ReverseDepth::True);
-                            m_debugCtx.m_frozenFrustums.insert({ viewPtr.get(), frustum });                            
+                            m_debugCtx.m_frozenFrustums.insert({ viewPtr.get(), frustum });
                         }
                     }
                 }
@@ -911,7 +913,7 @@ namespace AZ
         }
 
         void CullingScene::EndCulling()
-        {            
+        {
             m_cullDataConcurrencyCheck.soft_unlock();
         }
 

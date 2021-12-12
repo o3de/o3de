@@ -15,14 +15,18 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
+#include <AzCore/std/any.h>
 
 // These Streamer includes need to be moved to Streamer internals/implementation,
 // and pull out only what we need for visibility at IStreamer.h interface declaration.
 #include <AzCore/IO/Streamer/Statistics.h>
-#include <AzCore/IO/Streamer/FileRequest.h>
 
 namespace AZ::IO
 {
+    class ExternalFileRequest;
+    class FileRequestHandle;
+
+    using FileRequestPtr = AZStd::intrusive_ptr<ExternalFileRequest>;
     /**
      * Data Streamer Interface
      */

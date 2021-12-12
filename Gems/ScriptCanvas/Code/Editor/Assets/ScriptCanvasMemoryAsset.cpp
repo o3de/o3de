@@ -10,11 +10,14 @@
 #include "ScriptCanvasMemoryAsset.h"
 #include "ScriptCanvasUndoHelper.h"
 
-#include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
+#include <AzCore/IO/Streamer/StreamerContext.h>
+#include <AzCore/IO/Streamer/FileRequest.h>
+#include <AzCore/IO/IStreamer.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <ScriptCanvas/Asset/ScriptCanvasAssetBase.h>
-#include <ScriptCanvas/Components/EditorGraph.h>
 #include <Editor/Assets/ScriptCanvasAssetTrackerBus.h>
+#include <ScriptCanvas/Asset/ScriptCanvasAssetBase.h>
+#include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
+#include <ScriptCanvas/Components/EditorGraph.h>
 
 namespace ScriptCanvasEditor
 {

@@ -7,11 +7,61 @@
  */
 
 #include <AzCore/Asset/AssetDataStream.h>
+#include <AzCore/Memory/Memory.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Debug/Profiler.h>
+#include <AzCore/IO/IStreamer.h>
+
+#include <AzCore/IO/Streamer/FileRequest.h>
+#include <AzCore/std/parallel/condition_variable.h>
 
 namespace AZ::Data
 {
+    namespace Internal
+    {
+        struct AssetDataStreamPrivate
+        {
+            //! Optional data buffer that's been directly passed in through Open(), instead of reading data from a file.
+            AZStd::vector<AZ::u8> m_preloadedData;
+            //! The current active streamer read request - tracked in case we need to cancel it prematurely
+            AZ::IO::FileRequestPtr m_curReadRequest{ nullptr };
+
+            //! Synchronization for the read request, so that it's possible to block until completion.
+            AZStd::mutex m_readRequestMutex;
+            AZStd::condition_variable m_readRequestActive;
+
+            void SetReadRequest(AZ::IO::FileRequestPtr&& req)
+            {
+                AZStd::scoped_lock<AZStd::mutex> lock(m_readRequestMutex);
+                // The read request finished, so stop tracking it.
+                m_curReadRequest = AZStd::move(req);
+            }
+            void BlockUntilReadComplete()
+            {
+                AZStd::unique_lock<AZStd::mutex> lock(m_readRequestMutex);
+                m_readRequestActive.wait(
+                    lock,
+                    [this]
+                    {
+                        return m_curReadRequest == nullptr;
+                    });
+                lock.unlock();
+            }
+            void CancelRequest()
+            {
+                AZStd::scoped_lock<AZStd::mutex> lock(m_readRequestMutex);
+                if (m_curReadRequest)
+                {
+                    auto streamer = Interface<IO::IStreamer>::Get();
+                    m_curReadRequest = streamer->Cancel(m_curReadRequest);
+                }
+            }
+        };
+    } // namespace Internal
     AssetDataStream::AssetDataStream(AZ::IO::IStreamerTypes::RequestMemoryAllocator* bufferAllocator)
         : m_bufferAllocator(bufferAllocator ? bufferAllocator : &m_defaultAllocator)
+        , m_privateData(new Internal::AssetDataStreamPrivate)
     {
         ClearInternalStateData();
     }
@@ -22,6 +72,7 @@ namespace AZ::Data
         {
             Close();
         }
+        delete m_privateData;
     }
 
 
@@ -53,9 +104,9 @@ namespace AZ::Data
         OpenInternal(data.size(), "(mem buffer)");
 
         // Directly take ownership of the provided buffer
-        m_preloadedData = AZStd::move(data);
-        m_buffer = m_preloadedData.data();
-        m_loadedSize = m_preloadedData.size();
+        m_privateData->m_preloadedData = AZStd::move(data);
+        m_buffer = m_privateData->m_preloadedData.data();
+        m_loadedSize = m_privateData->m_preloadedData.size();
     }
 
     void AssetDataStream::Open(const AZStd::string& filePath, size_t fileOffset, size_t assetSize,
@@ -65,7 +116,7 @@ namespace AZ::Data
         AZ_PROFILE_FUNCTION(AzCore);
 
         AZ_Assert(!m_isOpen, "Attempting to open the stream when it is already open.");
-        AZ_Assert(!m_curReadRequest, "Queueing an asset stream load while one is still in progress.");
+        AZ_Assert(!m_privateData->m_curReadRequest, "Queueing an asset stream load while one is still in progress.");
         AZ_Assert(!filePath.empty(), "AssetDataStream::Open called without a valid file name.");
 
         // Initialize the state variables and start tracking the overall load timings
@@ -97,11 +148,8 @@ namespace AZ::Data
                          "Buffer for %s was expected to be %zu bytes, but is %zu bytes.",
                          m_filePath.c_str(), m_requestedAssetSize, m_loadedSize);
 
-                {
-                    AZStd::scoped_lock<AZStd::mutex> lock(m_readRequestMutex);
-                    // The read request finished, so stop tracking it.
-                    m_curReadRequest = nullptr;
-                }
+                // The read request finished, so stop tracking it.
+                m_privateData->SetReadRequest(nullptr);
 
                 // Call the load callback to start processing the loaded data.
                 if (loadCallback)
@@ -115,21 +163,22 @@ namespace AZ::Data
                 }
 
                 // Notify that the load is complete, in case anyone is using BlockUntilLoadComplete to block.
-                m_readRequestActive.notify_one();
+                m_privateData->m_readRequestActive.notify_one();
             };
 
             // Queue the raw file load with the file streamer.
             auto streamer = AZ::Interface<AZ::IO::IStreamer>::Get();
-            m_curReadRequest = streamer->Read(
+            m_privateData->m_curReadRequest =
+                streamer->Read(
                 m_filePath,
                 *m_bufferAllocator,
                 m_requestedAssetSize,
                 deadline, priority, m_fileOffset);
             m_curDeadline = deadline;
             m_curPriority = priority;
-            streamer->SetRequestCompleteCallback(m_curReadRequest, streamerCallback);
+            streamer->SetRequestCompleteCallback(m_privateData->m_curReadRequest, streamerCallback);
 
-            streamer->QueueRequest(m_curReadRequest);
+            streamer->QueueRequest(m_privateData->m_curReadRequest);
         }
         else
         {
@@ -139,19 +188,19 @@ namespace AZ::Data
                 loadCallback(AZ::IO::IStreamerTypes::RequestStatus::Completed);
             }
 
-            m_readRequestActive.notify_one();
+            m_privateData->m_readRequestActive.notify_one();
         }
     }
 
     void AssetDataStream::Reschedule(AZStd::chrono::milliseconds newDeadline, AZ::IO::IStreamerTypes::Priority newPriority)
     {
-        if (m_curReadRequest && (newDeadline < m_curDeadline || newPriority > m_curPriority))
+        if (m_privateData->m_curReadRequest && (newDeadline < m_curDeadline || newPriority > m_curPriority))
         {
             auto deadline = AZStd::GetMin(m_curDeadline, newDeadline);
             auto priority = AZStd::GetMax(m_curPriority, newPriority);
 
             auto streamer = Interface<IO::IStreamer>::Get();
-            m_curReadRequest = streamer->RescheduleRequest(m_curReadRequest, deadline, priority);
+            m_privateData->m_curReadRequest = streamer->RescheduleRequest(m_privateData->m_curReadRequest, deadline, priority);
             m_curDeadline = deadline;
             m_curPriority = priority;
         }
@@ -159,15 +208,13 @@ namespace AZ::Data
 
     void AssetDataStream::BlockUntilLoadComplete()
     {
-        AZStd::unique_lock<AZStd::mutex> lock(m_readRequestMutex);
-        m_readRequestActive.wait(lock, [this] { return m_curReadRequest == nullptr; });
-        lock.unlock();
+        m_privateData->BlockUntilReadComplete();
     }
 
     void AssetDataStream::ClearInternalStateData()
     {
         // Clear all our internal state data.
-        m_preloadedData.resize(0);
+        m_privateData->m_preloadedData.resize(0);
         m_buffer = nullptr;
         m_loadedSize = 0;
         m_requestedAssetSize = 0;
@@ -204,10 +251,10 @@ namespace AZ::Data
     void AssetDataStream::Close()
     {
         AZ_Assert(m_isOpen, "Attempting to close a stream that hasn't been opened.");
-        AZ_Assert(m_curReadRequest == nullptr, "Attempting to close a stream with a read request in flight.");
+        AZ_Assert(m_privateData->m_curReadRequest == nullptr, "Attempting to close a stream with a read request in flight.");
 
         // Destroy the asset buffer and unlock the allocator, so the allocator itself knows that it is no longer needed.
-        if (m_buffer != m_preloadedData.data())
+        if (m_buffer != m_privateData->m_preloadedData.data())
         {
             m_bufferAllocator->Release(m_buffer);
         }
@@ -221,12 +268,7 @@ namespace AZ::Data
 
     void AssetDataStream::RequestCancel()
     {
-        AZStd::scoped_lock<AZStd::mutex> lock(m_readRequestMutex);
-        if (m_curReadRequest)
-        {
-            auto streamer = Interface<IO::IStreamer>::Get();
-            m_curReadRequest = streamer->Cancel(m_curReadRequest);
-        }
+        m_privateData->CancelRequest();
     }
 
     void AssetDataStream::Seek(AZ::IO::OffsetType bytes, AZ::IO::GenericStream::SeekMode mode)
