@@ -221,11 +221,12 @@ namespace ImageProcessingAtom
         return STRING_OUTCOME_SUCCESS;
     }
 
-    MultiplatformTextureSettings TextureSettings::GenerateDefaultMultiplatformTextureSettings(const AZStd::string& imageFilepath)
+    MultiplatformTextureSettings TextureSettings::GenerateDefaultMultiplatformTextureSettings(
+        const AZStd::string& imageFilepath, IImageObjectPtr image)
     {
         MultiplatformTextureSettings settings;
         PlatformNameList platformsList = BuilderSettingManager::Instance()->GetPlatformList();
-        PresetName suggestedPreset = BuilderSettingManager::Instance()->GetSuggestedPreset(imageFilepath);
+        PresetName suggestedPreset = BuilderSettingManager::Instance()->GetSuggestedPreset(imageFilepath, image);
         for (PlatformName& platform : platformsList)
         {
             TextureSettings textureSettings;
@@ -292,7 +293,8 @@ namespace ImageProcessingAtom
         return loadedSettingsReturn;
     }
 
-    const MultiplatformTextureSettings TextureSettings::GetMultiplatformTextureSetting(const AZStd::string& imageFilepath, bool& canOverridePreset, AZ::SerializeContext* serializeContext)
+    const MultiplatformTextureSettings TextureSettings::GetMultiplatformTextureSetting(
+        const AZStd::string& imageFilepath, bool& canOverridePreset, AZ::SerializeContext* serializeContext, IImageObjectPtr image)
     {
         TextureSettings loadedTextureSetting;
 
@@ -317,7 +319,7 @@ namespace ImageProcessingAtom
             }
         }
 
-        return GenerateDefaultMultiplatformTextureSettings(imageFilepath);
+        return GenerateDefaultMultiplatformTextureSettings(imageFilepath, image);
     }
 
     StringOutcome TextureSettings::ApplySettings(const TextureSettings& settings, const PlatformName& overridePlatform, AZ::SerializeContext* serializeContext)

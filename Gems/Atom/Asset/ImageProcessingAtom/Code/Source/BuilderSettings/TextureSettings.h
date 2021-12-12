@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/DataPatch.h>
+#include <Atom/ImageProcessing/ImageObject.h>
 
 namespace ImageProcessingAtom
 {
@@ -93,7 +94,8 @@ namespace ImageProcessingAtom
         static StringOutcome WriteTextureSetting(const AZStd::string& filepath, TextureSettings& textureSetting, AZ::SerializeContext* serializeContext = nullptr);
 
         // Generates a MultiplatformTextureSettings collection with default texture settings for all
-        static MultiplatformTextureSettings GenerateDefaultMultiplatformTextureSettings(const AZStd::string& imageFilepath);
+        static MultiplatformTextureSettings GenerateDefaultMultiplatformTextureSettings(
+            const AZStd::string& imageFilepath, IImageObjectPtr image = nullptr);
 
         /**
         * Generates a TextureSetting instance of a particular image file for each supported platform.
@@ -102,7 +104,11 @@ namespace ImageProcessingAtom
         * @param serializeContext - Optional. Serialize context used for reflection/serialization
         * @return - The collection of TextureSetting instances. If error occurs, a default MultiplatformTextureSettings is returned (see GenerateDefaultMultiplatformTextureSettings()).
         */
-        static const MultiplatformTextureSettings GetMultiplatformTextureSetting(const AZStd::string& filepath, bool& canOverridePreset, AZ::SerializeContext* serializeContext = nullptr);
+        static const MultiplatformTextureSettings GetMultiplatformTextureSetting(
+            const AZStd::string& filepath,
+            bool& canOverridePreset,
+            AZ::SerializeContext* serializeContext = nullptr,
+            IImageObjectPtr image = nullptr);
         
         /**
         * Generates a TextureSetting instance of a particular image file for each supported platform.

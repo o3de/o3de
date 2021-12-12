@@ -95,7 +95,7 @@ namespace ImageProcessingAtom
         //! @param imageFilePath: Filepath string of the image file. The function may load the image from the path for better detection
         //! @param image: an optional image object which can be used for preset selection if there is no match based file mask.
         //! @return suggested preset name.
-        PresetName GetSuggestedPreset(AZStd::string_view imageFilePath) const;
+        PresetName GetSuggestedPreset(AZStd::string_view imageFilePath, IImageObjectPtr image = nullptr) const;
 
         //! Get the possible preset config's full file paths
         //! This function is only used for setting up image's source dependency if a preset file is missing

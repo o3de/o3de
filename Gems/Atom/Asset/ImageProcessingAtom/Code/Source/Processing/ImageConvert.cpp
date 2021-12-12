@@ -747,13 +747,21 @@ namespace ImageProcessingAtom
     ImageConvertProcess* CreateImageConvertProcess(const AZStd::string& imageFilePath, const AZStd::string& exportDir
         , const PlatformName& platformName, AZStd::vector<AssetBuilderSDK::JobProduct>& jobProducts, AZ::SerializeContext* context)
     {
+        // Load image. Do it earlier so GetSuggestedPreset function could use the information of file to choose better preset
+        IImageObjectPtr srcImage(LoadImageFromFile(imageFilePath));
+        if (srcImage == nullptr)
+        {
+            AZ_Error("Image Processing", false, "Load image file %s failed", imageFilePath.c_str());
+            return nullptr;
+        }
+
         AZStd::unique_ptr<ImageConvertProcessDescriptor> desc = AZStd::make_unique<ImageConvertProcessDescriptor>();
 
         TextureSettings& textureSettings = desc->m_textureSetting;
         MultiplatformTextureSettings multiTextureSetting;
         bool canOverridePreset = false;
 
-        multiTextureSetting = TextureSettings::GetMultiplatformTextureSetting(imageFilePath, canOverridePreset, context);
+        multiTextureSetting = TextureSettings::GetMultiplatformTextureSetting(imageFilePath, canOverridePreset, context, srcImage);
         if (multiTextureSetting.size() == 0)
         {
             AZ_Error("Image Processing", false, "Failed to generate texture setting");
@@ -777,13 +785,6 @@ namespace ImageProcessingAtom
             }
         }
 
-        // Load image. Do it earlier so GetSuggestedPreset function could use the information of file to choose better preset
-        IImageObjectPtr srcImage(LoadImageFromFile(imageFilePath));
-        if (srcImage == nullptr)
-        {
-            AZ_Error("Image Processing", false, "Load image file %s failed", imageFilePath.c_str());
-            return nullptr;
-        }
 
         // if get textureSetting failed, use the default texture setting, and find suitable preset for this file
         // in very rare user case, an old texture setting file may not have a preset. We fix it over here too. 

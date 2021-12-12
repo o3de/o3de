@@ -616,7 +616,7 @@ namespace ImageProcessingAtom
         return m_presets.find(presetName) != m_presets.end();
     }
 
-    PresetName BuilderSettingManager::GetSuggestedPreset(AZStd::string_view imageFilePath) const
+    PresetName BuilderSettingManager::GetSuggestedPreset(AZStd::string_view imageFilePath, IImageObjectPtr image) const
     {
         PresetName emptyPreset;
 
@@ -637,14 +637,9 @@ namespace ImageProcessingAtom
         }
 
         if (outPreset == emptyPreset)
-        {        
-            auto image = IImageObjectPtr(LoadImageFromFile(imageFilePath));
-            if (image->GetAlphaContent() == EAlphaContent::eAlphaContent_Absent
-                || image->GetAlphaContent() == EAlphaContent::eAlphaContent_OnlyWhite)
-            {
-                outPreset = m_defaultPreset;
-            }
-            else
+        {
+            outPreset = m_defaultPreset;
+            if (image != nullptr && image->GetAlphaContent() != EAlphaContent::eAlphaContent_Absent)
             {
                 outPreset = m_defaultPresetAlpha;
             }
