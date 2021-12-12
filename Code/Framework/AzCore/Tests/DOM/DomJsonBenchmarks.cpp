@@ -276,12 +276,30 @@ namespace Benchmark
         for (auto _ : state)
         {
             rapidjson::Document copy;
-            original.Accept(copy);
+            copy.CopyFrom(original, copy.GetAllocator(), true);
+            benchmark::DoNotOptimize(copy);
         }
 
         state.SetItemsProcessed(state.iterations());
     }
+
     BENCHMARK_REGISTER_JSON(DomJsonBenchmark, RapidjsonDeepCopy)
+
+    BENCHMARK_DEFINE_F(DomJsonBenchmark, RapidjsonCopyAndMutate)(benchmark::State& state)
+    {
+        rapidjson::Document original = GenerateDomJsonBenchmarkDocument(state.range(0), state.range(1));
+
+        for (auto _ : state)
+        {
+            rapidjson::Document copy;
+            copy.CopyFrom(original, copy.GetAllocator(), true);
+            copy["entries"]["Key0"].PushBack(42, copy.GetAllocator());
+            benchmark::DoNotOptimize(copy);
+        }
+
+        state.SetItemsProcessed(state.iterations());
+    }
+    BENCHMARK_REGISTER_JSON(DomJsonBenchmark, RapidjsonCopyAndMutate)
 
 #undef BENCHMARK_REGISTER_JSON
 } // namespace Benchmark
