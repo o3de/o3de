@@ -1433,7 +1433,9 @@ namespace LUAEditor
             return;
         }
 
+#if !(defined(AZ_PLATFORM_LINUX))
         AZStd::to_lower(const_cast<AZStd::string&>(assetId).begin(), const_cast<AZStd::string&>(assetId).end());
+#endif
 
         ShowLUAEditorView();
 
