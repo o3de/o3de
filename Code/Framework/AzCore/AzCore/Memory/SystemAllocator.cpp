@@ -36,8 +36,8 @@
 #endif
 
 
-using namespace AZ;
-
+namespace AZ
+{
 //////////////////////////////////////////////////////////////////////////
 // Globals - we use global storage for the first memory schema, since we can't use dynamic memory!
 static bool g_isSystemSchemaUsed = false;
@@ -313,4 +313,6 @@ SystemAllocator::AllocationSize(pointer_type ptr)
     size_type allocSize = MemorySizeAdjustedDown(m_allocator->AllocationSize(ptr));
 
     return allocSize;
+}
+
 }

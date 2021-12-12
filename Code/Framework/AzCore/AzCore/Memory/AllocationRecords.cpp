@@ -16,8 +16,11 @@
 
 #include <AzCore/Debug/StackTracer.h>
 
-using namespace AZ;
-using namespace AZ::Debug;
+namespace AZ 
+{
+
+namespace Debug
+{
 
 // Many PC tools break with alloc/free size mismatches when the memory guard is enabled.  Disable for now
 //#define ENABLE_MEMORY_GUARD
@@ -518,4 +521,8 @@ PrintAllocationsCB::operator()(void* address, const AllocationInfo& info, unsign
         }
     }
     return true; // continue enumerating
+}
+
+}
+
 }

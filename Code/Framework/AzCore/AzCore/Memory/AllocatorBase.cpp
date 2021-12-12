@@ -9,7 +9,8 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/AllocatorManager.h>
 
-using namespace AZ;
+namespace AZ
+{
 
 AllocatorBase::AllocatorBase(IAllocatorAllocate* allocationSource, const char* name, const char* desc) :
     IAllocator(allocationSource),
@@ -196,4 +197,6 @@ bool AllocatorBase::OnOutOfMemory(size_t byteSize, size_t alignment, int flags, 
         return true;
     }
     return false;
+}
+
 }

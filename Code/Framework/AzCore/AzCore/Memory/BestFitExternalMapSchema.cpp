@@ -9,8 +9,9 @@
 #include <AzCore/Memory/BestFitExternalMapSchema.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
-using namespace AZ;
-
+namespace AZ
+{
+    
 //=========================================================================
 // BestFitExternalMapSchema
 // [1/28/2011]
@@ -199,4 +200,6 @@ BestFitExternalMapSchema::GarbageCollect()
             ++curBlock;
         }
     }
+}
+
 }

@@ -325,8 +325,8 @@ namespace AZ
     };
 }
 
-using namespace AZ;
-
+namespace AZ
+{
 //=========================================================================
 // PoolAllocation
 // [9/09/2009]
@@ -1401,4 +1401,6 @@ ThreadPoolData::~ThreadPoolData()
     {
         m_allocator.DeAllocate(fakeLFNode);
     }
+}
+
 }

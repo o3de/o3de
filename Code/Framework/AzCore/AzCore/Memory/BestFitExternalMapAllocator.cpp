@@ -13,7 +13,8 @@
 
 #include <AzCore/std/functional.h>
 
-using namespace AZ;
+namespace AZ 
+{
 
 //=========================================================================
 // BestFitExternalMapAllocator
@@ -195,4 +196,6 @@ IAllocatorAllocate*
 BestFitExternalMapAllocator::GetSubAllocator()
 {
     return m_schema->GetSubAllocator();
+}
+
 }
