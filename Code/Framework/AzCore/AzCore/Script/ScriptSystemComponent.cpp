@@ -45,14 +45,16 @@ namespace AZ
  *      If the script was loaded by a ScriptComponent, Load will be called once reload is complete.
  */
 
+namespace LocalTU_ScriptSystemComponent {
+    // Called when a module has already been loaded
+    static int LuaRequireLoadedModule(lua_State* l)
+    {
+        // Push value to top of stack
+        lua_pushvalue(l, lua_upvalueindex(1));
 
-// Called when a module has already been loaded
-static int LuaRequireLoadedModule(lua_State* l)
-{
-    // Push value to top of stack
-    lua_pushvalue(l, lua_upvalueindex(1));
+        return 1;
+    }
 
-    return 1;
 }
 
 
@@ -479,7 +481,7 @@ int ScriptSystemComponent::DefaultRequireHook(lua_State* lua, ScriptContext* con
         scriptIt->second.m_scriptNames.emplace(module);
         // Push the value to a closure that will just return it
         lua_rawgeti(lua, LUA_REGISTRYINDEX, scriptIt->second.m_tableReference);
-        lua_pushcclosure(lua, LuaRequireLoadedModule, 1);
+        lua_pushcclosure(lua, LocalTU_ScriptSystemComponent::LuaRequireLoadedModule, 1);
 
         // If asset reference already populated, just return now. Otherwise, capture reference
         if (scriptIt->second.m_scriptAsset.GetId().IsValid())
@@ -519,7 +521,7 @@ int ScriptSystemComponent::DefaultRequireHook(lua_State* lua, ScriptContext* con
     }
 
     // Push function returning the result
-    lua_pushcclosure(lua, LuaRequireLoadedModule, 1);
+    lua_pushcclosure(lua, LocalTU_ScriptSystemComponent::LuaRequireLoadedModule, 1);
 
     // Set asset reference on the loaded script
     scriptIt = container->m_loadedScripts.find(scriptId.m_guid);
@@ -565,7 +567,7 @@ int ScriptSystemComponent::InMemoryRequireHook(lua_State* lua, ScriptContext* co
         scriptIt->second.m_scriptNames.emplace(module);
         // Push the value to a closure that will just return it
         lua_rawgeti(lua, LUA_REGISTRYINDEX, scriptIt->second.m_tableReference);
-        lua_pushcclosure(lua, LuaRequireLoadedModule, 1);
+        lua_pushcclosure(lua, LocalTU_ScriptSystemComponent::LuaRequireLoadedModule, 1);
 
         // If asset reference already populated, just return now. Otherwise, capture reference
         if (scriptIt->second.m_scriptAsset.GetId().IsValid())
@@ -591,7 +593,7 @@ int ScriptSystemComponent::InMemoryRequireHook(lua_State* lua, ScriptContext* co
     }
 
     // Push function returning the result
-    lua_pushcclosure(lua, LuaRequireLoadedModule, 1);
+    lua_pushcclosure(lua, LocalTU_ScriptSystemComponent::LuaRequireLoadedModule, 1);
 
     // Set asset reference on the loaded script
     scriptIt = container->m_loadedScripts.find(scriptId.m_guid);
