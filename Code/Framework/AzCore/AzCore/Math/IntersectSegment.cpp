@@ -8,8 +8,8 @@
 
 #include <AzCore/Math/IntersectSegment.h>
 
-using namespace AZ;
-using namespace Intersect;
+namespace AZ 
+{
 
 //=========================================================================
 // IntersectSegmentTriangleCCW
@@ -158,7 +158,7 @@ Intersect::IntersectSegmentTriangle(
 // [10/21/2009]
 //=========================================================================
 bool
-AZ::Intersect::TestSegmentAABBOrigin(const Vector3& midPoint, const Vector3& halfVector, const Vector3& aabbExtends)
+Intersect::TestSegmentAABBOrigin(const Vector3& midPoint, const Vector3& halfVector, const Vector3& aabbExtends)
 {
     const Vector3 EPSILON(0.001f); // \todo this is slow load move to a const
     Vector3 absHalfVector = halfVector.GetAbs();
@@ -200,8 +200,8 @@ AZ::Intersect::TestSegmentAABBOrigin(const Vector3& midPoint, const Vector3& hal
 // IntersectRayAABB
 // [10/21/2009]
 //=========================================================================
-RayAABBIsectTypes
-AZ::Intersect::IntersectRayAABB(
+Intersect::RayAABBIsectTypes
+Intersect::IntersectRayAABB(
     const Vector3& rayStart, const Vector3& dir, const Vector3& dirRCP, const Aabb& aabb,
     float& tStart, float& tEnd, Vector3& startNormal /*, Vector3& inter*/)
 {
@@ -356,8 +356,8 @@ AZ::Intersect::IntersectRayAABB(
 // IntersectRayAABB2
 // [2/18/2011]
 //=========================================================================
-RayAABBIsectTypes
-AZ::Intersect::IntersectRayAABB2(const Vector3& rayStart, const Vector3& dirRCP, const Aabb& aabb, float& start, float& end)
+Intersect::RayAABBIsectTypes
+Intersect::IntersectRayAABB2(const Vector3& rayStart, const Vector3& dirRCP, const Aabb& aabb, float& start, float& end)
 {
     float tmin, tmax, tymin, tymax, tzmin, tzmax;
     Vector3 vZero = Vector3::CreateZero();
@@ -408,7 +408,7 @@ AZ::Intersect::IntersectRayAABB2(const Vector3& rayStart, const Vector3& dirRCP,
     return ISECT_RAY_AABB_ISECT;
 }
 
-bool AZ::Intersect::IntersectRayDisk(
+bool Intersect::IntersectRayDisk(
     const Vector3& rayOrigin, const Vector3& rayDir, const Vector3& diskCenter, const float diskRadius, const Vector3& diskNormal, float& t)
 {
     // First intersect with the plane of the disk
@@ -428,7 +428,7 @@ bool AZ::Intersect::IntersectRayDisk(
 }
 
 // Reference: Real-Time Collision Detection - 5.3.7 Intersecting Ray or Segment Against Cylinder, and the book's errata.
-int AZ::Intersect::IntersectRayCappedCylinder(
+int Intersect::IntersectRayCappedCylinder(
     const Vector3& rayOrigin, const Vector3& rayDir,
     const Vector3& cylinderEnd1, const Vector3& cylinderDir,
     float cylinderHeight, float cylinderRadius, float &t1, float &t2)
@@ -625,7 +625,7 @@ int AZ::Intersect::IntersectRayCappedCylinder(
     }
 }
 
-int AZ::Intersect::IntersectRayCone(
+int Intersect::IntersectRayCone(
     const Vector3& rayOrigin, const Vector3& rayDir,
     const Vector3& coneApex, const Vector3& coneDir, float coneHeight,
     float coneBaseRadius, float& t1, float& t2)
@@ -923,7 +923,7 @@ int AZ::Intersect::IntersectRayCone(
     }
 }
 
-int AZ::Intersect::IntersectRayPlane(const Vector3& rayOrigin, const Vector3& rayDir, const Vector3& planePos, const Vector3& planeNormal, float& t)
+int Intersect::IntersectRayPlane(const Vector3& rayOrigin, const Vector3& rayDir, const Vector3& planePos, const Vector3& planeNormal, float& t)
 {
     // (rayOrigin + t * rayDir - planePos).dot(planeNormal) = 0
 
@@ -946,7 +946,7 @@ int AZ::Intersect::IntersectRayPlane(const Vector3& rayOrigin, const Vector3& ra
     }
 }
 
-int AZ::Intersect::IntersectRayQuad(
+int Intersect::IntersectRayQuad(
     const Vector3& rayOrigin, const Vector3& rayDir, const Vector3& vertexA,
     const Vector3& vertexB, const Vector3& vertexC, const Vector3& vertexD, float& t)
 {
@@ -1012,7 +1012,7 @@ int AZ::Intersect::IntersectRayQuad(
 }
 
 // reference: Real-Time Collision Detection, 5.3.3 Intersecting Ray or Segment Against Box
-bool AZ::Intersect::IntersectRayBox(
+bool Intersect::IntersectRayBox(
     const Vector3& rayOrigin, const Vector3& rayDir, const Vector3& boxCenter, const Vector3& boxAxis1,
     const Vector3& boxAxis2, const Vector3& boxAxis3, float boxHalfExtent1, float boxHalfExtent2, float boxHalfExtent3, float& t)
 {
@@ -1155,9 +1155,9 @@ bool AZ::Intersect::IntersectRayBox(
     return true;
 }
 
-bool AZ::Intersect::IntersectRayObb(const Vector3& rayOrigin, const Vector3& rayDir, const Obb& obb, float& t)
+bool Intersect::IntersectRayObb(const Vector3& rayOrigin, const Vector3& rayDir, const Obb& obb, float& t)
 {
-    return AZ::Intersect::IntersectRayBox(rayOrigin, rayDir, obb.GetPosition(),
+    return Intersect::IntersectRayBox(rayOrigin, rayDir, obb.GetPosition(),
         obb.GetAxisX(), obb.GetAxisY(), obb.GetAxisZ(),
         obb.GetHalfLengthX(), obb.GetHalfLengthY(), obb.GetHalfLengthZ(), t);
 }
@@ -1166,8 +1166,8 @@ bool AZ::Intersect::IntersectRayObb(const Vector3& rayOrigin, const Vector3& ray
 // IntersectSegmentCylinder
 // [10/21/2009]
 //=========================================================================
-CylinderIsectTypes
-AZ::Intersect::IntersectSegmentCylinder(
+Intersect::CylinderIsectTypes
+Intersect::IntersectSegmentCylinder(
     const Vector3& sa, const Vector3& dir, const Vector3& p, const Vector3& q, const float r, float& t)
 {
     const float epsilon = 0.001f;
@@ -1294,8 +1294,8 @@ AZ::Intersect::IntersectSegmentCylinder(
 // IntersectSegmentCapsule
 // [10/21/2009]
 //=========================================================================
-CapsuleIsectTypes
-AZ::Intersect::IntersectSegmentCapsule(const Vector3& sa, const Vector3& dir, const Vector3& p, const Vector3& q, const float r, float& t)
+Intersect::CapsuleIsectTypes
+Intersect::IntersectSegmentCapsule(const Vector3& sa, const Vector3& dir, const Vector3& p, const Vector3& q, const float r, float& t)
 {
     int result = IntersectSegmentCylinder(sa, dir, p, q, r, t);
 
@@ -1362,7 +1362,7 @@ AZ::Intersect::IntersectSegmentCapsule(const Vector3& sa, const Vector3& dir, co
 // [10/21/2009]
 //=========================================================================
 bool
-AZ::Intersect::IntersectSegmentPolyhedron(
+Intersect::IntersectSegmentPolyhedron(
     const Vector3& sa, const Vector3& dir, const Plane p[], int numPlanes,
     float& tfirst, float& tlast, int& iFirstPlane, int& iLastPlane)
 {
@@ -1437,7 +1437,7 @@ AZ::Intersect::IntersectSegmentPolyhedron(
 // [10/21/2009]
 //=========================================================================
 void
-AZ::Intersect::ClosestSegmentSegment(
+Intersect::ClosestSegmentSegment(
     const Vector3& segment1Start, const Vector3& segment1End,
     const Vector3& segment2Start, const Vector3& segment2End,
     float& segment1Proportion, float& segment2Proportion, 
@@ -1516,21 +1516,21 @@ AZ::Intersect::ClosestSegmentSegment(
     closestPointSegment2 = segment2Start + segment2 * segment2Proportion;
 }
 
-void AZ::Intersect::ClosestSegmentSegment(
+void Intersect::ClosestSegmentSegment(
     const Vector3& segment1Start, const Vector3& segment1End,
     const Vector3& segment2Start, const Vector3& segment2End,
     Vector3& closestPointSegment1, Vector3& closestPointSegment2,
     float epsilon)
 {
     float proportion1, proportion2;
-    AZ::Intersect::ClosestSegmentSegment(
+    Intersect::ClosestSegmentSegment(
         segment1Start, segment1End,
         segment2Start, segment2End,
         proportion1, proportion2,
         closestPointSegment1, closestPointSegment2, epsilon);
 }
 
-void AZ::Intersect::ClosestPointSegment(
+void Intersect::ClosestPointSegment(
     const Vector3& point, const Vector3& segmentStart, const Vector3& segmentEnd,
     float& proportion, Vector3& closestPointOnSegment)
 {
@@ -2121,3 +2121,5 @@ namespace test
 }
 //////////////////////////////////////////////////////////////////////////
 #endif
+
+}

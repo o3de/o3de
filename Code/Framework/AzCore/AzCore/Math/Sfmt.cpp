@@ -295,12 +295,13 @@ namespace AZ::SfmtInternal
 #endif
 } // namespace AZ::SfmtInternal
 
-using namespace AZ;
 
 //////////////////////////////////////////////////////////////////////////
 // Statics
 //////////////////////////////////////////////////////////////////////////
 
+namespace AZ 
+{
 
 static EnvironmentVariable<AZ::Sfmt> s_sfmt;
 static const char* s_globalSfmtName = "GlobalSfmt";
@@ -610,4 +611,6 @@ int
 Sfmt::GetMinArray64Size() const
 {
     return SfmtInternal::N64;
+}
+
 }
