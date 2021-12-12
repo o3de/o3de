@@ -20,7 +20,7 @@
 namespace MaterialEditor
 {
     CreateMaterialDialog::CreateMaterialDialog(QWidget* parent)
-        : CreateMaterialDialog(QString(AZ::Utils::GetProjectPath().c_str()) + AZ_CORRECT_FILESYSTEM_SEPARATOR + "Materials", parent)
+        : CreateMaterialDialog(QString(AZ::Utils::GetProjectPath().c_str()) + AZ_CORRECT_FILESYSTEM_SEPARATOR + "Assets", parent)
     {
     }
 

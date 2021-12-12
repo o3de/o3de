@@ -108,7 +108,7 @@ namespace MaterialEditor
             {
                 const QString defaultPath = AtomToolsFramework::GetUniqueFileInfo(
                     QString(AZ::Utils::GetProjectPath().c_str()) +
-                    AZ_CORRECT_FILESYSTEM_SEPARATOR + "Materials" +
+                    AZ_CORRECT_FILESYSTEM_SEPARATOR + "Assets" +
                     AZ_CORRECT_FILESYSTEM_SEPARATOR + "untitled." +
                     AZ::RPI::MaterialSourceData::Extension).absoluteFilePath();
 
@@ -184,7 +184,7 @@ namespace MaterialEditor
             {
                 const QString defaultPath = AtomToolsFramework::GetUniqueFileInfo(
                     QString(AZ::Utils::GetProjectPath().c_str()) +
-                    AZ_CORRECT_FILESYSTEM_SEPARATOR + "Materials" +
+                    AZ_CORRECT_FILESYSTEM_SEPARATOR + "Assets" +
                     AZ_CORRECT_FILESYSTEM_SEPARATOR + "untitled." +
                     AZ::RPI::MaterialSourceData::Extension).absoluteFilePath();
 

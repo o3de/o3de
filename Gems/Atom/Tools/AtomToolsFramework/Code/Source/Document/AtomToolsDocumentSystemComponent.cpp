@@ -179,6 +179,8 @@ namespace AtomToolsFramework
     {
         for (const AZ::Uuid& documentId : m_documentIdsWithExternalChanges)
         {
+            m_documentIdsWithDependencyChanges.erase(documentId);
+
             AZStd::string documentPath;
             AtomToolsDocumentRequestBus::EventResult(documentPath, documentId, &AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
 
@@ -190,8 +192,6 @@ namespace AtomToolsFramework
             {
                 continue;
             }
-
-            m_documentIdsWithDependencyChanges.erase(documentId);
 
             AtomToolsFramework::TraceRecorder traceRecorder(m_maxMessageBoxLineCount);
 
