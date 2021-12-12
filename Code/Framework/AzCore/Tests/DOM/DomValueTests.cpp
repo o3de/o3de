@@ -79,7 +79,7 @@ namespace AZ::Dom::Tests
         m_value.SetArray();
         for (int j = 0; j < 5; ++j)
         {
-            Value nestedArray(Type::ArrayType);
+            Value nestedArray(Type::Array);
             for (int i = 0; i < 5; ++i)
             {
                 nestedArray.PushBack(Value(i));
@@ -127,7 +127,7 @@ namespace AZ::Dom::Tests
         m_value.SetObject();
         for (int j = 0; j < 3; ++j)
         {
-            Value nestedObject(Type::ObjectType);
+            Value nestedObject(Type::Object);
             for (int i = 0; i < 5; ++i)
             {
                 nestedObject.AddMember(AZStd::string::format("Key%i", i), Value(i));
@@ -189,7 +189,7 @@ namespace AZ::Dom::Tests
 
         for (int i = 0; i < 5; ++i)
         {
-            Value childNode(Type::NodeType);
+            Value childNode(Type::Node);
             childNode.SetNodeName(childNodeName);
             childNode.SetNodeValue(i);
 
@@ -218,9 +218,9 @@ namespace AZ::Dom::Tests
         m_value["int64_min"] = AZStd::numeric_limits<int64_t>::min();
         m_value["int64_max"] = AZStd::numeric_limits<int64_t>::max();
 
-        EXPECT_EQ(m_value["int64_min"].GetType(), Type::NumberType);
+        EXPECT_EQ(m_value["int64_min"].GetType(), Type::Number);
         EXPECT_EQ(m_value["int64_min"].GetInt64(), AZStd::numeric_limits<int64_t>::min());
-        EXPECT_EQ(m_value["int64_max"].GetType(), Type::NumberType);
+        EXPECT_EQ(m_value["int64_max"].GetType(), Type::Number);
         EXPECT_EQ(m_value["int64_max"].GetInt64(), AZStd::numeric_limits<int64_t>::max());
 
         PerformValueChecks();
@@ -232,9 +232,9 @@ namespace AZ::Dom::Tests
         m_value["uint64_min"] = AZStd::numeric_limits<uint64_t>::min();
         m_value["uint64_max"] = AZStd::numeric_limits<uint64_t>::max();
 
-        EXPECT_EQ(m_value["uint64_min"].GetType(), Type::NumberType);
+        EXPECT_EQ(m_value["uint64_min"].GetType(), Type::Number);
         EXPECT_EQ(m_value["uint64_min"].GetInt64(), AZStd::numeric_limits<uint64_t>::min());
-        EXPECT_EQ(m_value["uint64_max"].GetType(), Type::NumberType);
+        EXPECT_EQ(m_value["uint64_max"].GetType(), Type::Number);
         EXPECT_EQ(m_value["uint64_max"].GetInt64(), AZStd::numeric_limits<uint64_t>::max());
 
         PerformValueChecks();
@@ -246,9 +246,9 @@ namespace AZ::Dom::Tests
         m_value["double_min"] = AZStd::numeric_limits<double>::min();
         m_value["double_max"] = AZStd::numeric_limits<double>::max();
 
-        EXPECT_EQ(m_value["double_min"].GetType(), Type::NumberType);
+        EXPECT_EQ(m_value["double_min"].GetType(), Type::Number);
         EXPECT_EQ(m_value["double_min"].GetDouble(), AZStd::numeric_limits<double>::min());
-        EXPECT_EQ(m_value["double_max"].GetType(), Type::NumberType);
+        EXPECT_EQ(m_value["double_max"].GetType(), Type::Number);
         EXPECT_EQ(m_value["double_max"].GetDouble(), AZStd::numeric_limits<double>::max());
 
         PerformValueChecks();
@@ -257,9 +257,9 @@ namespace AZ::Dom::Tests
     TEST_F(DomValueTests, Null)
     {
         m_value.SetObject();
-        m_value["null_value"] = Value(Type::NullType);
+        m_value["null_value"] = Value(Type::Null);
 
-        EXPECT_EQ(m_value["null_value"].GetType(), Type::NullType);
+        EXPECT_EQ(m_value["null_value"].GetType(), Type::Null);
         EXPECT_EQ(m_value["null_type"], Value());
 
         PerformValueChecks();
@@ -271,9 +271,9 @@ namespace AZ::Dom::Tests
         m_value["true_value"] = true;
         m_value["false_value"] = false;
 
-        EXPECT_EQ(m_value["true_value"].GetType(), Type::TrueType);
+        EXPECT_EQ(m_value["true_value"].GetType(), Type::True);
         EXPECT_EQ(m_value["true_value"].GetBool(), true);
-        EXPECT_EQ(m_value["false_value"].GetType(), Type::FalseType);
+        EXPECT_EQ(m_value["false_value"].GetType(), Type::False);
         EXPECT_EQ(m_value["false_value"].GetBool(), false);
 
         PerformValueChecks();
@@ -290,12 +290,12 @@ namespace AZ::Dom::Tests
         AZStd::string stringToCopy = s2;
         m_value["copy"] = Value(stringToCopy, true);
 
-        EXPECT_EQ(m_value["no_copy"].GetType(), Type::StringType);
+        EXPECT_EQ(m_value["no_copy"].GetType(), Type::String);
         EXPECT_EQ(m_value["no_copy"].GetString(), s1);
         stringToReference.at(0) = 'F';
         EXPECT_NE(m_value["no_copy"].GetString(), s1);
 
-        EXPECT_EQ(m_value["copy"].GetType(), Type::StringType);
+        EXPECT_EQ(m_value["copy"].GetType(), Type::String);
         EXPECT_EQ(m_value["copy"].GetString(), s2);
         stringToCopy.at(0) = 'F';
         EXPECT_EQ(m_value["copy"].GetString(), s2);
@@ -305,10 +305,10 @@ namespace AZ::Dom::Tests
 
     TEST_F(DomValueTests, CopyOnWrite_Object)
     {
-        Value v1(Type::ObjectType);
+        Value v1(Type::Object);
         v1["foo"] = 5;
 
-        Value nestedObject(Type::ObjectType);
+        Value nestedObject(Type::Object);
         v1["obj"] = nestedObject;
 
         Value v2 = v1;
@@ -333,11 +333,11 @@ namespace AZ::Dom::Tests
 
     TEST_F(DomValueTests, CopyOnWrite_Array)
     {
-        Value v1(Type::ArrayType);
+        Value v1(Type::Array);
         v1.PushBack(1);
         v1.PushBack(2);
 
-        Value nestedArray(Type::ArrayType);
+        Value nestedArray(Type::Array);
         v1.PushBack(nestedArray);
         Value v2 = v1;
 

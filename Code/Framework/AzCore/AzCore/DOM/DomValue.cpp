@@ -141,31 +141,31 @@ namespace AZ::Dom
     {
         switch (type)
         {
-        case Type::NullType:
+        case Type::Null:
             // Null is the default initialized value
             break;
-        case Type::FalseType:
+        case Type::False:
             m_value = false;
             break;
-        case Type::TrueType:
+        case Type::True:
             m_value = true;
             break;
-        case Type::ObjectType:
+        case Type::Object:
             SetObject();
             break;
-        case Type::ArrayType:
+        case Type::Array:
             SetArray();
             break;
-        case Type::StringType:
+        case Type::String:
             SetString("");
             break;
-        case Type::NumberType:
+        case Type::Number:
             m_value = 0.0;
             break;
-        case Type::NodeType:
+        case Type::Node:
             SetNode("");
             break;
-        case Type::OpaqueType:
+        case Type::Opaque:
             AZ_Assert(false, "AZ::Dom::Value may not be constructed with an empty opaque type");
             break;
         }
@@ -225,43 +225,43 @@ namespace AZ::Dom
         switch (m_value.index())
         {
         case 0: // AZStd::monostate
-            return Type::NullType;
+            return Type::Null;
         case 1: // int64_t
         case 2: // uint64_t
         case 3: // double
-            return Type::NumberType;
+            return Type::Number;
         case 4: // bool
-            return AZStd::get<bool>(m_value) ? Type::TrueType : Type::FalseType;
+            return AZStd::get<bool>(m_value) ? Type::True : Type::False;
         case 5: // AZStd::string_view
         case 6: // AZStd::shared_ptr<AZStd::string>
         case 7: // ShortStringType
-            return Type::StringType;
+            return Type::String;
         case 8: // ObjectPtr
-            return Type::ObjectType;
+            return Type::Object;
         case 9: // ArrayPtr
-            return Type::ArrayType;
+            return Type::Array;
         case 10: // NodePtr
-            return Type::NodeType;
+            return Type::Node;
         case 11: // AZStd::any*
-            return Type::OpaqueType;
+            return Type::Opaque;
         }
         AZ_Assert(false, "AZ::Dom::Value::GetType: m_value has an unexpected type");
-        return Type::NullType;
+        return Type::Null;
     }
 
     bool Value::IsNull() const
     {
-        return GetType() == Type::NullType;
+        return GetType() == Type::Null;
     }
 
     bool Value::IsFalse() const
     {
-        return GetType() == Type::FalseType;
+        return GetType() == Type::False;
     }
 
     bool Value::IsTrue() const
     {
-        return GetType() == Type::TrueType;
+        return GetType() == Type::True;
     }
 
     bool Value::IsBool() const
@@ -271,27 +271,27 @@ namespace AZ::Dom
 
     bool Value::IsNode() const
     {
-        return GetType() == Type::NodeType;
+        return GetType() == Type::Node;
     }
 
     bool Value::IsObject() const
     {
-        return GetType() == Type::ObjectType;
+        return GetType() == Type::Object;
     }
 
     bool Value::IsArray() const
     {
-        return GetType() == Type::ArrayType;
+        return GetType() == Type::Array;
     }
 
     bool Value::IsOpaqueValue() const
     {
-        return GetType() == Type::OpaqueType;
+        return GetType() == Type::Opaque;
     }
 
     bool Value::IsNumber() const
     {
-        return GetType() == Type::NumberType;
+        return GetType() == Type::Number;
     }
 
     bool Value::IsInt() const
@@ -311,7 +311,7 @@ namespace AZ::Dom
 
     bool Value::IsString() const
     {
-        return GetType() == Type::StringType;
+        return GetType() == Type::String;
     }
 
     Value& Value::SetObject()
@@ -322,13 +322,13 @@ namespace AZ::Dom
 
     const Node& Value::GetNodeInternal() const
     {
-        AZ_Assert(GetType() == Type::NodeType, "AZ::Dom::Value: attempted to retrieve a node from a non-node value");
+        AZ_Assert(GetType() == Type::Node, "AZ::Dom::Value: attempted to retrieve a node from a non-node value");
         return *AZStd::get<NodePtr>(m_value);
     }
 
     Node& Value::GetNodeInternal()
     {
-        AZ_Assert(GetType() == Type::NodeType, "AZ::Dom::Value: attempted to retrieve a node from a non-node value");
+        AZ_Assert(GetType() == Type::Node, "AZ::Dom::Value: attempted to retrieve a node from a non-node value");
         return *CheckCopyOnWrite(AZStd::get<NodePtr>(m_value));
     }
 
@@ -336,9 +336,9 @@ namespace AZ::Dom
     {
         const Type type = GetType();
         AZ_Assert(
-            type == Type::ObjectType || type == Type::NodeType,
+            type == Type::Object || type == Type::Node,
             "AZ::Dom::Value: attempted to retrieve an object from a value that isn't an object or a node");
-        if (type == Type::ObjectType)
+        if (type == Type::Object)
         {
             return AZStd::get<ObjectPtr>(m_value)->m_values;
         }
@@ -352,9 +352,9 @@ namespace AZ::Dom
     {
         const Type type = GetType();
         AZ_Assert(
-            type == Type::ObjectType || type == Type::NodeType,
+            type == Type::Object || type == Type::Node,
             "AZ::Dom::Value: attempted to retrieve an object from a value that isn't an object or a node");
-        if (type == Type::ObjectType)
+        if (type == Type::Object)
         {
             return CheckCopyOnWrite(AZStd::get<ObjectPtr>(m_value))->m_values;
         }
@@ -368,9 +368,9 @@ namespace AZ::Dom
     {
         const Type type = GetType();
         AZ_Assert(
-            type == Type::ArrayType || type == Type::NodeType,
+            type == Type::Array || type == Type::Node,
             "AZ::Dom::Value: attempted to retrieve an array from a value that isn't an array or a node");
-        if (type == Type::ArrayType)
+        if (type == Type::Array)
         {
             return AZStd::get<ArrayPtr>(m_value)->m_values;
         }
@@ -384,9 +384,9 @@ namespace AZ::Dom
     {
         const Type type = GetType();
         AZ_Assert(
-            type == Type::ArrayType || type == Type::NodeType,
+            type == Type::Array || type == Type::Node,
             "AZ::Dom::Value: attempted to retrieve an array from a value that isn't an array or node");
-        if (type == Type::ArrayType)
+        if (type == Type::Array)
         {
             return CheckCopyOnWrite(AZStd::get<ArrayPtr>(m_value))->m_values;
         }
@@ -751,13 +751,13 @@ namespace AZ::Dom
 
     void Value::SetNodeValue(Value value)
     {
-        AZ_Assert(GetType() == Type::NodeType, "AZ::Dom::Value: Attempted to set value for non-node type");
+        AZ_Assert(GetType() == Type::Node, "AZ::Dom::Value: Attempted to set value for non-node type");
         Array::ContainerType& nodeChildren = GetArrayInternal();
 
         // Set the first non-node child, if one is found
         for (Value& entry : nodeChildren)
         {
-            if (entry.GetType() != Type::NodeType)
+            if (entry.GetType() != Type::Node)
             {
                 entry = AZStd::move(value);
                 return;
@@ -770,13 +770,13 @@ namespace AZ::Dom
 
     Value Value::GetNodeValue() const
     {
-        AZ_Assert(GetType() == Type::NodeType, "AZ::Dom::Value: Attempted to get value for non-node type");
+        AZ_Assert(GetType() == Type::Node, "AZ::Dom::Value: Attempted to get value for non-node type");
         const Array::ContainerType& nodeChildren = GetArrayInternal();
 
         // Get the first non-node child, if one is found
         for (const Value& entry : nodeChildren)
         {
-            if (entry.GetType() != Type::NodeType)
+            if (entry.GetType() != Type::Node)
             {
                 return entry;
             }

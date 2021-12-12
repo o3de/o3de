@@ -26,15 +26,15 @@ namespace AZ::Dom
 
     enum class Type
     {
-        NullType = 0,
-        FalseType = 1,
-        TrueType = 2,
-        ObjectType = 3,
-        ArrayType = 4,
-        StringType = 5,
-        NumberType = 6,
-        NodeType = 7,
-        OpaqueType = 8,
+        Null = 0,
+        False = 1,
+        True = 2,
+        Object = 3,
+        Array = 4,
+        String = 5,
+        Number = 6,
+        Node = 7,
+        Opaque = 8,
     };
 
     class ValueAllocator final : public SimpleSchemaAllocator<AZ::HphaSchema, AZ::HphaSchema::Descriptor, false, false>
