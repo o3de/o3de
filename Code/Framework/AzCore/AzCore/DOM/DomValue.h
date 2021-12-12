@@ -24,6 +24,7 @@ namespace AZ::Dom
 {
     using KeyType = AZ::Name;
 
+    //! The type of underlying value stored in a value. \see Value
     enum class Type
     {
         Null = 0,
@@ -37,6 +38,9 @@ namespace AZ::Dom
         Opaque = 8,
     };
 
+    //! The allocator used by Value.
+    //! Value heap allocates shared_ptrs for its container storage (Array / Object / Node) alongside the vector
+    //! contents of its container storage.
     class ValueAllocator final : public SimpleSchemaAllocator<AZ::HphaSchema, AZ::HphaSchema::Descriptor, false, false>
     {
     public:
@@ -56,7 +60,7 @@ namespace AZ::Dom
     class Array
     {
     public:
-        using ContainerType = AZStd::vector<Value>;
+        using ContainerType = AZStd::vector<Value, AZStdAlloc<ValueAllocator>>;
         using Iterator = ContainerType::iterator;
         using ConstIterator = ContainerType::const_iterator;
         static constexpr const size_t ReserveIncrement = 4;
@@ -74,7 +78,7 @@ namespace AZ::Dom
     {
     public:
         using EntryType = AZStd::pair<KeyType, Value>;
-        using ContainerType = AZStd::vector<EntryType>;
+        using ContainerType = AZStd::vector<EntryType, AZStdAlloc<ValueAllocator>>;
         using Iterator = ContainerType::iterator;
         using ConstIterator = ContainerType::const_iterator;
         static constexpr const size_t ReserveIncrement = 8;
