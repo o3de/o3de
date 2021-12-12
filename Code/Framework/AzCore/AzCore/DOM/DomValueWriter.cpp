@@ -87,13 +87,13 @@ namespace AZ::Dom
         const char* endMethodName;
         switch (containerType)
         {
-        case Type::ObjectType:
+        case Type::Object:
             endMethodName = "EndObject";
             break;
-        case Type::ArrayType:
+        case Type::Array:
             endMethodName = "EndArray";
             break;
-        case Type::NodeType:
+        case Type::Node:
             endMethodName = "EndNode";
             break;
         default:
@@ -173,7 +173,7 @@ namespace AZ::Dom
 
     Visitor::Result ValueWriter::EndObject(AZ::u64 attributeCount)
     {
-        return EndContainer(Type::ObjectType, attributeCount, 0);
+        return EndContainer(Type::Object, attributeCount, 0);
     }
 
     Visitor::Result ValueWriter::Key(AZ::Name key)
@@ -199,7 +199,7 @@ namespace AZ::Dom
 
     Visitor::Result ValueWriter::EndArray(AZ::u64 elementCount)
     {
-        return EndContainer(Type::ArrayType, 0, elementCount);
+        return EndContainer(Type::Array, 0, elementCount);
     }
 
     Visitor::Result ValueWriter::StartNode(AZ::Name name)
@@ -217,7 +217,7 @@ namespace AZ::Dom
 
     Visitor::Result ValueWriter::EndNode(AZ::u64 attributeCount, AZ::u64 elementCount)
     {
-        return EndContainer(Type::NodeType, attributeCount, elementCount);
+        return EndContainer(Type::Node, attributeCount, elementCount);
     }
 
     Visitor::Result ValueWriter::FinishWrite()

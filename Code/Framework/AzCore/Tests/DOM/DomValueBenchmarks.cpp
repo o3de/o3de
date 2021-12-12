@@ -46,7 +46,7 @@ namespace AZ::Dom::Benchmark
 
         Value GenerateDomBenchmarkPayload(int64_t entryCount, int64_t stringTemplateLength)
         {
-            Value root(Type::ObjectType);
+            Value root(Type::Object);
 
             AZStd::string entryTemplate;
             while (entryTemplate.size() < static_cast<size_t>(stringTemplateLength))
@@ -63,18 +63,18 @@ namespace AZ::Dom::Benchmark
 
             auto createEntry = [&](int n) -> Value
             {
-                Value entry(Type::ObjectType);
+                Value entry(Type::Object);
                 entry.AddMember("string", createString(n));
                 entry.AddMember("int", n);
                 entry.AddMember("double", static_cast<double>(n) * 0.5);
                 entry.AddMember("bool", n % 2 == 0);
-                entry.AddMember("null", Value(Type::NullType));
+                entry.AddMember("null", Value(Type::Null));
                 return entry;
             };
 
             auto createArray = [&]() -> Value
             {
-                Value array(Type::ArrayType);
+                Value array(Type::Array);
                 for (int i = 0; i < entryCount; ++i)
                 {
                     array.PushBack(createEntry(i));
@@ -176,7 +176,7 @@ namespace AZ::Dom::Benchmark
 
     BENCHMARK_DEFINE_F(DomValueBenchmark, LookupMemberByName)(benchmark::State& state)
     {
-        Value value(Type::ObjectType);
+        Value value(Type::Object);
         AZStd::vector<AZ::Name> keys;
         for (int64_t i = 0; i < state.range(0); ++i)
         {
@@ -199,7 +199,7 @@ namespace AZ::Dom::Benchmark
 
     BENCHMARK_DEFINE_F(DomValueBenchmark, LookupMemberByString)(benchmark::State& state)
     {
-        Value value(Type::ObjectType);
+        Value value(Type::Object);
         AZStd::vector<AZStd::string> keys;
         for (int64_t i = 0; i < state.range(0); ++i)
         {
