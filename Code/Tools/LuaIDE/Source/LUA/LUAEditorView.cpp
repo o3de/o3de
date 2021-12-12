@@ -964,9 +964,9 @@ namespace LUAEditor
         int endLine;
         auto newText = AcumulateSelectedLines(startLine, endLine, callable);
 
-        SetSelection(startLine, 0, endLine + 1, 0);
+        SetSelection(startLine + 1, 0, endLine + 2, 0);
         ReplaceSelectedText(newText);
-        SetSelection(startLine, 0, endLine + 1, 0);
+        SetSelection(startLine + 1, 0, endLine + 2, 0);
     }
 
     void LUAViewWidget::CommentSelectedLines()
