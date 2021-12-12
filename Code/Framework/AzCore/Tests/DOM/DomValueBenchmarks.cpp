@@ -135,7 +135,7 @@ namespace AZ::Dom::Benchmark
         ->Args({ 100, 500 })
         ->Unit(benchmark::kNanosecond);
 
-    BENCHMARK_DEFINE_F(DomValueBenchmark, AzDomValueShallowCopyAndMutate)(benchmark::State& state)
+    BENCHMARK_DEFINE_F(DomValueBenchmark, AzDomValueCopyAndMutate)(benchmark::State& state)
     {
         Value original = GenerateDomBenchmarkPayload(state.range(0), state.range(1));
 
@@ -148,7 +148,7 @@ namespace AZ::Dom::Benchmark
 
         state.SetItemsProcessed(state.iterations());
     }
-    BENCHMARK_REGISTER_F(DomValueBenchmark, AzDomValueShallowCopyAndMutate)
+    BENCHMARK_REGISTER_F(DomValueBenchmark, AzDomValueCopyAndMutate)
         ->Args({ 10, 5 })
         ->Args({ 10, 500 })
         ->Args({ 100, 5 })
