@@ -35,7 +35,8 @@ namespace O3DE::ProjectManager
 
         // Engine
         AZ::Outcome<EngineInfo> GetEngineInfo() override;
-        bool SetEngineInfo(const EngineInfo& engineInfo) override;
+        AZ::Outcome<EngineInfo> GetEngineInfo(const QString& engineName) override;
+        DetailedOutcome SetEngineInfo(const EngineInfo& engineInfo, bool force = false) override;
 
         // Gem
         AZ::Outcome<GemInfo> GetGemInfo(const QString& path, const QString& projectPath = {}) override;
@@ -62,12 +63,12 @@ namespace O3DE::ProjectManager
         // Gem Repos
         AZ::Outcome<void, AZStd::string> RefreshGemRepo(const QString& repoUri) override;
         bool RefreshAllGemRepos() override;
-        AZ::Outcome<void, AZStd::pair<AZStd::string, AZStd::string>> AddGemRepo(const QString& repoUri) override;
+        DetailedOutcome AddGemRepo(const QString& repoUri) override;
         bool RemoveGemRepo(const QString& repoUri) override;
         AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> GetAllGemRepoInfos() override;
         AZ::Outcome<QVector<GemInfo>, AZStd::string> GetGemInfosForRepo(const QString& repoUri) override;
         AZ::Outcome<QVector<GemInfo>, AZStd::string> GetGemInfosForAllRepos() override;
-        AZ::Outcome<void, AZStd::pair<AZStd::string, AZStd::string>> DownloadGem(
+        DetailedOutcome DownloadGem(
             const QString& gemName, std::function<void(int, int)> gemProgressCallback, bool force = false) override;
         void CancelDownload() override;
         bool IsGemUpdateAvaliable(const QString& gemName, const QString& lastUpdated) override;
@@ -80,14 +81,14 @@ namespace O3DE::ProjectManager
 
         AZ::Outcome<void, AZStd::string> ExecuteWithLockErrorHandling(AZStd::function<void()> executionCallback);
         bool ExecuteWithLock(AZStd::function<void()> executionCallback);
+        EngineInfo EngineInfoFromPath(pybind11::handle enginePath);
         GemInfo GemInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath);
         GemRepoInfo GetGemRepoInfo(pybind11::handle repoUri);
         ProjectInfo ProjectInfoFromPath(pybind11::handle path);
         ProjectTemplateInfo ProjectTemplateInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath);
         AZ::Outcome<void, AZStd::string> GemRegistration(const QString& gemPath, const QString& projectPath, bool remove = false);
-        bool RegisterThisEngine();
         bool StopPython();
-        AZStd::pair<AZStd::string, AZStd::string> GetSimpleDetailedErrorPair();
+        IPythonBindings::ErrorPair GetErrorPair();
 
 
         bool m_pythonStarted = false;
@@ -96,6 +97,7 @@ namespace O3DE::ProjectManager
         AZStd::recursive_mutex m_lock;
 
         pybind11::handle m_engineTemplate;
+        pybind11::handle m_engineProperties;
         pybind11::handle m_cmake;
         pybind11::handle m_register;
         pybind11::handle m_manifest;

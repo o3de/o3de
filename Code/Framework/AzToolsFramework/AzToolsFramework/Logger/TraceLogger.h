@@ -23,7 +23,7 @@ namespace AzToolsFramework
         ~TraceLogger();
 
         //! Open log file and dump log sink into it
-        void PrepareLogFile(const AZStd::string& logFileName);
+        void OpenLogFile(const AZStd::string& logFileName, bool clearLogFile);
 
         //! Add filter to ignore messages for windows with matching names
         void AddWindowFilter(const AZStd::string& filter);
@@ -55,7 +55,8 @@ namespace AzToolsFramework
             AZStd::string window;
             AZStd::string message;
         };
-        AZStd::vector<LogMessage> m_startupLogSink;
+
+        AZStd::list<LogMessage> m_startupLogSink;
         AZStd::unordered_set<AZStd::string> m_windowFilters;
         AZStd::unordered_set<AZStd::string> m_messageFilters;
         AZStd::unique_ptr<AzFramework::LogFile> m_logFile;

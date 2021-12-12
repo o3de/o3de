@@ -257,7 +257,6 @@ namespace AZ::IO
             m_application = aznew GemTestApplication();
             AZ::ComponentApplication::Descriptor appDesc;
             appDesc.m_useExistingAllocator = true;
-            appDesc.m_enableDrilling = false;
             auto m_systemEntity = m_application->Create(appDesc);
             m_systemEntity->AddComponent(aznew AZ::StreamerComponent());
             m_systemEntity->Init();

@@ -12,6 +12,7 @@
 
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
 #include <AzFramework/Physics/Material.h>
+#include <SurfaceData/SurfaceTag.h>
 #include <TerrainSystem/TerrainSystemBus.h>
 
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
@@ -24,6 +25,19 @@ namespace LmbrCentral
 
 namespace Terrain
 {
+    static const uint8_t InvalidSurfaceTagIndex = 0xFF;
+
+    struct TerrainPhysicsSurfaceMaterialMapping final
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(TerrainPhysicsSurfaceMaterialMapping, AZ::SystemAllocator, 0);
+        AZ_RTTI(TerrainPhysicsSurfaceMaterialMapping, "{A88B5289-DFCD-4564-8395-E2177DFE5B18}");
+        static void Reflect(AZ::ReflectContext* context);
+
+        SurfaceData::SurfaceTag m_surfaceTag;
+        Physics::MaterialId m_materialId;
+    };
+
     class TerrainPhysicsColliderConfig
         : public AZ::ComponentConfig
     {
@@ -32,6 +46,7 @@ namespace Terrain
         AZ_RTTI(TerrainPhysicsColliderConfig, "{E9EADB8F-C3A5-4B9C-A62D-2DBC86B4CE59}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 
+        AZStd::vector<TerrainPhysicsSurfaceMaterialMapping> m_surfaceMaterialMappings;
     };
 
 
@@ -76,6 +91,9 @@ namespace Terrain
         void Deactivate() override;
         bool ReadInConfig(const AZ::ComponentConfig* baseConfig) override;
         bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const override;
+
+        uint8_t GetMaterialIdIndex(const Physics::MaterialId& materialId, const AZStd::vector<Physics::MaterialId>& materialList) const;
+        Physics::MaterialId FindMaterialIdForSurfaceTag(const SurfaceData::SurfaceTag tag) const;
 
         void GenerateHeightsInBounds(AZStd::vector<float>& heights) const;
         void GenerateHeightsAndMaterialsInBounds(AZStd::vector<Physics::HeightMaterialPoint>& heightMaterials) const;

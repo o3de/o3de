@@ -6,7 +6,6 @@
  *
  */
 
-#include <AzCore/Debug/EventTrace.h>
 #include <RHI/RayTracingBlas.h>
 #include <RHI/Buffer.h>
 #include <RHI/Conversion.h>

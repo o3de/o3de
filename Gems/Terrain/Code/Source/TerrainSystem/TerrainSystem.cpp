@@ -161,10 +161,31 @@ void TerrainSystem::ClampPosition(float x, float y, AZ::Vector2& outPosition, AZ
     outPosition = (normalizedPosition - normalizedDelta) * m_currentSettings.m_heightQueryResolution;
 }
 
+bool TerrainSystem::InWorldBounds(float x, float y) const
+{
+    const float zTestValue = m_currentSettings.m_worldBounds.GetMin().GetX() +
+        ((m_currentSettings.m_worldBounds.GetMax().GetX() - m_currentSettings.m_worldBounds.GetMin().GetX()) / 2.0f);
+    const AZ::Vector3 testValue{ x, y, zTestValue };
+    if (m_currentSettings.m_worldBounds.Contains(testValue))
+    {
+        return true;
+    }
+    return false;
+}
+
 float TerrainSystem::GetHeightSynchronous(float x, float y, Sampler sampler, bool* terrainExistsPtr) const
 {
     bool terrainExists = false;
     float height = m_currentSettings.m_worldBounds.GetMin().GetZ();
+
+    if (!InWorldBounds(x, y))
+    {
+        if (terrainExistsPtr)
+        {
+            *terrainExistsPtr = terrainExists;
+            return height;
+        }
+    }
 
     AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
 
@@ -298,6 +319,14 @@ AZ::Vector3 TerrainSystem::GetNormalSynchronous(float x, float y, Sampler sample
 
     AZ::Vector3 outNormal = AZ::Vector3::CreateAxisZ();
 
+    if (!InWorldBounds(x, y))
+    {
+        if (terrainExistsPtr)
+        {
+            *terrainExistsPtr = terrainExists;
+            return outNormal;
+        }
+    }
     const AZ::Vector2 range = (m_currentSettings.m_heightQueryResolution / 2.0f);
     const AZ::Vector2 left (x - range.GetX(), y);
     const AZ::Vector2 right(x + range.GetX(), y);
@@ -334,14 +363,14 @@ AZ::Vector3 TerrainSystem::GetNormalFromFloats(float x, float y, Sampler sampler
     return GetNormalSynchronous(x, y, sampler, terrainExistsPtr);
 }
 
-
 AzFramework::SurfaceData::SurfaceTagWeight TerrainSystem::GetMaxSurfaceWeight(
     const AZ::Vector3& position, Sampler sampleFilter, bool* terrainExistsPtr) const
 {
     return GetMaxSurfaceWeightFromFloats(position.GetX(), position.GetY(), sampleFilter, terrainExistsPtr);
 }
 
-AzFramework::SurfaceData::SurfaceTagWeight TerrainSystem::GetMaxSurfaceWeightFromVector2(const AZ::Vector2& inPosition, Sampler sampleFilter, bool* terrainExistsPtr) const
+AzFramework::SurfaceData::SurfaceTagWeight TerrainSystem::GetMaxSurfaceWeightFromVector2(
+    const AZ::Vector2& inPosition, Sampler sampleFilter, bool* terrainExistsPtr) const
 {
     return GetMaxSurfaceWeightFromFloats(inPosition.GetX(), inPosition.GetY(), sampleFilter, terrainExistsPtr);
 }
@@ -355,6 +384,15 @@ AzFramework::SurfaceData::SurfaceTagWeight TerrainSystem::GetMaxSurfaceWeightFro
     }
 
     AzFramework::SurfaceData::SurfaceTagWeightList weightSet;
+
+    if (!InWorldBounds(x, y))
+    {
+        if (terrainExistsPtr)
+        {
+            *terrainExistsPtr = false;
+            return {};
+        }
+    }
 
     GetOrderedSurfaceWeights(x, y, sampleFilter, weightSet, terrainExistsPtr);
 
@@ -465,7 +503,6 @@ void TerrainSystem::GetSurfaceWeightsFromVector2(
     Sampler sampleFilter,
     bool* terrainExistsPtr) const
 {
-
     GetOrderedSurfaceWeights(inPosition.GetX(), inPosition.GetY(), sampleFilter, outSurfaceWeights, terrainExistsPtr);
 }
 

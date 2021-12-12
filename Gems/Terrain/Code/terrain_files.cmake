@@ -33,6 +33,7 @@ set(FILES
     Source/TerrainRenderer/TerrainFeatureProcessor.cpp
     Source/TerrainRenderer/TerrainFeatureProcessor.h
     Source/TerrainRenderer/TerrainAreaMaterialRequestBus.h
+    Source/TerrainRenderer/TerrainMacroMaterialBus.cpp
     Source/TerrainRenderer/TerrainMacroMaterialBus.h
     Source/TerrainSystem/TerrainSystem.cpp
     Source/TerrainSystem/TerrainSystem.h

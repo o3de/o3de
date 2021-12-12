@@ -48,10 +48,6 @@
 #include <AzCore/IO/Path/PathReflect.h>
 #include <AzCore/IO/SystemFile.h>
 
-#include <AzCore/Driller/Driller.h>
-#include <AzCore/Memory/MemoryDriller.h>
-#include <AzCore/Debug/TraceMessagesDriller.h>
-#include <AzCore/Debug/EventTraceDriller.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Script/ScriptSystemBus.h>
 
@@ -156,7 +152,6 @@ namespace AZ
         m_reservedDebug = 0;
         m_recordingMode = Debug::AllocationRecords::RECORD_STACK_IF_NO_FILE_LINE;
         m_stackRecordLevels = 5;
-        m_enableDrilling = false;
         m_useOverrunDetection = false;
         m_useMalloc = false;
     }
@@ -328,7 +323,6 @@ namespace AZ
                 ->Field("blockSize", &Descriptor::m_memoryBlocksByteSize)
                 ->Field("reservedOS", &Descriptor::m_reservedOS)
                 ->Field("reservedDebug", &Descriptor::m_reservedDebug)
-                ->Field("enableDrilling", &Descriptor::m_enableDrilling)
                 ->Field("useOverrunDetection", &Descriptor::m_useOverrunDetection)
                 ->Field("useMalloc", &Descriptor::m_useMalloc)
                 ->Field("allocatorRemappings", &Descriptor::m_allocatorRemappings)
@@ -367,7 +361,6 @@ namespace AZ
                         ->Attribute(Edit::Attributes::Step, &Descriptor::m_pageSize)
                     ->DataElement(Edit::UIHandlers::SpinBox, &Descriptor::m_reservedOS, "OS reserved memory", "System memory reserved for OS (used only when 'Allocate all memory at startup' is true)")
                     ->DataElement(Edit::UIHandlers::SpinBox, &Descriptor::m_reservedDebug, "Memory reserved for debugger", "System memory reserved for Debug allocator, like memory tracking (used only when 'Allocate all memory at startup' is true)")
-                    ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_enableDrilling, "Enable Driller", "Enable Drilling support for the application (ignored in Release builds)")
                     ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_useOverrunDetection, "Use Overrun Detection", "Use the overrun detection memory manager (only available on some platforms, ignored in Release builds)")
                     ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_useMalloc, "Use Malloc", "Use malloc for memory allocations (for memory debugging only, ignored in Release builds)")
                     ;

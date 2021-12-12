@@ -20,7 +20,6 @@
 #include <RHI/CommandQueue.h>
 #include <RHI/QueryPool.h>
 #include <Atom/RHI/IndirectArguments.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <RHI/RayTracingBlas.h>
 #include <RHI/RayTracingTlas.h>
 #include <RHI/RayTracingPipelineState.h>
@@ -563,7 +562,7 @@ namespace AZ
                 return;
             }
 
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             D3D12_VIEWPORT dx12Viewports[D3D12_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE];
 
             const auto& viewports = m_state.m_viewportState.m_states;
@@ -588,7 +587,7 @@ namespace AZ
                 return;
             }
 
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             D3D12_RECT dx12Scissors[D3D12_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE];
 
             const auto& scissors = m_state.m_scissorState.m_states;

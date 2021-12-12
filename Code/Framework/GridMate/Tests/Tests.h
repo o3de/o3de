@@ -18,17 +18,7 @@
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Memory/AllocationRecords.h>
 
-#include <AzCore/Driller/Driller.h>
-#include <AzCore/Memory/MemoryDriller.h>
-
 #include <GridMate/Carrier/Carrier.h>
-
-#define GM_TEST_MEMORY_DRILLING 0
-//////////////////////////////////////////////////////////////////////////
-// Drillers
-#include <AzCore/Driller/Driller.h>
-
-#define AZ_ROOT_TEST_FOLDER ""
 
 #include <AzCore/AzCore_Traits_Platform.h>
 
@@ -50,9 +40,6 @@ namespace UnitTest
     {
         protected:
             GridMate::IGridMate* m_gridMate;
-            AZ::Debug::DrillerSession* m_drillerSession;
-            AZ::Debug::DrillerOutputFileStream* m_drillerStream;
-            AZ::Debug::DrillerManager* m_drillerManager;
     
         private:
             using Platform = GridMateTestFixture_Platform;
@@ -60,25 +47,15 @@ namespace UnitTest
     public:
         GridMateTestFixture([[maybe_unused]] unsigned int memorySize = 100 * 1024 * 1024)
             : m_gridMate(nullptr)
-            , m_drillerSession(nullptr)
-            , m_drillerStream(nullptr)
-            , m_drillerManager(nullptr)
         {
             GridMate::GridMateDesc desc;
-#if GM_TEST_MEMORY_DRILLING
-            m_drillerManager = AZ::Debug::DrillerManager::Create();
-            m_drillerManager->Register(aznew AZ::Debug::MemoryDriller);
-
-            desc.m_allocatorDesc.m_allocationRecords = true;
-#endif
             AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
 
             //desc.m_autoInitPlatformNetModules = false;
             m_gridMate = GridMateCreate(desc);
             AZ_TEST_ASSERT(m_gridMate != NULL);
 
-            m_drillerSession = NULL;
-
+            AZ::AllocatorManager::Instance().EnterProfilingMode();
             AZ::Debug::AllocationRecords* records = AZ::AllocatorInstance<GridMate::GridMateAllocator>::GetAllocator().GetRecords();
             if (records)
             {
@@ -99,12 +76,7 @@ namespace UnitTest
             }
 
             AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-
-            if (m_drillerManager)
-            {
-                AZ::Debug::DrillerManager::Destroy(m_drillerManager);
-                m_drillerManager = nullptr;
-            }
+            AZ::AllocatorManager::Instance().ExitProfilingMode();
         }
 
         void Update()

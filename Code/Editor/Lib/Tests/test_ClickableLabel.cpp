@@ -19,7 +19,7 @@ using namespace ::testing;
 namespace UnitTest
 {
     class TestingClickableLabel
-        : public testing::Test
+        : public ScopedAllocatorSetupFixture
     {
     public:
         ClickableLabel m_clickableLabel;

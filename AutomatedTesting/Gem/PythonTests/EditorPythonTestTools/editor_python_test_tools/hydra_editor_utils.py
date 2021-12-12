@@ -46,6 +46,18 @@ def get_component_type_id(component_name):
     return component_type_id
 
 
+def get_level_component_type_id(component_name):
+    """
+    Gets the component_type_id from a given component name
+    :param component_name: String of component name to search for
+    :return component type ID
+    """
+    type_ids_list = editor.EditorComponentAPIBus(bus.Broadcast, 'FindComponentTypeIdsByEntityType', [component_name],
+                                                 entity.EntityType().Level)
+    component_type_id = type_ids_list[0]
+    return component_type_id
+
+
 def add_level_component(component_name):
     """
     Adds the specified component to the Level Inspector
@@ -144,6 +156,20 @@ def get_component_property_value(component, component_propertyPath):
     else:
         print(f'FAILURE: Could not get value from {component_propertyPath}')
         return None
+
+def set_component_property_value(component, component_propertyPath, value):
+    """
+    Given a component name and component property path, set component property value
+    :param component: Component object to act on.
+    :param componentPropertyPath: String of component property. (e.g. 'Settings|Visible')
+    :param value: new value for the variable being changed in the component
+    """
+    componentPropertyObj = editor.EditorComponentAPIBus(bus.Broadcast, 'SetComponentProperty', component,
+                                                        component_propertyPath, value)
+    if componentPropertyObj.IsSuccess():
+        print(f'{component_propertyPath} set to {value}')
+    else:
+        print(f'FAILURE: Could not set value in {component_propertyPath}')
 
 
 def get_property_tree(component):

@@ -433,7 +433,10 @@ namespace ScriptCanvasEditor
         AZ::Data::AssetId sourceAssetId(sourceUuid, 0);
 
         AZ::Outcome<int, AZStd::string> openOutcome = AZ::Failure(AZStd::string());
-        GeneralRequestBus::BroadcastResult(openOutcome, &GeneralRequests::OpenScriptCanvasAssetId, sourceAssetId);
+        GeneralRequestBus::BroadcastResult(openOutcome, &GeneralRequests::OpenScriptCanvasAssetId
+            , ScriptCanvasEditor::SourceHandle(nullptr, sourceUuid, {})
+            , Tracker::ScriptCanvasFileState::UNMODIFIED);
+
         if (!openOutcome)
         {
             AZ_Warning("Script Canvas", openOutcome, "%s", openOutcome.GetError().data());
