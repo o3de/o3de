@@ -29,8 +29,7 @@ namespace GridMate
 
     class ReplicaStatus;
     class ReplicaTask;
-    class InterestManager;
-
+    
     //-------------------------------------------------------------------------
     // Replica
     //-------------------------------------------------------------------------
@@ -55,7 +54,6 @@ namespace GridMate
 
         friend class ReplicaMarshalNewTask;
 
-        friend class InterestManager;
         friend class ReplicaTarget;
 
         enum Flags

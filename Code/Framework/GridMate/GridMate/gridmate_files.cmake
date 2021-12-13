@@ -78,11 +78,6 @@ set(FILES
     Replica/Tasks/ReplicaProcessPolicy.cpp
     Replica/Tasks/ReplicaProcessPolicy.h
     Replica/Tasks/ReplicaPriorityPolicy.h
-    Replica/Interest/InterestDefs.h
-    Replica/Interest/InterestManager.cpp
-    Replica/Interest/InterestManager.h
-    Replica/Interest/InterestQueryResult.h
-    Replica/Interest/RulesHandler.h
     Serialize/Buffer.cpp
     Serialize/Buffer.h
     Serialize/PackedSize.h
