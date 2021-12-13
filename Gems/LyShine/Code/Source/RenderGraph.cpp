@@ -151,7 +151,7 @@ namespace LyShine
 
         // Add the indexed primitives to the dynamic draw context for drawing
         //
-        // [LYSHINE_ATOM_TODO][ATOM-15073] - need to combine into a single DrawIndexed call to take advantage of the draw call
+        // [LYSHINE_ATOM_TODO][ATOM-15073] Combine into a single DrawIndexed call to take advantage of the draw call
         // optimization done by this RenderGraph. This option will be added to DynamicDrawContext. For
         // now we could combine the vertices ourselves
         for (const LyShine::UiPrimitive& primitive : m_primitives)
@@ -698,7 +698,7 @@ namespace LyShine
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    void RenderGraph::AddPrimitiveAtom(LyShine::UiPrimitive* primitive, const AZ::Data::Instance<AZ::RPI::Image>& texture,
+    void RenderGraph::AddPrimitive(LyShine::UiPrimitive* primitive, const AZ::Data::Instance<AZ::RPI::Image>& texture,
         bool isClampTextureMode, bool isTextureSRGB, bool isTexturePremultipliedAlpha, BlendMode blendMode)
     {
         AZStd::vector<RenderNode*>* renderNodeList = m_renderNodeListStack.top();
@@ -771,7 +771,7 @@ namespace LyShine
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    void RenderGraph::AddAlphaMaskPrimitiveAtom(LyShine::UiPrimitive* primitive,
+    void RenderGraph::AddAlphaMaskPrimitive(LyShine::UiPrimitive* primitive,
         AZ::Data::Instance<AZ::RPI::AttachmentImage> contentAttachmentImage,
         AZ::Data::Instance<AZ::RPI::AttachmentImage> maskAttachmentImage,
         bool isClampTextureMode,
