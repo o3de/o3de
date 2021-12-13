@@ -1,0 +1,362 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include "Atom/Features/ShaderQualityOptions.azsli"
+
+#include "StandardPBR_Common.azsli"
+
+// SRGs
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/Features/PBR/ForwardPassSrg.azsli>
+
+// Pass Output
+#include <Atom/Features/PBR/ForwardPassOutput.azsli>
+
+// Utility
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
+#include <Atom/Features/PBR/AlphaUtils.azsli>
+
+// Custom Surface & Lighting
+#include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
+
+// Decals
+#include <Atom/Features/PBR/Decals.azsli>
+
+
+// ---------- Material Parameters ----------
+
+COMMON_OPTIONS_BASE_COLOR()
+COMMON_OPTIONS_ROUGHNESS()
+COMMON_OPTIONS_METALLIC()
+COMMON_OPTIONS_SPECULAR_F0()
+COMMON_OPTIONS_NORMAL()
+COMMON_OPTIONS_CLEAR_COAT()
+COMMON_OPTIONS_OCCLUSION()
+COMMON_OPTIONS_EMISSIVE()
+// Note COMMON_OPTIONS_PARALLAX is in StandardPBR_Common.azsli because it's needed by all StandardPBR shaders.
+
+// Alpha
+#include "MaterialInputs/AlphaInput.azsli"
+
+// ---------- Vertex Shader ----------
+
+struct VSInput
+{
+    // Base fields (required by the template azsli file)...
+    float3 m_position : POSITION;
+    float3 m_normal : NORMAL;
+    float4 m_tangent : TANGENT; 
+    float3 m_bitangent : BITANGENT; 
+ 
+    // Extended fields (only referenced in this azsl file)...
+    float2 m_uv0 : UV0;
+    float2 m_uv1 : UV1;
+};
+
+struct VSOutput
+{
+    // Base fields (required by the template azsli file)...
+    // "centroid" is needed for SV_Depth to compile
+    linear centroid float4 m_position : SV_Position;
+    float3 m_normal: NORMAL;
+    float3 m_tangent : TANGENT; 
+    float3 m_bitangent : BITANGENT; 
+    float3 m_worldPosition : UV0;
+    float3 m_shadowCoords[ViewSrg::MaxCascadeCount] : UV3;
+
+    // Extended fields (only referenced in this azsl file)...
+    float2 m_uv[UvSetCount] : UV1;
+};
+
+#include <Atom/Features/Vertex/VertexHelper.azsli>
+
+VSOutput StandardPbr_ForwardPassVS(VSInput IN)
+{
+    VSOutput OUT;
+
+    float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
+
+    // By design, only UV0 is allowed to apply transforms.
+    OUT.m_uv[0] = mul(MaterialSrg::m_uvMatrix, float3(IN.m_uv0, 1.0)).xy;
+    OUT.m_uv[1] = IN.m_uv1;
+
+    // Shadow coords will be calculated in the pixel shader in this case
+    bool skipShadowCoords = ShouldHandleParallax() && o_parallax_enablePixelDepthOffset;
+
+    VertexHelper(IN, OUT, worldPosition, skipShadowCoords);
+
+    return OUT;
+}
+
+
+// ---------- Pixel Shader ----------
+
+PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float depthNDC)
+{
+    const float3 vertexNormal = normalize(IN.m_normal);
+
+    // ------- Tangents & Bitangets -------
+    float3 tangents[UvSetCount] = { IN.m_tangent.xyz, IN.m_tangent.xyz };
+    float3 bitangents[UvSetCount] = { IN.m_bitangent.xyz, IN.m_bitangent.xyz };
+
+    if (ShouldHandleParallax() || o_normal_useTexture || (o_clearCoat_enabled && o_clearCoat_normal_useTexture))
+    {
+        PrepareGeneratedTangent(IN.m_normal, IN.m_worldPosition, isFrontFace, IN.m_uv, UvSetCount, tangents, bitangents);
+    }
+
+    // ------- Depth & Parallax -------
+
+    depthNDC = IN.m_position.z;
+    
+    bool displacementIsClipped = false;
+
+    if(ShouldHandleParallax())
+    {
+
+        float3x3 uvMatrix = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3();
+        float3x3 uvMatrixInverse = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrixInverse : CreateIdentity3x3();
+        GetParallaxInput(IN.m_normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex], MaterialSrg::m_heightmapScale, MaterialSrg::m_heightmapOffset,
+                         ObjectSrg::GetWorldMatrix(), uvMatrix, uvMatrixInverse,
+                         IN.m_uv[MaterialSrg::m_parallaxUvIndex], IN.m_worldPosition, depthNDC, IN.m_position.w, displacementIsClipped);
+
+        // Adjust directional light shadow coordinates for parallax correction
+        if(o_parallax_enablePixelDepthOffset)
+        {
+            const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
+            if (o_enableShadows && shadowIndex < SceneSrg::m_directionalLightCount)
+            {
+                DirectionalLightShadow::GetShadowCoords(shadowIndex, IN.m_worldPosition, vertexNormal, IN.m_shadowCoords);
+            }
+        }
+    }
+
+    Surface surface;
+    surface.position = IN.m_worldPosition.xyz;
+
+    // ------- Alpha & Clip -------
+
+    float2 baseColorUv = IN.m_uv[MaterialSrg::m_baseColorMapUvIndex];
+    float2 opacityUv = IN.m_uv[MaterialSrg::m_opacityMapUvIndex];
+    float alpha = GetAlphaInputAndClip(MaterialSrg::m_baseColorMap, MaterialSrg::m_opacityMap, baseColorUv, opacityUv, MaterialSrg::m_sampler, MaterialSrg::m_opacityFactor, o_opacity_source);
+
+    // ------- Normal -------
+
+    float2 normalUv = IN.m_uv[MaterialSrg::m_normalMapUvIndex];
+    float3x3 uvMatrix = MaterialSrg::m_normalMapUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3(); // By design, only UV0 is allowed to apply transforms.
+    surface.vertexNormal = vertexNormal;
+    surface.normal = GetNormalInputWS(MaterialSrg::m_normalMap, MaterialSrg::m_sampler, normalUv, MaterialSrg::m_flipNormalX, MaterialSrg::m_flipNormalY, isFrontFace, IN.m_normal,
+                                       tangents[MaterialSrg::m_normalMapUvIndex], bitangents[MaterialSrg::m_normalMapUvIndex], uvMatrix, o_normal_useTexture, MaterialSrg::m_normalFactor);
+
+    // ------- Base Color -------
+
+    float3 sampledColor = GetBaseColorInput(MaterialSrg::m_baseColorMap, MaterialSrg::m_sampler, baseColorUv, MaterialSrg::m_baseColor.rgb, o_baseColor_useTexture);
+    float3 baseColor = BlendBaseColor(sampledColor, MaterialSrg::m_baseColor.rgb, MaterialSrg::m_baseColorFactor, o_baseColorTextureBlendMode, o_baseColor_useTexture);
+    
+    if(o_parallax_highlightClipping && displacementIsClipped)
+    {
+        ApplyParallaxClippingHighlight(baseColor);
+    }
+
+    // ------- Metallic -------
+
+    float2 metallicUv = IN.m_uv[MaterialSrg::m_metallicMapUvIndex];
+    float metallic = GetMetallicInput(MaterialSrg::m_metallicMap, MaterialSrg::m_sampler, metallicUv, MaterialSrg::m_metallicFactor, o_metallic_useTexture);
+
+    // ------- Specular -------
+
+    float2 specularUv = IN.m_uv[MaterialSrg::m_specularF0MapUvIndex];
+    float specularF0Factor = GetSpecularInput(MaterialSrg::m_specularF0Map, MaterialSrg::m_sampler, specularUv, MaterialSrg::m_specularF0Factor, o_specularF0_useTexture);
+
+    surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
+
+    // ------- Roughness -------
+
+    float2 roughnessUv = IN.m_uv[MaterialSrg::m_roughnessMapUvIndex];
+    surface.roughnessLinear = GetRoughnessInput(MaterialSrg::m_roughnessMap, MaterialSrg::m_sampler, roughnessUv, MaterialSrg::m_roughnessFactor,
+                                        MaterialSrg::m_roughnessLowerBound, MaterialSrg::m_roughnessUpperBound, o_roughness_useTexture);
+    surface.CalculateRoughnessA();
+
+    // ------- Lighting Data -------
+
+    LightingData lightingData;
+
+    // Light iterator
+    lightingData.tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
+    lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
+    
+    // Directional light shadow coordinates
+    lightingData.shadowCoords = IN.m_shadowCoords;
+
+    // ------- Emissive -------
+
+    float2 emissiveUv = IN.m_uv[MaterialSrg::m_emissiveMapUvIndex];
+    lightingData.emissiveLighting = GetEmissiveInput(MaterialSrg::m_emissiveMap, MaterialSrg::m_sampler, emissiveUv, MaterialSrg::m_emissiveIntensity, MaterialSrg::m_emissiveColor.rgb, o_emissiveEnabled, o_emissive_useTexture);
+
+    // ------- Occlusion -------
+    
+    lightingData.diffuseAmbientOcclusion = GetOcclusionInput(MaterialSrg::m_diffuseOcclusionMap, MaterialSrg::m_sampler, IN.m_uv[MaterialSrg::m_diffuseOcclusionMapUvIndex], MaterialSrg::m_diffuseOcclusionFactor, o_diffuseOcclusion_useTexture);
+    lightingData.specularOcclusion = GetOcclusionInput(MaterialSrg::m_specularOcclusionMap, MaterialSrg::m_sampler, IN.m_uv[MaterialSrg::m_specularOcclusionMapUvIndex], MaterialSrg::m_specularOcclusionFactor, o_specularOcclusion_useTexture);
+
+    // ------- Clearcoat -------
+    
+    // [GFX TODO][ATOM-14603]: Clean up the double uses of these clear coat flags
+    if(o_clearCoat_feature_enabled)
+    {
+        if(o_clearCoat_enabled)
+        {
+            float3x3 uvMatrix = MaterialSrg::m_clearCoatNormalMapUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3();
+            GetClearCoatInputs(MaterialSrg::m_clearCoatInfluenceMap, IN.m_uv[MaterialSrg::m_clearCoatInfluenceMapUvIndex], MaterialSrg::m_clearCoatFactor, o_clearCoat_factor_useTexture,
+                               MaterialSrg::m_clearCoatRoughnessMap, IN.m_uv[MaterialSrg::m_clearCoatRoughnessMapUvIndex], MaterialSrg::m_clearCoatRoughness, o_clearCoat_roughness_useTexture,
+                               MaterialSrg::m_clearCoatNormalMap,    IN.m_uv[MaterialSrg::m_clearCoatNormalMapUvIndex], IN.m_normal, o_clearCoat_normal_useTexture, MaterialSrg::m_clearCoatNormalStrength,
+                               uvMatrix, tangents[MaterialSrg::m_clearCoatNormalMapUvIndex], bitangents[MaterialSrg::m_clearCoatNormalMapUvIndex],
+                               MaterialSrg::m_sampler, isFrontFace,
+                               surface.clearCoat.factor, surface.clearCoat.roughness, surface.clearCoat.normal);
+        }
+
+        // manipulate base layer f0 if clear coat is enabled
+        // modify base layer's normal incidence reflectance
+        // for the derivation of the following equation please refer to:
+        // https://google.github.io/filament/Filament.md.html#materialsystem/clearcoatmodel/baselayermodification
+        float3 f0 = (1.0 - 5.0 * sqrt(surface.specularF0)) / (5.0 - sqrt(surface.specularF0));
+        surface.specularF0 = lerp(surface.specularF0, f0 * f0, surface.clearCoat.factor);
+    }
+    
+    // Diffuse and Specular response (used in IBL calculations)
+    lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
+    lightingData.diffuseResponse = 1.0 - lightingData.specularResponse;
+
+    if(o_clearCoat_feature_enabled)
+    {
+        // Clear coat layer has fixed IOR = 1.5 and transparent => F0 = (1.5 - 1)^2 / (1.5 + 1)^2 = 0.04
+        lightingData.diffuseResponse *= 1.0 - (FresnelSchlickWithRoughness(lightingData.NdotV, float3(0.04, 0.04, 0.04), surface.clearCoat.roughness) * surface.clearCoat.factor);
+    }
+
+    // ------- Multiscatter -------
+
+    lightingData.CalculateMultiscatterCompensation(surface.specularF0, o_specularF0_enableMultiScatterCompensation);
+
+    // ------- Lighting Calculation -------
+
+    // Apply Decals
+    ApplyDecals(lightingData.tileIterator, surface);
+
+    // Apply Direct Lighting
+    ApplyDirectLighting(surface, lightingData);
+
+    // Apply Image Based Lighting (IBL)
+    ApplyIBL(surface, lightingData);
+
+    // Finalize Lighting
+    lightingData.FinalizeLighting();
+
+    PbrLightingOutput lightingOutput = GetPbrLightingOutput(surface, lightingData, alpha);
+
+    // ------- Opacity -------
+
+    if (o_opacity_mode == OpacityMode::Blended || o_opacity_mode == OpacityMode::TintedTransparent)
+    {
+        // Increase opacity at grazing angles for surfaces with a low m_opacityAffectsSpecularFactor.
+        // For m_opacityAffectsSpecularFactor values close to 0, that indicates a transparent surface
+        // like glass, so it becomes less transparent at grazing angles. For m_opacityAffectsSpecularFactor
+        // values close to 1.0, that indicates the absence of a surface entirely, so this effect should
+        // not apply.
+        float fresnelAlpha = FresnelSchlickWithRoughness(lightingData.NdotV, alpha, surface.roughnessLinear).x;
+        alpha = lerp(fresnelAlpha, alpha, MaterialSrg::m_opacityAffectsSpecularFactor);
+    }
+
+    if (o_opacity_mode == OpacityMode::Blended)
+    {
+        // [GFX_TODO ATOM-13187] PbrLighting shouldn't be writing directly to render targets. It's confusing when
+        // specular is being added to diffuse just because we're calling render target 0 "diffuse".
+
+        // For blended mode, we do (dest * alpha) + (source * 1.0). This allows the specular
+        // to be added on top of the diffuse, but then the diffuse must be pre-multiplied.
+        // It's done this way because surface transparency doesn't really change specular response (eg, glass).
+
+        lightingOutput.m_diffuseColor.rgb *= lightingOutput.m_diffuseColor.w; // pre-multiply diffuse
+        
+        // Add specular. m_opacityAffectsSpecularFactor controls how much the alpha masks out specular contribution.
+        float3 specular = lightingOutput.m_specularColor.rgb;
+        specular = lerp(specular, specular * lightingOutput.m_diffuseColor.w, MaterialSrg::m_opacityAffectsSpecularFactor);
+        lightingOutput.m_diffuseColor.rgb += specular;
+
+        lightingOutput.m_diffuseColor.w = alpha;
+    }
+    else if (o_opacity_mode == OpacityMode::TintedTransparent)
+    {
+        // See OpacityMode::Blended above for the basic method. TintedTransparent adds onto the above concept by supporting
+        // colored alpha. This is currently a very basic calculation that uses the baseColor as a multiplier with strength
+        // determined by the alpha. We'll modify this later to be more physically accurate and allow surface depth,
+        // absorption, and interior color to be specified.
+        //
+        // The technique uses dual source blending to allow two separate sources to be part of the blending equation
+        // even though ultimately only a single render target is being written to. m_diffuseColor is render target 0 and
+        // m_specularColor render target 1, and the blend mode is (dest * source1color) + (source * 1.0).
+        //
+        // This means that m_specularColor.rgb (source 1) is multiplied against the destination, then
+        // m_diffuseColor.rgb (source) is added to that, and the final result is stored in render target 0.
+
+        lightingOutput.m_diffuseColor.rgb *= lightingOutput.m_diffuseColor.w; // pre-multiply diffuse
+
+        // Add specular. m_opacityAffectsSpecularFactor controls how much the alpha masks out specular contribution.
+        float3 specular = lightingOutput.m_specularColor.rgb;
+        specular = lerp(specular, specular * lightingOutput.m_diffuseColor.w, MaterialSrg::m_opacityAffectsSpecularFactor);
+        lightingOutput.m_diffuseColor.rgb += specular;
+
+        lightingOutput.m_specularColor.rgb = baseColor * (1.0 - alpha); 
+    }
+    else
+    {
+        lightingOutput.m_diffuseColor.w = -1; // Disable subsurface scattering
+    }
+
+    return lightingOutput;
+}
+
+ForwardPassOutputWithDepth StandardPbr_ForwardPassPS(VSOutput IN, bool isFrontFace : SV_IsFrontFace)
+{
+    ForwardPassOutputWithDepth OUT;
+    float depth;
+
+    PbrLightingOutput lightingOutput = ForwardPassPS_Common(IN, isFrontFace, depth);
+
+#ifdef UNIFIED_FORWARD_OUTPUT
+    OUT.m_color.rgb = lightingOutput.m_diffuseColor.rgb + lightingOutput.m_specularColor.rgb;
+    OUT.m_color.a = lightingOutput.m_diffuseColor.a;
+    OUT.m_depth = depth;
+#else
+    OUT.m_diffuseColor = lightingOutput.m_diffuseColor;
+    OUT.m_specularColor = lightingOutput.m_specularColor;
+    OUT.m_specularF0 = lightingOutput.m_specularF0;
+    OUT.m_albedo = lightingOutput.m_albedo;
+    OUT.m_normal = lightingOutput.m_normal;
+    OUT.m_depth = depth;
+#endif
+    return OUT;
+}
+
+[earlydepthstencil]
+ForwardPassOutput StandardPbr_ForwardPassPS_EDS(VSOutput IN, bool isFrontFace : SV_IsFrontFace)
+{
+    ForwardPassOutput OUT;
+    float depth;
+
+    PbrLightingOutput lightingOutput = ForwardPassPS_Common(IN, isFrontFace, depth);
+
+#ifdef UNIFIED_FORWARD_OUTPUT
+    OUT.m_color.rgb = lightingOutput.m_diffuseColor.rgb + lightingOutput.m_specularColor.rgb;
+    OUT.m_color.a = lightingOutput.m_diffuseColor.a;
+#else
+    OUT.m_diffuseColor = lightingOutput.m_diffuseColor;
+    OUT.m_specularColor = lightingOutput.m_specularColor;
+    OUT.m_specularF0 = lightingOutput.m_specularF0;
+    OUT.m_albedo = lightingOutput.m_albedo;
+    OUT.m_normal = lightingOutput.m_normal;
+#endif
+    return OUT;
+}

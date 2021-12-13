@@ -10,6 +10,13 @@ set(FILES
     Materials/Special/ShadowCatcher.azsl
     Materials/Special/ShadowCatcher.materialtype
     Materials/Special/ShadowCatcher.shader
+    Materials/Types/BasePBR.materialtype
+    Materials/Types/BasePBR_Common.azsli
+    Materials/Types/BasePBR_ForwardPass.azsl
+    Materials/Types/BasePBR_ForwardPass.shader
+    Materials/Types/BasePBR_LowEndForward.azsl
+    Materials/Types/BasePBR_LowEndForward.shader
+    Materials/Types/BasePBR_ShaderEnable.lua
     Materials/Types/EnhancedPBR.materialtype
     Materials/Types/EnhancedPBR_Common.azsli
     Materials/Types/EnhancedPBR_DepthPass_WithPS.azsl
@@ -53,6 +60,7 @@ set(FILES
     Materials/Types/StandardPBR_LowEndForward.azsl
     Materials/Types/StandardPBR_LowEndForward.shader
     Materials/Types/StandardPBR_LowEndForward_EDS.shader
+    Materials/Types/StandardPBR_Metallic.lua
     Materials/Types/StandardPBR_ParallaxState.lua
     Materials/Types/StandardPBR_Roughness.lua
     Materials/Types/StandardPBR_ShaderEnable.lua
@@ -129,6 +137,7 @@ set(FILES
     Passes/DownsampleMipChain.pass
     Passes/EnvironmentCubeMapDepthMSAA.pass
     Passes/EnvironmentCubeMapForwardMSAA.pass
+    Passes/EnvironmentCubeMapForwardSubsurfaceMSAA.pass
     Passes/EnvironmentCubeMapPipeline.pass
     Passes/EnvironmentCubeMapSkyBox.pass
     Passes/EsmShadowmaps.pass
@@ -303,6 +312,7 @@ set(FILES
     ShaderLib/Atom/Features/ScreenSpace/ScreenSpaceUtil.azsli
     ShaderLib/Atom/Features/Shadow/BicubicPcfFilters.azsli
     ShaderLib/Atom/Features/Shadow/DirectionalLightShadow.azsli
+    ShaderLib/Atom/Features/Shadow/ESM.azsli
     ShaderLib/Atom/Features/Shadow/NormalOffsetShadows.azsli
     ShaderLib/Atom/Features/Shadow/ProjectedShadow.azsli
     ShaderLib/Atom/Features/Shadow/ReceiverPlaneDepthBias.azsli
