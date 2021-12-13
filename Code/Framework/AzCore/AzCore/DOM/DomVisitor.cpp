@@ -110,7 +110,7 @@ namespace AZ::Dom
         return String(*value, lifetime);
     }
 
-    Visitor::Result Visitor::OpaqueValue([[maybe_unused]] const OpaqueType& value, [[maybe_unused]] Lifetime lifetime)
+    Visitor::Result Visitor::OpaqueValue([[maybe_unused]] OpaqueType& value)
     {
         if (!SupportsOpaqueValues())
         {

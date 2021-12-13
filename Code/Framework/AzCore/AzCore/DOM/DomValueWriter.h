@@ -13,6 +13,8 @@
 
 namespace AZ::Dom
 {
+    //! Visitor that writes to a Value.
+    //! Supports all Visitor operations.
     class ValueWriter : public Visitor
     {
     public:
@@ -36,6 +38,7 @@ namespace AZ::Dom
         Result StartNode(AZ::Name name) override;
         Result RawStartNode(AZStd::string_view name, Lifetime lifetime) override;
         Result EndNode(AZ::u64 attributeCount, AZ::u64 elementCount) override;
+        Result OpaqueValue(OpaqueType& value) override;
 
     private:
         Result FinishWrite();
@@ -60,7 +63,10 @@ namespace AZ::Dom
         ValueBuffer& GetValueBuffer();
 
         Value& m_result;
+        // Stores info about the current value being processed
         AZStd::stack<ValueInfo> m_entryStack;
+        // Provides temporary storage for elements and attributes to prevent extra heap allocations
+        // These buffers persist to be reused even as the entry stack changes
         AZStd::vector<ValueBuffer> m_valueBuffers;
     };
 } // namespace AZ::Dom
