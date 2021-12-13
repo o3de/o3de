@@ -104,6 +104,11 @@ namespace
         }
     }
 
+    // Currently (December 13, 2021), this function is only used by slice editor code.
+    // When the slice editor is not enabled, there are no references to the
+    // HideActionWhileEntitiesDeselected function, causing a compiler warning and
+    // subsequently a build error.
+#ifdef ENABLE_SLICE_EDITOR
     void HideActionWhileEntitiesDeselected(QAction* action, EEditorNotifyEvent editorNotifyEvent)
     {
         if (action == nullptr)
@@ -127,6 +132,7 @@ namespace
             break;
         }
     }
+#endif
 
     void DisableActionWhileInSimMode(QAction* action, EEditorNotifyEvent editorNotifyEvent)
     {
