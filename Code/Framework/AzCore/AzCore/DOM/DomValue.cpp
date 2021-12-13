@@ -61,7 +61,7 @@ namespace AZ::Dom
         return m_children;
     }
 
-    Value::Value(AZStd::shared_ptr<AZStd::string> string)
+    Value::Value(AZStd::shared_ptr<const AZStd::string> string)
         : m_value(string)
     {
     }
@@ -233,7 +233,7 @@ namespace AZ::Dom
         case 4: // bool
             return AZStd::get<bool>(m_value) ? Type::True : Type::False;
         case 5: // AZStd::string_view
-        case 6: // AZStd::shared_ptr<AZStd::string>
+        case 6: // AZStd::shared_ptr<const AZStd::string>
         case 7: // ShortStringType
             return Type::String;
         case 8: // ObjectPtr
@@ -900,7 +900,7 @@ namespace AZ::Dom
         m_value = aznumeric_cast<double>(value);
     }
 
-    void Value::SetString(AZStd::shared_ptr<AZStd::string> string)
+    void Value::SetString(AZStd::shared_ptr<const AZStd::string> string)
     {
         m_value = string;
     }
@@ -911,8 +911,8 @@ namespace AZ::Dom
         {
         case 5: // AZStd::string_view
             return AZStd::get<AZStd::string_view>(m_value);
-        case 6: // AZStd::shared_ptr<AZStd::string>
-            return *AZStd::get<AZStd::shared_ptr<AZStd::string>>(m_value);
+        case 6: // AZStd::shared_ptr<const AZStd::string>
+            return *AZStd::get<AZStd::shared_ptr<const AZStd::string>>(m_value);
         case 7: // ShortStringType
             {
                 const ShortStringType& ShortString = AZStd::get<ShortStringType>(m_value);
@@ -948,7 +948,7 @@ namespace AZ::Dom
         }
         else
         {
-            m_value = AZStd::allocate_shared<AZStd::string>(AZStdAlloc<ValueAllocator>(), value);
+            m_value = AZStd::allocate_shared<const AZStd::string>(AZStdAlloc<ValueAllocator>(), value);
         }
     }
 
@@ -1000,7 +1000,7 @@ namespace AZ::Dom
                 {
                     result = visitor.String(arg, copyStrings ? Lifetime::Temporary : Lifetime::Persistent);
                 }
-                else if constexpr (AZStd::is_same_v<Alternative, AZStd::shared_ptr<AZStd::string>>)
+                else if constexpr (AZStd::is_same_v<Alternative, AZStd::shared_ptr<const AZStd::string>>)
                 {
                     result = visitor.RefCountedString(arg, copyStrings ? Lifetime::Temporary : Lifetime::Persistent);
                 }
@@ -1096,7 +1096,7 @@ namespace AZ::Dom
         if (IsString() && other.IsString())
         {
             // If we both hold the same ref counted string we don't need to do a full comparison
-            if (AZStd::holds_alternative<AZStd::shared_ptr<AZStd::string>>(m_value) && m_value == other.m_value)
+            if (AZStd::holds_alternative<AZStd::shared_ptr<const AZStd::string>>(m_value) && m_value == other.m_value)
             {
                 return true;
             }

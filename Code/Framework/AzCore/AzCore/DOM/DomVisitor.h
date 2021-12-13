@@ -168,10 +168,15 @@ namespace AZ::Dom
         virtual Result Uint64(AZ::u64 value);
         //! Operates on a double precision, 64 bit floating point value.
         virtual Result Double(double value);
-        //! Operates on a string value. As strings are a reference type.
-        //! Storage semantics are provided to indicate where the value may be stored persistently or requires a copy.
+        //! Operates on a string value. As strings are a reference type,
+        //! storage semantics are provided to indicate where the value may be stored persistently or requires a copy.
+        //! \param lifetime Specifies the lifetime of this string - if the string has a temporary lifetime, it cannot
+        //! safely be stored as a reference.
         virtual Result String(AZStd::string_view value, Lifetime lifetime);
-        virtual Result RefCountedString(AZStd::shared_ptr<AZStd::string> value, Lifetime lifetime);
+        //! Operates on a ref-counted string value. S
+        //! \param lifetime Specifies the lifetime of this string. If the string has a temporary lifetime, it may not
+        //! be safely stored as a reference, but may still be safely stored as a ref-counted shared_ptr.
+        virtual Result RefCountedString(AZStd::shared_ptr<const AZStd::string> value, Lifetime lifetime);
         //! Operates on an opaque value. As opaque values are a reference type, storage semantics are provided to
         //! indicate where the value may be stored persistently or requires a copy.
         //! The base implementation of OpaqueValue rejects the operation, as opaque values are meant for special

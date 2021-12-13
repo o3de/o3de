@@ -39,8 +39,7 @@ namespace AZ::Dom
     };
 
     //! The allocator used by Value.
-    //! Value heap allocates shared_ptrs for its container storage (Array / Object / Node) alongside the vector
-    //! contents of its container storage.
+    //! Value heap allocates shared_ptrs for its container storage (Array / Object / Node) alongside 
     class ValueAllocator final : public SimpleSchemaAllocator<AZ::HphaSchema, AZ::HphaSchema::Descriptor, false, false>
     {
     public:
@@ -131,7 +130,7 @@ namespace AZ::Dom
         Value(const Value&);
         Value(Value&&) noexcept;
         Value(AZStd::string_view string, bool copy);
-        Value(AZStd::shared_ptr<AZStd::string> string);
+        Value(AZStd::shared_ptr<const AZStd::string> string);
 
         Value(int32_t value);
         Value(uint32_t value);
@@ -242,10 +241,6 @@ namespace AZ::Dom
         const Array::ContainerType& GetArray() const;
 
         // Node API (supports both object + array API, plus a dedicated NodeName)...
-        // bool CanConvertToNodeFromObject() const;
-        // Value& ConvertToNodeFromObject();
-        // Value& ConvertToObjectFromNode();
-
         void SetNode(AZ::Name name);
         void SetNode(AZStd::string_view name);
 
@@ -282,14 +277,14 @@ namespace AZ::Dom
         float GetFloat() const;
         void SetFloat(float);
 
-        // string API...
+        // String API...
         AZStd::string_view GetString() const;
         size_t GetStringLength() const;
         void SetString(AZStd::string_view);
-        void SetString(AZStd::shared_ptr<AZStd::string>);
+        void SetString(AZStd::shared_ptr<const AZStd::string>);
         void CopyFromString(AZStd::string_view);
 
-        // opaque type API...
+        // Opaque type API...
         AZStd::any& GetOpaqueValue() const;
         //! This sets this Value to represent a value of an type that the DOM has
         //! no formal knowledge of. Where possible, it should be preferred to
@@ -298,10 +293,10 @@ namespace AZ::Dom
         //! values.
         void SetOpaqueValue(AZStd::any&);
 
-        // null API...
+        // Null API...
         void SetNull();
 
-        // Visitor API
+        // Visitor API...
         Visitor::Result Accept(Visitor& visitor, bool copyStrings) const;
         AZStd::unique_ptr<Visitor> GetWriteHandler();
 
@@ -330,12 +325,9 @@ namespace AZ::Dom
             }
         };
 
-        // If using the the copy on write model, anything stored internally as a shared_ptr will
-        // detach and copy when doing a mutating operation if use_count() > 1.
-
-        // This internal storage will not have a 1:1 mapping to the public Type, as there may be
-        // multiple storage options (e.g. strings being stored as non-owning string_view or
-        // owning shared_ptr<string>)
+        //! The internal storage type for Value.
+        //! These types do not correspond one-to-one with the Value's external Type as there may be multiple storage classes
+        //! for the same type in some instances, such as string storage 
         using ValueType = AZStd::variant<
             // NullType
             AZStd::monostate,
@@ -347,7 +339,7 @@ namespace AZ::Dom
             bool,
             // StringType
             AZStd::string_view,
-            AZStd::shared_ptr<AZStd::string>,
+            AZStd::shared_ptr<const AZStd::string>,
             ShortStringType,
             // ObjectType
             ObjectPtr,
