@@ -57,8 +57,8 @@ namespace SandboxEditor
     SANDBOX_API float ManipulatorLineBoundWidth();
     SANDBOX_API void SetManipulatorLineBoundWidth(float lineBoundWidth);
 
-    SANDBOX_API bool ManipulatorMouseWrap();
-    SANDBOX_API void SetManipulatorMouseWrap(bool wrapping);
+    SANDBOX_API bool ViewportMouseWrapSetting();
+    SANDBOX_API void SetViewportMouseWrapSetting(bool wrapping);
 
     SANDBOX_API float ManipulatorCircleBoundWidth();
     SANDBOX_API void SetManipulatorCircleBoundWidth(float circleBoundWidth);

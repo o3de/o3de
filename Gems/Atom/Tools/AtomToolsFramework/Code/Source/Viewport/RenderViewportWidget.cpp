@@ -331,12 +331,12 @@ namespace AtomToolsFramework
 
     void RenderViewportWidget::BeginCursorCapture()
     {
-        m_inputChannelMapper->SetCursorMode(AzToolsFramework::QtEventToAzInputMapper::CURSOR_MODE_CAPTURED);
+        m_inputChannelMapper->SetCursorMode(AzToolsFramework::QtEventToAzInputMapper::CursorModeCaptured);
     }
 
     void RenderViewportWidget::EndCursorCapture()
     {
-        m_inputChannelMapper->SetCursorMode(AzToolsFramework::QtEventToAzInputMapper::CURSOR_MODE_NONE);
+        m_inputChannelMapper->SetCursorMode(AzToolsFramework::QtEventToAzInputMapper::CursorModeNone);
     }
 
     void RenderViewportWidget::SetOverrideCursor(AzToolsFramework::ViewportInteraction::CursorStyleOverride cursorStyleOverride)

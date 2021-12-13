@@ -47,12 +47,12 @@ namespace UnitTest
 
     void ViewportMouseCursorRequestImpl::BeginCursorCapture()
     {
-        m_inputChannelMapper->SetCursorMode(AzToolsFramework::QtEventToAzInputMapper::CURSOR_MODE_CAPTURED);
+        m_inputChannelMapper->SetCursorMode(AzToolsFramework::QtEventToAzInputMapper::CursorModeCaptured);
     }
 
     void ViewportMouseCursorRequestImpl::EndCursorCapture()
     {
-        m_inputChannelMapper->SetCursorMode(AzToolsFramework::QtEventToAzInputMapper::CURSOR_MODE_NONE);
+        m_inputChannelMapper->SetCursorMode(AzToolsFramework::QtEventToAzInputMapper::CursorModeNone);
     }
 
     bool ViewportMouseCursorRequestImpl::IsMouseOver() const
