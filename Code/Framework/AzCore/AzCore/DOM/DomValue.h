@@ -334,6 +334,8 @@ namespace AZ::Dom
 
         explicit Value(AZStd::any* opaqueValue);
 
+        // Determine the short string buffer size based on the size of our largest internal type (string_view)
+        // minus the size of the short string size field.
         static constexpr const size_t ShortStringSize = sizeof(AZStd::string_view) - sizeof(size_t);
         struct ShortStringType
         {
@@ -348,7 +350,7 @@ namespace AZ::Dom
 
         //! The internal storage type for Value.
         //! These types do not correspond one-to-one with the Value's external Type as there may be multiple storage classes
-        //! for the same type in some instances, such as string storage
+        //! for the same type in some instances, such as string storage.
         using ValueType = AZStd::variant<
             // NullType
             AZStd::monostate,
