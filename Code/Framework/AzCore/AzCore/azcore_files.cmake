@@ -127,8 +127,6 @@ set(FILES
     Debug/TraceReflection.h
     DOM/DomBackend.cpp
     DOM/DomBackend.h
-    DOM/DomDocument.cpp
-    DOM/DomDocument.h
     DOM/DomUtils.cpp
     DOM/DomUtils.h
     DOM/DomValue.cpp
