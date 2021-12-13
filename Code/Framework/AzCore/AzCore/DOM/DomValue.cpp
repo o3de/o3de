@@ -144,11 +144,8 @@ namespace AZ::Dom
         case Type::Null:
             // Null is the default initialized value
             break;
-        case Type::False:
+        case Type::Bool:
             m_value = false;
-            break;
-        case Type::True:
-            m_value = true;
             break;
         case Type::Object:
             SetObject();
@@ -159,8 +156,14 @@ namespace AZ::Dom
         case Type::String:
             SetString("");
             break;
-        case Type::Number:
-            m_value = 0.0;
+        case Type::Int64:
+            m_value = int64_t{};
+            break;
+        case Type::Uint64:
+            m_value = uint64_t{};
+            break;
+        case Type::Double:
+            m_value = double{};
             break;
         case Type::Node:
             SetNode("");
@@ -227,11 +230,13 @@ namespace AZ::Dom
         case 0: // AZStd::monostate
             return Type::Null;
         case 1: // int64_t
+            return Type::Int64;
         case 2: // uint64_t
+            return Type::Uint64;
         case 3: // double
-            return Type::Number;
+            return Type::Double;
         case 4: // bool
-            return AZStd::get<bool>(m_value) ? Type::True : Type::False;
+            return Type::Bool;
         case 5: // AZStd::string_view
         case 6: // AZStd::shared_ptr<const AZStd::string>
         case 7: // ShortStringType
@@ -256,12 +261,12 @@ namespace AZ::Dom
 
     bool Value::IsFalse() const
     {
-        return GetType() == Type::False;
+        return IsBool() && !AZStd::get<bool>(m_value);
     }
 
     bool Value::IsTrue() const
     {
-        return GetType() == Type::True;
+        return IsBool() && AZStd::get<bool>(m_value);
     }
 
     bool Value::IsBool() const
@@ -291,7 +296,16 @@ namespace AZ::Dom
 
     bool Value::IsNumber() const
     {
-        return GetType() == Type::Number;
+        switch (GetType())
+        {
+        case Type::Int64:
+            [[fallthrough]];
+        case Type::Uint64:
+            [[fallthrough]];
+        case Type::Double:
+            return true;
+        }
+        return false;
     }
 
     bool Value::IsInt() const

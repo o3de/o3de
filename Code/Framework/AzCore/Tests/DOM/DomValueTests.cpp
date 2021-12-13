@@ -218,9 +218,9 @@ namespace AZ::Dom::Tests
         m_value["int64_min"] = AZStd::numeric_limits<int64_t>::min();
         m_value["int64_max"] = AZStd::numeric_limits<int64_t>::max();
 
-        EXPECT_EQ(m_value["int64_min"].GetType(), Type::Number);
+        EXPECT_EQ(m_value["int64_min"].GetType(), Type::Int64);
         EXPECT_EQ(m_value["int64_min"].GetInt64(), AZStd::numeric_limits<int64_t>::min());
-        EXPECT_EQ(m_value["int64_max"].GetType(), Type::Number);
+        EXPECT_EQ(m_value["int64_max"].GetType(), Type::Int64);
         EXPECT_EQ(m_value["int64_max"].GetInt64(), AZStd::numeric_limits<int64_t>::max());
 
         PerformValueChecks();
@@ -232,9 +232,9 @@ namespace AZ::Dom::Tests
         m_value["uint64_min"] = AZStd::numeric_limits<uint64_t>::min();
         m_value["uint64_max"] = AZStd::numeric_limits<uint64_t>::max();
 
-        EXPECT_EQ(m_value["uint64_min"].GetType(), Type::Number);
+        EXPECT_EQ(m_value["uint64_min"].GetType(), Type::Uint64);
         EXPECT_EQ(m_value["uint64_min"].GetInt64(), AZStd::numeric_limits<uint64_t>::min());
-        EXPECT_EQ(m_value["uint64_max"].GetType(), Type::Number);
+        EXPECT_EQ(m_value["uint64_max"].GetType(), Type::Uint64);
         EXPECT_EQ(m_value["uint64_max"].GetInt64(), AZStd::numeric_limits<uint64_t>::max());
 
         PerformValueChecks();
@@ -246,9 +246,9 @@ namespace AZ::Dom::Tests
         m_value["double_min"] = AZStd::numeric_limits<double>::min();
         m_value["double_max"] = AZStd::numeric_limits<double>::max();
 
-        EXPECT_EQ(m_value["double_min"].GetType(), Type::Number);
+        EXPECT_EQ(m_value["double_min"].GetType(), Type::Double);
         EXPECT_EQ(m_value["double_min"].GetDouble(), AZStd::numeric_limits<double>::min());
-        EXPECT_EQ(m_value["double_max"].GetType(), Type::Number);
+        EXPECT_EQ(m_value["double_max"].GetType(), Type::Double);
         EXPECT_EQ(m_value["double_max"].GetDouble(), AZStd::numeric_limits<double>::max());
 
         PerformValueChecks();
@@ -271,9 +271,9 @@ namespace AZ::Dom::Tests
         m_value["true_value"] = true;
         m_value["false_value"] = false;
 
-        EXPECT_EQ(m_value["true_value"].GetType(), Type::True);
+        EXPECT_EQ(m_value["true_value"].GetType(), Type::Bool);
         EXPECT_EQ(m_value["true_value"].GetBool(), true);
-        EXPECT_EQ(m_value["false_value"].GetType(), Type::False);
+        EXPECT_EQ(m_value["false_value"].GetType(), Type::Bool);
         EXPECT_EQ(m_value["false_value"].GetBool(), false);
 
         PerformValueChecks();
