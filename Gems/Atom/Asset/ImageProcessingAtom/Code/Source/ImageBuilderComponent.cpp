@@ -221,18 +221,19 @@ namespace ImageProcessingAtom
         m_isShuttingDown = true;
     }
 
-    PresetName GetImagePreset(const AZStd::string& filepath)
+    PresetName GetImagePreset(const AZStd::string& imageFileFullPath)
     {
         // first let preset from asset info
         TextureSettings textureSettings;
-        StringOutcome output = TextureSettings::LoadTextureSetting(filepath, textureSettings);
+        AZStd::string settingFilePath = imageFileFullPath + TextureSettings::ExtensionName;
+        TextureSettings::LoadTextureSetting(settingFilePath, textureSettings);
 
         if (!textureSettings.m_preset.IsEmpty())
         {
             return textureSettings.m_preset;
         }
 
-        return BuilderSettingManager::Instance()->GetSuggestedPreset(filepath);
+        return BuilderSettingManager::Instance()->GetSuggestedPreset(imageFileFullPath);
     }
 
     void HandlePresetDependency(PresetName presetName, AZStd::vector<AssetBuilderSDK::SourceFileDependency>& sourceDependencyList)
@@ -305,13 +306,14 @@ namespace ImageProcessingAtom
         // add source dependency for .assetinfo file
         AssetBuilderSDK::SourceFileDependency sourceFileDependency;
         sourceFileDependency.m_sourceDependencyType = AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Absolute;
-        sourceFileDependency.m_sourceFileDependencyPath = request.m_sourceFile;
-        AZ::StringFunc::Path::ReplaceExtension(sourceFileDependency.m_sourceFileDependencyPath, TextureSettings::ExtensionName);
+        sourceFileDependency.m_sourceFileDependencyPath = request.m_sourceFile + TextureSettings::ExtensionName;
         response.m_sourceFileDependencyList.push_back(sourceFileDependency);
 
         // add source dependencies for .preset files
-        // Get the preset for this file 
-        auto presetName = GetImagePreset(request.m_sourceFile);
+        // Get the preset for this file        
+        AZ::IO::FixedMaxPath fullPath(request.m_watchFolder);
+        fullPath /= request.m_sourceFile;
+        auto presetName = GetImagePreset(fullPath.c_str());
         HandlePresetDependency(presetName, response.m_sourceFileDependencyList);
 
         response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
