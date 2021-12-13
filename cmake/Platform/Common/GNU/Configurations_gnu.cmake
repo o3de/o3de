@@ -19,25 +19,16 @@ ly_append_configurations_options(
         -Werror
 
         # Disabled warnings (please do not disable any others without first consulting ly-warnings)
-        -Wno-unknown-warning-option       
-        "-Wno-#pragma-messages"
-        
-        -Wno-dynamic-class-memaccess
         -Wno-format-security
-        -Wno-inconsistent-missing-override
         -Wno-multichar
         -Wno-parentheses
-        -Wno-self-assign
         -Wno-switch
         -Wno-tautological-compare
-        -Wno-undefined-var-template
         -Wno-unknown-pragmas
         -Wno-unused-function
-        -Wno-unused-private-field
         -Wno-unused-value
         -Wno-unused-variable
-        -Wno-non-pod-varargs
-        -Wno-unused-lambda-capture
+
         
     COMPILATION_C
         -Wno-absolute-value
