@@ -202,12 +202,17 @@ namespace UnitTest
 
         AZ::Data::AssetId GetAssetIdByPath(const char* path, const AZ::Data::AssetType&, bool) override
         {
-            if (AZ::StringFunc::Equal(path, m_testFile))
+            AZ::IO::PathView pathView{ AZStd::string_view(path) };
+
+            if (AZ::IO::PathView(m_testFile) == pathView)
             {
                 return TestId;
             }
 
-            return AZ::Data::AssetId();
+            AZ_Error("MockCatalog", false, "Requested path %s does not match expected asset path of %s", path, m_testFile.c_str());
+            ADD_FAILURE();
+
+            return {};
         }
 
         AZStd::string m_testFile;
