@@ -10,15 +10,15 @@
 
 #include <AzCore/DOM/DomBackend.h>
 #include <AzCore/DOM/DomVisitor.h>
+#include <AzCore/Memory/HphaSchema.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/PoolAllocator.h>
-#include <AzCore/Memory/HphaSchema.h>
+#include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/stack.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
-#include <AzCore/std/containers/array.h>
 
 namespace AZ::Dom
 {
@@ -27,19 +27,20 @@ namespace AZ::Dom
     //! The type of underlying value stored in a value. \see Value
     enum class Type
     {
-        Null = 0,
-        False = 1,
-        True = 2,
-        Object = 3,
-        Array = 4,
-        String = 5,
-        Number = 6,
-        Node = 7,
-        Opaque = 8,
+        Null,
+        Bool,
+        Object,
+        Array,
+        String,
+        Int64,
+        Uint64,
+        Double,
+        Node,
+        Opaque,
     };
 
     //! The allocator used by Value.
-    //! Value heap allocates shared_ptrs for its container storage (Array / Object / Node) alongside 
+    //! Value heap allocates shared_ptrs for its container storage (Array / Object / Node) alongside
     class ValueAllocator final : public SimpleSchemaAllocator<AZ::HphaSchema, AZ::HphaSchema::Descriptor, false, false>
     {
     public:
@@ -56,6 +57,7 @@ namespace AZ::Dom
 
     class Value;
 
+    //! Internal storage for a Value array: an ordered list of Values.
     class Array
     {
     public:
@@ -73,6 +75,7 @@ namespace AZ::Dom
     using ArrayPtr = AZStd::shared_ptr<Array>;
     using ConstArrayPtr = AZStd::shared_ptr<const Array>;
 
+    //! Internal storage for a Value object: an ordered list of Name / Value pairs.
     class Object
     {
     public:
@@ -91,6 +94,9 @@ namespace AZ::Dom
     using ObjectPtr = AZStd::shared_ptr<Object>;
     using ConstObjectPtr = AZStd::shared_ptr<const Object>;
 
+    //! Storage for a Value node: a named Value with both properties and children.
+    //! Properties are stored as an ordered list of Name / Value pairs.
+    //! Children are stored as an oredered list of Values.
     class Node
     {
     public:
@@ -122,6 +128,21 @@ namespace AZ::Dom
     using NodePtr = AZStd::shared_ptr<Node>;
     using ConstNodePtr = AZStd::shared_ptr<Node>;
 
+    //! Value is a typed union of Dom types that can represent the types provdied by AZ::Dom::Visitor.
+    //! Value can be one of the following types:
+    //! - Null: a type with no value, this is the default type for Value
+    //! - Bool: a true or false boolean value
+    //! - Object: a container with an ordered list of Name/Value pairs, analagous to a JSON object
+    //! - Array: a container with an ordered list of Values, analagous to a JSON array
+    //! - String: a UTF-8 string
+    //! - Int64: a signed, 64-bit integer
+    //! - Uint64: an unsigned, 64-bit integer
+    //! - Double: a double precision floating point value
+    //! - Node: a container with a Name, an ordered list of Name/Values pairs (attributes), and an ordered list of Values (children),
+    //! analagous to an XML node
+    //! - Opaque: an arbitrary value stored in an AZStd::any. This is a non-serializable representation of an entry used only for in-memory
+    //! options. This is intended to be used as an intermediate value over the course of DOM transformation and as a proxy to pass through
+    //! types of which the DOM has no knowledge to other systems.
     class Value
     {
     public:
@@ -327,7 +348,7 @@ namespace AZ::Dom
 
         //! The internal storage type for Value.
         //! These types do not correspond one-to-one with the Value's external Type as there may be multiple storage classes
-        //! for the same type in some instances, such as string storage 
+        //! for the same type in some instances, such as string storage
         using ValueType = AZStd::variant<
             // NullType
             AZStd::monostate,
@@ -351,8 +372,7 @@ namespace AZ::Dom
             AZStd::any*>;
 
         static_assert(
-            sizeof(ValueType) == sizeof(AZStd::variant<ShortStringType>),
-            "ValueType should have no members larger than ShortStringType");
+            sizeof(ValueType) == sizeof(AZStd::variant<ShortStringType>), "ValueType should have no members larger than ShortStringType");
 
         ValueType m_value;
     };
