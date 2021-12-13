@@ -112,6 +112,54 @@ namespace AZ
         , m_debugDescription(nullptr)
     {}
 
+    bool BehaviorMethod::AllocateParameters(const BehaviorParameter* parameters, unsigned int parametersSize, BehaviorValueParameter* arguments, unsigned int numArguments) const
+    {
+        size_t totalArguments = GetNumArguments();
+        if (numArguments < totalArguments)
+        {
+            // We are cloning all arguments on the stack, since Call is called only from Invoke we can reserve bigger "arguments" array
+            // that can always handle all parameters. So far the don't use default values that ofter, so we will optimize for the common case first.
+            BehaviorValueParameter* newArguments = reinterpret_cast<BehaviorValueParameter*>(alloca(sizeof(BehaviorValueParameter)*  totalArguments));
+            // clone the input parameters (we don't need to clone temp buffers, etc. as they will be still on the stack)
+            size_t argIndex = 0;
+            for (; argIndex < numArguments; ++argIndex)
+            {
+                new(&newArguments[argIndex]) BehaviorValueParameter(arguments[argIndex]);
+            }
+
+            // clone the default parameters if they exist
+            for (; argIndex < totalArguments; ++argIndex)
+            {
+                BehaviorDefaultValuePtr defaultValue = GetDefaultValue(argIndex);
+                if (!defaultValue)
+                {
+                    AZ_Warning("Behavior", false, "Not enough arguments to make a call! %d needed %d", numArguments, totalArguments);
+                    return false;
+                }
+                new(&newArguments[argIndex]) BehaviorValueParameter(defaultValue->GetValue());
+            }
+
+            arguments = newArguments;
+        }
+
+        for (size_t i = s_startArgumentIndex; i < parametersSize; ++i)
+        {
+            if (!arguments[i - 1].ConvertTo(parameters[i].m_typeId))
+            {
+                AZ_Warning("Behavior", false, "Invalid parameter type for method '%s'! Can not convert method parameter %d from %s(%s) to %s(%s)",
+                    m_name.c_str(),
+                    i - 1,
+                    arguments[i - 1].m_name,
+                    arguments[i - 1].m_typeId.template ToString<AZStd::string>().c_str(),
+                    parameters[i].m_name,
+                    parameters[i].m_typeId.template ToString<AZStd::string>().c_str());
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     //=========================================================================
     // ~BehaviorMethod
     //=========================================================================
