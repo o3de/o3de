@@ -1,5 +1,5 @@
 {
-    "Source" : "./StandardPBR_ForwardPass.azsl",
+    "Source" : "./BasePBR_ForwardPass.azsl",
 
     "DepthStencilState" :
     {
@@ -30,7 +30,6 @@
         }
     },
 
-
     "CompilerHints" : { 
         "DisableOptimizations" : false
     },
@@ -40,11 +39,11 @@
       "EntryPoints":
       [
         {
-          "name": "StandardPbr_ForwardPassVS",
+          "name": "BasePbr_ForwardPassVS",
           "type": "Vertex"
         },
         {
-          "name": "StandardPbr_ForwardPassPS",
+          "name": "BasePbr_ForwardPassPS_EDS",
           "type": "Fragment"
         }
       ]

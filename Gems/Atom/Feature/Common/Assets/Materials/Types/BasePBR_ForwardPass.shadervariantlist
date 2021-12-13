@@ -1,5 +1,5 @@
 {
-    "Shader" : "StandardPBR_ForwardPass.shader",
+    "Shader" : "BasePBR_ForwardPass.shader",
     "Variants": [
         {
             "StableId": 1,

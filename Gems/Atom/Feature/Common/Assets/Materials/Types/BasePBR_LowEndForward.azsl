@@ -10,4 +10,4 @@
 
 #define QUALITY_LOW_END 1
 
-#include "StandardPBR_ForwardPass.azsl"
+#include "BasePBR_ForwardPass.azsl"
