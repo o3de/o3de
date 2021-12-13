@@ -39,6 +39,63 @@ except:
 
 
 # -------------------------------------------------------------------------
+# global scope
+_MODULENAME = 'DCCsi.config'
+
+#os.environ['PYTHONINSPECT'] = 'True'
+_MODULE_PATH = os.path.abspath(__file__)
+
+# we don't have access yet to the DCCsi Lib\site-packages
+# (1) this will give us import access to azpy (always?)
+_PATH_DCCSIG = os.getenv('PATH_DCCSIG',
+                         os.path.abspath(os.path.dirname(_MODULE_PATH)))
+os. environ['PATH_DCCSIG'] = _PATH_DCCSIG
+# ^ we assume this config is in the root of the DCCsi
+# if it's not, be sure to set envar 'PATH_DCCSIG' to ensure it
+site.addsitedir(_PATH_DCCSIG)  # must be done for azpy
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+# now we have azpy api access
+import azpy
+from azpy.env_bool import env_bool
+from azpy.constants import ENVAR_DCCSI_GDEBUG
+from azpy.constants import ENVAR_DCCSI_DEV_MODE
+from azpy.constants import ENVAR_DCCSI_LOGLEVEL
+from azpy.constants import ENVAR_DCCSI_GDEBUGGER
+from azpy.constants import FRMT_LOG_LONG
+
+_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
+_DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
+_DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
+
+# default loglevel to info unless set
+_DCCSI_LOGLEVEL = int(env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO))
+if _DCCSI_GDEBUG:
+    # override loglevel if runnign debug
+    _DCCSI_LOGLEVEL = _logging.DEBUG
+    
+# set up module logging
+#for handler in _logging.root.handlers[:]:
+    #_logging.root.removeHandler(handler)
+    
+# configure basic logger
+# note: not using a common logger to reduce cyclical imports
+_logging.basicConfig(level=_DCCSI_LOGLEVEL,
+                    format=FRMT_LOG_LONG,
+                    datefmt='%m-%d %H:%M')
+
+_LOGGER = _logging.getLogger(_MODULENAME)
+_LOGGER.debug('Initializing: {}.'.format({_MODULENAME}))
+_LOGGER.debug('site.addsitedir({})'.format(_PATH_DCCSIG))
+_LOGGER.debug('_DCCSI_GDEBUG: {}'.format(_DCCSI_GDEBUG))
+_LOGGER.debug('_DCCSI_DEV_MODE: {}'.format(_DCCSI_DEV_MODE))
+_LOGGER.debug('_DCCSI_LOGLEVEL: {}'.format(_DCCSI_LOGLEVEL))
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
 def attach_debugger():
     _DCCSI_GDEBUG = True
     os.environ["DYNACONF_DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)
@@ -50,60 +107,6 @@ def attach_debugger():
     _debugger = connect_wing()
     
     return _debugger
-# -------------------------------------------------------------------------
-
-
-# -------------------------------------------------------------------------
-# global scope
-_MODULENAME = __name__
-if _MODULENAME is '__main__':
-    _MODULENAME = 'DCCsi.config'
-
-#os.environ['PYTHONINSPECT'] = 'True'
-_MODULE_PATH = os.path.abspath(__file__)
-
-# we don't have access yet to the DCCsi Lib\site-packages
-# (1) this will give us import access to azpy (always?)
-_PATH_DCCSIG = os.getenv('PATH_DCCSIG',
-                         os.path.abspath(os.path.dirname(_MODULE_PATH)))
-# ^ we assume this config is in the root of the DCCsi
-# if it's not, be sure to set envar 'PATH_DCCSIG' to ensure it
-site.addsitedir(_PATH_DCCSIG)  # must be done for azpy
-
-# now we have azpy api access
-import azpy
-from azpy.env_bool import env_bool
-from azpy.constants import ENVAR_DCCSI_GDEBUG
-from azpy.constants import ENVAR_DCCSI_DEV_MODE
-from azpy.constants import ENVAR_DCCSI_LOGLEVEL
-
-# set up global space, logging etc.
-# set these true if you want them set globally for debugging
-_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
-_DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
-_DCCSI_LOGLEVEL = int(env_bool(ENVAR_DCCSI_LOGLEVEL, int(20)))
-if _DCCSI_GDEBUG:
-    _DCCSI_LOGLEVEL = int(10)
-
-# early attach WingIDE debugger (can refactor to include other IDEs later)
-# requires externally enabling via ENVAR
-if _DCCSI_DEV_MODE:
-    _debugger = attach_debugger()
-# to do: ^ this should be replaced with full featured azpy.dev.util
-# that supports additional debuggers (pycharm, vscode, etc.)
-
-# set up module logging
-for handler in _logging.root.handlers[:]:
-    _logging.root.removeHandler(handler)
-    
-_LOGGER = azpy.initialize_logger(_MODULENAME,
-                                 log_to_file=_DCCSI_GDEBUG,
-                                 default_log_level=_DCCSI_LOGLEVEL)
-_LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
-_LOGGER.debug('site.addsitedir({})'.format(_PATH_DCCSIG))
-_LOGGER.debug('_DCCSI_GDEBUG: {}'.format(_DCCSI_GDEBUG))
-_LOGGER.debug('_DCCSI_DEV_MODE: {}'.format(_DCCSI_DEV_MODE))
-_LOGGER.debug('_DCCSI_LOGLEVEL: {}'.format(_DCCSI_LOGLEVEL))
 # -------------------------------------------------------------------------
 
 
@@ -481,11 +484,11 @@ def get_config_settings(engine_path=_O3DE_DEV,
 # Main Code Block, runs this script as main (testing)
 # -------------------------------------------------------------------------
 if __name__ == '__main__':
-    """Run this file as a standalone cli script"""
+    """Run this file as a standalone cli script for testing/debugging"""
+    import time
+    start = time.process_time() # start tracking
     
-    _MODULENAME = __name__
-    if _MODULENAME is '__main__':
-        _MODULENAME = 'DCCsi.config'
+    _MODULENAME = 'DCCsi.config'
     
     from azpy.constants import STR_CROSSBAR
     
@@ -500,7 +503,7 @@ if __name__ == '__main__':
 
     # happy print
     _LOGGER.info(STR_CROSSBAR)
-    _LOGGER.info('~ constants.py ... Running script as __main__')
+    _LOGGER.info('~ {}.py ... Running script as __main__'.format(_MODULENAME))
     _LOGGER.info(STR_CROSSBAR)
 
     # go ahead and run the rest of the configuration
@@ -695,6 +698,8 @@ if __name__ == '__main__':
             _LOGGER.warning("Could not import 'pyside2uic'")
             _LOGGER.warning("Refer to: '< local DCCsi >\3rdParty\Python\README.txt'")
             _LOGGER.error(e)
+    
+    _LOGGER.info('DCCsi: config.py took: {} sec'.format(time.process_time() - start)) 
 
     # return
     sys.exit()
