@@ -180,13 +180,16 @@ namespace AZ
 
         //! Transforms the data from the rapidjson Value to outputValue, if the conversion is possible and supported.
         //! The serializer is responsible for casting to the proper type and safely writing to the outputValue memory.
+        //! \note The default implementation is to load the object ignoring a custom serializers for the type, which allows for custom serializers
+        //! to modify the object after all default loading has occurred.
         virtual JsonSerializationResult::Result Load(void* outputValue, const Uuid& outputValueTypeId, const rapidjson::Value& inputValue,
-            JsonDeserializerContext& context) = 0;
+            JsonDeserializerContext& context);
         
         //! Write the input value to a rapidjson value if the default value is not null and doesn't match the input value, otherwise
         //! an error is returned and sets the rapidjson value to a null value.
+        //! \note The default implementation is to store the object ignoring custom serializers.
         virtual JsonSerializationResult::Result Store(rapidjson::Value& outputValue, const void* inputValue, const void* defaultValue,
-            const Uuid& valueTypeId, JsonSerializerContext& context) = 0;
+            const Uuid& valueTypeId, JsonSerializerContext& context);
 
         //! Returns the operation flags which tells the Json Serialization how this custom json serializer can be used.
         virtual OperationFlags GetOperationsFlags() const;

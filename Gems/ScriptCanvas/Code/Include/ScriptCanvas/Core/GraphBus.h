@@ -147,9 +147,6 @@ namespace ScriptCanvas
         //! returns a pair of <variable datum pointer, variable name> with the supplied id
         //! The variable datum pointer is non-null if the variable has been found
         virtual GraphVariable* FindVariableById(const VariableId& variableId) = 0;
-
-        virtual AZ::Data::AssetType GetAssetType() const = 0;
-
     };
     using GraphRequestBus = AZ::EBus<GraphRequests>;
 

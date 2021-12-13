@@ -3820,10 +3820,8 @@ CarrierImpl::DisconnectRequest(ConnectionID id, CarrierDisconnectReason reason)
         case Carrier::CST_CONNECTED:
         {
             conn->m_state = Carrier::CST_DISCONNECTING;
-            EBUS_EVENT(Debug::CarrierDrillerBus, OnConnectionStateChanged, this, conn, conn->m_state);
             m_handshake->OnDisconnect(conn);
             EBUS_EVENT_ID(m_gridMate, CarrierEventBus, OnDisconnect, this, id, reason);
-            EBUS_EVENT(Debug::CarrierDrillerBus, OnDisconnect, this, id, reason);
 
             ThreadMessage* ctm = aznew ThreadMessage(CTM_DISCONNECT);
             ctm->m_connection = conn;
@@ -3836,10 +3834,8 @@ CarrierImpl::DisconnectRequest(ConnectionID id, CarrierDisconnectReason reason)
         case Carrier::CST_CONNECTING:
         {
             conn->m_state = Carrier::CST_DISCONNECTING;
-            EBUS_EVENT(Debug::CarrierDrillerBus, OnConnectionStateChanged, this, id, conn->m_state);
             m_handshake->OnDisconnect(conn);
             EBUS_EVENT_ID(m_gridMate, CarrierEventBus, OnFailedToConnect, this, id, reason);
-            EBUS_EVENT(Debug::CarrierDrillerBus, OnFailedToConnect, this, id, reason);
 
             ThreadMessage* ctm = aznew ThreadMessage(CTM_DISCONNECT);
             ctm->m_connection = conn;
@@ -3873,13 +3869,11 @@ CarrierImpl::DeleteConnection(Connection* conn, CarrierDisconnectReason reason)
     {
         m_handshake->OnDisconnect(conn);
         EBUS_EVENT_ID(m_gridMate, CarrierEventBus, OnDisconnect, this, conn, reason);
-        EBUS_EVENT(Debug::CarrierDrillerBus, OnDisconnect, this, conn, reason);
     } break;
     case Carrier::CST_CONNECTING:
     {
         m_handshake->OnDisconnect(conn);
         EBUS_EVENT_ID(m_gridMate, CarrierEventBus, OnFailedToConnect, this, conn, reason);
-        EBUS_EVENT(Debug::CarrierDrillerBus, OnFailedToConnect, this, conn, reason);
     } break;
     case Carrier::CST_DISCONNECTED:
     case Carrier::CST_DISCONNECTING:
@@ -4271,7 +4265,6 @@ CarrierImpl::ProcessMainThreadMessages()
                     m_connections.insert(conn);
 
                     EBUS_EVENT_ID(m_gridMate, CarrierEventBus, OnIncomingConnection, this, conn);
-                    EBUS_EVENT(Debug::CarrierDrillerBus, OnIncomingConnection, this, conn);
 
                     ThreadMessage* ctm = aznew ThreadMessage(CTM_CONNECT);
                     ctm->m_connection = conn;
@@ -4306,7 +4299,6 @@ CarrierImpl::ProcessMainThreadMessages()
                     ctm->m_threadConnection = threadConn;
                     ctm->m_disconnectReason = msg->m_disconnectReason;
                     m_thread->PushCarrierThreadMessage(ctm);
-                    EBUS_EVENT(Debug::CarrierDrillerBus, OnConnectionStateChanged, this, msg->m_connection, msg->m_connection->m_state);
                 }
             } break;
             case MTM_DELETE_CONNECTION:
@@ -4333,7 +4325,6 @@ CarrierImpl::ProcessMainThreadMessages()
                 if (msg->m_errorCode == CarrierErrorCode::EC_DRIVER)
                 {
                     EBUS_EVENT_ID(m_gridMate, CarrierEventBus, OnDriverError, this, msg->m_connection, msg->m_error.m_driverError);
-                    EBUS_EVENT(Debug::CarrierDrillerBus, OnDriverError, this, msg->m_connection, msg->m_error.m_driverError);
 
                     if (msg->m_connection)
                     {
@@ -4344,7 +4335,6 @@ CarrierImpl::ProcessMainThreadMessages()
                 else
                 {
                     EBUS_EVENT_ID(m_gridMate, CarrierEventBus, OnSecurityError, this, msg->m_connection, msg->m_error.m_securityError);
-                    EBUS_EVENT(Debug::CarrierDrillerBus, OnSecurityError, this, msg->m_connection, msg->m_error.m_securityError);
                 }
             } break;
             case MTM_RATE_UPDATE:
@@ -4443,13 +4433,11 @@ CarrierImpl::ProcessSystemMessages()
                         if (requestError == HandshakeErrorCode::OK)
                         {
                             conn->m_state = Carrier::CST_CONNECTED;
-                            EBUS_EVENT(Debug::CarrierDrillerBus, OnConnectionStateChanged, this, conn, conn->m_state);
 
                             SendSyncTime();         // send time first if we have the clock.
                             SendSystemMessage(SM_CONNECT_ACK, wb, conn, SEND_RELIABLE);
 
                             EBUS_EVENT_ID(m_gridMate, CarrierEventBus, OnConnectionEstablished, this, conn);
-                            EBUS_EVENT(Debug::CarrierDrillerBus, OnConnectionEstablished, this, conn);
 
                             ThreadMessage* ctm = aznew ThreadMessage(CTM_HANDSHAKE_COMPLETE);
                             ctm->m_connection = conn;
@@ -4494,9 +4482,7 @@ CarrierImpl::ProcessSystemMessages()
                             m_pendingHandshakes.erase(PendingHandshake(conn)); // Connected -> no need to retry handshake anymore
 
                             conn->m_state = Carrier::CST_CONNECTED;
-                            EBUS_EVENT(Debug::CarrierDrillerBus, OnConnectionStateChanged, this, conn, conn->m_state);
                             EBUS_EVENT_ID(m_gridMate, CarrierEventBus, OnConnectionEstablished, this, conn);
-                            EBUS_EVENT(Debug::CarrierDrillerBus, OnConnectionEstablished, this, conn);
 
                             ThreadMessage* ctm = aznew ThreadMessage(CTM_HANDSHAKE_COMPLETE);
                             ctm->m_connection = conn;
@@ -4540,7 +4526,6 @@ CarrierImpl::ProcessSystemMessages()
                     ctm->m_threadConnection = threadConn;
                     ctm->m_disconnectReason = reason;
                     m_thread->PushCarrierThreadMessage(ctm);
-                    EBUS_EVENT(Debug::CarrierDrillerBus, OnConnectionStateChanged, this, conn, conn->m_state);
                     //////////////////////////////////////////////////////////////////////////
                 } break;
                 case SM_CLOCK_SYNC:
@@ -4850,7 +4835,6 @@ CarrierImpl::DebugDeleteConnection(ConnectionID id)
     ctm->m_threadConnection = threadConn;
     ctm->m_disconnectReason = reason;
     m_thread->PushCarrierThreadMessage(ctm);
-    EBUS_EVENT(Debug::CarrierDrillerBus, OnConnectionStateChanged, this, conn, conn->m_state);
     //////////////////////////////////////////////////////////////////////////
 }
 

@@ -8,7 +8,6 @@
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI.Reflect/Metal/PlatformLimitsDescriptor.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>

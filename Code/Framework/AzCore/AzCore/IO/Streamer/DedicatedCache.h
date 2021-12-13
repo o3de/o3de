@@ -18,77 +18,74 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
-namespace AZ
+namespace AZ::IO
 {
-    namespace IO
+    struct DedicatedCacheConfig final :
+        public IStreamerStackConfig
     {
-        struct DedicatedCacheConfig final :
-            public IStreamerStackConfig
-        {
-            AZ_RTTI(AZ::IO::DedicatedCacheConfig, "{DF0F6029-02B0-464C-9846-524654335BCC}", IStreamerStackConfig);
-            AZ_CLASS_ALLOCATOR(DedicatedCacheConfig, AZ::SystemAllocator, 0);
+        AZ_RTTI(AZ::IO::DedicatedCacheConfig, "{DF0F6029-02B0-464C-9846-524654335BCC}", IStreamerStackConfig);
+        AZ_CLASS_ALLOCATOR(DedicatedCacheConfig, AZ::SystemAllocator, 0);
 
-            ~DedicatedCacheConfig() override = default;
-            AZStd::shared_ptr<StreamStackEntry> AddStreamStackEntry(
-                const HardwareInformation& hardware, AZStd::shared_ptr<StreamStackEntry> parent) override;
-            static void Reflect(AZ::ReflectContext* context);
+        ~DedicatedCacheConfig() override = default;
+        AZStd::shared_ptr<StreamStackEntry> AddStreamStackEntry(
+            const HardwareInformation& hardware, AZStd::shared_ptr<StreamStackEntry> parent) override;
+        static void Reflect(AZ::ReflectContext* context);
 
-            //! The size of the individual blocks inside the cache.
-            BlockCacheConfig::BlockSize m_blockSize{ BlockCacheConfig::BlockSize::MemoryAlignment };
-            //! The overall size of the cache in megabytes.
-            u32 m_cacheSizeMib{ 8 };
-            //! If true, only the epilog is written otherwise the prolog and epilog are written. In either case both prolog and epilog are read.
-            //! For uses of the cache that read mostly sequentially this flag should be set to true. If reads are more random than it's better
-            //! to set this flag to false.
-            bool m_writeOnlyEpilog{ true };
-        };
+        //! The size of the individual blocks inside the cache.
+        BlockCacheConfig::BlockSize m_blockSize{ BlockCacheConfig::BlockSize::MemoryAlignment };
+        //! The overall size of the cache in megabytes.
+        u32 m_cacheSizeMib{ 8 };
+        //! If true, only the epilog is written otherwise the prolog and epilog are written. In either case both prolog and epilog are read.
+        //! For uses of the cache that read mostly sequentially this flag should be set to true. If reads are more random than it's better
+        //! to set this flag to false.
+        bool m_writeOnlyEpilog{ true };
+    };
 
-        class DedicatedCache
-            : public StreamStackEntry
-        {
-        public:
-            DedicatedCache(u64 cacheSize, u32 blockSize, u32 alignment, bool onlyEpilogWrites);
-            
-            void SetNext(AZStd::shared_ptr<StreamStackEntry> next) override;
-            void SetContext(StreamerContext& context) override;
+    class DedicatedCache
+        : public StreamStackEntry
+    {
+    public:
+        DedicatedCache(u64 cacheSize, u32 blockSize, u32 alignment, bool onlyEpilogWrites);
 
-            void PrepareRequest(FileRequest* request) override;
-            void QueueRequest(FileRequest* request) override;
-            bool ExecuteRequests() override;
+        void SetNext(AZStd::shared_ptr<StreamStackEntry> next) override;
+        void SetContext(StreamerContext& context) override;
 
-            void UpdateStatus(Status& status) const override;
+        void PrepareRequest(FileRequest* request) override;
+        void QueueRequest(FileRequest* request) override;
+        bool ExecuteRequests() override;
 
-            void UpdateCompletionEstimates(AZStd::chrono::system_clock::time_point now, AZStd::vector<FileRequest*>& internalPending,
-                StreamerContext::PreparedQueue::iterator pendingBegin, StreamerContext::PreparedQueue::iterator pendingEnd) override;
+        void UpdateStatus(Status& status) const override;
 
-            void CollectStatistics(AZStd::vector<Statistic>& statistics) const override;
+        void UpdateCompletionEstimates(AZStd::chrono::system_clock::time_point now, AZStd::vector<FileRequest*>& internalPending,
+            StreamerContext::PreparedQueue::iterator pendingBegin, StreamerContext::PreparedQueue::iterator pendingEnd) override;
 
-        private:
-            void CreateDedicatedCache(FileRequest* request, FileRequest::CreateDedicatedCacheData& data);
-            void DestroyDedicatedCache(FileRequest* request, FileRequest::DestroyDedicatedCacheData& data);
+        void CollectStatistics(AZStd::vector<Statistic>& statistics) const override;
 
-            void ReadFile(FileRequest* request, FileRequest::ReadData& data);
-            size_t FindCache(const RequestPath& filename, FileRange range);
-            size_t FindCache(const RequestPath& filename, u64 offset);
+    private:
+        void CreateDedicatedCache(FileRequest* request, FileRequest::CreateDedicatedCacheData& data);
+        void DestroyDedicatedCache(FileRequest* request, FileRequest::DestroyDedicatedCacheData& data);
 
-            void FlushCache(const RequestPath& filePath);
-            void FlushEntireCache();
+        void ReadFile(FileRequest* request, FileRequest::ReadData& data);
+        size_t FindCache(const RequestPath& filename, FileRange range);
+        size_t FindCache(const RequestPath& filename, u64 offset);
 
-            AZStd::vector<RequestPath> m_cachedFileNames;
-            AZStd::vector<FileRange> m_cachedFileRanges;
-            AZStd::vector<AZStd::unique_ptr<BlockCache>> m_cachedFileCaches;
-            AZStd::vector<size_t> m_cachedFileRefCounts;
+        void FlushCache(const RequestPath& filePath);
+        void FlushEntireCache();
 
-            AZ::Statistics::RunningStatistic m_usagePercentageStat;
+        AZStd::vector<RequestPath> m_cachedFileNames;
+        AZStd::vector<FileRange> m_cachedFileRanges;
+        AZStd::vector<AZStd::unique_ptr<BlockCache>> m_cachedFileCaches;
+        AZStd::vector<size_t> m_cachedFileRefCounts;
+
+        AZ::Statistics::RunningStatistic m_usagePercentageStat;
 #if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
-            AZ::Statistics::RunningStatistic m_overallHitRateStat;
-            AZ::Statistics::RunningStatistic m_overallCacheableRateStat;
+        AZ::Statistics::RunningStatistic m_overallHitRateStat;
+        AZ::Statistics::RunningStatistic m_overallCacheableRateStat;
 #endif
 
-            u64 m_cacheSize;
-            u32 m_alignment;
-            u32 m_blockSize;
-            bool m_onlyEpilogWrites;
-        };
-    } // namespace IO
-} // namespace AZ
+        u64 m_cacheSize;
+        u32 m_alignment;
+        u32 m_blockSize;
+        bool m_onlyEpilogWrites;
+    };
+} // namespace AZ::IO

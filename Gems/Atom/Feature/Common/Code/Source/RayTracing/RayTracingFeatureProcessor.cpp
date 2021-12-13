@@ -7,7 +7,6 @@
  */
 
 #include <RayTracing/RayTracingFeatureProcessor.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
@@ -318,7 +317,8 @@ namespace AZ
                         }
 
                         subMesh.m_irradianceColor.StoreToFloat4(meshInfo.m_irradianceColor.data());
-                        rotationMatrix.StoreToRowMajorFloat9(meshInfo.m_worldInvTranspose.data());
+                        Matrix3x4 worldInvTranspose3x4 = Matrix3x4::CreateFromMatrix3x3(rotationMatrix);
+                        worldInvTranspose3x4.StoreToRowMajorFloat12(meshInfo.m_worldInvTranspose.data());
                         meshInfo.m_bufferFlags = subMesh.m_bufferFlags;
                         meshInfo.m_bufferStartIndex = bufferStartIndex;
 
