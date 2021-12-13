@@ -40,7 +40,6 @@ set(FILES
     Containers/unordered_set.h
     Containers/vector.h
     Replica/BasicHostChunkDescriptor.h
-    Replica/DeltaCompressedDataSet.h
     Replica/DataSet.cpp
     Replica/DataSet.h
     Replica/Interpolators.h
@@ -58,7 +57,6 @@ set(FILES
     Replica/ReplicaCommon.h
     Replica/ReplicaDefs.h
     Replica/ReplicaFunctions.h
-    Replica/ReplicaFunctions.inl
     Replica/ReplicaInline.inl
     Replica/ReplicaMgr.cpp
     Replica/ReplicaMgr.h
@@ -80,8 +78,6 @@ set(FILES
     Replica/Tasks/ReplicaProcessPolicy.cpp
     Replica/Tasks/ReplicaProcessPolicy.h
     Replica/Tasks/ReplicaPriorityPolicy.h
-    Replica/Interest/BitmaskInterestHandler.cpp
-    Replica/Interest/BitmaskInterestHandler.h
     Replica/Interest/InterestDefs.h
     Replica/Interest/InterestManager.cpp
     Replica/Interest/InterestManager.h
