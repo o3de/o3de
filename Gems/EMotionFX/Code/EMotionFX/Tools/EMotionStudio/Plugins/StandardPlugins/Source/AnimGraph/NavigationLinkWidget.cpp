@@ -41,6 +41,7 @@ namespace EMStudio
 
         connect(&m_plugin->GetAnimGraphModel(), &AnimGraphModel::FocusChanged, this, &NavigationLinkWidget::OnFocusChanged);
         connect(&m_plugin->GetAnimGraphModel(), &AnimGraphModel::dataChanged, this, &NavigationLinkWidget::OnDataChanged);
+        connect(&m_plugin->GetAnimGraphModel(), &AnimGraphModel::RemoveAll, this, &NavigationLinkWidget::ClearModelIndex);
     }
 
     NavigationLinkWidget::~NavigationLinkWidget()
@@ -80,6 +81,12 @@ namespace EMStudio
                 break;
             }
         }
+    }
+
+    void NavigationLinkWidget::ClearModelIndex()
+    {
+        m_modelIndexes.clear();
+        m_breadCrumbs->setCurrentPath("");
     }
 
     void NavigationLinkWidget::OnBreadCrumbsLinkClicked(const QString& linkPath, int linkIndex)
