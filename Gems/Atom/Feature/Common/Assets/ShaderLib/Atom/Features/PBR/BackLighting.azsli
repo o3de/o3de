@@ -69,15 +69,17 @@ float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightI
                 float3 E = surface.albedo * max(lightingData.angleOffset + dot(-surface.normal, dirToLight),0.0);
 
                 // Transmission distance modulated by editor-exposed scale parameter
-                float s = transmissionDistance / (transmissionParams.w * transmissionParams.w);
+                float s = transmissionDistance * 100.0;
                 
                 // Use scattering color to weight thin object transmission color
                 const float3 invScattering = rcp(transmissionParams.xyz);
                 
                 // Albedo at front (surface point) is used to approximate irradiance at the back of the object
                 // See observation 4 in [Jimenez J. et al, 2010] 
-                result = TransmissionKernel(s, invScattering) * lightIntensity * E;
-                // result = T(s) * lightIntensity * surface.albedo * E;
+                result = TransmissionKernel(s, invScattering) * lightIntensity * E * transmissionParams.w;
+                
+                // Alternative specific to skin translucency
+                // result = T(s) * lightIntensity * surface.albedo * E * transmissionParams.w;
             }
             break;
     }
