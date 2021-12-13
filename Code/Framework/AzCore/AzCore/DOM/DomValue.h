@@ -143,6 +143,10 @@ namespace AZ::Dom
     //! - Opaque: an arbitrary value stored in an AZStd::any. This is a non-serializable representation of an entry used only for in-memory
     //! options. This is intended to be used as an intermediate value over the course of DOM transformation and as a proxy to pass through
     //! types of which the DOM has no knowledge to other systems.
+    //! \note Value is a copy-on-write data structure and may be cheaply returned by value. Heap allocated data larger than the size of the
+    //! value itself (objects, arrays, and nodes) are copied by new Values only when their contents change, so care should be taken in
+    //! performance critical code to avoid mutation operations such as operator[] to avoid copies. It is recommended that an immutable Value
+    //! be explicitly be stored as a `const Value` to avoid accidental detach and copy operations.
     class Value
     {
     public:
