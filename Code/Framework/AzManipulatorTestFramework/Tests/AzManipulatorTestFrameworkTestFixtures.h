@@ -70,10 +70,11 @@ namespace UnitTest
 
         // left mouse down ray in world space 2 units back from origin looking down +y axis with a null interaction
         // id and no keyboard modifiers
-        AzToolsFramework::ViewportInteraction::MouseInteraction m_interaction = AzManipulatorTestFramework::CreateMouseInteraction(
-            m_mouseStartingPositionRay,
-            AzManipulatorTestFramework::CreateMouseButtons(AzToolsFramework::ViewportInteraction::MouseButton::Left),
-            AzToolsFramework::ViewportInteraction::InteractionId(AZ::EntityId(0), 0),
-            AzToolsFramework::ViewportInteraction::KeyboardModifiers(0));
+        AzToolsFramework::ViewportInteraction::MouseInteraction m_interaction =
+            AzToolsFramework::ViewportInteraction::BuildMouseInteraction(
+                m_mouseStartingPositionRay,
+                AzToolsFramework::ViewportInteraction::BuildMouseButtons(AzToolsFramework::ViewportInteraction::MouseButton::Left),
+                AzToolsFramework::ViewportInteraction::InteractionId(AZ::EntityId(0), 0),
+                AzToolsFramework::ViewportInteraction::KeyboardModifiers(0));
     };
 } // namespace UnitTest
