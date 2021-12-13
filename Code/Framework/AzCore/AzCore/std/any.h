@@ -367,15 +367,13 @@ namespace AZStd
             }
         }
 
-        template <typename ValueType>
+        template<typename ValueType>
         static type_info create_template_type_info()
         {
-            type_info ti;
-            ti.m_id = azrtti_typeid<ValueType>();
-            ti.m_isPointer = is_pointer<ValueType>::value;
-            ti.m_useHeap = AZStd::GetMax(sizeof(ValueType), AZStd::alignment_of<ValueType>::value) > Internal::ANY_SBO_BUF_SIZE;
-            ti.m_handler = type_info::HandleFnT(&action_handler<ValueType>);
-            return ti;
+            return { /* m_id */ azrtti_typeid<ValueType>(),
+                     /* m_handler */ type_info::HandleFnT(&action_handler<ValueType>),
+                     /* m_isPointer */ is_pointer<ValueType>::value,
+                     /* m_useHeap */ AZStd::GetMax(sizeof(ValueType), AZStd::alignment_of<ValueType>::value) > Internal::ANY_SBO_BUF_SIZE };
         }
 
         /**
