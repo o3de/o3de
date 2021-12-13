@@ -939,13 +939,13 @@ namespace AZ::IO
             // then it has no root directory nor filename
             if (rootNameView.end() == m_path.end())
             {
-                // has_root_directory || has_filename = false
-                // If the root name is of the form
-                // # C: - then it isn't absolute unless it has a root directory C:\
-                // # \\?\ = is a UNC path that can't exist without a root directory
-                // # \\server - Is absolute, but has no root directory
-                // Therefore if the rootName is larger than three characters
-                // then append the path separator
+                /* has_root_directory || has_filename = false
+                   If the root name is of the form
+                   C: - then it isn't absolute unless it has a root directory C:\.
+                   \\?\ = is a UNC path that can't exist without a root directory.
+                   \\server - Is absolute, but has no root directory.
+                   Therefore if the rootName is larger than three characters
+                   then append the path separator. */
                 if (rootNameView.size() >= 3)
                 {
                     m_path.push_back(m_preferred_separator);
