@@ -13,46 +13,43 @@
 
 //! IsSubfolder(folderA, folderB)
 //! returns whether folderA is a subfolder of folderB
-//! assumptions: absolute paths, case insensitive
+//! assumptions: absolute paths
 static bool IsSubfolder(const QString& folderA, const QString& folderB)
 {
     // lets avoid allocating or messing with memory - this is a MAJOR hotspot as it is called for any file change even in the cache!
-    int sizeB = folderB.length();
-    int sizeA = folderA.length();
-
-    if (sizeA <= sizeB)
+    if (folderA.length() <= folderB.length())
     {
         return false;
     }
 
-    QChar slash1 = QChar('\\');
-    QChar slash2 = QChar('/');
-    int posA = 0;
+    using AZStd::begin;
+    using AZStd::end;
 
-    // A is going to be the longer one, so use B:
-    for (int idx = 0; idx < sizeB; ++idx)
+    constexpr auto isSlash = [](const QChar c) constexpr
     {
-        QChar charAtA = folderA.at(posA);
-        QChar charAtB = folderB.at(idx);
+        return c == AZ::IO::WindowsPathSeparator || c == AZ::IO::PosixPathSeparator;
+    };
 
-        if ((charAtB == slash1) || (charAtB == slash2))
+    const auto firstPathSeparator = AZStd::find_if(begin(folderB), end(folderB), [&isSlash](const QChar c)
+    {
+        return isSlash(c);
+    });
+
+    // Follow the convention used by AZ::IO::Path, and use a case-sensitive comparison on Posix paths
+    const bool useCaseSensitiveCompare = (firstPathSeparator == end(folderB)) ? true : (*firstPathSeparator == AZ::IO::PosixPathSeparator);
+
+    return AZStd::equal(begin(folderB), end(folderB), begin(folderA), [isSlash, useCaseSensitiveCompare](const QChar charAtB, const QChar charAtA)
+    {
+        if (isSlash(charAtA))
         {
-            if ((charAtA != slash1) && (charAtA != slash2))
-            {
-                return false;
-            }
-            ++posA;
+            return isSlash(charAtB);
         }
-        else
+        if (useCaseSensitiveCompare)
         {
-            if (charAtA.toLower() != charAtB.toLower())
-            {
-                return false;
-            }
-            ++posA;
+            return charAtA == charAtB;
         }
-    }
-    return true;
+        return charAtA.toLower() == charAtB.toLower();
+    });
 }
 
 //////////////////////////////////////////////////////////////////////////
