@@ -23,13 +23,11 @@
 #include <AzCore/EBus/Results.h>
 #include <AzCore/EBus/Internal/Debug.h>
 
-<<<<<<< HEAD
-=======
  // Included for backwards compatibility purposes
 #include <AzCore/std/typetraits/typetraits.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/containers/unordered_set.h>
->>>>>>> ed5f0343c8 (Initial Changes to support 'gcc' for Linux)
+
 #include <AzCore/std/typetraits/is_same.h>
 
 #include <AzCore/std/utils.h>
