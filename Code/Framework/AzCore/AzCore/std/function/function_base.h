@@ -279,11 +279,23 @@ namespace AZStd
                             reinterpret_cast<functor_type*>(&in_buffer.data);
                         if (op == clone_functor_tag)
                         {
+                            #if defined(__GNUC__)
+                            // For GNUC, we need to use AZStd::construct_at instead to prevent the error: placement new constructing an object '...' 
+                            // and size ‘8’ in a region of type ‘char’ and size ‘1’ [-Werror=placement-new=]
+                            AZStd::construct_at(reinterpret_cast<functor_type*>(&out_buffer), functor_type(*in_functor));
+                            #else
                             new ((void*)&out_buffer.data)functor_type(*in_functor);
+                            #endif // defined(__GNUC__)
                         }
                         else if (op == move_functor_tag)
                         {
+                            #if defined(__GNUC__)
+                            // For GNUC, we need to use AZStd::construct_at instead to prevent the error: placement new constructing an object '...' 
+                            // and size ‘8’ in a region of type ‘char’ and size ‘1’ [-Werror=placement-new=]
+                            AZStd::construct_at(reinterpret_cast<functor_type*>(&out_buffer), functor_type(AZStd::move(*in_functor)));
+                            #else
                             new ((void*)&out_buffer.data)functor_type(AZStd::move(*in_functor));
+                            #endif // defined(__GNUC__)
                             // Casting via union to get around compiler warnings (strict type on GCC, unused variable on MSVC)
                             union
                             {
