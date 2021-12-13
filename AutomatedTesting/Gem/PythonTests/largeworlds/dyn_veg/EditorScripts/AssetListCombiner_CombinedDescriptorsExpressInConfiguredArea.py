@@ -111,7 +111,7 @@ def AssetListCombiner_CombinedDescriptorsExpressInConfiguredArea():
 
     # 4) Create a spawner using a Vegetation Asset List Combiner component and a Weight Selector, and disallow
     # spawning empty assets
-    spawner_entity = dynveg.create_vegetation_area("Spawner Entity", center_point, 16.0, 16.0, 16.0, None)
+    spawner_entity = dynveg.create_dynamic_slice_vegetation_area("Spawner Entity", center_point, 16.0, 16.0, 16.0, None)
     spawner_entity.remove_component("Vegetation Asset List")
     spawner_entity.add_component("Vegetation Asset List Combiner")
     spawner_entity.add_component("Vegetation Asset Weight Selector")

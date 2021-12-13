@@ -145,6 +145,7 @@ namespace ScriptCanvasEditor
             }
 
             Idle();
+            RestoreSettings();
         }
 
         void Model::OnScanComplete()
@@ -161,6 +162,7 @@ namespace ScriptCanvasEditor
                 return;
             }
 
+            CacheSettings();
             m_state = State::Scanning;
             m_log.Activate();
             m_keepEditorAlive = AZStd::make_unique<EditorKeepAlive>();

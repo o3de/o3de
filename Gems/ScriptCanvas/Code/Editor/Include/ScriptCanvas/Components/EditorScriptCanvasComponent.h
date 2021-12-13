@@ -9,15 +9,16 @@
 #pragma once
 
 #include <AzFramework/Asset/AssetCatalogBus.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <Builder/ScriptCanvasBuilder.h>
 #include <Editor/Assets/ScriptCanvasAssetHolder.h>
 #include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
+#include <ScriptCanvas/Components/EditorScriptCanvasComponentSerializer.h>
 #include <ScriptCanvas/Execution/RuntimeComponent.h>
 #include <ScriptCanvas/Variable/VariableBus.h>
-#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
 namespace ScriptCanvasEditor
 {
@@ -39,10 +40,11 @@ namespace ScriptCanvasEditor
         , private EditorScriptCanvasComponentLoggingBus::Handler
         , private EditorScriptCanvasComponentRequestBus::Handler
         , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
-
     {
     public:
         AZ_COMPONENT(EditorScriptCanvasComponent, "{C28E2D29-0746-451D-A639-7F113ECF5D72}", AzToolsFramework::Components::EditorComponentBase);
+
+        friend class AZ::EditorScriptCanvasComponentSerializer;
 
         EditorScriptCanvasComponent();
         EditorScriptCanvasComponent(const SourceHandle& sourceHandle);
@@ -93,9 +95,7 @@ namespace ScriptCanvasEditor
 
         //=====================================================================
         // EditorEntityContextNotificationBus
-        void OnStartPlayInEditor() override;
-
-        void OnStopPlayInEditor() override;
+        
 
     protected:
         enum class SourceChangeDescription : AZ::u8

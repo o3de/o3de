@@ -58,7 +58,7 @@ namespace PhysX
     }
 
     JointComponent::JointComponent(
-        const JointComponentConfiguration& configuration, 
+        const JointComponentConfiguration& configuration,
         const JointGenericProperties& genericProperties)
         : m_configuration(configuration)
         , m_genericProperties(genericProperties)
@@ -66,7 +66,7 @@ namespace PhysX
     }
 
     JointComponent::JointComponent(
-        const JointComponentConfiguration& configuration, 
+        const JointComponentConfiguration& configuration,
         const JointGenericProperties& genericProperties,
         const JointLimitProperties& limitProperties)
         : m_configuration(configuration)
@@ -81,8 +81,8 @@ namespace PhysX
         {
             if (m_configuration.m_followerEntity == m_configuration.m_leadEntity)
             {
-                AZ_Error("JointComponent::Activate()", 
-                    false, 
+                AZ_Error("JointComponent::Activate()",
+                    false,
                     "Joint's lead entity cannot be the same as the entity in which the joint resides. Joint failed to initialize.");
                 return;
             }

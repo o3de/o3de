@@ -1135,8 +1135,14 @@ namespace Multiplayer
         // make sure the player prefab path is lowercase (how it's stored in the cache folder)
         auto sv_defaultPlayerSpawnAssetLowerCase = static_cast<AZ::CVarFixedString>(sv_defaultPlayerSpawnAsset);
         AZStd::to_lower(sv_defaultPlayerSpawnAssetLowerCase.begin(), sv_defaultPlayerSpawnAssetLowerCase.end());
-        PrefabEntityId playerPrefabEntityId(AZ::Name(static_cast<AZ::CVarFixedString>(sv_defaultPlayerSpawnAssetLowerCase).c_str()));
+        PrefabEntityId playerPrefabEntityId(AZ::Name(sv_defaultPlayerSpawnAssetLowerCase.c_str()));
+
         INetworkEntityManager::EntityList entityList = m_networkEntityManager.CreateEntitiesImmediate(playerPrefabEntityId, NetEntityRole::Authority, AZ::Transform::CreateIdentity(), Multiplayer::AutoActivate::DoNotActivate);
+
+        AZ_Warning(
+            "MultiplayerSystemComponent", !entityList.empty(),
+            "SpawnDefaultPlayerPrefab failed. Missing sv_defaultPlayerSpawnAsset at path '%s'.\n",
+            sv_defaultPlayerSpawnAssetLowerCase.c_str())
 
         for (NetworkEntityHandle subEntity : entityList)
         {

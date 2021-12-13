@@ -51,8 +51,7 @@ namespace AZ
                 DiffuseProbeGridBakeTexturesCallback callback,
                 const AZStd::string& irradianceTextureRelativePath,
                 const AZStd::string& distanceTextureRelativePath,
-                const AZStd::string& relocationTextureRelativePath,
-                const AZStd::string& classificationTextureRelativePath) override;
+                const AZStd::string& probeDataTextureRelativePath) override;
 
             bool CheckTextureAssetNotification(
                 const AZStd::string& relativePath,
@@ -62,8 +61,7 @@ namespace AZ
             bool AreBakedTexturesReferenced(
                 const AZStd::string& irradianceTextureRelativePath,
                 const AZStd::string& distanceTextureRelativePath,
-                const AZStd::string& relocationTextureRelativePath,
-                const AZStd::string& classificationTextureRelativePath) override;
+                const AZStd::string& probeDataTextureRelativePath) override;
 
             // FeatureProcessor overrides
             void Activate() override;

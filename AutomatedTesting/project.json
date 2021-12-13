@@ -10,5 +10,7 @@
         "version_name": "1.0.0.0",
         "orientation": "landscape"
     },
-    "engine": "o3de"
+    "engine": "o3de",
+    "display_name": "AutomatedTesting",
+    "icon_path": "preview.png"
 }

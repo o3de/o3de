@@ -277,6 +277,26 @@ namespace AzToolsFramework
                 }
             }
 
+            bool onlySelectedEntityIsFocusedPrefabContainer = false;
+            bool onlySelectedEntityIsClosedPrefabContainer = false;
+
+            if (selectedEntities.size() == 1)
+            {
+                AZ::EntityId selectedEntity = selectedEntities.front();
+
+                if (s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntity))
+                {
+                    if (s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(selectedEntity))
+                    {
+                        onlySelectedEntityIsFocusedPrefabContainer = true;
+                    }
+                    else
+                    {
+                        onlySelectedEntityIsClosedPrefabContainer = true;
+                    }
+                }
+            }
+
             bool itemWasShown = false;
 
             // Create Prefab
@@ -284,8 +304,7 @@ namespace AzToolsFramework
                 if (!selectedEntities.empty())
                 {
                     // Hide if the only selected entity is the Focused Instance Container
-                    if (selectedEntities.size() > 1 ||
-                        selectedEntities[0] != s_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(s_editorEntityContextId))
+                    if (!onlySelectedEntityIsFocusedPrefabContainer)
                     {
                         bool layerInSelection = false;
 
@@ -322,7 +341,7 @@ namespace AzToolsFramework
             }
 
             // Instantiate Prefab
-            if (!readOnlyEntityInSelection)
+            if (selectedEntities.size() == 1 && !readOnlyEntityInSelection && !onlySelectedEntityIsClosedPrefabContainer)
             {
                 QAction* instantiateAction = menu->addAction(QObject::tr("Instantiate Prefab..."));
                 instantiateAction->setToolTip(QObject::tr("Instantiates a prefab file in the scene."));
@@ -330,17 +349,15 @@ namespace AzToolsFramework
                 QObject::connect(
                     instantiateAction, &QAction::triggered, instantiateAction, [] { ContextMenu_InstantiatePrefab(); });
 
-                itemWasShown = true;
-            }
+                // Instantiate Procedural Prefab
+                if (AZ::Prefab::ProceduralPrefabAsset::UseProceduralPrefabs())
+                {
+                    QAction* action = menu->addAction(QObject::tr("Instantiate Procedural Prefab..."));
+                    action->setToolTip(QObject::tr("Instantiates a procedural prefab file in a prefab."));
 
-            // Instantiate Procedural Prefab
-            if (AZ::Prefab::ProceduralPrefabAsset::UseProceduralPrefabs() && !readOnlyEntityInSelection)
-            {
-                QAction* action = menu->addAction(QObject::tr("Instantiate Procedural Prefab..."));
-                action->setToolTip(QObject::tr("Instantiates a procedural prefab file in a prefab."));
-
-                QObject::connect(
-                    action, &QAction::triggered, action, [] { ContextMenu_InstantiateProceduralPrefab(); });
+                    QObject::connect(
+                        action, &QAction::triggered, action, [] { ContextMenu_InstantiateProceduralPrefab(); });
+                }
 
                 itemWasShown = true;
             }
@@ -362,14 +379,34 @@ namespace AzToolsFramework
                     {
                         if (!s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(selectedEntity))
                         {
-                            // Edit Prefab
-                            QAction* editAction = menu->addAction(QObject::tr("Open/Edit Prefab"));
-                            editAction->setShortcut(QKeySequence(Qt::Key_Plus));
-                            editAction->setToolTip(QObject::tr("Edit the prefab in focus mode."));
+                            if (s_prefabPublicInterface->IsOwnedByProceduralPrefabInstance(selectedEntity))
+                            {
+                                // Inspect Prefab
+                                QAction* editAction = menu->addAction(QObject::tr("Inspect Procedural Prefab"));
+                                editAction->setShortcut(QKeySequence(Qt::Key_Plus));
+                                editAction->setToolTip(QObject::tr("See the procedural prefab contents in focus mode."));
 
-                            QObject::connect(editAction, &QAction::triggered, editAction, [selectedEntity] {
-                                ContextMenu_EditPrefab(selectedEntity);
-                            });
+                                QObject::connect(
+                                    editAction, &QAction::triggered, editAction,
+                                    [selectedEntity]
+                                    {
+                                        ContextMenu_EditPrefab(selectedEntity);
+                                    });
+                            }
+                            else
+                            {
+                                // Edit Prefab
+                                QAction* editAction = menu->addAction(QObject::tr("Open/Edit Prefab"));
+                                editAction->setShortcut(QKeySequence(Qt::Key_Plus));
+                                editAction->setToolTip(QObject::tr("Edit the prefab in focus mode."));
+
+                                QObject::connect(
+                                    editAction, &QAction::triggered, editAction,
+                                    [selectedEntity]
+                                    {
+                                        ContextMenu_EditPrefab(selectedEntity);
+                                    });
+                            }
                         }
                         else
                         {
@@ -420,21 +457,17 @@ namespace AzToolsFramework
             }
 
             // Detach Prefab
-            if (selectedEntities.size() == 1)
+            if (onlySelectedEntityIsClosedPrefabContainer)
             {
-                AZ::EntityId selectedEntityId = selectedEntities[0];
+                AZ::EntityId selectedEntityId = selectedEntities.front();
 
-                if (s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntityId) &&
-                    selectedEntityId != s_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(s_editorEntityContextId))
-                {
-                    QAction* detachPrefabAction = menu->addAction(QObject::tr("Detach Prefab..."));
-                    QObject::connect(
-                        detachPrefabAction, &QAction::triggered, detachPrefabAction,
-                        [selectedEntityId]
-                        {
-                            ContextMenu_DetachPrefab(selectedEntityId);
-                        });
-                }
+                QAction* detachPrefabAction = menu->addAction(QObject::tr("Detach Prefab..."));
+                QObject::connect(
+                    detachPrefabAction, &QAction::triggered, detachPrefabAction,
+                    [selectedEntityId]
+                    {
+                        ContextMenu_DetachPrefab(selectedEntityId);
+                    });
             }
         }
 

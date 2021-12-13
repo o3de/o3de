@@ -14,7 +14,7 @@
 #include <ProjectUtils.h>
 #include <ProjectBuilderController.h>
 #include <ScreensCtrl.h>
-#include <ProjectManagerSettings.h>
+#include <SettingsInterface.h>
 
 #include <AzQtComponents/Components/FlowLayout.h>
 #include <AzCore/Platform.h>
@@ -291,13 +291,9 @@ namespace O3DE::ProjectManager
                 // Check whether project manager has successfully built the project
                 if (currentButton)
                 {
-                    auto settingsRegistry = AZ::SettingsRegistry::Get();
                     bool projectBuiltSuccessfully = false;
-                    if (settingsRegistry)
-                    {
-                        QString settingsKey = GetProjectBuiltSuccessfullyKey(project.m_projectName);
-                        settingsRegistry->Get(projectBuiltSuccessfully, settingsKey.toStdString().c_str());
-                    }
+                    SettingsInterface::Get()->GetProjectBuiltSuccessfully(projectBuiltSuccessfully, project);
+
                     if (!projectBuiltSuccessfully)
                     {
                         currentButton->ShowBuildRequired();

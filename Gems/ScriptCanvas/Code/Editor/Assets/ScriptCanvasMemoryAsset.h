@@ -117,10 +117,10 @@ namespace ScriptCanvasEditor
     // once the file is saved to file, its asset ID will be changed, if the file is to remain
     // open, we need to update the source AssetId to correspond to the file asset.
     //
-    // The other is when an asset is loaded, we clone the asset from file and use an in-memory 
-    // version of the asset until it is time to save, at that moment we need to save to the 
+    // The other is when an asset is loaded, we clone the asset from file and use an in-memory
+    // version of the asset until it is time to save, at that moment we need to save to the
     // source file
-    class ScriptCanvasMemoryAsset 
+    class ScriptCanvasMemoryAsset
         : public MemoryAsset<ScriptCanvas::ScriptCanvasAssetBase>
         , public AZStd::enable_shared_from_this<ScriptCanvasMemoryAsset>
         , EditorGraphNotificationBus::Handler
@@ -245,7 +245,7 @@ namespace ScriptCanvasEditor
             return m_inMemoryAsset;
         }
 
-        // Upon loading a graph, we clone the source data and we replace the loaded asset with 
+        // Upon loading a graph, we clone the source data and we replace the loaded asset with
         // a clone, this is to prevent modifications to the source data and it gives us some
         // flexibility if we need to load the source asset again
         AZ::Data::Asset<AZ::Data::AssetData> CloneAssetData(AZ::Data::AssetId newAssetId);
