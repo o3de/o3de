@@ -450,6 +450,10 @@ def bootstrap_dccsi_py_libs(dccsi_dirpath=return_stub_dir()):
 # Main Code Block, runs this script as main (testing)
 # -------------------------------------------------------------------------
 if __name__ == '__main__':
+    """Run this file as a standalone cli script for testing/debugging"""
+    import time
+    start = time.process_time() # start tracking
+    
     # global scope
     _MODULENAME = 'azpy.config_utils'
         
@@ -523,8 +527,11 @@ if __name__ == '__main__':
     _PATH_DCCSI_PYTHON_LIB = bootstrap_dccsi_py_libs(_PATH_DCCSIG)
     _LOGGER.info('PATH_DCCSI_PYTHON_LIB: {}'.format(_PATH_DCCSI_PYTHON_LIB.resolve()))
 
-    _DCCSI_CONFIG = get_dccsi_config()
+    _DCCSI_CONFIG = get_dccsi_config(_PATH_DCCSIG)
     _LOGGER.info('PATH_DCCSI_CONFIG: {}'.format(_DCCSI_CONFIG))
+    
+    _LOGGER.info('DCCsi: config_utils.py took: {} sec'.format(time.process_time() - start)) 
 
     # custom prompt
     sys.ps1 = "[azpy]>>"
+# --- END -----------------------------------------------------------------
