@@ -105,7 +105,7 @@ namespace AZ::Dom
         return VisitorSuccess();
     }
 
-    Visitor::Result Visitor::RefCountedString(AZStd::shared_ptr<AZStd::string> value, Lifetime lifetime)
+    Visitor::Result Visitor::RefCountedString(AZStd::shared_ptr<const AZStd::string> value, Lifetime lifetime)
     {
         return String(*value, lifetime);
     }
