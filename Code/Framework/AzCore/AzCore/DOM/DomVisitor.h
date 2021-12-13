@@ -181,8 +181,7 @@ namespace AZ::Dom
         //! indicate where the value may be stored persistently or requires a copy.
         //! The base implementation of OpaqueValue rejects the operation, as opaque values are meant for special
         //! cases with specific implementations, not generic usage.
-        //! Storage semantics are provided to indicate where the value may be stored persistently or requires a copy.
-        virtual Result OpaqueValue(const OpaqueType& value, Lifetime lifetime);
+        virtual Result OpaqueValue(OpaqueType& value);
         //! Operates on a raw value encoded as a UTF-8 string that hasn't had its type deduced.
         //! Visitors that support raw values (\see VisitorFlags::SupportsRawValues) may parse the raw value and
         //! forward it to the corresponding value call or calls of their choice.

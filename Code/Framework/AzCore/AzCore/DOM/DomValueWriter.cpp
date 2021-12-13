@@ -220,6 +220,12 @@ namespace AZ::Dom
         return EndContainer(Type::Node, attributeCount, elementCount);
     }
 
+    Visitor::Result ValueWriter::OpaqueValue(OpaqueType& value)
+    {
+        CurrentValue().SetOpaqueValue(value);
+        return FinishWrite();
+    }
+
     Visitor::Result ValueWriter::FinishWrite()
     {
         if (m_entryStack.empty())
