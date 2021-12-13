@@ -10,7 +10,6 @@
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
-#include <Editor/Assets/ScriptCanvasAssetTrackerBus.h>
 #include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
 #include <Editor/View/Widgets/StatisticsDialog/NodeUsageTreeItem.h>
 
@@ -152,8 +151,9 @@ namespace ScriptCanvasEditor
 
         m_assetType = assetType;
 
-        auto onAssetReady = [](ScriptCanvasMemoryAsset&) {};
-        AssetTrackerRequestBus::Broadcast(&AssetTrackerRequests::Load, m_assetId, m_assetType, onAssetReady);
+        // #sc-editor-asset-redux fix up
+        // auto onAssetReady = [](ScriptCanvasMemoryAsset&) {};
+        // AssetTrackerRequestBus::Broadcast(&AssetTrackerRequests::Load, m_assetId, m_assetType, onAssetReady);
     }
 
     const AZ::Data::AssetId& ScriptCanvasAssetNodeUsageTreeItem::GetAssetId() const

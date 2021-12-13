@@ -12,7 +12,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 
-#include <Editor/Assets/ScriptCanvasAssetHolder.h>
 
 #include <Editor/View/Dialogs/SettingsDialog.h>
 #include <Editor/View/Widgets/LoggingPanel/LiveWindowSession/LiveLoggingWindowSession.h>
@@ -24,6 +23,7 @@
 #include <Editor/View/Widgets/NodePalette/SpecializedNodePaletteTreeItemTypes.h>
 #include <Editor/View/Widgets/NodePalette/VariableNodePaletteTreeItemTypes.h>
 #include <Editor/View/Widgets/NodePalette/FunctionNodePaletteTreeItemTypes.h>
+#include <ScriptCanvas/Components/EditorDeprecationData.h>
 
 #include <ScriptCanvas/Bus/UndoBus.h>
 
@@ -33,7 +33,7 @@ namespace ScriptCanvasEditor
     {
         SourceHandle::Reflect(context);
         ScriptCanvas::ScriptCanvasData::Reflect(context);
-        ScriptCanvasAssetHolder::Reflect(context);
+        Deprecated::ScriptCanvasAssetHolder::Reflect(context);
         EditorSettings::EditorWorkspace::Reflect(context);        
         EditorSettings::ScriptCanvasEditorSettings::Reflect(context);        
         LiveLoggingUserSettings::Reflect(context);

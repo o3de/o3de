@@ -13,8 +13,6 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <Builder/ScriptCanvasBuilder.h>
-#include <Editor/Assets/ScriptCanvasAssetHolder.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <ScriptCanvas/Components/EditorScriptCanvasComponentSerializer.h>
 #include <ScriptCanvas/Execution/RuntimeComponent.h>

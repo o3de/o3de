@@ -43,11 +43,11 @@
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <ScriptCanvas/Core/ScriptCanvasBus.h>
 #include <ScriptCanvas/Debugger/ClientTransceiver.h>
-#include <Editor/Assets/ScriptCanvasAssetHolder.h>
 #include <Editor/Undo/ScriptCanvasGraphCommand.h>
 #include <Editor/Utilities/RecentFiles.h>
 #include <Editor/View/Dialogs/SettingsDialog.h>
 #include <Editor/View/Widgets/NodePalette/NodePaletteModel.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
 #include <Editor/View/Widgets/AssetGraphSceneDataBus.h>
 
@@ -57,9 +57,6 @@
 #if SCRIPTCANVAS_EDITOR
 #include <Include/EditorCoreAPI.h>
 #endif
-
-#include <Editor/Assets/ScriptCanvasAssetTrackerBus.h>
-#include <Editor/Assets/ScriptCanvasAssetTrackerDefinitions.h>
 
 #include <ScriptCanvas/Asset/ScriptCanvasAssetBase.h>
 #endif
@@ -155,7 +152,6 @@ namespace ScriptCanvasEditor
 
     //! Manages the Save/Restore operations of the user's last opened and focused graphs
     class Workspace
-        : AssetTrackerNotificationBus::MultiHandler
     {
     public:
 
@@ -174,7 +170,6 @@ namespace ScriptCanvasEditor
 
     private:
 
-        void OnAssetReady(const ScriptCanvasMemoryAsset::pointer asset) override;
         void SignalAssetComplete(const ScriptCanvasEditor::SourceHandle& fileAssetId);
 
         ScriptCanvasEditor::SourceHandle GetSourceAssetId(const ScriptCanvasEditor::SourceHandle& memoryAssetId) const;
@@ -329,7 +324,6 @@ namespace ScriptCanvasEditor
         bool OnFileSaveAs();
         bool OnFileSaveCaller(){return OnFileSave();};
         bool OnFileSaveAsCaller(){return OnFileSaveAs();};        
-        bool SaveAssetImpl_OLD(const ScriptCanvasEditor::SourceHandle& assetId, const Callbacks::OnSave& saveCB);
         enum class Save
         {
             InPlace,

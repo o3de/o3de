@@ -97,7 +97,6 @@
 #include <ScriptCanvas/Core/ScriptCanvasBus.h>
 #include <ScriptCanvas/Core/Graph.h>
 #include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
 #include <ScriptCanvas/Libraries/Core/FunctionDefinitionNode.h>
 
 #include <GraphCanvas/GraphCanvasBus.h>
@@ -145,9 +144,6 @@
 ////
 
 #include <Editor/Assets/ScriptCanvasAssetHelpers.h>
-#include <Editor/Assets/ScriptCanvasAssetTracker.h>
-#include <Editor/Assets/ScriptCanvasAssetTrackerDefinitions.h>
-
 #include <ScriptCanvas/Asset/AssetDescription.h>
 #include <ScriptCanvas/Components/EditorScriptCanvasComponent.h>
 #include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
@@ -356,21 +352,6 @@ namespace ScriptCanvasEditor
                 m_mainWindow->OnWorkspaceRestoreEnd(ScriptCanvasEditor::SourceHandle());
             }
         }
-    }
-
-    void Workspace::OnAssetReady(const ScriptCanvasMemoryAsset::pointer memoryAsset)
-    {
-        // open the file in the main window
-//         const ScriptCanvasEditor::SourceHandle& fileAssetId = memoryAsset->GetFileAssetId();
-// 
-//         if (AssetTrackerNotificationBus::MultiHandler::BusIsConnectedId(fileAssetId))
-//         {
-//             AssetTrackerNotificationBus::MultiHandler::BusDisconnect(fileAssetId);
-// 
-//             m_mainWindow->OpenScriptCanvasAsset(*memoryAsset);
-// 
-//             SignalAssetComplete(fileAssetId);
-//         }
     }
 
     void Workspace::SignalAssetComplete(const ScriptCanvasEditor::SourceHandle& /*fileAssetId*/)
@@ -3513,19 +3494,23 @@ namespace ScriptCanvasEditor
         return findChild<QObject*>(elementName);
     }
 
-    AZ::EntityId MainWindow::FindEditorNodeIdByAssetNodeId(const ScriptCanvasEditor::SourceHandle& assetId, AZ::EntityId assetNodeId) const
+    AZ::EntityId MainWindow::FindEditorNodeIdByAssetNodeId([[maybe_unused]] const ScriptCanvasEditor::SourceHandle& assetId
+        , [[maybe_unused]] AZ::EntityId assetNodeId) const
     {
-        AZ::EntityId editorEntityId;
-        AssetTrackerRequestBus::BroadcastResult
-            ( editorEntityId, &AssetTrackerRequests::GetEditorEntityIdFromSceneEntityId, assetId.Id(), assetNodeId);
+        AZ::EntityId editorEntityId{};
+//         AssetTrackerRequestBus::BroadcastResult
+//             ( editorEntityId, &AssetTrackerRequests::GetEditorEntityIdFromSceneEntityId, assetId.Id(), assetNodeId);
+        // #sc_editor_asset_redux fix logger
         return editorEntityId;
     }
 
-    AZ::EntityId MainWindow::FindAssetNodeIdByEditorNodeId(const ScriptCanvasEditor::SourceHandle& assetId, AZ::EntityId editorNodeId) const
+    AZ::EntityId MainWindow::FindAssetNodeIdByEditorNodeId([[maybe_unused]] const ScriptCanvasEditor::SourceHandle& assetId
+        , [[maybe_unused]] AZ::EntityId editorNodeId) const
     {
-        AZ::EntityId sceneEntityId;
-        AssetTrackerRequestBus::BroadcastResult
-            ( sceneEntityId, &AssetTrackerRequests::GetSceneEntityIdFromEditorEntityId, assetId.Id(), editorNodeId);
+        AZ::EntityId sceneEntityId{};
+        // AssetTrackerRequestBus::BroadcastResult
+        // ( sceneEntityId, &AssetTrackerRequests::GetSceneEntityIdFromEditorEntityId, assetId.Id(), editorNodeId);
+        // #sc_editor_asset_redux fix logger
         return sceneEntityId;
     }
 

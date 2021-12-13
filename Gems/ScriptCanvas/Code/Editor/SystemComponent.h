@@ -19,7 +19,6 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <Core/GraphBus.h>
-#include <Editor/Assets/ScriptCanvasAssetTracker.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/Model.h>
 #include <ScriptCanvas/Bus/ScriptCanvasBus.h>
 #include <ScriptCanvas/Bus/ScriptCanvasExecutionBus.h>
@@ -117,8 +116,6 @@ namespace ScriptCanvasEditor
         AZStd::unique_ptr<VersionExplorer::Model> m_versionExplorer;
 
         AZStd::unordered_set<ScriptCanvas::Data::Type> m_creatableTypes;
-
-        AssetTracker m_assetTracker;
 
         AZStd::vector<AZ::Data::AssetId> m_assetsThatNeedManualUpgrade;
 

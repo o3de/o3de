@@ -37,6 +37,8 @@
 #include <ScriptCanvas/PerformanceStatisticsBus.h>
 #include <ScriptCanvas/Variable/VariableCore.h>
 #include <ScriptCanvas/View/EditCtrls/GenericLineEditCtrl.h>
+#include <Editor/Assets/ScriptCanvasAssetHelpers.h>
+
 
 namespace ScriptCanvasEditor
 {
@@ -109,7 +111,6 @@ namespace ScriptCanvasEditor
 
     void SystemComponent::Activate()
     {
-        m_assetTracker.Activate();
         AZ::JobManagerDesc jobDesc;
         for (size_t i = 0; i < cs_jobThreads; ++i)
         {
@@ -165,7 +166,6 @@ namespace ScriptCanvasEditor
 
         m_jobContext.reset();
         m_jobManager.reset();
-        m_assetTracker.Deactivate();
     }
 
     void SystemComponent::AddAsyncJob(AZStd::function<void()>&& jobFunc)

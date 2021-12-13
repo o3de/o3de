@@ -35,7 +35,6 @@
 #include <Editor/QtMetaTypes.h>
 #include <Editor/Settings.h>
 
-#include <Editor/Assets/ScriptCanvasAssetHelpers.h>
 #include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
 #include <Editor/Include/ScriptCanvas/GraphCanvas/NodeDescriptorBus.h>
 #include <Editor/Model/UnitTestBrowserFilterModel.h>
@@ -48,12 +47,11 @@
 #include <Data/Data.h>
 
 #include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
 #include <ScriptCanvas/Bus/ScriptCanvasExecutionBus.h>
 #include <ScriptCanvas/Bus/UnitTestVerificationBus.h>
 #include <ScriptCanvas/Data/DataRegistry.h>
 #include <ScriptCanvas/GraphCanvas/NodeDescriptorBus.h>
-
+#include <ScriptCanvas/Components/EditorUtils.h>
 #include <LyViewPaneNames.h>
 
 namespace ScriptCanvasEditor
@@ -522,16 +520,20 @@ namespace ScriptCanvasEditor
                         continue;
                     }
 
-                    AZ::Data::AssetInfo assetInfo;
-                    if (AssetHelpers::GetAssetInfo(sourceBrowserEntry->GetFullPath(), assetInfo))
-                    {
-                        auto asset = AZ::Data::AssetManager::Instance().GetAsset(assetInfo.m_assetId, azrtti_typeid<ScriptCanvasAsset>(), AZ::Data::AssetLoadBehavior::PreLoad);
-                        asset.BlockUntilLoadComplete();
-                        if (asset.IsReady())
-                        {
-                            RunTestGraph(asset, mode);
-                        }
-                    }
+                    ScriptCanvasEditor::SourceHandle source(nullptr, scriptUuid, "");
+                    ScriptCanvasEditor::CompleteDescriptionInPlace(source);
+
+                    // #sc_editor_asset_redux
+//                     AZ::Data::AssetInfo assetInfo;
+//                     if (AssetHelpers::GetAssetInfo(sourceBrowserEntry->GetFullPath(), assetInfo))
+//                     {
+//                         auto asset = AZ::Data::AssetManager::Instance().GetAsset(assetInfo.m_assetId, azrtti_typeid<ScriptCanvasAsset>(), AZ::Data::AssetLoadBehavior::PreLoad);
+//                         asset.BlockUntilLoadComplete();
+//                         if (asset.IsReady())
+//                         {
+//                             RunTestGraph(asset, mode);
+//                         }
+//                     }
                 }
             }           
         }
