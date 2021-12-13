@@ -47,6 +47,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/API/EditorAnimationSystemRequestBus.h>
 #include <AzToolsFramework/SourceControl/QtSourceControlNotificationHandler.h>
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
+#include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 
 // AzQtComponents
@@ -445,10 +446,10 @@ void MainWindow::Initialize()
 {
     m_viewPaneManager->SetMainWindow(m_viewPaneHost, &m_settings, /*unused*/ QByteArray());
 
+    InitActions();
+
     RegisterStdViewClasses();
     InitCentralWidget();
-
-    InitActions();
 
     // load toolbars ("shelves") and macros
     GetIEditor()->GetToolBoxManager()->Load(m_actionManager);
@@ -804,21 +805,35 @@ void MainWindow::InitActions()
         .SetToolTip(tr("Snap to grid (G)"))
         .SetStatusTip(tr("Toggles snap to grid"))
         .SetCheckable(true)
-        .RegisterUpdateCallback([](QAction* action) {
-            Q_ASSERT(action->isCheckable());
-            action->setChecked(SandboxEditor::GridSnappingEnabled());
-        })
-        .Connect(&QAction::triggered, []() { SandboxEditor::SetGridSnapping(!SandboxEditor::GridSnappingEnabled()); });
+        .RegisterUpdateCallback(
+            [](QAction* action)
+            {
+                Q_ASSERT(action->isCheckable());
+                action->setChecked(SandboxEditor::GridSnappingEnabled());
+            })
+        .Connect(
+            &QAction::triggered,
+            []
+            {
+                SandboxEditor::SetGridSnapping(!SandboxEditor::GridSnappingEnabled());
+            });
 
     am->AddAction(AzToolsFramework::SnapAngle, tr("Snap angle"))
         .SetIcon(Style::icon("Angle"))
         .SetStatusTip(tr("Snap angle"))
         .SetCheckable(true)
-        .RegisterUpdateCallback([](QAction* action) {
-            Q_ASSERT(action->isCheckable());
-            action->setChecked(SandboxEditor::AngleSnappingEnabled());
-        })
-        .Connect(&QAction::triggered, []() { SandboxEditor::SetAngleSnapping(!SandboxEditor::AngleSnappingEnabled()); });
+        .RegisterUpdateCallback(
+            [](QAction* action)
+            {
+                Q_ASSERT(action->isCheckable());
+                action->setChecked(SandboxEditor::AngleSnappingEnabled());
+            })
+        .Connect(
+            &QAction::triggered,
+            []
+            {
+                SandboxEditor::SetAngleSnapping(!SandboxEditor::AngleSnappingEnabled());
+            });
 
     // Display actions
     am->AddAction(ID_SWITCHCAMERA_DEFAULTCAMERA, tr("Default Camera")).SetCheckable(true)
@@ -918,9 +933,41 @@ void MainWindow::InitActions()
         .SetStatusTip(tr("Cycle 2D Viewport"))
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateNonGameMode);
 #endif
-    am->AddAction(ID_DISPLAY_SHOWHELPERS, tr("Show/Hide Helpers"))
+    am->AddAction(AzToolsFramework::Helpers, tr("Show Helpers"))
         .SetShortcut(tr("Shift+Space"))
-        .SetToolTip(tr("Show/Hide Helpers (Shift+Space)"));
+        .SetToolTip(tr("Show/Hide Helpers (Shift+Space)"))
+        .SetCheckable(true)
+        .RegisterUpdateCallback(
+            [](QAction* action)
+            {
+                Q_ASSERT(action->isCheckable());
+                action->setChecked(AzToolsFramework::HelpersVisible());
+            })
+        .Connect(
+            &QAction::triggered,
+            []()
+            {
+                AzToolsFramework::SetHelpersVisible(!AzToolsFramework::HelpersVisible());
+                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
+                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnDrawHelpersChanged,
+                    AzToolsFramework::HelpersVisible());
+            });
+    am->AddAction(AzToolsFramework::Icons, tr("Show Icons"))
+        .SetShortcut(tr("Ctrl+Space"))
+        .SetToolTip(tr("Show/Hide Icons (Ctrl+Space)"))
+        .SetCheckable(true)
+        .RegisterUpdateCallback(
+            [](QAction* action)
+            {
+                Q_ASSERT(action->isCheckable());
+                action->setChecked(AzToolsFramework::IconsVisible());
+            })
+        .Connect(
+            &QAction::triggered,
+            []()
+            {
+                AzToolsFramework::SetIconsVisible(!AzToolsFramework::IconsVisible());
+            });
 
     // Audio actions
     am->AddAction(ID_SOUND_STOPALLSOUNDS, tr("Stop All Sounds"))
