@@ -56,17 +56,17 @@ namespace AZ::Dom
 
         struct ValueBuffer
         {
-            AZStd::vector<Value> m_elements;
-            AZStd::vector<AZStd::pair<AZ::Name, Value>> m_attributes;
+            Array::ContainerType m_elements;
+            Object::ContainerType m_attributes;
         };
 
         ValueBuffer& GetValueBuffer();
 
         Value& m_result;
         // Stores info about the current value being processed
-        AZStd::stack<ValueInfo> m_entryStack;
+        AZStd::stack<ValueInfo, AZStd::deque<ValueInfo, AZStdAlloc<ValueAllocator>>> m_entryStack;
         // Provides temporary storage for elements and attributes to prevent extra heap allocations
         // These buffers persist to be reused even as the entry stack changes
-        AZStd::vector<ValueBuffer> m_valueBuffers;
+        AZStd::vector<ValueBuffer, AZStdAlloc<ValueAllocator>> m_valueBuffers;
     };
 } // namespace AZ::Dom
