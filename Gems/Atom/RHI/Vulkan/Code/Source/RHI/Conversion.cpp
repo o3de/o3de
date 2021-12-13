@@ -1155,8 +1155,7 @@ namespace AZ
             case RHI::ScopeAttachmentUsage::Shader:
             case RHI::ScopeAttachmentUsage::SubpassInput:
                 {
-                    // If we are reading from a depth/stencil texture, then we use the depth/stencil read optimal layout instead of the generic shader read one.
-                    // Note that if the Image is ShaderWrite we always set VK_IMAGE_LAYOUT_GENERAL, even in a read scope.
+                    // always set VK_IMAGE_LAYOUT_GENERAL if the Image is ShaderWrite, even in a read scope
                     if (RHI::CheckBitsAny(usagesAndAccesses.front().m_access, RHI::ScopeAttachmentAccess::Write) ||
                         RHI::CheckBitsAny(imageView->GetImage().GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderWrite))
                     {
@@ -1164,6 +1163,7 @@ namespace AZ
                     }
                     else
                     {
+                        // if we are reading from a depth/stencil texture, then we use the depth/stencil read optimal layout instead of the generic shader read one
                         return RHI::CheckBitsAny(imageAspects, RHI::ImageAspectFlags::DepthStencil) ?
                             VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                     }

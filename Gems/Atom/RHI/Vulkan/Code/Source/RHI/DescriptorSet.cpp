@@ -149,8 +149,7 @@ namespace AZ
                 {
                     imageInfo.imageView = imageView->GetNativeImageView();
 
-                    // If we are reading from a depth/stencil texture, then we use the depth/stencil read optimal layout instead of the generic shader read one.
-                    // Note that if the Image is ShaderWrite we always set VK_IMAGE_LAYOUT_GENERAL, even if the descriptor layout wants a read-only input.
+                    // always set VK_IMAGE_LAYOUT_GENERAL if the Image is ShaderWrite, even if the descriptor layout wants a read-only input
                     if (layout.GetDescriptorType(layoutIndex) == VK_DESCRIPTOR_TYPE_STORAGE_IMAGE ||
                         RHI::CheckBitsAny(imageView->GetImage().GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderWrite))
                     {
@@ -158,6 +157,7 @@ namespace AZ
                     }
                     else
                     {
+                        // if we are reading from a depth/stencil texture, then we use the depth/stencil read optimal layout instead of the generic shader read one
                         imageInfo.imageLayout = RHI::CheckBitsAny(imageView->GetImage().GetAspectFlags(), RHI::ImageAspectFlags::DepthStencil) ?
                             VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                     }
