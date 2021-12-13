@@ -14,6 +14,9 @@
 
 namespace AZ
 {
+    // Enum types must have a TypeId tied to it in order for the reflection to succeed.
+    AZ_TYPE_INFO_SPECIALIZE(SceneAPI::DataTypes::ScriptProcessorFallbackLogic, "{3DCABF3D-E8EF-43E7-B3C7-373E05825F60}");
+
     namespace SceneAPI
     {
         namespace SceneData
@@ -23,13 +26,23 @@ namespace AZ
                 return m_scriptFilename;
             }
 
+            DataTypes::ScriptProcessorFallbackLogic ScriptProcessorRule::GetScriptProcessorFallbackLogic() const
+            {
+                return m_fallbackLogic;
+            }
+
             void ScriptProcessorRule::Reflect(AZ::ReflectContext* context)
             {
                 AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
                 if (serializeContext)
                 {
                     serializeContext->Class<ScriptProcessorRule, DataTypes::IScriptProcessorRule>()->Version(1)
-                        ->Field("scriptFilename", &ScriptProcessorRule::m_scriptFilename);
+                        ->Field("scriptFilename", &ScriptProcessorRule::m_scriptFilename)
+                        ->Field("fallbackLogic", &ScriptProcessorRule::m_fallbackLogic);
+
+                    serializeContext->Enum<DataTypes::ScriptProcessorFallbackLogic>()
+                        ->Value("FailBuild", DataTypes::ScriptProcessorFallbackLogic::FailBuild)
+                        ->Value("ContinueBuild", DataTypes::ScriptProcessorFallbackLogic::ContinueBuild);
 
                     AZ::EditContext* editContext = serializeContext->GetEditContext();
                     if (editContext)
