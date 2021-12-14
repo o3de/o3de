@@ -23,6 +23,9 @@
 #include <QWheelEvent>
 #include <QWidget>
 
+#pragma optimize("", off)
+#pragma inline_depth(0)
+
 namespace AzToolsFramework
 {
     static bool HandleTextEvent(QEvent::Type eventType, Qt::Key key, QString keyText, bool isAutoRepeat)
@@ -569,3 +572,6 @@ namespace AzToolsFramework
         }
     }
 } // namespace AzToolsFramework
+
+#pragma optimize("", on)
+#pragma inline_depth()
