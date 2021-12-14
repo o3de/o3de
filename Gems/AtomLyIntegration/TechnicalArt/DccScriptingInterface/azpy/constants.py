@@ -23,6 +23,7 @@ So we can make an update here once that is used elsewhere.
 import os
 import sys
 import site
+import time
 from os.path import expanduser
 import logging as _logging
 # -------------------------------------------------------------------------
@@ -31,6 +32,8 @@ import logging as _logging
 # -------------------------------------------------------------------------
 # global scope
 _MODULENAME = 'azpy.constants'
+
+start = time.process_time() # start tracking
 
 os.environ['PYTHONINSPECT'] = 'True'
 # for this module to perform standalone
@@ -64,18 +67,23 @@ FRMT_LOG_SHRT = "[%(asctime)s][%(name)s][%(levelname)s] >> %(message)s"
 # global debug stuff
 _DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
-_DCCSI_LOGLEVEL = int(env_bool(ENVAR_DCCSI_LOGLEVEL, int(20)))
+# default loglevel to info unless set
+_DCCSI_LOGLEVEL = int(env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO))
 if _DCCSI_GDEBUG:
-    _DCCSI_LOGLEVEL = int(10)
-# -------------------------------------------------------------------------
+    # override loglevel if runnign debug
+    _DCCSI_LOGLEVEL = _logging.DEBUG
 
-
-# -------------------------------------------------------------------------
 # set up module logging
-for handler in _logging.root.handlers[:]:
-    _logging.root.removeHandler(handler)
+#for handler in _logging.root.handlers[:]:
+    #_logging.root.removeHandler(handler)
+    
+# configure basic logger
+# note: not using a common logger to reduce cyclical imports
+_logging.basicConfig(level=_DCCSI_LOGLEVEL,
+                    format=FRMT_LOG_LONG,
+                    datefmt='%m-%d %H:%M')
+
 _LOGGER = _logging.getLogger(_MODULENAME)
-_logging.basicConfig(format=FRMT_LOG_LONG, level=_DCCSI_LOGLEVEL)
 _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 # -------------------------------------------------------------------------
 
@@ -365,3 +373,6 @@ if __name__ == '__main__':
 
     # custom prompt
     sys.ps1 = "[azpy]>>"
+
+_LOGGER.debug('{0} took: {1} sec'.format(_MODULENAME, time.process_time() - start)) 
+# --- END -----------------------------------------------------------------

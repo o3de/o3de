@@ -29,16 +29,21 @@ import logging as _logging
 
 
 # -------------------------------------------------------------------------
-# we don't use dynaconf setting here as we might not yet have access
-# to that site-dir.
 _MODULENAME = 'O3DE.DCCsi.bootstrap'
 
+# we don't use dynaconf setting here as we might not yet have access
 # we need to set up basic access to the DCCsi
 _MODULE_PATH = os.path.realpath(__file__)  # To Do: what if frozen?
-_PATH_DCCSIG = os.path.normpath(os.path.join(_MODULE_PATH, '../../..'))
-_PATH_DCCSIG = os.getenv('PATH_DCCSIG', _PATH_DCCSIG)
+_PATH_DCCSIG = Path(os.path.join(_MODULE_PATH, '../../..'))
 site.addsitedir(_PATH_DCCSIG)
 
+# set envar so DCCsi synthetic env bootstraps with it (config.py)
+from azpy.constants import ENVAR_PATH_DCCSIG
+os.environ[ENVAR_PATH_DCCSIG] = str(_PATH_DCCSIG.resolve())
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
 # now we have azpy api access
 from azpy.env_bool import env_bool
 from azpy.constants import ENVAR_DCCSI_GDEBUG
