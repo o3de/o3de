@@ -53,6 +53,9 @@ namespace AZ
             //! @return the loaded PngFile or an invalid PngFile if there was an error.
             static PngFile Load(const char* path, LoadSettings loadSettings = {});
 
+            //! @return the loaded PngFile or an invalid PngFile if there was an error.
+            static PngFile LoadFromBuffer(AZStd::array_view<uint8_t> data, LoadSettings loadSettings = {});
+
             //! Create a PngFile from an RHI data buffer.
             //! @param size the dimensions of the image (m_depth is not used, assumed to be 1)
             //! @param format indicates the pixel format represented by @data. Only a limited set of formats are supported, see implementation.
@@ -83,10 +86,13 @@ namespace AZ
         private:
             AZ_DEFAULT_COPY(PngFile)
 
-                static const int HeaderSize = 8;
+            static const int HeaderSize = 8;
 
             static void DefaultErrorHandler(const char* message);
 
+            // This will load from *either* a file or an array_view, but it isn't expected for both to be valid when passed in.
+            static PngFile LoadInternal(FILE* filePtr, AZStd::array_view<uint8_t> data, LoadSettings loadSettings);
+                
             uint32_t m_width = 0;
             uint32_t m_height = 0;
             int32_t m_bitDepth = 0;
