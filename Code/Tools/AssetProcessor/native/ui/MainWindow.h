@@ -16,6 +16,7 @@
 #include "native/assetprocessor.h"
 #include <AzQtComponents/Components/FilteredSearchWidget.h>
 #include <QElapsedTimer>
+#include <ui/BuilderListModel.h>
 #endif
 
 namespace AzToolsFramework
@@ -102,7 +103,7 @@ public:
 
 public Q_SLOTS:
     void ShowWindow();
-    
+
     void SyncAllowedListAndRejectedList(QStringList allowedList, QStringList rejectedList);
     void FirstTimeAddedToRejctedList(QString ipAddress);
     void SaveLogPanelState();
@@ -145,6 +146,7 @@ private:
     int m_createJobCount = 0;
     QFileSystemWatcher* m_fileSystemWatcher;
     Config m_config;
+    MyBuilderList m_builderList;
 
     void SetContextLogDetailsVisible(bool visible);
     void SetContextLogDetails(const QMap<QString, QString>& details);
@@ -160,12 +162,12 @@ private:
 
     QStringListModel m_rejectedAddresses;
     QStringListModel m_allowedListAddresses;
-    
+
     void OnAllowedListConnectionsListViewClicked();
     void OnRejectedConnectionsListViewClicked();
-    
+
     void OnAllowedListCheckBoxToggled();
-    
+
     void OnAddHostNameAllowedListButtonClicked();
     void OnAddIPAllowedListButtonClicked();
 
@@ -197,7 +199,7 @@ private:
 
     /// Refreshes the filter in the Asset Tab at a set time interval.
     /// TreeView filters can be expensive to refresh every time an item is added, so refreshing on a set schedule
-    /// keeps the view up-to-date without causing a performance bottleneck. 
+    /// keeps the view up-to-date without causing a performance bottleneck.
     void IntervalAssetTabFilterRefresh();
     /// Fires off one final refresh before invalidating the filter refresh timer.
     void ShutdownAssetTabFilterRefresh();

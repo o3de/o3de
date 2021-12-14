@@ -150,6 +150,7 @@ void MainWindow::Activate()
     ui->buttonList->addTab(QStringLiteral("Logs"));
     ui->buttonList->addTab(QStringLiteral("Shaders"));
     ui->buttonList->addTab(QStringLiteral("Connections"));
+    ui->buttonList->addTab(QStringLiteral("Builders"));
     ui->buttonList->addTab(QStringLiteral("Tools"));
 
     connect(ui->buttonList, &AzQtComponents::SegmentBar::currentChanged, ui->dialogStack, &QStackedWidget::setCurrentIndex);
@@ -402,6 +403,47 @@ void MainWindow::Activate()
     connect(ui->jobLogTableView, &AzQtComponents::TableView::customContextMenuRequested, this, &MainWindow::ShowJobLogContextMenu);
 
     m_jobsModel->PopulateJobsFromDatabase();
+
+    // Builders Tab:
+
+    ui->builderList->setModel(&m_builderList);
+    connect(ui->builderList->selectionModel(), &QItemSelectionModel::selectionChanged, [this](const QItemSelection& selected, const QItemSelection& /*deselected*/)
+    {
+            if (selected.size() > 0)
+            {
+                const auto& index = selected.indexes().at(0);
+
+                BuilderInfoList builders;
+                AssetBuilderInfoBus::Broadcast(&AssetBuilderInfoBus::Events::GetAllBuildersInfo, builders);
+
+                AZ_Assert(index.row() >= 0, "Index must be >= 0");
+
+                const auto& builder = builders[index.row()];
+                QString patternString;
+
+                for (const auto & pattern : builder.m_patterns)
+                {
+                    patternString.append("\n\t");
+                    patternString.append(pattern.ToString().c_str());
+                }
+
+                ui->builderDetails->setPlainText(QString("Name: %1\n"
+                                                   "Type: %2\n"
+                                                   "Fingerprint: %3\n"
+                                                   "Version Number: %4\n"
+                                                   "BusId: %5\n"
+                                                   "Patterns: %6"
+                )
+                    .arg(builder.m_name.c_str())
+                    .arg(builder.m_builderType == AssetBuilderSDK::AssetBuilderDesc::AssetBuilderType::Internal ? "Internal" : "External")
+                    .arg(builder.m_analysisFingerprint.c_str())
+                    .arg(builder.m_version)
+                    .arg(builder.m_busId.ToString<QString>())
+                    .arg(patternString)
+                );
+            }
+    });
+        //ui->builderDetails->setModel();
 
     // Tools tab:
     connect(ui->fullScanButton, &QPushButton::clicked, this, &MainWindow::OnRescanButtonClicked);

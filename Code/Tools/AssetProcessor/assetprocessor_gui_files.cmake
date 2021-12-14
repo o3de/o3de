@@ -30,9 +30,11 @@ set(FILES
     native/ui/GoToButton.ui
     native/ui/JobTreeViewItemDelegate.h
     native/ui/JobTreeViewItemDelegate.cpp
-    native/ui/MainWindow.ui
+    native/ui/MainWindow.h
     native/ui/MainWindow.cpp
     native/ui/MainWindow.ui
+    native/ui/BuilderListModel.h
+    native/ui/BuilderListModel.cpp
     native/ui/ProductAssetDetailsPanel.h
     native/ui/ProductAssetDetailsPanel.cpp
     native/ui/ProductAssetDetailsPanel.ui
