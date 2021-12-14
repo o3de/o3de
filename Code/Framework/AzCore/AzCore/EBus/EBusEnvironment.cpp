@@ -147,7 +147,7 @@ namespace AZ
     //////////////////////////////////////////////////////////////////////////
     Internal::ContextBase* EBusEnvironment::FindContext(int tlsKey)
     {
-        if (tlsKey >= m_busContexts.size())
+        if (aznumeric_cast<size_t>(tlsKey) >= m_busContexts.size())
         {
             return nullptr;
         }
@@ -157,7 +157,7 @@ namespace AZ
     //////////////////////////////////////////////////////////////////////////
     bool EBusEnvironment::InsertContext(int tlsKey, Internal::ContextBase* context, bool isTakeOwnership)
     {
-        if (tlsKey >= m_busContexts.size())
+        if (aznumeric_cast<size_t>(tlsKey) >= m_busContexts.size())
         {
             m_busContexts.resize(tlsKey+1, AZStd::make_pair(nullptr,false));
         }
