@@ -266,6 +266,12 @@ if __name__ == '__main__':
         _LOGGER.info('~ DCCsi: bootstrap.py ... Running script as __main__')
         _LOGGER.info(STR_CROSSBAR)
         
+        _TEST_PYSIDE2 = False
+        if args.test_pyside2:
+            _TEST_PYSIDE2 = True
+        
+        _settings= bootstrap_Editor(_DCCSI_GDEBUG, _TEST_PYSIDE2)
+        
         if _DCCSI_GDEBUG:
             _LOGGER.info(f'PATH_DCCSIG: {_settings.PATH_DCCSIG}')
             _LOGGER.info(f'DCCSI_G_DEBUG: {_settings.DCCSI_GDEBUG}')
@@ -282,20 +288,11 @@ if __name__ == '__main__':
             _LOGGER.info(f'PATH_DCCSI_PYTHON_LIB: {_settings.PATH_DCCSI_PYTHON_LIB}')
             _LOGGER.info(f'DCCSI_PY_BASE: {_settings.DCCSI_PY_BASE}')
 
-        if _DCCSI_GDEBUG or args.test_pyside2:
-            try:
-                import PySide2
-            except:
-                # set up Qt/PySide2 access and test
-                _settings = _config.get_config_settings(enable_o3de_pyside2=True)
-                import PySide2
-
+        if args.test_pyside2:
             _LOGGER.info(f'PySide2: {PySide2}')
             _LOGGER.info(f'PATH_O3DE_BIN: {_settings.PATH_O3DE_BIN}')
             _LOGGER.info(f'QT_PLUGIN_PATH: {_settings.QT_PLUGIN_PATH}')
             _LOGGER.info(f'QT_QPA_PLATFORM_PLUGIN_PATH: {_settings.QT_QPA_PLATFORM_PLUGIN_PATH}')
-            
-            _config.test_pyside2()
     # ---------------------------------------------------------------------
     
     # custom prompt
