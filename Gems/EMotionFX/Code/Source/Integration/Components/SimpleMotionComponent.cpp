@@ -18,6 +18,7 @@
 #include <EMotionFX/Source/ActorInstance.h>
 #include <EMotionFX/Source/MotionSystem.h>
 #include <EMotionFX/Source/MotionInstance.h>
+#include <MCore/Source/Compare.h>
 
 namespace EMotionFX
 {
@@ -307,8 +308,23 @@ namespace EMotionFX
         {
             if (m_motionInstance)
             {
-                float delta = time - m_motionInstance->GetLastCurrentTime();
-                m_motionInstance->SetCurrentTime(time, false);
+                //PlayTime setting precision.
+                //The play time of the motion in the animation editor is displayed as a rounded two decimal places.
+                //Therefore, you need to determine the precision of the input parameter.
+                const float playTimePrecision = 0.005f;
+                float revisedTime = time;
+                if (MCore::Compare<float>::CheckIfIsClose(time, m_motionInstance->GetDuration(), playTimePrecision) == true)
+                {
+                    revisedTime = m_motionInstance->GetDuration();
+                }
+                else if (revisedTime > (m_motionInstance->GetDuration() + MCore::Math::epsilon))
+                {
+                    AZ_Warning("EMotionFX", false, "Invalid play time: %f (max:%.2f), The set value exceeds the maximum value.", time, m_motionInstance->GetDuration());
+                    return;
+                }
+
+                float delta = revisedTime - m_motionInstance->GetLastCurrentTime();
+                m_motionInstance->SetCurrentTime(revisedTime, false);
 
                 // Apply the same time step to the last animation
                 // so blend out will be good. Otherwise we are just blending
@@ -325,7 +341,17 @@ namespace EMotionFX
             float result = 0.0f;
             if (m_motionInstance)
             {
-                result = m_motionInstance->GetCurrentTimeNormalized();
+                result = m_motionInstance->GetCurrentTime();
+
+                //When the output current play time is close to the total play time,
+                //the precision is revised.
+                const float playTimePrecision = 0.005f;
+                if (MCore::Compare<float>::CheckIfIsClose(result, m_motionInstance->GetDuration(), playTimePrecision) == true)
+                {
+                    //Change the output time precision to 0.01 because the display precision of motion in the animation editor is 0.01.
+                    int tempTime = static_cast<int>((result + playTimePrecision) * 100);
+                    result = (float)tempTime / 100;
+                }
             }
             return result;
         }
