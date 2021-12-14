@@ -19,6 +19,7 @@
 #include <AzCore/std/allocator_traits.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/typetraits/alignment_of.h>
+#include <AzCore/std/typetraits/is_convertible.h>
 #include <AzCore/std/typetraits/is_integral.h>
 
 #include <AzCore/std/string/string_view.h>
@@ -1562,7 +1563,7 @@ namespace AZStd
 
             auto IsValidFormatArg = [](const auto& value) constexpr
             {
-                constexpr bool isValid = AZSTD_IS_CONVERTIBLE(decltype(value), ValidFormatArg);
+                constexpr bool isValid = AZStd::is_convertible_v(decltype(value), ValidFormatArg);
                 static_assert(isValid, "Invalid string::format argument");
                 return isValid;
             };
@@ -1585,7 +1586,7 @@ namespace AZStd
 
             auto IsValidFormatArg = [](const auto& value) constexpr
             {
-                constexpr bool isValid = AZSTD_IS_CONVERTIBLE(decltype(value), ValidFormatArg);
+                constexpr bool isValid = AZStd::is_convertible_v<decltype(value), ValidFormatArg>;
                 static_assert(isValid, "Invalid wstring::format argument");
                 return isValid;
             };
