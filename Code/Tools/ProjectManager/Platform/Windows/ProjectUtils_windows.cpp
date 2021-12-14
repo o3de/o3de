@@ -77,7 +77,7 @@ namespace O3DE::ProjectManager
             if (vsWhereFile.exists() && vsWhereFile.isFile())
             {
                 QStringList vsWhereBaseArguments = QStringList{"-version",
-                                                               "16.9.2",
+                                                               "[16.9.2,17)",
                                                                "-latest",
                                                                "-requires",
                                                                "Microsoft.VisualStudio.Component.VC.Tools.x86.x64"};
