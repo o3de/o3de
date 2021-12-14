@@ -14,7 +14,6 @@ set(FILES
     GraphMetaInfoHandler.h
     GraphMetaInfoHandler.cpp
     CommonWidgets/OverlayWidget.h
-    CommonWidgets/OverlayWidgetLayer.h
     CommonWidgets/JobWatcher.h
     CommonWidgets/JobWatcher.cpp
     CommonWidgets/ProcessingOverlayWidget.h
