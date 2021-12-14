@@ -503,20 +503,21 @@ namespace ScriptCanvas
 
         void InitializeInterpretedStatics(RuntimeData& runtimeData)
         {
-            if (!runtimeData.m_areStaticsInitialized)
+            AZ_Error("ScriptCanvas", !runtimeData.m_areStaticsInitialized, "ScriptCanvas runtime data already initalized");
             {
                 runtimeData.m_areStaticsInitialized = true;
 
                 for (auto& dependency : runtimeData.m_requiredAssets)
                 {
-                    InitializeInterpretedStatics(dependency.Get()->GetData());
+                    if (!dependency.Get()->GetData().m_areStaticsInitialized)
+                    {
+                        InitializeInterpretedStatics(dependency.Get()->GetData());
+                    }
                 }
 
 #if defined(AZ_PROFILE_BUILD) || defined(AZ_DEBUG_BUILD)
                 Execution::InitializeFromLuaStackFunctions(const_cast<Grammar::DebugSymbolMap&>(runtimeData.m_debugMap));
 #endif
-                AZ_WarningOnce("ScriptCanvas", !runtimeData.m_areStaticsInitialized, "ScriptCanvas runtime data already initalized");
-
                 if (runtimeData.RequiresStaticInitialization())
                 {
                     AZ::ScriptLoadResult result{};

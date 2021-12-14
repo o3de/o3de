@@ -112,12 +112,12 @@ namespace UnitTest
             : AZ::RHI::ShaderStageFunction(shaderStage)
         {}
 
-        void SetIndex(size_t index)
+        void SetIndex(uint32_t index)
         {
             m_index = index;
         }
 
-        size_t m_index;
+        int32_t m_index;
 
         ShaderByteCode m_byteCode;
 

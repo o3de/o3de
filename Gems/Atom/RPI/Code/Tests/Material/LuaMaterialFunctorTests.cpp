@@ -425,11 +425,7 @@ namespace UnitTest
         EXPECT_EQ(Vector4(1.0f, 2.0f, 3.0f, 4.0f) / 4.0f, testData.GetMaterial()->GetRHIShaderResourceGroup()->GetData().GetConstant<Vector4>(testData.GetSrgConstantIndex()));
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ATOM_RPI_TESTS
-    TEST_F(LuaMaterialFunctorTests, DISABLED_LuaMaterialFunctor_RuntimeContext_GetMaterialProperty_SetShaderConstant_Color)
-#else
     TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_GetMaterialProperty_SetShaderConstant_Color)
-#endif // AZ_TRAIT_DISABLE_FAILED_ATOM_RPI_TESTS
     {
         using namespace AZ::RPI;
 

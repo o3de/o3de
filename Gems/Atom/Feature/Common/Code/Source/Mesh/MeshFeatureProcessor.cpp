@@ -123,11 +123,26 @@ namespace AZ
                     }
                 };
                 Job* executeGroupJob = aznew JobFunction<decltype(jobLambda)>(jobLambda, true, nullptr); // Auto-deletes
-                parentJob->StartAsChild(executeGroupJob);
+                if (parentJob)
+                {
+                    parentJob->StartAsChild(executeGroupJob);
+                }
+                else
+                {
+                    executeGroupJob->SetDependent(&jobCompletion);
+                    executeGroupJob->Start();
+                }
             }
             {
                 AZ_PROFILE_SCOPE(AzRender, "MeshFeatureProcessor: Simulate: WaitForChildren");
-                parentJob->WaitForChildren();
+                if (parentJob)
+                {
+                    parentJob->WaitForChildren();
+                }
+                else
+                {
+                    jobCompletion.StartAndWaitForCompletion();
+                }
             }
 
             m_forceRebuildDrawPackets = false;

@@ -76,11 +76,11 @@ def palRm(path) {
 def palRmDir(path) {
     if (env.IS_UNIX) {
         sh label: "Removing ${path}",
-           script: "rm -rf ${path}"
+           script: "if [ -d ${path} ]; then rm -rf ${path}; fi"
     } else {
         def win_path = path.replace('/','\\')
         bat label: "Removing ${win_path}",
-            script: "rd /s /q ${win_path}"
+            script: "IF exist ${win_path} rd /s /q ${win_path}"
     }
 }
 
@@ -406,10 +406,6 @@ def ExportTestResults(Map options, String platform, String type, String workspac
         def o3deroot = "${workspace}/${ENGINE_REPOSITORY_NAME}"
         dir("${o3deroot}/${params.OUTPUT_DIRECTORY}") {
             junit testResults: "Testing/**/*.xml"
-            palRmDir("Testing")
-            // Recreate test runner xml directories that need to be pre generated
-            palMkdir("Testing/Pytest")
-            palMkdir("Testing/Gtest")
         }
     }
 }
@@ -461,9 +457,26 @@ def UploadAPLogs(String platformName, String jobName, String workspace, Map para
     }
 }
 
-def PostBuildCommonSteps(String workspace, boolean mount = true) {
-    echo 'Starting post-build common steps...'
+def UploadTestArtifacts(String workspace, String outputDirectory) {
+    catchError(message: "Error archiving test artifacts (this won't fail the build)", buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+        def cmakeBuildDir = [workspace, ENGINE_REPOSITORY_NAME, outputDirectory].join('/')
+        echo "Uploading Test Artifacts: ${cmakeBuildDir}/Testing"
+        ArchiveArtifactsOnS3("${cmakeBuildDir}/Testing", "test_artifacts", true)
+    }
+}
 
+def PostBuildCommonSteps(String workspace, Map params, boolean mount = true) {
+    echo 'Starting post-build common steps...'
+    if (params && params.containsKey('OUTPUT_DIRECTORY')){
+        dir([workspace, ENGINE_REPOSITORY_NAME, params.OUTPUT_DIRECTORY].join('/')){
+            // Clean up Testing directory
+            palRmDir("Testing")
+            // Recreate test runner xml directories that need to be pre generated to prevent race condition on incremental runs
+            palMkdir("Testing/Pytest")
+            palMkdir("Testing/Gtest")
+        }
+    }
+    
     if (mount) {
         def pythonCmd = ''
         if(env.IS_UNIX) pythonCmd = 'sudo -E python3 -u '
@@ -532,10 +545,18 @@ def CreateUploadAPLogsStage(String platformName, String jobName, String workspac
     }
 }
 
-def CreateTeardownStage(Map environmentVars) {
+def CreateUploadTestArtifactStage(String jobName, String workspace, String outputDirectory) {
+    return {
+        stage("${jobName}_upload_test_artifacts") {
+            UploadTestArtifacts(workspace, outputDirectory)
+        }
+    }
+}
+
+def CreateTeardownStage(Map environmentVars, Map params) {
     return {
         stage('Teardown') {
-            PostBuildCommonSteps(environmentVars['WORKSPACE'], environmentVars['MOUNT_VOLUME'])
+            PostBuildCommonSteps(environmentVars['WORKSPACE'], params, environmentVars['MOUNT_VOLUME'])
         }
     }
 }
@@ -552,6 +573,7 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                 }
                 withEnv(GetEnvStringList(envVars)) {
                     def build_job_name = build_job.key
+                    def params = platform.value.build_types[build_job_name].PARAMETERS
                     try {
                         CreateSetupStage(pipelineConfig, snapshot, repositoryName, projectName, pipelineName, branchName, platform.key, build_job.key, envVars, onlyMountEBSVolume).call()
 
@@ -559,6 +581,7 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                             pipelineEnvVars = GetBuildEnvVars(platform.value.PIPELINE_ENV ?: EMPTY_JSON, build_job.value.PIPELINE_ENV ?: EMPTY_JSON, pipelineName)
                             build_job.value.steps.each { build_step ->
                                 build_job_name = build_step
+                                params = platform.value.build_types[build_job_name].PARAMETERS
                                 // This addition of maps makes it that the right operand will override entries if they overlap with the left operand
                                 envVars = pipelineEnvVars + GetBuildEnvVars(platform.value.PIPELINE_ENV ?: EMPTY_JSON, platform.value.build_types[build_step].PIPELINE_ENV ?: EMPTY_JSON, pipelineName)
                                 try {
@@ -586,16 +609,18 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                         if (build_job_name.toLowerCase().contains('asset') && env.IS_UPLOAD_AP_LOGS?.toBoolean()) {
                             CreateUploadAPLogsStage(platform.key, build_job_name, envVars['WORKSPACE'], platform.value.build_types[build_job_name].PARAMETERS).call()
                         }
+                        // Upload test artifacts only on builds that failed and ran test suites
+                        if (env.IS_UPLOAD_TEST_ARTIFACTS?.toBoolean() && params.containsKey('CMAKE_TARGET') && params.CMAKE_TARGET.contains("TEST_SUITE")) {
+                            CreateUploadTestArtifactStage(build_job_name, envVars['WORKSPACE'], params.OUTPUT_DIRECTORY).call()
+                        }
                         // All other errors will be raised outside the retry block
                         currentResult = envVars['ON_FAILURE_MARK'] ?: 'FAILURE'
                         currentException = e.toString()
                     }
                     finally {
-                        def params = platform.value.build_types[build_job_name].PARAMETERS
+
                         if (env.MARS_REPO && params && params.containsKey('TEST_METRICS') && params.TEST_METRICS == 'True') {
-                            def output_directory = params.OUTPUT_DIRECTORY
-                            def configuration = params.CONFIGURATION
-                            CreateTestMetricsStage(pipelineConfig, branchName, envVars, build_job_name, output_directory, configuration).call()
+                            CreateTestMetricsStage(pipelineConfig, branchName, envVars, build_job_name, params.OUTPUT_DIRECTORY, params.CONFIGURATION).call()
                         }
                         if (params && params.containsKey('TEST_RESULTS') && params.TEST_RESULTS == 'True') {
                             CreateExportTestResultsStage(pipelineConfig, platform.key, build_job_name, envVars, params).call()
@@ -603,7 +628,7 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                         if (params && params.containsKey('TEST_SCREENSHOTS') && params.TEST_SCREENSHOTS == 'True' && currentResult == 'FAILURE') {
                             CreateExportTestScreenshotsStage(pipelineConfig, branchName, platform.key, build_job_name, envVars, params).call()
                         }
-                        CreateTeardownStage(envVars).call()
+                        CreateTeardownStage(envVars, params).call()
                     }
                 }
             }
@@ -854,7 +879,7 @@ finally {
                     "build_number": env.BUILD_NUMBER,
                     "repository_name": env.REPOSITORY_NAME,
                     "branch_name": env.BRANCH_NAME,
-                    "pipeline_name": GetRunningPipelineName(env.JOB_NAME),
+                    "pipeline_name": GetRunningPipelineName(env.JOB_NAME)[1],
                     "build_result": "${currentBuild.currentResult}",
                     "build_failure": buildFailure,
                     "recreate_volume": env.RECREATE_VOLUME,

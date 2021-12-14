@@ -61,7 +61,7 @@ namespace PhysX
     {
         m_onMaterialLibraryReloadedCallback(asset);
     }
-    
+
     PhysXSystem::PhysXSystem(PhysXSettingsRegistryManager* registryManager, const physx::PxCookingParams& cookingParams)
         : m_registryManager(*registryManager)
         , m_materialLibraryAssetHelper(
@@ -528,7 +528,7 @@ namespace PhysX
 
         AZ_Warning("PhysX", loadedSuccessfully,
             "LoadDefaultMaterialLibrary: Default Material Library asset data is invalid.");
-        
+
         return loadedSuccessfully;
     }
 

@@ -791,11 +791,7 @@ namespace ScriptCanvasEditor
 
         // View menu
         connect(ui->action_ViewNodePalette, &QAction::triggered, this, &MainWindow::OnViewNodePalette);
-
-        // Disabling the Minimap since it does not play nicely with the Qt caching solution
-        // And causing some weird visual issues.
         connect(ui->action_ViewMiniMap, &QAction::triggered, this, &MainWindow::OnViewMiniMap);
-        ui->action_ViewMiniMap->setVisible(false);
 
         connect(ui->action_ViewProperties, &QAction::triggered, this, &MainWindow::OnViewProperties);
         connect(ui->action_ViewBookmarks, &QAction::triggered, this, &MainWindow::OnBookmarks);
@@ -1880,10 +1876,6 @@ namespace ScriptCanvasEditor
 
     void MainWindow::OnFileOpen()
     {
-        AZ::SerializeContext* serializeContext = nullptr;
-        EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
-        AZ_Assert(serializeContext, "Failed to acquire application serialize context.");
-
         AZStd::string assetRoot;
         {
             AZStd::array<char, AZ::IO::MaxPathLength> assetRootChar;
@@ -1892,21 +1884,9 @@ namespace ScriptCanvasEditor
         }
 
         AZStd::string assetPath = AZStd::string::format("%s/scriptcanvas", assetRoot.c_str());
-
-        AZ::EBusAggregateResults<AZStd::vector<AZStd::string>> fileFilters;
-        AssetRegistryRequestBus::BroadcastResult(fileFilters, &AssetRegistryRequests::GetAssetHandlerFileFilters);
-
         QString filter;
 
-        AZStd::set<AZStd::string> filterSet;
-        auto aggregateFilters = fileFilters.values;
-        for (auto aggregateFilters2 : fileFilters.values)
-        {
-            for (const AZStd::string& fileFilter : aggregateFilters2)
-            {
-                filterSet.insert(fileFilter);
-            }
-        }
+        AZStd::set<AZStd::string> filterSet { ".scriptcanvas" };
 
         QStringList nameFilters;
 
@@ -2774,14 +2754,12 @@ namespace ScriptCanvasEditor
             m_logPanel->hide();
         }
 
-        /* Disable Mini-map until we fix rendering performance
         if (m_minimap)
         {
             addDockWidget(Qt::LeftDockWidgetArea, m_minimap);
             m_minimap->setFloating(false);
-            m_minimap->hide();
+            m_minimap->show();
         }
-        */
 
         if (m_nodePalette)
         {
@@ -2825,14 +2803,12 @@ namespace ScriptCanvasEditor
             m_bookmarkDockWidget->hide();
         }
 
-        /* Disable mini-map until we fix rendering performance
         if (m_minimap)
         {
             addDockWidget(Qt::RightDockWidgetArea, m_minimap);
             m_minimap->setFloating(false);
-            m_minimap->hide();
+            m_minimap->show();
         }
-        */
 
         resizeDocks(
         { m_nodePalette, m_propertyGrid },
