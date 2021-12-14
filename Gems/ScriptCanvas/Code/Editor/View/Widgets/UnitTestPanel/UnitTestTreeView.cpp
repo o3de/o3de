@@ -33,7 +33,7 @@
 #include <Editor/QtMetaTypes.h>
 
 #include <ScriptCanvas/Data/DataRegistry.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
+
 
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Asset/AssetManager.h>

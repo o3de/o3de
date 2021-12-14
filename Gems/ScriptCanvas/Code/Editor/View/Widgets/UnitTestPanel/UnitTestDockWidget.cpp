@@ -26,7 +26,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Asset/AssetManager.h>
-
+#include <Editor/Assets/ScriptCanvasAssetHelpers.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
@@ -46,7 +46,7 @@
 
 #include <Data/Data.h>
 
-#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
+
 #include <ScriptCanvas/Bus/ScriptCanvasExecutionBus.h>
 #include <ScriptCanvas/Bus/UnitTestVerificationBus.h>
 #include <ScriptCanvas/Data/DataRegistry.h>
@@ -522,18 +522,7 @@ namespace ScriptCanvasEditor
 
                     ScriptCanvasEditor::SourceHandle source(nullptr, scriptUuid, "");
                     ScriptCanvasEditor::CompleteDescriptionInPlace(source);
-
-                    // #sc_editor_asset_redux
-//                     AZ::Data::AssetInfo assetInfo;
-//                     if (AssetHelpers::GetAssetInfo(sourceBrowserEntry->GetFullPath(), assetInfo))
-//                     {
-//                         auto asset = AZ::Data::AssetManager::Instance().GetAsset(assetInfo.m_assetId, azrtti_typeid<ScriptCanvasAsset>(), AZ::Data::AssetLoadBehavior::PreLoad);
-//                         asset.BlockUntilLoadComplete();
-//                         if (asset.IsReady())
-//                         {
-//                             RunTestGraph(asset, mode);
-//                         }
-//                     }
+                    RunTestGraph(source, mode);
                 }
             }           
         }
@@ -582,19 +571,19 @@ namespace ScriptCanvasEditor
         m_testMetrics[interpretedMode].Clear();
     }
 
-    void UnitTestDockWidget::RunTestGraph(AZ::Data::Asset<AZ::Data::AssetData> asset, ScriptCanvas::ExecutionMode mode)
+    void UnitTestDockWidget::RunTestGraph(SourceHandle asset, ScriptCanvas::ExecutionMode mode)
     {
         Reporter reporter;
-        UnitTestWidgetNotificationBus::Broadcast(&UnitTestWidgetNotifications::OnTestStart, asset.GetId().m_guid);
+        UnitTestWidgetNotificationBus::Broadcast(&UnitTestWidgetNotifications::OnTestStart, asset);
 
         ScriptCanvasExecutionBus::BroadcastResult(reporter, &ScriptCanvasExecutionRequests::RunAssetGraph, asset, mode);
 
         UnitTestResult testResult;
 
         UnitTestVerificationBus::BroadcastResult(testResult, &UnitTestVerificationRequests::Verify, reporter);
-        UnitTestWidgetNotificationBus::Broadcast(&UnitTestWidgetNotifications::OnTestResult, asset.GetId().m_guid, testResult);
+        UnitTestWidgetNotificationBus::Broadcast(&UnitTestWidgetNotifications::OnTestResult, asset, testResult);
 
-        m_pendingTests.Add(asset.GetId(), mode);
+        m_pendingTests.Add(asset, mode);
 
         ++m_testMetrics[static_cast<int>(mode)].m_graphsTested;
 

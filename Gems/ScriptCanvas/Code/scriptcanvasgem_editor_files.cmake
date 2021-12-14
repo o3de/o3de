@@ -19,10 +19,7 @@ set(FILES
     Editor/Assets/ScriptCanvasAssetHelpers.cpp
     Editor/Include/ScriptCanvas/Assets/ScriptCanvasBaseAssetData.h
     Editor/Include/ScriptCanvas/Assets/ScriptCanvasBaseAssetData.cpp
-    Editor/Include/ScriptCanvas/Assets/ScriptCanvasAsset.h
-    Editor/Assets/ScriptCanvasAsset.cpp
     Editor/Include/ScriptCanvas/Assets/ScriptCanvasAssetBus.h
-    Editor/Include/ScriptCanvas/Assets/ScriptCanvasAssetTypes.h
     Editor/Include/ScriptCanvas/Assets/ScriptCanvasFileHandling.h
     Editor/Assets/ScriptCanvasFileHandling.cpp
     Editor/Assets/ScriptCanvasUndoHelper.h

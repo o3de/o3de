@@ -13,7 +13,7 @@
 #include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
 #include <Editor/View/Widgets/StatisticsDialog/NodeUsageTreeItem.h>
 
-#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
+
 #include <ScriptCanvas/Components/EditorGraph.h>
 
 namespace ScriptCanvasEditor
@@ -135,8 +135,6 @@ namespace ScriptCanvasEditor
 
     void ScriptCanvasAssetNodeUsageTreeItem::SetAssetId(const AZ::Data::AssetId& assetId, AZ::Data::AssetType assetType)
     {
-        // If we are setting up a new assetId, we wantt o register for the bus.
-        // Otherwise we just want to reload the asset to scrape some data from it.
         if (m_assetId != assetId)
         {
             if (AZ::Data::AssetBus::Handler::BusIsConnected())
@@ -150,10 +148,6 @@ namespace ScriptCanvasEditor
         }
 
         m_assetType = assetType;
-
-        // #sc-editor-asset-redux fix up
-        // auto onAssetReady = [](ScriptCanvasMemoryAsset&) {};
-        // AssetTrackerRequestBus::Broadcast(&AssetTrackerRequests::Load, m_assetId, m_assetType, onAssetReady);
     }
 
     const AZ::Data::AssetId& ScriptCanvasAssetNodeUsageTreeItem::GetAssetId() const

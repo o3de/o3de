@@ -12,7 +12,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/LogTraits.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/Scanner.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
+
 #include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
 
 namespace ScannerCpp

@@ -432,7 +432,6 @@ namespace ScriptCanvasEditor
 
         AZ::Outcome<int, AZStd::string> CreateScriptCanvasAsset(AZStd::string_view assetPath, int tabIndex = -1);
         
-        //! Removes the assetId -> ScriptCanvasAsset mapping and disconnects from the asset tracker
         void RemoveScriptCanvasAsset(const ScriptCanvasEditor::SourceHandle& assetId);
         void OnChangeActiveGraphTab(ScriptCanvasEditor::SourceHandle) override;
 

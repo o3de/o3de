@@ -14,7 +14,7 @@
 #include <Builder/ScriptCanvasBuilderWorker.h>
 #include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
 #include <ScriptCanvas/Asset/SubgraphInterfaceAssetHandler.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
+
 #include <ScriptCanvas/Utils/BehaviorContextUtils.h>
 
 namespace ScriptCanvasBuilder

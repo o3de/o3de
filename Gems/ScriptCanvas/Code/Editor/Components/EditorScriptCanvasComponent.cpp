@@ -23,7 +23,7 @@
 #include <LyViewPaneNames.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
+
 #include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
 #include <ScriptCanvas/Bus/RequestBus.h>
 #include <ScriptCanvas/Components/EditorDeprecationData.h>

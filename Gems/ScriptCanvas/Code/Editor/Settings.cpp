@@ -13,7 +13,7 @@
 
 #include "Settings.h"
 
-#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
+
 #include <ScriptCanvas/Data/Data.h>
 
 #include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>

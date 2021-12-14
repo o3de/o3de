@@ -317,6 +317,23 @@ namespace ScriptCanvasEditor
     using GraphPtr = Graph*;
     using GraphPtrConst = const Graph*;
 
+    class SourceDescription
+    {
+    public:
+        static inline constexpr const char* GetAssetGroup() { return "ScriptCanvas"; }
+        inline static constexpr const char* GetType() { return "{FA10C3DA-0717-4B72-8944-CD67D13DFA2B}"; } //  type
+        inline static constexpr const char* GetName() { return "Script Canvas"; } //  name 
+        inline static constexpr const char* GetDescription() { return "Script Canvas Graph Asset"; } //  description
+        inline static constexpr const char* GetSuggestedSavePath() { return "@projectroot@/scriptcanvas"; } //  suggested save path
+        inline static constexpr const char* GetFileExtension() { return ".scriptcanvas"; } //  fileExtention
+        inline static constexpr const char* GetGroup() { return "Script Canvas"; } //  group
+        inline static constexpr const char* GetAssetNamePattern() { return "Untitled-%i"; } //  asset name pattern
+        inline static constexpr const char* GetFileFilter() { return "Script Canvas Files (*.scriptcanvas)"; } //  file filter
+        inline static constexpr const char* GetAssetTypeDisplayName() { return "Script Canvas"; } //  asset type display name
+        inline static constexpr const char* GetEntityName() { return "Script Canvas"; } //  entity name
+        inline static constexpr const char* GetIconPath() { return "Icons/ScriptCanvas/Viewport/ScriptCanvas.png"; } //  icon pa
+    };
+
     class SourceHandle
     {
     public:

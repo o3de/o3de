@@ -9,15 +9,12 @@
 set(FILES
     Include/ScriptCanvas/SystemComponent.h
     Include/ScriptCanvas/ScriptCanvasGem.h
-    Include/ScriptCanvas/Asset/AssetDescription.h
     Include/ScriptCanvas/Asset/AssetRegistry.h
     Include/ScriptCanvas/Asset/AssetRegistryBus.h
     Include/ScriptCanvas/Asset/ExecutionLogAsset.h
     Include/ScriptCanvas/Asset/ExecutionLogAssetBus.h
     Include/ScriptCanvas/Asset/RuntimeAsset.h
     Include/ScriptCanvas/Asset/RuntimeAssetHandler.h
-    Include/ScriptCanvas/Asset/ScriptCanvasAssetBase.h
-    Include/ScriptCanvas/Asset/ScriptCanvasAssetData.h
     Include/ScriptCanvas/Asset/SubgraphInterfaceAssetHandler.h
     Include/ScriptCanvas/Core/ScriptCanvasBus.h
     Include/ScriptCanvas/Core/ExecutionNotificationsBus.h

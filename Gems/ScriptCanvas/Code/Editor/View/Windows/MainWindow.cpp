@@ -96,7 +96,7 @@
 
 #include <ScriptCanvas/Core/ScriptCanvasBus.h>
 #include <ScriptCanvas/Core/Graph.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
+
 #include <ScriptCanvas/Libraries/Core/FunctionDefinitionNode.h>
 
 #include <GraphCanvas/GraphCanvasBus.h>
@@ -146,7 +146,7 @@
 #include <Editor/Assets/ScriptCanvasAssetHelpers.h>
 #include <ScriptCanvas/Asset/AssetDescription.h>
 #include <ScriptCanvas/Components/EditorScriptCanvasComponent.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
+
 
 #include <Editor/QtMetaTypes.h>
 #include <GraphCanvas/Components/SceneBus.h>
@@ -434,7 +434,8 @@ namespace ScriptCanvasEditor
             m_scriptCanvasAssetModel = new ScriptCanvasAssetBrowserModel(this);
 
             AzToolsFramework::AssetBrowser::AssetGroupFilter* scriptCanvasAssetFilter = new AzToolsFramework::AssetBrowser::AssetGroupFilter();
-            scriptCanvasAssetFilter->SetAssetGroup(ScriptCanvasAsset::Description::GetGroup(azrtti_typeid<ScriptCanvasAsset>()));
+            // #sc_editor_asset_redux this may not be needed, may not be doing the right thing at all...
+            scriptCanvasAssetFilter->SetAssetGroup(ScriptCanvasAsset::Description::GetGroup(azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>()));
             scriptCanvasAssetFilter->SetFilterPropagation(AzToolsFramework::AssetBrowser::AssetBrowserEntryFilter::PropagateDirection::Down);
 
             m_scriptCanvasAssetModel->setSourceModel(assetBrowserModel);
