@@ -154,6 +154,9 @@
    <property name="text">
     <string>Save All</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
   </action>
   <action name="actionReload">
    <property name="icon">
