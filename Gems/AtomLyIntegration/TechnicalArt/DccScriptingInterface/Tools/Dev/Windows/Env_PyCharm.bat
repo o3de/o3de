@@ -24,18 +24,25 @@ IF "%PYCHARM_VERSION_MAJOR%"=="" (set PYCHARM_VERSION_MAJOR=3)
 :: version Minor
 IF "%PYCHARM_VERSION_MINOR%"=="" (set PYCHARM_VERSION_MINOR=2)
 
+
+:: PyCharm install paths look something like the following and has changed from release to release
 ::"C:\Program Files\JetBrains\PyCharm 2019.1.3\bin"
+::"C:\Program Files\JetBrains\PyCharm 2020.3.2\bin" <-- this is mine @HogJonnyAMZN
 ::"C:\Program Files\JetBrains\PyCharm Community Edition 2018.3.5\bin\pycharm64.exe"
 
+:: The version of PyCharm can be updated without altering the install path
+:: You can set the envar to your local install path in the Env_Dev.bat file to override
+:: C:< o3de install location >\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\Tools\Dev\Windows\Env_Dev.bat"
+
 :: put project env variables/paths here
-set PYCHARM_HOME=%PROGRAMFILES%\JetBrains\PyCharm %PYCHARM_VERSION_YEAR%.%PYCHARM_VERSION_MAJOR%.%PYCHARM_VERSION_MINOR%
+IF "%PYCHARM_HOME%"=="" (set PYCHARM_HOME=%PROGRAMFILES%\JetBrains\PyCharm %PYCHARM_VERSION_YEAR%.%PYCHARM_VERSION_MAJOR%.%PYCHARM_VERSION_MINOR%)
 
 :: Initialize env
 CALL %~dp0\Env_Core.bat
 CALL %~dp0\Env_Python.bat
 CALL %~dp0\Env_Qt.bat
 
-SET PYCHARM_PROJ=%PATH_DCCSIG%\Tools\Dev\Windows\Solutions
+IF "%PYCHARM_PROJ%"=="" (SET PYCHARM_PROJ=%PATH_DCCSIG%\Tools\Dev\Windows\Solutions)
 
 echo.
 echo _____________________________________________________________________

@@ -20,15 +20,12 @@ COLOR 8E
 cd %~dp0
 PUSHD %~dp0
 
-:: if the user has set up a custom env call it
-IF EXIST "%~dp0..\Env_Dev.bat" CALL %~dp0..\Env_Dev.bat
-
 :: Constant Vars (Global)
 :: global debug (propogates)
-IF "%DCCSI_GDEBUG%"=="" (set DCCSI_GDEBUG=True)
+IF "%DCCSI_GDEBUG%"=="" (set DCCSI_GDEBUG=False)
 echo     DCCSI_GDEBUG = %DCCSI_GDEBUG%
 :: initiates debugger connection
-IF "%DCCSI_DEV_MODE%"=="" (set DCCSI_DEV_MODE=True)
+IF "%DCCSI_DEV_MODE%"=="" (set DCCSI_DEV_MODE=False)
 echo     DCCSI_DEV_MODE = %DCCSI_DEV_MODE%
 :: sets debugger, options: WING, PYCHARM
 IF "%DCCSI_GDEBUGGER%"=="" (set DCCSI_GDEBUGGER=WING)
@@ -40,8 +37,11 @@ echo     DCCSI_GDEBUGGER = %DCCSI_GDEBUGGER%
 :: INFO:20
 :: DEBUG:10
 :: NOTSET:0
-IF "%DCCSI_LOGLEVEL%"=="" (set DCCSI_LOGLEVEL=10)
+IF "%DCCSI_LOGLEVEL%"=="" (set DCCSI_LOGLEVEL=20)
 echo     DCCSI_LOGLEVEL = %DCCSI_LOGLEVEL%
+
+:: if the user has set up a custom env call it
+IF EXIST "%~dp0..\Env_Dev.bat" CALL %~dp0..\Env_Dev.bat
 
 :: Initialize env
 CALL %~dp0\..\Env_Core.bat
