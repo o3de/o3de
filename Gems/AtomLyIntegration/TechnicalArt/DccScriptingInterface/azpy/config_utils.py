@@ -8,6 +8,7 @@
 #
 #
 # note: this module should reamin py2.7 compatible (Maya) so no f'strings
+# -------------------------------------------------------------------------
 """@module docstring
 This module is part of the O3DE DccScriptingInterface Gem
 This module is a set of utils related to config.py, it hase several methods
@@ -27,7 +28,9 @@ get_check_global_project() :get global project path from user .o3de data
 get_o3de_project_path()    :get the project path while within editor
 bootstrap_dccsi_py_libs()  :extends code access (mainly used in Maya py27)
 """
-# --------------------------------------------------------------------------
+import time
+start = time.process_time() # start tracking
+
 import sys
 import os
 import re
@@ -451,8 +454,6 @@ def bootstrap_dccsi_py_libs(dccsi_dirpath=return_stub_dir()):
 # -------------------------------------------------------------------------
 if __name__ == '__main__':
     """Run this file as a standalone cli script for testing/debugging"""
-    import time
-    start = time.process_time() # start tracking
     
     # global scope
     _MODULENAME = 'azpy.config_utils'
@@ -529,9 +530,10 @@ if __name__ == '__main__':
 
     _DCCSI_CONFIG = get_dccsi_config(_PATH_DCCSIG)
     _LOGGER.info('PATH_DCCSI_CONFIG: {}'.format(_DCCSI_CONFIG))
+    # ---------------------------------------------------------------------
     
-    _LOGGER.info('DCCsi: config_utils.py took: {} sec'.format(time.process_time() - start)) 
-
     # custom prompt
     sys.ps1 = "[azpy]>>"
+    
+_LOGGER.debug('DCCsi: config_utils.py took: {} sec'.format(time.process_time() - start)) 
 # --- END -----------------------------------------------------------------

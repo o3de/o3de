@@ -30,9 +30,7 @@ import logging as _logging
 
 # -------------------------------------------------------------------------
 # global scope
-_MODULENAME = __name__
-if _MODULENAME is '__main__':
-    _MODULENAME = 'azpy.constants'
+_MODULENAME = 'azpy.constants'
 
 os.environ['PYTHONINSPECT'] = 'True'
 # for this module to perform standalone

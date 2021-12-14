@@ -14,11 +14,15 @@ If you need DCCsi access in py27 (Autodesk Maya for instance) you may need
 to implement your own boostrapper module. Currently this is boostrapped
 from add_dccsi.py, as a temporty measure related to this Jira:
 SPEC-2581"""
+
+# test bootstrap execution time
+import time
+_START = time.process_time() # start tracking
+
 # standard imports
 import sys
 import os
 import site
-import importlib.util
 from pathlib import Path
 import logging as _logging
 # -------------------------------------------------------------------------
@@ -27,15 +31,7 @@ import logging as _logging
 # -------------------------------------------------------------------------
 # we don't use dynaconf setting here as we might not yet have access
 # to that site-dir.
-
-_MODULENAME = __name__
-if _MODULENAME is '__main__':
-    _MODULENAME = 'O3DE.DCCsi.bootstrap'
-
-# set up module logging
-for handler in _logging.root.handlers[:]:
-    _logging.root.removeHandler(handler)
-_LOGGER = _logging.getLogger(_MODULENAME)
+_MODULENAME = 'O3DE.DCCsi.bootstrap'
 
 # we need to set up basic access to the DCCsi
 _MODULE_PATH = os.path.realpath(__file__)  # To Do: what if frozen?
@@ -48,23 +44,46 @@ from azpy.env_bool import env_bool
 from azpy.constants import ENVAR_DCCSI_GDEBUG
 from azpy.constants import ENVAR_DCCSI_DEV_MODE
 from azpy.constants import ENVAR_DCCSI_LOGLEVEL
+from azpy.constants import ENVAR_DCCSI_GDEBUGGER
 from azpy.constants import FRMT_LOG_LONG
 
-# set up global space, logging etc.
-# set these true if you want them set globally for debugging
+from azpy.env_bool import env_bool
 _DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
-_DCCSI_LOGLEVEL = int(env_bool(ENVAR_DCCSI_LOGLEVEL, int(20)))
-if _DCCSI_GDEBUG:
-    _DCCSI_LOGLEVEL = int(10)
+_DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
 
-_logging.basicConfig(format=FRMT_LOG_LONG, level=_DCCSI_LOGLEVEL)
+# default loglevel to info unless set
+_DCCSI_LOGLEVEL = int(env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO))
+if _DCCSI_GDEBUG:
+    # override loglevel if runnign debug
+    _DCCSI_LOGLEVEL = _logging.DEBUG
+    
+# set up module logging
+#for handler in _logging.root.handlers[:]:
+    #_logging.root.removeHandler(handler)
+    
+# configure basic logger
+# note: not using a common logger to reduce cyclical imports
+_logging.basicConfig(level=_DCCSI_LOGLEVEL,
+                    format=FRMT_LOG_LONG,
+                    datefmt='%m-%d %H:%M')
+
+_LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
+def attach_debugger():
+    from azpy.test.entry_test import connect_wing
+    _debugger = connect_wing()
+    return _debugger
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
 # _settings.setenv()  # doing this will add the additional DYNACONF_ envars
+import importlib.util
 def get_dccsi_config(PATH_DCCSIG=_PATH_DCCSIG):
     """Convenience method to set and retreive settings directly from module."""
     
@@ -81,48 +100,123 @@ def get_dccsi_config(PATH_DCCSIG=_PATH_DCCSIG):
 
 
 # -------------------------------------------------------------------------
-# set and retreive the *basic* env context/_settings on import
-_config = get_dccsi_config()
-_settings = _config.get_config_settings()
+# bootstrap in AssetProcessor
+def bootstrap_Editor(test_config=_DCCSI_GDEBUG,
+                     test_pyside2=_DCCSI_GDEBUG):
+    '''Put boostrapping code here to execute in O3DE Editor.exe'''
+    
+    _settings = None
+
+    if test_config:
+        # set and retreive the base env context/_settings on import
+        _config = get_dccsi_config()
+        _settings = _config.get_config_settings(enable_o3de_python=True,
+                                               enable_o3de_pyside2=True)
+        # note: this can impact start up times so currently we are only
+        # running it to test.
+        # To Do: slim down start up times so we can init _settings
+    
+    if test_pyside2:
+        _config.test_pyside2()
+    
+    return _settings
 # -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+# bootstrap in AssetProcessor
+def bootstrap_MaterialEditor():
+    '''Put boostrapping code here to execute in O3DE MaterialEdito.exe'''
+    pass
+    return None
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+# bootstrap in AssetProcessor
+def bootstrap_AssetProcessor():
+    '''Put boostrapping code here to execute in O3DE AssetProcessor.exe'''
+    pass
+    return None
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+# bootstrap in AssetProcessor
+def bootstrap_AssetBuilder():
+    '''Put boostrapping code here to execute in O3DE AssetBuilder.exe'''
+    pass
+    return None
+# -------------------------------------------------------------------------
+
+        
+# -------------------------------------------------------------------------
+if _DCCSI_DEV_MODE:
+    foo = attach_debugger()  # attempts to start debugger
+
+# set and retreive the *basic* env context/_settings on import
+# What application is executing the bootstrap?
+# Python is being run from:
+#    editor.exe
+#    materialeditor.exe
+#    assetprocessor.exe
+#    assetbuilder.exe, or the Python executable.
+# Exclude the .exe so it works on other platforms
+
+_O3DE_Editor = Path(sys.executable)
+_LOGGER.debug(f'The sys.executable is: {_O3DE_Editor}')
+
+if _O3DE_Editor.stem.lower() == "editor":
+    # if _DCCSI_GDEBUG then run the pyside2 test
+    _settings = bootstrap_Editor(_DCCSI_GDEBUG)
+    
+elif _O3DE_Editor.stem.lower() == "materialeditor":
+    _settings = bootstrap_MaterialEditor()
+    
+elif _O3DE_Editor.stem.lower() == "assetprocessor":
+    _settings = bootstrap_AssetProcessor()
+    
+elif _O3DE_Editor.stem.lower() == "assetbuilder":
+    _settings= bootstrap_AssetBuilder()
+    
+elif _O3DE_Editor.stem.lower() == "python":
+    # in this case, we can re-use the editor settings
+    # which will init python and pyside2 access externally
+    _settings= bootstrap_Editor(_DCCSI_GDEBUG)
+    
+else:
+    _LOGGER.warning('No bootstrapping code for: {_O3DE_Editor}')
+# -------------------------------------------------------------------------
+
 
 ###########################################################################
 # Main Code Block, runs this script as main (testing)
 # -------------------------------------------------------------------------
 if __name__ == '__main__':
-    """Run this file as main"""
+    """Run this file as main (external commandline for testing)"""
+    # ---------------------------------------------------------------------
+    # force enable debug settings manually
+    _DCCSI_GDEBUG = False # enable here to force temporarily
+    _DCCSI_DEV_MODE = False
+    if _DCCSI_GDEBUG:
+        # override loglevel if runnign debug
+        _DCCSI_LOGLEVEL = _logging.DEBUG
+    # ---------------------------------------------------------------------
     
-    # -------------------------------------------------------------------------
+    
+    # ---------------------------------------------------------------------
     _O3DE_RUNNING=None    
     try:
         import azlmbr
         _O3DE_RUNNING=True
     except:
         _O3DE_RUNNING=False
-    # -------------------------------------------------------------------------     
+    # ---------------------------------------------------------------------
 
-    _MODULENAME = __name__
-    if _MODULENAME is '__main__':
-        _MODULENAME = 'O3DE.DCCsi.bootstrap'
-    
-    from azpy.constants import STR_CROSSBAR
 
-    # module internal debugging flags
-    while 0: # temp internal debug flag
-        _DCCSI_GDEBUG = True
-        break
-    
-    # overide logger for standalone to be more verbose and log to file
-    import azpy
-    _LOGGER = azpy.initialize_logger(_MODULENAME,
-                                     log_to_file=_DCCSI_GDEBUG,
-                                     default_log_level=_DCCSI_LOGLEVEL)
-
+    # ---------------------------------------------------------------------
+    # this is a simple commandline interface for running and testing externally
     if not _O3DE_RUNNING: # external tool or commandline
-        # happy print
-        _LOGGER.info(STR_CROSSBAR)
-        _LOGGER.info('~ constants.py ... Running script as __main__')
-        _LOGGER.info(STR_CROSSBAR)
         
         # parse the command line args
         import argparse
@@ -134,32 +228,43 @@ if __name__ == '__main__':
                             type=bool,
                             required=False,
                             help='Enables global debug flag.')
+    
+        parser.add_argument('-sd', '--set-debugger',
+                            type=str,
+                            required=False,
+                            help='Default debugger: WING, others: PYCHARM, VSCODE (not yet implemented).')
+        
         parser.add_argument('-dm', '--developer-mode',
                             type=bool,
                             required=False,
                             help='Enables dev mode for early auto attaching debugger.')
+        
         parser.add_argument('-tp', '--test-pyside2',
                             type=bool,
                             required=False,
                             help='Runs Qt/PySide2 tests and reports.')
+        
         args = parser.parse_args()
 
-        # set and retreive the base env context/_settings on import
-        _config = get_dccsi_config()
-        _settings = _config.get_config_settings(enable_o3de_python=True,
-                                               enable_o3de_pyside2=True)
-
-        if _DCCSI_DEV_MODE:
-            _config.attach_debugger()  # attempts to start debugger
-        # done with basic setup
-        
         # easy overrides
         if args.global_debug:
             _DCCSI_GDEBUG = True
+            _DCCSI_LOGLEVEL = _logging.DEBUG
+            _LOGGER.setLevel(_DCCSI_LOGLEVEL)
 
-        if args.developer_mode:
+        if args.set_debugger:
+            _LOGGER.info('Setting and switching debugger type not implemented (default=WING)')
+            # To Do: implement debugger plugin pattern
+    
+        if args.developer_mode or _DCCSI_DEV_MODE:
             _DCCSI_DEV_MODE = True
-            _config.attach_debugger()  # attempts to start debugger
+            foo = attach_debugger()  # attempts to start debugger
+            
+        # happy print
+        from azpy.constants import STR_CROSSBAR
+        _LOGGER.info(STR_CROSSBAR)
+        _LOGGER.info('~ DCCsi: bootstrap.py ... Running script as __main__')
+        _LOGGER.info(STR_CROSSBAR)
         
         if _DCCSI_GDEBUG:
             _LOGGER.info(f'PATH_DCCSIG: {_settings.PATH_DCCSIG}')
@@ -191,7 +296,10 @@ if __name__ == '__main__':
             _LOGGER.info(f'QT_QPA_PLATFORM_PLUGIN_PATH: {_settings.QT_QPA_PLATFORM_PLUGIN_PATH}')
             
             _config.test_pyside2()
-
-        # end
-        sys.exit()        
+    # ---------------------------------------------------------------------
+    
+    # custom prompt
+    sys.ps1 = "[azpy]>>"
+    
+_LOGGER.debug('~ DCCsi: bootstrap.py took: {} sec'.format(time.process_time() - _START)) 
 # --- END -----------------------------------------------------------------
