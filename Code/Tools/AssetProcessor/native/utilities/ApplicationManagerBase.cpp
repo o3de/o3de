@@ -192,7 +192,7 @@ void ApplicationManagerBase::InitAssetProcessorManager()
     {
         m_assetProcessorManager->SetEnableModtimeSkippingFeature(true);
     }
-    
+
     if (commandLine->HasSwitch(Command_enableQueryLogging.m_switch))
     {
         m_assetProcessorManager->SetQueryLogging(true);
@@ -206,7 +206,7 @@ void ApplicationManagerBase::InitAssetProcessorManager()
     {
         m_dependencyScanPattern = commandLine->GetSwitchValue(Command_dsp.m_switch, 0).c_str();
     }
-    
+
     m_fileDependencyScanPattern = "*";
 
     if (commandLine->HasSwitch(Command_fileDependencyScanPattern.m_switch))
@@ -327,7 +327,7 @@ void ApplicationManagerBase::InitAssetCatalog()
                 AssetProcessor::AssetCatalog* catalog = new AssetCatalog(assetCatalogHelper, m_platformConfiguration);
 
                 // Using a direct connection so we know the catalog has been updated before continuing on with code might depend on the asset being in the catalog
-                connect(m_assetProcessorManager, &AssetProcessorManager::AssetMessage, catalog, &AssetCatalog::OnAssetMessage, Qt::DirectConnection); 
+                connect(m_assetProcessorManager, &AssetProcessorManager::AssetMessage, catalog, &AssetCatalog::OnAssetMessage, Qt::DirectConnection);
                 connect(m_assetProcessorManager, &AssetProcessorManager::SourceQueued, catalog, &AssetCatalog::OnSourceQueued);
                 connect(m_assetProcessorManager, &AssetProcessorManager::SourceFinished, catalog, &AssetCatalog::OnSourceFinished);
                 connect(m_assetProcessorManager, &AssetProcessorManager::PathDependencyResolved, catalog, &AssetCatalog::OnDependencyResolved);
@@ -379,12 +379,12 @@ void ApplicationManagerBase::InitAssetScanner()
     QObject::connect(m_assetScanner, &AssetScanner::FilesFound, [this](QSet<AssetFileInfo> files) { m_fileStateCache->AddInfoSet(files); });
     QObject::connect(m_assetScanner, &AssetScanner::FoldersFound, [this](QSet<AssetFileInfo> files) { m_fileStateCache->AddInfoSet(files); });
     QObject::connect(m_assetScanner, &AssetScanner::ExcludedFound, [this](QSet<AssetFileInfo> files) { m_fileStateCache->AddInfoSet(files); });
-    
+
     // file table
     QObject::connect(m_assetScanner, &AssetScanner::AssetScanningStatusChanged, m_fileProcessor.get(), &FileProcessor::OnAssetScannerStatusChange);
     QObject::connect(m_assetScanner, &AssetScanner::FilesFound,                 m_fileProcessor.get(), &FileProcessor::AssessFilesFromScanner);
     QObject::connect(m_assetScanner, &AssetScanner::FoldersFound,               m_fileProcessor.get(), &FileProcessor::AssessFoldersFromScanner);
-    
+
 }
 
 void ApplicationManagerBase::DestroyAssetScanner()
@@ -719,11 +719,11 @@ void ApplicationManagerBase::InitConnectionManager()
             AssetProcessorPlatformStatusRequest requestMessage;
             if (AssetProcessor::UnpackMessage(payload, requestMessage))
             {
-                AzToolsFramework::AssetSystemRequestBus::BroadcastResult(responseMessage.m_isPlatformEnabled, 
+                AzToolsFramework::AssetSystemRequestBus::BroadcastResult(responseMessage.m_isPlatformEnabled,
                         &AzToolsFramework::AssetSystemRequestBus::Events::IsAssetPlatformEnabled, requestMessage.m_platform.c_str());
             }
 
-            AssetProcessor::ConnectionBus::Event(connId, 
+            AssetProcessor::ConnectionBus::Event(connId,
                 &AssetProcessor::ConnectionBus::Events::SendResponse, serial, responseMessage);
         });
 
@@ -739,11 +739,11 @@ void ApplicationManagerBase::InitConnectionManager()
             if (AssetProcessor::UnpackMessage(payload, requestMessage))
             {
                 const char* platformIdentifier = requestMessage.m_platform.c_str();
-                responseMessage.m_numberOfPendingJobs = 
+                responseMessage.m_numberOfPendingJobs =
                     GetRCController()->NumberOfPendingJobsPerPlatform(platformIdentifier);
             }
 
-            AssetProcessor::ConnectionBus::Event(connId, 
+            AssetProcessor::ConnectionBus::Event(connId,
                 &AssetProcessor::ConnectionBus::Events::SendResponse, serial, responseMessage);
         });
 }
@@ -782,7 +782,7 @@ void ApplicationManagerBase::InitAssetRequestHandler(AssetProcessor::AssetReques
     QObject::connect(GetAssetProcessorManager(), &AssetProcessorManager::SendAssetExistsResponse, m_assetRequestHandler, &AssetRequestHandler::OnRequestAssetExistsResponse);
 
     QObject::connect(GetAssetProcessorManager(), &AssetProcessorManager::FenceFileDetected, m_assetRequestHandler, &AssetRequestHandler::OnFenceFileDetected);
-    
+
     // connect the Asset Request Handler to RC:
     QObject::connect(m_assetRequestHandler, &AssetRequestHandler::RequestCompileGroup, GetRCController(), &RCController::OnRequestCompileGroup);
     QObject::connect(m_assetRequestHandler, &AssetRequestHandler::RequestEscalateAssetBySearchTerm, GetRCController(), &RCController::OnEscalateJobsBySearchTerm);
@@ -985,7 +985,7 @@ void ApplicationManagerBase::HandleFileRelocation() const
         while(!m_sourceControlReady)
         {
             // We need to wait for source control to be ready before continuing
-            
+
             if (printCounter % 10 == 0)
             {
                 AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Waiting for Source Control connection\n");
@@ -1215,7 +1215,7 @@ void ApplicationManagerBase::CheckForIdle()
             TryScanProductDependencies();
 
             TryHandleFileRelocation();
-            
+
             // since we are shutting down, we save the registry and then we quit.
             AZ_Printf(AssetProcessor::ConsoleChannel, "No assets remain in the build queue.  Saving the catalog, and then shutting down.\n");
             // stop accepting any further idle messages, as we will shut down - don't want this function to repeat!
@@ -1259,7 +1259,7 @@ void ApplicationManagerBase::InitBuilderManager()
         {
             m_builderManager->ConnectionLost(connId);
         });
-    
+
 }
 
 void ApplicationManagerBase::ShutdownBuilderManager()
@@ -1293,7 +1293,7 @@ void ApplicationManagerBase::ShutDownAssetDatabase()
     AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler::BusDisconnect();
 }
 
-void ApplicationManagerBase::InitFileProcessor() 
+void ApplicationManagerBase::InitFileProcessor()
 {
     AssetProcessor::ThreadController<AssetProcessor::FileProcessor>* fileProcessorHelper = new AssetProcessor::ThreadController<AssetProcessor::FileProcessor>();
 
@@ -1394,12 +1394,17 @@ bool ApplicationManagerBase::Activate()
     }
 
     m_isCurrentlyLoadingGems = false;
+
+    AssetProcessor::AssetProcessorStatusEntry entry(
+        AssetProcessor::AssetProcessorStatus::Activating, 0, QString());
+    Q_EMIT AssetProcessorStatusChanged(entry);
+
     PopulateApplicationDependencies();
 
     InitAssetProcessorManager();
     AssetBuilderSDK::InitializeSerializationContext();
     AssetBuilderSDK::InitializeBehaviorContext();
-    
+
     InitFileStateCache();
     InitFileProcessor();
 
@@ -1427,7 +1432,7 @@ bool ApplicationManagerBase::Activate()
     RegisterObjectForQuit(m_rcController);
 
     m_connectionsToRemoveOnShutdown << QObject::connect(
-        m_assetProcessorManager, &AssetProcessor::AssetProcessorManager::AssetProcessorManagerIdleState, 
+        m_assetProcessorManager, &AssetProcessor::AssetProcessorManager::AssetProcessorManagerIdleState,
         this, [this](bool state)
         {
             if (state)
@@ -1448,7 +1453,7 @@ bool ApplicationManagerBase::Activate()
         });
 
     m_connectionsToRemoveOnShutdown << QObject::connect(
-        this, &ApplicationManagerBase::CheckAssetProcessorManagerIdleState, 
+        this, &ApplicationManagerBase::CheckAssetProcessorManagerIdleState,
         m_assetProcessorManager, &AssetProcessor::AssetProcessorManager::CheckAssetProcessorIdleState);
 
     MakeActivationConnections();
@@ -1487,7 +1492,7 @@ bool ApplicationManagerBase::PostActivate()
             AZ::SystemTickBus::Broadcast(&AZ::SystemTickEvents::OnSystemTick);
         });
 
-    // now that everything is up and running, we start scanning.  Before this, we don't want file events to start percolating through the 
+    // now that everything is up and running, we start scanning.  Before this, we don't want file events to start percolating through the
     // asset system.
 
     GetAssetScanner()->StartScan();
@@ -1856,7 +1861,7 @@ bool ApplicationManagerBase::CheckSufficientDiskSpace(const QString& savePath, q
     [[maybe_unused]] bool result = AzToolsFramework::ToolsFileUtils::GetFreeDiskSpace(savePath, bytesFree);
 
     AZ_Assert(result, "Unable to determine the amount of free space on drive containing path (%s).", savePath.toUtf8().constData());
-    
+
     if (bytesFree < requiredSpace + s_ReservedDiskSpaceInBytes)
     {
         if (shutdownIfInsufficient)
@@ -1894,8 +1899,8 @@ void ApplicationManagerBase::RemoveOldTempFolders()
         return;
     }
 
-    // We will remove old temp folders if either their modified time is older than the cutoff time or 
-    // if the total number of temp folders have exceeded the maximum number of temp folders.   
+    // We will remove old temp folders if either their modified time is older than the cutoff time or
+    // if the total number of temp folders have exceeded the maximum number of temp folders.
     QFileInfoList entries = root.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Time); // sorting by modification time
     int folderCount = 0;
     bool removeFolder = false;
@@ -1909,9 +1914,9 @@ void ApplicationManagerBase::RemoveOldTempFolders()
 
         // Since we are sorting the folders list from latest to oldest, we will either be in a state where we have to delete all the remaining folders or not
         // because either we have reached the folder limit or reached the cutoff date limit.
-        removeFolder = removeFolder || (folderCount++ >= s_MaximumTempFolders) || 
+        removeFolder = removeFolder || (folderCount++ >= s_MaximumTempFolders) ||
             (entry.lastModified() < cutoffTime);
-        
+
         if (removeFolder)
         {
             QDir dir(entry.absoluteFilePath());
@@ -1924,8 +1929,6 @@ void ApplicationManagerBase::ConnectivityStateChanged(const AzToolsFramework::So
 {
     Q_EMIT SourceControlReady();
 }
-
-
 
 void ApplicationManagerBase::OnAssetProcessorManagerIdleState(bool isIdle)
 {

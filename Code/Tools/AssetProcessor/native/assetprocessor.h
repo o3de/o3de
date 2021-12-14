@@ -77,6 +77,7 @@ namespace AssetProcessor
     enum AssetProcessorStatus
     {
         Initializing_Gems,
+        Activating,
         Initializing_Builders,
         Scanning_Started,
         Analyzing_Jobs,
