@@ -46,7 +46,7 @@ void SymbolStorage::UnregisterModuleListeners()
 unsigned int
 StackRecorder::Record(StackFrame* frames, unsigned int maxNumOfFrames, unsigned int suppressCount /* = 0 */, void* nativeThread /*= NULL*/)
 {
-    int count = 0;
+    unsigned int count = 0;
     unw_cursor_t cursor;
     unw_context_t context;
 
@@ -70,7 +70,7 @@ StackRecorder::Record(StackFrame* frames, unsigned int maxNumOfFrames, unsigned 
     }
 
     // Clear reset of the buffer
-    for (int i = count; i < maxNumOfFrames; ++i)
+    for (unsigned int i = count; i < maxNumOfFrames; ++i)
     {
         frames[i].m_programCounter = 0;
     }

@@ -114,7 +114,7 @@ namespace AzFramework
 #if AZ_TRAIT_DENY_ASSETPROCESSOR_LOOPBACK
                     bool isIllegalLoopBack = ip == "127.0.0.1";
 #endif
-                    for (int i = 0; isNumeric && i < iplen; ++i)
+                    for (size_t i = 0; isNumeric && i < iplen; ++i)
                     {
                         if (ip[i] == '.')
                         {
