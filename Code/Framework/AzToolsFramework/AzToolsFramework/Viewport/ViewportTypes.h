@@ -258,8 +258,8 @@ namespace AzToolsFramework
         //! A ray projection, originating from a point and extending in a direction specified as a normal.
         struct ProjectedViewportRay
         {
-            AZ::Vector3 origin;
-            AZ::Vector3 direction;
+            AZ::Vector3 m_origin;
+            AZ::Vector3 m_direction;
         };
 
         //! Utility function to return a viewport ray.
@@ -327,7 +327,7 @@ namespace AzToolsFramework
         inline MousePick BuildMousePick(const AzFramework::CameraState& cameraState, const AzFramework::ScreenPoint& screenPoint)
         {
             const auto ray = ViewportScreenToWorldRay(cameraState, screenPoint);
-            return MousePick(ray.origin, ray.direction, screenPoint);
+            return MousePick(ray.m_origin, ray.m_direction, screenPoint);
         }
 
         //! Create a mouse interaction from the specified pick, buttons, interaction id and keyboard modifiers.

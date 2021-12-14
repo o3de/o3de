@@ -3232,7 +3232,7 @@ namespace UnitTest
         const AZ::Transform finalEntityTransform = AzToolsFramework::GetWorldTransform(m_entityIdBox);
 
         const auto viewportRay = AzToolsFramework::ViewportInteraction::ViewportScreenToWorldRay(m_cameraState, initialPositionScreen);
-        const auto distanceAway = (finalEntityTransform.GetTranslation() - viewportRay.origin).GetLength();
+        const auto distanceAway = (finalEntityTransform.GetTranslation() - viewportRay.m_origin).GetLength();
 
         // ensure final world positions match
         EXPECT_THAT(finalEntityTransform, IsCloseTolerance(finalTransformWorld, 0.01f));
