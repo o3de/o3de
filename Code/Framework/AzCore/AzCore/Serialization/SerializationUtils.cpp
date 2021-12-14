@@ -399,7 +399,7 @@ namespace AZ::Utils
         {
             if (GenericClassInfo* classInfo = serializeContext->FindGenericClassInfo(type))
             {
-                for (int i = 0; i < classInfo->GetNumTemplatedArguments(); ++i)
+                for (size_t i = 0; i < classInfo->GetNumTemplatedArguments(); ++i)
                 {
                     types.push_back(classInfo->GetTemplatedTypeId(i));
                 }
