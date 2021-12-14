@@ -670,6 +670,9 @@ set(FILES
     Prefab/PrefabSystemComponent.h
     Prefab/PrefabSystemComponent.cpp
     Prefab/PrefabSystemComponentInterface.h
+    Prefab/ProceduralPrefabSystemComponent.h
+    Prefab/ProceduralPrefabSystemComponent.cpp
+    Prefab/ProceduralPrefabSystemComponentInterface.h
     Prefab/PrefabSystemScriptingBus.h
     Prefab/PrefabSystemScriptingHandler.h
     Prefab/PrefabSystemScriptingHandler.cpp

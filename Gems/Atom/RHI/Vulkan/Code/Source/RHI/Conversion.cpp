@@ -736,7 +736,7 @@ namespace AZ
 
             if (RHI::CheckBitsAny(bindFlags, BindFlags::RayTracingAccelerationStructure))
             {
-                usageFlags |= VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR;
+                usageFlags |= VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR;
             }
 
             if (RHI::CheckBitsAny(bindFlags, BindFlags::RayTracingShaderTable))
@@ -756,7 +756,7 @@ namespace AZ
         {
             return RHI::CheckBitsAny(
                 bindFlags,
-                RHI::BufferBindFlags::InputAssembly | RHI::BufferBindFlags::DynamicInputAssembly | RHI::BufferBindFlags::RayTracingShaderTable);
+                RHI::BufferBindFlags::InputAssembly | RHI::BufferBindFlags::DynamicInputAssembly | RHI::BufferBindFlags::RayTracingShaderTable | RHI::BufferBindFlags::RayTracingAccelerationStructure | RHI::BufferBindFlags::RayTracingScratchBuffer);
         }
 
         VkPipelineStageFlags GetSupportedPipelineStages(RHI::PipelineStateType type)
@@ -1154,15 +1154,20 @@ namespace AZ
                 return RHI::CheckBitsAny(usagesAndAccesses.front().m_access, RHI::ScopeAttachmentAccess::Write) ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
             case RHI::ScopeAttachmentUsage::Shader:
             case RHI::ScopeAttachmentUsage::SubpassInput:
-                // If we are reading from a depth/stencil texture, then we use the depth/stencil read optimal layout instead of the generic shader read one.
-                if (RHI::CheckBitsAny(imageAspects, RHI::ImageAspectFlags::DepthStencil))
                 {
-                    return RHI::CheckBitsAny(usagesAndAccesses.front().m_access, RHI::ScopeAttachmentAccess::Write) ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+                    // always set VK_IMAGE_LAYOUT_GENERAL if the Image is ShaderWrite, even in a read scope
+                    if (RHI::CheckBitsAny(usagesAndAccesses.front().m_access, RHI::ScopeAttachmentAccess::Write) ||
+                        RHI::CheckBitsAny(imageView->GetImage().GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderWrite))
+                    {
+                        return VK_IMAGE_LAYOUT_GENERAL;
+                    }
+                    else
+                    {
+                        // if we are reading from a depth/stencil texture, then we use the depth/stencil read optimal layout instead of the generic shader read one
+                        return RHI::CheckBitsAny(imageAspects, RHI::ImageAspectFlags::DepthStencil) ?
+                            VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                    }
                 }
-                else
-                {
-                    return RHI::CheckBitsAny(usagesAndAccesses.front().m_access, RHI::ScopeAttachmentAccess::Write) ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                }                
             case RHI::ScopeAttachmentUsage::Copy:
                 return RHI::CheckBitsAny(usagesAndAccesses.front().m_access, RHI::ScopeAttachmentAccess::Write) ? VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL : VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
             default:
