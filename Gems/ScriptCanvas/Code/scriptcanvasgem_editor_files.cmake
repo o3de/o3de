@@ -17,9 +17,6 @@ set(FILES
     Editor/QtMetaTypes.h
     Editor/Assets/ScriptCanvasAssetHelpers.h
     Editor/Assets/ScriptCanvasAssetHelpers.cpp
-    Editor/Include/ScriptCanvas/Assets/ScriptCanvasBaseAssetData.h
-    Editor/Include/ScriptCanvas/Assets/ScriptCanvasBaseAssetData.cpp
-    Editor/Include/ScriptCanvas/Assets/ScriptCanvasAssetBus.h
     Editor/Include/ScriptCanvas/Assets/ScriptCanvasFileHandling.h
     Editor/Assets/ScriptCanvasFileHandling.cpp
     Editor/Assets/ScriptCanvasUndoHelper.h

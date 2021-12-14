@@ -434,8 +434,9 @@ namespace ScriptCanvasEditor
             m_scriptCanvasAssetModel = new ScriptCanvasAssetBrowserModel(this);
 
             AzToolsFramework::AssetBrowser::AssetGroupFilter* scriptCanvasAssetFilter = new AzToolsFramework::AssetBrowser::AssetGroupFilter();
-            // #sc_editor_asset_redux this may not be needed, may not be doing the right thing at all...
-            scriptCanvasAssetFilter->SetAssetGroup(ScriptCanvasAsset::Description::GetGroup(azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>()));
+            // #sc_editor_asset_redux this may not be needed, may not be doing the right thing at all, verify that searching through
+            // the subgraph interface assets is the correct thing to do
+            scriptCanvasAssetFilter->SetAssetGroup(ScriptCanvas::SubgraphInterfaceAssetDescription().GetGroupImpl());
             scriptCanvasAssetFilter->SetFilterPropagation(AzToolsFramework::AssetBrowser::AssetBrowserEntryFilter::PropagateDirection::Down);
 
             m_scriptCanvasAssetModel->setSourceModel(assetBrowserModel);
@@ -1483,17 +1484,17 @@ namespace ScriptCanvasEditor
 
         for (;;)
         {
-            ScriptCanvasAssetDescription description;
-            AZStd::string newAssetName = AZStd::string::format(description.GetAssetNamePatternImpl(), ++scriptCanvasEditorDefaultNewNameCount);
+            AZStd::string newAssetName = AZStd::string::format(SourceDescription::GetAssetNamePattern()
+                , ++scriptCanvasEditorDefaultNewNameCount);
             
             AZStd::array<char, AZ::IO::MaxPathLength> assetRootArray;
-            if (!AZ::IO::FileIOBase::GetInstance()->ResolvePath(description.GetSuggestedSavePathImpl()
+            if (!AZ::IO::FileIOBase::GetInstance()->ResolvePath(SourceDescription::GetSuggestedSavePath()
                 , assetRootArray.data(), assetRootArray.size()))
             {
                 AZ_ErrorOnce("Script Canvas", false, "Unable to resolve @projectroot@ path");
             }
 
-            AzFramework::StringFunc::Path::Join(assetRootArray.data(), (newAssetName + description.GetExtensionImpl()).data(), assetPath);
+            AzFramework::StringFunc::Path::Join(assetRootArray.data(), (newAssetName + SourceDescription::GetFileExtension()).data(), assetPath);
             AZ::Data::AssetInfo assetInfo;
 
             if (!AssetHelpers::GetAssetInfo(assetPath, assetInfo))
@@ -1621,7 +1622,6 @@ namespace ScriptCanvasEditor
         }
 
         PrepareAssetForSave(inMemoryAssetId);
-        ScriptCanvasAssetDescription assetDescription;
 
         AZStd::string suggestedFilename;
         AZStd::string suggestedFileFilter;
@@ -1630,16 +1630,16 @@ namespace ScriptCanvasEditor
         if (save == Save::InPlace)
         {
             isValidFileName = true;
-            suggestedFileFilter = ScriptCanvasAssetDescription().GetExtensionImpl();
+            suggestedFileFilter = SourceDescription::GetFileExtension();
             suggestedFilename = inMemoryAssetId.Path().c_str();
         }
         else
         {
-            suggestedFileFilter = ScriptCanvasAssetDescription().GetExtensionImpl();
+            suggestedFileFilter = SourceDescription::GetFileExtension();
 
             if (inMemoryAssetId.Path().empty())
             {
-                suggestedFilename = ScriptCanvasAssetDescription().GetSuggestedSavePathImpl();
+                suggestedFilename = SourceDescription::GetSuggestedSavePath();
             }
             else
             {
@@ -1661,9 +1661,9 @@ namespace ScriptCanvasEditor
             {
                 AZStd::string filePath = selectedFile.toUtf8().data();
 
-                if (!AZ::StringFunc::EndsWith(filePath, assetDescription.GetExtensionImpl(), false))
+                if (!AZ::StringFunc::EndsWith(filePath, SourceDescription::GetFileExtension(), false))
                 {
-                    filePath += assetDescription.GetExtensionImpl();
+                    filePath += SourceDescription::GetFileExtension();
                 }
 
                 AZStd::string fileName;
@@ -1695,9 +1695,9 @@ namespace ScriptCanvasEditor
             AZStd::string internalStringFile = selectedFile.toUtf8().data();
 
 
-            if (!AZ::StringFunc::EndsWith(internalStringFile, assetDescription.GetExtensionImpl(), false))
+            if (!AZ::StringFunc::EndsWith(internalStringFile, SourceDescription::GetFileExtension(), false))
             {
-                internalStringFile += assetDescription.GetExtensionImpl();
+                internalStringFile += SourceDescription::GetFileExtension();
             }
 
             if (!AssetHelpers::IsValidSourceFile(internalStringFile, GetActiveScriptCanvasId()))

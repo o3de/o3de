@@ -21,14 +21,8 @@
 namespace ScriptCanvasEditor
 {
     /*! EditorScriptCanvasComponent
-    The user facing Editor Component for interfacing with ScriptCanvas
-    It connects to the AssetCatalogEventBus in order to remove the ScriptCanvasAssetHolder asset reference
-    when the asset is removed from the file system. The reason the ScriptCanvasAssetHolder holder does not
-    remove the asset reference itself is because the ScriptCanvasEditor MainWindow has a ScriptCanvasAssetHolder
-    which it uses to maintain the asset data in memory. Therefore removing an open ScriptCanvasAsset from the file system
-    will remove the reference from the EditorScriptCanvasComponent, but not the reference from the MainWindow allowing the
-    ScriptCanvas graph to still be modified while open
-    Finally per graph instance variables values are stored on the EditorScriptCanvasComponent and injected into the runtime ScriptCanvas component in BuildGameEntity
+    The user facing Editor Component for interfacing with ScriptCanvas.
+    Per graph instance variables values are stored here and injected into the runtime ScriptCanvas component in BuildGameEntity.
     */
     class EditorScriptCanvasComponent
         : public AzToolsFramework::Components::EditorComponentBase
@@ -88,13 +82,6 @@ namespace ScriptCanvasEditor
         AZ::Data::AssetId GetAssetId() const override;
         //=====================================================================
         
-       
-
-
-        //=====================================================================
-        // EditorEntityContextNotificationBus
-        
-
     protected:
         enum class SourceChangeDescription : AZ::u8
         {
