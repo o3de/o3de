@@ -34,9 +34,9 @@ namespace AZ
     }
 
     Name::Name(Internal::NameData* data)
-        : m_data{data}
-        , m_view{data->GetName()}
+        : m_view{data->GetName()}
         , m_hash{data->GetHash()}
+        , m_data{data}
     {}
 
     Name::Name(const Name& rhs)

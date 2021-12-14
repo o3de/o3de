@@ -65,9 +65,9 @@ namespace AZ::IO
     }
 
     FileRequest::ReadData::ReadData(void* output, u64 outputSize, const RequestPath& path, u64 offset, u64 size, bool sharedRead)
-        : m_output(output)
+        : m_path(path)
+        , m_output(output)
         , m_outputSize(outputSize)
-        , m_path(path)
         , m_offset(offset)
         , m_size(size)
         , m_sharedRead(sharedRead)
