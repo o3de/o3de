@@ -438,7 +438,10 @@ namespace EMotionFX
         for (size_t i = 0; i < actorInstanceCount; ++i)
         {
             ActorInstance* actorInstance = GetActorManager().GetActorInstance(i);
-            LegacyRenderRagdoll(actorInstance, renderColliders, renderJointLimits, renderPlugin, renderInfo);
+            if (actorInstance->GetRender() && actorInstance->GetIsVisible() && actorInstance->GetIsOwnedByRuntime() == false)
+            {
+                RenderRagdoll(actorInstance, renderColliders, renderJointLimits, renderPlugin, renderInfo);
+            }
         }
 
         renderUtil->RenderLines();
