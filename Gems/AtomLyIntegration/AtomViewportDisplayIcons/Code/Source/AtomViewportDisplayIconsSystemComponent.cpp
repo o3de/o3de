@@ -214,7 +214,8 @@ namespace AZ::Render
         };
         AZStd::array<Indice, 6> indices = {0, 1, 2, 0, 2, 3};
 
-        dynamicDraw->SetSortKey(aznumeric_cast<int64_t>(screenPosition.GetZ() * AZStd::numeric_limits<int64_t>::max()));
+        dynamicDraw->SetSortKey(
+            aznumeric_cast<int64_t>(screenPosition.GetZ() * aznumeric_cast<float>(AZStd::numeric_limits<int64_t>::max())));
         dynamicDraw->DrawIndexed(
             &vertices, static_cast<uint32_t>(vertices.size()), &indices, static_cast<uint32_t>(indices.size()), RHI::IndexFormat::Uint16,
             drawSrg);
