@@ -52,15 +52,16 @@ AZ_CVAR(
     AZ::ConsoleFunctorFlags::Null,
     "Use a lock icon when the cursor is over entities that cannot be interacted with");
 
+AZ_CVAR(float, ed_iconMinScale, 0.1f, nullptr, AZ::ConsoleFunctorFlags::Null, "Minimum scale for icons in the distance");
+AZ_CVAR(float, ed_iconMaxScale, 1.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "Maximum scale for icons near the camera");
+AZ_CVAR(float, ed_iconCloseDist, 3.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "Distance at which icons are at maximum scale");
+AZ_CVAR(float, ed_iconFarDist, 40.f, nullptr, AZ::ConsoleFunctorFlags::Null, "Distance at which icons are at minimum scale");
+
 namespace AzToolsFramework
 {
     AZ_CLASS_ALLOCATOR_IMPL(EditorHelpers, AZ::SystemAllocator, 0)
 
-    static const int s_iconSize = 36; // icon display size (in pixels)
-    static const float s_iconMinScale = 0.1f; // minimum scale for icons in the distance
-    static const float s_iconMaxScale = 1.0f; // maximum scale for icons near the camera
-    static const float s_iconCloseDist = 3.f; // distance at which icons are at maximum scale
-    static const float s_iconFarDist = 40.f; // distance at which icons are at minimum scale
+    static const int IconSize = 36; // icon display size (in pixels)
 
     // helper function to wrap EBus call to check if helpers are being displayed
     static bool HelpersVisible(const AzFramework::ViewportId viewportId)
@@ -82,14 +83,14 @@ namespace AzToolsFramework
 
     float GetIconScale(const float distance)
     {
-        return s_iconMinScale +
-            (s_iconMaxScale - s_iconMinScale) *
-            (1.0f - AZ::GetClamp(AZ::GetMax(0.0f, distance - s_iconCloseDist) / (s_iconFarDist - s_iconCloseDist), 0.0f, 1.0f));
+        return ed_iconMinScale +
+            (ed_iconMaxScale - ed_iconMinScale) *
+            (1.0f - AZ::GetClamp(AZ::GetMax(0.0f, distance - ed_iconCloseDist) / (ed_iconFarDist - ed_iconCloseDist), 0.0f, 1.0f));
     }
 
     float GetIconSize(const float distance)
     {
-        return GetIconScale(distance) * s_iconSize;
+        return GetIconScale(distance) * IconSize;
     }
 
     static void DisplayComponents(
