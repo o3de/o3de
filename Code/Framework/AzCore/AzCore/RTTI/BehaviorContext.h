@@ -1541,7 +1541,7 @@ namespace AZ
         }
 
         template<class T>
-        static bool SetClassEqualityComparer(BehaviorClass* behaviorClass, const T*)
+        static void SetClassEqualityComparer(BehaviorClass* behaviorClass, const T*)
         {
             behaviorClass->m_equalityComparer = &DefaultEqualityComparer<T>;
         }
