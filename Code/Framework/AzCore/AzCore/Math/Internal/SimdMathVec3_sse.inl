@@ -658,11 +658,12 @@ namespace AZ
             const FloatType detTmp = Add(detXYZ, _mm_shuffle_ps(detXYZ, detXYZ, _MM_SHUFFLE(0, 1, 0, 1)));
             const FloatType det    = Add(detTmp, _mm_shuffle_ps(detXYZ, detXYZ, _MM_SHUFFLE(0, 0, 2, 2)));
 
-            Mat3x3Transpose(cols, cols);
+            FloatType transposed[3];
+            Mat3x3Transpose(cols, transposed);
 
-            out[0] = Div(cols[0], det);
-            out[1] = Div(cols[1], det);
-            out[2] = Div(cols[2], det);
+            out[0] = Div(transposed[0], det);
+            out[1] = Div(transposed[1], det);
+            out[2] = Div(transposed[2], det);
         }
 
 
