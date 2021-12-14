@@ -955,6 +955,9 @@ namespace UnitTest
 
         const auto entity2ScreenPosition = AzFramework::WorldToScreen(AzToolsFramework::GetWorldTranslation(m_entityId2), m_cameraState);
 
+        // ensure icons are not enabled to avoid them interfering with bound detection
+        m_viewportManipulatorInteraction->GetViewportInteraction().SetIconsVisible(false);
+
         // click the entity in the viewport
         m_actionDispatcher->SetStickySelect(true)
             ->CameraState(m_cameraState)
@@ -1055,7 +1058,8 @@ namespace UnitTest
 
     // if an entity with an icon is behind an entity with a bound, the entity with the icon will be selected
     // even if the bound is closer (this is because icons are treated as if they are on the near clip plane)
-    TEST_F(EditorTransformComponentSelectionViewportPickingManipulatorTestFixture, FurtherAwayEntityWithIconReturnedWhenBoundEntityIsInFront)
+    TEST_F(
+        EditorTransformComponentSelectionViewportPickingManipulatorTestFixture, FurtherAwayEntityWithIconReturnedWhenBoundEntityIsInFront)
     {
         const AZ::EntityId boundEntityId = CreateEntityWithBounds("BoundEntity");
         const AZ::EntityId boundlessEntityId = CreateDefaultEditorEntity("BoundlessEntity");
@@ -1835,8 +1839,9 @@ namespace UnitTest
         using MouseInteractionResult = AzToolsFramework::ViewportInteraction::MouseInteractionResult;
 
     public:
-        WheelEventWidget(QWidget* parent = nullptr)
+        WheelEventWidget(const AzFramework::ViewportId viewportId, QWidget* parent = nullptr)
             : QWidget(parent)
+            , m_viewportId(viewportId)
         {
         }
 
@@ -1845,7 +1850,7 @@ namespace UnitTest
             namespace vi = AzToolsFramework::ViewportInteraction;
             vi::MouseInteraction mouseInteraction;
             mouseInteraction.m_interactionId.m_cameraId = AZ::EntityId();
-            mouseInteraction.m_interactionId.m_viewportId = 0;
+            mouseInteraction.m_interactionId.m_viewportId = m_viewportId;
             mouseInteraction.m_mouseButtons = vi::BuildMouseButtons(ev->buttons());
             mouseInteraction.m_mousePick = vi::MousePick();
             mouseInteraction.m_keyboardModifiers = vi::BuildKeyboardModifiers(ev->modifiers());
@@ -1857,15 +1862,15 @@ namespace UnitTest
         }
 
         MouseInteractionResult m_mouseInteractionResult;
+        AzFramework::ViewportId m_viewportId;
     };
 
-    TEST_F(EditorTransformComponentSelectionFixture, MouseScrollWheelSwitchesTransformMode)
+    TEST_F(EditorTransformComponentSelectionManipulatorTestFixture, MouseScrollWheelSwitchesTransformMode)
     {
-        using ::testing::Eq;
         namespace vi = AzToolsFramework::ViewportInteraction;
         using AzToolsFramework::EditorTransformComponentSelectionRequestBus;
 
-        const auto transformMode = []()
+        const auto transformMode = []
         {
             EditorTransformComponentSelectionRequestBus::Events::Mode transformMode;
             EditorTransformComponentSelectionRequestBus::EventResult(
@@ -1878,7 +1883,7 @@ namespace UnitTest
         // preconditions
         EXPECT_THAT(transformMode(), EditorTransformComponentSelectionRequestBus::Events::Mode::Translation);
 
-        auto wheelEventWidget = WheelEventWidget();
+        auto wheelEventWidget = WheelEventWidget(m_viewportManipulatorInteraction->GetViewportInteraction().GetViewportId());
         // attach the global event filter to the placeholder widget
         AzQtComponents::GlobalEventFilter globalEventFilter(QApplication::instance());
         wheelEventWidget.installEventFilter(&globalEventFilter);
@@ -1894,6 +1899,7 @@ namespace UnitTest
 
         // then
         // transform mode has changed and mouse event was handled
+        using ::testing::Eq;
         EXPECT_THAT(transformMode(), Eq(EditorTransformComponentSelectionRequestBus::Events::Mode::Rotation));
         EXPECT_THAT(wheelEventWidget.m_mouseInteractionResult, Eq(vi::MouseInteractionResult::Viewport));
     }

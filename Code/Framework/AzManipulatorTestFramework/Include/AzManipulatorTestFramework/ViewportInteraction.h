@@ -39,9 +39,8 @@ namespace AzManipulatorTestFramework
         AzFramework::ViewportId GetViewportId() const override;
         void UpdateVisibility() override;
         void SetStickySelect(bool enabled) override;
-        AZ::Vector3 DefaultEditorCameraPosition() const override;
-        bool IconsVisible() const override;
-        bool HelpersVisible() const override;
+        void SetIconsVisible(bool visible) override;
+        void SetHelpersVisible(bool visible) override;
 
         // ViewportInteractionRequestBus overrides ...
         AzFramework::CameraState GetCameraState() override;
@@ -60,6 +59,9 @@ namespace AzManipulatorTestFramework
         float ManipulatorLineBoundWidth() const override;
         float ManipulatorCircleBoundWidth() const override;
         bool StickySelectEnabled() const override;
+        AZ::Vector3 DefaultEditorCameraPosition() const override;
+        bool IconsVisible() const override;
+        bool HelpersVisible() const override;
 
         // EditorEntityViewportInteractionRequestBus overrides ...
         void FindVisibleEntities(AZStd::vector<AZ::EntityId>& visibleEntities) override;
