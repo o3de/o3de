@@ -21,6 +21,7 @@
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabDomTypes.h>
+#include <AzToolsFramework/Prefab/Spawnable/PrefabDocument.h>
 #include <AzToolsFramework/Prefab/Spawnable/ProcesedObjectStore.h>
 
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
@@ -93,9 +94,9 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         explicit PrefabProcessorContext(const AZ::Uuid& sourceUuid);
         virtual ~PrefabProcessorContext() = default;
 
-        virtual bool AddPrefab(AZStd::string prefabName, PrefabDom prefab);
-        virtual void ListPrefabs(const AZStd::function<void(AZStd::string_view, PrefabDom&)>& callback);
-        virtual void ListPrefabs(const AZStd::function<void(AZStd::string_view, const PrefabDom&)>& callback) const;
+        virtual bool AddPrefab(PrefabDocument&& document);
+        virtual void ListPrefabs(const AZStd::function<void(AZStd::string_view, PrefabDocument&)>& callback);
+        virtual void ListPrefabs(const AZStd::function<void(AZStd::string_view, const PrefabDocument&)>& callback) const;
         virtual bool HasPrefabs() const;
 
         virtual bool RegisterSpawnableProductAssetDependency(
@@ -128,13 +129,15 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         virtual void ErrorEncountered();
 
     protected:
-        using NamedPrefabContainer = AZStd::unordered_map<AZStd::string, PrefabDom>;
+        using PrefabNames = AZStd::unordered_set<AZStd::string>;
+        using PrefabContainer = AZStd::vector<PrefabDocument>;
         using SpawnableEntityAliasStore = AZStd::vector<EntityAliasStore>;
 
         AZ::Data::AssetLoadBehavior ToAssetLoadBehavior(EntityAliasSpawnableLoadBehavior loadBehavior) const;
 
-        NamedPrefabContainer m_prefabs;
-        NamedPrefabContainer m_pendingPrefabAdditions;
+        PrefabContainer m_prefabs;
+        PrefabContainer m_pendingPrefabAdditions;
+        PrefabNames m_prefabNames;
         SpawnableEntityAliasStore m_entityAliases;
         ProcessedObjectStoreContainer m_products;
         ProductAssetDependencyContainer m_registeredProductAssetDependencies;

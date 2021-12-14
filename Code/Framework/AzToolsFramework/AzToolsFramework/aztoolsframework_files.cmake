@@ -730,6 +730,8 @@ set(FILES
     Prefab/Spawnable/PrefabConversionPipeline.h
     Prefab/Spawnable/PrefabConversionPipeline.cpp
     Prefab/Spawnable/PrefabConverterStackProfileNames.h
+    Prefab/Spawnable/PrefabDocument.h
+    Prefab/Spawnable/PrefabDocument.cpp
     Prefab/Spawnable/ProcesedObjectStore.h
     Prefab/Spawnable/ProcesedObjectStore.cpp
     Prefab/Spawnable/PrefabProcessor.h

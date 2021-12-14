@@ -10,6 +10,7 @@
 #include <AzCore/Component/EntityUtils.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
+#include <AzToolsFramework/Prefab/Spawnable/PrefabDocument.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabProcessorContext.h>
 #include <AzToolsFramework/Prefab/Spawnable/SpawnableUtils.h>
 
@@ -31,49 +32,39 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         : m_sourceUuid(sourceUuid)
     {}
 
-    bool PrefabProcessorContext::AddPrefab(AZStd::string prefabName, PrefabDom prefab)
+    bool PrefabProcessorContext::AddPrefab(PrefabDocument&& document)
     {
-        if (!m_isIterating)
+        AZStd::string name = document.GetName();
+        if (!m_prefabNames.contains(name))
         {
-            auto result = m_prefabs.emplace(AZStd::move(prefabName), AZStd::move(prefab));
-            return result.second;
+            m_prefabNames.emplace(AZStd::move(name));
+            PrefabContainer& container = m_isIterating ? m_pendingPrefabAdditions : m_prefabs;
+            container.push_back(AZStd::move(document));
+            return true;
         }
-        else
-        {
-            auto it = m_prefabs.find(prefabName);
-            if (it == m_prefabs.end())
-            {
-                auto result = m_pendingPrefabAdditions.emplace(AZStd::move(prefabName), AZStd::move(prefab));
-                return result.second;
-            }
-            else
-            {
-                return false;
-            }
-        }
+        return false;
     }
 
-    void PrefabProcessorContext::ListPrefabs(const AZStd::function<void(AZStd::string_view, PrefabDom&)>& callback)
+    void PrefabProcessorContext::ListPrefabs(const AZStd::function<void(AZStd::string_view, PrefabDocument&)>& callback)
     {
         m_isIterating = true;
-        for (auto& it : m_prefabs)
+        for (PrefabDocument& document : m_prefabs)
         {
-            callback(it.first, it.second);
+            callback(document.GetName(), document);
         }
 
         m_isIterating = false;
-        for (auto& prefab : m_pendingPrefabAdditions)
-        {
-            m_prefabs.emplace(AZStd::move(prefab.first), AZStd::move(prefab.second));
-        }
+        m_prefabs.insert(
+            m_prefabs.end(), AZStd::make_move_iterator(m_pendingPrefabAdditions.begin()),
+            AZStd::make_move_iterator(m_pendingPrefabAdditions.end()));
         m_pendingPrefabAdditions.clear();
     }
 
-    void PrefabProcessorContext::ListPrefabs(const AZStd::function<void(AZStd::string_view, const PrefabDom&)>& callback) const
+    void PrefabProcessorContext::ListPrefabs(const AZStd::function<void(AZStd::string_view, const PrefabDocument&)>& callback) const
     {
-        for (const auto& it : m_prefabs)
+        for (const PrefabDocument& document : m_prefabs)
         {
-            callback(it.first, it.second);
+            callback(document.GetName(), document);
         }
     }
 

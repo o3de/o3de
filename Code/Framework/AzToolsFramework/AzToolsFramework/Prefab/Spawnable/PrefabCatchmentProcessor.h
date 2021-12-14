@@ -40,7 +40,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         static void Reflect(AZ::ReflectContext* context);
 
     protected:
-        static void ProcessPrefab(PrefabProcessorContext& context, AZStd::string_view prefabName, PrefabDom& prefab,
+        static void ProcessPrefab(PrefabProcessorContext& context, AZStd::string_view prefabName, PrefabDocument& prefab,
             AZ::DataStream::StreamType serializationFormat);
 
         SerializationFormats m_serializationFormat{ SerializationFormats::Binary };

@@ -417,6 +417,7 @@ namespace AzToolsFramework
             bool readyToCreateRootSpawnable = m_playInEditorData.m_assetsCache.IsActivated();
             if (!readyToCreateRootSpawnable &&
                 !m_playInEditorData.m_assetsCache.Activate(Prefab::PrefabConversionUtils::PlayInEditor))
+
             {
                 AZ_Error("Prefab", false, "Failed to create a prefab processing stack from key '%.*s'.", AZ_STRING_ARG(Prefab::PrefabConversionUtils::PlayInEditor));
                 return;
