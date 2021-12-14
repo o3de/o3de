@@ -520,7 +520,7 @@ namespace AZ
         * This is not EBus Context Mutex when LocklessDispatch is set
         */
         template <typename DispatchMutex>
-        using DispatchLockGuard = typename ImplTraits::template DispatchLockGuard<DispatchMutex>;
+        using DispatchLockGuardTemplate = typename ImplTraits::template DispatchLockGuard<DispatchMutex>;
 
         //////////////////////////////////////////////////////////////////////////
         // Check to help identify common mistakes
@@ -650,7 +650,7 @@ namespace AZ
              * during broadcast/event dispatch.
              * @see EBusTraits::LocklessDispatch
              */
-            using DispatchLockGuard = DispatchLockGuard<ContextMutexType>;
+            using DispatchLockGuard = DispatchLockGuardTemplate<ContextMutexType>;
 
             /**
             * The scoped lock guard to use during connection.  Some specialized policies execute handler methods which

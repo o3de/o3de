@@ -797,7 +797,7 @@ namespace AZ
         // Note: Always use l over context->NativeContext(), as require may be called from a thread.
         using RequireHook = AZStd::function<int(lua_State* lua, ScriptContext* context, const char* module)>;
 
-        using StackVariableAllocator = StackVariableAllocator;
+        using StackVariableAllocator = AZ::StackVariableAllocator;
         /// Stack temporary memory
         
         /**
