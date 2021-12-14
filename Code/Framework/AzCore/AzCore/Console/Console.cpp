@@ -490,8 +490,8 @@ namespace AZ
     struct ConsoleCommandKeyNotificationHandler
     {
         ConsoleCommandKeyNotificationHandler(AZ::SettingsRegistryInterface& registry, Console& console)
-            : m_settingsRegistry(registry)
-            , m_console(console)
+            : m_console(console)
+            , m_settingsRegistry(registry)
         {
         }
 

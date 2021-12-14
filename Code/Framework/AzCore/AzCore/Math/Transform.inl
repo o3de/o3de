@@ -9,9 +9,9 @@
 namespace AZ
 {
     AZ_MATH_INLINE Transform::Transform(const Vector3& translation, const Quaternion& rotation, float scale)
-        : m_translation(translation)
-        , m_rotation(rotation)
+        : m_rotation(rotation)
         , m_scale(scale)
+        , m_translation(translation)
     {
         ;
     }

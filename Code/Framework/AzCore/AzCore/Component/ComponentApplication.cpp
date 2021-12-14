@@ -410,8 +410,8 @@ namespace AZ
     }
 
     ComponentApplication::ComponentApplication(int argC, char** argV)
-        : m_eventLogger{}
-        , m_timeSystem(AZStd::make_unique<TimeSystem>())
+        : m_timeSystem(AZStd::make_unique<TimeSystem>())
+        , m_eventLogger{}
     {
         if (Interface<ComponentApplicationRequests>::Get() == nullptr)
         {

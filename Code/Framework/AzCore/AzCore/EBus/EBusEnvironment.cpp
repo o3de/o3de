@@ -29,8 +29,8 @@ namespace AZ
 
         //////////////////////////////////////////////////////////////////////////
         ContextBase::ContextBase(EBusEnvironment* environment)
-            : m_ebusEnvironmentGetter(nullptr)
-            , m_ebusEnvironmentTLSIndex(-1)
+            : m_ebusEnvironmentTLSIndex(-1)
+            , m_ebusEnvironmentGetter(nullptr)
         {
             // we need m_ebusEnvironmentGetter and m_ebusEnvironmentTLSIndex only in the global context
             (void)environment;
