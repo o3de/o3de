@@ -214,7 +214,7 @@ namespace AZ
     {
         constexpr size_t GF2_DIM = 32; /* dimension of GF(2) vectors (length of CRC) */
 
-        int n{};
+        size_t n{};
         u32 row{};
         u32 even[GF2_DIM]{};    /* even-power-of-two zeros operator */
         u32 odd[GF2_DIM]{};     /* odd-power-of-two zeros operator */
