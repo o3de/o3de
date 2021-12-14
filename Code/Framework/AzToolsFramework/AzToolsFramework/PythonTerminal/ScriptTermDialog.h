@@ -25,7 +25,7 @@
 #endif
 
 
-#define SCRIPT_TERM_WINDOW_NAME "Python Console"
+#define SCRIPT_TERM_WINDOW_NAME "Python Terminal"
 
 class QStringListModel;
 namespace Ui {
