@@ -25,7 +25,6 @@ set(FILES
     native/tests/resourcecompiler/RCControllerTest.cpp
     native/tests/resourcecompiler/RCControllerTest.h
     native/tests/resourcecompiler/RCJobTest.cpp
-    native/tests/resourcecompiler/RCJobTest.h
     native/tests/assetBuilderSDK/assetBuilderSDKTest.h
     native/tests/assetBuilderSDK/assetBuilderSDKTest.cpp
     native/tests/assetBuilderSDK/SerializationDependenciesTests.cpp
