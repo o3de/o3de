@@ -850,6 +850,38 @@ namespace AssetBuilderSDK
         ProcessJobResponse m_response;
     };
 
+    //////////////////////////////////////////////////////////////////////////
+    struct BuilderRegistration
+    {
+        AZ_CLASS_ALLOCATOR(BuilderRegistration, AZ::OSAllocator, 0);
+        AZ_TYPE_INFO(BuilderRegistration, "{36E785C3-5046-4568-870A-336C8249E453}");
+
+        static void Reflect(AZ::ReflectContext* context);
+
+        AZStd::string m_name;
+        AZStd::vector<AssetBuilderSDK::AssetBuilderPattern> m_patterns;
+        AZ::Uuid m_busId;
+        int m_version = 0;
+        AZStd::string m_analysisFingerprint;
+        AZ::u8 m_flags = 0;
+        AZStd::unordered_map<AZStd::string, AZ::u8> m_flagsByJobKey;
+        AZStd::unordered_map<AZStd::string, AZStd::unordered_set<AZ::u32>> m_productsToKeepOnFailure;
+    };
+
+    class BuilderRegistrationRequest : public AzFramework::AssetSystem::BaseAssetProcessorMessage
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(BuilderRegistrationRequest, AZ::OSAllocator, 0);
+        AZ_RTTI(BuilderRegistrationRequest, "{FA9CF2D5-C847-47F3-979D-6C3AE061715C}", BaseAssetProcessorMessage);
+        static void Reflect(AZ::ReflectContext* context);
+        static constexpr unsigned int MessageType = AZ_CRC_CE("AssetSystem::BuilderRegistrationRequest");
+
+        BuilderRegistrationRequest() = default;
+        unsigned int GetMessageType() const override;
+
+        AZStd::vector<BuilderRegistration> m_builders;
+    };
+
     //! JobCancelListener can be used by builders in their processJob method to listen for job cancellation request.
     //! The address of this listener is the jobid which can be found in the process job request.
     class JobCancelListener : public JobCommandBus::Handler

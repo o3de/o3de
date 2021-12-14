@@ -1178,6 +1178,7 @@ namespace AssetBuilderSDK
         CreateJobsResponse::Reflect(context);
         ProcessJobRequest::Reflect(context);
         ProcessJobResponse::Reflect(context);
+        BuilderRegistrationRequest::Reflect(context);
 
         BuilderHelloRequest::Reflect(context);
         BuilderHelloResponse::Reflect(context);
@@ -1519,6 +1520,43 @@ namespace AssetBuilderSDK
                 ->Enum<aznumeric_cast<int>(JobDependencyType::Order)>("Order")
                 ->Enum<aznumeric_cast<int>(JobDependencyType::OrderOnce)>("OrderOnce");
         }
+    }
+
+    //---------------------------------------------------------------------
+    void BuilderRegistration::Reflect(AZ::ReflectContext* context)
+    {
+        auto serialize = azrtti_cast<AZ::SerializeContext*>(context);
+        if (serialize)
+        {
+            serialize->Class<BuilderRegistration>()
+                ->Version(1)
+                ->Field("Name", &BuilderRegistration::m_name)
+                ->Field("Patterns", &BuilderRegistration::m_patterns)
+                ->Field("BusId", &BuilderRegistration::m_busId)
+                ->Field("Version", &BuilderRegistration::m_version)
+                ->Field("AnalysisFingerprint", &BuilderRegistration::m_analysisFingerprint)
+                ->Field("Flags", &BuilderRegistration::m_flags)
+                ->Field("FlagsByJobKey", &BuilderRegistration::m_flagsByJobKey)
+                ->Field("ProductsToKeepOnFailure", &BuilderRegistration::m_productsToKeepOnFailure);
+        }
+    }
+
+    void BuilderRegistrationRequest::Reflect(AZ::ReflectContext* context)
+    {
+        BuilderRegistration::Reflect(context);
+
+        auto serialize = azrtti_cast<AZ::SerializeContext*>(context);
+        if (serialize)
+        {
+            serialize->Class<BuilderRegistrationRequest, BaseAssetProcessorMessage>()
+            ->Version(1)
+            ->Field("Builders", &BuilderRegistrationRequest::m_builders);
+        }
+    }
+
+    unsigned int BuilderRegistrationRequest::GetMessageType() const
+    {
+        return BuilderRegistrationRequest::MessageType;
     }
 
     AssertAbsorber::AssertAbsorber()

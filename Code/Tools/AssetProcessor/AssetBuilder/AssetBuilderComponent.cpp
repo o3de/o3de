@@ -256,7 +256,41 @@ bool AssetBuilderComponent::Run()
     AZ_TracePrintf("AssetBuilderComponent", "Run: Connecting back to Asset Processor...\n");
     bool connectedToAssetProcessor = ConnectToAssetProcessor();
     //AP connection is required to access the asset catalog
-    AZ_Error("AssetBuilder", connectedToAssetProcessor, "Failed to establish a network connection to the AssetProcessor. Use -help for options.");;
+    AZ_Error("AssetBuilder", connectedToAssetProcessor, "Failed to establish a network connection to the AssetProcessor. Use -help for options.");
+
+    if (connectedToAssetProcessor && task == s_taskResident)
+    {
+        using namespace AssetBuilderSDK;
+
+        BuilderHelloRequest request;
+        BuilderHelloResponse response;
+
+        AZStd::string id;
+
+        if (!GetParameter(s_paramId, id))
+        {
+            return false;
+        }
+
+        request.m_uuid = AZ::Uuid::CreateString(id.c_str());
+
+        AZ_TracePrintf(
+            "AssetBuilderComponent", "RunInResidentMode: Pinging asset processor with the builder UUID %s\n",
+            request.m_uuid.ToString<AZStd::string>().c_str());
+
+        bool result = AzFramework::AssetSystem::SendRequest(request, response);
+
+        AZ_Error("AssetBuilder", result, "Failed to send hello request to Asset Processor");
+        // This error is only shown if we successfully got a response AND the response explicitly indicates the AP rejected the builder
+        AZ_Error("AssetBuilder", !result || response.m_accepted, "Asset Processor rejected connection request");
+
+        if (!result)
+        {
+            return false;
+        }
+
+        AZ_TracePrintf("AssetBuilder", "Builder ID: %s\n", response.m_uuid.ToString<AZStd::string>().c_str());
+    }
 
     IBuilderApplication* builderApplication = AZ::Interface<IBuilderApplication>::Get();
 
@@ -377,36 +411,32 @@ bool AssetBuilderComponent::RunInResidentMode()
 
     AZ_TracePrintf("AssetBuilderComponent", "RunInResidentMode: Starting resident mode (waiting for commands to arrive)\n");
 
-    AZStd::string port, id, builderFolder;
-
-    if (!GetParameter(s_paramId, id)
-        || !GetParameter(s_paramModule, builderFolder))
-    {
-        return false;
-    }
-
-    if (!LoadBuilders(builderFolder))
-    {
-        return false;
-    }
-
     AzFramework::SocketConnection::GetInstance()->AddMessageHandler(CreateJobsNetRequest::MessageType(), AZStd::bind(&AssetBuilderComponent::CreateJobsResidentHandler, this, _1, _2, _3, _4));
     AzFramework::SocketConnection::GetInstance()->AddMessageHandler(ProcessJobNetRequest::MessageType(), AZStd::bind(&AssetBuilderComponent::ProcessJobResidentHandler, this, _1, _2, _3, _4));
 
-    BuilderHelloRequest request;
-    BuilderHelloResponse response;
+    AssetBuilderSDK::BuilderRegistrationRequest registrationRequest;
 
-    request.m_uuid = AZ::Uuid::CreateString(id.c_str());
+    for (const auto& [uuid, desc] : m_assetBuilderDescMap)
+    {
+        AssetBuilderSDK::BuilderRegistration registration;
 
-    AZ_TracePrintf("AssetBuilderComponent", "RunInResidentMode: Pinging asset processor with the builder UUID %s\n", request.m_uuid.ToString<AZStd::string>().c_str());
+        registration.m_name = desc->m_name;
+        registration.m_analysisFingerprint = desc->m_analysisFingerprint;
+        registration.m_flags = desc->m_flags;
+        registration.m_flagsByJobKey = desc->m_flagsByJobKey;
+        registration.m_version = desc->m_version;
+        registration.m_busId = desc->m_busId;
+        registration.m_patterns = desc->m_patterns;
+        registration.m_productsToKeepOnFailure = desc->m_productsToKeepOnFailure;
 
-    bool result = AzFramework::AssetSystem::SendRequest(request, response);
+        registrationRequest.m_builders.push_back(AZStd::move(registration));
+    }
 
-    AZ_Error("AssetBuilder", result, "Failed to send hello request to Asset Processor");
-    // This error is only shown if we successfully got a response AND the response explicitly indicates the AP rejected the builder
-    AZ_Error("AssetBuilder", !result || response.m_accepted, "Asset Processor rejected connection request");
+    bool result = SendRequest(registrationRequest);
 
-    if (result && response.m_accepted)
+    AZ_Error("AssetBuilder", result, "Failed to send builder registration request to Asset Processor");
+
+    if (result)
     {
         m_running = true;
 
@@ -415,7 +445,6 @@ bool AssetBuilderComponent::RunInResidentMode()
 
         AzFramework::EngineConnectionEvents::Bus::Handler::BusConnect(); // Listen for disconnects
 
-        AZ_TracePrintf("AssetBuilder", "Builder ID: %s\n", response.m_uuid.ToString<AZStd::string>().c_str());
         AZ_TracePrintf("AssetBuilder", "Resident mode ready\n");
         m_mainEvent.acquire();
         AZ_TracePrintf("AssetBuilder", "Shutting down\n");

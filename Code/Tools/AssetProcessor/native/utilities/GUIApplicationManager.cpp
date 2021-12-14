@@ -318,14 +318,17 @@ bool GUIApplicationManager::Run()
 
     qApp->setQuitOnLastWindowClosed(false);
 
-    QTimer::singleShot(0, this, [this]()
+    BuilderRef builder;
+    BuilderManagerBus::BroadcastResult(builder, &BuilderManagerBus::Events::GetBuilder);
+
+    /*QTimer::singleShot(0, this, [this]()
     {
         if (!PostActivate())
         {
             QuitRequested();
             m_startedSuccessfully = false;
         }
-    });
+    });*/
 
     m_duringStartup = false;
 

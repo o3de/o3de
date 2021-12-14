@@ -591,6 +591,92 @@ void ApplicationManagerBase::InitConnectionManager()
             }, AZStd::placeholders::_1, AZStd::placeholders::_2, AZStd::placeholders::_3, AZStd::placeholders::_4)
         );
 
+    m_connectionManager->RegisterService(
+        AssetBuilderSDK::BuilderRegistrationRequest::MessageType,
+        [this](unsigned int /*connId*/, unsigned int /*type*/, unsigned int /*serial*/, QByteArray payload, QString)
+    {
+        AssetBuilderSDK::BuilderRegistrationRequest registrationRequest;
+
+        if (AssetProcessor::UnpackMessage(payload, registrationRequest))
+        {
+            for (const auto& builder : registrationRequest.m_builders)
+            {
+                AssetBuilderSDK::AssetBuilderDesc desc;
+                desc.m_name = builder.m_name;
+                desc.m_patterns = builder.m_patterns;
+                desc.m_version = builder.m_version;
+                desc.m_analysisFingerprint = builder.m_analysisFingerprint;
+                desc.m_flags = builder.m_flags;
+                desc.m_busId = builder.m_busId;
+                desc.m_flagsByJobKey = builder.m_flagsByJobKey;
+                desc.m_productsToKeepOnFailure = builder.m_productsToKeepOnFailure;
+                desc.m_builderType = AssetBuilderSDK::AssetBuilderDesc::AssetBuilderType::External;
+
+                // We're going to override the createJob function so we can run it externally in AssetBuilder, rather than having it run
+                // inside the AP
+                desc.m_createJobFunction =
+                    [](const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response)
+                {
+                    AssetProcessor::BuilderRef builderRef;
+                    AssetProcessor::BuilderManagerBus::BroadcastResult(
+                        builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder);
+
+                    if (builderRef)
+                    {
+                        int retryCount = 0;
+                        AssetProcessor::BuilderRunJobOutcome result;
+
+                        do
+                        {
+                            retryCount++;
+                            result = builderRef->RunJob<AssetBuilderSDK::CreateJobsNetRequest, AssetBuilderSDK::CreateJobsNetResponse>(
+                                request, response, s_MaximumCreateJobsTimeSeconds, "create", "", nullptr);
+                        } while (result == AssetProcessor::BuilderRunJobOutcome::LostConnection &&
+                                 retryCount <= AssetProcessor::RetriesForJobNetworkError);
+                    }
+                    else
+                    {
+                        AZ_Error("AssetProcessor", false, "Failed to retrieve a valid builder to process job");
+                    }
+                };
+
+                // Also override the processJob function to run externally
+                desc.m_processJobFunction =
+                    [](const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response)
+                {
+                    AssetBuilderSDK::JobCancelListener jobCancelListener(request.m_jobId);
+
+                    AssetProcessor::BuilderRef builderRef;
+                    AssetProcessor::BuilderManagerBus::BroadcastResult(
+                        builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder);
+
+                    if (builderRef)
+                    {
+                        int retryCount = 0;
+                        AssetProcessor::BuilderRunJobOutcome result;
+
+                        do
+                        {
+                            retryCount++;
+                            result = builderRef->RunJob<AssetBuilderSDK::ProcessJobNetRequest, AssetBuilderSDK::ProcessJobNetResponse>(
+                                request, response, s_MaximumProcessJobsTimeSeconds, "process", "", &jobCancelListener,
+                                request.m_tempDirPath);
+                        } while (result == AssetProcessor::BuilderRunJobOutcome::LostConnection &&
+                                 retryCount <= AssetProcessor::RetriesForJobNetworkError);
+                    }
+                    else
+                    {
+                        AZ_Error("AssetProcessor", false, "Failed to retrieve a valid builder to process job");
+                    }
+                };
+
+                m_builderDescMap[desc.m_busId] = desc;
+            }
+
+            PostActivate();
+        }
+    });
+
     //You can get Asset Processor Current State
     using AzFramework::AssetSystem::RequestAssetProcessorStatus;
     auto GetState = [this](unsigned int connId, unsigned int, unsigned int serial, QByteArray payload, QString)
@@ -1611,6 +1697,8 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
                     AZ_Error("AssetProcessor", false, "Failed to retrieve a valid builder to process job");
                 }
             };
+
+        return;
     }
 
     if (m_builderDescMap.find(modifiedBuilderDesc.m_busId) != m_builderDescMap.end())
