@@ -56,10 +56,10 @@ class LightingData
 
 void LightingData::Init(float3 positionWS, float3 normal, float roughnessLinear)
 {
-    diffuseLighting = 0;
-    specularLighting = 0;
-    translucentBackLighting = 0;
-    multiScatterCompensation = 1.0f;
+    diffuseLighting = float3(0.0, 0.0, 0.0);
+    specularLighting = float3(0.0, 0.0, 0.0);
+    translucentBackLighting = float3(0.0, 0.0, 0.0);
+    multiScatterCompensation = float3(1.0f, 1.0f, 1.0f);
     emissiveLighting = float3(0.0f, 0.0f, 0.0f);
     diffuseAmbientOcclusion = 1.0f;
     specularOcclusion = 1.0f;

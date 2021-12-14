@@ -150,7 +150,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace)
     
     // Diffuse and Specular response (used in IBL calculations)
     lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
-    lightingData.diffuseResponse = 1.0 - lightingData.specularResponse;
+    lightingData.diffuseResponse = float3(1.0, 1.0, 1.0) - lightingData.specularResponse;
 
     // ------- Multiscatter -------
 
