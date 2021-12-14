@@ -18,24 +18,25 @@ cd %~dp0
 PUSHD %~dp0
 
 :: version Year
-IF "%PYCHARM_VERSION_YEAR%"=="" (set PYCHARM_VERSION_YEAR=2020)
+IF "%PYCHARM_VERSION_YEAR%"=="" (set PYCHARM_VERSION_YEAR=2021)
 :: version Major
-IF "%PYCHARM_VERSION_MAJOR%"=="" (set PYCHARM_VERSION_MAJOR=3)
+IF "%PYCHARM_VERSION_MAJOR%"=="" (set PYCHARM_VERSION_MAJOR=2)
 :: version Minor
-IF "%PYCHARM_VERSION_MINOR%"=="" (set PYCHARM_VERSION_MINOR=2)
+IF "%PYCHARM_VERSION_MINOR%"=="" (set PYCHARM_VERSION_MINOR=3)
 
 ::"C:\Program Files\JetBrains\PyCharm 2019.1.3\bin"
 ::"C:\Program Files\JetBrains\PyCharm Community Edition 2018.3.5\bin\pycharm64.exe"
 
 :: put project env variables/paths here
-set PYCHARM_HOME=%PROGRAMFILES%\JetBrains\PyCharm %PYCHARM_VERSION_YEAR%.%PYCHARM_VERSION_MAJOR%.%PYCHARM_VERSION_MINOR%
+IF "%PYCHARM_HOME%"=="" (set PYCHARM_HOME=%PROGRAMFILES%\JetBrains\PyCharm %PYCHARM_VERSION_YEAR%.%PYCHARM_VERSION_MAJOR%)
 
 :: Initialize env
 CALL %~dp0\Env_Core.bat
 CALL %~dp0\Env_Python.bat
 CALL %~dp0\Env_Qt.bat
 
-SET PYCHARM_PROJ=%PATH_DCCSIG%\Tools\Dev\Windows\Solutions
+::SET PYCHARM_PROJ=%PATH_DCCSIG%\Tools\Dev\Windows\Solutions
+SET PYCHARM_PROJ=%PATH_DCCSIG%
 
 echo.
 echo _____________________________________________________________________

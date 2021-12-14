@@ -34,3 +34,6 @@ pyside2-tools instructions:
 	in .py something like: site.addsitedir(DCCSI_PYSIDE2_TOOLS)
 
 See: "< local DCCsi >\config.py"
+
+Install Substance Automation Toolkit 3rd party library to DCCsi:
+PS E:\Depot\o3de\python> pip install "E:\PROJECTS\CODE\Python\SubstanceAutomationToolkit\Python API\Pysbs-2021.2.2-py2.py3-none-win_amd64.whl" --target=E:\Depot\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\3rdParty\Python\Lib\3.x\3.7.x\site-packages
