@@ -112,14 +112,14 @@ namespace AZ
         , m_debugDescription(nullptr)
     {}
 
-    bool BehaviorMethod::AllocateParameters(const BehaviorParameter* parameters, unsigned int parametersSize, BehaviorValueParameter* arguments, unsigned int numArguments) const
+    bool BehaviorMethod::AllocateParameters(const BehaviorParameter* parameters, unsigned int parametersSize, BehaviorValueParameter*& arguments, unsigned int numArguments) const
     {
         size_t totalArguments = GetNumArguments();
         if (numArguments < totalArguments)
         {
             // We are cloning all arguments on the stack, since Call is called only from Invoke we can reserve bigger "arguments" array
             // that can always handle all parameters. So far the don't use default values that ofter, so we will optimize for the common case first.
-            BehaviorValueParameter* newArguments = reinterpret_cast<BehaviorValueParameter*>(alloca(sizeof(BehaviorValueParameter)*  totalArguments));
+            BehaviorValueParameter* newArguments = reinterpret_cast<BehaviorValueParameter*>(alloca(sizeof(BehaviorValueParameter) * totalArguments));
             // clone the input parameters (we don't need to clone temp buffers, etc. as they will be still on the stack)
             size_t argIndex = 0;
             for (; argIndex < numArguments; ++argIndex)
@@ -158,6 +158,21 @@ namespace AZ
         }
 
         return true;
+    }
+
+    void BehaviorMethod::SetDefaultValue(size_t index, BehaviorDefaultValuePtr defaultValue)
+    {
+        if (index < GetNumArguments())
+        {
+            if (defaultValue && defaultValue->GetValue().m_typeId != GetArgument(index)->m_typeId)
+            {
+                AZ_Assert(
+                    false, "Argument %zu default value type, doesn't match! Default value should be the same type! Current type %s!", index,
+                    defaultValue->GetValue().m_name);
+                return;
+            }
+            m_metadataParameters[index + s_startArgumentIndex].m_defaultValue = defaultValue;
+        }
     }
 
     //=========================================================================

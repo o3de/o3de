@@ -294,7 +294,7 @@ namespace AZ
 
         virtual void OverrideParameterTraits(size_t index, AZ::u32 addTraits, AZ::u32 removeTraits) = 0;
 
-        bool AllocateParameters(const BehaviorParameter* parameters, unsigned int parametersSize, BehaviorValueParameter* arguments, unsigned int numArguments) const;
+        bool AllocateParameters(const BehaviorParameter* parameters, unsigned int parametersSize, BehaviorValueParameter*& arguments, unsigned int numArguments) const;
 
         virtual size_t GetNumArguments() const = 0;
         /// Return the minimum number of arguments needed (considering default arguments)
@@ -304,7 +304,7 @@ namespace AZ
         virtual void SetArgumentName(size_t index, const AZStd::string& name) = 0;
         virtual const AZStd::string* GetArgumentToolTip(size_t index) const = 0;
         virtual void SetArgumentToolTip(size_t index, const AZStd::string& name) = 0;
-        virtual void SetDefaultValue(size_t index, BehaviorDefaultValuePtr defaultValue) = 0;
+        virtual void SetDefaultValue(size_t index, BehaviorDefaultValuePtr defaultValue);
         virtual BehaviorDefaultValuePtr GetDefaultValue(size_t index) const = 0;
         virtual const BehaviorParameter* GetResult() const = 0;
 
@@ -318,6 +318,9 @@ namespace AZ
         const char* m_debugDescription;
         bool m_isConst = false; ///< Is member function const (false if not a member function)
         AttributeArray m_attributes;    ///< Attributes for the method
+        AZStd::vector<BehaviorParameterMetadata> m_metadataParameters; ///< Stores the per parameter metadata which is used to add names, tooltips, trait, default values, etc...
+                                                                       ///< to the parameters
+
     };
 
     using InputIndices = AZStd::vector<AZ::u8>;
@@ -541,7 +544,6 @@ namespace AZ
             void SetArgumentName(size_t index, const AZStd::string& name) override;
             const AZStd::string* GetArgumentToolTip(size_t index) const override;
             void SetArgumentToolTip(size_t index, const AZStd::string& name) override;
-            void SetDefaultValue(size_t index, BehaviorDefaultValuePtr defaultValue) override;
             BehaviorDefaultValuePtr GetDefaultValue(size_t index) const override;
             const BehaviorParameter* GetResult() const override;
 
@@ -550,7 +552,6 @@ namespace AZ
             FunctionPointer m_functionPtr;
 
             BehaviorParameter m_parameters[sizeof...(Args)+s_startNamedArgumentIndex];
-            AZStd::array<BehaviorParameterMetadata, sizeof...(Args)+s_startNamedArgumentIndex> m_metadataParameters; ///< Stores the per parameter metadata which is used to add names, tooltips, trait, default values, etc... to the parameters
         };
 
 #if __cpp_noexcept_function_type
@@ -579,6 +580,12 @@ namespace AZ
 
             static const int s_startNamedArgumentIndex = s_startArgumentIndex + 1; // +1 for result type, +1 for class Type (this ptr)
 
+            BehaviorMethodImpl<R(C::*)(Args...)>()
+                : BehaviorMethod()
+            {
+                m_metadataParameters.resize(sizeof...(Args) + s_startNamedArgumentIndex);
+            }
+
             BehaviorMethodImpl(FunctionPointer functionPointer, BehaviorContext* context, const AZStd::string& name = AZStd::string());
             BehaviorMethodImpl(FunctionPointerConst functionPointer, BehaviorContext* context, const AZStd::string& name = AZStd::string());
 
@@ -597,7 +604,6 @@ namespace AZ
             void SetArgumentName(size_t index, const AZStd::string& name) override;
             const AZStd::string* GetArgumentToolTip(size_t index) const override;
             void SetArgumentToolTip(size_t index, const AZStd::string& name) override;
-            void SetDefaultValue(size_t index, BehaviorDefaultValuePtr defaultValue) override;
             BehaviorDefaultValuePtr GetDefaultValue(size_t index) const override;
             const BehaviorParameter* GetResult() const override;
 
@@ -605,7 +611,6 @@ namespace AZ
 
             FunctionPointer m_functionPtr;
             BehaviorParameter m_parameters[sizeof...(Args)+s_startNamedArgumentIndex];
-            AZStd::array<BehaviorParameterMetadata, sizeof...(Args)+s_startNamedArgumentIndex> m_metadataParameters; ///< Stores the per parameter metadata which is used to add names, tooltips, trait, default values, etc... to the parameters
         };
 
  #if __cpp_noexcept_function_type
@@ -757,7 +762,6 @@ namespace AZ
             void SetArgumentName(size_t index, const AZStd::string& name) override;
             const AZStd::string* GetArgumentToolTip(size_t index) const override;
             void SetArgumentToolTip(size_t index, const AZStd::string& name) override;
-            void SetDefaultValue(size_t index, BehaviorDefaultValuePtr defaultValue) override;
             BehaviorDefaultValuePtr GetDefaultValue(size_t index) const override;
             const BehaviorParameter* GetResult() const override;
 
@@ -765,7 +769,6 @@ namespace AZ
 
             FunctionPointer m_functionPtr;
             BehaviorParameter m_parameters[sizeof...(Args)+s_startNamedArgumentIndex];
-            AZStd::array<BehaviorParameterMetadata, sizeof...(Args)+s_startNamedArgumentIndex> m_metadataParameters; ///< Stores the per parameter metadata which is used to add names, tooltips, trait, default values, etc... to the parameters
         };
 
 #if __cpp_noexcept_function_type
@@ -3867,6 +3870,7 @@ namespace AZ
             : BehaviorMethod(context)
             , m_functionPtr(functionPointer)
         {
+            m_metadataParameters.resize(sizeof...(Args) + s_startNamedArgumentIndex);
             m_name = name;
             SetParameters<R>(m_parameters, this);
             SetParameters<Args...>(&m_parameters[s_startNamedArgumentIndex], this);
@@ -3991,19 +3995,6 @@ namespace AZ
             }
         }
 
-        template<class R, class... Args>
-        void BehaviorMethodImpl<R(Args...)>::SetDefaultValue(size_t index, BehaviorDefaultValuePtr defaultValue)
-        {
-            if (index < GetNumArguments())
-            {
-                if (defaultValue && defaultValue->GetValue().m_typeId != GetArgument(index)->m_typeId)
-                {
-                    AZ_Assert(false, "Argument %zu default value type, doesn't match! Default value should be the same type! Current type %s!", index, defaultValue->GetValue().m_name);
-                    return;
-                }
-                m_metadataParameters[index + s_startArgumentIndex].m_defaultValue = defaultValue;
-            }
-        }
 
         template<class R, class... Args>
         BehaviorDefaultValuePtr BehaviorMethodImpl<R(Args...)>::GetDefaultValue(size_t index) const
@@ -4028,6 +4019,7 @@ namespace AZ
             : BehaviorMethod(context)
             , m_functionPtr(functionPointer)
         {
+            m_metadataParameters.resize(sizeof...(Args) + s_startNamedArgumentIndex);
             m_name = name;
             SetParameters<R>(m_parameters, this);
             SetParameters<C*>(&m_parameters[s_startArgumentIndex], this);
@@ -4205,20 +4197,6 @@ namespace AZ
         }
 
         template<class R, class C, class... Args>
-        void BehaviorMethodImpl<R(C::*)(Args...)>::SetDefaultValue(size_t index, BehaviorDefaultValuePtr defaultValue)
-        {
-            if (index < GetNumArguments())
-            {
-                if (defaultValue && defaultValue->GetValue().m_typeId != GetArgument(index)->m_typeId)
-                {
-                    AZ_Assert(false, "Argument %zu default value type, doesn't match! Default value should be the same type! Current type %s!", index, defaultValue->GetValue().m_name);
-                    return;
-                }
-                m_metadataParameters[index + s_startArgumentIndex].m_defaultValue = defaultValue;
-            }
-        }
-
-        template<class R, class C, class... Args>
         BehaviorDefaultValuePtr BehaviorMethodImpl<R(C::*)(Args...)>::GetDefaultValue(size_t index) const
         {
             if (index < GetNumArguments())
@@ -4241,6 +4219,7 @@ namespace AZ
             : BehaviorMethod(context)
             , m_functionPtr(functionPointer)
         {
+            m_metadataParameters.resize(sizeof...(Args) + s_startNamedArgumentIndex);
             SetParameters<R>(m_parameters, this);
             SetParameters<Args...>(&m_parameters[s_startNamedArgumentIndex], this);
             // optional ID parameter
@@ -4429,20 +4408,6 @@ namespace AZ
             if (index < GetNumArguments())
             {
                 m_metadataParameters[index + s_startArgumentIndex].m_toolTip = toolTip;
-            }
-        }
-
-        template<class EBus, BehaviorEventType EventType, class R, class C, class... Args>
-        void BehaviorEBusEvent<EBus, EventType, R(C::*)(Args...)>::SetDefaultValue(size_t index, BehaviorDefaultValuePtr defaultValue)
-        {
-            if (index < GetNumArguments())
-            {
-                if (defaultValue && defaultValue->GetValue().m_typeId != GetArgument(index)->m_typeId)
-                {
-                    AZ_Assert(false, "Argument %zu default value type, doesn't match! Default value should be the same type! Current type %s!", index, defaultValue->GetValue().m_name);
-                    return;
-                }
-                m_metadataParameters[index + s_startArgumentIndex].m_defaultValue = defaultValue;
             }
         }
 
