@@ -15,9 +15,6 @@
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Windowing/WindowBus.h>
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace AzFramework
 {
     AZ_CVAR(
@@ -216,9 +213,9 @@ namespace AzFramework
 
     Camera Cameras::StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, const float scrollDelta, const float deltaTime)
     {
-        for (int i = 0; i < m_idleCameraInputs.size();)
+        for (int idleIndex = 0; idleIndex < m_idleCameraInputs.size();)
         {
-            auto& cameraInput = m_idleCameraInputs[i];
+            auto& cameraInput = m_idleCameraInputs[idleIndex];
             const bool canBegin = cameraInput->Beginning() &&
                 AZStd::all_of(m_activeCameraInputs.cbegin(), m_activeCameraInputs.cend(),
                               [](const auto& input)
@@ -231,12 +228,18 @@ namespace AzFramework
             {
                 m_activeCameraInputs.push_back(cameraInput);
                 using AZStd::swap;
-                swap(m_idleCameraInputs[i], m_idleCameraInputs[m_idleCameraInputs.size() - 1]);
+                swap(m_idleCameraInputs[idleIndex], m_idleCameraInputs[m_idleCameraInputs.size() - 1]);
                 m_idleCameraInputs.pop_back();
             }
             else
             {
-                i++;
+                // if a camera attempted to start but was not allowed to, ensure activation is cancelled
+                if (!cameraInput->Idle())
+                {
+                    cameraInput->CancelActivation();
+                }
+
+                idleIndex++;
             }
         }
 
@@ -248,21 +251,21 @@ namespace AzFramework
                 return acc;
             });
 
-        for (int i = 0; i < m_activeCameraInputs.size();)
+        for (int activeIndex = 0; activeIndex < m_activeCameraInputs.size();)
         {
-            auto& cameraInput = m_activeCameraInputs[i];
+            auto& cameraInput = m_activeCameraInputs[activeIndex];
             if (cameraInput->Ending())
             {
                 cameraInput->ClearActivation();
                 m_idleCameraInputs.push_back(cameraInput);
                 using AZStd::swap;
-                swap(m_activeCameraInputs[i], m_activeCameraInputs[m_activeCameraInputs.size() - 1]);
+                swap(m_activeCameraInputs[activeIndex], m_activeCameraInputs[m_activeCameraInputs.size() - 1]);
                 m_activeCameraInputs.pop_back();
             }
             else
             {
                 cameraInput->ContinueActivation();
-                i++;
+                activeIndex++;
             }
         }
 
@@ -473,9 +476,10 @@ namespace AzFramework
         {
             if (input->m_state == InputChannel::State::Began)
             {
-                m_translation |= TranslationFromKey(input->m_channelId, m_translateCameraInputChannelIds);
-                if (m_translation != TranslationType::Nil)
+                if (auto translation = TranslationFromKey(input->m_channelId, m_translateCameraInputChannelIds);
+                    translation != TranslationType::Nil)
                 {
+                    m_translation |= translation;
                     BeginActivation();
                 }
 
@@ -487,11 +491,16 @@ namespace AzFramework
             // ensure we don't process end events in the idle state
             else if (input->m_state == InputChannel::State::Ended && !Idle())
             {
-                m_translation &= ~(TranslationFromKey(input->m_channelId, m_translateCameraInputChannelIds));
-                if (m_translation == TranslationType::Nil)
+                if (auto translation = TranslationFromKey(input->m_channelId, m_translateCameraInputChannelIds);
+                   translation != TranslationType::Nil)
                 {
-                    EndActivation();
+                    m_translation &= ~translation;
+                    if (m_translation == TranslationType::Nil)
+                    {
+                        EndActivation();
+                    }
                 }
+
                 if (input->m_channelId == m_translateCameraInputChannelIds.m_boostChannelId)
                 {
                     m_boost = false;
@@ -939,6 +948,3 @@ namespace AzFramework
         return AZStd::monostate{};
     }
 } // namespace AzFramework
-
-#pragma optimize("", on)
-#pragma inline_depth()
