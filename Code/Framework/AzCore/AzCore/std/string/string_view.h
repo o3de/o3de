@@ -325,12 +325,7 @@ namespace AZStd
             }
             else if constexpr (AZStd::is_same_v<char_type, wchar_t>)
             {
-                #if defined (__GNUC__)
-                // __builtin_wcslen(s) is not defined for GCC, use the wcslen
-                return wcslen(s);
-                #else
                 return __builtin_wcslen(s);
-                #endif // defined (__GNUC__)
             }
             else
             {
@@ -350,12 +345,7 @@ namespace AZStd
 #if !defined(AZ_COMPILER_MSVC) || AZ_COMPILER_MSVC < 1915 || AZ_COMPILER_MSVC > 1916
             if constexpr (AZStd::is_same_v<char_type, char>)
             {
-                #if defined (__GNUC__)
-                // __builtin_char_memchr(s) is not defined for GCC, but __builtin_memchr is
-                return static_cast<const char_type*>(__builtin_memchr(s, ch, count));
-                #else
                 return __builtin_char_memchr(s, ch, count);
-                #endif // defined (__GNUC__)
             }
             else if constexpr (AZStd::is_same_v<char_type, wchar_t>)
             {
