@@ -9,17 +9,11 @@
 set(FILES
     Source/StandaloneToolsApplication.cpp
     Source/StandaloneToolsApplication.h
-    Source/Telemetry/TelemetryBus.h
-    Source/Telemetry/TelemetryComponent.cpp
-    Source/Telemetry/TelemetryComponent.h
-    Source/Telemetry/TelemetryEvent.cpp
-    Source/Telemetry/TelemetryEvent.h
     Source/LuaIDEApplication.h
     Source/LuaIDEApplication.cpp
     Source/AssetDatabaseLocationListener.h
     Source/AssetDatabaseLocationListener.cpp
     Source/Editor/LuaEditor.cpp
-    Source/LUA/BasicScriptChecker.h
     Source/LUA/BreakpointPanel.cpp
     Source/LUA/BreakpointPanel.hxx
     Source/LUA/ClassReferenceFilter.cpp
@@ -33,7 +27,6 @@ set(FILES
     Source/LUA/LUAContextControlMessages.h
     Source/LUA/LUADebuggerComponent.cpp
     Source/LUA/LUADebuggerComponent.h
-    Source/LUA/LUADebuggerMessages.h
     Source/LUA/LUAEditorBlockState.h
     Source/LUA/LUAEditorBreakpointWidget.cpp
     Source/LUA/LUAEditorBreakpointWidget.hxx
@@ -71,10 +64,8 @@ set(FILES
     Source/LUA/LUAEditorViewMessages.h
     Source/LUA/LUALocalsTrackerMessages.h
     Source/LUA/LUAStackTrackerMessages.h
-    Source/LUA/LUATargetContextTrackerMessages.cpp
     Source/LUA/LUATargetContextTrackerMessages.h
     Source/LUA/LUAWatchesDebuggerMessages.h
-    Source/LUA/ScriptCheckerAPI.h
     Source/LUA/StackPanel.cpp
     Source/LUA/StackPanel.hxx
     Source/LUA/TargetContextButton.cpp
