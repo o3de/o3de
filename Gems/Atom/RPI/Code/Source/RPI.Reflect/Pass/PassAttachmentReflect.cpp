@@ -211,7 +211,7 @@ namespace AZ
                     ->Field("FormatSource", &PassAttachmentDesc::m_formatSource)
                     ->Field("MultisampleSource", &PassAttachmentDesc::m_multisampleSource)
                     ->Field("AssetRef", &PassAttachmentDesc::m_assetRef)
-                    ->Field("LoadStoreAction", &PassSlot::m_loadStoreAction)
+                    ->Field("LoadStoreAction", &PassAttachmentDesc::m_loadStoreAction)
                     ;
             }
         }
