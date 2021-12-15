@@ -738,7 +738,7 @@ void AZ::LuaHook(lua_State* l, lua_Debug* ar)
         //}
     }
 
-    if (doBreak)
+    if (doBreak && bp->m_lineNumber > 0)
     {
         context->m_luaDebug = ar;
         context->m_breakCallback(context, bp);
