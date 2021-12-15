@@ -358,14 +358,16 @@ namespace AssetProcessor
         connectionManager->RegisterService(AssetBuilderSDK::BuilderHelloRequest::MessageType(), AZStd::bind(&BuilderManager::IncomingBuilderPing, this, _1, _2, _3, _4, _5));
 
         // Setup a background thread to pump the idle builders so they don't get blocked trying to output to stdout/err
-        m_pollingThread = AZStd::thread([this]()
+        AZStd::thread_desc desc;
+        desc.m_name = "BuilderManager Idle Pump";
+        m_pollingThread = AZStd::thread(desc, [this]()
+            {
+                while (!m_quitListener.WasQuitRequested())
                 {
-                    while (!m_quitListener.WasQuitRequested())
-                    {
-                        PumpIdleBuilders();
-                        AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(s_IdleBuilderPumpingDelayMS));
-                    }
-                });
+                    PumpIdleBuilders();
+                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(s_IdleBuilderPumpingDelayMS));
+                }
+            });
 
         m_quitListener.BusConnect();
         BusConnect();
