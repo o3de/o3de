@@ -131,7 +131,7 @@ namespace AZ
                         {
                             if (binding.m_attachment == attachment)
                             {
-                                binding.m_unifiedScopeDesc.m_attachmentId = nextAttachment->GetAttachmentId();
+                                binding.SetScopeDescriptorAttachmentId(nextAttachment->GetAttachmentId());
                                 break;
                             }
                         }

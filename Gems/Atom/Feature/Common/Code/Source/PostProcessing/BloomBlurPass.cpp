@@ -155,7 +155,7 @@ namespace AZ
             RHI::ImageViewDescriptor viewDesc;
             viewDesc.m_mipSliceMin = static_cast<uint16_t>(mipLevel);
             viewDesc.m_mipSliceMax = static_cast<uint16_t>(mipLevel);
-            inBinding.m_unifiedScopeDesc.SetAsImage(viewDesc);
+            inBinding.SetImageViewDescriptor(viewDesc);
 
             pass->AddAttachmentBinding(inBinding);
 
@@ -169,7 +169,7 @@ namespace AZ
             outBinding.m_connectedBinding = isHorizontalPass ? &parentInBinding : &parentInOutBinding;
 
             // Output to the same mip level as input downsampled texture
-            outBinding.m_unifiedScopeDesc.SetAsImage(viewDesc);
+            outBinding.SetImageViewDescriptor(viewDesc);
 
             pass->AddAttachmentBinding(outBinding);
         }

@@ -13,7 +13,9 @@
 #include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI.Reflect/Bits.h>
 
+#include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Pass/PassAttachment.h>
+#include <Atom/RPI.Public/Pass/RenderPass.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Reflect/Pass/PassName.h>
 
@@ -28,6 +30,7 @@ namespace AZ
             m_name = attachmentDesc.m_name;
             m_lifetime = attachmentDesc.m_lifetime;
             m_generateFullMipChain = attachmentDesc.m_generateFullMipChain;
+            m_loadStoreAction = attachmentDesc.m_loadStoreAction;
 
             m_descriptor = RHI::UnifiedAttachmentDescriptor(attachmentDesc.m_imageDescriptor);
             ValidateDeviceFormats(attachmentDesc.m_formatFallbacks);
@@ -38,6 +41,7 @@ namespace AZ
             m_descriptor = RHI::UnifiedAttachmentDescriptor(attachmentDesc.m_bufferDescriptor);
             m_name = attachmentDesc.m_name;
             m_lifetime = attachmentDesc.m_lifetime;
+            m_loadStoreAction = attachmentDesc.m_loadStoreAction;
         }
 
         Ptr<PassAttachment> PassAttachment::Clone() const
@@ -53,6 +57,7 @@ namespace AZ
             clone->m_sizeMultipliers = this->m_sizeMultipliers;
             clone->m_arraySizeSource = this->m_arraySizeSource;
             clone->m_generateFullMipChain = this->m_generateFullMipChain;
+            clone->m_loadStoreAction = this->m_loadStoreAction;
 
             return clone;
         }
@@ -112,6 +117,8 @@ namespace AZ
 
         void PassAttachment::Update(bool updateImportedAttachments)
         {
+            m_settingFlags.m_visitedByRenderPassThisFrame = false;
+
             if (m_descriptor.m_type == RHI::AttachmentType::Image && (m_lifetime == RHI::AttachmentLifetimeType::Transient || updateImportedAttachments == true))
             {
                 if (m_settingFlags.m_getFormatFromPipeline && m_renderPipelineSource)
@@ -161,8 +168,16 @@ namespace AZ
             }
         }
 
-        void PassAttachment::OnAttached(const PassAttachmentBinding& binding)
+        void PassAttachment::OnAttached(const PassAttachmentBinding& binding, const Pass& pass)
         {
+            const RenderPass* renderPass = azrtti_cast<const RenderPass*>(&pass);
+
+            if (renderPass != nullptr && !m_settingFlags.m_visitedByRenderPassThisFrame)
+            {
+                m_settingFlags.m_visitedByRenderPassThisFrame = true;
+                m_firstVisitedRenderPassBinding = &binding;
+            }
+
             // Auto-infer image and buffer bind flags...
             if (GetAttachmentType() == RHI::AttachmentType::Image)
             {
@@ -232,7 +247,7 @@ namespace AZ
             return access;
         }
 
-        void PassAttachmentBinding::SetAttachment(const Ptr<PassAttachment>& attachment)
+        void PassAttachmentBinding::SetAttachment(const Ptr<PassAttachment>& attachment, const Pass& pass)
         {
             m_attachment = attachment;
             m_unifiedScopeDesc.m_attachmentId = attachment->GetAttachmentId();
@@ -276,11 +291,99 @@ namespace AZ
 
             RHI::FormatCapabilities capabilities = RHI::GetCapabilities(m_scopeAttachmentUsage, GetAttachmentAccess(), m_unifiedScopeDesc.GetType());
             m_attachment->ValidateDeviceFormats(AZStd::vector<RHI::Format>(), capabilities);
-            m_attachment->OnAttached(*this);
+            m_attachment->OnAttached(*this, pass);
 
             AZ_Error("PassSystem", m_unifiedScopeDesc.GetType() == attachment->GetAttachmentType(), 
                 "Attachment must have same type as unified scope descriptor");
         }
+
+        void PassAttachmentBinding::SetUnifiedScopeAttachmentDescriptor(RHI::UnifiedScopeAttachmentDescriptor desc)
+        {
+            m_unifiedScopeDesc = desc;
+        }
+
+        template<typename DescType>
+        void OverrideDescriptorClearAction(DescType& desc, RHI::AttachmentLoadStoreAction attachmentAction)
+        {
+            bool bindingClear = desc.m_loadStoreAction.m_loadAction == RHI::AttachmentLoadAction::Clear;
+            bool bindindStencilClear = desc.m_loadStoreAction.m_loadActionStencil == RHI::AttachmentLoadAction::Clear;
+
+            bool attachmentClear = attachmentAction.m_loadAction == RHI::AttachmentLoadAction::Clear;
+            bool attachmentStencilClear = attachmentAction.m_loadActionStencil == RHI::AttachmentLoadAction::Clear;
+
+            // Override load
+            if (attachmentClear && !bindingClear)
+            {
+                desc.m_loadStoreAction.m_loadAction = RHI::AttachmentLoadAction::Clear;
+            }
+
+            // Override stencil load
+            if (attachmentStencilClear && !bindindStencilClear)
+            {
+                desc.m_loadStoreAction.m_loadActionStencil = RHI::AttachmentLoadAction::Clear;
+            }
+
+            // Only override the clear color if neither of the binding load actions were set to clear
+            if (!bindingClear && !bindindStencilClear && (attachmentClear || attachmentStencilClear))
+            {
+                desc.m_loadStoreAction.m_clearValue = attachmentAction.m_clearValue;
+            }
+        }
+
+        RHI::BufferScopeAttachmentDescriptor PassAttachmentBinding::GetBufferScopeDescriptor() const
+        {
+            RHI::BufferScopeAttachmentDescriptor desc = m_unifiedScopeDesc.GetAsBuffer();
+
+            // If we're the first pass using this attachment in the frame, and the attachment specifies clear as it's load action
+            // we want to override the load action on the returned descriptor to be clear if it isn't already
+            if (m_attachment->m_firstVisitedRenderPassBinding == this)
+            {
+                OverrideDescriptorClearAction(desc, m_attachment->m_loadStoreAction);
+            }
+
+            return desc;
+        }
+        RHI::BufferViewDescriptor& PassAttachmentBinding::GetBufferViewDescriptor()
+        {
+            return m_unifiedScopeDesc.GetBufferViewDescriptor();
+        }
+        void PassAttachmentBinding::SetBufferViewDescriptor(const RHI::BufferViewDescriptor& desc)
+        {
+            m_unifiedScopeDesc.SetAsBuffer(desc);
+        }
+
+        RHI::ImageScopeAttachmentDescriptor PassAttachmentBinding::GetImageScopeDescriptor() const
+        {
+            RHI::ImageScopeAttachmentDescriptor desc = m_unifiedScopeDesc.GetAsImage();
+
+            // If we're the first pass using this attachment in the frame, and the attachment specifies clear as it's load action
+            // we want to override the load action on the returned descriptor to be clear if it isn't already
+            if (m_attachment->m_firstVisitedRenderPassBinding == this)
+            {
+                OverrideDescriptorClearAction(desc, m_attachment->m_loadStoreAction);
+            }
+
+            return desc;
+        }
+        RHI::ImageViewDescriptor& PassAttachmentBinding::GetImageViewDescriptor()
+        {
+            return m_unifiedScopeDesc.GetImageViewDescriptor();
+        }
+        void PassAttachmentBinding::SetImageViewDescriptor(const RHI::ImageViewDescriptor& desc)
+        {
+            m_unifiedScopeDesc.SetAsImage(desc);
+        }
+
+        RHI::AttachmentType PassAttachmentBinding::GetAttachmentType() const
+        {
+            return m_unifiedScopeDesc.GetType();
+        }
+
+        void PassAttachmentBinding::SetScopeDescriptorAttachmentId(const RHI::AttachmentId& id)
+        {
+            m_unifiedScopeDesc.m_attachmentId = id;
+        }
+
 
     }   // namespace RPI
 }   // namespace AZ

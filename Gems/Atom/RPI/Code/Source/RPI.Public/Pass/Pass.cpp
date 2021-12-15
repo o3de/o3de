@@ -421,7 +421,7 @@ namespace AZ
             attachment->m_importedResource = buffer;
             m_ownedAttachments.push_back(attachment);
 
-            localBinding->SetAttachment(attachment);
+            localBinding->SetAttachment(attachment, *this);
             localBinding->m_originalAttachment = attachment;
         }
         
@@ -453,7 +453,7 @@ namespace AZ
             attachment->m_importedResource = image;
             m_ownedAttachments.push_back(attachment);
 
-            localBinding->SetAttachment(attachment);
+            localBinding->SetAttachment(attachment, *this);
             localBinding->m_originalAttachment = attachment;
         }               
 
@@ -488,7 +488,7 @@ namespace AZ
                 AZ_RPI_PASS_ERROR(attachment, "Pass::ProcessConnection - Pass [%s] doesn't own an attachment named [%s].",
                     m_path.GetCStr(),
                     connectedSlotName.GetCStr());
-                localBinding->SetAttachment(attachment);
+                localBinding->SetAttachment(attachment, *this);
                 localBinding->m_originalAttachment = attachment;
                 return;
             }
@@ -1032,7 +1032,7 @@ namespace AZ
                 return;
             }
 
-            binding.SetAttachment(targetAttachment);
+            binding.SetAttachment(targetAttachment, *this);
         }
 
         void Pass::UpdateConnectedBindings()

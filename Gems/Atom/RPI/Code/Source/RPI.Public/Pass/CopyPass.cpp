@@ -101,7 +101,7 @@ namespace AZ
                 m_ownedAttachments.push_back(dest);
 
                 // Set the output binding to the new attachment
-                GetOutputBinding(0).SetAttachment(dest);
+                GetOutputBinding(0).SetAttachment(dest, *this);
             }
         }
 

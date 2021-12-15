@@ -64,8 +64,8 @@ namespace AZ
                 RHI::ImageViewDescriptor outViewDesc;
                 outViewDesc.m_mipSliceMin = i;
                 outViewDesc.m_mipSliceMax = i;
-                outBinding.m_unifiedScopeDesc.SetAsImage(outViewDesc);
-                outBinding.m_unifiedScopeDesc.m_attachmentId = outAttachment->GetAttachmentId();
+
+                outBinding.SetUnifiedScopeAttachmentDescriptor(RHI::UnifiedScopeAttachmentDescriptor(outAttachment->GetAttachmentId(), outViewDesc));
 
                 AddAttachmentBinding(outBinding);
             }

@@ -57,7 +57,7 @@ namespace AZ
             void ValidateDeviceFormats(const AZStd::vector<RHI::Format>& formatFallbacks, RHI::FormatCapabilities capabilities = RHI::FormatCapabilities::None);
 
             //! Called when a PassAttachmentBinding sets it's attachment to this
-            void OnAttached(const PassAttachmentBinding& binding);
+            void OnAttached(const PassAttachmentBinding& binding, const Pass& pass);
 
             //! Name of the attachment
             Name m_name;
@@ -71,6 +71,9 @@ namespace AZ
 
             //! Whether the attachment is transient or not
             RHI::AttachmentLifetimeType m_lifetime = RHI::AttachmentLifetimeType::Transient;
+
+            //! Binding of the first render pass to visit this attachment in the frame
+            const PassAttachmentBinding* m_firstVisitedRenderPassBinding;
 
             //! The source attachment from which to derive this attachment's format
             //! If null, keep this attachment's format as is
@@ -104,6 +107,9 @@ namespace AZ
             //! Reference to owner pass
             Pass* m_ownerPass = nullptr;
 
+            //! This load store action can be used to force a clear of the attachment on it's first usage by a RenderPass in a frame
+            RHI::AttachmentLoadStoreAction m_loadStoreAction;
+
             //! Collection of flags that influence how source data is queried
             struct
             {
@@ -114,6 +120,7 @@ namespace AZ
                         u8 m_getSizeFromPipeline : 1;
                         u8 m_getFormatFromPipeline : 1;
                         u8 m_getMultisampleStateFromPipeline : 1;
+                        u8 m_visitedByRenderPassThisFrame : 1;         // Whether this attachment has been accessed by a render pass this frame
                     };
                     u8 m_allFlags = 0;
                 };
@@ -134,13 +141,32 @@ namespace AZ
             PassAttachmentBinding(const PassSlot& slot);
             ~PassAttachmentBinding() { };
 
-            void SetAttachment(const Ptr<PassAttachment>& attachment);
+            void SetAttachment(const Ptr<PassAttachment>& attachment, const Pass& pass);
 
             //! Returns the corresponding ScopeAttachmentAccess for this binding
             RHI::ScopeAttachmentAccess GetAttachmentAccess() const;
 
             //! Sets all formats to nearest device supported formats and warns if changes where made
             void ValidateDeviceFormats(const AZStd::vector<RHI::Format>& formatFallbacks);
+
+
+            void SetUnifiedScopeAttachmentDescriptor(RHI::UnifiedScopeAttachmentDescriptor desc);
+
+            RHI::BufferScopeAttachmentDescriptor GetBufferScopeDescriptor() const;
+            RHI::BufferViewDescriptor& GetBufferViewDescriptor();
+            void SetBufferViewDescriptor(const RHI::BufferViewDescriptor& desc);
+
+            RHI::ImageScopeAttachmentDescriptor GetImageScopeDescriptor() const;
+            RHI::ImageViewDescriptor& GetImageViewDescriptor();
+            void SetImageViewDescriptor(const RHI::ImageViewDescriptor& desc);
+
+            //RHI::ResolveScopeAttachmentDescriptor GetResolveScopeDescriptor() const;
+            //void SetAsResolve(const RHI::ImageViewDescriptor& desc, RHI::AttachmentId resolveAttachmentId);
+
+            RHI::AttachmentType GetAttachmentType() const;
+            void SetScopeDescriptorAttachmentId(const RHI::AttachmentId& id);
+
+
 
             //! Name of the attachment binding so we can find it in a list of attachment binding
             Name m_name;
@@ -157,9 +183,6 @@ namespace AZ
 
             //! ScopeAttachmentUsage used when binding the attachment with the RHI
             RHI::ScopeAttachmentUsage m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Uninitialized;
-
-            //! The scope descriptor to be used for this binding during rendering
-            RHI::UnifiedScopeAttachmentDescriptor m_unifiedScopeDesc;
 
             //! Pointer to the attachment used by the scope
             Ptr<PassAttachment> m_attachment = nullptr;
@@ -189,6 +212,10 @@ namespace AZ
             //! An attachment can be used multiple times by the same pass (for example reading an writing to different
             //! mips of the same texture). This indicates which number usage this binding corresponds to.
             uint8_t m_attachmentUsageIndex = 0;
+
+        private:
+            //! The scope descriptor to be used for this binding during rendering
+            RHI::UnifiedScopeAttachmentDescriptor m_unifiedScopeDesc;
         };
 
         using PassAttachmentBindingList = AZStd::vector<PassAttachmentBinding>;

@@ -83,11 +83,11 @@ namespace AZ::Render
         Offset offset = m_subPixelOffsets.at(m_offsetIndex);
         view->SetClipSpaceOffset(offset.m_xOffset * rcpInputSize.GetX(), offset.m_yOffset * rcpInputSize.GetY());
 
-        m_lastFrameAccumulationBinding->SetAttachment(m_accumulationAttachments[m_accumulationOuptutIndex]);
+        m_lastFrameAccumulationBinding->SetAttachment(m_accumulationAttachments[m_accumulationOuptutIndex], *this);
         m_accumulationOuptutIndex ^= 1; // swap which attachment is the output and last frame
 
         UpdateAttachmentImage(m_accumulationAttachments[m_accumulationOuptutIndex]);
-        m_outputColorBinding->SetAttachment(m_accumulationAttachments[m_accumulationOuptutIndex]);
+        m_outputColorBinding->SetAttachment(m_accumulationAttachments[m_accumulationOuptutIndex], *this);
         
         Base::FrameBeginInternal(params);
     }
@@ -135,8 +135,8 @@ namespace AZ::Render
         // ensure SRG indices are set up correctly by the pass system.
         if (m_lastFrameAccumulationBinding->m_attachment == nullptr)
         {
-            m_lastFrameAccumulationBinding->SetAttachment(m_accumulationAttachments[0]);
-            m_outputColorBinding->SetAttachment(m_accumulationAttachments[1]);
+            m_lastFrameAccumulationBinding->SetAttachment(m_accumulationAttachments[0], *this);
+            m_outputColorBinding->SetAttachment(m_accumulationAttachments[1], *this);
         }
 
         Base::BuildInternal();

@@ -135,7 +135,7 @@ namespace AZ
             RHI::ImageViewDescriptor inViewDesc;
             inViewDesc.m_mipSliceMin = static_cast<uint16_t>(mipLevel);
             inViewDesc.m_mipSliceMax = static_cast<uint16_t>(mipLevel);
-            inBinding.m_unifiedScopeDesc.SetAsImage(inViewDesc);
+            inBinding.SetImageViewDescriptor(inViewDesc);
 
             pass->AddAttachmentBinding(inBinding);
 
@@ -153,7 +153,7 @@ namespace AZ
                 RHI::ImageViewDescriptor outViewDesc;
                 outViewDesc.m_mipSliceMin = static_cast<uint16_t>(mipLevel - 1);
                 outViewDesc.m_mipSliceMax = static_cast<uint16_t>(mipLevel - 1);
-                outBinding.m_unifiedScopeDesc.SetAsImage(outViewDesc);
+                outBinding.SetImageViewDescriptor(outViewDesc);
             }
             
             pass->AddAttachmentBinding(outBinding);

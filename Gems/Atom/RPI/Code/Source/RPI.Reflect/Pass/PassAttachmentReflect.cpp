@@ -203,7 +203,7 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<PassAttachmentDesc>()
-                    ->Version(2)    // Removing PassAttachmentArraySizeSource class
+                    ->Version(3)    // Making PassAttachment have their own load store action
                     ->Field("Name", &PassAttachmentDesc::m_name)
                     ->Field("Lifetime", &PassAttachmentDesc::m_lifetime)
                     ->Field("SizeSource", &PassAttachmentDesc::m_sizeSource)
@@ -211,6 +211,7 @@ namespace AZ
                     ->Field("FormatSource", &PassAttachmentDesc::m_formatSource)
                     ->Field("MultisampleSource", &PassAttachmentDesc::m_multisampleSource)
                     ->Field("AssetRef", &PassAttachmentDesc::m_assetRef)
+                    ->Field("LoadStoreAction", &PassSlot::m_loadStoreAction)
                     ;
             }
         }
