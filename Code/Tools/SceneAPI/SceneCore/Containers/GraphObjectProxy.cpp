@@ -292,8 +292,22 @@ namespace AZ
                 if (behaviorMethod->HasResult())
                 {
                     returnBehaviorValue.Set(*behaviorMethod->GetResult());
-                    returnBehaviorValue.m_value =
-                        returnBehaviorValue.m_tempData.allocate(returnBehaviorValue.m_azRtti->GetTypeSize(), 16);
+                    const size_t typeSize = returnBehaviorValue.m_azRtti->GetTypeSize();
+
+                    if (returnBehaviorValue.m_traits & BehaviorParameter::TR_POINTER ||
+                        returnBehaviorValue.m_traits & BehaviorParameter::TR_REFERENCE)
+                    {
+                        returnBehaviorValue.m_value = nullptr;
+                    }
+                    else if (typeSize < returnBehaviorValue.m_tempData.max_size())
+                    {
+                        returnBehaviorValue.m_value = returnBehaviorValue.m_tempData.allocate(typeSize, 16);
+                    }
+                    else
+                    {
+                        AZ_Warning("SceneAPI", false, "Can't invoke method since the return value is too big; %d bytes", typeSize);
+                        return AZStd::any(false);
+                    }
                 }
 
                 if (!entry->second->Call(behaviorParamList, paramCount, &returnBehaviorValue))

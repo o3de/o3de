@@ -21,6 +21,7 @@
 #include <SceneAPI/SceneBuilder/Importers/AssImpMeshImporter.h>
 #include <SceneAPI/SceneBuilder/Importers/AssImpTangentStreamImporter.h>
 #include <SceneAPI/SceneBuilder/Importers/AssImpTransformImporter.h>
+//#include <SceneAPI/SceneBuilder/Importers/AssImpCustomPropertiesImporter.h>
 #include <SceneAPI/SceneBuilder/Importers/AssImpUvMapImporter.h>
 #include <SceneAPI/SceneBuilder/Importers/AssImpSkinImporter.h>
 #include <SceneAPI/SceneBuilder/Importers/AssImpSkinWeightsImporter.h>
@@ -56,6 +57,7 @@ namespace AZ
                     g_componentDescriptors.push_back(AssImpMeshImporter::CreateDescriptor());
                     g_componentDescriptors.push_back(AssImpTangentStreamImporter::CreateDescriptor());
                     g_componentDescriptors.push_back(AssImpTransformImporter::CreateDescriptor());
+                    g_componentDescriptors.push_back(AssImpCustomPropertyImporter::CreateDescriptor());
                     g_componentDescriptors.push_back(AssImpUvMapImporter::CreateDescriptor());
                     g_componentDescriptors.push_back(AssImpSkinImporter::CreateDescriptor());
                     g_componentDescriptors.push_back(AssImpSkinWeightsImporter::CreateDescriptor());

@@ -21,6 +21,7 @@
 #include <SceneAPI/SceneCore/DataTypes/IGraphObject.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshData.h>
 #include <SceneAPI/SceneData/ReflectionRegistrar.h>
+#include <SceneAPI/SceneData/GraphData/CustomPropertyData.h>
 #include <SceneAPI/SceneData/GraphData/MeshData.h>
 #include <SceneAPI/SceneData/GraphData/MeshVertexBitangentData.h>
 #include <SceneAPI/SceneData/GraphData/MeshVertexColorData.h>
@@ -31,6 +32,7 @@
 #include <SceneAPI/SceneData/GraphData/MaterialData.h>
 #include <SceneAPI/SceneData/GraphData/BoneData.h>
 #include <SceneAPI/SceneData/GraphData/RootBoneData.h>
+#include <SceneAPI/SceneData/GraphData/TransformData.h>
 
 namespace AZ
 {
@@ -192,6 +194,26 @@ namespace AZ
                         boneData->SetWorldTransform(SceneAPI::DataTypes::MatrixType::CreateDiagonal({2.0, 3.0, 4.0}));
                         return true;
                     }
+                    else if (data.get_type_info().m_id == azrtti_typeid<AZ::SceneData::GraphData::TransformData>())
+                    {
+                        SceneAPI::DataTypes::MatrixType transform;
+                        transform = SceneAPI::DataTypes::MatrixType::CreateDiagonal({1.0, 2.0, 3.0});
+                        auto* transformData = AZStd::any_cast<AZ::SceneData::GraphData::TransformData>(&data);
+                        transformData->SetMatrix(transform);
+                        return true;
+                    }
+                    else if (data.get_type_info().m_id == azrtti_typeid<AZ::SceneData::GraphData::CustomPropertyData>())
+                    {
+                        AZ::SceneData::GraphData::CustomPropertyData::PropertyMap properyMap;
+                        properyMap["a_string"] = AZStd::make_any<AZStd::string>("the string");
+                        properyMap["a_bool"] = AZStd::make_any<bool>(true);
+                        properyMap["a_int32"] = AZStd::make_any<int32_t>(aznumeric_cast<int32_t>(-32));
+                        properyMap["a_uint64"] = AZStd::make_any<uint64_t>(aznumeric_cast<uint64_t>(64));
+                        properyMap["a_float"] = AZStd::make_any<float>(aznumeric_cast<float>(12.34));
+                        properyMap["a_double"] = AZStd::make_any<double>(aznumeric_cast<double>(0.1234));
+                        AZStd::any_cast<AZ::SceneData::GraphData::CustomPropertyData>(&data)->SetPropertyMap(properyMap);
+                        return true;
+                    }
                     return false;
                 }
 
@@ -231,10 +253,19 @@ namespace AZ
                     EXPECT_EQ(lhs, rhs);
                 }
 
+                static void Create()
+                {
+                    AZ::NameDictionary::Create();
+                }
+
+                static void Destroy()
+                {
+                    AZ::NameDictionary::Destroy();
+                }
+
                 void SetUp() override
                 {
                     UnitTest::AllocatorsFixture::SetUp();
-                    AZ::NameDictionary::Create();
 
                     m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
                     AZ::SceneAPI::RegisterDataTypeReflection(m_serializeContext.get());
@@ -257,7 +288,6 @@ namespace AZ
                     m_serializeContext.reset();
                     m_behaviorContext.reset();
 
-                    AZ::NameDictionary::Destroy();
                     UnitTest::AllocatorsFixture::TearDown();
                 }
 
@@ -576,6 +606,35 @@ namespace AZ
                 ExpectExecute("TestExpectFloatEquals(rootBoneData:GetWorldTransform():GetRow(2).y, 0.0)");
                 ExpectExecute("TestExpectFloatEquals(rootBoneData:GetWorldTransform():GetRow(2).z, 4.0)");
                 ExpectExecute("TestExpectFloatEquals(rootBoneData:GetWorldTransform():GetRow(2).w, 0.0)");
+            }
+
+            TEST_F(GrapDatahBehaviorScriptTest, SceneGraph_TransformData_AccessWorks)
+            {
+                ExpectExecute("transformData = TransformData()");
+                ExpectExecute("TestExpectTrue(transformData ~= nil)");
+                ExpectExecute("MockGraphData.FillData(transformData)");
+                ExpectExecute("TestExpectFloatEquals(transformData.transform:GetRow(0).x, 1.0)");
+                ExpectExecute("TestExpectFloatEquals(transformData.transform:GetRow(0).y, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(transformData.transform:GetRow(0).z, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(transformData.transform:GetRow(1).x, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(transformData.transform:GetRow(1).y, 2.0)");
+                ExpectExecute("TestExpectFloatEquals(transformData.transform:GetRow(1).z, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(transformData.transform:GetRow(2).x, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(transformData.transform:GetRow(2).y, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(transformData.transform:GetRow(2).z, 3.0)");
+            }
+
+            TEST_F(GrapDatahBehaviorScriptTest, SceneGraph_CustomPropertyData_AccessWorks)
+            {
+                ExpectExecute("customPropertyData = CustomPropertyData()");
+                ExpectExecute("TestExpectTrue(customPropertyData ~= nil)");
+                ExpectExecute("MockGraphData.FillData(customPropertyData)");
+                ExpectExecute("TestExpectTrue(customPropertyData:GetPropertyMap():At('a_string') == 'the string')");
+                ExpectExecute("TestExpectTrue(customPropertyData:GetPropertyMap():At('a_bool') == true)");
+                ExpectExecute("TestExpectIntegerEquals(customPropertyData:GetPropertyMap():At('a_int32'), -32)");
+                ExpectExecute("TestExpectIntegerEquals(customPropertyData:GetPropertyMap():At('a_uint64'), 64)");
+                ExpectExecute("TestExpectFloatEquals(customPropertyData:GetPropertyMap():At('a_float'), 12.34)");
+                ExpectExecute("TestExpectFloatEquals(customPropertyData:GetPropertyMap():At('a_double'), 0.1234)");
             }
         }
     }

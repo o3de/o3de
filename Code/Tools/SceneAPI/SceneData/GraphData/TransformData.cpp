@@ -9,6 +9,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <SceneAPI/SceneData/GraphData/TransformData.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 
 namespace AZ
 {
@@ -50,6 +51,20 @@ namespace AZ
                         editContext->Class<TransformData>("Transform", "Transform matrix applied as a node or as a child.")
                             ->DataElement(AZ::Edit::UIHandlers::Default, &TransformData::m_transform, "", "Transform matrix applied as a node or as a child.");
                     }
+                }
+
+                BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context);
+                if (behaviorContext)
+                {
+                    behaviorContext->Class<SceneAPI::DataTypes::ITransform>()
+                        ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                        ->Attribute(AZ::Script::Attributes::Module, "scene");
+
+                    behaviorContext->Class<TransformData>()
+                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                        ->Attribute(AZ::Script::Attributes::Module, "scene")
+                        ->Property("transform", BehaviorValueProperty(&TransformData::m_transform));
                 }
             }
         } // namespace GraphData
