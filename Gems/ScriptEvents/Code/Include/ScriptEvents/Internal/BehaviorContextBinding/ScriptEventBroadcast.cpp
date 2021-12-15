@@ -18,7 +18,7 @@
 namespace ScriptEvents
 {
     ScriptEventBroadcast::ScriptEventBroadcast(AZ::BehaviorContext* behaviorContext, const ScriptEvent& definition, AZStd::string eventName)
-        : AZ::BehaviorMethod(behaviorContext)
+        : AZ::BehaviorMethod(behaviorContext, 0, 0)
         , m_returnType(AZ::Uuid::CreateNull())
     {
         m_name = AZStd::move(eventName);

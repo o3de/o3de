@@ -107,12 +107,15 @@ namespace AZ
     //=========================================================================
     // BehaviorMethod
     //=========================================================================
-    BehaviorMethod::BehaviorMethod(BehaviorContext* context)
+    BehaviorMethod::BehaviorMethod(BehaviorContext* context, int startArgumentIndex, size_t metadataParameterCount)
         : OnDemandReflectionOwner(*context)
         , m_debugDescription(nullptr)
-    {}
+        , m_startArgumentIndex(startArgumentIndex)
+    {
+        m_metadataParameters.resize(metadataParameterCount);
+    }
 
-    bool BehaviorMethod::AllocateParameters(const BehaviorParameter* parameters, unsigned int parametersSize, BehaviorValueParameter*& arguments, unsigned int numArguments) const
+    bool BehaviorMethod::AllocateArguments(const BehaviorParameter* parameters, unsigned int parametersSize, BehaviorValueParameter*& arguments, unsigned int numArguments, size_t conversionArgumentIndexBegin) const
     {
         size_t totalArguments = GetNumArguments();
         if (numArguments < totalArguments)
@@ -142,7 +145,7 @@ namespace AZ
             arguments = newArguments;
         }
 
-        for (size_t i = s_startArgumentIndex; i < parametersSize; ++i)
+        for (size_t i = conversionArgumentIndexBegin; i < parametersSize; ++i)
         {
             if (!arguments[i - 1].ConvertTo(parameters[i].m_typeId))
             {
@@ -171,7 +174,7 @@ namespace AZ
                     defaultValue->GetValue().m_name);
                 return;
             }
-            m_metadataParameters[index + s_startArgumentIndex].m_defaultValue = defaultValue;
+            m_metadataParameters[index + m_startArgumentIndex].m_defaultValue = defaultValue;
         }
     }
 

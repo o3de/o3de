@@ -267,10 +267,8 @@ namespace AZ
         : public OnDemandReflectionOwner
     {
     public:
-        BehaviorMethod(BehaviorContext* context);
+        BehaviorMethod(BehaviorContext* context, int startArgumentIndex, size_t metadataParameterCount);
         ~BehaviorMethod() override;
-
-        static const int s_startArgumentIndex = 1; // +1 for result type
 
         template<class... Args>
         bool Invoke(Args&&... args) const;
@@ -294,7 +292,7 @@ namespace AZ
 
         virtual void OverrideParameterTraits(size_t index, AZ::u32 addTraits, AZ::u32 removeTraits) = 0;
 
-        bool AllocateParameters(const BehaviorParameter* parameters, unsigned int parametersSize, BehaviorValueParameter*& arguments, unsigned int numArguments) const;
+        bool AllocateArguments(const BehaviorParameter* parameters, unsigned int parametersSize, BehaviorValueParameter*& arguments, unsigned int numArguments, size_t conversionArgumentIndexBegin) const;
 
         virtual size_t GetNumArguments() const = 0;
         /// Return the minimum number of arguments needed (considering default arguments)
@@ -317,6 +315,7 @@ namespace AZ
         AZStd::string m_deprecatedName;     ///<this is the deprecated name of this method
         const char* m_debugDescription;
         bool m_isConst = false; ///< Is member function const (false if not a member function)
+        int m_startArgumentIndex = 1; // +1 for result type
         AttributeArray m_attributes;    ///< Attributes for the method
         AZStd::vector<BehaviorParameterMetadata> m_metadataParameters; ///< Stores the per parameter metadata which is used to add names, tooltips, trait, default values, etc...
                                                                        ///< to the parameters
@@ -524,6 +523,7 @@ namespace AZ
 
             AZ_CLASS_ALLOCATOR(BehaviorMethodImpl, AZ::SystemAllocator, 0);
 
+            static const int s_startArgumentIndex = 1; // +1 for result type
             static const int s_startNamedArgumentIndex = s_startArgumentIndex; // +1 for result type
 
             BehaviorMethodImpl(FunctionPointer functionPointer, BehaviorContext* context, const AZStd::string& name = AZStd::string());
@@ -551,7 +551,7 @@ namespace AZ
 
             FunctionPointer m_functionPtr;
 
-            BehaviorParameter m_parameters[sizeof...(Args)+s_startNamedArgumentIndex];
+            BehaviorParameter m_parameters[sizeof...(Args) + s_startNamedArgumentIndex];
         };
 
 #if __cpp_noexcept_function_type
@@ -578,13 +578,8 @@ namespace AZ
 
             AZ_CLASS_ALLOCATOR(BehaviorMethodImpl<R(C::*)(Args...)>, AZ::SystemAllocator, 0);
 
+            static const int s_startArgumentIndex = 1; // +1 for result type
             static const int s_startNamedArgumentIndex = s_startArgumentIndex + 1; // +1 for result type, +1 for class Type (this ptr)
-
-            BehaviorMethodImpl<R(C::*)(Args...)>()
-                : BehaviorMethod()
-            {
-                m_metadataParameters.resize(sizeof...(Args) + s_startNamedArgumentIndex);
-            }
 
             BehaviorMethodImpl(FunctionPointer functionPointer, BehaviorContext* context, const AZStd::string& name = AZStd::string());
             BehaviorMethodImpl(FunctionPointerConst functionPointer, BehaviorContext* context, const AZStd::string& name = AZStd::string());
@@ -610,7 +605,7 @@ namespace AZ
             void OverrideParameterTraits(size_t index, AZ::u32 addTraits, AZ::u32 removeTraits) override;
 
             FunctionPointer m_functionPtr;
-            BehaviorParameter m_parameters[sizeof...(Args)+s_startNamedArgumentIndex];
+            BehaviorParameter m_parameters[sizeof...(Args) + s_startNamedArgumentIndex];
         };
 
  #if __cpp_noexcept_function_type
@@ -3867,10 +3862,9 @@ namespace AZ
         //////////////////////////////////////////////////////////////////////////
         template<class R, class... Args>
         BehaviorMethodImpl<R(Args...)>::BehaviorMethodImpl(FunctionPointer functionPointer, BehaviorContext* context, const AZStd::string& name)
-            : BehaviorMethod(context)
+            : BehaviorMethod(context, s_startNamedArgumentIndex, sizeof...(Args) + s_startNamedArgumentIndex)
             , m_functionPtr(functionPointer)
         {
-            m_metadataParameters.resize(sizeof...(Args) + s_startNamedArgumentIndex);
             m_name = name;
             SetParameters<R>(m_parameters, this);
             SetParameters<Args...>(&m_parameters[s_startNamedArgumentIndex], this);
@@ -3880,13 +3874,14 @@ namespace AZ
         template<class R, class... Args>
         bool BehaviorMethodImpl<R(Args...)>::Call(BehaviorValueParameter* arguments, unsigned int numArguments, BehaviorValueParameter* result) const
         {
-            if (AllocateParameters(&m_parameters[0], AZ_ARRAY_SIZE(m_parameters), arguments, numArguments))
+            if (!AllocateArguments(&m_parameters[0], AZ_ARRAY_SIZE(m_parameters), arguments, numArguments, s_startArgumentIndex))
             {
-                CallFunction<R, Args...>::Global(m_functionPtr, arguments, result, AZStd::make_index_sequence<sizeof...(Args)>());
-
-                return true;
+                return false;
             }
-            return false;
+
+            CallFunction<R, Args...>::Global(m_functionPtr, arguments, result, AZStd::make_index_sequence<sizeof...(Args)>());
+
+            return true;
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -4016,10 +4011,9 @@ namespace AZ
         //////////////////////////////////////////////////////////////////////////
         template<class R, class C, class... Args>
         BehaviorMethodImpl<R(C::*)(Args...)>::BehaviorMethodImpl(FunctionPointer functionPointer, BehaviorContext* context, const AZStd::string& name)
-            : BehaviorMethod(context)
+            : BehaviorMethod(context, s_startArgumentIndex, sizeof...(Args) + s_startNamedArgumentIndex)
             , m_functionPtr(functionPointer)
         {
-            m_metadataParameters.resize(sizeof...(Args) + s_startNamedArgumentIndex);
             m_name = name;
             SetParameters<R>(m_parameters, this);
             SetParameters<C*>(&m_parameters[s_startArgumentIndex], this);
@@ -4039,48 +4033,15 @@ namespace AZ
         template<class R, class C, class... Args>
         bool BehaviorMethodImpl<R(C::*)(Args...)>::Call(BehaviorValueParameter* arguments, unsigned int numArguments, BehaviorValueParameter* result) const
         {
-            size_t totalArguments = GetNumArguments();
-            if (numArguments < totalArguments)
+            if (!AllocateArguments(&m_parameters[0], AZ_ARRAY_SIZE(m_parameters), arguments, numArguments, s_startNamedArgumentIndex))
             {
-                // We are cloning all arguments on the stack, since Call is called only from Invoke we can reserve bigger "arguments" array
-                // that can always handle all parameters. So far the don't use default values that ofter, so we will optimize for the common case first.
-                BehaviorValueParameter* newArguments = reinterpret_cast<BehaviorValueParameter*>(alloca(sizeof(BehaviorValueParameter)*  totalArguments));
-                // clone the input parameters (we don't need to clone temp buffers, etc. as they will be still on the stack)
-                size_t argIndex = 0;
-                for (; argIndex < numArguments; ++argIndex)
-                {
-                    new(&newArguments[argIndex]) BehaviorValueParameter(arguments[argIndex]);
-                }
-
-                // clone the default parameters if they exist
-                for (; argIndex < totalArguments; ++argIndex)
-                {
-                    BehaviorDefaultValuePtr defaultValue = GetDefaultValue(argIndex);
-                    if (!defaultValue)
-                    {
-                        AZ_Warning("Behavior", false, "Not enough arguments to make a call! %d needed %d", numArguments, totalArguments);
-                        return false;
-                    }
-                    new(&newArguments[argIndex]) BehaviorValueParameter(defaultValue->GetValue());
-                }
-
-                arguments = newArguments;
+                return false;
             }
-
             if (!arguments[0].ConvertTo(AzTypeInfo<C>::Uuid()))
             {
                 // this pointer is invalid
                 AZ_Warning("Behavior", false, "First parameter should be the 'this' pointer for the member function! %s", m_name.c_str());
                 return false;
-            }
-
-            for (size_t i = s_startNamedArgumentIndex; i < AZ_ARRAY_SIZE(m_parameters); ++i)
-            {
-                if (!arguments[i - 1].ConvertTo(m_parameters[i].m_typeId))
-                {
-                    AZ_Warning("Behavior", false, "Invalid parameter type for method '%s'! Can not convert method parameter %d from %s(%s) to %s(%s)", m_name.c_str(), i - 1, arguments[i - 1].m_name, arguments[i - 1].m_typeId.template ToString<AZStd::string>().c_str(), m_parameters[i].m_name, m_parameters[i].m_typeId.template ToString<AZStd::string>().c_str());
-                    return false;
-                }
             }
 
             CallFunction<R, Args...>::Member(m_functionPtr, *arguments[0].GetAsUnsafe<C*>(), &arguments[1], result, AZStd::make_index_sequence<sizeof...(Args)>());
@@ -4216,10 +4177,9 @@ namespace AZ
         //////////////////////////////////////////////////////////////////////////
         template<class EBus, BehaviorEventType EventType, class R, class C, class... Args>
         BehaviorEBusEvent<EBus, EventType, R(C::*)(Args...)>::BehaviorEBusEvent(FunctionPointer functionPointer, BehaviorContext* context)
-            : BehaviorMethod(context)
+            : BehaviorMethod(context, s_startArgumentIndex, sizeof...(Args) + s_startNamedArgumentIndex)
             , m_functionPtr(functionPointer)
         {
-            m_metadataParameters.resize(sizeof...(Args) + s_startNamedArgumentIndex);
             SetParameters<R>(m_parameters, this);
             SetParameters<Args...>(&m_parameters[s_startNamedArgumentIndex], this);
             // optional ID parameter
@@ -4253,48 +4213,15 @@ namespace AZ
         template<class EBus, BehaviorEventType EventType, class R, class C, class... Args>
         bool BehaviorEBusEvent<EBus, EventType, R(C::*)(Args...)>::Call(BehaviorValueParameter* arguments, unsigned int numArguments, BehaviorValueParameter* result) const
         {
-            size_t totalArguments = GetNumArguments();
-            if (numArguments < totalArguments)
+            if (!AllocateArguments(&m_parameters[0], AZ_ARRAY_SIZE(m_parameters), arguments, numArguments, s_startNamedArgumentIndex))
             {
-                // We are cloning all arguments on the stack, since Call is called only from Invoke we can reserve bigger "arguments" array
-                // that can always handle all parameters. So far the don't use default values that ofter, so we will optimize for the common case first.
-                BehaviorValueParameter* newArguments = reinterpret_cast<BehaviorValueParameter*>(alloca(sizeof(BehaviorValueParameter)*  totalArguments));
-                // clone the input parameters (we don't need to clone temp buffers, etc. as they will be still on the stack)
-                size_t argIndex = 0;
-                for (; argIndex < numArguments; ++argIndex)
-                {
-                    new(&newArguments[argIndex]) BehaviorValueParameter(arguments[argIndex]);
-                }
-
-                // clone the default parameters if they exist
-                for (; argIndex < totalArguments; ++argIndex)
-                {
-                    BehaviorDefaultValuePtr defaultValue = GetDefaultValue(argIndex);
-                    if (!defaultValue)
-                    {
-                        AZ_Warning("Behavior", false, "Not enough arguments to make a call! %d needed %d", numArguments, totalArguments);
-                        return false;
-                    }
-                    new(&newArguments[argIndex]) BehaviorValueParameter(defaultValue->GetValue());
-                }
-
-                arguments = newArguments;
+                return false;
             }
-
             if constexpr (s_isBusIdParameter)
             {
                 if (!arguments[0].ConvertTo(m_parameters[1].m_typeId))
                 {
                     AZ_Warning("Behavior", false, "Invalid BusIdType type can't convert! %s -> %s", arguments[0].m_name, m_parameters[1].m_name);
-                    return false;
-                }
-            }
-
-            for (size_t i = s_startNamedArgumentIndex; i < AZ_ARRAY_SIZE(m_parameters); ++i)
-            {
-                if (!arguments[i - 1].ConvertTo(m_parameters[i].m_typeId))
-                {
-                    AZ_Warning("Behavior", false, "Invalid parameter type for method '%s'! Can not convert method parameter %d from %s(%s) to %s(%s)", m_name.c_str(), i - 1, arguments[i - 1].m_name, arguments[i - 1].m_typeId.template ToString<AZStd::string>().c_str(), m_parameters[i].m_name, m_parameters[i].m_typeId.template ToString<AZStd::string>().c_str());
                     return false;
                 }
             }

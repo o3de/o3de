@@ -26,7 +26,7 @@ namespace ScriptEvents
         };
 
         BehaviorHandlerFactoryMethod(AZ::BehaviorEBus* ebus, AZ::BehaviorContext* behaviorContext, const AZStd::string& name)
-            : AZ::BehaviorMethod(behaviorContext)
+            : AZ::BehaviorMethod(behaviorContext, 0, 0)
             , m_ebus(ebus)
             , m_name(name)
         {}
