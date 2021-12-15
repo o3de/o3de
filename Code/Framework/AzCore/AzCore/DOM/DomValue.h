@@ -147,7 +147,7 @@ namespace AZ::Dom
     //! value itself (objects, arrays, and nodes) are copied by new Values only when their contents change, so care should be taken in
     //! performance critical code to avoid mutation operations such as operator[] to avoid copies. It is recommended that an immutable Value
     //! be explicitly be stored as a `const Value` to avoid accidental detach and copy operations.
-    class Value
+    class Value final
     {
     public:
         // Constructors...
