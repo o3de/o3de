@@ -35,6 +35,7 @@ ly_append_configurations_options(
         -Wno-nonnull-compare
         -Wno-strict-aliasing
         -Wno-unused-result
+        -Wno-sign-compare
 
     COMPILATION_C
         -Wno-absolute-value
