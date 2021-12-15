@@ -80,24 +80,26 @@ namespace AzToolsFramework
         m_onMouseMoveCallback = onMouseMoveCallback;
     }
 
-    void SurfaceManipulator::OnLeftMouseDownImpl(
-        const ViewportInteraction::MouseInteraction& interaction, [[maybe_unused]] float rayIntersectionDistance)
+    static void RefreshRayIgnoreEntities(
+        const BaseManipulator::EntityComponentIds& entityComponentIdPairs, AZStd::unordered_set<AZ::EntityId>& entityIdsToIgnore)
     {
-        const AZ::Transform worldFromLocalUniformScale = TransformUniformScale(GetSpace());
-
-        const AzFramework::ViewportId viewportId = interaction.m_interactionId.m_viewportId;
-
-        const auto& entityComponentIdPairs = EntityComponentIdPairs();
-        m_rayRequest.m_entityFilter.m_ignoreEntities.clear();
-        m_rayRequest.m_entityFilter.m_ignoreEntities.reserve(entityComponentIdPairs.size());
+        entityIdsToIgnore.clear();
+        entityIdsToIgnore.reserve(entityComponentIdPairs.size());
         AZStd::transform(
-            entityComponentIdPairs.begin(), entityComponentIdPairs.end(),
-            AZStd::inserter(m_rayRequest.m_entityFilter.m_ignoreEntities, m_rayRequest.m_entityFilter.m_ignoreEntities.begin()),
+            entityComponentIdPairs.begin(), entityComponentIdPairs.end(), AZStd::inserter(entityIdsToIgnore, entityIdsToIgnore.begin()),
             [](const AZ::EntityComponentIdPair& entityComponentIdPair)
             {
                 return entityComponentIdPair.GetEntityId();
             });
+    }
 
+    void SurfaceManipulator::OnLeftMouseDownImpl(
+        const ViewportInteraction::MouseInteraction& interaction, [[maybe_unused]] float rayIntersectionDistance)
+    {
+        const AZ::Transform worldFromLocalUniformScale = TransformUniformScale(GetSpace());
+        const AzFramework::ViewportId viewportId = interaction.m_interactionId.m_viewportId;
+
+        RefreshRayIgnoreEntities(EntityComponentIdPairs(), m_rayRequest.m_entityFilter.m_ignoreEntities);
         // calculate the start and end of the ray
         RefreshRayRequest(
             m_rayRequest, ViewportInteraction::ViewportScreenToWorldRay(viewportId, interaction.m_mousePick.m_screenCoordinates),
