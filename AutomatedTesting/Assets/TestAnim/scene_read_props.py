@@ -51,9 +51,10 @@ def update_manifest(scene):
 sceneJobHandler = None
 
 def on_update_manifest(args):
+    output = ''
     try:
         scene = args[0]
-        return update_manifest(scene)
+        output = update_manifest(scene)
     except RuntimeError as err:
         print (f'ERROR - {err}')
         log_exception_traceback()
@@ -63,6 +64,7 @@ def on_update_manifest(args):
     global sceneJobHandler
     sceneJobHandler.disconnect()
     sceneJobHandler = None
+    return output
 
 # try to create SceneAPI handler for processing
 try:
