@@ -76,7 +76,7 @@ settings.setenv()  # for standalone
 
 # log debug info about Qt/PySide2
 _LOGGER.debug('QTFORPYTHON_PATH: {}'.format(settings.QTFORPYTHON_PATH))
-_LOGGER.debug('O3DE_BIN_PATH: {}'.format(settings.O3DE_BIN_PATH))
+_LOGGER.debug('PATH_O3DE_BIN: {}'.format(settings.PATH_O3DE_BIN))
 _LOGGER.debug('QT_PLUGIN_PATH: {}'.format(settings.QT_PLUGIN_PATH))
 _LOGGER.debug('QT_QPA_PLATFORM_PLUGIN_PATH: {}'.format(settings.QT_QPA_PLATFORM_PLUGIN_PATH))
 # -------------------------------------------------------------------------
@@ -129,15 +129,15 @@ _O3DE_DEV = Path(os.getenv(ENVAR_O3DE_DEV, None)).resolve()
 from azpy.constants import ENVAR_O3DE_PROJECT
 _O3DE_PROJECT = os.getenv(ENVAR_O3DE_PROJECT, None)
 
-from azpy.constants import ENVAR_O3DE_PROJECT_PATH
-_O3DE_PROJECT_PATH = Path(os.getenv(ENVAR_O3DE_PROJECT_PATH, None)).resolve()
+from azpy.constants import ENVAR_PATH_O3DE_PROJECT
+_PATH_O3DE_PROJECT = Path(os.getenv(ENVAR_PATH_O3DE_PROJECT, None)).resolve()
 
 from azpy.constants import ENVAR_DCCSI_SDK_PATH
 _DCCSI_SDK_PATH = Path(os.getenv(ENVAR_DCCSI_SDK_PATH, None)).resolve()
 
 # build some reuseable path parts
-_PROJECT_ASSET_PATH = Path(_O3DE_PROJECT_PATH).resolve()
-_PROJECT_ASSETS_PATH = Path(_O3DE_PROJECT_PATH, 'Materials').resolve()
+_PROJECT_ASSET_PATH = Path(_PATH_O3DE_PROJECT).resolve()
+_PROJECT_ASSETS_PATH = Path(_PATH_O3DE_PROJECT, 'Materials').resolve()
 
 # To Do: figure out a proper way to deal with Lumberyard game projects
 _GEM_MATPLAY_PATH = Path(_O3DE_DEV, 'Gems', 'AtomContent', 'AtomMaterialPlayground').resolve()
@@ -150,9 +150,9 @@ _SUB_LIBRARY_PATH = Path(_GEM_SUBSOURCELIBRARY, 'Assets', 'SubstanceSource', 'Li
 # path to watcher script
 _WATCHER_SCRIPT_PATH = Path(_DCCSI_SDK_PATH, 'substance', 'builder', 'watchdog', '__init__.py').resolve()
 
-_TEX_RNDR_PATH = Path(_O3DE_PROJECT_PATH, 'Materials', 'Substance').resolve()
-_MAT_OUTPUT_PATH = Path(_O3DE_PROJECT_PATH, 'Materials', 'Substance').resolve()
-_SBSAR_COOK_PATH = Path(_O3DE_PROJECT_PATH, 'Materials', 'Substance').resolve()
+_TEX_RNDR_PATH = Path(_PATH_O3DE_PROJECT, 'Materials', 'Substance').resolve()
+_MAT_OUTPUT_PATH = Path(_PATH_O3DE_PROJECT, 'Materials', 'Substance').resolve()
+_SBSAR_COOK_PATH = Path(_PATH_O3DE_PROJECT, 'Materials', 'Substance').resolve()
 # -------------------------------------------------------------------------
 
 
@@ -171,12 +171,12 @@ class Window(QtWidgets.QDialog):
 
         # we should really init non-Qt stuff and set things up as properties
         if project_path is None:
-            self.project_path = str(_O3DE_PROJECT_PATH)
+            self.project_path = str(_PATH_O3DE_PROJECT)
         else:
             self.project_path = Path(project_path)
 
         if default_material_path is None:
-            self._default_material_path = Path(_DCCSIG_PATH,
+            self._default_material_path = Path(_PATH_DCCSIG,
                                                'sdk',
                                                'substance',
                                                'resources',
@@ -672,7 +672,7 @@ class Window(QtWidgets.QDialog):
 
         # if you want relative paths here is a better way
         # first of all, assume we know the project we are in
-        #_O3DE_PROJECT_PATH
+        #_PATH_O3DE_PROJECT
 
         texture_output_path = Path(self.texRenderPathComboBox.currentText()).resolve()
         rel_tex_path = None
@@ -928,7 +928,7 @@ def substance_builder_launcher():
     _LOGGER.info('file: {}'.format(__file__))     # *might* come back relative
 
     # we should ensure we know the abs path
-    qss_filepath = Path(_DCCSIG_PATH).resolve().absolute()
+    qss_filepath = Path(_PATH_DCCSIG).resolve().absolute()
     qss_filepath = Path(qss_filepath, 'SDK', 'substance', 'builder',
                         'ui', 'stylesheets', 'LYstyle.qss').resolve().absolute()
     window.setStyleSheet(qss_filepath.read_text())
