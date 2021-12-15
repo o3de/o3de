@@ -145,10 +145,13 @@ namespace ScriptCanvasEditor
             }
         }
 
-        if (rootElement.GetVersion() < EditorScriptCanvasComponentCpp::Version::AddSourceHandle)
+        auto scriptCanvasAssetHolderElementIndex = rootElement.FindElement(AZ_CRC_CE("m_assetHolder"));
+        if (scriptCanvasAssetHolderElementIndex != -1)
         {
+            auto& scriptCanvasAssetHolderElement = rootElement.GetSubElement(scriptCanvasAssetHolderElementIndex);
             Deprecated::ScriptCanvasAssetHolder assetHolder;
-            if (!rootElement.FindSubElementAndGetData(AZ_CRC_CE("m_assetHolder"), assetHolder))
+
+            if (!scriptCanvasAssetHolderElement.GetData(assetHolder))
             {
                 AZ_Error("ScriptCanvas", false, "EditorScriptCanvasComponent conversion failed: could not retrieve old 'm_assetHolder'");
                 return false;

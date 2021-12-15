@@ -10,6 +10,7 @@
 
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Asset/AssetSerializer.h>
 
 namespace ScriptCanvasEditor
 {
