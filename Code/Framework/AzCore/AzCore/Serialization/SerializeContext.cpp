@@ -469,6 +469,39 @@ namespace AZ
         }
     }
 
+    bool SerializeContext::InternalClass(const Uuid& typeUuid, const char* name)
+    {
+        if (IsRemovingReflection())
+        {
+            auto mapIt = m_uuidMap.find(typeUuid);
+            if (mapIt != m_uuidMap.end())
+            {
+                RemoveClassData(&mapIt->second);
+
+                auto classNameRange = m_classNameToUuid.equal_range(Crc32(name));
+                for (auto classNameRangeIter = classNameRange.first; classNameRangeIter != classNameRange.second;)
+                {
+                    if (classNameRangeIter->second == typeUuid)
+                    {
+                        classNameRangeIter = m_classNameToUuid.erase(classNameRangeIter);
+                    }
+                    else
+                    {
+                        ++classNameRangeIter;
+                    }
+                }
+                m_uuidAnyCreationMap.erase(typeUuid);
+                m_uuidMap.erase(mapIt);
+            }
+            return true;
+        }
+        else
+        {
+            m_classNameToUuid.emplace(AZ::Crc32(name), typeUuid);
+            return false;
+        }
+    }
+
     //=========================================================================
     // DestroyEditContext
     // [10/26/2012]

@@ -104,6 +104,8 @@ namespace AZ
     {
         static const unsigned int VersionClassDeprecated = (unsigned int)-1;
 
+        bool InternalClass(const Uuid& typeUuid, const char* name);
+
     public:
         /// @cond EXCLUDE_DOCS
         friend class EditContext;
@@ -246,7 +248,6 @@ namespace AZ
             void            Reset();
 
         private:
-
             AZStd::string GetStackDescription() const;
 
             typedef AZStd::vector<DbgStackEntry>    DbgStack;
@@ -1897,34 +1898,13 @@ namespace AZ
         const Uuid& typeUuid = AzTypeInfo<T>::Uuid();
         const char* name = AzTypeInfo<T>::Name();
 
-        if (IsRemovingReflection())
+        if (InternalClass(typeUuid, name))
         {
-            auto mapIt = m_uuidMap.find(typeUuid);
-            if (mapIt != m_uuidMap.end())
-            {
-                RemoveClassData(&mapIt->second);
-
-                auto classNameRange = m_classNameToUuid.equal_range(Crc32(name));
-                for (auto classNameRangeIter = classNameRange.first; classNameRangeIter != classNameRange.second;)
-                {
-                    if (classNameRangeIter->second == typeUuid)
-                    {
-                        classNameRangeIter = m_classNameToUuid.erase(classNameRangeIter);
-                    }
-                    else
-                    {
-                        ++classNameRangeIter;
-                    }
-                }
-                m_uuidAnyCreationMap.erase(typeUuid);
-                m_uuidMap.erase(mapIt);
-            }
             return ClassBuilder(this, m_uuidMap.end());
         }
         else
         {
-            m_classNameToUuid.emplace(AZ::Crc32(name), typeUuid);
-            UuidToClassMap::pair_iter_bool result = m_uuidMap.insert(AZStd::make_pair(typeUuid, ClassData::Create<T>(name, typeUuid, factory)));
+            UuidToClassMap::pair_iter_bool result = m_uuidMap.emplace(typeUuid, ClassData::Create<T>(name, typeUuid, factory));
             AZ_Assert(result.second, "This class type %s could not be registered with duplicated Uuid: %s.", name, typeUuid.ToString<AZStd::string>().c_str());
             m_uuidAnyCreationMap.emplace(SerializeTypeInfo<T>::GetUuid(), &AnyTypeInfoConcept<T>::CreateAny);
 
