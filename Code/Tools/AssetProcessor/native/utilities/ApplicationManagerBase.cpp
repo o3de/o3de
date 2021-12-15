@@ -1410,21 +1410,6 @@ bool ApplicationManagerBase::Activate()
     }
 
     InitBuilderConfiguration();
-
-    m_isCurrentlyLoadingGems = true;
-    if (!ActivateModules())
-    {
-        // ActivateModules reports any errors it encounters.
-        m_isCurrentlyLoadingGems = false;
-        return false;
-    }
-
-    m_isCurrentlyLoadingGems = false;
-
-    AssetProcessor::AssetProcessorStatusEntry entry(
-        AssetProcessor::AssetProcessorStatus::Activating, 0, QString());
-    Q_EMIT AssetProcessorStatusChanged(entry);
-
     PopulateApplicationDependencies();
 
     InitAssetProcessorManager();
