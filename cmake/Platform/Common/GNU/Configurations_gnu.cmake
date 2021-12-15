@@ -31,6 +31,7 @@ ly_append_configurations_options(
         -Wno-reorder
         -Wno-uninitialized
         -Wno-array-bounds
+        -Wno-class-memaccess
 
     COMPILATION_C
         -Wno-absolute-value
