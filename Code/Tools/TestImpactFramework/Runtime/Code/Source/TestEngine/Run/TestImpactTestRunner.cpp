@@ -10,7 +10,6 @@
 
 #include <Artifact/Factory/TestImpactTestRunSuiteFactory.h>
 #include <TestEngine/TestImpactTestEngineException.h>
-#include <TestEngine/Run/TestImpactTestRunSerializer.h>
 #include <TestEngine/Run/TestImpactTestRunner.h>
 
 #include <AzCore/IO/SystemFile.h>
