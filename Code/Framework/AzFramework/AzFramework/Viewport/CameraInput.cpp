@@ -222,7 +222,7 @@ namespace AzFramework
                               {
                                   return !input->Exclusive();
                               }) &&
-                (!cameraInput->Exclusive() || (cameraInput->Exclusive() && m_activeCameraInputs.empty()));
+                (!cameraInput->Exclusive() || m_activeCameraInputs.empty());
 
             if (canBegin)
             {
@@ -492,7 +492,7 @@ namespace AzFramework
             else if (input->m_state == InputChannel::State::Ended && !Idle())
             {
                 if (auto translation = TranslationFromKey(input->m_channelId, m_translateCameraInputChannelIds);
-                   translation != TranslationType::Nil)
+                    translation != TranslationType::Nil)
                 {
                     m_translation &= ~translation;
                     if (m_translation == TranslationType::Nil)
