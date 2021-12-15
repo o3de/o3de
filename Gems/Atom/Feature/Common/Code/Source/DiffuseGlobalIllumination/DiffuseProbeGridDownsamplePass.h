@@ -18,10 +18,11 @@ namespace AZ
         class DiffuseProbeGridDownsamplePass
             : public RPI::FullscreenTrianglePass
         {
+            using Base = RPI::FullscreenTrianglePass;
             AZ_RPI_PASS(DiffuseProbeGridDownsamplePass);
 
         public:
-            AZ_RTTI(Render::DiffuseProbeGridDownsamplePass, "{B3331B68-F974-44D6-806B-2CFFB4B6B563}", FullscreenTrianglePass);
+            AZ_RTTI(Render::DiffuseProbeGridDownsamplePass, "{B3331B68-F974-44D6-806B-2CFFB4B6B563}", Base);
             AZ_CLASS_ALLOCATOR(Render::DiffuseProbeGridDownsamplePass, SystemAllocator, 0);
 
             //! Creates a new pass without a PassTemplate

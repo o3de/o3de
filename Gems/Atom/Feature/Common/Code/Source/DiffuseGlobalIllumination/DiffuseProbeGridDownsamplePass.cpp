@@ -27,8 +27,19 @@ namespace AZ
 
         bool DiffuseProbeGridDownsamplePass::IsEnabled() const
         {
+            if (!Base::IsEnabled())
+            {
+                return false;
+            }
+
+            RPI::Scene* scene = m_pipeline->GetScene();
+            if (!scene)
+            {
+                return false;
+            }
+
             // only enabled if there are DiffuseProbeGrids present in the scene
-            DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = m_pipeline->GetScene()->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
+            DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
             return (diffuseProbeGridFeatureProcessor && !diffuseProbeGridFeatureProcessor->GetProbeGrids().empty());
         }
 
