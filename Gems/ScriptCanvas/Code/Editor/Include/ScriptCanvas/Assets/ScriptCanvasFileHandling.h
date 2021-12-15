@@ -11,7 +11,7 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetTypeInfoBus.h>
 #include <AzCore/Serialization/ObjectStream.h>
-
+#include <ScriptCanvas/Core/Core.h>
 
 namespace AZ
 {
