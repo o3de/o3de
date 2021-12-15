@@ -14,8 +14,6 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 
-#include <IRenderer.h>
-
 #include <LyShine/Draw2d.h>
 #include <LyShine/ISprite.h>
 #include <LyShine/Bus/UiElementBus.h>
@@ -76,7 +74,7 @@ namespace LyShineExamples
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void UiCustomImageComponent::Render([[maybe_unused]] LyShine::IRenderGraph* renderGraph)
     {
-#ifdef LYSHINE_ATOM_TODO // [LYN-3635] convert to use Atom
+#ifdef LYSHINE_ATOM_TODO // [GHI #3568] Convert draws to use Atom
         // get fade value (tracked by UiRenderer) and compute the desired alpha for the image
         float fade = renderGraph->GetAlphaFade();
         float desiredAlpha = m_overrideAlpha * fade;
@@ -371,7 +369,7 @@ namespace LyShineExamples
                 delete [] m_cachedPrimitive.m_vertices;
             }
     
-            m_cachedPrimitive.m_vertices = new SVF_P2F_C4B_T2F_F4B[numVertices];
+            m_cachedPrimitive.m_vertices = new LyShine::UiPrimitiveVertex[numVertices];
             m_cachedPrimitive.m_numVertices = numVertices;
         }
 

@@ -23,6 +23,16 @@ float3 TransmissionKernel(float t, float3 s)
     return 0.25 * (1.0 / exp(exponent) + 3.0 / exp(exponent / 3.0));
 }
 
+float ThinObjectFalloff(const float3 surfaceNormal, const float3 dirToLight)
+{
+    const float ndl = saturate(dot(-surfaceNormal, dirToLight));
+    
+    // ndl works decently well but it can produce a harsh discontinuity in the area just before 
+    // the shadow starts appearing on objects like cylinder and tubes.
+    // Smoothing out ndl does a decent enough job of removing this artifact.
+    return smoothstep(0, 1, ndl * ndl);
+}
+
 float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightIntensity, float3 dirToLight, float shadowRatio)
 {
     float3 result = float3(0.0, 0.0, 0.0);
@@ -53,8 +63,10 @@ float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightI
             float litRatio = 1.0 - shadowRatio;
             if (litRatio)
             {
-                result = TransmissionKernel(surface.transmission.thickness * transmissionParams.w, rcp(transmissionParams.xyz)) * 
-                    saturate(dot(-surface.normal, dirToLight)) * lightIntensity * litRatio;
+                const float thickness = surface.transmission.thickness * transmissionParams.w;
+                const float3 invScattering = rcp(transmissionParams.xyz);
+                const float falloff = ThinObjectFalloff(surface.normal, dirToLight);
+                result = TransmissionKernel(thickness, invScattering) * falloff * lightIntensity * litRatio;
             }
 
             break;

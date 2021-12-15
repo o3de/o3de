@@ -56,27 +56,21 @@ public:
     bool SetScale(const Vec3& scale, int flags) override;
     void InvalidateTM(int nWhyFlags) override;
     void Display(DisplayContext& disp) override;
-    void OnContextMenu(QMenu* pMenu) override;
-    int MouseCreateCallback(CViewport* view, EMouseEvent event, QPoint& point, int flags) override;
-    bool HitHelperTest(HitContext& hc) override;
     bool HitTest(HitContext& hc) override;
     void GetLocalBounds(AABB& box) override;
     void GetBoundBox(AABB& box) override;
     void SetName(const QString& name) override;
     bool IsFrozen() const override;
     void SetFrozen(bool bFrozen) override;
-    void SetHidden(bool bHidden, uint64 hiddenId = CBaseObject::s_invalidHiddenID, bool bAnimated = false) override;
     void SetSelected(bool bSelect) override;
     void SetHighlight(bool bHighlight) override;
-    IRenderNode* GetEngineNode() const override;
     void AttachChild(CBaseObject* child, bool bKeepPos = true) override;
     void DetachAll(bool bKeepPos = true) override;
     void DetachThis(bool bKeepPos = true) override;
-    CBaseObject* GetLinkParent() const override;
     XmlNodeRef Export(const QString& levelPath, XmlNodeRef& xmlNode) override;
     void DeleteEntity() override;
     void DrawDefault(DisplayContext& dc, const QColor& labelColor = QColor(255, 255, 255)) override;
-    IStatObj* GetIStatObj() override;
+
     bool IsIsolated() const override;
     bool IsSelected() const override;
     bool IsSelectable() const override;
@@ -87,12 +81,6 @@ public:
     bool IsHighlighted() { return false; }
     // Component entity highlighting (accenting) is taken care of elsewhere
     void DrawHighlight(DisplayContext& /*dc*/) override {};
-
-    // Don't auto-clone children. Cloning happens in groups with reference fixups,
-    // and individually selected objercts should be cloned as individuals.
-    bool ShouldCloneChildren() const override { return false; }
-
-
 
     //////////////////////////////////////////////////////////////////////////
 

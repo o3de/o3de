@@ -55,8 +55,8 @@ namespace EMotionFX
         AZ::u32 GetStreamSaveVersion() const override;
         const char* GetSceneSettingsName() const override;
 
-        Transform SampleJointTransform(const SampleSettings& settings, size_t jointSkeletonIndex) const override;
-        void SamplePose(const SampleSettings& settings, Pose* outputPose) const override;
+        Transform SampleJointTransform(const MotionDataSampleSettings& settings, size_t jointSkeletonIndex) const override;
+        void SamplePose(const MotionDataSampleSettings& settings, Pose* outputPose) const override;
 
         Transform SampleJointTransform(float sampleTime, size_t jointDataIndex) const override;
         AZ::Vector3 SampleJointPosition(float sampleTime, size_t jointDataIndex) const override;

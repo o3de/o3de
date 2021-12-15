@@ -81,7 +81,7 @@ namespace Multiplayer
         else
         {
             m_networkEditorInterface->SendReliablePacket(editorServerToEditorConnectionId, MultiplayerEditorPackets::EditorServerReadyForLevelData());
-            AZ_Printf("MultiplayerEditorConnection", "Editor-server activation has found and connected to the editor.")
+            AZ_Printf("MultiplayerEditorConnection", "Editor-server activation has found and connected to the editor.\n")
         }
     }
 

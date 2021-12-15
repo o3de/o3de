@@ -1,0 +1,147 @@
+{
+    "entries": [
+        {
+            "base": "AWSGameLiftJoinSessionRequest",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Join Session Request",
+                "category": "AWS Game Lift"
+            },
+            "methods": [
+                {
+                    "base": "GetPlayerData",
+                    "details": {
+                        "name": "Get Player Data"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{519769E8-3CDE-4385-A0D7-24DBB3685657}",
+                            "details": {
+                                "name": "Join Session Request",
+                                "tooltip": "The container for JoinSession request parameters"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Player Data"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetPlayerData",
+                    "details": {
+                        "name": "Set Player Data"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{519769E8-3CDE-4385-A0D7-24DBB3685657}",
+                            "details": {
+                                "name": "Join Session Request",
+                                "tooltip": "The container for JoinSession request parameters"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Player Data"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetPlayerId",
+                    "details": {
+                        "name": "Get Player Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{519769E8-3CDE-4385-A0D7-24DBB3685657}",
+                            "details": {
+                                "name": "Join Session Request",
+                                "tooltip": "The container for JoinSession request parameters"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Player Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetPlayerId",
+                    "details": {
+                        "name": "Set Player Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{519769E8-3CDE-4385-A0D7-24DBB3685657}",
+                            "details": {
+                                "name": "Join Session Request",
+                                "tooltip": "The container for JoinSession request parameters"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Player Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetSessionId",
+                    "details": {
+                        "name": "Get Session Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{519769E8-3CDE-4385-A0D7-24DBB3685657}",
+                            "details": {
+                                "name": "Join Session Request",
+                                "tooltip": "The container for JoinSession request parameters"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Session Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetSessionId",
+                    "details": {
+                        "name": "Set Session Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{519769E8-3CDE-4385-A0D7-24DBB3685657}",
+                            "details": {
+                                "name": "Join Session Request",
+                                "tooltip": "The container for JoinSession request parameters"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Session Id"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

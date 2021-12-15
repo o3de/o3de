@@ -7,10 +7,9 @@
  */
 #pragma once
 
-#include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Interface/Interface.h>
-#include <AzFramework/Asset/AssetCatalogBus.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Physics/Configuration/SystemConfiguration.h>
 
@@ -35,7 +34,6 @@ namespace PhysX
 {
     class PhysXSystem
         : public AZ::Interface<AzPhysics::SystemInterface>::Registrar
-        , private AzFramework::AssetCatalogEventBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL;
@@ -86,13 +84,12 @@ namespace PhysX
     private:
         //! Initializes the PhysX SDK.
         //! This sets up the PhysX Foundation, Cooking, and other PhysX sub-systems.
-        //! @param cookingParams The cooking params to use when setting up PhysX cooking interface. 
+        //! @param cookingParams The cooking params to use when setting up PhysX cooking interface.
         void InitializePhysXSdk(const physx::PxCookingParams& cookingParams);
         void ShutdownPhysXSdk();
-        bool LoadMaterialLibrary();
 
-        // AzFramework::AssetCatalogEventBus::Handler ...
-        void OnCatalogLoaded(const char* catalogFile) override;
+        void InitializeMaterialLibrary();
+        bool LoadMaterialLibrary();
 
         PhysXSystemConfiguration m_systemConfig;
         AzPhysics::SceneConfiguration m_defaultSceneConfiguration;
@@ -145,6 +142,8 @@ namespace PhysX
             OnMaterialLibraryReloadedCallback m_onMaterialLibraryReloadedCallback;
         };
         MaterialLibraryAssetHelper m_materialLibraryAssetHelper;
+
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_componentApplicationLifecycleHandler;
     };
 
     //! Helper function for getting the PhysX System interface from inside the PhysX gem.

@@ -8,8 +8,6 @@
 #include <Atom/RHI/ShaderResourceGroupPool.h>
 #include <Atom/RHI/BufferView.h>
 #include <Atom/RHI/ImageView.h>
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace RHI
@@ -250,7 +248,7 @@ namespace AZ
 
         void ShaderResourceGroupPool::CompileGroupsForInterval(Interval interval)
         {
-            AZ_TRACE_METHOD_NAME("CompileGroupsForInterval");
+            AZ_PROFILE_SCOPE(RHI, "CompileGroupsForInterval");
 
             AZ_Assert(m_isCompiling, "You must call CompileGroupsBegin() first!");
             AZ_Assert(

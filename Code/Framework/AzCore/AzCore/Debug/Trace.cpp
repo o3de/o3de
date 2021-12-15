@@ -12,7 +12,6 @@
 
 #include <AzCore/Debug/StackTracer.h>
 #include <AzCore/Debug/TraceMessageBus.h>
-#include <AzCore/Debug/TraceMessagesDrillerBus.h>
 #include <AzCore/Debug/IEventLogger.h>
 #include <AzCore/Interface/Interface.h>
 
@@ -276,8 +275,6 @@ namespace AZ::Debug
             logger->Flush(); // Flush as an assert may indicate a crash is imminent.
         }
 
-        EBUS_EVENT(TraceMessageDrillerBus, OnPreAssert, fileName, line, funcName, message);
-
         TraceMessageResult result;
         EBUS_EVENT_RESULT(result, TraceMessageBus, OnPreAssert, fileName, line, funcName, message);
 
@@ -302,7 +299,6 @@ namespace AZ::Debug
             azstrcat(message, g_maxMessageLength, "\n");
             Output(g_dbgSystemWnd, message);
 
-            EBUS_EVENT(TraceMessageDrillerBus, OnAssert, message);
             EBUS_EVENT_RESULT(result, TraceMessageBus, OnAssert, message);
             if (result.m_value)
             {
@@ -405,8 +401,6 @@ namespace AZ::Debug
             logger->RecordStringEvent(ErrorEventId, message);
         }
 
-        EBUS_EVENT(TraceMessageDrillerBus, OnPreError, window, fileName, line, funcName, message);
-
         TraceMessageResult result;
         EBUS_EVENT_RESULT(result, TraceMessageBus, OnPreError, window, fileName, line, funcName, message);
         if (result.m_value)
@@ -421,7 +415,6 @@ namespace AZ::Debug
         azstrcat(message, g_maxMessageLength, "\n");
         Output(window, message);
 
-        EBUS_EVENT(TraceMessageDrillerBus, OnError, window, message);
         EBUS_EVENT_RESULT(result, TraceMessageBus, OnError, window, message);
         Output(window, "==================================================================\n");
         if (result.m_value)
@@ -457,8 +450,6 @@ namespace AZ::Debug
             logger->RecordStringEvent(WarningEventId, message);
         }
 
-        EBUS_EVENT(TraceMessageDrillerBus, OnPreWarning, window, fileName, line, funcName, message);
-
         TraceMessageResult result;
         EBUS_EVENT_RESULT(result, TraceMessageBus, OnPreWarning, window, fileName, line, funcName, message);
         if (result.m_value)
@@ -472,7 +463,6 @@ namespace AZ::Debug
         azstrcat(message, g_maxMessageLength, "\n");
         Output(window, message);
 
-        EBUS_EVENT(TraceMessageDrillerBus, OnWarning, window, message);
         EBUS_EVENT_RESULT(result, TraceMessageBus, OnWarning, window, message);
         Output(window, "==================================================================\n");
     }
@@ -500,8 +490,6 @@ namespace AZ::Debug
         {
             logger->RecordStringEvent(PrintfEventId, message);
         }
-
-        EBUS_EVENT(TraceMessageDrillerBus, OnPrintf, window, message);
 
         TraceMessageResult result;
         EBUS_EVENT_RESULT(result, TraceMessageBus, OnPrintf, window, message);
@@ -531,7 +519,6 @@ namespace AZ::Debug
             // only call into Ebusses if we are not in a recursive-exception situation as that
             // would likely just lead to even more exceptions.
             
-            EBUS_EVENT(TraceMessageDrillerBus, OnOutput, window, message);
             TraceMessageResult result;
             EBUS_EVENT_RESULT(result, TraceMessageBus, OnOutput, window, message);
             if (result.m_value)
