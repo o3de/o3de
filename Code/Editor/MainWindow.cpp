@@ -799,11 +799,10 @@ void MainWindow::InitActions()
                     EditorTransformComponentSelectionRequests::Mode::Scale);
             });
 
-    am->AddAction(AzToolsFramework::SnapToGrid, tr("Snap to grid"))
+    am->AddAction(AzToolsFramework::SnapToGrid, tr("Grid snapping"))
         .SetIcon(Style::icon("Grid"))
+        .SetStatusTip(tr("Toggle grid snapping"))
         .SetShortcut(tr("G"))
-        .SetToolTip(tr("Snap to grid (G)"))
-        .SetStatusTip(tr("Toggles snap to grid"))
         .SetCheckable(true)
         .RegisterUpdateCallback(
             [](QAction* action)
@@ -818,9 +817,9 @@ void MainWindow::InitActions()
                 SandboxEditor::SetGridSnapping(!SandboxEditor::GridSnappingEnabled());
             });
 
-    am->AddAction(AzToolsFramework::SnapAngle, tr("Snap angle"))
+    am->AddAction(AzToolsFramework::SnapAngle, tr("Angle snapping"))
         .SetIcon(Style::icon("Angle"))
-        .SetStatusTip(tr("Snap angle"))
+        .SetStatusTip(tr("Toggle angle snapping"))
         .SetCheckable(true)
         .RegisterUpdateCallback(
             [](QAction* action)
