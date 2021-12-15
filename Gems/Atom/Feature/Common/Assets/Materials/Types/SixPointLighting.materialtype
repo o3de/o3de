@@ -193,6 +193,23 @@
                         "type": "ShaderOption",
                         "name": "o_sixPointTexutrePackMode"
                     }
+                },                
+                {
+                    "name": "depthMap",
+                    "displayName": "Depth",
+                    "description": "Depth texture map",
+                    "type": "Image",
+                    "connection": {
+                        "type": "ShaderInput",
+                        "name": "m_depthMap"
+                    }
+                },
+                {
+                    "name": "useDepthTexture",
+                    "displayName": "Use Depth",
+                    "description": "Whether to use the depth map.",
+                    "type": "Bool",
+                    "defaultValue": false
                 },
                 {
                     "name": "rowCount",
@@ -1104,26 +1121,18 @@
             "file": "./SixPointLighting_ForwardPass.shader",
             "tag": "ForwardPass_EDS"
         },
-        {
-            "file": "./SixPointLighting_DepthPass_WithPS.shader",
-            "tag": "DepthPass_WithPS"
-        },
-        {
-            "file": "./SixPointLighting_Shadowmap_WithPS.shader",
-            "tag": "Shadowmap_WithPS"
-        },
         //{
         //    "file": "./SixPointLighting_MotionVector.shader",
         //    "tag": "MeshMotionVector"
         //},
         // Used by the light culling system to produce accurate depth bounds for this object when it uses blended transparency
         {
-            "file": "Shaders/Depth/DepthPassTransparentMin.shader",
-            "tag": "DepthPassTransparentMin"
+            "file": "./SixPointLighting_DepthPassTransparentMin_WithPS.shader",
+            "tag": "DepthPassTransparentMin_WithPS"
         },
         {
-            "file": "Shaders/Depth/DepthPassTransparentMax.shader",
-            "tag": "DepthPassTransparentMax"
+            "file": "./SixPointLighting_DepthPassTransparentMax_WithPS.shader",
+            "tag": "DepthPassTransparentMax_WithPS"
         }        
     ],
     "functors": [
@@ -1154,6 +1163,14 @@
                 "nitIndex" : 1,
                 "ev100MinMax": [-10, 20],
                 "nitMinMax": [0.001, 100000.0]
+            }
+        },
+        {
+            "type": "UseTexture",
+            "args": {
+                "textureProperty": "sixPointLighting.depthMap",
+                "useTextureProperty": "sixPointLighting.useDepthTexture",
+                "shaderOption": "o_enableDepthTexture"
             }
         },
         {

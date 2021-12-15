@@ -42,7 +42,6 @@ COMMON_OPTIONS_EMISSIVE()
 enum class SixPointTexturePackMode { TpLftRtBt_FrBck, LftRtTp_FrBckBt };
 option SixPointTexturePackMode o_sixPointTexutrePackMode = SixPointTexturePackMode::TpLftRtBt_FrBck;
 
-option bool o_enableDebugFrame = false;
 // Note COMMON_OPTIONS_PARALLAX is in SixPointLighting_Common.azsli because it's needed by all StandardPBR shaders.
 
 // Alpha
@@ -148,20 +147,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     float2 baseColorUv = IN.m_uv[MaterialSrg::m_baseColorMapUvIndex];
     float2 opacityUv = IN.m_uv[MaterialSrg::m_opacityMapUvIndex];
     
-    // Fixed frequency of 30hz
-    // Get the current frame
-    float frame = (float)(((double)SceneSrg::m_time / (33.3333)) * 1000.0) % (MaterialSrg::m_columnCount * MaterialSrg::m_rowCount);
-    if(o_enableDebugFrame)
-    {
-        // The frame input by the material is 1-indexed, so subtract 1 here to make it 0-indexed
-        frame = MaterialSrg::m_debugFrame - 1.0f;
-    }
-    // Get the row/column of the frame
-    float frameColumn = floor(frame % MaterialSrg::m_columnCount);
-    float frameRow = floor(frame / MaterialSrg::m_columnCount) % MaterialSrg::m_rowCount;
-    
-    float2 invColumnRowCounts = float2(1.0f, 1.0f) / float2(MaterialSrg::m_columnCount, MaterialSrg::m_rowCount);
-    float2 sixPointUv = (baseColorUv + float2(frameColumn, frameRow)) * invColumnRowCounts;
+    float2 sixPointUv = GetUvForCurrentFrame(baseColorUv);
 
     float alpha = GetAlphaInputAndClip(MaterialSrg::m_baseColorMap, MaterialSrg::m_opacityMap, sixPointUv, sixPointUv, MaterialSrg::m_sampler, MaterialSrg::m_opacityFactor, o_opacity_source);
 

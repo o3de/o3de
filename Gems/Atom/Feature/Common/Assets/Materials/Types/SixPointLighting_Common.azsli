@@ -10,6 +10,7 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 #include <viewsrg.srgi>
+#include <scenesrg.srgi>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include <Atom/Features/PBR/LightingOptions.azsli>
 #include <Atom/Features/PBR/AlphaUtils.azsli>
@@ -29,6 +30,7 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
 {
     Texture2D m_topLeftRightBottomMap;
     Texture2D m_frontBackMap;
+    Texture2D m_depthMap;
     float m_rowCount;
     float m_columnCount;
     float m_debugFrame;
@@ -78,6 +80,10 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
     };
 }
 
+// Allows you to specify a specific frame of the flipbook to render in MaterialSrg::m_debugFrame
+option bool o_enableDebugFrame = false;
+option bool o_enableDepthTexture = false;
+
 // Callback function for ParallaxMapping.azsli
 DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
 {
@@ -98,4 +104,24 @@ bool ShouldHandleParallaxInDepthShaders()
     // The depth pass shaders need to calculate parallax when the result could affect the depth buffer, or when
     // parallax could affect texel clipping.
     return ShouldHandleParallax() && (o_parallax_enablePixelDepthOffset || o_opacity_mode == OpacityMode::Cutout);
+}
+
+float2 GetUvForCurrentFrame(float2 baseUv)
+{
+    // Fixed frequency of 30hz
+    // Get the current frame
+    float frame = (float)(((double)SceneSrg::m_time / (33.3333)) * 1000.0) % (MaterialSrg::m_columnCount * MaterialSrg::m_rowCount);
+    if(o_enableDebugFrame)
+    {
+        // The frame input by the material is 1-indexed, so subtract 1 here to make it 0-indexed
+        frame = MaterialSrg::m_debugFrame - 1.0f;
+    }
+    // Get the row/column of the frame
+    float frameColumn = floor(frame % MaterialSrg::m_columnCount);
+    float frameRow = floor(frame / MaterialSrg::m_columnCount) % MaterialSrg::m_rowCount;
+    
+    float2 invColumnRowCounts = float2(1.0f, 1.0f) / float2(MaterialSrg::m_columnCount, MaterialSrg::m_rowCount);
+    float2 sixPointUv = (baseUv + float2(frameColumn, frameRow)) * invColumnRowCounts;
+
+    return sixPointUv;
 }

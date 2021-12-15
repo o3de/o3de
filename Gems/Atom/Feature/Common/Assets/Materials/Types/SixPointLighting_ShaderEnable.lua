@@ -40,17 +40,9 @@ function Process(context)
     local parallaxPdoEnabled = context:GetMaterialPropertyValue_bool("parallax.pdo")
     
     local forwardPassEDS = context:GetShaderByTag("ForwardPass_EDS")
-
-    local depthPassWithPS = context:GetShaderByTag("DepthPass_WithPS")
-    local shadowMapWithPS = context:GetShaderByTag("Shadowmap_WithPS")
     
-    forwardPassEDS:SetEnabled((opacityMode == OpacityMode_Opaque) or (opacityMode == OpacityMode_Blended) or (opacityMode == OpacityMode_TintedTransparent))
-        
-    depthPassWithPS:SetEnabled(opacityMode == OpacityMode_Cutout)
-    shadowMapWithPS:SetEnabled(opacityMode == OpacityMode_Cutout)
-
-
+    forwardPassEDS:SetEnabled(true)
     
-    context:GetShaderByTag("DepthPassTransparentMin"):SetEnabled(true)
-    context:GetShaderByTag("DepthPassTransparentMax"):SetEnabled(true)
+    context:GetShaderByTag("DepthPassTransparentMin_WithPS"):SetEnabled(true)
+    context:GetShaderByTag("DepthPassTransparentMax_WithPS"):SetEnabled(true)
 end

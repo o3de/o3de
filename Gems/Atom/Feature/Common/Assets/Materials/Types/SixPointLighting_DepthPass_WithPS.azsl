@@ -7,57 +7,33 @@
  */
 
 #include "./SixPointLighting_Common.azsli"
-#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
-#include <Atom/Features/ParallaxMapping.azsli>
-#include <Atom/Features/MatrixUtility.azsli>
 
-#include "MaterialInputs/AlphaInput.azsli"
-#include "MaterialInputs/ParallaxInput.azsli"
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/Features/MatrixUtility.azsli>
 
 struct VSInput
 {
     float3 m_position : POSITION;
     float2 m_uv0 : UV0;
-    float2 m_uv1 : UV1;
-
-    // only used for parallax depth calculation
-    float3 m_normal : NORMAL;
-    float4 m_tangent : TANGENT; 
-    float3 m_bitangent : BITANGENT; 
 };
- 
+
 struct VSDepthOutput
 {
     // "centroid" is needed for SV_Depth to compile
     linear centroid float4 m_position : SV_Position;
-    float2 m_uv[UvSetCount] : UV1;
-
-    // only used for parallax depth calculation
-    float3 m_normal : NORMAL;
-    float3 m_tangent : TANGENT; 
-    float3 m_bitangent : BITANGENT; 
-    float3 m_worldPosition : UV0;
+    float2 m_uv0 : UV0;
 };
 
-VSDepthOutput MainVS(VSInput IN)
+
+VSDepthOutput DepthPassVS(VSInput IN)
 {
     VSDepthOutput OUT;
  
     float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
     float4 worldPosition = mul(objectToWorld, float4(IN.m_position, 1.0));
-
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
-    // By design, only UV0 is allowed to apply transforms.
-    OUT.m_uv[0] = mul(MaterialSrg::m_uvMatrix, float3(IN.m_uv0, 1.0)).xy;
-    OUT.m_uv[1] = IN.m_uv1;
+    OUT.m_uv0 = mul(MaterialSrg::m_uvMatrix, float3(IN.m_uv0, 1.0)).xy;
 
-    if(ShouldHandleParallaxInDepthShaders())
-    {
-        OUT.m_worldPosition = worldPosition.xyz;
-
-        float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
-        ConstructTBN(IN.m_normal, IN.m_tangent, IN.m_bitangent, objectToWorld, objectToWorldIT, OUT.m_normal, OUT.m_tangent, OUT.m_bitangent);
-    }
     return OUT;
 }
 
@@ -66,33 +42,16 @@ struct PSDepthOutput
     float m_depth : SV_Depth;
 };
 
-PSDepthOutput MainPS(VSDepthOutput IN, bool isFrontFace : SV_IsFrontFace)
+PSDepthOutput DepthPassPS(VSDepthOutput IN, bool isFrontFace : SV_IsFrontFace)
 {
     PSDepthOutput OUT;
-
     OUT.m_depth = IN.m_position.z;
-
-    if(ShouldHandleParallaxInDepthShaders())
+    
+    if(o_enableDepthTexture)
     {
-        float3 tangents[UvSetCount] = { IN.m_tangent.xyz, IN.m_tangent.xyz };
-        float3 bitangents[UvSetCount] = { IN.m_bitangent.xyz, IN.m_bitangent.xyz };
-
-        PrepareGeneratedTangent(IN.m_normal, IN.m_worldPosition, isFrontFace, IN.m_uv, UvSetCount, tangents, bitangents);
-    
-        float3x3 uvMatrix = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3();
-        float3x3 uvMatrixInverse = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrixInverse : CreateIdentity3x3();
-    
-        GetParallaxInput(IN.m_normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex], MaterialSrg::m_heightmapScale, MaterialSrg::m_heightmapOffset,
-                         ObjectSrg::GetWorldMatrix(), uvMatrix, uvMatrixInverse,
-                         IN.m_uv[MaterialSrg::m_parallaxUvIndex], IN.m_worldPosition, OUT.m_depth);
+        float2 sixPointUv = GetUvForCurrentFrame(IN.m_uv0);
+        float depthOffset = MaterialSrg::m_depthMap.Sample(MaterialSrg::m_sampler, sixPointUv).r;
+        OUT.m_depth += (depthOffset - 0.5f);
     }
-    
-    // Alpha
-    float2 baseColorUV = IN.m_uv[MaterialSrg::m_baseColorMapUvIndex];
-    float2 opacityUV = IN.m_uv[MaterialSrg::m_opacityMapUvIndex];
-    float alpha = SampleAlpha(MaterialSrg::m_baseColorMap, MaterialSrg::m_opacityMap, baseColorUV, opacityUV, MaterialSrg::m_sampler, o_opacity_source);
-
-    CheckClipping(alpha, MaterialSrg::m_opacityFactor);
-
     return OUT;
 }
