@@ -28,6 +28,7 @@ ly_add_target(
             3rdParty::zstd
             3rdParty::OpenSSL
         PUBLIC
+            3rdParty::MsQuic
             3rdParty::RapidJSON
             3rdParty::RapidXML
     AUTOGEN_RULES

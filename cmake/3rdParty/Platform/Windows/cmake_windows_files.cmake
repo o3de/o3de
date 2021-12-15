@@ -8,5 +8,6 @@
 
 set(FILES
     BuiltInPackages_windows.cmake
+    MsQuic_windows.cmake
     Wwise_windows.cmake
 )

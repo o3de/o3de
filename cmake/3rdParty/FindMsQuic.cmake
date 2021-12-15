@@ -1,4 +1,4 @@
-﻿#
+#
 # Copyright (c) Contributors to the Open 3D Engine Project.
 # For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
@@ -6,11 +6,10 @@
 #
 #
 
-set(FILES
-    BuiltInPackages.cmake
-    FindMsQuic.cmake
-    FindOpenGLInterface.cmake
-    FindPIX.cmake
-    FindVkValidation.cmake
-    FindWwise.cmake
+ly_add_external_target(
+    NAME MsQuic
+    3RDPARTY_ROOT_DIRECTORY ${LY_3RDPARTY_PATH}/MsQuic
+    VERSION
+    INCLUDE_DIRECTORIES include
 )
+
