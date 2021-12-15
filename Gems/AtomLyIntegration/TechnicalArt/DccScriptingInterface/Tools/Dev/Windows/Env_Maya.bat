@@ -22,12 +22,13 @@ IF "%DCCSI_ENV_MAYA_INIT%"=="1" GOTO :END_OF_FILE
 cd %~dp0
 PUSHD %~dp0
 
-IF "%DCCSI_PY_VERSION_MAJOR%"=="" (set DCCSI_PY_VERSION_MAJOR=2)
+:: Maya 2022: 3.7.7 (tags/v3.7.7:d7c567b08f, Mar 10 2020, 10:41:24) [MSC v.1900 64 bit (AMD64)]
+IF "%DCCSI_PY_VERSION_MAJOR%"=="" (set DCCSI_PY_VERSION_MAJOR=3)
 IF "%DCCSI_PY_VERSION_MINOR%"=="" (set DCCSI_PY_VERSION_MINOR=7)
-IF "%DCCSI_PY_VERSION_RELEASE%"=="" (set DCCSI_PY_VERSION_RELEASE=11)
+IF "%DCCSI_PY_VERSION_RELEASE%"=="" (set DCCSI_PY_VERSION_RELEASE=7)
 
 :: Default Maya Version
-IF "%DCCSI_MAYA_VERSION%"=="" (set DCCSI_MAYA_VERSION=2020)
+IF "%MAYA_VERSION%"=="" (set MAYA_VERSION=2022)
 
 :: Initialize env
 CALL %~dp0\Env_Core.bat
@@ -43,14 +44,14 @@ echo.
 echo     DCCSI_PY_VERSION_MAJOR = %DCCSI_PY_VERSION_MAJOR%
 echo     DCCSI_PY_VERSION_MINOR = %DCCSI_PY_VERSION_MINOR%
 echo     DCCSI_PY_VERSION_RELEASE = %DCCSI_PY_VERSION_RELEASE%
-echo     DCCSI_MAYA_VERSION = %DCCSI_MAYA_VERSION%
+echo     MAYA_VERSION = %MAYA_VERSION%
 
 :::: Set Maya native project acess to this project
-IF "%MAYA_PROJECT%"=="" (set MAYA_PROJECT=%O3DE_PROJECT_PATH%)
+IF "%MAYA_PROJECT%"=="" (set MAYA_PROJECT=%PATH_O3DE_PROJECT%)
 echo     MAYA_PROJECT = %MAYA_PROJECT%
 
 :: maya sdk path
-set DCCSI_TOOLS_MAYA_PATH=%DCCSI_TOOLS_PATH%\DCC\Maya
+set DCCSI_TOOLS_MAYA_PATH=%PATH_DCCSI_TOOLS%\DCC\Maya
 echo     DCCSI_TOOLS_MAYA_PATH = %DCCSI_TOOLS_MAYA_PATH%
 
 set MAYA_MODULE_PATH=%DCCSI_TOOLS_MAYA_PATH%;%MAYA_MODULE_PATH%
@@ -59,7 +60,7 @@ echo     MAYA_MODULE_PATH = %MAYA_MODULE_PATH%
 :: Maya File Paths, etc
 :: https://knowledge.autodesk.com/support/maya/learn-explore/caas/CloudHelp/cloudhelp/2015/ENU/Maya/files/Environment-Variables-File-path-variables-htm.html
 :::: Set Maya native project acess to this project
-IF "%MAYA_LOCATION%"=="" (set MAYA_LOCATION=%ProgramFiles%\Autodesk\Maya%DCCSI_MAYA_VERSION%)
+IF "%MAYA_LOCATION%"=="" (set MAYA_LOCATION=%ProgramFiles%\Autodesk\Maya%MAYA_VERSION%)
 echo     MAYA_LOCATION = %MAYA_LOCATION%
 
 IF "%MAYA_BIN_PATH%"=="" (set MAYA_BIN_PATH=%MAYA_LOCATION%\bin)

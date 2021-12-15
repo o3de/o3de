@@ -29,7 +29,7 @@ CALL %~dp0\Env_Qt.bat
 
 :: put project env variables/paths here
 set WINGHOME=%PROGRAMFILES(X86)%\Wing Pro %DCCSI_WING_VERSION_MAJOR%.%DCCSI_WING_VERSION_MINOR%
-SET WING_PROJ=%DCCSIG_PATH%\Tools\Dev\Windows\Solutions\.wing\DCCsi_%DCCSI_WING_VERSION_MAJOR%x.wpr
+SET WING_PROJ=%PATH_DCCSIG%\Tools\Dev\Windows\Solutions\.wing\DCCsi_%DCCSI_WING_VERSION_MAJOR%x.wpr
 
 echo.
 echo _____________________________________________________________________

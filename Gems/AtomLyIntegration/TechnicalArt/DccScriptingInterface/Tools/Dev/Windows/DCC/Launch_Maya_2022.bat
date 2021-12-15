@@ -14,26 +14,26 @@ PUSHD %~dp0
 
 SETLOCAL ENABLEDELAYEDEXPANSION
 
-:: Default Maya and Python version
-set MAYA_VERSION=2020
-set DCCSI_PY_VERSION_MAJOR=2
-set DCCSI_PY_VERSION_MINOR=7
-set DCCSI_PY_VERSION_RELEASE=11
+:: if the user has set up a custom env call it
+IF EXIST "%~dp0..\Env_Dev.bat" CALL %~dp0..\Env_Dev.bat
 
-CALL %~dp0\Env_Core.bat
-CALL %~dp0\Env_Python.bat
-CALL %~dp0\Env_Maya.bat
+:: Default Maya and Python version
+set MAYA_VERSION=2022
+set DCCSI_PY_VERSION_MAJOR=3
+set DCCSI_PY_VERSION_MINOR=7
+set DCCSI_PY_VERSION_RELEASE=7
+
+CALL %~dp0\..\Env_Core.bat
+CALL %~dp0\..\Env_Python.bat
+CALL %~dp0\..\Env_Maya.bat
 
 :: ide and debugger plug
 set DCCSI_PY_DEFAULT=%DCCSI_PY_MAYA%
 
 :: Default BASE DCCsi python 3.7 location
-:: Can be overridden (example, Launch_mayaPy_2020.bat :: MayaPy.exe)
-set DCCSI_PY_DCCSI=%DCCSI_LAUNCHERS_PATH%Launch_mayaPy_2020.bat
+:: Can be overridden (example, Launch_mayaPy_%MAYA_VERSION%.bat :: MayaPy.exe)
+set DCCSI_PY_DCCSI=%DCCSI_LAUNCHERS_PATH%Launch_mayaPy_%MAYA_VERSION%.bat
 echo     DCCSI_PY_DCCSI = %DCCSI_PY_DCCSI%
-
-:: if the user has set up a custom env call it
-IF EXIST "%~dp0Env_Dev.bat" CALL %~dp0Env_Dev.bat
 
 echo.
 echo _____________________________________________________________________
@@ -50,7 +50,7 @@ echo     MAYA_LOCATION = %MAYA_LOCATION%
 echo     MAYA_BIN_PATH = %MAYA_BIN_PATH%
 
 :: Change to root dir
-CD /D %O3DE_PROJECT_PATH%
+CD /D %PATH_O3DE_PROJECT%
 
 :: Default to the right version of Maya if we can detect it... and launch
 IF EXIST "%MAYA_BIN_PATH%\maya.exe" (

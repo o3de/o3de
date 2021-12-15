@@ -33,7 +33,7 @@ CALL %~dp0\Env_Maya.bat
 IF EXIST "%~dp0Env_Dev.bat" CALL %~dp0Env_Dev.bat
 
 :: Change to root dir
-CD /D %O3DE_PROJECT_PATH%
+CD /D %PATH_O3DE_PROJECT%
 
 :: Create command prompt with environment
 CALL %windir%\system32\cmd.exe

@@ -7,15 +7,15 @@ REM SPDX-License-Identifier: Apache-2.0 OR MIT
 REM
 REM
 
-:: Set up window
-TITLE O3DE DCCsi Launch MayaPy
-:: Use obvious color to prevent confusion (Grey with Yellow Text)
-COLOR 8E
-
-:: Store current directory and change to environment directory so script works in any path.
+:: Store current dir
 %~d0
 cd %~dp0
 PUSHD %~dp0
+
+SETLOCAL ENABLEDELAYEDEXPANSION
+
+:: if the user has set up a custom env call it
+IF EXIST "%~dp0..\Env_Dev.bat" CALL %~dp0..\Env_Dev.bat
 
 :: Default Maya and Python version
 set MAYA_VERSION=2020
@@ -23,21 +23,23 @@ set DCCSI_PY_VERSION_MAJOR=2
 set DCCSI_PY_VERSION_MINOR=7
 set DCCSI_PY_VERSION_RELEASE=11
 
-CALL %~dp0\Env_Core.bat
-CALL %~dp0\Env_Python.bat
-CALL %~dp0\Env_Maya.bat
-
-:: if the user has set up a custom env call it
-IF EXIST "%~dp0Env_Dev.bat" CALL %~dp0Env_Dev.bat
+CALL %~dp0\..\Env_Core.bat
+CALL %~dp0\..\Env_Python.bat
+CALL %~dp0\..\Env_Maya.bat
 
 :: ide and debugger plug
 set DCCSI_PY_DEFAULT=%DCCSI_PY_MAYA%
 
+:: Default BASE DCCsi python 3.7 location
+:: Can be overridden (example, Launch_mayaPy_2020.bat :: MayaPy.exe)
+set DCCSI_PY_DCCSI=%DCCSI_LAUNCHERS_PATH%Launch_mayaPy_2020.bat
+echo     DCCSI_PY_DCCSI = %DCCSI_PY_DCCSI%
+
 echo.
 echo _____________________________________________________________________
 echo.
-echo ~    Launching O3DE DCCsi MayaPy (%MAYA_VERSION%) ...
-echo ________________________________________________________________
+echo Launching Maya %MAYA_VERSION% for O3DE DCCsi...
+echo _____________________________________________________________________
 echo.
 
 echo     MAYA_VERSION = %MAYA_VERSION%
@@ -48,13 +50,11 @@ echo     MAYA_LOCATION = %MAYA_LOCATION%
 echo     MAYA_BIN_PATH = %MAYA_BIN_PATH%
 
 :: Change to root dir
-CD /D %O3DE_PROJECT_PATH%
-
-SETLOCAL ENABLEDELAYEDEXPANSION
+CD /D %PATH_O3DE_PROJECT%
 
 :: Default to the right version of Maya if we can detect it... and launch
-IF EXIST "%DCCSI_PY_MAYA%" (
-    start "" "%DCCSI_PY_MAYA%" %*
+IF EXIST "%MAYA_BIN_PATH%\maya.exe" (
+    start "" "%MAYA_BIN_PATH%\maya.exe" %*
 ) ELSE (
     Where maya.exe 2> NUL
     IF ERRORLEVEL 1 (
@@ -65,9 +65,9 @@ IF EXIST "%DCCSI_PY_MAYA%" (
     )
 )
 
-ENDLOCAL
+::ENDLOCAL
 
-:: Return to starting directory
+:: Restore previous directory
 POPD
 
 :END_OF_FILE

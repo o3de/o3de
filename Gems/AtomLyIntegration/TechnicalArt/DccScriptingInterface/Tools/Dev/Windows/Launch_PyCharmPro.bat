@@ -1,10 +1,13 @@
 @echo off
 REM 
-REM Copyright (c) Contributors to the Open 3D Engine Project.
-REM For complete copyright and license terms please see the LICENSE at the root of this distribution.
+REM All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+REM its licensors.
 REM
-REM SPDX-License-Identifier: Apache-2.0 OR MIT
-REM
+REM For complete copyright and license terms please see the LICENSE at the root of this
+REM distribution (the "License"). All use of this software is governed by the License,
+REM or, if provided, by the license below or the license accompanying this file. Do not
+REM remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+REM WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 REM
 
 :: Set up window
@@ -19,10 +22,10 @@ PUSHD %~dp0
 
 :: Constant Vars (Global)
 :: global debug (propogates)
-IF "%DCCSI_GDEBUG%"=="" (set DCCSI_GDEBUG=True)
+IF "%DCCSI_GDEBUG%"=="" (set DCCSI_GDEBUG=False)
 echo     DCCSI_GDEBUG = %DCCSI_GDEBUG%
 :: initiates debugger connection
-IF "%DCCSI_DEV_MODE%"=="" (set DCCSI_DEV_MODE=True)
+IF "%DCCSI_DEV_MODE%"=="" (set DCCSI_DEV_MODE=False)
 echo     DCCSI_DEV_MODE = %DCCSI_DEV_MODE%
 :: sets debugger, options: WING, PYCHARM
 IF "%DCCSI_GDEBUGGER%"=="" (set DCCSI_GDEBUGGER=WING)
@@ -37,11 +40,20 @@ echo     DCCSI_GDEBUGGER = %DCCSI_GDEBUGGER%
 IF "%DCCSI_LOGLEVEL%"=="" (set DCCSI_LOGLEVEL=10)
 echo     DCCSI_LOGLEVEL = %DCCSI_LOGLEVEL%
 
+:: WingIDE version Major
+IF "%DCCSI_WING_VERSION_MAJOR%"=="" (set DCCSI_WING_VERSION_MAJOR=7)
+echo DCCSI_WING_VERSION_MAJOR = %DCCSI_WING_VERSION_MAJOR%
+:: WingIDE version Major
+IF "%DCCSI_WING_VERSION_MINOR%"=="" (set DCCSI_WING_VERSION_MINOR=2)
+echo DCCSI_WING_VERSION_MINOR = %DCCSI_WING_VERSION_MINOR%
+
 :: Initialize env
 CALL %~dp0\Env_PyCharm.bat
 
 :: if the user has set up a custom env call it
 IF EXIST "%~dp0Env_Dev.bat" CALL %~dp0Env_Dev.bat
+set WINGHOME=%PROGRAMFILES(X86)%\Wing Pro %DCCSI_WING_VERSION_MAJOR%.%DCCSI_WING_VERSION_MINOR%
+echo WINGHOME = %WINGHOME%
 
 echo.
 echo _____________________________________________________________________
