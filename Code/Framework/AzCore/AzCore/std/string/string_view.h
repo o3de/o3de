@@ -290,8 +290,8 @@ namespace AZStd
         static constexpr bool lt(char_type left, char_type right) noexcept { return left < right; }
         static constexpr int compare(const char_type* s1, const char_type* s2, size_t count) noexcept
         {
-            // Regression in VS2017 15.8 and 15.9 where __builtin_memcmp fails in valid checks in constexpr evaluation
-#if !defined(AZ_COMPILER_MSVC) || AZ_COMPILER_MSVC < 1915 || AZ_COMPILER_MSVC > 1916
+            // In GCC versions prior to major version 10, __builtin_memcmp fails in valid checks in constexpr evaluation
+#if !defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC < 100000
             if constexpr (AZStd::is_same_v<char_type, char>)
             {
                 return __builtin_memcmp(s1, s2, count);
