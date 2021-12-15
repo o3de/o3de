@@ -15,7 +15,10 @@
 #if defined(__clang__)
     #define AZ_COMPILER_CLANG   __clang_major__
 #elif defined(__GNUC__)
-    #define AZ_COMPILER_GCC     __GNUC__
+    //  Assign AZ_COMPILER_GCC to a number that represents the major+minor (2 digits) + path level (2 digits)  i.e. 3.2.0 == 30200
+    #define AZ_COMPILER_GCC     (__GNUC__ * 10000 \
+                               + __GNUC_MINOR__ * 100 \
+                               + __GNUC_PATCHLEVEL__)
 #elif defined(_MSC_VER)
     #define AZ_COMPILER_MSVC    _MSC_VER
 #else
