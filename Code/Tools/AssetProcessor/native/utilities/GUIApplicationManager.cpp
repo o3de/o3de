@@ -38,6 +38,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QSettings>
+#include <ui/MessageWindow.h>
 
 using namespace AssetProcessor;
 
@@ -73,6 +74,17 @@ namespace
     
 }
 
+ErrorCollector::~ErrorCollector()
+{
+    if (m_application)
+    {
+        MessageWindow messageWindow;
+        messageWindow.SetHeaderText("The following errors occurred during startup:");
+        messageWindow.SetMessageText(m_errorMessages);
+        messageWindow.SetTitleText("Startup Errors");
+        messageWindow.exec();
+    }
+}
 
 GUIApplicationManager::GUIApplicationManager(int* argc, char*** argv, QObject* parent)
     : ApplicationManagerBase(argc, argv, parent)
@@ -427,6 +439,12 @@ bool GUIApplicationManager::OnError(const char* /*window*/, const char* message)
         return true;
     }
 
+    if (m_startupErrorCollector)
+    {
+        m_startupErrorCollector->AddError(message);
+        return true;
+    }
+
     // If we're the main thread, then consider showing the message box directly.  
     // note that all other threads will PAUSE if they emit a message while the main thread is showing this box
     // due to the way the trace system EBUS is mutex-protected.
@@ -463,6 +481,8 @@ bool GUIApplicationManager::OnAssert(const char* message)
 
 bool GUIApplicationManager::Activate()
 {
+    m_startupErrorCollector = AZStd::make_unique<ErrorCollector>(this);
+
     AZ::SerializeContext* context;
     EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
     AZ_Assert(context, "No serialize context");
@@ -490,11 +510,13 @@ bool GUIApplicationManager::PostActivate()
 {
     if (!ApplicationManagerBase::PostActivate())
     {
+        m_startupErrorCollector = nullptr;
         return false;
     }
 
     m_fileWatcher.StartWatching();
 
+    m_startupErrorCollector = nullptr;
     return true;
 }
 
