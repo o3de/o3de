@@ -21,6 +21,7 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
+#include <AzToolsFramework/Prefab/Spawnable/PrefabProcessorContext.h>
 
 namespace AzToolsFramework::Prefab::SpawnableUtils
 {
@@ -220,32 +221,6 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
             AZ_Assert(false, "Entity with id %zu was not found in the source prefab.", static_cast<AZ::u64>(entityId));
             return nullptr;
         }
-    }
-
-    void PatchParents(const AzToolsFramework::Prefab::Instance& source, AzToolsFramework::Prefab::Instance& target)
-    {
-        target.GetEntities(
-            [&source, &target](AZStd::unique_ptr<AZ::Entity>& entity)
-            {
-                AzFramework::TransformComponent* transform = entity->FindComponent<AzFramework::TransformComponent>();
-                if (transform)
-                {
-                    if (transform->GetParentId().IsValid())
-                    {
-                        AliasPath originalParentAlias = source.GetAliasPathRelativeToInstance(transform->GetParentId());
-                        if (!originalParentAlias.empty())
-                        {
-                            AZ::EntityId targetParentId = target.GetEntityIdFromAliasPath(originalParentAlias);
-                            if (targetParentId.IsValid())
-                            {
-                                // If this is valid then the parent was moved to the target spawnable so adjust the entity id.
-                                transform->SetParent(targetParentId);
-                            }
-                        }
-                    }
-                }
-                return true;
-            });
     }
 
     uint32_t FindEntityIndex(AZ::EntityId entity, const AzFramework::Spawnable& spawnable)

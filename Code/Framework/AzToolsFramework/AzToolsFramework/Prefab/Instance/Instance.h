@@ -169,6 +169,13 @@ namespace AzToolsFramework
             * @return entityId, invalid ID if not found
             */
             AZ::EntityId GetEntityIdFromAliasPath(AliasPathView relativeAliasPath) const;
+            /**
+             * Retrieves the instance pointer and entity id from an alias path that's relative to this instance.
+             *
+             * @return A pair with the Instance and entity id. The Instance is set to null and entityId is set to invalid if not found.
+             */
+            AZStd::pair<Instance*, AZ::EntityId> GetInstanceAndEntityIdFromAliasPath(AliasPathView relativeAliasPath);
+            AZStd::pair<const Instance*, AZ::EntityId> GetInstanceAndEntityIdFromAliasPath(AliasPathView relativeAliasPath) const;
 
 
             /**

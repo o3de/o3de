@@ -8,13 +8,18 @@
 
 #pragma once
 
+#include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/string.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabDomTypes.h>
+#include <AzToolsFramework/Prefab/Spawnable/EntityAliasTypes.h>
+#include <AzToolsFramework/Prefab/Spawnable/SpawnableUtils.h>
 
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
+    class PrefabProcessorContext;
+
     class PrefabDocument final
     {
     public:
@@ -32,6 +37,18 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         const PrefabDom& GetDom() const;
         PrefabDom&& TakeDom();
 
+        template<typename Component>
+        void ListEntitiesWithComponentType(const AZStd::function<bool(AzToolsFramework::Prefab::AliasPath&&)>& callback) const;
+        void ListEntitiesWithComponentType(
+            AZ::TypeId componentType, const AZStd::function<bool(AzToolsFramework::Prefab::AliasPath&&)>& callback) const;
+        AZ::Entity* CreateEntityAlias(
+            PrefabDocument& source,
+            AzToolsFramework::Prefab::AliasPathView entity,
+            AzToolsFramework::Prefab::PrefabConversionUtils::EntityAliasType aliasType,
+            AzToolsFramework::Prefab::PrefabConversionUtils::EntityAliasSpawnableLoadBehavior loadBehavior,
+            uint32_t tag,
+            AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext& context);
+
         // Where possible, prefer functions directly on the PrefabDocument Instead of using the Instance.
         AzToolsFramework::Prefab::Instance& GetInstance();
         const AzToolsFramework::Prefab::Instance& GetInstance() const;
@@ -45,3 +62,5 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         mutable bool m_isDirty{ false };
     };
 } // namespace AzToolsFramework::Prefab::PrefabConversionUtils
+
+#include <AzToolsFramework/Prefab/Spawnable/PrefabDocument.inl>

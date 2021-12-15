@@ -609,6 +609,31 @@ namespace AzToolsFramework
 
         AZ::EntityId Instance::GetEntityIdFromAliasPath(AliasPathView relativeAliasPath) const
         {
+            return GetInstanceAndEntityIdFromAliasPath(relativeAliasPath).second;
+        }
+
+        AZStd::pair<Instance*, AZ::EntityId> Instance::GetInstanceAndEntityIdFromAliasPath(AliasPathView relativeAliasPath)
+        {
+            Instance* instance = this;
+            AliasPathView path = relativeAliasPath.ParentPath();
+            for (auto it : path)
+            {
+                InstanceOptionalReference child = instance->FindNestedInstance(it.Native());
+                if (child.has_value())
+                {
+                    instance = &(child->get());
+                }
+                else
+                {
+                    return AZStd::pair<Instance*, AZ::EntityId>(nullptr, AZ::EntityId());
+                }
+            }
+
+            return AZStd::pair<Instance*, AZ::EntityId>(instance, instance->GetEntityId(relativeAliasPath.Filename().Native()));
+        }
+
+        AZStd::pair<const Instance*, AZ::EntityId> Instance::GetInstanceAndEntityIdFromAliasPath(AliasPathView relativeAliasPath) const
+        {
             const Instance* instance = this;
             AliasPathView path = relativeAliasPath.ParentPath();
             for (auto it : path)
@@ -620,11 +645,11 @@ namespace AzToolsFramework
                 }
                 else
                 {
-                    return AZ::EntityId();
+                    return AZStd::pair<const Instance*, AZ::EntityId>(nullptr, AZ::EntityId());
                 }
             }
 
-            return instance->GetEntityId(relativeAliasPath.Filename().Native());
+            return AZStd::pair<const Instance*, AZ::EntityId>(instance, instance->GetEntityId(relativeAliasPath.Filename().Native()));
         }
 
         AZStd::vector<InstanceAlias> Instance::GetNestedInstanceAliases(TemplateId templateId) const
