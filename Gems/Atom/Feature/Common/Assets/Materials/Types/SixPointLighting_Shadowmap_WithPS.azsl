@@ -7,7 +7,7 @@
  */
 
 #include <scenesrg.srgi>
-#include "StandardPBR_Common.azsli"
+#include "SixPointLighting_Common.azsli"
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <Atom/Features/ParallaxMapping.azsli>
 #include <Atom/Features/MatrixUtility.azsli>

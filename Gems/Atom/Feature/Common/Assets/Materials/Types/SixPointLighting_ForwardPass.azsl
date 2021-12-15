@@ -8,7 +8,7 @@
 
 #include "Atom/Features/ShaderQualityOptions.azsli"
 
-#include "StandardPBR_Common.azsli"
+#include "SixPointLighting_Common.azsli"
 
 // SRGs
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
@@ -22,7 +22,7 @@
 #include <Atom/Features/PBR/AlphaUtils.azsli>
 
 // Custom Surface & Lighting
-#include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
+#include <Atom/Features/PBR/Lighting/SixPointLighting.azsli>
 
 // Decals
 #include <Atom/Features/PBR/Decals.azsli>
@@ -38,7 +38,12 @@ COMMON_OPTIONS_NORMAL()
 COMMON_OPTIONS_CLEAR_COAT()
 COMMON_OPTIONS_OCCLUSION()
 COMMON_OPTIONS_EMISSIVE()
-// Note COMMON_OPTIONS_PARALLAX is in StandardPBR_Common.azsli because it's needed by all StandardPBR shaders.
+
+enum class SixPointTexturePackMode { TpLftRtBt_FrBck, LftRtTp_FrBckBt };
+option SixPointTexturePackMode o_sixPointTexutrePackMode = SixPointTexturePackMode::TpLftRtBt_FrBck;
+
+option bool o_enableDebugFrame = false;
+// Note COMMON_OPTIONS_PARALLAX is in SixPointLighting_Common.azsli because it's needed by all StandardPBR shaders.
 
 // Alpha
 #include "MaterialInputs/AlphaInput.azsli"
@@ -142,7 +147,23 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
 
     float2 baseColorUv = IN.m_uv[MaterialSrg::m_baseColorMapUvIndex];
     float2 opacityUv = IN.m_uv[MaterialSrg::m_opacityMapUvIndex];
-    float alpha = GetAlphaInputAndClip(MaterialSrg::m_baseColorMap, MaterialSrg::m_opacityMap, baseColorUv, opacityUv, MaterialSrg::m_sampler, MaterialSrg::m_opacityFactor, o_opacity_source);
+    
+    // Fixed frequency of 30hz
+    // Get the current frame
+    float frame = (float)(((double)SceneSrg::m_time / (33.3333)) * 1000.0) % (MaterialSrg::m_columnCount * MaterialSrg::m_rowCount);
+    if(o_enableDebugFrame)
+    {
+        // The frame input by the material is 1-indexed, so subtract 1 here to make it 0-indexed
+        frame = MaterialSrg::m_debugFrame - 1.0f;
+    }
+    // Get the row/column of the frame
+    float frameColumn = floor(frame % MaterialSrg::m_columnCount);
+    float frameRow = floor(frame / MaterialSrg::m_columnCount) % MaterialSrg::m_rowCount;
+    
+    float2 invColumnRowCounts = float2(1.0f, 1.0f) / float2(MaterialSrg::m_columnCount, MaterialSrg::m_rowCount);
+    float2 sixPointUv = (baseColorUv + float2(frameColumn, frameRow)) * invColumnRowCounts;
+
+    float alpha = GetAlphaInputAndClip(MaterialSrg::m_baseColorMap, MaterialSrg::m_opacityMap, sixPointUv, sixPointUv, MaterialSrg::m_sampler, MaterialSrg::m_opacityFactor, o_opacity_source);
 
     // ------- Normal -------
 
@@ -157,6 +178,9 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     float3 sampledColor = GetBaseColorInput(MaterialSrg::m_baseColorMap, MaterialSrg::m_sampler, baseColorUv, MaterialSrg::m_baseColor.rgb, o_baseColor_useTexture);
     float3 baseColor = BlendBaseColor(sampledColor, MaterialSrg::m_baseColor.rgb, MaterialSrg::m_baseColorFactor, o_baseColorTextureBlendMode, o_baseColor_useTexture);
     
+    float4 topLeftRightBottom = MaterialSrg::m_topLeftRightBottomMap.Sample(MaterialSrg::m_sampler, sixPointUv);
+    float4 frontBack = MaterialSrg::m_frontBackMap.Sample(MaterialSrg::m_sampler, sixPointUv);
+
     if(o_parallax_highlightClipping && displacementIsClipped)
     {
         ApplyParallaxClippingHighlight(baseColor);
@@ -173,7 +197,26 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     float specularF0Factor = GetSpecularInput(MaterialSrg::m_specularF0Map, MaterialSrg::m_sampler, specularUv, MaterialSrg::m_specularF0Factor, o_specularF0_useTexture);
 
     surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
-
+    if(o_sixPointTexutrePackMode == SixPointTexturePackMode::TpLftRtBt_FrBck)
+    {
+        surface.top = topLeftRightBottom.r;
+        surface.left = topLeftRightBottom.g;
+        surface.right = topLeftRightBottom.b;
+        surface.bottom = topLeftRightBottom.a;
+        surface.f = frontBack.r;
+        surface.b = frontBack.g;
+    }
+    else
+    {
+        surface.left = topLeftRightBottom.r;
+        surface.right = topLeftRightBottom.g;
+        surface.top = topLeftRightBottom.b;
+        surface.f = frontBack.r;
+        surface.b = frontBack.g;
+        surface.bottom = frontBack.b;
+    }
+    surface.tangent = tangents[MaterialSrg::m_normalMapUvIndex];
+    surface.bitangent = bitangents[MaterialSrg::m_normalMapUvIndex];
     // ------- Roughness -------
 
     float2 roughnessUv = IN.m_uv[MaterialSrg::m_roughnessMapUvIndex];
@@ -314,6 +357,8 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     {
         lightingOutput.m_diffuseColor.w = -1; // Disable subsurface scattering
     }
+
+    
 
     return lightingOutput;
 }
