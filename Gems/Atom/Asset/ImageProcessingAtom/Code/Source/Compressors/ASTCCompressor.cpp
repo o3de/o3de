@@ -78,7 +78,7 @@ namespace ImageProcessingAtom
         return true;
     }
 
-    astcenc_profile GetAstcProfile(bool isSrgb, EPixelFormat pixelFormat)
+    astcenc_profile GetAstcProfile(bool isSrgb, bool isHDR)
     {
         // select profile depends on LDR or HDR, SRGB or Linear
         //      ASTCENC_PRF_LDR
@@ -86,8 +86,6 @@ namespace ImageProcessingAtom
         //      ASTCENC_PRF_HDR_RGB_LDR_A
         //      ASTCENC_PRF_HDR
         
-        auto formatInfo = CPixelFormats::GetInstance().GetPixelFormatInfo(pixelFormat);
-        bool isHDR = formatInfo->eSampleType == ESampleType::eSampleType_Half || formatInfo->eSampleType == ESampleType::eSampleType_Float;
         astcenc_profile profile;
         if (isHDR)
         {
@@ -170,7 +168,7 @@ namespace ImageProcessingAtom
         auto dstFormatInfo = CPixelFormats::GetInstance().GetPixelFormatInfo(fmtDst);
 
         const float quality = GetAstcCompressQuality(compressOption->compressQuality);
-        const astcenc_profile profile = GetAstcProfile(srcImage->HasImageFlags(EIF_SRGBRead), fmtSrc);
+        const astcenc_profile profile = GetAstcProfile(srcImage->HasImageFlags(EIF_SRGBRead), srcImage->HasImageFlags(EIF_HDR));
 
         astcenc_config config;
         astcenc_error status;
@@ -182,9 +180,11 @@ namespace ImageProcessingAtom
         // Create a context based on the configuration
         astcenc_context* context;
         AZ::u32 blockCount = ((srcImage->GetWidth(0)+ dstFormatInfo->blockWidth-1)/dstFormatInfo->blockWidth) * ((srcImage->GetHeight(0) + dstFormatInfo->blockHeight-1)/dstFormatInfo->blockHeight);
-        AZ::u32 threadCount = AZStd::min(AZStd::thread::hardware_concurrency(), blockCount);
+        AZ::u32 threadCount = AZStd::min(AZStd::thread::hardware_concurrency()/2, blockCount);
         status = astcenc_context_alloc(&config, threadCount, &context);
         AZ_Assert( status == ASTCENC_SUCCESS, "ERROR: Codec context alloc failed: %s\n", astcenc_get_error_string(status));
+
+        AZ::Job* currentJob = AZ::JobContext::GetGlobalContext()->GetJobManager().GetCurrentJob();
 
         const astcenc_type dataType =GetAstcDataType(fmtSrc);
 
@@ -209,29 +209,65 @@ namespace ImageProcessingAtom
             dstImage->GetImagePointer(mip, dstMem, dstPitch);
             AZ::u32 dataSize = dstImage->GetMipBufSize(mip);
 
-            // Create jobs for each compression thread
-            auto completionJob = aznew AZ::JobCompletion();
-            for (AZ::u32 threadIdx = 0; threadIdx < threadCount; threadIdx++)
+            if (threadCount == 1)
             {
-                const auto jobLambda = [&status, context, &image, &swizzle, dstMem, dataSize, threadIdx]()
+                astcenc_error error = astcenc_compress_image(context, &image, &swizzle, dstMem, dataSize, 0);
+                if (error != ASTCENC_SUCCESS)
                 {
+                    status = error;
+                }
+            }
+            else
+            {
+                AZ::JobCompletion* completionJob = nullptr;
+                if (!currentJob)
+                {
+                    completionJob = aznew AZ::JobCompletion();
+                }
+                // Create jobs for each compression thread
+                for (AZ::u32 threadIdx = 0; threadIdx < threadCount; threadIdx++)
+                {
+                    const auto jobLambda = [&status, context, &image, &swizzle, dstMem, dataSize, threadIdx]()
+                    {
+                        astcenc_error error = astcenc_compress_image(context, &image, &swizzle, dstMem, dataSize, threadIdx);
+                        if (error != ASTCENC_SUCCESS)
+                        {
+                            status = error;
+                        }
+                    };
+
+                    AZ::Job* simulationJob = AZ::CreateJobFunction(AZStd::move(jobLambda), true, nullptr);  //auto-deletes
+
+                    // adds this job as child to current job if there is a current job
+                    // otherwise adds it as a dependent for the complete job
+                    if (currentJob)
+                    {
+                        currentJob->StartAsChild(simulationJob);
+                    }
+                    else
+                    {
+                        simulationJob->SetDependent(completionJob);
+                        simulationJob->Start();
+                    }
+
                     astcenc_error error = astcenc_compress_image(context, &image, &swizzle, dstMem, dataSize, threadIdx);
                     if (error != ASTCENC_SUCCESS)
                     {
                         status = error;
                     }
-                };
+                }
+                
+                if (currentJob)
+                {
+                    currentJob->WaitForChildren();
+                }
 
-                AZ::Job* simulationJob = AZ::CreateJobFunction(AZStd::move(jobLambda), true, nullptr);  //auto-deletes
-                simulationJob->SetDependent(completionJob);
-                simulationJob->Start();
-            }
-
-            if (completionJob)
-            {
-                completionJob->StartAndWaitForCompletion();
-                delete completionJob;
-                completionJob = nullptr;
+                if (completionJob)
+                {
+                    completionJob->StartAndWaitForCompletion();
+                    delete completionJob;
+                    completionJob = nullptr;
+                }
             }
 
             if (status != ASTCENC_SUCCESS)

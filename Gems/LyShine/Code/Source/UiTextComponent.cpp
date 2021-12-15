@@ -1843,11 +1843,7 @@ void UiTextComponent::Render(LyShine::IRenderGraph* renderGraph)
             LyShine::UiPrimitive* primitive = renderGraph->GetDynamicQuadPrimitive(rect.pt, packedColor);
             primitive->m_next = nullptr;
 
-            LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
-            if (lyRenderGraph)
-            {
-                lyRenderGraph->AddPrimitiveAtom(primitive, systemImage, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
-            }
+            renderGraph->AddPrimitive(primitive, systemImage, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
         }
     }
 
@@ -1869,12 +1865,8 @@ void UiTextComponent::Render(LyShine::IRenderGraph* renderGraph)
             }
 
             bool isClampTextureMode = true;
-            LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
-            if (lyRenderGraph)
-            {
-                lyRenderGraph->AddPrimitiveAtom(&batch->m_cachedPrimitive, texture,
-                    isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
-            }
+            renderGraph->AddPrimitive(&batch->m_cachedPrimitive, texture,
+                isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
         }
     }
 
@@ -1884,7 +1876,7 @@ void UiTextComponent::Render(LyShine::IRenderGraph* renderGraph)
 
     for (RenderCacheBatch* batch : m_renderCache.m_batches)
     {
-        AZ::FFont* font = static_cast<AZ::FFont*>(batch->m_font); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
+        AZ::FFont* font = static_cast<AZ::FFont*>(batch->m_font); // LYSHINE_ATOM_TODO - move IFont.h out of CryCommon/engine code
         AZ::Data::Instance<AZ::RPI::Image> fontImage = font->GetFontImage();
         if (fontImage)
         {
@@ -1907,12 +1899,8 @@ void UiTextComponent::Render(LyShine::IRenderGraph* renderGraph)
             // because there is no padding on the left of the glyphs.
             bool isClampTextureMode = false;
 
-            LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
-            if (lyRenderGraph)
-            {
-                lyRenderGraph->AddPrimitiveAtom(&batch->m_cachedPrimitive, fontImage,
-                    isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
-            }
+            renderGraph->AddPrimitive(&batch->m_cachedPrimitive, fontImage,
+                isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
         }
     }
 }

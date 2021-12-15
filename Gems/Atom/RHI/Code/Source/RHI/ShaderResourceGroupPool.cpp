@@ -248,8 +248,6 @@ namespace AZ
 
         void ShaderResourceGroupPool::CompileGroupsForInterval(Interval interval)
         {
-            AZ_PROFILE_SCOPE(RHI, "CompileGroupsForInterval");
-
             AZ_Assert(m_isCompiling, "You must call CompileGroupsBegin() first!");
             AZ_Assert(
                 interval.m_max >= interval.m_min &&
@@ -259,6 +257,8 @@ namespace AZ
             for (uint32_t i = interval.m_min; i < interval.m_max; ++i)
             {
                 ShaderResourceGroup* group = m_groupsToCompile[i];
+                AZ_PROFILE_SCOPE(RHI, "CompileGroupsForInterval %s", group->GetName().GetCStr());
+
                 CompileGroupInternal(*group, group->GetData());
                 group->m_isQueuedForCompile = false;
             }

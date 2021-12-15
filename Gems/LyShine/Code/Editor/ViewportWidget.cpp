@@ -341,11 +341,6 @@ void ViewportWidget::ClearUntilSafeToRedraw()
     // set flag so that Update will just clear the screen rather than rendering canvas
     m_canvasRenderIsEnabled = false;
 
-#ifdef LYSHINE_ATOM_TODO // check if still needed
-    // Force an update
-    Update();
-#endif
-
     // Schedule a timer to set the m_canvasRenderIsEnabled flag
     // using a time of zero just waits until there is nothing on the event queue
     QTimer::singleShot(0, this, SLOT(EnableCanvasRender()));

@@ -548,11 +548,11 @@ namespace AzToolsFramework
         AZ::EntityId entityId = GetEntityFromIndex(index);
 
         // Only allow renaming the entity if the UI Handler did not block it.
-        auto entityUiHandler = m_editorEntityUiInterface->GetHandler(entityId);
+        auto entityUiHandler = m_editorEntityUiInterface ? m_editorEntityUiInterface->GetHandler(entityId) : nullptr;
         bool canRename = !entityUiHandler || entityUiHandler->CanRename(entityId);
 
         // Disable renaming for read-only entities.
-        bool isReadOnly = m_readOnlyEntityPublicInterface->IsReadOnly(entityId);
+        bool isReadOnly = m_readOnlyEntityPublicInterface ? m_readOnlyEntityPublicInterface->IsReadOnly(entityId) : false;
 
         Qt::ItemFlags itemFlags = QAbstractItemModel::flags(index);
         switch (index.column())
