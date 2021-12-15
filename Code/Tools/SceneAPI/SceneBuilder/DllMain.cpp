@@ -21,7 +21,7 @@
 #include <SceneAPI/SceneBuilder/Importers/AssImpMeshImporter.h>
 #include <SceneAPI/SceneBuilder/Importers/AssImpTangentStreamImporter.h>
 #include <SceneAPI/SceneBuilder/Importers/AssImpTransformImporter.h>
-//#include <SceneAPI/SceneBuilder/Importers/AssImpCustomPropertiesImporter.h>
+#include <SceneAPI/SceneBuilder/Importers/AssImpCustomPropertyImporter.h>
 #include <SceneAPI/SceneBuilder/Importers/AssImpUvMapImporter.h>
 #include <SceneAPI/SceneBuilder/Importers/AssImpSkinImporter.h>
 #include <SceneAPI/SceneBuilder/Importers/AssImpSkinWeightsImporter.h>
