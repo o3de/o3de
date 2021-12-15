@@ -199,7 +199,10 @@ namespace AZ
             }
 
             const char* LutAttachment = "LutOutput";
-            const AZStd::vector<AZStd::string> LutGenerationPassHierarchy{ "LutGenerationPass" };
+            const AZStd::vector<AZStd::string> LutGenerationPassHierarchy{
+                "MainPipeline_0",
+                "LutGenerationPass"
+            };
 
             char resolvedOutputFilePath[AZ_MAX_PATH_LEN] = { 0 };
             AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(m_currentTiffFilePath.c_str(), resolvedOutputFilePath, AZ_MAX_PATH_LEN);
