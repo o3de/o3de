@@ -29,6 +29,7 @@ ly_append_configurations_options(
         -Wno-unused-variable
         -Wno-format-truncation
         -Wno-reorder
+        -Wno-uninitialized
 
     COMPILATION_C
         -Wno-absolute-value
