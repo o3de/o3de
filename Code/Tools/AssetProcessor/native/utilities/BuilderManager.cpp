@@ -138,7 +138,7 @@ namespace AssetProcessor
         }
     }
 
-    bool Builder::Start()
+    bool Builder::Start(bool doRegistration)
     {
         // Get the current BinXXX folder based on the current running AP
         QString applicationDir = QCoreApplication::instance()->applicationDirPath();
@@ -155,7 +155,7 @@ namespace AssetProcessor
             return false;
         }
 
-        const AZStd::vector<AZStd::string> params = BuildParams("resident", buildersFolder.c_str(), UuidString(), "", "");
+        const AZStd::vector<AZStd::string> params = BuildParams("resident", buildersFolder.c_str(), UuidString(), "", "", doRegistration);
 
         m_processWatcher = LaunchProcess(fullExePathString.c_str(), params);
 
@@ -179,7 +179,7 @@ namespace AssetProcessor
         return !m_processWatcher || (m_processWatcher && m_processWatcher->IsProcessRunning(exitCode));
     }
 
-    AZStd::vector<AZStd::string> Builder::BuildParams(const char* task, const char* moduleFilePath, const AZStd::string& builderGuid, const AZStd::string& jobDescriptionFile, const AZStd::string& jobResponseFile) const
+    AZStd::vector<AZStd::string> Builder::BuildParams(const char* task, const char* moduleFilePath, const AZStd::string& builderGuid, const AZStd::string& jobDescriptionFile, const AZStd::string& jobResponseFile, bool doRegistration) const
     {
         QDir projectCacheRoot;
         AssetUtilities::ComputeProjectCacheRoot(projectCacheRoot);
@@ -199,6 +199,11 @@ namespace AssetProcessor
         params.emplace_back(AZStd::string::format(R"(-project-path="%s")", projectPath.c_str()));
         params.emplace_back(AZStd::string::format(R"(-engine-path="%s")", enginePath.c_str()));
         params.emplace_back(AZStd::string::format("-port=%d", portNumber));
+
+        if(doRegistration)
+        {
+            params.emplace_back("--register");
+        }
 
         if (moduleFilePath && moduleFilePath[0])
         {
@@ -232,7 +237,7 @@ namespace AssetProcessor
     {
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
         processLaunchInfo.m_processExecutableString = fullExePath;
-        
+
         AZStd::vector<AZStd::string> commandLineArray{ fullExePath };
         commandLineArray.insert(commandLineArray.end(), params.begin(), params.end());
         processLaunchInfo.m_commandlineParameters = AZStd::move(commandLineArray);
@@ -476,7 +481,7 @@ namespace AssetProcessor
         return builder;
     }
 
-    BuilderRef BuilderManager::GetBuilder()
+    BuilderRef BuilderManager::GetBuilder(bool doRegistration)
     {
         AZStd::shared_ptr<Builder> newBuilder;
         BuilderRef builderRef;
@@ -484,26 +489,29 @@ namespace AssetProcessor
         {
             AZStd::unique_lock<AZStd::mutex> lock(m_buildersMutex);
 
-            for (auto itr = m_builders.begin(); itr != m_builders.end(); )
+            if (!doRegistration)
             {
-                auto& builder = itr->second;
-
-                if (!builder->m_busy)
+                for (auto itr = m_builders.begin(); itr != m_builders.end();)
                 {
-                    builder->PumpCommunicator();
+                    auto& builder = itr->second;
 
-                    if (builder->IsValid())
+                    if (!builder->m_busy)
                     {
-                        return BuilderRef(builder);
+                        builder->PumpCommunicator();
+
+                        if (builder->IsValid())
+                        {
+                            return BuilderRef(builder);
+                        }
+                        else
+                        {
+                            itr = m_builders.erase(itr);
+                        }
                     }
                     else
                     {
-                        itr = m_builders.erase(itr);
+                        ++itr;
                     }
-                }
-                else
-                {
-                    ++itr;
                 }
             }
 
@@ -516,7 +524,7 @@ namespace AssetProcessor
             builderRef = BuilderRef(newBuilder);
         }
 
-        if (!newBuilder->Start())
+        if (!newBuilder->Start(doRegistration))
         {
             AZ_Error("BuilderManager", false, "Builder failed to start");
 

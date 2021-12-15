@@ -218,6 +218,8 @@ protected:
     AZStd::shared_ptr<AssetProcessor::InternalRecognizerBasedBuilder> m_internalBuilder;
     AZStd::shared_ptr<AssetProcessor::SettingsRegistryBuilder> m_settingsRegistryBuilder;
 
+    bool m_builderRegistrationComplete = false;
+
     // Builder description map based on the builder id
     AZStd::unordered_map<AZ::Uuid, AssetBuilderSDK::AssetBuilderDesc> m_builderDescMap;
 
@@ -231,7 +233,7 @@ protected:
     AZStd::list<AssetProcessor::ExternalModuleAssetBuilderInfo*>    m_externalAssetBuilders;
 
     AssetProcessor::ExternalModuleAssetBuilderInfo* m_currentExternalAssetBuilder = nullptr;
-    
+
     QAtomicInt m_connectionsAwaitingAssetCatalogSave = 0;
     int m_remainingAPMJobs = 0;
     bool m_assetProcessorManagerIsReady = false;

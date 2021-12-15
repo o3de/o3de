@@ -597,6 +597,13 @@ void ApplicationManagerBase::InitConnectionManager()
     {
         AssetBuilderSDK::BuilderRegistrationRequest registrationRequest;
 
+        if (m_builderRegistrationComplete)
+        {
+            return;
+        }
+
+        m_builderRegistrationComplete = true;
+
         if (AssetProcessor::UnpackMessage(payload, registrationRequest))
         {
             for (const auto& builder : registrationRequest.m_builders)
@@ -619,7 +626,7 @@ void ApplicationManagerBase::InitConnectionManager()
                 {
                     AssetProcessor::BuilderRef builderRef;
                     AssetProcessor::BuilderManagerBus::BroadcastResult(
-                        builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder);
+                        builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, false);
 
                     if (builderRef)
                     {
@@ -648,7 +655,7 @@ void ApplicationManagerBase::InitConnectionManager()
 
                     AssetProcessor::BuilderRef builderRef;
                     AssetProcessor::BuilderManagerBus::BroadcastResult(
-                        builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder);
+                        builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, false);
 
                     if (builderRef)
                     {
@@ -671,6 +678,12 @@ void ApplicationManagerBase::InitConnectionManager()
                 };
 
                 m_builderDescMap[desc.m_busId] = desc;
+
+                for (const AssetBuilderSDK::AssetBuilderPattern& pattern : desc.m_patterns)
+                {
+                    AssetUtilities::BuilderFilePatternMatcher patternMatcher(pattern, desc.m_busId);
+                    m_matcherBuilderPatterns.push_back(patternMatcher);
+                }
             }
 
             PostActivate();
@@ -1659,7 +1672,7 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
         modifiedBuilderDesc.m_createJobFunction = [builderFilePath](const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response)
             {
                 AssetProcessor::BuilderRef builderRef;
-                AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder);
+                AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, false);
 
                 if (builderRef)
                 {
@@ -1684,7 +1697,7 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
                 AssetBuilderSDK::JobCancelListener jobCancelListener(request.m_jobId);
 
                 AssetProcessor::BuilderRef builderRef;
-                AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder);
+                AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, false);
 
                 if (builderRef)
                 {

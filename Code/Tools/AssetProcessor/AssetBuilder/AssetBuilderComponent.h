@@ -46,6 +46,7 @@ class AssetBuilderComponent
 public:
     AZ_COMPONENT(AssetBuilderComponent, "{04332899-5d73-4d41-86b7-b1017d349673}")
     static void Reflect(AZ::ReflectContext* context);
+    bool DoHelloPing();
 
     AssetBuilderComponent() = default;
     ~AssetBuilderComponent() override = default;
@@ -64,7 +65,7 @@ public:
 
     void RegisterBuilderInformation(const AssetBuilderSDK::AssetBuilderDesc& builderDesc) override;
     void RegisterComponentDescriptor(AZ::ComponentDescriptor* descriptor) override;
-    
+
     //EngineConnectionEvents Handler
     void Disconnected(AzFramework::SocketConnection* connection) override;
 
@@ -98,12 +99,13 @@ protected:
     static const char* GetLibraryExtension();
 
     bool ConnectToAssetProcessor();
+    bool SendRegisteredBuildersToAp();
     bool LoadBuilders(const AZStd::string& builderFolder);
     bool LoadBuilder(const AZStd::string& filePath);
     void UnloadBuilders();
 
     //! Hooks up net job request handling and keeps the AssetBuilder running indefinitely
-    bool RunInResidentMode();
+    bool RunInResidentMode(bool sendRegistration);
     bool RunDebugTask(AZStd::string&& debugFile, bool runCreateJobs, bool runProcessJob);
     bool RunOneShotTask(const AZStd::string& task);
 
@@ -141,7 +143,7 @@ protected:
 
     //! Currently loading builder
     AssetBuilder::ExternalModuleAssetBuilderInfo* m_currentAssetBuilder = nullptr;
-    
+
     //! Thread for running a job, so we don't block the network thread while doing work
     AZStd::thread_desc m_jobThreadDesc;
     AZStd::thread m_jobThread;
@@ -153,7 +155,7 @@ protected:
     AZStd::binary_semaphore m_mainEvent;
     //! Use to signal a new job is ready to be processed
     AZStd::binary_semaphore m_jobEvent;
-    
+
     //! Lock for m_queuedJob
     AZStd::mutex m_jobMutex;
 

@@ -317,22 +317,22 @@ bool GUIApplicationManager::Run()
     connect(this, &GUIApplicationManager::ConnectionStatusMsg, this, &GUIApplicationManager::ShowTrayIconMessage);
 
     qApp->setQuitOnLastWindowClosed(false);
-
-    BuilderRef builder;
-    BuilderManagerBus::BroadcastResult(builder, &BuilderManagerBus::Events::GetBuilder);
-
-    /*QTimer::singleShot(0, this, [this]()
+    AZStd::thread_desc desc;
+    desc.m_name = "Builder Component Registration";
+    AZStd::thread builderRegistrationThread(desc, []()
     {
-        if (!PostActivate())
-        {
-            QuitRequested();
-            m_startedSuccessfully = false;
-        }
-    });*/
+        BuilderRef builder;
+        BuilderManagerBus::BroadcastResult(builder, &BuilderManagerBus::Events::GetBuilder, true);
+    });
 
     m_duringStartup = false;
 
     int resultCode =  qApp->exec(); // this blocks until the last window is closed.
+
+    if (builderRegistrationThread.joinable())
+    {
+        builderRegistrationThread.join();
+    }
 
     if(!InitiatedShutdown())
     {
