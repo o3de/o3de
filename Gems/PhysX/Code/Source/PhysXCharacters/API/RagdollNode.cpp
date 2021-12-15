@@ -47,7 +47,7 @@ namespace PhysX
         {
             return;
         }
-        
+
         m_joint = joint;
     }
 

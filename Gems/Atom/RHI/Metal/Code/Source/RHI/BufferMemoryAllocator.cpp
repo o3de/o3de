@@ -116,7 +116,7 @@ namespace AZ
 
         BufferMemoryView BufferMemoryAllocator::AllocateUnique(const RHI::BufferDescriptor& bufferDescriptor)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             const size_t alignedSize = RHI::AlignUp(bufferDescriptor.m_byteCount, Alignment::Buffer);
             
             RHI::HeapMemoryUsage& heapMemoryUsage = *m_descriptor.m_getHeapMemoryUsageFunction();

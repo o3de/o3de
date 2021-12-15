@@ -11,24 +11,10 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
 ## DynVeg ##
 
     ly_add_pytest(
-        NAME AutomatedTesting::DynamicVegetationTests_Main
+        NAME AutomatedTesting::DynamicVegetationTests_Main_Optimized
         TEST_SERIAL
         TEST_SUITE main
-        PATH ${CMAKE_CURRENT_LIST_DIR}/dyn_veg/TestSuite_Main.py
-        RUNTIME_DEPENDENCIES
-            AZ::AssetProcessor
-            Legacy::Editor
-            AutomatedTesting.GameLauncher
-            AutomatedTesting.Assets
-        COMPONENT
-            LargeWorlds
-    )
-
-    ly_add_pytest(
-        NAME AutomatedTesting::DynamicVegetationTests_Periodic
-        TEST_SERIAL
-        TEST_SUITE periodic
-        PATH ${CMAKE_CURRENT_LIST_DIR}/dyn_veg/TestSuite_Periodic.py
+        PATH ${CMAKE_CURRENT_LIST_DIR}/dyn_veg/TestSuite_Main_Optimized.py
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             Legacy::Editor
@@ -37,7 +23,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         COMPONENT
             LargeWorlds
     )
-
     ly_add_pytest(
         NAME AutomatedTesting::DynamicVegetationTests_Periodic_Optimized
         TEST_SERIAL
@@ -48,20 +33,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
             Legacy::Editor
             AutomatedTesting.Assets
             AutomatedTesting.GameLauncher
-        COMPONENT
-            LargeWorlds
-    )
-
-    ly_add_pytest(
-        NAME AutomatedTesting::DynamicVegetationTests_Main_Optimized
-        TEST_SERIAL
-        TEST_SUITE main
-        PATH ${CMAKE_CURRENT_LIST_DIR}/dyn_veg/TestSuite_Main_Optimized.py
-        RUNTIME_DEPENDENCIES
-           AZ::AssetProcessor
-           Legacy::Editor
-           AutomatedTesting.Assets
-           AutomatedTesting.GameLauncher
         COMPONENT
             LargeWorlds
     )

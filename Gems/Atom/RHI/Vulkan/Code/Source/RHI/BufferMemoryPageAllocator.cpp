@@ -8,8 +8,6 @@
 #include <RHI/BufferMemoryPageAllocator.h>
 #include <RHI/Device.h>
 #include <RHI/Conversion.h>
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace Vulkan
@@ -50,7 +48,7 @@ namespace AZ
                 return nullptr;
             }
 
-            AZ_TRACE_METHOD_NAME("Create BufferMemory Page");
+            AZ_PROFILE_SCOPE(RHI, "Create BufferMemory Page");
 
             RHI::Ptr<BufferMemory> bufferMemory;
 

@@ -17,7 +17,7 @@ namespace PhysX
     /// Wraps an AZ stream by provided the physx interface.
     /// This is used to prevent copying of data when going from
     /// physx streams to az streams.
-    class StreamWrapper 
+    class StreamWrapper
         : public physx::PxInputStream
         , public physx::PxOutputStream
 

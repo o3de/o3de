@@ -25,7 +25,6 @@
 
 #include <Atom/RHI/CommandList.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Jobs/JobCompletion.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/RTTI/TypeInfo.h>

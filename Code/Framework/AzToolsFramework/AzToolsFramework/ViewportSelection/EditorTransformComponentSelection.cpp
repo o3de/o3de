@@ -21,6 +21,7 @@
 #include <AzToolsFramework/Commands/EntityManipulatorCommand.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
 #include <AzToolsFramework/Entity/EditorEntityTransformBus.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
 #include <AzToolsFramework/Manipulators/RotationManipulators.h>
@@ -33,6 +34,7 @@
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
+#include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/ViewportSelection/EditorVisibleEntityDataCache.h>
 #include <Entity/EditorEntityContextBus.h>
@@ -231,8 +233,8 @@ namespace AzToolsFramework
         {
             return mouseInteraction.m_mouseInteraction.m_mouseButtons.Middle() &&
                 mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down &&
-                mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Ctrl() &&
-                !mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Alt();
+                !mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Alt() &&
+                mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Ctrl();
         }
 
         static bool IndividualDitto(const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
@@ -243,12 +245,12 @@ namespace AzToolsFramework
                 mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Ctrl();
         }
 
-        static bool SnapTerrain(const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
+        static bool SnapSurface(const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
         {
             return mouseInteraction.m_mouseInteraction.m_mouseButtons.Middle() &&
                 mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down &&
-                (mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Alt() ||
-                 mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Ctrl());
+                mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Shift() &&
+                mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Ctrl();
         }
 
         static bool ManipulatorDitto(
@@ -923,26 +925,6 @@ namespace AzToolsFramework
         }
     }
 
-    static AZ::Vector3 PickTerrainPosition(const ViewportInteraction::MouseInteraction& mouseInteraction)
-    {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-        const int viewportId = mouseInteraction.m_interactionId.m_viewportId;
-        // get unsnapped terrain position (world space)
-        AZ::Vector3 worldSurfacePosition;
-        ViewportInteraction::MainEditorViewportInteractionRequestBus::EventResult(
-            worldSurfacePosition, viewportId, &ViewportInteraction::MainEditorViewportInteractionRequestBus::Events::PickTerrain,
-            mouseInteraction.m_mousePick.m_screenCoordinates);
-
-        // convert to local space - snap if enabled
-        const GridSnapParameters gridSnapParams = GridSnapSettings(viewportId);
-        const AZ::Vector3 finalSurfacePosition = gridSnapParams.m_gridSnap
-            ? CalculateSnappedTerrainPosition(worldSurfacePosition, AZ::Transform::CreateIdentity(), viewportId, gridSnapParams.m_gridSize)
-            : worldSurfacePosition;
-
-        return finalSurfacePosition;
-    }
-
     // is the passed entity id contained with in the entity id list
     template<typename EntityIdContainer>
     static bool IsEntitySelectedInternal(AZ::EntityId entityId, const EntityIdContainer& selectedEntityIds)
@@ -1038,6 +1020,7 @@ namespace AzToolsFramework
         EditorManipulatorCommandUndoRedoRequestBus::Handler::BusConnect(entityContextId);
         EditorContextMenuBus::Handler::BusConnect();
         ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusConnect(ViewportUi::DefaultViewportId);
+        ReadOnlyEntityPublicNotificationBus::Handler::BusConnect(entityContextId);
 
         CreateTransformModeSelectionCluster();
         CreateSpaceSelectionCluster();
@@ -1073,6 +1056,7 @@ namespace AzToolsFramework
 
         m_pivotOverrideFrame.Reset();
 
+        ReadOnlyEntityPublicNotificationBus::Handler::BusDisconnect();
         ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusDisconnect();
         EditorContextMenuBus::Handler::BusConnect();
         EditorManipulatorCommandUndoRedoRequestBus::Handler::BusDisconnect();
@@ -1286,7 +1270,7 @@ namespace AzToolsFramework
                 m_axisPreview.m_translation = m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation();
                 m_axisPreview.m_orientation = QuaternionFromTransformNoScaling(m_entityIdManipulators.m_manipulators->GetLocalTransform());
 
-                // [ref 1.]
+                // see comment [ref 1.] above
                 BeginRecordManipulatorCommand();
             });
 
@@ -1321,7 +1305,7 @@ namespace AzToolsFramework
                 m_axisPreview.m_translation = m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation();
                 m_axisPreview.m_orientation = QuaternionFromTransformNoScaling(m_entityIdManipulators.m_manipulators->GetLocalTransform());
 
-                // [ref 1.]
+                // see comment [ref 1.] above
                 BeginRecordManipulatorCommand();
             });
 
@@ -1335,6 +1319,39 @@ namespace AzToolsFramework
 
         translationManipulators->InstallPlanarManipulatorMouseUpCallback(
             [this, manipulatorEntityIds]([[maybe_unused]] const PlanarManipulator::Action& action)
+            {
+                AzToolsFramework::EditorTransformChangeNotificationBus::Broadcast(
+                    &AzToolsFramework::EditorTransformChangeNotificationBus::Events::OnEntityTransformChanged,
+                    manipulatorEntityIds->m_entityIds);
+
+                EndRecordManipulatorCommand();
+            });
+
+        // surface
+        translationManipulators->InstallSurfaceManipulatorMouseDownCallback(
+            [this, manipulatorEntityIds]([[maybe_unused]] const SurfaceManipulator::Action& action)
+            {
+                BuildSortedEntityIdVectorFromEntityIdMap(m_entityIdManipulators.m_lookups, manipulatorEntityIds->m_entityIds);
+
+                InitializeTranslationLookup(m_entityIdManipulators);
+
+                m_axisPreview.m_translation = m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation();
+                m_axisPreview.m_orientation = QuaternionFromTransformNoScaling(m_entityIdManipulators.m_manipulators->GetLocalTransform());
+
+                // see comment [ref 1.] above
+                BeginRecordManipulatorCommand();
+            });
+
+        translationManipulators->InstallSurfaceManipulatorMouseMoveCallback(
+            [this, prevModifiers, manipulatorEntityIds](const SurfaceManipulator::Action& action) mutable
+            {
+                UpdateTranslationManipulator(
+                    action, manipulatorEntityIds->m_entityIds, m_entityIdManipulators, m_pivotOverrideFrame, prevModifiers,
+                    m_transformChangedInternally, m_spaceCluster.m_spaceLock);
+            });
+
+        translationManipulators->InstallSurfaceManipulatorMouseUpCallback(
+            [this, manipulatorEntityIds]([[maybe_unused]] const SurfaceManipulator::Action& action)
             {
                 AzToolsFramework::EditorTransformChangeNotificationBus::Broadcast(
                     &AzToolsFramework::EditorTransformChangeNotificationBus::Events::OnEntityTransformChanged,
@@ -1363,7 +1380,7 @@ namespace AzToolsFramework
         // view
         rotationManipulators->SetLocalAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ());
         rotationManipulators->ConfigureView(
-            2.0f, AzFramework::ViewportColors::XAxisColor, AzFramework::ViewportColors::YAxisColor,
+            RotationManipulatorRadius(), AzFramework::ViewportColors::XAxisColor, AzFramework::ViewportColors::YAxisColor,
             AzFramework::ViewportColors::ZAxisColor);
 
         struct SharedRotationState
@@ -1395,7 +1412,7 @@ namespace AzToolsFramework
                 m_axisPreview.m_translation = m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation();
                 m_axisPreview.m_orientation = QuaternionFromTransformNoScaling(m_entityIdManipulators.m_manipulators->GetLocalTransform());
 
-                // [ref 1.]
+                // see comment [ref 1.] above
                 BeginRecordManipulatorCommand();
             });
 
@@ -1522,7 +1539,8 @@ namespace AzToolsFramework
             RecalculateAverageManipulatorTransform(m_entityIdManipulators.m_lookups, m_pivotOverrideFrame, m_pivotMode, m_referenceFrame));
 
         scaleManipulators->SetAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ());
-        scaleManipulators->ConfigureView(2.0f, AZ::Color::CreateOne(), AZ::Color::CreateOne(), AZ::Color::CreateOne());
+        scaleManipulators->ConfigureView(
+            LinearManipulatorAxisLength(), AZ::Color::CreateOne(), AZ::Color::CreateOne(), AZ::Color::CreateOne());
 
         struct SharedScaleState
         {
@@ -1867,6 +1885,13 @@ namespace AzToolsFramework
 
         if (!m_selectedEntityIds.empty())
         {
+            // try snapping to a surface (mesh) if in Translation mode
+            if (Input::SnapSurface(mouseInteraction))
+            {
+                PerformSnapToSurface(mouseInteraction);
+                return false;
+            }
+
             // group copying/alignment to specific entity - 'ditto' position/orientation for group
             if (Input::GroupDitto(mouseInteraction) && PerformGroupDitto(entityIdUnderCursor))
             {
@@ -1876,13 +1901,6 @@ namespace AzToolsFramework
             // individual copying/alignment to specific entity - 'ditto' position/orientation for individual
             if (Input::IndividualDitto(mouseInteraction) && PerformIndividualDitto(entityIdUnderCursor))
             {
-                return false;
-            }
-
-            // try snapping to the terrain (if in Translation mode) and entity wasn't picked
-            if (Input::SnapTerrain(mouseInteraction))
-            {
-                PerformSnapToTerrain(mouseInteraction);
                 return false;
             }
 
@@ -1973,25 +1991,28 @@ namespace AzToolsFramework
         return false;
     }
 
-    void EditorTransformComponentSelection::PerformSnapToTerrain(const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
+    void EditorTransformComponentSelection::PerformSnapToSurface(const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
-        for (AZ::EntityId entityId : m_selectedEntityIds)
+        for (const AZ::EntityId& entityId : m_selectedEntityIds)
         {
             ScopedUndoBatch::MarkEntityDirty(entityId);
         }
 
         if (m_mode == Mode::Translation)
         {
-            const AZ::Vector3 finalSurfacePosition = PickTerrainPosition(mouseInteraction.m_mouseInteraction);
+            const AZ::Vector3 worldPosition = FindClosestPickIntersection(
+                mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId,
+                mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates, AzToolsFramework::EditorPickRayLength,
+                GetDefaultEntityPlacementDistance());
 
             // handle modifier alternatives
             if (Input::IndividualDitto(mouseInteraction))
             {
-                CopyTranslationToSelectedEntitiesIndividual(finalSurfacePosition);
+                CopyTranslationToSelectedEntitiesIndividual(worldPosition);
             }
             else if (Input::GroupDitto(mouseInteraction))
             {
-                CopyTranslationToSelectedEntitiesGroup(finalSurfacePosition);
+                CopyTranslationToSelectedEntitiesGroup(worldPosition);
             }
         }
         else if (m_mode == Mode::Rotation)
@@ -2482,6 +2503,29 @@ namespace AzToolsFramework
     void EditorTransformComponentSelection::RegenerateManipulators()
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+        // do not create manipulators for the container entity of the focused prefab.
+        if (auto prefabFocusPublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusPublicInterface>::Get())
+        {
+            AzFramework::EntityContextId editorEntityContextId = GetEntityContextId();
+            if (AZ::EntityId focusRoot = prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId);
+                focusRoot.IsValid())
+            {
+                m_selectedEntityIds.erase(focusRoot);
+            }
+        }
+
+        // do not create manipulators for any entities marked as read only
+        if (auto readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get())
+        {
+            AZStd::erase_if(
+                m_selectedEntityIds,
+                [readOnlyEntityPublicInterface](auto entityId)
+            {
+                return readOnlyEntityPublicInterface->IsReadOnly(entityId);
+            }
+            );
+        }
 
         // note: create/destroy pattern to be addressed
         DestroyManipulators(m_entityIdManipulators);
@@ -3217,13 +3261,34 @@ namespace AzToolsFramework
     void EditorTransformComponentSelection::PopulateEditorGlobalContextMenu(
         QMenu* menu, [[maybe_unused]] const AZ::Vector2& point, [[maybe_unused]] int flags)
     {
-        QAction* action = menu->addAction(QObject::tr(TogglePivotTitleRightClick));
-        QObject::connect(
-            action, &QAction::triggered, action,
-            [this]
+        // Don't show the Toggle Pivot option if any read-only entities are in the current selection
+        // We need to request the selected entities instead of just using the m_selectedEntities variable
+        // because we filter out any read-only entities from the m_selectedEntities so that the manipulators
+        // will be hidden
+        EntityIdList selectedEntityIds;
+        ToolsApplicationRequests::Bus::BroadcastResult(selectedEntityIds, &ToolsApplicationRequests::GetSelectedEntities);
+
+        auto readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get();
+        bool readOnlyEntityInSelection = false;
+        for (const auto& entityId : selectedEntityIds)
+        {
+            if (readOnlyEntityPublicInterface->IsReadOnly(entityId))
+            {
+                readOnlyEntityInSelection = true;
+                break;
+            }
+        }
+
+        if (!readOnlyEntityInSelection)
+        {
+            QAction* action = menu->addAction(QObject::tr(TogglePivotTitleRightClick));
+            QObject::connect(
+                action, &QAction::triggered, action,
+                [this]
             {
                 ToggleCenterPivotSelection();
             });
+        }
     }
 
     void EditorTransformComponentSelection::BeforeEntitySelectionChanged()
@@ -3544,10 +3609,9 @@ namespace AzToolsFramework
         debugDisplay.SetLineWidth(1.0f);
 
         const float labelOffset = ed_viewportGizmoAxisLabelOffset;
-        const float screenScale = GetScreenDisplayScaling(viewportId);
-        const auto labelXScreenPosition = (gizmoStart + (gizmoAxisX * labelOffset)) * editorCameraState.m_viewportSize * screenScale;
-        const auto labelYScreenPosition = (gizmoStart + (gizmoAxisY * labelOffset)) * editorCameraState.m_viewportSize * screenScale;
-        const auto labelZScreenPosition = (gizmoStart + (gizmoAxisZ * labelOffset)) * editorCameraState.m_viewportSize * screenScale;
+        const auto labelXScreenPosition = (gizmoStart + (gizmoAxisX * labelOffset)) * editorCameraState.m_viewportSize;
+        const auto labelYScreenPosition = (gizmoStart + (gizmoAxisY * labelOffset)) * editorCameraState.m_viewportSize;
+        const auto labelZScreenPosition = (gizmoStart + (gizmoAxisZ * labelOffset)) * editorCameraState.m_viewportSize;
 
         // draw the label of of each axis for the gizmo
         const float labelSize = ed_viewportGizmoAxisLabelSize;
@@ -3594,17 +3658,6 @@ namespace AzToolsFramework
         m_selectedEntityIds.clear();
         m_selectedEntityIds.reserve(selectedEntityIds.size());
         AZStd::copy(selectedEntityIds.begin(), selectedEntityIds.end(), AZStd::inserter(m_selectedEntityIds, m_selectedEntityIds.end()));
-
-        // Do not create manipulators for the container entity of the focused prefab.
-        if (auto prefabFocusPublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusPublicInterface>::Get())
-        {
-            AzFramework::EntityContextId editorEntityContextId = GetEntityContextId();
-            if (AZ::EntityId focusRoot = prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId);
-                focusRoot.IsValid())
-            {
-                m_selectedEntityIds.erase(focusRoot);
-            }
-        }
     }
 
     void EditorTransformComponentSelection::OnTransformChanged(
@@ -3810,6 +3863,14 @@ namespace AzToolsFramework
     void EditorTransformComponentSelection::OnGridSnappingChanged([[maybe_unused]] const bool enabled)
     {
         m_snappingCluster.TrySetVisible(m_viewportUiVisible && !m_selectedEntityIds.empty());
+    }
+
+    void EditorTransformComponentSelection::OnReadOnlyEntityStatusChanged(const AZ::EntityId& entityId, [[maybe_unused]] bool readOnly)
+    {
+        if (IsEntitySelected(entityId))
+        {
+            RefreshSelectedEntityIdsAndRegenerateManipulators();
+        }
     }
 
     namespace ETCS

@@ -36,8 +36,6 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/TargetManagement/TargetManagementComponent.h>
 
-#include <AzCore/Driller/Driller.h>
-
 #ifdef AZ_PLATFORM_WINDOWS
 #include "shlobj.h"
 #endif

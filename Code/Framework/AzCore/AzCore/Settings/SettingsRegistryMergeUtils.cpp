@@ -19,9 +19,6 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Settings/CommandLine.h>
 #include <AzCore/std/string/conversions.h>
-#include <AzCore/std/string/wildcard.h>
-#include <AzCore/std/tuple.h>
-#include <AzCore/std/containers/variant.h>
 #include <AzCore/Utils/Utils.h>
 
 #include <cinttypes>
@@ -983,7 +980,7 @@ namespace AZ::SettingsRegistryMergeUtils
     // code in the loop makes calls that mutates the `commandLine` instance, invalidating the iterators. Making a copy
     // ensures that the iterators remain valid.
     // NOLINTNEXTLINE(performance-unnecessary-value-param)
-    void MergeSettingsToRegistry_CommandLine(SettingsRegistryInterface& registry, AZ::CommandLine commandLine, bool executeCommands)
+    void MergeSettingsToRegistry_CommandLine(SettingsRegistryInterface& registry, AZ::CommandLine commandLine, bool executeRegdumpCommands)
     {
         // Iterate over all the command line options in order to parse the --regset and --regremove
         // arguments in the order they were supplied
@@ -998,18 +995,44 @@ namespace AZ::SettingsRegistryMergeUtils
                     continue;
                 }
             }
+            else if (commandArgument.m_option == "regset-file")
+            {
+                AZStd::string_view fileArg(commandArgument.m_value);
+                AZStd::string_view jsonAnchorPath;
+                // double colons is treated as the separator for an anchor path
+                // single colon cannot be used as it is used in Windows paths
+                if (auto anchorPathIndex = AZ::StringFunc::Find(fileArg, "::");
+                    anchorPathIndex != AZStd::string_view::npos)
+                {
+                    jsonAnchorPath = fileArg.substr(anchorPathIndex + 2);
+                    fileArg = fileArg.substr(0, anchorPathIndex);
+                }
+                if (!fileArg.empty())
+                {
+                    AZ::IO::PathView filePath(fileArg);
+                    const auto mergeFormat = filePath.Extension() != ".setregpatch"
+                        ? AZ::SettingsRegistryInterface::Format::JsonMergePatch
+                        : AZ::SettingsRegistryInterface::Format::JsonPatch;
+                    if (!registry.MergeSettingsFile(filePath.Native(), mergeFormat, jsonAnchorPath))
+                    {
+                        AZ_Warning("SettingsRegistryMergeUtils", false, R"(Merging of file "%.*s" to the Settings Registry has failed at anchor  "%.*s".)",
+                            AZ_STRING_ARG(filePath.Native()), AZ_STRING_ARG(jsonAnchorPath));
+                        continue;
+                    }
+                }
+            }
             else if (commandArgument.m_option == "regremove")
             {
                 if (!registry.Remove(commandArgument.m_value))
                 {
                     AZ_Warning("SettingsRegistryMergeUtils", false, "Unable to remove value at JSON Pointer %s for --regremove.",
-                        commandArgument.m_value.data());
+                        commandArgument.m_value.c_str());
                     continue;
                 }
             }
         }
 
-        if (executeCommands)
+        if (executeRegdumpCommands)
         {
             constexpr bool prettifyOutput = true;
             const size_t regdumpSwitchValues = commandLine.GetNumSwitchValues("regdump");

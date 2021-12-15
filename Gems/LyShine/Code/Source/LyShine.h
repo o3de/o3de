@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#include <IRenderer.h>
 #include <LyShine/ILyShine.h>
 #include <LyShine/Bus/UiCursorBus.h>
 #include <AzCore/Math/Vector2.h>
@@ -38,7 +37,6 @@ struct IConsoleCmdArgs;
 //! CLyShine is the full implementation of the ILyShine interface
 class CLyShine
     : public ILyShine
-    , public IRenderDebugListener
     , public UiCursorBus::Handler
     , public AzFramework::InputChannelEventListener
     , public AzFramework::InputTextEventListener
@@ -87,13 +85,6 @@ public:
     void OnLoadScreenUnloaded() override;
 
     // ~ILyShine
-
-    // IRenderDebugListener
-
-    //! Renders any debug displays currently enabled for the UI system
-    void OnDebugDraw() override;
-
-    // ~IRenderDebugListener
 
     // UiCursorInterface
     void IncrementVisibleCounter() override;

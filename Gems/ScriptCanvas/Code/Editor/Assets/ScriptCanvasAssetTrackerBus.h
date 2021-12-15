@@ -17,6 +17,7 @@
 
 #include <Editor/Assets/ScriptCanvasAssetTrackerDefinitions.h>
 #include <Editor/Assets/ScriptCanvasMemoryAsset.h>
+#include <ScriptCanvas/Bus/RequestBus.h>
 
 class QWidget;
 
@@ -154,17 +155,5 @@ namespace ScriptCanvasEditor
         using MemoryAssetSystemNotificationBus = AZ::EBus<MemoryAssetSystemNotifications>;
     }
     
-    class MemoryAssetNotifications
-        : public AZ::EBusTraits
-    {
-    public:
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
-        using BusIdType = AZ::Data::AssetId;
-
-        virtual void OnFileStateChanged(Tracker::ScriptCanvasFileState) {}
-    };
-
-    using MemoryAssetNotificationBus = AZ::EBus<MemoryAssetNotifications>;
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
