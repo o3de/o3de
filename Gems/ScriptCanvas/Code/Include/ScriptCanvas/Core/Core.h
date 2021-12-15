@@ -320,7 +320,7 @@ namespace ScriptCanvasEditor
     class SourceDescription
     {
     public:
-        static inline constexpr const char* GetAssetGroup() { return "ScriptCanvas"; }
+        inline static constexpr const char* GetAssetGroup() { return "ScriptCanvas"; }
         inline static constexpr const char* GetType() { return "{FA10C3DA-0717-4B72-8944-CD67D13DFA2B}"; }
         inline static constexpr const char* GetName() { return "Script Canvas"; }
         inline static constexpr const char* GetDescription() { return "Script Canvas Graph File"; }
@@ -332,7 +332,7 @@ namespace ScriptCanvasEditor
         inline static constexpr const char* GetAssetTypeDisplayName() { return "Script Canvas"; }
         inline static constexpr const char* GetEntityName() { return "Script Canvas"; }
         inline static constexpr const char* GetIconPath() { return "Icons/ScriptCanvas/Viewport/ScriptCanvas.png"; }
-        inline static AZ::Color GetDisplayColor() { return AZ::Color(1.0f, 0.0f, 0.0f, 1.0f); };
+        inline static AZ::Color GetDisplayColor() { return AZ::Color(0.5f, 0.5f, 0.5f, 0.5f); };
     };
 
     class SourceHandle
