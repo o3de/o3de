@@ -619,6 +619,10 @@ void ApplicationManagerBase::InitConnectionManager()
                 desc.m_productsToKeepOnFailure = builder.m_productsToKeepOnFailure;
                 desc.m_builderType = AssetBuilderSDK::AssetBuilderDesc::AssetBuilderType::External;
 
+                // Allow for overrides defined in a BuilderConfig.ini file to update our code defined default values
+                AssetProcessor::BuilderConfigurationRequestBus::Broadcast(
+                    &AssetProcessor::BuilderConfigurationRequests::UpdateBuilderDescriptor, desc.m_name, desc);
+
                 // We're going to override the createJob function so we can run it externally in AssetBuilder, rather than having it run
                 // inside the AP
                 desc.m_createJobFunction =
@@ -686,7 +690,16 @@ void ApplicationManagerBase::InitConnectionManager()
                 }
             }
 
-            PostActivate();
+            QTimer::singleShot(
+                0, this,
+                [this]()
+                {
+                    if (!PostActivate())
+                    {
+                        QuitRequested();
+                        //m_startedSuccessfully = false;
+                    }
+                });
         }
     });
 
@@ -1480,6 +1493,10 @@ bool ApplicationManagerBase::Activate()
             return false;
         }
     }
+
+    AssetProcessor::AssetProcessorStatusEntry entry(AssetProcessor::AssetProcessorStatus::Initializing_Builders, 0, QString());
+    Q_EMIT AssetProcessorStatusChanged(entry);
+
     return true;
 }
 
@@ -1488,11 +1505,6 @@ bool ApplicationManagerBase::PostActivate()
     m_connectionManager->LoadConnections();
 
     InitializeInternalBuilders();
-    if (!InitializeExternalBuilders())
-    {
-        AZ_Error("AssetProcessor", false, "AssetProcessor is closing. Failed to initialize and load all the external builders. Please ensure that Builders_Temp directory is not read-only. Please see log for more information.\n");
-        return false;
-    }
 
     Q_EMIT OnBuildersRegistered();
 
@@ -1654,70 +1666,9 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
         "Bus ID for %s builder is empty.\n",
         builderDesc.m_name.c_str());
 
-    // This is an external builder registering, we will want to track its builder desc since it can register multiple ones
-    AZStd::string builderFilePath;
-    if (m_currentExternalAssetBuilder)
-    {
-        m_currentExternalAssetBuilder->RegisterBuilderDesc(builderDesc.m_busId);
-        builderFilePath = m_currentExternalAssetBuilder->GetModuleFullPath().toUtf8().data();
-    }
-
     AssetBuilderSDK::AssetBuilderDesc modifiedBuilderDesc = builderDesc;
     // Allow for overrides defined in a BuilderConfig.ini file to update our code defined default values
     AssetProcessor::BuilderConfigurationRequestBus::Broadcast(&AssetProcessor::BuilderConfigurationRequests::UpdateBuilderDescriptor, builderDesc.m_name, modifiedBuilderDesc);
-
-    if (builderDesc.IsExternalBuilder())
-    {
-        // We're going to override the createJob function so we can run it externally in AssetBuilder, rather than having it run inside the AP
-        modifiedBuilderDesc.m_createJobFunction = [builderFilePath](const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response)
-            {
-                AssetProcessor::BuilderRef builderRef;
-                AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, false);
-
-                if (builderRef)
-                {
-                    int retryCount = 0;
-                    AssetProcessor::BuilderRunJobOutcome result;
-
-                    do
-                    {
-                        retryCount++;
-                        result = builderRef->RunJob<AssetBuilderSDK::CreateJobsNetRequest, AssetBuilderSDK::CreateJobsNetResponse>(request, response, s_MaximumCreateJobsTimeSeconds, "create", builderFilePath, nullptr);
-                    } while (result == AssetProcessor::BuilderRunJobOutcome::LostConnection && retryCount <= AssetProcessor::RetriesForJobNetworkError);
-                }
-                else
-                {
-                    AZ_Error("AssetProcessor", false, "Failed to retrieve a valid builder to process job");
-                }
-            };
-
-        // Also override the processJob function to run externally
-        modifiedBuilderDesc.m_processJobFunction = [builderFilePath](const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response)
-            {
-                AssetBuilderSDK::JobCancelListener jobCancelListener(request.m_jobId);
-
-                AssetProcessor::BuilderRef builderRef;
-                AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, false);
-
-                if (builderRef)
-                {
-                    int retryCount = 0;
-                    AssetProcessor::BuilderRunJobOutcome result;
-
-                    do
-                    {
-                        retryCount++;
-                        result = builderRef->RunJob<AssetBuilderSDK::ProcessJobNetRequest, AssetBuilderSDK::ProcessJobNetResponse>(request, response, s_MaximumProcessJobsTimeSeconds, "process", builderFilePath, &jobCancelListener, request.m_tempDirPath);
-                    } while (result == AssetProcessor::BuilderRunJobOutcome::LostConnection && retryCount <= AssetProcessor::RetriesForJobNetworkError);
-                }
-                else
-                {
-                    AZ_Error("AssetProcessor", false, "Failed to retrieve a valid builder to process job");
-                }
-            };
-
-        return;
-    }
 
     if (m_builderDescMap.find(modifiedBuilderDesc.m_busId) != m_builderDescMap.end())
     {

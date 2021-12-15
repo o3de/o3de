@@ -842,9 +842,6 @@ void MainWindow::OnAssetProcessorStatusChanged(const AssetProcessor::AssetProces
     case AssetProcessorStatus::Initializing_Gems:
         text = tr("Initializing Gem...%1").arg(entry.m_extraInfo);
         break;
-    case AssetProcessorStatus::Activating:
-        text = tr("Initializing Systems...");
-        break;
     case AssetProcessorStatus::Initializing_Builders:
         text = tr("Initializing Builders...");
         break;
