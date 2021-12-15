@@ -45,12 +45,12 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         return false;
     }
 
-    void PrefabProcessorContext::ListPrefabs(const AZStd::function<void(AZStd::string_view, PrefabDocument&)>& callback)
+    void PrefabProcessorContext::ListPrefabs(const AZStd::function<void(PrefabDocument&)>& callback)
     {
         m_isIterating = true;
         for (PrefabDocument& document : m_prefabs)
         {
-            callback(document.GetName(), document);
+            callback(document);
         }
 
         m_isIterating = false;
@@ -60,11 +60,11 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         m_pendingPrefabAdditions.clear();
     }
 
-    void PrefabProcessorContext::ListPrefabs(const AZStd::function<void(AZStd::string_view, const PrefabDocument&)>& callback) const
+    void PrefabProcessorContext::ListPrefabs(const AZStd::function<void(const PrefabDocument&)>& callback) const
     {
         for (const PrefabDocument& document : m_prefabs)
         {
-            callback(document.GetName(), document);
+            callback(document);
         }
     }
 

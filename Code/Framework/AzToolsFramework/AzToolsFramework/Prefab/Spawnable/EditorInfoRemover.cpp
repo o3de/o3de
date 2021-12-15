@@ -37,13 +37,13 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         }
 
         prefabProcessorContext.ListPrefabs(
-            [this, &serializeContext, &prefabProcessorContext]([[maybe_unused]] AZStd::string_view prefabName, PrefabDocument& prefab)
+            [this, &serializeContext, &prefabProcessorContext](PrefabDocument& prefab)
             {
                 auto result = RemoveEditorInfo(prefab, serializeContext, prefabProcessorContext);
                 if (!result)
                 {
                     AZ_Error(
-                        "Prefab", false, "Converting to runtime Prefab '%.*s' failed, Error: %s .", AZ_STRING_ARG(prefabName),
+                        "Prefab", false, "Converting to runtime Prefab '%s' failed, Error: %s .", prefab.GetName().c_str(),
                         result.GetError().c_str());
                     return;
                 } 

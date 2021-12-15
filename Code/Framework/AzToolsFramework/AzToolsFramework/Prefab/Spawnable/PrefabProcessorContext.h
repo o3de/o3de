@@ -46,8 +46,8 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         virtual ~PrefabProcessorContext() = default;
 
         virtual bool AddPrefab(PrefabDocument&& document);
-        virtual void ListPrefabs(const AZStd::function<void(AZStd::string_view, PrefabDocument&)>& callback);
-        virtual void ListPrefabs(const AZStd::function<void(AZStd::string_view, const PrefabDocument&)>& callback) const;
+        virtual void ListPrefabs(const AZStd::function<void(PrefabDocument&)>& callback);
+        virtual void ListPrefabs(const AZStd::function<void(const PrefabDocument&)>& callback) const;
         virtual bool HasPrefabs() const;
 
         virtual bool RegisterSpawnableProductAssetDependency(

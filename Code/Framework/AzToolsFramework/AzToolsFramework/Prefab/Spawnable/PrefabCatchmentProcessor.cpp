@@ -25,9 +25,9 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
     {
         AZ::DataStream::StreamType serializationFormat = m_serializationFormat == SerializationFormats::Binary ?
             AZ::DataStream::StreamType::ST_BINARY : AZ::DataStream::StreamType::ST_XML;
-        context.ListPrefabs([&context, serializationFormat](AZStd::string_view prefabName, PrefabDocument& prefab)
+        context.ListPrefabs([&context, serializationFormat](PrefabDocument& prefab)
             {
-                ProcessPrefab(context, prefabName, prefab, serializationFormat);
+                ProcessPrefab(context, prefab, serializationFormat);
             });
     }
 
@@ -45,12 +45,12 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         }
     }
 
-    void PrefabCatchmentProcessor::ProcessPrefab(PrefabProcessorContext& context, AZStd::string_view prefabName, PrefabDocument& prefab,
+    void PrefabCatchmentProcessor::ProcessPrefab(PrefabProcessorContext& context, PrefabDocument& prefab,
         AZ::DataStream::StreamType serializationFormat)
     {
         using namespace AzToolsFramework::Prefab::SpawnableUtils;
 
-        AZStd::string uniqueName = prefabName;
+        AZStd::string uniqueName = prefab.GetName();
         uniqueName += AzFramework::Spawnable::DotFileExtension;
 
         auto serializer = [serializationFormat](AZStd::vector<uint8_t>& output, const ProcessedObjectStore& object) -> bool
@@ -67,7 +67,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         Instance& instance = prefab.GetInstance();
         // Resolve entity aliases that store PrefabDOM information to use the spawnable instead. This is done before the entities are
         // moved from the instance as they'd otherwise can't be found.
-        context.ResolveSpawnableEntityAliases(prefabName, *spawnable, instance);
+        context.ResolveSpawnableEntityAliases(prefab.GetName(), *spawnable, instance);
 
         AzFramework::Spawnable::EntityList& entities = spawnable->GetEntities();
         instance.DetachAllEntitiesInHierarchy(
