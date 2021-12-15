@@ -416,7 +416,6 @@ namespace AZStd
         }
         static constexpr char_type* copy(char_type* dest, const char_type* src, size_t count) noexcept
         {
-            AZ_Assert(dest != nullptr && src != nullptr, "Invalid input!");
             char_type* result = dest;
             for(; count; --count, ++dest, ++src)
             {
