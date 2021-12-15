@@ -145,6 +145,15 @@ namespace AzToolsFramework
         }
     }
 
+    void TranslationManipulators::InstallSurfaceManipulatorEntityIdsToIgnoreCallback(
+        const AZStd::function<AZStd::unordered_set<AZ::EntityId>(const ViewportInteraction::MouseInteraction&)>& entityIdsToIgnoreFn)
+    {
+        if (m_surfaceManipulator)
+        {
+            m_surfaceManipulator->InstallEntityIdsToIgnoreCallback(entityIdsToIgnoreFn);
+        }
+    }
+
     void TranslationManipulators::SetLocalTransformImpl(const AZ::Transform& localTransform)
     {
         for (AZStd::shared_ptr<LinearManipulator>& manipulator : m_linearManipulators)

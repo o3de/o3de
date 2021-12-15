@@ -1360,6 +1360,19 @@ namespace AzToolsFramework
                 EndRecordManipulatorCommand();
             });
 
+        translationManipulators->InstallSurfaceManipulatorEntityIdsToIgnoreCallback(
+            [this](const ViewportInteraction::MouseInteraction& interaction)
+            {
+                if (interaction.m_keyboardModifiers.Ctrl())
+                {
+                    return AZStd::unordered_set<AZ::EntityId>();
+                }
+                else
+                {
+                    return m_selectedEntityIds;
+                }
+            });
+
         // transfer ownership
         m_entityIdManipulators.m_manipulators = AZStd::move(translationManipulators);
     }

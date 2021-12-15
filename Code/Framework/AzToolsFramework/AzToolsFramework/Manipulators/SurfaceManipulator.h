@@ -77,11 +77,14 @@ namespace AzToolsFramework
         void InstallLeftMouseUpCallback(const MouseActionCallback& onMouseUpCallback);
         void InstallMouseMoveCallback(const MouseActionCallback& onMouseMoveCallback);
 
+        void InstallEntityIdsToIgnoreCallback(
+            const AZStd::function<AZStd::unordered_set<AZ::EntityId>(const ViewportInteraction::MouseInteraction&)>& entityIdsToIgnoreFn);
+
         void Draw(
             const ManipulatorManagerState& managerState,
             AzFramework::DebugDisplayRequests& debugDisplay,
             const AzFramework::CameraState& cameraState,
-            const ViewportInteraction::MouseInteraction& mouseInteraction) override;
+            const ViewportInteraction::MouseInteraction& interaction) override;
 
         void SetView(AZStd::unique_ptr<ManipulatorView>&& view);
 
@@ -108,6 +111,8 @@ namespace AzToolsFramework
         MouseActionCallback m_onLeftMouseDownCallback = nullptr;
         MouseActionCallback m_onLeftMouseUpCallback = nullptr;
         MouseActionCallback m_onMouseMoveCallback = nullptr;
+
+        AZStd::function<AZStd::unordered_set<AZ::EntityId>(const ViewportInteraction::MouseInteraction&)> m_entityIdsToIgnoreFn;
 
         //! Cached ray request initialized at mouse down and updated during mouse move.
         AzFramework::RenderGeometry::RayRequest m_rayRequest;
