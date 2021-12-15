@@ -28,7 +28,8 @@ ly_append_configurations_options(
         -Wno-unused-value
         -Wno-unused-variable
         -Wno-format-truncation
-        
+        -Wno-reorder
+
     COMPILATION_C
         -Wno-absolute-value
         -Werror
@@ -36,7 +37,6 @@ ly_append_configurations_options(
     COMPILATION_CXX
         -fvisibility-inlines-hidden
         -Wno-invalid-offsetof
-        -Wno-reorder
         -Werror
 
     COMPILATION_DEBUG
