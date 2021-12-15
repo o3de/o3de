@@ -157,7 +157,7 @@ namespace ScriptCanvasEditor
             auto assetId = assetHolder.m_scriptCanvasAsset.GetId();
             auto path = assetHolder.m_scriptCanvasAsset.GetHint();
 
-            if (!rootElement.AddElementWithData(serializeContext, "runtimeDataOverrides", SourceHandle(nullptr, assetId.m_guid, path)))
+            if (!rootElement.AddElementWithData(serializeContext, "sourceHandle", SourceHandle(nullptr, assetId.m_guid, path)))
             {
                 AZ_Error("ScriptCanvas", false, "EditorScriptCanvasComponent conversion failed: failed to add 'sourceHandle'");
                 return false;
