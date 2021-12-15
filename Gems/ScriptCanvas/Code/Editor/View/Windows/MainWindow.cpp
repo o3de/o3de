@@ -434,8 +434,6 @@ namespace ScriptCanvasEditor
             m_scriptCanvasAssetModel = new ScriptCanvasAssetBrowserModel(this);
 
             AzToolsFramework::AssetBrowser::AssetGroupFilter* scriptCanvasAssetFilter = new AzToolsFramework::AssetBrowser::AssetGroupFilter();
-            // #sc_editor_asset_redux this may not be needed, may not be doing the right thing at all, verify that searching through
-            // the subgraph interface assets is the correct thing to do
             scriptCanvasAssetFilter->SetAssetGroup(ScriptCanvas::SubgraphInterfaceAssetDescription().GetGroupImpl());
             scriptCanvasAssetFilter->SetFilterPropagation(AzToolsFramework::AssetBrowser::AssetBrowserEntryFilter::PropagateDirection::Down);
 
