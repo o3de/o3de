@@ -30,6 +30,7 @@ ly_append_configurations_options(
         -Wno-format-truncation
         -Wno-reorder
         -Wno-uninitialized
+        -Wno-array-bounds
 
     COMPILATION_C
         -Wno-absolute-value
