@@ -16,7 +16,6 @@ ly_append_configurations_options(
         -fno-exceptions
         -fvisibility=hidden
         -Wall
-        -Werror
 
         # Disabled warnings (please do not disable any others without first consulting ly-warnings)
         -Wno-format-security
@@ -28,15 +27,17 @@ ly_append_configurations_options(
         -Wno-unused-function
         -Wno-unused-value
         -Wno-unused-variable
-
+        -Wno-format-truncation
         
     COMPILATION_C
         -Wno-absolute-value
+        -Werror
 
     COMPILATION_CXX
         -fvisibility-inlines-hidden
         -Wno-invalid-offsetof
         -Wno-reorder
+        -Werror
 
     COMPILATION_DEBUG
         -O0 # No optimization
