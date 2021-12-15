@@ -620,6 +620,7 @@ namespace ImageProcessingAtom
     {
         PresetName emptyPreset;
 
+
         //get file mask of this image file
         AZStd::string fileMask = GetFileMask(imageFilePath);
 
@@ -636,8 +637,17 @@ namespace ImageProcessingAtom
         }
 
         if (outPreset == emptyPreset)
-        {
-            outPreset = m_defaultPreset;
+        {        
+            auto image = IImageObjectPtr(LoadImageFromFile(imageFilePath));
+            if (image->GetAlphaContent() == EAlphaContent::eAlphaContent_Absent
+                || image->GetAlphaContent() == EAlphaContent::eAlphaContent_OnlyWhite)
+            {
+                outPreset = m_defaultPreset;
+            }
+            else
+            {
+                outPreset = m_defaultPresetAlpha;
+            }
         }
 
         return outPreset;
