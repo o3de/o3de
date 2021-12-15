@@ -44,10 +44,10 @@ namespace UnitTest
             QObject::connect(m_inputChannelMapper.get(), &AzToolsFramework::QtEventToAzInputMapper::InputChannelUpdated, m_rootWidget.get(),
                 [this]([[maybe_unused]] const AzFramework::InputChannel* inputChannel, QEvent* event)
                 {
-                    if(event == nullptr) {
+                    if(event == nullptr) 
+                    {
                         return;
                     }
-
                     const QEvent::Type eventType = event->type();
 
                     if (eventType == QEvent::Type::MouseButtonPress ||
@@ -517,31 +517,144 @@ namespace UnitTest
         }
     );
 
-    TEST_F(QtEventToAzInputMapperFixture, MouseWrapMouseViewportQtEventToAzInputMapperFixture) 
+    struct MouseMoveParam
     {
+        AzToolsFramework::CursorInputMode mode;
+        int iterations;
+        QPoint startPos;
+        QPoint deltaPos;
+        QPoint expectedPos;
+        const char* name;
+    };
+
+    class MoveMoveWrapParamQtEventToAzInputMapperFixture
+        : public QtEventToAzInputMapperFixture
+        , public ::testing::WithParamInterface<MouseMoveParam>
+    {
+    };
+
+    TEST_P(MoveMoveWrapParamQtEventToAzInputMapperFixture, MouseMove_NoAzHandlers_VerifyMouseMovmentViewport) 
+    {
+        // setup
+        const MouseMoveParam mouseMoveParam = GetParam();
+
         AzFramework::InputChannelNotificationBus::Handler::BusConnect();
         m_captureAzEvents = false;
+        m_inputChannelMapper->SetCursorMode(mouseMoveParam.mode);
+        m_rootWidget->move(100, 100);
 
-        
-        const auto startPos = QPoint(WidgetSize.width()  - 2, WidgetSize.height() / 2);
-        MouseMove(m_rootWidget.get(), startPos, QPoint(0,0));
-        m_inputChannelMapper->SetCursorMode(AzToolsFramework::QtEventToAzInputMapper::CursorInputMode::CursorModeWrappedX);
 
-        const auto deltaPos = QPoint(200.0f, 0);
-        const auto expectedPosition = m_rootWidget->mapToGlobal(QPoint(200, WidgetSize.height() / 2));
-        const int iterations = 50;
-  
-        for(float i = 0; i < iterations; i++) {
-            MouseMove(m_rootWidget.get(), m_rootWidget->mapFromGlobal(QCursor::pos()), (deltaPos / iterations));
+        MouseMove(m_rootWidget.get(), mouseMoveParam.startPos, QPoint(0,0));
+        for(float i = 0; i < mouseMoveParam.iterations; i++) {
+            MouseMove(m_rootWidget.get(), m_rootWidget->mapFromGlobal(QCursor::pos()), (mouseMoveParam.deltaPos / mouseMoveParam.iterations));
         }
-        
-        QPointF endPosition = QCursor::pos();
-        EXPECT_NEAR(endPosition.x(), expectedPosition.x(), 5.0f);
-        EXPECT_NEAR(endPosition.y(), expectedPosition.y(), 5.0f);
-        
+
+        QPointF endPosition = m_rootWidget->mapFromGlobal(QCursor::pos());
+        EXPECT_NEAR(endPosition.x(), mouseMoveParam.expectedPos.x(), 1.0f);
+        EXPECT_NEAR(endPosition.y(), mouseMoveParam.expectedPos.y(), 1.0f);
+
         // cleanup
-        m_inputChannelMapper->SetCursorMode(AzToolsFramework::QtEventToAzInputMapper::CursorInputMode::CursorModeNone);
+        m_rootWidget->move(0, 0);
+        m_inputChannelMapper->SetCursorMode(AzToolsFramework::CursorInputMode::CursorModeNone);
         AzFramework::InputChannelNotificationBus::Handler::BusDisconnect();
     }
+
+    INSTANTIATE_TEST_CASE_P(All, MoveMoveWrapParamQtEventToAzInputMapperFixture,
+        testing::Values(
+            // verify CursorModeWrappedX wrapping
+            MouseMoveParam {AzToolsFramework::CursorInputMode::CursorModeWrappedX, 
+                40,
+                QPoint(QtEventToAzInputMapperFixture::WidgetSize.width() - 20, QtEventToAzInputMapperFixture::WidgetSize.height()/2.0f),
+                QPoint(40, 0),
+                QPoint(20, QtEventToAzInputMapperFixture::WidgetSize.height()/2.0f),
+                "CursorModeWrappedX_Test_Right"
+                },
+            MouseMoveParam {AzToolsFramework::CursorInputMode::CursorModeWrappedX, 
+                40,
+                QPoint(20, QtEventToAzInputMapperFixture::WidgetSize.height()/2.0f),
+                QPoint(-40, 0),
+                QPoint(QtEventToAzInputMapperFixture::WidgetSize.width() - 20, QtEventToAzInputMapperFixture::WidgetSize.height()/2.0f),
+                 "CursorModeWrappedX_Test_Left"
+                },
+            MouseMoveParam {AzToolsFramework::CursorInputMode::CursorModeWrappedX, 
+                40,
+                QPoint(QtEventToAzInputMapperFixture::WidgetSize.width() / 2.0f, 20.0f),
+                QPoint(0, -40),
+                QPoint(QtEventToAzInputMapperFixture::WidgetSize.width() / 2.0f, -20.0f),
+                 "CursorModeWrappedX_Test_Top"
+                },
+            MouseMoveParam {AzToolsFramework::CursorInputMode::CursorModeWrappedX, 
+                40,
+                QPoint(QtEventToAzInputMapperFixture::WidgetSize.width() / 2.0f, QtEventToAzInputMapperFixture::WidgetSize.height() - 20),
+                QPoint(0, 40),
+                QPoint(QtEventToAzInputMapperFixture::WidgetSize.width() / 2.0f, QtEventToAzInputMapperFixture::WidgetSize.height() + 20),
+                 "CursorModeWrappedX_Test_Bottom"
+                },
+
+            // verify CursorModeWrappedY wrapping
+            MouseMoveParam {AzToolsFramework::CursorInputMode::CursorModeWrappedY, 
+                40,
+                QPoint(QtEventToAzInputMapperFixture::WidgetSize.width() - 20, QtEventToAzInputMapperFixture::WidgetSize.height()/2.0f),
+                QPoint(40, 0),
+                QPoint(QtEventToAzInputMapperFixture::WidgetSize.width() + 20, QtEventToAzInputMapperFixture::WidgetSize.height()/2.0f),
+                "CursorModeWrappedY_Test_Right"
+                },
+            MouseMoveParam {AzToolsFramework::CursorInputMode::CursorModeWrappedY, 
+                40,
+                QPoint(20, QtEventToAzInputMapperFixture::WidgetSize.height()/2.0f),
+                QPoint(-40, 0),
+                QPoint(-20, QtEventToAzInputMapperFixture::WidgetSize.height()/2.0f),
+                 "CursorModeWrappedY_Test_Left"
+                },
+            MouseMoveParam {AzToolsFramework::CursorInputMode::CursorModeWrappedY, 
+                40,
+                QPoint(QtEventToAzInputMapperFixture::WidgetSize.width() / 2.0f, 20.0f),
+                QPoint(0, -40),
+                QPoint(QtEventToAzInputMapperFixture::WidgetSize.width() / 2.0f, QtEventToAzInputMapperFixture::WidgetSize.height() - 20.0f),
+                 "CursorModeWrappedY_Test_Top"
+                },
+            MouseMoveParam {AzToolsFramework::CursorInputMode::CursorModeWrappedY, 
+                40,
+                QPoint(QtEventToAzInputMapperFixture::WidgetSize.width() / 2.0f, QtEventToAzInputMapperFixture::WidgetSize.height() - 20),
+                QPoint(0, 40),
+                QPoint(QtEventToAzInputMapperFixture::WidgetSize.width() / 2.0f, 20),
+                 "CursorModeWrappedY_Test_Bottom"
+                },
+
+            // verify CursorModeWrapped wrapping
+            MouseMoveParam {AzToolsFramework::CursorInputMode::CursorModeWrapped, 
+                40,
+                QPoint(QtEventToAzInputMapperFixture::WidgetSize.width() - 20, QtEventToAzInputMapperFixture::WidgetSize.height()/2.0f),
+                QPoint(40, 0),
+                QPoint(20, QtEventToAzInputMapperFixture::WidgetSize.height()/2.0f),
+                "CursorModeWrapped_Test_Right"
+                },
+            MouseMoveParam {AzToolsFramework::CursorInputMode::CursorModeWrapped, 
+                40,
+                QPoint(20, QtEventToAzInputMapperFixture::WidgetSize.height()/2.0f),
+                QPoint(-40, 0),
+                QPoint(QtEventToAzInputMapperFixture::WidgetSize.width() - 20, QtEventToAzInputMapperFixture::WidgetSize.height()/2.0f),
+                 "CursorModeWrapped_Test_Left"
+                },
+            MouseMoveParam {AzToolsFramework::CursorInputMode::CursorModeWrapped, 
+                40,
+                QPoint(QtEventToAzInputMapperFixture::WidgetSize.width() / 2.0f, 20.0f),
+                QPoint(0, -40),
+                QPoint(QtEventToAzInputMapperFixture::WidgetSize.width() / 2.0f, QtEventToAzInputMapperFixture::WidgetSize.height() - 20.0f),
+                 "CursorModeWrapped_Test_Top"
+                },
+            MouseMoveParam {AzToolsFramework::CursorInputMode::CursorModeWrapped, 
+                40,
+                QPoint(QtEventToAzInputMapperFixture::WidgetSize.width() / 2.0f, QtEventToAzInputMapperFixture::WidgetSize.height() - 20),
+                QPoint(0, 40),
+                QPoint(QtEventToAzInputMapperFixture::WidgetSize.width() / 2.0f, 20),
+                 "CursorModeWrapped_Test_Bottom"
+                }
+        ),
+        [](const ::testing::TestParamInfo<MouseMoveParam>& info)
+        {
+            return info.param.name;
+        }
+    );
 
 } // namespace UnitTest

@@ -32,6 +32,17 @@ class QWheelEvent;
 
 namespace AzToolsFramework
 {
+    enum class CursorInputMode {
+        CursorModeNone,
+        CursorModeCaptured,   //!< Sets whether or not the cursor should be constrained to the source widget and invisible.
+                              //!< Internally, this will reset the cursor position after each move event to ensure movement
+                              //!< events don't allow the cursor to escape. This can be used for typical camera controls
+                              //!< like a dolly or rotation, where mouse movement is important but cursor location is not.
+        CursorModeWrapped,    //!< Flags whether the curser is going to wrap around the soruce widget.
+        CursorModeWrappedX,
+        CursorModeWrappedY 
+    };
+
     //! Maps events from the Qt input system to synthetic InputChannels in AzFramework
     //! that can be used by AzFramework::ViewportControllers.
     class QtEventToAzInputMapper final
@@ -41,17 +52,6 @@ namespace AzToolsFramework
         Q_OBJECT
 
     public:
-        enum class CursorInputMode {
-            CursorModeNone,
-            CursorModeCaptured,   //< Sets whether or not the cursor should be constrained to the source widget and invisible.
-                                    //< Internally, this will reset the cursor position after each move event to ensure movement
-                                    //< events don't allow the cursor to escape. This can be used for typical camera controls
-                                    //< like a dolly or rotation, where mouse movement is important but cursor location is not.
-            CursorModeWrapped,    //< Flags whether the curser is going to wrap around the soruce widget.
-            CursorModeWrappedX,
-            CursorModeWrappedY 
-        };
-
         QtEventToAzInputMapper(QWidget* sourceWidget, int syntheticDeviceId = 0);
         ~QtEventToAzInputMapper() = default;
 
@@ -71,7 +71,7 @@ namespace AzToolsFramework
         void SetCursorCaptureEnabled(bool enabled);
 
         //! Set the cursor mode.
-        void SetCursorMode(QtEventToAzInputMapper::CursorInputMode mode);
+        void SetCursorMode(AzToolsFramework::CursorInputMode mode);
 
         void SetOverrideCursor(ViewportInteraction::CursorStyleOverride cursorStyleOverride);
         void ClearOverrideCursor();
@@ -192,7 +192,7 @@ namespace AzToolsFramework
         // Flags whether or not Qt events should currently be processed.
         bool m_enabled = true;
         // Controls the cursor behavior.
-        QtEventToAzInputMapper::CursorInputMode m_cursorMode = CursorInputMode::CursorModeNone;
+        AzToolsFramework::CursorInputMode m_cursorMode = AzToolsFramework::CursorInputMode::CursorModeNone;
         // Flags whether the cursor has been overridden.
         bool m_overrideCursor = false;
 

@@ -241,7 +241,7 @@ namespace AzToolsFramework
         }
     }
 
-    void QtEventToAzInputMapper::SetCursorMode(QtEventToAzInputMapper::CursorInputMode mode)
+    void QtEventToAzInputMapper::SetCursorMode(AzToolsFramework::CursorInputMode mode)
     {
         if (mode != m_cursorMode)
         {
@@ -445,7 +445,7 @@ namespace AzToolsFramework
         return QPoint{ denormalizedX, denormalizedY };
     }
 
-    void wrapCursorX(const QRect& rect, QPoint& point)
+    void WrapCursorX(const QRect& rect, QPoint& point)
     {
         if (point.x() < rect.left())
         {
@@ -457,7 +457,7 @@ namespace AzToolsFramework
         }
     }
 
-    void wrapCursorY(const QRect& rect, QPoint& point)
+    void WrapCursorY(const QRect& rect, QPoint& point)
     {
         if (point.y() < rect.top())
         {
@@ -492,14 +492,14 @@ namespace AzToolsFramework
                 switch (m_cursorMode)
                 {
                 case CursorInputMode::CursorModeWrappedX:
-                    wrapCursorX(widgetRect, screenPos);
+                    WrapCursorX(widgetRect, screenPos);
                     break;
                 case CursorInputMode::CursorModeWrappedY:
-                    wrapCursorY(widgetRect, screenPos);
+                    WrapCursorY(widgetRect, screenPos);
                     break;
                 case CursorInputMode::CursorModeWrapped:
-                    wrapCursorX(widgetRect, screenPos);
-                    wrapCursorY(widgetRect, screenPos);
+                    WrapCursorX(widgetRect, screenPos);
+                    WrapCursorY(widgetRect, screenPos);
                     break;
                 default:
                     // this should never happen

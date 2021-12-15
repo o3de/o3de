@@ -189,7 +189,7 @@ namespace SandboxEditor
 
     bool ViewportMouseWrapSetting()
     {
-        return aznumeric_cast<bool>(GetRegistry(ViewportMouseWrapSetting, false));
+        return GetRegistry(ViewportMouseWrapSetting, false);
     }
 
     void SetViewportMouseWrapSetting(bool wrapping)
