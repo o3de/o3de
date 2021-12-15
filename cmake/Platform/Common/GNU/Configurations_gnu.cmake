@@ -38,6 +38,7 @@ ly_append_configurations_options(
         -Wno-sign-compare
         -Wno-return-local-addr
         -Wno-stringop-overflow
+        -Wno-attributes
 
     COMPILATION_C
         -Wno-absolute-value
