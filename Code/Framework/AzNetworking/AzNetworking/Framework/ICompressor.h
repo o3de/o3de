@@ -17,12 +17,12 @@
 namespace AzNetworking
 {
     //! Collection of compression related error codes
-    enum class CompressorError
+    enum class CompressorError : int32_t
     {
-        Ok,                   //!< No error, operation finished successfully
-        InsufficientBuffer,   //!< Buffer size is insufficient for the operation to complete, increase the size and try again
-        CorruptData,          //!< Malformed or hacked packet, potentially security issue
-        Uninitialized         //!< Compressor or supplied buffers are uninitialized
+        Ok                  = 0x00, //!< No error, operation finished successfully
+        InsufficientBuffer  = 0x01, //!< Buffer size is insufficient for the operation to complete, increase the size and try again
+        CorruptData         = 0x02, //!< Malformed or hacked packet, potentially security issue
+        Uninitialized       = 0x03  //!< Compressor or supplied buffers are uninitialized
     };
 
     //! Unique identifier of a given compressor
