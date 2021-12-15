@@ -36,6 +36,7 @@ ly_append_configurations_options(
         -Wno-strict-aliasing
         -Wno-unused-result
         -Wno-sign-compare
+        -Wno-return-local-addr
 
     COMPILATION_C
         -Wno-absolute-value
