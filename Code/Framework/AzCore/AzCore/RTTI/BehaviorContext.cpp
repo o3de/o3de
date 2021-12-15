@@ -449,6 +449,79 @@ namespace AZ
     //=========================================================================
     BehaviorContext::BehaviorContext() = default;
 
+    bool BehaviorContext::InternalMethod(
+        AZStd::unordered_map<AZStd::string, BehaviorMethod*>& methods,
+        BehaviorMethod* method,
+        const char* name,
+        const BehaviorParameterOverrides* args,
+        size_t argsSize,
+        const char* deprecatedName,
+        const char* dbgDesc)
+    {
+        method->m_debugDescription = dbgDesc;
+
+        /*
+        ** check to see if the deprecated name is used, and ensure its not duplicated.
+        */
+        if (deprecatedName != nullptr)
+        {
+            auto itr = methods.find(name);
+            if (itr != methods.end())
+            {
+                // now check to make sure that the deprecated name is not being used as a identical deprecated name for another method.
+                bool isDuplicate = false;
+                for (const auto& i : methods)
+                {
+                    if (i.second->GetDeprecatedName() == deprecatedName)
+                    {
+                        AZ_Warning(
+                            "BehaviorContext", false,
+                            "Method %s is attempting to use a deprecated name of %s which is already in use for method %s! Deprecated name "
+                            "is ignored!",
+                            name, deprecatedName, i.first.c_str());
+                        isDuplicate = true;
+                        break;
+                    }
+                }
+
+                if (!isDuplicate)
+                {
+                    itr->second->SetDeprecatedName(deprecatedName);
+                }
+            }
+            else
+            {
+                AZ_Warning("BehaviorContext", false, "Method %s does not exist, so the deprecated name is ignored!", name, deprecatedName);
+            }
+        }
+
+        auto methodIter = methods.find(name);
+        if (methodIter != methods.end())
+        {
+            if (!methodIter->second->AddOverload(method))
+            {
+                AZ_Error("BehaviorContext", false, "Method incorrectly reflected as C++ overload");
+                delete method;
+                return false;
+            }
+        }
+        else
+        {
+            methods.insert(AZStd::make_pair(name, method));
+        }
+
+        size_t classPtrIndex = method->IsMember() ? 1 : 0;
+        for (size_t i = 0; i < argsSize; ++i)
+        {
+            method->SetArgumentName(i + classPtrIndex, args[i].m_name);
+            method->SetArgumentToolTip(i + classPtrIndex, args[i].m_toolTip);
+            method->SetDefaultValue(i + classPtrIndex, args[i].m_defaultValue);
+            method->OverrideParameterTraits(i + classPtrIndex, args[i].m_addTraits, args[i].m_removeTraits);
+        }
+
+        return true;
+    }
+
     //=========================================================================
     // ~BehaviorContext
     //=========================================================================

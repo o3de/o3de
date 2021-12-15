@@ -1570,6 +1570,15 @@ namespace AZ
             }
         };
 
+        static bool InternalMethod(
+            AZStd::unordered_map<AZStd::string, BehaviorMethod*>& methods,
+            BehaviorMethod* method,
+            const char* name,
+            const BehaviorParameterOverrides* args,
+            size_t argsSize,
+            const char* deprecatedName,
+            const char* dbgDesc);
+
     public:
         AZ_CLASS_ALLOCATOR(BehaviorContext, SystemAllocator, 0);
         AZ_RTTI(BehaviorContext, "{ED75FE05-9196-4F69-A3E5-1BDF5FF034CF}", ReflectContext);
@@ -3138,53 +3147,10 @@ namespace AZ
         BehaviorMethod* method = aznew BehaviorMethodType(f, this, name);
         method->m_debugDescription = dbgDesc;
 
-        /*
-        ** check to see if the deprecated name is used, and ensure its not duplicated.
-        */
-
-        if (deprecatedName != nullptr)
-        {
-            auto itr = m_methods.find(deprecatedName);
-            if (itr != m_methods.end())
-            {
-                // now check to make sure that the deprecated name is not being used as a identical deprecated name for another method.
-                bool isDuplicate = false;
-                for (const auto & i : m_methods)
-                {
-                    if (i.second->GetDeprecatedName() == deprecatedName)
-                    {
-                        AZ_Warning("BehaviorContext", false, "Method %s is attempting to use a deprecated name of %s which is already in use for method %s! Deprecated name is ignored!", name, deprecatedName, i.first.c_str());
-                        isDuplicate = true;
-                        break;
-                    }
-                }
-
-                if (!isDuplicate)
-                {
-                    itr->second->SetDeprecatedName(deprecatedName);
-                }
-            }
-            else
-            {
-                AZ_Warning("BehaviorContext", false, "Method %s is attempting to use a deprecated name of %s which is already in use! Deprecated name is ignored!", name, deprecatedName);
-            }
-        }
-
-        // global method
-        if (!m_methods.insert(AZStd::make_pair(name, method)).second)
+        if (!InternalMethod(m_methods, method, name, args.begin(), args.size(), deprecatedName, dbgDesc))
         {
             AZ_Error("Reflection", false, "Method '%s' is already registered in the global context!", name);
-            delete method;
             return GlobalMethodBuilder(this, nullptr, nullptr);
-        }
-
-        size_t classPtrIndex = method->IsMember() ? 1 : 0;
-        for (size_t i = 0; i < args.size(); ++i)
-        {
-            method->SetArgumentName(i + classPtrIndex, args[i].m_name);
-            method->SetArgumentToolTip(i + classPtrIndex, args[i].m_toolTip);
-            method->SetDefaultValue(i + classPtrIndex, args[i].m_defaultValue);
-            method->OverrideParameterTraits(i + classPtrIndex, args[i].m_addTraits, args[i].m_removeTraits);
         }
 
         return GlobalMethodBuilder(this, name, method);
@@ -3232,63 +3198,7 @@ namespace AZ
         {
             typedef AZ::Internal::BehaviorMethodImpl<typename AZStd::RemoveFunctionConst<typename AZStd::remove_pointer<Function>::type>::type> BehaviorMethodType;
             BehaviorMethod* method = aznew BehaviorMethodType(f, Base::m_context, AZStd::string::format("%s::%s", m_class->m_name.c_str(), name));
-            method->m_debugDescription = dbgDesc;
-
-            /*
-            ** check to see if the deprecated name is used, and ensure its not duplicated.
-            */
-
-            if (deprecatedName != nullptr)
-            {
-                auto itr = m_class->m_methods.find(name);
-                if (itr != m_class->m_methods.end())
-                {
-                    // now check to make sure that the deprecated name is not being used as a identical deprecated name for another method.
-                    bool isDuplicate = false;
-                    for (const auto & i : m_class->m_methods)
-                    {
-                        if (i.second->GetDeprecatedName() == deprecatedName)
-                        {
-                            AZ_Warning("BehaviorContext", false, "Method %s is attempting to use a deprecated name of %s which is already in use for method %s! Deprecated name is ignored!", name, deprecatedName, i.first.c_str());
-                            isDuplicate = true;
-                            break;
-                        }
-                    }
-
-                    if (!isDuplicate)
-                    {
-                        itr->second->SetDeprecatedName(deprecatedName);
-                    }
-                }
-                else
-                {
-                    AZ_Warning("BehaviorContext", false, "Method %s does not exist, so the deprecated name is ignored!", name, deprecatedName);
-                }
-            }
-
-            auto methodIter = m_class->m_methods.find(name);
-            if (methodIter != m_class->m_methods.end())
-            {
-                if (!methodIter->second->AddOverload(method))
-                {
-                    AZ_Error("BehaviorContext", false, "Method incorrectly reflected as C++ overload");
-                    delete method;
-                    return this;
-                }
-            }
-            else
-            {
-                m_class->m_methods.insert(AZStd::make_pair(name, method));
-            }
-
-            size_t classPtrIndex = method->IsMember() ? 1 : 0;
-            for (size_t i = 0; i < args.size(); ++i)
-            {
-                method->SetArgumentName(i + classPtrIndex, args[i].m_name);
-                method->SetArgumentToolTip(i + classPtrIndex, args[i].m_toolTip);
-                method->SetDefaultValue(i + classPtrIndex, args[i].m_defaultValue);
-                method->OverrideParameterTraits(i + classPtrIndex, args[i].m_addTraits, args[i].m_removeTraits);
-            }
+            InternalMethod(m_class->m_methods, method, name, args.begin(), args.size(), deprecatedName, dbgDesc);
 
             // \note we can start returning a context so we can maintain the scope
             Base::m_currentAttributes = &method->m_attributes;
@@ -3874,7 +3784,7 @@ namespace AZ
         template<class R, class... Args>
         bool BehaviorMethodImpl<R(Args...)>::Call(BehaviorValueParameter* arguments, unsigned int numArguments, BehaviorValueParameter* result) const
         {
-            if (!AllocateArguments(&m_parameters[0], AZ_ARRAY_SIZE(m_parameters), arguments, numArguments, s_startArgumentIndex))
+            if (!AllocateArguments(m_parameters, AZ_ARRAY_SIZE(m_parameters), arguments, numArguments, s_startArgumentIndex))
             {
                 return false;
             }
@@ -4033,7 +3943,7 @@ namespace AZ
         template<class R, class C, class... Args>
         bool BehaviorMethodImpl<R(C::*)(Args...)>::Call(BehaviorValueParameter* arguments, unsigned int numArguments, BehaviorValueParameter* result) const
         {
-            if (!AllocateArguments(&m_parameters[0], AZ_ARRAY_SIZE(m_parameters), arguments, numArguments, s_startNamedArgumentIndex))
+            if (!AllocateArguments(m_parameters, AZ_ARRAY_SIZE(m_parameters), arguments, numArguments, s_startNamedArgumentIndex))
             {
                 return false;
             }
@@ -4213,7 +4123,7 @@ namespace AZ
         template<class EBus, BehaviorEventType EventType, class R, class C, class... Args>
         bool BehaviorEBusEvent<EBus, EventType, R(C::*)(Args...)>::Call(BehaviorValueParameter* arguments, unsigned int numArguments, BehaviorValueParameter* result) const
         {
-            if (!AllocateArguments(&m_parameters[0], AZ_ARRAY_SIZE(m_parameters), arguments, numArguments, s_startNamedArgumentIndex))
+            if (!AllocateArguments(m_parameters, AZ_ARRAY_SIZE(m_parameters), arguments, numArguments, s_startNamedArgumentIndex))
             {
                 return false;
             }
