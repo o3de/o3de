@@ -26,13 +26,13 @@
 #endif
 
 #if AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HPHA
-#include <AzCore/Memory/HphaSchema.h>
+    #include <AzCore/Memory/HphaSchema.h>
 #elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC
-#include <AzCore/Memory/MallocSchema.h>
+    #include <AzCore/Memory/MallocSchema.h>
 #elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HEAP
-#include <AzCore/Memory/HeapSchema.h>
+    #include <AzCore/Memory/HeapSchema.h>
 #else
-#error "Invalid allocator selected for SystemAllocator"
+    #error "Invalid allocator selected for SystemAllocator"
 #endif
 
 namespace AZ

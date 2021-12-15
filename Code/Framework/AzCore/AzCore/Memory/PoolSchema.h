@@ -163,8 +163,3 @@ namespace AZ
     template<class Allocator>
     AZ_THREAD_LOCAL ThreadPoolData* ThreadPoolSchemaHelper<Allocator>::m_threadData = 0;
 }
-
-#endif // AZ_POOL_ALLOCATION_SCHEME_H
-#pragma once
-
-
