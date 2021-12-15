@@ -182,6 +182,7 @@ namespace ScriptCanvasEditor
         return nodeIter->second;
     }
 
+    /*
     void ScriptCanvasAssetNodeUsageTreeItem::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         ProcessAsset(asset);
@@ -200,7 +201,8 @@ namespace ScriptCanvasEditor
         ProcessAsset(asset);
     }
 
-    void ScriptCanvasAssetNodeUsageTreeItem::ProcessAsset(const AZ::Data::Asset<ScriptCanvas::ScriptCanvasAssetBase>& scriptCanvasAsset)
+    // #sc_editor_asset_redux fix graph use statistics
+    void ScriptCanvasAssetNodeUsageTreeItem::ProcessAsset(const AZ::Data::Asset<LegacyScriptCanvasBaseAsset>& scriptCanvasAsset)
     {
         if (scriptCanvasAsset.IsReady())
         {
@@ -222,6 +224,7 @@ namespace ScriptCanvasEditor
             }
         }
     }
+    */
 
     ///////////////////////////////////////////
     // ScriptCanvasAssetNodeUsageTreeItemRoot

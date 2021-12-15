@@ -316,8 +316,8 @@ namespace ScriptCanvasEditor
         using namespace AzToolsFramework::AssetBrowser;
 
         bool isScriptCanvasAsset = false;
-        ScriptCanvasAssetDescription scriptCanvasAssetDescription;
-        if (AZStd::wildcard_match(AZStd::string::format("*%s", scriptCanvasAssetDescription.GetExtensionImpl()).c_str(), fullSourceFileName))
+
+        if (AZStd::wildcard_match(ScriptCanvasEditor::SourceDescription::GetFileExtension(), fullSourceFileName))
         {
             isScriptCanvasAsset = true;
         }
@@ -339,7 +339,7 @@ namespace ScriptCanvasEditor
                 }
             };
  
-            openers.push_back({ "O3DE_ScriptCanvasEditor", "Open In Script Canvas Editor...", QIcon(ScriptCanvasAssetDescription().GetIconPathImpl()), scriptCanvasEditorCallback });
+            openers.push_back({ "O3DE_ScriptCanvasEditor", "Open In Script Canvas Editor...", QIcon(ScriptCanvasEditor::SourceDescription::GetIconPath()), scriptCanvasEditorCallback });
          }
     }
 
@@ -394,7 +394,7 @@ namespace ScriptCanvasEditor
         return ScriptCanvasEditor::RunGraph(runGraphSpec).front();
     }
 
-    Reporter SystemComponent::RunAssetGraph(AZ::Data::Asset<AZ::Data::AssetData> asset, ScriptCanvas::ExecutionMode mode)
+    Reporter SystemComponent::RunAssetGraph(SourceHandle asset, ScriptCanvas::ExecutionMode mode)
     {
         Reporter reporter;
         RunEditorAsset(asset, reporter, mode);

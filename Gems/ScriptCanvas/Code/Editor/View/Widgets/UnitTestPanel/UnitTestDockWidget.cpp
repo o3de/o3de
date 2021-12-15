@@ -574,14 +574,14 @@ namespace ScriptCanvasEditor
     void UnitTestDockWidget::RunTestGraph(SourceHandle asset, ScriptCanvas::ExecutionMode mode)
     {
         Reporter reporter;
-        UnitTestWidgetNotificationBus::Broadcast(&UnitTestWidgetNotifications::OnTestStart, asset);
+        UnitTestWidgetNotificationBus::Broadcast(&UnitTestWidgetNotifications::OnTestStart, asset.Id());
 
         ScriptCanvasExecutionBus::BroadcastResult(reporter, &ScriptCanvasExecutionRequests::RunAssetGraph, asset, mode);
 
         UnitTestResult testResult;
 
         UnitTestVerificationBus::BroadcastResult(testResult, &UnitTestVerificationRequests::Verify, reporter);
-        UnitTestWidgetNotificationBus::Broadcast(&UnitTestWidgetNotifications::OnTestResult, asset, testResult);
+        UnitTestWidgetNotificationBus::Broadcast(&UnitTestWidgetNotifications::OnTestResult, asset.Id(), testResult);
 
         m_pendingTests.Add(asset, mode);
 
@@ -603,7 +603,7 @@ namespace ScriptCanvasEditor
             ++m_testMetrics[static_cast<int>(mode)].m_compilationFailures;
         }
 
-        m_pendingTests.Complete(asset.GetId(), mode);
+        m_pendingTests.Complete(asset, mode);
     }
 
     void UnitTestDockWidget::OnSystemTick()
@@ -614,14 +614,14 @@ namespace ScriptCanvasEditor
         }
     }
 
-    void UnitTestDockWidget::PendingTests::Add(AZ::Data::AssetId assetId, ExecutionMode mode)
+    void UnitTestDockWidget::PendingTests::Add(ScriptCanvasEditor::SourceHandle assetId, ExecutionMode mode)
     {
         m_pendingTests.push_back(AZStd::make_pair(assetId, mode));
     }
 
-    void UnitTestDockWidget::PendingTests::Complete(AZ::Data::AssetId assetId, ExecutionMode mode)
+    void UnitTestDockWidget::PendingTests::Complete(ScriptCanvasEditor::SourceHandle assetId, ExecutionMode mode)
     {
-        AZStd::erase_if(m_pendingTests, [assetId, mode](const AZStd::pair<AZ::Data::AssetId, ExecutionMode>& pending)
+        AZStd::erase_if(m_pendingTests, [assetId, mode](const AZStd::pair<ScriptCanvasEditor::SourceHandle, ExecutionMode>& pending)
             {
                 return (assetId == pending.first && mode == pending.second);
             });

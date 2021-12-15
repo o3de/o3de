@@ -9,6 +9,7 @@
 set(FILES
     Include/ScriptCanvas/SystemComponent.h
     Include/ScriptCanvas/ScriptCanvasGem.h
+    Include/ScriptCanvas/Asset/AssetDescription.h
     Include/ScriptCanvas/Asset/AssetRegistry.h
     Include/ScriptCanvas/Asset/AssetRegistryBus.h
     Include/ScriptCanvas/Asset/ExecutionLogAsset.h

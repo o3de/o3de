@@ -128,7 +128,7 @@ namespace ScriptCanvasEditor
         // and then a lambda which will be activated if the user chooses to open it with your opener:
 
         openers.push_back({ "ScriptCanvas_Editor_Asset_Edit", "Script Canvas Editor..."
-            , QIcon(ScriptCanvasAssetDescription().GetIconPathImpl()),
+            , QIcon(ScriptCanvasEditor::SourceDescription::GetIconPath()),
             [](const char*, const AZ::Uuid& scSourceUuid)
             {
                 AzToolsFramework::OpenViewPane(LyViewPane::ScriptCanvas);

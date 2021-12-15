@@ -13,7 +13,6 @@
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/StringFunc/StringFunc.h>
-#include <Editor/Include/ScriptCanvas/Assets/ScriptCanvasBaseAssetData.h>
 
 #include "Attributes.h"
 #include "Core.h"

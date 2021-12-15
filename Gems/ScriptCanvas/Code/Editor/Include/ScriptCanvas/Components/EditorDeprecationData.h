@@ -17,6 +17,18 @@ namespace ScriptCanvasEditor
 {
     namespace Deprecated
     {
+        // only used as a pass-through to loading a guid / hint during version conversion
+        class ScriptCanvasAsset
+            : public AZ::Data::AssetData
+        {
+        public:
+            AZ_TYPE_INFO(ScriptCanvasAsset, "{FA10C3DA-0717-4B72-8944-CD67D13DFA2B}");
+            AZ_CLASS_ALLOCATOR(ScriptCanvasAsset, AZ::SystemAllocator, 0);
+
+            ScriptCanvasAsset() = default;
+        };
+
+        // only used as a pass-through to loading a guid / hint during version conversion
         class ScriptCanvasAssetHolder
         {
         public:
@@ -30,15 +42,5 @@ namespace ScriptCanvasEditor
             ScriptCanvasAssetHolder() = default;
         };
 
-        // only is used as a pass-through to loading a guid / hint during versioning
-        class ScriptCanvasAsset
-            : public AZ::Data::AssetData
-        {
-        public:
-            AZ_TYPE_INFO(ScriptCanvasAsset, "{FA10C3DA-0717-4B72-8944-CD67D13DFA2B}");
-            AZ_CLASS_ALLOCATOR(ScriptCanvasAsset, AZ::SystemAllocator, 0);
-
-            ScriptCanvasAsset() = default;
-        };
     }
 }

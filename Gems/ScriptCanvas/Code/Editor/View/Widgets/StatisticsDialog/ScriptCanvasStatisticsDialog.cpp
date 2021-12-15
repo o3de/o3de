@@ -435,9 +435,9 @@ namespace ScriptCanvasEditor
         }
     }
 
-    void StatisticsDialog::ProcessAsset(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry)
+    void StatisticsDialog::ProcessAsset([[maybe_unused]] const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry)
     {
-            // #sc_editor_asset_redux cut or update
+           // #sc_editor_asset_redux cut or update
 //         if (entry)
 //         {
 //             if (entry->GetEntryType() == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Product)

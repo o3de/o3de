@@ -149,36 +149,33 @@ namespace ScriptCanvasEditor
         }
     }
 
-    AZ_INLINE void RunEditorAsset(AZ::Data::Asset<AZ::Data::AssetData> asset, Reporter& reporter, ScriptCanvas::ExecutionMode mode)
+    AZ_INLINE void RunEditorAsset(SourceHandle asset, Reporter& reporter, ScriptCanvas::ExecutionMode mode)
     {
-        if (asset.IsReady())
+        AZ::Data::AssetId assetId = asset.Id();
+        AZ::Data::AssetId runtimeAssetId(assetId.m_guid, AZ_CRC("RuntimeData", 0x163310ae));
+        AZ::Data::Asset<ScriptCanvas::RuntimeAsset> runtimeAsset;
+        if (!runtimeAsset.Create(runtimeAssetId, true))
         {
-            AZ::Data::AssetId assetId = asset.GetId();
-            AZ::Data::AssetId runtimeAssetId(assetId.m_guid, AZ_CRC("RuntimeData", 0x163310ae));
-            AZ::Data::Asset<ScriptCanvas::RuntimeAsset> runtimeAsset;
-            if (!runtimeAsset.Create(runtimeAssetId, true))
-            {
-                return;
-            }
-
-            reporter.SetExecutionMode(mode);
-
-            LoadTestGraphResult loadResult;
-            loadResult.m_editorAsset = SourceHandle(nullptr, assetId.m_guid, asset.GetHint());
-            AZ::EntityId scriptCanvasId;
-            loadResult.m_entity = AZStd::make_unique<AZ::Entity>("Loaded test graph");
-            loadResult.m_runtimeAsset = runtimeAsset;
-
-            RunGraphSpec runGraphSpec;
-            runGraphSpec.dirPath = "";
-            runGraphSpec.graphPath = asset.GetHint().c_str();
-            runGraphSpec.runSpec.duration.m_spec = eDuration::Ticks;
-            runGraphSpec.runSpec.duration.m_ticks = 10;
-            runGraphSpec.runSpec.execution = mode;
-            runGraphSpec.runSpec.release = true;
-            runGraphSpec.runSpec.debug = runGraphSpec.runSpec.traced = false;
-            RunGraphImplementation(runGraphSpec, loadResult, reporter);
+            return;
         }
+
+        reporter.SetExecutionMode(mode);
+
+        LoadTestGraphResult loadResult;
+        loadResult.m_editorAsset = SourceHandle(nullptr, assetId.m_guid, asset.Path());
+        AZ::EntityId scriptCanvasId;
+        loadResult.m_entity = AZStd::make_unique<AZ::Entity>("Loaded test graph");
+        loadResult.m_runtimeAsset = runtimeAsset;
+
+        RunGraphSpec runGraphSpec;
+        runGraphSpec.dirPath = "";
+        runGraphSpec.graphPath = asset.Path().c_str();
+        runGraphSpec.runSpec.duration.m_spec = eDuration::Ticks;
+        runGraphSpec.runSpec.duration.m_ticks = 10;
+        runGraphSpec.runSpec.execution = mode;
+        runGraphSpec.runSpec.release = true;
+        runGraphSpec.runSpec.debug = runGraphSpec.runSpec.traced = false;
+        RunGraphImplementation(runGraphSpec, loadResult, reporter);
     }
 
     AZ_INLINE void RunGraphImplementation(const RunGraphSpec& runGraphSpec, Reporter& reporter)

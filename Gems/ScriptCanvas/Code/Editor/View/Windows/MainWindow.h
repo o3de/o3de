@@ -56,10 +56,9 @@
 
 #if SCRIPTCANVAS_EDITOR
 #include <Include/EditorCoreAPI.h>
-#endif
+#endif//#if SCRIPTCANVAS_EDITOR
 
-#include <ScriptCanvas/Asset/ScriptCanvasAssetBase.h>
-#endif
+#endif//#if !defined(Q_MOC_RUN)
 
 namespace GraphCanvas
 {
@@ -87,7 +86,6 @@ namespace AzQtComponents
 class QDir;
 class QFile;
 class QProgressDialog;
-namespace ScriptCanvas { class ScriptCanvasAssetBase; }
 
 namespace ScriptCanvasEditor
 {

@@ -78,7 +78,7 @@ namespace ScriptCanvasEditor
 
         ////////////////////////////////////////////////////////////////////////
         // ScriptCanvasExecutionBus::Handler...
-        Reporter RunAssetGraph(AZ::Data::Asset<AZ::Data::AssetData>, ScriptCanvas::ExecutionMode mode) override;
+        Reporter RunAssetGraph(SourceHandle source, ScriptCanvas::ExecutionMode mode) override;
         Reporter RunGraph(AZStd::string_view path, ScriptCanvas::ExecutionMode mode) override;
         ////////////////////////////////////////////////////////////////////////
 

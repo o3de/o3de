@@ -150,11 +150,7 @@ namespace ScriptCanvasEditor
 
         bool IsValidSourceFile(const AZStd::string& filePath, [[maybe_unused]] ScriptCanvas::ScriptCanvasId scriptCanvasId)
         {
-            ScriptCanvasAssetDescription assetDescription;
-            return AZ::StringFunc::EndsWith(filePath, assetDescription.GetExtensionImpl(), false);
-            {
-                return true;
-            }
+            return AZ::StringFunc::EndsWith(filePath, ScriptCanvasEditor::SourceDescription::GetFileExtension(), false);
         }
     }
 }
