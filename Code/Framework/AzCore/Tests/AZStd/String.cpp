@@ -8,11 +8,11 @@
 #include "UserTypes.h"
 
 #include <AzCore/std/string/string.h>
-#include <AzCore/std/string/string_view.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/tokenize.h>
 #include <AzCore/std/string/alphanum.h>
 #include <AzCore/std/sort.h>
+#include <AzCore/std/allocator_stateless.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/array.h>
@@ -21,7 +21,6 @@
 #include <AzCore/std/string/fixed_string.h>
 
 // we need this for AZ_TEST_FLOAT compare
-#include <cfloat>
 #include <cinttypes>
 #include <string>
 #include <string_view>
@@ -2422,6 +2421,31 @@ namespace UnitTest
 
         static_assert(eraseIfTest == "oWord");
         EXPECT_EQ("oWord", eraseIfTest);
+    }
+
+    TEST_F(String, StringWithStatelessAllocator_HasSizeOf_PointerPlus2IntTypes_Compiles)
+    {
+        // The expected size of a basic_string with a stateless allocator
+        // Is the size of the pointer (used for storing the memory address of the string)
+        // + the size of the string "size" member used to store the size of the string
+        // + the size of the string "capacity" member used to store the capacity of the string
+        size_t constexpr ExpectedBasicStringSize = sizeof(void*) + 2 * sizeof(size_t);
+        using StringStatelessAllocator = basic_string<char, AZStd::char_traits<char>, AZStd::stateless_allocator>;
+        static_assert(ExpectedBasicStringSize == sizeof(StringStatelessAllocator),
+            "Stateless allocator is counting against the size of the basic_string class"
+            " A change has made to break the empty base optimization of the basic_string class");
+    }
+
+    TEST_F(String, StringWithStatefulAllocator_HasSizeOf_PointerPlus2IntTypesPlusAllocator_Compiles)
+    {
+        // The expected size of a basic_string with a stateless allocator
+        // Is the size of the pointer (used for storing the memory address of the string)
+        // + the size of the string "size" member used to store the size of the string
+        // + the size of the string "capacity" member used to store the capacity of the string
+        size_t constexpr ExpectedBasicStringSize = sizeof(void*) + 2 * sizeof(size_t) + sizeof(AZStd::allocator);
+        static_assert(ExpectedBasicStringSize == sizeof(AZStd::string),
+            "Using Stateful allocator with basic_string class should result in a 32-byte string class"
+            " on 64-bit platforms ");
     }
 
     template <typename StringType>
