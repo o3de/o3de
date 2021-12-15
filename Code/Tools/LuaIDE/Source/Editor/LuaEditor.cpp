@@ -6,12 +6,7 @@
  *
  */
 
-#include "LuaEditor.h"
 #include <Source/LuaIDEApplication.h>
-
-#if defined(AZ_COMPILER_MSVC)
-#include "resource.h"
-#endif
 
 #include <QtCore/QCoreApplication>
 

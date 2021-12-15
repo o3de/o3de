@@ -7,11 +7,8 @@
 #
 
 set(FILES
-    targetver.h
     Source/StandaloneToolsApplication.cpp
     Source/StandaloneToolsApplication.h
-    Source/Editor/Resource.h
-    Source/Editor/targetver.h
     Source/Telemetry/TelemetryBus.h
     Source/Telemetry/TelemetryComponent.cpp
     Source/Telemetry/TelemetryComponent.h
@@ -21,7 +18,6 @@ set(FILES
     Source/LuaIDEApplication.cpp
     Source/AssetDatabaseLocationListener.h
     Source/AssetDatabaseLocationListener.cpp
-    Source/Editor/LuaEditor.h
     Source/Editor/LuaEditor.cpp
     Source/LUA/BasicScriptChecker.h
     Source/LUA/BreakpointPanel.cpp
