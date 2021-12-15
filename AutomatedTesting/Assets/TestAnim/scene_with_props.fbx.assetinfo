@@ -1,0 +1,9 @@
+{
+    "values": [
+        {
+            "$type": "ScriptProcessorRule",
+            "scriptFilename": "Assets/TestAnim/scene_read_props.py",
+			"fallbackLogic" : 0
+        }
+    ]
+}
