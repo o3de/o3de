@@ -44,6 +44,10 @@ namespace UnitTest
             QObject::connect(m_inputChannelMapper.get(), &AzToolsFramework::QtEventToAzInputMapper::InputChannelUpdated, m_rootWidget.get(),
                 [this]([[maybe_unused]] const AzFramework::InputChannel* inputChannel, QEvent* event)
                 {
+                    if(event == nullptr) {
+                        return;
+                    }
+
                     const QEvent::Type eventType = event->type();
 
                     if (eventType == QEvent::Type::MouseButtonPress ||
@@ -512,4 +516,32 @@ namespace UnitTest
             return info.param.m_az.GetName();
         }
     );
+
+    TEST_F(QtEventToAzInputMapperFixture, MouseWrapMouseViewportQtEventToAzInputMapperFixture) 
+    {
+        AzFramework::InputChannelNotificationBus::Handler::BusConnect();
+        m_captureAzEvents = false;
+
+        
+        const auto startPos = QPoint(WidgetSize.width()  - 2, WidgetSize.height() / 2);
+        MouseMove(m_rootWidget.get(), startPos, QPoint(0,0));
+        m_inputChannelMapper->SetCursorMode(AzToolsFramework::QtEventToAzInputMapper::CursorInputMode::CursorModeWrappedX);
+
+        const auto deltaPos = QPoint(200.0f, 0);
+        const auto expectedPosition = m_rootWidget->mapToGlobal(QPoint(200, WidgetSize.height() / 2));
+        const int iterations = 50;
+  
+        for(float i = 0; i < iterations; i++) {
+            MouseMove(m_rootWidget.get(), m_rootWidget->mapFromGlobal(QCursor::pos()), (deltaPos / iterations));
+        }
+        
+        QPointF endPosition = QCursor::pos();
+        EXPECT_NEAR(endPosition.x(), expectedPosition.x(), 5.0f);
+        EXPECT_NEAR(endPosition.y(), expectedPosition.y(), 5.0f);
+        
+        // cleanup
+        m_inputChannelMapper->SetCursorMode(AzToolsFramework::QtEventToAzInputMapper::CursorInputMode::CursorModeNone);
+        AzFramework::InputChannelNotificationBus::Handler::BusDisconnect();
+    }
+
 } // namespace UnitTest

@@ -447,11 +447,11 @@ namespace AzToolsFramework
 
     void wrapCursorX(const QRect& rect, QPoint& point)
     {
-        if (rect.left() < point.x())
+        if (point.x() < rect.left())
         {
             point.setX(rect.right() - 1);
         }
-        else if (rect.right() > point.x())
+        else if (point.x() > rect.right())
         {
             point.setX(rect.left() + 1);
         }
@@ -459,11 +459,11 @@ namespace AzToolsFramework
 
     void wrapCursorY(const QRect& rect, QPoint& point)
     {
-        if (rect.top() < point.y())
+        if (point.y() < rect.top())
         {
             point.setY(rect.bottom() - 1);
         }
-        else if (rect.bottom() > point.y())
+        else if (point.y() > rect.bottom())
         {
             point.setY(rect.top() + 1);
         }
