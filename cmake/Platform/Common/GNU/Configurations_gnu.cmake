@@ -34,6 +34,7 @@ ly_append_configurations_options(
         -Wno-class-memaccess
         -Wno-nonnull-compare
         -Wno-strict-aliasing
+        -Wno-unused-result
 
     COMPILATION_C
         -Wno-absolute-value
