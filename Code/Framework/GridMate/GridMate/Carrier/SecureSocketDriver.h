@@ -19,13 +19,14 @@
 #define AZ_DebugSecureSocket(...)
 #define AZ_DebugSecureSocketConnection(window, fmt, ...)
 
-//#define AZ_DebugUseSocketDebugLog
-//#define AZ_DebugSecureSocket AZ_TracePrintf
-//#define AZ_DebugSecureSocketConnection(window, fmt, ...) \
-//{\
-//    AZStd::string line = AZStd::string::format(fmt, __VA_ARGS__);\
-//    this->m_dbgLog += line;\
-//}
+/*
+#define AZ_DebugUseSocketDebugLog
+#define AZ_DebugSecureSocket AZ_TracePrintf
+#define AZ_DebugSecureSocketConnection(window, fmt, ...) \
+{\
+    AZStd::string line = AZStd::string::format(fmt, __VA_ARGS__);\
+    this->m_dbgLog += line;\
+} */
 
 #if AZ_TRAIT_GRIDMATE_SECURE_SOCKET_DRIVER_HOOK_ENABLED
 struct ssl_st;
