@@ -522,6 +522,79 @@ namespace AZ
         return true;
     }
 
+    BehaviorClass* BehaviorContext::InternalClass(
+        const char* name,
+        const AZ::TypeId& typeUuid,
+        AZ::IRttiHelper* rttiHelper,
+        size_t alignment,
+        size_t size)
+    {
+        AZ_Assert(
+            !typeUuid.IsNull(),
+            "Type %s has no AZ_TYPE_INFO or AZ_RTTI.  Please use an AZ_RTTI or AZ_TYPE_INFO declaration before trying to use it in "
+            "reflection contexts.",
+            name ? name : "<Unknown class>");
+        if (typeUuid.IsNull())
+        {
+            return nullptr;
+        }
+
+        auto classTypeIt = m_typeToClassMap.find(typeUuid);
+        if (IsRemovingReflection())
+        {
+            if (classTypeIt != m_typeToClassMap.end())
+            {
+                // find it in the name category
+                auto nameIt = m_classes.find(name);
+                while (nameIt != m_classes.end())
+                {
+                    if (nameIt->second == classTypeIt->second)
+                    {
+                        m_classes.erase(nameIt);
+                        break;
+                    }
+                }
+                BehaviorContextBus::Event(this, &BehaviorContextBus::Events::OnRemoveClass, name, classTypeIt->second);
+                delete classTypeIt->second;
+                m_typeToClassMap.erase(classTypeIt);
+            }
+            return nullptr;
+        }
+        else
+        {
+            if (classTypeIt != m_typeToClassMap.end())
+            {
+                // class already reflected, display name and uuid
+#if defined(AZ_ENABLE_TRACING)
+                char uuidName[AZ::Uuid::MaxStringBuffer];
+                classTypeIt->first.ToString(uuidName, AZ::Uuid::MaxStringBuffer);
+
+                AZ_Error("Reflection", false, "Class '%s' is already registered using Uuid: %s!", name, uuidName);
+#endif
+                return nullptr;
+            }
+
+            // TODO: make it a set and use the name inside the class
+            if (m_classes.find(name) != m_classes.end())
+            {
+                AZ_Error("Reflection", false, "A class with name '%s' is already registered!", name);
+                return nullptr;
+            }
+
+            BehaviorClass* behaviorClass = aznew BehaviorClass();
+            behaviorClass->m_typeId = typeUuid;
+            behaviorClass->m_azRtti = rttiHelper;
+            behaviorClass->m_alignment = alignment;
+            behaviorClass->m_size = size;
+            behaviorClass->m_name = name;
+
+            // Switch to Set (we store the name in the class)
+            m_classes.emplace(behaviorClass->m_name, behaviorClass);
+            m_typeToClassMap.emplace(behaviorClass->m_typeId, behaviorClass);
+            return behaviorClass;
+        }
+    }
+
     //=========================================================================
     // ~BehaviorContext
     //=========================================================================
