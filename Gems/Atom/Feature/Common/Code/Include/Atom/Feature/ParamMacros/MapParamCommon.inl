@@ -31,4 +31,4 @@
         AZ_GFX_COMMON_PARAM(AZ::Vector4, Name, MemberName, DefaultValue)                                \
 
 #define AZ_GFX_TEXTURE2D_PARAM(Name, MemberName, DefaultValue)                                          \
-        AZ_GFX_COMMON_PARAM(AZStd::string, Name, MemberName, DefaultValue)                              \
+        AZ_GFX_COMMON_PARAM(AZStd::string, Name, MemberName, DefaultValue)                              
