@@ -66,7 +66,6 @@ namespace AssetProcessor
         int GetColumnCount() const;
         int GetRow() const;
         QVariant GetDataForColumn(int column) const;
-        QIcon GetIcon() const;
         ProductDependencyTreeItem* GetParent() const;
 
         AZStd::shared_ptr<ProductDependencyTreeItemData> GetData() const
@@ -79,6 +78,5 @@ namespace AssetProcessor
         AZStd::vector<AZStd::unique_ptr<ProductDependencyTreeItem>> m_childItems;
         AZStd::shared_ptr<ProductDependencyTreeItemData> m_data;
         ProductDependencyTreeItem* m_parent = nullptr;
-        QIcon m_fileIcon;
     };
 } // namespace AssetProcessor

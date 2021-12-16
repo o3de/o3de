@@ -30,6 +30,7 @@ namespace AssetProcessor
         , m_sharedDbConnection(sharedDbConnection)
         , m_productFilterModel(productFilterModel)
         , m_treeType(treeType)
+        , m_fileIcon(QIcon(QStringLiteral(":/Gallery/Asset_File.svg")))
     {        
         m_root.reset(new ProductDependencyTreeItem(AZStd::make_shared<ProductDependencyTreeItemData>("", "")));
     }
@@ -125,7 +126,7 @@ namespace AssetProcessor
             // Only show the icon in the name column
             if (index.column() == static_cast<int>(AssetTreeColumns::Name))
             {
-                return item->GetIcon();
+                return m_fileIcon;
             }
             break;
         case Qt::ToolTipRole:

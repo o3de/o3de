@@ -34,8 +34,6 @@ namespace AssetProcessor
         AZStd::shared_ptr<ProductDependencyTreeItemData> data, ProductDependencyTreeItem* parentItem)
         : m_data(data)
         , m_parent(parentItem)
-        // QIcon is implicitily shared.
-        , m_fileIcon(QIcon(QStringLiteral(":/Gallery/Asset_File.svg")))
     {
     }
 
@@ -112,11 +110,6 @@ namespace AssetProcessor
             break;
         }
         return QVariant();
-    }
-
-    QIcon ProductDependencyTreeItem::GetIcon() const
-    {
-        return m_fileIcon;
     }
 
     ProductDependencyTreeItem* ProductDependencyTreeItem::GetParent() const

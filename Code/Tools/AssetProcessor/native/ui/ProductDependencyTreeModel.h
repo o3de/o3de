@@ -63,5 +63,6 @@ namespace AssetProcessor
         AZStd::unique_ptr<ProductDependencyTreeItem> m_root;
         AZStd::unordered_set<AZ::s64> m_trackedProductIds;
         DependencyTreeType m_treeType;
+        QIcon m_fileIcon;
     };
 }
