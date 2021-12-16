@@ -31,6 +31,7 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
     Texture2D m_topLeftRightBottomMap;
     Texture2D m_frontBackMap;
     Texture2D m_depthMap;
+    float m_depthScale;
     float m_rowCount;
     float m_columnCount;
     float m_debugFrame;

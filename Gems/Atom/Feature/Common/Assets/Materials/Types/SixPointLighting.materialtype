@@ -212,6 +212,18 @@
                     "defaultValue": false
                 },
                 {
+                    "name": "depthScale",
+                    "displayName": "Scale the Depth Texture",
+                    "description": "Multiplier for the depth texture",
+                    "type": "Float",
+                    "defaultValue": 10.0,
+                    "min": 0.01,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "name": "m_depthScale"
+                    }
+                },
+                {
                     "name": "rowCount",
                     "displayName": "Rows in Flipbook",
                     "description": "Total rows of animation in the flipbook",
