@@ -115,6 +115,7 @@ public Q_SLOTS:
 
 protected Q_SLOTS:
     void ApplyConfig();
+
 protected:
     bool eventFilter(QObject* obj, QEvent* event) override;
 private:
@@ -187,6 +188,8 @@ private:
 
     void ShowProductAssetContextMenu(const QPoint& pos);
     void ShowSourceAssetContextMenu(const QPoint& pos);
+    void ShowOutgoingProductDependenciesContextMenu(const QPoint& pos);
+    void ShowIncomingProductDependenciesContextMenu(const QPoint& pos);
 
     void ResetTimers();
     void CheckStartAnalysisTimers();

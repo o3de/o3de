@@ -32,6 +32,8 @@ namespace AssetProcessor
         m_ui->setupUi(this);
         m_ui->scrollAreaWidgetContents->setLayout(m_ui->scrollableVerticalLayout);
         m_ui->MissingProductDependenciesTable->setColumnWidth(1, 160);
+
+
         ResetText();
         connect(m_ui->MissingProductDependenciesSupport, &QPushButton::clicked, this, &ProductAssetDetailsPanel::OnSupportClicked);
         connect(m_ui->ScanMissingDependenciesButton, &QPushButton::clicked, this, &ProductAssetDetailsPanel::OnScanFileClicked);
@@ -44,6 +46,55 @@ namespace AssetProcessor
     ProductAssetDetailsPanel::~ProductAssetDetailsPanel()
     {
 
+    }
+
+    void ProductAssetDetailsPanel::SetupDependencyGraph(QTreeView* productAssetsTreeView, AZStd::shared_ptr<AssetDatabaseConnection> assetDatabaseConnection)
+    {
+        m_outgoingDependencyTreeModel =
+            new ProductDependencyTreeModel(assetDatabaseConnection, m_productFilterModel, DependencyTreeType::Outgoing, this);
+        m_ui->OutgoingProductDependenciesTreeView->setModel(m_outgoingDependencyTreeModel);
+        connect(
+            productAssetsTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, m_outgoingDependencyTreeModel,
+            &ProductDependencyTreeModel::AssetDataSelectionChanged);
+
+        m_incomingDependencyTreeModel =
+            new ProductDependencyTreeModel(assetDatabaseConnection, m_productFilterModel, DependencyTreeType::Incoming, this);
+        m_ui->IncomingProductDependenciesTreeView->setModel(m_incomingDependencyTreeModel);
+        connect(
+            productAssetsTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, m_incomingDependencyTreeModel,
+            &ProductDependencyTreeModel::AssetDataSelectionChanged);
+
+        
+        connect(
+            m_outgoingDependencyTreeModel, &QAbstractItemModel::modelAboutToBeReset, this,
+            &ProductAssetDetailsPanel::IncomingProductDependencyTreeModelReset);
+        connect(
+            m_incomingDependencyTreeModel, &QAbstractItemModel::modelAboutToBeReset, this,
+            &ProductAssetDetailsPanel::OutgoingProductDependencyTreeModelReset);
+
+        AzQtComponents::StyleManager::setStyleSheet(m_ui->OutgoingProductDependenciesTreeView, QStringLiteral("style:AssetProcessor.qss"));
+        AzQtComponents::StyleManager::setStyleSheet(m_ui->IncomingProductDependenciesTreeView, QStringLiteral("style:AssetProcessor.qss"));
+    }
+
+    
+    QTreeView* ProductAssetDetailsPanel::GetOutgoingProductDependenciesTreeView() const
+    {
+        return m_ui->OutgoingProductDependenciesTreeView;
+    }
+
+    QTreeView* ProductAssetDetailsPanel::GetIncomingProductDependenciesTreeView() const
+    {
+        return m_ui->IncomingProductDependenciesTreeView;
+    }
+
+    void ProductAssetDetailsPanel::IncomingProductDependencyTreeModelReset()
+    {
+        m_ui->IncomingProductDependenciesTreeView->expandToDepth(0);
+    }
+
+    void ProductAssetDetailsPanel::OutgoingProductDependencyTreeModelReset()
+    {
+        m_ui->OutgoingProductDependenciesTreeView->expandToDepth(0);
     }
 
     void ProductAssetDetailsPanel::SetScanQueueEnabled(bool enabled)
@@ -394,6 +445,7 @@ namespace AssetProcessor
         m_ui->folderSelectedDescription->setVisible(!visible);
         m_ui->ScanFolderButton->setVisible(!visible);
         m_ui->ClearScanFolderButton->setVisible(!visible);
+        m_ui->FolderDescriptionProductDependencies->setVisible(!visible);
         m_ui->MissingProductDependenciesFolderTitleLabel->setVisible(!visible);
 
         m_ui->productAssetIdTitleLabel->setVisible(visible);
@@ -432,6 +484,11 @@ namespace AssetProcessor
         m_ui->ClearMissingDependenciesButton->setVisible(visible);
 
         m_ui->DependencySeparatorLine->setVisible(visible);
+
+        m_ui->OutgoingDescription->setVisible(visible);
+        m_ui->IncomingDescription->setVisible(visible);
+        m_ui->IncomingProductDependenciesTreeView->setVisible(visible);
+        m_ui->OutgoingProductDependenciesTreeView->setVisible(visible);
 
         m_ui->missingDependencyErrorIcon->setVisible(false);
     }
