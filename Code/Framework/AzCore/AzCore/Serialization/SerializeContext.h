@@ -107,6 +107,26 @@ namespace AZ
         bool InternalClass(const Uuid& typeUuid, const char* name);
 
     public:
+        class ClassBuilder;
+
+    private:
+        static ClassBuilder* InternalField(
+            ClassBuilder* builder,
+            const AZ::TypeId& classTypeUuid,
+            const char* classTypeName,
+            const AZ::TypeId& fieldTypeId,
+            const AZ::TypeId& underlyingTypeId,
+            const char* name,
+            const AZStd::initializer_list<AttributePair>& attributes,
+            size_t offset,
+            size_t dataSize,
+            int flags,
+            IRttiHelper* rttiHelper,
+            GenericClassInfo* genericClassInfo,
+            bool isEnum,
+            AZStd::any (*createAny)(SerializeContext* serializeContext));
+
+    public:
         /// @cond EXCLUDE_DOCS
         friend class EditContext;
         class ClassBuilder;
@@ -1921,90 +1941,33 @@ namespace AZ
     template<class ClassType, class FieldType>
     SerializeContext::ClassBuilder* SerializeContext::ClassBuilder::Field(const char* name, FieldType ClassType::* member, AZStd::initializer_list<AttributePair> attributes)
     {
-        using UnderlyingType = AZStd::RemoveEnumT<FieldType>;
         using ValueType = AZStd::remove_pointer_t<FieldType>;
+        using UnderlyingType = AZStd::RemoveEnumT<FieldType>;
 
-        if (m_context->IsRemovingReflection())
-        {
-            // Delete any attributes allocated for this call.
-            for (auto& attributePair : attributes)
-            {
-                delete attributePair.second;
-            }
-            return this; // we have already removed the class data for this class
-        }
-
-        AZ_Assert(!m_classData->second.m_serializer,
-            "Class %s has a custom serializer, and can not have additional fields. Classes can either have a custom serializer or child fields.",
-            name);
-
-        AZ_Assert(m_classData->second.m_typeId == AzTypeInfo<ClassType>::Uuid(),
-            "Field %s is serialized with class %s, but belongs to class %s. If you are trying to expose base class field use FieldFromBase",
+        return SerializeContext::InternalField(
+            this,
+            AzTypeInfo<ClassType>::Uuid(),
+            AzTypeInfo<ClassType>::Name(),
+            // SerializeGenericTypeInfo<ValueType>::GetClassTypeId() is needed solely because
+            // the SerializeGenericTypeInfo specialization for AZ::Data::Asset<T> returns the GetAssetClassId() value
+            // and not the AzTypeInfo<AZ::Data::Asset<T>>::Uuid()
+            // Therefore in order to remain backwards compatible the SerializeGenericTypeInfo<ValueType>::GetClassTypeId specialization
+            // is used for all cases except when the ValueType is an enum type.
+            // In that case AzTypeInfo is used directly to retrieve the actual Uuid that the enum specializes
+            AZStd::is_enum<ValueType>::value ? AzTypeInfo<ValueType>::Uuid() : SerializeGenericTypeInfo<ValueType>::GetClassTypeId(),
+            AzTypeInfo<UnderlyingType>::Uuid(),
             name,
-            m_classData->second.m_name,
-            AzTypeInfo<ClassType>::Name());
-
-        // SerializeGenericTypeInfo<ValueType>::GetClassTypeId() is needed solely because
-        // the SerializeGenericTypeInfo specialization for AZ::Data::Asset<T> returns the GetAssetClassId() value
-        // and not the AzTypeInfo<AZ::Data::Asset<T>>::Uuid()
-        // Therefore in order to remain backwards compatible the SerializeGenericTypeInfo<ValueType>::GetClassTypeId specialization
-        // is used for all cases except when the ValueType is an enum type.
-        // In that case AzTypeInfo is used directly to retrieve the actual Uuid that the enum specializes
-        const AZ::TypeId& fieldTypeId = AZStd::is_enum<ValueType>::value ? AzTypeInfo<ValueType>::Uuid() : SerializeGenericTypeInfo<ValueType>::GetClassTypeId();
-        const AZ::TypeId& underlyingTypeId = AzTypeInfo<UnderlyingType>::Uuid();
-
-        m_classData->second.m_elements.emplace_back();
-        ClassElement& ed = m_classData->second.m_elements.back();
-        ed.m_name = name;
-        ed.m_nameCrc = AZ::Crc32(name);
-        // Not really portable but works for the supported compilers. It will crash and not work if we have virtual inheritance. Detect and assert at compile time about it. (something like is_virtual_base_of)
-        ed.m_offset = reinterpret_cast<size_t>(&(reinterpret_cast<ClassType const volatile*>(0)->*member));
-        //ed.m_offset = or pass it to the function with offsetof(typename ElementTypeInfo::ClassType,member);
-        ed.m_dataSize = sizeof(FieldType);
-        ed.m_flags = AZStd::is_pointer<FieldType>::value ? ClassElement::FLG_POINTER : 0;
-        ed.m_editData = nullptr;
-        ed.m_azRtti = GetRttiHelper<ValueType>();
-
-        ed.m_genericClassInfo = SerializeGenericTypeInfo<ValueType>::GetGenericInfo();
-        if (!fieldTypeId.IsNull())
-        {
-            ed.m_typeId = fieldTypeId;
-            // If the field is an enum type add it to the map of enum types -> underlying types
-            if (AZStd::is_enum<FieldType>::value)
-            {
-                m_context->m_enumTypeIdToUnderlyingTypeIdMap.emplace(fieldTypeId, underlyingTypeId);
-                m_context->m_uuidAnyCreationMap.emplace(fieldTypeId, &AnyTypeInfoConcept<FieldType>::CreateAny);
-            }
-        }
-        else
-        {
-            // If the Field typeid is null, fallback to using the Underlying typeid  in case the reflected field is an enum
-            // This allows reflected enum fields which doen't specialize AzTypeInfo using the AZ_TYPE_INFO_SPECIALIZE macro to still
-            // serialize out using  the underlying type for backwards compatibility
-            ed.m_typeId = underlyingTypeId;
-        }
-        AZ_Assert(!ed.m_typeId.IsNull(), "You must provide a valid class id for class %s", name);
-        for (const AttributePair& attributePair : attributes)
-        {
-            ed.m_attributes.emplace_back(attributePair.first, attributePair.second);
-        }
-
-        if (ed.m_genericClassInfo)
-        {
-            ed.m_genericClassInfo->Reflect(m_context);
-        }
-
-        m_currentAttributes = &ed.m_attributes;
-
-        // Flag the field with the EnumType attribute if we're an enumeration type aliased by RemoveEnum
-        // We use Attribute here, so we have to do this after m_currentAttributes is assigned
-        const bool isSpecializedEnum = AZStd::is_enum<FieldType>::value && !AzTypeInfo<FieldType>::Uuid().IsNull();
-        if (isSpecializedEnum)
-        {
-            Attribute(AZ_CRC("EnumType", 0xb177e1b5), AzTypeInfo<FieldType>::Uuid());
-        }
-
-        return this;
+            attributes,
+            // Not really portable but works for the supported compilers. It will crash and not work if we have virtual inheritance. Detect
+            // and assert at compile time about it. (something like is_virtual_base_of)
+            reinterpret_cast<size_t>(&(reinterpret_cast<ClassType const volatile*>(0)->*member)),
+            sizeof(FieldType),
+            AZStd::is_pointer<FieldType>::value ? ClassElement::FLG_POINTER : 0,
+            GetRttiHelper<ValueType>(),
+            SerializeGenericTypeInfo<ValueType>::GetGenericInfo(),
+            AZStd::is_enum<FieldType>::value,
+            &AnyTypeInfoConcept<FieldType>::CreateAny
+        );
     }
 
     /// Declare a type change between serialized versions of a field

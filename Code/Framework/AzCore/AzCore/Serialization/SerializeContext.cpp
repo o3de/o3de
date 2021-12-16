@@ -502,6 +502,96 @@ namespace AZ
         }
     }
 
+    SerializeContext::ClassBuilder* SerializeContext::InternalField(
+        ClassBuilder* builder,
+        const AZ::TypeId& classTypeUuid,
+        const char* classTypeName,
+        const AZ::TypeId& fieldTypeId,
+        const AZ::TypeId& underlyingTypeId, 
+        const char* name,
+        const AZStd::initializer_list<AttributePair>& attributes,
+        size_t offset,
+        size_t dataSize,
+        int flags,
+        IRttiHelper* rttiHelper,
+        GenericClassInfo* genericClassInfo,
+        bool isEnum,
+        AZStd::any (*createAny)(SerializeContext* serializeContext))
+    {
+        if (builder->m_context->IsRemovingReflection())
+        {
+            // Delete any attributes allocated for this call.
+            for (auto& attributePair : attributes)
+            {
+                delete attributePair.second;
+            }
+            return builder; // we have already removed the class data for this class
+        }
+
+        AZ_Assert(
+            !builder->m_classData->second.m_serializer,
+            "Class %s has a custom serializer, and can not have additional fields. Classes can either have a custom serializer or child "
+            "fields.",
+            name);
+
+        AZ_Assert(
+            builder->m_classData->second.m_typeId == classTypeUuid,
+            "Field %s is serialized with class %s, but belongs to class %s. If you are trying to expose base class field use FieldFromBase",
+            name, builder->m_classData->second.m_name, classTypeName);
+
+        builder->m_classData->second.m_elements.emplace_back();
+        ClassElement& ed = builder->m_classData->second.m_elements.back();
+        ed.m_name = name;
+        ed.m_nameCrc = AZ::Crc32(name);
+        ed.m_offset = offset;
+        // ed.m_offset = or pass it to the function with offsetof(typename ElementTypeInfo::ClassType,member);
+        ed.m_dataSize = dataSize;
+        ed.m_flags = flags;
+        ed.m_editData = nullptr;
+        ed.m_azRtti = rttiHelper;
+        ed.m_genericClassInfo = genericClassInfo;
+
+        if (!fieldTypeId.IsNull())
+        {
+            ed.m_typeId = fieldTypeId;
+            // If the field is an enum type add it to the map of enum types -> underlying types
+            if (isEnum)
+            {
+                builder->m_context->m_enumTypeIdToUnderlyingTypeIdMap.emplace(fieldTypeId, underlyingTypeId);
+                builder->m_context->m_uuidAnyCreationMap.emplace(fieldTypeId, createAny);
+            }
+        }
+        else
+        {
+            // If the Field typeid is null, fallback to using the Underlying typeid  in case the reflected field is an enum
+            // This allows reflected enum fields which doen't specialize AzTypeInfo using the AZ_TYPE_INFO_SPECIALIZE macro to still
+            // serialize out using  the underlying type for backwards compatibility
+            ed.m_typeId = underlyingTypeId;
+        }
+        AZ_Assert(!ed.m_typeId.IsNull(), "You must provide a valid class id for class %s", name);
+        for (const AttributePair& attributePair : attributes)
+        {
+            ed.m_attributes.emplace_back(attributePair.first, attributePair.second);
+        }
+
+        if (ed.m_genericClassInfo)
+        {
+            ed.m_genericClassInfo->Reflect(builder->m_context);
+        }
+
+        builder->m_currentAttributes = &ed.m_attributes;
+
+        // Flag the field with the EnumType attribute if we're an enumeration type aliased by RemoveEnum
+        // We use Attribute here, so we have to do this after m_currentAttributes is assigned
+        const bool isSpecializedEnum = isEnum && !fieldTypeId.IsNull();
+        if (isSpecializedEnum)
+        {
+            builder->Attribute(AZ_CRC("EnumType", 0xb177e1b5), fieldTypeId);
+        }
+
+        return builder;
+    }
+
     //=========================================================================
     // DestroyEditContext
     // [10/26/2012]
