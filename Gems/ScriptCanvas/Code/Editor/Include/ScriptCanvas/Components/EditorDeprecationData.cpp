@@ -21,6 +21,7 @@ namespace ScriptCanvasEditor
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<ScriptCanvasAssetHolder>()
+                    ->Version(1)
                     ->Field("m_asset", &ScriptCanvasAssetHolder::m_scriptCanvasAsset)
                     ;
             }
