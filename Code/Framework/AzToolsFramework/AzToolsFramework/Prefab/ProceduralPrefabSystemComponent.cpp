@@ -24,7 +24,7 @@ namespace AzToolsFramework
         {
             if (auto serializationContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
-                serializationContext->Class<ProceduralPrefabSystemComponent>();
+                serializationContext->Class<ProceduralPrefabSystemComponent, AZ::Component>();
             }
         }
 
