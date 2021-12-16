@@ -455,8 +455,17 @@ namespace CommandSystem
         EMotionFX::ActorInstance* actorInstance = nullptr;
         if (parameters.CheckIfHasParameter("actorInstanceID"))
         {
-            const uint32 actorInstanceID = parameters.GetValueAsInt("actorInstanceID", this);
-            actorInstance = EMotionFX::GetActorManager().FindActorInstanceByID(actorInstanceID);
+            const int actorInstanceID = parameters.GetValueAsInt("actorInstanceID", this);
+            if (actorInstanceID == -1)
+            {
+                // If there isn't an actorInstanceId, grab the first actor instance. 
+                actorInstance = EMotionFX::GetActorManager().GetActorInstance(0);
+            }
+            else
+            {
+                actorInstance = EMotionFX::GetActorManager().FindActorInstanceByID(actorInstanceID);
+            }
+
             if (!actorInstance)
             {
                 outResult = AZStd::string::format("Cannot activate anim graph. Actor instance id '%i' is not valid.", actorInstanceID);
