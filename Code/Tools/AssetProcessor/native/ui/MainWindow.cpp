@@ -443,7 +443,7 @@ void MainWindow::Activate()
                 );
             }
     });
-        //ui->builderDetails->setModel();
+    connect(m_guiApplicationManager, &GUIApplicationManager::OnBuildersRegistered, ui->builderList, &QListView::reset);
 
     // Tools tab:
     connect(ui->fullScanButton, &QPushButton::clicked, this, &MainWindow::OnRescanButtonClicked);
