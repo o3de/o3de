@@ -149,7 +149,6 @@ protected:
     void CreateQtApplication() override;
 
     bool InitializeInternalBuilders();
-    bool InitializeExternalBuilders();
     void InitBuilderManager();
     void ShutdownBuilderManager();
     bool InitAssetDatabase();
@@ -172,8 +171,6 @@ protected:
     // ------------------------------------------------------------
 
     AssetProcessor::AssetCatalog* GetAssetCatalog() const { return m_assetCatalog; }
-
-    static bool WaitForBuilderExit(AzFramework::ProcessWatcher* processWatcher, AssetBuilderSDK::JobCancelListener* jobCancelListener, AZ::u32 processTimeoutLimitInSeconds);
 
     ApplicationServer* m_applicationServer = nullptr;
     ConnectionManager* m_connectionManager = nullptr;
