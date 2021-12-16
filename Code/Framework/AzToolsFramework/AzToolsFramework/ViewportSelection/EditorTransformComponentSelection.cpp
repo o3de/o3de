@@ -1360,7 +1360,7 @@ namespace AzToolsFramework
                 EndRecordManipulatorCommand();
             });
 
-        translationManipulators->InstallSurfaceManipulatorEntityIdsToIgnoreCallback(
+        translationManipulators->InstallSurfaceManipulatorEntityIdsToIgnoreFn(
             [this](const ViewportInteraction::MouseInteraction& interaction)
             {
                 if (interaction.m_keyboardModifiers.Ctrl())

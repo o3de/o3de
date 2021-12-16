@@ -80,10 +80,9 @@ namespace AzToolsFramework
         m_onMouseMoveCallback = onMouseMoveCallback;
     }
 
-    void SurfaceManipulator::InstallEntityIdsToIgnoreCallback(
-        const AZStd::function<AZStd::unordered_set<AZ::EntityId>(const ViewportInteraction::MouseInteraction&)>& entityIdsToIgnoreFn)
+    void SurfaceManipulator::InstallEntityIdsToIgnoreFn(EntityIdsToIgnoreFn entityIdsToIgnoreCallback)
     {
-        m_entityIdsToIgnoreFn = entityIdsToIgnoreFn;
+        m_entityIdsToIgnoreFn = AZStd::move(entityIdsToIgnoreCallback);
     }
 
     void SurfaceManipulator::OnLeftMouseDownImpl(

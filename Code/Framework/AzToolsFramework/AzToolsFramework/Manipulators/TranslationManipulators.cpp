@@ -145,12 +145,12 @@ namespace AzToolsFramework
         }
     }
 
-    void TranslationManipulators::InstallSurfaceManipulatorEntityIdsToIgnoreCallback(
-        const AZStd::function<AZStd::unordered_set<AZ::EntityId>(const ViewportInteraction::MouseInteraction&)>& entityIdsToIgnoreFn)
+    void TranslationManipulators::InstallSurfaceManipulatorEntityIdsToIgnoreFn(
+        SurfaceManipulator::EntityIdsToIgnoreFn entityIdsToIgnoreFn)
     {
         if (m_surfaceManipulator)
         {
-            m_surfaceManipulator->InstallEntityIdsToIgnoreCallback(entityIdsToIgnoreFn);
+            m_surfaceManipulator->InstallEntityIdsToIgnoreFn(AZStd::move(entityIdsToIgnoreFn));
         }
     }
 

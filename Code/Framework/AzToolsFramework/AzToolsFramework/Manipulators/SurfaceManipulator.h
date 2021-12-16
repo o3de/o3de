@@ -40,6 +40,9 @@ namespace AzToolsFramework
         //! A Manipulator must only be created and managed through a shared_ptr.
         static AZStd::shared_ptr<SurfaceManipulator> MakeShared(const AZ::Transform& worldFromLocal);
 
+        //! Callback function to determine which EntityIds to ignore when performing the ray intersection.
+        using EntityIdsToIgnoreFn = AZStd::function<UniqueEntityIds(const ViewportInteraction::MouseInteraction&)>;
+
         //! The state of the manipulator at the start of an interaction.
         struct Start
         {
@@ -77,8 +80,7 @@ namespace AzToolsFramework
         void InstallLeftMouseUpCallback(const MouseActionCallback& onMouseUpCallback);
         void InstallMouseMoveCallback(const MouseActionCallback& onMouseMoveCallback);
 
-        void InstallEntityIdsToIgnoreCallback(
-            const AZStd::function<AZStd::unordered_set<AZ::EntityId>(const ViewportInteraction::MouseInteraction&)>& entityIdsToIgnoreFn);
+        void InstallEntityIdsToIgnoreFn(EntityIdsToIgnoreFn entityIdsToIgnoreFn);
 
         void Draw(
             const ManipulatorManagerState& managerState,
@@ -112,7 +114,8 @@ namespace AzToolsFramework
         MouseActionCallback m_onLeftMouseUpCallback = nullptr;
         MouseActionCallback m_onMouseMoveCallback = nullptr;
 
-        AZStd::function<AZStd::unordered_set<AZ::EntityId>(const ViewportInteraction::MouseInteraction&)> m_entityIdsToIgnoreFn;
+        //! Customization point to determine which (if any) EntityIds to ignore while performing the ray intersection.
+        EntityIdsToIgnoreFn m_entityIdsToIgnoreFn = nullptr;
 
         //! Cached ray request initialized at mouse down and updated during mouse move.
         AzFramework::RenderGeometry::RayRequest m_rayRequest;
