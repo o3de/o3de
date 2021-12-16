@@ -247,7 +247,7 @@ namespace AZ
         void ParentPass::CreateClearPassesFromBindings()
         {
             PassRequest clearRequest;
-            clearRequest.m_templateName = Name("ClearPassTemplate");
+            clearRequest.m_templateName = Name("SlowClearPassTemplate");
             clearRequest.m_passData = AZStd::make_shared<ClearPassData>();
             clearRequest.m_connections.push_back();
             clearRequest.m_connections[0].m_localSlot = Name("ClearInputOutput");

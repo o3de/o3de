@@ -65,8 +65,8 @@
                 "Path": "Passes/CascadedShadowmaps.pass"
             },
             {
-                "Name": "ClearPassTemplate",
-                "Path": "Passes/Clear.pass"
+                "Name": "SlowClearPassTemplate",
+                "Path": "Passes/SlowClear.pass"
             },
             {
                 "Name": "FullscreenCopyTemplate",

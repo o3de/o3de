@@ -14,7 +14,9 @@ namespace AZ
 {
     namespace RPI
     {
-        //! A simple pass to clear a render target
+        //! Only use this for debug purposes and edge cases
+        //! The correct and efficient way to clear a pass is through the LoadStoreAction on the pass slot
+        //! This will clear a given image attachment to the specified clear value.
         class ClearPass
             : public RenderPass
         {

@@ -4,7 +4,11 @@
     "ClassName": "PassAsset",
     "ClassData": {
         "PassTemplate": {
-            "Name": "ClearPassTemplate",
+
+            // This is for debug purposes and edge cases only
+            // If you want to clear an attachment you should 
+            // use the LoadStoreAction on your pass slot.
+            "Name": "SlowClearPassTemplate",
             "PassClass": "ClearPass",
             "Slots": [
                 {

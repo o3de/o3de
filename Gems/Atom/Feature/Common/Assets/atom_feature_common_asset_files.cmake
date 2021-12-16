@@ -86,7 +86,6 @@ set(FILES
     Passes/CascadedShadowmaps.pass
     Passes/CheckerboardResolveColor.pass
     Passes/CheckerboardResolveDepth.pass
-    Passes/Clear.pass
     Passes/ContrastAdaptiveSharpening.pass
     Passes/ConvertToAcescg.pass
     Passes/DebugOverlayParent.pass
@@ -201,6 +200,7 @@ set(FILES
     Passes/Skinning.pass
     Passes/SkyBox.pass
     Passes/SkyBox_TwoOutputs.pass
+    Passes/SlowClear.pass
     Passes/SMAA1xApplyLinearHDRColor.pass
     Passes/SMAA1xApplyPerceptualColor.pass
     Passes/SMAABlendingWeightCalculation.pass
