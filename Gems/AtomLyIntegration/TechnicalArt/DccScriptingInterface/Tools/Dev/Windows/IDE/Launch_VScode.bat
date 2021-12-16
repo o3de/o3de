@@ -29,10 +29,10 @@ PUSHD %~dp0
 
 :: Constant Vars (Global)
 :: global debug (propogates)
-IF "%DCCSI_GDEBUG%"=="" (set DCCSI_GDEBUG=True)
+IF "%DCCSI_GDEBUG%"=="" (set DCCSI_GDEBUG=False)
 echo     DCCSI_GDEBUG = %DCCSI_GDEBUG%
 :: initiates debugger connection
-IF "%DCCSI_DEV_MODE%"=="" (set DCCSI_DEV_MODE=True)
+IF "%DCCSI_DEV_MODE%"=="" (set DCCSI_DEV_MODE=False)
 echo     DCCSI_DEV_MODE = %DCCSI_DEV_MODE%
 :: sets debugger, options: WING, PYCHARM
 IF "%DCCSI_GDEBUGGER%"=="" (set DCCSI_GDEBUGGER=WING)
@@ -44,15 +44,19 @@ echo     DCCSI_GDEBUGGER = %DCCSI_GDEBUGGER%
 :: INFO:20
 :: DEBUG:10
 :: NOTSET:0
-IF "%DCCSI_LOGLEVEL%"=="" (set DCCSI_LOGLEVEL=10)
+IF "%DCCSI_LOGLEVEL%"=="" (set DCCSI_LOGLEVEL=20)
 echo     DCCSI_LOGLEVEL = %DCCSI_LOGLEVEL%
 
-:: Initialize envCALL %~dp0\Env_Core.bat
-CALL %~dp0\Env_Python.bat
-CALL %~dp0\Env_Qt.bat
-CALL %~dp0\Env_Maya.bat
-CALL %~dp0\Env_Substance.bat
-CALL %~dp0\Env_VScode.bat
+:: if the user has set up a custom env call it
+IF EXIST "%~dp0..\Env_Dev.bat" CALL %~dp0..\Env_Dev.bat
+
+:: Initialize env
+CALL %~dp0\..\Env_Core.bat
+CALL %~dp0\..\Env_Python.bat
+CALL %~dp0\..\Env_Qt.bat
+CALL %~dp0\..\Env_Maya.bat
+CALL %~dp0\..\Env_Substance.bat
+CALL %~dp0\..\Env_VScode.bat
 
 echo.
 echo _____________________________________________________________________
@@ -64,11 +68,11 @@ echo.
 echo     O3DE_DEV = %O3DE_DEV%
 
 :: shared location for default O3DE python location
-set O3DE_PYTHON_INSTALL=%O3DE_DEV%\Python
-echo     O3DE_PYTHON_INSTALL = %O3DE_PYTHON_INSTALL%
+set PATH_O3DE_PYTHON_INSTALL=%O3DE_DEV%\Python
+echo    PATH_O3DE_PYTHON_INSTALL = %PATH_O3DE_PYTHON_INSTALL%
 
 :: Wing and other IDEs probably prefer access directly to the python.exe
-set DCCSI_PY_IDE = %O3DE_PYTHON_INSTALL%\runtime\python-3.7.10-rev2-windows\python
+set DCCSI_PY_IDE = %PATH_O3DE_PYTHON_INSTALL%\runtime\python-3.7.10-rev2-windows\python
 echo     DCCSI_PY_IDE = %DCCSI_PY_IDE%
 
 :: ide and debugger plug
@@ -78,9 +82,6 @@ echo     DCCSI_PY_BASE = %DCCSI_PY_BASE%
 :: ide and debugger plug
 set DCCSI_PY_DEFAULT=%DCCSI_PY_BASE%
 echo     DCCSI_PY_DEFAULT = %DCCSI_PY_DEFAULT%
-
-:: if the user has set up a custom env call it
-IF EXIST "%~dp0Env_Dev.bat" CALL %~dp0Env_Dev.bat
 
 echo.
 
