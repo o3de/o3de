@@ -156,38 +156,42 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     float2 normalUv = IN.m_uv[MaterialSrg::m_normalMapUvIndex];
     float3x3 uvMatrix = MaterialSrg::m_normalMapUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3(); // By design, only UV0 is allowed to apply transforms.
     surface.vertexNormal = vertexNormal;
-    surface.normal = GetNormalInputWS(MaterialSrg::m_normalMap, MaterialSrg::m_sampler, normalUv, MaterialSrg::m_flipNormalX, MaterialSrg::m_flipNormalY, isFrontFace, IN.m_normal,
+    surface.normal = GetNormalInputWS(MaterialSrg::m_normalMap, MaterialSrg::m_sampler, sixPointUv, MaterialSrg::m_flipNormalX, MaterialSrg::m_flipNormalY, isFrontFace, IN.m_normal,
                                        tangents[MaterialSrg::m_normalMapUvIndex], bitangents[MaterialSrg::m_normalMapUvIndex], uvMatrix, o_normal_useTexture, MaterialSrg::m_normalFactor);
 
     // ------- Base Color -------
 
-    float3 sampledColor = GetBaseColorInput(MaterialSrg::m_baseColorMap, MaterialSrg::m_sampler, baseColorUv, MaterialSrg::m_baseColor.rgb, o_baseColor_useTexture);
+    float3 sampledColor = GetBaseColorInput(MaterialSrg::m_baseColorMap, MaterialSrg::m_sampler, sixPointUv, MaterialSrg::m_baseColor.rgb, o_baseColor_useTexture);
     float3 baseColor = BlendBaseColor(sampledColor, MaterialSrg::m_baseColor.rgb, MaterialSrg::m_baseColorFactor, o_baseColorTextureBlendMode, o_baseColor_useTexture);
     
     float4 topLeftRightBottom = MaterialSrg::m_topLeftRightBottomMap.Sample(MaterialSrg::m_sampler, sixPointUv);
     float4 frontBack = MaterialSrg::m_frontBackMap.Sample(MaterialSrg::m_sampler, sixPointUv);
-    float depthOffset = MaterialSrg::m_depthMap.Sample(MaterialSrg::m_sampler, sixPointUv).r * MaterialSrg::m_depthScale;
+    if(o_enableDepthTexture)
+    {
+        float depthOffset = MaterialSrg::m_depthMap.Sample(MaterialSrg::m_sampler, sixPointUv).r * MaterialSrg::m_depthScale;
 
-    // Calculate new depth in world space
-    // This feels like overkill, once we can assume that the flipbook is always oriented toward the camera.
-    // Should be able to figure out how to scale the depth offset value directly
-    float3 dirToCameraWS;
-    if(ViewSrg::m_projectionMatrix[0].w)
-    {
-        // orthographic projection (directional light)
-        // No view position, use light direction
-        dirToCameraWS = ViewSrg::m_viewMatrix[2].xyz;
+        // Calculate new depth in world space, then transform it to normalized device coordinates
+        // This feels like overkill.
+        // Once we can assume that the flipbook is always oriented toward the camera.
+        // Should be able to figure out how to scale the depth offset value directly
+        float3 dirToCameraWS;
+        if(ViewSrg::m_projectionMatrix[0].w)
+        {
+            // orthographic projection (directional light)
+            // No view position, use light direction
+            dirToCameraWS = ViewSrg::m_viewMatrix[2].xyz;
+        }
+        else
+        {
+            dirToCameraWS = ViewSrg::m_worldPosition.xyz - IN.m_worldPosition.xyz;
+        }
+        dirToCameraWS = normalize(dirToCameraWS);
+        float3 worldOffset = dirToCameraWS * depthOffset;
+        float3 worldOffsetPosition = IN.m_worldPosition.xyz + worldOffset;
+        float4 clipOffsetPosition = mul(ViewSrg::m_viewProjectionMatrix, float4(worldOffsetPosition, 1.0));
+        
+        depthNDC = clipOffsetPosition.z / clipOffsetPosition.w;
     }
-    else
-    {
-        dirToCameraWS = ViewSrg::m_worldPosition.xyz - IN.m_worldPosition.xyz;
-    }
-    dirToCameraWS = normalize(dirToCameraWS);
-    float3 worldOffset = dirToCameraWS * depthOffset;
-    float3 worldOffsetPosition = IN.m_worldPosition.xyz + worldOffset;
-    float4 clipOffsetPosition = mul(ViewSrg::m_viewProjectionMatrix, float4(worldOffsetPosition, 1.0));
-    
-    depthNDC = clipOffsetPosition.z / clipOffsetPosition.w;
 
     if(o_parallax_highlightClipping && displacementIsClipped)
     {
