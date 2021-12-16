@@ -64,6 +64,7 @@ ApplicationManagerBase::~ApplicationManagerBase()
     AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
     AssetProcessor::AssetBuilderRegistrationBus::Handler::BusDisconnect();
     AssetBuilderSDK::AssetBuilderBus::Handler::BusDisconnect();
+    AssetProcessor::AssetBuilderInfoBus::Handler::BusDisconnect();
 
     if (m_settingsRegistryBuilder)
     {
