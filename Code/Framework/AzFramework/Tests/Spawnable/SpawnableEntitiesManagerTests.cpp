@@ -111,7 +111,7 @@ namespace UnitTest
             m_spawnable = aznew AzFramework::Spawnable(
                 AZ::Data::AssetId::CreateString("{EB2E8A2B-F253-4A90-BBF4-55F2EED786B8}:0"), AZ::Data::AssetData::AssetStatus::Ready);
             m_spawnableAsset = new AZ::Data::Asset<AzFramework::Spawnable>(m_spawnable, AZ::Data::AssetLoadBehavior::Default);
-            m_ticket = new AzFramework::EntitySpawnTicket(*m_spawnableAsset);
+            m_ticket = aznew AzFramework::EntitySpawnTicket(*m_spawnableAsset);
 
             auto managerInterface = AzFramework::SpawnableEntitiesInterface::Get();
             m_manager = azrtti_cast<AzFramework::SpawnableEntitiesManager*>(managerInterface);
@@ -516,7 +516,7 @@ namespace UnitTest
             // Make sure we start with a fresh ticket each time, or else each iteration through this loop would continue to build up
             // more and more entities.
             delete m_ticket;
-            m_ticket = new AzFramework::EntitySpawnTicket(*m_spawnableAsset);
+            m_ticket = aznew AzFramework::EntitySpawnTicket(*m_spawnableAsset);
 
             constexpr size_t NumEntities = 4;
             FillSpawnable(NumEntities);
