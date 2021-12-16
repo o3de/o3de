@@ -81,7 +81,6 @@ namespace AZ
                     ->Field("MinimumScreenCoverage", &MeshComponentConfig::m_minimumScreenCoverage)
                     ->Field("QualityDecayRate", &MeshComponentConfig::m_qualityDecayRate);
             }
-
         }
 
         bool MeshComponentConfig::IsAssetSet()
@@ -221,33 +220,40 @@ namespace AZ
         {
         }
 
+        static AzFramework::EntityContextId FindOwningContextId(const AZ::EntityId entityId)
+        {
+            AzFramework::EntityContextId contextId = AzFramework::EntityContextId::CreateNull();
+            AzFramework::EntityIdContextQueryBus::EventResult(
+                contextId, entityId, &AzFramework::EntityIdContextQueries::GetOwningContextId);
+            return contextId;
+        }
+
         void MeshComponentController::Activate(const AZ::EntityComponentIdPair& entityComponentIdPair)
         {
             const AZ::EntityId entityId = entityComponentIdPair.GetEntityId();
             m_entityComponentIdPair = entityComponentIdPair;
 
             m_transformInterface = TransformBus::FindFirstHandler(entityId);
-            AZ_Warning("MeshComponentController", m_transformInterface, "Unable to attach to a TransformBus handler. This mesh will always be rendered at the origin.");
+            AZ_Warning(
+                "MeshComponentController", m_transformInterface,
+                "Unable to attach to a TransformBus handler. This mesh will always be rendered at the origin.");
 
             m_meshFeatureProcessor = RPI::Scene::GetFeatureProcessorForEntity<MeshFeatureProcessorInterface>(entityId);
             AZ_Error("MeshComponentController", m_meshFeatureProcessor, "Unable to find a MeshFeatureProcessorInterface on the entityId.");
 
             m_cachedNonUniformScale = AZ::Vector3::CreateOne();
             AZ::NonUniformScaleRequestBus::EventResult(m_cachedNonUniformScale, entityId, &AZ::NonUniformScaleRequests::GetScale);
-            AZ::NonUniformScaleRequestBus::Event(entityId, &AZ::NonUniformScaleRequests::RegisterScaleChangedEvent,
-                m_nonUniformScaleChangedHandler);
+            AZ::NonUniformScaleRequestBus::Event(
+                entityId, &AZ::NonUniformScaleRequests::RegisterScaleChangedEvent, m_nonUniformScaleChangedHandler);
 
             MeshComponentRequestBus::Handler::BusConnect(entityId);
             TransformNotificationBus::Handler::BusConnect(entityId);
             MaterialReceiverRequestBus::Handler::BusConnect(entityId);
             MaterialComponentNotificationBus::Handler::BusConnect(entityId);
             AzFramework::BoundsRequestBus::Handler::BusConnect(entityId);
-            AzFramework::EntityContextId contextId;
-            AzFramework::EntityIdContextQueryBus::EventResult(
-                contextId, entityId, &AzFramework::EntityIdContextQueries::GetOwningContextId);
-            AzFramework::RenderGeometry::IntersectionRequestBus::Handler::BusConnect({entityId, contextId});
+            AzFramework::RenderGeometry::IntersectionRequestBus::Handler::BusConnect({ entityId, FindOwningContextId(entityId) });
 
-            //Buses must be connected before RegisterModel in case requests are made as a result of HandleModelChange
+            // Buses must be connected before RegisterModel in case requests are made as a result of HandleModelChange
             RegisterModel();
         }
 
@@ -286,6 +292,11 @@ namespace AZ
             if (m_meshFeatureProcessor)
             {
                 m_meshFeatureProcessor->SetTransform(m_meshHandle, world, m_cachedNonUniformScale);
+                // ensure the render geometry is kept in sync with any changes to the entity the mesh is on
+                AzFramework::RenderGeometry::IntersectionNotificationBus::Event(
+                    FindOwningContextId(m_entityComponentIdPair.GetEntityId()),
+                    &AzFramework::RenderGeometry::IntersectionNotificationBus::Events::OnGeometryChanged,
+                    m_entityComponentIdPair.GetEntityId());
             }
         }
 
@@ -297,7 +308,7 @@ namespace AZ
                 m_meshFeatureProcessor->SetTransform(m_meshHandle, m_transformInterface->GetWorldTM(), m_cachedNonUniformScale);
             }
         }
-        
+
         RPI::ModelMaterialSlotMap MeshComponentController::GetModelMaterialSlots() const
         {
             Data::Asset<const RPI::ModelAsset> modelAsset = GetModelAsset();
