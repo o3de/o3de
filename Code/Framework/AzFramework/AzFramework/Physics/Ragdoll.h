@@ -33,6 +33,7 @@ namespace Physics
 
         RagdollNodeConfiguration();
         RagdollNodeConfiguration(const RagdollNodeConfiguration& settings) = default;
+        void OnDataChanged() override;
 
         AZStd::shared_ptr<AzPhysics::JointConfiguration> m_jointConfig;
     };

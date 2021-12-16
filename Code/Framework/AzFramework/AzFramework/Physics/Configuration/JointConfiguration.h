@@ -31,6 +31,7 @@ namespace AzPhysics
         JointConfiguration() = default;
         virtual ~JointConfiguration() = default;
 
+        void OnDataChanged();
         // Visibility helpers for use in the Editor when reflected.
         enum PropertyVisibility : AZ::u8
         {

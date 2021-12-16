@@ -73,6 +73,7 @@ namespace Physics
     private:
         void OnRestOffsetChanged();
         void OnContactOffsetChanged();
+        void OnDataChanged();
     };
 
     struct RayCastRequest;

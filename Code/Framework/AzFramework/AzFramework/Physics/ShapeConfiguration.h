@@ -43,6 +43,7 @@ namespace Physics
         virtual ShapeType GetShapeType() const = 0;
 
         AZ::Vector3 m_scale = AZ::Vector3::CreateOne();
+        void OnDataChanged();
     };
 
     class SphereShapeConfiguration : public ShapeConfiguration

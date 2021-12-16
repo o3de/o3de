@@ -12,6 +12,7 @@
 #include <AzFramework/Physics/PropertyTypes.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzFramework/Physics/RagdollEMotionBus.h>
 
 namespace Physics
 {
@@ -43,6 +44,11 @@ namespace Physics
         }
     }
 
+    void ShapeConfiguration::OnDataChanged()
+    {
+        RagdollEMotionNotificationBus::Broadcast(&RagdollEMotionNotificationBus::Events::OnRagdollColliderConfigurationChanged);
+    }
+
     void SphereShapeConfiguration::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -64,6 +70,7 @@ namespace Physics
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SphereShapeConfiguration::m_radius, "Radius", "The radius of the sphere collider")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &ShapeConfiguration::OnDataChanged)
                     ;
             }
         }
@@ -95,6 +102,7 @@ namespace Physics
                     ->DataElement(AZ::Edit::UIHandlers::Default, &BoxShapeConfiguration::m_dimensions, "Dimensions", "Lengths of the box sides")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &ShapeConfiguration::OnDataChanged)
                     ;
             }
         }
@@ -129,11 +137,13 @@ namespace Physics
                         ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CapsuleShapeConfiguration::OnHeightChanged)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::ValuesOnly)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &ShapeConfiguration::OnDataChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CapsuleShapeConfiguration::m_radius, "Radius", "The radius of the capsule")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CapsuleShapeConfiguration::OnRadiusChanged)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::ValuesOnly)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &ShapeConfiguration::OnDataChanged)
                     ;
             }
         }
