@@ -28,6 +28,7 @@
 #include <Atom/RPI.Public/Pass/Specific/SwapChainPass.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 
+#include <Atom/RPI.Reflect/Pass/ClearPassData.h>
 #include <Atom/RPI.Reflect/Pass/ComputePassData.h>
 #include <Atom/RPI.Reflect/Pass/CopyPassData.h>
 #include <Atom/RPI.Reflect/Pass/DownsampleMipChainPassData.h>
@@ -67,6 +68,7 @@ namespace AZ
             PassSlot::Reflect(context);
 
             PassData::Reflect(context);
+            ClearPassData::Reflect(context);
             CopyPassData::Reflect(context);
             RenderPassData::Reflect(context);
             ComputePassData::Reflect(context);

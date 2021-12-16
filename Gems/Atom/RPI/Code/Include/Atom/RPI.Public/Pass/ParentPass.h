@@ -131,6 +131,10 @@ namespace AZ
 
             // Generates child passes from source PassTemplate
             void CreatePassesFromTemplate();
+
+            // Generates child clear passes to clear input and input/output attachments
+            void CreateClearPassFromBinding(PassAttachmentBinding& binding, PassRequest& clearRequest);
+            void CreateClearPassesFromBindings();
         };
 
         template<typename PassType>

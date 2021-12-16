@@ -8,6 +8,7 @@
 
 #include <AzCore/Interface/Interface.h>
 
+#include <Atom/RPI.Public/Pass/ClearPass.h>
 #include <Atom/RPI.Public/Pass/ComputePass.h>
 #include <Atom/RPI.Public/Pass/CopyPass.h>
 #include <Atom/RPI.Public/Pass/FullscreenTrianglePass.h>
@@ -60,6 +61,7 @@ namespace AZ
         {
             AddPassCreator(Name("ParentPass"), &ParentPass::Create);
             AddPassCreator(Name("RasterPass"), &RasterPass::Create);
+            AddPassCreator(Name("ClearPass"), &ClearPass::Create);
             AddPassCreator(Name("CopyPass"), &CopyPass::Create);
             AddPassCreator(Name("FullScreenTriangle"), &FullscreenTrianglePass::Create);
             AddPassCreator(Name("ComputePass"), &ComputePass::Create);
