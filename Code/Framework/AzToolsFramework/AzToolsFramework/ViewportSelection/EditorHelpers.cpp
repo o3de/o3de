@@ -344,9 +344,20 @@ namespace AzToolsFramework
                         continue;
                     }
 
-                    int iconTextureId = 0;
-                    EditorEntityIconComponentRequestBus::EventResult(
-                        iconTextureId, entityId, &EditorEntityIconComponentRequests::GetEntityIconTextureId);
+                    const AZ::Vector3& entityPosition = m_entityDataCache->GetVisibleEntityPosition(entityCacheIndex);
+                    const AZ::Vector3 entityCameraVector = (entityPosition - cameraState.m_position);
+                    
+                    if (const float directionFromCamera = entityCameraVector.Dot(cameraState.m_forward);
+                        directionFromCamera < 0.0f)
+                    {
+                        continue;
+                    }
+
+                    const float distanceFromCamera = entityCameraVector.GetLength();
+                    if (distanceFromCamera < cameraState.m_nearClip)
+                    {
+                        continue;
+                    }
 
                     using ComponentEntityAccentType = Components::EditorSelectionAccentSystemComponent::ComponentEntityAccentType;
                     const AZ::Color iconHighlight = [this, entityCacheIndex]()
@@ -364,13 +375,13 @@ namespace AzToolsFramework
                         return AZ::Color(1.0f, 1.0f, 1.0f, 1.0f);
                     }();
 
-                    const AZ::Vector3& entityPosition = m_entityDataCache->GetVisibleEntityPosition(entityCacheIndex);
-                    const float distanceFromCamera = cameraState.m_position.GetDistance(entityPosition);
-                    const float iconSize = GetIconSize(distanceFromCamera);
+                    int iconTextureId = 0;
+                    EditorEntityIconComponentRequestBus::EventResult(
+                        iconTextureId, entityId, &EditorEntityIconComponentRequests::GetEntityIconTextureId);
 
-                    editorViewportIconDisplay->DrawIcon({ viewportInfo.m_viewportId, iconTextureId, iconHighlight, entityPosition,
-                                                          EditorViewportIconDisplayInterface::CoordinateSpace::WorldSpace,
-                                                          AZ::Vector2{ iconSize, iconSize } });
+                    editorViewportIconDisplay->DrawIcon(EditorViewportIconDisplayInterface::DrawParameters{
+                        viewportInfo.m_viewportId, iconTextureId, iconHighlight, entityPosition,
+                        EditorViewportIconDisplayInterface::CoordinateSpace::WorldSpace, AZ::Vector2(GetIconSize(distanceFromCamera)) });
                 }
             }
         }
