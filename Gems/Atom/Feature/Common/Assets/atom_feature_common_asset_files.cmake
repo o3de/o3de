@@ -16,7 +16,6 @@ set(FILES
     Materials/Types/BasePBR_ForwardPass.shader
     Materials/Types/BasePBR_LowEndForward.azsl
     Materials/Types/BasePBR_LowEndForward.shader
-    Materials/Types/BasePBR_ShaderEnable.lua
     Materials/Types/EnhancedPBR.materialtype
     Materials/Types/EnhancedPBR_Common.azsli
     Materials/Types/EnhancedPBR_DepthPass_WithPS.azsl
@@ -264,6 +263,7 @@ set(FILES
     ShaderLib/Atom/Features/PBR/Hammersley.azsli
     ShaderLib/Atom/Features/PBR/LightingOptions.azsli
     ShaderLib/Atom/Features/PBR/LightingUtils.azsli
+    ShaderLib/Atom/Features/PBR/Lighting/BaseLighting.azsli
     ShaderLib/Atom/Features/PBR/Lighting/DualSpecularLighting.azsli
     ShaderLib/Atom/Features/PBR/Lighting/EnhancedLighting.azsli
     ShaderLib/Atom/Features/PBR/Lighting/LightingData.azsli
