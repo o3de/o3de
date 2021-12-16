@@ -40,6 +40,7 @@ ly_append_configurations_options(
         -Wno-stringop-overflow
         -Wno-attributes
         -Wno-logical-not-parentheses
+        -Wno-stringop-truncation
 
     COMPILATION_C
         -Wno-absolute-value
