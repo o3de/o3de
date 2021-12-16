@@ -211,7 +211,7 @@ namespace ScriptCanvas
 
             if (asset.GetType() == azrtti_typeid<ScriptEvents::ScriptEventsAsset>())
             {
-                m_scriptEventAssets.push_back(AZStd::make_pair(assetData.second.first, asset));
+                m_scriptEventAssets.emplace_back(assetData.second.first, ScriptEvents::ScriptEventsAssetPtr{ asset.Get(), AZ::Data::AssetLoadBehavior::PreLoad });
             }
         }
 
