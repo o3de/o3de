@@ -134,6 +134,7 @@ namespace UnitTest
         for (size_t i = 0; i < Count; ++i)
         {
             indices[i] = container.Reserve();
+            (void*) indices[i];
         }
 
         // Get the raw data pointer
@@ -253,6 +254,7 @@ namespace UnitTest
         for (size_t i = 0; i < Count; ++i)
         {
             indices[i] = container.Reserve();
+            (void*) indices[i];
 
             container.GetElement<1>(i) = static_cast<int>(i * 10);
             container.GetElement<2>(i) = i * 20.0f;
