@@ -14,7 +14,6 @@
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <SurfaceData/SurfaceDataTagProviderRequestBus.h>
-#include <Terrain/TerrainDataConstants.h>
 
 namespace AZ::Data
 {
@@ -23,15 +22,6 @@ namespace AZ::Data
 
 namespace SurfaceData
 {
-    namespace Constants
-    {
-        static const char* s_allTagNames[] = {
-            Constants::s_unassignedTagName,
-            Terrain::Constants::s_terrainHoleTagName,
-            Terrain::Constants::s_terrainTagName,
-        };
-    } //namespace Constants
-
     class EditorSurfaceDataSystemConfig
         : public AZ::ComponentConfig
     {

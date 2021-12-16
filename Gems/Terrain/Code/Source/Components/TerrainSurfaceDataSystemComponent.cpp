@@ -15,6 +15,7 @@
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
 #include <SurfaceData/SurfaceTag.h>
 #include <SurfaceData/Utility/SurfaceDataUtility.h>
+#include <SurfaceData/SurfaceDataTagProviderRequestBus.h>
 
 namespace Terrain
 {
@@ -240,6 +241,8 @@ namespace Terrain
             // Start listening for surface data events
             AZ_Assert((m_providerHandle != SurfaceData::InvalidSurfaceDataRegistryHandle), "Invalid surface data handle");
             SurfaceData::SurfaceDataProviderRequestBus::Handler::BusConnect(m_providerHandle);
+
+            SurfaceData::SurfaceDataTagProviderRequestBus::Handler::BusConnect();
         }
         else if (terrainValidBeforeUpdate && !terrainValidAfterUpdate)
         {
@@ -262,5 +265,11 @@ namespace Terrain
         const AZ::Aabb& dirtyRegion, [[maybe_unused]] TerrainDataChangedMask dataChangedMask)
     {
         UpdateTerrainData(dirtyRegion);
+    }
+
+    void TerrainSurfaceDataSystemComponent::GetRegisteredSurfaceTagNames(SurfaceData::SurfaceTagNameSet& names) const
+    {
+        names.insert(Constants::s_terrainHoleTagName);
+        names.insert(Constants::s_terrainTagName);
     }
 }
