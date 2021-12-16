@@ -69,7 +69,7 @@ struct VSOutput
 
 VSOutput BasePbr_ForwardPassVS(VSInput IN)
 {
-    VSOutput OUT = (VSOutput)0;
+    VSOutput OUT;
 
     float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
 
@@ -101,7 +101,8 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace)
         PrepareGeneratedTangent(IN.m_normal, IN.m_worldPosition, isFrontFace, IN.m_uv, UvSetCount, tangents, bitangents);
     }
     
-    Surface surface = (Surface)0;
+    Surface surface;
+    surface.clearCoat.InitializeToZero();
     surface.position = IN.m_worldPosition.xyz;
 
     // ------- Normal -------
@@ -139,7 +140,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace)
 
     // ------- Lighting Data -------
 
-    LightingData lightingData = (LightingData)0;
+    LightingData lightingData;
 
     // Light iterator
     lightingData.tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
@@ -173,7 +174,8 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace)
     float alpha = 1.0f;
     PbrLightingOutput lightingOutput = GetPbrLightingOutput(surface, lightingData, alpha);
 
-    lightingOutput.m_diffuseColor.w = -1; // Disable subsurface scattering
+    // Disable subsurface scattering
+    lightingOutput.m_diffuseColor.w = -1;
 
     return lightingOutput;
 }
@@ -183,8 +185,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace)
 ForwardPassOutput BasePbr_ForwardPassPS_EDS(VSOutput IN, bool isFrontFace : SV_IsFrontFace)
 {
     ForwardPassOutput OUT;
-    PbrLightingOutput lightingOutput = (PbrLightingOutput)0;
-    lightingOutput = ForwardPassPS_Common(IN, isFrontFace);
+    PbrLightingOutput lightingOutput = ForwardPassPS_Common(IN, isFrontFace);
 
 #ifdef UNIFIED_FORWARD_OUTPUT
     OUT.m_color.rgb = lightingOutput.m_diffuseColor.rgb + lightingOutput.m_specularColor.rgb;

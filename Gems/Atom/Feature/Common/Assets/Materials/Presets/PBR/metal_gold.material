@@ -1,8 +1,8 @@
 {
     "description": "",
-    "materialType": "Materials\\Types\\Temp\\BasePBR.materialtype",
+    "materialType": "Materials\\Types\\BasePBR.materialtype",
     "parentMaterial": "",
-    "propertyLayoutVersion": 3,
+    "propertyLayoutVersion": 0,
     "properties": {
         "baseColor": {
             "color": [

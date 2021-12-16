@@ -596,24 +596,6 @@
             "args": {
                 "file": "StandardPBR_Metallic.lua"
             }
-        },
-        {
-            "type": "Lua",
-            "args": {
-                "file": "StandardPBR_HandleOpacityDoubleSided.lua"
-            }
-        },
-        {
-            "type": "Lua",
-            "args": {
-                "file": "StandardPBR_HandleOpacityMode.lua"
-            }
-        },
-        {
-            "type": "Lua",
-            "args": {
-                "file": "BasePBR_ShaderEnable.lua"
-            }
         }
     ],
     "uvNameMap": {
