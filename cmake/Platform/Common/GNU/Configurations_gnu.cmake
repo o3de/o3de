@@ -41,6 +41,7 @@ ly_append_configurations_options(
         -Wno-attributes
         -Wno-logical-not-parentheses
         -Wno-stringop-truncation
+        -Wno-memset-elt-size
 
     COMPILATION_C
         -Wno-absolute-value
