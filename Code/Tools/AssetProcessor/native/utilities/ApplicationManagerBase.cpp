@@ -885,14 +885,6 @@ bool ApplicationManagerBase::Run()
         return false;
     }
 
-    bool startedSuccessfully = true;
-
-    if (!PostActivate())
-    {
-        QuitRequested();
-        startedSuccessfully = false;
-    }
-
     AZ_Printf(AssetProcessor::ConsoleChannel, "Asset Processor Batch Processing Started.\n");
     AZ_Printf(AssetProcessor::ConsoleChannel, "-----------------------------------------\n");
     QElapsedTimer allAssetsProcessingTimer;
@@ -912,7 +904,7 @@ bool ApplicationManagerBase::Run()
     RemoveOldTempFolders();
     Destroy();
 
-    return (startedSuccessfully && FailedAssetsCount() == 0);
+    return FailedAssetsCount() == 0;
 }
 
 void ApplicationManagerBase::HandleFileRelocation() const
