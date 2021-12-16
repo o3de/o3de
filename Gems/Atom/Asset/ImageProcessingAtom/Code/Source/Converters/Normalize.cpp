@@ -169,11 +169,12 @@ namespace ImageProcessingAtom
 
         // get the origins of the color model's lattice for the range of values
         // these values need to be encoded as precise as possible under quantization
-        AZ::Vector4 cBaseLines = AZ::Vector4(0.0f, 0.0f, 0.0f, 0.0f);
         AZ::Vector4 cScale = AZ::Vector4(cMaxColor[0] - cMinColor[0], cMaxColor[1] - cMinColor[1],
             cMaxColor[2] - cMinColor[2], cMaxColor[3] - cMinColor[3]);
 
 #if 0
+        AZ::Vector4 cBaseLines = AZ::Vector4(0.0f, 0.0f, 0.0f, 0.0f);
+
         // NOTE: disabled for now, in the future we can turn this on to force availability
         // of value to guarantee for example perfect grey-scales (using YFF)
         switch (GetImageFlags() & EIF_Colormodel)
