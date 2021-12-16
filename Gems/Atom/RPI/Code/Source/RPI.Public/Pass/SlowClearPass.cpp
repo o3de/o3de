@@ -6,37 +6,37 @@
  *
  */
 
-#include <Atom/RPI.Public/Pass/ClearPass.h>
+#include <Atom/RPI.Public/Pass/SlowClearPass.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 
-#include <Atom/RPI.Reflect/Pass/ClearPassData.h>
+#include <Atom/RPI.Reflect/Pass/SlowClearPassData.h>
 
 namespace AZ
 {
     namespace RPI
     {
-        Ptr<ClearPass> ClearPass::Create(const PassDescriptor& descriptor)
+        Ptr<SlowClearPass> SlowClearPass::Create(const PassDescriptor& descriptor)
         {
-            Ptr<ClearPass> pass = aznew ClearPass(descriptor);
+            Ptr<SlowClearPass> pass = aznew SlowClearPass(descriptor);
             return pass;
         }
 
-        ClearPass::ClearPass(const PassDescriptor& descriptor)
+        SlowClearPass::SlowClearPass(const PassDescriptor& descriptor)
             : RenderPass(descriptor)
         {
-            const ClearPassData* passData = PassUtils::GetPassData<ClearPassData>(descriptor);
+            const SlowClearPassData* passData = PassUtils::GetPassData<SlowClearPassData>(descriptor);
             if (passData != nullptr)
             {
                 m_clearValue = passData->m_clearValue;
             }
         }
 
-        void ClearPass::InitializeInternal()
+        void SlowClearPass::InitializeInternal()
         {
             RenderPass::InitializeInternal();
 
             // Set clear value
-            AZ_Assert(GetInputOutputCount() > 0, "ClearPass: Missing InputOutput binding!");
+            AZ_Assert(GetInputOutputCount() > 0, "SlowClearPass: Missing InputOutput binding!");
             RPI::PassAttachmentBinding& binding = GetInputOutputBinding(0);
             binding.m_unifiedScopeDesc.m_loadStoreAction.m_clearValue = m_clearValue;
         }

@@ -14,23 +14,23 @@ namespace AZ
 {
     namespace RPI
     {
-        //! Custom data for the ClearPass. Should be specified in the PassRequest.
-        struct ClearPassData
+        //! Custom data for the SlowClearPass. Should be specified in the PassRequest.
+        struct SlowClearPassData
             : public RenderPassData
         {
-            AZ_RTTI(ClearPassData, "{5F2C24A4-62D0-4E60-91EC-C207C10D15C6}", RenderPassData);
-            AZ_CLASS_ALLOCATOR(ClearPassData, SystemAllocator, 0);
+            AZ_RTTI(SlowClearPassData, "{5F2C24A4-62D0-4E60-91EC-C207C10D15C6}", RenderPassData);
+            AZ_CLASS_ALLOCATOR(SlowClearPassData, SystemAllocator, 0);
 
-            ClearPassData() = default;
-            virtual ~ClearPassData() = default;
+            SlowClearPassData() = default;
+            virtual ~SlowClearPassData() = default;
 
             static void Reflect(ReflectContext* context)
             {
                 if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
                 {
-                    serializeContext->Class<ClearPassData, RenderPassData>()
+                    serializeContext->Class<SlowClearPassData, RenderPassData>()
                         ->Version(0)
-                        ->Field("ClearValue", &ClearPassData::m_clearValue)
+                        ->Field("ClearValue", &SlowClearPassData::m_clearValue)
                         ;
                 }
             }

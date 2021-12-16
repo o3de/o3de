@@ -17,21 +17,21 @@ namespace AZ
         //! Only use this for debug purposes and edge cases
         //! The correct and efficient way to clear a pass is through the LoadStoreAction on the pass slot
         //! This will clear a given image attachment to the specified clear value.
-        class ClearPass
+        class SlowClearPass
             : public RenderPass
         {
-            AZ_RPI_PASS(ClearPass);
+            AZ_RPI_PASS(SlowClearPass);
 
         public:
-            AZ_RTTI(ClearPass, "{31CBAD6C-108F-4F3F-B498-ED968DFCFCE2}", RenderPass);
-            AZ_CLASS_ALLOCATOR(ClearPass, SystemAllocator, 0);
-            virtual ~ClearPass() = default;
+            AZ_RTTI(SlowClearPass, "{31CBAD6C-108F-4F3F-B498-ED968DFCFCE2}", RenderPass);
+            AZ_CLASS_ALLOCATOR(SlowClearPass, SystemAllocator, 0);
+            virtual ~SlowClearPass() = default;
 
-            //! Creates a ClearPass
-            static Ptr<ClearPass> Create(const PassDescriptor& descriptor);
+            //! Creates a SlowClearPass
+            static Ptr<SlowClearPass> Create(const PassDescriptor& descriptor);
 
         protected:
-            ClearPass(const PassDescriptor& descriptor);
+            SlowClearPass(const PassDescriptor& descriptor);
             void InitializeInternal() override;
 
         private:

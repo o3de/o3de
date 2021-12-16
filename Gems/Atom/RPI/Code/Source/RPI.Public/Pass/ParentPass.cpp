@@ -9,14 +9,14 @@
 #include <AtomCore/Instance/InstanceDatabase.h>
 #include <AtomCore/std/containers/vector_set.h>
 
-#include <Atom/RPI.Public/Pass/ClearPass.h>
+#include <Atom/RPI.Public/Pass/SlowClearPass.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/RPI.Public/Pass/PassAttachment.h>
 #include <Atom/RPI.Public/Pass/PassDefines.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 
-#include <Atom/RPI.Reflect/Pass/ClearPassData.h>
+#include <Atom/RPI.Reflect/Pass/SlowClearPassData.h>
 #include <Atom/RPI.Reflect/Pass/PassName.h>
 #include <Atom/RPI.Reflect/Pass/PassRequest.h>
 
@@ -231,7 +231,7 @@ namespace AZ
                 clearRequest.m_connections[0].m_attachmentRef.m_attachment = binding.m_name;
 
                 // Set the pass clear value to the clear value of the attachment binding
-                ClearPassData* clearData = static_cast<ClearPassData*>(clearRequest.m_passData.get());
+                SlowClearPassData* clearData = static_cast<SlowClearPassData*>(clearRequest.m_passData.get());
                 clearData->m_clearValue = binding.m_unifiedScopeDesc.m_loadStoreAction.m_clearValue;
 
                 // Create and add the pass
@@ -248,7 +248,7 @@ namespace AZ
         {
             PassRequest clearRequest;
             clearRequest.m_templateName = Name("SlowClearPassTemplate");
-            clearRequest.m_passData = AZStd::make_shared<ClearPassData>();
+            clearRequest.m_passData = AZStd::make_shared<SlowClearPassData>();
             clearRequest.m_connections.push_back();
             clearRequest.m_connections[0].m_localSlot = Name("ClearInputOutput");
             clearRequest.m_connections[0].m_attachmentRef.m_pass = Name("Parent");

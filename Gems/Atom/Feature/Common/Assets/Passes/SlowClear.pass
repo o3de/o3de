@@ -9,7 +9,7 @@
             // If you want to clear an attachment you should 
             // use the LoadStoreAction on your pass slot.
             "Name": "SlowClearPassTemplate",
-            "PassClass": "ClearPass",
+            "PassClass": "SlowClearPass",
             "Slots": [
                 {
                     "Name": "ClearInputOutput",

@@ -62,7 +62,6 @@ set(FILES
     Include/Atom/RPI.Reflect/Material/ShaderCollection.h
     Include/Atom/RPI.Reflect/Material/MaterialFunctor.h
     Include/Atom/RPI.Reflect/Material/MaterialVersionUpdate.h
-    Include/Atom/RPI.Reflect/Pass/ClearPassData.h
     Include/Atom/RPI.Reflect/Pass/ComputePassData.h
     Include/Atom/RPI.Reflect/Pass/CopyPassData.h
     Include/Atom/RPI.Reflect/Pass/DownsampleMipChainPassData.h
@@ -76,6 +75,7 @@ set(FILES
     Include/Atom/RPI.Reflect/Pass/PassTemplate.h
     Include/Atom/RPI.Reflect/Pass/RasterPassData.h
     Include/Atom/RPI.Reflect/Pass/RenderPassData.h
+    Include/Atom/RPI.Reflect/Pass/SlowClearPassData.h
     Include/Atom/RPI.Reflect/Shader/ShaderCommonTypes.h
     Include/Atom/RPI.Reflect/Shader/ShaderAsset.h
     Include/Atom/RPI.Reflect/Shader/ShaderAssetCreator.h
