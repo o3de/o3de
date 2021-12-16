@@ -8,11 +8,6 @@
 #pragma once
 
 #include <AzCore/Memory/SystemAllocator.h>
-
-#include <Atom/RHI/CommandList.h>
-#include <Atom/RHI/DrawItem.h>
-#include <Atom/RHI/ScopeProducer.h>
-
 #include <Atom/RPI.Public/Pass/RenderPass.h>
 
 namespace AZ
@@ -38,8 +33,8 @@ namespace AZ
             void InitializeInternal() override;
 
         private:
-
             RHI::ClearValue m_clearValue;
         };
+
     }   // namespace RPI
 }   // namespace AZ

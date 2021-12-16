@@ -8,7 +8,6 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/ClearValue.h>
-
 #include <Atom/RPI.Reflect/Pass/RenderPassData.h>
 
 namespace AZ
@@ -38,6 +37,7 @@ namespace AZ
 
             RHI::ClearValue m_clearValue;
         };
+
     } // namespace RPI
 } // namespace AZ
 

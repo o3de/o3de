@@ -8,20 +8,8 @@
 
 #include <Atom/RPI.Public/Pass/ClearPass.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
-#include <Atom/RPI.Public/RPIUtils.h>
-#include <Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h>
 
 #include <Atom/RPI.Reflect/Pass/ClearPassData.h>
-#include <Atom/RPI.Reflect/Pass/PassTemplate.h>
-#include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
-
-#include <Atom/RHI/Factory.h>
-#include <Atom/RHI/FrameScheduler.h>
-#include <Atom/RHI/PipelineState.h>
-
-#include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/Asset/AssetManagerBus.h>
-#include <AzCore/std/algorithm.h>
 
 namespace AZ
 {
