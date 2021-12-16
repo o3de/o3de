@@ -50,10 +50,10 @@ PSDepthOutput DepthPassPS(VSDepthOutput IN, bool isFrontFace : SV_IsFrontFace)
     
     float2 sixPointUv = GetUvForCurrentFrame(IN.m_uv0);
     float alpha = MaterialSrg::m_opacityMap.Sample(MaterialSrg::m_sampler, sixPointUv).r;
-    if(alpha < .1f)
-    {
-        clip(-1);
-    }
+    //if(alpha < .001f)
+    //{
+    //    clip(-1);
+   // }
     if(o_enableDepthTexture)
     {
         float depthOffset = MaterialSrg::m_depthMap.Sample(MaterialSrg::m_sampler, sixPointUv).r;

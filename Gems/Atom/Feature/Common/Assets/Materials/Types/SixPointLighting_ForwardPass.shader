@@ -30,7 +30,6 @@
         }
     },
 
-
     "CompilerHints" : { 
         "DisableOptimizations" : false
     },
@@ -44,7 +43,7 @@
           "type": "Vertex"
         },
         {
-          "name": "StandardPbr_ForwardPassPS_EDS",
+          "name": "StandardPbr_ForwardPassPS",
           "type": "Fragment"
         }
       ]

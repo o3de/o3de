@@ -1261,7 +1261,7 @@
         {
             "type": "Lua",
             "args": {
-                "file": "SixPointLighting_HandleOpacityDoubleSided.lua"
+                "file": "StandardPbr_HandleOpacityDoubleSided.lua"
             }
         },
         {

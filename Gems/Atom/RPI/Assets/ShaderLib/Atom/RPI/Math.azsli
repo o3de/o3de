@@ -271,6 +271,18 @@ float PerspectiveDepthToLinear(float clipDepth, float3 coefficients)
     return coefficients.x * (coefficients.z / (coefficients.y * clipDepth + coefficients.z) - 1.);
 }
 
+float LinearDepthToPerspective(float linearDepth, float3 coefficients)
+{
+    linearDepth /= coefficients.x;
+    linearDepth += 1.0f;
+    linearDepth /= coefficients.z;
+    linearDepth = 1.0f / linearDepth;
+    linearDepth -= coefficients.z;
+    linearDepth /= coefficients.y;
+    return linearDepth;
+    //return (((1.0f / (((linearDepth / coefficients.x) + 1.0f) / coefficients.z)) - coefficients.z) / coefficients.y);
+}
+
 // ---------- Random number generators -----------
 // George Marsaglia's Xorshift RNGs
 // https://www.jstatsoft.org/article/view/v008i14/xorshift.pdf

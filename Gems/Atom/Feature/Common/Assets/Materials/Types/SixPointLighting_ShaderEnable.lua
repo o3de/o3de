@@ -41,9 +41,9 @@ function Process(context)
     
     local forwardPassEDS = context:GetShaderByTag("ForwardPass_EDS")
     local depthPassWithPS = context:GetShaderByTag("DepthPass_WithPS")
-    depthPassWithPS:SetEnabled(true)
+    depthPassWithPS:SetEnabled(false)
     forwardPassEDS:SetEnabled(true)
     
     context:GetShaderByTag("DepthPassTransparentMin_WithPS"):SetEnabled(false)
-    context:GetShaderByTag("DepthPassTransparentMax_WithPS"):SetEnabled(false)
+    context:GetShaderByTag("DepthPassTransparentMax_WithPS"):SetEnabled(true)
 end

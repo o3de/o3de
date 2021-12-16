@@ -166,7 +166,10 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     
     float4 topLeftRightBottom = MaterialSrg::m_topLeftRightBottomMap.Sample(MaterialSrg::m_sampler, sixPointUv);
     float4 frontBack = MaterialSrg::m_frontBackMap.Sample(MaterialSrg::m_sampler, sixPointUv);
-
+    
+    float depthOffset = MaterialSrg::m_depthMap.Sample(MaterialSrg::m_sampler, sixPointUv).r;
+    depthNDC += depthOffset;
+    
     if(o_parallax_highlightClipping && displacementIsClipped)
     {
         ApplyParallaxClippingHighlight(baseColor);
