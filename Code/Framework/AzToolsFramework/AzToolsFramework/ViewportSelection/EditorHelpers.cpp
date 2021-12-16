@@ -345,7 +345,7 @@ namespace AzToolsFramework
                     }
 
                     const AZ::Vector3& entityPosition = m_entityDataCache->GetVisibleEntityPosition(entityCacheIndex);
-                    const AZ::Vector3 entityCameraVector = (entityPosition - cameraState.m_position);
+                    const AZ::Vector3 entityCameraVector = entityPosition - cameraState.m_position;
                     
                     if (const float directionFromCamera = entityCameraVector.Dot(cameraState.m_forward);
                         directionFromCamera < 0.0f)
