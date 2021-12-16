@@ -319,20 +319,17 @@ namespace AZStd
         }
         static constexpr size_t length(const char_type* s) noexcept
         {
+#if !defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC >= 100000
             if constexpr (AZStd::is_same_v<char_type, char>)
             {
                 return __builtin_strlen(s);
             }
             else if constexpr (AZStd::is_same_v<char_type, wchar_t>)
             {
-#if defined(AZ_COMPILER_GCC)
-                // __builtin_wcslen(s) is not defined for GCC, use the wcslen
-                return wcslen(s);
-#else
                 return __builtin_wcslen(s);
-#endif // defined(AZ_COMPILER_GCC)
             }
             else
+#endif // defined(AZ_COMPILER_GCC)
             {
                 size_t strLength{};
                 for (; *s; ++s, ++strLength)
@@ -347,19 +344,14 @@ namespace AZStd
                 // There is a bug with the __builtin_char_memchr intrinsic in Visual Studio 2017 15.8.x and 15.9.x
                 // It reads in one more additional character than the value of count.
                 // This is probably due to assuming null-termination
-#if !defined(AZ_COMPILER_MSVC) || AZ_COMPILER_MSVC < 1915 || AZ_COMPILER_MSVC > 1916
+#if (!defined(AZ_COMPILER_MSVC) || AZ_COMPILER_MSVC < 1915 || AZ_COMPILER_MSVC > 1916) && !defined(AZ_COMPILER_GCC)
             if constexpr (AZStd::is_same_v<char_type, char>)
             {
-#if defined(AZ_COMPILER_GCC)
-                return static_cast<const char_type*>(__builtin_memchr(s, ch, count));
-#else
                 return __builtin_char_memchr(s, ch, count);
-#endif // defined(AZ_COMPILER_GCC)
             }
             else if constexpr (AZStd::is_same_v<char_type, wchar_t>)
             {
                 return __builtin_wmemchr(s, ch, count);
-
             }
             else
 #endif
