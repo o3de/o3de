@@ -445,7 +445,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_OPEN_ASSET_BROWSER, OnOpenAssetBrowserView)
     ON_COMMAND(ID_OPEN_AUDIO_CONTROLS_BROWSER, OnOpenAudioControlsEditor)
 
-    ON_COMMAND(ID_DISPLAY_SHOWHELPERS, OnShowHelpers)
     ON_COMMAND(ID_OPEN_TRACKVIEW, OnOpenTrackView)
     ON_COMMAND(ID_OPEN_UICANVASEDITOR, OnOpenUICanvasEditor)
 
@@ -2615,12 +2614,6 @@ void CCryEditApp::OnOpenAssetImporter()
 void CCryEditApp::OnUpdateSelected(QAction* action)
 {
     action->setEnabled(!GetIEditor()->GetSelection()->IsEmpty());
-}
-
-void CCryEditApp::OnShowHelpers()
-{
-    GetIEditor()->GetDisplaySettings()->DisplayHelpers(!GetIEditor()->GetDisplaySettings()->IsDisplayHelpers());
-    GetIEditor()->Notify(eNotify_OnDisplayRenderUpdate);
 }
 
 //////////////////////////////////////////////////////////////////////////
