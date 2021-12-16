@@ -3455,7 +3455,7 @@ namespace AzToolsFramework
                 static const AZ::u32 kPixelIndentationPerLevel = GetSliceHierarchyMenuIdentationPerLevel();
 
                 // Any asset that acts as a valid target for all selected slice-instance-owned entities can be shown.
-                QMenu* quickPushMenu = quickPushMenu = new QMenu(parent);
+                QMenu* quickPushMenu = new QMenu(parent);
 
                 bool setupMenu = false;
                 if (pushableChangesAvailable)
