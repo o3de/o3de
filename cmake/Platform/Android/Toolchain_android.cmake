@@ -31,7 +31,9 @@ endif()
 if(NOT ANDROID_ABI)
     set(ANDROID_ABI arm64-v8a)
 endif()
-if(NOT ANDROID_ARM_MODE)
+
+# The ANDROID_ARM_MODE is only applicable when the ANDROID_ABI starts with "armeabi"
+if(NOT ANDROID_ARM_MODE AND ANDROID_ABI MATCHES "^armeabi")
     set(ANDROID_ARM_MODE arm)
 endif()
 if(NOT ANDROID_ARM_NEON)
