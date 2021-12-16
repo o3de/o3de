@@ -15,7 +15,6 @@
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzFramework/Viewport/ClickDetector.h>
 #include <AzFramework/Viewport/ViewportId.h>
-#include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
 
@@ -151,13 +150,6 @@ namespace AzToolsFramework
             static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         };
 
-        //! A ray projection, originating from a point and extending in a direction specified as a normal.
-        struct ProjectedViewportRay
-        {
-            AZ::Vector3 origin;
-            AZ::Vector3 direction;
-        };
-
         //! Requests that can be made to the viewport to query and modify its state.
         class ViewportInteractionRequests
         {
@@ -182,15 +174,6 @@ namespace AzToolsFramework
 
         //! Type to inherit to implement ViewportInteractionRequests.
         using ViewportInteractionRequestBus = AZ::EBus<ViewportInteractionRequests, ViewportEBusTraits>;
-
-        //! Utility function to return a viewport ray.
-        inline ProjectedViewportRay ViewportScreenToWorldRay(
-            const AzFramework::CameraState& cameraState, const AzFramework::ScreenPoint& screenPoint)
-        {
-            const AZ::Vector3 rayOrigin = AzFramework::ScreenToWorld(screenPoint, cameraState);
-            const AZ::Vector3 rayDirection = (rayOrigin - cameraState.m_position).GetNormalized();
-            return AzToolsFramework::ViewportInteraction::ProjectedViewportRay{ rayOrigin, rayDirection };
-        }
 
         //! Utility function to return a viewport ray using the ViewportInteractionRequestBus.
         inline ProjectedViewportRay ViewportScreenToWorldRay(
@@ -225,6 +208,10 @@ namespace AzToolsFramework
             virtual bool StickySelectEnabled() const = 0;
             //! Returns the default viewport camera position.
             virtual AZ::Vector3 DefaultEditorCameraPosition() const = 0;
+            //! Returns if icons are visible in the viewport.
+            virtual bool IconsVisible() const = 0;
+            //! Returns if viewport helpers (additional debug drawing) are visible in the viewport.
+            virtual bool HelpersVisible() const = 0;
 
         protected:
             ~ViewportSettingsRequests() = default;

@@ -8,8 +8,6 @@
 #include <Atom/RHI/SwapChain.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace RHI
@@ -185,7 +183,7 @@ namespace AZ
 
         void SwapChain::Present()
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             // Due to swapchain recreation, the images are refreshed.
             // There is no need to present swapchain for this frame.
             const uint32_t imageCount = aznumeric_cast<uint32_t>(m_images.size());

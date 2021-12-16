@@ -37,9 +37,9 @@ namespace AzToolsFramework
         static void Reflect(AZ::ReflectContext* context);
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
 
-        // ReadOnlyEntityPublicNotifications overrides ...
+        // ReadOnlyEntityPublicInterface overrides ...
         bool IsReadOnly(const AZ::EntityId& entityId) override;
-        
+
         // ReadOnlyEntityQueryInterface overrides ...
         void RefreshReadOnlyState(const EntityIdList& entityIds) override;
         void RefreshReadOnlyStateForAllEntities() override;

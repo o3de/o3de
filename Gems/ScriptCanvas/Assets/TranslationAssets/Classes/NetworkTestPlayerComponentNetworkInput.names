@@ -5,8 +5,7 @@
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "Network Test Player Component Network Input",
-                "category": "Automated Testing"
+                "name": "Network Test Player Component Network Input"
             },
             "methods": [
                 {
@@ -27,13 +26,7 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Forward Back"
-                            }
-                        },
-                        {
-                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
-                            "details": {
-                                "name": "Left Right"
+                                "name": "left Right"
                             }
                         }
                     ],
@@ -47,9 +40,9 @@
                     ]
                 },
                 {
-                    "base": "FwdBack",
+                    "base": "GetFwdBack",
                     "details": {
-                        "name": "Get Forward Back"
+                        "name": "Get Fwd Back"
                     },
                     "params": [
                         {
@@ -63,15 +56,15 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Forward Back"
+                                "name": "Fwd Back"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "FwdBack",
+                    "base": "SetFwdBack",
                     "details": {
-                        "name": "Set Forward Back"
+                        "name": "Set Fwd Back"
                     },
                     "params": [
                         {
@@ -83,13 +76,13 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Forward Back"
+                                "name": "Fwd Back"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "LeftRight",
+                    "base": "GetLeftRight",
                     "details": {
                         "name": "Get Left Right"
                     },
@@ -111,7 +104,7 @@
                     ]
                 },
                 {
-                    "base": "LeftRight",
+                    "base": "SetLeftRight",
                     "details": {
                         "name": "Set Left Right"
                     },

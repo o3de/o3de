@@ -11,7 +11,6 @@
 #include <AzCore/base.h>
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/Debug/TraceMessageBus.h>
-#include <AzCore/Debug/TraceMessagesDrillerBus.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/fixed_string.h>
 
@@ -185,8 +184,6 @@ namespace AZ::Debug
         Debug::Trace::Instance().Output(nullptr, message);
 
         Debug::Trace::Instance().PrintCallstack(nullptr, 0, ExceptionInfo->ContextRecord);
-
-        EBUS_EVENT(Debug::TraceMessageDrillerBus, OnException, message);
 
         bool result = false;
         EBUS_EVENT_RESULT(result, Debug::TraceMessageBus, OnException, message);

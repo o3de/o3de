@@ -80,7 +80,6 @@ protected:
     void OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam) override;
 
     void OnMaximize();
-    void OnToggleHelpers();
     void UpdateDisplayInfo();
 
     void SetupCameraDropdownMenu();
@@ -153,6 +152,9 @@ protected:
     QMenu* m_aspectMenu = nullptr;
     QMenu* m_resolutionMenu = nullptr;
     QMenu* m_viewportInformationMenu = nullptr;
+    QMenu* m_helpersMenu = nullptr;
+    QAction* m_helpersAction = nullptr;
+    QAction* m_iconsAction = nullptr;
     QAction* m_noInformationAction = nullptr;
     QAction* m_normalInformationAction = nullptr;
     QAction* m_fullInformationAction = nullptr;

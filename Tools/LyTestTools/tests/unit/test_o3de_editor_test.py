@@ -594,6 +594,7 @@ class TestRunningTests(unittest.TestCase):
                                                      mock_get_output_results, mock_create):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
         mock_workspace = mock.MagicMock()
+        mock_workspace.paths.engine_root.return_value = ""
         mock_editor = mock.MagicMock()
         mock_test_spec = mock.MagicMock()
         mock_test_spec.__name__ = 'mock_test_name'
@@ -620,6 +621,7 @@ class TestRunningTests(unittest.TestCase):
                                                      mock_get_output_results, mock_create):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
         mock_workspace = mock.MagicMock()
+        mock_workspace.paths.engine_root.return_value = ""
         mock_editor = mock.MagicMock()
         mock_test_spec = mock.MagicMock()
         mock_test_spec.__name__ = 'mock_test_name'
@@ -647,6 +649,7 @@ class TestRunningTests(unittest.TestCase):
                                                      mock_get_output_results, mock_retrieve_crash, mock_create):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
         mock_workspace = mock.MagicMock()
+        mock_workspace.paths.engine_root.return_value = ""
         mock_editor = mock.MagicMock()
         mock_test_spec = mock.MagicMock()
         mock_test_spec.__name__ = 'mock_test_name'
@@ -674,6 +677,7 @@ class TestRunningTests(unittest.TestCase):
                                                      mock_get_output_results, mock_create):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
         mock_workspace = mock.MagicMock()
+        mock_workspace.paths.engine_root.return_value = ""
         mock_editor = mock.MagicMock()
         mock_test_spec = mock.MagicMock()
         mock_test_spec.__name__ = 'mock_test_name'
@@ -699,6 +703,7 @@ class TestRunningTests(unittest.TestCase):
                                                             mock_retrieve_log, mock_retrieve_editor_log, mock_create):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
         mock_workspace = mock.MagicMock()
+        mock_workspace.paths.engine_root.return_value = ""
         mock_editor = mock.MagicMock()
         mock_editor.get_returncode.return_value = 0
         mock_test_spec = mock.MagicMock()
@@ -726,6 +731,7 @@ class TestRunningTests(unittest.TestCase):
                                                            mock_retrieve_log, mock_retrieve_editor_log, mock_get_results):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
         mock_workspace = mock.MagicMock()
+        mock_workspace.paths.engine_root.return_value = ""
         mock_editor = mock.MagicMock()
         mock_editor.get_returncode.return_value = 15
         mock_test_spec = mock.MagicMock()
@@ -751,6 +757,7 @@ class TestRunningTests(unittest.TestCase):
                                                                  mock_get_results, mock_retrieve_crash, mock_create):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
         mock_workspace = mock.MagicMock()
+        mock_workspace.paths.engine_root.return_value = ""
         mock_editor = mock.MagicMock()
         mock_editor.get_returncode.return_value = 1
         mock_test_spec = mock.MagicMock()
@@ -785,6 +792,7 @@ class TestRunningTests(unittest.TestCase):
                                                                    mock_get_results, mock_retrieve_crash, mock_create):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
         mock_workspace = mock.MagicMock()
+        mock_workspace.paths.engine_root.return_value = ""
         mock_editor = mock.MagicMock()
         mock_editor.get_returncode.return_value = 1
         mock_test_spec = mock.MagicMock()
@@ -821,6 +829,7 @@ class TestRunningTests(unittest.TestCase):
                                                                 mock_get_results, mock_create):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
         mock_workspace = mock.MagicMock()
+        mock_workspace.paths.engine_root.return_value = ""
         mock_editor = mock.MagicMock()
         mock_editor.wait.side_effect = ly_test_tools.launchers.exceptions.WaitTimeoutError()
         mock_test_spec = mock.MagicMock()

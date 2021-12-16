@@ -37,6 +37,7 @@ namespace AudioControls
         m_connectionList->installEventFilter(this);
 
         connect(m_connectionList, SIGNAL(customContextMenuRequested(const QPoint&)), SLOT(ShowConnectionContextMenu(const QPoint&)));
+        connect(m_connectionList, SIGNAL(itemSelectionChanged()), this, SLOT(SelectedConnectionChanged()));
     }
 
     //-------------------------------------------------------------------------------------------//
@@ -100,6 +101,57 @@ namespace AudioControls
         contextMenu.exec(m_connectionList->mapToGlobal(pos));
     }
 
+     //-------------------------------------------------------------------------------------------//
+    void QConnectionsWidget::SelectedConnectionChanged()
+    {
+        TConnectionPtr connection;
+        EACEControlType controlType = AudioControls::eACET_NUM_TYPES;
+        if (m_control)
+        {
+            QList<QListWidgetItem*> selected = m_connectionList->selectedItems();
+            if (selected.length() == 1)
+            {
+                QListWidgetItem* currentItem = selected[0];
+                if (currentItem)
+                {
+                    const CID externalId = currentItem->data(eMDR_ID).toInt();
+                    connection = m_control->GetConnection(externalId);
+                    controlType = m_control->GetType();
+                }
+            }
+        }
+
+        if (m_connectionPropertiesWidget)
+        {
+            delete m_connectionPropertiesWidget;
+            m_connectionPropertiesWidget = nullptr;
+        }
+
+        if (connection && connection->HasProperties())
+        {
+            if (IAudioSystemEditor* audioSystemImpl = CAudioControlsEditorPlugin::GetAudioSystemEditorImpl())
+            {
+                m_connectionPropertiesWidget = audioSystemImpl->CreateConnectionPropertiesWidget(connection, controlType);
+                if (m_connectionPropertiesWidget)
+                {
+                    m_connectionPropertiesWidget->setParent(m_connectionPropertiesFrame);
+                    m_connectionPropertiesLayout->addWidget(m_connectionPropertiesWidget);
+
+                    bool widgetHasChangedSignal = m_connectionPropertiesWidget->metaObject()->indexOfSignal("PropertiesChanged()") != -1;
+                    AZ_Error(
+                        "Audio", widgetHasChangedSignal,
+                        "The widget created by IAudioSystemEditor::CreateConnectionPropertiesWidget() must have a \"PropertiesChanged()\" "
+                        "signal.");
+
+                    if (widgetHasChangedSignal)
+                    {
+                        connect(m_connectionPropertiesWidget, SIGNAL(PropertiesChanged()), this, SLOT(CurrentConnectionModified()));
+                    }
+                }
+            }
+        }
+    }
+
     //-------------------------------------------------------------------------------------------//
     void QConnectionsWidget::MakeConnectionTo(IAudioSystemControl* middlewareControl)
     {
@@ -128,6 +180,22 @@ namespace AudioControls
             }
             else
             {
+                if (m_control->GetType() == EACEControlType::eACET_SWITCH_STATE)
+                {
+                    if (!m_control->GetParent()->SwitchStateConnectionCheck(middlewareControl))
+                    {
+                        QMessageBox messageBox(this);
+                        messageBox.setStandardButtons(QMessageBox::Ok);
+                        messageBox.setDefaultButton(QMessageBox::Ok);
+                        messageBox.setWindowTitle("Audio Controls Editor");
+                        messageBox.setText("Not in the same switch group, connection failed.");
+                        if (messageBox.exec() == QMessageBox::Ok)
+                        {
+                            return;
+                        }
+                    }
+                }
+
                 connection = audioSystemImpl->CreateConnectionToControl(m_control->GetType(), middlewareControl);
                 if (connection)
                 {

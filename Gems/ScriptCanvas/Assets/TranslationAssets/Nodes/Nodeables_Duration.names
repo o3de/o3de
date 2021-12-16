@@ -6,43 +6,43 @@
             "variant": "",
             "details": {
                 "name": "Duration",
-                "category": "Timing",
+                "category": "Nodeables",
                 "tooltip": "Triggers a signal every frame during the specified duration."
             },
             "slots": [
                 {
-                    "base": "Input_Start",
+                    "base": "Input_Start_0",
                     "details": {
                         "name": "Start"
                     }
                 },
                 {
-                    "base": "DataInput_Duration",
+                    "base": "DataInput_Duration_0",
                     "details": {
                         "name": "Duration"
                     }
                 },
                 {
-                    "base": "Output_On Start",
+                    "base": "Output_On Start_0",
                     "details": {
                         "name": "On Start"
                     }
                 },
                 {
-                    "base": "Output_OnTick",
+                    "base": "Output_OnTick_1",
                     "details": {
                         "name": "OnTick",
                         "tooltip": "Signaled every frame while the duration is active."
                     }
                 },
                 {
-                    "base": "DataOutput_Elapsed",
+                    "base": "DataOutput_Elapsed_0",
                     "details": {
                         "name": "Elapsed"
                     }
                 },
                 {
-                    "base": "Output_Done",
+                    "base": "Output_Done_2",
                     "details": {
                         "name": "Done",
                         "tooltip": "Signaled after waiting for the specified amount of times."

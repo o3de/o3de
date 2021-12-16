@@ -168,8 +168,6 @@ enum EEditorNotifyEvent
     eNotify_OnVegetationObjectSelection, // When vegetation objects selection change.
     eNotify_OnVegetationPanelUpdate,   // When vegetation objects selection change.
 
-    eNotify_OnDisplayRenderUpdate,     // Sent when editor finish terrain texture generation.
-
     eNotify_OnDataBaseUpdate,          // DataBase Library was modified.
 
     eNotify_OnLayerImportBegin,         //layer import was started

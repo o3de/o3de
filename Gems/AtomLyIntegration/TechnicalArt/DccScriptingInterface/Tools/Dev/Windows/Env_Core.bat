@@ -74,8 +74,8 @@ echo     O3DE_PROJECT = %O3DE_PROJECT%
 :: if not set we also use the DCCsi path as stand-in
 CD /D ..\..\..\
 :: To Do: remove one of these 
-IF "%O3DE_PROJECT_PATH%"=="" (set O3DE_PROJECT_PATH=%CD%)
-echo     O3DE_PROJECT_PATH = %O3DE_PROJECT_PATH%
+IF "%PATH_O3DE_PROJECT%"=="" (set PATH_O3DE_PROJECT=%CD%)
+echo     PATH_O3DE_PROJECT = %PATH_O3DE_PROJECT%
 
 IF "%ABS_PATH%"=="" (set ABS_PATH=%CD%)
 echo     ABS_PATH = %ABS_PATH%
@@ -84,7 +84,7 @@ echo     ABS_PATH = %ABS_PATH%
 pushd %ABS_PATH%
 
 :: Change to root Lumberyard dev dir
-CD /d %O3DE_PROJECT_PATH%\%O3DE_REL_PATH%
+CD /d %PATH_O3DE_PROJECT%\%O3DE_REL_PATH%
 IF "%O3DE_DEV%"=="" (set O3DE_DEV=%CD%)
 echo     O3DE_DEV = %O3DE_DEV%
 :: Restore original directory
@@ -92,32 +92,32 @@ popd
 
 :: dcc scripting interface gem path
 :: currently know relative path to this gem
-set DCCSIG_PATH=%O3DE_DEV%\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface
-echo     DCCSIG_PATH = %DCCSIG_PATH%
+set PATH_DCCSIG=%O3DE_DEV%\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface
+echo     PATH_DCCSIG = %PATH_DCCSIG%
 
 :: Change to DCCsi root dir
-CD /D %DCCSIG_PATH%
+CD /D %PATH_DCCSIG%
 
 :: per-dcc sdk path
-set DCCSI_TOOLS_PATH=%DCCSIG_PATH%\Tools
-echo     DCCSI_TOOLS_PATH = %DCCSI_TOOLS_PATH%
+set PATH_DCCSI_TOOLS=%PATH_DCCSIG%\Tools
+echo     PATH_DCCSI_TOOLS = %PATH_DCCSI_TOOLS%
 
 :: temp log location specific to this gem
-set DCCSI_LOG_PATH=%O3DE_PROJECT_PATH%\.temp\logs
+set DCCSI_LOG_PATH=%PATH_O3DE_PROJECT%\.temp\logs
 echo     DCCSI_LOG_PATH = %DCCSI_LOG_PATH%
 
 :: O3DE build path
 IF "%O3DE_BUILD_FOLDER%"=="" (set O3DE_BUILD_FOLDER=build)
 echo     O3DE_BUILD_FOLDER = %O3DE_BUILD_FOLDER%
 
-IF "%O3DE_BUILD_PATH%"=="" (set O3DE_BUILD_PATH=%O3DE_DEV%\%O3DE_BUILD_FOLDER%)
-echo     O3DE_BUILD_PATH = %O3DE_BUILD_PATH%
+IF "%PATH_O3DE_BUILD%"=="" (set PATH_O3DE_BUILD=%O3DE_DEV%\%O3DE_BUILD_FOLDER%)
+echo     PATH_O3DE_BUILD = %PATH_O3DE_BUILD%
 
-IF "%O3DE_BIN_PATH%"=="" (set O3DE_BIN_PATH=%O3DE_BUILD_PATH%\bin\profile)
-echo     O3DE_BIN_PATH = %O3DE_BIN_PATH%
+IF "%PATH_O3DE_BIN%"=="" (set PATH_O3DE_BIN=%PATH_O3DE_BUILD%\bin\profile)
+echo     PATH_O3DE_BIN = %PATH_O3DE_BIN%
 
 :: add to the PATH
-SET PATH=%O3DE_BIN_PATH%;%DCCSIG_PATH%;%PATH%
+SET PATH=%PATH_O3DE_BIN%;%PATH_DCCSIG%;%PATH%
 
 ::ENDLOCAL
 

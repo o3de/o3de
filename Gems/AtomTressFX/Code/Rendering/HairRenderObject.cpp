@@ -5,8 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzCore/Debug/EventTrace.h>
-
 #include <Atom/RHI/Factory.h>
 
 #include <Atom/RPI.Public/Shader/Shader.h>
@@ -958,7 +956,7 @@ namespace AZ
                 const char* assetName, AMD::TressFXAsset* asset,
                 AMD::TressFXSimulationSettings* simSettings, AMD::TressFXRenderingSettings* renderSettings)
             {
-                AZ_TRACE_METHOD();
+                AZ_PROFILE_FUNCTION(AzRender);
 
                 ++s_objectCounter;
 
