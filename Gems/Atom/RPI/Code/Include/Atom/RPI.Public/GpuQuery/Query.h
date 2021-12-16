@@ -101,7 +101,7 @@ namespace AZ
             QueryResultCode GetLatestResult(T& queryResult)
             {
                 void* resultData = static_cast<void*>(&queryResult);
-                GetLatestResult(resultData, sizeof(T));
+                return GetLatestResult(resultData, sizeof(T));
             }
 
             //! Returns the result of the earliest possible query. It might stall the calling thread, depending if the query result is available for polling
