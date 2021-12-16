@@ -25,10 +25,10 @@ bool TerrainLayerPriorityComparator::operator()(const AZ::EntityId& layer1id, co
 {
     // Comparator for insertion/keylookup.
     // Sorts into layer/priority order, highest priority first.
-    AZ::u32 priority1, layer1;
+    AZ::u32 priority1 = 0, layer1 = 0;
     Terrain::TerrainSpawnerRequestBus::Event(layer1id, &Terrain::TerrainSpawnerRequestBus::Events::GetPriority, layer1, priority1);
 
-    AZ::u32 priority2, layer2;
+    AZ::u32 priority2 = 0, layer2 = 0;
     Terrain::TerrainSpawnerRequestBus::Event(layer2id, &Terrain::TerrainSpawnerRequestBus::Events::GetPriority, layer2, priority2);
 
     if (layer1 < layer2)
