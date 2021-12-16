@@ -40,9 +40,10 @@ function Process(context)
     local parallaxPdoEnabled = context:GetMaterialPropertyValue_bool("parallax.pdo")
     
     local forwardPassEDS = context:GetShaderByTag("ForwardPass_EDS")
-    
+    local depthPassWithPS = context:GetShaderByTag("DepthPass_WithPS")
+    depthPassWithPS:SetEnabled(true)
     forwardPassEDS:SetEnabled(true)
     
-    context:GetShaderByTag("DepthPassTransparentMin_WithPS"):SetEnabled(true)
-    context:GetShaderByTag("DepthPassTransparentMax_WithPS"):SetEnabled(true)
+    context:GetShaderByTag("DepthPassTransparentMin_WithPS"):SetEnabled(false)
+    context:GetShaderByTag("DepthPassTransparentMax_WithPS"):SetEnabled(false)
 end

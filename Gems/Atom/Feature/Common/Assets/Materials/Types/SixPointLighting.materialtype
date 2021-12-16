@@ -1121,6 +1121,10 @@
             "file": "./SixPointLighting_ForwardPass.shader",
             "tag": "ForwardPass_EDS"
         },
+        {
+            "file": "./SixPointLighting_DepthPass_WithPS.shader",
+            "tag": "DepthPass_WithPS"
+        },
         //{
         //    "file": "./SixPointLighting_MotionVector.shader",
         //    "tag": "MeshMotionVector"
@@ -1257,7 +1261,7 @@
         {
             "type": "Lua",
             "args": {
-                "file": "StandardPBR_HandleOpacityDoubleSided.lua"
+                "file": "SixPointLighting_HandleOpacityDoubleSided.lua"
             }
         },
         {

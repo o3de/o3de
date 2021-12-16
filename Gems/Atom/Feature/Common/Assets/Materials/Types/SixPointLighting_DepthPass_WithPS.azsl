@@ -10,6 +10,7 @@
 
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <Atom/Features/MatrixUtility.azsli>
+#include <Atom/Math.azsli>
 
 struct VSInput
 {
@@ -47,11 +48,33 @@ PSDepthOutput DepthPassPS(VSDepthOutput IN, bool isFrontFace : SV_IsFrontFace)
     PSDepthOutput OUT;
     OUT.m_depth = IN.m_position.z;
     
+    float2 sixPointUv = GetUvForCurrentFrame(IN.m_uv0);
+    float alpha = MaterialSrg::m_opacityMap.Sample(MaterialSrg::m_sampler, sixPointUv).r;
+    if(alpha < .1f)
+    {
+        clip(-1);
+    }
     if(o_enableDepthTexture)
     {
-        float2 sixPointUv = GetUvForCurrentFrame(IN.m_uv0);
         float depthOffset = MaterialSrg::m_depthMap.Sample(MaterialSrg::m_sampler, sixPointUv).r;
-        OUT.m_depth += (depthOffset - 0.5f);
+        
+        float m_n_f_n =  ViewSrg::GetNearZ() / ViewSrg::GetFarZMinusNearZ(); // n / (f - n)
+        float m_n_f = ViewSrg::GetNearZ() - ViewSrg::GetFarZ();   // n - f
+        float m_f = ViewSrg::GetFarZ();     // f
+
+        float3 coefficients = float3(m_n_f_n, m_n_f, m_f);
+
+        float linearDepth = 
+            ((ViewSrg::GetFarZTimesNearZ()) / (ViewSrg::GetFarZMinusNearZ() * OUT.m_depth - ViewSrg::GetFarZ()));
+        float tempSign = sign(linearDepth);
+        linearDepth = abs(linearDepth);
+        linearDepth *= tempSign;
+        //OUT.m_depth = ((1.0f / ((linearDepth) / ViewSrg::GetFarZTimesNearZ())) + ViewSrg::GetFarZ()) / ViewSrg::GetFarZMinusNearZ();
+        float linearDepth2 = PerspectiveDepthToLinear(OUT.m_depth, coefficients);
+        //    OUT.m_depth = LinearDepthToPerspective(linearDepth2, coefficients);
+        //OUT.m_depth += LinearDepthToPerspective(depthOffset, coefficients);
+        OUT.m_depth += depthOffset;
     }
+
     return OUT;
 }

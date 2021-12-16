@@ -50,5 +50,5 @@
       ]
     },
 
-    "DrawList" : "forward"
+    "DrawList" : "transparent"
 }
