@@ -88,8 +88,10 @@ void LightingData::FinalizeLighting(float3 transmissionTint)
     FinalizeLighting();
 
     // Transmitted light
+#if ENABLE_TRANSMISSION
     if(o_transmission_mode != TransmissionMode::None)
     {
         diffuseLighting += translucentBackLighting * transmissionTint;
     }
+#endif
 }

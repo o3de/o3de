@@ -179,9 +179,8 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
     const float specularF0Factor = 0.5f;
     surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
 
-    // Clear Coat, Transmission
+    // Clear Coat
     surface.clearCoat.InitializeToZero();
-    surface.transmission.InitializeToZero();
 
     // ------- LightingData -------
 
@@ -213,7 +212,7 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
     ApplyIBL(surface, lightingData);
 
     // Finalize Lighting
-    lightingData.FinalizeLighting(surface.transmission.tint);
+    lightingData.FinalizeLighting();
 
     PbrLightingOutput lightingOutput = GetPbrLightingOutput(surface, lightingData, alpha);
 

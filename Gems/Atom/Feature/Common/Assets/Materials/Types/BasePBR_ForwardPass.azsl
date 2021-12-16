@@ -21,7 +21,7 @@
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
 
 // Custom Surface & Lighting
-#include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
+#include <Atom/Features/PBR/Lighting/BaseLighting.azsli>
 
 // Decals
 #include <Atom/Features/PBR/Decals.azsli>
@@ -102,7 +102,6 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace)
     }
     
     Surface surface;
-    surface.clearCoat.InitializeToZero();
     surface.position = IN.m_worldPosition.xyz;
 
     // ------- Normal -------

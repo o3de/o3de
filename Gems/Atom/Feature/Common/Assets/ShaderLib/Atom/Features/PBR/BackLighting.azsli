@@ -36,6 +36,9 @@ float ThinObjectFalloff(const float3 surfaceNormal, const float3 dirToLight)
 float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightIntensity, float3 dirToLight, float shadowRatio)
 {
     float3 result = float3(0.0, 0.0, 0.0);
+
+#if ENABLE_TRANSMISSION
+
     float thickness = 0.0; 
     float4 transmissionParams = surface.transmission.transmissionParams;
 
@@ -71,7 +74,9 @@ float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightI
 
             break;
     }
-    
+
+#endif
+
     return result;
 }
 
