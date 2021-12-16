@@ -595,6 +595,22 @@ namespace AZ
         }
     }
 
+    void BehaviorContext::InitializeParameterOverrides(BehaviorValues* defaultValues, BehaviorParameterOverrides* paramOverrides, size_t paramOverridesCount)
+    {
+        if (defaultValues)
+        {
+            AZ_Assert(defaultValues->GetNumValues() <= paramOverridesCount,
+                "You can't have more default values than the number of function arguments");
+            // Copy default values to parameter override structure
+            size_t startArgumentIndex = paramOverridesCount - defaultValues->GetNumValues();
+            for (size_t i = 0; i < defaultValues->GetNumValues(); ++i)
+            {
+                paramOverrides[startArgumentIndex + i].m_defaultValue = defaultValues->GetDefaultValue(i);
+            }
+            delete defaultValues;
+        }
+    }
+
     //=========================================================================
     // ~BehaviorContext
     //=========================================================================

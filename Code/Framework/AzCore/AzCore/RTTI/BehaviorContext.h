@@ -1586,6 +1586,8 @@ namespace AZ
             size_t alignment,
             size_t size);
 
+        static void InitializeParameterOverrides(BehaviorValues* defaultValues, BehaviorParameterOverrides* paramOverrides, size_t paramOverridesCount);
+
     public:
         AZ_CLASS_ALLOCATOR(BehaviorContext, SystemAllocator, 0);
         AZ_RTTI(BehaviorContext, "{ED75FE05-9196-4F69-A3E5-1BDF5FF034CF}", ReflectContext);
@@ -3066,17 +3068,7 @@ namespace AZ
     BehaviorContext::GlobalMethodBuilder BehaviorContext::Method(const char* name, Function f, const char* deprecatedName, BehaviorValues* defaultValues, const char* dbgDesc)
     {
         AZStd::array<BehaviorParameterOverrides, AZStd::function_traits<Function>::num_args> parameterOverrides;
-        if (defaultValues)
-        {
-            AZ_Assert(defaultValues->GetNumValues() <= parameterOverrides.size(), "You can't have more default values than the number of function arguments");
-            // Copy default values to parameter override structure
-            size_t startArgumentIndex = parameterOverrides.size() - defaultValues->GetNumValues();
-            for (size_t i = 0; i < defaultValues->GetNumValues(); ++i)
-            {
-                parameterOverrides[startArgumentIndex + i].m_defaultValue = defaultValues->GetDefaultValue(i);
-            }
-            delete defaultValues;
-        }
+        InitializeParameterOverrides(defaultValues, parameterOverrides.begin(), parameterOverrides.size());
         return Method(name, f, deprecatedName, parameterOverrides, dbgDesc);
     }
 
@@ -3121,18 +3113,7 @@ namespace AZ
     BehaviorContext::ClassBuilder<C>* BehaviorContext::ClassBuilder<C>::Method(const char* name, Function f, const char* deprecatedName, BehaviorValues* defaultValues, const char* dbgDesc)
     {
         AZStd::array<BehaviorParameterOverrides, AZStd::function_traits<Function>::num_args> parameterOverrides;
-        if (defaultValues)
-        {
-            AZ_Assert(defaultValues->GetNumValues() <= parameterOverrides.size(), "You can't have more default values than the number of function arguments");
-            // Copy default values to parameter override structure
-            size_t startArgumentIndex = parameterOverrides.size() - defaultValues->GetNumValues();
-            for (size_t i = 0; i < defaultValues->GetNumValues(); ++i)
-            {
-                parameterOverrides[startArgumentIndex + i].m_defaultValue = defaultValues->GetDefaultValue(i);
-            }
-            delete defaultValues;
-        }
-
+        InitializeParameterOverrides(defaultValues, parameterOverrides.begin(), parameterOverrides.size());
         return Method(name, f, deprecatedName, parameterOverrides, dbgDesc);
     }
 
