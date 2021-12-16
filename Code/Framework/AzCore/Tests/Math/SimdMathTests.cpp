@@ -2443,12 +2443,13 @@ namespace UnitTest
     {
         float testStoreValues[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
-        Simd::Vec3::FloatType rows[3];
-        rows[0] = Simd::Vec3::LoadImmediate(2.0f, 0.0f, 0.0f);
-        rows[1] = Simd::Vec3::LoadImmediate(0.0f, 2.0f, 0.0f);
-        rows[2] = Simd::Vec3::LoadImmediate(0.0f, 0.0f, 2.0f);
+        Simd::Vec3::FloatType srcRows[3];
+        srcRows[0] = Simd::Vec3::LoadImmediate(2.0f, 0.0f, 0.0f);
+        srcRows[1] = Simd::Vec3::LoadImmediate(0.0f, 2.0f, 0.0f);
+        srcRows[2] = Simd::Vec3::LoadImmediate(0.0f, 0.0f, 2.0f);
 
-        Simd::Vec3::Mat3x3Inverse(rows, rows);
+        Simd::Vec3::FloatType rows[3];
+        Simd::Vec3::Mat3x3Inverse(srcRows, rows);
 
         Simd::Vec3::StoreUnaligned(testStoreValues, rows[0]);
         AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[0], 0.5f);
@@ -2470,12 +2471,13 @@ namespace UnitTest
     {
         float testStoreValues[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
-        Simd::Vec3::FloatType rows[3];
-        rows[0] = Simd::Vec3::LoadImmediate( 1.0f,  2.0f,  3.0f);
-        rows[1] = Simd::Vec3::LoadImmediate( 2.0f,  0.0f,  1.0f);
-        rows[2] = Simd::Vec3::LoadImmediate(-1.0f,  1.0f,  2.0f);
+        Simd::Vec3::FloatType srcRows[3];
+        srcRows[0] = Simd::Vec3::LoadImmediate( 1.0f,  2.0f,  3.0f);
+        srcRows[1] = Simd::Vec3::LoadImmediate( 2.0f,  0.0f,  1.0f);
+        srcRows[2] = Simd::Vec3::LoadImmediate(-1.0f,  1.0f,  2.0f);
 
-        Simd::Vec3::Mat3x3Adjugate(rows, rows);
+        Simd::Vec3::FloatType rows[3];
+        Simd::Vec3::Mat3x3Adjugate(srcRows, rows);
 
         Simd::Vec3::StoreUnaligned(testStoreValues, rows[0]);
         AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[0], -1.0f);
@@ -2497,12 +2499,13 @@ namespace UnitTest
     {
         float testStoreValues[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
-        Simd::Vec3::FloatType rows[3];
-        rows[0] = Simd::Vec3::LoadImmediate(1.0f, 2.0f, 3.0f);
-        rows[1] = Simd::Vec3::LoadImmediate(4.0f, 5.0f, 6.0f);
-        rows[2] = Simd::Vec3::LoadImmediate(7.0f, 8.0f, 9.0f);
+        Simd::Vec3::FloatType srcRows[3];
+        srcRows[0] = Simd::Vec3::LoadImmediate(1.0f, 2.0f, 3.0f);
+        srcRows[1] = Simd::Vec3::LoadImmediate(4.0f, 5.0f, 6.0f);
+        srcRows[2] = Simd::Vec3::LoadImmediate(7.0f, 8.0f, 9.0f);
 
-        Simd::Vec3::Mat3x3Transpose(rows, rows);
+        Simd::Vec3::FloatType rows[3];
+        Simd::Vec3::Mat3x3Transpose(srcRows, rows);
 
         Simd::Vec3::StoreUnaligned(testStoreValues, rows[0]);
         AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[0], 1.0f);
@@ -2676,12 +2679,13 @@ namespace UnitTest
     {
         float testStoreValues[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
-        Simd::Vec4::FloatType rows[4];
-        rows[0] = Simd::Vec4::LoadImmediate(0.0f, 1.0f, 2.0f, 3.0f);
-        rows[1] = Simd::Vec4::LoadImmediate(4.0f, 5.0f, 6.0f, 7.0f);
-        rows[2] = Simd::Vec4::LoadImmediate(8.0f, 9.0f, -1.0f, -2.0f);
+        Simd::Vec3::FloatType srcRows[4];
+        srcRows[0] = Simd::Vec4::LoadImmediate(0.0f, 1.0f, 2.0f, 3.0f);
+        srcRows[1] = Simd::Vec4::LoadImmediate(4.0f, 5.0f, 6.0f, 7.0f);
+        srcRows[2] = Simd::Vec4::LoadImmediate(8.0f, 9.0f, -1.0f, -2.0f);
 
-        Simd::Vec4::Mat3x4Transpose(rows, rows);
+        Simd::Vec4::FloatType rows[4];
+        Simd::Vec4::Mat3x4Transpose(srcRows, rows);
 
         Simd::Vec4::StoreUnaligned(testStoreValues, rows[0]);
         AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[0], 0.0f);
@@ -2706,13 +2710,14 @@ namespace UnitTest
     {
         float testStoreValues[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
-        Simd::Vec4::FloatType rows[4];
-        rows[0] = Simd::Vec4::LoadImmediate(0.0f, 1.0f, 2.0f, 3.0f);
-        rows[1] = Simd::Vec4::LoadImmediate(4.0f, 5.0f, 6.0f, 7.0f);
-        rows[2] = Simd::Vec4::LoadImmediate(8.0f, 9.0f, 9.1f, 9.9f);
-        rows[3] = Simd::Vec4::LoadImmediate(-1.0f, -2.0f, -3.0f, -4.0f);
+        Simd::Vec3::FloatType srcRows[4];
+        srcRows[0] = Simd::Vec4::LoadImmediate(0.0f, 1.0f, 2.0f, 3.0f);
+        srcRows[1] = Simd::Vec4::LoadImmediate(4.0f, 5.0f, 6.0f, 7.0f);
+        srcRows[2] = Simd::Vec4::LoadImmediate(8.0f, 9.0f, 9.1f, 9.9f);
+        srcRows[3] = Simd::Vec4::LoadImmediate(-1.0f, -2.0f, -3.0f, -4.0f);
 
-        Simd::Vec4::Mat4x4Transpose(rows, rows);
+        Simd::Vec4::FloatType rows[4];
+        Simd::Vec4::Mat4x4Transpose(srcRows, rows);
 
         Simd::Vec4::StoreUnaligned(testStoreValues, rows[0]);
         AZ_TEST_ASSERT_FLOAT_CLOSE(testStoreValues[0], 0.0f);
