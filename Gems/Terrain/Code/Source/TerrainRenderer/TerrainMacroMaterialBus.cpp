@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
- 
+
 #include "TerrainMacroMaterialBus.h"
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -56,6 +56,8 @@ namespace Terrain
 
         static void Reflect(AZ::ReflectContext* context)
         {
+            MacroMaterialData::Reflect(context);
+
             if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
                 behaviorContext->EBus<Terrain::TerrainMacroMaterialNotificationBus>("TerrainMacroMaterialAutomationBus")
@@ -66,8 +68,39 @@ namespace Terrain
         }
     };
 
+    void MacroMaterialData::Reflect(AZ::ReflectContext* context)
+    {
+        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<MacroMaterialData>()
+                ->Field("EntityId", &MacroMaterialData::m_entityId)
+                ->Field("Bounds", &MacroMaterialData::m_bounds)
+                ->Field("ColorImage", &MacroMaterialData::m_colorImage)
+                ->Field("NormalImage", &MacroMaterialData::m_normalImage)
+                ->Field("NormalFlipX", &MacroMaterialData::m_normalFlipX)
+                ->Field("NormalFlipY", &MacroMaterialData::m_normalFlipY)
+                ->Field("NormalFactor", &MacroMaterialData::m_normalFactor);
+        }
+
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<MacroMaterialData>()
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Module, "terrain")
+                ->Property("EntityId", BehaviorValueProperty(&MacroMaterialData::m_entityId))
+                ->Property("Bounds", BehaviorValueProperty(&MacroMaterialData::m_bounds))
+                ->Property("ColorImage", BehaviorValueProperty(&MacroMaterialData::m_colorImage))
+                ->Property("NormalImage", BehaviorValueProperty(&MacroMaterialData::m_normalImage))
+                ->Property("NormalFlipX", BehaviorValueProperty(&MacroMaterialData::m_normalFlipX))
+                ->Property("NormalFlipY", BehaviorValueProperty(&MacroMaterialData::m_normalFlipY))
+                ->Property("NormalFactor", BehaviorValueProperty(&MacroMaterialData::m_normalFactor));
+        }
+    }
+
     void TerrainMacroMaterialRequests::Reflect(AZ::ReflectContext* context)
     {
+        Terrain::TerrainMacroMaterialNotificationHandler::Reflect(context);
+
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->EBus<Terrain::TerrainMacroMaterialRequestBus>("TerrainMacroMaterialRequestBus")
@@ -86,8 +119,6 @@ namespace Terrain
                 ->Event("OnTerrainMacroMaterialRegionChanged", &Terrain::TerrainMacroMaterialNotifications::OnTerrainMacroMaterialRegionChanged)
                 ->Event("OnTerrainMacroMaterialDestroyed", &Terrain::TerrainMacroMaterialNotifications::OnTerrainMacroMaterialDestroyed)
             ;
-
-            Terrain::TerrainMacroMaterialNotificationHandler::Reflect(context);
         }
     }
 } // namespace Terrain

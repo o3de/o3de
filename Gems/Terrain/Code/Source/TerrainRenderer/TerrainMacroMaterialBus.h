@@ -19,7 +19,9 @@ namespace Terrain
     struct MacroMaterialData final
     {
         AZ_RTTI(MacroMaterialData, "{DC68E20A-3251-4E4E-8BC7-F6A2521FEF46}");
-                 
+
+        static void Reflect(AZ::ReflectContext* context);
+
         AZ::EntityId m_entityId;
         AZ::Aabb m_bounds = AZ::Aabb::CreateNull();
 
@@ -38,7 +40,7 @@ namespace Terrain
     {
     public:
         static void Reflect(AZ::ReflectContext* context);
-    
+
         ////////////////////////////////////////////////////////////////////////
         // EBusTraits
         using MutexType = AZStd::recursive_mutex;
@@ -51,7 +53,7 @@ namespace Terrain
     };
 
     using TerrainMacroMaterialRequestBus = AZ::EBus<TerrainMacroMaterialRequests>;
-    
+
     /**
     * Notifications for when the terrain macro material data changes.
     */
