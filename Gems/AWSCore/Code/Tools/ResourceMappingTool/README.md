@@ -14,13 +14,13 @@ Or follow **AWS CLI** configuration directions which can be reused by the boto3 
 
 ## Python Environment Setup Options
 ### 1. Use Engine python environment (Including Editor)
-1. In order to use the Open 3D engine's python environment, this tool requires linking the Qt binaries.
+1. In order to use the Open 3D Engine's python environment, this tool requires linking the Qt binaries.
 Follow cmake instructions to configure your project, for example:
    ```
    $ cmake -B <BUILD_FOLDER> -S . -G "Visual Studio 16 2019" -DLY_PROJECTS=<PROJECT_NAME>
    ```
 
-2. At this point, double check that the Open 3D engine's python environment gets set up under *<ENGINE_ROOT_PATH>/python/runtime* directory
+2. At this point, double check that the Open 3D Engine's python environment gets set up under *<ENGINE_ROOT_PATH>/python/runtime* directory
 
 3. Build the project with the **AWSCore.Editor** (or **AWSCore.ResourceMappingTool**, or **Editor**) target to generate the required Qt binaries.
    * Windows
