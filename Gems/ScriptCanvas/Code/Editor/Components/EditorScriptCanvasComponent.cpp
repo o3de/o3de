@@ -41,6 +41,7 @@ namespace EditorScriptCanvasComponentCpp
         PrefabIntegration = 10,
         InternalDev,
         AddSourceHandle,
+        RefactorAssets,
         // add description above
         Current
     };

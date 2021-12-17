@@ -59,7 +59,7 @@ namespace ScriptCanvasBuilder
         CorrectGraphVariableVersion,
         ReflectEntityIdNodes,
         FixExecutionStateNodeableConstruction,
-
+        SwitchAssetsToBinary,
         // add new entries above
         Current,
     };
