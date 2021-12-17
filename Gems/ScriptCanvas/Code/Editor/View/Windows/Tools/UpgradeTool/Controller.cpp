@@ -29,7 +29,6 @@
 #include <Editor/Settings.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/Controller.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/LogTraits.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
 

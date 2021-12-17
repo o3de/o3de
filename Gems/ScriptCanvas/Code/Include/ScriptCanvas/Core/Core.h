@@ -317,6 +317,24 @@ namespace ScriptCanvasEditor
     using GraphPtr = Graph*;
     using GraphPtrConst = const Graph*;
 
+    class SourceDescription
+    {
+    public:
+        inline static constexpr const char* GetAssetGroup() { return "ScriptCanvas"; }
+        inline static constexpr const char* GetType() { return "{FA10C3DA-0717-4B72-8944-CD67D13DFA2B}"; }
+        inline static constexpr const char* GetName() { return "Script Canvas"; }
+        inline static constexpr const char* GetDescription() { return "Script Canvas Graph File"; }
+        inline static constexpr const char* GetSuggestedSavePath() { return "@projectroot@/scriptcanvas"; }
+        inline static constexpr const char* GetFileExtension() { return ".scriptcanvas"; }
+        inline static constexpr const char* GetGroup() { return "Script Canvas"; }
+        inline static constexpr const char* GetAssetNamePattern() { return "Untitled-%i"; }
+        inline static constexpr const char* GetFileFilter() { return "Script Canvas Files (*.scriptcanvas)"; }
+        inline static constexpr const char* GetAssetTypeDisplayName() { return "Script Canvas"; }
+        inline static constexpr const char* GetEntityName() { return "Script Canvas"; }
+        inline static constexpr const char* GetIconPath() { return "Icons/ScriptCanvas/Viewport/ScriptCanvas.png"; }
+        inline static AZ::Color GetDisplayColor() { return AZ::Color(0.5f, 0.5f, 0.5f, 0.5f); };
+    };
+
     class SourceHandle
     {
     public:
