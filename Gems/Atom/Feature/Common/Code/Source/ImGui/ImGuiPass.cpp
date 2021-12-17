@@ -27,6 +27,7 @@
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Scene.h>
 
+#include <Atom_Feature_Traits_Platform.h>
 #include <Atom/Feature/ImGui/SystemBus.h>
 
 #include <AzCore/Debug/EventTrace.h>
@@ -462,6 +463,9 @@ namespace AZ
         {
             auto imguiContextScope = ImguiContextScope(m_imguiContext);
             auto& io = ImGui::GetIO();
+        #if defined(AZ_TRAIT_IMGUI_INI_FILENAME)
+            io.IniFilename = AZ_TRAIT_IMGUI_INI_FILENAME;
+        #endif
 
             // ImGui IO Setup
             {

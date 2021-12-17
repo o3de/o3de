@@ -96,6 +96,12 @@ ly_add_target(
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
+    set(runtime_dependencies_tools ${pal_source_dir}/runtime_dependencies_tools.cmake)
+    foreach(pal_tools_platform ${LY_PAL_TOOLS_ENABLED})
+        ly_get_list_relative_pal_filename(pal_runtime_dependencies_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${pal_tools_platform})
+        list(APPEND runtime_dependencies_tools ${pal_runtime_dependencies_source_dir}/runtime_dependencies_tools.cmake)
+    endforeach()
+
     ly_add_target(
         NAME Atom_Feature_Common.Editor GEM_MODULE
 
@@ -103,7 +109,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         FILES_CMAKE
             atom_feature_common_editor_files.cmake
         PLATFORM_INCLUDE_FILES
-            ${pal_source_dir}/runtime_dependencies_tools.cmake
+            ${runtime_dependencies_tools}
         INCLUDE_DIRECTORIES
             PRIVATE
                 .
@@ -136,7 +142,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         FILES_CMAKE
             atom_feature_common_builders_files.cmake
         PLATFORM_INCLUDE_FILES
-            ${pal_source_dir}/runtime_dependencies_tools.cmake
+            ${runtime_dependencies_tools}
         INCLUDE_DIRECTORIES
             PRIVATE
                 Source/Builders
