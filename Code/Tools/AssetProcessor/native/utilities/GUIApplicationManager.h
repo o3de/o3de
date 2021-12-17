@@ -72,10 +72,6 @@ private:
     void DestroyIniConfiguration();
     void InitFileServer();
     void DestroyFileServer();
-    void InitShaderCompilerManager();
-    void DestroyShaderCompilerManager();
-    void InitShaderCompilerModel();
-    void DestroyShaderCompilerModel();
     void Destroy() override;
 
 Q_SIGNALS:
