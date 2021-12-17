@@ -298,10 +298,7 @@ namespace Audio
     {
     }
 
-    CATLAudioFileEntry::~CATLAudioFileEntry()
-    {
-
-    }
+    CATLAudioFileEntry::~CATLAudioFileEntry() = default;
 
 #endif // !AUDIO_RELEASE
 } // namespace Audio

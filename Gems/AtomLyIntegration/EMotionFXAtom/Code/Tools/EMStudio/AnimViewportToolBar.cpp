@@ -162,6 +162,7 @@ namespace EMStudio
 
         const bool isChecked = settings.value("CameraFollowUp", false).toBool();
         m_followCharacterAction->setChecked(isChecked);
+        AnimViewportRequestBus::Broadcast(&AnimViewportRequestBus::Events::SetFollowCharacter, isChecked);
     }
 
     void AnimViewportToolBar::SaveSettings()

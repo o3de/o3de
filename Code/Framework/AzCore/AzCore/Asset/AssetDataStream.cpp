@@ -18,7 +18,7 @@
 
 namespace AZ::Data
 {
-    namespace Internal
+    namespace DataStreamInternal
     {
         struct AssetDataStreamPrivate
         {
@@ -39,7 +39,7 @@ namespace AZ::Data
             }
             void BlockUntilReadComplete()
             {
-                AZStd::unique_lock<AZStd::mutex> lock(m_readRequestMutex);
+                AZStd::unique_lock lock(m_readRequestMutex);
                 m_readRequestActive.wait(
                     lock,
                     [this]
@@ -59,9 +59,10 @@ namespace AZ::Data
             }
         };
     } // namespace Internal
+
     AssetDataStream::AssetDataStream(AZ::IO::IStreamerTypes::RequestMemoryAllocator* bufferAllocator)
-        : m_bufferAllocator(bufferAllocator ? bufferAllocator : &m_defaultAllocator)
-        , m_privateData(new Internal::AssetDataStreamPrivate)
+        : m_privateData(AZStd::make_unique<DataStreamInternal::AssetDataStreamPrivate>())
+        , m_bufferAllocator(bufferAllocator ? bufferAllocator : &m_defaultAllocator)
     {
         ClearInternalStateData();
     }
@@ -72,7 +73,6 @@ namespace AZ::Data
         {
             Close();
         }
-        delete m_privateData;
     }
 
 

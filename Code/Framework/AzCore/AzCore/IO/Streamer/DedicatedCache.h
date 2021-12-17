@@ -74,7 +74,7 @@ namespace AZ::IO
         void CreateDedicatedCache(FileRequest* request, Requests::CreateDedicatedCacheData& data);
         void DestroyDedicatedCache(FileRequest* request, Requests::DestroyDedicatedCacheData& data);
 
-        void ReadFile(FileRequest* request, AZ::IO::Requests::ReadData& data);
+        void ReadFile(FileRequest* request, Requests::ReadData& data);
         size_t FindCache(const RequestPath& filename, FileRange range);
         size_t FindCache(const RequestPath& filename, u64 offset);
 

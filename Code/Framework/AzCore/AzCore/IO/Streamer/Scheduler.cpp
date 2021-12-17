@@ -8,9 +8,9 @@
 
 #include <AzCore/IO/Streamer/Scheduler.h>
 
-#include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Debug/Profiler.h>
+#include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/std/containers/deque.h>
 #include <AzCore/std/sort.h>
 
@@ -37,9 +37,7 @@ namespace AZ::IO
         m_threadData.m_streamStack = AZStd::move(streamStack);
     }
 
-    Scheduler::~Scheduler()
-    {
-    }
+    Scheduler::~Scheduler() = default;
 
     void Scheduler::Start(const AZStd::thread_desc& threadDesc)
     {

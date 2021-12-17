@@ -23,9 +23,8 @@ namespace AZ
         static constexpr char MissedDeadlinesName[] = "Missed deadlines";
 #endif // AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
 
-        StreamerContext::StreamerContext()
-        {
-        }
+        StreamerContext::StreamerContext() = default;
+
         StreamerContext::~StreamerContext()
         {
             for (FileRequest* entry : m_internalRecycleBin)
@@ -228,7 +227,7 @@ namespace AZ
                         top->m_onCompletion(*top);
                         AZ_PROFILE_INTERVAL_END(AzCore, top);
                     }
-                    
+
                     if (parent)
                     {
                         AZ_Assert(parent->m_dependencies > 0,

@@ -179,6 +179,6 @@ protected: // attributes
 
 #ifndef _RELEASE
     int m_debugTextureDataRecordLevel = 0;
-    AZStd::unordered_set<ITexture*> m_texturesUsedInFrame; // LYSHINE_ATOM_TODO - convert to RPI::Image
+    AZStd::unordered_set<ITexture*> m_texturesUsedInFrame; // [LYN-7857] - Support debug display with Atom
 #endif
 };

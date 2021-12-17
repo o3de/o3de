@@ -265,7 +265,7 @@ namespace UnitTest
             EXPECT_TRUE(m_srg->SetConstantArray<bool>(inputIndex, AZStd::array<bool, 2>({ asBools[1], asBools[2] })));
             AZStd::array_view<uint8_t> result = m_srg->GetConstantRaw(inputIndex);
             AZStd::array_view <uint32_t> resultInUint = AZStd::array_view<uint32_t>(reinterpret_cast<const uint32_t*>(result.data()), 2);
-            ExpectEqual<uint32_t>({ 1 /*true*/, 0 /*false*/ }, resultInUint);
+            EXPECT_THAT(resultInUint, testing::ElementsAre(testing::IsTrue(), testing::IsFalse()));
         }
     }
 

@@ -60,13 +60,13 @@ namespace AZ::IO
         AZ_PROFILE_FUNCTION(AzCore);
         AZ_Assert(request, "PrepareRequest was provided a null request.");
 
-            if (AZStd::holds_alternative<Requests::ReadRequestData>(request->GetCommand()))
+        if (AZStd::holds_alternative<Requests::ReadRequestData>(request->GetCommand()))
         {
-                auto& readRequest = AZStd::get<Requests::ReadRequestData>(request->GetCommand());
+            auto& readRequest = AZStd::get<Requests::ReadRequestData>(request->GetCommand());
 
             FileRequest* read = m_context->GetNewInternalRequest();
-            read->CreateRead(request, readRequest.m_output, readRequest.m_outputSize, readRequest.m_path,
-                readRequest.m_offset, readRequest.m_size);
+            read->CreateRead(
+                request, readRequest.m_output, readRequest.m_outputSize, readRequest.m_path, readRequest.m_offset, readRequest.m_size);
             m_context->PushPreparedRequest(read);
             return;
         }

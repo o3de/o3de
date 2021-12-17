@@ -254,27 +254,29 @@ namespace AZ::IO
         else if (!m_pendingRequests.empty())
         {
             FileRequest* request = m_pendingRequests.front();
-            hasWorked = AZStd::visit([this, request](auto&& args)
-            {
-                using Command = AZStd::decay_t<decltype(args)>;
+            hasWorked = AZStd::visit(
+                [this, request](auto&& args)
+                {
+                    using Command = AZStd::decay_t<decltype(args)>;
                     if constexpr (AZStd::is_same_v<Command, Requests::FileExistsCheckData>)
-                {
-                    FileExistsRequest(request);
-                    m_pendingRequests.pop_front();
-                    return true;
-                }
-                else if constexpr (AZStd::is_same_v<Command, Requests::FileMetaDataRetrievalData>)
-                {
-                    FileMetaDataRetrievalRequest(request);
-                    m_pendingRequests.pop_front();
-                    return true;
-                }
-                else
-                {
-                    AZ_Assert(false, "A request was added to StorageDriveWin's pending queue that isn't supported.");
-                    return false;
-                }
-            }, request->GetCommand());
+                    {
+                        FileExistsRequest(request);
+                        m_pendingRequests.pop_front();
+                        return true;
+                    }
+                    else if constexpr (AZStd::is_same_v<Command, Requests::FileMetaDataRetrievalData>)
+                    {
+                        FileMetaDataRetrievalRequest(request);
+                        m_pendingRequests.pop_front();
+                        return true;
+                    }
+                    else
+                    {
+                        AZ_Assert(false, "A request was added to StorageDriveWin's pending queue that isn't supported.");
+                        return false;
+                    }
+                },
+                request->GetCommand());
         }
 
         return StreamStackEntry::ExecuteRequests() || hasFinalizedReads || hasWorked;

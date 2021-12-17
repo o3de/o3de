@@ -343,7 +343,7 @@ namespace AZ::IO
             m_numRunningJobs == 0;
     }
 
-    void FullFileDecompressor::PrepareReadRequest(FileRequest* request, Requests::ReadRequestData &data)
+    void FullFileDecompressor::PrepareReadRequest(FileRequest* request, Requests::ReadRequestData& data)
     {
         CompressionInfo info;
         if (CompressionUtils::FindCompressionInfo(info, data.m_path.GetRelativePath()))

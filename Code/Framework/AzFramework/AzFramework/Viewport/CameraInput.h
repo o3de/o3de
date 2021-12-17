@@ -185,6 +185,11 @@ namespace AzFramework
             m_activation = Activation::Ending;
         }
 
+        void CancelActivation()
+        {
+            m_activation = Activation::Idle;
+        }
+
         void ContinueActivation()
         {
             // continue activation is called after the first step of the camera input,

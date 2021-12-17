@@ -20,8 +20,6 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/EBus/EBus.h>
 
-
-
 namespace PhysX::Utils
 {
     struct PxJointActorData

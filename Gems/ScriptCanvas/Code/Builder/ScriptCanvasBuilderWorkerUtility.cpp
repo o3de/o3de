@@ -20,7 +20,6 @@
 #include <ScriptCanvas/Asset/SubgraphInterfaceAssetHandler.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
 #include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
 #include <ScriptCanvas/Core/Connection.h>
@@ -384,45 +383,6 @@ namespace ScriptCanvasBuilder
             + static_cast<int>(ScriptCanvas::GrammarVersion::Current)
             + static_cast<int>(ScriptCanvas::RuntimeVersion::Current)
             ;
-    }
-
-    AZ::Outcome < AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>, AZStd::string> LoadEditorAsset(AZStd::string_view filePath, AZ::Data::AssetId assetId, AZ::Data::AssetFilterCB assetFilterCB)
-    {
-        AZStd::shared_ptr<AZ::Data::AssetDataStream> assetDataStream = AZStd::make_shared<AZ::Data::AssetDataStream>();
-
-        // Read the asset into a memory buffer, then hand ownership of the buffer to assetDataStream
-        {
-            AZ::IO::FileIOStream stream(filePath.data(), AZ::IO::OpenMode::ModeRead);
-            if (!AZ::IO::RetryOpenStream(stream))
-            {
-                AZ_Warning(s_scriptCanvasBuilder, false, "CreateJobs for \"%s\" failed because the source file could not be opened.", filePath.data());
-                AZ::Failure(AZStd::string::format("Failed to load ScriptCavas asset: %s", filePath.data()));
-            }
-            AZStd::vector<AZ::u8> fileBuffer(stream.GetLength());
-            size_t bytesRead = stream.Read(fileBuffer.size(), fileBuffer.data());
-            if (bytesRead != stream.GetLength())
-            {
-                AZ_Warning(s_scriptCanvasBuilder, false, "CreateJobs for \"%s\" failed because the source file could not be read.", filePath.data());
-                AZ::Failure(AZStd::string::format("Failed to load ScriptCavas asset: %s", filePath.data()));
-            }
-
-            assetDataStream->Open(AZStd::move(fileBuffer));
-        }
-
-        ScriptCanvasEditor::ScriptCanvasAssetHandler editorAssetHandler;
-
-        AZ::SerializeContext* context{};
-        AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-
-        AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset> asset;
-        asset.Create(assetId);
-
-        if (editorAssetHandler.LoadAssetData(asset, assetDataStream, assetFilterCB) != AZ::Data::AssetHandler::LoadResult::LoadComplete)
-        {
-            return AZ::Failure(AZStd::string::format("Failed to load ScriptCavas asset: %s", filePath.data()));
-        }
-
-        return AZ::Success(asset);
     }
 
     ScriptCanvasEditor::Graph* PrepareSourceGraph(AZ::Entity* const buildEntity)

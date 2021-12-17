@@ -9,8 +9,8 @@
 
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/IO/IStreamerTypes.h>
-#include <AzCore/std/function/function_template.h>
-
+#include <AzCore/std/functional.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace AZStd
 {
@@ -20,7 +20,7 @@ namespace AZStd
 
 namespace AZ::Data
 {
-    namespace Internal
+    namespace DataStreamInternal
     {
         struct AssetDataStreamPrivate;
     }
@@ -100,7 +100,7 @@ namespace AZ::Data
 
         void ClearInternalStateData();
 
-        Internal::AssetDataStreamPrivate* m_privateData;
+        AZStd::unique_ptr<DataStreamInternal::AssetDataStreamPrivate> m_privateData;
 
         //! The allocator to use for allocating / deallocating asset buffers
         AZ::IO::IStreamerTypes::RequestMemoryAllocator* m_bufferAllocator{ nullptr };
