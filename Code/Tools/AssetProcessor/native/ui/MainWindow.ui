@@ -1263,32 +1263,43 @@
            <number>0</number>
           </property>
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <layout class="QVBoxLayout" name="verticalLayout">
             <item>
-             <widget class="QListView" name="builderList">
-              <property name="alternatingRowColors">
-               <bool>true</bool>
+             <widget class="QLabel" name="label">
+              <property name="text">
+               <string>Builders are used by the asset processor to transform source assets into product assets. Builders are mostly defined in C++, and the source for them can be in Gems, the engine, or your project.</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QPlainTextEdit" name="builderDetails">
-              <property name="inputMethodHints">
-               <set>Qt::ImhMultiLine|Qt::ImhNoEditMenu</set>
-              </property>
-              <property name="horizontalScrollBarPolicy">
-               <enum>Qt::ScrollBarAlwaysOff</enum>
-              </property>
-              <property name="undoRedoEnabled">
-               <bool>false</bool>
-              </property>
-              <property name="readOnly">
-               <bool>true</bool>
-              </property>
-              <property name="backgroundVisible">
-               <bool>false</bool>
-              </property>
-             </widget>
+             <layout class="QHBoxLayout" name="horizontalLayout_7">
+              <item>
+               <widget class="QListView" name="builderList">
+                <property name="alternatingRowColors">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPlainTextEdit" name="builderDetails">
+                <property name="inputMethodHints">
+                 <set>Qt::ImhMultiLine|Qt::ImhNoEditMenu</set>
+                </property>
+                <property name="horizontalScrollBarPolicy">
+                 <enum>Qt::ScrollBarAlwaysOff</enum>
+                </property>
+                <property name="undoRedoEnabled">
+                 <bool>false</bool>
+                </property>
+                <property name="readOnly">
+                 <bool>true</bool>
+                </property>
+                <property name="backgroundVisible">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </item>
            </layout>
           </item>
