@@ -39,8 +39,8 @@ namespace AzToolsFramework
                               //!< events don't allow the cursor to escape. This can be used for typical camera controls
                               //!< like a dolly or rotation, where mouse movement is important but cursor location is not.
         CursorModeWrapped,    //!< Flags whether the curser is going to wrap around the soruce widget.
-        CursorModeWrappedX,
-        CursorModeWrappedY 
+        CursorModeWrappedX,   //!< Flags whether the curser is going to wrap around the soruce widget only on the left and right side.
+        CursorModeWrappedY    //!< Flags whether the curser is going to wrap around the soruce widget only on the top and bottom side.
     };
 
     //! Maps events from the Qt input system to synthetic InputChannels in AzFramework

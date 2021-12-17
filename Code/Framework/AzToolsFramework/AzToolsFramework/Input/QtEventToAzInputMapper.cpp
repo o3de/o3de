@@ -511,6 +511,9 @@ namespace AzToolsFramework
                 m_previousGlobalCursorPosition = globalCursorPosition - screenDelta;
             }
             break;
+        case CursorInputMode::CursorModeNone:
+            m_previousGlobalCursorPosition = globalCursorPosition;
+            break;
         default: 
             AZ_Assert(false, "Invalid Curosr Mode: %i.", m_cursorMode);
             break;

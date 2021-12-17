@@ -533,23 +533,38 @@ namespace UnitTest
     {
     };
 
-    TEST_P(MoveMoveWrapParamQtEventToAzInputMapperFixture, MouseMove_NoAzHandlers_VerifyMouseMovmentViewport) 
+    TEST_P(MoveMoveWrapParamQtEventToAzInputMapperFixture, MouseMove_NoAzHandlers_VerifyMouseMovementViewport)
     {
+        //TODO: mouseMove is bugged mapToGlobal is called twice
+        auto mouseMoveFix = [](QWidget* wid, QPoint globalPos, QPoint deltaPos)
+        {
+            QPoint globalPosition = globalPos + deltaPos;
+            QPoint localPosition = wid->mapFromGlobal(globalPosition);
+            QTest::mouseMove(wid, localPosition);
+            QMouseEvent mouseMoveEvent(QEvent::MouseMove, localPosition, globalPosition, Qt::NoButton, Qt::NoButton, Qt::NoModifier);
+            QApplication::sendEvent(wid, &mouseMoveEvent);
+        };
+
         // setup
         const MouseMoveParam mouseMoveParam = GetParam();
 
         AzFramework::InputChannelNotificationBus::Handler::BusConnect();
         m_captureAzEvents = false;
-        m_inputChannelMapper->SetCursorMode(mouseMoveParam.mode);
+
         m_rootWidget->move(100, 100);
+        mouseMoveFix(m_rootWidget.get(), m_rootWidget->mapToGlobal(mouseMoveParam.startPos), QPoint(0, 0));
 
+        // given
+        m_inputChannelMapper->SetCursorMode(mouseMoveParam.mode);
 
-        MouseMove(m_rootWidget.get(), mouseMoveParam.startPos, QPoint(0,0));
-        for(float i = 0; i < mouseMoveParam.iterations; i++) {
-            MouseMove(m_rootWidget.get(), m_rootWidget->mapFromGlobal(QCursor::pos()), (mouseMoveParam.deltaPos / mouseMoveParam.iterations));
+        mouseMoveFix(m_rootWidget.get(), m_rootWidget->mapToGlobal(mouseMoveParam.startPos), QPoint(0, 0));
+        for (float i = 0; i < mouseMoveParam.iterations; i++)
+        {
+            mouseMoveFix(m_rootWidget.get(), QCursor::pos(), (mouseMoveParam.deltaPos / mouseMoveParam.iterations));
         }
 
-        QPointF endPosition = m_rootWidget->mapFromGlobal(QCursor::pos());
+        // validate
+        QPoint endPosition = m_rootWidget->mapFromGlobal(QCursor::pos());
         EXPECT_NEAR(endPosition.x(), mouseMoveParam.expectedPos.x(), 1.0f);
         EXPECT_NEAR(endPosition.y(), mouseMoveParam.expectedPos.y(), 1.0f);
 
@@ -649,6 +664,22 @@ namespace UnitTest
                 QPoint(0, 40),
                 QPoint(QtEventToAzInputMapperFixture::WidgetSize.width() / 2.0f, 20),
                  "CursorModeWrapped_Test_Bottom"
+                },
+            // verify CursorModeCaptured 
+            MouseMoveParam {AzToolsFramework::CursorInputMode::CursorModeCaptured, 
+                40,
+                QPoint(QtEventToAzInputMapperFixture::WidgetSize.width() / 2.0f, QtEventToAzInputMapperFixture::WidgetSize.height() / 2.0f),
+                QPoint(0, 40),
+                QPoint(QtEventToAzInputMapperFixture::WidgetSize.width() / 2.0f, QtEventToAzInputMapperFixture::WidgetSize.height() / 2.0f),
+                 "CursorModeCaptured"
+                },
+            // verify CursorModeNone 
+            MouseMoveParam {AzToolsFramework::CursorInputMode::CursorModeNone, 
+                40,
+                QPoint(QtEventToAzInputMapperFixture::WidgetSize.width() / 2.0f, QtEventToAzInputMapperFixture::WidgetSize.height() / 2.0f),
+                QPoint(40.0f, 0),
+                QPoint((QtEventToAzInputMapperFixture::WidgetSize.width() / 2.0f) + 40.0f, (QtEventToAzInputMapperFixture::WidgetSize.height() / 2.0f)),
+                 "CursorModeNone"
                 }
         ),
         [](const ::testing::TestParamInfo<MouseMoveParam>& info)
