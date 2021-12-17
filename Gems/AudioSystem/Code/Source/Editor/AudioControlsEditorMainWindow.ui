@@ -143,6 +143,7 @@
     </property>
     <addaction name="actionSaveAll"/>
     <addaction name="actionReload"/>
+    <addaction name="actionRefreshAudioSystem"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
@@ -168,6 +169,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+R</string>
+   </property>
+  </action>
+  <action name="actionRefreshAudioSystem">
+   <property name="text">
+    <string>Refresh Audio System</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+R</string>
    </property>
   </action>
  </widget>
@@ -196,6 +205,22 @@
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
    <slot>Reload()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>485</x>
+     <y>336</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionRefreshAudioSystem</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>RefreshAudioSystem()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>

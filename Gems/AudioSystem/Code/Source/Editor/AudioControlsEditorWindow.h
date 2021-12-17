@@ -61,6 +61,7 @@ namespace AudioControls
         void UpdateInspector();
         void FilterControlType(EACEControlType type, bool bShow);
         void Update();
+        void RefreshAudioSystem();
 
     protected:
         void closeEvent(QCloseEvent* pEvent) override;
