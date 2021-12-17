@@ -43,16 +43,23 @@ namespace AZ
 
         const char* MaterialBuilder::JobKey = "Atom Material Builder";
 
+        AZStd::string GetBuilderSettingsFingerprint()
+        {
+            return AZStd::string::format("[BuildersShouldFinalizeMaterialAssets=%d]", MaterialUtils::BuildersShouldFinalizeMaterialAssets());
+        }
+
         void MaterialBuilder::RegisterBuilder()
         {
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = JobKey;
-            materialBuilderDescriptor.m_version = 110; // Material version auto update feature
+            materialBuilderDescriptor.m_version = 111; // material dependency improvements
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.material", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.materialtype", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_busId = azrtti_typeid<MaterialBuilder>();
             materialBuilderDescriptor.m_createJobFunction = AZStd::bind(&MaterialBuilder::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
             materialBuilderDescriptor.m_processJobFunction = AZStd::bind(&MaterialBuilder::ProcessJob, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
+
+            materialBuilderDescriptor.m_analysisFingerprint = GetBuilderSettingsFingerprint();
 
             BusConnect(materialBuilderDescriptor.m_busId);
 
@@ -63,7 +70,7 @@ namespace AZ
         {
             BusDisconnect();
         }
-        
+
         bool MaterialBuilder::ReportMaterialAssetWarningsAsErrors() const
         {
             bool warningsAsErrors = false;
@@ -77,15 +84,18 @@ namespace AZ
         //! Adds all relevant dependencies for a referenced source file, considering that the path might be relative to the original file location or a full asset path.
         //! This will usually include multiple source dependencies and a single job dependency, but will include only source dependencies if the file is not found.
         //! Note the AssetBuilderSDK::JobDependency::m_platformIdentifier will not be set by this function. The calling code must set this value before passing back
-        //! to the AssetBuilderSDK::CreateJobsResponse. If isOrderedOnceForMaterialTypes is true and the dependency is a .materialtype file, the job dependency type
-        //! will be set to JobDependencyType::OrderOnce.
-        void AddPossibleDependencies(AZStd::string_view currentFilePath,
-            AZStd::string_view referencedParentPath,
+        //! to the AssetBuilderSDK::CreateJobsResponse. 
+        void AddPossibleDependencies(
+            const AZStd::string& currentFilePath,
+            const AZStd::string& referencedParentPath,
             const char* jobKey,
-            AZStd::vector<AssetBuilderSDK::JobDependency>& jobDependencies,
-            bool isOrderedOnceForMaterialTypes = false)
+            AZStd::vector<AssetBuilderSDK::JobDependency>& jobDependencies)
         {
             bool dependencyFileFound = false;
+            
+            const bool currentFileIsMaterial = AzFramework::StringFunc::Path::IsExtension(currentFilePath.c_str(), MaterialSourceData::Extension);
+            const bool referencedFileIsMaterialType = AzFramework::StringFunc::Path::IsExtension(referencedParentPath.c_str(), MaterialTypeSourceData::Extension);
+            const bool ShouldFinalizeMaterialAssets = MaterialUtils::BuildersShouldFinalizeMaterialAssets();
 
             AZStd::vector<AZStd::string> possibleDependencies = RPI::AssetUtils::GetPossibleDepenencyPaths(currentFilePath, referencedParentPath);
             for (auto& file : possibleDependencies)
@@ -103,9 +113,15 @@ namespace AZ
                         AssetBuilderSDK::JobDependency jobDependency;
                         jobDependency.m_jobKey = jobKey;
                         jobDependency.m_sourceFile.m_sourceFileDependencyPath = file;
-
-                        const bool isMaterialTypeFile = AzFramework::StringFunc::Path::IsExtension(file.c_str(), MaterialTypeSourceData::Extension);
-                        jobDependency.m_type = (isMaterialTypeFile && isOrderedOnceForMaterialTypes) ? AssetBuilderSDK::JobDependencyType::OrderOnce : AssetBuilderSDK::JobDependencyType::Order;
+                        jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
+                        
+                        // If we aren't finalizing material assets, then a normal job dependency isn't needed because the MaterialTypeAsset data won't be used.
+                        // However, we do still need at least an OrderOnce dependency to ensure the Asset Processor knows about the material type asset so the builder can get it's AssetId.
+                        // This can significantly reduce AP processing time when a material type or its shaders are edited.
+                        if (currentFileIsMaterial && referencedFileIsMaterialType && !ShouldFinalizeMaterialAssets)
+                        {
+                            jobDependency.m_type = AssetBuilderSDK::JobDependencyType::OrderOnce;
+                        }
 
                         jobDependencies.push_back(jobDependency);
                     }
@@ -156,7 +172,8 @@ namespace AZ
             // We'll build up this one JobDescriptor and reuse it to register each of the platforms
             AssetBuilderSDK::JobDescriptor outputJobDescriptor;
             outputJobDescriptor.m_jobKey = JobKey;
-            
+            outputJobDescriptor.m_additionalFingerprintInfo = GetBuilderSettingsFingerprint();
+
             // Load the file so we can detect and report dependencies.
             // If the file is a .materialtype, report dependencies on the .shader files.
             // If the file is a .material, report a dependency on the .materialtype and parent .material file
@@ -233,24 +250,12 @@ namespace AZ
                         parentMaterialPath = materialTypePath;
                     }
 
-                    // If includeMaterialPropertyNames is false, then a job dependency is needed so the material builder can validate MaterialAsset properties
-                    // against the MaterialTypeAsset at asset build time.
-                    // If includeMaterialPropertyNames is true, the material properties will be validated at runtime when the material is loaded, so the job dependency
-                    // is needed only for first-time processing to set up the initial MaterialAsset. This speeds up AP processing time when a materialtype file
-                    // is edited (e.g. 10s when editing StandardPBR.materialtype on AtomTest project from 45s).
-                    bool includeMaterialPropertyNames = true;
-                    if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
-                    {
-                        settingsRegistry->Get(includeMaterialPropertyNames, "/O3DE/Atom/RPI/MaterialBuilder/IncludeMaterialPropertyNames");
-                    }
-
                     // Register dependency on the parent material source file so we can load it and use it's data to build this variant material.
                     // Note, we don't need a direct dependency on the material type because the parent material will depend on it.
                     AddPossibleDependencies(request.m_sourceFile,
                         parentMaterialPath,
                         JobKey,
-                        outputJobDescriptor.m_jobDependencyList,
-                        includeMaterialPropertyNames);
+                        outputJobDescriptor.m_jobDependencyList);
                 }
             }
             
@@ -297,12 +302,9 @@ namespace AZ
                 return {};
             }
 
-            if (MaterialSourceData::ApplyVersionUpdatesResult::Failed == material.GetValue().ApplyVersionUpdates(materialSourceFilePath))
-            {
-                return {};
-            }
+            MaterialAssetProcessingMode processingMode = MaterialUtils::BuildersShouldFinalizeMaterialAssets() ? MaterialAssetProcessingMode::PreBake : MaterialAssetProcessingMode::DeferredBake;
 
-            auto materialAssetOutcome = material.GetValue().CreateMaterialAsset(Uuid::CreateRandom(), materialSourceFilePath, ReportMaterialAssetWarningsAsErrors());
+            auto materialAssetOutcome = material.GetValue().CreateMaterialAsset(Uuid::CreateRandom(), materialSourceFilePath, processingMode, ReportMaterialAssetWarningsAsErrors());
             if (!materialAssetOutcome.IsSuccess())
             {
                 return {};

@@ -9,7 +9,6 @@
 
 #include <Atom/RPI.Reflect/AssetCreator.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
-#include <Atom/RPI.Reflect/Material/MaterialAssetCreatorCommon.h>
 
 namespace AZ
 {
@@ -19,21 +18,21 @@ namespace AZ
         //! The MaterialAsset will be based on a MaterialTypeAsset or another MaterialAsset.
         //! Either way, the base provides the necessary data to define the layout 
         //! and behavior of the material. The MaterialAsset only provides property value overrides.
-        class MaterialAssetCreator
+        //! Note however that the MaterialTypeAsset does not have to be loaded and available yet;
+        //! only the AssetId is required. The resulting MaterialAsset will be in a non-finalized state;
+        //! it must be finalized afterwards when the MaterialTypeAsset is available before it can be used.
+        class MaterialAssetCreator  
             : public AssetCreator<MaterialAsset>
-            , public MaterialAssetCreatorCommon
         {
         public:
             friend class MaterialSourceData;
-
-            void Begin(const Data::AssetId& assetId, MaterialAsset& parentMaterial, bool includeMaterialPropertyNames = true);
-            void Begin(const Data::AssetId& assetId, MaterialTypeAsset& materialType, bool includeMaterialPropertyNames = true);
+            
+            void Begin(const Data::AssetId& assetId, const Data::Asset<MaterialTypeAsset>& materialType);
             bool End(Data::Asset<MaterialAsset>& result);
 
-        private:
-            void PopulatePropertyNameList();
-
-            const MaterialPropertiesLayout* m_materialPropertiesLayout = nullptr;
+            void SetMaterialTypeVersion(uint32_t version);
+            
+            void SetPropertyValue(const Name& name, const MaterialPropertyValue& value);
         };
     } // namespace RPI
 } // namespace AZ
