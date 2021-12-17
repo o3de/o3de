@@ -95,11 +95,12 @@ namespace AzToolsFramework
             entityId,
             [mouseInteraction, &entityPicked, &closestDistance, viewportId](EditorComponentSelectionRequests* handler) -> bool
             {
-                if (handler->SupportsEditorRayIntersect())
+                const auto viewportInfo = AzFramework::ViewportInfo{ viewportId };
+                if (handler->SupportsEditorRayIntersectViewport(viewportInfo))
                 {
                     float distance = std::numeric_limits<float>::max();
                     const bool intersection = handler->EditorSelectionIntersectRayViewport(
-                        { viewportId }, mouseInteraction.m_mousePick.m_rayOrigin, mouseInteraction.m_mousePick.m_rayDirection, distance);
+                        viewportInfo, mouseInteraction.m_mousePick.m_rayOrigin, mouseInteraction.m_mousePick.m_rayDirection, distance);
 
                     if (intersection && distance < closestDistance)
                     {
