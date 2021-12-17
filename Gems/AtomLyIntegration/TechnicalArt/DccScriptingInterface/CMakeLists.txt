@@ -6,5 +6,5 @@
 #
 #
 
-add_subdirectory(Code)
+#add_subdirectory(Code)
 update_pip_requirements(${CMAKE_CURRENT_LIST_DIR}/requirements.txt DccScriptingInterface)

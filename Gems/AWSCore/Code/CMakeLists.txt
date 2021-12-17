@@ -6,7 +6,7 @@
 #
 #
 
-ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
 
 ly_add_target(
     NAME AWSCore.Static STATIC
@@ -61,7 +61,7 @@ ly_create_alias(
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
 
-    include(${CMAKE_CURRENT_SOURCE_DIR}/Platform/${PAL_PLATFORM_NAME}/PAL_traits_editor_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+    include(${pal_dir}/PAL_traits_editor_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
     ly_add_target(
         NAME AWSCore.Editor.Static STATIC

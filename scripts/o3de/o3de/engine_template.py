@@ -80,10 +80,20 @@ restricted_platforms = {
     'Provo',
     'Salem',
     'Jasper',
-    'Paris'
+    'Paris',
+    'Xenia',
+    'Lancaster'
 }
 
-template_file_name = 'template.json'
+O3DE_LICENSE_TEXT = \
+    """'# {BEGIN_LICENSE}
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+# {END_LICENSE}
+"""
+
 this_script_parent = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
 
 
@@ -165,7 +175,8 @@ def _execute_template_json(json_data: dict,
                            destination_path: pathlib.Path,
                            template_path: pathlib.Path,
                            replacements: list,
-                           keep_license_text: bool = False) -> None:
+                           keep_license_text: bool = False,
+                           keep_restricted_in_instance: bool = False) -> None:
     # create dirs first
     # for each createDirectory entry, transform the folder name
     for create_directory in json_data['createDirectories']:
@@ -174,6 +185,18 @@ def _execute_template_json(json_data: dict,
 
         # transform the folder name
         new_dir = _transform(new_dir.as_posix(), replacements, keep_license_text)
+        new_dir = pathlib.Path(new_dir)
+
+        if not keep_restricted_in_instance and 'Platform' in new_dir.parts:
+            try:
+                # the name of the Platform should follow the '/Platform/'
+                pattern = r'/Platform/(?P<Platform>[^/:*?\"<>|\r\n]+/?)'
+                found_platform = re.search(pattern, new_dir.as_posix()).group('Platform')
+                found_platform = found_platform.replace('/', '')
+                if found_platform in restricted_platforms:
+                    continue
+            except Exception as e:
+                pass
 
         # create the folder
         os.makedirs(new_dir, exist_ok=True)
@@ -184,16 +207,23 @@ def _execute_template_json(json_data: dict,
         # construct the input file name
         in_file = template_path / 'Template' / copy_file['file']
 
-        # the file can be marked as optional, if it is and it does not exist skip
-        if copy_file['isOptional'] and copy_file['isOptional'] == 'true':
-            if not os.path.isfile(in_file):
-                continue
-
         # construct the output file name
         out_file = destination_path / copy_file['file']
 
         # transform the output file name
         out_file = _transform(out_file.as_posix(), replacements, keep_license_text)
+        out_file = pathlib.Path(out_file)
+
+        if not keep_restricted_in_instance and 'Platform' in out_file.parts:
+            try:
+                # the name of the Platform should follow the '/Platform/'
+                pattern = r'/Platform/(?P<Platform>[^/:*?\"<>|\r\n]+/?)'
+                found_platform = re.search(pattern, out_file.as_posix()).group('Platform')
+                found_platform = found_platform.replace('/', '')
+                if found_platform in restricted_platforms:
+                    continue
+            except Exception as e:
+                pass
 
         # if for some reason the output folder for this file was not created above do it now
         os.makedirs(os.path.dirname(out_file), exist_ok=True)
@@ -205,18 +235,20 @@ def _execute_template_json(json_data: dict,
             shutil.copy(in_file, out_file)
 
 
-def _execute_restricted_template_json(json_data: dict,
+def _execute_restricted_template_json(template_json_data: dict,
+                                      json_data: dict,
                                       restricted_platform: str,
                                       destination_name,
-                                      template_name,
                                       destination_path: pathlib.Path,
                                       destination_restricted_path: pathlib.Path,
+                                      template_path: pathlib.Path,
                                       template_restricted_path: pathlib.Path,
                                       destination_restricted_platform_relative_path: pathlib.Path,
                                       template_restricted_platform_relative_path: pathlib.Path,
                                       replacements: list,
                                       keep_restricted_in_instance: bool = False,
                                       keep_license_text: bool = False) -> None:
+
     # if we are not keeping restricted in instance make restricted.json if not present
     if not keep_restricted_in_instance:
         restricted_json = destination_restricted_path / 'restricted.json'
@@ -227,50 +259,96 @@ def _execute_restricted_template_json(json_data: dict,
                 restricted_json_data.update({"restricted_name": destination_name})
                 s.write(json.dumps(restricted_json_data, indent=4) + '\n')
 
+    ###################################################################################
+    # for each createDirectories in the template copy any entries in the json_data that are for this platform
+    for create_directory in template_json_data['createDirectories']:
+        new_dir = pathlib.Path(create_directory['dir'])
+        if not keep_restricted_in_instance and 'Platform' in new_dir.parts:
+            try:
+                # the name of the Platform should follow the '/Platform/'
+                pattern = r'/Platform/(?P<Platform>[^/:*?\"<>|\r\n]+/?)'
+                found_platform = re.search(pattern, new_dir.as_posix()).group('Platform')
+            except Exception as e:
+                pass
+            else:
+                found_platform = found_platform.replace('/', '')
+                if found_platform == restricted_platform:
+                    create_dirs = []
+                    if 'createDirectories' in json_data.keys():
+                        create_dirs = json_data['createDirectories']
+                    create_dirs.append(create_directory)
+                    json_data.update({'createDirectories': create_dirs})
+
+    # for each copyFiles in the template copy any entries in the json_data that are for this platform
+    for copy_file in template_json_data['copyFiles']:
+        new_file = pathlib.Path(copy_file['file'])
+        if not keep_restricted_in_instance and 'Platform' in new_file.parts:
+            try:
+                # the name of the Platform should follow the '/Platform/'
+                pattern = r'/Platform/(?P<Platform>[^/:*?\"<>|\r\n]+/?)'
+                found_platform = re.search(pattern, new_file.as_posix()).group('Platform')
+            except Exception as e:
+                pass
+            else:
+                found_platform = found_platform.replace('/', '')
+                if found_platform == restricted_platform:
+                    copy_files = []
+                    if 'copyFiles' in json_data.keys():
+                        copy_files = json_data['copyFiles']
+                    copy_files.append(copy_file)
+                    json_data.update({'copyFiles': copy_files})
+
+    ###################################################################################
+
+    # every entry is saved in its combined location, so if not keep_restricted_in_instance
+    # then we need to palify into the restricted folder
+
     # create dirs first
     # for each createDirectory entry, transform the folder name
-    for create_directory in json_data['createDirectories']:
-        # construct the new folder name
-        new_dir = destination_restricted_path / restricted_platform / destination_restricted_platform_relative_path\
-                  / destination_name / create_directory['dir']
-        if keep_restricted_in_instance:
-            new_dir = destination_path / create_directory['origin']
+    if 'createDirectories' in json_data:
+        for create_directory in json_data['createDirectories']:
+            # construct the new folder name
+            if keep_restricted_in_instance:
+                new_dir = destination_path / create_directory['dir']
+            else:
+                pal_dir = create_directory['dir'].replace(f'Platform/{restricted_platform}','')
+                new_dir = destination_restricted_path / restricted_platform / destination_restricted_platform_relative_path / pal_dir
 
-        # transform the folder name
-        new_dir = _transform(new_dir.as_posix(), replacements, keep_license_text)
+            # transform the folder name
+            new_dir = _transform(new_dir.as_posix(), replacements, keep_license_text)
 
-        # create the folder
-        os.makedirs(new_dir, exist_ok=True)
+            # create the folder
+            os.makedirs(new_dir, exist_ok=True)
 
     # for each copyFiles entry, _transformCopy the templated source file into a concrete instance file or
     # regular copy if not templated
-    for copy_file in json_data['copyFiles']:
-        # construct the input file name
-        in_file = template_restricted_path / restricted_platform / template_restricted_platform_relative_path\
-                  / template_name / 'Template' / copy_file['file']
+    if 'copyFiles' in json_data:
+        for copy_file in json_data['copyFiles']:
+            # construct the input file name
+            if template_restricted_path:
+                pal_file = copy_file['file'].replace(f'Platform/{restricted_platform}/', '')
+                in_file = template_restricted_path / restricted_platform / template_restricted_platform_relative_path / 'Template' / pal_file
+            else:
+                in_file = template_path / 'Template' / copy_file['file']
 
-        # the file can be marked as optional, if it is and it does not exist skip
-        if copy_file['isOptional'] and copy_file['isOptional'] == 'true':
-            if not os.path.isfile(in_file):
-                continue
+            # construct the output file name
+            if keep_restricted_in_instance:
+                out_file = destination_path / copy_file['file']
+            else:
+                pal_file = copy_file['file'].replace(f'Platform/{restricted_platform}/', '')
+                out_file = destination_restricted_path / restricted_platform / destination_restricted_platform_relative_path / pal_file
 
-        # construct the output file name
-        out_file = destination_restricted_path / restricted_platform / destination_restricted_platform_relative_path\
-                   / destination_name / copy_file['file']
-        if keep_restricted_in_instance:
-            out_file = destination_path / copy_file['origin']
+            # transform the output file name
+            out_file = _transform(out_file.as_posix(), replacements, keep_license_text)
 
-        # transform the output file name
-        out_file = _transform(out_file.as_posix(), replacements, keep_license_text)
+            # if for some reason the output folder for this file was not created above do it now
+            os.makedirs(os.path.dirname(out_file), exist_ok=True)
 
-        # if for some reason the output folder for this file was not created above do it now
-        os.makedirs(os.path.dirname(out_file), exist_ok=True)
-
-        # if templated _transformCopy the file, if not just copy it
-        if copy_file['isTemplated']:
-            _transform_copy(in_file, out_file, replacements, keep_license_text)
-        else:
-            shutil.copy(in_file, out_file)
+            # if templated _transformCopy the file, if not just copy it
+            if copy_file['isTemplated']:
+                _transform_copy(in_file, out_file, replacements, keep_license_text)
+            else:
+                shutil.copy(in_file, out_file)
 
 
 def _instantiate_template(template_json_data: dict,
@@ -309,46 +387,51 @@ def _instantiate_template(template_json_data: dict,
     :return: 0 for success or non 0 failure code
     """
     # execute the template json
+    # this will filter out any restricted platforms in the template
     _execute_template_json(template_json_data,
                            destination_path,
                            template_path,
                            replacements,
-                           keep_license_text)
+                           keep_license_text,
+                           keep_restricted_in_instance)
 
-    # execute restricted platform jsons if any
-    if template_restricted_path:
-        for restricted_platform in os.listdir(template_restricted_path):
-            if os.path.isfile(restricted_platform):
-                continue
+    # we execute the jason data again if there are any restricted platforms in the main template and
+    # execute any restricted platform jsons if separate
+
+    for restricted_platform in restricted_platforms:
+        restricted_json_data = {}
+        if template_restricted_path:
             template_restricted_platform = template_restricted_path / restricted_platform
-            template_restricted_platform_path_rel = template_restricted_platform / template_restricted_platform_relative_path / template_name
-            platform_json = template_restricted_platform_path_rel / template_file_name
+            template_restricted_platform_path_rel = template_restricted_platform / template_restricted_platform_relative_path
+            platform_json = template_restricted_platform_path_rel / 'template.json'
 
             if os.path.isfile(platform_json):
                 if not validation.valid_o3de_template_json(platform_json):
                     logger.error(f'Template json {platform_json} is invalid.')
                     return 1
 
-                # load the template json and execute it
+                # load the template json
                 with open(platform_json, 'r') as s:
                     try:
-                        json_data = json.load(s)
+                        restricted_json_data = json.load(s)
                     except json.JSONDecodeError as e:
                         logger.error(f'Failed to load {platform_json}: ' + str(e))
                         return 1
-                    else:
-                        _execute_restricted_template_json(json_data,
-                                                          restricted_platform,
-                                                          destination_name,
-                                                          template_name,
-                                                          destination_path,
-                                                          destination_restricted_path,
-                                                          template_restricted_path,
-                                                          destination_restricted_platform_relative_path,
-                                                          template_restricted_platform_relative_path,
-                                                          replacements,
-                                                          keep_restricted_in_instance,
-                                                          keep_license_text)
+
+        # execute for this restricted platform
+        _execute_restricted_template_json(template_json_data,
+                                          restricted_json_data,
+                                          restricted_platform,
+                                          destination_name,
+                                          destination_path,
+                                          destination_restricted_path,
+                                          template_path,
+                                          template_restricted_path,
+                                          destination_restricted_platform_relative_path,
+                                          template_restricted_platform_relative_path,
+                                          replacements,
+                                          keep_restricted_in_instance,
+                                          keep_license_text)
 
     return 0
 
@@ -365,7 +448,8 @@ def create_template(source_path: pathlib.Path,
                     keep_restricted_in_template: bool = False,
                     keep_license_text: bool = False,
                     replace: list = None,
-                    force: bool = False) -> int:
+                    force: bool = False,
+                    no_register: bool = False) -> int:
     """
     Create a template from a source directory using replacement
 
@@ -391,6 +475,7 @@ def create_template(source_path: pathlib.Path,
      this controls if you want to keep the license text from the template in the new instance. It is false by default
      because most people will not want license text in their instances.
      :param force Overrides existing files even if they exist
+     :param no_register: whether or not after completion that the new object is registered
     :return: 0 for success or non 0 failure code
     """
 
@@ -401,15 +486,19 @@ def create_template(source_path: pathlib.Path,
     if not source_path.is_dir():
         logger.error(f'Src path {source_path} is not a folder.')
         return 1
-
     source_path = source_path.resolve()
-    # source_name is now the last component of the source_path
+
+    # if not specified, source_name defaults to the last component of the source_path
     if not source_name:
         source_name = os.path.basename(source_path)
     sanitized_source_name = utils.sanitize_identifier_for_cpp(source_name)
 
     # if no template path, use default_templates_folder path
     if not template_path:
+        logger.info(f'Template path empty. Using source name {source_name}')
+        template_path = source_name
+    # if the template_path is not an absolute path, then it default to relative from the default template folder
+    if not template_path.is_absolute():
         default_templates_folder = manifest.get_registered(default_folder='templates')
         template_path = default_templates_folder / source_name
         logger.info(f'Template path empty. Using default templates folder {template_path}')
@@ -423,7 +512,8 @@ def create_template(source_path: pathlib.Path,
     except ValueError:
         pass
     else:
-        logger.error(f'Template output path {template_path} cannot be a subdirectory of the source_path {source_path}\n')
+        logger.error(
+            f'Template output path {template_path} cannot be a subdirectory of the source_path {source_path}\n')
         return 1
 
     # template name is now the last component of the template_path
@@ -434,69 +524,61 @@ def create_template(source_path: pathlib.Path,
         logger.error(f'Template path cannot be a restricted name. {template_name}')
         return 1
 
+    # if the source restricted name was given and no source restricted path, look up the restricted name to fill
+    # in the path
     if source_restricted_name and not source_restricted_path:
         source_restricted_path = manifest.get_registered(restricted_name=source_restricted_name)
 
-    # source_restricted_path
+    # if we have a source restricted path, make sure its a real restricted object
     if source_restricted_path:
-        if not os.path.isabs(source_restricted_path):
-            engine_json = manifest.get_this_engine_path() / 'engine.json'
-            if not validation.valid_o3de_engine_json(engine_json):
-                logger.error(f"Engine json {engine_json} is not valid.")
-                return 1
-            with open(engine_json) as s:
-                try:
-                    engine_json_data = json.load(s)
-                except json.JSONDecodeError as e:
-                    logger.error(f"Failed to read engine json {engine_json}: {str(e)}")
-                    return 1
-                try:
-                    engine_restricted = engine_json_data['restricted_name']
-                except KeyError as e:
-                    logger.error(f"Engine json {engine_json} restricted not found.")
-                    return 1
-            engine_restricted_folder = manifest.get_registered(restricted_name=engine_restricted)
-            new_source_restricted_path = engine_restricted_folder / source_restricted_path
-            logger.info(f'Source restricted path {source_restricted_path} not a full path. We must assume this engines'
-                        f' restricted folder {new_source_restricted_path}')
-        if not os.path.isdir(source_restricted_path):
+        if not source_restricted_path.is_dir():
             logger.error(f'Source restricted path {source_restricted_path} is not a folder.')
             return 1
+        restricted_json = source_restricted_path / 'restricted.json'
+        if not validation.valid_o3de_restricted_json(restricted_json):
+            logger.error(f"Restricted json {restricted_json} is not valid.")
+            return 1
+        with open(restricted_json, 'r') as s:
+            try:
+                restricted_json_data = json.load(s)
+            except json.JSONDecodeError as e:
+                logger.error(f'Failed to load {restricted_json}: ' + str(e))
+                return 1
+            try:
+                source_restricted_name = restricted_json_data['restricted_name']
+            except KeyError as e:
+                logger.error(f'Failed to read restricted_name from {restricted_json}')
+                return 1
 
+    # if the template restricted name was given and no template restricted path, look up the restricted name to fill
+    # in the path
     if template_restricted_name and not template_restricted_path:
         template_restricted_path = manifest.get_registered(restricted_name=template_restricted_name)
 
+    # if we dont have a template restricted name then set it to the templates name
     if not template_restricted_name:
         template_restricted_name = template_name
 
-    # template_restricted_path
+    # if we have a template restricted path, it must either not exist yet or must be a restricted object already
     if template_restricted_path:
-        if not os.path.isabs(template_restricted_path):
-            default_templates_restricted_folder = manifest.get_registered(restricted_name='templates')
-            new_template_restricted_path = default_templates_restricted_folder / template_restricted_path
-            logger.info(f'Template restricted path {template_restricted_path} not a full path. We must assume the'
-                        f' default templates restricted folder {new_template_restricted_path}')
-            template_restricted_path = new_template_restricted_path
-
-        if os.path.isdir(template_restricted_path):
+        if template_restricted_path.is_dir():
             # see if this is already a restricted path, if it is get the "restricted_name" from the restricted json
             # so we can set "restricted_name" to it for this template
             restricted_json = template_restricted_path / 'restricted.json'
-            if os.path.isfile(restricted_json):
-                if not validation.valid_o3de_restricted_json(restricted_json):
-                    logger.error(f'{restricted_json} is not valid.')
+            if not validation.valid_o3de_restricted_json(restricted_json):
+                logger.error(f'{restricted_json} is not valid.')
+                return 1
+            with open(restricted_json, 'r') as s:
+                try:
+                    restricted_json_data = json.load(s)
+                except json.JSONDecodeError as e:
+                    logger.error(f'Failed to load {restricted_json}: ' + str(e))
                     return 1
-                with open(restricted_json, 'r') as s:
-                    try:
-                        restricted_json_data = json.load(s)
-                    except json.JSONDecodeError as e:
-                        logger.error(f'Failed to load {restricted_json}: ' + str(e))
-                        return 1
-                    try:
-                        template_restricted_name = restricted_json_data['restricted_name']
-                    except KeyError as e:
-                        logger.error(f'Failed to read restricted_name from {restricted_json}')
-                        return 1
+                try:
+                    template_restricted_name = restricted_json_data['restricted_name']
+                except KeyError as e:
+                    logger.error(f'Failed to read restricted_name from {restricted_json}')
+                    return 1
         else:
             os.makedirs(template_restricted_path, exist_ok=True)
 
@@ -610,36 +692,7 @@ def create_template(source_path: pathlib.Path,
         else:
             return False, t_data
 
-    def _transform_into_template_restricted_filename(s_data: object,
-                                                     platform: str) -> (bool, object):
-        """
-        Internal function to transform a restricted platform file name into restricted template file name
-        :param s_data: the input data, this could be file data or file name data
-        :return: bool: whether or not the returned data MAY need to be transformed to instantiate it
-                 t_data: potentially transformed data 0 for success or non 0 failure code
-        """
-        # copy the src data to the transformed data, then operate only on transformed data
-        t_data = s_data
-
-        # run all the replacements
-        for replacement in replacements:
-            t_data = t_data.replace(replacement[0], replacement[1])
-
-        # the name of the Platform should follow the '/Platform/{platform}'
-        t_data = t_data.replace(f"Platform/{platform}", '')
-
-        # we want to send back the transformed data and whether or not this file
-        # may require transformation when instantiated. So if the input data is not the
-        # same as the output, then we transformed it which means there may be a transformation
-        # needed to instance it.
-        if s_data != t_data:
-            return True, t_data
-        else:
-            return False, t_data
-
-    def _transform_restricted_into_copyfiles_and_createdirs(source_path: pathlib.Path,
-                                                            restricted_platform: str,
-                                                            root_abs: pathlib.Path,
+    def _transform_restricted_into_copyfiles_and_createdirs(root_abs: pathlib.Path,
                                                             path_abs: pathlib.Path = None) -> None:
         """
         Internal function recursively called to transform any paths files into copyfiles and create dirs relative to
@@ -657,70 +710,49 @@ def create_template(source_path: pathlib.Path,
             # create the absolute entry by joining the path_abs and the entry
             entry_abs = path_abs / entry
 
+            # report what file we are processing so we have a good idea if it breaks on what file it broke on
+            logger.info(f'Processing file: {entry_abs}')
+
             # create the relative entry by removing the root_abs
             try:
                 entry_rel = entry_abs.relative_to(root_abs)
             except ValueError as err:
-                logger.warning(f'Unable to create relative path: {str(err)}')
+                logger.fatal(f'Unable to create relative path: {str(err)}')
 
-            # report what file we are processing so we have a good idea if it breaks on what file it broke on
-            logger.info(f'Processing file: {entry_abs}')
-
-            # this is a restricted file, so we need to transform it, unpalify it
-            # restricted/<platform>/<source_path_rel>/some/folders/<file> ->
-            # <source_path_rel>/some/folders/Platform/<platform>/<file>
-            #
-            # C:/repo/Lumberyard/restricted/Jasper/TestDP/CMakeLists.txt ->
-            # C:/repo/Lumberyard/TestDP/Platform/Jasper/CMakeLists.txt
-            #
-            _, origin_entry_rel = _transform_into_template(entry_rel.as_posix())
-            components = list(origin_entry_rel.parts)
-            num_components = len(components)
-
-            # see how far along the source path the restricted folder matches
-            # then hopefully there is a Platform folder, warn if there isn't
-            before = []
-            after = []
-            relative = ''
-
-            if os.path.isdir(entry_abs):
-                for x in range(0, num_components):
-                    relative += f'{components[x]}/'
-                    if os.path.isdir(f'{source_path}/{relative}'):
-                        before.append(components[x])
-                    else:
-                        after.append(components[x])
-            else:
-                for x in range(0, num_components - 1):
-                    relative += f'{components[x]}/'
-                    if os.path.isdir(f'{source_path}/{relative}'):
-                        before.append(components[x])
-                    else:
-                        after.append(components[x])
-
-                after.append(components[num_components - 1])
-
-            before.append("Platform")
-            warn_if_not_platform = source_path / pathlib.Path(*before)
-            before.append(restricted_platform)
-            before.extend(after)
-
-            origin_entry_rel = pathlib.Path(*before)
-
-            if not os.path.isdir(warn_if_not_platform):
-                logger.warning(
-                    f'{entry_abs} -> {origin_entry_rel}: Other Platforms not found in {warn_if_not_platform}')
-
-            destination_entry_rel = origin_entry_rel
-            destination_entry_abs = template_path / 'Template' / origin_entry_rel
+            # templatize the entry relative into the destination entry relative
+            _, destination_entry_rel = _transform_into_template(entry_rel.as_posix())
+            destination_entry_rel = pathlib.Path(destination_entry_rel)
 
             # clean up any relative leading slashes
-            if origin_entry_rel.as_posix().startswith('/'):
-                origin_entry_rel = pathlib.Path(origin_entry_rel.as_posix().lstrip('/'))
             if destination_entry_rel.as_posix().startswith('/'):
                 destination_entry_rel = pathlib.Path(destination_entry_rel.as_posix().lstrip('/'))
+            if isinstance(destination_entry_rel, pathlib.Path):
+                destination_entry_rel = destination_entry_rel.as_posix()
 
-            # make sure the dst folder may or may not exist yet, make sure it does exist before we transform
+            if template_restricted_path:
+                destination_entry_abs = template_restricted_path / restricted_platform / template_restricted_platform_relative_path / 'Template' / destination_entry_rel
+                destination_entry_rel = pathlib.Path(destination_entry_rel)
+                first = True
+                for component in destination_entry_rel.parts:
+                    if first:
+                        first = False
+                        result = pathlib.Path(component) / 'Platform' / restricted_platform
+                    else:
+                        result = result / component
+                destination_entry_rel = result.as_posix()
+            else:
+                destination_entry_rel = pathlib.Path(destination_entry_rel)
+                first = True
+                for component in destination_entry_rel.parts:
+                    if first:
+                        first = False
+                        result = pathlib.Path(component) / 'Platform' / restricted_platform
+                    else:
+                        result = result / component
+                destination_entry_rel = result.as_posix()
+                destination_entry_abs = template_path / 'Template' / destination_entry_rel
+
+            # the destination folder may or may not exist yet, make sure it does exist before we transform
             # data into it
             os.makedirs(os.path.dirname(destination_entry_abs), exist_ok=True)
 
@@ -730,8 +762,8 @@ def create_template(source_path: pathlib.Path,
             if os.path.isfile(entry_abs):
 
                 # if this file is a known binary file, there is no transformation needed and just copy it
-                # if not a known binary file open it and try to transform the data. if it is an unknown binary
-                # type it will throw and we catch copy
+                # if not a known binary file open it and try to transform the data.
+                # if it is an unknown binary type it will throw and we catch copy
                 # if we had no known binary type it would still work, but much slower
                 name, ext = os.path.splitext(entry)
                 if ext in binary_file_ext:
@@ -743,7 +775,7 @@ def create_template(source_path: pathlib.Path,
                             source_data = s.read()
                             templated, source_data = _transform_into_template(source_data, _is_cpp_file(entry_abs))
 
-                            # if the file type is a file that we expect to fins license header and we don't find any
+                            # if the file type is a file that we expect to find a license header and we don't find any
                             # warn that the we didn't find the license info, this makes it easy to make sure we didn't
                             # miss any files we want to have license info in.
                             if keep_license_text and ext in expect_license_info_ext:
@@ -761,19 +793,26 @@ def create_template(source_path: pathlib.Path,
                         shutil.copy(entry_abs, destination_entry_abs)
                         pass
 
-                copy_files.append({
-                    "file": destination_entry_rel,
-                    "origin": origin_entry_rel,
-                    "isTemplated": templated,
-                    "isOptional": False
-                })
+                if keep_restricted_in_template:
+                    copy_files.append({
+                        "file": destination_entry_rel,
+                        "isTemplated": templated
+                    })
+                else:
+                    restricted_platform_entries[restricted_platform]['copyFiles'].append({
+                        "file": destination_entry_rel,
+                        "isTemplated": templated
+                    })
             else:
-                create_dirs.append({
-                    "dir": destination_entry_rel,
-                    "origin": origin_entry_rel
-                })
-                _transform_restricted_into_copyfiles_and_createdirs(source_path, restricted_platform, root_abs,
-                                                                    entry_abs)
+                if keep_restricted_in_template:
+                    create_dirs.append({
+                        "dir": destination_entry_rel
+                    })
+                else:
+                    restricted_platform_entries[restricted_platform]['createDirs'].append({
+                        "dir": destination_entry_rel
+                    })
+                _transform_restricted_into_copyfiles_and_createdirs(root_abs, entry_abs)
 
     def _transform_dir_into_copyfiles_and_createdirs(root_abs: pathlib.Path,
                                                      path_abs: pathlib.Path = None) -> None:
@@ -793,18 +832,21 @@ def create_template(source_path: pathlib.Path,
             # create the absolute entry by joining the path_abs and the entry
             entry_abs = path_abs / entry
 
-            # create the relative entry by removing the root_abs
-            entry_rel = entry_abs
-            try:
-                entry_rel = entry_abs.relative_to(root_abs)
-            except ValueError as err:
-                logger.warning(f'Unable to create relative path: {str(err)}')
-
             # report what file we are processing so we have a good idea if it breaks on what file it broke on
             logger.info(f'Processing file: {entry_abs}')
 
-            # see if the entry is a platform file, if it is then we save its copyfile data in a platform specific list
-            # then at the end we can save the restricted ones separately
+            # create the relative entry by removing the root_abs
+            try:
+                entry_rel = entry_abs.relative_to(root_abs).as_posix()
+            except ValueError as err:
+                logger.fatal(f'Unable to create relative path: {str(err)}')
+
+            # templatize the entry relative into the origin entry relative
+            _, destination_entry_rel = _transform_into_template(entry_rel)
+            destination_entry_rel = pathlib.Path(destination_entry_rel)
+
+            # see if the entry is a restricted platform file, if it is then we save its copyfile data in a
+            # platform specific list then at the end we can save the restricted ones separately
             found_platform = ''
             platform = False
             if not keep_restricted_in_template and 'Platform' in entry_abs.parts:
@@ -812,7 +854,7 @@ def create_template(source_path: pathlib.Path,
                 try:
                     # the name of the Platform should follow the '/Platform/'
                     pattern = r'/Platform/(?P<Platform>[^/:*?\"<>|\r\n]+/?)'
-                    found_platform = re.search(pattern, entry_abs).group('Platform')
+                    found_platform = re.search(pattern, entry_abs.as_posix()).group('Platform')
                     found_platform = found_platform.replace('/', '')
                 except Exception as e:
                     pass
@@ -831,30 +873,35 @@ def create_template(source_path: pathlib.Path,
             # Now if we found a platform and still have a found_platform which is a restricted platform
             # then transform the entry relative name into a dst relative entry name and dst abs entry.
             # if not then create a normal relative and abs dst entry name
-            _, origin_entry_rel = _transform_into_template(entry_rel.as_posix())
             if platform and found_platform in restricted_platforms:
                 # if we don't have a template restricted path and we found restricted files... warn and skip
                 # the file/dir
                 if not template_restricted_path:
-                    logger.warning("Restricted platform files found!!! {entry_rel}, {found_platform}")
+                    logger.warning("Restricted platform file found!!! {destination_entry_rel}, {found_platform}")
                     continue
-                _, destination_entry_rel = _transform_into_template_restricted_filename(entry_rel, found_platform)
-                destination_entry_abs = template_restricted_path / found_platform\
-                                        / template_restricted_platform_relative_path / template_name / 'Template'\
-                                        / destination_entry_rel
+
+                # run all the replacements
+                for replacement in replacements:
+                    destination_entry_rel = destination_entry_rel.replace(replacement[0], replacement[1])
+
+                # the name of the Platform should follow the '/Platform/{found_platform}'
+                destination_entry_rel = destination_entry_rel.replace(f"Platform/{found_platform}", '')
+                destination_entry_rel = destination_entry_rel.lstrip('/')
+
+                # construct the absolute entry from the relative
+                if template_restricted_platform_relative_path:
+                    destination_entry_abs = template_restricted_path / found_platform / template_restricted_platform_relative_path / template_name / 'Template' / destination_entry_rel
+                else:
+                    destination_entry_abs = template_restricted_path / found_platform / 'Template' / destination_entry_rel
             else:
-                destination_entry_rel = origin_entry_rel
+                # construct the absolute entry from the relative
                 destination_entry_abs = template_path / 'Template' / destination_entry_rel
 
             # clean up any relative leading slashes
-            if isinstance(origin_entry_rel, pathlib.Path):
-                origin_entry_rel = origin_entry_rel.as_posix()
-            if origin_entry_rel.startswith('/'):
-                origin_entry_rel = pathlib.Path(origin_entry_rel.lstrip('/'))
             if isinstance(destination_entry_rel, pathlib.Path):
                 destination_entry_rel = destination_entry_rel.as_posix()
             if destination_entry_rel.startswith('/'):
-                destination_entry_rel = pathlib.Path(destination_entry_rel.lstrip('/'))
+                destination_entry_rel = destination_entry_rel.lstrip('/')
 
             # make sure the dst folder may or may not exist yet, make sure it does exist before we transform
             # data into it
@@ -902,29 +949,23 @@ def create_template(source_path: pathlib.Path,
                 if platform and found_platform in restricted_platforms:
                     restricted_platform_entries[found_platform]['copyFiles'].append({
                         "file": destination_entry_rel,
-                        "origin": origin_entry_rel,
-                        "isTemplated": templated,
-                        "isOptional": False
+                        "isTemplated": templated
                     })
                 else:
                     copy_files.append({
                         "file": destination_entry_rel,
-                        "origin": origin_entry_rel,
-                        "isTemplated": templated,
-                        "isOptional": False
+                        "isTemplated": templated
                     })
             else:
                 # if the folder was for a restricted platform add the entry to the restricted platform, otherwise add it
                 # to the non restricted
                 if platform and found_platform in restricted_platforms:
                     restricted_platform_entries[found_platform]['createDirs'].append({
-                        "dir": destination_entry_rel,
-                        "origin": origin_entry_rel
+                        "dir": destination_entry_rel
                     })
                 else:
                     create_dirs.append({
-                        "dir": destination_entry_rel,
-                        "origin": origin_entry_rel
+                        "dir": destination_entry_rel
                     })
 
                 # recurse using the same root and this folder
@@ -937,11 +978,11 @@ def create_template(source_path: pathlib.Path,
     # when we run the transformation any restricted platforms entries we find will go in here
     restricted_platform_entries = {}
 
-    # Every project will have a unrestricted folder which is src_path_abs which MAY have restricted files in it, and
-    # each project MAY have a restricted folder which will only have restricted files in them. The process is the
+    # Every template will have a unrestricted folder which is src_path_abs which MAY have restricted files in it, and
+    # each template MAY have a restricted folder which will only have restricted files in them. The process is the
     # same for all of them and the result will be a separation of all restricted files from unrestricted files. We do
-    # this by running the transformation first over the src path abs and then on each restricted folder for this project
-    # we find. This will effectively combine all sources then separates all the restricted.
+    # this by running the transformation first over the src path abs and then on each restricted folder for this
+    # template we find. This will effectively combine all sources then separates all the restricted.
 
     # run the transformation on the src, which may or may not have restricted files
     _transform_dir_into_copyfiles_and_createdirs(source_path)
@@ -950,11 +991,12 @@ def create_template(source_path: pathlib.Path,
     # run the transformation on each src restricted folder
     if source_restricted_path:
         for restricted_platform in os.listdir(source_restricted_path):
-            restricted_platform_src_path_abs = source_restricted_path / restricted_platform\
-                                               / source_restricted_platform_relative_path / source_name
+            restricted_platform_src_path_abs = source_restricted_path / restricted_platform \
+                                               / source_restricted_platform_relative_path
             if os.path.isdir(restricted_platform_src_path_abs):
-                _transform_restricted_into_copyfiles_and_createdirs(source_path, restricted_platform,
-                                                                    restricted_platform_src_path_abs)
+                if restricted_platform not in restricted_platform_entries:
+                    restricted_platform_entries.update({restricted_platform: {'copyFiles': [], 'createDirs': []}})
+                _transform_restricted_into_copyfiles_and_createdirs(restricted_platform_src_path_abs)
 
     # sort
     copy_files.sort(key=lambda x: x['file'])
@@ -972,39 +1014,47 @@ def create_template(source_path: pathlib.Path,
     json_data.update({'canonical_tags': []})
     json_data.update({'user_tags': [f"{template_name}"]})
     json_data.update({'icon_path': "preview.png"})
-    if template_restricted_path:
+    if not keep_restricted_in_template and template_restricted_path:
         json_data.update({'restricted_name': template_restricted_name})
         if template_restricted_platform_relative_path != '':
-            json_data.update({'template_restricted_platform_relative_path': template_restricted_platform_relative_path})
+            json_data.update({'template_restricted_platform_relative_path': template_restricted_platform_relative_path.as_posix()})
     json_data.update({'copyFiles': copy_files})
     json_data.update({'createDirectories': create_dirs})
 
-    json_name =  template_path / template_file_name
+    json_name = template_path / source_restricted_platform_relative_path / 'template.json'
 
     with json_name.open('w') as s:
         s.write(json.dumps(json_data, indent=4) + '\n')
 
     # copy the default preview.png
     preview_png_src = this_script_parent / 'resources' / 'preview.png'
-    preview_png_dst = template_path / 'Template' / 'preview.png'
+    preview_png_dst = template_path / 'preview.png'
     if not os.path.isfile(preview_png_dst):
         shutil.copy(preview_png_src, preview_png_dst)
 
     # if no restricted template path was given and restricted platform files were found
-    if not template_restricted_path and len(restricted_platform_entries):
+    if not keep_restricted_in_template and not template_restricted_path and len(restricted_platform_entries):
         logger.info(f'Restricted platform files found!!! and no template restricted path was found...')
 
-    if template_restricted_path:
+    if not keep_restricted_in_template and template_restricted_path:
+        json_name = template_restricted_path / 'restricted.json'
+        if not json_name.is_file():
+            json_data = {}
+            json_data.update({'restricted_name': template_restricted_name})
+            os.makedirs(os.path.dirname(json_name), exist_ok=True)
+
+            with json_name.open('w') as s:
+                s.write(json.dumps(json_data, indent=4) + '\n')
+
         # now write out each restricted platform template json separately
         for restricted_platform in restricted_platform_entries:
-            restricted_template_path = template_restricted_path / restricted_platform\
-                                       / template_restricted_platform_relative_path / template_name
-
+            restricted_template_path = template_restricted_path / restricted_platform / template_restricted_platform_relative_path
             # sort
             restricted_platform_entries[restricted_platform]['copyFiles'].sort(key=lambda x: x['file'])
             restricted_platform_entries[restricted_platform]['createDirs'].sort(key=lambda x: x['dir'])
 
             json_data = {}
+            json_data.update({'restricted_name': template_name})
             json_data.update({'template_name': template_name})
             json_data.update(
                 {'origin': f'The primary repo for {template_name} goes here: i.e. http://www.mydomain.com'})
@@ -1012,23 +1062,25 @@ def create_template(source_path: pathlib.Path,
                 {'license': f'What license {template_name} uses goes here: i.e. https://opensource.org/licenses/MIT'})
             json_data.update({'display_name': template_name})
             json_data.update({'summary': f"A short description of {template_name}."})
-            json_data.update({'canonical_tags': []})
+            json_data.update({'canonical_tags': [f'{restricted_platform}']})
             json_data.update({'user_tags': [f'{template_name}']})
-            json_data.update({'icon_path': "preview.png"})
             json_data.update({'copyFiles': restricted_platform_entries[restricted_platform]['copyFiles']})
             json_data.update({'createDirectories': restricted_platform_entries[restricted_platform]['createDirs']})
 
-            json_name = restricted_template_path / template_file_name
+            json_name = restricted_template_path / 'template.json'
             os.makedirs(os.path.dirname(json_name), exist_ok=True)
 
             with json_name.open('w') as s:
                 s.write(json.dumps(json_data, indent=4) + '\n')
 
-            preview_png_dst = restricted_template_path / 'Template' /' preview.png'
-            if not os.path.isfile(preview_png_dst):
-                shutil.copy(preview_png_src, preview_png_dst)
+        # Register the restricted
+        if not no_register:
+            if register.register(restricted_path=template_restricted_path):
+                logger.error(f'Failed to register the restricted {template_restricted_path}.')
+                return 1
 
-    return 0
+    # Register the template
+    return register.register(template_path=template_path) if not no_register else 0
 
 
 def create_from_template(destination_path: pathlib.Path,
@@ -1044,7 +1096,8 @@ def create_from_template(destination_path: pathlib.Path,
                          keep_restricted_in_instance: bool = False,
                          keep_license_text: bool = False,
                          replace: list = None,
-                         force: bool = False) -> int:
+                         force: bool = False,
+                         no_register: bool = False) -> int:
     """
     Generic template instantiation for non o3de object templates. This function makes NO assumptions!
      Assumptions are made only for specializations like create_project or create_gem etc... So this function
@@ -1306,13 +1359,19 @@ def create_from_template(destination_path: pathlib.Path,
         if destination_restricted_path:
             os.makedirs(destination_restricted_path, exist_ok=True)
 
-            # read the restricted_name from the destination restricted.json
+            # write the restricted_name to the destination restricted.json
             restricted_json = destination_restricted_path / 'restricted.json'
             if not os.path.isfile(restricted_json):
                 with open(restricted_json, 'w') as s:
                     restricted_json_data = {}
                     restricted_json_data.update({'restricted_name': destination_name})
                     s.write(json.dumps(restricted_json_data, indent=4) + '\n')
+
+            # Register the restricted
+            if not no_register:
+                if register.register(restricted_path=destination_restricted_path):
+                    logger.error(f'Failed to register the restricted {destination_restricted_path}.')
+                    return 1
 
     logger.warning(f'Instantiation successful. NOTE: This is a generic instantiation of the template. If this'
                    f' was a template of an o3de object like a project, gem, template, etc. then the create-project'
@@ -1364,6 +1423,7 @@ def create_project(project_path: pathlib.Path,
         Ex. ${Name},TestGem,${Player},TestGemPlayer
         This will cause all references to ${Name} be replaced by TestGem, and all ${Player} replaced by 'TestGemPlayer'
     :param force Overrides existing files even if they exist
+    :param no_register: whether or not after completion that the new object is registered
     :param system_component_class_id: optionally specify a uuid for the system component class, default is random uuid
     :param editor_system_component_class_id: optionally specify a uuid for the editor system component class, default is
      random uuid
@@ -1422,12 +1482,10 @@ def create_project(project_path: pathlib.Path,
     # see if the template itself specifies a restricted name
     if not template_restricted_name and not template_restricted_path:
         try:
-            template_json_restricted_name = template_json_data['restricted_name']
+            template_restricted_name = template_json_data['restricted_name']
         except KeyError as e:
             # the template json doesn't have a 'restricted_name' element warn and use it
             logger.info(f'The template does not specify a "restricted_name".')
-        else:
-            template_restricted_name = template_json_restricted_name
 
     # if no restricted name or path we continue on as if there is no template restricted files.
     if template_restricted_name or template_restricted_path:
@@ -1523,8 +1581,13 @@ def create_project(project_path: pathlib.Path,
     if not project_path:
         logger.error('Project path cannot be empty.')
         return 1
-
     project_path = project_path.resolve()
+    if not os.path.isabs(project_path):
+        default_projects_folder = manifest.get_registered(default_folder='projects')
+        new_project_path = default_projects_folder / project_path
+        logger.info(f'Project Path {project_path} is not a full path, we must assume its relative'
+                    f' to default projects path = {new_project_path}')
+        project_path = new_project_path
     if not force and project_path.is_dir() and len(list(project_path.iterdir())):
         logger.error(f'Project path {project_path} already exists and is not empty.')
         return 1
@@ -1536,7 +1599,8 @@ def create_project(project_path: pathlib.Path,
         project_name = os.path.basename(project_path)
 
     if not utils.validate_identifier(project_name):
-        logger.error(f'Project name must be fewer than 64 characters, contain only alphanumeric, "_" or "-" characters, and start with a letter.  {project_name}')
+        logger.error(
+            f'Project name must be fewer than 64 characters, contain only alphanumeric, "_" or "-" characters, and start with a letter.  {project_name}')
         return 1
 
     # project name cannot be the same as a restricted platform name
@@ -1546,21 +1610,19 @@ def create_project(project_path: pathlib.Path,
 
     # project restricted name
     if project_restricted_name and not project_restricted_path:
-        project_restricted_path = manifest.get_registered(restricted_name=project_restricted_name)
+        gem_restricted_path = manifest.get_registered(restricted_name=project_restricted_name)
+        if not gem_restricted_path:
+            logger.error(f'Project Restricted Name {project_restricted_name} cannot be found.')
+            return 1
 
     # project restricted path
-    elif project_restricted_path:
+    if project_restricted_path:
         if not os.path.isabs(project_restricted_path):
-            default_projects_restricted_folder = manifest.get_registered(restricted_name='projects')
-            new_project_restricted_path = default_projects_restricted_folder/ project_restricted_path
-            logger.info(f'Project restricted path {project_restricted_path} is not a full path, we must assume its'
-                        f' relative to default projects restricted path = {new_project_restricted_path}')
-            project_restricted_path = new_project_restricted_path
-    elif template_restricted_path:
-        project_restricted_default_path = manifest.get_registered(restricted_name='projects')
-        logger.info(f'--project-restricted-path is not specified, using default project restricted path / project name'
-                    f' = {project_restricted_default_path}')
-        project_restricted_path = project_restricted_default_path
+            logger.error(f'Project Restricted Path {project_restricted_path} is not an absolute path.')
+            return 1
+    # neither put it in the default restricted projects
+    else:
+        project_restricted_path = manifest.get_o3de_restricted_folder() / 'Projects' / project_name
 
     # project restricted relative path
     if not project_restricted_platform_relative_path:
@@ -1639,7 +1701,7 @@ def create_project(project_path: pathlib.Path,
             os.makedirs(project_restricted_path, exist_ok=True)
 
             # read the restricted_name from the projects restricted.json
-            restricted_json =  project_restricted_path / 'restricted.json'
+            restricted_json = project_restricted_path / 'restricted.json'
             if os.path.isfile(restricted_json):
                 if not validation.valid_o3de_restricted_json(restricted_json):
                     logger.error(f'Restricted json {restricted_json} is not valid.')
@@ -1663,7 +1725,8 @@ def create_project(project_path: pathlib.Path,
                 logger.error(f'Failed to read "restricted_name" from restricted json {restricted_json}.')
                 return 1
 
-            # set the "restricted_name": "restricted_name" element of the project.json
+            # set the "restricted": <restricted_name> element of the project.json
+            project_json = project_path / 'project.json'
             if not validation.valid_o3de_project_json(project_json):
                 logger.error(f'Project json {project_json} is not valid.')
                 return 1
@@ -1675,7 +1738,7 @@ def create_project(project_path: pathlib.Path,
                     logger.error(f'Failed to load project json {project_json}.')
                     return 1
 
-            project_json_data.update({"restricted_name": restricted_name})
+            project_json_data.update({"restricted": restricted_name})
             os.unlink(project_json)
             with open(project_json, 'w') as s:
                 try:
@@ -1684,20 +1747,11 @@ def create_project(project_path: pathlib.Path,
                     logger.error(f'Failed to write project json {project_json}.')
                     return 1
 
-            for restricted_platform in restricted_platforms:
-                restricted_project = project_restricted_path / restricted_platform / project_name
-                os.makedirs(restricted_project, exist_ok=True)
-                cmakelists_file_name = restricted_project/ 'CMakeLists.txt'
-                if not os.path.isfile(cmakelists_file_name):
-                    with open(cmakelists_file_name, 'w') as d:
-                        if keep_license_text:
-                            d.write('# {BEGIN_LICENSE}\n')
-                            d.write('# Copyright (c) Contributors to the Open 3D Engine Project.\n')
-                            d.write('# For complete copyright and license terms please see the LICENSE at the root of this distribution.\n')
-                            d.write('#\n')
-                            d.write('# SPDX-License-Identifier: Apache-2.0 OR MIT\n')
-                            d.write('# {END_LICENSE}\n')
-
+            # Register the restricted
+            if not no_register:
+                if register.register(restricted_path=project_restricted_path):
+                    logger.error(f'Failed to register the restricted {project_restricted_path}.')
+                    return 1
 
     # Register the project with the either o3de_manifest.json or engine.json
     # and set the project.json "engine" field to match the
@@ -1906,10 +1960,15 @@ def create_gem(gem_path: pathlib.Path,
     if not gem_path:
         logger.error('Gem path cannot be empty.')
         return 1
-
     gem_path = gem_path.resolve()
+    if not os.path.isabs(gem_path):
+        default_gems_folder = manifest.get_registered(default_folder='gems')
+        new_gem_path = default_gems_folder / gem_path
+        logger.info(f'Gem Path {gem_path} is not a full path, we must assume its relative'
+                    f' to default gems path = {new_gem_path}')
+        gem_path = new_gem_path
     if not force and gem_path.is_dir() and len(list(gem_path.iterdir())):
-        logger.error(f'Gem path {gem_path} already exists and is not empty.')
+        logger.error(f'Gem path {gem_path} already exists.')
         return 1
     else:
         os.makedirs(gem_path, exist_ok=force)
@@ -1930,22 +1989,18 @@ def create_gem(gem_path: pathlib.Path,
     # gem restricted name
     if gem_restricted_name and not gem_restricted_path:
         gem_restricted_path = manifest.get_registered(restricted_name=gem_restricted_name)
+        if not gem_restricted_path:
+            logger.error(f'Gem Restricted Name {gem_restricted_name} cannot be found.')
+            return 1
 
     # gem restricted path
-    elif gem_restricted_path:
+    if gem_restricted_path:
         if not os.path.isabs(gem_restricted_path):
-            gem_restricted_default_path = manifest.get_registered(restricted_name='gems')
-            if gem_restricted_default_path:
-                new_gem_restricted_path = gem_restricted_default_path / gem_restricted_path
-                logger.info(f'Gem restricted path {gem_restricted_path} is not a full path, we must assume its'
-                            f' relative to default gems restricted path = {new_gem_restricted_path}')
-                gem_restricted_path = new_gem_restricted_path
+            logger.error(f'Gem Restricted Path {gem_restricted_path} is not an absolute path.')
+            return 1
+    # neither put it in the default restricted gems
     else:
-        gem_restricted_default_path = manifest.get_registered(restricted_name='gems')
-        if gem_restricted_default_path:
-            logger.info(f'--gem-restricted-path is not specified, using default <gem restricted path> / <gem name>'
-                        f' = {gem_restricted_default_path}')
-            gem_restricted_path = gem_restricted_default_path / gem_name
+        gem_restricted_path = manifest.get_o3de_restricted_folder() / "Gems" / gem_name
 
     # gem restricted relative
     if not gem_restricted_platform_relative_path:
@@ -2035,47 +2090,49 @@ def create_gem(gem_path: pathlib.Path,
                     logger.error(f'Failed to load restricted json {restricted_json}.')
                     return 1
 
+            try:
+                restricted_name = restricted_json_data["restricted_name"]
+            except KeyError as e:
+                logger.error(f'Failed to read "restricted_name" from restricted json {restricted_json}.')
+                return 1
+
+            # set the "restricted_name": <restricted_name> element of the gem.json
+            gem_json = gem_path / 'gem.json'
+            if not validation.valid_o3de_gem_json(gem_json):
+                logger.error(f'Gem json {gem_json} is not valid.')
+                return 1
+
+            with open(gem_json, 'r') as s:
                 try:
-                    restricted_name = restricted_json_data["restricted_name"]
-                except KeyError as e:
-                    logger.error(f'Failed to read "restricted_name" from restricted json {restricted_json}.')
+                    gem_json_data = json.load(s)
+                except json.JSONDecodeError as e:
+                    logger.error(f'Failed to load gem json {gem_json}.')
                     return 1
 
-                # set the "restricted_name": "restricted_name" element of the gem.json
-                gem_json = gem_path / 'gem.json'
-                if not validation.valid_o3de_gem_json(gem_json):
-                    logger.error(f'Gem json {gem_json} is not valid.')
+            gem_json_data.update({"restricted": restricted_name})
+            os.unlink(gem_json)
+            with open(gem_json, 'w') as s:
+                try:
+                    s.write(json.dumps(gem_json_data, indent=4) + '\n')
+                except OSError as e:
+                    logger.error(f'Failed to write project json {gem_json}.')
+                    return 1
+            '''
+            for restricted_platform in restricted_platforms:
+                restricted_gem = gem_restricted_path / restricted_platform / gem_name
+                os.makedirs(restricted_gem, exist_ok=True)
+                cmakelists_file_name = restricted_gem / 'CMakeLists.txt'
+                if not os.path.isfile(cmakelists_file_name):
+                    with open(cmakelists_file_name, 'w') as d:
+                        if keep_license_text:
+                            d.write(O3DE_LICENSE_TEXT)
+            '''
+            # Register the restricted
+            if not no_register:
+                if register.register(restricted_path=gem_restricted_path):
+                    logger.error(f'Failed to register the restricted {gem_restricted_path}.')
                     return 1
 
-                with open(gem_json, 'r') as s:
-                    try:
-                        gem_json_data = json.load(s)
-                    except json.JSONDecodeError as e:
-                        logger.error(f'Failed to load gem json {gem_json}.')
-                        return 1
-
-                gem_json_data.update({"restricted_name": restricted_name})
-                os.unlink(gem_json)
-                with open(gem_json, 'w') as s:
-                    try:
-                        s.write(json.dumps(gem_json_data, indent=4) + '\n')
-                    except OSError as e:
-                        logger.error(f'Failed to write project json {gem_json}.')
-                        return 1
-
-                for restricted_platform in restricted_platforms:
-                    restricted_gem = gem_restricted_path / restricted_platform/ gem_name
-                    os.makedirs(restricted_gem, exist_ok=True)
-                    cmakelists_file_name = restricted_gem / 'CMakeLists.txt'
-                    if not os.path.isfile(cmakelists_file_name):
-                        with open(cmakelists_file_name, 'w') as d:
-                            if keep_license_text:
-                                d.write('# {BEGIN_LICENSE}\n')
-                                d.write('# Copyright (c) Contributors to the Open 3D Engine Project.\n')
-                                d.write('# For complete copyright and license terms please see the LICENSE at the root of this distribution.\n')
-                                d.write('#\n')
-                                d.write('# SPDX-License-Identifier: Apache-2.0 OR MIT\n')
-                                d.write('# {END_LICENSE}\n')
     # Register the gem with the either o3de_manifest.json, engine.json or project.json based on the gem path
     return register.register(gem_path=gem_path) if not no_register else 0
 
@@ -2093,7 +2150,8 @@ def _run_create_template(args: argparse) -> int:
                            args.keep_restricted_in_template,
                            args.keep_license_text,
                            args.replace,
-                           args.force)
+                           args.force,
+                           args.no_register)
 
 
 def _run_create_from_template(args: argparse) -> int:
@@ -2110,7 +2168,8 @@ def _run_create_from_template(args: argparse) -> int:
                                 args.keep_restricted_in_instance,
                                 args.keep_license_text,
                                 args.replace,
-                                args.force)
+                                args.force,
+                                args.no_register)
 
 
 def _run_create_project(args: argparse) -> int:
@@ -2166,7 +2225,6 @@ def add_args(subparsers) -> None:
     call add_args and execute: python o3de.py create-gem --gem-path TestGem
     :param subparsers: the caller instantiates subparsers and passes it in here
     """
-
     # turn a directory into a template
     create_template_subparser = subparsers.add_parser('create-template')
 
@@ -2242,7 +2300,10 @@ def add_args(subparsers) -> None:
                                                 ' Note: <templatename> is automatically ${NameLower}'
                                                 ' Note: <TEMPLATENAME> is automatically ${NameUpper}')
     create_template_subparser.add_argument('-f', '--force', action='store_true', default=False,
-                                      help='Copies to new template directory even if it exist.')
+                                           help='Copies to new template directory even if it exist.')
+    create_template_subparser.add_argument('--no-register', action='store_true', default=False,
+                                           help='If the template is created successfully, it will not register the'
+                                                ' template with the global or engine manifest file.')
     create_template_subparser.set_defaults(func=_run_create_template)
 
     # create from template
@@ -2268,11 +2329,11 @@ def add_args(subparsers) -> None:
                             ' resolve the --template-path.')
 
     create_from_template_subparser.add_argument('-dn', '--destination-name', type=str,
-                                      help='The name to use when substituting the ${Name} placeholder in instantiated template,'
-                                           ' must be alphanumeric, '
-                                           ' and can contain _ and - characters.'
-                                           ' If no name is provided, will use last component of destination path.'
-                                           ' Ex. New_Gem')
+                                                help='The name to use when substituting the ${Name} placeholder in instantiated template,'
+                                                     ' must be alphanumeric, '
+                                                     ' and can contain _ and - characters.'
+                                                     ' If no name is provided, will use last component of destination path.'
+                                                     ' Ex. New_Gem')
 
     group = create_from_template_subparser.add_mutually_exclusive_group(required=False)
     group.add_argument('-drp', '--destination-restricted-path', type=pathlib.Path, required=False,
@@ -2293,7 +2354,8 @@ def add_args(subparsers) -> None:
                        help='The name of the registered restricted path to read from if any. If supplied this will'
                             ' resolve the --template-restricted-path.')
 
-    create_from_template_subparser.add_argument('-drprp', '--destination-restricted-platform-relative-path', type=pathlib.Path,
+    create_from_template_subparser.add_argument('-drprp', '--destination-restricted-platform-relative-path',
+                                                type=pathlib.Path,
                                                 required=False,
                                                 default=None,
                                                 help='Any path to append to the --destination-restricted-path/<platform>'
@@ -2301,7 +2363,8 @@ def add_args(subparsers) -> None:
                                                      ' --destination-restricted-path C:/instance'
                                                      ' --destination-restricted-platform-relative-path some/folder'
                                                      ' => C:/instance/<platform>/some/folder/<destination_name>')
-    create_from_template_subparser.add_argument('-trprp', '--template-restricted-platform-relative-path', type=pathlib.Path,
+    create_from_template_subparser.add_argument('-trprp', '--template-restricted-platform-relative-path',
+                                                type=pathlib.Path,
                                                 required=False,
                                                 default=None,
                                                 help='Any path to append to the --template-restricted-path/<platform>'
@@ -2329,7 +2392,10 @@ def add_args(subparsers) -> None:
                                                      ' Note: ${NameLower} is automatically <destinationname>'
                                                      ' Note: ${NameUpper} is automatically <DESTINATIONNAME>')
     create_from_template_subparser.add_argument('-f', '--force', action='store_true', default=False,
-                                      help='Copies over instantiated template directory even if it exist.')
+                                                help='Copies over instantiated template directory even if it exist.')
+    create_from_template_subparser.add_argument('--no-register', action='store_true', default=False,
+                                                help='If the project template is instantiated successfully, it will not register the'
+                                                     ' project with the global or engine manifest file.')
     create_from_template_subparser.set_defaults(func=_run_create_from_template)
 
     # creation of a project from a template (like create from template but makes project assumptions)
@@ -2430,10 +2496,10 @@ def add_args(subparsers) -> None:
                                           help='The str id you want to associate with the project, default is a random uuid'
                                                ' Ex. {b60c92eb-3139-454b-a917-a9d3c5819594}')
     create_project_subparser.add_argument('-f', '--force', action='store_true', default=False,
-                                      help='Copies over instantiated template directory even if it exist.')
+                                          help='Copies over instantiated template directory even if it exist.')
     create_project_subparser.add_argument('--no-register', action='store_true', default=False,
-                                      help='If the project template is instantiated successfully, it will not register the'
-                                           ' project with the global or engine manifest file.')
+                                          help='If the project template is instantiated successfully, it will not register the'
+                                               ' project with the global or engine manifest file.')
     create_project_subparser.set_defaults(func=_run_create_project)
 
     # creation of a gem from a template (like create from template but makes gem assumptions)
@@ -2445,11 +2511,11 @@ def add_args(subparsers) -> None:
     create_gem_subparser.add_argument('-gp', '--gem-path', type=pathlib.Path, required=True,
                                       help='The gem path, can be absolute or relative to the current working directory')
     create_gem_subparser.add_argument('-gn', '--gem-name', type=str,
-                                          help='The name to use when substituting the ${Name} placeholder for the gem,'
-                                               ' must be alphanumeric, '
-                                               ' and can contain _ and - characters.'
-                                               ' If no name is provided, will use last component of gem path.'
-                                               ' Ex. New_Gem')
+                                      help='The name to use when substituting the ${Name} placeholder for the gem,'
+                                           ' must be alphanumeric, '
+                                           ' and can contain _ and - characters.'
+                                           ' If no name is provided, will use last component of gem path.'
+                                           ' Ex. New_Gem')
 
     group = create_gem_subparser.add_mutually_exclusive_group(required=False)
     group.add_argument('-tp', '--template-path', type=pathlib.Path, required=False,
@@ -2529,7 +2595,7 @@ def add_args(subparsers) -> None:
                                       help='The uuid you want to associate with the gem module,'
                                            ' default is a random uuid Ex. {b60c92eb-3139-454b-a917-a9d3c5819594}')
     create_gem_subparser.add_argument('-f', '--force', action='store_true', default=False,
-                        help='Copies over instantiated template directory even if it exist.')
+                                      help='Copies over instantiated template directory even if it exist.')
     create_gem_subparser.add_argument('--no-register', action='store_true', default=False,
                                       help='If the gem template is instantiated successfully, it will not register the'
                                            ' gem with the global, project or engine manifest file.')

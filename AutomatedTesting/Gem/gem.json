@@ -3,13 +3,21 @@
     "display_name": "AutomatedTesting",
     "license": "Apache-2.0 Or MIT",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
-    "origin": "Amazon Web Services, Inc.",
+    "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
     "type": "Code",
     "summary": "Project Gem for customizing the AutomatedTesting project functionality.",
     "canonical_tags": [
         "Gem"
     ],
-    "user_tags": [],
+    "user_tags": [
+        "AutomatedTesting"
+    ],
     "icon_path": "preview.png",
-    "requirements": ""
+    "requirements": "",
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/gameplay/achievements/",
+    "dependencies": [],
+    "external_subdirectories": [
+        "PythonCoverage"
+    ]
 }

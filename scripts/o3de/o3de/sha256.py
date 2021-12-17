@@ -35,7 +35,7 @@ def sha256(file_path: str or pathlib.Path,
             logger.error(f'Json path {json_path} does not exist.')
             return 1
 
-    the_sha256 = hashlib.sha256(file_path.open('rb').read()).hexdigest()
+    sha256 = hashlib.sha256(file_path.open('rb').read()).hexdigest()
 
     if json_path:
         with json_path.open('r') as s:
@@ -44,7 +44,7 @@ def sha256(file_path: str or pathlib.Path,
             except json.JSONDecodeError as e:
                 logger.error(f'Failed to read Json path {json_path}: {str(e)}')
                 return 1
-        json_data.update({"sha256": the_sha256})
+        json_data.update({"sha256": sha256})
         utils.backup_file(json_path)
         with json_path.open('w') as s:
             try:
@@ -53,7 +53,7 @@ def sha256(file_path: str or pathlib.Path,
                 logger.error(f'Failed to write Json path {json_path}: {str(e)}')
                 return 1
     else:
-        print(the_sha256)
+        print(sha256)
     return 0
 
 

@@ -1,10 +1,14 @@
 {
     "template_name": "GemRepo",
-    "origin": "The primary repo for GemRepo goes here: i.e. http://www.mydomain.com",
-    "license": "What license GemRepo uses goes here: i.e. https://opensource.org/licenses/MIT",
+        "origin_url": "https://github.com/o3de/o3de",
+    "license": "Apache-2.0 or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "display_name": "GemRepo",
     "summary": "A Gem Repository that contains a single Gem.",
-    "canonical_tags": [],
+    "canonical_tags": [
+        "Gem",
+        "Repo"
+    ],
     "user_tags": [
         "GemRepo"
     ],
@@ -12,15 +16,11 @@
     "copyFiles": [
         {
             "file": "gem.json",
-            "origin": "gem.json",
-            "isTemplated": true,
-            "isOptional": false
+            "isTemplated": true
         },
         {
             "file": "repo.json",
-            "origin": "repo.json",
-            "isTemplated": true,
-            "isOptional": false
+            "isTemplated": true
         }
     ],
     "createDirectories": []
