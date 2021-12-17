@@ -7,35 +7,35 @@
             "details": {
                 "name": "Transform",
                 "category": "Math/Plane",
-                "tooltip": "Returns Source transformed by Transform"
+                "tooltip": "returns Source transformed by Transform"
             },
             "slots": [
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "base": "DataInput_Source",
+                    "base": "DataInput_Source_0",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "base": "DataInput_Transform",
+                    "base": "DataInput_Transform_1",
                     "details": {
                         "name": "Transform"
                     }
                 },
                 {
-                    "base": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

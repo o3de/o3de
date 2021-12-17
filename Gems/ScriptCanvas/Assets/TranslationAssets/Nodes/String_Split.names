@@ -7,37 +7,36 @@
             "details": {
                 "name": "Split",
                 "category": "String",
-                "tooltip": ".",
-                "subtitle": "String"
+                "tooltip": "."
             },
             "slots": [
                 {
-                    "base": "DataInput_Source",
+                    "base": "DataInput_Source_0",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "base": "DataInput_Delimiters",
+                    "base": "DataInput_Delimiters_1",
                     "details": {
                         "name": "Delimiters"
                     }
                 },
                 {
-                    "base": "DataOutput_String Array",
+                    "base": "DataOutput_String Array_0",
                     "details": {
                         "name": "String Array"
                     }
                 },
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In",
                         "tooltip": "Input signal"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }

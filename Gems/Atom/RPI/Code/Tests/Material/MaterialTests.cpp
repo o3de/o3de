@@ -211,21 +211,13 @@ namespace UnitTest
         EXPECT_NE(materialInstance3, materialInstance4);
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ATOM_RPI_TESTS
-    TEST_F(MaterialTests, DISABLED_TestInitialValuesFromMaterial)
-#else
     TEST_F(MaterialTests, TestInitialValuesFromMaterial)
-#endif // AZ_TRAIT_DISABLE_FAILED_ATOM_RPI_TESTS
     {
         Data::Instance<Material> material = Material::FindOrCreate(m_testMaterialAsset);
         ValidateInitialValuesFromMaterial(material);
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ATOM_RPI_TESTS
-    TEST_F(MaterialTests, DISABLED_TestSetPropertyValue)
-#else
     TEST_F(MaterialTests, TestSetPropertyValue)
-#endif // AZ_TRAIT_DISABLE_FAILED_ATOM_RPI_TESTS
     {
         Data::Instance<Material> material = Material::FindOrCreate(m_testMaterialAsset);
 
@@ -713,11 +705,7 @@ namespace UnitTest
         AZ_TEST_STOP_ASSERTTEST(2);
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ATOM_RPI_TESTS
-    TEST_F(MaterialTests, DISABLED_Error_SetPropertyValue_WrongDataType)
-#else
     TEST_F(MaterialTests, Error_SetPropertyValue_WrongDataType)
-#endif // AZ_TRAIT_DISABLE_FAILED_ATOM_RPI_TESTS
     {
         Data::Instance<Material> material = Material::FindOrCreate(m_testMaterialAsset);
 

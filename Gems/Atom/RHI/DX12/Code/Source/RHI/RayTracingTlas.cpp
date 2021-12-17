@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Math/Matrix3x4.h>
 #include <RHI/RayTracingTlas.h>
 #include <RHI/RayTracingBlas.h>
@@ -120,7 +119,7 @@ namespace AZ
             // create scratch buffer
             buffers.m_scratchBuffer = RHI::Factory::Get().CreateBuffer();
             AZ::RHI::BufferDescriptor scratchBufferDescriptor;
-            scratchBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite;
+            scratchBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::RayTracingScratchBuffer;
             scratchBufferDescriptor.m_byteCount = prebuildInfo.ScratchDataSizeInBytes;
             
             AZ::RHI::BufferInitRequest scratchBufferRequest;

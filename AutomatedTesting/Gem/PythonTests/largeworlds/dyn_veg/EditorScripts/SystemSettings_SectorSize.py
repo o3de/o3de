@@ -51,7 +51,7 @@ def SystemSettings_SectorSize():
     # Create basic vegetation entity
     position = math.Vector3(512.0, 512.0, 32.0)
     asset_path = os.path.join("Slices", "PinkFlower.dynamicslice")
-    vegetation = dynveg.create_vegetation_area("vegetation", position, 16.0, 16.0, 1.0, asset_path)
+    vegetation = dynveg.create_dynamic_slice_vegetation_area("vegetation", position, 16.0, 16.0, 1.0, asset_path)
     dynveg.create_surface_entity("Surface_Entity", position, 16.0, 16.0, 1.0)
 
     # Add the Vegetation Debugger component to the Level Inspector
