@@ -148,11 +148,16 @@ namespace AZ
     {
         /// Needs to match declared parameter type.
         template <template <typename...> class> constexpr bool false_v1 = false;
-        template <template <AZStd::size_t...> class> constexpr bool false_v2 = false;
-        template <template <typename, AZStd::size_t> class> constexpr bool false_v3 = false;
-        template <template <typename, typename, AZStd::size_t> class> constexpr bool false_v4 = false;
-        template <template <typename, typename, typename, AZStd::size_t> class> constexpr bool false_v5 = false;
-        template <template <typename, AZStd::size_t, typename> class> constexpr bool false_v6 = false;
+#if defined(AZ_COMPILER_MSVC)
+        template<template<AZStd::size_t...> class> constexpr bool false_v2 = false;
+#else
+        template<template<auto...> class> constexpr bool false_v2 = false;
+#endif // defined(AZ_COMPILER_MSVC)
+        template<template<typename, auto> class>
+        constexpr bool false_v3 = false;
+        template <template <typename, typename, auto> class> constexpr bool false_v4 = false;
+        template <template <typename, typename, typename, auto> class> constexpr bool false_v5 = false;
+        template <template <typename, auto, typename> class> constexpr bool false_v6 = false;
 
         template<typename T>
         inline const AZ::TypeId& Uuid()
@@ -167,14 +172,18 @@ namespace AZ
             static const AZ::TypeId s_uuid = AZ::TypeId::CreateNull();
             return s_uuid;
         }
-
+#if defined(AZ_COMPILER_MSVC)
+        template<template<AZStd::size_t...> class T>
+#else
         template<template<auto...> class T>
+#endif // defined(AZ_COMPILER_MSVC)
         inline const AZ::TypeId& Uuid()
         {
             static_assert(false_v2<T>, "Missing specialization for this template. Make sure it's registered for type info support.");
             static const AZ::TypeId s_uuid = AZ::TypeId::CreateNull();
             return s_uuid;
         }
+
 
         template<template<typename, auto> class T>
         inline const AZ::TypeId& Uuid()
