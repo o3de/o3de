@@ -159,6 +159,8 @@ namespace AZ
             bool m_isVisible = true;
             MeshComponentConfig m_configuration;
             AZ::Vector3 m_cachedNonUniformScale = AZ::Vector3::CreateOne();
+            //! Cached bus to use to notify RenderGeometry::Intersector the entity/component has changed.
+            AzFramework::RenderGeometry::IntersectionNotificationBus::BusPtr m_intersectionNotificationsBus;
 
             MeshFeatureProcessorInterface::ModelChangedEvent::Handler m_changeEventHandler
             {
