@@ -69,7 +69,7 @@ namespace AzToolsFramework
             {
                 return nullptr;
             }
-            return entity->AZ::Entity::FindComponent<ComponentType>();
+            return entity->template FindComponent<ComponentType>();
         }
     };
 
