@@ -41,7 +41,10 @@ namespace Multiplayer
         // Automated testing listens for these logs
         if (editorsv_isDedicated)
         {
-            // Server logs piped to the editor. Change the buffering policy to ensure every write to stdout is flushed.
+            // Server logs will be piped to the editor so turn off buffering,
+            // otherwise it'll take a lot of logs to fill up the buffer before stdout is finally flushed.
+            // This isn't optimal, but will only affect 
+            // Note: _IOLBF (flush on newlines) won't work for Automated Testing which uses a headless server app and will fall back to _IOFBF (full buffering)
             setvbuf(stdout, NULL, _IONBF, 0);
 
             // If the settings registry is not available at this point,
