@@ -254,12 +254,12 @@ namespace AZ
                 Method("CreateFromMatrix3x3", &Quaternion::CreateFromMatrix3x3)->
                 Method("CreateFromMatrix4x4", &Quaternion::CreateFromMatrix4x4)->
                 Method("CreateFromAxisAngle", &Quaternion::CreateFromAxisAngle)->
+                Method("CreateFromScaledAxisAngle", &Quaternion::CreateFromScaledAxisAngle)->
                 Method("CreateShortestArc", &Quaternion::CreateShortestArc)->
                 Method("CreateFromEulerAnglesDegrees", &Quaternion::CreateFromEulerAnglesDegrees)
                 ;
         }
     }
-
 
     Quaternion Quaternion::CreateFromMatrix3x3(const Matrix3x3& m)
     {
@@ -428,6 +428,26 @@ namespace AZ
         {
             outAxis.Set(0.0f, 1.0f, 0.0f);
             outAngle = 0.0f;
+        }
+    }
+
+
+    Vector3 Quaternion::ConvertToScaledAxisAngle() const
+    {
+        // Take the log of the quaternion to convert it to the exponential map
+        // and multiply it by 2.0 to bring it into the scaled axis-angle representation.
+        const AZ::Vector3 imaginary = GetImaginary();
+        const float length = imaginary.GetLength();
+        if (length < AZ::Constants::FloatEpsilon)
+        {
+            return imaginary * 2.0f;
+        }
+        else
+        {
+            const float halfAngle = acosf(AZ::GetClamp(GetW(), -1.0f, 1.0f));
+
+            // Multiply by 2.0 to convert the half angle into the full one.
+            return halfAngle * 2.0f * (imaginary / length);
         }
     }
 }
