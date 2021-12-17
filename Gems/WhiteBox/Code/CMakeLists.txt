@@ -44,8 +44,7 @@ if(NOT PAL_TRAIT_WHITEBOX_SUPPORTED)
                 PRIVATE
                     AZ::AzCore
             RUNTIME_DEPENDENCIES
-                PRIVATE
-                    Gem::EditorPythonBindings.Editor
+                Gem::EditorPythonBindings.Editor
         )
     endif()
     return()
