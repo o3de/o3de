@@ -122,6 +122,21 @@ namespace AZ
                     return false;
                 }
 
+                // We don't allow previously renamed property names to be reused for new properties. This would just complicate too many things,
+                // as every use of every property name (like in Material Component, or in scripts, for example) would have to have a version number
+                // associated with it, in order to know whether or which rename to apply.
+                for (size_t propertyIndex = 0; propertyIndex < m_asset->m_materialPropertiesLayout->GetPropertyCount(); ++propertyIndex)
+                {
+                    Name originalPropertyName = m_asset->m_materialPropertiesLayout->GetPropertyDescriptor(MaterialPropertyIndex{propertyIndex})->GetName();
+                    Name newPropertyName = originalPropertyName;
+                    if (versionUpdate.ApplyPropertyRenames(newPropertyName))
+                    {
+                        ReportError("There was a material property named '%s' at material type version %d. This name cannot be reused for another property.",
+                            originalPropertyName.GetCStr(), versionUpdate.GetVersion());
+                        return false;
+                    }
+                }
+
                 prevVersion = versionUpdate.GetVersion();
             }
 
