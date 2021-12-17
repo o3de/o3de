@@ -1482,7 +1482,7 @@ namespace AZ
             {
                 int& parentCurrentContainerElementIndex = nodeStack.back().m_currentContainerElementIndex;
                 // add element to the array
-                if (dataContainer->CanAccessElementsByIndex() && dataContainer->Size(parentPtr) > aznumeric_cast<size_t>(parentCurrentContainerElementIndex))
+                if (dataContainer->CanAccessElementsByIndex() && dataContainer->Size(parentPtr) > parentCurrentContainerElementIndex)
                 {
                     dataAddress = dataContainer->GetElementByIndex(parentPtr, &classElement, parentCurrentContainerElementIndex);
                 }
@@ -1580,7 +1580,7 @@ namespace AZ
             node.m_dataElement = this;
             nodeStack.push_back(node);
 
-            for (size_t dataElementIndex = 0; dataElementIndex < m_subElements.size(); ++dataElementIndex)
+            for (int dataElementIndex = 0; dataElementIndex < m_subElements.size(); ++dataElementIndex)
             {
                 DataElementNode& subElement = m_subElements[dataElementIndex];
                 if (!subElement.GetDataHierarchyEnumerate(errorHandler, nodeStack))

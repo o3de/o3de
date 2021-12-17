@@ -598,7 +598,7 @@ namespace AZ
             // we have a patch to this node, and the PreventOverride flag is not preventing it from being applied
             if (parentClassData->m_container)
             {
-                if (parentClassData->m_container->CanAccessElementsByIndex() && parentClassData->m_container->Size(parentPointer) > aznumeric_cast<size_t>(parentContainerElementCounter))
+                if (parentClassData->m_container->CanAccessElementsByIndex() && parentClassData->m_container->Size(parentPointer) > parentContainerElementCounter)
                 {
                     targetPointer = parentClassData->m_container->GetElementByIndex(parentPointer, sourceNode->m_classElement, parentContainerElementCounter);
                 }
@@ -680,7 +680,7 @@ namespace AZ
             {
                 if (parentClassData->m_container)
                 {
-                    if (parentClassData->m_container->CanAccessElementsByIndex() && parentClassData->m_container->Size(parentPointer) > aznumeric_cast<size_t>(parentContainerElementCounter))
+                    if (parentClassData->m_container->CanAccessElementsByIndex() && parentClassData->m_container->Size(parentPointer) > parentContainerElementCounter)
                     {
                         targetPointer = parentClassData->m_container->GetElementByIndex(parentPointer, sourceNode->m_classElement, parentContainerElementCounter);
                     }

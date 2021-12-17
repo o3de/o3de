@@ -169,7 +169,7 @@ namespace AZ
 
         // This version of Parse does not skip over 0th index
         AZStd::string currentSwitch;
-        for (size_t i = 0; i < commandLine.size(); ++i)
+        for (int i = 0; i < commandLine.size(); ++i)
         {
             AddArgument(commandLine[i], currentSwitch);
         }

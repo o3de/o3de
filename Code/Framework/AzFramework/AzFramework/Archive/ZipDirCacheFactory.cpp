@@ -333,14 +333,14 @@ namespace AZ::IO::ZipDir
 
         //There is a 2GB pak file limit
         constexpr size_t pakSizeLimit{ 1U << 31 };
-        if (aznumeric_cast<size_t>(nFileSize) > pakSizeLimit)
+        if (nFileSize > pakSizeLimit)
         {
             AZ_Fatal("Archive", "The file is too large. Can't open a pak file that is greater than 2GB in size. Current size is " PRIi64, nFileSize);
         }
 
         m_nZipFileSize = aznumeric_cast<size_t>(nFileSize);
 
-        if (aznumeric_cast<size_t>(nFileSize) < sizeof(ZipFile::CDREnd))
+        if (nFileSize < sizeof(ZipFile::CDREnd))
         {
             AZ_Warning("Archive", false, "The file is too small(%" PRIi64 "), it needs to contain the CDREnd structure which is %zu bytes. Please check and delete the file. Truncated files are not deleted automatically",
                 nFileSize, sizeof(ZipFile::CDREnd));
@@ -375,7 +375,7 @@ namespace AZ::IO::ZipDir
 
             // since dealing with 32bit unsigned, check that filesize is bigger than
             // CDREnd plus comment before the following check occurs.
-            if (aznumeric_cast<size_t>(nFileSize) > (sizeof(ZipFile::CDREnd) + 0xFFFF))
+            if (nFileSize > (sizeof(ZipFile::CDREnd) + 0xFFFF))
             {
                 // if the new buffer pos is beyond 64k limit for the comment size
                 if (nNewBufPos < aznumeric_cast<uint32_t>(nFileSize - sizeof(ZipFile::CDREnd) - 0xFFFF))
