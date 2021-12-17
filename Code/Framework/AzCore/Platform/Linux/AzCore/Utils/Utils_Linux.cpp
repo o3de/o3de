@@ -26,7 +26,7 @@ namespace AZ::Utils
         {
             result.m_pathStored = ExecutablePathResult::GeneralError;
         }
-        else if (bytesWritten == aznumeric_cast<ssize_t>(exeStorageSize))
+        else if (bytesWritten == exeStorageSize)
         {
             result.m_pathStored = ExecutablePathResult::BufferSizeNotLargeEnough;
         }

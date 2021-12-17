@@ -900,7 +900,7 @@ namespace AZ::StringFunc
 
         outIndex = 0;
         outOffset = AZStd::string::npos;
-        for (uint32_t i = 0; i < searchStrings.size(); ++i)
+        for (int32_t i = 0; i < searchStrings.size(); ++i)
         {
             const AZStd::string& search = searchStrings[i];
 
@@ -1308,7 +1308,7 @@ namespace AZ::StringFunc
             AZ_Assert(groupingSize > 0, "Grouping size must be a positive integer");
 
             int numberEndPos = 0;
-            unsigned int stringEndPos = 0;
+            int stringEndPos = 0;
 
             if (decimalPosHint > 0 && decimalPosHint < (bufferSize - 1) && buffer[decimalPosHint] == decimalSeparator)
             {
@@ -2556,7 +2556,7 @@ namespace AZ::StringFunc
     {
         bool CheckNonAsciiChar(const AZStd::string& in)
         {
-            for (size_t i = 0; i < in.length(); ++i)
+            for (int i = 0; i < in.length(); ++i)
             {
                 char byte = in[i];
                 if (byte & 0x80)

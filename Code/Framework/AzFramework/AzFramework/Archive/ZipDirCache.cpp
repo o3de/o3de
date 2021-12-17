@@ -70,7 +70,7 @@ namespace AZ::IO::ZipDir
                 std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
                 std::uniform_int_distribution<> distrib(0, 10 + 'z' - 'a');
                 char szBuf[8];
-                size_t i;
+                int i;
                 for (i = 0; i < AZ_ARRAY_SIZE(szBuf) - 1; ++i)
                 {
                     int r = distrib(gen);
