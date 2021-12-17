@@ -56,7 +56,7 @@ namespace
         {
             moduleFileInfo.setFile(executableDirectory);
         }
-        
+
         QDir binaryDir = moduleFileInfo.absoluteDir();
         // strip extension
         QString applicationBase = moduleFileInfo.completeBaseName();
@@ -71,16 +71,27 @@ namespace
             binaryDir.remove(tempFile);
         }
     }
-    
+
 }
 
 ErrorCollector::~ErrorCollector()
 {
-    MessageWindow messageWindow(m_parent);
-    messageWindow.SetHeaderText("The following errors occurred during startup:");
-    messageWindow.SetMessageText(m_errorMessages);
-    messageWindow.SetTitleText("Startup Errors");
-    messageWindow.exec();
+    if (!m_errorMessages.isEmpty())
+    {
+        MessageWindow messageWindow(m_parent);
+        messageWindow.SetHeaderText("The following errors occurred during startup:");
+        messageWindow.SetMessageText(m_errorMessages);
+        messageWindow.SetTitleText("Startup Errors");
+        messageWindow.exec();
+    }
+}
+
+void ErrorCollector::AddError(AZStd::string message)
+{
+    QString qMessage(message.c_str());
+    qMessage = qMessage.trimmed();
+
+    m_errorMessages << qMessage.split('\n', Qt::SkipEmptyParts);
 }
 
 GUIApplicationManager::GUIApplicationManager(int* argc, char*** argv, QObject* parent)
@@ -201,7 +212,7 @@ bool GUIApplicationManager::Run()
     wrapper->enableSaveRestoreGeometry(GetOrganizationName(), GetApplicationName(), "MainWindow", restoreOnFirstShow);
 
     AzQtComponents::StyleManager::setStyleSheet(m_mainWindow, QStringLiteral("style:AssetProcessor.qss"));
-    
+
     auto refreshStyleSheets = [styleManager]()
     {
         styleManager->Refresh();
@@ -343,7 +354,7 @@ bool GUIApplicationManager::Run()
     m_duringStartup = false;
 
     int resultCode =  qApp->exec(); // this blocks until the last window is closed.
-    
+
     if(!InitiatedShutdown())
     {
         // if we are here it implies that AP did not stop the Qt event loop and is shutting down prematurely
@@ -442,7 +453,7 @@ bool GUIApplicationManager::OnError(const char* /*window*/, const char* message)
         return true;
     }
 
-    // If we're the main thread, then consider showing the message box directly.  
+    // If we're the main thread, then consider showing the message box directly.
     // note that all other threads will PAUSE if they emit a message while the main thread is showing this box
     // due to the way the trace system EBUS is mutex-protected.
     Qt::ConnectionType connection = Qt::DirectConnection;
@@ -487,7 +498,7 @@ bool GUIApplicationManager::Activate()
     AssetUtilities::ComputeProjectCacheRoot(projectCacheRoot);
     m_localUserSettings.Load(projectCacheRoot.filePath("AssetProcessorUserSettings.xml").toUtf8().data(), context);
     m_localUserSettings.Activate(AZ::UserSettings::CT_LOCAL);
-    
+
     InitIniConfiguration();
     InitFileServer();
 
@@ -496,7 +507,7 @@ bool GUIApplicationManager::Activate()
     {
         return false;
     }
-    
+
     InitShaderCompilerModel();
     InitShaderCompilerManager();
 
@@ -625,7 +636,7 @@ void GUIApplicationManager::InitConnectionManager()
     QObject::connect(m_fileServer, SIGNAL(AddRenameRequest(unsigned int, bool)), m_connectionManager, SLOT(AddRenameRequest(unsigned int, bool)));
     QObject::connect(m_fileServer, SIGNAL(AddFindFileNamesRequest(unsigned int, bool)), m_connectionManager, SLOT(AddFindFileNamesRequest(unsigned int, bool)));
     QObject::connect(m_fileServer, SIGNAL(UpdateConnectionMetrics()), m_connectionManager, SLOT(UpdateConnectionMetrics()));
-    
+
     m_connectionManager->RegisterService(ShowAssetProcessorRequest::MessageType,
         std::bind([this](unsigned int /*connId*/, unsigned int /*type*/, unsigned int /*serial*/, QByteArray /*payload*/)
     {
@@ -683,12 +694,12 @@ void GUIApplicationManager::DestroyFileServer()
 void GUIApplicationManager::InitShaderCompilerManager()
 {
     m_shaderCompilerManager = new ShaderCompilerManager();
-    
+
     //Shader compiler stuff
     m_connectionManager->RegisterService(AssetUtilities::ComputeCRC32Lowercase("ShaderCompilerProxyRequest"), std::bind(&ShaderCompilerManager::process, m_shaderCompilerManager, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
     QObject::connect(m_shaderCompilerManager, SIGNAL(sendErrorMessageFromShaderJob(QString, QString, QString, QString)), m_shaderCompilerModel, SLOT(addShaderErrorInfoEntry(QString, QString, QString, QString)));
 
-    
+
 }
 
 void GUIApplicationManager::DestroyShaderCompilerManager()

@@ -52,12 +52,12 @@ void MessageWindow::ShowLineContextMenu(const QPoint& pos)
     }
 
     QMenu menu;
-    menu.addAction("Copy Line", [listWidgetItem]()
+    menu.addAction(tr("Copy Line"), [listWidgetItem]()
     {
         QGuiApplication::clipboard()->setText(listWidgetItem->text());
     });
 
-    menu.addAction("Copy All Lines", [this]()
+    menu.addAction(tr("Copy All Lines"), [this]()
     {
         QGuiApplication::clipboard()->setText(m_messageText.join('\n'));
     });

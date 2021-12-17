@@ -39,13 +39,7 @@ struct ErrorCollector
     explicit ErrorCollector(QWidget* parent = nullptr) : m_parent(parent){}
     ~ErrorCollector();
 
-    void AddError(AZStd::string message)
-    {
-        QString qMessage(message.c_str());
-        qMessage = qMessage.trimmed();
-
-        m_errorMessages << qMessage.split('\n', Qt::SkipEmptyParts);
-    }
+    void AddError(AZStd::string message);
 
     QWidget* m_parent{};
     QStringList m_errorMessages;
