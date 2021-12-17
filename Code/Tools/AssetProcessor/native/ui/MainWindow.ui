@@ -1265,7 +1265,11 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_2">
             <item>
-             <widget class="QListView" name="builderList"/>
+             <widget class="QListView" name="builderList">
+              <property name="alternatingRowColors">
+               <bool>true</bool>
+              </property>
+             </widget>
             </item>
             <item>
              <widget class="QPlainTextEdit" name="builderDetails">
