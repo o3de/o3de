@@ -95,6 +95,9 @@ namespace MaterialEditor
         ////////////////////////////////////////////////////////////////////////
         // AzFramework::AssetCatalogEventBus::Handler overrides ...
         void OnCatalogLoaded(const char* catalogFile) override;
+        void OnCatalogAssetChanged(const AZ::Data::AssetId& assetId) override;
+        void OnCatalogAssetAdded(const AZ::Data::AssetId& assetId) override;
+        void OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& assetInfo) override;
         ////////////////////////////////////////////////////////////////////////
 
         AZStd::unordered_map<AZ::Data::AssetId, AZ::Data::Asset<AZ::RPI::AnyAsset>> m_lightingPresetAssets;
