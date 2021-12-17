@@ -43,7 +43,7 @@ namespace AZ::JsonMathMatrixSerializerInternal
 
         constexpr const char* names[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"};
         float values[ElementCount];
-        for (size_t i = 0; i < ElementCount; ++i)
+        for (int i = 0; i < ElementCount; ++i)
         {
             ScopedContextPath subPath(context, names[i]);
             JSR::Result intermediate = floatSerializer->Load(values + i, azrtti_typeid<float>(), inputValue[i], context);
@@ -123,7 +123,7 @@ namespace AZ::JsonMathMatrixSerializerInternal
 
         JSR::ResultCode result(JSR::Tasks::ReadField);
         float values[ElementCount];
-        for (size_t i = 0; i < ElementCount; ++i)
+        for (int i = 0; i < ElementCount; ++i)
         {
             values[i] = output.GetElement(i);
             auto name = names[i * 2];
@@ -140,7 +140,7 @@ namespace AZ::JsonMathMatrixSerializerInternal
             }
         }
 
-        for (size_t i = 0; i < ElementCount; ++i)
+        for (int i = 0; i < ElementCount; ++i)
         {
             output.SetElement(i, values[i]);
         }
