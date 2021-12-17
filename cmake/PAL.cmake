@@ -250,6 +250,7 @@ endforeach()
 
 # set the O3DE_ENGINE_RESTRICTED_PATH
 o3de_restricted_path(${LY_ROOT_FOLDER}/engine.json O3DE_ENGINE_RESTRICTED_PATH engine_has_no_parent)
+message("O3DE_ENGINE_RESTRICTED_PATH=${O3DE_ENGINE_RESTRICTED_PATH}")
 
 # detect platforms in the restricted path
 file(GLOB detection_files ${O3DE_ENGINE_RESTRICTED_PATH}/*/cmake/PALDetection_*.cmake)
