@@ -60,10 +60,11 @@
 #   define AZSTD_IS_CLASS(T) __is_class(T)
 #   define AZSTD_IS_ENUM(T) __is_enum(T)
 //  This one doesn't quite always do the right thing:
+#   define AZSTD_IS_CONVERTIBLE(_From, _To) __is_convertible_to(_From, _To)
 //  #   define AZSTD_IS_POLYMORPHIC(T) __is_polymorphic(T)
 #endif
 
-#if defined(AZ_COMPILER_CLANG) || defined(AZ_COMPILER_CLANG)
+#if defined(AZ_COMPILER_CLANG) || defined(AZ_COMPILER_GCC)
 #   include <AzCore/std/typetraits/is_same.h>
 #   include <AzCore/std/typetraits/is_reference.h>
 #   include <AzCore/std/typetraits/is_volatile.h>
@@ -85,6 +86,7 @@
 #   define AZSTD_IS_BASE_OF(T, U) (__is_base_of(T, U) && !is_same<T, U>::value)
 #   define AZSTD_IS_CLASS(T) __is_class(T)
 #   define AZSTD_IS_ENUM(T) __is_enum(T)
+#   define AZSTD_IS_CONVERTIBLE(_From, _To) AZStd::is_convertible_v(_From, _To)
 #   define AZSTD_IS_POLYMORPHIC(T) __is_polymorphic(T)
 #endif
 

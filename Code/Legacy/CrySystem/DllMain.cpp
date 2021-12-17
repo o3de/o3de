@@ -33,7 +33,7 @@
 HMODULE gDLLHandle = NULL;
 
 #if !defined(AZ_MONOLITHIC_BUILD) && defined(AZ_HAS_DLL_SUPPORT) && AZ_TRAIT_LEGACY_CRYSYSTEM_DEFINE_DLLMAIN
-AZ_PUSH_DISABLE_WARNING(4447, "-Wunknown-warning-option", )
+AZ_PUSH_DISABLE_WARNING(4447, "-Wunknown-warning-option")
 BOOL APIENTRY DllMain(HANDLE hModule,
     DWORD  ul_reason_for_call,
     [[maybe_unused]] LPVOID lpReserved

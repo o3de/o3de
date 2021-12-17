@@ -1563,7 +1563,7 @@ namespace AZStd
 
             auto IsValidFormatArg = [](const auto& value) constexpr
             {
-                constexpr bool isValid = AZStd::is_convertible_v(decltype(value), ValidFormatArg);
+                constexpr bool isValid = AZSTD_IS_CONVERTIBLE(decltype(value), ValidFormatArg);
                 static_assert(isValid, "Invalid string::format argument");
                 return isValid;
             };
@@ -1586,7 +1586,7 @@ namespace AZStd
 
             auto IsValidFormatArg = [](const auto& value) constexpr
             {
-                constexpr bool isValid = AZStd::is_convertible_v<decltype(value), ValidFormatArg>;
+                constexpr bool isValid = AZSTD_IS_CONVERTIBLE(decltype(value), ValidFormatArg);
                 static_assert(isValid, "Invalid wstring::format argument");
                 return isValid;
             };
