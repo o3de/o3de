@@ -41,7 +41,10 @@ struct ErrorCollector
 
     void AddError(AZStd::string message)
     {
-        m_errorMessages.push_back(QString(message.c_str()).trimmed());
+        QString qMessage(message.c_str());
+        qMessage = qMessage.trimmed();
+
+        m_errorMessages << qMessage.split('\n', Qt::SkipEmptyParts);
     }
 
     QWidget* m_parent{};
