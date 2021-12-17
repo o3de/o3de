@@ -144,11 +144,7 @@ namespace AZ::Debug
         if ((m_saveNames || m_mode == RECORD_FULL) && name && fileName)
         {
             // In RECORD_FULL mode or when specifically enabled in app descriptor with
-        // In RECORD_FULL mode or when specifically enabled in app descriptor with 
-            // In RECORD_FULL mode or when specifically enabled in app descriptor with
             // m_allocationRecordsSaveNames, we allocate our own memory to save off name and fileName.
-            // When testing for memory leaks, on process shutdown AllocationRecords::~AllocationRecords
-        // When testing for memory leaks, on process shutdown AllocationRecords::~AllocationRecords 
             // When testing for memory leaks, on process shutdown AllocationRecords::~AllocationRecords
             // gets called to enumerate the remaining (leaked) allocations. Unfortunately, any names
             // referenced in dynamic module memory whose modules are unloaded won't be valid
@@ -253,8 +249,6 @@ namespace AZ::Debug
         {
             AZStd::scoped_lock lock(m_recordsMutex);
             Debug::AllocationRecordsType::iterator iter = m_records.find(address);
-            // We cannot assert if an allocation does not exist because allocations may have been made before tracking was enabled.
-        // We cannot assert if an allocation does not exist because allocations may have been made before tracking was enabled. 
             // We cannot assert if an allocation does not exist because allocations may have been made before tracking was enabled.
             // It is currently impossible to actually track all allocations that happen before a certain point
             // AZ_Assert(iter!=m_records.end(), "Could not find address 0x%p in the allocator!", address);

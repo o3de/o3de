@@ -717,8 +717,6 @@ namespace AZ
         // occur exclusively in the destruction of the allocator.
         //
         // TODO: A better solution needs to be found for integrating back into mainline
-    // TODO: A better solution needs to be found for integrating back into mainline 
-        // TODO: A better solution needs to be found for integrating back into mainline
         // Open 3D Engine.
         // m_impl->GarbageCollect();
     }

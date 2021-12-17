@@ -169,9 +169,8 @@ namespace AZ
                     ++curBlock;
                     m_freeChunksMap.erase(toErase);
                     FreeMapType::iterator newBlock = m_freeChunksMap.insert(AZStd::make_pair(newBlockSize, newBlockAddress)).first;
-                    if (curBlock != m_freeChunksMap.end() &&
-                        newBlockSize <
-                            curBlock->first) // if the newBlock in before the next in the list, update next in the list to current
+                    // if the newBlock in before the next in the list, update next in the list to current
+                    if (curBlock != m_freeChunksMap.end() && newBlockSize < curBlock->first)
                     {
                         curBlock = newBlock;
                     }
@@ -188,9 +187,8 @@ namespace AZ
                     ++curBlock;
                     m_freeChunksMap.erase(toErase);
                     FreeMapType::iterator newBlock = m_freeChunksMap.insert(AZStd::make_pair(newBlockSize, newBlockAddress)).first;
-                    if (curBlock != m_freeChunksMap.end() &&
-                        newBlockSize <
-                            curBlock->first) // if the newBlock in before the next in the list, update next in the list to current
+                    // if the newBlock in before the next in the list, update next in the list to current
+                    if (curBlock != m_freeChunksMap.end() && newBlockSize < curBlock->first)
                     {
                         curBlock = newBlock;
                     }
