@@ -36,15 +36,15 @@ class GUIApplicationManager;
 
 struct ErrorCollector
 {
-    ErrorCollector(GUIApplicationManager* guiApplication) : m_application(guiApplication){}
+    explicit ErrorCollector(QWidget* parent = nullptr) : m_parent(parent){}
     ~ErrorCollector();
 
     void AddError(AZStd::string message)
     {
-        m_errorMessages.push_back(message.c_str());
+        m_errorMessages.push_back(QString(message.c_str()).trimmed());
     }
 
-    GUIApplicationManager* m_application{};
+    QWidget* m_parent{};
     QStringList m_errorMessages;
 };
 

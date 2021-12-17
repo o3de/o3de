@@ -76,14 +76,11 @@ namespace
 
 ErrorCollector::~ErrorCollector()
 {
-    if (m_application)
-    {
-        MessageWindow messageWindow;
-        messageWindow.SetHeaderText("The following errors occurred during startup:");
-        messageWindow.SetMessageText(m_errorMessages);
-        messageWindow.SetTitleText("Startup Errors");
-        messageWindow.exec();
-    }
+    MessageWindow messageWindow(m_parent);
+    messageWindow.SetHeaderText("The following errors occurred during startup:");
+    messageWindow.SetMessageText(m_errorMessages);
+    messageWindow.SetTitleText("Startup Errors");
+    messageWindow.exec();
 }
 
 GUIApplicationManager::GUIApplicationManager(int* argc, char*** argv, QObject* parent)
@@ -481,7 +478,7 @@ bool GUIApplicationManager::OnAssert(const char* message)
 
 bool GUIApplicationManager::Activate()
 {
-    m_startupErrorCollector = AZStd::make_unique<ErrorCollector>(this);
+    m_startupErrorCollector = AZStd::make_unique<ErrorCollector>(m_mainWindow);
 
     AZ::SerializeContext* context;
     EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
