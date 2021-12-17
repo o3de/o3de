@@ -71,7 +71,9 @@ class EditorComponent:
 
     def is_property_container(self, component_property_path: str) -> bool:
         """
-
+        Used to determine if a component property is a container. Containers are similar to a dictionary with int keys.
+        :param component_property_path: String of component property. (e.g. 'Settings|Visible')
+        :return: Boolean True if the property is a container False if it is not.
         """
         if self.property_tree is None:
             self.get_property_tree()
@@ -255,7 +257,7 @@ class EditorEntity:
     """
     Entity class is used to create and interact with Editor Entities.
     Example: To create Editor Entity, Use the code:
-        test_entity = Entity.create_editor_entity("TestEntity")
+        test_entity = EditorEntity.create_editor_entity("TestEntity")
         # This creates a python object with 'test_entity' linked to entity name "TestEntity" in Editor.
         # To add component, use:
         test_entity.add_component(<COMPONENT_NAME>)
