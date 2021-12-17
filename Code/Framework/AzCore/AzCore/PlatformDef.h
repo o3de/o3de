@@ -72,7 +72,7 @@
 #if defined(AZ_COMPILER_MSVC)
 
 /// Disables a warning using push style. For use matched with an AZ_POP_WARNING
-#define AZ_PUSH_DISABLE_WARNING_BASE(_msvcOption, _1, _2)    \
+#define AZ_PUSH_DISABLE_WARNING(_msvcOption, _1)    \
     __pragma(warning(push))                         \
     __pragma(warning(disable : _msvcOption))
 
