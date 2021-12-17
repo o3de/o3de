@@ -88,6 +88,7 @@ namespace ScriptEvents
         {}
 
         ScriptEventsAssetPtr(const ScriptEventsAssetPtr& scriptEventsAsset) = default;
+        ScriptEventsAssetPtr(ScriptEventsAssetPtr&& scriptEventsAsset) = default;
 
         virtual ~ScriptEventsAssetPtr() = default;
 

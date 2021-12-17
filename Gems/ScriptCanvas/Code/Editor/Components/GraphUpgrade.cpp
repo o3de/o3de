@@ -328,7 +328,7 @@ namespace ScriptCanvasEditor
         {
             if (sm->m_assetSanitizationSet.find(currentIter->first) == sm->m_assetSanitizationSet.end())
             {
-                currentIter->second = {};
+                currentIter->second = ScriptEvents::ScriptEventsAssetPtr{};
                 currentIter = graph->GetGraphData()->m_scriptEventAssets.erase(currentIter);
                 sm->m_graphNeedsDirtying = true;
             }
