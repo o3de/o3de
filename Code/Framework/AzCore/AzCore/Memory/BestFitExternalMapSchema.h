@@ -50,7 +50,7 @@ namespace AZ
 
         BestFitExternalMapSchema(const Descriptor& desc);
 
-        pointer_type Allocate(size_type byteSize, size_type alignment, int flags = 0, const char* name = 0, const char* fileName = 0, int lineNum = 0, unsigned int suppressStackRecord = 0) override;
+        pointer_type Allocate(size_type byteSize, size_type alignment, int flags = 0, const char* name = nullptr, const char* fileName = nullptr, int lineNum = 0, unsigned int suppressStackRecord = 0) override;
         void DeAllocate(pointer_type ptr, size_type byteSize = 0, size_type alignment = 0) override;
         size_type Resize(pointer_type ptr, size_type newSize) override;
         pointer_type ReAllocate(pointer_type ptr, size_type newSize, size_type newAlignment) override;

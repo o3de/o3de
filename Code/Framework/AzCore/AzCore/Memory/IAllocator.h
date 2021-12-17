@@ -37,9 +37,9 @@ namespace AZ
         typedef size_t          size_type;
         typedef ptrdiff_t       difference_type;
 
-        virtual ~IAllocatorSchema() {}
+        virtual ~IAllocatorSchema() = default;
 
-        virtual pointer_type            Allocate(size_type byteSize, size_type alignment, int flags = 0, const char* name = 0, const char* fileName = 0, int lineNum = 0, unsigned int suppressStackRecord = 0) = 0;
+        virtual pointer_type            Allocate(size_type byteSize, size_type alignment, int flags = 0, const char* name = nullptr, const char* fileName = nullptr, int lineNum = 0, unsigned int suppressStackRecord = 0) = 0;
         virtual void                    DeAllocate(pointer_type ptr, size_type byteSize = 0, size_type alignment = 0) = 0;
         /// Resize an allocated memory block. Returns the new adjusted size (as close as possible or equal to the requested one) or 0 (if you don't support resize at all).
         virtual size_type               Resize(pointer_type ptr, size_type newSize) = 0;

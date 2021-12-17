@@ -9,11 +9,10 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/AllocatorManager.h>
 
-using namespace AZ;
+// Only used to create recordings of memory operations to use for memory benchmarks
+#define O3DE_RECORDING_ENABLED 0
 
-#define RECORDING_ENABLED 0
-
-#if RECORDING_ENABLED
+#if O3DE_RECORDING_ENABLED
 
 #include <AzCore/std/containers/map.h>
 #include <AzCore/IO/SystemFile.h>
@@ -25,10 +24,10 @@ namespace
     class DebugAllocator
     {
     public:
-        typedef void* pointer_type;
-        typedef AZStd::size_t size_type;
-        typedef AZStd::ptrdiff_t difference_type;
-        typedef AZStd::false_type allow_memory_leaks; ///< Regular allocators should not leak.
+        using pointer_type = void*;
+        using size_type = AZStd::size_t;
+        using difference_type = AZStd::ptrdiff_t;
+        using allow_memory_leaks = AZStd::false_type; ///< Regular allocators should not leak.
 
         AZ_FORCE_INLINE pointer_type allocate(size_t byteSize, size_t alignment, int = 0)
         {
@@ -64,7 +63,7 @@ namespace
 
     static constexpr size_t s_maxNumberOfAllocationsToRecord = 16384;
     static size_t s_numberOfAllocationsRecorded = 0;
-    static constexpr size_t s_allocationOperationCount = 5 * 1024;
+    static constexpr size_t s_allocationOperationCount = 8 * 1024;
     static AZStd::array<AllocatorOperation, s_allocationOperationCount> s_operations = {};
     static uint64_t s_operationCounter = 0;
 
@@ -76,11 +75,12 @@ namespace
 
     void RecordAllocatorOperation(AllocatorOperation::OperationType type, void* ptr, size_t size = 0, size_t alignment = 0)
     {
-        AZStd::scoped_lock<AZStd::mutex> lock(s_operationsMutex);
+        AZStd::scoped_lock lock(s_operationsMutex);
         if (s_operationCounter == s_allocationOperationCount)
         {
             AZ::IO::SystemFile file;
             int mode = AZ::IO::SystemFile::OpenMode::SF_OPEN_APPEND | AZ::IO::SystemFile::OpenMode::SF_OPEN_WRITE_ONLY;
+            // memoryrecordings.bin is being output to the current working directory
             if (!file.Exists("memoryrecordings.bin"))
             {
                 mode |= AZ::IO::SystemFile::OpenMode::SF_OPEN_CREATE;
@@ -158,188 +158,195 @@ namespace
 }
 #endif
 
-AllocatorBase::AllocatorBase(IAllocatorSchema* allocationSchema, const char* name, const char* desc)
-    : IAllocator(allocationSchema)
-    , m_name(name)
-    , m_desc(desc)
+namespace AZ
 {
-}
-
-AllocatorBase::~AllocatorBase()
-{
-    AZ_Assert(!m_isReady, "Allocator %s (%s) is being destructed without first having gone through proper calls to PreDestroy() and Destroy(). Use AllocatorInstance<> for global allocators or AllocatorWrapper<> for local allocators.", m_name, m_desc);
-}
-
-const char* AllocatorBase::GetName() const
-{
-    return m_name;
-}
-
-const char* AllocatorBase::GetDescription() const
-{
-    return m_desc;
-}
-
-Debug::AllocationRecords* AllocatorBase::GetRecords()
-{
-    return m_records;
-}
-
-void AllocatorBase::SetRecords(Debug::AllocationRecords* records)
-{
-    m_records = records;
-    m_memoryGuardSize = records ? records->MemoryGuardSize() : 0;
-}
-
-bool AllocatorBase::IsReady() const
-{
-    return m_isReady;
-}
-
-void AllocatorBase::PostCreate()
-{
-    if (m_registrationEnabled)
+    AllocatorBase::AllocatorBase(IAllocatorSchema* allocationSchema, const char* name, const char* desc)
+        : IAllocator(allocationSchema)
+        , m_name(name)
+        , m_desc(desc)
     {
-        if (AZ::Environment::IsReady())
+    }
+
+    AllocatorBase::~AllocatorBase()
+    {
+        AZ_Assert(
+            !m_isReady,
+            "Allocator %s (%s) is being destructed without first having gone through proper calls to PreDestroy() and Destroy(). Use "
+            "AllocatorInstance<> for global allocators or AllocatorWrapper<> for local allocators.",
+            m_name, m_desc);
+    }
+
+    const char* AllocatorBase::GetName() const
+    {
+        return m_name;
+    }
+
+    const char* AllocatorBase::GetDescription() const
+    {
+        return m_desc;
+    }
+
+    Debug::AllocationRecords* AllocatorBase::GetRecords()
+    {
+        return m_records;
+    }
+
+    void AllocatorBase::SetRecords(Debug::AllocationRecords* records)
+    {
+        m_records = records;
+        m_memoryGuardSize = records ? records->MemoryGuardSize() : 0;
+    }
+
+    bool AllocatorBase::IsReady() const
+    {
+        return m_isReady;
+    }
+
+    void AllocatorBase::PostCreate()
+    {
+        if (m_registrationEnabled)
         {
-            AllocatorManager::Instance().RegisterAllocator(this);
+            if (AZ::Environment::IsReady())
+            {
+                AllocatorManager::Instance().RegisterAllocator(this);
+            }
+            else
+            {
+                AllocatorManager::PreRegisterAllocator(this);
+            }
         }
-        else
+
+        const auto debugConfig = GetDebugConfig();
+        if (!debugConfig.m_excludeFromDebugging)
         {
-            AllocatorManager::PreRegisterAllocator(this);
+            SetRecords(aznew Debug::AllocationRecords(
+                (unsigned char)debugConfig.m_stackRecordLevels, debugConfig.m_usesMemoryGuards, debugConfig.m_marksUnallocatedMemory,
+                GetName()));
         }
+
+        m_isReady = true;
     }
 
-    const auto debugConfig = GetDebugConfig();
-    if (!debugConfig.m_excludeFromDebugging)
+    void AllocatorBase::PreDestroy()
     {
-        SetRecords(aznew Debug::AllocationRecords((unsigned char)debugConfig.m_stackRecordLevels, debugConfig.m_usesMemoryGuards, debugConfig.m_marksUnallocatedMemory, GetName()));
-    }
-
-    m_isReady = true;
-}
-
-void AllocatorBase::PreDestroy()
-{
-    Debug::AllocationRecords* allocatorRecords = GetRecords();
-    if(allocatorRecords)
-    {
-        delete allocatorRecords;
-        SetRecords(nullptr);
-    }
-
-    if (m_registrationEnabled && AZ::AllocatorManager::IsReady())
-    {
-        AllocatorManager::Instance().UnRegisterAllocator(this);
-    }
-
-    m_isReady = false;
-}
-
-void AllocatorBase::SetLazilyCreated(bool lazy)
-{
-    m_isLazilyCreated = lazy;
-}
-
-bool AllocatorBase::IsLazilyCreated() const
-{
-    return m_isLazilyCreated;
-}
-
-void AllocatorBase::SetProfilingActive(bool active)
-{
-    m_isProfilingActive = active;
-}
-
-bool AllocatorBase::IsProfilingActive() const
-{
-    return m_isProfilingActive;
-}
-
-void AllocatorBase::DisableRegistration()
-{
-    m_registrationEnabled = false;
-}
-
-void AllocatorBase::ProfileAllocation(void* ptr, size_t byteSize, size_t alignment, const char* name, const char* fileName, int lineNum, int suppressStackRecord)
-{
-    if (m_isProfilingActive)
-    {
-#if defined(AZ_HAS_VARIADIC_TEMPLATES) && defined(AZ_DEBUG_BUILD)
-        ++suppressStackRecord; // one more for the fact the ebus is a function
-#endif // AZ_HAS_VARIADIC_TEMPLATES
-
-        auto records = GetRecords();
-        if (records)
+        Debug::AllocationRecords* allocatorRecords = GetRecords();
+        if (allocatorRecords)
         {
-            records->RegisterAllocation(ptr, byteSize, alignment, name, fileName, lineNum, suppressStackRecord + 1);
+            delete allocatorRecords;
+            SetRecords(nullptr);
         }
+
+        if (m_registrationEnabled && AZ::AllocatorManager::IsReady())
+        {
+            AllocatorManager::Instance().UnRegisterAllocator(this);
+        }
+
+        m_isReady = false;
     }
 
-#if RECORDING_ENABLED
-    RecordAllocatorOperation(AllocatorOperation::ALLOCATE, ptr, byteSize, alignment);
+    void AllocatorBase::SetLazilyCreated(bool lazy)
+    {
+        m_isLazilyCreated = lazy;
+    }
+
+    bool AllocatorBase::IsLazilyCreated() const
+    {
+        return m_isLazilyCreated;
+    }
+
+    void AllocatorBase::SetProfilingActive(bool active)
+    {
+        m_isProfilingActive = active;
+    }
+
+    bool AllocatorBase::IsProfilingActive() const
+    {
+        return m_isProfilingActive;
+    }
+
+    void AllocatorBase::DisableRegistration()
+    {
+        m_registrationEnabled = false;
+    }
+
+    void AllocatorBase::ProfileAllocation(
+        void* ptr, size_t byteSize, size_t alignment, const char* name, const char* fileName, int lineNum, int suppressStackRecord)
+    {
+        if (m_isProfilingActive)
+        {
+            auto records = GetRecords();
+            if (records)
+            {
+                records->RegisterAllocation(ptr, byteSize, alignment, name, fileName, lineNum, suppressStackRecord + 1);
+            }
+        }
+
+#if O3DE_RECORDING_ENABLED
+        RecordAllocatorOperation(AllocatorOperation::ALLOCATE, ptr, byteSize, alignment);
 #endif
-}
+    }
 
-void AllocatorBase::ProfileDeallocation(void* ptr, size_t byteSize, size_t alignment, Debug::AllocationInfo* info)
-{
-    if (m_isProfilingActive)
+    void AllocatorBase::ProfileDeallocation(void* ptr, size_t byteSize, size_t alignment, Debug::AllocationInfo* info)
     {
-        auto records = GetRecords();
-        if (records)
+        if (m_isProfilingActive)
         {
-            records->UnregisterAllocation(ptr, byteSize, alignment, info);
+            auto records = GetRecords();
+            if (records)
+            {
+                records->UnregisterAllocation(ptr, byteSize, alignment, info);
+            }
         }
-    }
-#if RECORDING_ENABLED
-    RecordAllocatorOperation(AllocatorOperation::DEALLOCATE, ptr, byteSize, alignment);
+#if O3DE_RECORDING_ENABLED
+        RecordAllocatorOperation(AllocatorOperation::DEALLOCATE, ptr, byteSize, alignment);
 #endif
-}
-
-void AllocatorBase::ProfileReallocationBegin([[maybe_unused]] void* ptr, [[maybe_unused]] size_t newSize)
-{
-}
-
-void AllocatorBase::ProfileReallocationEnd(void* ptr, void* newPtr, size_t newSize, size_t newAlignment)
-{
-    if (m_isProfilingActive)
-    {
-        Debug::AllocationInfo info;
-        ProfileDeallocation(ptr, 0, 0, &info);
-        ProfileAllocation(newPtr, newSize, newAlignment, info.m_name, info.m_fileName, info.m_lineNum, 0);
     }
-#if RECORDING_ENABLED
-    RecordAllocatorOperation(AllocatorOperation::DEALLOCATE, ptr);
-    RecordAllocatorOperation(AllocatorOperation::ALLOCATE, newPtr, newSize, newAlignment);
-#endif
-}
 
-void AllocatorBase::ProfileReallocation(void* ptr, void* newPtr, size_t newSize, size_t newAlignment)
-{
-    ProfileReallocationEnd(ptr, newPtr, newSize, newAlignment);
-}
-
-void AllocatorBase::ProfileResize(void* ptr, size_t newSize)
-{
-    if (newSize && m_isProfilingActive)
+    void AllocatorBase::ProfileReallocationBegin([[maybe_unused]] void* ptr, [[maybe_unused]] size_t newSize)
     {
-        auto records = GetRecords();
-        if (records)
+    }
+
+    void AllocatorBase::ProfileReallocationEnd(void* ptr, void* newPtr, size_t newSize, size_t newAlignment)
+    {
+        if (m_isProfilingActive)
         {
-            records->ResizeAllocation(ptr, newSize);
+            Debug::AllocationInfo info;
+            ProfileDeallocation(ptr, 0, 0, &info);
+            ProfileAllocation(newPtr, newSize, newAlignment, info.m_name, info.m_fileName, info.m_lineNum, 0);
         }
-    }
-#if RECORDING_ENABLED
-    RecordAllocatorOperation(AllocatorOperation::ALLOCATE, ptr, newSize);
+#if O3DE_RECORDING_ENABLED
+        RecordAllocatorOperation(AllocatorOperation::DEALLOCATE, ptr);
+        RecordAllocatorOperation(AllocatorOperation::ALLOCATE, newPtr, newSize, newAlignment);
 #endif
-}
-
-bool AllocatorBase::OnOutOfMemory(size_t byteSize, size_t alignment, int flags, const char* name, const char* fileName, int lineNum)
-{
-    if (AllocatorManager::IsReady() && AllocatorManager::Instance().m_outOfMemoryListener)
-    {
-        AllocatorManager::Instance().m_outOfMemoryListener(this, byteSize, alignment, flags, name, fileName, lineNum);
-        return true;
     }
-    return false;
-}
+
+    void AllocatorBase::ProfileReallocation(void* ptr, void* newPtr, size_t newSize, size_t newAlignment)
+    {
+        ProfileReallocationEnd(ptr, newPtr, newSize, newAlignment);
+    }
+
+    void AllocatorBase::ProfileResize(void* ptr, size_t newSize)
+    {
+        if (newSize && m_isProfilingActive)
+        {
+            auto records = GetRecords();
+            if (records)
+            {
+                records->ResizeAllocation(ptr, newSize);
+            }
+        }
+#if O3DE_RECORDING_ENABLED
+        RecordAllocatorOperation(AllocatorOperation::ALLOCATE, ptr, newSize);
+#endif
+    }
+
+    bool AllocatorBase::OnOutOfMemory(size_t byteSize, size_t alignment, int flags, const char* name, const char* fileName, int lineNum)
+    {
+        if (AllocatorManager::IsReady() && AllocatorManager::Instance().m_outOfMemoryListener)
+        {
+            AllocatorManager::Instance().m_outOfMemoryListener(this, byteSize, alignment, flags, name, fileName, lineNum);
+            return true;
+        }
+        return false;
+    }
+
+} // namespace AZ

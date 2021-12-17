@@ -735,7 +735,7 @@ namespace AZ
             typedef typename Allocator::Descriptor Descriptor;
 
             // Maintained for backwards compatibility, prefer to use Get() instead.
-            // Get was previously used to get the the schema, however, that bypases what the allocators are doing.
+            // Get was previously used to get the the schema, however, that bypasses what the allocators are doing.
             // If the schema is needed, call Get().GetSchema()
             AZ_FORCE_INLINE static IAllocator& GetAllocator()
             {

@@ -155,10 +155,8 @@ namespace Benchmark
         }
 
     private:
-        static size_t s_numAllocatedBytes;
+         inline static size_t s_numAllocatedBytes = 0;
     };
-
-    size_t TestAllocatorWrapper<RawMallocAllocator>::s_numAllocatedBytes = 0;
 
     // Some allocator are not fully declared, those we simply setup from the schema
     class MallocSchemaAllocator : public AZ::SimpleSchemaAllocator<AZ::MallocSchema>
