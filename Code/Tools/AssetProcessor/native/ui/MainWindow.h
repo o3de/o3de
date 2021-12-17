@@ -68,6 +68,7 @@ public:
         Logs,
         Shaders,
         Connections,
+        Builders,
         Tools
     };
 
