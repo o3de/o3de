@@ -166,6 +166,9 @@
    <property name="text">
     <string>Reload</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
+   </property>
   </action>
  </widget>
  <resources>
