@@ -202,7 +202,7 @@ AllocatorManager::RegisterAllocator(class IAllocator* alloc)
     AZStd::lock_guard<AZStd::mutex> lock(m_allocatorListMutex);
     AZ_Assert(m_numAllocators < m_maxNumAllocators, "Too many allocators %d! Max is %d", m_numAllocators, m_maxNumAllocators);
 
-    for (int i = 0; i < m_numAllocators; i++)
+    for (size_t i = 0; i < m_numAllocators; i++)
     {
         AZ_Assert(m_allocators[i] != alloc, "Allocator %s (%s) registered twice!", alloc->GetName(), alloc->GetDescription());
     }

@@ -45,7 +45,7 @@ namespace AZ
 
             constexpr const char* names[4] = { "0", "1", "2", "3" };
             float values[ElementCount];
-            for (size_t i = 0; i < ElementCount; ++i)
+            for (int i = 0; i < ElementCount; ++i)
             {
                 ScopedContextPath subPath(context, names[i]);
                 JSR::Result intermediate = floatSerializer->Load(values + i, azrtti_typeid<float>(), inputValue[i], context);
@@ -55,7 +55,7 @@ namespace AZ
                 }
             }
 
-            for (size_t i = 0; i < ElementCount; ++i)
+            for (int i = 0; i < ElementCount; ++i)
             {
                 output.SetElement(i, values[i]);
             }
@@ -80,7 +80,7 @@ namespace AZ
 
             JSR::ResultCode result(JSR::Tasks::ReadField);
             float values[ElementCount];
-            for (size_t i = 0; i < ElementCount; ++i)
+            for (int i = 0; i < ElementCount; ++i)
             {
                 values[i] = output.GetElement(i);
 
@@ -110,7 +110,7 @@ namespace AZ
                 }
             }
 
-            for (size_t i = 0; i < ElementCount; ++i)
+            for (int i = 0; i < ElementCount; ++i)
             {
                 output.SetElement(i, values[i]);
             }
@@ -186,7 +186,7 @@ namespace AZ
             }
 
             outputValue.SetArray();
-            for (size_t i = 0; i < ElementCount; ++i)
+            for (int i = 0; i < ElementCount; ++i)
             {
                 outputValue.PushBack(vector->GetElement(i), context.GetJsonAllocator());
             }
