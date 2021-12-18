@@ -43,7 +43,7 @@ namespace Multiplayer
         {
             // Server logs will be piped to the editor so turn off buffering,
             // otherwise it'll take a lot of logs to fill up the buffer before stdout is finally flushed.
-            // This isn't optimal, but will only affect 
+            // This isn't optimal, but will only affect editor-servers (used when testing multiplayer levels in Editor gameplay mode) and not production servers.
             // Note: _IOLBF (flush on newlines) won't work for Automated Testing which uses a headless server app and will fall back to _IOFBF (full buffering)
             setvbuf(stdout, NULL, _IONBF, 0);
 
