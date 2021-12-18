@@ -62,9 +62,9 @@ def Multiplayer_AutoComponent_RPC():
         Report.critical_result(TestSuccessFailTuples.find_network_player, player_id.IsValid())
 
         # 4) Check the editor logs for expected and unexpected log output
-        EXPECTEDLINE_WAIT_TIME_SECONDS = 1.0
-        helper.wait_for_critical_expected_line('EditorServer', 'Script: AutoComponent_RPC: Sending client PlayerNumber 1', section_tracer.prints, EXPECTEDLINE_WAIT_TIME_SECONDS)
-        helper.wait_for_critical_expected_line('Script', "AutoComponent_RPC: I'm Player #1", section_tracer.prints, EXPECTEDLINE_WAIT_TIME_SECONDS)
+        PLAYERID_RPC_WAIT_TIME_SECONDS = 1.0  # The player id is sent from the server as soon as the player script is spawned. 1 second should be more than enough time to send/receive that RPC.
+        helper.wait_for_critical_expected_line('EditorServer', 'Script: AutoComponent_RPC: Sending client PlayerNumber 1', section_tracer.prints, PLAYERID_RPC_WAIT_TIME_SECONDS)
+        helper.wait_for_critical_expected_line('Script', "AutoComponent_RPC: I'm Player #1", section_tracer.prints, PLAYERID_RPC_WAIT_TIME_SECONDS)
 
     
     # Exit game mode
