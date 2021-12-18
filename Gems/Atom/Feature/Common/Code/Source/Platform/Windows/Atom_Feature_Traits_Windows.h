@@ -6,6 +6,3 @@
  *
  */
 #pragma once
-
-#define AZ_TRAIT_LUXCORE_SUPPORTED 0
-#define AZ_TRAIT_LUXCORE_EXEPATH "Gems/Atom/Feature/Common/External/LuxCore2.2/win64/dll/luxcoreui.exe"

@@ -6,6 +6,3 @@
  *
  */
 #pragma once
-
-#define AZ_TRAIT_LUXCORE_SUPPORTED 0
-#define AZ_TRAIT_LUXCORE_EXEPATH UNUSED_TRAIT
