@@ -114,11 +114,27 @@ namespace AZ
             return m_isFinalized;
         }
 
-        void MaterialAsset::Finalize()
+        void MaterialAsset::Finalize(AZStd::function<void(const char*)> reportWarning, AZStd::function<void(const char*)> reportError)
         {
             if (IsFinalized())
             {
                 return;
+            }
+
+            if (!reportWarning)
+            {
+                reportWarning = [](const char* message)
+                {
+                    AZ_Warning(s_debugTraceName, false, "%s", message);
+                };
+            }
+            
+            if (!reportError)
+            {
+                reportError = [](const char* message)
+                {
+                    AZ_Error(s_debugTraceName, false, "%s", message);
+                };
             }
 
             const uint32_t materialTypeVersion = m_materialTypeAsset->GetVersion();
@@ -147,7 +163,7 @@ namespace AZ
                         uint32_t enumValue = propertyDescriptor->GetEnumValue(enumName);
                         if (enumValue == MaterialPropertyDescriptor::InvalidEnumValue)
                         {
-                            AZ_Error(s_debugTraceName, false, "Material property name \"%s\" has invalid enum value \"%s\".", name.GetCStr(), enumName.GetCStr());
+                            reportWarning(AZStd::string::format("Material property name \"%s\" has invalid enum value \"%s\".", name.GetCStr(), enumName.GetCStr()).c_str());
                         }
                         else
                         {
@@ -164,12 +180,15 @@ namespace AZ
                     }
                     else
                     {
-                        finalizedPropertyValues[propertyIndex.GetIndex()] = value;
+                        if (ValidateMaterialPropertyDataType(value.GetTypeId(), name, propertyDescriptor, reportError))
+                        {
+                            finalizedPropertyValues[propertyIndex.GetIndex()] = value;
+                        }
                     }
                 }
                 else
                 {
-                    AZ_Warning(s_debugTraceName, false, "Material property name \"%s\" is not found in the material properties layout and will not be used.", name.GetCStr());
+                    reportWarning(AZStd::string::format("Material property name \"%s\" is not found in the material properties layout and will not be used.", name.GetCStr()).c_str());
                 }
             }
 

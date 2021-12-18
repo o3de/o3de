@@ -52,12 +52,6 @@ namespace AZ
         private:
             bool PropertyCheck(TypeId typeId, const Name& name);
 
-            //! Returns the MaterialPropertyDataType value that corresponds to typeId
-            MaterialPropertyDataType GetMaterialPropertyDataType(TypeId typeId) const;
-
-            //! Checks that the TypeId typeId matches the type expected by materialPropertyDescriptor
-            bool ValidateDataType(TypeId typeId, const Name& propertyName, const MaterialPropertyDescriptor* materialPropertyDescriptor);
-
             const MaterialPropertiesLayout* m_propertyLayout = nullptr;
             //! Points to the m_propertyValues list in a MaterialAsset or MaterialTypeAsset
             AZStd::vector<MaterialPropertyValue>* m_propertyValues = nullptr;

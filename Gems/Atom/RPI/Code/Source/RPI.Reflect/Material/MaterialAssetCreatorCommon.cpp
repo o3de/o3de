@@ -7,6 +7,7 @@
  */
 
 #include <Atom/RPI.Reflect/Material/MaterialAssetCreatorCommon.h>
+#include <Atom/RPI.Reflect/Material/MaterialAssetCreatorCommon.h>
 
 namespace AZ
 {
@@ -30,57 +31,6 @@ namespace AZ
             m_propertyValues = nullptr;
             m_reportWarning = nullptr;
             m_reportError = nullptr;
-        }
-
-        MaterialPropertyDataType MaterialAssetCreatorCommon::GetMaterialPropertyDataType(TypeId typeId) const
-        {
-            if (typeId == azrtti_typeid<bool>()) { return MaterialPropertyDataType::Bool; }
-            if (typeId == azrtti_typeid<int32_t>()) { return MaterialPropertyDataType::Int; }
-            if (typeId == azrtti_typeid<uint32_t>()) { return MaterialPropertyDataType::UInt; }
-            if (typeId == azrtti_typeid<float>()) { return MaterialPropertyDataType::Float; }
-            if (typeId == azrtti_typeid<Vector2>()) { return MaterialPropertyDataType::Vector2; }
-            if (typeId == azrtti_typeid<Vector3>()) { return MaterialPropertyDataType::Vector3; }
-            if (typeId == azrtti_typeid<Vector4>()) { return MaterialPropertyDataType::Vector4; }
-            if (typeId == azrtti_typeid<Color>()) { return MaterialPropertyDataType::Color; }
-            if (typeId == azrtti_typeid<Data::Asset<ImageAsset>>()) { return MaterialPropertyDataType::Image; }
-            else
-            {
-                return MaterialPropertyDataType::Invalid;
-            }
-        }
-
-        bool MaterialAssetCreatorCommon::ValidateDataType(TypeId typeId, const Name& propertyName, const MaterialPropertyDescriptor* materialPropertyDescriptor)
-        {
-            auto expectedDataType = materialPropertyDescriptor->GetDataType();
-            auto actualDataType = GetMaterialPropertyDataType(typeId);
-
-            if (expectedDataType == MaterialPropertyDataType::Enum)
-            {
-                if (actualDataType != MaterialPropertyDataType::UInt)
-                {
-                    m_reportError(
-                        AZStd::string::format("Material property '%s' is a Enum type, can only accept UInt value, input value is %s",
-                            propertyName.GetCStr(),
-                            ToString(actualDataType)
-                        ).data());
-                    return false;
-                }
-            }
-            else
-            {
-                if (expectedDataType != actualDataType)
-                {
-                    m_reportError(
-                        AZStd::string::format("Material property '%s': Type mismatch. Expected %s but was %s",
-                            propertyName.GetCStr(),
-                            ToString(expectedDataType),
-                            ToString(actualDataType)
-                        ).data());
-                    return false;
-                }
-            }
-
-            return true;
         }
 
         bool MaterialAssetCreatorCommon::PropertyCheck(TypeId typeId, const Name& name)
@@ -108,7 +58,7 @@ namespace AZ
                 return false;
             }
 
-            if (!ValidateDataType(typeId, name, materialPropertyDescriptor))
+            if (!ValidateMaterialPropertyDataType(typeId, name, materialPropertyDescriptor, m_reportError))
             {
                 return false;
             }
