@@ -216,17 +216,11 @@ void UiRenderer::BeginUiFrameRender()
         m_texturesUsedInFrame.clear();
     }
 #endif
-   
-    // Various platform drivers expect all texture slots used in the shader to be bound
-    BindNullTexture();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiRenderer::EndUiFrameRender()
 {
-    // We never want to leave a texture bound that could get unloaded before the next render
-    // So bind the global white texture for all the texture units we use.
-    BindNullTexture();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -384,45 +378,6 @@ void UiRenderer::DecrementStencilRef()
     --m_stencilRef;
 }
 
-#ifdef LYSHINE_ATOM_TODO
-////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiRenderer::SetTexture(ITexture* texture, int texUnit, bool clamp)
-{
-    if (!texture)
-    {
-        texture = m_renderer->GetWhiteTexture();
-    }
-    else
-    {
-        texture->SetClamp(clamp);
-    }
-
-    m_renderer->SetTexture(texture->GetTextureID(), texUnit);
-
-#ifndef _RELEASE
-    if (m_debugTextureDataRecordLevel > 0)
-    {
-        m_texturesUsedInFrame.insert(texture);
-    }
-#endif
-}
-#endif
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiRenderer::BindNullTexture()
-{
-#ifdef LYSHINE_ATOM_TODO
-    // Bind the global white texture for all the texture units we use
-    const int MaxTextures = 16;
-    int whiteTexId = m_renderer->GetWhiteTextureId();
-    for (int texUnit = 0; texUnit < MaxTextures; ++texUnit)
-    {
-        m_renderer->SetTexture(whiteTexId, texUnit);
-    }
-#endif
-}
-
 #ifndef _RELEASE
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -436,38 +391,41 @@ void UiRenderer::DebugDisplayTextureData(int recordingOption)
 {
     if (recordingOption > 0)
     {
-#ifdef LYSHINE_ATOM_TODO // [GHI #3568] Support canvas debug display with Atom
         // compute the total area of all the textures, also create a vector that we can sort by area
-        AZStd::vector<ITexture*> textures;
+        AZStd::vector<AZStd::pair<AZ::Data::Instance<AZ::RPI::Image>, uint32_t>> textures;
         int totalArea = 0;
         int totalDataSize = 0;
-        for (ITexture* texture : m_texturesUsedInFrame)
+        for (AZ::Data::Instance<AZ::RPI::Image> image : m_texturesUsedInFrame)
         {
-            int area = texture->GetWidth() * texture->GetHeight();
-            int dataSize = texture->GetDataSize();
+            const AZ::RHI::ImageDescriptor& imageDescriptor = image->GetRHIImage()->GetDescriptor();
+            AZ::RHI::Size size = imageDescriptor.m_size;
+            int area = size.m_width * size.m_height;
+            uint32_t dataSize = AZ::RHI::GetFormatSize(imageDescriptor.m_format) * area;
+
             totalArea += area;
             totalDataSize += dataSize;
 
-            textures.push_back(texture);
+            textures.push_back(AZStd::pair<AZ::Data::Instance<AZ::RPI::Image>, uint32_t>(image, dataSize));
         }
 
         // sort the vector by data size
-        std::sort( textures.begin( ), textures.end( ), [ ]( const ITexture* lhs, const ITexture* rhs )
+        std::sort( textures.begin( ), textures.end( ), [ ]( const AZStd::pair<AZ::Data::Instance<AZ::RPI::Image>, uint32_t> lhs, const AZStd::pair<AZ::Data::Instance<AZ::RPI::Image>, uint32_t> rhs )
         {
-            return lhs->GetDataSize() > rhs->GetDataSize();
+            return lhs.second > rhs.second;
         });
 
         CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
         // setup to render lines of text for the debug display
 
-        float xOffset = 20.0f;
-        float yOffset = 20.0f;
+        float dpiScale = GetViewportContext()->GetDpiScalingFactor();
+        float xOffset = 20.0f * dpiScale;
+        float yOffset = 20.0f * dpiScale;
 
         auto blackTexture = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::Black);
         float textOpacity = 1.0f;
         float backgroundRectOpacity = 0.75f;
-        const float lineSpacing = 20.0f;
+        const float lineSpacing = 20.0f * dpiScale;
 
         const AZ::Vector3 white(1,1,1);
         const AZ::Vector3 red(1,0.3f,0.3f);
@@ -492,29 +450,53 @@ void UiRenderer::DebugDisplayTextureData(int recordingOption)
         {
             CDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
             textOptions.color = color;
-            AZ::Vector2 textSize = draw2d->GetTextSize(buffer, 16, &textOptions);
+            const int fontSize = 8;
+            AZ::Vector2 textSize = draw2d->GetTextSize(buffer, fontSize, &textOptions);
             AZ::Vector2 rectTopLeft = AZ::Vector2(xOffset - 2, yOffset);
             AZ::Vector2 rectSize = AZ::Vector2(textSize.GetX() + 4, lineSpacing);
             draw2d->DrawImage(blackTexture, rectTopLeft, rectSize, backgroundRectOpacity);
-            draw2d->DrawText(buffer, AZ::Vector2(xOffset, yOffset), 16, textOpacity, &textOptions);
+            draw2d->DrawText(buffer, AZ::Vector2(xOffset, yOffset), fontSize, textOpacity, &textOptions);
             yOffset += lineSpacing;
         };
 
-        int numTexturesUsedInFrame = m_texturesUsedInFrame.size();
+        size_t numTexturesUsedInFrame = m_texturesUsedInFrame.size();
         char buffer[200];
-        sprintf_s(buffer, "There are %d unique UI textures rendered in this frame, the total texture area is %d (%d x %d), total data size is %d (%.2f MB)",
+        sprintf_s(buffer, "There are %zu unique UI textures rendered in this frame, the total texture area is %d (%d x %d), total data size is %d (%.2f MB)",
             numTexturesUsedInFrame, totalArea, xDim, yDim, totalDataSize, totalDataSizeMB);
         WriteLine(buffer, white);
         sprintf_s(buffer, "Dimensions   Data Size   Format Texture name");
         WriteLine(buffer, blue);
 
-        for (ITexture* texture : textures)
+        for (auto texture : textures)
         {
-            sprintf_s(buffer, "%4d x %4d, %9d %8s %s",
-                texture->GetWidth(), texture->GetHeight(), texture->GetDataSize(), texture->GetFormatName(), texture->GetName());
+            AZ::Data::Instance<AZ::RPI::Image> image = texture.first;
+            const AZ::RHI::ImageDescriptor& imageDescriptor = image->GetRHIImage()->GetDescriptor();
+            AZ::RHI::Size size = imageDescriptor.m_size;
+            uint32_t width = imageDescriptor.m_size.m_width;
+            uint32_t height = imageDescriptor.m_size.m_height;
+            uint32_t dataSize = texture.second;
+
+            // Check if the image has been assigned a name (ex. attachment image or cpu generated image)
+            AZStd::string textureName = image->GetRHIImage()->GetName().GetStringView();
+            if (textureName.empty())
+            {
+                // Use the asset path as the texture name
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(textureName,
+                    &AZ::Data::AssetCatalogRequests::GetAssetPathById, image->GetAssetId());
+            }
+
+            sprintf_s(buffer, "%4u x %4u, %9u %9s %s",
+                width, height, dataSize, AZ::RHI::ToString(imageDescriptor.m_format), textureName.c_str());
             WriteLine(buffer, white);
         }
-#endif
+    }
+}
+
+void UiRenderer::DebugUseTexture(AZ::Data::Instance<AZ::RPI::Image> image)
+{
+    if (m_debugTextureDataRecordLevel > 0)
+    {
+        m_texturesUsedInFrame.insert(image);
     }
 }
 
