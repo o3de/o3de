@@ -368,25 +368,7 @@ namespace GraphCanvas
 
     void GraphCanvasSystemComponent::OnCatalogLoaded(const char* /*catalogFile*/)
     {
-        AZStd::vector<AZ::Data::AssetId> translationAssets;
-        auto postEnumerateCb = [&translationAssets]()
-        {
-            for (const AZ::Data::AssetId& assetId : translationAssets)
-            {
-                AZ::Data::AssetManager::Instance().GetAsset<TranslationAsset>(assetId, AZ::Data::AssetLoadBehavior::Default);
-            }
-        };
-
-        // Find any TranslationAsset files that may have translation database key/values
-        AZ::Data::AssetCatalogRequests::AssetEnumerationCB collectAssetsCb = [&translationAssets](const AZ::Data::AssetId assetId, const AZ::Data::AssetInfo& assetInfo)
-        {
-            if (AZ::StringFunc::EndsWith(assetInfo.m_relativePath, ".names", false))
-            {
-                translationAssets.push_back(assetId);
-            }
-        };
-
-        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets, nullptr, collectAssetsCb, postEnumerateCb);
+        GraphCanvas::TranslationRequestBus::Broadcast(&GraphCanvas::TranslationRequests::Restore);
     }
 
     void GraphCanvasSystemComponent::OnCatalogAssetRemoved(const AZ::Data::AssetId& /*assetId*/, const AZ::Data::AssetInfo& assetInfo)
