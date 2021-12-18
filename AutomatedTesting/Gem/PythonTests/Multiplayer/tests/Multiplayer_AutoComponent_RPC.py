@@ -10,7 +10,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 
 # fmt: off
-class Tests():
+class TestSuccessFailTuples():
     enter_game_mode =           ("Entered game mode",                       "Failed to enter game mode")
     exit_game_mode =            ("Exited game mode",                        "Couldn't exit game mode")
     find_network_player =       ("Found network player",                    "Couldn't find network player")
@@ -55,11 +55,11 @@ def Multiplayer_AutoComponent_RPC():
 
     with Tracer() as section_tracer:
         # 2) Enter game mode
-        helper.multiplayer_enter_game_mode(Tests.enter_game_mode, player_prefab_path.lower())
+        helper.multiplayer_enter_game_mode(TestSuccessFailTuples.enter_game_mode, player_prefab_path.lower())
 
         # 3) Make sure the network player was spawned
         player_id = general.find_game_entity(player_prefab_name)
-        Report.critical_result(Tests.find_network_player, player_id.IsValid())
+        Report.critical_result(TestSuccessFailTuples.find_network_player, player_id.IsValid())
 
         # 4) Check the editor logs for expected and unexpected log output
         EXPECTEDLINE_WAIT_TIME_SECONDS = 1.0
@@ -68,7 +68,7 @@ def Multiplayer_AutoComponent_RPC():
 
     
     # Exit game mode
-    helper.exit_game_mode(Tests.exit_game_mode)
+    helper.exit_game_mode(TestSuccessFailTuples.exit_game_mode)
 
 
 
