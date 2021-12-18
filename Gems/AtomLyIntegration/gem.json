@@ -34,7 +34,7 @@
         "AtomViewportDisplayIcons",
         "AtomViewportDisplayInfo",
         "CommonFeatures",
-        "EmotionFXAtom",
+        "EMotionFXAtom",
         "ImGuiAtom",
         "TechnicalArt/DccScriptingInterface"
     ]
