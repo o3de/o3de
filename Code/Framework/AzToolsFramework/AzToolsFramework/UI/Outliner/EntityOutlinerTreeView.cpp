@@ -27,6 +27,20 @@
 
 namespace AzToolsFramework
 {
+    static QMouseEvent ToMousePressEvent(QMouseEvent* event) {
+        //interpret the mouse event as a button press
+        QMouseEvent mousePressedEvent(
+            QEvent::MouseButtonPress,
+            event->localPos(),
+            event->windowPos(),
+            event->screenPos(),
+            event->button(),
+            event->buttons(),
+            event->modifiers(),
+            event->source());
+        return mousePressedEvent;
+    }
+
     EntityOutlinerTreeView::EntityOutlinerTreeView(QWidget* pParent)
         : AzQtComponents::StyledTreeView(pParent)
         , m_queuedMouseEvent(nullptr)
@@ -156,7 +170,9 @@ namespace AzToolsFramework
             QAbstractItemView::setState(QAbstractItemView::State::EditingState);
 
             //treat this as a mouse pressed event to process selection etc
-            processQueuedMousePressedEvent(m_queuedMouseEvent);
+            QMouseEvent mouseEvent = ToMousePressEvent(m_queuedMouseEvent);
+            QTreeView::mousePressEvent(&mouseEvent);
+
 
             QAbstractItemView::setState(stateBefore);
         }
@@ -183,7 +199,8 @@ namespace AzToolsFramework
             setSelectionMode(QAbstractItemView::NoSelection);
 
             //treat this as a mouse pressed event to process everything but selection, but use the position data from the mousePress message
-            processQueuedMousePressedEvent(m_queuedMouseEvent);
+            QMouseEvent mouseEvent = ToMousePressEvent(m_queuedMouseEvent);
+            QAbstractItemView::mousePressEvent(&mouseEvent);
 
             //restore selection state
             setSelectionMode(selectionModeBefore);
@@ -350,21 +367,6 @@ namespace AzToolsFramework
         }
 
         QTreeView::timerEvent(event);
-    }
-
-    void EntityOutlinerTreeView::processQueuedMousePressedEvent(QMouseEvent* event)
-    {
-        //interpret the mouse event as a button press
-        QMouseEvent mousePressedEvent(
-            QEvent::MouseButtonPress,
-            event->localPos(),
-            event->windowPos(),
-            event->screenPos(),
-            event->button(),
-            event->buttons(),
-            event->modifiers(),
-            event->source());
-        QTreeView::mousePressEvent(&mousePressedEvent);
     }
 
     void EntityOutlinerTreeView::StartCustomDrag(const QModelIndexList& indexList, Qt::DropActions supportedActions)
