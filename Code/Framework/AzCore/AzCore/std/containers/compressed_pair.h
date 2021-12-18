@@ -98,7 +98,7 @@ namespace AZStd
         using second_base_value_type = typename second_base_type::value_type;
 
     public:
-        // First template argument is a is used to perform a substitution into AZStd::enable_if_t
+        // First template argument is used to perform a substitution into AZStd::enable_if_t
         // so that SFINAE can trigger
         template <typename Unused = void, typename = AZStd::enable_if_t<
             AZStd::is_default_constructible_v<first_base_value_type>

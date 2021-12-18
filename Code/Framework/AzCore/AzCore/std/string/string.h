@@ -47,39 +47,39 @@ namespace AZStd
         : public Debug::checked_container_base
 #endif
     {
-        typedef basic_string<Element, Traits, Allocator> this_type;
+        using this_type = basic_string<Element, Traits, Allocator>;
     public:
-        typedef Element* pointer;
-        typedef const Element* const_pointer;
+        using pointer = Element*;
+        using const_pointer = const Element*;
 
-        typedef Element& reference;
-        typedef const Element& const_reference;
-        typedef typename Allocator::difference_type     difference_type;
-        typedef typename Allocator::size_type           size_type;
+        using reference = Element&;
+        using const_reference = const Element&;
+        using difference_type = typename Allocator::difference_type;
+        using size_type = typename Allocator::size_type;
 
-        typedef pointer                                 iterator_impl;
-        typedef const_pointer                           const_iterator_impl;
+        using iterator_impl = pointer;
+        using const_iterator_impl = const_pointer;
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
-        typedef Debug::checked_randomaccess_iterator<iterator_impl, this_type>       iterator;
-        typedef Debug::checked_randomaccess_iterator<const_iterator_impl, this_type> const_iterator;
+        using iterator = Debug::checked_randomaccess_iterator<iterator_impl, this_type>;
+        using const_iterator = Debug::checked_randomaccess_iterator<const_iterator_impl, this_type>;
 #else
-        typedef iterator_impl                           iterator;
-        typedef const_iterator_impl                     const_iterator;
+        using iterator = iterator_impl;
+        using const_iterator = const_iterator_impl;
 #endif
-        typedef AZStd::reverse_iterator<iterator>       reverse_iterator;
-        typedef AZStd::reverse_iterator<const_iterator> const_reverse_iterator;
-        typedef Element                                 value_type;
-        typedef Traits                                  traits_type;
-        typedef Allocator                               allocator_type;
+        using reverse_iterator = AZStd::reverse_iterator<iterator>;
+        using const_reverse_iterator = AZStd::reverse_iterator<const_iterator>;
+        using value_type = Element;
+        using traits_type = Traits;
+        using allocator_type = Allocator;
 
         // AZSTD extension.
         /**
         * \brief Allocation node type. Common for all AZStd containers.
         * In vectors case we allocate always "sizeof(node_type)*capacity" block.
         */
-        typedef value_type                              node_type;
+        using node_type = value_type;
 
-        static const size_type                          npos = size_type(-1);
+        inline static constexpr size_type npos = size_type(-1);
 
         inline basic_string(const Allocator& alloc = Allocator())
             : m_storage{ skip_element_tag{}, alloc }
@@ -1481,7 +1481,10 @@ namespace AZStd
     protected:
         enum
         {   // roundup mask for allocated buffers, [0, 15]
-            _ALLOC_MASK = sizeof(Element) <= 1 ? 15 : sizeof(Element) <= 2 ? 7 : sizeof(Element) <= 4 ? 3 : sizeof(Element) <= 8 ? 1 : 0
+            _ALLOC_MASK = sizeof(Element) <= 1 ? 15
+                : sizeof(Element) <= 2 ? 7
+                : sizeof(Element) <= 4 ? 3
+                : sizeof(Element) <= 8 ? 1 : 0
         };
 
         template<class InputIterator>
@@ -1643,10 +1646,10 @@ namespace AZStd
             // offset: 128, bits: 63
             size_type m_capacity : AZStd::numeric_limits<size_type>::digits - 1;
 
-            // bit offset: 171, bits: 1
+            // bit offset: 191, bits: 1
             size_type m_ssoActive : 1;
 
-            // Total size 172 bits(24 bytes)
+            // Total size 192 bits(24 bytes)
         };
 
         static_assert(sizeof(AllocatedStringData) <= 24, "The AllocatedStringData structure"
@@ -1673,7 +1676,7 @@ namespace AZStd
                 m_ssoActive = true;
             }
 
-            // bit offset: 0, bits: 164
+            // bit offset: 0, bits: 184
             Element m_buffer[BufferCapacityPlusNull];
 
             // Padding to make sure for Element types with a size >1
@@ -1688,13 +1691,13 @@ namespace AZStd
                 : StringInternal::Padding<Element>
             {
 
-                // bit offset: 164, bits: 7
+                // bit offset: 184, bits: 7
                 AZ::u8 m_size : AZStd::numeric_limits<AZ::u8>::digits - 1;
 
-                // bit offset: 171, bits: 1
+                // bit offset: 191, bits: 1
                 AZ::u8 m_ssoActive : 1;
             };
-            // Total size 172 bits(24 bytes)
+            // Total size 192 bits(24 bytes)
         };
 
         static_assert(sizeof(AllocatedStringData) == sizeof(ShortStringData), "Short string struct must be the same size"
