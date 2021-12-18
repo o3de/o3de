@@ -120,9 +120,9 @@ namespace AZ::Data
             AssetHandler* handler, const AssetLoadParameters& loadParams, bool signalLoaded)
             : AssetDatabaseAsyncJob(JobContext::GetGlobalContext(), true, owner, asset, handler)
             , m_dataStream(dataStream)
-            , m_loadParams(loadParams)
-            , m_requestState(requestState)
             , m_isReload(isReload)
+            , m_requestState(requestState)
+            , m_loadParams(loadParams)
             , m_signalLoaded(signalLoaded)
         {
             AZ_Assert(m_dataStream, "Data stream pointer received through the callback from AZ::IO::Streamer is invalid.");
