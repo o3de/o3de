@@ -52,7 +52,7 @@ namespace AZ
         {
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = JobKey;
-            materialBuilderDescriptor.m_version = 111; // material dependency improvements
+            materialBuilderDescriptor.m_version = 112; // material dependency improvements
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.material", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.materialtype", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_busId = azrtti_typeid<MaterialBuilder>();

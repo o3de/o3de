@@ -114,7 +114,7 @@ namespace AZ
                 }
             }
 
-            materialAssetCreator.Begin(assetId, materialTypeAsset);
+            materialAssetCreator.Begin(assetId, materialTypeAsset, processingMode == MaterialAssetProcessingMode::PreBake);
 
             if (!m_parentMaterial.empty())
             {
@@ -180,11 +180,6 @@ namespace AZ
             Data::Asset<MaterialAsset> material;
             if (materialAssetCreator.End(material))
             {
-                if (processingMode == MaterialAssetProcessingMode::PreBake)
-                {
-                    material->Finalize();
-                }
-
                 return Success(material);
             }
             else
@@ -270,11 +265,18 @@ namespace AZ
                 parentSourceAbsPath = AssetUtils::ResolvePathReference(parentSourceAbsPath, parentSourceRelPath);
                 parentSourceDataStack.emplace_back(AZStd::move(parentSourceData));
             }
+            
+            // Unlike CreateMaterialAsset(), we can always finalize the material here because we loaded created the MaterialTypeAsset from
+            // the source .materialtype file, so the necessary data is always available.
+            // (In case you are wondering why we don't use CreateMaterialAssetFromSourceData in MaterialBuilder: that would require a
+            // source dependency between the .materialtype and .material file, which would cause all .material files to rebuild when you
+            // edit the .materialtype; it's faster to not read the material type data at all ... until it's needed at runtime)
+            const bool finalize = true;
 
             // Create the material asset from all the previously loaded source data 
             MaterialAssetCreator materialAssetCreator;
             materialAssetCreator.SetElevateWarnings(elevateWarnings);
-            materialAssetCreator.Begin(assetId, materialTypeAsset.GetValue());
+            materialAssetCreator.Begin(assetId, materialTypeAsset.GetValue(), finalize);
 
             while (!parentSourceDataStack.empty())
             {
@@ -287,13 +289,6 @@ namespace AZ
             Data::Asset<MaterialAsset> material;
             if (materialAssetCreator.End(material))
             {
-                // Unlike CreateMaterialAsset(), we can always finalize the material here because we loaded created the MaterialTypeAsset from
-                // the source .materialtype file, so the necessary data is always available.
-                // (In case you are wondering why we don't use CreateMaterialAssetFromSourceData in MaterialBuilder: that would require a
-                // source dependency between the .materialtype and .material file, which would cause all .material files to rebuild when you
-                // edit the .materialtype; it's faster to not read the material type data at all ... until it's needed at runtime)
-                material->Finalize();
-
                 if (sourceDependencies)
                 {
                     sourceDependencies->insert(dependencies.begin(), dependencies.end());

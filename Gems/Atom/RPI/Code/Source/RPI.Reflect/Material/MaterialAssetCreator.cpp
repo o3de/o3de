@@ -16,16 +16,21 @@ namespace AZ
 {
     namespace RPI
     {
-        void MaterialAssetCreator::Begin(const Data::AssetId& assetId, const Data::Asset<MaterialTypeAsset>& materialType)
+        void MaterialAssetCreator::Begin(const Data::AssetId& assetId, const Data::Asset<MaterialTypeAsset>& materialType, bool shouldFinalize)
         {
             BeginCommon(assetId);
 
             if (ValidateIsReady())
             {
+                m_shouldFinalize = shouldFinalize;
+
                 m_asset->m_materialTypeAsset = materialType;
-
                 m_asset->m_materialTypeAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
-
+                
+                if (shouldFinalize && !m_asset->m_materialTypeAsset)
+                {
+                    ReportError("MaterialTypeAsset is null, the MaterialAsset cannot be finalized");
+                }
             }
         }
         
@@ -37,6 +42,14 @@ namespace AZ
             }
 
             m_asset->SetReady();
+
+            if (m_shouldFinalize)
+            {
+                m_asset->Finalize(
+                    [this](const char* message) { ReportWarning("%s", message); },
+                    [this](const char* message) { ReportError("%s", message); });
+            }
+
             return EndCommon(result);
         }
         
@@ -70,6 +83,21 @@ namespace AZ
                 
                 m_asset->m_rawPropertyValues.emplace_back(name, value);
             }
+        }
+        
+        void MaterialAssetCreator::SetPropertyValue(const Name& name, const Data::Asset<ImageAsset>& imageAsset)
+        {
+            SetPropertyValue(name, MaterialPropertyValue{imageAsset});
+        }
+
+        void MaterialAssetCreator::SetPropertyValue(const Name& name, const Data::Asset<StreamingImageAsset>& imageAsset)
+        {
+            SetPropertyValue(name, Data::Asset<ImageAsset>(imageAsset));
+        }
+
+        void MaterialAssetCreator::SetPropertyValue(const Name& name, const Data::Asset<AttachmentImageAsset>& imageAsset)
+        {
+            SetPropertyValue(name, Data::Asset<ImageAsset>(imageAsset));
         }
 
     } // namespace RPI
