@@ -424,7 +424,8 @@ void UiRenderer::DebugDisplayTextureData(int recordingOption)
 
         auto blackTexture = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::Black);
         float textOpacity = 1.0f;
-        float backgroundRectOpacity = 0.75f;
+        float backgroundRectOpacity = 0.0f; // 0.75f;
+        const float fontSize = 8.0f;
         const float lineSpacing = 20.0f * dpiScale;
 
         const AZ::Vector3 white(1,1,1);
@@ -450,7 +451,6 @@ void UiRenderer::DebugDisplayTextureData(int recordingOption)
         {
             CDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
             textOptions.color = color;
-            const int fontSize = 8;
             AZ::Vector2 textSize = draw2d->GetTextSize(buffer, fontSize, &textOptions);
             AZ::Vector2 rectTopLeft = AZ::Vector2(xOffset - 2, yOffset);
             AZ::Vector2 rectSize = AZ::Vector2(textSize.GetX() + 4, lineSpacing);
@@ -464,7 +464,7 @@ void UiRenderer::DebugDisplayTextureData(int recordingOption)
         sprintf_s(buffer, "There are %zu unique UI textures rendered in this frame, the total texture area is %d (%d x %d), total data size is %d (%.2f MB)",
             numTexturesUsedInFrame, totalArea, xDim, yDim, totalDataSize, totalDataSizeMB);
         WriteLine(buffer, white);
-        sprintf_s(buffer, "Dimensions   Data Size   Format Texture name");
+        sprintf_s(buffer, "Dimensions   Data Size    Format Texture name");
         WriteLine(buffer, blue);
 
         for (auto texture : textures)
