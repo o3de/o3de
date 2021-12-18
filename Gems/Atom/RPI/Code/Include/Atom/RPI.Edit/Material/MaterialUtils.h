@@ -69,6 +69,7 @@ namespace AZ
             //! Finalizing during asset processing reduces load times and obfuscates the material data.
             //! Waiting to finalize at load time reduces dependencies on the material type data, resulting in fewer asset rebuilds and less time spent processing assets.
             bool BuildersShouldFinalizeMaterialAssets();
+            
         }
     }
 }

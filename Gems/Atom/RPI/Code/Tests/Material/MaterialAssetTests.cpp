@@ -94,7 +94,7 @@ namespace UnitTest
         Data::AssetId assetId(Uuid::CreateRandom());
 
         MaterialAssetCreator creator;
-        creator.Begin(assetId, *m_testMaterialTypeAsset);
+        creator.Begin(assetId, m_testMaterialTypeAsset, true);
         creator.SetPropertyValue(Name{ "MyFloat2" }, Vector2{ 0.1f, 0.2f });
         creator.SetPropertyValue(Name{ "MyFloat3" }, Vector3{ 1.1f, 1.2f, 1.3f });
         creator.SetPropertyValue(Name{ "MyFloat4" }, Vector4{ 2.1f, 2.2f, 2.3f, 2.4f });
@@ -129,7 +129,7 @@ namespace UnitTest
         Data::AssetId assetId(Uuid::CreateRandom());
 
         MaterialAssetCreator creator;
-        creator.Begin(assetId, *m_testMaterialTypeAsset);
+        creator.Begin(assetId, m_testMaterialTypeAsset, true);
         creator.SetPropertyValue(Name{ "MyFloat" }, 3.14f);
 
         Data::Asset<MaterialAsset> materialAsset;
@@ -171,7 +171,7 @@ namespace UnitTest
 
         Data::Asset<MaterialAsset> materialAsset;
         MaterialAssetCreator materialCreator;
-        materialCreator.Begin(Uuid::CreateRandom(), *emptyMaterialTypeAsset);
+        materialCreator.Begin(Uuid::CreateRandom(), emptyMaterialTypeAsset, true);
         EXPECT_TRUE(materialCreator.End(materialAsset));
         EXPECT_EQ(emptyMaterialTypeAsset, materialAsset->GetMaterialTypeAsset());
         EXPECT_EQ(materialAsset->GetPropertyValues().size(), 0);
@@ -189,7 +189,7 @@ namespace UnitTest
         Data::AssetId assetId(Uuid::CreateRandom());
 
         MaterialAssetCreator creator;
-        creator.Begin(assetId, *m_testMaterialTypeAsset);
+        creator.Begin(assetId, m_testMaterialTypeAsset, true);
         creator.SetPropertyValue(Name{ "MyImage" }, streamingImageAsset);
 
         Data::Asset<MaterialAsset> materialAsset;
@@ -231,8 +231,8 @@ namespace UnitTest
         Data::AssetId assetId(Uuid::CreateRandom());
 
         MaterialAssetCreator creator;
-        const bool includePropertyNames = true;
-        creator.Begin(assetId, *testMaterialTypeAssetV1, includePropertyNames);
+        const bool shouldFinalize = false;
+        creator.Begin(assetId, testMaterialTypeAssetV1, shouldFinalize);
         creator.SetPropertyValue(Name{ "MyInt" }, 7);
         creator.SetPropertyValue(Name{ "MyUInt" }, 8u);
         creator.SetPropertyValue(Name{ "MyFloat" }, 9.0f);
@@ -307,26 +307,68 @@ namespace UnitTest
         // We use local functions to easily start a new MaterialAssetCreator for each test case because
         // the AssetCreator would just skip subsequent operations after the first failure is detected.
 
-        auto expectCreatorError = [this](AZStd::function<void(MaterialAssetCreator& creator)> passBadInput)
+        auto expectCreatorError = [this](const char* expectedErrorMessage, AZStd::function<void(MaterialAssetCreator& creator)> passBadInput)
         {
-            MaterialAssetCreator creator;
-            creator.Begin(Uuid::CreateRandom(), *m_testMaterialTypeAsset);
+            // Test with finalizing enabled
+            {
+                MaterialAssetCreator creator;
+                creator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, true);
 
-            AZ_TEST_START_ASSERTTEST;
-            passBadInput(creator);
-            AZ_TEST_STOP_ASSERTTEST(1);
+                ErrorMessageFinder errorMessageFinder;
+                errorMessageFinder.AddExpectedErrorMessage(expectedErrorMessage);
+                errorMessageFinder.AddIgnoredErrorMessage("Failed to build", true);
 
-            EXPECT_EQ(1, creator.GetErrorCount());
+                passBadInput(creator);
+
+                Data::Asset<MaterialAsset> materialAsset;
+                EXPECT_FALSE(creator.End(materialAsset));
+
+                errorMessageFinder.CheckExpectedErrorsFound();
+
+                EXPECT_TRUE(creator.GetErrorCount() > 0);
+            }
+            
+            // Test with finalizing disabled, so no validation occurs because the MaterialTypeAsset data is not used.
+            {
+                MaterialAssetCreator creator;
+                creator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, false);
+
+                passBadInput(creator);
+
+                Data::Asset<MaterialAsset> materialAsset;
+                EXPECT_TRUE(creator.End(materialAsset));
+
+                EXPECT_EQ(creator.GetErrorCount(), 0);
+            }
         };
 
         auto expectCreatorWarning = [this](AZStd::function<void(MaterialAssetCreator& creator)> passBadInput)
         {
-            MaterialAssetCreator creator;
-            creator.Begin(Uuid::CreateRandom(), *m_testMaterialTypeAsset);
+            // Test with finalizing enabled
+            {
+                MaterialAssetCreator creator;
+                creator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, true);
 
-            passBadInput(creator);
+                passBadInput(creator);
 
-            EXPECT_EQ(1, creator.GetWarningCount());
+                Data::Asset<MaterialAsset> material;
+                creator.End(material);
+
+                EXPECT_EQ(1, creator.GetWarningCount());
+            }
+            
+            // Test with finalizing disabled, so no validation occurs because the MaterialTypeAsset data is not used.
+            {
+                MaterialAssetCreator creator;
+                creator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, false);
+
+                passBadInput(creator);
+
+                Data::Asset<MaterialAsset> material;
+                creator.End(material);
+
+                EXPECT_EQ(0, creator.GetWarningCount());
+            }
         };
 
         // Invalid input ID
@@ -343,55 +385,65 @@ namespace UnitTest
 
         // Test data type mismatches...
 
-        expectCreatorError([this](MaterialAssetCreator& creator)
-        {
-            creator.SetPropertyValue(Name{ "MyBool" }, m_testImageAsset);
-        });
+        expectCreatorError("Type mismatch",
+            [this](MaterialAssetCreator& creator)
+            {
+                creator.SetPropertyValue(Name{ "MyBool" }, m_testImageAsset);
+            });
 
-        expectCreatorError([](MaterialAssetCreator& creator)
-        {
-            creator.SetPropertyValue(Name{ "MyInt" }, 0.0f);
-        });
+        expectCreatorError("Type mismatch",
+            [](MaterialAssetCreator& creator)
+            {
+                creator.SetPropertyValue(Name{ "MyInt" }, 0.0f);
+            });
 
-        expectCreatorError([](MaterialAssetCreator& creator)
-        {
-            creator.SetPropertyValue(Name{ "MyUInt" }, -1);
-        });
+        expectCreatorError("Type mismatch",
+            [](MaterialAssetCreator& creator)
+            {
+                creator.SetPropertyValue(Name{ "MyUInt" }, -1);
+            });
 
-        expectCreatorError([](MaterialAssetCreator& creator)
-        {
-            creator.SetPropertyValue(Name{ "MyFloat" }, 10u);
-        });
+        expectCreatorError("Type mismatch",
+            [](MaterialAssetCreator& creator)
+            {
+                creator.SetPropertyValue(Name{ "MyFloat" }, 10u);
+            });
 
-        expectCreatorError([](MaterialAssetCreator& creator)
-        {
-            creator.SetPropertyValue(Name{ "MyFloat2" }, 1.0f);
-        });
+        expectCreatorError("Type mismatch",
+            [](MaterialAssetCreator& creator)
+            {
+                creator.SetPropertyValue(Name{ "MyFloat2" }, 1.0f);
+            });
 
-        expectCreatorError([](MaterialAssetCreator& creator)
-        {
-            creator.SetPropertyValue(Name{ "MyFloat3" }, AZ::Vector4{});
-        });
+        expectCreatorError("Type mismatch",
+            [](MaterialAssetCreator& creator)
+            {
+                creator.SetPropertyValue(Name{ "MyFloat3" }, AZ::Vector4{});
+            });
 
-        expectCreatorError([](MaterialAssetCreator& creator)
-        {
-            creator.SetPropertyValue(Name{ "MyFloat4" }, AZ::Vector3{});
-        });
+        expectCreatorError("Type mismatch",
+            [](MaterialAssetCreator& creator)
+            {
+                creator.SetPropertyValue(Name{ "MyFloat4" }, AZ::Vector3{});
+            });
 
-        expectCreatorError([](MaterialAssetCreator& creator)
-        {
-            creator.SetPropertyValue(Name{ "MyColor" }, MaterialPropertyValue(false));
-        });
+        expectCreatorError("Type mismatch",
+            [](MaterialAssetCreator& creator)
+            {
+                creator.SetPropertyValue(Name{ "MyColor" }, MaterialPropertyValue(false));
+            });
 
-        expectCreatorError([](MaterialAssetCreator& creator)
-        {
-            creator.SetPropertyValue(Name{ "MyImage" }, true);
-        });
+        expectCreatorError("Type mismatch",
+            [](MaterialAssetCreator& creator)
+            {
+                creator.SetPropertyValue(Name{ "MyImage" }, true);
+            });
 
-        expectCreatorError([](MaterialAssetCreator& creator)
-        {
-            creator.SetPropertyValue(Name{ "MyEnum" }, -1);
-        });
+        expectCreatorError("can only accept UInt value",
+            [](MaterialAssetCreator& creator)
+            {
+                creator.SetPropertyValue(Name{ "MyEnum" }, -1);
+            });
     }
 }
 
