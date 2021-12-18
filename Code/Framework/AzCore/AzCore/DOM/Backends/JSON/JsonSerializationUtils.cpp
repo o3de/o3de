@@ -204,8 +204,8 @@ namespace AZ::Dom::Json
     }
 
     RapidJsonValueWriter::ValueInfo::ValueInfo(bool isObject, rapidjson::Value& container)
-        : m_container(container)
-        , m_isObject(isObject)
+        : m_isObject(isObject)
+        , m_container(container)
     {
     }
 
@@ -311,9 +311,9 @@ namespace AZ::Dom::Json
     // struct JsonReadHandler
     //
     RapidJsonReadHandler::RapidJsonReadHandler(Visitor* visitor, Lifetime stringLifetime)
-        : m_outcome(AZ::Success())
-        , m_visitor(visitor)
+        : m_visitor(visitor)
         , m_stringLifetime(stringLifetime)
+        , m_outcome(AZ::Success())
     {
     }
 

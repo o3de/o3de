@@ -507,8 +507,8 @@ void AZ::Internal::SmallPageAllocator::UpdateAvailability(SmallAllocationGroup* 
 //---------------------------------------------------------------------
 
 AZ::OverrunDetectionSchemaImpl::OverrunDetectionSchemaImpl(const OverrunDetectionSchema::Descriptor& desc) :
-    m_used(0),
-    m_underrunMode(desc.m_underrunDetection)
+    m_underrunMode(desc.m_underrunDetection),
+    m_used(0)
 {
     m_platformAllocator.reset(new Internal::PlatformOverrunDetectionSchema);
 

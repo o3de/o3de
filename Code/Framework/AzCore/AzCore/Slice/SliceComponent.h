@@ -67,16 +67,15 @@ namespace AZ
             SliceInstance* GetInstance();
             void SetInstance(SliceInstance* instance);
 
-        private:
-            SliceReference* m_reference = nullptr; ///< The SliceReference to which this SliceInstance belongs
-            SliceInstance* m_instance = nullptr; ///< The specific instantiation of the nested slice
-
-        public:
             // DEPRECATED
             // SlinceInstanceAddress used to be an AZStd::pair, so 'first' and 'second' are provided to maintain backwards compatibility.
             // Use GetReference() and GetInstance() instead.
             SliceReference*& first;
             SliceInstance*& second;
+
+        private:
+            SliceReference* m_reference = nullptr; ///< The SliceReference to which this SliceInstance belongs
+            SliceInstance* m_instance = nullptr; ///< The specific instantiation of the nested slice
         };
 
         using SliceInstanceAddressSet = AZStd::unordered_set<SliceInstanceAddress>;

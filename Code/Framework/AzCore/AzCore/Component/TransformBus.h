@@ -373,8 +373,8 @@ namespace AZ
         //! Sets both the local and world transform to the same value.
         //! @param transform The entity's position, rotation, and scale in 3D.
         explicit TransformConfig(const Transform& transform)
-            : m_worldTransform(transform)
-            , m_localTransform(transform)
+            : m_localTransform(transform)
+            , m_worldTransform(transform)
         {}
 
         //! World 3D transform.
