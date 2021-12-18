@@ -117,11 +117,31 @@ class TestHelper:
 
     @staticmethod
     def wait_for_critical_expected_line(window, expected_message, print_infos, time_out):
+        """
+        Looks for an expected line in a list of tracer log lines for a period of time.
+        Reports a critical result based on if the expected line was found. The result is successful if the line is found.
+        :param window: The log's window name. For example, logs printed via script-canvas use the "Script" window. 
+        :param expected_message: The log message we're expecting to find.
+        :param print_infos: A list of PrintInfos collected by Tracer to search. Example options: your_tracer.warnings, your_tracer.errors, your_tracer.asserts, or your_tracer.prints 
+        :param time_out: The total amount of time to wait before giving up looking for the expected line.
+
+        :return: No return value, but if the expected message is found, a successful critical result is reported; otherwise failure.
+        """
         TestHelper.wait_for_condition(lambda : TestHelper.find_expected_line(window, expected_message, print_infos), time_out)
         Report.critical_result(("Found expected line: " + expected_message, "Failed to find expected line: " + expected_message), TestHelper.find_expected_line(window, expected_message, print_infos))
 
     @staticmethod
     def wait_for_critical_unexpected_line(window, unexpected_line, print_infos, time_out):
+        """
+        Looks for an unexpected line in a list of tracer log lines over a period of time.
+        Reports a critical result based on if the unexpected line was found. The result is successful if the line is not found.
+        :param window: The log's window name. For example, logs printed via script-canvas use the "Script" window. 
+        :param unexpected_line: The log message we're hoping to not find.
+        :param print_infos: A list of PrintInfos collected by Tracer to search. Example options: your_tracer.warnings, your_tracer.errors, your_tracer.asserts, or your_tracer.prints 
+        :param time_out: The total amount of time to wait before giving up looking for the unexpected line.
+
+        :return: No return value, but if the unexpected message is found, a failed critical result is reported; otherwise success.
+        """
         TestHelper.wait_for_condition(lambda : TestHelper.find_expected_line(window, unexpected_line, print_infos), time_out)
         Report.critical_result(("Unexpected line not found: " + unexpected_line, "Unexpected line found: " + unexpected_line), not TestHelper.find_expected_line(window, unexpected_line, print_infos))
 
