@@ -17,8 +17,6 @@
 
 namespace ScriptCanvasEditor
 {
-    class ScriptCanvasAsset;
-
     class EditorAssetSystemComponent
         : public AZ::Component
         , public EditorAssetConversionBus::Handler

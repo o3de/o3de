@@ -401,34 +401,37 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
     const InputChannelId& inputChannelId = inputChannel.GetInputChannelId();
     const InputDeviceId& inputDeviceId = inputChannel.GetInputDevice().GetInputDeviceId();
 
-    // Handle Keyboard Hotkeys
-    if (InputDeviceKeyboard::IsKeyboardDevice(inputDeviceId) && inputChannel.IsStateBegan())
-    {
-        // Cycle through ImGui Menu Bar States on Home button press
-        if (inputChannelId == InputDeviceKeyboard::Key::NavigationHome)
-        {
-            ToggleThroughImGuiVisibleState();
-        }
+    bool consumeEvent = false;
 
-        // Cycle through Standalone Editor Window States
-        if (inputChannel.GetInputChannelId() == InputDeviceKeyboard::Key::NavigationEnd)
-        {
-            if (gEnv->IsEditor() && m_editorWindowState == DisplayState::Hidden)
-            {
-                ImGuiUpdateListenerBus::Broadcast(&IImGuiUpdateListener::OnOpenEditorWindow);
-            }
-            else
-            {
-                m_editorWindowState = m_editorWindowState == DisplayState::Visible
-                                          ? DisplayState::VisibleNoMouse
-                                          : DisplayState::Visible;
-            }
-        }
-    }
-
-    // Handle Keyboard Modifier Keys
+    // Handle Keyboard Inputs
     if (InputDeviceKeyboard::IsKeyboardDevice(inputDeviceId))
     {
+        // Handle Keyboard Hotkeys
+        if (inputChannel.IsStateBegan())
+        {
+            // Cycle through ImGui Menu Bar States on Home button press
+            if (inputChannelId == InputDeviceKeyboard::Key::NavigationHome)
+            {
+                ToggleThroughImGuiVisibleState();
+            }
+
+            // Cycle through Standalone Editor Window States
+            if (inputChannel.GetInputChannelId() == InputDeviceKeyboard::Key::NavigationEnd)
+            {
+                if (gEnv->IsEditor() && m_editorWindowState == DisplayState::Hidden)
+                {
+                    ImGuiUpdateListenerBus::Broadcast(&IImGuiUpdateListener::OnOpenEditorWindow);
+                }
+                else
+                {
+                    m_editorWindowState = m_editorWindowState == DisplayState::Visible
+                                              ? DisplayState::VisibleNoMouse
+                                              : DisplayState::Visible;
+                }
+            }
+        }
+
+        // Handle Keyboard Modifier Keys
         if (inputChannelId == InputDeviceKeyboard::Key::ModifierShiftL
             || inputChannelId == InputDeviceKeyboard::Key::ModifierShiftR)
         {
@@ -454,7 +457,7 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
     }
 
     // Handle Controller Inputs
-    if (InputDeviceGamepad::IsGamepadDevice(inputDeviceId))
+    else if (InputDeviceGamepad::IsGamepadDevice(inputDeviceId))
     {
         // Only pipe in Controller Nav Inputs when at least 1 of the two controller modes are enabled.
         if (m_controllerModeFlags)
@@ -496,32 +499,30 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
         {
             ToggleThroughImGuiVisibleState();
         }
-
-        // If we have the Discrete Input Mode Enabled.. and we are in the Visible State, then consume input here
-        if (m_enableDiscreteInputMode && m_clientMenuBarState == DisplayState::Visible)
-        {
-            return true;
-        }
-
-        return false;
     }
 
     // Handle Mouse Inputs
-    if (InputDeviceMouse::IsMouseDevice(inputDeviceId))
+    else if (InputDeviceMouse::IsMouseDevice(inputDeviceId))
     {
         const int mouseButtonIndex = GetAzMouseButtonIndex(inputChannelId);
         if (0 <= mouseButtonIndex && mouseButtonIndex < AZ_ARRAY_SIZE(io.MouseDown))
         {
             io.MouseDown[mouseButtonIndex] = inputChannel.IsActive();
+
+            // only consume the event during edit mode in the editor so the viewport doesn't also respond to it
+            consumeEvent = gEnv->IsEditing() && io.WantCaptureMouse;
         }
         else if (inputChannelId == InputDeviceMouse::Movement::Z)
         {
             io.MouseWheel = inputChannel.GetValue() / static_cast<float>(IMGUI_WHEEL_DELTA);
+
+            // only consume the event during edit mode in the editor so the viewport doesn't also respond to it
+            consumeEvent = gEnv->IsEditing() && io.WantCaptureMouse;
         }
     }
 
     // Handle Touch Inputs
-    if (InputDeviceTouch::IsTouchDevice(inputDeviceId))
+    else if (InputDeviceTouch::IsTouchDevice(inputDeviceId))
     {
         const int touchIndex = GetAzTouchIndex(inputChannelId);
         if (0 <= touchIndex && touchIndex < AZ_ARRAY_SIZE(io.MouseDown))
@@ -542,7 +543,7 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
     }
 
     // Handle Virtual Keyboard Inputs
-    if (InputDeviceVirtualKeyboard::IsVirtualKeyboardDevice(inputDeviceId))
+    else if (InputDeviceVirtualKeyboard::IsVirtualKeyboardDevice(inputDeviceId))
     {
         if (inputChannelId == AzFramework::InputDeviceVirtualKeyboard::Command::EditEnter)
         {
@@ -554,13 +555,16 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
     if (m_clientMenuBarState == DisplayState::Visible
         || m_editorWindowState == DisplayState::Visible)
     {
-        // If we have the Discrete Input Mode Enabled.. then consume the input here. 
+        // If we have the Discrete Input Mode Enabled.. then consume the input here.
         if (m_enableDiscreteInputMode)
         {
             return true;
         }
+
+        return consumeEvent;
     }
 
+    // don't allow event capturing when ImGui isn't active
     return false;
 }
 

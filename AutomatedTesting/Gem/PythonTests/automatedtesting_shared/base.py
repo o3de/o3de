@@ -12,6 +12,8 @@ import sys
 import pytest
 import time
 
+from os import path
+
 import ly_test_tools.environment.file_system as file_system
 import ly_test_tools.environment.process_utils as process_utils
 import ly_test_tools.environment.waiter as waiter
@@ -98,7 +100,9 @@ class TestAutomationBase:
         if autotest_mode:
             pycmd += ["-autotest_mode"]
         if enable_prefab_system:
-            pycmd += ["--regset=/Amazon/Preferences/EnablePrefabSystem=true"]
+            pycmd += [
+                "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
+                f"--regset-file={path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
         else:
             pycmd += ["--regset=/Amazon/Preferences/EnablePrefabSystem=false"]
 

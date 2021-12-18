@@ -61,7 +61,11 @@ namespace AZ
             (RayTracingAccelerationStructure , AZ_BIT(9)),
 
             /// Supports ray tracing shader table usage.
-            (RayTracingShaderTable , AZ_BIT(10)));
+            (RayTracingShaderTable , AZ_BIT(10)),
+
+            /// Supports ray tracing scratch buffer usage.
+            (RayTracingScratchBuffer, AZ_BIT(11)));
+
 
         AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::BufferBindFlags);
 

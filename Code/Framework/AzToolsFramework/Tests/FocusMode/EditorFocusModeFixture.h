@@ -18,10 +18,9 @@
 #include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 
-namespace AzToolsFramework
+namespace UnitTest
 {
-    class EditorFocusModeFixture
-        : public UnitTest::ToolsApplicationFixture
+    class EditorFocusModeFixture : public ToolsApplicationFixture
     {
     protected:
         void SetUpEditorFixtureImpl() override;
@@ -32,8 +31,8 @@ namespace AzToolsFramework
 
         AZStd::unordered_map<AZStd::string, AZ::EntityId> m_entityMap;
 
-        ContainerEntityInterface* m_containerEntityInterface = nullptr;
-        FocusModeInterface* m_focusModeInterface = nullptr;
+        AzToolsFramework::ContainerEntityInterface* m_containerEntityInterface = nullptr;
+        AzToolsFramework::FocusModeInterface* m_focusModeInterface = nullptr;
 
     public:
         AzToolsFramework::EntityIdList GetSelectedEntities();
@@ -53,4 +52,4 @@ namespace AzToolsFramework
         inline static AZ::Vector3 WorldCarEntityPosition = AZ::Vector3(5.0f, 15.0f, 0.0f);
     };
 
-}
+} // namespace UnitTest

@@ -27,6 +27,7 @@
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
+#include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/UI/ComponentPalette/ComponentPaletteUtil.hxx>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiHandlerBase.h>
@@ -154,8 +155,14 @@ namespace AzToolsFramework
     {
         initEntityOutlinerWidgetResources();
 
+        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+            m_editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
+
         m_editorEntityUiInterface = AZ::Interface<AzToolsFramework::EditorEntityUiInterface>::Get();
         AZ_Assert(m_editorEntityUiInterface != nullptr, "EntityOutlinerWidget requires a EditorEntityUiInterface instance on Initialize.");
+
+        m_focusModeInterface = AZ::Interface<AzToolsFramework::FocusModeInterface>::Get();
+        AZ_Assert(m_focusModeInterface != nullptr, "EntityOutlinerWidget requires a FocusModeInterface instance on Initialize.");
 
         m_readOnlyEntityPublicInterface = AZ::Interface<AzToolsFramework::ReadOnlyEntityPublicInterface>::Get();
         AZ_Assert(
@@ -609,23 +616,27 @@ namespace AzToolsFramework
             {
                 AZ::EntityId entityId = m_selectedEntityIds[0];
 
-                AZ::EntityId parentId;
-                EditorEntityInfoRequestBus::EventResult(parentId, entityId, &EditorEntityInfoRequestBus::Events::GetParent);
-
-                EntityOrderArray entityOrderArray = GetEntityChildOrder(parentId);
-
-                if (entityOrderArray.size() > 1)
+                // Don't allow moving the entity if it's the focus root.
+                if (m_focusModeInterface->GetFocusRoot(m_editorEntityContextId) != entityId)
                 {
-                    if (AZStd::find(entityOrderArray.begin(), entityOrderArray.end(), entityId) != entityOrderArray.end())
-                    {
-                        if (entityOrderArray.front() != entityId)
-                        {
-                            contextMenu->addAction(m_actionToMoveEntityUp);
-                        }
+                    AZ::EntityId parentId;
+                    EditorEntityInfoRequestBus::EventResult(parentId, entityId, &EditorEntityInfoRequestBus::Events::GetParent);
 
-                        if (entityOrderArray.back() != entityId)
+                    EntityOrderArray entityOrderArray = GetEntityChildOrder(parentId);
+
+                    if (entityOrderArray.size() > 1)
+                    {
+                        if (AZStd::find(entityOrderArray.begin(), entityOrderArray.end(), entityId) != entityOrderArray.end())
                         {
-                            contextMenu->addAction(m_actionToMoveEntityDown);
+                            if (entityOrderArray.front() != entityId)
+                            {
+                                contextMenu->addAction(m_actionToMoveEntityUp);
+                            }
+
+                            if (entityOrderArray.back() != entityId)
+                            {
+                                contextMenu->addAction(m_actionToMoveEntityDown);
+                            }
                         }
                     }
                 }

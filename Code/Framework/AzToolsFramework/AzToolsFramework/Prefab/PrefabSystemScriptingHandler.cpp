@@ -10,6 +10,7 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Utils/TypeHash.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityComponent.h>
 #include <Prefab/PrefabSystemComponentInterface.h>
@@ -73,11 +74,23 @@ namespace AzToolsFramework::Prefab
         AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(result, &AzToolsFramework::ToolsApplicationRequestBus::Events::FindCommonRootInactive,
             entities, commonRoot, &topLevelEntities);
 
+
         auto containerEntity = AZStd::make_unique<AZ::Entity>();
-        containerEntity->CreateComponent<Components::TransformComponent>();
+
         containerEntity->CreateComponent<Components::EditorLockComponent>();
         containerEntity->CreateComponent<Components::EditorVisibilityComponent>();
         containerEntity->CreateComponent<Prefab::EditorPrefabComponent>();
+
+        {
+            auto transformComponent = containerEntity->CreateComponent<Components::TransformComponent>();
+            // Because procedural prefabs need to be deterministic we need to set the component ID to something unique and non-random
+            // The prefab that references the proc prefab will store a patch that references the transform component by it's component ID
+            // If this ID is not stable, the proc prefab will lose its position, parenting, etc data next time it is regenerated
+            auto hash = TypeHash64(reinterpret_cast<const uint8_t*>(filePath.data()), filePath.length(), AZ::HashValue64{0});
+
+            transformComponent->SetId(static_cast<AZ::ComponentId>(hash));
+
+        }
 
         for (AZ::Entity* entity : topLevelEntities)
         {
@@ -92,7 +105,7 @@ namespace AzToolsFramework::Prefab
 
         auto prefab = m_prefabSystemComponentInterface->CreatePrefab(
             entities, {}, AZ::IO::PathView(AZStd::string_view(filePath)), AZStd::move(containerEntity));
-        
+
         if (!prefab)
         {
             AZ_Error("PrefabSystemComponenent", false, "Failed to create prefab %s", filePath.c_str());

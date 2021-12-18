@@ -73,7 +73,7 @@ namespace AZ::IO
         , m_constructionOptions(options)
     {
         AZ_Assert(!drivePaths.empty(), "StorageDrive_win requires at least one drive path to work.");
-        
+
         // Get drive paths
         m_drivePaths.reserve(drivePaths.size());
         for (AZStd::string_view drivePath : drivePaths)
@@ -583,7 +583,7 @@ namespace AZ::IO
             // If any are unaligned to the sector sizes, make adjustments and allocate an aligned buffer.
             const bool alignedAddr = IStreamerTypes::IsAlignedTo(data->m_output, aznumeric_caster(m_physicalSectorSize));
             const bool alignedOffs = IStreamerTypes::IsAlignedTo(data->m_offset, aznumeric_caster(m_logicalSectorSize));
-            
+
             // Adjust the offset if it's misaligned.
             // Align the offset down to next lowest sector.
             // Change the size to compensate.
@@ -656,7 +656,7 @@ namespace AZ::IO
             Statistic::PlotImmediate(m_name, DirectReadsName, m_directReadsPercentageStat.GetMostRecentSample());
 #endif // AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
         }
-        
+
         FileReadStatus& readStatus = m_readSlots_statusInfo[readSlot];
         LPOVERLAPPED overlapped = &readStatus.m_overlapped;
         overlapped->Offset = aznumeric_caster(readOffs);
@@ -716,7 +716,7 @@ namespace AZ::IO
         Statistic::PlotImmediate(m_name, FileSwitchesName, m_fileSwitchPercentageStat.GetMostRecentSample());
         Statistic::PlotImmediate(m_name, SeeksName, m_seekPercentageStat.GetMostRecentSample());
 #endif // AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
-        
+
         m_fileCache_activeReads[fileCacheSlot]++;
         m_activeCacheSlot = fileCacheSlot;
         m_activeOffset = readOffs + readSize;
@@ -1007,7 +1007,7 @@ namespace AZ::IO
 
         auto readCommand = AZStd::get_if<FileRequest::ReadData>(&fileReadInfo.m_request->GetCommand());
         AZ_Assert(readCommand != nullptr, "Request stored with the overlapped I/O call did not contain a read request.");
-        
+
         if (fileReadInfo.m_sectorAlignedOutput && !encounteredError)
         {
             auto offsetAddress = reinterpret_cast<u8*>(fileReadInfo.m_sectorAlignedOutput) + fileReadInfo.m_copyBackOffset;

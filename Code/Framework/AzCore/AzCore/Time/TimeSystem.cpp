@@ -62,6 +62,7 @@ namespace AZ
     TimeSystem::TimeSystem()
     {
         m_lastInvokedTimeUs = static_cast<TimeUs>(AZStd::GetTimeNowMicroSecond());
+        m_realLastInvokedTimeUs = static_cast<TimeUs>(AZStd::GetTimeNowMicroSecond());
         AZ::Interface<ITime>::Register(this);
         ITimeRequestBus::Handler::BusConnect();
     }
@@ -101,7 +102,11 @@ namespace AZ
 
     TimeUs TimeSystem::GetRealElapsedTimeUs() const
     {
-        return static_cast<TimeUs>(AZStd::GetTimeNowMicroSecond());
+        const TimeUs currentTime = static_cast<TimeUs>(AZStd::GetTimeNowMicroSecond());
+        m_realAccumulatedTimeUs += currentTime - m_realLastInvokedTimeUs;
+        m_realLastInvokedTimeUs = currentTime;
+
+        return m_realAccumulatedTimeUs;
     }
 
     TimeUs TimeSystem::GetSimulationTickDeltaTimeUs() const
