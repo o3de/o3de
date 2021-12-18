@@ -45,14 +45,15 @@ namespace UnitTest
     // - https://lists.qt-project.org/pipermail/development/2019-July/036873.html
     void MouseMove(QWidget* widget, const QPoint& initialPositionWidget, const QPoint& mouseDelta, const Qt::MouseButton mouseButton)
     {
-        QPoint nextPosition = widget->mapToGlobal(initialPositionWidget + mouseDelta);
+        QPoint localPosition = initialPositionWidget + mouseDelta;
+        QPoint globalPosition = widget->mapToGlobal(localPosition);
 
         // ^1 To ensure a mouse move event is fired we must call the test mouse move function
         // and also send a mouse move event that matches. Each on their own do not appear to
         // work - please see the links above for more context.
-        QTest::mouseMove(widget, nextPosition);
+        QTest::mouseMove(widget, localPosition);
         QMouseEvent mouseMoveEvent(
-            QEvent::MouseMove, QPointF(nextPosition), QPointF(nextPosition), Qt::NoButton, mouseButton, Qt::NoModifier);
+            QEvent::MouseMove, QPointF(localPosition), QPointF(globalPosition), Qt::NoButton, mouseButton, Qt::NoModifier);
         QApplication::sendEvent(widget, &mouseMoveEvent);
     }
 
