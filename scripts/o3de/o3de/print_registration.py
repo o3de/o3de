@@ -179,19 +179,6 @@ def print_project_templates(verbose: int, project_path: pathlib.Path, project_na
     return 0
 
 
-def print_project_restricted(verbose: int, project_path: pathlib.Path, project_name: str) -> int:
-    project_path = get_project_path(project_path, project_name)
-    if not project_path:
-        return 1
-
-    project_restricted_data = manifest.get_project_restricted(project_path)
-    print(f'Restricted Paths:\n{json.dumps(project_restricted_data, indent=4)}')
-    if verbose > 0:
-        return print_manifest_json_data(project_restricted_data, 'Restricted Jsons',
-                                        manifest.get_restricted_json_data, 'restricted_path')
-    return 0
-
-
 def print_all_projects(verbose: int) -> int:
     all_projects_data = manifest.get_all_projects()
     print(f'Project Paths:\n{json.dumps(all_projects_data, indent=4)}')
@@ -260,28 +247,6 @@ def print_all_templates(verbose: int, project_path: pathlib.Path = None, project
                                         manifest.get_template_json_data, 'template_path')
     return 0
 
-
-def print_all_restricted(verbose: int, project_path: pathlib.Path = None, project_name: str = None) -> int:
-    all_restricted = manifest.get_manifest_restricted()
-    all_restricted.extend(manifest.get_engine_restricted())
-
-    # If a project path or project name is supplied query the restricted from that project,
-    # otherwise query the restricted from all projects
-    project_path = get_project_path(project_path, project_name) if project_path or project_name else None
-    projects = [project_path] if project_path else manifest.get_all_projects()
-    for project in projects:
-        all_restricted.extend(manifest.get_project_restricted(project))
-
-    # Filter out duplicates
-    all_restricted = list(dict.fromkeys(all_restricted))
-    print(f'Restricted Paths:\n{json.dumps(all_restricted, indent=4)}')
-
-    if verbose > 0:
-        return print_manifest_json_data(all_restricted, 'Restricted Jsons',
-                                        manifest.get_restricted_json_data, 'restricted_path')
-    return 0
-
-
 def print_manifest_json_data(uri_json_data: list,
                              print_prefix: str, get_json_func: callable, get_json_data_kw: str) -> int:
     print('\n')
@@ -344,7 +309,7 @@ def register_show(verbose: int, project_path: pathlib.Path = None, project_name:
         result = print_all_projects(verbose) or result
         result = print_all_gems(verbose, project_path, project_name) or result
         result = print_all_templates(verbose, project_path, project_name) or result
-        result = print_all_restricted(verbose, project_path, project_name) or result
+        result = print_restricted(verbose) or result
         result = print_repos(verbose) or result
 
     return result
@@ -364,7 +329,7 @@ def _run_register_show(args: argparse) -> int:
     elif args.templates:
         return print_templates(args.verbose)
     elif args.repos:
-        return register_show_repos(args.verbose)
+        return print_repos(args.verbose)
     elif args.restricted:
         return print_restricted(args.verbose)
 
@@ -376,8 +341,6 @@ def _run_register_show(args: argparse) -> int:
         return print_engine_external_subdirectories(args.verbose)
     elif args.engine_templates:
         return print_engine_templates(args.verbose)
-    elif args.engine_restricted:
-        return print_engine_restricted(args.verbose)
 
     elif args.project_gems:
         return print_project_gems(args.verbose, args.project_path, args.project_name)
@@ -385,8 +348,6 @@ def _run_register_show(args: argparse) -> int:
         return print_project_external_subdirectories(args.verbose, args.project_path, args.project_name)
     elif args.project_templates:
         return print_project_templates(args.verbose, args.project_path, args.project_name)
-    elif args.project_restricted:
-        return print_project_restricted(args.verbose, args.project_path, args.project_name)
     elif args.project_engine_name:
         return print_project_engine_name(args.verbose, args.project_path, args.project_name)
 
@@ -398,8 +359,6 @@ def _run_register_show(args: argparse) -> int:
         return print_all_external_subdirectories(args.verbose, args.project_path, args.project_name)
     elif args.all_templates:
         return print_all_templates(args.verbose, args.project_path, args.project_name)
-    elif args.all_restricted:
-        return print_all_restricted(args.verbose, args.project_path, args.project_name)
 
     else:
         return register_show(args.verbose, args.project_path, args.project_name)

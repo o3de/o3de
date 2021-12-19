@@ -123,6 +123,8 @@ def get_default_o3de_manifest_json_data() -> dict:
     default_restricted_gems_folder.mkdir(parents=True, exist_ok=True)
     default_restricted_engine_folder = default_restricted_folder / 'Engines' / 'o3de'
     default_restricted_engine_folder.mkdir(parents=True, exist_ok=True)
+    default_restricted_templates_folder = default_restricted_folder / 'Templates'
+    default_restricted_templates_folder.mkdir(parents=True, exist_ok=True)
     default_restricted_engine_folder_json = default_restricted_engine_folder / 'restricted.json'
     if not default_restricted_engine_folder_json.is_file():
         with default_restricted_engine_folder_json.open('w') as s:
@@ -289,15 +291,6 @@ def get_engine_templates() -> list:
     return []
 
 
-def get_engine_restricted() -> list:
-    engine_path = get_this_engine_path()
-    engine_object = get_engine_json_data(engine_path=engine_path)
-    if engine_object:
-        return list(map(lambda rel_path: (pathlib.Path(engine_path) / rel_path).as_posix(),
-                        engine_object['restricted'])) if 'restricted' in engine_object else []
-    return []
-
-
 # project.json queries
 def get_project_gems(project_path: pathlib.Path) -> list:
     return get_gems_from_external_subdirectories(get_project_external_subdirectories(project_path))
@@ -426,7 +419,8 @@ def get_templates_for_generic_creation(project_path: pathlib.Path = None) -> lis
             continue
         gem_json_path = template_path / 'Template' / 'gem.json'
         project_json_path = template_path / 'Template' / 'project.json'
-        if not gem_json_path.is_file() and not project_json_path.is_file():
+        if not validation.valid_o3de_gem_json(gem_json_path) and\
+                not validation.valid_o3de_project_json(project_json_path):
             generic_templates.append(template_path)
 
     return generic_templates

@@ -1304,17 +1304,18 @@ def create_from_template(destination_path: pathlib.Path,
 
     # destination restricted path
     elif destination_restricted_path:
-        if os.path.isabs(destination_restricted_path):
+        if not os.path.isabs(destination_restricted_path):
             restricted_default_path = manifest.get_registered(default_folder='restricted')
-            new_destination_restricted_path = restricted_default_path / destination_restricted_path
+            new_destination_restricted_path = restricted_default_path / "Templates" / destination_restricted_path
             logger.info(f'{destination_restricted_path} is not a full path, making it relative'
                         f' to default restricted path = {new_destination_restricted_path}')
             destination_restricted_path = new_destination_restricted_path
-    elif template_restricted_path:
-        restricted_default_path = manifest.get_registered(restricted_name='restricted')
-        logger.info(f'--destination-restricted-path is not specified, using default restricted path / destination name'
-                    f' = {restricted_default_path}')
-        destination_restricted_path = restricted_default_path
+    else:
+        restricted_default_path = manifest.get_registered(default_folder='restricted')
+        new_destination_restricted_path = restricted_default_path / "Templates" / destination_name
+        logger.info(f'--destination-restricted-path is not specified, using default restricted path'
+                    f' / Templates / destination name = {new_destination_restricted_path}')
+        destination_restricted_path = new_destination_restricted_path
 
     # destination restricted relative
     if not destination_restricted_platform_relative_path:

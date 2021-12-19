@@ -19,7 +19,7 @@
     "external_subdirectories": [
         "Asset/ImageProcessingAtom",
         "Asset/Shader",
-        "BootStrap",
+        "Bootstrap",
         "Component/DebugCamera",
         "Feature/Common",
         "RHI",
