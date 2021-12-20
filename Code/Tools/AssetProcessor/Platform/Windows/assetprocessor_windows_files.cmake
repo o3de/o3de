@@ -8,7 +8,7 @@
 
 set(FILES
     native/FileWatcher/FileWatcher_platform.h
-    native/FileWatcher/FileWatcher_win.cpp
+    native/FileWatcher/FileWatcher_windows.cpp
     native/FileWatcher/FileWatcher_windows.h
     native/resource.h
 )
