@@ -74,6 +74,11 @@ namespace AZ
         {
             return GetCurrentSerializeContextModule().CreateGenericClassInfo<ThisType>();
         }
+
+        static const Uuid& GetClassTypeId()
+        {
+            return GetGenericInfo()->GetClassData()->m_typeId;
+        }
     };
 } // namespace AZ
 
