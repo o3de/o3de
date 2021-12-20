@@ -6,3 +6,6 @@
  *
  */
 #pragma once
+
+#define AZ_TRAIT_DIFFUSE_GI_PASSES_SUPPORTED 1
+
