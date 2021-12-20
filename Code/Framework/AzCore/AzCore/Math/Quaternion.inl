@@ -109,6 +109,24 @@ namespace AZ
     }
 
 
+    AZ_MATH_INLINE Quaternion Quaternion::CreateFromScaledAxisAngle(const Vector3& scaledAxisAngle)
+    {
+        const AZ::Vector3 exponentialMap = scaledAxisAngle / 2.0f;
+        const float halfAngle = exponentialMap.GetLength();
+
+        if (halfAngle < AZ::Constants::FloatEpsilon)
+        {
+            return AZ::Quaternion::CreateFromVector3AndValue(exponentialMap, 1.0f).GetNormalized();
+        }
+        else
+        {
+            float sin, cos;
+            SinCos(halfAngle, sin, cos);
+            return AZ::Quaternion::CreateFromVector3AndValue((sin / halfAngle) * exponentialMap, cos);
+        }
+    }
+
+
     AZ_MATH_INLINE void Quaternion::StoreToFloat4(float* values) const
     {
         Simd::Vec4::StoreUnaligned(values, m_value);

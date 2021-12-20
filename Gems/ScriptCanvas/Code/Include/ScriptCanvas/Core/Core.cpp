@@ -13,7 +13,6 @@
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/StringFunc/StringFunc.h>
-#include <Editor/Include/ScriptCanvas/Assets/ScriptCanvasBaseAssetData.h>
 
 #include "Attributes.h"
 #include "Core.h"
@@ -21,6 +20,12 @@
 
 namespace ScriptCanvas
 {
+    AZ_CVAR(bool, g_saveRuntimeAssetsAsPlainTextForDebug, false, {}, AZ::ConsoleFunctorFlags::Null
+        , "Save runtime assets as plain text rather than binary for debug purposes.");
+
+    AZ_CVAR(bool, g_saveEditorAssetsAsPlainTextForDebug, false, {}, AZ::ConsoleFunctorFlags::Null
+        , "Save editor assets as plain text rather than binary for debug purposes.");
+
     ScopedAuxiliaryEntityHandler::ScopedAuxiliaryEntityHandler(AZ::Entity* buildEntity)
         : m_buildEntity(buildEntity)
         , m_wasAdded(false)

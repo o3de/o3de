@@ -149,21 +149,16 @@ namespace AZ
                 {
                     AZ_Assert(blasInstanceFound == false, "Partial set of RayTracingBlas objects found for mesh");
 
-                    // create the BLAS object
-                    subMesh.m_blas = AZ::RHI::RayTracingBlas::CreateRHIRayTracingBlas();
+                    // create the BLAS object and store it in the BLAS list
+                    RHI::Ptr<RHI::RayTracingBlas> rayTracingBlas = AZ::RHI::RayTracingBlas::CreateRHIRayTracingBlas();
+                    itMeshBlasInstance->second.m_subMeshes.push_back({ rayTracingBlas });
 
-                    // create the buffers from the descriptor
-                    subMesh.m_blas->CreateBuffers(*device, &blasDescriptor, *m_bufferPools);
+                    // create the buffers from the BLAS descriptor
+                    rayTracingBlas->CreateBuffers(*device, &blasDescriptor, *m_bufferPools);
 
-                    // store the BLAS in the side list
-                    itMeshBlasInstance->second.m_subMeshes.push_back({ subMesh.m_blas });
+                    // store the BLAS in the mesh
+                    subMesh.m_blas = rayTracingBlas;
                 }
-            }
-
-            if (blasInstanceFound)
-            {
-                // set the mesh BLAS flag so we don't try to rebuild it in the RayTracingAccelerationStructurePass
-                mesh.m_blasBuilt = true;
             }
 
             // set initial transform

@@ -46,6 +46,7 @@
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
+#include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 
@@ -1621,14 +1622,14 @@ Vec3 EditorViewportWidget::ViewToWorld(
     auto ray = m_renderViewport->ViewportScreenToWorldRay(AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(vp));
 
     const float maxDistance = 10000.f;
-    Vec3 v = AZVec3ToLYVec3(ray.direction) * maxDistance;
+    Vec3 v = AZVec3ToLYVec3(ray.m_direction) * maxDistance;
 
     if (!_finite(v.x) || !_finite(v.y) || !_finite(v.z))
     {
         return Vec3(0, 0, 0);
     }
 
-    Vec3 colp = AZVec3ToLYVec3(ray.origin) + 0.002f * v;
+    Vec3 colp = AZVec3ToLYVec3(ray.m_origin) + 0.002f * v;
 
     return colp;
 }
@@ -2418,6 +2419,16 @@ bool EditorViewportSettings::StickySelectEnabled() const
 AZ::Vector3 EditorViewportSettings::DefaultEditorCameraPosition() const
 {
     return SandboxEditor::CameraDefaultEditorPosition();
+}
+
+bool EditorViewportSettings::IconsVisible() const
+{
+    return AzToolsFramework::IconsVisible();
+}
+
+bool EditorViewportSettings::HelpersVisible() const
+{
+    return AzToolsFramework::HelpersVisible();
 }
 
 AZ_CVAR_EXTERNED(bool, ed_previewGameInFullscreen_once);
