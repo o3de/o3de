@@ -17,5 +17,6 @@
     "requirements": "",
     "documentation_url": "",
     "dependencies": [
+        "QtForPython"
     ]
 }
