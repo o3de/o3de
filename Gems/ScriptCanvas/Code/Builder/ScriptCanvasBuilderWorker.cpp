@@ -62,7 +62,6 @@ namespace ScriptCanvasBuilder
         }
 
         // in terms of job creation, assert on anything but smooth sailing from this point
-
         AZ_Assert(sourceGraph, "Graph component is missing from entity.");
         AZ_Assert(graphData, "GraphData is missing from entity");
 

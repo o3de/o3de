@@ -151,6 +151,7 @@
 #include <Editor/QtMetaTypes.h>
 #include <GraphCanvas/Components/SceneBus.h>
 
+#include <Editor/LyViewPaneNames.h>
 
 namespace ScriptCanvasEditor
 {
@@ -1616,6 +1617,7 @@ namespace ScriptCanvasEditor
         }
 
         PrepareAssetForSave(inMemoryAssetId);
+        ScriptCanvasAssetDescription assetDescription;
 
         AZStd::string suggestedFilename;
         AZStd::string suggestedFileFilter;

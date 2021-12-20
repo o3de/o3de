@@ -50,7 +50,6 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
 #include <Editor/View/Widgets/AssetGraphSceneDataBus.h>
-
 #include <Editor/View/Windows/Tools/UpgradeTool/Controller.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/FileSaver.h>
 
