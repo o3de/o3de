@@ -62,6 +62,8 @@ namespace AtomToolsFramework
         const QFileInfo initialFileInfo(initialPath);
         const QString initialExt(initialFileInfo.completeSuffix());
 
+        // Instead of just passing in the absolute file path, we pass in the absolute folder path and the base name to prevent the file
+        // dialog from displaying multiple extensions when the extension contains a "."
         const QFileInfo selectedFileInfo(AzQtComponents::FileDialog::GetSaveFileName(
             QApplication::activeWindow(),
             "Save File",
@@ -82,7 +84,9 @@ namespace AtomToolsFramework
             return QFileInfo();
         }
 
-        return selectedFileInfo;
+        // Reconstructing the file info from the absolute path and expected extension to compensate for an issue with the save file
+        // dialog adding the extension multiple times if it contains "." like *.lightingpreset.azasset
+        return QFileInfo(selectedFileInfo.absolutePath() + AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING + selectedFileInfo.baseName() + "." + initialExt);
     }
 
     QFileInfo GetOpenFileInfo(const AZStd::vector<AZ::Data::AssetType>& assetTypes)

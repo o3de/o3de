@@ -326,6 +326,9 @@ namespace EMStudio
         Camera::Configuration cameraConfig;
         cameraConfig.m_fovRadians = AZ::DegToRad(m_renderOptions->GetFOV());
         cameraConfig.m_nearClipDistance = m_renderOptions->GetNearClipPlaneDistance();
+        cameraConfig.m_farClipDistance = m_renderOptions->GetFarClipPlaneDistance();
+        cameraConfig.m_frustumWidth = DefaultFrustumDimension;
+        cameraConfig.m_frustumHeight = DefaultFrustumDimension;
 
         preset->ApplyLightingPreset(
             iblFeatureProcessor, m_skyboxFeatureProcessor, exposureControlSettingInterface, m_directionalLightFeatureProcessor,

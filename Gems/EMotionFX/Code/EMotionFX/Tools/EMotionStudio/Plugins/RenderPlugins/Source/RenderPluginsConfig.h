@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __EMSTUDIO_RENDERPLUGINSCONFIG_H
-#define __EMSTUDIO_RENDERPLUGINSCONFIG_H
+#pragma once
 
 #include <MCore/Source/StandardHeaders.h>
 
@@ -27,5 +26,3 @@ enum
 {
     MEMCATEGORY_RENDERPLUGIN = 993
 };
-
-#endif

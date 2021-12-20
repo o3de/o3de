@@ -32,6 +32,8 @@ namespace AzToolsFramework
     constexpr inline AZ::Crc32 EditReset = AZ_CRC_CE("com.o3de.action.editortransform.editreset");
     constexpr inline AZ::Crc32 EditResetManipulator = AZ_CRC_CE("com.o3de.action.editortransform.editresetmanipulator");
     constexpr inline AZ::Crc32 ViewportUiVisible = AZ_CRC_CE("com.o3de.action.editortransform.viewportuivisible");
+    constexpr inline AZ::Crc32 Helpers = AZ_CRC_CE("com.o3de.action.editor.helpers");
+    constexpr inline AZ::Crc32 Icons = AZ_CRC_CE("com.o3de.action.editor.icons");
     //@}
 
     //! Provide interface for EditorTransformComponentSelection requests.

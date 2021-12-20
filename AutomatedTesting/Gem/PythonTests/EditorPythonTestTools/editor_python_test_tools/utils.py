@@ -140,11 +140,15 @@ class TestHelper:
             # make sure the server launcher is running
             waiter.wait_for(lambda: process_utils.process_exists("AutomatedTesting.ServerLauncher", ignore_extensions=True), timeout=5.0, exc=AssertionError("AutomatedTesting.ServerLauncher has NOT launched!"), interval=1.0)
 
-            # make sure the editor connects to the editor-server and sends the level data packet
+            wait_for_critical_expected_line("MultiplayerEditorConnection: Editor-server activation has found and connected to the editor.", section_tracer.prints, 15.0)
+
             wait_for_critical_expected_line("Editor is sending the editor-server the level data packet.", section_tracer.prints, 5.0)
 
-            # make sure the editor finally connects to the editor-server network simulation
+            wait_for_critical_expected_line("Logger: Editor Server completed receiving the editor's level assets, responding to Editor...", section_tracer.prints, 5.0)
+
             wait_for_critical_expected_line("Editor-server ready. Editor has successfully connected to the editor-server's network simulation.", section_tracer.prints, 5.0)
+
+            wait_for_critical_unexpected_line(f"MultiplayerSystemComponent: SpawnDefaultPlayerPrefab failed. Missing sv_defaultPlayerSpawnAsset at path '{sv_default_player_spawn_asset.lower()}'.", section_tracer.prints, 0.5)
 
         TestHelper.wait_for_condition(lambda : multiplayer.PythonEditorFuncs_is_in_game_mode(), 5.0)
         Report.critical_result(msgtuple_success_fail, multiplayer.PythonEditorFuncs_is_in_game_mode())

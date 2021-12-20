@@ -36,7 +36,6 @@ namespace ScriptCanvas
 namespace ScriptCanvasEditor
 {
     class Graph;
-    class ScriptCanvasAsset;
     class SourceHandle;
 }
 
@@ -60,7 +59,7 @@ namespace ScriptCanvasBuilder
         CorrectGraphVariableVersion,
         ReflectEntityIdNodes,
         FixExecutionStateNodeableConstruction,
-
+        SwitchAssetsToBinary,
         // add new entries above
         Current,
     };
@@ -131,8 +130,6 @@ namespace ScriptCanvasBuilder
     AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> CreateLuaAsset(const ScriptCanvasEditor::SourceHandle& editAsset, AZStd::string_view rawLuaFilePath);
 
     int GetBuilderVersion();
-
-    AZ::Outcome<AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>, AZStd::string> LoadEditorAsset(AZStd::string_view graphPath, AZ::Data::AssetId assetId, AZ::Data::AssetFilterCB assetFilterCB = {});
 
     AZ::Outcome<ScriptCanvas::Grammar::AbstractCodeModelConstPtr, AZStd::string> ParseGraph(AZ::Entity& buildEntity, AZStd::string_view graphPath);
 

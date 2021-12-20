@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __EMSTUDIO_ATTACHMENTSPLUGIN_H
-#define __EMSTUDIO_ATTACHMENTSPLUGIN_H
+#pragma once
 
 // include MCore
 #if !defined(Q_MOC_RUN)
@@ -91,6 +90,3 @@ namespace EMStudio
         AttachmentNodesWindow*                      m_attachmentNodesWindow;
     };
 } // namespace EMStudio
-
-
-#endif

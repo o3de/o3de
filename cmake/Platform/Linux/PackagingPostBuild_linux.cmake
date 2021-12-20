@@ -33,6 +33,8 @@ if(CPACK_UPLOAD_URL)
         "${CPACK_TOPLEVEL_DIRECTORY}/*.deb" 
         "${CPACK_TOPLEVEL_DIRECTORY}/*.sha256"
         "${LY_ROOT_FOLDER}/scripts/signer/Platform/Linux/*.gpg"
+        "${CPACK_3P_LICENSE_FILE}"
+        "${CPACK_3P_MANIFEST_FILE}"
     )
     file(COPY ${_artifacts}
         DESTINATION ${CPACK_UPLOAD_DIRECTORY}
@@ -42,7 +44,7 @@ if(CPACK_UPLOAD_URL)
     ly_upload_to_url(
         ${CPACK_UPLOAD_URL}
         ${CPACK_UPLOAD_DIRECTORY}
-        ".*(.deb|.gpg|.sha256)$"
+        ".*(.deb|.gpg|.sha256|.txt|.json)$"
     )
 
     # for auto tagged builds, we will also upload a second copy of just the boostrapper

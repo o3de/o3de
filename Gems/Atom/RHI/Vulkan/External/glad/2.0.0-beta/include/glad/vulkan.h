@@ -8028,19 +8028,25 @@ typedef struct VkBindAccelerationStructureMemoryInfoKHR {
 
 typedef struct VkBindAccelerationStructureMemoryInfoKHR  VkBindAccelerationStructureMemoryInfoNV;
 
-typedef struct VkPhysicalDeviceRayTracingFeaturesKHR {
+typedef struct VkPhysicalDeviceRayTracingPipelineFeaturesKHR {
     VkStructureType   sType;
-    void *                             pNext;
-    VkBool32                           rayTracing;
-    VkBool32                           rayTracingShaderGroupHandleCaptureReplay;
-    VkBool32                           rayTracingShaderGroupHandleCaptureReplayMixed;
-    VkBool32                           rayTracingAccelerationStructureCaptureReplay;
-    VkBool32                           rayTracingIndirectTraceRays;
-    VkBool32                           rayTracingIndirectAccelerationStructureBuild;
-    VkBool32                           rayTracingHostAccelerationStructureCommands;
-    VkBool32                           rayQuery;
-    VkBool32                           rayTracingPrimitiveCulling;
-} VkPhysicalDeviceRayTracingFeaturesKHR;
+    void*                               pNext;
+    VkBool32                            rayTracingPipeline;
+    VkBool32                            rayTracingPipelineShaderGroupHandleCaptureReplay;
+    VkBool32                            rayTracingPipelineShaderGroupHandleCaptureReplayMixed;
+    VkBool32                            rayTracingPipelineTraceRaysIndirect;
+    VkBool32                            rayTraversalPrimitiveCulling;
+} VkPhysicalDeviceRayTracingPipelineFeaturesKHR;
+
+typedef struct VkPhysicalDeviceAccelerationStructureFeaturesKHR {
+    VkStructureType   sType;
+    void*                               pNext;
+    VkBool32                            accelerationStructure;
+    VkBool32                            accelerationStructureCaptureReplay;
+    VkBool32                            accelerationStructureIndirectBuild;
+    VkBool32                            accelerationStructureHostCommands;
+    VkBool32                            descriptorBindingAccelerationStructureUpdateAfterBind;
+} VkPhysicalDeviceAccelerationStructureFeaturesKHR;
 
 typedef struct VkStridedBufferRegionKHR {
     VkBuffer           buffer;
