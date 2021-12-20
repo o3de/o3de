@@ -8,9 +8,11 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 import os
 import logging
-import subprocess
+import sys
 import pytest
 import time
+
+from os import path
 
 import ly_test_tools.environment.file_system as file_system
 import ly_test_tools.environment.process_utils as process_utils
@@ -98,7 +100,9 @@ class TestAutomationBase:
         if autotest_mode:
             pycmd += ["-autotest_mode"]
         if enable_prefab_system:
-            pycmd += ["--regset=/Amazon/Preferences/EnablePrefabSystem=true"]
+            pycmd += [
+                "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
+                f"--regset-file={path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
         else:
             pycmd += ["--regset=/Amazon/Preferences/EnablePrefabSystem=false"]
 
@@ -128,7 +132,8 @@ class TestAutomationBase:
             errors.append(TestRunError("FAILED TEST", error_str))
             if return_code and return_code != TestAutomationBase.TEST_FAIL_RETCODE: # Crashed
                 crash_info = "-- No crash log available --"
-                crash_log = os.path.join(workspace.paths.project_log(), 'error.log')
+                crash_log = workspace.paths.crash_log()
+
                 try:
                     waiter.wait_for(lambda: os.path.exists(crash_log), timeout=TestAutomationBase.WAIT_FOR_CRASH_LOG)
                 except AssertionError:                    
@@ -177,7 +182,7 @@ class TestAutomationBase:
     @staticmethod
     def _kill_ly_processes(include_asset_processor=True):
         LY_PROCESSES = [
-            'Editor', 'Profiler', 'RemoteConsole',
+            'Editor', 'Profiler', 'RemoteConsole', 'AutomatedTesting.ServerLauncher'
         ]
         AP_PROCESSES = [
             'AssetProcessor', 'AssetProcessorBatch', 'AssetBuilder', 'CrySCompileServer',

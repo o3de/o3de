@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __RENDERGL_INDEXBUFFER_H
-#define __RENDERGL_INDEXBUFFER_H
+#pragma once
 
 #include "VertexBuffer.h"
 
@@ -51,6 +50,4 @@ namespace RenderGL
         bool GetIsSuccess();
         bool GetHasError();
     };
-}
-
-#endif
+} // namespace RenderGL

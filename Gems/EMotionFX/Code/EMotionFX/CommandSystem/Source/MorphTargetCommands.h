@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __EMFX_MORPHTARGETCOMMANDS_H
-#define __EMFX_MORPHTARGETCOMMANDS_H
+#pragma once
 
 // include the required headers
 #include "CommandSystemConfig.h"
@@ -30,6 +29,3 @@ namespace CommandSystem
     bool GetMorphTarget(EMotionFX::Actor* actor, EMotionFX::ActorInstance* actorInstance, uint32 lodLevel, const char* morphTargetName, EMotionFX::MorphTarget** outMorphTarget, EMotionFX::MorphSetupInstance::MorphTarget** outMorphTargetInstance, AZStd::string& outResult);
     MCORE_DEFINECOMMAND_END
 } // namespace CommandSystem
-
-
-#endif

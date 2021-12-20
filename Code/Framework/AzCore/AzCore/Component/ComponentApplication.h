@@ -41,7 +41,6 @@ namespace AZ
 }
 namespace AZ::Debug
 {
-    class DrillerManager;
     class LocalFileEventLogger;
 }
 
@@ -143,7 +142,6 @@ namespace AZ
             AZ::u64         m_reservedDebug;            //!< Reserved memory for Debugging (allocation,etc.). Used only when m_grabAllMemory is set to true. (default: 0)
             Debug::AllocationRecords::Mode m_recordingMode; //!< When to record stack traces (default: AZ::Debug::AllocationRecords::RECORD_STACK_IF_NO_FILE_LINE)
             AZ::u64         m_stackRecordLevels;        //!< If stack recording is enabled, how many stack levels to record. (default: 5)
-            bool            m_enableDrilling;           //!< True to enabled drilling support for the application. RegisterDrillers will be called. Ignored in release. (default: true)
             bool            m_useOverrunDetection;      //!< True to use the overrun detection memory management scheme. Only available on some platforms; greatly increases memory consumption.
             bool            m_useMalloc;                //!< True to use malloc instead of the internal memory manager. Intended for debugging purposes only.
 

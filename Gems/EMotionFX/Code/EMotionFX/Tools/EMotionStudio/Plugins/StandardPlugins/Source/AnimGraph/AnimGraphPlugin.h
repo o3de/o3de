@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __EMSTUDIO_ANIMGRAPHPLUGIN_H
-#define __EMSTUDIO_ANIMGRAPHPLUGIN_H
+#pragma once
 
 // include MCore
 #if !defined(Q_MOC_RUN)
@@ -320,6 +319,3 @@ namespace EMStudio
         void UpdateWindowActionsCheckState();
     };
 }   // namespace EMStudio
-
-
-#endif

@@ -18,7 +18,6 @@
 #include <LoadScreenBus.h>
 #include <CryCommon/StaticInstance.h>
 
-#include <AzCore/Debug/AssetTracking.h>
 #include <AzCore/Time/ITime.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/IO/FileOperations.h>
@@ -27,7 +26,6 @@
 #include <AzFramework/Spawnable/RootSpawnableInterface.h>
 
 #include "MainThreadRenderRequestBus.h"
-#include <LyShine/ILyShine.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/StringFunc/StringFunc.h>
@@ -541,7 +539,6 @@ bool CLevelSystem::LoadLevel(const char* _levelName)
 ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
 {
     gEnv->pSystem->SetSystemGlobalState(ESYSTEM_GLOBAL_STATE_LEVEL_LOAD_START);
-    AZ_ASSET_NAMED_SCOPE("Level: %s", _levelName);
 
     CryLog ("Level system is loading \"%s\"", _levelName);
     INDENT_LOG_DURING_SCOPE();
@@ -881,12 +878,6 @@ void CLevelSystem::UnloadLevel()
     // Force Lua garbage collection (may no longer be needed now the legacy renderer has been removed).
     // Normally the GC step is triggered at the end of this method (by the ESYSTEM_EVENT_LEVEL_POST_UNLOAD event).
     EBUS_EVENT(AZ::ScriptSystemRequestBus, GarbageCollect);
-
-    // Perform level unload procedures for the LyShine UI system
-    if (gEnv && gEnv->pLyShine)
-    {
-        gEnv->pLyShine->OnLevelUnload();
-    }
 
     m_bLevelLoaded = false;
 

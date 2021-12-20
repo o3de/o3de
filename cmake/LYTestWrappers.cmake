@@ -32,6 +32,7 @@ endif()
 # Set and create folders for PyTest and GTest xml output
 ly_set(PYTEST_XML_OUTPUT_DIR ${CMAKE_BINARY_DIR}/Testing/Pytest)
 ly_set(GTEST_XML_OUTPUT_DIR ${CMAKE_BINARY_DIR}/Testing/Gtest)
+ly_set(LYTESTTOOLS_OUTPUT_DIR ${CMAKE_BINARY_DIR}/Testing/LyTestTools)
 file(MAKE_DIRECTORY ${PYTEST_XML_OUTPUT_DIR})
 file(MAKE_DIRECTORY ${GTEST_XML_OUTPUT_DIR})
 
@@ -309,6 +310,7 @@ function(ly_add_pytest)
     endif()
 
     string(REPLACE "::" "_" pytest_report_directory "${PYTEST_XML_OUTPUT_DIR}/${ly_add_pytest_NAME}.xml")
+    string(REPLACE "::" "_" pytest_output_directory "${LYTESTTOOLS_OUTPUT_DIR}/${ly_add_pytest_NAME}")
 
     # Add the script path to the test target params
     set(LY_TEST_PARAMS "${ly_add_pytest_PATH}")
@@ -318,7 +320,7 @@ function(ly_add_pytest)
         PARENT_NAME ${ly_add_pytest_NAME}
         TEST_SUITE ${ly_add_pytest_TEST_SUITE}
         LABELS FRAMEWORK_pytest
-        TEST_COMMAND ${LY_PYTEST_EXECUTABLE} ${ly_add_pytest_PATH} ${ly_add_pytest_EXTRA_ARGS} --junitxml=${pytest_report_directory} ${custom_marks_args}
+        TEST_COMMAND ${LY_PYTEST_EXECUTABLE} ${ly_add_pytest_PATH} ${ly_add_pytest_EXTRA_ARGS} --output-path ${pytest_output_directory} --junitxml=${pytest_report_directory} ${custom_marks_args}
         TEST_LIBRARY pytest
         COMPONENT ${ly_add_pytest_COMPONENT}
         ${ly_add_pytest_UNPARSED_ARGUMENTS}

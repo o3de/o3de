@@ -16,10 +16,10 @@ import os
 import pathlib
 import sys
 
-from o3de import cmake, manifest, register, validation
+from o3de import cmake, manifest, register, validation, utils
 
-logger = logging.getLogger()
-logging.basicConfig()
+logger = logging.getLogger('o3de.enable_gem')
+logging.basicConfig(format=utils.LOG_FORMAT)
 
 
 def enable_gem_in_project(gem_name: str = None,
@@ -132,6 +132,10 @@ def add_parser_args(parser):
     Ex. Directly run from this file alone with: python enable_gem.py --project-path "D:/TestProject" --gem-path "D:/TestGem"
     :param parser: the caller passes an argparse parser like instance to this method
     """
+
+    # Sub-commands should declare their own verbosity flag, if desired
+    utils.add_verbosity_arg(parser)
+
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-pp', '--project-path', type=pathlib.Path, required=False,
                        help='The path to the project.')
@@ -171,8 +175,6 @@ def main():
     # parse the command line args
     the_parser = argparse.ArgumentParser()
 
-    # add subparsers
-
     # add args to the parser
     add_parser_args(the_parser)
 
@@ -181,6 +183,7 @@ def main():
 
     # run
     ret = the_args.func(the_args) if hasattr(the_args, 'func') else 1
+    logger.info('Success!' if ret == 0 else 'Completed with issues: result {}'.format(ret))
 
     # return
     sys.exit(ret)
