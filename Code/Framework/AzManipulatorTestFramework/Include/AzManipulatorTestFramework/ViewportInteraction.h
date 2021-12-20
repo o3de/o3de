@@ -39,7 +39,8 @@ namespace AzManipulatorTestFramework
         AzFramework::ViewportId GetViewportId() const override;
         void UpdateVisibility() override;
         void SetStickySelect(bool enabled) override;
-        AZ::Vector3 DefaultEditorCameraPosition() const override;
+        void SetIconsVisible(bool visible) override;
+        void SetHelpersVisible(bool visible) override;
 
         // ViewportInteractionRequestBus overrides ...
         AzFramework::CameraState GetCameraState() override;
@@ -58,6 +59,9 @@ namespace AzManipulatorTestFramework
         float ManipulatorLineBoundWidth() const override;
         float ManipulatorCircleBoundWidth() const override;
         bool StickySelectEnabled() const override;
+        AZ::Vector3 DefaultEditorCameraPosition() const override;
+        bool IconsVisible() const override;
+        bool HelpersVisible() const override;
 
         // EditorEntityViewportInteractionRequestBus overrides ...
         void FindVisibleEntities(AZStd::vector<AZ::EntityId>& visibleEntities) override;
@@ -68,10 +72,12 @@ namespace AzManipulatorTestFramework
         AzFramework::EntityVisibilityQuery m_entityVisibilityQuery;
         AZStd::shared_ptr<AzFramework::DebugDisplayRequests> m_debugDisplayRequests;
         AzFramework::CameraState m_cameraState;
+        float m_gridSize = 1.0f;
+        float m_angularStep = 0.0f;
         bool m_gridSnapping = false;
         bool m_angularSnapping = false;
         bool m_stickySelect = true;
-        float m_gridSize = 1.0f;
-        float m_angularStep = 0.0f;
+        bool m_iconsVisible = true;
+        bool m_helpersVisible = true;
     };
 } // namespace AzManipulatorTestFramework

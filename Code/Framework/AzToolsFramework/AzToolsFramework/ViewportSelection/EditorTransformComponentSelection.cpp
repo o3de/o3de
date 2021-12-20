@@ -2521,10 +2521,9 @@ namespace AzToolsFramework
             AZStd::erase_if(
                 m_selectedEntityIds,
                 [readOnlyEntityPublicInterface](auto entityId)
-            {
-                return readOnlyEntityPublicInterface->IsReadOnly(entityId);
-            }
-            );
+                {
+                    return readOnlyEntityPublicInterface->IsReadOnly(entityId);
+                });
         }
 
         // note: create/destroy pattern to be addressed
@@ -3285,9 +3284,9 @@ namespace AzToolsFramework
             QObject::connect(
                 action, &QAction::triggered, action,
                 [this]
-            {
-                ToggleCenterPivotSelection();
-            });
+                {
+                    ToggleCenterPivotSelection();
+                });
         }
     }
 

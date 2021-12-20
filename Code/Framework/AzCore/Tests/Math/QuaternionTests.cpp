@@ -408,4 +408,106 @@ namespace UnitTest
         Matrix4x4 m = Matrix4x4::CreateFromQuaternion(rotQuat);
         AZ_TEST_ASSERT(m.IsClose(rotMatrix));
     }
+
+    class QuaternionScaledAxisAngleConversionFixture
+        : public ::testing::TestWithParam<AZ::Quaternion>
+    {
+    public:
+        AZ::Quaternion GetAbs(const AZ::Quaternion& in)
+        {
+            // Take the shortest path for quaternions containing rotations bigger than 180.0°.
+            if (in.GetW() < 0.0f)
+            {
+                return -in;
+            }
+
+            return in;
+        }
+    };
+
+    static const AZ::Quaternion RotationRepresentationConversionTestQuats[] =
+    {
+        AZ::Quaternion::CreateIdentity(),
+        -AZ::Quaternion::CreateIdentity(),
+        AZ::Quaternion::CreateRotationX(AZ::Constants::TwoPi),
+        AZ::Quaternion::CreateRotationY(AZ::Constants::Pi),
+        AZ::Quaternion::CreateRotationZ(AZ::Constants::HalfPi),
+        AZ::Quaternion::CreateRotationX(AZ::Constants::QuarterPi),
+        AZ::Quaternion(0.64f, 0.36f, 0.48f, 0.48f),
+        AZ::Quaternion(0.70f, -0.34f, 0.10f, 0.62f),
+        AZ::Quaternion(-0.38f, 0.34f, 0.70f, -0.50f),
+        AZ::Quaternion(0.70f, -0.34f, -0.38f, 0.50f),
+        AZ::Quaternion(0.00f, 0.00f, -0.28f, 0.96f),
+        AZ::Quaternion(0.24f, -0.64f, 0.72f, 0.12f),
+        AZ::Quaternion(-0.66f, 0.62f, 0.42f, 0.06f)
+    };
+
+    TEST_P(QuaternionScaledAxisAngleConversionFixture, ScaledAxisAngleQuatRoundtripTests)
+    {
+        const AZ::Quaternion testQuat = GetAbs(GetParam());
+
+        // Convert test quaternion to scaled axis-angle representation.
+        const AZ::Vector3 scaledAxisAngle = testQuat.ConvertToScaledAxisAngle();
+
+        // Convert the scaled axis-angle back into a quaternion.
+        AZ::Quaternion backFromScaledAxisAngle = AZ::Quaternion::CreateFromScaledAxisAngle(scaledAxisAngle);
+
+        // Compare the original quaternion with the one after the conversion.
+        EXPECT_TRUE(testQuat.IsClose(backFromScaledAxisAngle, 1e-6f));
+    }
+
+    TEST_P(QuaternionScaledAxisAngleConversionFixture, AxisAngleQuatRoundtripTests)
+    {
+        const AZ::Quaternion testQuat = GetAbs(GetParam());
+
+        // Convert test quaternion to axis-angle representation.
+        AZ::Vector3 axis;
+        float angle;
+        testQuat.ConvertToAxisAngle(axis, angle);
+
+        // Convert the axis-angle back into a quaternion and compare the original quaternion with the one after the conversion.
+        const AZ::Quaternion backFromAxisAngle = AZ::Quaternion::CreateFromAxisAngle(axis, angle);
+        EXPECT_TRUE(testQuat.IsClose(backFromAxisAngle, 1e-6f));
+    }
+
+    TEST_P(QuaternionScaledAxisAngleConversionFixture, CompareAxisAngleConversionTests)
+    {
+        const AZ::Quaternion testQuat = GetAbs(GetParam());
+
+        // Convert test quaternion to scaled axis-angle representation.
+        const AZ::Vector3 scaledAxisAngle = testQuat.ConvertToScaledAxisAngle();
+
+        // Convert test quaternion to axis-angle representation and scale it manually.
+        AZ::Vector3 axis;
+        float angle;
+        testQuat.ConvertToAxisAngle(axis, angle);
+
+        // Compare the scaled result to the version from the helper that directly converts it to scaled axis-angle.
+        AZ::Vector3 scaledResult = axis*angle;
+        EXPECT_TRUE(scaledResult.IsClose(scaledAxisAngle, 1e-5f));
+    }
+
+    TEST_P(QuaternionScaledAxisAngleConversionFixture, CompareScaledAxisAngleConversionTests)
+    {
+        const AZ::Quaternion testQuat = GetAbs(GetParam());
+
+        // Convert test quaternion to axis-angle representation and scale it manually.
+        AZ::Vector3 axis;
+        float angle;
+        testQuat.ConvertToAxisAngle(axis, angle);
+        AZ::Vector3 scaledResult = axis*angle;
+
+        // Special case handling for identity rotation.
+        AZ::Vector3 axisFromScaledResult = scaledResult.GetNormalized();
+        float angleFromScaledResult = scaledResult.GetLength();
+        if (AZ::IsClose(angleFromScaledResult, 0.0f))
+        {
+            axisFromScaledResult = AZ::Vector3::CreateAxisY();
+        }
+
+        const AZ::Quaternion backFromAxisAngle = AZ::Quaternion::CreateFromAxisAngle(axisFromScaledResult, angleFromScaledResult);
+        EXPECT_TRUE(testQuat.IsClose(backFromAxisAngle, 1e-6f));
+    }
+
+    INSTANTIATE_TEST_CASE_P(MATH_Quaternion, QuaternionScaledAxisAngleConversionFixture, ::testing::ValuesIn(RotationRepresentationConversionTestQuats));
 }

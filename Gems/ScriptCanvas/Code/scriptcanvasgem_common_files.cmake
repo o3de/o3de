@@ -207,8 +207,3 @@ set(FILES
     Include/ScriptCanvas/Utils/VersioningUtils.cpp
     Include/ScriptCanvas/Utils/BehaviorContextUtils.cpp
 )
-
-set(SKIP_UNITY_BUILD_INCLUSION_FILES
-    Include/ScriptCanvas/Libraries/Core/FunctionCallNode.cpp
-    Include/ScriptCanvas/Libraries/Core/FunctionCallNodeIsOutOfDate.cpp
-)

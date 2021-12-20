@@ -74,10 +74,6 @@ namespace UnitTest
         AZStd::unique_ptr<AzToolsFramework::AssetBrowser::AssetBrowserFilterModel> m_filterModel;
         AZStd::unique_ptr<AzToolsFramework::AssetBrowser::AssetBrowserTableModel> m_tableModel;
 
-        AZStd::unique_ptr<QAbstractItemModelTester> m_modelTesterAssetBrowser;
-        AZStd::unique_ptr<QAbstractItemModelTester> m_modelTesterFilterModel;
-        AZStd::unique_ptr<QAbstractItemModelTester> m_modelTesterTableModel;
-
         QVector<int> m_folderIds = { 13, 14, 15 };
         QVector<int> m_sourceIDs = { 1, 2, 3, 4, 5 };
         QVector<int> m_productIDs = { 1, 2, 3, 4, 5 };
@@ -96,9 +92,6 @@ namespace UnitTest
         m_filterModel->setSourceModel(m_assetBrowserComponent->GetAssetBrowserModel());
         m_tableModel->setSourceModel(m_filterModel.get());
 
-        m_modelTesterAssetBrowser = AZStd::make_unique<QAbstractItemModelTester>(m_assetBrowserComponent->GetAssetBrowserModel());
-        m_modelTesterFilterModel = AZStd::make_unique<QAbstractItemModelTester>(m_filterModel.get());
-        m_modelTesterTableModel = AZStd::make_unique<QAbstractItemModelTester>(m_tableModel.get());
         m_searchWidget = AZStd::make_unique<AzToolsFramework::AssetBrowser::SearchWidget>();
 
         // Setup String filters
@@ -110,10 +103,6 @@ namespace UnitTest
 
     void AssetBrowserTest::TearDownEditorFixtureImpl()
     {
-        m_modelTesterAssetBrowser.reset();
-        m_modelTesterFilterModel.reset();
-        m_modelTesterTableModel.reset();
-
         m_tableModel.reset();
         m_filterModel.reset();
         m_assetBrowserComponent->Deactivate();

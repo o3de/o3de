@@ -133,6 +133,8 @@ set(FILES
     Source/DiffuseGlobalIllumination/DiffuseProbeGridRelocationPass.h
     Source/DiffuseGlobalIllumination/DiffuseProbeGridClassificationPass.cpp
     Source/DiffuseGlobalIllumination/DiffuseProbeGridClassificationPass.h
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridDownsamplePass.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridDownsamplePass.h
     Source/DiffuseGlobalIllumination/DiffuseProbeGridRenderPass.cpp
     Source/DiffuseGlobalIllumination/DiffuseProbeGridRenderPass.h
     Source/DiffuseGlobalIllumination/DiffuseProbeGrid.cpp
