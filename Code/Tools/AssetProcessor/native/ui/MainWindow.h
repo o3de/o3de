@@ -147,7 +147,7 @@ private:
     int m_createJobCount = 0;
     QFileSystemWatcher* m_fileSystemWatcher;
     Config m_config;
-    MyBuilderList m_builderList;
+    BuilderListModel m_builderList;
 
     void SetContextLogDetailsVisible(bool visible);
     void SetContextLogDetails(const QMap<QString, QString>& details);

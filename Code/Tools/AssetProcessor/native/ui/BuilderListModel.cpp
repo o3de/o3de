@@ -8,24 +8,24 @@
 
 #include <native/ui/BuilderListModel.h>
 
-int MyBuilderList::rowCount(const QModelIndex& /*parent*/) const
+int BuilderListModel::rowCount(const QModelIndex& /*parent*/) const
 {
     AssetProcessor::BuilderInfoList builders;
     AssetProcessor::AssetBuilderInfoBus::Broadcast(&AssetProcessor::AssetBuilderInfoBus::Events::GetAllBuildersInfo, builders);
-    
+
     return aznumeric_caster(builders.size());
 }
 
-QVariant MyBuilderList::data(const QModelIndex& index, int role) const
+QVariant BuilderListModel::data(const QModelIndex& index, int role) const
 {
     AssetProcessor::BuilderInfoList builders;
     AssetProcessor::AssetBuilderInfoBus::Broadcast(&AssetProcessor::AssetBuilderInfoBus::Events::GetAllBuildersInfo, builders);
-    
+
     AZ_Assert(index.row() >= 0, "Index must be >= 0");
     AZ_Assert(index.row() < builders.size(), "Index out of bounds");
 
     const auto& assetBuilderDesc = builders[index.row()];
-    
+
     if (role == Qt::DisplayRole)
     {
         return QString(assetBuilderDesc.m_name.c_str());

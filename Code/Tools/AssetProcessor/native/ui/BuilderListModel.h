@@ -13,11 +13,11 @@
 #include <utilities/BuilderInterface.h>
 #endif
 
-struct MyBuilderList : QAbstractListModel
+struct BuilderListModel : QAbstractListModel
 {
     Q_OBJECT;
 public:
-    MyBuilderList(QObject* parent = nullptr)
+    BuilderListModel(QObject* parent = nullptr)
         : QAbstractListModel(parent)
     {
     }
