@@ -61,6 +61,10 @@ then
     exit 1
 fi
 
+echo [cdk_installation] Install nodejs Node.js v17.x
+curl -fsSL https://deb.nodesource.com/setup_17.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
 echo [cdk_installation] Install the latest version of CDK
 if ! sudo npm uninstall -g aws-cdk;
 then
