@@ -100,6 +100,11 @@ namespace UnitTest
                     m_azChannelEvents.push_back(AzEventInfo(inputChannel));
                     hasBeenConsumed = m_captureAzEvents;
                 }
+                else if (inputChannelId == AzFramework::InputDeviceMouse::SystemCursorPosition) 
+                {
+                    m_azCursorPositions.push_back(*inputChannel.GetCustomData<AzFramework::InputChannel::PositionData2D>());
+                    hasBeenConsumed = m_captureAzEvents;
+                }
             }
             else if (AzFramework::InputDeviceKeyboard::IsKeyboardDevice(inputDeviceId))
             {
@@ -165,6 +170,7 @@ namespace UnitTest
         AZStd::vector<QtEventInfo> m_signalEvents;
         AZStd::vector<AzEventInfo> m_azChannelEvents;
         AZStd::vector<AZStd::string> m_azTextEvents;
+        AZStd::vector<AzFramework::InputChannel::PositionData2D> m_azCursorPositions;
 
         bool m_captureAzEvents{ false };
         bool m_captureTextEvents{ false };
@@ -549,13 +555,14 @@ namespace UnitTest
         const MouseMoveParam mouseMoveParam = GetParam();
 
         AzFramework::InputChannelNotificationBus::Handler::BusConnect();
-        m_captureAzEvents = false;
+        m_captureAzEvents = true;
 
         m_rootWidget->move(100, 100);
         mouseMoveFix(m_rootWidget.get(), m_rootWidget->mapToGlobal(mouseMoveParam.startPos), QPoint(0, 0));
 
         // given
         m_inputChannelMapper->SetCursorMode(mouseMoveParam.mode);
+        m_azCursorPositions.clear();
 
         mouseMoveFix(m_rootWidget.get(), m_rootWidget->mapToGlobal(mouseMoveParam.startPos), QPoint(0, 0));
         for (float i = 0; i < mouseMoveParam.iterations; i++)
@@ -563,10 +570,18 @@ namespace UnitTest
             mouseMoveFix(m_rootWidget.get(), QCursor::pos(), (mouseMoveParam.deltaPos / mouseMoveParam.iterations));
         }
 
+        AZ::Vector2 accumalatedPosition(0.0f,0.0f);
+        for(const auto& pos: m_azCursorPositions) {
+            accumalatedPosition += (pos.m_normalizedPositionDelta * AZ::Vector2(WidgetSize.width(), WidgetSize.height()));
+        }
+
         // validate
         QPoint endPosition = m_rootWidget->mapFromGlobal(QCursor::pos());
         EXPECT_NEAR(endPosition.x(), mouseMoveParam.expectedPos.x(), 1.0f);
         EXPECT_NEAR(endPosition.y(), mouseMoveParam.expectedPos.y(), 1.0f);
+
+        EXPECT_NEAR(accumalatedPosition.GetX(), mouseMoveParam.deltaPos.x(), 1.0f);
+        EXPECT_NEAR(accumalatedPosition.GetY(), mouseMoveParam.deltaPos.y(), 1.0f);
 
         // cleanup
         m_rootWidget->move(0, 0);
