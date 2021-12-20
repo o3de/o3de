@@ -91,7 +91,10 @@ namespace AZ
             m_pageAllocator = &pageAllocator;
             m_descriptor = descriptor;
             m_descriptor.m_addressBase = 0;
-            m_descriptor.m_capacityInBytes = m_pageAllocator->GetPageSize();
+            if (m_descriptor.m_capacityInBytes == 0)
+            {
+                m_descriptor.m_capacityInBytes = m_pageAllocator->GetPageSize();
+            }
         }
 
         template <class Traits>

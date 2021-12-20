@@ -20,13 +20,13 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <Core/ScriptCanvasBus.h>
-#include <Editor/Assets/ScriptCanvasAssetTrackerBus.h>
 #include <LyViewPaneNames.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
+
 #include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
 #include <ScriptCanvas/Bus/RequestBus.h>
+#include <ScriptCanvas/Components/EditorDeprecationData.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
 #include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
 #include <ScriptCanvas/Components/EditorScriptCanvasComponent.h>
@@ -41,6 +41,7 @@ namespace EditorScriptCanvasComponentCpp
         PrefabIntegration = 10,
         InternalDev,
         AddSourceHandle,
+        RefactorAssets,
         // add description above
         Current
     };
@@ -59,15 +60,15 @@ namespace ScriptCanvasEditor
             }
 
             auto assetElement = rootElement.GetSubElement(assetElementIndex);
-            AZ::Data::Asset<ScriptCanvasAsset> scriptCanvasAsset;
+            AZ::Data::Asset<Deprecated::ScriptCanvasAsset> scriptCanvasAsset;
             if (!assetElement.GetData(scriptCanvasAsset))
             {
                 AZ_Error("Script Canvas", false, "Unable to find Script Canvas Asset on a Version %u Editor ScriptCanvas Component", rootElement.GetVersion());
                 return false;
             }
 
-            ScriptCanvasAssetHolder assetHolder;
-            assetHolder.SetAsset(scriptCanvasAsset.GetId());
+            Deprecated::ScriptCanvasAssetHolder assetHolder;
+            assetHolder.m_scriptCanvasAsset = scriptCanvasAsset;
 
             if (!rootElement.AddElementWithData(serializeContext, "m_assetHolder", assetHolder))
             {
@@ -115,7 +116,7 @@ namespace ScriptCanvasEditor
 
             auto& scriptCanvasAssetHolderElement = rootElement.GetSubElement(scriptCanvasAssetHolderElementIndex);
 
-            ScriptCanvasAssetHolder assetHolder;
+            Deprecated::ScriptCanvasAssetHolder assetHolder;
             if (!scriptCanvasAssetHolderElement.GetData(assetHolder))
             {
                 AZ_Error("ScriptCanvas", false, "EditorScriptCanvasComponent conversion failed: could not retrieve old 'm_assetHolder'");
@@ -131,7 +132,7 @@ namespace ScriptCanvasEditor
             }
 
             ScriptCanvasBuilder::BuildVariableOverrides overrides;
-            overrides.m_source = SourceHandle(nullptr, assetHolder.GetAssetId().m_guid, {});
+            overrides.m_source = SourceHandle(nullptr, assetHolder.m_scriptCanvasAsset.GetId().m_guid, {});
 
             for (auto& variable : editableData.GetVariables())
             {
@@ -145,19 +146,22 @@ namespace ScriptCanvasEditor
             }
         }
 
-        if (rootElement.GetVersion() < EditorScriptCanvasComponentCpp::Version::AddSourceHandle)
+        auto scriptCanvasAssetHolderElementIndex = rootElement.FindElement(AZ_CRC_CE("m_assetHolder"));
+        if (scriptCanvasAssetHolderElementIndex != -1)
         {
-            ScriptCanvasAssetHolder assetHolder;
-            if (!rootElement.FindSubElementAndGetData(AZ_CRC_CE("m_assetHolder"), assetHolder))
+            auto& scriptCanvasAssetHolderElement = rootElement.GetSubElement(scriptCanvasAssetHolderElementIndex);
+            Deprecated::ScriptCanvasAssetHolder assetHolder;
+
+            if (!scriptCanvasAssetHolderElement.GetData(assetHolder))
             {
                 AZ_Error("ScriptCanvas", false, "EditorScriptCanvasComponent conversion failed: could not retrieve old 'm_assetHolder'");
                 return false;
             }
 
-            auto assetId = assetHolder.GetAssetId();
-            auto path = assetHolder.GetAssetHint();
+            auto assetId = assetHolder.m_scriptCanvasAsset.GetId();
+            auto path = assetHolder.m_scriptCanvasAsset.GetHint();
 
-            if (!rootElement.AddElementWithData(serializeContext, "runtimeDataOverrides", SourceHandle(nullptr, assetId.m_guid, path)))
+            if (!rootElement.AddElementWithData(serializeContext, "sourceHandle", SourceHandle(nullptr, assetId.m_guid, path)))
             {
                 AZ_Error("ScriptCanvas", false, "EditorScriptCanvasComponent conversion failed: failed to add 'sourceHandle'");
                 return false;
@@ -188,7 +192,6 @@ namespace ScriptCanvasEditor
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/ScriptCanvas.svg")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/ScriptCanvas/Viewport/ScriptCanvas.svg")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, ScriptCanvasAssetHandler::GetAssetTypeStatic())
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Level", 0x9aeacc13))
