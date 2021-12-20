@@ -137,6 +137,12 @@ namespace EMotionFX
         MCORE_INLINE ActorInstance* GetActorInstance(size_t nr) const                   { return m_actorInstances[nr]; }
 
         /**
+         * Get a given registered actor instance owned by editor (not owned by runtime).
+         * @result A pointer to the actor instance.
+         */
+        MCORE_INLINE ActorInstance* GetFirstEditorActorInstance() const;
+
+        /**
          * Get the array of actor instances.
          * @result The const reference to the actor instance array.
          */

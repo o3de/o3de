@@ -459,7 +459,7 @@ namespace CommandSystem
             if (actorInstanceID == -1)
             {
                 // If there isn't an actorInstanceId, grab the first actor instance. 
-                actorInstance = EMotionFX::GetActorManager().GetActorInstance(0);
+                actorInstance = EMotionFX::GetActorManager().GetFirstEditorActorInstance();
             }
             else
             {
