@@ -77,6 +77,9 @@ namespace AZ
 
         static Quaternion CreateFromAxisAngle(const Vector3& axis, float angle);
 
+        //! Create a quaternion from a scaled axis-angle representation.
+        static Quaternion CreateFromScaledAxisAngle(const Vector3& scaledAxisAngle);
+
         static Quaternion CreateShortestArc(const Vector3& v1, const Vector3& v2);
 
         //! Creates a quaternion using rotation in degrees about the axes. First rotated about the X axis, followed by the Y axis, then the Z axis.
@@ -230,6 +233,9 @@ namespace AZ
         //! @param[out] outAxis A Vector3 defining the rotation axis.
         //! @param[out] outAngle A float rotation angle around the axis in radians.
         void ConvertToAxisAngle(Vector3& outAxis, float& outAngle) const;
+
+        //! Convert the quaternion into scaled axis-angle representation.
+        Vector3 ConvertToScaledAxisAngle() const;
 
         //! Returns the imaginary (X/Y/Z) portion of the quaternion.
         Vector3 GetImaginary() const;

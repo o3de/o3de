@@ -62,10 +62,10 @@ def MeshBlocker_InstancesBlockedByMeshHeightTuning():
     # 2) Create entity with components "Vegetation Layer Spawner", "Vegetation Asset List", "Box Shape"
     entity_position = math.Vector3(512.0, 512.0, 32.0)
     asset_path = os.path.join("Slices", "PurpleFlower.dynamicslice")
-    spawner_entity = dynveg.create_vegetation_area("Instance Spawner",
-                                                   entity_position,
-                                                   10.0, 10.0, 10.0,
-                                                   asset_path)
+    spawner_entity = dynveg.create_dynamic_slice_vegetation_area("Instance Spawner",
+                                                                               entity_position,
+                                                                               10.0, 10.0, 10.0,
+                                                                               asset_path)
 
     # 3) Create surface entity to plant on
     dynveg.create_surface_entity("Surface Entity", entity_position, 10.0, 10.0, 1.0)

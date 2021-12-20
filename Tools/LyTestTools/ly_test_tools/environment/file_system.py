@@ -293,61 +293,75 @@ def delete(file_list, del_files, del_dirs):
     return True
 
 
-def create_backup(source, backup_dir):
+def create_backup(source, backup_dir, backup_name=None):
     """
     Creates a backup of a single source file by creating a copy of it with the same name + '.bak' in backup_dir
     e.g.: foo.txt is stored as backup_dir/foo.txt.bak
+    If backup_name is provided, it will create a copy of the source file named "backup_name + .bak" instead.
 
     :param source: Full path to file to backup
     :param backup_dir: Path to the directory to store backup.
+    :param backup_name: [Optional] Name of the backed up file to use instead or the source name.
     """
 
     if not backup_dir or not os.path.isdir(backup_dir):
         logger.error(f'Cannot create backup due to invalid backup directory {backup_dir}')
-        return
+        return False
 
     if not os.path.exists(source):
         logger.warning(f'Source file {source} does not exist, aborting backup creation.')
-        return
+        return False
 
-    source_filename = os.path.basename(source)
-    dest = os.path.join(backup_dir, f'{source_filename}.bak')
+    dest = None
+    if backup_name is None:
+        source_filename = os.path.basename(source)
+        dest = os.path.join(backup_dir, f'{source_filename}.bak')
+    else:
+        dest = os.path.join(backup_dir, f'{backup_name}.bak')
 
     logger.info(f'Saving backup of {source} in {dest}')
     if os.path.exists(dest):
         logger.warning(f'Backup file already exists at {dest}, it will be overwritten.')
 
     try:
-        shutil.copy(source, dest)
+        shutil.copy2(source, dest)
     except Exception:  # intentionally broad
         logger.warning('Could not create backup, exception occurred while copying.', exc_info=True)
+        return False
 
+    return True
 
-def restore_backup(original_file, backup_dir):
+def restore_backup(original_file, backup_dir, backup_name=None):
     """
     Restores a backup file to its original location. Works with a single file only.
 
     :param original_file: Full path to file to overwrite.
     :param backup_dir: Path to the directory storing the backup.
+    :param backup_name: [Optional] Provide if the backup file name is different from source. eg backup file = myFile_1.txt.bak original file = myfile.txt
     """
 
     if not backup_dir or not os.path.isdir(backup_dir):
         logger.error(f'Cannot restore backup due to invalid or nonexistent directory {backup_dir}.')
-        return
+        return False
 
-    source_filename = os.path.basename(original_file)
-    backup = os.path.join(backup_dir, f'{source_filename}.bak')
+    backup = None
+    if backup_name is None:
+        source_filename = os.path.basename(original_file)
+        backup = os.path.join(backup_dir, f'{source_filename}.bak')
+    else:
+        backup = os.path.join(backup_dir, f'{backup_name}.bak')
 
     if not os.path.exists(backup):
         logger.warning(f'Backup file {backup} does not exist, aborting backup restoration.')
-        return
+        return False
 
     logger.info(f'Restoring backup of {original_file} from {backup}')
     try:
-        shutil.copy(backup, original_file)
+        shutil.copy2(backup, original_file)
     except Exception:  # intentionally broad
         logger.warning('Could not restore backup, exception occurred while copying.', exc_info=True)
-
+        return False
+    return True
 
 def delete_oldest(path_glob, keep_num, del_files=True, del_dirs=False):
     """ Delete oldest builds, keeping a specific number """

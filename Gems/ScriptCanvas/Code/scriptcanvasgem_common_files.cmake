@@ -191,8 +191,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/Operators/Math/OperatorSub.cpp
     Include/ScriptCanvas/Libraries/Operators/Math/OperatorLerpNodeable.cpp
     Include/ScriptCanvas/Libraries/Operators/Math/OperatorLerpNodeableNode.cpp
-    Include/ScriptCanvas/Profiler/Aggregator.cpp
-    Include/ScriptCanvas/Profiler/DrillerEvents.cpp
     Include/ScriptCanvas/Serialization/BehaviorContextObjectSerializer.cpp
     Include/ScriptCanvas/Serialization/DatumSerializer.cpp
     Include/ScriptCanvas/Serialization/RuntimeVariableSerializer.cpp
@@ -208,9 +206,4 @@ set(FILES
     Include/ScriptCanvas/Utils/VersioningUtils.cpp
     Include/ScriptCanvas/Utils/VersioningUtils.cpp
     Include/ScriptCanvas/Utils/BehaviorContextUtils.cpp
-)
-
-set(SKIP_UNITY_BUILD_INCLUSION_FILES
-    Include/ScriptCanvas/Libraries/Core/FunctionCallNode.cpp
-    Include/ScriptCanvas/Libraries/Core/FunctionCallNodeIsOutOfDate.cpp
 )

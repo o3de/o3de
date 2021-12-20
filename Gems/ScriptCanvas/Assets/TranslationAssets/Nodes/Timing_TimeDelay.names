@@ -11,21 +11,21 @@
             },
             "slots": [
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In",
                         "tooltip": "When signaled, execution is delayed at this node for the specified amount of times."
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out",
                         "tooltip": "Signaled after waiting for the specified amount of times."
                     }
                 },
                 {
-                    "base": "DataInput_Delay",
+                    "base": "DataInput_Delay_0",
                     "details": {
                         "name": "Delay"
                     }

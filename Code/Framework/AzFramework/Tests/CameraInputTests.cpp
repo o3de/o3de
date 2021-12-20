@@ -322,6 +322,17 @@ namespace UnitTest
         EXPECT_THAT(m_camera.m_offset, IsClose(AZ::Vector3::CreateZero()));
     }
 
+    TEST(CameraInput, CameraPitchIsClampedWithExpectedTolerance)
+    {
+        const auto [expectedMinPitch, expectedMaxPitch] = AzFramework::CameraPitchMinMaxRadiansWithTolerance();
+        const float minPitch = AzFramework::ClampPitchRotation(-AZ::Constants::HalfPi);
+        const float maxPitch = AzFramework::ClampPitchRotation(AZ::Constants::HalfPi);
+
+        using ::testing::FloatNear;
+        EXPECT_THAT(minPitch, FloatNear(expectedMinPitch, AzFramework::CameraPitchTolerance));
+        EXPECT_THAT(maxPitch, FloatNear(expectedMaxPitch, AzFramework::CameraPitchTolerance));
+    }
+
     TEST_F(CameraInputFixture, OrbitRotateCameraInputRotatesPitchOffsetByNinetyDegreesWithRequiredPixelDelta)
     {
         const auto cameraStartingPosition = AZ::Vector3::CreateAxisY(-20.0f);
@@ -404,5 +415,79 @@ namespace UnitTest
 
         using ::testing::FloatNear;
         EXPECT_THAT(m_camera.m_pitch, FloatNear(expectedPitch, 0.001f));
+    }
+
+    TEST_F(CameraInputFixture, InvalidTranslationInputKeyCannotBeginTranslateCameraInputAgain)
+    {
+        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_forwardChannelId,
+                                                              AzFramework::InputChannel::State::Began });
+
+        const bool consumed =
+            m_cameraSystem->HandleEvents(AzFramework::DiscreteInputEvent{ m_orbitChannelId, AzFramework::InputChannel::State::Began });
+
+        using ::testing::IsFalse;
+        using ::testing::IsTrue;
+        EXPECT_THAT(consumed, IsTrue());
+        EXPECT_THAT(m_firstPersonTranslateCamera->Beginning(), IsFalse());
+        EXPECT_THAT(m_firstPersonTranslateCamera->Active(), IsTrue());
+    }
+
+    TEST_F(CameraInputFixture, InvalidTranslationInputKeyDownCannotBeginTranslateCameraInputAgain)
+    {
+        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_forwardChannelId,
+                                                              AzFramework::InputChannel::State::Began });
+
+        const bool consumed =
+            m_cameraSystem->HandleEvents(AzFramework::DiscreteInputEvent{ m_orbitChannelId, AzFramework::InputChannel::State::Began });
+
+        using ::testing::IsFalse;
+        using ::testing::IsTrue;
+        EXPECT_THAT(consumed, IsTrue());
+        EXPECT_THAT(m_firstPersonTranslateCamera->Beginning(), IsFalse());
+        EXPECT_THAT(m_firstPersonTranslateCamera->Active(), IsTrue());
+    }
+
+    TEST_F(CameraInputFixture, InvalidTranslationInputKeyUpDoesNotAffectTranslateCameraInputEnd)
+    {
+        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_forwardChannelId,
+                                                              AzFramework::InputChannel::State::Began });
+
+        const bool consumed =
+            m_cameraSystem->HandleEvents(AzFramework::DiscreteInputEvent{ m_orbitChannelId, AzFramework::InputChannel::State::Began });
+
+        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_forwardChannelId,
+                                                              AzFramework::InputChannel::State::Ended });
+
+        using ::testing::IsFalse;
+        using ::testing::IsTrue;
+        EXPECT_THAT(consumed, IsTrue());
+        EXPECT_THAT(m_firstPersonTranslateCamera->Idle(), IsTrue());
+    }
+
+    TEST_F(CameraInputFixture, OrbitCameraInputCannotBeLeftInInvalidStateIfItCannotFullyBeginAfterInputChannelBegin)
+    {
+        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_forwardChannelId,
+                                                              AzFramework::InputChannel::State::Began });
+
+        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_orbitChannelId, AzFramework::InputChannel::State::Began });
+
+        using ::testing::IsFalse;
+        using ::testing::IsTrue;
+        EXPECT_THAT(m_orbitCamera->Beginning(), IsFalse());
+        EXPECT_THAT(m_orbitCamera->Idle(), IsTrue());
+    }
+
+    TEST_F(CameraInputFixture, OrbitCameraInputCannotBeLeftInInvalidStateIfItCannotFullyBeginAfterInputChannelBeginAndEnd)
+    {
+        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_forwardChannelId,
+                                                              AzFramework::InputChannel::State::Began });
+
+        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_orbitChannelId, AzFramework::InputChannel::State::Began });
+        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_orbitChannelId, AzFramework::InputChannel::State::Ended });
+
+        using ::testing::IsFalse;
+        using ::testing::IsTrue;
+        EXPECT_THAT(m_orbitCamera->Ending(), IsFalse());
+        EXPECT_THAT(m_orbitCamera->Idle(), IsTrue());
     }
 } // namespace UnitTest

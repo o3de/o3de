@@ -16,7 +16,6 @@
 
 #include <Editor/View/Widgets/NodePalette/NodePaletteModel.h>
 
-#include <Editor/Assets/ScriptCanvasAssetHelpers.h>
 #include <Editor/Include/ScriptCanvas/Bus/RequestBus.h>
 #include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
 #include <Editor/Nodes/NodeUtils.h>
@@ -1023,13 +1022,15 @@ namespace ScriptCanvasEditor
 
             GraphCanvas::TranslationKey key;
 
+            AZStd::string context;
             AZStd::string updatedMethodName;
             if (propertyStatus != ScriptCanvas::PropertyStatus::None)
             {
                 updatedMethodName = (propertyStatus == ScriptCanvas::PropertyStatus::Getter) ? "Get" : "Set";
+                context = (propertyStatus == ScriptCanvas::PropertyStatus::Getter) ? "Getter" : "Setter";
             }
             updatedMethodName += methodName;
-            key << "BehaviorClass" << methodClass.c_str() << "methods" << updatedMethodName << "details";
+            key << "BehaviorClass" << context << methodClass << "methods" << updatedMethodName << "details";
 
             GraphCanvas::TranslationRequests::Details details;
             GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);

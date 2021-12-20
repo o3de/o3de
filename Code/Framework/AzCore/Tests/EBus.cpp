@@ -2500,7 +2500,7 @@ namespace UnitTest
 
     namespace RoutingTest
     {
-        class DrillerInterceptor : public EBusVersion1::Router
+        class EBusInterceptor : public EBusVersion1::Router
         {
         public:
             void OnEvent(int a) override
@@ -2555,20 +2555,20 @@ namespace UnitTest
     TEST_F(EBus, Routing)
     {
         using namespace RoutingTest;
-        DrillerInterceptor driller;
+        EBusInterceptor interceptor;
         EBusVersion1Handler v1Handler;
 
         v1Handler.BusConnect();
-        driller.BusRouterConnect();
+        interceptor.BusRouterConnect();
 
         EBusVersion1::Broadcast(&EBusVersion1::Events::OnEvent, 1020);
-        EXPECT_EQ(1, driller.m_numOnEvent);
+        EXPECT_EQ(1, interceptor.m_numOnEvent);
         EXPECT_EQ(1, v1Handler.m_numOnEvent);
 
-        driller.BusRouterDisconnect();
+        interceptor.BusRouterDisconnect();
 
         EBusVersion1::Broadcast(&EBusVersion1::Events::OnEvent, 1020);
-        EXPECT_EQ(1, driller.m_numOnEvent);
+        EXPECT_EQ(1, interceptor.m_numOnEvent);
         EXPECT_EQ(2, v1Handler.m_numOnEvent);
 
         // routing events

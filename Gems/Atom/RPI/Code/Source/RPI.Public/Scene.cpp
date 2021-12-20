@@ -18,7 +18,6 @@
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/View.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Jobs/JobEmpty.h>
@@ -115,6 +114,7 @@ namespace AZ
             if (m_taskGraphActive)
             {
                 WaitAndCleanTGEvent(AZStd::move(m_simulationFinishedTGEvent));
+                m_simulationFinishedTGEvent.reset();
             }
             else
             {
@@ -384,7 +384,9 @@ namespace AZ
                     simulationTGDesc,
                     [this, featureProcessor]()
                     {
-                        featureProcessor->Simulate(m_simulatePacket);
+                        FeatureProcessor::SimulatePacket jobPacket = m_simulatePacket;
+                        jobPacket.m_parentJob = nullptr;
+                        featureProcessor->Simulate(jobPacket);
                     });
             }
             simulationTG.Detach();
@@ -400,10 +402,11 @@ namespace AZ
             for (FeatureProcessorPtr& fp : m_featureProcessors)
             {
                 FeatureProcessor* featureProcessor = fp.get();
-                const auto jobLambda = [this, featureProcessor]()
+                const auto jobLambda = [this, featureProcessor](AZ::Job& owner)
                 {
-
-                    featureProcessor->Simulate(m_simulatePacket);
+                    FeatureProcessor::SimulatePacket jobPacket = m_simulatePacket;
+                    jobPacket.m_parentJob = &owner;
+                    featureProcessor->Simulate(jobPacket);
                 };
 
                 AZ::Job* simulationJob = AZ::CreateJobFunction(AZStd::move(jobLambda), true, nullptr);  //auto-deletes
@@ -423,6 +426,7 @@ namespace AZ
             if (m_taskGraphActive)
             {
                 WaitAndCleanTGEvent(AZStd::move(m_simulationFinishedTGEvent));
+                m_simulationFinishedTGEvent.reset();
             }
             else
             {
@@ -516,7 +520,7 @@ namespace AZ
                 collectDrawPacketsTG.Submit(&collectDrawPacketsTGEvent);
 
                 // Launch CullingSystem::ProcessCullables() jobs (will run concurrently with FeatureProcessor::Render() jobs if m_parallelOctreeTraversal)
-                bool parallelOctreeTraversal = m_cullingScene->GetDebugContext().m_parallelOctreeTraversal;
+                const bool parallelOctreeTraversal = m_cullingScene->GetDebugContext().m_parallelOctreeTraversal;
                 m_cullingScene->BeginCulling(m_renderPacket.m_views);
                 static const AZ::TaskDescriptor processCullablesDescriptor{"AZ::RPI::Scene::ProcessCullables", "Graphics"};
                 AZ::TaskGraphEvent processCullablesTGEvent;
@@ -576,6 +580,7 @@ namespace AZ
             }
 
             // Launch CullingSystem::ProcessCullables() jobs (will run concurrently with FeatureProcessor::Render() jobs)
+            const bool parallelOctreeTraversal = m_cullingScene->GetDebugContext().m_parallelOctreeTraversal;
             m_cullingScene->BeginCulling(m_renderPacket.m_views);
             for (ViewPtr& viewPtr : m_renderPacket.m_views)
             {
@@ -584,7 +589,7 @@ namespace AZ
                         m_cullingScene->ProcessCullablesJobs(*this, *viewPtr, thisJob); // can't call directly because ProcessCullables needs a parent job
                     },
                     true, nullptr); //auto-deletes
-                if (m_cullingScene->GetDebugContext().m_parallelOctreeTraversal)
+                if (parallelOctreeTraversal)
                 {
                     processCullablesJob->SetDependent(collectDrawPacketsCompletion);
                     processCullablesJob->Start();
@@ -608,9 +613,9 @@ namespace AZ
             {
                 finalizeDrawListsTG.AddTask(
                     finalizeDrawListsTGDesc,
-                    [view]()
+                    [view, &finalizeDrawListsTGEvent]()
                     {
-                        view->FinalizeDrawLists();
+                        view->FinalizeDrawListsTG(finalizeDrawListsTGEvent);
                     });
             }
             finalizeDrawListsTG.Submit(&finalizeDrawListsTGEvent);
@@ -622,9 +627,9 @@ namespace AZ
             AZ::JobCompletion* finalizeDrawListsCompletion = aznew AZ::JobCompletion();
             for (auto& view : m_renderPacket.m_views)
             {
-                const auto finalizeDrawListsLambda = [view]()
+                const auto finalizeDrawListsLambda = [view](AZ::Job& job)
                 {
-                    view->FinalizeDrawLists();
+                    view->FinalizeDrawListsJob(&job);
                 };
 
                 AZ::Job* finalizeDrawListsJob = AZ::CreateJobFunction(AZStd::move(finalizeDrawListsLambda), true, nullptr);     //auto-deletes
@@ -641,6 +646,7 @@ namespace AZ
             if (m_taskGraphActive)
             {
                 WaitAndCleanTGEvent(AZStd::move(m_simulationFinishedTGEvent));
+                m_simulationFinishedTGEvent.reset();
             }
             else
             {
@@ -731,20 +737,19 @@ namespace AZ
                 // Add dynamic draw data for all the views
                 if (m_dynamicDrawSystem)
                 {
-                    AZ_PROFILE_SCOPE(RPI, "DynamicDraw SubmitDrawData");
                     m_dynamicDrawSystem->SubmitDrawData(this, m_renderPacket.m_views);
                 }
             }
 
             {
-                AZ_PROFILE_BEGIN(RPI, "FinalizeDrawLists");
-                if (jobPolicy == RHI::JobPolicy::Serial)
+                AZ_PROFILE_SCOPE(RPI, "FinalizeDrawLists");
+                if (jobPolicy == RHI::JobPolicy::Serial || 
+                    m_renderPacket.m_views.size() <= 1) // FinalizeDrawListsX both immediately wait for the job to complete, skip job if only 1 job would be generated
                 {
                     for (auto& view : m_renderPacket.m_views)
                     {
-                        view->FinalizeDrawLists();
+                        view->FinalizeDrawListsJob(nullptr);
                     }
-                    AZ_PROFILE_END(RPI);
                 }
                 else
                 {
@@ -756,7 +761,6 @@ namespace AZ
                     {
                         FinalizeDrawListsJobs();
                     }
-                    AZ_PROFILE_END(RPI);
                 }
             }
 

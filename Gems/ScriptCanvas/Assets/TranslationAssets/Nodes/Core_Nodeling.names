@@ -7,8 +7,7 @@
             "details": {
                 "name": "Nodeling",
                 "category": "Core",
-                "tooltip": "Represents either an execution entry or exit node",
-                "subtitle": "Core"
+                "tooltip": "Represents either an execution entry or exit node"
             }
         }
     ]

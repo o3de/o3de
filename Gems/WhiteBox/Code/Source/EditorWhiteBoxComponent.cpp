@@ -720,7 +720,6 @@ namespace WhiteBox
         // must have at least one triangle
         if (m_faces->empty())
         {
-            distance = std::numeric_limits<float>::max();
             return false;
         }
 
@@ -735,7 +734,6 @@ namespace WhiteBox
         const AZ::Vector3 localRayEnd = localRayOrigin + localRayDirection * rayLength;
 
         bool intersection = false;
-        distance = std::numeric_limits<float>::max();
         for (const auto& face : m_faces.value())
         {
             float t;

@@ -786,11 +786,7 @@ void UiParticleEmitterComponent::Render(LyShine::IRenderGraph* renderGraph)
     AZ::Data::Instance<AZ::RPI::Image> image;
     if (m_sprite)
     {
-        CSprite* sprite = static_cast<CSprite*>(m_sprite); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
-        if (sprite)
-        {
-            image = sprite->GetImage();
-        }
+        image = m_sprite->GetImage();
     }
 
     bool isClampTextureMode = true;
@@ -833,7 +829,7 @@ void UiParticleEmitterComponent::Render(LyShine::IRenderGraph* renderGraph)
     // particlesToRender is the max particles we will render, we could render less if some have zero alpha
     for (AZ::u32 i = 0; i < particlesToRender; ++i)
     {
-        SVF_P2F_C4B_T2F_F4B* firstVertexOfParticle = &m_cachedPrimitive.m_vertices[totalVerticesInserted];
+        LyShine::UiPrimitiveVertex* firstVertexOfParticle = &m_cachedPrimitive.m_vertices[totalVerticesInserted];
 
         if (m_particleContainer[i].FillVertices(firstVertexOfParticle, renderParameters, transform))
         {
@@ -844,11 +840,7 @@ void UiParticleEmitterComponent::Render(LyShine::IRenderGraph* renderGraph)
 
     m_cachedPrimitive.m_numVertices = totalVerticesInserted;
     m_cachedPrimitive.m_numIndices = totalParticlesInserted * indicesPerParticle;
-    LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
-    if (lyRenderGraph)
-    {
-        lyRenderGraph->AddPrimitiveAtom(&m_cachedPrimitive, image, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, m_blendMode);
-    }
+    renderGraph->AddPrimitive(&m_cachedPrimitive, image, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, m_blendMode);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1845,7 +1837,7 @@ void UiParticleEmitterComponent::ResetParticleBuffers()
     {
         delete [] m_cachedPrimitive.m_vertices;
     }
-    m_cachedPrimitive.m_vertices = new SVF_P2F_C4B_T2F_F4B[numVertices];
+    m_cachedPrimitive.m_vertices = new LyShine::UiPrimitiveVertex[numVertices];
 
     m_particleContainer.clear();
     m_particleContainer.reserve(m_particleBufferSize);

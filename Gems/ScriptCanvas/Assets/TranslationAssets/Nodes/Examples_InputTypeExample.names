@@ -1,0 +1,70 @@
+{
+    "entries": [
+        {
+            "base": "{42CC5090-BE28-E017-8704-FD732475CECD}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Input Type Example",
+                "category": "Examples",
+                "tooltip": "Example of passing as input by value, pointer and reference."
+            },
+            "slots": [
+                {
+                    "base": "Input_Clear By Value_0",
+                    "details": {
+                        "name": "Clear By Value"
+                    }
+                },
+                {
+                    "base": "DataInput_Value Input_0",
+                    "details": {
+                        "name": "Value Input"
+                    }
+                },
+                {
+                    "base": "Output_On Clear By Value_0",
+                    "details": {
+                        "name": "On Clear By Value"
+                    }
+                },
+                {
+                    "base": "Input_Clear By Pointer_1",
+                    "details": {
+                        "name": "Clear By Pointer"
+                    }
+                },
+                {
+                    "base": "DataInput_Pointer Input_1",
+                    "details": {
+                        "name": "Pointer Input"
+                    }
+                },
+                {
+                    "base": "Output_On Clear By Pointer_1",
+                    "details": {
+                        "name": "On Clear By Pointer"
+                    }
+                },
+                {
+                    "base": "Input_Clear By Reference_2",
+                    "details": {
+                        "name": "Clear By Reference"
+                    }
+                },
+                {
+                    "base": "DataInput_Reference Input_2",
+                    "details": {
+                        "name": "Reference Input"
+                    }
+                },
+                {
+                    "base": "Output_On Clear By Reference_2",
+                    "details": {
+                        "name": "On Clear By Reference"
+                    }
+                }
+            ]
+        }
+    ]
+}

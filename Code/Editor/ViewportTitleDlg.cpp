@@ -6,7 +6,6 @@
  *
  */
 
-
 // Description : CViewportTitleDlg implementation file
 
 #if !defined(Q_MOC_RUN)
@@ -42,37 +41,17 @@
 #include <AzCore/std/algorithm.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <AzToolsFramework/Viewport/ViewportSettings.h>
+#include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 
 #include <LmbrCentral/Audio/AudioSystemComponentBus.h>
 
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include "ui_ViewportTitleDlg.h"
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
-#endif //!defined(Q_MOC_RUN)
+#endif //! defined(Q_MOC_RUN)
 
 // CViewportTitleDlg dialog
-
-inline namespace Helpers
-{
-    void ToggleHelpers()
-    {
-        const bool newValue = !GetIEditor()->GetDisplaySettings()->IsDisplayHelpers();
-        GetIEditor()->GetDisplaySettings()->DisplayHelpers(newValue);
-        GetIEditor()->Notify(eNotify_OnDisplayRenderUpdate);
-
-        if (newValue == false)
-        {
-            GetIEditor()->GetObjectManager()->SendEvent(EVENT_HIDE_HELPER);
-        }
-        AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
-            &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnDrawHelpersChanged, newValue);
-    }
-
-    bool IsHelpersShown()
-    {
-        return GetIEditor()->GetDisplaySettings()->IsDisplayHelpers();
-    }
-}
 
 namespace
 {
@@ -98,7 +77,7 @@ namespace
             emit ViewportInfoStatusUpdated(static_cast<int>(state));
         }
     };
-} //end anonymous namespace
+} // end anonymous namespace
 
 CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
     : QWidget(pParent)
@@ -215,13 +194,65 @@ void CViewportTitleDlg::SetupViewportInformationMenu()
     m_ui->m_debugInformationMenu->setMenu(GetViewportInformationMenu());
     connect(m_ui->m_debugInformationMenu, &QToolButton::clicked, this, &CViewportTitleDlg::OnToggleDisplayInfo);
     m_ui->m_debugInformationMenu->setPopupMode(QToolButton::MenuButtonPopup);
-
 }
 
 void CViewportTitleDlg::SetupHelpersButton()
 {
-    connect(m_ui->m_helpers, &QToolButton::clicked, this, &CViewportTitleDlg::OnToggleHelpers);
-    m_ui->m_helpers->setChecked(Helpers::IsHelpersShown());
+    if (m_helpersMenu == nullptr)
+    {
+        m_helpersMenu = new QMenu("Helpers State", this);
+
+        auto helperAction = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::Helpers);
+        connect(
+            helperAction, &QAction::triggered, this,
+            [this]
+            {
+                m_ui->m_helpers->setChecked(AzToolsFramework::HelpersVisible() || AzToolsFramework::IconsVisible());
+            });
+
+        auto iconAction = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::Icons);
+        connect(
+            iconAction, &QAction::triggered, this,
+            [this]
+            {
+                m_ui->m_helpers->setChecked(AzToolsFramework::HelpersVisible() || AzToolsFramework::IconsVisible());
+            });
+
+        m_helpersAction = new QAction(tr("Helpers"), m_helpersMenu);
+        m_helpersAction->setCheckable(true);
+        connect(
+            m_helpersAction, &QAction::triggered, this,
+            [helperAction]
+            {
+                helperAction->trigger();
+            });
+
+        m_iconsAction = new QAction(tr("Icons"), m_helpersMenu);
+        m_iconsAction->setCheckable(true);
+        connect(
+            m_iconsAction, &QAction::triggered, this,
+            [iconAction]
+            {
+                iconAction->trigger();
+            });
+
+        m_helpersMenu->addAction(m_helpersAction);
+        m_helpersMenu->addAction(m_iconsAction);
+
+        connect(
+            m_helpersMenu, &QMenu::aboutToShow, this,
+            [this]
+            {
+                m_helpersAction->setChecked(AzToolsFramework::HelpersVisible());
+                m_iconsAction->setChecked(AzToolsFramework::IconsVisible());
+            });
+
+        m_ui->m_helpers->setCheckable(true);
+        m_ui->m_helpers->setMenu(m_helpersMenu);
+        m_ui->m_helpers->setPopupMode(QToolButton::InstantPopup);
+    }
+
+    m_ui->m_helpers->setChecked(AzToolsFramework::HelpersVisible() || AzToolsFramework::IconsVisible());
 }
 
 void CViewportTitleDlg::SetupOverflowMenu()
@@ -279,15 +310,20 @@ void CViewportTitleDlg::SetupOverflowMenu()
     UpdateMuteActionText();
 }
 
-
 //////////////////////////////////////////////////////////////////////////
 void CViewportTitleDlg::SetViewPane(CLayoutViewPane* pViewPane)
 {
     if (m_pViewPane)
+    {
         m_pViewPane->disconnect(this);
+    }
+
     m_pViewPane = pViewPane;
+
     if (m_pViewPane)
+    {
         connect(this, &QWidget::customContextMenuRequested, m_pViewPane, &CLayoutViewPane::ShowTitleMenu);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -318,7 +354,6 @@ void CViewportTitleDlg::OnInitDialog()
         m_ui->m_prefabFocusPath->hide();
         m_ui->m_prefabFocusBackButton->hide();
     }
-    
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -334,13 +369,6 @@ void CViewportTitleDlg::OnMaximize()
     {
         m_pViewPane->ToggleMaximize();
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CViewportTitleDlg::OnToggleHelpers()
-{
-    Helpers::ToggleHelpers();
-    m_ui->m_helpers->setChecked(Helpers::IsHelpersShown());
 }
 
 void CViewportTitleDlg::SetNoViewportInfo()
@@ -366,7 +394,6 @@ void CViewportTitleDlg::SetCompactViewportInfo()
     AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Broadcast(
         &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::SetDisplayState, AZ::AtomBridge::ViewportInfoDisplayState::CompactInfo);
 }
-
 
 //////////////////////////////////////////////////////////////////////////
 void CViewportTitleDlg::UpdateDisplayInfo()
@@ -783,9 +810,6 @@ void CViewportTitleDlg::OnEditorNotifyEvent(EEditorNotifyEvent event)
 {
     switch (event)
     {
-    case eNotify_OnDisplayRenderUpdate:
-        m_ui->m_helpers->setChecked(Helpers::IsHelpersShown());
-        break;
     case eNotify_OnBeginGameMode:
     case eNotify_OnEndGameMode:
         UpdateMuteActionText();
@@ -997,24 +1021,18 @@ void CViewportTitleDlg::UpdateOverFlowMenuState()
     m_angleSizeActionWidget->setEnabled(angleSnappingActive);
 }
 
-namespace
+ namespace
 {
     void PyToggleHelpers()
     {
-        GetIEditor()->GetDisplaySettings()->DisplayHelpers(!GetIEditor()->GetDisplaySettings()->IsDisplayHelpers());
-        GetIEditor()->Notify(eNotify_OnDisplayRenderUpdate);
-
-        if (GetIEditor()->GetDisplaySettings()->IsDisplayHelpers() == false)
-        {
-            GetIEditor()->GetObjectManager()->SendEvent(EVENT_HIDE_HELPER);
-        }
+        AzToolsFramework::SetHelpersVisible(!AzToolsFramework::HelpersVisible());
     }
 
     bool PyIsHelpersShown()
     {
-        return GetIEditor()->GetDisplaySettings()->IsDisplayHelpers();
+        return AzToolsFramework::HelpersVisible();
     }
-}
+} // namespace
 
 namespace AzToolsFramework
 {
@@ -1029,11 +1047,12 @@ namespace AzToolsFramework
                     ->Attribute(AZ::Script::Attributes::Category, "Legacy/Editor")
                     ->Attribute(AZ::Script::Attributes::Module, "legacy.general");
             };
+
             addLegacyGeneral(behaviorContext->Method("toggle_helpers", PyToggleHelpers, nullptr, "Toggles the display of helpers."));
             addLegacyGeneral(behaviorContext->Method("is_helpers_shown", PyIsHelpersShown, nullptr, "Gets the display state of helpers."));
         }
     }
-}
+} // namespace AzToolsFramework
 
 #include "ViewportTitleDlg.moc"
 #include <moc_ViewportTitleDlg.cpp>

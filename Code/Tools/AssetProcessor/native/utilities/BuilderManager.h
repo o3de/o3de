@@ -103,8 +103,8 @@ namespace AssetProcessor
         //! Sets the connection id and signals that the builder has connected
         void SetConnection(AZ::u32 connId);
 
-        AZStd::string BuildParams(const char* task, const char* moduleFilePath, const AZStd::string& builderGuid, const AZStd::string& jobDescriptionFile, const AZStd::string& jobResponseFile) const;
-        AZStd::unique_ptr<AzFramework::ProcessWatcher> LaunchProcess(const char* fullExePath, const AZStd::string& params) const;
+        AZStd::vector<AZStd::string> BuildParams(const char* task, const char* moduleFilePath, const AZStd::string& builderGuid, const AZStd::string& jobDescriptionFile, const AZStd::string& jobResponseFile) const;
+        AZStd::unique_ptr<AzFramework::ProcessWatcher> LaunchProcess(const char* fullExePath, const AZStd::vector<AZStd::string>& params) const;
 
         //! Waits for the builder exe to send the job response and pumps stdout/err
         BuilderRunJobOutcome WaitForBuilderResponse(AssetBuilderSDK::JobCancelListener* jobCancelListener, AZ::u32 processTimeoutLimitInSeconds, AZStd::binary_semaphore* waitEvent) const;
