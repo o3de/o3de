@@ -84,7 +84,7 @@ def write_test_data_to_dynamodb_table(resource_mappings: pytest.fixture, aws_uti
 @pytest.mark.parametrize('session_name', [constants.SESSION_NAME])
 @pytest.mark.usefixtures('workspace')
 @pytest.mark.parametrize('project', ['AutomatedTesting'])
-@pytest.mark.parametrize('level', ['AWS/Core'])
+@pytest.mark.parametrize('level', ['levels/aws/core/core.spawnable'])
 @pytest.mark.usefixtures('resource_mappings')
 @pytest.mark.parametrize('resource_mappings_filename', [constants.AWS_RESOURCE_MAPPING_FILE_NAME])
 @pytest.mark.parametrize('stacks', [[f'{constants.AWS_PROJECT_NAME}-{AWS_CORE_FEATURE_NAME}',

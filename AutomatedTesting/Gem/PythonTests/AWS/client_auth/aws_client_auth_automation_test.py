@@ -40,7 +40,7 @@ class TestAWSClientAuthWindows(object):
     Test class to verify AWS Client Auth gem features on Windows.
     """
 
-    @pytest.mark.parametrize('level', ['AWS/ClientAuth'])
+    @pytest.mark.parametrize('level', ['levels/aws/clientauth/clientauth.spawnable'])
     def test_anonymous_credentials(self,
                                    level: str,
                                    launcher: pytest.fixture,
@@ -72,7 +72,7 @@ class TestAWSClientAuthWindows(object):
             )
             assert result, 'Anonymous credentials fetched successfully.'
     
-    @pytest.mark.parametrize('level', ['AWS/ClientAuth'])
+    @pytest.mark.parametrize('level', ['levels/aws/clientauth/clientauth.spawnable'])
     def test_anonymous_credentials_no_global_accountid(self,
                                                        level: str,
                                                        launcher: pytest.fixture,
@@ -140,7 +140,7 @@ class TestAWSClientAuthWindows(object):
         except cognito_idp.exceptions.UserNotFoundException:
             pass
 
-        launcher.args = ['+LoadLevel', 'AWS/ClientAuthPasswordSignUp']
+        launcher.args = ['+LoadLevel', 'levels/aws/clientauthpasswordsignup/clientauthpasswordsignup.spawnable']
         launcher.args.extend(['-rhi=null'])
 
         with launcher.start(launch_ap=False):
@@ -158,7 +158,7 @@ class TestAWSClientAuthWindows(object):
             Username='test1'
         )
 
-        launcher.args = ['+LoadLevel', 'AWS/ClientAuthPasswordSignIn']
+        launcher.args = ['+LoadLevel', 'levels/aws/clientauthpasswordsignin/clientauthpasswordsignin.spawnable']
         launcher.args.extend(['-rhi=null'])
 
         with launcher.start(launch_ap=False):

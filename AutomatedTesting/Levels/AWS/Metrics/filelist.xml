@@ -1,6 +1,0 @@
-<download name="Metrics" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="E09" md5="f16fff2970a4037af5909b269ceece4b"/>
- </files>
-</download>
