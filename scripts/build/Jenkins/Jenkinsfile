@@ -850,7 +850,8 @@ try {
     timestamps {
 
         stage('Build') {
-            parallel buildConfigs // Run parallel builds
+            //parallel buildConfigs // Run parallel builds
+            echo 'Building'
         }
 
         echo 'All builds successful'
@@ -899,6 +900,7 @@ finally {
                     [$class: 'RequesterRecipientProvider']
                 ]
             )
+            echo 'succeed'
         }
     } catch(Exception e) {
     }
