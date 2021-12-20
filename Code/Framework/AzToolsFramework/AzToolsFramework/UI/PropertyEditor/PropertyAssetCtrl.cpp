@@ -638,6 +638,21 @@ namespace AzToolsFramework
         {
             UpdateAssetDisplay();
         }
+        else if (!m_selectedAssetID.IsValid())
+        {
+            // If we get here without a valid assetId, it means the user has pressed the create button and we're waiting for an asset to be created.
+            // Use it if it's of the correct type.
+            AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
+
+            AZ::Data::AssetInfo assetInfo;
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, assetId);
+
+            if (assetInfo.m_assetType == GetCurrentAssetType())
+            {
+                SetSelectedAssetID(assetId);
+            }
+        }
     }
 
     void PropertyAssetCtrl::OnCatalogAssetChanged(const AZ::Data::AssetId& assetId)
@@ -764,6 +779,7 @@ namespace AzToolsFramework
                     {
                         // No Asset Id selected - Open editor and create new asset for them
                         AssetEditor::AssetEditorRequestsBus::Broadcast(&AssetEditor::AssetEditorRequests::CreateNewAsset, GetCurrentAssetType());
+                        AzFramework::AssetCatalogEventBus::Handler::BusConnect();
                     }
                     else
                     {
