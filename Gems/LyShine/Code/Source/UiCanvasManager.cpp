@@ -1007,7 +1007,7 @@ void UiCanvasManager::DebugDisplayCanvasData(int setting) const
 
     auto blackTexture = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::Black);
     float textOpacity = 1.0f;
-    float backgroundRectOpacity = 0.0f; // 0.75f;
+    float backgroundRectOpacity = 0.0f; // 0.75f; // [GHI #6515] Reenable background rect
 
     const AZ::Vector3 white(1.0f, 1.0f, 1.0f);
     const AZ::Vector3 grey(0.5f, 0.5f, 0.5f);
@@ -1162,7 +1162,7 @@ void UiCanvasManager::DebugDisplayDrawCallData() const
 
     auto blackTexture = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::Black);
     float textOpacity = 1.0f;
-    float backgroundRectOpacity = 0.0f; // 0.75f;
+    float backgroundRectOpacity = 0.0f; // 0.75f; // [GHI #6515] Reenable background rect
 
     const AZ::Vector3 white(1,1,1);
     const AZ::Vector3 red(1,0.3f,0.3f);

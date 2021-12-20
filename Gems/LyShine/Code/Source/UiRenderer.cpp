@@ -424,7 +424,7 @@ void UiRenderer::DebugDisplayTextureData(int recordingOption)
 
         auto blackTexture = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::Black);
         float textOpacity = 1.0f;
-        float backgroundRectOpacity = 0.0f; // 0.75f;
+        float backgroundRectOpacity = 0.0f; // 0.75f; // [GHI #6515] Reenable background rect
         const float fontSize = 8.0f;
         const float lineSpacing = 20.0f * dpiScale;
 
