@@ -5,7 +5,7 @@
     "ClassData": {
         "PassTemplate": {
             "Name": "DiffuseProbeGridDownsamplePassTemplate",
-            "PassClass": "FullScreenTriangle",
+            "PassClass": "DiffuseProbeGridDownsamplePass",
             "Slots": [
                 {
                     "Name": "NormalInput",
@@ -37,24 +37,6 @@
                     "ScopeAttachmentUsage": "RenderTarget",
                     "LoadStoreAction": {
                         "LoadAction": "DontCare"
-                    }
-                },
-                {
-                    // Note: this is attached here to ensure that the image is cleared,
-                    // but it is not used as an output from the shader
-                    "Name": "IrradianceOutput",
-                    "SlotType": "Output",
-                    "ScopeAttachmentUsage": "RenderTarget",
-                    "LoadStoreAction": {
-                        "ClearValue": {
-                            "Value": [
-                                0.0,
-                                0.0,
-                                0.0,
-                                0.0
-                            ]
-                        },
-                        "LoadAction": "Clear"
                     }
                 }
             ],
@@ -103,27 +85,6 @@
                         "Format": "R16G16B16A16_FLOAT",
                         "SharedQueueMask": "Graphics"
                     }
-                },
-                {
-                    "Name": "IrradianceImage",
-                    "SizeSource": {
-                        "Source": {
-                            "Pass": "This",
-                            "Attachment": "NormalInput"
-                        },
-                        "Multipliers": {
-                            "WidthMultiplier": 0.25,
-                            "HeightMultiplier": 0.25
-                        }
-                    },
-                    "MultisampleSource": {
-                        "Pass": "This",
-                        "Attachment": "NormalInput"
-                    },
-                    "ImageDescriptor": {
-                        "Format": "R16G16B16A16_FLOAT",
-                        "SharedQueueMask": "Graphics"
-                    }
                 }
             ],
             "Connections": [
@@ -139,13 +100,6 @@
                     "AttachmentRef": {
                         "Pass": "This",
                         "Attachment": "DownsampledDepthImage"
-                    }
-                },
-                {
-                    "LocalSlot": "IrradianceOutput",
-                    "AttachmentRef": {
-                        "Pass": "This",
-                        "Attachment": "IrradianceImage"
                     }
                 }
             ],

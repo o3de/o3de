@@ -191,7 +191,6 @@
 #define ID_BRUSH_CSGSUBSTRUCT                      33837
 #define ID_MATERIAL_PICKTOOL                       33842
 #define ID_MODIFY_AIPOINT_PICKIMPASSLINK           33865
-#define ID_DISPLAY_SHOWHELPERS                     33871
 #define ID_FILE_EXPORTSELECTION                    33875
 #define ID_EDIT_PASTE_WITH_LINKS                   33893
 #define ID_FILE_EXPORT_TERRAINAREA                 33904

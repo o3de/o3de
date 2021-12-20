@@ -78,7 +78,7 @@ namespace ScriptCanvasEditor
                     if (!tabDataVariant.value<GraphTabMetadata>().m_canvasWidget)
                     {
                         CanvasWidget* canvasWidget = new CanvasWidget(tabDataVariant.value<GraphTabMetadata>().m_assetId, this);
-                        canvasWidget->SetDefaultBorderColor(ScriptCanvasAssetDescription().GetDisplayColorImpl());
+                        canvasWidget->SetDefaultBorderColor(ScriptCanvasEditor::SourceDescription::GetDisplayColor());
                         GraphTabMetadata replacement = tabDataVariant.value<GraphTabMetadata>();
                         replacement.m_canvasWidget = canvasWidget;
                         tabDataVariant.setValue(replacement);
@@ -147,11 +147,11 @@ namespace ScriptCanvasEditor
         {
             if (!SelectTab(assetId))
             {
-                QIcon tabIcon = QIcon(ScriptCanvasAssetDescription().GetIconPathImpl());
+                QIcon tabIcon = QIcon(ScriptCanvasEditor::SourceDescription::GetIconPath());
                 tabIndex = qobject_cast<AzQtComponents::TabWidget*>(parent())->insertTab(tabIndex, new QWidget(), tabIcon, "");
                 GraphTabMetadata metaData;
                 CanvasWidget* canvasWidget = new CanvasWidget(assetId, this);
-                canvasWidget->SetDefaultBorderColor(ScriptCanvasAssetDescription().GetDisplayColorImpl());
+                canvasWidget->SetDefaultBorderColor(SourceDescription::GetDisplayColor());
                 metaData.m_canvasWidget = canvasWidget;
                 metaData.m_assetId = assetId;
                 metaData.m_fileState = fileState;
