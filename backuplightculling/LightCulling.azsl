@@ -368,19 +368,16 @@ void CullDecals(uint groupIndex, TileLightData tileLightData, float3 aabb_center
         float3 decalPosition = WorldToView_Point(decal.m_position); 
         
         // just wrapping a bounding sphere around a cube for now to get a minor perf boost. i.e. the sphere radius is sqrt(x*x + y*y + z*z)
-        // ATOM-4224 - try AABB-AABB 
+        // ATOM-4224 - try AABB-AABB and implement depth binning for the decals
         float maxHalfSize = max(max(decal.m_halfSize.x, decal.m_halfSize.y), decal.m_halfSize.z);
         float boundingSphereRadiusSqr = maxHalfSize * maxHalfSize * 3;            
           
         bool potentiallyIntersects = TestSphereVsAabb(decalPosition, boundingSphereRadiusSqr, aabb_center, aabb_extents);
         if (potentiallyIntersects) 
         {                                           
-            uint inside = 0;
-            float2 minmax = ComputePointLightMinMaxZ(sqrt(boundingSphereRadiusSqr), decalPosition);
-            if (IsObjectInsideTile(tileLightData, minmax, inside))
-            {
-                MarkLightAsVisibleInSharedMemory(decalIndex, inside);            
-            }
+            // Implement and profile fine-grained light culling testing
+            // ATOM-3732 
+            MarkLightAsVisibleInSharedMemory(decalIndex, 0xFFFF);            
         }          
     }   
 }
@@ -569,14 +566,17 @@ void CullQuadLights(uint groupIndex, TileLightData tileLightData, float3 aabb_ce
     }   
 }
 
-uint WriteEndOfGroup(uint lightCount, uint3 groupID)
+uint WriteLightCount(uint lightCount, uint3 groupID)
 {
-    uint lightsAfter = lightCount + shared_lightCount;
+    uint lightsAfter = lightCount;// + shared_lightCount;
     
-    uint end = PackLightIndexWithBinMask(NVLC_END_OF_GROUP, NVLC_ALL_BIN_BITS);
-    uint offset = min(lightCount + shared_lightCount, NVLC_MAX_POSSIBLE_LIGHTS_PER_BIN - 1);    
+ //   uint end = PackLightIndexWithBinMask(NVLC_END_OF_GROUP, NVLC_ALL_BIN_BITS);
+    uint offset = min(lightCount, NVLC_MAX_POSSIBLE_LIGHTS_PER_BIN - 1);    
     uint index = GetLightListIndex(groupID, PassSrg::m_constantData.m_gridWidth, offset);
-    PassSrg::m_lightList[index] = end;
+    // pack the light count into the top 16 bits and pack 0xFFFF into the lower 16 bits
+    // the reason for this is because the LightCullingRemap shader will copy the contents of the top 16 bits into the bins indicated in the lower 16 bits. We want to copy the light count into
+    // ALL bins, hence why we will it with 0xFFFF
+    PassSrg::m_lightList[index] = (shared_lightCount << 16) | 0xFFFF;
 
     lightsAfter++;
     
@@ -613,9 +613,9 @@ TileLightData ReadTileLightData(uint3 groupID)
 uint WriteCullingDataToMainMemory(uint lightCount, uint groupIndex, uint3 groupID)
 {
     GroupMemoryBarrierWithGroupSync();    
+    lightCount = WriteLightCount(lightCount, groupID);
     CopySharedLightsToMainMemory(lightCount, groupIndex, groupID );
-    lightCount = WriteEndOfGroup(lightCount, groupID);
-    return lightCount;
+    return lightCount + shared_lightCount;
 }
 
 // This shader is invoke one thread-group per on-screen tile
@@ -662,22 +662,23 @@ void MainCS(
     BuildAabb(tileRect, tileLightData, aabb_center, aabb_extents);                
     GroupMemoryBarrierWithGroupSync();
     
-    CullDecals(groupIndex, tileLightData, aabb_center, aabb_extents, tileCenterUv); 
-    GroupMemoryBarrierWithGroupSync();    
-    SortDecals(groupIndex);
-    lightCount = WriteCullingDataToMainMemory(lightCount, groupIndex, groupID );
+  //  CullDecals(groupIndex, tileLightData, aabb_center, aabb_extents, tileCenterUv); 
+  //  GroupMemoryBarrierWithGroupSync();    
+  //  SortDecals(groupIndex);
+  //  lightCount = WriteCullingDataToMainMemory(lightCount, groupIndex, groupID );
     
-    ClearSharedLightCountWithDoubleBarrier(groupIndex);
+  //  ClearSharedLightCountWithDoubleBarrier(groupIndex);
             
-    CullSimplePointLights(groupIndex, tileLightData, aabb_center, aabb_extents); 
-    lightCount = WriteCullingDataToMainMemory(lightCount, groupIndex, groupID );
+  //  CullSimplePointLights(groupIndex, tileLightData, aabb_center, aabb_extents); 
+   // lightCount = WriteCullingDataToMainMemory(lightCount, groupIndex, groupID );
     
-    ClearSharedLightCountWithDoubleBarrier(groupIndex);
+ 
+ //   ClearSharedLightCountWithDoubleBarrier(groupIndex);
 
-    CullSimpleSpotLights(groupIndex, tileLightData, aabb_center, aabb_extents); 
-    lightCount = WriteCullingDataToMainMemory(lightCount, groupIndex, groupID );
-    
-    ClearSharedLightCountWithDoubleBarrier(groupIndex);
+ //   CullSimpleSpotLights(groupIndex, tileLightData, aabb_center, aabb_extents); 
+ //   lightCount = WriteCullingDataToMainMemory(lightCount, groupIndex, groupID );
+       
+ //   ClearSharedLightCountWithDoubleBarrier(groupIndex);
 
     CullPointLights(groupIndex, tileLightData, aabb_center, aabb_extents); 
     lightCount = WriteCullingDataToMainMemory(lightCount, groupIndex, groupID );
@@ -687,15 +688,15 @@ void MainCS(
     CullDiskLights(groupIndex, tileLightData, aabb_center, aabb_extents);
     lightCount = WriteCullingDataToMainMemory(lightCount, groupIndex, groupID );
  
-    ClearSharedLightCountWithDoubleBarrier(groupIndex);
+  //  ClearSharedLightCountWithDoubleBarrier(groupIndex);
 
-    CullCapsuleLights(groupIndex, tileLightData, aabb_center, aabb_extents);
-    lightCount = WriteCullingDataToMainMemory(lightCount, groupIndex, groupID );
+ //   CullCapsuleLights(groupIndex, tileLightData, aabb_center, aabb_extents);
+ //   lightCount = WriteCullingDataToMainMemory(lightCount, groupIndex, groupID );
 
-    ClearSharedLightCountWithDoubleBarrier(groupIndex);
+  //  ClearSharedLightCountWithDoubleBarrier(groupIndex);
 
-    CullQuadLights(groupIndex, tileLightData, aabb_center, aabb_extents);
-    lightCount = WriteCullingDataToMainMemory(lightCount, groupIndex, groupID );
+  //  CullQuadLights(groupIndex, tileLightData, aabb_center, aabb_extents);
+ //   lightCount = WriteCullingDataToMainMemory(lightCount, groupIndex, groupID );
 
 
     if (groupIndex == 0)

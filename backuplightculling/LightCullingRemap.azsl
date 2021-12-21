@@ -1,0 +1,216 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+// Compute shader that takes a LightList and remaps it into a format that is fast for the forward shader to read (LightListRemapped)
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+#include <Atom/RPI/Math.azsli>
+#include <Atom/Features/LightCulling/LightCullingShared.azsli>
+
+// Make sure to change ComputeSharedBinLocationFromLightIndex() if NUM_THREADS changes.
+#define NUM_THREADS 32
+
+#define UNROLLING_STEPS 2
+
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{    
+    // Contains the number of lights (along with End of Group Markers) for each tile. This includes all types of lights (point, spot, disk, etc)
+    Texture2D<uint> m_lightCount;
+    
+    // The light list is of type R32_UINT, and contents are either light indices or End of Group markers
+    // 32-bits because we wrote directly from groupshared uints to device memory and also because they are packed with a bitmask containing which 
+    // bins the light is present in
+    // We will compact it into 16-bit uints here
+    // Size is width * height * max_lights_per_tile
+    StructuredBuffer<uint> m_lightList;
+    
+    // The output is an R16_UINT containing light indices, separated into bins that run along the Z axis
+    // Size is width * height * max_lights_per_tile * num_bins
+    RWStructuredBuffer<uint> m_lightListRemapped;
+
+    RWTexture2D<uint4> m_tileLightData;   
+    uint m_tileWidth;
+}
+
+
+void ComputeSharedBinLocationFromLightIndex(uint lightIndex, out uint locationBin, out uint locationBit)
+{
+    locationBit = 1 << (lightIndex & 31);       // lightIndex % NUM_THREADS
+    locationBin = lightIndex >> 5;              // lightIndex / NUM_THREADS    
+}
+
+// What we are doing with shared_bin is storing an "is present" bit for each light in groupshared memory
+// If we have a max possible 256 lights, then we need 8 buckets of uints to store all these bits since a uint has 32 bits
+#define NUM_LIGHT_BINS (NVLC_MAX_POSSIBLE_LIGHTS_PER_BIN / 32)
+
+groupshared uint shared_bin[NVLC_MAX_BINS][NUM_LIGHT_BINS];  
+
+groupshared uint shared_lights[NVLC_MAX_POSSIBLE_LIGHTS_PER_BIN];
+
+
+void ClearSharedMemory(uint groupIndex)
+{
+    if( groupIndex < NUM_LIGHT_BINS )
+    {
+        [unroll]
+        for( uint bin = 0; bin < NVLC_MAX_BINS; bin++ )
+        {
+            shared_bin[bin][groupIndex] = 0;        
+        }
+    }
+}
+
+void AssignLightsToSharedMemoryBins(uint groupIndex, uint3 groupID, uint totalLights)
+{
+    for(uint lightIndex = groupIndex; lightIndex < totalLights; lightIndex += NUM_THREADS )
+    {       
+        uint index = GetLightListIndex(groupID, PassSrg::m_tileWidth, lightIndex);
+        uint package = PassSrg::m_lightList[index];
+        shared_lights[lightIndex] = Light_GetIndex(package);
+
+        uint lightBin;
+        uint lightBit;
+        ComputeSharedBinLocationFromLightIndex(lightIndex, lightBin, lightBit);
+
+        [unroll]
+        for( uint tileBin = 0; tileBin < NVLC_MAX_BINS; tileBin++ )
+        {
+            if( Light_IsInsideBin(package, tileBin) )
+            {
+                InterlockedOr(shared_bin[tileBin][lightBin], lightBit);            
+            }
+        }
+    }
+}
+
+uint ComputeBaseBin(uint3 groupID)
+{
+    uint baseBin = (groupID.y * PassSrg::m_tileWidth + groupID.x) * NVLC_MAX_POSSIBLE_LIGHTS_PER_BIN * NVLC_MAX_BINS;
+    return baseBin;
+}
+
+
+void WriteLightsToRemappedLightList(uint groupIndex, uint3 groupID, uint totalLights, inout uint writeIndices[NVLC_MAX_BINS])
+{
+    uint threadMask = (1 << groupIndex) - 1;
+
+    for(uint lightIndex = groupIndex; lightIndex < totalLights; lightIndex += NUM_THREADS )
+    {       
+        uint lightBin;
+        uint lightBit;
+        ComputeSharedBinLocationFromLightIndex(lightIndex, lightBin, lightBit);
+
+        [unroll]
+        for( uint tileBin = 0; tileBin < NVLC_MAX_BINS; tileBin++ )
+        {
+            if( (shared_bin[tileBin][lightBin] & lightBit) != 0 )
+            {
+                uint addr = countbits(shared_bin[tileBin][lightBin] & threadMask);
+                PassSrg::m_lightListRemapped[writeIndices[tileBin] + addr] = shared_lights[lightIndex];
+            }
+
+            uint n = countbits(shared_bin[tileBin][lightBin]);
+            writeIndices[tileBin] += n;
+        }
+    }
+}
+
+uint CalculateNumLightsInWorstBin(uint groupIndex, uint3 groupID, uint baseBin, uint writeIndices[NVLC_MAX_BINS])
+{
+    uint lightsInWorstBin = 0;
+    if( groupIndex == 0 )
+    {
+        [unroll]
+        for( uint bin = 0; bin < NVLC_MAX_BINS; bin++ )
+        {
+            uint base_bin = baseBin + bin * NVLC_MAX_POSSIBLE_LIGHTS_PER_BIN;
+            uint lights = writeIndices[bin] - base_bin;
+            lightsInWorstBin = max(lightsInWorstBin, lights);
+        }
+    }
+    return lightsInWorstBin;
+}
+
+void WriteTileLightData(const uint groupIndex, const uint3 groupID, const uint lightsInWorstBin, const bool overflow)
+{
+    if (groupIndex == 0)
+    {
+        uint4 tileLightData = PassSrg::m_tileLightData[groupID.xy];
+        // Used for the heatmap
+        tileLightData.w = lightsInWorstBin;
+        
+        // pack a "lights have overflowed bit" into this uint
+        tileLightData.w |= overflow ? (1 << 31) : 0;
+
+        PassSrg::m_tileLightData[groupID.xy] = tileLightData;    
+    } 
+}
+
+void WriteEndOfList(uint groupIndex, uint writeIndices[NVLC_MAX_BINS])
+{
+    if (groupIndex == 0)
+    {
+        [unroll]
+        for( uint bin = 0; bin < NVLC_MAX_BINS; bin++ )
+        {    
+            PassSrg::m_lightListRemapped[writeIndices[bin]] = NVLC_END_OF_LIST;
+        }        
+    }    
+}
+ 
+void InitWriteIndices(uint3 groupID, uint baseBin, out uint writeIndices[NVLC_MAX_BINS])
+{
+    [unroll]
+    for( uint bin = 0; bin < NVLC_MAX_BINS ; bin++ )
+    {
+        writeIndices[bin] = baseBin + bin * NVLC_MAX_POSSIBLE_LIGHTS_PER_BIN;
+    }
+}
+
+// This compute shader reads the results of the culling phase and packs into a tight buffer that is used by the forward pass
+// The primary input is the Light List which is of size width * height * MAX_LIGHTS_PER_BIN * sizeof(R32_UINT). 
+// Each R32_UINT contains two items: the light index and a list of bins that the light covers
+
+// The output is LightListRemapped, it is of size: width * height * MAX_LIGHTS_PER_BIN * NUM_BINS * sizeof(R16_UINT)
+// It contains only light (and eventually decal) indices along with END_OF_GROUP markers
+// The forward pass will look up which bin the pixel it wants to shade exists in and do a linear walk through the 
+// light indices until it hits an END_OF_X marker
+
+// Note that this code could probably be made faster with wave intrinsics
+// ATOM-4104
+[numthreads(NUM_THREADS, 1, 1)]
+void MainCS(
+    uint3 dispatchThreadID : SV_DispatchThreadID, 
+    uint3 groupID : SV_GroupID, 
+    uint groupIndex : SV_GroupIndex)
+{
+    ClearSharedMemory(groupIndex);
+    GroupMemoryBarrierWithGroupSync();
+
+    uint totalLights = PassSrg::m_lightCount.Load(uint3(groupID.xy, 0)).x;
+    
+    // expect flickering if the max number of lights per tile is exceeded
+    const bool overflow = totalLights > (NVLC_MAX_POSSIBLE_LIGHTS_PER_BIN - 1);
+    totalLights = min(totalLights, NVLC_MAX_POSSIBLE_LIGHTS_PER_BIN - 1);
+
+    AssignLightsToSharedMemoryBins(groupIndex, groupID, totalLights);
+    GroupMemoryBarrierWithGroupSync();
+
+    uint baseBin = ComputeBaseBin(groupID);
+
+    uint writeIndices[NVLC_MAX_BINS];
+    InitWriteIndices(groupID, baseBin, writeIndices);
+
+    WriteLightsToRemappedLightList(groupIndex, groupID, totalLights, writeIndices);
+
+    uint lightsInWorstBin = CalculateNumLightsInWorstBin(groupIndex, groupID, baseBin, writeIndices);
+    //WriteEndOfList(groupIndex, writeIndices);
+    WriteTileLightData(groupIndex, groupID, lightsInWorstBin, overflow);
+}
