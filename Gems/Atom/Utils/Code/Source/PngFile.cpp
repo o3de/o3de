@@ -27,10 +27,10 @@ namespace AZ
             }
 
             // Convenience class for reading from an array_view into a buffer provided by libpng.
-            class ArrayViewReader
+            class PngFileArrayViewReader
             {
             public:
-                ArrayViewReader(AZStd::array_view<uint8_t> data)
+                PngFileArrayViewReader(AZStd::array_view<uint8_t> data)
                     : m_data(data)
                     , m_curOffset(0)
                 {
@@ -56,7 +56,7 @@ namespace AZ
                     png_voidp io_ptr = png_get_io_ptr(png_ptr);
                     if (io_ptr != nullptr)
                     {
-                        ArrayViewReader& arrayViewReader = *(ArrayViewReader*)io_ptr;
+                        PngFileArrayViewReader& arrayViewReader = *(PngFileArrayViewReader*)io_ptr;
                         arrayViewReader.ReadData(outBytes, byteCountToRead);
                     }
                 };
@@ -162,7 +162,7 @@ namespace AZ
                 return {};
             }
 
-            ArrayViewReader reader(data);
+            PngFileArrayViewReader reader(data);
 
             png_byte header[HeaderSize] = {};
             size_t headerBytesRead = 0;
@@ -210,16 +210,16 @@ namespace AZ
                 return {};
             }
 
-            AZ_PUSH_DISABLE_WARNING(
-                4611, "-Wunknown-warning-option") // Disables "interaction between '_setjmp' and C++ object destruction is non-portable".
-                                                  // See https://docs.microsoft.com/en-us/cpp/preprocessor/warning?view=msvc-160
+// Disables "interaction between '_setjmp' and C++ object destruction is non-portable".
+// See https://docs.microsoft.com/en-us/cpp/preprocessor/warning?view=msvc-160
+AZ_PUSH_DISABLE_WARNING(4611, "-Wunknown-warning-option") 
             if (setjmp(png_jmpbuf(png_ptr)))
             {
                 png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
                 // We don't report an error message here because the user_error_fn should have done that already.
                 return {};
             }
-            AZ_POP_DISABLE_WARNING
+AZ_POP_DISABLE_WARNING
 
             // If we have a file pointer, let libpng handle the file I/O.  Otherwise, provide a custom function for reading data
             // from the array_view.
@@ -229,7 +229,7 @@ namespace AZ
             }
             else
             {
-                png_set_read_fn(png_ptr, &reader, ArrayViewReader::PngReadFn);
+                png_set_read_fn(png_ptr, &reader, PngFileArrayViewReader::PngReadFn);
             }
 
             png_set_sig_bytes(png_ptr, HeaderSize);
