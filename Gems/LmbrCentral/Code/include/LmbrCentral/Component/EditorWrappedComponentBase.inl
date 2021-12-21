@@ -222,12 +222,7 @@ namespace LmbrCentral
     template <typename TComponent, typename TConfiguration>
     AZ::u32 EditorWrappedComponentBase<TComponent, TConfiguration>::ConfigurationChanged()
     {
-        // Only call Deactivate if it's currently active.
-        if (m_component.GetEntity())
-        {
-            m_component.Deactivate();
-        }
-
+        m_component.Deactivate();
         m_component.ReadInConfig(&m_configuration);
 
         if (m_visible && m_component.GetEntity())
