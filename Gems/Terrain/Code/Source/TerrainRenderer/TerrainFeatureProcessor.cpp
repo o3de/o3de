@@ -327,8 +327,6 @@ namespace Terrain
     {
         AZ_PROFILE_FUNCTION(AzRender);
         
-        constexpr auto GridMeters = TerrainMeshManager::GridMeters;
-
         if (!m_terrainBounds.IsValid())
         {
             return;
