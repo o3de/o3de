@@ -55,13 +55,15 @@ namespace AZ::Dom
         }
     };
 
+    using StdValueAllocator = AZStdAlloc<ValueAllocator>;
+
     class Value;
 
     //! Internal storage for a Value array: an ordered list of Values.
     class Array
     {
     public:
-        using ContainerType = AZStd::vector<Value, AZStdAlloc<ValueAllocator>>;
+        using ContainerType = AZStd::vector<Value, StdValueAllocator>;
         using Iterator = ContainerType::iterator;
         using ConstIterator = ContainerType::const_iterator;
         static constexpr const size_t ReserveIncrement = 4;
@@ -80,7 +82,7 @@ namespace AZ::Dom
     {
     public:
         using EntryType = AZStd::pair<KeyType, Value>;
-        using ContainerType = AZStd::vector<EntryType, AZStdAlloc<ValueAllocator>>;
+        using ContainerType = AZStd::vector<EntryType, StdValueAllocator>;
         using Iterator = ContainerType::iterator;
         using ConstIterator = ContainerType::const_iterator;
         static constexpr const size_t ReserveIncrement = 8;
@@ -150,6 +152,13 @@ namespace AZ::Dom
     class Value final
     {
     public:
+        // Determine the short string buffer size based on the size of our largest internal type (string_view)
+        // minus the size of the short string size field.
+        static constexpr const size_t ShortStringSize = sizeof(AZStd::string_view) - 2;
+        using ShortStringType = AZStd::fixed_string<ShortStringSize>;
+        using SharedStringContainer = AZStd::vector<char>;
+        using SharedStringType = AZStd::shared_ptr<const SharedStringContainer>;
+
         // Constructors...
         Value();
         Value(const Value&);
@@ -167,7 +176,7 @@ namespace AZ::Dom
 
         explicit Value(Type type);
 
-        static Value FromOpaqueValue(AZStd::any& value);
+        static Value FromOpaqueValue(const AZStd::any& value);
 
         // Equality / comparison / swap...
         Value& operator=(const Value&);
@@ -306,17 +315,17 @@ namespace AZ::Dom
         AZStd::string_view GetString() const;
         size_t GetStringLength() const;
         void SetString(AZStd::string_view);
-        void SetString(AZStd::shared_ptr<const AZStd::string>);
+        void SetString(SharedStringType sharedString);
         void CopyFromString(AZStd::string_view);
 
         // Opaque type API...
-        AZStd::any& GetOpaqueValue() const;
+        const AZStd::any& GetOpaqueValue() const;
         //! This sets this Value to represent a value of an type that the DOM has
         //! no formal knowledge of. Where possible, it should be preferred to
         //! serialize an opaque type into a DOM value instead, as serializers
         //! and other systems will have no means of dealing with fully arbitrary
         //! values.
-        void SetOpaqueValue(AZStd::any&);
+        void SetOpaqueValue(const AZStd::any&);
 
         // Null API...
         void SetNull();
@@ -336,49 +345,37 @@ namespace AZ::Dom
         const Array::ContainerType& GetArrayInternal() const;
         Array::ContainerType& GetArrayInternal();
 
-        explicit Value(AZStd::any* opaqueValue);
-
-        // Determine the short string buffer size based on the size of our largest internal type (string_view)
-        // minus the size of the short string size field.
-        static constexpr const size_t ShortStringSize = sizeof(AZStd::string_view) - sizeof(size_t);
-        struct ShortStringType
-        {
-            AZStd::array<char, ShortStringSize> m_data;
-            size_t m_size;
-
-            bool operator==(const ShortStringType& other) const
-            {
-                return m_size == other.m_size ? memcmp(m_data.data(), other.m_data.data(), m_size) == 0 : false;
-            }
-        };
+        explicit Value(const AZStd::any& opaqueValue);
 
         //! The internal storage type for Value.
         //! These types do not correspond one-to-one with the Value's external Type as there may be multiple storage classes
         //! for the same type in some instances, such as string storage.
         using ValueType = AZStd::variant<
-            // NullType
+            // Null
             AZStd::monostate,
-            // NumberType
+            // Int64
             int64_t,
+            // Uint64
             uint64_t,
+            // Double
             double,
-            // FalseType & TrueType
+            // Bool
             bool,
             // StringType
             AZStd::string_view,
-            AZStd::shared_ptr<const AZStd::string>,
+            SharedStringType,
             ShortStringType,
-            // ObjectType
+            // Object
             ObjectPtr,
-            // ArrayType
+            // Array
             ArrayPtr,
-            // NodeType
+            // Node
             NodePtr,
-            // OpaqueType
-            AZStd::any*>;
+            // Opaque
+            AZStd::shared_ptr<AZStd::any>>;
 
         static_assert(
-            sizeof(ValueType) == sizeof(AZStd::variant<ShortStringType>), "ValueType should have no members larger than ShortStringType");
+            sizeof(ValueType) == sizeof(ShortStringType) + sizeof(size_t), "ValueType should have no members larger than ShortStringType");
 
         ValueType m_value;
     };

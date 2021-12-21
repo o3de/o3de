@@ -19,7 +19,7 @@ namespace AZ::Dom
     {
         if (refCountedPointer.use_count() > 1)
         {
-            AZStd::shared_ptr<T> newPointer = AZStd::allocate_shared<T>(AZStdAlloc<ValueAllocator>());
+            AZStd::shared_ptr<T> newPointer = AZStd::allocate_shared<T>(StdValueAllocator());
             *newPointer = *refCountedPointer;
             refCountedPointer = AZStd::move(newPointer);
         }
@@ -92,12 +92,12 @@ namespace AZ::Dom
         }
     }
 
-    Value::Value(AZStd::any* value)
-        : m_value(value)
+    Value::Value(const AZStd::any& value)
+        : m_value(AZStd::allocate_shared<AZStd::any>(StdValueAllocator(), value))
     {
     }
 
-    Value Value::FromOpaqueValue(AZStd::any& value)
+    Value Value::FromOpaqueValue(const AZStd::any& value)
     {
         return Value(&value);
     }
@@ -330,7 +330,7 @@ namespace AZ::Dom
 
     Value& Value::SetObject()
     {
-        m_value = AZStd::allocate_shared<Object>(AZStdAlloc<ValueAllocator>());
+        m_value = AZStd::allocate_shared<Object>(StdValueAllocator());
         return *this;
     }
 
@@ -634,7 +634,7 @@ namespace AZ::Dom
 
     Value& Value::SetArray()
     {
-        m_value = AZStd::allocate_shared<Array>(AZStdAlloc<ValueAllocator>());
+        m_value = AZStd::allocate_shared<Array>(StdValueAllocator());
         return *this;
     }
 
@@ -740,7 +740,7 @@ namespace AZ::Dom
 
     void Value::SetNode(AZ::Name name)
     {
-        m_value = AZStd::allocate_shared<Node>(AZStdAlloc<ValueAllocator>(), name);
+        m_value = AZStd::allocate_shared<Node>(StdValueAllocator(), name);
     }
 
     void Value::SetNode(AZStd::string_view name)
@@ -914,9 +914,9 @@ namespace AZ::Dom
         m_value = aznumeric_cast<double>(value);
     }
 
-    void Value::SetString(AZStd::shared_ptr<const AZStd::string> string)
+    void Value::SetString(SharedStringType sharedString)
     {
-        m_value = string;
+        m_value = sharedString;
     }
 
     AZStd::string_view Value::GetString() const
@@ -925,12 +925,15 @@ namespace AZ::Dom
         {
         case 5: // AZStd::string_view
             return AZStd::get<AZStd::string_view>(m_value);
-        case 6: // AZStd::shared_ptr<const AZStd::string>
-            return *AZStd::get<AZStd::shared_ptr<const AZStd::string>>(m_value);
+        case 6: // AZStd::shared_ptr<AZStd::vector<char>>
+            {
+                auto& buffer = *AZStd::get<SharedStringType>(m_value);
+                return { buffer.data(), buffer.size() };
+            }
         case 7: // ShortStringType
             {
-                const ShortStringType& ShortString = AZStd::get<ShortStringType>(m_value);
-                return { ShortString.m_data.data(), ShortString.m_size };
+                const ShortStringType& shortString = AZStd::get<ShortStringType>(m_value);
+                return { shortString.data(), shortString.size() };
             }
         }
         AZ_Assert(false, "AZ::Dom::Value: Called GetString on a non-string type");
@@ -947,8 +950,8 @@ namespace AZ::Dom
         if (value.size() <= ShortStringSize)
         {
             ShortStringType buffer;
-            buffer.m_size = value.size();
-            memcpy(buffer.m_data.data(), value.data(), buffer.m_size);
+            buffer.resize_no_construct(value.size());
+            memcpy(buffer.data(), value.data(), value.size());
             m_value = buffer;
         }
         m_value = value;
@@ -962,18 +965,20 @@ namespace AZ::Dom
         }
         else
         {
-            m_value = AZStd::allocate_shared<const AZStd::string>(AZStdAlloc<ValueAllocator>(), value);
+            SharedStringType sharedString =
+                AZStd::allocate_shared<SharedStringContainer>(StdValueAllocator(), value.begin(), value.end());
+            m_value = AZStd::move(sharedString);
         }
     }
 
-    AZStd::any& Value::GetOpaqueValue() const
+    const AZStd::any& Value::GetOpaqueValue() const
     {
-        return *AZStd::get<AZStd::any*>(m_value);
+        return *AZStd::get<AZStd::shared_ptr<AZStd::any>>(m_value);
     }
 
-    void Value::SetOpaqueValue(AZStd::any& value)
+    void Value::SetOpaqueValue(const AZStd::any& value)
     {
-        m_value = &value;
+        m_value = AZStd::allocate_shared<AZStd::any>(StdValueAllocator(), value);
     }
 
     void Value::SetNull()
@@ -1014,7 +1019,7 @@ namespace AZ::Dom
                 {
                     result = visitor.String(arg, copyStrings ? Lifetime::Temporary : Lifetime::Persistent);
                 }
-                else if constexpr (AZStd::is_same_v<Alternative, AZStd::shared_ptr<const AZStd::string>>)
+                else if constexpr (AZStd::is_same_v<Alternative, SharedStringType>)
                 {
                     result = visitor.RefCountedString(arg, copyStrings ? Lifetime::Temporary : Lifetime::Persistent);
                 }
@@ -1110,7 +1115,7 @@ namespace AZ::Dom
         if (IsString() && other.IsString())
         {
             // If we both hold the same ref counted string we don't need to do a full comparison
-            if (AZStd::holds_alternative<AZStd::shared_ptr<const AZStd::string>>(m_value) && m_value == other.m_value)
+            if (AZStd::holds_alternative<SharedStringType>(m_value) && m_value == other.m_value)
             {
                 return true;
             }

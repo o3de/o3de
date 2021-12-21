@@ -68,7 +68,7 @@ namespace AZ::Dom
         return FinishWrite();
     }
 
-    Visitor::Result ValueWriter::RefCountedString(AZStd::shared_ptr<const AZStd::string> value, [[maybe_unused]] Lifetime lifetime)
+    Visitor::Result ValueWriter::RefCountedString(AZStd::shared_ptr<const AZStd::vector<char>> value, [[maybe_unused]] Lifetime lifetime)
     {
         CurrentValue().SetString(value);
         return FinishWrite();
