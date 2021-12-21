@@ -521,7 +521,7 @@ namespace ScriptCanvasBuilder
     {
         AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset> runtimeAsset;
         runtimeAsset.Create(AZ::Data::AssetId(input.assetID.m_guid, AZ_CRC("SubgraphInterface", 0xdfe6dc72)));
-        runtimeAsset.Get()->SetData(subgraphInterface);
+        runtimeAsset.Get()->m_interfaceData = subgraphInterface;
 
         AZStd::vector<AZ::u8> byteBuffer;
         AZ::IO::ByteContainerStream<decltype(byteBuffer)> byteStream(&byteBuffer);
@@ -557,7 +557,7 @@ namespace ScriptCanvasBuilder
     {
         AZ::Data::Asset<ScriptCanvas::RuntimeAsset> runtimeAsset;
         runtimeAsset.Create(AZ::Data::AssetId(input.assetID.m_guid, AZ_CRC("RuntimeData", 0x163310ae)));
-        runtimeAsset.Get()->SetData(runtimeData);
+        runtimeAsset.Get()->m_runtimeData = runtimeData;
 
         AZStd::vector<AZ::u8> byteBuffer;
         AZ::IO::ByteContainerStream<decltype(byteBuffer)> byteStream(&byteBuffer);
