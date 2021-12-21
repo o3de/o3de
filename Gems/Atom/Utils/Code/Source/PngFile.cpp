@@ -8,6 +8,7 @@
 
 #include <Atom/Utils/PngFile.h>
 #include <png.h>
+#include <AzCore/IO/SystemFile.h>
 
 namespace AZ
 {
@@ -25,46 +26,6 @@ namespace AZ
             {
                 AZ_Warning("PngFile", false, "%s", warning_msg);
             }
-
-            // Convenience class for reading from an array_view into a buffer provided by libpng.
-            class PngFileArrayViewReader
-            {
-            public:
-                PngFileArrayViewReader(AZStd::array_view<uint8_t> data)
-                    : m_data(data)
-                    , m_curOffset(0)
-                {
-                }
-
-                // Copy the next numBytes bytes into destBuffer.  If there are less than numBytes left, just copy whatever is left.
-                // Returns the number of bytes actually copied.
-                size_t ReadData(uint8_t* destBuffer, size_t numBytes)
-                {
-                    size_t numBytesRead = AZStd::min(m_data.size() - m_curOffset, numBytes);
-
-                    if (numBytesRead > 0)
-                    {
-                        memcpy(destBuffer, m_data.data() + m_curOffset, numBytesRead);
-                        m_curOffset += numBytesRead;
-                    }
-                    return numBytesRead;
-                }
-
-                // Function to pass into png_set_read_fn to handle the custom I/O reads from ArrayViewReader.
-                static void PngReadFn(png_structp png_ptr, png_bytep outBytes, png_size_t byteCountToRead)
-                {
-                    png_voidp io_ptr = png_get_io_ptr(png_ptr);
-                    if (io_ptr != nullptr)
-                    {
-                        PngFileArrayViewReader& arrayViewReader = *(PngFileArrayViewReader*)io_ptr;
-                        arrayViewReader.ReadData(outBytes, byteCountToRead);
-                    }
-                };
-
-            private:
-                AZStd::array_view<uint8_t> m_data;
-                size_t m_curOffset = 0;
-            };
         }
 
         PngFile PngFile::Create(const RHI::Size& size, RHI::Format format, AZStd::array_view<uint8_t> data, ErrorHandler errorHandler)
@@ -114,16 +75,17 @@ namespace AZ
                 };
             }
 
-            FILE* fp = NULL;
-            azfopen(&fp, path, "rb"); // return type differs across platforms so can't do inside if
-            if (!fp)
+            AZ::IO::SystemFile file;
+            file.Open(path, AZ::IO::SystemFile::SF_OPEN_READ_ONLY);
+            if (!file.IsOpen())
             {
                 loadSettings.m_errorHandler("Cannot open file.");
                 return {};
             }
+            constexpr bool StreamOwnsFilePointer = true;
+            AZ::IO::SystemFileStream fileLoadStream(&file, StreamOwnsFilePointer);
 
-            auto pngFile = LoadInternal(fp, {}, loadSettings);
-            fclose(fp);
+            auto pngFile = LoadInternal(fileLoadStream, loadSettings);
             return pngFile;
         }
 
@@ -143,33 +105,28 @@ namespace AZ
                 return {};
             }
 
-            return LoadInternal(nullptr, data, loadSettings);
+            AZ::IO::MemoryStream memStream(data.data(), data.size());
+
+            return LoadInternal(memStream, loadSettings);
         }
 
-        PngFile PngFile::LoadInternal(FILE* filePtr, AZStd::array_view<uint8_t> data, LoadSettings loadSettings)
+        PngFile PngFile::LoadInternal(AZ::IO::GenericStream& dataStream, LoadSettings loadSettings)
         {
             // For documentation of this code, see http://www.libpng.org/pub/png/libpng-1.4.0-manual.pdf chapter 3
 
-            // Verify that we've passed in either a valid filePtr or a valid data buffer, but not both.
-            if (!filePtr && data.empty())
+            // Verify that we've passed in a valid data stream.
+            if (!dataStream.IsOpen()  || !dataStream.CanRead())
             {
-                loadSettings.m_errorHandler("No data was provided to PngFile.");
+                loadSettings.m_errorHandler("Data stream isn't valid.");
                 return {};
             }
-            if (filePtr && !data.empty())
-            {
-                loadSettings.m_errorHandler("Both a file and a buffer was provided to PngFile.  Only one or the other should be provided.");
-                return {};
-            }
-
-            PngFileArrayViewReader reader(data);
 
             png_byte header[HeaderSize] = {};
             size_t headerBytesRead = 0;
 
             // This is the one I/O read that occurs outside of the png library, so either read from the file or the buffer and
             // verify the results.
-            headerBytesRead = filePtr ? fread(header, 1, HeaderSize, filePtr) : reader.ReadData(header, HeaderSize);
+            headerBytesRead = dataStream.Read(HeaderSize, header);
             if (headerBytesRead != HeaderSize)
             {
                 loadSettings.m_errorHandler("Invalid png header.");
@@ -221,16 +178,20 @@ AZ_PUSH_DISABLE_WARNING(4611, "-Wunknown-warning-option")
             }
 AZ_POP_DISABLE_WARNING
 
-            // If we have a file pointer, let libpng handle the file I/O.  Otherwise, provide a custom function for reading data
-            // from the array_view.
-            if (filePtr)
+            auto genericStreamReader = [](png_structp pngPtr, png_bytep data, png_size_t length)
             {
-                png_init_io(png_ptr, filePtr);
-            }
-            else
-            {
-                png_set_read_fn(png_ptr, &reader, PngFileArrayViewReader::PngReadFn);
-            }
+                // Here we get our IO pointer back from the read struct.
+                // This should be the GenericStream pointer we passed to the png_set_read_fn() function.
+                png_voidp ioPtr = png_get_io_ptr(pngPtr);
+
+                if (ioPtr != nullptr)
+                {
+                    AZ::IO::GenericStream* genericStream = static_cast<AZ::IO::GenericStream*>(ioPtr);
+                    genericStream->Read(length, data);
+                }
+            };
+
+            png_set_read_fn(png_ptr, &dataStream, genericStreamReader);
 
             png_set_sig_bytes(png_ptr, HeaderSize);
 

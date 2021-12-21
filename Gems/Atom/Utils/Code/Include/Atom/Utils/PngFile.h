@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <AzCore/IO/GenericStreams.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
@@ -90,8 +91,7 @@ namespace AZ
 
             static void DefaultErrorHandler(const char* message);
 
-            // This will load from *either* a file or an array_view, but it isn't expected for both to be valid when passed in.
-            static PngFile LoadInternal(FILE* filePtr, AZStd::array_view<uint8_t> data, LoadSettings loadSettings);
+            static PngFile LoadInternal(AZ::IO::GenericStream& dataStream, LoadSettings loadSettings);
                 
             uint32_t m_width = 0;
             uint32_t m_height = 0;
