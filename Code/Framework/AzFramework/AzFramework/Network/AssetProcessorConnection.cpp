@@ -73,10 +73,10 @@ namespace AzFramework
             m_retryAfterDisconnect = false;
             m_isBusyDisconnecting = false;
 
-            m_sendThread.m_desc.m_name = "APConnection::SendThread";
+            m_sendThread.m_desc.m_name = "APConnectSend";
             m_sendThread.m_main = AZStd::bind(&AssetProcessorConnection::SendThread, this);
 
-            m_recvThread.m_desc.m_name = "APConnection::RecvThread";
+            m_recvThread.m_desc.m_name = "APConnectRecv";
             m_recvThread.m_main = AZStd::bind(&AssetProcessorConnection::RecvThread, this);
             
             // Put the AP send and receive threads on a core not shared by the main thread or render thread.
