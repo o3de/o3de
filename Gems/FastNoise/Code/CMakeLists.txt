@@ -19,8 +19,9 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PUBLIC
             Gem::GradientSignal
-        PRIVATE
+        PUBLIC
             AZ::AzCore
+        PRIVATE
             AZ::AzFramework
             Gem::LmbrCentral
 )

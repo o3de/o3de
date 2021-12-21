@@ -23,7 +23,6 @@ ly_add_target(
             AZ::AzFramework
             Gem::SurfaceData
             Gem::ImageProcessingAtom.Headers
-        PRIVATE
             Gem::LmbrCentral
 )
 
@@ -39,10 +38,11 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::GradientSignal.Static
             Gem::LmbrCentral
         PUBLIC
+            AZ::AzCore
             AZ::AtomCore
+            Gem::GradientSignal.Static
             Gem::ImageProcessingAtom.Headers # Atom/ImageProcessing/PixelFormats.h is part of a header in Includes
     RUNTIME_DEPENDENCIES
         Gem::LmbrCentral
