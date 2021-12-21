@@ -243,7 +243,7 @@ SliderDoubleCombo::SliderDoubleCombo(QWidget* parent)
 
     InitialiseSliderCombo(this, layout, m_spinbox, m_slider);
 
-    connect(m_slider, &SliderDouble::valueChanged, this, &SliderDoubleCombo::setValue);
+    connect(m_slider, &SliderDouble::valueChanged, this, &SliderDoubleCombo::setValueSlider);
     connect(m_spinbox, QOverload<double>::of(&DoubleSpinBox::valueChanged), this, &SliderDoubleCombo::setValue);
     connect(m_slider, &SliderDouble::sliderReleased, this, &SliderDoubleCombo::editingFinished);
     connect(m_spinbox, &DoubleSpinBox::editingFinished, this, &SliderDoubleCombo::editingFinished);
@@ -254,7 +254,7 @@ SliderDoubleCombo::~SliderDoubleCombo()
 {
 }
 
-void SliderDoubleCombo::setValue(double value)
+void SliderDoubleCombo::setValueSlider(double value)
 {
     const bool doEmit = m_value != value;
     m_value = value;
@@ -264,7 +264,31 @@ void SliderDoubleCombo::setValue(double value)
 
     if (doEmit)
     {
+        // We don't want to update the slider from setValue as this
+        // causes rounding errors in the tooltip hint.
+        m_fromSlider = true;
         Q_EMIT valueChanged();
+    }
+}
+
+void SliderDoubleCombo::setValue(double value)
+{
+    const bool doEmit = m_value != value;
+    m_value = value;
+
+    updateSpinBox();
+    if (!m_fromSlider)
+    {
+        updateSlider();
+
+        if (doEmit)
+        {
+            Q_EMIT valueChanged();
+        }
+    }
+    else
+    {
+        m_fromSlider = false;
     }
 }
 
