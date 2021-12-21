@@ -98,13 +98,23 @@ namespace AZ::Dom::Benchmark
 
             return root;
         }
+
+        template<class T>
+        void TakeAndDiscardWithoutTimingDtor(T&& value, benchmark::State& state)
+        {
+            {
+                T instance = AZStd::move(value);
+                state.PauseTiming();
+            }
+            state.ResumeTiming();
+        }
     };
 
     BENCHMARK_DEFINE_F(DomValueBenchmark, AzDomValueMakeComplexObject)(benchmark::State& state)
     {
         for (auto _ : state)
         {
-            benchmark::DoNotOptimize(GenerateDomBenchmarkPayload(state.range(0), state.range(1)));
+            TakeAndDiscardWithoutTimingDtor(GenerateDomBenchmarkPayload(state.range(0), state.range(1)), state);
         }
 
         state.SetItemsProcessed(state.range(0) * state.range(0) * state.iterations());
@@ -143,7 +153,7 @@ namespace AZ::Dom::Benchmark
         {
             Value copy = original;
             copy["entries"]["Key0"].PushBack(42);
-            benchmark::DoNotOptimize(copy);
+            TakeAndDiscardWithoutTimingDtor(AZStd::move(copy), state);
         }
 
         state.SetItemsProcessed(state.iterations());
@@ -162,7 +172,7 @@ namespace AZ::Dom::Benchmark
         for (auto _ : state)
         {
             Value copy = original.DeepCopy();
-            benchmark::DoNotOptimize(copy);
+            TakeAndDiscardWithoutTimingDtor(AZStd::move(copy), state);
         }
 
         state.SetItemsProcessed(state.iterations());

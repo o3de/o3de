@@ -373,10 +373,6 @@ namespace AZ::Dom::Json
     bool RapidJsonReadHandler::Key(const char* str, rapidjson::SizeType length, [[maybe_unused]] bool copy)
     {
         AZStd::string_view key = AZStd::string_view(str, length);
-        if (!m_visitor->SupportsRawKeys())
-        {
-            m_visitor->Key(AZ::Name(key));
-        }
         const Lifetime lifetime = !copy ? m_stringLifetime : Lifetime::Temporary;
         return CheckResult(m_visitor->RawKey(key, lifetime));
     }

@@ -190,8 +190,8 @@ namespace AZ::Dom
         Value();
         Value(const Value&);
         Value(Value&&) noexcept;
-        Value(AZStd::string_view string, bool copy);
-        Value(AZStd::shared_ptr<const AZStd::string> string);
+        Value(AZStd::string_view stringView, bool copy);
+        Value(SharedStringType sharedString);
 
         Value(int32_t value);
         Value(uint32_t value);
