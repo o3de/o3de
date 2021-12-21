@@ -166,14 +166,31 @@ namespace Terrain
         void OnTerrainSurfaceMaterialMappingChanged(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag, MaterialInstance material) override;
         void OnTerrainSurfaceMaterialMappingRegionChanged(AZ::EntityId entityId, const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion) override;
 
+        //! Removes all images from all detail materials from the bindless image array
         void RemoveAllImages();
 
+        //! Creates or updates an existing detail material with settings from a material instance
         uint16_t CreateOrUpdateDetailMaterial(MaterialInstance material);
+
+        //! Decrements the ref count on a detail material and removes it if it reaches 0
         void CheckDetailMaterialForDeletion(uint16_t detailMaterialId);
+
+        //! Updates a specific detail material with settings from a material instance
         void UpdateDetailMaterialData(uint16_t detailMaterialIndex, MaterialInstance material);
+
+        //! Checks to see if the detail material id texture needs to update based on new center and bounds. Any
+        //! required updates are then executed.
         void CheckUpdateDetailTexture(const Aabb2i& newBounds, const Vector2i& newCenter);
+
+        //! Updates the detail texture in a given area
         void UpdateDetailTexture(const Aabb2i& updateArea, const Aabb2i& textureBounds, const Vector2i& centerPixel);
+
+        //! Finds the detail material Id for a surface type and position
         uint16_t GetDetailMaterialForSurfaceTypeAndPosition(AZ::Crc32 surfaceType, const AZ::Vector2& position);
+
+        //! Calculates which regions of the detail material id texture need to be updated based on the update area. Since
+        //! the "center" of the detail material id texture can move, a single update region in contiguous world space may
+        //! map to up to 4 different areas on teh detail material id texture.
         uint8_t CalculateUpdateRegions(const Aabb2i& updateArea, const Aabb2i& textureBounds, const Vector2i& centerPixel,
             AZStd::array<Aabb2i, 4>& textureSpaceAreas, AZStd::array<Aabb2i, 4>& scaledWorldSpaceAreas);
 

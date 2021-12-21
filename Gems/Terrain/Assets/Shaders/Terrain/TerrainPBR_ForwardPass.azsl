@@ -8,6 +8,7 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 
+#include <scenesrg.srgi>
 #include <viewsrg.srgi>
 #include <TerrainSrg.azsli>
 #include <TerrainCommon.azsli>
