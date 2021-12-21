@@ -10,7 +10,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Component/Entity.h>
-#include <MathConversion.h>
 #include <LmbrCentral/Rendering/MeshAsset.h>
 #include <LmbrCentral/Animation/AttachmentComponentBus.h>
 #include <LmbrCentral/Animation/SkeletalHierarchyRequestBus.h>

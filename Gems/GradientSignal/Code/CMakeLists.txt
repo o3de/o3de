@@ -18,7 +18,9 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PUBLIC
-            Legacy::CryCommon
+            AZ::AzCore
+            AZ::AtomCore
+            AZ::AzFramework
             Gem::SurfaceData
             Gem::ImageProcessingAtom.Headers
         PRIVATE
@@ -40,6 +42,7 @@ ly_add_target(
             Gem::GradientSignal.Static
             Gem::LmbrCentral
         PUBLIC
+            AZ::AtomCore
             Gem::ImageProcessingAtom.Headers # Atom/ImageProcessing/PixelFormats.h is part of a header in Includes
     RUNTIME_DEPENDENCIES
         Gem::LmbrCentral
@@ -69,7 +72,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::LmbrCentral.Editor
             PUBLIC
                 3rdParty::Qt::Widgets
-                Legacy::CryCommon
+                AZ::AzCore
+                AZ::AtomCore
+                AZ::AzFramework
                 AZ::AzToolsFramework
                 AZ::AssetBuilderSDK
                 Gem::GradientSignal.Static
@@ -92,6 +97,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 Gem::GradientSignal.Editor.Static
                 Gem::LmbrCentral.Editor
+            PUBLIC
+                AZ::AtomCore
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral.Editor
     )

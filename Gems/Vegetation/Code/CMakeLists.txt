@@ -24,6 +24,7 @@ ly_add_target(
         PRIVATE
             Gem::LmbrCentral
             Gem::SurfaceData
+            Legacy::CryCommon
         PUBLIC
             Gem::AtomLyIntegration_CommonFeatures.Static
     RUNTIME_DEPENDENCIES
@@ -72,6 +73,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 Gem::Vegetation.Static
                 AZ::AzToolsFramework
+                Legacy::CryCommon
     RUNTIME_DEPENDENCIES
         Gem::LmbrCentral.Editor
         Gem::GradientSignal.Editor
