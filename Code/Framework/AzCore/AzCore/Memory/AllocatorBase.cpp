@@ -13,7 +13,7 @@
 
 #if RECORDING_ENABLED
 
-#include <AzCore/std/containers/map.h>
+#include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/scoped_lock.h>
@@ -23,10 +23,10 @@ namespace
     class DebugAllocator
     {
     public:
-        typedef void* pointer_type;
-        typedef AZStd::size_t size_type;
-        typedef AZStd::ptrdiff_t difference_type;
-        typedef AZStd::false_type allow_memory_leaks; ///< Regular allocators should not leak.
+        using pointer_type = void*;
+        using size_type = AZStd::size_t;
+        using difference_type = AZStd::ptrdiff_t;
+        using allow_memory_leaks = AZStd::false_type; ///< Regular allocators should not leak.
 
         AZ_FORCE_INLINE pointer_type allocate(size_t byteSize, size_t alignment, int = 0)
         {
@@ -67,7 +67,7 @@ namespace
     static uint64_t s_operationCounter = 0;
 
     static unsigned int s_nextRecordId = 1;
-    using AllocatorOperationByAddress = AZStd::map<void*, AllocatorOperation, AZStd::less<void*>, DebugAllocator>;
+    using AllocatorOperationByAddress = AZStd::unordered_map<void*, AllocatorOperation, AZStd::less<void*>, DebugAllocator>;
     static AllocatorOperationByAddress s_allocatorOperationByAddress;
     using AvailableRecordIds = AZStd::vector<unsigned int, DebugAllocator>;
     AvailableRecordIds s_availableRecordIds;
