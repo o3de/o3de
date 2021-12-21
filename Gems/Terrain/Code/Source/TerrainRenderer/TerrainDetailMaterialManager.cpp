@@ -12,6 +12,7 @@
 #include <AzCore/Console/Console.h>
 
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
+#include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
 
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
 
