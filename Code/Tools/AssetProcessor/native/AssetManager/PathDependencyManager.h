@@ -39,9 +39,13 @@ namespace AssetProcessor
 
         PathDependencyManager(AZStd::shared_ptr<AssetDatabaseConnection> stateData, PlatformConfiguration* platformConfig);
 
+        void QueueSourceForDependencyResolution(const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry);
+
+        void ProcessQueuedDependencyResolves();
+
         /// This function is responsible for looking up existing, unresolved dependencies that the current asset satisfies.
         /// These can be dependencies on either the source asset or one of the product assets
-        void RetryDeferredDependencies(const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry);
+        void RetryDeferredDependencies(const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry, const AZStd::unordered_map<AZStd::string, AZStd::vector<AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry>>& map, const AZStd::vector<AzToolsFramework::AssetDatabase::ProductDatabaseEntry>& products);
 
         /// This function is responsible for taking the path dependencies output by the current asset and trying to resolve them to AssetIds
         /// This does not look for dependencies that the current asset satisfies.
@@ -93,5 +97,6 @@ namespace AssetProcessor
         AZStd::shared_ptr<AssetDatabaseConnection> m_stateData;
         PlatformConfiguration* m_platformConfig{};
         DependencyResolvedCallback m_dependencyResolvedCallback{};
+        AZStd::vector<AzToolsFramework::AssetDatabase::SourceDatabaseEntry> m_queuedForResolve;
     };
 } // namespace AssetProcessor
