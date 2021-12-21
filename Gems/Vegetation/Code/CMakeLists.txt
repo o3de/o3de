@@ -44,6 +44,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::Vegetation.Static
+            Legacy::CryCommon
     RUNTIME_DEPENDENCIES
         Gem::LmbrCentral
         Gem::GradientSignal
@@ -106,6 +107,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzFrameworkTestShared
                 Gem::Vegetation.Static
                 Gem::LmbrCentral.Mocks
+                Legacy::CryCommon
     )
     ly_add_googletest(
         NAME Gem::Vegetation.Tests
