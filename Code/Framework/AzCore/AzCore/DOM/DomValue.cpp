@@ -17,13 +17,15 @@ namespace AZ::Dom
     template<class T>
     AZStd::shared_ptr<T>& CheckCopyOnWrite(AZStd::shared_ptr<T>& refCountedPointer)
     {
-        if (refCountedPointer.use_count() > 1)
+        if (refCountedPointer.use_count() == 1)
         {
-            AZStd::shared_ptr<T> newPointer = AZStd::allocate_shared<T>(StdValueAllocator());
-            *newPointer = *refCountedPointer;
-            refCountedPointer = AZStd::move(newPointer);
+            return refCountedPointer;
         }
-        return refCountedPointer;
+        else
+        {
+            refCountedPointer = AZStd::allocate_shared<T>(StdValueAllocator(), *refCountedPointer);
+            return refCountedPointer;
+        }
     }
 
     namespace Internal
@@ -72,7 +74,7 @@ namespace AZ::Dom
     }
 
     Node::Node(AZ::Name name)
-        : m_name(name)
+        : m_name(AZStd::move(name))
     {
     }
 
@@ -83,7 +85,7 @@ namespace AZ::Dom
 
     void Node::SetName(AZ::Name name)
     {
-        m_name = name;
+        m_name = AZStd::move(name);
     }
 
     Object::ContainerType& Node::GetProperties()
@@ -106,8 +108,8 @@ namespace AZ::Dom
         return m_children;
     }
 
-    Value::Value(AZStd::shared_ptr<const AZStd::string> string)
-        : m_value(string)
+    Value::Value(SharedStringType sharedString)
+        : m_value(AZStd::move(sharedString))
     {
     }
 
@@ -122,18 +124,19 @@ namespace AZ::Dom
 
     Value::Value(Value&& value) noexcept
     {
-        operator=(value);
+        memcpy(this, &value, sizeof(Value));
+        memset(&value, 0, sizeof(Value));
     }
 
-    Value::Value(AZStd::string_view string, bool copy)
+    Value::Value(AZStd::string_view stringView, bool copy)
     {
         if (copy)
         {
-            CopyFromString(string);
+            CopyFromString(stringView);
         }
         else
         {
-            SetString(string);
+            SetString(stringView);
         }
     }
 
@@ -227,7 +230,9 @@ namespace AZ::Dom
 
     Value& Value::operator=(Value&& other) noexcept
     {
-        m_value.swap(other.m_value);
+        SetNull();
+        memcpy(this, &other, sizeof(Value));
+        memset(&other, 0, sizeof(Value));
         return *this;
     }
 
@@ -265,7 +270,10 @@ namespace AZ::Dom
 
     void Value::Swap(Value& other) noexcept
     {
-        m_value.swap(other.m_value);
+        AZStd::aligned_storage_for_t<Value> temp;
+        memcpy(&temp, this, sizeof(Value));
+        memcpy(this, &other, sizeof(Value));
+        memcpy(&other, &temp, sizeof(Value));
     }
 
     Type Dom::Value::GetType() const
@@ -583,7 +591,7 @@ namespace AZ::Dom
         }
         else
         {
-            object.emplace_back(name, value);
+            object.emplace_back(AZStd::move(name), value);
         }
         return *this;
     }
@@ -602,7 +610,7 @@ namespace AZ::Dom
         }
         else
         {
-            object.emplace_back(name, value);
+            object.emplace_back(AZStd::move(name), value);
         }
         return *this;
     }
@@ -636,15 +644,12 @@ namespace AZ::Dom
     Object::Iterator Value::RemoveMember(Object::Iterator pos)
     {
         Object::ContainerType& object = GetObjectInternal();
-        Object::Iterator nextIndex = object.end();
-        auto lastEntry = object.end() - 1;
-        if (pos != lastEntry)
+        if (!object.empty())
         {
-            AZStd::swap(*pos, *lastEntry);
-            nextIndex = pos;
+            AZStd::swap(*pos, object.back());
+            object.pop_back();
         }
-        object.resize(object.size() - 1);
-        return nextIndex;
+        return object.end();
     }
 
     Object::Iterator Value::EraseMember(Object::ConstIterator pos)
@@ -785,7 +790,7 @@ namespace AZ::Dom
 
     void Value::SetNode(AZ::Name name)
     {
-        m_value = AZStd::allocate_shared<Node>(StdValueAllocator(), name);
+        m_value = AZStd::allocate_shared<Node>(StdValueAllocator(), AZStd::move(name));
     }
 
     void Value::SetNode(AZStd::string_view name)
@@ -800,7 +805,7 @@ namespace AZ::Dom
 
     void Value::SetNodeName(AZ::Name name)
     {
-        GetNodeInternal().SetName(name);
+        GetNodeInternal().SetName(AZStd::move(name));
     }
 
     void Value::SetNodeName(AZStd::string_view name)

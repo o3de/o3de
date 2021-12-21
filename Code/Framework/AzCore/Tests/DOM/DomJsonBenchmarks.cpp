@@ -120,6 +120,16 @@ namespace Benchmark
             AZ_Assert(result.IsSuccess(), "Failed to serialize generated JSON");
             return serializedJson;
         }
+
+        template <class T>
+        void TakeAndDiscardWithoutTimingDtor(T&& value, benchmark::State& state)
+        {
+            {
+                T instance = AZStd::move(value);
+                state.PauseTiming();
+            }
+            state.ResumeTiming();
+        }
     };
 
 // Helper macro for registering JSON benchmarks
@@ -148,7 +158,7 @@ namespace Benchmark
                     return AZ::Dom::Utils::ReadFromStringInPlace(backend, payloadCopy, visitor);
                 });
 
-            benchmark::DoNotOptimize(result.GetValue());
+            TakeAndDiscardWithoutTimingDtor(result.TakeValue(), state);
         }
 
         state.SetBytesProcessed(serializedPayload.size() * state.iterations());
@@ -172,7 +182,7 @@ namespace Benchmark
                     return AZ::Dom::Utils::ReadFromStringInPlace(backend, payloadCopy, visitor);
                 });
 
-            benchmark::DoNotOptimize(result.GetValue());
+            TakeAndDiscardWithoutTimingDtor(result.TakeValue(), state);
         }
 
         state.SetBytesProcessed(serializedPayload.size() * state.iterations());
@@ -192,7 +202,7 @@ namespace Benchmark
                     return AZ::Dom::Utils::ReadFromString(backend, serializedPayload, AZ::Dom::Lifetime::Temporary, visitor);
                 });
 
-            benchmark::DoNotOptimize(result.GetValue());
+            TakeAndDiscardWithoutTimingDtor(result.TakeValue(), state);
         }
 
         state.SetBytesProcessed(serializedPayload.size() * state.iterations());
@@ -212,7 +222,7 @@ namespace Benchmark
                     return AZ::Dom::Utils::ReadFromString(backend, serializedPayload, AZ::Dom::Lifetime::Temporary, visitor);
                 });
 
-            benchmark::DoNotOptimize(result.GetValue());
+            TakeAndDiscardWithoutTimingDtor(result.TakeValue(), state);
         }
 
         state.SetBytesProcessed(serializedPayload.size() * state.iterations());
@@ -228,7 +238,7 @@ namespace Benchmark
         {
             auto result = AZ::JsonSerializationUtils::ReadJsonString(serializedPayload);
 
-            benchmark::DoNotOptimize(result.GetValue());
+            TakeAndDiscardWithoutTimingDtor(result.TakeValue(), state);
         }
 
         state.SetBytesProcessed(serializedPayload.size() * state.iterations());
@@ -239,7 +249,7 @@ namespace Benchmark
     {
         for (auto _ : state)
         {
-            benchmark::DoNotOptimize(GenerateDomJsonBenchmarkPayload(state.range(0), state.range(1)));
+            TakeAndDiscardWithoutTimingDtor(GenerateDomJsonBenchmarkPayload(state.range(0), state.range(1)), state);
         }
 
         state.SetItemsProcessed(state.range(0) * state.range(0) * state.iterations());
@@ -277,7 +287,7 @@ namespace Benchmark
         {
             rapidjson::Document copy;
             copy.CopyFrom(original, copy.GetAllocator(), true);
-            benchmark::DoNotOptimize(copy);
+            TakeAndDiscardWithoutTimingDtor(AZStd::move(copy), state);
         }
 
         state.SetItemsProcessed(state.iterations());
@@ -294,7 +304,7 @@ namespace Benchmark
             rapidjson::Document copy;
             copy.CopyFrom(original, copy.GetAllocator(), true);
             copy["entries"]["Key0"].PushBack(42, copy.GetAllocator());
-            benchmark::DoNotOptimize(copy);
+            TakeAndDiscardWithoutTimingDtor(AZStd::move(copy), state);
         }
 
         state.SetItemsProcessed(state.iterations());

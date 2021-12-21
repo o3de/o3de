@@ -82,6 +82,16 @@ namespace AZ::Dom
         return VisitorSuccess();
     }
 
+    template <class T, class A>
+    void MoveVectorMemory(AZStd::vector<T, A>& dest, AZStd::vector<T, A>& source)
+    {
+        dest.resize_no_construct(source.size());
+        const size_t size = sizeof(T) * source.size();
+        memcpy(dest.data(), source.data(), size);
+        memset(source.data(), 0, size);
+        source.resize(0);
+    }
+
     Visitor::Result ValueWriter::EndContainer(Type containerType, AZ::u64 attributeCount, AZ::u64 elementCount)
     {
         const char* endMethodName;
@@ -138,22 +148,12 @@ namespace AZ::Dom
         }
         if (buffer.m_attributes.size() > 0)
         {
-            container.MemberReserve(buffer.m_attributes.size());
-            for (AZStd::pair<AZ::Name, Value>& entry : buffer.m_attributes)
-            {
-                container.AddMember(AZStd::move(entry.first), AZStd::move(entry.second));
-            }
-            buffer.m_attributes.clear();
+            MoveVectorMemory(container.GetMutableObject(), buffer.m_attributes);
         }
 
         if(buffer.m_elements.size() > 0)
         {
-            container.Reserve(buffer.m_elements.size());
-            for (Value& entry : buffer.m_elements)
-            {
-                container.PushBack(AZStd::move(entry));
-            }
-            buffer.m_elements.clear();
+            MoveVectorMemory(container.GetMutableArray(), buffer.m_elements);
         }
 
         m_entryStack.pop();
@@ -180,7 +180,7 @@ namespace AZ::Dom
     {
         AZ_Assert(!m_entryStack.empty(), "Attempmted to push a key with no object");
         AZ_Assert(!m_entryStack.top().m_container.IsArray(), "Attempted to push a key to an array");
-        m_entryStack.top().m_key = key;
+        m_entryStack.top().m_key = AZStd::move(key);
         return VisitorSuccess();
     }
 
