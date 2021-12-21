@@ -26,6 +26,51 @@ namespace AZ::Dom
         return refCountedPointer;
     }
 
+    namespace Internal
+    {
+        template<class TestType>
+        constexpr size_t GetTypeIndexInternal(size_t index = 0)
+        {
+            static_assert(false, "Type not found in ValueType");
+            return index;
+        }
+
+        template<class TestType, class FirstType, class... Rest>
+        constexpr size_t GetTypeIndexInternal(size_t index = 0)
+        {
+            if constexpr (AZStd::is_same_v<TestType, FirstType>)
+            {
+                return index;
+            }
+            else
+            {
+                return GetTypeIndexInternal<TestType, Rest...>(index + 1);
+            }
+        }
+
+        template<typename T>
+        struct ExtractTypeArgs
+        {
+        };
+
+        template<template<typename...> class TypeToExtract, typename... Args>
+        struct ExtractTypeArgs<TypeToExtract<Args...>>
+        {
+            template<class T>
+            static constexpr size_t GetTypeIndex()
+            {
+                return GetTypeIndexInternal<T, Args...>();
+            }
+        };
+    } // namespace Internal
+
+    // Helper function, looks up the index of a type within Value::m_value's storage
+    template<class T>
+    constexpr size_t GetTypeIndex()
+    {
+        return Internal::ExtractTypeArgs<Value::ValueType>::GetTypeIndex<T>();
+    }
+
     Node::Node(AZ::Name name)
         : m_name(name)
     {
@@ -227,27 +272,27 @@ namespace AZ::Dom
     {
         switch (m_value.index())
         {
-        case 0: // AZStd::monostate
+        case GetTypeIndex<AZStd::monostate>():
             return Type::Null;
-        case 1: // int64_t
+        case GetTypeIndex<int64_t>():
             return Type::Int64;
-        case 2: // uint64_t
+        case GetTypeIndex<uint64_t>():
             return Type::Uint64;
-        case 3: // double
+        case GetTypeIndex<double>():
             return Type::Double;
-        case 4: // bool
+        case GetTypeIndex<bool>():
             return Type::Bool;
-        case 5: // AZStd::string_view
-        case 6: // AZStd::shared_ptr<const AZStd::string>
-        case 7: // ShortStringType
+        case GetTypeIndex<AZStd::string_view>():
+        case GetTypeIndex<SharedStringType>():
+        case GetTypeIndex<ShortStringType>():
             return Type::String;
-        case 8: // ObjectPtr
+        case GetTypeIndex<ObjectPtr>():
             return Type::Object;
-        case 9: // ArrayPtr
+        case GetTypeIndex<ArrayPtr>():
             return Type::Array;
-        case 10: // NodePtr
+        case GetTypeIndex<NodePtr>():
             return Type::Node;
-        case 11: // AZStd::any*
+        case GetTypeIndex<AZStd::shared_ptr<AZStd::any>>():
             return Type::Opaque;
         }
         AZ_Assert(false, "AZ::Dom::Value::GetType: m_value has an unexpected type");
@@ -813,11 +858,11 @@ namespace AZ::Dom
     {
         switch (m_value.index())
         {
-        case 1: // int64_t
+        case GetTypeIndex<int64_t>():
             return AZStd::get<int64_t>(m_value);
-        case 2: // uint64_t
+        case GetTypeIndex<uint64_t>():
             return aznumeric_cast<int64_t>(AZStd::get<uint64_t>(m_value));
-        case 3: // double
+        case GetTypeIndex<double>():
             return aznumeric_cast<int64_t>(AZStd::get<double>(m_value));
         }
         AZ_Assert(false, "AZ::Dom::Value: Called GetInt on a non-numeric type");
@@ -843,11 +888,11 @@ namespace AZ::Dom
     {
         switch (m_value.index())
         {
-        case 1: // int64_t
+        case GetTypeIndex<int64_t>():
             return aznumeric_cast<uint64_t>(AZStd::get<int64_t>(m_value));
-        case 2: // uint64_t
+        case GetTypeIndex<uint64_t>():
             return AZStd::get<uint64_t>(m_value);
-        case 3: // double
+        case GetTypeIndex<double>():
             return aznumeric_cast<uint64_t>(AZStd::get<double>(m_value));
         }
         AZ_Assert(false, "AZ::Dom::Value: Called GetInt on a non-numeric type");
@@ -888,11 +933,11 @@ namespace AZ::Dom
     {
         switch (m_value.index())
         {
-        case 1: // int64_t
+        case GetTypeIndex<int64_t>():
             return aznumeric_cast<double>(AZStd::get<int64_t>(m_value));
-        case 2: // uint64_t
+        case GetTypeIndex<uint64_t>():
             return aznumeric_cast<double>(AZStd::get<uint64_t>(m_value));
-        case 3: // double
+        case GetTypeIndex<double>():
             return AZStd::get<double>(m_value);
         }
         AZ_Assert(false, "AZ::Dom::Value: Called GetInt on a non-numeric type");
@@ -923,14 +968,14 @@ namespace AZ::Dom
     {
         switch (m_value.index())
         {
-        case 5: // AZStd::string_view
+        case GetTypeIndex<AZStd::string_view>():
             return AZStd::get<AZStd::string_view>(m_value);
-        case 6: // AZStd::shared_ptr<AZStd::vector<char>>
+        case GetTypeIndex<SharedStringType>():
             {
                 auto& buffer = *AZStd::get<SharedStringType>(m_value);
                 return { buffer.data(), buffer.size() };
             }
-        case 7: // ShortStringType
+        case GetTypeIndex<ShortStringType>():
             {
                 const ShortStringType& shortString = AZStd::get<ShortStringType>(m_value);
                 return { shortString.data(), shortString.size() };
@@ -965,8 +1010,7 @@ namespace AZ::Dom
         }
         else
         {
-            SharedStringType sharedString =
-                AZStd::allocate_shared<SharedStringContainer>(StdValueAllocator(), value.begin(), value.end());
+            SharedStringType sharedString = AZStd::allocate_shared<SharedStringContainer>(StdValueAllocator(), value.begin(), value.end());
             m_value = AZStd::move(sharedString);
         }
     }
