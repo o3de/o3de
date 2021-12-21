@@ -163,8 +163,7 @@ void TerrainSystem::ClampPosition(float x, float y, AZ::Vector2& outPosition, AZ
 
 bool TerrainSystem::InWorldBounds(float x, float y) const
 {
-    const float zTestValue = m_currentSettings.m_worldBounds.GetMin().GetX() +
-        ((m_currentSettings.m_worldBounds.GetMax().GetX() - m_currentSettings.m_worldBounds.GetMin().GetX()) / 2.0f);
+    const float zTestValue = m_currentSettings.m_worldBounds.GetMin().GetZ();
     const AZ::Vector3 testValue{ x, y, zTestValue };
     if (m_currentSettings.m_worldBounds.Contains(testValue))
     {
