@@ -81,10 +81,10 @@ def start():
         try:
             _TAG_LY_BUILD_PATH = os.getenv('TAG_LY_BUILD_PATH', 'build')
             _DEFAULT_BIN_PATH = Path(str(_O3DE_DEV), _TAG_LY_BUILD_PATH, 'bin', 'profile')
-            _O3DE_BIN_PATH = Path(os.getenv('O3DE_BIN_PATH', _DEFAULT_BIN_PATH))
-            os.environ['O3DE_BIN_PATH'] = _O3DE_BIN_PATH.as_posix()
-            _LOGGER.debug(f'O3DE_BIN_PATH is: {_O3DE_BIN_PATH}')
-            site.addsitedir(_O3DE_BIN_PATH.resolve())
+            _PATH_O3DE_BIN = Path(os.getenv('PATH_O3DE_BIN', _DEFAULT_BIN_PATH))
+            os.environ['PATH_O3DE_BIN'] = _PATH_O3DE_BIN.as_posix()
+            _LOGGER.debug(f'PATH_O3DE_BIN is: {_PATH_O3DE_BIN}')
+            site.addsitedir(_PATH_O3DE_BIN.resolve())
         except EnvironmentError as e:
             _LOGGER.error('O3DE bin folder not set or found')
             raise e
@@ -94,10 +94,10 @@ def start():
             os.environ['O3DE_DEV'] = _O3DE_DEV.as_posix()
             _LOGGER.debug(_O3DE_DEV)
         
-            _O3DE_BIN_PATH = Path(str(_O3DE_DEV),Path(azlmbr.paths.executableFolder))
+            _PATH_O3DE_BIN = Path(str(_O3DE_DEV),Path(azlmbr.paths.executableFolder))
         
-            _O3DE_BIN = Path(os.getenv('O3DE_BIN', _O3DE_BIN_PATH.resolve()))
-            os.environ['O3DE_BIN'] = _O3DE_BIN_PATH.as_posix()
+            _O3DE_BIN = Path(os.getenv('O3DE_BIN', _PATH_O3DE_BIN.resolve()))
+            os.environ['O3DE_BIN'] = _PATH_O3DE_BIN.as_posix()
         
             _LOGGER.debug(_O3DE_BIN)
         

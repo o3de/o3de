@@ -89,6 +89,7 @@ namespace EMStudio
         AZStd::vector<AZ::Entity*> m_actorEntities;
         const RenderOptions* m_renderOptions;
 
+        const float DefaultFrustumDimension = 128.0f;
         AZStd::vector<AZ::Render::DirectionalLightFeatureProcessorInterface::LightHandle> m_lightHandles;
     };
 }

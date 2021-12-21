@@ -122,27 +122,6 @@ namespace AudioControls
     }
 
     //-------------------------------------------------------------------------------------------//
-    void CAudioControlsEditorWindow::keyPressEvent(QKeyEvent* pEvent)
-    {
-        if (pEvent->key() == Qt::Key_S && pEvent->modifiers() == Qt::ControlModifier)
-        {
-            Save();
-        }
-        else if (pEvent->key() == Qt::Key_Z && (pEvent->modifiers() & Qt::ControlModifier))
-        {
-            if (pEvent->modifiers() & Qt::ShiftModifier)
-            {
-                GetIEditor()->Redo();
-            }
-            else
-            {
-                GetIEditor()->Undo();
-            }
-        }
-        QMainWindow::keyPressEvent(pEvent);
-    }
-
-    //-------------------------------------------------------------------------------------------//
     void CAudioControlsEditorWindow::closeEvent(QCloseEvent* pEvent)
     {
         if (m_pATLModel && m_pATLModel->IsDirty())

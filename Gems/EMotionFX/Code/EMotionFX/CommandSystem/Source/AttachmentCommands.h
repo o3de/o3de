@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __EMFX_ATTACHMENTCOMMANDS_H
-#define __EMFX_ATTACHMENTCOMMANDS_H
+#pragma once
 
 // include the required headers
 #include "CommandSystemConfig.h"
@@ -35,6 +34,3 @@ public:
     static bool AddAttachment(MCore::Command* command, const MCore::CommandLine& parameters, AZStd::string& outResult, bool remove);
     MCORE_DEFINECOMMAND_END
 } // namespace CommandSystem
-
-
-#endif
