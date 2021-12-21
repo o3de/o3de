@@ -159,6 +159,33 @@ namespace AZ::Dom
         using SharedStringContainer = AZStd::vector<char>;
         using SharedStringType = AZStd::shared_ptr<const SharedStringContainer>;
 
+        //! The internal storage type for Value.
+        //! These types do not correspond one-to-one with the Value's external Type as there may be multiple storage classes
+        //! for the same type in some instances, such as string storage.
+        using ValueType = AZStd::variant<
+            // Null
+            AZStd::monostate,
+            // Int64
+            int64_t,
+            // Uint64
+            uint64_t,
+            // Double
+            double,
+            // Bool
+            bool,
+            // StringType
+            AZStd::string_view,
+            SharedStringType,
+            ShortStringType,
+            // Object
+            ObjectPtr,
+            // Array
+            ArrayPtr,
+            // Node
+            NodePtr,
+            // Opaque
+            AZStd::shared_ptr<AZStd::any>>;
+
         // Constructors...
         Value();
         Value(const Value&);
@@ -346,33 +373,6 @@ namespace AZ::Dom
         Array::ContainerType& GetArrayInternal();
 
         explicit Value(const AZStd::any& opaqueValue);
-
-        //! The internal storage type for Value.
-        //! These types do not correspond one-to-one with the Value's external Type as there may be multiple storage classes
-        //! for the same type in some instances, such as string storage.
-        using ValueType = AZStd::variant<
-            // Null
-            AZStd::monostate,
-            // Int64
-            int64_t,
-            // Uint64
-            uint64_t,
-            // Double
-            double,
-            // Bool
-            bool,
-            // StringType
-            AZStd::string_view,
-            SharedStringType,
-            ShortStringType,
-            // Object
-            ObjectPtr,
-            // Array
-            ArrayPtr,
-            // Node
-            NodePtr,
-            // Opaque
-            AZStd::shared_ptr<AZStd::any>>;
 
         static_assert(
             sizeof(ValueType) == sizeof(ShortStringType) + sizeof(size_t), "ValueType should have no members larger than ShortStringType");
