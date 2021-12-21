@@ -376,7 +376,7 @@ namespace Terrain
             
             if (m_imageArrayHandler->IsInitialized())
             {
-                bool result = m_imageArrayHandler->UpdateSrg(m_terrainSrg);
+                bool result [[maybe_unused]] = m_imageArrayHandler->UpdateSrg(m_terrainSrg);
                 AZ_Error(TerrainFPName, result, "Failed to set image view unbounded array into shader resource group.");
             }
         }
