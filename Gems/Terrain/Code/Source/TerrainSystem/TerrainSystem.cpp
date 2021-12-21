@@ -80,7 +80,7 @@ void TerrainSystem::Activate()
     m_requestedSettings.m_systemActive = true;
 
     {
-        AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
+        AZStd::unique_lock<AZStd::shared_mutex> lock(m_areaMutex);
         m_registeredAreas.clear();
     }
 
@@ -109,7 +109,7 @@ void TerrainSystem::Deactivate()
     AzFramework::Terrain::TerrainDataRequestBus::Handler::BusDisconnect();
 
     {
-        AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
+        AZStd::unique_lock<AZStd::shared_mutex> lock(m_areaMutex);
         m_registeredAreas.clear();
     }
 
