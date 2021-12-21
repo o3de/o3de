@@ -25,6 +25,7 @@ VSDepthOutput MainVS(in VertexInput input)
 
     if (heightContext.IsVertexOutsideOfTerrainBounds())
     {
+        // Output a NaN to remove this vertex.
         output.m_position = 1.0 / 0.0;
         return output;
     }

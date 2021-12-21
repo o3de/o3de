@@ -19,8 +19,8 @@ namespace Terrain
 {
     namespace
     {
-        [[maybe_unused]] const char* TerrainDetailMaterialManagerName = "TerrainDetailMaterialManager";
-        const char* TerrainDetailChars = "TerrainDetail";
+        [[maybe_unused]] static const char* TerrainDetailMaterialManagerName = "TerrainDetailMaterialManager";
+        static const char* TerrainDetailChars = "TerrainDetail";
     }
     
     namespace DetailMaterialInputs

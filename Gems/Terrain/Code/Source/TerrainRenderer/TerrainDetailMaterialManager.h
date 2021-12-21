@@ -121,6 +121,7 @@ namespace Terrain
             uint32_t m_padding2;
             uint32_t m_padding3;
         };
+        static_assert(sizeof(DetailMaterialShaderData) % 16 == 0, "DetailMaterialShaderData must be 16 byte aligned.");
 
         struct DetailMaterialData
         {

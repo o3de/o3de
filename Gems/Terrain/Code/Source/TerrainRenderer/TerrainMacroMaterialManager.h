@@ -58,6 +58,7 @@ namespace Terrain
             AZStd::array<float, 2> m_boundsMin{ 0.0f, 0.0f };
             AZStd::array<float, 2> m_boundsMax{ 0.0f, 0.0f };
         };
+        static_assert(sizeof(MacroMaterialShaderData) % 16 == 0, "MacroMaterialShaderData must be 16 byte aligned.");
         
         struct MacroMaterial
         {
@@ -72,6 +73,7 @@ namespace Terrain
             float m_tileSize; // Size of a tile in meters.
             AZStd::array<float, 2> m_offset; // x/y offset of min x/y corner of grid.
         };
+        static_assert(sizeof(MacroMaterialGridShaderData) % 16 == 0, "MacroMaterialGridShaderData must be 16 byte aligned.");
         
         // AzFramework::Terrain::TerrainDataNotificationBus overrides...
         void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion [[maybe_unused]], TerrainDataChangedMask dataChangedMask) override;

@@ -29,7 +29,7 @@ namespace Terrain
 {
     namespace
     {
-        [[maybe_unused]] const char* TerrainMeshManagerName = "TerrainMeshManager";
+        [[maybe_unused]] static const char* TerrainMeshManagerName = "TerrainMeshManager";
     }
 
     namespace ShaderInputs

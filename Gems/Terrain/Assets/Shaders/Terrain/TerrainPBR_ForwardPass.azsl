@@ -38,6 +38,7 @@ VSOutput TerrainPBR_MainPassVS(VertexInput IN)
 
     if (heightContext.IsVertexOutsideOfTerrainBounds())
     {
+        // Output a NaN to remove this vertex.
         OUT.m_position = 1.0 / 0.0;
         return OUT;
     }
@@ -114,7 +115,7 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
         macroUvSize.x = -macroUvSize.x;
         float2 macroUv = (macroMaterialData.m_boundsMin - surface.position.xy) / macroUvSize;
 
-        // The macro uv gradient can vary massively over the quad because differnet pixels may choose different macro materials with different UVs.
+        // The macro uv gradient can vary massively over the quad because different pixels may choose different macro materials with different UVs.
         // To fix, we use the world position scaled by the macro uv scale which should be fairly uniform across macro materials.
         float2 macroUvScale = IN.m_worldPosition.xy / macroUvSize;
         float2 ddx_macroUv = ddx(macroUvScale);

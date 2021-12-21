@@ -12,7 +12,7 @@ namespace Terrain
 {
     namespace
     {
-        [[maybe_unused]] const char* TerrainMacroMaterialManagerName = "TerrainMacroMaterialManager";
+        [[maybe_unused]] static const char* TerrainMacroMaterialManagerName = "TerrainMacroMaterialManager";
     }
 
     namespace TerrainSrgInputs
