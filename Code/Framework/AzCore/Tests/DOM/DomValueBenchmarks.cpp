@@ -220,4 +220,33 @@ namespace AZ::Dom::Benchmark
     }
     BENCHMARK_REGISTER_F(DomValueBenchmark, LookupMemberByString)->Arg(100)->Arg(1000)->Arg(10000)->Unit(benchmark::kMillisecond);
 
+    BENCHMARK_DEFINE_F(DomValueBenchmark, LookupMemberByStringComparison)(benchmark::State& state)
+    {
+        Value value(Type::Object);
+        AZStd::vector<AZStd::string> keys;
+        for (int64_t i = 0; i < state.range(0); ++i)
+        {
+            AZStd::string key(AZStd::string::format("key%" PRId64, i));
+            keys.push_back(key);
+            value[key] = i;
+        }
+
+        for (auto _ : state)
+        {
+            for (const AZStd::string& key : keys)
+            {
+                const Object::ContainerType& object = value.GetObject();
+                benchmark::DoNotOptimize(AZStd::find_if(
+                    object.cbegin(), object.cend(),
+                    [&key](const Object::EntryType& entry)
+                    {
+                        return key == entry.first.GetStringView();
+                    }));
+            }
+        }
+
+        state.SetItemsProcessed(state.iterations() * state.range(0));
+    }
+    BENCHMARK_REGISTER_F(DomValueBenchmark, LookupMemberByStringComparison)->Arg(100)->Arg(1000)->Arg(10000)->Unit(benchmark::kMillisecond);
+
 } // namespace AZ::Dom::Benchmark

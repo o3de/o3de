@@ -28,7 +28,7 @@ namespace AZ::Dom
         Result Double(double value) override;
 
         Result String(AZStd::string_view value, Lifetime lifetime) override;
-        Result RefCountedString(AZStd::shared_ptr<const AZStd::string> value, Lifetime lifetime) override;
+        Result RefCountedString(AZStd::shared_ptr<const AZStd::vector<char>> value, Lifetime lifetime) override;
         Result StartObject() override;
         Result EndObject(AZ::u64 attributeCount) override;
         Result Key(AZ::Name key) override;

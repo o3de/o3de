@@ -11,8 +11,9 @@
 #include <AzCore/Name/Name.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/any.h>
-#include <AzCore/std/string/string.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/std/string/string.h>
 
 namespace AZ::Dom
 {
@@ -176,7 +177,7 @@ namespace AZ::Dom
         //! Operates on a ref-counted string value. S
         //! \param lifetime Specifies the lifetime of this string. If the string has a temporary lifetime, it may not
         //! be safely stored as a reference, but may still be safely stored as a ref-counted shared_ptr.
-        virtual Result RefCountedString(AZStd::shared_ptr<const AZStd::string> value, Lifetime lifetime);
+        virtual Result RefCountedString(AZStd::shared_ptr<const AZStd::vector<char>> value, Lifetime lifetime);
         //! Operates on an opaque value. As opaque values are a reference type, storage semantics are provided to
         //! indicate where the value may be stored persistently or requires a copy.
         //! The base implementation of OpaqueValue rejects the operation, as opaque values are meant for special
