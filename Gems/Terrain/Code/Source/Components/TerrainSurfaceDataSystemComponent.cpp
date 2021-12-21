@@ -98,6 +98,7 @@ namespace Terrain
     {
         m_providerHandle = SurfaceData::InvalidSurfaceDataRegistryHandle;
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
+        SurfaceData::SurfaceDataTagProviderRequestBus::Handler::BusConnect();
 
         UpdateTerrainData(AZ::Aabb::CreateNull());
     }
@@ -112,6 +113,7 @@ namespace Terrain
         }
 
         SurfaceData::SurfaceDataProviderRequestBus::Handler::BusDisconnect();
+        SurfaceData::SurfaceDataTagProviderRequestBus::Handler::BusDisconnect();
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
 
         // Clear the cached terrain bounds data
@@ -241,8 +243,6 @@ namespace Terrain
             // Start listening for surface data events
             AZ_Assert((m_providerHandle != SurfaceData::InvalidSurfaceDataRegistryHandle), "Invalid surface data handle");
             SurfaceData::SurfaceDataProviderRequestBus::Handler::BusConnect(m_providerHandle);
-
-            SurfaceData::SurfaceDataTagProviderRequestBus::Handler::BusConnect();
         }
         else if (terrainValidBeforeUpdate && !terrainValidAfterUpdate)
         {
@@ -251,8 +251,6 @@ namespace Terrain
             SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
                 &SurfaceData::SurfaceDataSystemRequestBus::Events::UnregisterSurfaceDataProvider, m_providerHandle);
             m_providerHandle = SurfaceData::InvalidSurfaceDataRegistryHandle;
-
-            SurfaceData::SurfaceDataProviderRequestBus::Handler::BusDisconnect();
         }
         else
         {
