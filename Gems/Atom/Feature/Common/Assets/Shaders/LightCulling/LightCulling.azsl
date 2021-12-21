@@ -370,9 +370,10 @@ void CullDecals(uint groupIndex, TileLightData tileLightData, float3 aabb_center
         // just wrapping a bounding sphere around a cube for now to get a minor perf boost. i.e. the sphere radius is sqrt(x*x + y*y + z*z)
         // ATOM-4224 - try AABB-AABB 
         float maxHalfSize = max(max(decal.m_halfSize.x, decal.m_halfSize.y), decal.m_halfSize.z);
-        float boundingSphereRadiusSqr = maxHalfSize * maxHalfSize * 3;            
+        float boundingSphereRadiusSqr = dot(decal.m_halfSize, decal.m_halfSize);
           
         bool potentiallyIntersects = TestSphereVsAabb(decalPosition, boundingSphereRadiusSqr, aabb_center, aabb_extents);
+        
         if (potentiallyIntersects) 
         {                                           
             uint inside = 0;
