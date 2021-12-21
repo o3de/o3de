@@ -179,6 +179,7 @@ namespace LmbrCentral
         AzToolsFramework::Components::EditorComponentBase::Init();
         m_component.ReadInConfig(&m_configuration);
         m_component.Init();
+        m_runtimeComponentActive = false;
     }
 
     template <typename TComponent, typename TConfiguration>
@@ -196,6 +197,7 @@ namespace LmbrCentral
         if (m_visible)
         {
             m_component.Activate();
+            m_runtimeComponentActive = true;
         }
     }
 
@@ -205,6 +207,7 @@ namespace LmbrCentral
         AzToolsFramework::EditorVisibilityNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::Components::EditorComponentBase::Deactivate();
 
+        m_runtimeComponentActive = false;
         m_component.Deactivate();
         m_component.SetEntity(nullptr); // remove the entity association, in case the parent component is being removed, otherwise the component will be reactivated
     }
@@ -222,11 +225,17 @@ namespace LmbrCentral
     template <typename TComponent, typename TConfiguration>
     AZ::u32 EditorWrappedComponentBase<TComponent, TConfiguration>::ConfigurationChanged()
     {
-        m_component.Deactivate();
+        if (m_runtimeComponentActive)
+        {
+            m_component.Deactivate();
+            m_runtimeComponentActive = false;
+        }
+
         m_component.ReadInConfig(&m_configuration);
 
-        if (m_visible && m_component.GetEntity())
+        if (m_visible && !m_runtimeComponentActive)
         {
+            m_runtimeComponentActive = true;
             m_component.Activate();
         }
 
