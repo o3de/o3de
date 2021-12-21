@@ -177,9 +177,9 @@ namespace LmbrCentral
     void EditorWrappedComponentBase<TComponent, TConfiguration>::Init()
     {
         AzToolsFramework::Components::EditorComponentBase::Init();
+        m_runtimeComponentActive = false;
         m_component.ReadInConfig(&m_configuration);
         m_component.Init();
-        m_runtimeComponentActive = false;
     }
 
     template <typename TComponent, typename TConfiguration>
@@ -209,7 +209,8 @@ namespace LmbrCentral
 
         m_runtimeComponentActive = false;
         m_component.Deactivate();
-        m_component.SetEntity(nullptr); // remove the entity association, in case the parent component is being removed, otherwise the component will be reactivated
+        // remove the entity association, in case the parent component is being removed, otherwise the component will be reactivated
+        m_component.SetEntity(nullptr); 
     }
 
     template <typename TComponent, typename TConfiguration>
@@ -227,16 +228,16 @@ namespace LmbrCentral
     {
         if (m_runtimeComponentActive)
         {
-            m_component.Deactivate();
             m_runtimeComponentActive = false;
+            m_component.Deactivate();
         }
 
         m_component.ReadInConfig(&m_configuration);
 
         if (m_visible && !m_runtimeComponentActive)
         {
-            m_runtimeComponentActive = true;
             m_component.Activate();
+            m_runtimeComponentActive = true;
         }
 
         return AZ::Edit::PropertyRefreshLevels::None;
