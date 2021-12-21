@@ -668,7 +668,7 @@ void CLyShine::LoadUiCursor()
 {
     if (!m_cursorImagePathToLoad.empty())
     {
-        m_uiCursorTexture = CDraw2d::LoadTexture(m_cursorImagePathToLoad); // LYSHINE_ATOM_TODO - add clamp option to draw2d and set cursor to clamp
+        m_uiCursorTexture = CDraw2d::LoadTexture(m_cursorImagePathToLoad);
         m_cursorImagePathToLoad.clear();
     }
 }
@@ -691,7 +691,13 @@ void CLyShine::RenderUiCursor()
     AZ::RHI::Size cursorSize = m_uiCursorTexture->GetDescriptor().m_size;
     const AZ::Vector2 dimensions(aznumeric_cast<float>(cursorSize.m_width), aznumeric_cast<float>(cursorSize.m_height));
 
-    m_draw2d->DrawImage(m_uiCursorTexture, position, dimensions);
+    CDraw2d::ImageOptions imageOptions;
+    imageOptions.m_clamp = true;
+    const float opacity = 1.0f;
+    const float rotation = 0.0f;
+    const AZ::Vector2* pivotPoint = nullptr;
+    const AZ::Vector2* minMaxTexCoords = nullptr;
+    m_draw2d->DrawImage(m_uiCursorTexture, position, dimensions, opacity, rotation, pivotPoint, minMaxTexCoords, &imageOptions);
 }
 
 #ifndef _RELEASE
