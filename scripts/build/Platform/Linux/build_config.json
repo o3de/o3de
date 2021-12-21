@@ -311,7 +311,9 @@
       "NONBLOCKING_STEP": "True"
     },
     "COMMAND": "deploy_cdk_applications.sh",
-    "PARAMETERS": {}
+    "PARAMETERS": {
+      "NVM_VERSION": "v0.39.1"
+    }
   },
   "awsi_destruction": {
     "TAGS": [],
@@ -319,6 +321,8 @@
       "NONBLOCKING_STEP": "True"
     },
     "COMMAND": "destroy_cdk_applications.sh",
-    "PARAMETERS": {}
+    "PARAMETERS": {
+      "NVM_VERSION": "v0.39.1"
+    }
   }
 }
