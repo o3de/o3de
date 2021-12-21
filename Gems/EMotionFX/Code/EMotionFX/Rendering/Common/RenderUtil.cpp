@@ -952,7 +952,15 @@ namespace MCommon
         }
         else
         {
-            worldTM = AZ::Transform::CreateFromQuaternion(MCore::AzEulerAnglesToAzQuat(0.0f, 0.0f, MCore::Math::DegreesToRadians(180.0f)));
+            if (direction.GetX() > 0)
+            {
+                worldTM = AZ::Transform::CreateFromQuaternion(MCore::AzEulerAnglesToAzQuat(MCore::Math::DegreesToRadians(180.0f), 0.0f, MCore::Math::DegreesToRadians(180.0f)));
+            }
+            else
+            {
+                worldTM = AZ::Transform::CreateFromQuaternion(MCore::AzEulerAnglesToAzQuat(0.0f, 0.0f,  0.0f));
+            }
+            
         }
 
         // set the cylinder to the given position
