@@ -17,15 +17,16 @@
 
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 
-#include <Atom/RPI.Reflect/Model/ModelLodAsset.h>
+#include <Atom/RPI.Public/Model/Model.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Public/MeshDrawPacket.h>
+
+#include <Atom/RPI.Reflect/Model/ModelLodAsset.h>
 
 
 namespace AZ::RPI
 {
     class BufferAsset;
-    class Model;
 }
 
 namespace AZ::RHI
