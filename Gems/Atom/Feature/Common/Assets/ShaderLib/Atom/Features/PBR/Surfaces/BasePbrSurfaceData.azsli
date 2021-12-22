@@ -24,7 +24,7 @@ static const float MinRoughnessA = 0.0005f;
 
 class BasePbrSurfaceData
 {
-    precise float3 position;            //!< Position in world-space
+    precise float3 position;    //!< Position in world-space
     float3 normal;              //!< Normal in world-space
     float3 albedo;              //!< Albedo color of the non-metallic material, will be multiplied against the diffuse lighting value
     float3 specularF0;          //!< Fresnel f0 spectral value of the surface
