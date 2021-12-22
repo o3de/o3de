@@ -158,6 +158,7 @@ namespace AZ::Dom
         using ShortStringType = AZStd::fixed_string<ShortStringSize>;
         using SharedStringContainer = AZStd::vector<char>;
         using SharedStringType = AZStd::shared_ptr<const SharedStringContainer>;
+        using OpaqueStorageType = AZStd::shared_ptr<AZStd::any>;
 
         //! The internal storage type for Value.
         //! These types do not correspond one-to-one with the Value's external Type as there may be multiple storage classes
@@ -184,7 +185,7 @@ namespace AZ::Dom
             // Node
             NodePtr,
             // Opaque
-            AZStd::shared_ptr<AZStd::any>>;
+            OpaqueStorageType>;
 
         // Constructors...
         Value();

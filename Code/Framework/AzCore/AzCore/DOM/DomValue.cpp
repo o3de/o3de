@@ -1042,7 +1042,7 @@ namespace AZ::Dom
 
     const AZStd::any& Value::GetOpaqueValue() const
     {
-        return *AZStd::get<AZStd::shared_ptr<AZStd::any>>(m_value);
+        return *AZStd::get<OpaqueStorageType>(m_value);
     }
 
     void Value::SetOpaqueValue(const AZStd::any& value)
@@ -1165,7 +1165,7 @@ namespace AZ::Dom
                         result = visitor.EndNode(object.size(), arrayContainer.size());
                     }
                 }
-                else if constexpr (AZStd::is_same_v<Alternative, AZStd::any>)
+                else if constexpr (AZStd::is_same_v<Alternative, OpaqueStorageType>)
                 {
                     result = visitor.OpaqueValue(*arg);
                 }
