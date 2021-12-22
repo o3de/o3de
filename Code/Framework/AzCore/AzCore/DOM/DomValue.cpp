@@ -150,6 +150,26 @@ namespace AZ::Dom
         return Value(&value);
     }
 
+    Value::Value(int8_t value)
+        : m_value(aznumeric_cast<int64_t>(value))
+    {
+    }
+
+    Value::Value(uint8_t value)
+        : m_value(aznumeric_cast<uint64_t>(value))
+    {
+    }
+
+    Value::Value(int16_t value)
+        : m_value(aznumeric_cast<int64_t>(value))
+    {
+    }
+
+    Value::Value(uint16_t value)
+        : m_value(aznumeric_cast<uint64_t>(value))
+    {
+    }
+
     Value::Value(int32_t value)
         : m_value(aznumeric_cast<int64_t>(value))
     {
