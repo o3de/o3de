@@ -42,7 +42,6 @@ set(FILES
     OpenGL2/Source/GraphicsManager.h
     OpenGL2/Source/IndexBuffer.cpp
     OpenGL2/Source/IndexBuffer.h
-    OpenGL2/Source/Light.h
     OpenGL2/Source/Material.cpp
     OpenGL2/Source/Material.h
     OpenGL2/Source/PostProcessShader.cpp
