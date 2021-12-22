@@ -20,7 +20,6 @@
 #include <ATL.h>
 
 #include <Mocks/ATLEntitiesMock.h>
-#include <Mocks/IAudioSystemImplementationMock.h>
 #include <Mocks/FileCacheManagerMock.h>
 
 #include <Mocks/IConsoleMock.h>
