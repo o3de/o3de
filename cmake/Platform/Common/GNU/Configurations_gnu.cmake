@@ -13,8 +13,14 @@ include(cmake/Platform/Common/Configurations_common.cmake)
 
 set(LY_GCC_BUILD_FOR_GCOV FALSE CACHE BOOL "Flag to enable the build for gcov usage")
 if(LY_GCC_BUILD_FOR_GCOV)
-    set(LY_GCC_GCOV_FLAGS "-fprofile-arcs -ftest-coverage")
+    set(LY_GCC_GCOV_FLAGS "--coverage")
 endif()
+
+set(LY_GCC_BUILD_FOR_GPROF FALSE CACHE BOOL "Flag to enable the build for gprof usage")
+if(LY_GCC_BUILD_FOR_GPROF)
+    set(LY_GCC_GPROF_FLAGS "-pg")
+endif()
+
 
 ly_append_configurations_options(
     COMPILATION
@@ -23,6 +29,7 @@ ly_append_configurations_options(
         -Wall
 
         ${LY_GCC_GCOV_FLAGS}
+        ${LY_GCC_GPROF_FLAGS}
 
         # Disabled warnings (please do not disable any others without first consulting ly-warnings)
         -Wno-format-security

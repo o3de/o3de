@@ -24,6 +24,13 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 
     include(cmake/Platform/Common/GNU/Configurations_gnu.cmake)
 
+    if(LY_GCC_BUILD_FOR_GCOV)
+        set(LY_GCC_GCOV_LFLAGS "-lgcov")
+    endif()
+    if(LY_GCC_BUILD_FOR_GPROF)
+        set(LY_GCC_GPROF_LFLAGS "-pg")
+    endif()
+
     ly_append_configurations_options(
         DEFINES
             LINUX
@@ -33,6 +40,8 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
             -fPIC
             -msse4.1
         LINK_NON_STATIC
+            ${LY_GCC_GCOV_LFLAGS}
+            ${LY_GCC_GPROF_LFLAGS}
             -Wl,--no-undefined
             -lpthread
     )
