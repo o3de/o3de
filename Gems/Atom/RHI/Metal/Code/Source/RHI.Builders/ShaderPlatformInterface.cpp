@@ -424,7 +424,9 @@ namespace AZ
             AZStd::string outMetalLibFile = RHI::BuildFileNameWithExtension(shaderSourceFile, tempFolder, "metallib");
             
             //Debug symbols are always enabled at the moment. Need to turn them off for optimized shader assets. 
-            AZStd::string shaderDebugInfo = "-gline-tables-only -MO -fpreserve-invariance";
+            AZStd::string shaderDebugInfo = "-gline-tables-only -MO";
+
+            AZStd::string shaderMslToAirOptions = "-fpreserve-invariance";
 
             //Apply the correct platform sdk option
             AZStd::string platformSdk = "macosx";
@@ -434,7 +436,7 @@ namespace AZ
             }
             
             //Convert to air file
-            AZStd::string mslToAirCommandOptions = AZStd::string::format("-sdk %s metal \"%s\" %s -c -o \"%s\"", platformSdk.c_str(), inputMetalFile.c_str(), shaderDebugInfo.c_str(), outputAirFile.c_str());
+            AZStd::string mslToAirCommandOptions = AZStd::string::format("-sdk %s metal \"%s\" %s %s -c -o \"%s\"", platformSdk.c_str(), inputMetalFile.c_str(), shaderDebugInfo.c_str(), shaderMslToAirOptions.c_str(), outputAirFile.c_str());
             
             if (!RHI::ExecuteShaderCompiler("/usr/bin/xcrun", mslToAirCommandOptions, inputMetalFile, "MslToAir"))
             {
