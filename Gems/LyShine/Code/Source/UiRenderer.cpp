@@ -471,7 +471,6 @@ void UiRenderer::DebugDisplayTextureData(int recordingOption)
         {
             AZ::Data::Instance<AZ::RPI::Image> image = texture.first;
             const AZ::RHI::ImageDescriptor& imageDescriptor = image->GetRHIImage()->GetDescriptor();
-            AZ::RHI::Size size = imageDescriptor.m_size;
             uint32_t width = imageDescriptor.m_size.m_width;
             uint32_t height = imageDescriptor.m_size.m_height;
             uint32_t dataSize = texture.second;
