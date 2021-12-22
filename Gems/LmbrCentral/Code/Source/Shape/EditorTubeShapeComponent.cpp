@@ -143,7 +143,7 @@ namespace LmbrCentral
             debugDisplay, [this]() { return CanDraw(); },
             [this](AzFramework::DebugDisplayRequests& debugDisplay)
             {
-                DrawShape(debugDisplay, { m_shapeColor, m_shapeWireColor, m_displayFilled }, m_tubeShapeMesh);
+                DrawShape(debugDisplay, { m_tubeShapeMeshConfig.m_shapeComponentConfig.GetDrawColor(), m_shapeWireColor, m_displayFilled }, m_tubeShapeMesh);
             },
             m_tubeShape.GetCurrentTransform());
     }

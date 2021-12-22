@@ -85,7 +85,7 @@ namespace LmbrCentral
             [this](AzFramework::DebugDisplayRequests& debugDisplay)
             {
                 DrawQuadShape(
-                    { m_shapeColor, m_shapeWireColor, m_displayFilled },
+                    { m_quadShape.GetQuadConfiguration().GetDrawColor(), m_shapeWireColor, m_displayFilled },
                     m_quadShape.GetQuadConfiguration(), debugDisplay, m_quadShape.GetCurrentNonUniformScale());
             },
             m_quadShape.GetCurrentTransform());

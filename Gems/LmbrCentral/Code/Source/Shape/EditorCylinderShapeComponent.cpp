@@ -86,7 +86,7 @@ namespace LmbrCentral
             [this](AzFramework::DebugDisplayRequests& debugDisplay)
             {
                 DrawCylinderShape(
-                    { m_shapeColor, m_shapeWireColor, m_displayFilled },
+                    { m_cylinderShape.GetCylinderConfiguration().GetDrawColor(), m_shapeWireColor, m_displayFilled },
                     m_cylinderShape.GetCylinderConfiguration(), debugDisplay);
             },
             m_cylinderShape.GetCurrentTransform());
