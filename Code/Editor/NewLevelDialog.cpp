@@ -214,9 +214,10 @@ void CNewLevelDialog::OnLevelNameChange()
     bool valid = !m_level.isEmpty() && ValidateLevel();
     if (valid)
     {
-        QString strLevelPath = m_levelFolders + "/" + m_level + "/" + m_level + EditorUtils::LevelFile::GetDefaultFileExtension();
-        int levelMaxLength = (_MAX_PATH - m_levelFolders.length() - QString(EditorUtils::LevelFile::GetDefaultFileExtension()).length() - 2) / 2;
-        if (strLevelPath.length() >= _MAX_PATH)
+        QDir levelDir(QString("%1/%2/").arg(m_levelFolders, m_level));
+        QString strLevelPath = levelDir.absoluteFilePath(m_level + EditorUtils::LevelFile::GetDefaultFileExtension());
+        int levelMaxLength = (AZ::IO::MaxPathLength - m_levelFolders.length() - QString(EditorUtils::LevelFile::GetDefaultFileExtension()).length() - 2) / 2;
+        if (strLevelPath.length() >= AZ::IO::MaxPathLength)
         {
             valid = false;
             if (!ui->nameErrorTips->isVisible())
