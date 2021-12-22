@@ -1014,8 +1014,6 @@ void UiCanvasManager::DebugDisplayCanvasData(int setting) const
     const AZ::Vector3 red(1.0f, 0.3f, 0.3f);
     const AZ::Vector3 blue(0.3f, 0.3f, 1.0f);
 
-    // If the viewport is narrow then a font size of 16 might be too large, so we use a size between 12 and 16 depending
-    // on the viewport width.
     const float fontSize = 8.0f;
     const float lineSpacing = 20.0f * dpiScale;
 

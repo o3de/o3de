@@ -464,7 +464,7 @@ void UiRenderer::DebugDisplayTextureData(int recordingOption)
         sprintf_s(buffer, "There are %zu unique UI textures rendered in this frame, the total texture area is %d (%d x %d), total data size is %d (%.2f MB)",
             numTexturesUsedInFrame, totalArea, xDim, yDim, totalDataSize, totalDataSizeMB);
         WriteLine(buffer, white);
-        sprintf_s(buffer, "Dimensions   Data Size    Format Texture name");
+        sprintf_s(buffer, "Dimensions   Data Size              Format Texture name");
         WriteLine(buffer, blue);
 
         for (auto texture : textures)
@@ -476,17 +476,27 @@ void UiRenderer::DebugDisplayTextureData(int recordingOption)
             uint32_t height = imageDescriptor.m_size.m_height;
             uint32_t dataSize = texture.second;
 
-            // Check if the image has been assigned a name (ex. attachment image or cpu generated image)
-            AZStd::string textureName = image->GetRHIImage()->GetName().GetStringView();
-            if (textureName.empty())
+            const char* displayName = "Unnamed Texture";
+            AZStd::string imagePath;
+            // Check if the image has been assigned a name (ex. if it's an attachment image or a cpu generated image)
+            const AZ::Name& imageName = image->GetRHIImage()->GetName();
+            if (!imageName.IsEmpty())
             {
-                // Use the asset path as the texture name
-                AZ::Data::AssetCatalogRequestBus::BroadcastResult(textureName,
+                displayName = imageName.GetCStr();
+            }
+            else
+            {
+                // Use the image's asset path as the display name
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(imagePath,
                     &AZ::Data::AssetCatalogRequests::GetAssetPathById, image->GetAssetId());
+                if (!imagePath.empty())
+                {
+                    displayName = imagePath.c_str();
+                }
             }
 
-            sprintf_s(buffer, "%4u x %4u, %9u %9s %s",
-                width, height, dataSize, AZ::RHI::ToString(imageDescriptor.m_format), textureName.c_str());
+            sprintf_s(buffer, "%4u x %4u, %9u %19s %s",
+                width, height, dataSize, AZ::RHI::ToString(imageDescriptor.m_format), displayName);
             WriteLine(buffer, white);
         }
     }
