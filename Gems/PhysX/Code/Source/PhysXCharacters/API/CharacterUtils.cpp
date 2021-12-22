@@ -95,6 +95,7 @@ namespace PhysX::Utils::Characters
 
             controllerDesc.scaleCoeff = extendedConfig.m_scaleCoefficient;
             controllerDesc.contactOffset = extendedConfig.m_contactOffset;
+            controllerDesc.position = PxMathConvertExtended(extendedConfig.m_position);
             controllerDesc.nonWalkableMode = extendedConfig.m_slopeBehaviour == SlopeBehaviour::PreventClimbing
                 ? physx::PxControllerNonWalkableMode::ePREVENT_CLIMBING
                 : physx::PxControllerNonWalkableMode::ePREVENT_CLIMBING_AND_FORCE_SLIDING;
