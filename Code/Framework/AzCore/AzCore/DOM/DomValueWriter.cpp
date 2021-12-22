@@ -70,7 +70,7 @@ namespace AZ::Dom
 
     Visitor::Result ValueWriter::RefCountedString(AZStd::shared_ptr<const AZStd::vector<char>> value, [[maybe_unused]] Lifetime lifetime)
     {
-        CurrentValue().SetString(value);
+        CurrentValue().SetString(AZStd::move(value));
         return FinishWrite();
     }
 

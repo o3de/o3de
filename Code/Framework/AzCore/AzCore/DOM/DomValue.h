@@ -103,9 +103,9 @@ namespace AZ::Dom
     {
     public:
         Node() = default;
-        Node(AZ::Name name);
-        Node(const Node&) = default;
-        Node(Node&&) = default;
+        explicit Node(AZ::Name name);
+        explicit Node(const Node&) = default;
+        explicit Node(Node&&) = default;
 
         Node& operator=(const Node&) = default;
         Node& operator=(Node&&) = default;
@@ -188,7 +188,7 @@ namespace AZ::Dom
             OpaqueStorageType>;
 
         // Constructors...
-        Value();
+        Value() = default;
         Value(const Value&);
         Value(Value&&) noexcept;
         Value(AZStd::string_view stringView, bool copy);

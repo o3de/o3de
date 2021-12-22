@@ -113,10 +113,6 @@ namespace AZ::Dom
     {
     }
 
-    Value::Value()
-    {
-    }
-
     Value::Value(const Value& value)
         : m_value(value.m_value)
     {
@@ -344,7 +340,7 @@ namespace AZ::Dom
 
     bool Value::IsBool() const
     {
-        return AZStd::holds_alternative<bool>(m_value);
+        return GetType() == Type::Bool;
     }
 
     bool Value::IsNode() const
@@ -383,17 +379,17 @@ namespace AZ::Dom
 
     bool Value::IsInt() const
     {
-        return AZStd::holds_alternative<int64_t>(m_value);
+        return GetType() == Type::Int64;
     }
 
     bool Value::IsUint() const
     {
-        return AZStd::holds_alternative<uint64_t>(m_value);
+        return GetType() == Type::Uint64;
     }
 
     bool Value::IsDouble() const
     {
-        return AZStd::holds_alternative<double>(m_value);
+        return GetType() == Type::Double;
     }
 
     bool Value::IsString() const
@@ -666,7 +662,7 @@ namespace AZ::Dom
         Object::ContainerType& object = GetObjectInternal();
         if (!object.empty())
         {
-            AZStd::swap(*pos, object.back());
+            *pos = AZStd::move(object.back());
             object.pop_back();
         }
         return object.end();
