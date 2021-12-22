@@ -16,13 +16,10 @@ set(FILES
     Include/Framework/AWSApiRequestJob.h
     Include/Framework/AWSApiRequestJobConfig.h
     Include/Framework/Error.h
-    Include/Framework/HttpClientComponent.h
     Include/Framework/HttpRequestJob.h
     Include/Framework/HttpRequestJobConfig.h
-    Include/Framework/JobExecuter.h
     Include/Framework/JsonObjectHandler.h
     Include/Framework/JsonWriter.h
-    Include/Framework/MultipartFormData.h
     Include/Framework/RequestBuilder.h
     Include/Framework/ServiceClientJob.h
     Include/Framework/ServiceClientJobConfig.h
@@ -61,7 +58,6 @@ set(FILES
     Source/Framework/HttpRequestJob.cpp
     Source/Framework/HttpRequestJobConfig.cpp
     Source/Framework/JsonObjectHandler.cpp
-    Source/Framework/MultipartFormData.cpp
     Source/Framework/RequestBuilder.cpp
     Source/Framework/ServiceJob.cpp
     Source/Framework/ServiceJobConfig.cpp
