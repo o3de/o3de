@@ -6,8 +6,6 @@
  *
  */
 
-#pragma once
-
 #include <AzCore/DOM/DomValue.h>
 #include <AzCore/DOM/DomValueWriter.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
@@ -31,11 +29,7 @@ namespace AZ::Dom
     namespace Internal
     {
         template<class TestType>
-        constexpr size_t GetTypeIndexInternal(size_t index = 0)
-        {
-            static_assert(false, "Type not found in ValueType");
-            return index;
-        }
+        constexpr size_t GetTypeIndexInternal(size_t index = 0);
 
         template<class TestType, class FirstType, class... Rest>
         constexpr size_t GetTypeIndexInternal(size_t index = 0)
@@ -143,7 +137,7 @@ namespace AZ::Dom
 
     Value Value::FromOpaqueValue(const AZStd::any& value)
     {
-        return Value(&value);
+        return Value(value);
     }
 
     Value::Value(int8_t value)
