@@ -10,7 +10,6 @@
 #include <AzCore/Casting/numeric_cast.h>
 #include <QPushButton>
 #include <QLabel>
-#include "../../../../EMStudioSDK/Source/EMStudioCore.h"
 #include <MCore/Source/LogManager.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/Source/ActorManager.h>

@@ -8,7 +8,6 @@
 
 #include "RenderViewWidget.h"
 #include "RenderPlugin.h"
-#include "../EMStudioCore.h"
 #include "../PreferencesWindow.h"
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <EMotionFX/CommandSystem/Source/SelectionList.h>

@@ -9,7 +9,6 @@
 // include the required headers
 #include "RenderUpdateCallback.h"
 #include "RenderPlugin.h"
-#include "../EMStudioCore.h"
 #include <EMotionFX/Rendering/Common/OrthographicCamera.h>
 #include <EMotionFX/Source/TransformData.h>
 #include "RenderWidget.h"

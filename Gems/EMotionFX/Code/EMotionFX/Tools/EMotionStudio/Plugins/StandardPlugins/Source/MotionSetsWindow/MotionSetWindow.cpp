@@ -28,7 +28,6 @@
 #include <QDesktopWidget>
 #include <QToolBar>
 #include <EMotionFX/CommandSystem/Source/MotionCommands.h>
-#include "../../../../EMStudioSDK/Source/EMStudioCore.h"
 #include <MCore/Source/LogManager.h>
 #include <MCore/Source/IDGenerator.h>
 #include "../../../../EMStudioSDK/Source/EMStudioManager.h"

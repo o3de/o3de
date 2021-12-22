@@ -8,7 +8,6 @@
 
 // include required headers
 #include "NodeGroupsPlugin.h"
-#include "../../../../EMStudioSDK/Source/EMStudioCore.h"
 #include <MCore/Source/LogManager.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/CommandSystem/Source/NodeGroupCommands.h>

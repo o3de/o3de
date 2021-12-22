@@ -14,7 +14,6 @@ set(FILES
     Source/DockWidgetPlugin.cpp
     Source/DockWidgetPlugin.h
     Source/EMStudioConfig.h
-    Source/EMStudioCore.h
     Source/EMStudioManager.cpp
     Source/EMStudioManager.h
     Source/EMStudioPlugin.cpp
