@@ -9,6 +9,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzToolsFramework/Debug/TraceContext.h>
 
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Containers/SceneGraph.h>
