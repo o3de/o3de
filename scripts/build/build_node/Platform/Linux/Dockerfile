@@ -31,7 +31,7 @@ RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
     dpkg-reconfigure --frontend=noninteractive locales && \
     update-locale LANG=en_US.UTF-8
 
-ENV LANG en_US.UTF-8
+ENV LANG=en_US.UTF-8
 
 # Install common tools
 RUN apt-get -y install tar sudo less vim lsof firewalld net-tools pciutils \
@@ -48,7 +48,7 @@ RUN git clone --no-checkout https://github.com/o3de/o3de.git .o3de && \
     ./install-ubuntu.sh
 
 # Install supported version of cmake if build tool installation runs into issues
-ENV CMAKE_VER 3.21.1-0kitware1ubuntu20.04.1
+ENV CMAKE_VER=3.21.1-0kitware1ubuntu20.04.1
 RUN $(cmake --version) || apt-get -y install cmake=${CMAKE_VER} cmake-data=${CMAKE_VER}
 
 # Symlink clang version to non-versioned clang and set cc to clang
