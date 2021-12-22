@@ -288,7 +288,7 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestRegisteredTags)
 
     ASSERT_TRUE(AZStd::find_if(
         registeredTags.begin(), registeredTags.end(),
-        [searchTerm](decltype(registeredTags)::value_type pair)
+        [=](decltype(registeredTags)::value_type pair)
         {
             return pair.second == searchTerm;
         }));
