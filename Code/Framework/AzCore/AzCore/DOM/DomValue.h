@@ -193,6 +193,10 @@ namespace AZ::Dom
         Value(AZStd::string_view stringView, bool copy);
         Value(SharedStringType sharedString);
 
+        Value(int8_t value);
+        Value(uint8_t value);
+        Value(int16_t value);
+        Value(uint16_t value);
         Value(int32_t value);
         Value(uint32_t value);
         Value(int64_t value);
@@ -321,12 +325,20 @@ namespace AZ::Dom
         void SetInt64(int64_t);
         int32_t GetInt32() const;
         void SetInt32(int32_t);
+        int16_t GetInt16() const;
+        void SetInt16(int16_t);
+        int8_t GetInt8() const;
+        void SetInt8(int8_t);
 
         // uint API...
         uint64_t GetUint64() const;
         void SetUint64(uint64_t);
         uint32_t GetUint32() const;
         void SetUint32(uint32_t);
+        uint16_t GetUint16() const;
+        void SetUint16(uint16_t);
+        uint8_t GetUint8() const;
+        void SetUint8(uint8_t);
 
         // bool API...
         bool GetBool() const;
