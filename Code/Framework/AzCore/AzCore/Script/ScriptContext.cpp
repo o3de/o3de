@@ -1424,7 +1424,8 @@ namespace AZ
     }
 }
 
-using namespace AZ;
+namespace AZ
+{
 
 #ifndef AZ_USE_CUSTOM_SCRIPT_BIND
 
@@ -2254,6 +2255,7 @@ LUA_API const Node* lua_getDummyNode()
     }
 
 #endif // AZ_USE_CUSTOM_SCRIPT_BIND
+} // namespace AZ
 
     //////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////
@@ -5825,7 +5827,6 @@ LUA_API const Node* lua_getDummyNode()
             AllocatorWrapper<Internal::LuaSystemAllocator> m_luaAllocator;
             AZStd::thread::id m_ownerThreadId; // Check if Lua methods (including EBus handlers) are called from background threads.
         };
-    } // namespace AZ
 
     ScriptContext::ScriptContext(ScriptContextId id, IAllocatorAllocate* allocator, lua_State* nativeContext)
     {
@@ -6116,5 +6117,6 @@ LUA_API const Node* lua_getDummyNode()
     {
         return m_impl->ConstructScriptProperty(sdc, valueIndex, name, restrictToPropertyArrays);
     }
+} // namespace AZ
 
 #undef AZ_DBG_NAME_FIXER
