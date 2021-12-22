@@ -129,7 +129,7 @@ namespace AZ::Dom
                 AZStd::string::format("AZ::Dom::ValueWriter: %s called from within a different container type", endMethodName));
         }
 
-        if (buffer.m_attributes.size() != attributeCount)
+        if (static_cast<AZ::u64>(buffer.m_attributes.size()) != attributeCount)
         {
             return VisitorFailure(
                 VisitorErrorCode::InternalError,
@@ -138,7 +138,7 @@ namespace AZ::Dom
                     buffer.m_attributes.size()));
         }
 
-        if (buffer.m_elements.size() != elementCount)
+        if (static_cast<AZ::u64>(buffer.m_elements.size()) != elementCount)
         {
             return VisitorFailure(
                 VisitorErrorCode::InternalError,
@@ -146,6 +146,7 @@ namespace AZ::Dom
                     "AZ::Dom::ValueWriter: %s expected %llu elements but received %llu elements instead", endMethodName, elementCount,
                     buffer.m_elements.size()));
         }
+
         if (buffer.m_attributes.size() > 0)
         {
             MoveVectorMemory(container.GetMutableObject(), buffer.m_attributes);
@@ -236,8 +237,6 @@ namespace AZ::Dom
         Value value;
         m_entryStack.top().m_value.Swap(value);
         ValueInfo& newEntry = m_entryStack.top();
-
-        constexpr const size_t reserveSize = 8;
 
         if (!newEntry.m_key.IsEmpty())
         {

@@ -22,7 +22,7 @@ namespace AZ::Dom::Utils
         return backend.ReadFromBufferInPlace(string.data(), string.size(), visitor);
     }
 
-    AZ::Outcome<Value, AZStd::string> AZ::Dom::Utils::WriteToValue(Backend::WriteCallback writeCallback)
+    AZ::Outcome<Value, AZStd::string> WriteToValue(Backend::WriteCallback writeCallback)
     {
         Value value;
         AZStd::unique_ptr<Visitor> writer = value.GetWriteHandler();
