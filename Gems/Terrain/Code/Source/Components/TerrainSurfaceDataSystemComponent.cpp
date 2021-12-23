@@ -7,6 +7,7 @@
  */
 
 #include <Components/TerrainSurfaceDataSystemComponent.h>
+#include <Terrain/TerrainDataConstants.h>
 #include <AzCore/Debug/Profiler.h> 
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -14,6 +15,7 @@
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
 #include <SurfaceData/SurfaceTag.h>
 #include <SurfaceData/Utility/SurfaceDataUtility.h>
+#include <SurfaceData/SurfaceDataTagProviderRequestBus.h>
 
 namespace Terrain
 {
@@ -96,6 +98,7 @@ namespace Terrain
     {
         m_providerHandle = SurfaceData::InvalidSurfaceDataRegistryHandle;
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
+        SurfaceData::SurfaceDataTagProviderRequestBus::Handler::BusConnect();
 
         UpdateTerrainData(AZ::Aabb::CreateNull());
     }
@@ -110,6 +113,7 @@ namespace Terrain
         }
 
         SurfaceData::SurfaceDataProviderRequestBus::Handler::BusDisconnect();
+        SurfaceData::SurfaceDataTagProviderRequestBus::Handler::BusDisconnect();
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
 
         // Clear the cached terrain bounds data
@@ -162,8 +166,7 @@ namespace Terrain
                     point.m_normal = terrainSurfacePoint.m_normal;
 
                     // Always add a "terrain" or "terrainHole" tag.
-                    const AZ::Crc32 terrainTag =
-                        isHole ? SurfaceData::Constants::s_terrainHoleTagCrc : SurfaceData::Constants::s_terrainTagCrc;
+                    const AZ::Crc32 terrainTag = isHole ? Constants::s_terrainHoleTagCrc : Constants::s_terrainTagCrc;
                     SurfaceData::AddMaxValueForMasks(point.m_masks, terrainTag, 1.0f);
 
                     // Add all of the surface tags that the terrain has at this point.
@@ -189,8 +192,8 @@ namespace Terrain
     SurfaceData::SurfaceTagVector TerrainSurfaceDataSystemComponent::GetSurfaceTags() const
     {
         SurfaceData::SurfaceTagVector tags;
-        tags.push_back(SurfaceData::Constants::s_terrainHoleTagCrc);
-        tags.push_back(SurfaceData::Constants::s_terrainTagCrc);
+        tags.push_back(Constants::s_terrainHoleTagCrc);
+        tags.push_back(Constants::s_terrainTagCrc);
         return tags;
     }
 
@@ -248,8 +251,6 @@ namespace Terrain
             SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
                 &SurfaceData::SurfaceDataSystemRequestBus::Events::UnregisterSurfaceDataProvider, m_providerHandle);
             m_providerHandle = SurfaceData::InvalidSurfaceDataRegistryHandle;
-
-            SurfaceData::SurfaceDataProviderRequestBus::Handler::BusDisconnect();
         }
         else
         {
@@ -262,5 +263,11 @@ namespace Terrain
         const AZ::Aabb& dirtyRegion, [[maybe_unused]] TerrainDataChangedMask dataChangedMask)
     {
         UpdateTerrainData(dirtyRegion);
+    }
+
+    void TerrainSurfaceDataSystemComponent::GetRegisteredSurfaceTagNames(SurfaceData::SurfaceTagNameSet& names) const
+    {
+        names.insert(Constants::s_terrainHoleTagName);
+        names.insert(Constants::s_terrainTagName);
     }
 }

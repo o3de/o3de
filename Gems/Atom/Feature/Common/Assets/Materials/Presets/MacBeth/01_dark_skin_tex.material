@@ -11,6 +11,8 @@
                 1.0,
                 1.0
             ],
+            "textureBlendMode": "Lerp",
+            "textureMap": "01_dark_skin_sRGB.tif",
             "useTexture": true
         }
     }

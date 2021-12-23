@@ -1445,7 +1445,7 @@ ISourceControl* CEditorImpl::GetSourceControl()
         {
             IClassDesc* pClass = classes[i];
             ISourceControl* pSCM = nullptr;
-            HRESULT hRes = pClass->QueryInterface(__uuidof(ISourceControl), (void**)&pSCM);
+            HRESULT hRes = pClass->QueryInterface(__az_uuidof(ISourceControl), (void**)&pSCM);
             if (!FAILED(hRes) && pSCM)
             {
                 m_pSourceControl = pSCM;

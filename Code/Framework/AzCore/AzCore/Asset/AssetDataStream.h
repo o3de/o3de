@@ -100,7 +100,7 @@ namespace AZ::Data
         //! The path and file name of the asset being loaded
         AZStd::string m_filePath;
 
-        //! The offset into the file to start loading at.  
+        //! The offset into the file to start loading at.
         size_t m_fileOffset{ 0 };
 
         //! The amount of data that's expected to be loaded.

@@ -144,7 +144,10 @@ namespace AzToolsFramework
         {
             emit ClearStringFilter();
             emit ClearTypeFilter();
-            m_sourceFilterModel->FilterUpdatedSlotImmediate();
+            if (m_sourceFilterModel)
+            {
+                m_sourceFilterModel->FilterUpdatedSlotImmediate();
+            }
         }
 
         void AssetBrowserTableView::Update()

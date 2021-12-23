@@ -279,6 +279,21 @@ namespace AtomToolsFramework
         return false;
     }
 
+    void ModularViewportCameraControllerInstance::SetCameraPivotAttached(const AZ::Vector3& pivot)
+    {
+        m_targetCamera.m_pivot = pivot;
+    }
+
+    void ModularViewportCameraControllerInstance::SetCameraPivotDetached(const AZ::Vector3& pivot)
+    {
+        AzFramework::MovePivotDetached(m_targetCamera, pivot);
+    }
+
+    void ModularViewportCameraControllerInstance::SetCameraOffset(const AZ::Vector3& offset)
+    {
+        m_targetCamera.m_offset = offset;
+    }
+
     bool ModularViewportCameraControllerInstance::IsInterpolating() const
     {
         return m_cameraMode == CameraMode::Animation;

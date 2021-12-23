@@ -538,6 +538,7 @@ void LevelEditorMenuHandler::PopulateEditMenu(ActionManager::MenuWrapper& editMe
     auto snapMenu = modifyMenu.AddMenu(tr("Snap"));
 
     snapMenu.AddAction(AzToolsFramework::SnapAngle);
+    snapMenu.AddAction(AzToolsFramework::SnapToGrid);
 
     auto transformModeMenu = modifyMenu.AddMenu(tr("Transform Mode"));
     transformModeMenu.AddAction(AzToolsFramework::EditModeMove);
@@ -723,7 +724,8 @@ QMenu* LevelEditorMenuHandler::CreateViewMenu()
     // MISSING AVIRECORDER
 
     viewportViewsMenuWrapper.AddSeparator();
-    viewportViewsMenuWrapper.AddAction(ID_DISPLAY_SHOWHELPERS);
+    viewportViewsMenuWrapper.AddAction(AzToolsFramework::Helpers);
+    viewportViewsMenuWrapper.AddAction(AzToolsFramework::Icons);
 
     // Refresh Style
     viewMenu.AddAction(ID_SKINS_REFRESH);

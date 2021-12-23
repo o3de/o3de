@@ -6,30 +6,30 @@
             "variant": "",
             "details": {
                 "name": "Get Position",
-                "category": "Math/Oriented Bounding Box",
-                "tooltip": "Returns the position of Source"
+                "category": "Math/OBB",
+                "tooltip": "returns the position of Source"
             },
             "slots": [
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "base": "DataInput_Source",
+                    "base": "DataInput_Source_0",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "base": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

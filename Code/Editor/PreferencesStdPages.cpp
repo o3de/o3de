@@ -50,7 +50,7 @@ CStdPreferencesClassDesc::CStdPreferencesClassDesc()
 
 HRESULT CStdPreferencesClassDesc::QueryInterface(const IID& riid, void** ppvObj)
 {
-    if (riid == __uuidof(IPreferencesPageCreator))
+    if (riid == __az_uuidof(IPreferencesPageCreator))
     {
         *ppvObj = (IPreferencesPageCreator*)this;
         return S_OK;

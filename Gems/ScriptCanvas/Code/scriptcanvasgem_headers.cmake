@@ -16,8 +16,6 @@ set(FILES
     Include/ScriptCanvas/Asset/ExecutionLogAssetBus.h
     Include/ScriptCanvas/Asset/RuntimeAsset.h
     Include/ScriptCanvas/Asset/RuntimeAssetHandler.h
-    Include/ScriptCanvas/Asset/ScriptCanvasAssetBase.h
-    Include/ScriptCanvas/Asset/ScriptCanvasAssetData.h
     Include/ScriptCanvas/Asset/SubgraphInterfaceAssetHandler.h
     Include/ScriptCanvas/Core/ScriptCanvasBus.h
     Include/ScriptCanvas/Core/ExecutionNotificationsBus.h
@@ -351,9 +349,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/Operators/Math/OperatorSub.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Operators/Math/OperatorLerpNodeable.h
     Include/ScriptCanvas/Libraries/Operators/Math/OperatorLerpNodeableNode.h
-    Include/ScriptCanvas/Profiler/Driller.h
-    Include/ScriptCanvas/Profiler/Aggregator.h
-    Include/ScriptCanvas/Profiler/DrillerEvents.h
     Include/ScriptCanvas/Serialization/BehaviorContextObjectSerializer.h
     Include/ScriptCanvas/Serialization/DatumSerializer.h
     Include/ScriptCanvas/Serialization/RuntimeVariableSerializer.h

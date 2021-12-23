@@ -7,36 +7,35 @@
             "details": {
                 "name": "Divide by Number (/)",
                 "category": "Math",
-                "tooltip": "Divides certain types by a given number",
-                "subtitle": "Math"
+                "tooltip": "Divides certain types by a given number"
             },
             "slots": [
                 {
-                    "base": "DataInput_Divisor",
+                    "base": "DataInput_Divisor_0",
                     "details": {
                         "name": "Divisor"
                     }
                 },
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "base": "DataInput_Source",
+                    "base": "DataInput_Source_1",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "base": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

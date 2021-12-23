@@ -1,0 +1,32 @@
+{
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "propertyLayoutVersion": 1,
+    "properties": {
+        "baseColor": {
+            "color": [ 1.0, 1.0, 1.0 ],
+            "factor": 0.75,
+            "useTexture": false,
+            "textureMap": ""
+        },
+        "metallic": {
+            "factor": 0.0,
+            "useTexture": false,
+            "textureMap": ""
+        },
+        "roughness": {
+            "factor": 0.0,
+            "useTexture": false,
+            "textureMap": ""
+        },
+        "specularF0": {
+            "factor": 0.5,
+            "useTexture": false,
+            "textureMap": ""
+        },
+        "normal": {
+            "factor": 1.0,
+            "useTexture": false,
+            "textureMap": ""
+        }
+    }
+}

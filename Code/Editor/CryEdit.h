@@ -237,7 +237,6 @@ public:
     void OnSyncPlayerUpdate(QAction* action);
     void OnResourcesReduceworkingset();
     void OnDummyCommand() {};
-    void OnShowHelpers();
     void OnFileSave();
     void OnUpdateDocumentReady(QAction* action);
     void OnUpdateFileOpen(QAction* action);

@@ -10,7 +10,6 @@
 
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
-#include <AzCore/IO/FileIOEventBus.h>
 #include <AzCore/Utils/Utils.h>
 
 #include "BaseAssetProcessorTest.h"
@@ -55,13 +54,11 @@ namespace AssetProcessor
     };
 
     class LegacyTestAdapter : public AssetProcessorTest,
-        public ::testing::WithParamInterface<std::string>,
-        public AZ::IO::FileIOEventBus::Handler
+        public ::testing::WithParamInterface<std::string>
     {
         void SetUp() override
         {
             AssetProcessorTest::SetUp();
-            AZ::IO::FileIOEventBus::Handler::BusConnect();
             
             static int numParams = 1;
             static char processName[] = {"AssetProcessorBatch"};
@@ -91,16 +88,7 @@ namespace AssetProcessor
         void TearDown() override
         {
             m_application.reset();
-            AZ::IO::FileIOEventBus::Handler::BusDisconnect();
             AssetProcessorTest::TearDown();
-        }
-
-        void OnError(
-            [[maybe_unused]] const AZ::IO::SystemFile* file,
-            [[maybe_unused]] const char* fileName,
-            [[maybe_unused]] int errorCode) override
-        {
-            AZ_Error("LegacyTestAdapter", false, "File error detected with %s with code %d", fileName, errorCode);
         }
 
         AZStd::unique_ptr<UnitTestAppManager> m_application;

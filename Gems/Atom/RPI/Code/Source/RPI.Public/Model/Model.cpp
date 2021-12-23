@@ -11,7 +11,6 @@
 
 #include <Atom/RHI/Factory.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
 #include <AzCore/Debug/Timer.h>
 #include <AzCore/Jobs/JobFunction.h>

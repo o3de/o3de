@@ -578,7 +578,6 @@ namespace UnitTest
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
             AzFramework::Application::Descriptor descriptor;
-            descriptor.m_enableDrilling = false;
             m_app.Start(descriptor);
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is

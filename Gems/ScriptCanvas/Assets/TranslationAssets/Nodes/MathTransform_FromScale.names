@@ -7,29 +7,29 @@
             "details": {
                 "name": "From Scale",
                 "category": "Math/Transform",
-                "tooltip": "Returns a transform which applies the specified uniform Scale, but no rotation or translation"
+                "tooltip": "returns a transform which applies the specified uniform Scale, but no rotation or translation"
             },
             "slots": [
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "base": "DataInput_Scale",
+                    "base": "DataInput_Scale_0",
                     "details": {
                         "name": "Scale"
                     }
                 },
                 {
-                    "base": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

@@ -1032,7 +1032,7 @@ namespace EMotionFX
                     AZ::Vector3* normals = (AZ::Vector3*)mesh->FindVertexData(Mesh::ATTRIB_NORMALS);
                     AZ::Vector3  norm = MCore::BarycentricInterpolate<AZ::Vector3>(
                             closestBaryU, closestBaryV,
-                            normals[closestIndices[0]], normals[closestIndices[1]], normals[closestIndices[2]]);                   
+                            normals[closestIndices[0]], normals[closestIndices[1]], normals[closestIndices[2]]);
                     norm = closestTransform.TransformVector(norm);
                     norm.Normalize();
                     *outNormal = norm;

@@ -144,7 +144,6 @@ namespace UnitTest
         MOCK_METHOD0(GetJsonRegistrationContext, AZ::JsonRegistrationContext* ());
         MOCK_CONST_METHOD0(GetEngineRoot, const char* ());
         MOCK_CONST_METHOD0(GetExecutableFolder, const char* ());
-        MOCK_METHOD0(GetDrillerManager, AZ::Debug::DrillerManager* ());
         MOCK_METHOD1(ResolveModulePath, void(AZ::OSString&));
         MOCK_METHOD0(GetAzCommandLine, AZ::CommandLine* ());
         MOCK_CONST_METHOD1(QueryApplicationType, void(AZ::ApplicationTypeQuery&));

@@ -49,7 +49,10 @@ namespace ScriptCanvas
             , config.asset.GetId().ToString<AZStd::string>().data());
 #endif
 
-        Execution::InitializeInterpretedStatics(runtimeAsset->GetData());
+        if (!runtimeAsset->m_runtimeData.m_areStaticsInitialized)
+        {
+            Execution::InitializeInterpretedStatics(runtimeAsset->m_runtimeData);
+        }
     }
 
     void ExecutionStateInterpreted::ClearLuaRegistryIndex()
@@ -67,8 +70,8 @@ namespace ScriptCanvas
     const Grammar::DebugExecution* ExecutionStateInterpreted::GetDebugSymbolIn(size_t index, const AZ::Data::AssetId& id) const
     {
         auto asset = ExecutionStateInterpretedCpp::GetSubgraphAssetForDebug(id);
-        return asset && asset.Get() && index < asset.Get()->GetData().m_debugMap.m_ins.size()
-            ? &(asset.Get()->GetData().m_debugMap.m_ins[index])
+        return asset && asset.Get() && index < asset.Get()->m_runtimeData.m_debugMap.m_ins.size()
+            ? &(asset.Get()->m_runtimeData.m_debugMap.m_ins[index])
             : nullptr;
     }
 
@@ -82,8 +85,8 @@ namespace ScriptCanvas
     const Grammar::DebugExecution* ExecutionStateInterpreted::GetDebugSymbolOut(size_t index, const AZ::Data::AssetId& id) const
     {
         auto asset = ExecutionStateInterpretedCpp::GetSubgraphAssetForDebug(id);
-        return asset && asset.Get() && index < asset.Get()->GetData().m_debugMap.m_outs.size()
-            ? &(asset.Get()->GetData().m_debugMap.m_outs[index])
+        return asset && asset.Get() && index < asset.Get()->m_runtimeData.m_debugMap.m_outs.size()
+            ? &(asset.Get()->m_runtimeData.m_debugMap.m_outs[index])
             : nullptr;
     }
 
@@ -97,8 +100,8 @@ namespace ScriptCanvas
     const Grammar::DebugExecution* ExecutionStateInterpreted::GetDebugSymbolReturn(size_t index, const AZ::Data::AssetId& id) const
     {
         auto asset = ExecutionStateInterpretedCpp::GetSubgraphAssetForDebug(id);
-        return asset && asset.Get() && index < asset.Get()->GetData().m_debugMap.m_returns.size()
-            ? &(asset.Get()->GetData().m_debugMap.m_returns[index])
+        return asset && asset.Get() && index < asset.Get()->m_runtimeData.m_debugMap.m_returns.size()
+            ? &(asset.Get()->m_runtimeData.m_debugMap.m_returns[index])
             : nullptr;
     }
 
@@ -112,8 +115,8 @@ namespace ScriptCanvas
     const Grammar::DebugDataSource* ExecutionStateInterpreted::GetDebugSymbolVariableChange(size_t index, const AZ::Data::AssetId& id) const
     {
         auto asset = ExecutionStateInterpretedCpp::GetSubgraphAssetForDebug(id);
-        return asset && asset.Get() && index < asset.Get()->GetData().m_debugMap.m_variables.size()
-            ? &(asset.Get()->GetData().m_debugMap.m_variables[index])
+        return asset && asset.Get() && index < asset.Get()->m_runtimeData.m_debugMap.m_variables.size()
+            ? &(asset.Get()->m_runtimeData.m_debugMap.m_variables[index])
             : nullptr;
     }
 
@@ -143,6 +146,8 @@ namespace ScriptCanvas
         AZ_Assert(m_luaRegistryIndex == LUA_NOREF, "ExecutionStateInterpreted already in the Lua registry and risks double deletion");
         // Lua: instance
         m_luaRegistryIndex = luaL_ref(m_luaState, LUA_REGISTRYINDEX);
+        AZ_Assert(m_luaRegistryIndex != LUA_REFNIL, "ExecutionStateInterpreted was nil when trying to gain a reference");
+        AZ_Assert(m_luaRegistryIndex != LUA_NOREF, "ExecutionStateInterpreted failed to gain a reference");
     }
 
     void ExecutionStateInterpreted::Reflect(AZ::ReflectContext* reflectContext)

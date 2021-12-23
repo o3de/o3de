@@ -7,9 +7,6 @@
  */
 
 #include <AzTest/AzTest.h>
-#include <Mocks/ICryPakMock.h>
-#include <Mocks/IConsoleMock.h>
-#include <Mocks/ISystemMock.h>
 
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/Entity.h>
@@ -101,36 +98,12 @@ public:
     void SetAdvancedMode([[maybe_unused]] bool value) override {}
 };
 
-struct MockGlobalEnvironment
-{
-    MockGlobalEnvironment()
-    {
-        m_stubEnv.pCryPak = &m_stubPak;
-        m_stubEnv.pConsole = &m_stubConsole;
-        m_stubEnv.pSystem = &m_stubSystem;
-        gEnv = &m_stubEnv;
-    }
-
-    ~MockGlobalEnvironment()
-    {
-        gEnv = nullptr;
-    }
-
-private:
-    SSystemGlobalEnvironment m_stubEnv;
-    testing::NiceMock<CryPakMock> m_stubPak;
-    testing::NiceMock<ConsoleMock> m_stubConsole;
-    testing::NiceMock<SystemMock> m_stubSystem;
-};
-
 TEST(FastNoiseTest, ComponentsWithComponentApplication)
 {
     AZ::ComponentApplication::Descriptor appDesc;
     appDesc.m_memoryBlocksByteSize = 10 * 1024 * 1024;
     appDesc.m_recordingMode = AZ::Debug::AllocationRecords::RECORD_FULL;
     appDesc.m_stackRecordLevels = 20;
-
-    MockGlobalEnvironment mocks;
 
     AZ::ComponentApplication app;
     AZ::Entity* systemEntity = app.Create(appDesc);
@@ -186,7 +159,6 @@ public:
 
     AZ::ComponentApplication m_application;
     AZ::Entity* m_systemEntity;
-    MockGlobalEnvironment m_mocks;
 };
 
 //////////////////////////////////////////////////////////////////////////

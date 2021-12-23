@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __RENDERGL_RENDERTEXTURE_H
-#define __RENDERGL_RENDERTEXTURE_H
+#pragma once
 
 #include "TextureCache.h"
 #include <MCore/Source/Color.h>
@@ -66,6 +65,4 @@ namespace RenderGL
         AZ::u32 m_frameBuffer;
         AZ::u32 m_depthBuffer;
     };
-}
-
-#endif
+} // namespace RenderGL

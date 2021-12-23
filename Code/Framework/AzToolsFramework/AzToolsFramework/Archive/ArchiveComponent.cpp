@@ -158,16 +158,16 @@ namespace AzToolsFramework
 
             bool success = true;
             AZStd::vector<char> fileBuffer;
-            const AZ::IO::Path workingPath{ dirToArchive };
+            const AZ::IO::FixedMaxPath workingPath{ dirToArchive };
 
             for (const auto& fileName : foundFiles.GetValue())
             {
                 bool thisSuccess = false;
 
-                AZ::IO::PathView relativePath = AZ::IO::PathView{ fileName }.LexicallyRelative(workingPath);
+                AZ::IO::FixedMaxPath relativePath = AZ::IO::FixedMaxPath{ fileName }.LexicallyRelative(workingPath);
+                AZ::IO::FixedMaxPath fullPath = (workingPath / relativePath);
 
-                AZ::IO::Path fullPath = (workingPath / relativePath);
-                if (ArchiveUtils::ReadFile(fullPath, AZ::IO::OpenMode::ModeRead, fileBuffer))
+                if (ArchiveUtils::ReadFile(static_cast<AZ::IO::PathView>(fullPath), AZ::IO::OpenMode::ModeRead, fileBuffer))
                 {
                     int result = archive->UpdateFile(
                         relativePath.Native(), fileBuffer.data(), fileBuffer.size(), s_compressionMethod,
