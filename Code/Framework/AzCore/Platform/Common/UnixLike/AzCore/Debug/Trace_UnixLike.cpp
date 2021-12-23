@@ -9,11 +9,9 @@
 #include <AzCore/Debug/TraceMessageBus.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/string/string_view.h>
+#include <AzCore/Debug/StackTracer.h>
 
-#include <ctype.h>
-#include <execinfo.h>
 #include <signal.h>
-#include <unistd.h>
 
 namespace AZ::Debug
 {
@@ -114,19 +112,15 @@ namespace AZ::Debug
         azsnprintf(message, MaxMessageLength, "Error: signal %s: \n", strsignal(signal));
         Debug::Trace::Instance().Output(nullptr, message);
 
-        void* buffers[MaxStackLines];
-        int numberBacktraceStrings = backtrace(buffers, MaxStackLines);
-        char** backtraceResults = backtrace_symbols(buffers, numberBacktraceStrings);
-        if (backtraceResults == nullptr)
-        {
-            Debug::Trace::Instance().Output(nullptr, "==================================================================\n");
-            return;
+        StackFrame frames[MaxStackLines];
+        SymbolStorage::StackLine stackLines[MaxStackLines];
+        SymbolStorage decoder;
+        const unsigned int numberOfFrames = StackRecorder::Record(frames, MaxStackLines);
+        decoder.DecodeFrames(frames,  numberOfFrames, stackLines);
+        for(int i = 0; i < numberOfFrames; ++i) {
+            azsnprintf(message, MaxMessageLength, "%s \n", stackLines[i]);
+            Debug::Trace::Instance().Output(nullptr, message);
         }
-        for (int j = 0; j < numberBacktraceStrings; j++)
-        {
-            Debug::Trace::Instance().Output(nullptr, backtraceResults[j]);
-        }
-
         Debug::Trace::Instance().Output(nullptr, "==================================================================\n");
     }
 #endif
