@@ -27,7 +27,6 @@ namespace EMStudio
     // forward declarations
     class NodeGraph;
     class GraphNode;
-    class GraphWidgetCallback;
     class NodePort;
     class NodeConnection;
     class AnimGraphPlugin;
@@ -53,8 +52,6 @@ namespace EMStudio
         void SetActiveGraph(NodeGraph* graph);
         NodeGraph* GetActiveGraph() const;
 
-        void SetCallback(GraphWidgetCallback* callback);
-        MCORE_INLINE GraphWidgetCallback* GetCallback()                 { return m_callback; }
         MCORE_INLINE const QPoint& GetMousePos() const                  { return m_mousePos; }
         MCORE_INLINE void SetMousePos(const QPoint& pos)                { m_mousePos = pos; }
         MCORE_INLINE void SetShowFPS(bool showFPS)                      { m_showFps = showFPS; }
@@ -138,7 +135,6 @@ namespace EMStudio
         int                         m_curHeight;
         GraphNode*                  m_moveNode;  // the node we're moving
         NodeGraph*                  m_activeGraph = nullptr;
-        GraphWidgetCallback*        m_callback;
         QFont                       m_font;
         QFontMetrics*               m_fontMetrics;
         AZ::Debug::Timer            m_renderTimer;
