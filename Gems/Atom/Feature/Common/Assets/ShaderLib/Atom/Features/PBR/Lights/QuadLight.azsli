@@ -150,11 +150,11 @@ void ApplyQuadLight(ViewSrg::QuadLight light, Surface surface, inout LightingDat
             
             lightingData.translucentBackLighting +=
             (
-                GetBackLighting(surface, lightingData, intensity, p0, -1.0f) +
-                GetBackLighting(surface, lightingData, intensity, p1, -1.0f) +
-                GetBackLighting(surface, lightingData, intensity, p2, -1.0f) +
-                GetBackLighting(surface, lightingData, intensity, p3, -1.0f) +
-                GetBackLighting(surface, lightingData, intensity, dirToLightCenter, -1.0f)
+                GetBackLighting(surface, lightingData, intensity, p0, -1.0f, 0.0f) +
+                GetBackLighting(surface, lightingData, intensity, p1, -1.0f, 0.0f) +
+                GetBackLighting(surface, lightingData, intensity, p2, -1.0f, 0.0f) +
+                GetBackLighting(surface, lightingData, intensity, p3, -1.0f, 0.0f) +
+                GetBackLighting(surface, lightingData, intensity, dirToLightCenter, -1.0f, 0.0f)
             );
             
             // Calculate specular by choosing a single representative point on the light's surface based on the reflection ray

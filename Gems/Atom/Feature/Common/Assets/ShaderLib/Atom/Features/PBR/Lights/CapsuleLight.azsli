@@ -136,7 +136,7 @@ void ApplyCapsuleLight(ViewSrg::CapsuleLight light, Surface surface, inout Light
         float3 posToLight = closestIntersectionPoint - surface.position;
 
         // Tranmission contribution
-        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, lightIntensity, normalize(posToLight), 0.0);
+        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, lightIntensity, normalize(posToLight), -1.0f, 0.0f);
 
         // Calculate the offset from the nearest point on the reflection vector to the nearest point on the capsule light
         float3 posToClosestPointAlongReflection = dot(posToLight, reflectionDir) * reflectionDir;

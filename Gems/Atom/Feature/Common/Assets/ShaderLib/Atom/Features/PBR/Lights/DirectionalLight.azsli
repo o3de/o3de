@@ -77,10 +77,8 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
             currentTransmissionDistance = transmissionDistance;
         }
 
-        // Transmission contribution with attenuation applied to hide artifacts due to low-res shadow maps (might need some work in the future)
-        float3 backLighting = GetBackLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight, currentTransmissionDistance);
-        float attenuation = 1.0 / pow(max(1.0, camToSurfDist/2.0), lightingData.distanceAttenuation + 1.0);
-        lightingData.translucentBackLighting += backLighting * attenuation;
+        // Transmission contribution
+        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight, currentTransmissionDistance, camToSurfDist/2.0);
         
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight) * currentLitRatio;
         lightingData.specularLighting += GetSpecularLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight) * currentLitRatio;

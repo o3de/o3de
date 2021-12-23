@@ -36,7 +36,7 @@ float3 T(float s)
     float3(0.078, 0.0, 0.0) * exp(-s*s/7.41);
 }
 
-float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightIntensity, float3 dirToLight, float transmissionDistance)
+float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightIntensity, float3 dirToLight, float transmissionDistance, float attenuationDistance)
 {
     float3 result = float3(0.0, 0.0, 0.0);
     float thickness = 0.0; 
@@ -86,6 +86,9 @@ float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightI
                 
                 // Alternative specific to skin translucency
                 // result = T(s) * lightIntensity * surface.albedo * E * transmissionParams.w;
+                
+                // Distance attenuation applied to hide artifacts due to low-res projected areas onto shadowmaps (might need some work in the future)
+                result *= 1.0 / pow(max(1.0, sqrt(attenuationDistance)), lightingData.distanceAttenuation + 1.0);
             }
             break;
     }

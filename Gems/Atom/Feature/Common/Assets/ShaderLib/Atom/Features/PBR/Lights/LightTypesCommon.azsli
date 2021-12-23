@@ -49,6 +49,6 @@ void AddSampleContribution(
     float3 intensityRgb = float3(intensity, intensity, intensity);
 
     diffuseAcc += GetDiffuseLighting(surface, lightingData, intensityRgb, posToLightSampleDir);
-    translucentAcc += GetBackLighting(surface, lightingData, intensityRgb, posToLightSampleDir, 0.0);
+    translucentAcc += GetBackLighting(surface, lightingData, intensityRgb, posToLightSampleDir, -1.0f, 0.0f);
     specularAcc += GetSpecularLighting(surface, lightingData, intensityRgb, posToLightSampleDir);
 }

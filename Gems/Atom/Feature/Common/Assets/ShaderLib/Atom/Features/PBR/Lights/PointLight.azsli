@@ -113,10 +113,8 @@ void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingD
         // Diffuse contribution
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, normalize(posToLight)) * litRatio;
 
-        // Transmission contribution with attenuation applied to hide artifacts due to low-res shadow maps (might need some work in the future)
-        float3 backLighting = GetBackLighting(surface, lightingData, lightIntensity, normalize(posToLight), transmissionDistance);
-        float attenuation = 1.0 / pow(max(1.0, posToLightDist), lightingData.distanceAttenuation + 1.0);
-        lightingData.translucentBackLighting += backLighting * attenuation;
+        // Transmission contribution
+        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, lightIntensity, normalize(posToLight), transmissionDistance, posToLightDist);
 
         // Adjust the light direcion for specular based on bulb size
 
