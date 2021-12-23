@@ -651,8 +651,8 @@
                     }
                 },
                 {
-                    "name": "angleOffset",
-                    "displayName": "    Angle Offset",
+                    "name": "transmissionAngleBias",
+                    "displayName": "    Angle Bias",
                     "description": "cosine of angle to extend below (N . L = 0) in scattering through thin objects",
                     "type": "float",
                     "defaultValue": 0.1,
@@ -660,7 +660,7 @@
                     "softMax": 1.0,
                     "connection": {
                         "type": "ShaderInput",
-                        "name": "m_angleOffset"
+                        "name": "m_transmissionNdLBias"
                     }
                 },
                 {

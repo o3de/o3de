@@ -278,7 +278,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     // ------- Thin Object Light Transmission -------
 
     // Angle offset for subsurface scattering through thin objects
-    lightingData.angleOffset = MaterialSrg::m_angleOffset;
+    lightingData.transmissionNdLBias = MaterialSrg::m_transmissionNdLBias;
 
     // Shrink (absolute) offset towards the normal opposite direction to ensure correct shadow map projection
     lightingData.shrinkFactor = MaterialSrg::m_shrinkFactor;

@@ -71,8 +71,8 @@ float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightI
                 }
 
                 // Irradiance arround surface point. 
-                // Increase angle of influence (angle(N,L) -> angle(N,L) + acos(angleOffset)) to smooth transition regions
-                float3 E = surface.albedo * max(lightingData.angleOffset + dot(-surface.normal, dirToLight),0.0);
+                // Increase angle of influence (angle(N,L) -> angle(N,L) + acos(transmissionNdLBias)) to smooth transition regions
+                float3 E = surface.albedo * max(lightingData.transmissionNdLBias + dot(-surface.normal, dirToLight),0.0);
 
                 // Transmission distance modulated by hardcoded constant (could be exposed as a weight of scattering distance for transmission)
                 float s = transmissionDistance * 100.0;

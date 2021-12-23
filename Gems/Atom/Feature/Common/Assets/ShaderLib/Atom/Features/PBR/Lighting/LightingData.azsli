@@ -31,8 +31,8 @@ class LightingData
     // Direction light shadow coordinates for shrinked positions (used in scattering through thin objects)
     float3 shrinkedShadowCoords[ViewSrg::MaxCascadeCount];
 
-    // Angle to accept below (N . L = 0) in scattering through thin objects
-    float angleOffset; 
+    // (N . L) to accept below (N . L = 0) in scattering through thin objects
+    float transmissionNdLBias; 
     
     // Shrink (absolute) offset towards the normal opposite direction to ensure correct shadow map projection
     float shrinkFactor;

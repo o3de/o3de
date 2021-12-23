@@ -101,7 +101,7 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
     Texture2D m_transmissionThicknessMap;
     uint m_transmissionThicknessMapUvIndex;
     float m_shrinkFactor;
-    float m_angleOffset;
+    float m_transmissionNdLBias;
     float m_distanceAttenuation;
 }
 
