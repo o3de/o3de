@@ -76,7 +76,6 @@ set(FILES
     StaticLib/GraphCanvas/Editor/EditorTypes.h
     StaticLib/GraphCanvas/Editor/GraphCanvasProfiler.h
     StaticLib/GraphCanvas/Editor/GraphModelBus.h
-    StaticLib/GraphCanvas/Styling/definitions.cpp
     StaticLib/GraphCanvas/Styling/definitions.h
     StaticLib/GraphCanvas/Styling/PseudoElement.cpp
     StaticLib/GraphCanvas/Styling/PseudoElement.h
