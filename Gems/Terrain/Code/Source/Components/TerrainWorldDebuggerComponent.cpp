@@ -91,12 +91,11 @@ namespace Terrain
     void TerrainWorldDebuggerComponent::Activate()
     {
         m_wireframeBounds = AZ::Aabb::CreateNull();
+        m_dirtyRegion = GetWorldBounds();
 
         AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(GetEntityId());
         AzFramework::BoundsRequestBus::Handler::BusConnect(GetEntityId());
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
-
-        RefreshCachedWireframeGrid(AZ::Aabb::CreateNull());
     }
 
     void TerrainWorldDebuggerComponent::Deactivate()
@@ -106,6 +105,8 @@ namespace Terrain
         AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
 
         m_wireframeBounds = AZ::Aabb::CreateNull();
+        m_dirtyRegion = AZ::Aabb::CreateNull();
+
         m_wireframeSectors.clear();
     }
 
@@ -155,6 +156,13 @@ namespace Terrain
 
             debugDisplay.SetColor(outlineColor);
             debugDisplay.DrawWireBox(aabb.GetMin(), aabb.GetMax());
+        }
+
+        // If we're currently drawing the wireframe representation, update it if it's dirty.
+        if (m_configuration.m_drawWireframe && m_dirtyRegion.IsValid())
+        {
+            RefreshCachedWireframeGrid(m_dirtyRegion);
+            m_dirtyRegion = AZ::Aabb::CreateNull();
         }
 
         // Draw a wireframe representation of the terrain surface
@@ -357,7 +365,14 @@ namespace Terrain
     {
         if (dataChangedMask & (TerrainDataChangedMask::Settings | TerrainDataChangedMask::HeightData))
         {
-            RefreshCachedWireframeGrid(dirtyRegion);
+            if (dirtyRegion.IsValid())
+            {
+                m_dirtyRegion.AddAabb(dirtyRegion);
+            }
+            else
+            {
+                m_dirtyRegion = GetWorldBounds();
+            }
         }
     }
 

@@ -86,8 +86,10 @@ namespace Terrain
         // the wireframe representation in each direction.
         struct WireframeSector
         {
-            AZ::Aabb m_aabb;
+            AZ::Aabb m_aabb{ AZ::Aabb::CreateNull() };
             AZStd::vector<AZ::Vector3> m_lineVertices;
+            int32_t m_xSector{ 0 };
+            int32_t m_ySector{ 0 };
         };
 
         // Each sector contains an N x N grid of squares that it will draw.  Since this is a count of the number of terrain grid points
@@ -111,5 +113,6 @@ namespace Terrain
         TerrainWorldDebuggerConfig m_configuration;
         AZStd::vector<WireframeSector> m_wireframeSectors;
         AZ::Aabb m_wireframeBounds;
+        AZ::Aabb m_dirtyRegion;
     };
 }
