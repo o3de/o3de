@@ -8,9 +8,6 @@
 
 #pragma once
 
-// Graph Canvas
-#include <GraphCanvas/Components/NodePropertyDisplay/DoubleDataInterface.h>
-
 // Graph Model
 #include <GraphModel/Model/Slot.h>
 

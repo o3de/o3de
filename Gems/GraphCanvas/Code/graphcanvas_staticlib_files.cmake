@@ -50,7 +50,6 @@ set(FILES
     StaticLib/GraphCanvas/Components/NodePropertyDisplay/BooleanDataInterface.h
     StaticLib/GraphCanvas/Components/NodePropertyDisplay/ComboBoxDataInterface.h
     StaticLib/GraphCanvas/Components/NodePropertyDisplay/DataInterface.h
-    StaticLib/GraphCanvas/Components/NodePropertyDisplay/DoubleDataInterface.h
     StaticLib/GraphCanvas/Components/NodePropertyDisplay/EntityIdDataInterface.h
     StaticLib/GraphCanvas/Components/NodePropertyDisplay/NodePropertyDisplay.cpp
     StaticLib/GraphCanvas/Components/NodePropertyDisplay/NodePropertyDisplay.h
