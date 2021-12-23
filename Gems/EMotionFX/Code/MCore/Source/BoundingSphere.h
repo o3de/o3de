@@ -109,32 +109,6 @@ namespace MCore
         MCORE_INLINE bool Intersects(const BoundingSphere& s) const                             { return ((m_center - s.m_center).GetLengthSq() <= (m_radiusSq + s.m_radiusSq)); }
 
         /**
-         * Encapsulate a given 3D point with this sphere.
-         * Automatically adjust the center and radius of the sphere after 'adding' the given point to the sphere.
-         * Note that you should only use this method when the center of the bounding sphere isnt exactly known yet.
-         * This encapsulation method will adjust the center of the sphere as well. If the center of the sphere is known upfront and it is
-         * known upfront as well that this center point won't change, you should use the Encapsulate() method instead.
-         * @param v The vector representing the 3D point to use in the encapsulation.
-         */
-        void Encapsulate(const AZ::Vector3& v);
-
-        /**
-         * Checks if this sphere completely contains a given Axis Aligned Bounding Box (AABB).
-         * Note that the border of the sphere is counted as 'inside'.
-         * @param 'b' The box to perform the test with.
-         * @result Returns true when 'b' is COMPLETELY inside the spheres volume, otherwise false is returned.
-         */
-        bool Contains(const AABB& b) const;
-
-        /**
-         * Checks if a given Axis Aligned Bounding Box (AABB) intersects this sphere.
-         * Note that the border of the sphere is counted as inside.
-         * @param 'b' The box to perform the test with.
-         * @result Returns true when 'b' is completely or partially inside the volume of this sphere.
-         */
-        bool Intersects(const AABB& b) const;
-
-        /**
          * Get the radius of the sphere.
          * @result Returns the radius of the sphere.
          */

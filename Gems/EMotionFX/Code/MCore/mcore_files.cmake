@@ -34,7 +34,6 @@ set(FILES
     Source/AttributeVector3.h
     Source/AttributeVector4.h
     Source/AzCoreConversions.h
-    Source/BoundingSphere.cpp
     Source/BoundingSphere.h
     Source/Color.cpp
     Source/Color.h
