@@ -135,7 +135,7 @@ namespace GradientSignal
         GradientRequestBus::Handler::BusConnect(GetEntityId());
         AZ::Data::AssetBus::Handler::BusConnect(m_configuration.m_imageAsset.GetId());
 
-        AZStd::lock_guard<decltype(m_imageMutex)> imageLock(m_imageMutex);
+        AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
         m_configuration.m_imageAsset.QueueLoad();
     }
 
@@ -147,7 +147,7 @@ namespace GradientSignal
 
         m_dependencyMonitor.Reset();
 
-        AZStd::lock_guard<decltype(m_imageMutex)> imageLock(m_imageMutex);
+        AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
         m_configuration.m_imageAsset.Release();
     }
 
@@ -173,19 +173,19 @@ namespace GradientSignal
 
     void ImageGradientComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        AZStd::lock_guard<decltype(m_imageMutex)> imageLock(m_imageMutex);
+        AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
         m_configuration.m_imageAsset = asset;
     }
 
     void ImageGradientComponent::OnAssetMoved(AZ::Data::Asset<AZ::Data::AssetData> asset, [[maybe_unused]] void* oldDataPointer)
     {
-        AZStd::lock_guard<decltype(m_imageMutex)> imageLock(m_imageMutex);
+        AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
         m_configuration.m_imageAsset = asset;
     }
 
     void ImageGradientComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        AZStd::lock_guard<decltype(m_imageMutex)> imageLock(m_imageMutex);
+        AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
         m_configuration.m_imageAsset = asset;
     }
 
@@ -200,7 +200,7 @@ namespace GradientSignal
 
         if (!wasPointRejected)
         {
-            AZStd::lock_guard<decltype(m_imageMutex)> imageLock(m_imageMutex);
+            AZStd::shared_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
             return GetValueFromImageAsset(m_configuration.m_imageAsset, uvw, m_configuration.m_tilingX, m_configuration.m_tilingY, 0.0f);
         }
 
@@ -223,7 +223,7 @@ namespace GradientSignal
             AZ::Data::AssetBus::Handler::BusDisconnect(m_configuration.m_imageAsset.GetId());
 
             {
-                AZStd::lock_guard<decltype(m_imageMutex)> imageLock(m_imageMutex);
+                AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
                 m_configuration.m_imageAsset = AZ::Data::AssetManager::Instance().FindOrCreateAsset(assetId, azrtti_typeid<ImageAsset>(), m_configuration.m_imageAsset.GetAutoLoadBehavior());
             }
 
