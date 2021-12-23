@@ -79,9 +79,6 @@ set(FILES
     Source/LogManager.cpp
     Source/LogManager.h
     Source/Macros.h
-    Source/Matrix4.cpp
-    Source/Matrix4.h
-    Source/Matrix4.inl
     Source/MCoreSystem.cpp
     Source/MCoreSystem.h
     Source/MemoryCategoriesCore.h

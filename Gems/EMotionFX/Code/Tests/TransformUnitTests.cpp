@@ -17,7 +17,6 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Math/Quaternion.h>
-#include <MCore/Source/Matrix4.h>
 #include <MCore/Source/AzCoreConversions.h>
 #include <EMotionFX/Source/PlayBackInfo.h>
 
