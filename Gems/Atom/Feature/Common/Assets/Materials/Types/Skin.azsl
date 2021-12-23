@@ -136,7 +136,7 @@ VSOutput SkinVS(VSInput IN)
     }
 
     VertexHelper(IN, OUT, worldPosition, false);
-        
+
     return OUT;
 }
 
