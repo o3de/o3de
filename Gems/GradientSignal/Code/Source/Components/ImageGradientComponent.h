@@ -94,6 +94,6 @@ namespace GradientSignal
     private:
         ImageGradientConfig m_configuration;
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
-        mutable AZStd::recursive_mutex m_imageMutex;
+        mutable AZStd::shared_mutex m_imageMutex;
     };
 }
