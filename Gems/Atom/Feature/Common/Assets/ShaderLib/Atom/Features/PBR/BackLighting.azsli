@@ -64,11 +64,17 @@ float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightI
             // http://www.iryoku.com/translucency/downloads/Real-Time-Realistic-Skin-Translucency.pdf
             
             {
+                // transmissionDistance < 0.0f means shadows are not enabled --> avoid unnecessary computation
+                if (transmissionDistance < 0.0f)
+                {
+                    break;
+                }
+
                 // Irradiance arround surface point. 
                 // Increase angle of influence (angle(N,L) -> angle(N,L) + acos(angleOffset)) to smooth transition regions
                 float3 E = surface.albedo * max(lightingData.angleOffset + dot(-surface.normal, dirToLight),0.0);
 
-                // Transmission distance modulated by editor-exposed scale parameter
+                // Transmission distance modulated by hardcoded constant (could be exposed as a weight of scattering distance for transmission)
                 float s = transmissionDistance * 100.0;
                 
                 // Use scattering color to weight thin object transmission color

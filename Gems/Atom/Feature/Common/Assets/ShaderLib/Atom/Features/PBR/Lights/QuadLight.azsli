@@ -148,14 +148,13 @@ void ApplyQuadLight(ViewSrg::QuadLight light, Surface surface, inout LightingDat
                 GetDiffuseLighting(surface, lightingData, intensity, dirToLightCenter)
             );
             
-            float nullTransmissionDistance = (o_transmission_mode == TransmissionMode::ThickObject) ? 0.0f : 9999.0f;
             lightingData.translucentBackLighting +=
             (
-                GetBackLighting(surface, lightingData, intensity, p0, nullTransmissionDistance) +
-                GetBackLighting(surface, lightingData, intensity, p1, nullTransmissionDistance) +
-                GetBackLighting(surface, lightingData, intensity, p2, nullTransmissionDistance) +
-                GetBackLighting(surface, lightingData, intensity, p3, nullTransmissionDistance) +
-                GetBackLighting(surface, lightingData, intensity, dirToLightCenter, nullTransmissionDistance)
+                GetBackLighting(surface, lightingData, intensity, p0, -1.0f) +
+                GetBackLighting(surface, lightingData, intensity, p1, -1.0f) +
+                GetBackLighting(surface, lightingData, intensity, p2, -1.0f) +
+                GetBackLighting(surface, lightingData, intensity, p3, -1.0f) +
+                GetBackLighting(surface, lightingData, intensity, dirToLightCenter, -1.0f)
             );
             
             // Calculate specular by choosing a single representative point on the light's surface based on the reflection ray

@@ -88,6 +88,9 @@ void ApplyDiskLight(ViewSrg::DiskLight light, Surface surface, inout LightingDat
             lightIntensity *= penumbraMask;
         }
 
+        // Distance travelled by the light inside the object. If not redefined, it will take mode-specific null behaviors (see GetBackLighting())
+        float transmissionDistance = -1.0f;
+
         if (o_enableShadows)
         {
             litRatio = ProjectedShadow::GetVisibility(
@@ -97,8 +100,6 @@ void ApplyDiskLight(ViewSrg::DiskLight light, Surface surface, inout LightingDat
                 -dirToConeTip,
                 surface.vertexNormal);
              
-            // Distance travelled by the light inside the object
-            float transmissionDistance = 0.0f;
 
             // o_transmission_mode == NONE is not taken into account because GetBackLighting already ignores this case
             if (o_transmission_mode == TransmissionMode::ThickObject)
@@ -110,17 +111,15 @@ void ApplyDiskLight(ViewSrg::DiskLight light, Surface surface, inout LightingDat
                 transmissionDistance = ProjectedShadow::GetThickness(light.m_shadowIndex, surface.position - lightingData.shrinkFactor * surface.vertexNormal);
             }
 
-            // Attenuation applied to hide artifacts due to low-res shadow maps (might need some work in the future)
-            float attenuation = 1.0 / pow(max(1.0, sqrt(distanceToLight2)), lightingData.distanceAttenuation + 1.0);
-        
-            // Transmission contribution
-            float3 backLighting = GetBackLighting(surface, lightingData, lightIntensity, posToLightDir, transmissionDistance);
-            
-            lightingData.translucentBackLighting += backLighting * attenuation;
         }
 
         // Diffuse contribution
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, posToLightDir) * litRatio;
+
+        // Transmission contribution with attenuation applied to hide artifacts due to low-res shadow maps (might need some work in the future)
+        float3 backLighting = GetBackLighting(surface, lightingData, lightIntensity, posToLightDir, transmissionDistance);
+        float attenuation = 1.0 / pow(max(1.0, sqrt(distanceToLight2)), lightingData.distanceAttenuation + 1.0);
+        lightingData.translucentBackLighting += backLighting * attenuation;
 
         // Adjust the light direction for specular based on disk size
 
