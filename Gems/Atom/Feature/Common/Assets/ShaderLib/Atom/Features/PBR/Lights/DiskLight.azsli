@@ -77,16 +77,6 @@ void ApplyDiskLight(ViewSrg::DiskLight light, Surface surface, inout LightingDat
         // shadow
         float litRatio = 1.0;
 
-        if (useConeAngle && dotWithDirection < light.m_cosInnerConeAngle) // in penumbra
-        {   
-            // Normalize into 0.0 - 1.0 space.
-            float penumbraMask = (dotWithDirection - light.m_cosOuterConeAngle) / (light.m_cosInnerConeAngle - light.m_cosOuterConeAngle);
-            
-            // Apply smoothstep
-            penumbraMask = penumbraMask * penumbraMask * (3.0 - 2.0 * penumbraMask);
-            
-            lightIntensity *= penumbraMask;
-        }
 
         // Distance travelled by the light inside the object. If not redefined, it will take mode-specific null behaviors (see GetBackLighting())
         float transmissionDistance = -1.0f;
@@ -110,7 +100,17 @@ void ApplyDiskLight(ViewSrg::DiskLight light, Surface surface, inout LightingDat
             {
                 transmissionDistance = ProjectedShadow::GetThickness(light.m_shadowIndex, surface.position - lightingData.shrinkFactor * surface.vertexNormal);
             }
+        }
 
+        if (useConeAngle && dotWithDirection < light.m_cosInnerConeAngle) // in penumbra
+        {   
+            // Normalize into 0.0 - 1.0 space.
+            float penumbraMask = (dotWithDirection - light.m_cosOuterConeAngle) / (light.m_cosInnerConeAngle - light.m_cosOuterConeAngle);
+            
+            // Apply smoothstep
+            penumbraMask = penumbraMask * penumbraMask * (3.0 - 2.0 * penumbraMask);
+            
+            lightIntensity *= penumbraMask;
         }
 
         // Diffuse contribution
