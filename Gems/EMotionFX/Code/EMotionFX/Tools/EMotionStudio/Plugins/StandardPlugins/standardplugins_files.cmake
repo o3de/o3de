@@ -58,8 +58,6 @@ set(FILES
     Source/AnimGraph/AnimGraphPlugin.h
     Source/AnimGraph/AnimGraphPluginCallbacks.cpp
     Source/AnimGraph/ContextMenu.cpp
-    Source/AnimGraph/DebugEventHandler.cpp
-    Source/AnimGraph/DebugEventHandler.h
     Source/AnimGraph/GameController.cpp
     Source/AnimGraph/GameController.h
     Source/AnimGraph/GameControllerWindow.cpp
