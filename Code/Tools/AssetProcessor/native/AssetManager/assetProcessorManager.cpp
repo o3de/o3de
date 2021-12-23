@@ -1179,6 +1179,12 @@ namespace AssetProcessor
                     {
                         AssetProcessor::ProcessingJobInfoBus::Broadcast(&AssetProcessor::ProcessingJobInfoBus::Events::BeginCacheFileUpdate, fullProductPath.toUtf8().data());
                         bool wasRemoved = QFile::remove(fullProductPath);
+                        if (!wasRemoved)
+                        {
+                            constexpr int DeleteRetryDelay = 10;
+                            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(DeleteRetryDelay));
+                            wasRemoved = QFile::remove(fullProductPath);
+                        }
                         AssetProcessor::ProcessingJobInfoBus::Broadcast(&AssetProcessor::ProcessingJobInfoBus::Events::EndCacheFileUpdate, fullProductPath.toUtf8().data(), false);
                         if (!wasRemoved)
                         {
