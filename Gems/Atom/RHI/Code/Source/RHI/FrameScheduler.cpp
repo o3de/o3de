@@ -24,7 +24,6 @@
 #include <Atom/RHI/ResourcePoolDatabase.h>
 #include <Atom/RHI/RayTracingShaderTable.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Jobs/Algorithms.h>
 #include <AzCore/Jobs/JobCompletion.h>
@@ -233,9 +232,10 @@ namespace AZ
 
             for (ScopeProducer* scopeProducer : m_scopeProducers)
             {
+                AZ_PROFILE_SCOPE(RHI, "FrameScheduler: PrepareProducers: Scope %s", scopeProducer->GetScopeId().GetCStr());
                 m_frameGraph->BeginScope(*scopeProducer->GetScope());
                 scopeProducer->SetupFrameGraphDependencies(*m_frameGraph);
-
+                
                 // All scopes depend on the root scope.
                 if (scopeProducer->GetScopeId() != m_rootScopeId)
                 {
@@ -527,7 +527,10 @@ namespace AZ
                     parentJob->StartAsChild(AZ::CreateJobFunction(AZStd::move(jobLambda), true, nullptr));
                 }
 
-                parentJob->WaitForChildren();
+                {
+                    AZ_PROFILE_SCOPE(RHI, "FrameScheduler: ExecuteGroupInternal: WaitForChildren");
+                    parentJob->WaitForChildren();
+                }
             }
 
             m_frameGraphExecuter->EndGroup(groupIndex);

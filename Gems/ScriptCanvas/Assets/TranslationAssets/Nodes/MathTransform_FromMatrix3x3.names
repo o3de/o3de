@@ -5,31 +5,31 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "From Matrix3x3",
+                "name": "From Matrix 3x 3",
                 "category": "Math/Transform",
-                "tooltip": "Returns a transform with from 3x3 matrix and with the translation set to zero"
+                "tooltip": "returns a transform with from 3x3 matrix and with the translation set to zero"
             },
             "slots": [
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "base": "DataInput_Source",
+                    "base": "DataInput_Source_0",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "base": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

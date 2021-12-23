@@ -377,7 +377,7 @@ namespace LyShine
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
-    void LyShineSystemComponent::OnCrySystemInitialized([[maybe_unused]] ISystem& system, [[maybe_unused]] const SSystemInitParams& startupParams)
+    void LyShineSystemComponent::OnCrySystemInitialized(ISystem& system, [[maybe_unused]] const SSystemInitParams& startupParams)
     {
 #if !defined(AZ_MONOLITHIC_BUILD)
         // When module is linked dynamically, we must set our gEnv pointer.
@@ -387,14 +387,34 @@ namespace LyShine
         m_pLyShine = new CLyShine(gEnv->pSystem);
         gEnv->pLyShine = m_pLyShine;
 
+        system.GetILevelSystem()->AddListener(this);
+
         BroadcastCursorImagePathname();
+
+        if (gEnv->pLyShine)
+        {
+            gEnv->pLyShine->PostInit();
+        }
     }
 
-    void LyShineSystemComponent::OnCrySystemShutdown([[maybe_unused]] ISystem& system)
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    void LyShineSystemComponent::OnCrySystemShutdown(ISystem& system)
     {
+        system.GetILevelSystem()->RemoveListener(this);
+
         gEnv->pLyShine = nullptr;
         delete m_pLyShine;
         m_pLyShine = nullptr;       
+    }
+
+    ////////////////////////////////////////////////////////////////////////
+    void LyShineSystemComponent::OnUnloadComplete([[maybe_unused]] const char* levelName)
+    {
+        // Perform level unload procedures for the LyShine UI system
+        if (gEnv && gEnv->pLyShine)
+        {
+            gEnv->pLyShine->OnLevelUnload();
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

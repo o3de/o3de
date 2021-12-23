@@ -41,13 +41,11 @@ namespace AZ
 
             AZStd::string m_bakedIrradianceTextureRelativePath;
             AZStd::string m_bakedDistanceTextureRelativePath;
-            AZStd::string m_bakedRelocationTextureRelativePath;
-            AZStd::string m_bakedClassificationTextureRelativePath;
+            AZStd::string m_bakedProbeDataTextureRelativePath;
 
             Data::Asset<RPI::StreamingImageAsset> m_bakedIrradianceTextureAsset;
             Data::Asset<RPI::StreamingImageAsset> m_bakedDistanceTextureAsset;
-            Data::Asset<RPI::StreamingImageAsset> m_bakedRelocationTextureAsset;
-            Data::Asset<RPI::StreamingImageAsset> m_bakedClassificationTextureAsset;
+            Data::Asset<RPI::StreamingImageAsset> m_bakedProbeDataTextureAsset;
 
             AZ::u64 m_entityId{ EntityId::InvalidEntityId };
         };

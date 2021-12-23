@@ -256,7 +256,8 @@ namespace ScriptCanvasEditor
 
                 const AZ::Data::AssetId& assetId = executionItem->GetAssetId();
                 
-                GeneralRequestBus::Broadcast(&GeneralRequests::OpenScriptCanvasAssetId, assetId);
+                GeneralRequestBus::Broadcast(&GeneralRequests::OpenScriptCanvasAssetId
+                    , SourceHandle(nullptr, assetId.m_guid, {}), Tracker::ScriptCanvasFileState::UNMODIFIED);
             }
         }
     }
@@ -270,12 +271,14 @@ namespace ScriptCanvasEditor
             const AZ::Data::AssetId& assetId = executionItem->GetAssetId();
 
             bool isAssetOpen = false;
-            GeneralRequestBus::BroadcastResult(isAssetOpen, &GeneralRequests::IsScriptCanvasAssetOpen, assetId);
+            GeneralRequestBus::BroadcastResult(isAssetOpen, &GeneralRequests::IsScriptCanvasAssetOpen, SourceHandle(nullptr, assetId.m_guid, {}));
 
-            GeneralRequestBus::Broadcast(&GeneralRequests::OpenScriptCanvasAssetId, assetId);
+            GeneralRequestBus::Broadcast(&GeneralRequests::OpenScriptCanvasAssetId
+                , SourceHandle(nullptr, assetId.m_guid, {}), Tracker::ScriptCanvasFileState::UNMODIFIED);
 
             AZ::EntityId graphCanvasGraphId;
-            GeneralRequestBus::BroadcastResult(graphCanvasGraphId, &GeneralRequests::FindGraphCanvasGraphIdByAssetId, assetId);
+            GeneralRequestBus::BroadcastResult(graphCanvasGraphId, &GeneralRequests::FindGraphCanvasGraphIdByAssetId
+                , SourceHandle(nullptr, assetId.m_guid, {}));
             
             if (isAssetOpen)
             {
@@ -348,7 +351,7 @@ namespace ScriptCanvasEditor
         GeneralRequestBus::BroadcastResult(activeGraphCanvasGraphId, &GeneralRequests::GetActiveGraphCanvasGraphId);
 
         AZ::EntityId graphCanvasGraphId;
-        GeneralRequestBus::BroadcastResult(graphCanvasGraphId, &GeneralRequests::FindGraphCanvasGraphIdByAssetId, m_assetId);
+        GeneralRequestBus::BroadcastResult(graphCanvasGraphId, &GeneralRequests::FindGraphCanvasGraphIdByAssetId, SourceHandle(nullptr, m_assetId.m_guid, {}));
 
         if (activeGraphCanvasGraphId == graphCanvasGraphId)
         {
@@ -366,7 +369,7 @@ namespace ScriptCanvasEditor
         GraphCanvas::FocusConfig focusConfig;
 
         AZ::EntityId scriptCanvasNodeId;
-        AssetGraphSceneBus::BroadcastResult(scriptCanvasNodeId, &AssetGraphScene::FindEditorNodeIdByAssetNodeId, assetId, assetNodeId);
+        AssetGraphSceneBus::BroadcastResult(scriptCanvasNodeId, &AssetGraphScene::FindEditorNodeIdByAssetNodeId, SourceHandle(nullptr, assetId.m_guid, {}), assetNodeId);
 
         GraphCanvas::NodeId graphCanvasNodeId;
         SceneMemberMappingRequestBus::EventResult(graphCanvasNodeId, scriptCanvasNodeId, &SceneMemberMappingRequests::GetGraphCanvasEntityId);
@@ -403,12 +406,12 @@ namespace ScriptCanvasEditor
     void LoggingWindowSession::HighlightElement(const AZ::Data::AssetId& assetId, const AZ::EntityId& assetNodeId)
     {
         AZ::EntityId graphCanvasGraphId;
-        GeneralRequestBus::BroadcastResult(graphCanvasGraphId, &GeneralRequests::FindGraphCanvasGraphIdByAssetId, assetId);
+        GeneralRequestBus::BroadcastResult(graphCanvasGraphId, &GeneralRequests::FindGraphCanvasGraphIdByAssetId, SourceHandle(nullptr, assetId.m_guid, {}));
 
         if (graphCanvasGraphId.IsValid())
         {
             AZ::EntityId scriptCanvasNodeId;
-            AssetGraphSceneBus::BroadcastResult(scriptCanvasNodeId, &AssetGraphScene::FindEditorNodeIdByAssetNodeId, assetId, assetNodeId);
+            AssetGraphSceneBus::BroadcastResult(scriptCanvasNodeId, &AssetGraphScene::FindEditorNodeIdByAssetNodeId, SourceHandle(nullptr, assetId.m_guid, {}), assetNodeId);
 
             GraphCanvas::NodeId graphCanvasNodeId;
             SceneMemberMappingRequestBus::EventResult(graphCanvasNodeId, scriptCanvasNodeId, &SceneMemberMappingRequests::GetGraphCanvasEntityId);
@@ -447,7 +450,7 @@ namespace ScriptCanvasEditor
         if (effectIter != m_highlightEffects.end())
         {
             AZ::EntityId graphCanvasGraphId;
-            GeneralRequestBus::BroadcastResult(graphCanvasGraphId, &GeneralRequests::FindGraphCanvasGraphIdByAssetId, assetId);
+            GeneralRequestBus::BroadcastResult(graphCanvasGraphId, &GeneralRequests::FindGraphCanvasGraphIdByAssetId, SourceHandle(nullptr, assetId.m_guid, {}));
 
             if (graphCanvasGraphId.IsValid())
             {

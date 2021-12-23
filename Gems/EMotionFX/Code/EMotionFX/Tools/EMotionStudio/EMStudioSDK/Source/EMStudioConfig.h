@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __EMSTUDIO_EMSTUDIOCONFIG_H
-#define __EMSTUDIO_EMSTUDIOCONFIG_H
+#pragma once
 
 #include <QString>
 
@@ -31,5 +30,3 @@ enum
 };
 
 #define SHOW_REALTIMEINTERFACE_PERFORMANCEINFO
-
-#endif

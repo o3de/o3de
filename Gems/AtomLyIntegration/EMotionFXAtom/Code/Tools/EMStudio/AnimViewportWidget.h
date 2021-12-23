@@ -64,6 +64,5 @@ namespace EMStudio
         AZStd::shared_ptr<AzFramework::OrbitDollyScrollCameraInput> m_orbitDollyScrollCamera;
         EMotionFX::ActorRenderFlagBitset m_renderFlags;
         bool m_followCharacter = false;
-        AZ::Vector3 m_prevCharacterPos;
     };
 }

@@ -6,33 +6,32 @@
             "variant": "",
             "details": {
                 "name": "Extents",
-                "category": "Math/Axis Aligned Bounding Box",
-                "tooltip": "returns the Vector3(Source.Width, Source.Height, Source.Depth)",
-                "subtitle": "Axis Aligned Bounding Box"
+                "category": "Math/AABB",
+                "tooltip": "returns the Vector3(Source.Width, Source.Height, Source.Depth)"
             },
             "slots": [
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "base": "Source",
+                    "base": "DataInput_Source_0",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "base": "DataOutput_Result: Vector3",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Extents"
+                        "name": "Result"
                     }
                 }
             ]

@@ -63,7 +63,6 @@ namespace AudioControls
         void Update();
 
     protected:
-        void keyPressEvent(QKeyEvent* pEvent) override;
         void closeEvent(QCloseEvent* pEvent) override;
 
     private:

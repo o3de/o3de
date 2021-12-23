@@ -68,7 +68,7 @@ namespace ExecutionInterpretedAPICpp
     {
         if (lua_isstring(lua, -1))
         {
-            AZ::ScriptContext::FromNativeContext(lua)->Error(AZ::ScriptContext::ErrorType::Error, true, "%s", lua_tostring(lua, -1));
+            AZ::ScriptContext::FromNativeContext(lua)->Error(AZ::ScriptContext::ErrorType::Error, true, lua_tostring(lua, -1));
         }
         else
         {
@@ -401,7 +401,7 @@ namespace ScriptCanvas
             // \note: the the object is being constructed, and is assumed to never leave or re-enter Lua again
             AZ_Assert(lua_isuserdata(lua, -2) && !lua_islightuserdata(lua, -2), "Error in compiled lua file, 1st argument to OverrideNodeableMetatable is not userdata (Nodeable)");
             AZ_Assert(lua_istable(lua, -1), "Error in compiled lua file, 2nd argument to OverrideNodeableMetatable is not a Lua table");
-
+                   
             [[maybe_unused]] auto userData = reinterpret_cast<AZ::LuaUserData*>(lua_touserdata(lua, -2));
             AZ_Assert(userData && userData->magicData == AZ_CRC_CE("AZLuaUserData"), "this isn't user data");
             // Lua: LuaUserData::nodeable, class_mt
@@ -503,20 +503,21 @@ namespace ScriptCanvas
 
         void InitializeInterpretedStatics(RuntimeData& runtimeData)
         {
-            if (!runtimeData.m_areStaticsInitialized)
+            AZ_Error("ScriptCanvas", !runtimeData.m_areStaticsInitialized, "ScriptCanvas runtime data already initalized");
             {
                 runtimeData.m_areStaticsInitialized = true;
 
                 for (auto& dependency : runtimeData.m_requiredAssets)
                 {
-                    InitializeInterpretedStatics(dependency.Get()->GetData());
+                    if (!dependency.Get()->m_runtimeData.m_areStaticsInitialized)
+                    {
+                        InitializeInterpretedStatics(dependency.Get()->m_runtimeData);
+                    }
                 }
 
 #if defined(AZ_PROFILE_BUILD) || defined(AZ_DEBUG_BUILD)
                 Execution::InitializeFromLuaStackFunctions(const_cast<Grammar::DebugSymbolMap&>(runtimeData.m_debugMap));
 #endif
-                AZ_WarningOnce("ScriptCanvas", !runtimeData.m_areStaticsInitialized, "ScriptCanvas runtime data already initalized");
-
                 if (runtimeData.RequiresStaticInitialization())
                 {
                     AZ::ScriptLoadResult result{};

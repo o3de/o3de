@@ -14,6 +14,7 @@
 #include <AzCore/std/algorithm.h>
 
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiInterface.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiHandlerBase.h>
 
@@ -35,11 +36,14 @@ namespace AzToolsFramework
         setHeaderHidden(true);
 
         m_editorEntityFrameworkInterface = AZ::Interface<AzToolsFramework::EditorEntityUiInterface>::Get();
-
         AZ_Assert((m_editorEntityFrameworkInterface != nullptr),
             "EntityOutlinerTreeView requires a EditorEntityFrameworkInterface instance on Construction.");
 
-        
+        m_readOnlyEntityPublicInterface = AZ::Interface<AzToolsFramework::ReadOnlyEntityPublicInterface>::Get();
+        AZ_Assert(
+            (m_readOnlyEntityPublicInterface != nullptr),
+            "EntityOutlinerTreeView requires a ReadOnlyEntityPublicInterface instance on Construction.");
+
         AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
         AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
             editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
@@ -157,11 +161,22 @@ namespace AzToolsFramework
 
     void EntityOutlinerTreeView::startDrag(Qt::DropActions supportedActions)
     {
+        QModelIndex index = indexAt(m_queuedMouseEvent->pos());
+        AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
+
+        AZ::EntityId parentEntityId;
+        EditorEntityInfoRequestBus::EventResult(parentEntityId, entityId, &EditorEntityInfoRequestBus::Events::GetParent);
+
+        // If the entity is parented to a read-only entity, cancel the drag operation.
+        if (m_readOnlyEntityPublicInterface->IsReadOnly(parentEntityId))
+        {
+            return;
+        }
+
         //if we are attempting to drag an unselected item then we must special case drag and drop logic
         //QAbstractItemView::startDrag only supports selected items
         if (m_queuedMouseEvent)
         {
-            QModelIndex index = indexAt(m_queuedMouseEvent->pos());
             if (!index.isValid() || index.column() != 0)
             {
                 return;

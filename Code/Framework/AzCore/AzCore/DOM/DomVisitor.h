@@ -13,11 +13,11 @@
 #include <AzCore/std/any.h>
 #include <AzCore/std/string/string.h>
 
-namespace AZ::DOM
+namespace AZ::Dom
 {
     //
     // Lifetime enum
-    // 
+    //
     //! Specifies the period in which a reference value will still be alive and safe to read.
     enum class Lifetime
     {
@@ -30,7 +30,7 @@ namespace AZ::DOM
 
     //
     // VisitorErrorCode enum
-    // 
+    //
     //! Error code specifying the reason a Visitor operation failed.
     enum class VisitorErrorCode
     {
@@ -75,7 +75,7 @@ namespace AZ::DOM
     };
 
     //! A type alias for opaque DOM types that aren't meant to be serializable.
-    //! /see VisitorInterface::OpaqueValue
+    //! \see VisitorInterface::OpaqueValue
     using OpaqueType = AZStd::any;
 
     //
@@ -116,7 +116,7 @@ namespace AZ::DOM
     //!     - \ref Double: 64 bit double precision float
     //!     - \ref Null: sentinel "empty" type with no value representation
     //! - \ref String: UTF8 encoded string
-    //! - \ref Object: an ordered container of key/value pairs where keys are  AZ::Names and values may be any DOM type
+    //! - \ref Object: an ordered container of key/value pairs where keys are \ref AZ::Name and values may be any DOM type
     //!   (including Object)
     //! - \ref Array: an ordered container of values, in which values are any DOM value type (including Array)
     //! - \ref Node: a container
@@ -144,17 +144,17 @@ namespace AZ::DOM
         //! Raw (\see VisitorFlags::SupportsRawValues) and opaque values (\see VisitorFlags::SupportsOpaqueValues)
         //! are disallowed by default, as their handling is intended to be implementation-specific.
         virtual VisitorFlags GetVisitorFlags() const;
-        //! /see VisitorFlags::SupportsRawValues
+        //! \see VisitorFlags::SupportsRawValues
         bool SupportsRawValues() const;
-        //! /see VisitorFlags::SupportsRawKeys
+        //! \see VisitorFlags::SupportsRawKeys
         bool SupportsRawKeys() const;
-        //! /see VisitorFlags::SupportsObjects
+        //! \see VisitorFlags::SupportsObjects
         bool SupportsObjects() const;
-        //! /see VisitorFlags::SupportsArrays
+        //! \see VisitorFlags::SupportsArrays
         bool SupportsArrays() const;
-        //! /see VisitorFlags::SupportsNodes
+        //! \see VisitorFlags::SupportsNodes
         bool SupportsNodes() const;
-        //! /see VisitorFlags::SupportsOpaqueValues
+        //! \see VisitorFlags::SupportsOpaqueValues
         bool SupportsOpaqueValues() const;
 
         //! Operates on an empty null value.
@@ -231,7 +231,8 @@ namespace AZ::DOM
         static Result VisitorFailure(VisitorErrorCode code, AZStd::string additionalInfo);
         //! Helper method, constructs a failure \ref Result with the specified error.
         static Result VisitorFailure(VisitorError error);
+
         //! Helper method, constructs a success \ref Result.
         static Result VisitorSuccess();
     };
-} // namespace AZ::DOM
+} // namespace AZ::Dom

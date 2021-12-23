@@ -150,18 +150,17 @@ namespace AZ
             }
 
             // build newly added BLAS objects
-            // [GFX TODO][ATOM-14159] Add changelist for meshes in the RayTracingFeatureProcessor
-            RayTracingFeatureProcessor::MeshMap& rayTracingMeshes = rayTracingFeatureProcessor->GetMeshes();
-            for (auto& rayTracingMesh : rayTracingMeshes)
+            RayTracingFeatureProcessor::BlasInstanceMap& blasInstances = rayTracingFeatureProcessor->GetBlasInstances();
+            for (auto& blasInstance : blasInstances)
             {
-                if (rayTracingMesh.second.m_blasBuilt == false)
+                if (blasInstance.second.m_blasBuilt == false)
                 {
-                    for (auto& rayTracingSubMesh : rayTracingMesh.second.m_subMeshes)
+                    for (auto& blasInstanceSubMesh : blasInstance.second.m_subMeshes)
                     {
-                        context.GetCommandList()->BuildBottomLevelAccelerationStructure(*rayTracingSubMesh.m_blas);
+                        context.GetCommandList()->BuildBottomLevelAccelerationStructure(*blasInstanceSubMesh.m_blas);
                     }
 
-                    rayTracingMesh.second.m_blasBuilt = true;
+                    blasInstance.second.m_blasBuilt = true;
                 }
             }
 

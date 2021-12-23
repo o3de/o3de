@@ -25,7 +25,7 @@ class EditorComponent:
     """
     EditorComponent class used to set and get the component property value using path
     EditorComponent object is returned from either of
-        EditorEntity.add_component() or Entity.add_components() or EditorEntity.get_component_objects()
+        EditorEntity.add_component() or Entity.add_components() or EditorEntity.get_components_of_type()
     which also assigns self.id and self.type_id to the EditorComponent object.
     """
 
@@ -94,6 +94,13 @@ class EditorComponent:
         """
         return editor.EditorComponentAPIBus(bus.Broadcast, "IsComponentEnabled", self.id)
 
+    def disable_component(self):
+        """
+        Used to disable the component using its id value.
+        :return: None
+        """
+        editor.EditorComponentAPIBus(bus.Broadcast, "DisableComponents", [self.id])
+
     @staticmethod
     def get_type_ids(component_names: list) -> list:
         """
@@ -107,7 +114,6 @@ class EditorComponent:
         return type_ids
 
 
-
 def convert_to_azvector3(xyz) -> azlmbr.math.Vector3:
     """
     Converts a vector3-like element into a azlmbr.math.Vector3
@@ -119,6 +125,7 @@ def convert_to_azvector3(xyz) -> azlmbr.math.Vector3:
         return xyz
     else:
         raise ValueError("vector must be a 3 element list/tuple or azlmbr.math.Vector3")
+
 
 class EditorEntity:
     """
@@ -136,10 +143,11 @@ class EditorEntity:
 
     # Creation functions
     @classmethod
-    def find_editor_entity(cls, entity_name: str, must_be_unique : bool = False) -> EditorEntity:
+    def find_editor_entity(cls, entity_name: str, must_be_unique: bool = False) -> EditorEntity:
         """
         Given Entity name, outputs entity object
         :param entity_name: Name of entity to find
+        :param must_be_unique: bool that asserts the entity_name specified is unique when set to True
         :return: EditorEntity class object
         """
         entities = cls.find_editor_entities([entity_name])
@@ -147,14 +155,14 @@ class EditorEntity:
         if must_be_unique:
             assert len(entities) == 1, f"Failure: Multiple entities with name: '{entity_name}' when expected only one"
 
-        entity = cls(entities[0])
+        entity = entities[0]
         return entity
 
     @classmethod
-    def find_editor_entities(cls, entity_names: List[str]) -> EditorEntity:
+    def find_editor_entities(cls, entity_names: List[str]) -> List[EditorEntity]:
         """
         Given Entities names, returns a list of EditorEntity 
-        :param entity_name: Name of entity to find
+        :param entity_names: List of entity names to find
         :return: List[EditorEntity] class object
         """
         searchFilter = azlmbr.entity.SearchFilter()
@@ -438,7 +446,7 @@ class EditorEntity:
     def set_local_rotation(self, new_rotation) -> None:
         """
         Sets the set the local rotation(relative to the parent) of the current entity.
-        :param vector3_rotation: The math.Vector3 value to use for rotation on the entity (uses radians).
+        :param new_rotation: The math.Vector3 value to use for rotation on the entity (uses radians).
         :return: None
         """
         new_rotation = convert_to_azvector3(new_rotation)
@@ -454,7 +462,7 @@ class EditorEntity:
     def set_local_translation(self, new_translation) -> None:
         """
         Sets the local translation(relative to the parent) of the current entity.
-        :param vector3_translation: The math.Vector3 value to use for translation on the entity.
+        :param new_translation: The math.Vector3 value to use for translation on the entity.
         :return: None
         """
         new_translation = convert_to_azvector3(new_translation)
@@ -470,3 +478,99 @@ class EditorEntity:
         assert self.id.isValid(), "A valid entity id is required to focus on its owning prefab."
         focus_prefab_result = azlmbr.prefab.PrefabFocusPublicRequestBus(bus.Broadcast, "FocusOnOwningPrefab", self.id)
         assert focus_prefab_result.IsSuccess(), f"Prefab operation 'FocusOnOwningPrefab' failed. Error: {focus_prefab_result.GetError()}"
+
+
+class EditorLevelEntity:
+    """
+    EditorLevel class used to add and fetch level components.
+    Level entity is a special entity that you do not create/destroy independently of larger systems of level creation.
+    This collects a number of staticmethods that do not rely on entityId since Level entity is found internally by
+    EditorLevelComponentAPIBus requests.
+    """
+
+    @staticmethod
+    def get_type_ids(component_names: list) -> list:
+        """
+        Used to get type ids of given components list for EntityType Level
+        :param: component_names: List of components to get type ids
+        :return: List of type ids of given components.
+        """
+        type_ids = editor.EditorComponentAPIBus(
+            bus.Broadcast, "FindComponentTypeIdsByEntityType", component_names, azlmbr.entity.EntityType().Level
+        )
+        return type_ids
+
+    @staticmethod
+    def add_component(component_name: str) -> EditorComponent:
+        """
+        Used to add new component to Level.
+        :param component_name: String of component name to add.
+        :return: Component object of newly added component.
+        """
+        component = EditorLevelEntity.add_components([component_name])[0]
+        return component
+
+    @staticmethod
+    def add_components(component_names: list) -> List[EditorComponent]:
+        """
+        Used to add multiple components
+        :param: component_names: List of components to add to level
+        :return: List of newly added components to the level
+        """
+        components = []
+        type_ids = EditorLevelEntity.get_type_ids(component_names)
+        for type_id in type_ids:
+            new_comp = EditorComponent()
+            new_comp.type_id = type_id
+            add_component_outcome = editor.EditorLevelComponentAPIBus(
+                bus.Broadcast, "AddComponentsOfType", [type_id]
+            )
+            assert (
+                add_component_outcome.IsSuccess()
+            ), f"Failure: Could not add component: '{new_comp.get_component_name()}' to level"
+            new_comp.id = add_component_outcome.GetValue()[0]
+            components.append(new_comp)
+        return components
+
+    @staticmethod
+    def get_components_of_type(component_names: list) -> List[EditorComponent]:
+        """
+        Used to get components of type component_name that already exists on the level
+        :param component_names: List of names of components to check
+        :return: List of Level Component objects of given component name
+        """
+        component_list = []
+        type_ids = EditorLevelEntity.get_type_ids(component_names)
+        for type_id in type_ids:
+            component = EditorComponent()
+            component.type_id = type_id
+            get_component_of_type_outcome = editor.EditorLevelComponentAPIBus(
+                bus.Broadcast, "GetComponentOfType", type_id
+            )
+            assert (
+                get_component_of_type_outcome.IsSuccess()
+            ), f"Failure: Level does not have component:'{component.get_component_name()}'"
+            component.id = get_component_of_type_outcome.GetValue()
+            component_list.append(component)
+
+        return component_list
+
+    @staticmethod
+    def has_component(component_name: str) -> bool:
+        """
+        Used to verify if the level has the specified component
+        :param component_name: Name of component to check for
+        :return: True, if level has specified component. Else, False
+        """
+        type_ids = EditorLevelEntity.get_type_ids([component_name])
+        return editor.EditorLevelComponentAPIBus(bus.Broadcast, "HasComponentOfType", type_ids[0])
+
+    @staticmethod
+    def count_components_of_type(component_name: str) -> int:
+        """
+        Used to get a count of the specified level component attached to the level
+        :param component_name: Name of component to check for
+        :return: integer count of occurences of level component attached to level or zero if none are present
+        """
+        type_ids = EditorLevelEntity.get_type_ids([component_name])
+        return editor.EditorLevelComponentAPIBus(bus.Broadcast, "CountComponentsOfType", type_ids[0])

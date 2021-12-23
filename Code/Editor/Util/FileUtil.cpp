@@ -251,7 +251,7 @@ bool CFileUtil::ExtractDccFilenameFromAssetDatabase(const QString& assetFilename
 
     for (size_t i = 0; i < assetDatabasePlugins.size(); ++i)
     {
-        if (assetDatabasePlugins[i]->QueryInterface(__uuidof(IAssetItemDatabase), (void**)&pCurrentDatabaseInterface) == S_OK)
+        if (assetDatabasePlugins[i]->QueryInterface(__az_uuidof(IAssetItemDatabase), (void**)&pCurrentDatabaseInterface) == S_OK)
         {
             if (!pCurrentDatabaseInterface)
             {
