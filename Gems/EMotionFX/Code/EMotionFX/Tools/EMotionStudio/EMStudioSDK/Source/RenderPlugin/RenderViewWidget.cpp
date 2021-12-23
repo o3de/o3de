@@ -14,9 +14,10 @@
 #include <EMotionFX/CommandSystem/Source/ActorInstanceCommands.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <MysticQt/Source/KeyboardShortcutManager.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 
 #include <QToolBar>
-
+#include <QToolButton>
 
 namespace EMStudio
 {
