@@ -28,9 +28,6 @@ class LightingData
     // Direction light shadow coordinates
     float3 shadowCoords[ViewSrg::MaxCascadeCount];
 
-    // Direction light shadow coordinates for shrinked positions (used in scattering through thin objects)
-    float3 shrinkedShadowCoords[ViewSrg::MaxCascadeCount];
-
     // (N . L) to accept below (N . L = 0) in scattering through thin objects
     float transmissionNdLBias; 
     

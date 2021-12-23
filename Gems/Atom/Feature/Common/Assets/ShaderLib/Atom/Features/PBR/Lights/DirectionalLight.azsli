@@ -37,7 +37,7 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
             shadowIndex,
             surface.position - lightingData.shrinkFactor * surface.vertexNormal,
             surface.normal,
-            lightingData.shrinkedShadowCoords);
+            shrinkedShadowCoords);
             
         if (o_transmission_mode == TransmissionMode::ThickObject)
         {
@@ -47,7 +47,7 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
         {
             // Use shrinked positions for thin object transmission to ensure they fall onto the object when querying
             // the depth from the shadow map
-            transmissionDistance = DirectionalLightShadow::GetThickness(shadowIndex, lightingData.shrinkedShadowCoords);
+            transmissionDistance = DirectionalLightShadow::GetThickness(shadowIndex, shrinkedShadowCoords);
         }
     }
 
