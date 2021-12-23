@@ -23,8 +23,6 @@ namespace EMStudio
     class AnimGraphNodeWidget
         : public QWidget
     {
-        Q_OBJECT
-
     public:
         AnimGraphNodeWidget(QWidget* parent = nullptr)
             : QWidget(parent)

@@ -52,7 +52,6 @@ set(FILES
     Source/AnimGraph/AnimGraphHierarchyWidget.cpp
     Source/AnimGraph/AnimGraphHierarchyWidget.h
     Source/AnimGraph/AnimGraphNodeWidget.h
-    Source/AnimGraph/AnimGraphNodeWidget.cpp
     Source/AnimGraph/AnimGraphOptions.cpp
     Source/AnimGraph/AnimGraphOptions.h
     Source/AnimGraph/AnimGraphPlugin.cpp
