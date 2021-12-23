@@ -16,6 +16,12 @@ from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorSharedTest, E
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(EditorTestSuite):
+
+    # Helpers for test asset cleanup
+    def cleanup_test_level(self, workspace):
+        file_system.delete([os.path.join(workspace.paths.engine_root(), "AutomatedTesting", "Levels", "tmp_level")],
+                           True, True)
+
     class test_AltitudeFilter_ComponentAndOverrides_InstancesPlantAtSpecifiedAltitude(EditorParallelTest):
         from .EditorScripts import AltitudeFilter_ComponentAndOverrides_InstancesPlantAtSpecifiedAltitude as test_module
     
@@ -24,37 +30,6 @@ class TestAutomation(EditorTestSuite):
 
     class test_AltitudeFilter_ShapeSample_InstancesPlantAtSpecifiedAltitude(EditorParallelTest):
         from .EditorScripts import AltitudeFilter_ShapeSample_InstancesPlantAtSpecifiedAltitude as test_module
-
-
-@pytest.mark.SUITE_main
-@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
-@pytest.mark.parametrize("project", ["AutomatedTesting"])
-class TestAutomation_PrefabNotEnabled(EditorTestSuite):
-
-    enable_prefab_system = False
-
-    # Helpers for test asset cleanup
-    def cleanup_test_level(self, workspace):
-        file_system.delete([os.path.join(workspace.paths.engine_root(), "AutomatedTesting", "Levels", "tmp_level")],
-                           True, True)
-
-    def cleanup_test_slices(self, workspace):
-        file_system.delete([os.path.join(workspace.paths.engine_root(), "AutomatedTesting", "slices",
-                                         "TestSlice_1.slice")], True, True)
-        file_system.delete([os.path.join(workspace.paths.engine_root(), "AutomatedTesting", "slices",
-                                         "TestSlice_2.slice")], True, True)
-    
-    class test_DynamicSliceInstanceSpawner_DynamicSliceSpawnerWorks(EditorParallelTest):
-        from .EditorScripts import DynamicSliceInstanceSpawner_DynamicSliceSpawnerWorks as test_module
-
-    class test_EmptyInstanceSpawner_EmptySpawnerWorks(EditorParallelTest):
-        from .EditorScripts import EmptyInstanceSpawner_EmptySpawnerWorks as test_module
-
-    class test_SpawnerSlices_SliceCreationAndVisibilityToggleWorks(EditorSingleTest):
-        # Custom teardown to remove slice asset created during test
-        def teardown(self, request, workspace, editor, editor_test_results, launcher_platform):
-            TestAutomation_PrefabNotEnabled.cleanup_test_slices(self, workspace)
-        from .EditorScripts import SpawnerSlices_SliceCreationAndVisibilityToggleWorks as test_module
 
     class test_AssetListCombiner_CombinedDescriptorsExpressInConfiguredArea(EditorParallelTest):
         from .EditorScripts import AssetListCombiner_CombinedDescriptorsExpressInConfiguredArea as test_module
@@ -70,11 +45,11 @@ class TestAutomation_PrefabNotEnabled(EditorTestSuite):
     class test_DistanceBetweenFilterOverrides_InstancesPlantAtSpecifiedRadius(EditorParallelTest):
         from .EditorScripts import DistanceBetweenFilterOverrides_InstancesPlantAtSpecifiedRadius as test_module
 
-    class test_SurfaceDataRefreshes_RemainsStable(EditorParallelTest):
-        from .EditorScripts import SurfaceDataRefreshes_RemainsStable as test_module
+    class test_DynamicSliceInstanceSpawner_DynamicSliceSpawnerWorks(EditorParallelTest):
+        from .EditorScripts import DynamicSliceInstanceSpawner_DynamicSliceSpawnerWorks as test_module
 
-    class test_VegetationInstances_DespawnWhenOutOfRange(EditorParallelTest):
-        from .EditorScripts import VegetationInstances_DespawnWhenOutOfRange as test_module
+    class test_EmptyInstanceSpawner_EmptySpawnerWorks(EditorParallelTest):
+        from .EditorScripts import EmptyInstanceSpawner_EmptySpawnerWorks as test_module
 
     class test_InstanceSpawnerPriority_LayerAndSubPriority_HigherValuesPlantOverLower(EditorParallelTest):
         from .EditorScripts import InstanceSpawnerPriority_LayerAndSubPriority as test_module
@@ -82,18 +57,82 @@ class TestAutomation_PrefabNotEnabled(EditorTestSuite):
     class test_LayerBlocker_InstancesBlockedInConfiguredArea(EditorParallelTest):
         from .EditorScripts import LayerBlocker_InstancesBlockedInConfiguredArea as test_module
 
+    class test_LayerSpawner_FilterStageToggle(EditorParallelTest):
+        from .EditorScripts import LayerSpawner_FilterStageToggle as test_module
+
     class test_LayerSpawner_InheritBehaviorFlag(EditorParallelTest):
         from .EditorScripts import LayerSpawner_InheritBehaviorFlag as test_module
 
     class test_LayerSpawner_InstancesPlantInAllSupportedShapes(EditorParallelTest):
         from .EditorScripts import LayerSpawner_InstancesPlantInAllSupportedShapes as test_module
 
-    class test_LayerSpawner_FilterStageToggle(EditorParallelTest):
-        from .EditorScripts import LayerSpawner_FilterStageToggle as test_module
-
-    @pytest.mark.xfail(reason="https://github.com/o3de/o3de/issues/2038")
+    @pytest.mark.xfail(reason="https://github.com/o3de/o3de/issues/6549")
     class test_LayerSpawner_InstancesRefreshUsingCorrectViewportCamera(EditorParallelTest):
         from .EditorScripts import LayerSpawner_InstancesRefreshUsingCorrectViewportCamera as test_module
+
+
+
+    class test_PrefabInstanceSpawner_Embedded_E2E_Editor(EditorSingleTest):
+        from .EditorScripts import PrefabInstanceSpawner_Embedded_E2E as test_module
+
+        # Custom setup/teardown to remove test level created during test
+        def setup(self, request, workspace, editor, editor_test_results, launcher_platform):
+            TestAutomation.cleanup_test_level(self, workspace)
+
+        def teardown(self, request, workspace, editor, editor_test_results, launcher_platform):
+            TestAutomation.cleanup_test_level(self, workspace)
+
+    class test_PrefabInstanceSpawner_External_E2E_Editor(EditorSingleTest):
+        from .EditorScripts import PrefabInstanceSpawner_External_E2E as test_module
+
+        # Custom setup/teardown to remove test level created during test
+        def setup(self, request, workspace, editor, editor_test_results, launcher_platform):
+            TestAutomation.cleanup_test_level(self, workspace)
+
+        def teardown(self, request, workspace, editor, editor_test_results, launcher_platform):
+            TestAutomation.cleanup_test_level(self, workspace)
+
+    class test_LayerBlender_E2E_Editor(EditorSingleTest):
+        from .EditorScripts import LayerBlender_E2E_Editor as test_module
+
+        # Custom setup/teardown to remove test level created during test
+        def setup(self, request, workspace, editor, editor_test_results, launcher_platform):
+            TestAutomation.cleanup_test_level(self, workspace)
+
+        def teardown(self, request, workspace, editor, editor_test_results, launcher_platform):
+            TestAutomation.cleanup_test_level(self, workspace)
+
+
+@pytest.mark.SUITE_main
+@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
+@pytest.mark.parametrize("project", ["AutomatedTesting"])
+class TestAutomation_PrefabNotEnabled(EditorTestSuite):
+
+    enable_prefab_system = False
+
+    def cleanup_test_slices(self, workspace):
+        file_system.delete([os.path.join(workspace.paths.engine_root(), "AutomatedTesting", "slices",
+                                         "TestSlice_1.slice")], True, True)
+        file_system.delete([os.path.join(workspace.paths.engine_root(), "AutomatedTesting", "slices",
+                                         "TestSlice_2.slice")], True, True)
+
+    class test_SpawnerSlices_SliceCreationAndVisibilityToggleWorks(EditorSingleTest):
+        # Custom teardown to remove slice asset created during test
+        def teardown(self, request, workspace, editor, editor_test_results, launcher_platform):
+            TestAutomation_PrefabNotEnabled.cleanup_test_slices(self, workspace)
+        from .EditorScripts import SpawnerSlices_SliceCreationAndVisibilityToggleWorks as test_module
+
+    class test_SurfaceDataRefreshes_RemainsStable(EditorParallelTest):
+        from .EditorScripts import SurfaceDataRefreshes_RemainsStable as test_module
+
+    class test_VegetationInstances_DespawnWhenOutOfRange(EditorParallelTest):
+        from .EditorScripts import VegetationInstances_DespawnWhenOutOfRange as test_module
+
+
+
+
+
+
 
     class test_MeshBlocker_InstancesBlockedByMesh(EditorParallelTest):
         from .EditorScripts import MeshBlocker_InstancesBlockedByMesh as test_module
@@ -160,33 +199,3 @@ class TestAutomation_PrefabNotEnabled(EditorTestSuite):
 
     class test_SlopeFilter_ComponentAndOverrides_InstancesPlantOnValidSlopes(EditorParallelTest):
         from .EditorScripts import SlopeFilter_ComponentAndOverrides_InstancesPlantOnValidSlope as test_module
-
-    class test_DynamicSliceInstanceSpawner_Embedded_E2E_Editor(EditorSingleTest):
-        from .EditorScripts import DynamicSliceInstanceSpawner_Embedded_E2E as test_module
-
-        # Custom setup/teardown to remove test level created during test
-        def setup(self, request, workspace, editor, editor_test_results, launcher_platform):
-            TestAutomation_PrefabNotEnabled.cleanup_test_level(self, workspace)
-
-        def teardown(self, request, workspace, editor, editor_test_results, launcher_platform):
-            TestAutomation_PrefabNotEnabled.cleanup_test_level(self, workspace)
-
-    class test_DynamicSliceInstanceSpawner_External_E2E_Editor(EditorSingleTest):
-        from .EditorScripts import DynamicSliceInstanceSpawner_External_E2E as test_module
-
-        # Custom setup/teardown to remove test level created during test
-        def setup(self, request, workspace, editor, editor_test_results, launcher_platform):
-            TestAutomation_PrefabNotEnabled.cleanup_test_level(self, workspace)
-
-        def teardown(self, request, workspace, editor, editor_test_results, launcher_platform):
-            TestAutomation_PrefabNotEnabled.cleanup_test_level(self, workspace)
-
-    class test_LayerBlender_E2E_Editor(EditorSingleTest):
-        from .EditorScripts import LayerBlender_E2E_Editor as test_module
-
-        # Custom setup/teardown to remove test level created during test
-        def setup(self, request, workspace, editor, editor_test_results, launcher_platform):
-            TestAutomation_PrefabNotEnabled.cleanup_test_level(self, workspace)
-
-        def teardown(self, request, workspace, editor, editor_test_results, launcher_platform):
-            TestAutomation_PrefabNotEnabled.cleanup_test_level(self, workspace)

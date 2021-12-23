@@ -128,11 +128,10 @@ def DynamicSliceInstanceSpawner_External_E2E():
     search_entity_ids = entity.SearchBus(bus.Broadcast, 'SearchEntities', search_filter)
     components.TransformBus(bus.Event, "MoveEntity", search_entity_ids[0], cam_position)
 
-    # 6) Save and export to engine
+    # 6) Save the created level
     general.save_level()
-    general.export_to_engine()
-    pak_path = os.path.join(paths.products, "levels", lvl_name, "level.pak")
-    Report.result(Tests.saved_and_exported, os.path.exists(pak_path))
+    level_prefab_path = os.path.join(paths.products, "levels", lvl_name, f"{lvl_name}.spawnable")
+    Report.result(Tests.saved_and_exported, os.path.exists(level_prefab_path))
 
 
 if __name__ == "__main__":

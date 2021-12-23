@@ -42,18 +42,16 @@ def LayerSpawner_InheritBehaviorFlag():
 
     SURFACE_TAG = "test_tag"
 
-    def set_dynamic_slice_asset(entity_obj, component_index, dynamic_slice_asset_path):
-        dynamic_slice_spawner = vegetation.DynamicSliceInstanceSpawner()
-        dynamic_slice_spawner.SetSliceAssetPath(dynamic_slice_asset_path)
-        descriptor = hydra.get_component_property_value(
-            entity_obj.components[component_index], "Configuration|Embedded Assets|[0]"
-        )
-        descriptor.spawner = dynamic_slice_spawner
+    def set_prefab_asset(entity_obj, component_index, spawnable_prefab):
+        descriptor = hydra.get_component_property_value(entity_obj.components[component_index],
+                                                        "Configuration|Embedded Assets|[0]")
+        prefab_spawner = vegetation.PrefabInstanceSpawner()
+        prefab_spawner.SetPrefabAssetId(spawnable_prefab)
+        descriptor.spawner = prefab_spawner
         entity_obj.get_set_test(2, "Configuration|Embedded Assets|[0]", descriptor)
 
     # Open an existing simple level
     hydra.open_base_level()
-
     general.set_current_view_position(512.0, 480.0, 38.0)
 
     # Create Emitter entity and add the required components
@@ -79,7 +77,9 @@ def LayerSpawner_InheritBehaviorFlag():
     veg_1.create_entity(
         position, ["Vegetation Layer Spawner", "Shape Reference", "Vegetation Asset List"]
     )
-    set_dynamic_slice_asset(veg_1, 2, os.path.join("Slices", "PinkFlower.dynamicslice"))
+    pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
+    pink_flower_prefab = dynveg.create_temp_mesh_prefab(pink_flower_asset_path, "temp_PinkFlower")[0]
+    set_prefab_asset(veg_1, 2, pink_flower_prefab)
     veg_1.get_set_test(1, "Configuration|Shape Entity Id", blender_entity.id)
 
     # Create second vegetation area and assign a valid asset
@@ -87,7 +87,9 @@ def LayerSpawner_InheritBehaviorFlag():
     veg_2.create_entity(
         position, ["Vegetation Layer Spawner", "Shape Reference", "Vegetation Asset List"]
     )
-    set_dynamic_slice_asset(veg_2, 2, os.path.join("Slices", "PurpleFlower.dynamicslice"))
+    purple_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
+    purple_flower_prefab = dynveg.create_temp_mesh_prefab(purple_flower_asset_path, "temp_PurpleFlower")[0]
+    set_prefab_asset(veg_2, 2, purple_flower_prefab)
     veg_2.get_set_test(1, "Configuration|Shape Entity Id", blender_entity.id)
 
     # Assign the vegetation areas to the Blender entity

@@ -63,11 +63,13 @@ def DynamicSliceInstanceSpawner_Embedded_E2E():
     import azlmbr.entity as entity
     import azlmbr.math as math
     import azlmbr.paths as paths
+    import azlmbr.vegetation as vegetation
 
     import editor_python_test_tools.hydra_editor_utils as hydra
     from largeworlds.large_worlds_utils import editor_dynveg_test_helper as dynveg
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
+
 
     # 1) Create a new, temporary level
     lvl_name = "tmp_level"
@@ -79,13 +81,14 @@ def DynamicSliceInstanceSpawner_Embedded_E2E():
 
     # 2) Create a new entity with required vegetation area components and Script Canvas component for launcher test
     center_point = math.Vector3(512.0, 512.0, 32.0)
-    asset_path = os.path.join("Slices", "PinkFlower.dynamicslice")
-    spawner_entity = dynveg.create_dynamic_slice_vegetation_area("Instance Spawner", center_point, 16.0, 16.0, 1.0, asset_path)
+    pink_flower_prefab_path = os.path.join("assets", "prefabs", "PinkFlower.spawnable")
+    spawner_entity = dynveg.create_prefab_vegetation_area("Instance Spawner", center_point, 16.0, 16.0, 1.0,
+                                                          pink_flower_prefab_path)
     spawner_entity.add_component("Script Canvas")
     instance_counter_path = os.path.join("scriptcanvas", "instance_counter.scriptcanvas")
     instance_counter_script = asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", instance_counter_path,
                                                            math.Uuid(), False)
-    spawner_entity.get_set_test(3, "Script Canvas Asset|Script Canvas Asset", instance_counter_script)
+    spawner_entity.get_set_test(3, "Properties", instance_counter_script)
     Report.result(Tests.spawner_entity_created, spawner_entity.id.IsValid() and hydra.has_components(spawner_entity.id,
                                                                                                      ["Script Canvas"]))
 
@@ -106,11 +109,10 @@ def DynamicSliceInstanceSpawner_Embedded_E2E():
     search_entity_ids = entity.SearchBus(bus.Broadcast, 'SearchEntities', search_filter)
     components.TransformBus(bus.Event, "MoveEntity", search_entity_ids[0], cam_position)
 
-    # 6) Save and export to engine
+    # 6) Save the created level
     general.save_level()
-    general.export_to_engine()
-    pak_path = os.path.join(paths.products, "levels", lvl_name, "level.pak")
-    Report.result(Tests.saved_and_exported, os.path.exists(pak_path))
+    level_prefab_path = os.path.join(paths.products, "levels", lvl_name, f"{lvl_name}.spawnable")
+    Report.result(Tests.saved_and_exported, os.path.exists(level_prefab_path))
 
 
 if __name__ == "__main__":

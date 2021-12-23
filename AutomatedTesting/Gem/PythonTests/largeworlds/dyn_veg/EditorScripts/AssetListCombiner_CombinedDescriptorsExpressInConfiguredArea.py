@@ -56,19 +56,21 @@ def AssetListCombiner_CombinedDescriptorsExpressInConfiguredArea():
     """
 
     import os
+    from pathlib import Path
 
     import azlmbr.bus as bus
     import azlmbr.editor as editor
     import azlmbr.legacy.general as general
     import azlmbr.math as math
     import azlmbr.vegetation as vegetation
+    import azlmbr.prefab as prefab
 
     import editor_python_test_tools.hydra_editor_utils as hydra
     from largeworlds.large_worlds_utils import editor_dynveg_test_helper as dynveg
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
 
-    def create_asset_list_entity(name, center, dynamic_slice_asset_path):
+    def create_asset_list_entity(name, center, target_prefab):
         asset_list_entity = hydra.Entity(name)
         asset_list_entity.create_entity(
             center,
@@ -77,12 +79,29 @@ def AssetListCombiner_CombinedDescriptorsExpressInConfiguredArea():
         if asset_list_entity.id.IsValid():
             print(f"'{asset_list_entity.name}' created")
 
-        # Set the Asset List to a Dynamic Slice spawner with a specific slice asset selected
-        dynamic_slice_spawner = vegetation.DynamicSliceInstanceSpawner()
-        dynamic_slice_spawner.SetSliceAssetPath(dynamic_slice_asset_path)
+        if target_prefab:
+            # Get the in-memory spawnable asset id if exists
+            spawnable_name = Path(target_prefab.file_path).stem
+            spawnable_asset_id = prefab.PrefabPublicRequestBus(bus.Broadcast, 'GetInMemorySpawnableAssetId',
+                                                               spawnable_name)
+
+            # Create the in-memory spawnable asset from given prefab if the spawnable does not exist
+            if not spawnable_asset_id.is_valid():
+                create_spawnable_result = prefab.PrefabPublicRequestBus(bus.Broadcast, 'CreateInMemorySpawnableAsset',
+                                                                        target_prefab.file_path,
+                                                                        spawnable_name)
+                assert create_spawnable_result.IsSuccess(), \
+                    f"Prefab operation 'CreateInMemorySpawnableAssets' failed. Error: {create_spawnable_result.GetError()}"
+                spawnable_asset_id = create_spawnable_result.GetValue()
+        else:
+            spawnable_asset_id = None
+
+        # Set the vegetation area to a prefab instance spawner with a specific prefab asset selected
         descriptor = hydra.get_component_property_value(asset_list_entity.components[0],
-                                                        "Configuration|Embedded Assets|[0]")
-        descriptor.spawner = dynamic_slice_spawner
+                                                        'Configuration|Embedded Assets|[0]')
+        prefab_spawner = vegetation.PrefabInstanceSpawner()
+        prefab_spawner.SetPrefabAssetId(spawnable_asset_id)
+        descriptor.spawner = prefab_spawner
         asset_list_entity.get_set_test(0, "Configuration|Embedded Assets|[0]", descriptor)
         return asset_list_entity
 
@@ -95,11 +114,13 @@ def AssetListCombiner_CombinedDescriptorsExpressInConfiguredArea():
 
     # 2) Create 3 entities with Vegetation Asset List components set to spawn different descriptors
     center_point = math.Vector3(512.0, 512.0, 32.0)
-    asset_path = os.path.join("Slices", "PinkFlower.dynamicslice")
-    asset_path2 = os.path.join("Slices", "PurpleFlower.dynamicslice")
-    asset_list_entity = create_asset_list_entity("Asset List 1", center_point, asset_path)
+    pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
+    pink_flower_prefab = dynveg.create_temp_mesh_prefab(pink_flower_asset_path, "temp_PinkFlower")[0]
+    purple_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
+    purple_flower_prefab = dynveg.create_temp_mesh_prefab(purple_flower_asset_path, "temp_PurpleFlower")[0]
+    asset_list_entity = create_asset_list_entity("Asset List 1", center_point, pink_flower_prefab)
     asset_list_entity2 = create_asset_list_entity("Asset List 2", center_point, None)
-    asset_list_entity3 = create_asset_list_entity("Asset List 3", center_point, asset_path2)
+    asset_list_entity3 = create_asset_list_entity("Asset List 3", center_point, purple_flower_prefab)
 
     # 3) Create a planting surface and add a Vegetation System Settings level component with instances set to spawn
     # on center instead of corner

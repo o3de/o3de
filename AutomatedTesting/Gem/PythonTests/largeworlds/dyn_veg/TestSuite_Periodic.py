@@ -62,26 +62,51 @@ class TestAutomation(TestAutomationBase):
         from .EditorScripts import AltitudeFilter_FilterStageToggle as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    def test_SpawnerSlices_SliceCreationAndVisibilityToggleWorks(self, request, workspace, editor, remove_test_slice, launcher_platform):
-        from .EditorScripts import SpawnerSlices_SliceCreationAndVisibilityToggleWorks as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
-
     def test_AssetListCombiner_CombinedDescriptorsExpressInConfiguredArea(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import AssetListCombiner_CombinedDescriptorsExpressInConfiguredArea as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     def test_AssetWeightSelector_InstancesExpressBasedOnWeight(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import AssetWeightSelector_InstancesExpressBasedOnWeight as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.xfail(reason="https://github.com/o3de/o3de/issues/4155")
     def test_DistanceBetweenFilter_InstancesPlantAtSpecifiedRadius(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import DistanceBetweenFilter_InstancesPlantAtSpecifiedRadius as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.xfail(reason="https://github.com/o3de/o3de/issues/4155")
     def test_DistanceBetweenFilterOverrides_InstancesPlantAtSpecifiedRadius(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import DistanceBetweenFilterOverrides_InstancesPlantAtSpecifiedRadius as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_InstanceSpawnerPriority_LayerAndSubPriority_HigherValuesPlantOverLower(self, request, workspace, editor, launcher_platform):
+        from .EditorScripts import InstanceSpawnerPriority_LayerAndSubPriority as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_LayerBlocker_InstancesBlockedInConfiguredArea(self, request, workspace, editor, launcher_platform):
+        from .EditorScripts import LayerBlocker_InstancesBlockedInConfiguredArea as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_LayerSpawner_FilterStageToggle(self, request, workspace, editor, launcher_platform):
+        from .EditorScripts import LayerSpawner_FilterStageToggle as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_LayerSpawner_InheritBehaviorFlag(self, request, workspace, editor, launcher_platform):
+        from .EditorScripts import LayerSpawner_InheritBehaviorFlag as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_LayerSpawner_InstancesPlantInAllSupportedShapes(self, request, workspace, editor, launcher_platform):
+        from .EditorScripts import LayerSpawner_InstancesPlantInAllSupportedShapes as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    @pytest.mark.xfail(reason="https://github.com/o3de/o3de/issues/6549")
+    def test_LayerSpawner_InstancesRefreshUsingCorrectViewportCamera(self, request, workspace, editor, launcher_platform):
+        from .EditorScripts import LayerSpawner_InstancesRefreshUsingCorrectViewportCamera as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_SpawnerSlices_SliceCreationAndVisibilityToggleWorks(self, request, workspace, editor, remove_test_slice, launcher_platform):
+        from .EditorScripts import SpawnerSlices_SliceCreationAndVisibilityToggleWorks as test_module
         self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
 
     def test_SurfaceDataRefreshes_RemainsStable(self, request, workspace, editor, launcher_platform):
@@ -92,30 +117,18 @@ class TestAutomation(TestAutomationBase):
         from .EditorScripts import VegetationInstances_DespawnWhenOutOfRange as test_module
         self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
 
-    def test_InstanceSpawnerPriority_LayerAndSubPriority_HigherValuesPlantOverLower(self, request, workspace, editor, launcher_platform):
-        from .EditorScripts import InstanceSpawnerPriority_LayerAndSubPriority as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
 
-    def test_LayerBlocker_InstancesBlockedInConfiguredArea(self, request, workspace, editor, launcher_platform):
-        from .EditorScripts import LayerBlocker_InstancesBlockedInConfiguredArea as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
 
-    def test_LayerSpawner_InheritBehaviorFlag(self, request, workspace, editor, launcher_platform):
-        from .EditorScripts import LayerSpawner_InheritBehaviorFlag as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
 
-    def test_LayerSpawner_InstancesPlantInAllSupportedShapes(self, request, workspace, editor, launcher_platform):
-        from .EditorScripts import LayerSpawner_InstancesPlantInAllSupportedShapes as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
 
-    def test_LayerSpawner_FilterStageToggle(self, request, workspace, editor, launcher_platform):
-        from .EditorScripts import LayerSpawner_FilterStageToggle as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
 
-    @pytest.mark.xfail(reason="https://github.com/o3de/o3de/issues/2038")
-    def test_LayerSpawner_InstancesRefreshUsingCorrectViewportCamera(self, request, workspace, editor, launcher_platform):
-        from .EditorScripts import LayerSpawner_InstancesRefreshUsingCorrectViewportCamera as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+
+
+
+
+
+
+
 
     def test_MeshBlocker_InstancesBlockedByMesh(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import MeshBlocker_InstancesBlockedByMesh as test_module
@@ -214,36 +227,36 @@ class TestAutomationE2E(TestAutomationBase):
     # The following tests must run in order, please do not move tests out of order
 
     @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
-    def test_DynamicSliceInstanceSpawner_Embedded_E2E_Editor(self, request, workspace, project, level, editor, launcher_platform):
+    def test_PrefabInstanceSpawner_Embedded_E2E_Editor(self, request, workspace, project, level, editor, launcher_platform):
         # Ensure our test level does not already exist
         file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
-        from .EditorScripts import DynamicSliceInstanceSpawner_Embedded_E2E as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        from .EditorScripts import PrefabInstanceSpawner_Embedded_E2E as test_module
+        self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.parametrize("launcher_platform", ['windows'])
-    def test_DynamicSliceInstanceSpawner_Embedded_E2E_Launcher(self, workspace, launcher, level,
+    def test_PrefabInstanceSpawner_Embedded_E2E_Launcher(self, workspace, launcher, level,
                                                                remote_console_instance, project, launcher_platform):
 
         expected_lines = [
             "Instances found in area = 400"
         ]
 
-        hydra.launch_and_validate_results_launcher(launcher, level, remote_console_instance, expected_lines, launch_ap=False)
+        hydra.launch_and_validate_results_launcher(launcher, level, remote_console_instance, expected_lines, null_renderer=False, launch_ap=False)
 
         # Cleanup our temp level
         file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
     @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
-    def test_DynamicSliceInstanceSpawner_External_E2E_Editor(self, request, workspace, project, level, editor, launcher_platform):
+    def test_PrefabInstanceSpawner_External_E2E_Editor(self, request, workspace, project, level, editor, launcher_platform):
         # Ensure our test level does not already exist
         file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
-        from .EditorScripts import DynamicSliceInstanceSpawner_External_E2E as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        from .EditorScripts import PrefabInstanceSpawner_External_E2E as test_module
+        self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.parametrize("launcher_platform", ['windows'])
-    def test_DynamicSliceInstanceSpawner_External_E2E_Launcher(self, workspace, launcher, level,
+    def test_PrefabInstanceSpawner_External_E2E_Launcher(self, workspace, launcher, level,
                                                                remote_console_instance, project, launcher_platform):
 
         expected_lines = [
@@ -261,7 +274,7 @@ class TestAutomationE2E(TestAutomationBase):
         file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
         from .EditorScripts import LayerBlender_E2E_Editor as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.parametrize("launcher_platform", ['windows'])
     @pytest.mark.xfail(reason="https://github.com/o3de/o3de/issues/4170")

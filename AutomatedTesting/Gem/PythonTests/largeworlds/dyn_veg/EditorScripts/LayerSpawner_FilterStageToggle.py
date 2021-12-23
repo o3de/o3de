@@ -49,8 +49,10 @@ def LayerSpawner_FilterStageToggle():
 
     # Create a vegetation area with all needed components
     position = math.Vector3(512.0, 512.0, 32.0)
-    asset_path = os.path.join("Slices", "PinkFlower.dynamicslice")
-    vegetation_entity = dynveg.create_dynamic_slice_vegetation_area("vegetation", position, 16.0, 16.0, 16.0, asset_path)
+    pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
+    pink_flower_prefab = dynveg.create_temp_mesh_prefab(pink_flower_asset_path, "temp_PinkFlower")[0]
+    vegetation_entity = dynveg.create_temp_prefab_vegetation_area("vegetation", position, 16.0, 16.0, 16.0,
+                                                                  pink_flower_prefab)
     vegetation_entity.add_component("Vegetation Altitude Filter")
     vegetation_entity.add_component("Vegetation Position Modifier")
 

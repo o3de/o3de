@@ -74,7 +74,7 @@ def AltitudeFilter_ComponentAndOverrides_InstancesPlantAtSpecifiedAltitude():
     flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
     flower_prefab = dynveg.create_temp_mesh_prefab(flower_asset_path, "PinkFlower")[0]
 
-    spawner_entity = dynveg.create_prefab_vegetation_area("Instance Spawner", center_point, 32.0, 32.0, 32.0, flower_prefab)
+    spawner_entity = dynveg.create_temp_prefab_vegetation_area("Instance Spawner", center_point, 32.0, 32.0, 32.0, flower_prefab)
 
     # Add a Vegetation Altitude Filter
     spawner_entity.add_component("Vegetation Altitude Filter")
