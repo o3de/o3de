@@ -41,6 +41,7 @@ namespace Multiplayer
                     ->Attribute(AZ::Edit::Attributes::Category, "Multiplayer")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/NetBind.png")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/NetBind.png")
+                    ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"));
             }
         }

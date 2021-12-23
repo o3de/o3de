@@ -41,7 +41,7 @@ namespace LmbrCentral
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Spawner.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/spawner/")
+                    ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/")
                     ->DataElement(0, &EditorSpawnerComponent::m_sliceAsset, "Dynamic slice", "The slice to spawn")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSpawnerComponent::SliceAssetChanged)
                     ->DataElement(0, &EditorSpawnerComponent::m_spawnOnActivate, "Spawn on activate", "Should the component spawn the selected slice upon activation?")

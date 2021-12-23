@@ -29,7 +29,7 @@ namespace GradientSignal
         static constexpr const char* const s_componentDescription = "Generates a gradient by sampling a random noise generator";
         static constexpr const char* const s_icon = "Editor/Icons/Components/Gradient.svg";
         static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/Gradient.svg";
-        static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/";
+        static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/reference/";
 
     private:
         AZ::Crc32 OnGenerateRandomSeed();

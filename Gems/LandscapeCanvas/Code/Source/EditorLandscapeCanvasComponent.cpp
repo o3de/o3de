@@ -49,6 +49,7 @@ namespace LandscapeCanvas
                         ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/LandscapeCanvas.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/LandscapeCanvas.svg")
                         ->Attribute(AZ::Edit::Attributes::Category, "Vegetation")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->UIElement(AZ::Edit::UIHandlers::Button, "", "Opens the Landscape Canvas for the current entity")

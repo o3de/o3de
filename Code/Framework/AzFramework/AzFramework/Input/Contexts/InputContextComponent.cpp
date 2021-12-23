@@ -42,6 +42,7 @@ namespace AzFramework
                 editContext->Class<InputContextComponent>("Input Context",
                     "An input context is a collection of input mappings, which map 'raw' input to custom input channels (ie. events).")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Category, "Input")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))

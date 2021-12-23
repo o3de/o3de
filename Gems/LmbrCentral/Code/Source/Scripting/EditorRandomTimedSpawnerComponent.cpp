@@ -59,7 +59,7 @@ namespace LmbrCentral
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/RandomTimedSpawner.svg")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
-                    ->Attribute(AZ::Edit::Attributes::HelpPageURL, "http://docs.aws.amazon.com/console/lumberyard/userguide/random-timed-spawner-component")
+                    ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorRandomTimedSpawnerComponent::m_config, "m_config", "No Description")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)

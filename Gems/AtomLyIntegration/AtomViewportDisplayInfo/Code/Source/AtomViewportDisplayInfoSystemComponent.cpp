@@ -148,10 +148,13 @@ namespace AZ::Render
 
         if (m_updateRootPassQuery)
         {
-            if (auto rootPass = viewportContext->GetCurrentPipeline()->GetRootPass())
+            if (viewportContext->GetCurrentPipeline())
             {
-                rootPass->SetPipelineStatisticsQueryEnabled(displayLevel != AtomBridge::ViewportInfoDisplayState::CompactInfo);
-                m_updateRootPassQuery = false;
+                if (auto rootPass = viewportContext->GetCurrentPipeline()->GetRootPass())
+                {
+                    rootPass->SetPipelineStatisticsQueryEnabled(displayLevel != AtomBridge::ViewportInfoDisplayState::CompactInfo);
+                    m_updateRootPassQuery = false;
+                }
             }
         }
 
@@ -228,22 +231,20 @@ namespace AZ::Render
     void AtomViewportDisplayInfoSystemComponent::DrawPassInfo()
     {
         AZ::RPI::ViewportContextPtr viewportContext = GetViewportContext();
-        auto rootPass = viewportContext->GetCurrentPipeline()->GetRootPass();
-        const RPI::PipelineStatisticsResult stats = rootPass->GetLatestPipelineStatisticsResult();
+        if (viewportContext->GetCurrentPipeline())
+        {
+            auto rootPass = viewportContext->GetCurrentPipeline()->GetRootPass();
+            const RPI::PipelineStatisticsResult stats = rootPass->GetLatestPipelineStatisticsResult();
 
-        RPI::PassSystemFrameStatistics passSystemFrameStatistics = AZ::RPI::PassSystemInterface::Get()->GetFrameStatistics();
+            RPI::PassSystemFrameStatistics passSystemFrameStatistics = AZ::RPI::PassSystemInterface::Get()->GetFrameStatistics();
 
-        DrawLine(AZStd::string::format(
-            "RenderPasses: %d Vertex Count: %lld Primitive Count: %lld",
-            passSystemFrameStatistics.m_numRenderPassesExecuted,
-            aznumeric_cast<long long>(stats.m_vertexCount),
-            aznumeric_cast<long long>(stats.m_primitiveCount)
-        ));
-        DrawLine(AZStd::string::format(
-            "Total Draw Item Count: %d  Max Draw Items in a Pass: %d",
-            passSystemFrameStatistics.m_totalDrawItemsRendered,
-            passSystemFrameStatistics.m_maxDrawItemsRenderedInAPass
-        ));
+            DrawLine(AZStd::string::format(
+                "RenderPasses: %d Vertex Count: %lld Primitive Count: %lld", passSystemFrameStatistics.m_numRenderPassesExecuted,
+                aznumeric_cast<long long>(stats.m_vertexCount), aznumeric_cast<long long>(stats.m_primitiveCount)));
+            DrawLine(AZStd::string::format(
+                "Total Draw Item Count: %d  Max Draw Items in a Pass: %d", passSystemFrameStatistics.m_totalDrawItemsRendered,
+                passSystemFrameStatistics.m_maxDrawItemsRenderedInAPass));
+        }
     }
 
     void AtomViewportDisplayInfoSystemComponent::UpdateFramerate()

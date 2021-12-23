@@ -28,7 +28,7 @@ namespace FastNoiseGem
         static constexpr const char* const s_componentDescription = "Generates gradient values using FastNoise a noise generation library with a collection of realtime noise algorithms";
         static constexpr const char* const s_icon = "Editor/Icons/Components/Gradient.svg";
         static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/Gradient.svg";
-        static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/";
+        static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/reference/";
 
     private:
         AZ::Crc32 OnGenerateRandomSeed();

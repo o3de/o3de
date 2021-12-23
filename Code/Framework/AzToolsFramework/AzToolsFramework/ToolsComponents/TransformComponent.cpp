@@ -1198,6 +1198,7 @@ namespace AzToolsFramework
                             Attribute(AZ::Edit::Attributes::FixedComponentListIndex, 0)->
                             Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Transform.svg")->
                             Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Transform.svg")->
+                            Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/transform/")->
                             Attribute(AZ::Edit::Attributes::AutoExpand, true)->
                         DataElement(AZ::Edit::UIHandlers::Default, &TransformComponent::m_parentEntityId, "Parent entity", "")->
                             Attribute(AZ::Edit::Attributes::ChangeValidate, &TransformComponent::ValidatePotentialParent)->

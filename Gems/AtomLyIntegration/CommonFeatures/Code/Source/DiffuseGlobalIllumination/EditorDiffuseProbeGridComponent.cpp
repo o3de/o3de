@@ -41,7 +41,7 @@ namespace AZ
                     ->Field("viewBias", &EditorDiffuseProbeGridComponent::m_viewBias)
                     ->Field("normalBias", &EditorDiffuseProbeGridComponent::m_normalBias)
                     ->Field("editorMode", &EditorDiffuseProbeGridComponent::m_editorMode)
-                    ->Field("runtimeMode", &EditorDiffuseProbeGridComponent::m_runtimeMode)
+                    ->Field("runtimeMode", &EditorDiffuseProbeGridComponent::m_runtimeMode)  
                     ;
 
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())

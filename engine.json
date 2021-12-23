@@ -86,6 +86,7 @@
         "Gems/WhiteBox"
     ],
     "projects": [
+        "AllGems",
         "AutomatedTesting"
     ],
     "templates": [

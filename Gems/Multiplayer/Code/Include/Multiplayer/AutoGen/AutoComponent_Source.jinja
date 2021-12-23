@@ -1518,7 +1518,9 @@ namespace {{ Component.attrib['Namespace'] }}
                 editContext->Class<{{ ComponentName }}>("{{ ComponentName }}", "{{ Component.attrib['Description'] }}")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "{{ Component.attrib['Namespace'] }}")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"));
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
+                    ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/")
+                    ;
 {% endif %}
             }
         }
