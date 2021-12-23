@@ -691,6 +691,10 @@ namespace EMotionFX
         {
             const ActorInstance* actorInstance = actorManager->GetActorInstance(i);
             const Actor* actor = actorInstance->GetActor();
+            if (!(actorInstance->GetRender() && actorInstance->GetIsVisible() && actorInstance->GetIsOwnedByRuntime() == false))
+            {
+                continue;
+            }
             const AZStd::shared_ptr<PhysicsSetup>& physicsSetup = actor->GetPhysicsSetup();
             const Physics::CharacterColliderConfiguration* colliderConfig = physicsSetup->GetColliderConfigByType(colliderConfigType);
 
