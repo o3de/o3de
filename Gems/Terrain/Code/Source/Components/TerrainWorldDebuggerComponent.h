@@ -106,6 +106,7 @@ namespace Terrain
         static constexpr int32_t MaxSectorsToDraw = MaxVerticesToDraw / VerticesPerSector;
 
         void RefreshCachedWireframeGrid(const AZ::Aabb& dirtyRegion);
+        void RebuildSectorWireframe(WireframeSector& sector, const AZ::Vector2& gridResolution, float worldMinZ);
 
         TerrainWorldDebuggerConfig m_configuration;
         AZStd::vector<WireframeSector> m_wireframeSectors;

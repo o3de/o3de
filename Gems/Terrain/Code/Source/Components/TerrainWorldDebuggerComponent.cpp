@@ -210,6 +210,8 @@ namespace Terrain
 
     void TerrainWorldDebuggerComponent::RefreshCachedWireframeGrid(const AZ::Aabb& dirtyRegion)
     {
+        AZ_PROFILE_FUNCTION(Entity);
+
         // Get the terrain world bounds and grid resolution.
 
         AZ::Aabb worldBounds = GetWorldBounds();
@@ -224,20 +226,21 @@ namespace Terrain
             dirtyRegion.GetMin().GetX(), dirtyRegion.GetMin().GetY(), worldBounds.GetMin().GetZ(),
             dirtyRegion.GetMax().GetX(), dirtyRegion.GetMax().GetY(), worldBounds.GetMax().GetZ());
 
-        // Calculate the world size of each sector.  Note that this size actually ends at the last point, not the last square.
-        // So for example, the sector size for 3 points will go from (*--*--*) even though it will be used to draw (*--*--*--).
-        const float xSectorSize = (queryResolution.GetX() * SectorSizeInGridPoints);
-        const float ySectorSize = (queryResolution.GetY() * SectorSizeInGridPoints);
-
-        // Calculate the total number of sectors to cache.  The world bounds might not be evenly divisible by sector bounds, so we add
-        // an extra sector's worth of size in each direction so that clamping down to an integer still accounts for that fractional sector.
-        const int32_t numSectorsX = aznumeric_cast<int32_t>((worldBounds.GetXExtent() + xSectorSize) / xSectorSize);
-        const int32_t numSectorsY = aznumeric_cast<int32_t>((worldBounds.GetYExtent() + ySectorSize) / ySectorSize);
-
         // If we haven't cached anything before, or if the world bounds has changed, clear our cache structure and repopulate it
         // with WireframeSector entries with the proper AABB sizes.
         if (!m_wireframeBounds.IsValid() || !dirtyRegion2D.IsValid() || !m_wireframeBounds.IsClose(worldBounds))
         {
+            // Calculate the world size of each sector.
+            // Ex:  If our sectors have 10 grid points, and the query resolution is 1 m, each sector will be 10 m.
+            const float xSectorSize = (queryResolution.GetX() * SectorSizeInGridPoints);
+            const float ySectorSize = (queryResolution.GetY() * SectorSizeInGridPoints);
+
+            // Calculate the total number of sectors to cache.  The world bounds might not be evenly divisible by sector bounds, so we add
+            // an extra sector's worth of size in each direction so that clamping down to an integer still accounts for that fractional
+            // sector.
+            const int32_t numSectorsX = aznumeric_cast<int32_t>((worldBounds.GetXExtent() + xSectorSize) / xSectorSize);
+            const int32_t numSectorsY = aznumeric_cast<int32_t>((worldBounds.GetYExtent() + ySectorSize) / ySectorSize);
+
             m_wireframeBounds = worldBounds;
 
             m_wireframeSectors.clear();
@@ -270,6 +273,7 @@ namespace Terrain
         }
 
         // For each sector, if it overlaps with the dirty region, clear it out and recache the wireframe line data.
+        float worldMinZ = worldBounds.GetMin().GetZ();
         for (auto& sector : m_wireframeSectors)
         {
             if (dirtyRegion2D.IsValid() && !dirtyRegion2D.Overlaps(sector.m_aabb))
@@ -277,37 +281,75 @@ namespace Terrain
                 continue;
             }
 
-            sector.m_lineVertices.clear();
+            RebuildSectorWireframe(sector, queryResolution, worldMinZ);
+        }
+    }
 
-            for (float y = sector.m_aabb.GetMin().GetY(); y < sector.m_aabb.GetMax().GetY(); y += queryResolution.GetY())
+    void TerrainWorldDebuggerComponent::RebuildSectorWireframe(WireframeSector& sector, const AZ::Vector2& gridResolution, float worldMinZ)
+    {
+        // To rebuild the wireframe, we walk through the sector by X, then by Y.  For each point, we add two lines in a _| shape.
+        // To do that, we'll need to cache the height from the previous point to draw the _ line, and from the previous row to draw
+        // the | line.
+
+        // When walking through the bounding box, the loops will be inclusive on one side, and exclusive on the other.  However, since
+        // our box is exactly aligned with grid points, we want to get the grid points on both sides in each direction, so we need to
+        // expand our query region by one extra point.
+        // For example, if our AABB is 2 m and our grid resolution is 1 m, we'll want to query (*--*--*--), not (*--*--).
+        // Since we're processing lines based on the grid points and going backwards, this will give us (*--*--*).
+
+        AZ::Aabb region = sector.m_aabb;
+        region.SetMax(region.GetMax() + AZ::Vector3(gridResolution.GetX(), gridResolution.GetY(), 0.0f));
+
+        // This keeps track of the height from the previous point for the _ line.
+        float previousHeight = 0.0f;
+
+        // This keeps track of the heights from the previous row for the | line.
+        AZStd::vector<float> rowHeights(aznumeric_cast<size_t>(ceil(region.GetExtents().GetX() / gridResolution.GetX())));
+
+        // We need 4 vertices for each grid point in our sector to hold the _| shape.
+        const uint32_t numSamplesX = static_cast<uint32_t>((region.GetMax().GetX() - region.GetMin().GetX()) / gridResolution.GetX());
+        const uint32_t numSamplesY = static_cast<uint32_t>((region.GetMax().GetY() - region.GetMin().GetY()) / gridResolution.GetY());
+        sector.m_lineVertices.clear();
+        sector.m_lineVertices.reserve(numSamplesX * numSamplesY * 4);
+
+        auto HeightCallback = [gridResolution, &previousHeight, &rowHeights,
+                               &sector](uint32_t xIndex, uint32_t yIndex, const AZ::Vector3& position, [[maybe_unused]] bool terrainExists)
+        {
+            // Don't add any vertices for the first column or first row.  These grid lines will be handled by an adjacent sector, if
+            // there is one.
+            if ((xIndex > 0) && (yIndex > 0))
             {
-                for (float x = sector.m_aabb.GetMin().GetX(); x < sector.m_aabb.GetMax().GetX(); x += queryResolution.GetX())
-                {
-                    float x1 = x + queryResolution.GetX();
-                    float y1 = y + queryResolution.GetY();
+                float x = position.GetX() - gridResolution.GetX();
+                float y = position.GetY() - gridResolution.GetY();
 
-                    float z00 = 0.0f;
-                    float z01 = 0.0f;
-                    float z10 = 0.0f;
-                    bool terrainExists;
+                sector.m_lineVertices.emplace_back(AZ::Vector3(x, position.GetY(), previousHeight));
+                sector.m_lineVertices.emplace_back(position);
 
-                    AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-                        z00, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats, x, y,
-                        AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, &terrainExists);
-                    AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-                        z01, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats, x, y1,
-                        AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, &terrainExists);
-                    AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-                        z10, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats, x1, y,
-                        AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, &terrainExists);
-
-                    sector.m_lineVertices.push_back(AZ::Vector3(x, y, z00));
-                    sector.m_lineVertices.push_back(AZ::Vector3(x1, y, z10));
-
-                    sector.m_lineVertices.push_back(AZ::Vector3(x, y, z00));
-                    sector.m_lineVertices.push_back(AZ::Vector3(x, y1, z01));
-                }
+                sector.m_lineVertices.emplace_back(AZ::Vector3(position.GetX(), y, rowHeights[xIndex]));
+                sector.m_lineVertices.emplace_back(position);
             }
+
+            // Save off the heights so that we can use them to draw subsequent columns and rows.
+            previousHeight = position.GetZ();
+            rowHeights[xIndex] = position.GetZ();
+        };
+
+        // This set of nested loops will get replaced with a call to ProcessHeightsFromRegion once the API exists.
+        uint32_t yIndex = 0;
+        for (float y = region.GetMin().GetY(); y < region.GetMax().GetY(); y += gridResolution.GetY())
+        {
+            uint32_t xIndex = 0;
+            for (float x = region.GetMin().GetX(); x < region.GetMax().GetX(); x += gridResolution.GetX())
+            {
+                float height = worldMinZ;
+                bool terrainExists = false;
+                AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
+                    height, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats, x, y,
+                    AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, &terrainExists);
+                HeightCallback(xIndex, yIndex, AZ::Vector3(x, y, height), terrainExists);
+                xIndex++;
+            }
+            yIndex++;
         }
     }
 
