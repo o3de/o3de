@@ -69,7 +69,6 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
         // Currently shadow check is done only for index == shadowIndex.
         float currentLitRatio = 1.0f;
 
-        // Transmission distance from current light inside object (default non-influential values)
         if (o_enableShadows)
         {
             bool activeLight = index == shadowIndex;
@@ -88,7 +87,6 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
         
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight) * currentLitRatio;
         lightingData.specularLighting += GetSpecularLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight) * currentLitRatio;
-        
     }
     
     // Add debug coloring for directional light shadow
