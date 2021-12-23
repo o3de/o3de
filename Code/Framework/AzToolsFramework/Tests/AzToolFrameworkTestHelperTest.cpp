@@ -17,12 +17,19 @@ namespace UnitTest
     public:
         void SetUp() override
         {
+            AllocatorsTestFixture::SetUp();
+
             m_rootWidget = AZStd::make_unique<QWidget>();
+            m_rootWidget->setFixedSize(0,0);
+            m_rootWidget->move(0, 0); // explicitly set the widget to be in the upper left corner
+
         }
 
         void TearDown() override
         {
             m_rootWidget.reset();
+
+            AllocatorsTestFixture::TearDown();
         }
 
         AZStd::unique_ptr<QWidget> m_rootWidget;
@@ -46,8 +53,8 @@ namespace UnitTest
     {
         // setup
         const MouseMoveParams mouseMoveParams = GetParam();
-        m_rootWidget->setFixedSize(mouseMoveParams.widgetSize);
         m_rootWidget->move(mouseMoveParams.widgetPosition);
+        m_rootWidget->setFixedSize(mouseMoveParams.widgetSize);
 
         MouseMove(m_rootWidget.get(), mouseMoveParams.localCursorPosition, mouseMoveParams.deltaPosition);
 
@@ -63,6 +70,5 @@ namespace UnitTest
         testing::Values(
             MouseMoveParams{ QPoint(0, 0), QSize(100, 100), QPoint(0, 0), QPoint(10, 10) },
             MouseMoveParams{ QPoint(100, 100), QSize(100, 100), QPoint(0, 0), QPoint(10, 10) },
-            MouseMoveParams{ QPoint(20, 20), QSize(100, 100), QPoint(50, 50), QPoint(50, 50) },
-            MouseMoveParams{ QPoint(20, 20), QSize(100, 100), QPoint(50, 50), QPoint(0, 10) }));
+            MouseMoveParams{ QPoint(20, 20), QSize(100, 100), QPoint(50, 50), QPoint(20, 20) }));
 } // namespace UnitTest
