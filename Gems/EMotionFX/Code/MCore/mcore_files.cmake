@@ -91,9 +91,7 @@ set(FILES
     Source/MemoryTracker.cpp
     Source/MemoryTracker.h
     Source/MultiThreadManager.h
-    Source/PlaneEq.cpp
     Source/PlaneEq.h
-    Source/PlaneEq.inl
     Source/Random.cpp
     Source/Random.h
     Source/Ray.cpp
@@ -109,6 +107,5 @@ set(FILES
     Source/StringIdPool.h
     Source/ReflectionSerializer.cpp
     Source/ReflectionSerializer.h
-    Source/TriangleListOptimizer.h
     Source/Vector.h
 )
