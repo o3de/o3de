@@ -19,7 +19,8 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
     const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
     float litRatio = 1.0f;
     float camToSurfDist = distance(ViewSrg::m_worldPosition, surface.position);
-    // Transmission distance inside object
+
+    // Distance travelled by the light inside the object
     float transmissionDistance = 0.0f;
 
     if (o_enableShadows && shadowIndex <  SceneSrg::m_directionalLightCount)
@@ -69,28 +70,25 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
         float currentLitRatio = 1.0f;
 
         // Transmission distance from current light inside object (default non-influential values)
-        // o_transmission_mode == NONE is not taken into account because GetBackLighting already ignores this case 
-        float currentTransmissionDistance = (o_transmission_mode == TransmissionMode::ThickObject) ? 0.0f : 9999.0f;
         if (o_enableShadows)
         {
             bool activeLight = index == shadowIndex;
+            
+            // Add contribution only if current directional light is the active one for shadows
             currentLitRatio = activeLight ? litRatio : 1.;
             if (activeLight)
             {
-                // Transmission distance (add contribution only if current directional light is the active one for shadows)
-                currentTransmissionDistance = transmissionDistance;
+                float3 backLighting = GetBackLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight, transmissionDistance);
+            
+                // Attenuation applied to hide artifacts due to low-res shadow maps (might need some work in the future)
+                float attenuation = 1.0 / pow(max(1.0, camToSurfDist/2.0), lightingData.distanceAttenuation + 1.0);
+                lightingData.translucentBackLighting += backLighting * attenuation;
             }
         }
         
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight) * currentLitRatio;
         lightingData.specularLighting += GetSpecularLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight) * currentLitRatio;
         
-        float3 backLighting = GetBackLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight, currentTransmissionDistance);
-        
-        // Attenuation applied to hide artifacts due to low-res shadow maps (might need some work in the future)
-        float attenuation = 1.0 / pow(max(1.0, camToSurfDist/2.0), lightingData.distanceAttenuation + 1.0);
-        
-        lightingData.translucentBackLighting += backLighting * attenuation;
     }
     
     // Add debug coloring for directional light shadow
