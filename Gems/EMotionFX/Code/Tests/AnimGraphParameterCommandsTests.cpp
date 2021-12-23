@@ -102,7 +102,6 @@ namespace AnimGraphParameterCommandsTests
 #include <Tests/Mocks/AnimGraphInstance.h>
 #include <Tests/Mocks/AnimGraphManager.h>
 #include <Tests/Mocks/AnimGraphObject.h>
-#include <Tests/Mocks/AnimGraphObjectData.h>
 #include <Tests/Mocks/AnimGraphNode.h>
 #include <Tests/Mocks/AnimGraphStateTransition.h>
 #include <Tests/Mocks/EMotionFXManager.h>
