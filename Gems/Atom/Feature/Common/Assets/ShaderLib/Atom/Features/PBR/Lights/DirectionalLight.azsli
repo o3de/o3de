@@ -31,23 +31,21 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
             surface.vertexNormal,
             debugInfo);
 
-        // Fetch shadow coords for shrinked world position (used in thin transmission materials) 
-        float3 shrinkedShadowCoords[ViewSrg::MaxCascadeCount];
-        DirectionalLightShadow::GetShadowCoords(
-            shadowIndex,
-            surface.position - lightingData.shrinkFactor * surface.vertexNormal,
-            surface.normal,
-            shrinkedShadowCoords);
-            
         if (o_transmission_mode == TransmissionMode::ThickObject)
         {
             transmissionDistance = DirectionalLightShadow::GetThickness(shadowIndex, lightingData.shadowCoords);
         } 
         else if (o_transmission_mode == TransmissionMode::ThinObject) 
         {
-            // Use shrinked positions for thin object transmission to ensure they fall onto the object when querying
+            // Fetch and use shrinked positions for thin object transmission to ensure they fall onto the object when querying
+            DirectionalLightShadow::GetShadowCoords(
+                shadowIndex,
+                surface.position - lightingData.shrinkFactor * surface.vertexNormal,
+                surface.normal,
+                lightingData.shadowCoords);
+
             // the depth from the shadow map
-            transmissionDistance = DirectionalLightShadow::GetThickness(shadowIndex, shrinkedShadowCoords);
+            transmissionDistance = DirectionalLightShadow::GetThickness(shadowIndex, lightingData.shadowCoords);
         }
     }
 
