@@ -65,14 +65,15 @@ def AssetWeightSelector_InstancesExpressBasedOnWeight():
     # 2) Create a new instance spawner entity with multiple Dynamic Slice Instance Spawner descriptors, one set to a
     # valid slice entity, and one set to None
     spawner_center_point = math.Vector3(512.0, 512.0, 32.0)
-    asset_path = os.path.join("Slices", "PinkFlower.dynamicslice")
-    spawner_entity = dynveg.create_dynamic_slice_vegetation_area("Instance Spawner", spawner_center_point, 16.0, 16.0, 16.0,
-                                                                               asset_path)
+    pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
+    pink_flower_prefab = dynveg.create_temp_mesh_prefab(pink_flower_asset_path, "temp_PinkFlower")[0]
+    spawner_entity = dynveg.create_temp_prefab_vegetation_area("Instance Spawner", spawner_center_point, 16.0, 16.0, 16.0,
+                                                               pink_flower_prefab)
     desc_asset = hydra.get_component_property_value(spawner_entity.components[2],
                                                     "Configuration|Embedded Assets")[0]
     desc_list = [desc_asset, desc_asset]
     spawner_entity.get_set_test(2, "Configuration|Embedded Assets", desc_list)
-    spawner_entity.get_set_test(2, "Configuration|Embedded Assets|[1]|Instance|Slice Asset", None)
+    spawner_entity.get_set_test(2, "Configuration|Embedded Assets|[1]|Instance|Prefab Asset", None)
 
     # Add an Asset Weight Selector component to the spawner entity
     spawner_entity.add_component("Vegetation Asset Weight Selector")
