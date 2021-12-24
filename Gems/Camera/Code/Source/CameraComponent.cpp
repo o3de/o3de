@@ -106,6 +106,8 @@ namespace Camera
                 ->Event("SetOrthographic", &CameraRequestBus::Events::SetOrthographic)
                 ->Event("GetOrthographicHalfWidth", &CameraRequestBus::Events::GetOrthographicHalfWidth)
                 ->Event("SetOrthographicHalfWidth", &CameraRequestBus::Events::SetOrthographicHalfWidth)
+                ->Event("ScreenToWorld", &CameraRequestBus::Events::ScreenToWorld)
+                ->Event("WorldToScreen", &CameraRequestBus::Events::WorldToScreen)
                 ->VirtualProperty("FieldOfView","GetFovDegrees","SetFovDegrees")
                 ->VirtualProperty("NearClipDistance", "GetNearClipDistance", "SetNearClipDistance")
                 ->VirtualProperty("FarClipDistance", "GetFarClipDistance", "SetFarClipDistance")

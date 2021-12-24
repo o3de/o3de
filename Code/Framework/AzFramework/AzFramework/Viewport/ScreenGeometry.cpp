@@ -10,6 +10,7 @@
 
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 
 namespace AzFramework
 {
@@ -28,6 +29,33 @@ namespace AzFramework
             serializeContext->Class<ScreenSize>()->
                 Field("Width", &ScreenSize::m_width)->
                 Field("Height", &ScreenSize::m_height);
+        }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<ScreenPoint>()
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Constructor()
+                ->Constructor<int, int>()
+                ->Property("x", BehaviorValueProperty(&ScreenPoint::m_x))
+                ->Property("y", BehaviorValueProperty(&ScreenPoint::m_y))
+                ;
+
+            behaviorContext->Class<ScreenVector>()
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Constructor()
+                ->Constructor<int, int>()
+                ->Property("x", BehaviorValueProperty(&ScreenVector::m_x))
+                ->Property("y", BehaviorValueProperty(&ScreenVector::m_y))
+                ;
+
+            behaviorContext->Class<ScreenSize>()
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Constructor()
+                ->Constructor<int, int>()
+                ->Property("width", BehaviorValueProperty(&ScreenSize::m_width))
+                ->Property("height", BehaviorValueProperty(&ScreenSize::m_height))
+                ;
         }
     }
 } // namespace AzFramework

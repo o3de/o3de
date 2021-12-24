@@ -245,7 +245,7 @@ namespace AZ
             AZ_Assert(false, "DebugCamera does not support orthographic projection");
         }
 
-        void CameraComponent::MakeActiveView() 
+        void CameraComponent::MakeActiveView()
         {
             // do nothing
         }
@@ -253,6 +253,18 @@ namespace AZ
         bool CameraComponent::IsActiveView()
         {
             return false;
+        }
+
+        AZ::Vector3 CameraComponent::ScreenToWorld([[maybe_unused]] const AzFramework::ScreenPoint& screenPosition)
+        {
+            // not implemented
+            return AZ::Vector3::CreateZero();
+        }
+
+        AzFramework::ScreenPoint CameraComponent::WorldToScreen([[maybe_unused]] const AZ::Vector3& worldPosition)
+        {
+            // not implemented
+            return AzFramework::ScreenPoint();
         }
 
         void CameraComponent::OnViewportResized(uint32_t width, uint32_t height)

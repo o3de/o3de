@@ -104,6 +104,8 @@ namespace AZ
             void SetOrthographicHalfWidth(float halfWidth) override;
             void MakeActiveView() override;
             bool IsActiveView() override;
+            AZ::Vector3 ScreenToWorld(const AzFramework::ScreenPoint& screenPosition) override;
+            AzFramework::ScreenPoint WorldToScreen(const AZ::Vector3& worldPosition) override;
 
             // RPI::WindowContextNotificationBus overrides...
             void OnViewportResized(uint32_t width, uint32_t height) override;
