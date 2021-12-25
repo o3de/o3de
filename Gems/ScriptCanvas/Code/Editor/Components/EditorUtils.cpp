@@ -171,7 +171,7 @@ namespace ScriptCanvasEditor
         }
     }
 
-    void GraphStatisticsHelper::PopulateStatisticData(const Graph* editorGraph)
+    void GraphStatisticsHelper::PopulateStatisticData(const EditorGraph* editorGraph)
     {
         // Opportunistically use this time to refresh out node count array.
         m_nodeIdentifierCount.clear();

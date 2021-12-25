@@ -183,7 +183,7 @@ namespace ScriptCanvasEditor
     {
         if (entity)
         {
-            auto graph = entity->CreateComponent<Graph>();
+            auto graph = entity->CreateComponent<EditorGraph>();
             entity->CreateComponent<EditorGraphVariableManagerComponent>(graph->GetScriptCanvasId());
         }
     }
