@@ -88,8 +88,7 @@ namespace Terrain
         {
             AZ::Aabb m_aabb{ AZ::Aabb::CreateNull() };
             AZStd::vector<AZ::Vector3> m_lineVertices;
-            int32_t m_xSector{ 0 };
-            int32_t m_ySector{ 0 };
+            bool m_isDirty{ true };
         };
 
         // Each sector contains an N x N grid of squares that it will draw.  Since this is a count of the number of terrain grid points
@@ -107,12 +106,12 @@ namespace Terrain
         static constexpr int32_t MaxVerticesToDraw = 500000;
         static constexpr int32_t MaxSectorsToDraw = MaxVerticesToDraw / VerticesPerSector;
 
-        void RefreshCachedWireframeGrid(const AZ::Aabb& dirtyRegion);
         void RebuildSectorWireframe(WireframeSector& sector, const AZ::Vector2& gridResolution, float worldMinZ);
 
         TerrainWorldDebuggerConfig m_configuration;
         AZStd::vector<WireframeSector> m_wireframeSectors;
         AZ::Aabb m_wireframeBounds;
         AZ::Aabb m_dirtyRegion;
+        int32_t m_sectorGridSize;
     };
 }
