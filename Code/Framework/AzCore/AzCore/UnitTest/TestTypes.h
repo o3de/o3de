@@ -44,6 +44,7 @@ namespace UnitTest
 
         void SetupAllocator(const AZ::SystemAllocator::Descriptor& allocatorDesc = {})
         {
+            AZ::Environment::Create(nullptr);
             AZ::AllocatorManager::Instance().EnterProfilingMode();
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
 
@@ -67,6 +68,7 @@ namespace UnitTest
 
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
             AZ::AllocatorManager::Instance().ExitProfilingMode();
+            AZ::Environment::Destroy();
         }
     };
 

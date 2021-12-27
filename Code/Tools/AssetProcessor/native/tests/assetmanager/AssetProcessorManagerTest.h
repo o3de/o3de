@@ -23,6 +23,8 @@
 
 #include <QTemporaryDir>
 #include <QMetaObject>
+#include <AzCore/Jobs/JobContext.h>
+#include <AzCore/Jobs/JobManager.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 #include "resourcecompiler/rccontroller.h"
@@ -39,7 +41,7 @@ class AssetProcessorManagerTest
     : public AssetProcessor::AssetProcessorTest
 {
 public:
-    
+
 
     AssetProcessorManagerTest();
     virtual ~AssetProcessorManagerTest()
@@ -69,14 +71,16 @@ protected:
         ::testing::NiceMock<MockDatabaseLocationListener> m_databaseLocationListener;
     };
 
+    AZ::JobManager* m_jobManager{};
+    AZ::JobContext* m_jobContext{};
     AZStd::unique_ptr<StaticData> m_data;
-    
+
 private:
     int         m_argc;
     char**      m_argv;
     AZStd::unique_ptr<UnitTestUtils::ScopedDir> m_scopeDir;
 
-    AZStd::unique_ptr<QCoreApplication> m_qApp;    
+    AZStd::unique_ptr<QCoreApplication> m_qApp;
 };
 
 struct AbsolutePathProductDependencyTest

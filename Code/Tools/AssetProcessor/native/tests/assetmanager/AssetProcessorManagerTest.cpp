@@ -15,6 +15,9 @@
 #include <AzTest/AzTest.h>
 
 #include <limits>
+#include <AzCore/Jobs/JobContext.h>
+#include <AzCore/Jobs/JobManager.h>
+#include <AzCore/Jobs/JobManagerDesc.h>
 
 using namespace AssetProcessor;
 
@@ -26,6 +29,7 @@ public:
 
     friend class GTEST_TEST_CLASS_NAME_(MultiplatformPathDependencyTest, AssetProcessed_Impl_MultiplatformDependencies);
     friend class GTEST_TEST_CLASS_NAME_(MultiplatformPathDependencyTest, AssetProcessed_Impl_MultiplatformDependencies_DeferredResolution);
+    friend class GTEST_TEST_CLASS_NAME_(MultiplatformPathDependencyTest, SameFilenameForAllPlatforms);
 
     friend class GTEST_TEST_CLASS_NAME_(MultiplatformPathDependencyTest, AssetProcessed_Impl_MultiplatformDependencies_SourcePath);
 
@@ -176,6 +180,20 @@ void AssetProcessorManagerTest::SetUp()
 
     AssetProcessorTest::SetUp();
 
+    AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
+    AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
+
+    AZ::JobManagerDesc jobDesc;
+    AZ::JobManagerThreadDesc threadDesc;
+    for (int i = 0; i < 4; ++i)
+    {
+        jobDesc.m_workerThreads.push_back(threadDesc);
+    }
+
+    m_jobManager = aznew AZ::JobManager(jobDesc);
+    m_jobContext = aznew AZ::JobContext(*m_jobManager);
+    AZ::JobContext::SetGlobalContext(m_jobContext);
+
     m_data = AZStd::make_unique<StaticData>();
 
     m_config.reset(new AssetProcessor::PlatformConfiguration());
@@ -270,6 +288,13 @@ void AssetProcessorManagerTest::TearDown()
     m_config.reset();
     m_qApp.reset();
     m_scopeDir.reset();
+
+    AZ::JobContext::SetGlobalContext(nullptr);
+    delete m_jobContext;
+    delete m_jobManager;
+
+    AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
+    AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
 
     AssetProcessor::AssetProcessorTest::TearDown();
 }
@@ -1270,7 +1295,8 @@ TEST_F(AbsolutePathProductDependencyTest, AbsolutePathProductDependency_RetryDef
         AZ::Data::AssetType::CreateNull());
     m_assetProcessorManager->m_stateData->SetProduct(matchingProductForDependency);
 
-    m_assetProcessorManager->m_pathDependencyManager->RetryDeferredDependencies(matchingSource);
+    m_assetProcessorManager->m_pathDependencyManager->QueueSourceForDependencyResolution(matchingSource);
+    m_assetProcessorManager->m_pathDependencyManager->ProcessQueuedDependencyResolves();
 
     // The product dependency ID shouldn't change when it goes from unresolved to resolved.
     AZStd::vector<ProductDependencyDatabaseEntry> resolvedProductDependencies;
@@ -1405,6 +1431,7 @@ bool PathDependencyTest::ProcessAsset(TestAsset& asset, const OutputAssetSet& ou
         // tell the APM that the asset has been processed and allow it to bubble through its event queue:
         m_isIdling = false;
         m_assetProcessorManager->AssetProcessed(capturedDetails[jobSet].m_jobEntry, processJobResponse);
+        m_assetProcessorManager->CheckForIdle();
 
         jobSet++;
     }
@@ -2644,6 +2671,44 @@ TEST_F(MultiplatformPathDependencyTest, AssetProcessed_Impl_MultiplatformDepende
     ASSERT_EQ(resolvedCount, 1);
     ASSERT_EQ(unresolvedCount, 1);
     ASSERT_NE(SearchDependencies(dependencyContainer, asset1.m_products[0]), SearchDependencies(dependencyContainer, asset1.m_products[1]));
+}
+
+TEST_F(MultiplatformPathDependencyTest, SameFilenameForAllPlatforms)
+{
+    TestAsset asset2("asset2");
+    bool result = ProcessAsset(
+        asset2, { { ".output" }, { ".output" } }, { { "*1.output", AssetBuilderSDK::ProductPathDependencyType::ProductFile } }, "subfolder1/",
+        ".txt");
+
+    ASSERT_TRUE(result);
+
+    TestAsset asset1("asset1");
+    result = ProcessAsset(asset1, { { ".output" }, { ".output" } }, {});
+
+    ASSERT_TRUE(result);
+
+    AssetDatabaseConnection* sharedConnection = m_assetProcessorManager->m_stateData.get();
+    ASSERT_TRUE(sharedConnection);
+
+    AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer dependencyContainer;
+
+    sharedConnection->GetProductDependencies(dependencyContainer);
+    int resolvedCount = 0;
+    int unresolvedCount = 0;
+    for (const auto& dep : dependencyContainer)
+    {
+        if (dep.m_unresolvedPath.empty())
+        {
+            resolvedCount++;
+        }
+        else
+        {
+            unresolvedCount++;
+        }
+    }
+    ASSERT_EQ(resolvedCount, 2);
+    ASSERT_EQ(unresolvedCount, 2);
+    VerifyDependencies(dependencyContainer, { asset1.m_products[0], asset1.m_products[1] }, { "*1.output", "*1.output" });
 }
 
 TEST_F(MultiplatformPathDependencyTest, AssetProcessed_Impl_MultiplatformDependencies_SourcePath)
@@ -4185,7 +4250,7 @@ TEST_F(LockedFileTest, DeleteFile_LockedProduct_DeleteFails)
     auto theFile = m_data->m_absolutePath[1].toUtf8();
     const char* theFileString = theFile.constData();
     auto [sourcePath, productPath] = *m_data->m_productPaths.find(theFileString);
-    
+
     {
         QFile file(theFileString);
         file.remove();
@@ -4257,7 +4322,7 @@ TEST_F(LockedFileTest, DeleteFile_LockedProduct_DeletesWhenReleased)
 
         EXPECT_FALSE(QFile::exists(productPath));
         EXPECT_EQ(m_data->m_deletedSources.size(), 1);
-        
+
         EXPECT_GT(m_deleteCounter, 1); // Make sure the AP tried more than once to delete the file
         m_errorAbsorber->ExpectAsserts(0);
     }
@@ -5364,7 +5429,7 @@ AZStd::vector<AZStd::string> WildcardSourceDependencyTest::FileAddedTest(const Q
 void WildcardSourceDependencyTest::SetUp()
 {
     AssetProcessorManagerTest::SetUp();
-    
+
     QDir tempPath(m_tempDir.path());
 
     // Add a non-recursive scan folder.  Only files directly inside of this folder should be picked up, subfolders are ignored
@@ -5454,7 +5519,7 @@ TEST_F(WildcardSourceDependencyTest, Relative_Broad)
 {
     // Expect all files except for the 2 invalid ones (e and f)
     AZStd::vector<AZStd::string> resolvedPaths;
-    
+
     ASSERT_TRUE(Test("*.foo", resolvedPaths));
     ASSERT_THAT(resolvedPaths, ::testing::UnorderedElementsAre("a.foo", "b.foo", "folder/one/c.foo", "folder/one/d.foo", "1a.foo", "1b.foo"));
 }
@@ -5585,7 +5650,7 @@ TEST_F(WildcardSourceDependencyTest, Relative_CacheFolder)
 {
     AZStd::vector<AZStd::string> resolvedPaths;
     QDir tempPath(m_tempDir.path());
-    
+
     ASSERT_TRUE(Test("*cache.foo", resolvedPaths));
     ASSERT_THAT(resolvedPaths, ::testing::UnorderedElementsAre());
 }
@@ -5635,7 +5700,7 @@ TEST_F(WildcardSourceDependencyTest, FilesRemovedAfterInitialCache)
 
         ASSERT_EQ(excludedFolders.size(), 3);
     }
-    
+
     m_fileStateCache->SignalDeleteEvent(tempPath.absoluteFilePath("subfolder2/redirected/folder/two/ignored"));
 
     const auto& excludedFolders = excludedFolderCacheInterface->GetExcludedFolders();
