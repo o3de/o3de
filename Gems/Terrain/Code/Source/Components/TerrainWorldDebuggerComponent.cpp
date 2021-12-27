@@ -90,19 +90,16 @@ namespace Terrain
 
     void TerrainWorldDebuggerComponent::Activate()
     {
-        m_wireframeBounds = AZ::Aabb::CreateNull();
-        m_dirtyRegion = GetWorldBounds();
-
-        // We will create an NxN sector grid for our wireframe, based on the maximum number of sectors that we can draw.
-        // Get the square root so that we have the max sector count for rows and columns.
+        // Given the AuxGeom vertex limits, MaxSectorsToDraw is the max number of wireframe sectors we can draw without exceeding the
+        // limits.  Since we want an N x N sector grid, take the square root to get the number of sectors in each direction.
         m_sectorGridSize = aznumeric_cast<int32_t>(sqrtf(MaxSectorsToDraw));
 
-        // We're always going to keep the camera in the center square, so if we currently have an even number of sectors, reduce it
-        // so that we have an odd number of sectors.
+        // We're always going to keep the camera in the center square, so "round" downwards to an odd number of sectors if we currently
+        // have an even number.  (If we added a sector, we'll go above the max sectors that we can draw with our vertex limits)
         m_sectorGridSize = (m_sectorGridSize & 0x01) ? m_sectorGridSize : m_sectorGridSize - 1;
 
         // Create our fixed set of sectors that we'll draw.  By default, they'll all be constructed as dirty, so they'll get refreshed
-        // whenever they're needed.
+        // the first time we try to draw them.  (If wireframe drawing is disabled, we'll never refresh them)
         m_wireframeSectors.clear();
         m_wireframeSectors.resize(m_sectorGridSize * m_sectorGridSize);
 
@@ -110,6 +107,9 @@ namespace Terrain
         AzFramework::BoundsRequestBus::Handler::BusConnect(GetEntityId());
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
 
+        // Any time the world bounds potentially changes, notify that the terrain debugger's visibility bounds also changed.
+        // Otherwise, DisplayEntityViewport() won't get called at the appropriate times, since the visibility could get incorrectly
+        // culled out.
         AzFramework::IEntityBoundsUnionRequestBus::Broadcast(
             &AzFramework::IEntityBoundsUnionRequestBus::Events::RefreshEntityLocalBoundsUnion, GetEntityId());
     }
@@ -119,9 +119,6 @@ namespace Terrain
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
         AzFramework::BoundsRequestBus::Handler::BusDisconnect();
         AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
-
-        m_wireframeBounds = AZ::Aabb::CreateNull();
-        m_dirtyRegion = AZ::Aabb::CreateNull();
 
         m_wireframeSectors.clear();
     }
@@ -161,126 +158,159 @@ namespace Terrain
         return GetWorldBounds();
     }
 
-    void TerrainWorldDebuggerComponent::DisplayEntityViewport(
+    void TerrainWorldDebuggerComponent::MarkDirtySectors(const AZ::Aabb& dirtyRegion)
+    {
+        // Create a 2D version of dirtyRegion that has Z set to min/max float values, so that we can just check for XY overlap with
+        // each sector.
+        const AZ::Aabb dirtyRegion2D = AZ::Aabb::CreateFromMinMaxValues(
+            dirtyRegion.GetMin().GetX(), dirtyRegion.GetMin().GetY(), AZStd::numeric_limits<float>::lowest(),
+            dirtyRegion.GetMax().GetX(), dirtyRegion.GetMax().GetY(), AZStd::numeric_limits<float>::max());
+
+        // For each sector that overlaps the dirty region (or all of them if the region is invalid), mark them as dirty so that
+        // they'll get refreshed the next time we need to draw them.
+        for (auto& sector : m_wireframeSectors)
+        {
+            if (!dirtyRegion2D.IsValid() || dirtyRegion2D.Overlaps(sector.m_aabb))
+            {
+                sector.m_isDirty = true;
+            }
+        }
+    }
+
+    void TerrainWorldDebuggerComponent::DrawWorldBounds(AzFramework::DebugDisplayRequests& debugDisplay)
+    {
+        if (!m_configuration.m_drawWorldBounds)
+        {
+            return;
+        }
+
+        // Draw a wireframe box around the entire terrain world bounds
+        AZ::Color outlineColor(1.0f, 0.0f, 0.0f, 1.0f);
+        AZ::Aabb aabb = GetWorldBounds();
+
+        debugDisplay.SetColor(outlineColor);
+        debugDisplay.DrawWireBox(aabb.GetMin(), aabb.GetMax());
+    }
+
+    void TerrainWorldDebuggerComponent::DrawWireframe(
         const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
         AZ_PROFILE_FUNCTION(Entity);
 
-        // Draw a wireframe box around the entire terrain world bounds
-        if (m_configuration.m_drawWorldBounds)
+        if (!m_configuration.m_drawWireframe)
         {
-            AZ::Color outlineColor(1.0f, 0.0f, 0.0f, 1.0f);
-            AZ::Aabb aabb = GetWorldBounds();
-
-            debugDisplay.SetColor(outlineColor);
-            debugDisplay.DrawWireBox(aabb.GetMin(), aabb.GetMax());
+            return;
         }
 
-        // Draw a wireframe representation of the terrain surface
-        if (m_configuration.m_drawWireframe)
+        /* This draws a wireframe centered on the camera that extends out to a certain distance at all times.  To reduce the amount of
+         * recalculations we need to do on each camera movement, we divide the world into a conceptual grid of sectors (ex: 10 m x 10 m).
+         * The wireframe draws N x N sectors centered around the camera, as determined by m_sectorGridSize.  Each time the camera moves
+         * into a new sector, we refresh the changed sectors before drawing them.
+         *
+         * The only tricky bit to this design is the way the sectors are stored and indexed.  They're stored in a single vector as NxN
+         * entries, so they would normally be indexed as (y * N) + x.  Since we want this to be centered on the camera, the easy answer
+         * would be to take the camera position - (N / 2) (since we're centering) as the relative offset to the first entry.  But this
+         * would mean that the entire set of entries would change every time we move the camera.  For example, if we had 5 entries,
+         * they might map to 0-4, 1-5, 2-6, 3-7, etc as the camera moves.
+         *
+         * Instead, we use mod (%) to rotate our indices around, so it would go (0 1 2 3 4), (5 1 2 3 4), (5 6 2 3 4), (5 6 7 3 4), etc
+         * as the camera moves.  For negative entries, we need to get into positive space, so we mod a second time.  This produces results
+         * that look like (0 1 2 3 4), (0 1 2 3 -1), (0 1 2 -2 -1), (0 1 -3 -2 -1), etc.
+         */
+
+        // Get the terrain world bounds
+        AZ::Aabb worldBounds = GetWorldBounds();
+        float worldMinZ = worldBounds.GetMin().GetZ();
+
+        // Get the terrain height data resolution
+        AZ::Vector2 heightDataResolution = AZ::Vector2(1.0f);
+        AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
+            heightDataResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
+
+        // Get the size of a wireframe sector in world space
+        const AZ::Vector2 sectorSize = heightDataResolution * SectorSizeInGridPoints;
+
+        // Try to get the current camera position, or default to (0,0) if we can't.
+        AZ::Vector3 cameraPos = AZ::Vector3::CreateZero();
+        if (auto viewportContextRequests = AZ::RPI::ViewportContextRequests::Get(); viewportContextRequests)
         {
-            AZ::Aabb worldBounds = GetWorldBounds();
-            float worldMinZ = worldBounds.GetMin().GetZ();
+            AZ::RPI::ViewportContextPtr viewportContext = viewportContextRequests->GetViewportContextById(viewportInfo.m_viewportId);
+            cameraPos = viewportContext->GetCameraTransform().GetTranslation();
+        }
 
-            // If we have a dirty region, mark any overlapping valid sectors as dirty so we know to update them below.
-            if (m_dirtyRegion.IsValid())
+        // Convert our camera position to a wireframe grid sector.  We first convert from world space to sector space by dividing by
+        // sectorSize, so that integer values are sectors, and fractional values are the distance within the sector.  Then we get the
+        // floor, so that we consistently get the next lowest integer - i.e. 2.3 -> 2, and -2.3 -> -3. This gives us consistent behavior
+        // across both positive and negative positions.
+        AZ::Vector2 gridPosition = AZ::Vector2(cameraPos.GetX(), cameraPos.GetY()) / sectorSize;
+        int32_t cameraSectorX = aznumeric_cast<int32_t>(gridPosition.GetFloor().GetX());
+        int32_t cameraSectorY = aznumeric_cast<int32_t>(gridPosition.GetFloor().GetY());
+
+        // Loop through each sector that we *want* to draw, based on camera position.  If the current sector at that index in
+        // m_wireframeSectors doesn't match the world position we want, update its world position and mark it as dirty.
+        // (We loop from -gridSize/2 to gridSize/2 so that the camera is always in the center sector.)
+        for (int32_t sectorY = cameraSectorY - (m_sectorGridSize / 2); sectorY <= cameraSectorY + (m_sectorGridSize / 2); sectorY++)
+        {
+            for (int32_t sectorX = cameraSectorX - (m_sectorGridSize / 2); sectorX <= cameraSectorX + (m_sectorGridSize / 2); sectorX++)
             {
-                for (auto& sector : m_wireframeSectors)
+
+                // Calculate the index in m_wireframeSectors for this sector.  Our indices should rotate through 0 - gridSize, but just
+                // using a single mod will produce a negative result for negative sector indices.  Using abs() will give us incorrect
+                // "backwards" indices for negative numbers, so instead we add the grid size and mod a second time.
+                // Ex:  For a grid size of 5, we want the indices to map like this:
+                //      Index   0   1  2  3  4
+                //      Values -10 -9 -8 -7 -6
+                //             -5  -4 -3 -2 -1
+                //              0   1  2  3  4
+                //              5   6  7  8  9
+                // For -9, (-9 % 5) = -4, then (-4 + 5) % 5 = 1.  If we used abs(), we'd get 4, which is backwards from what we want.
+                int32_t sectorYIndex = ((sectorY % m_sectorGridSize) + m_sectorGridSize) % m_sectorGridSize;
+                int32_t sectorXIndex = ((sectorX % m_sectorGridSize) + m_sectorGridSize) % m_sectorGridSize;
+                int32_t sectorIndex = (sectorYIndex * m_sectorGridSize) + sectorXIndex;
+
+                auto& sector = m_wireframeSectors[sectorIndex];
+
+                // Calculate the new world space box for this sector.
+                AZ::Aabb sectorAabb = AZ::Aabb::CreateFromMinMax(
+                    AZ::Vector3(sectorX * sectorSize.GetX(), sectorY * sectorSize.GetY(), worldMinZ),
+                    AZ::Vector3((sectorX + 1) * sectorSize.GetX(), (sectorY + 1) * sectorSize.GetY(), worldMinZ));
+
+                // Clamp it to the terrain world bounds.
+                sectorAabb.Clamp(worldBounds);
+
+                // If the world space box for the sector doesn't match, set it and mark the sector as dirty so we refresh the height data.
+                if (sector.m_aabb != sectorAabb)
                 {
-                    if (m_dirtyRegion.Overlaps(sector.m_aabb))
-                    {
-                        sector.m_isDirty = true;
-                    }
-                }
-
-                // We're done processing the dirty region itself, so clear it out.
-                m_dirtyRegion = AZ::Aabb::CreateNull();
-            }
-
-            // Start by assuming we'll draw the entire world.
-            AZ::Aabb drawingAabb = GetWorldBounds();
-
-            int32_t cameraSectorX = 0;
-            int32_t cameraSectorY = 0;
-
-            AZ::Vector2 queryResolution = AZ::Vector2(1.0f);
-            AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-                queryResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
-
-            // Assuming we can get the camera, reduce the drawing bounds to a fixed distance around the camera.
-            if (auto viewportContextRequests = AZ::RPI::ViewportContextRequests::Get(); viewportContextRequests)
-            {
-                // Get the current camera position.
-                AZ::RPI::ViewportContextPtr viewportContext = viewportContextRequests->GetViewportContextById(viewportInfo.m_viewportId);
-                AZ::Vector3 cameraPos = viewportContext->GetCameraTransform().GetTranslation();
-
-                // Determine how far to draw in each direction in world space based on our MaxSectorsToDraw
-                AZ::Vector3 viewDistance(
-                    queryResolution.GetX() * SectorSizeInGridPoints * m_sectorGridSize,
-                    queryResolution.GetY() * SectorSizeInGridPoints * m_sectorGridSize,
-                    0.0f);
-
-                // Create an AABB around the camera based on how far we want to be able to draw in each direction and clamp the
-                // drawing AABB to it.
-                AZ::Aabb cameraAabb = AZ::Aabb::CreateFromMinMax(
-                    AZ::Vector3(
-                        cameraPos.GetX() - viewDistance.GetX(), cameraPos.GetY() - viewDistance.GetY(), drawingAabb.GetMin().GetZ()),
-                    AZ::Vector3(
-                        cameraPos.GetX() + viewDistance.GetX(), cameraPos.GetY() + viewDistance.GetY(), drawingAabb.GetMin().GetZ()));
-                drawingAabb.Clamp(cameraAabb);
-
-                // Calculate the current camera sector based on position.
-                cameraSectorX = aznumeric_cast<int32_t>(cameraPos.GetX() / (queryResolution.GetX() * SectorSizeInGridPoints));
-                cameraSectorY = aznumeric_cast<int32_t>(cameraPos.GetY() / (queryResolution.GetY() * SectorSizeInGridPoints));
-            }
-
-            // Calculate the world size of each sector.
-            // Ex:  If our sectors have 10 grid points, and the query resolution is 1 m, each sector will be 10 m.
-            const float xSectorSize = (queryResolution.GetX() * SectorSizeInGridPoints);
-            const float ySectorSize = (queryResolution.GetY() * SectorSizeInGridPoints);
-
-            for (int32_t sectorY = cameraSectorY - (m_sectorGridSize / 2); sectorY <= cameraSectorY + (m_sectorGridSize / 2); sectorY++)
-            {
-                for (int32_t sectorX = cameraSectorX - (m_sectorGridSize / 2); sectorX <= cameraSectorX + (m_sectorGridSize / 2); sectorX++)
-                {
-                    int32_t sectorIndex = (abs(sectorY % m_sectorGridSize) * m_sectorGridSize) + abs(sectorX % m_sectorGridSize);
-                    auto& sector = m_wireframeSectors[sectorIndex];
-                    AZ::Aabb sectorAabb = AZ::Aabb::CreateFromMinMax(
-                        AZ::Vector3(sectorX * xSectorSize, sectorY * ySectorSize, worldBounds.GetMin().GetZ()),
-                        AZ::Vector3((sectorX + 1) * xSectorSize, (sectorY + 1) * ySectorSize, worldBounds.GetMax().GetZ()));
-
-                    sectorAabb.Clamp(worldBounds);
-
-                    if (sector.m_aabb != sectorAabb)
-                    {
-                        sector.m_aabb = sectorAabb;
-                        sector.m_isDirty = true;
-                    }
-                }
-            }
-
-            // For each sector, if it appears within our view distance, draw it.
-            for (auto& sector : m_wireframeSectors)
-            {
-                if (drawingAabb.Overlaps(sector.m_aabb))
-                {
-                    if (sector.m_isDirty)
-                    {
-                        RebuildSectorWireframe(sector, queryResolution, worldMinZ);
-                    }
-
-                    if (!sector.m_lineVertices.empty())
-                    {
-                        const AZ::Color primaryColor = AZ::Color(0.25f, 0.25f, 0.25f, 1.0f);
-                        debugDisplay.DrawLines(sector.m_lineVertices, primaryColor);
-                    }
-                    else
-                    {
-                        AZ_Warning("Debug", false, "empty sector!");
-                    }
+                    sector.m_aabb = sectorAabb;
+                    sector.m_isDirty = true;
                 }
             }
         }
+
+        // Finally, for each sector, rebuild the data if it's dirty, then draw it assuming it has valid data.
+        // (Sectors that are outside the world bounds won't have any valid data, so they'll get skipped)
+        for (auto& sector : m_wireframeSectors)
+        {
+            if (sector.m_isDirty)
+            {
+                RebuildSectorWireframe(sector, heightDataResolution, worldMinZ);
+            }
+
+            if (!sector.m_lineVertices.empty())
+            {
+                const AZ::Color primaryColor = AZ::Color(0.25f, 0.25f, 0.25f, 1.0f);
+                debugDisplay.DrawLines(sector.m_lineVertices, primaryColor);
+            }
+        }
+    }
+
+
+    void TerrainWorldDebuggerComponent::DisplayEntityViewport(
+        const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
+    {
+        DrawWorldBounds(debugDisplay);
+        DrawWireframe(viewportInfo, debugDisplay);
+
     }
 
     void TerrainWorldDebuggerComponent::RebuildSectorWireframe(WireframeSector& sector, const AZ::Vector2& gridResolution, float worldMinZ)
@@ -362,20 +392,14 @@ namespace Terrain
     {
         if (dataChangedMask & (TerrainDataChangedMask::Settings | TerrainDataChangedMask::HeightData))
         {
-            if (dirtyRegion.IsValid())
-            {
-                m_dirtyRegion.AddAabb(dirtyRegion);
-            }
-            else
-            {
-                m_dirtyRegion = GetWorldBounds();
-            }
+            MarkDirtySectors(dirtyRegion);
+        }
 
-            if (dataChangedMask & TerrainDataChangedMask::Settings)
-            {
-                AzFramework::IEntityBoundsUnionRequestBus::Broadcast(
-                    &AzFramework::IEntityBoundsUnionRequestBus::Events::RefreshEntityLocalBoundsUnion, GetEntityId());
-            }
+        if (dataChangedMask & TerrainDataChangedMask::Settings)
+        {
+            // Any time the world bounds potentially changes, notify that the terrain debugger's visibility bounds also changed.
+            AzFramework::IEntityBoundsUnionRequestBus::Broadcast(
+                &AzFramework::IEntityBoundsUnionRequestBus::Events::RefreshEntityLocalBoundsUnion, GetEntityId());
         }
     }
 
