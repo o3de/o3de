@@ -27,18 +27,7 @@ import azlmbr.globals
 import azlmbr.math as math
 import azlmbr.prefab as prefab
 import editor_python_test_tools.pyside_utils as pyside_utils
-
-
-def get_prefab_file_path(prefab_path):
-    if not path.isabs(prefab_path):
-        prefab_path = path.join(general.get_file_alias("@projectroot@"), prefab_path)
-    
-    # Append prefab if it doesn't contain .prefab on it
-    name, ext = path.splitext(prefab_path)
-    if ext != ".prefab":
-        prefab_path = name + ".prefab"
-    return prefab_path
-
+import azlmbr.asset as asset
 
 def get_all_entity_ids():
     return entity.SearchBus(bus.Broadcast, 'SearchEntities', entity.SearchFilter())
@@ -144,7 +133,7 @@ class Prefab:
     existing_prefabs = {}
 
     def __init__(self, file_path: str):
-        self.file_path: str = get_prefab_file_path(file_path)
+        self.file_path: str = file_path
         self.instances: set[PrefabInstance] = set()
 
     @classmethod
@@ -160,11 +149,14 @@ class Prefab:
     @classmethod
     def prefab_exists(cls, file_path: str) -> bool:
         """
-        Check if a prefab exists in the directory for files of prefab tests.
-        :param file_name: A unique file name of the target prefab.
+        Check if a prefab asset exists.
+        :param file_path: A unique file name of the target prefab.
         :return: Whether the target prefab exists or not.
         """
-        return path.exists(get_prefab_file_path(file_path))
+        name, ext = path.splitext(file_path)
+        if ext != ".spawnable":
+            file_path = name + ".spawnable"
+        return asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", file_path, math.Uuid(), False).is_valid()
 
     @classmethod
     def get_prefab(cls, file_name: str) -> Prefab:
