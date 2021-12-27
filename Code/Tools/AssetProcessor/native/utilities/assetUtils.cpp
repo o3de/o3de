@@ -57,6 +57,7 @@
 #endif // defined(AZ_PLATFORM_LINUX)
 
 #include <sstream>
+#include <AzCore/std/containers/fixed_unordered_set.h>
 
 namespace AssetUtilsInternal
 {
@@ -131,7 +132,7 @@ namespace AssetUtilsInternal
                 }
             }
         } while (!timer.hasExpired(waitTimeInSeconds * 1000)); //We will keep retrying until the timer has expired the inputted timeout
-        
+
         // once we're done, regardless of success or failure, we 'unlock' those files for further process.
         // if we failed, also re-trigger them to rebuild (the bool param at the end of the ebus call)
         QString normalized = AssetUtilities::NormalizeFilePath(outputFile);
@@ -870,23 +871,53 @@ namespace AssetUtilities
         return true;
     }
 
-    QString StripAssetPlatform(AZStd::string_view relativeProductPath)
+    AZStd::string_view StripAssetPlatformNoCopy(AZStd::string_view relativeProductPath)
     {
+        //static AZStd::unordered_set<AZStd::string> platforms;
+
+        //if (platforms.empty())
+        //{
+        //    auto platformVector = AZ::PlatformHelper::GetPlatformsInterpreted(AZ::PlatformFlags::Platform_ALL);
+
+        //    for (const auto& platform : platformVector)
+        //    {
+        //        platforms.insert(platform);
+        //    }
+        //}
+
         // Skip over the assetPlatform path segment if it is matches one of the platform defaults
         // Otherwise return the path unchanged
-        AZStd::string_view strippedProductPath{ relativeProductPath };
-        if (AZStd::optional pathSegment = AZ::StringFunc::TokenizeNext(strippedProductPath, AZ_CORRECT_AND_WRONG_FILESYSTEM_SEPARATOR);
-            pathSegment.has_value())
-        {
-            AZ::IO::FixedMaxPathString assetPlatformSegmentLower{ *pathSegment };
-            AZStd::to_lower(assetPlatformSegmentLower.begin(), assetPlatformSegmentLower.end());
-            if (AzFramework::PlatformHelper::GetPlatformIdFromName(assetPlatformSegmentLower) != AzFramework::PlatformId::Invalid)
-            {
-                return QString::fromUtf8(strippedProductPath.data(), aznumeric_cast<int>(strippedProductPath.size()));
-            }
-        }
 
-        return QString::fromUtf8(relativeProductPath.data(), aznumeric_cast<int>(relativeProductPath.size()));
+        if (size_t pos = relativeProductPath.find_first_of(AZ_CORRECT_AND_WRONG_FILESYSTEM_SEPARATOR); pos == AZStd::string_view::npos)
+        {
+            // There's no separators, just return the path as is
+            return relativeProductPath;
+        }
+        else
+        {
+            // Grab the contents to the left of the separator and see if it matches a known platform string
+            // If it does, we'll return the right side, otherwise we assume there's no platform and return the whole string
+            AZStd::string_view leftSide{ relativeProductPath.data(), pos };
+
+            if (AzFramework::PlatformHelper::GetPlatformIdFromName(leftSide) != AzFramework::PlatformId::Invalid)
+            //if (platforms.contains(leftSide))
+            {
+                AZStd::string_view rightSide{ relativeProductPath };
+                // Strip off all previous characters before the delimiter plus the delimiter itself
+                rightSide.remove_prefix(pos + 1);
+
+                return rightSide;
+            }
+
+            return relativeProductPath;
+        }
+    }
+
+    QString StripAssetPlatform(AZStd::string_view relativeProductPath)
+    {
+        AZStd::string_view result = StripAssetPlatformNoCopy(relativeProductPath);
+
+        return QString::fromUtf8(result.data(), aznumeric_cast<int>(result.size()));
     }
 
     QString NormalizeFilePath(const QString& filePath)

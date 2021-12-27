@@ -1128,7 +1128,7 @@ namespace AssetProcessor
                 QString fullProductPath = m_cacheRootDir.absoluteFilePath(productName);
 
                 // Strip the <asset_platform> from the front of a relative product path
-                QString relativeProductPath = AssetUtilities::StripAssetPlatform(priorProduct.m_productName);
+                AZStd::string_view relativeProductPath = AssetUtilities::StripAssetPlatformNoCopy(priorProduct.m_productName);
 
                 AZ::Data::AssetId assetId(source.m_sourceGuid, priorProduct.m_subID);
 
@@ -1137,7 +1137,7 @@ namespace AssetProcessor
                 AZ::Data::AssetId legacyAssetId(priorProduct.m_legacyGuid, 0);
                 AZ::Data::AssetId legacySourceAssetId(AssetUtilities::CreateSafeSourceUUIDFromName(source.m_sourceName.c_str(), false), priorProduct.m_subID);
 
-                AssetNotificationMessage message(relativeProductPath.toUtf8().constData(), AssetNotificationMessage::AssetRemoved, priorProduct.m_assetType, processedAsset.m_entry.m_platformInfo.m_identifier.c_str());
+                AssetNotificationMessage message(relativeProductPath, AssetNotificationMessage::AssetRemoved, priorProduct.m_assetType, processedAsset.m_entry.m_platformInfo.m_identifier.c_str());
                 message.m_assetId = assetId;
 
                 if (legacyAssetId != assetId)
@@ -1312,14 +1312,14 @@ namespace AssetProcessor
 
                 // relative file path is gotten by removing the platform and game from the product name
                 // Strip the <asset_platform> from the front of a relative product path
-                QString relativeProductPath = AssetUtilities::StripAssetPlatform(productName.toUtf8().constData());
+                AZStd::string_view relativeProductPath = AssetUtilities::StripAssetPlatformNoCopy(productName.toUtf8().constData());
 
-                AssetNotificationMessage message(relativeProductPath.toUtf8().constData(), AssetNotificationMessage::AssetChanged, newProduct.m_assetType, processedAsset.m_entry.m_platformInfo.m_identifier.c_str());
+                AssetNotificationMessage message(relativeProductPath, AssetNotificationMessage::AssetChanged, newProduct.m_assetType, processedAsset.m_entry.m_platformInfo.m_identifier.c_str());
                 AZ::Data::AssetId assetId(source.m_sourceGuid, newProduct.m_subID);
                 AZ::Data::AssetId legacyAssetId(newProduct.m_legacyGuid, 0);
                 AZ::Data::AssetId legacySourceAssetId(AssetUtilities::CreateSafeSourceUUIDFromName(source.m_sourceName.c_str(), false), newProduct.m_subID);
 
-                message.m_data = relativeProductPath.toUtf8().data();
+                message.m_data = relativeProductPath;
                 message.m_sizeBytes = QFileInfo(fullProductPath).size();
                 message.m_assetId = assetId;
 
@@ -1633,9 +1633,6 @@ namespace AssetProcessor
             }
         }
 
-        // Strip the <asset_platform> from the front of a relative product path
-        QString relativePath = AssetUtilities::StripAssetPlatform(relativeProductFile.toUtf8().constData());
-
         //set the fingerprint on the job that made this product
         for (auto& job : jobs)
         {
@@ -1678,7 +1675,7 @@ namespace AssetProcessor
             }
 
             QString fullProductPath = m_cacheRootDir.absoluteFilePath(product.m_productName.c_str());
-            QString relativeProductPath(AssetUtilities::StripAssetPlatform(product.m_productName));
+            AZStd::string_view relativeProductPath = AssetUtilities::StripAssetPlatformNoCopy(product.m_productName);
             QFileInfo productFileInfo(fullProductPath);
             if (productFileInfo.exists())
             {
@@ -1725,7 +1722,7 @@ namespace AssetProcessor
                     AZ::Data::AssetId legacyAssetId(product.m_legacyGuid, 0);
                     AZ::Data::AssetId legacySourceAssetId(AssetUtilities::CreateSafeSourceUUIDFromName(source.m_sourceName.c_str(), false), product.m_subID);
 
-                    AssetNotificationMessage message(relativeProductPath.toUtf8().constData(), AssetNotificationMessage::AssetRemoved, product.m_assetType, job.m_platform.c_str());
+                    AssetNotificationMessage message(relativeProductPath, AssetNotificationMessage::AssetRemoved, product.m_assetType, job.m_platform.c_str());
                     message.m_assetId = assetId;
 
                     if (legacyAssetId != assetId)

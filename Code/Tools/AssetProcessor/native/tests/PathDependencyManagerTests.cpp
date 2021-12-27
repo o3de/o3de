@@ -50,12 +50,17 @@ namespace UnitTests
         ::testing::NiceMock<MockDatabaseLocationListener> m_databaseLocationListener;
         AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> m_stateData;
         AZStd::unique_ptr<AssetProcessor::PlatformConfiguration> m_platformConfig;
+        AZ::JobManager* m_jobManager{};
+        AZ::JobContext* m_jobContext{};
     };
 
     void PathDependencyDeletionTest::SetUp()
     {
         using namespace ::testing;
         using namespace AzToolsFramework::AssetDatabase;
+
+        ::UnitTest::TestRunner::Instance().m_suppressAsserts = false;
+        ::UnitTest::TestRunner::Instance().m_suppressErrors = false;
 
         BusConnect();
 
@@ -79,10 +84,31 @@ namespace UnitTests
         m_stateData->OpenDatabase();
 
         m_platformConfig = AZStd::make_unique<AssetProcessor::PlatformConfiguration>();
+
+        AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
+        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
+
+        AZ::JobManagerDesc jobDesc;
+        AZ::JobManagerThreadDesc threadDesc;
+        for (int i = 0; i < 16; ++i)
+        {
+            jobDesc.m_workerThreads.push_back(threadDesc);
+        }
+
+        m_jobManager = aznew AZ::JobManager(jobDesc);
+        m_jobContext = aznew AZ::JobContext(*m_jobManager);
+        AZ::JobContext::SetGlobalContext(m_jobContext);
     }
 
     void PathDependencyDeletionTest::TearDown()
     {
+        AZ::JobContext::SetGlobalContext(nullptr);
+        delete m_jobContext;
+        delete m_jobManager;
+
+        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
+        AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
+
         BusDisconnect();
     }
 
@@ -91,7 +117,7 @@ namespace UnitTests
         using namespace AzToolsFramework::AssetDatabase;
 
         // Add a product to the db with an unmet dependency
-        ScanFolderDatabaseEntry scanFolder("folder", "test", "test", "");
+        ScanFolderDatabaseEntry scanFolder("folder", "test", "test", 0);
         m_stateData->SetScanFolder(scanFolder);
 
         SourceDatabaseEntry source1, source2;
@@ -110,7 +136,8 @@ namespace UnitTests
 
         Util::CreateSourceJobAndProduct(m_stateData.get(), scanFolder.m_scanFolderID, source2, job2, product2, "source2.txt", "product2.jpg");
 
-        manager.RetryDeferredDependencies(source2);
+        manager.QueueSourceForDependencyResolution(source2);
+        manager.ProcessQueuedDependencyResolves();
     }
 
     TEST_F(PathDependencyDeletionTest, ExistingSourceWithUnmetDependency_RemovedFromDB_DependentProductCreatedWithoutError)
@@ -118,7 +145,7 @@ namespace UnitTests
         using namespace AzToolsFramework::AssetDatabase;
 
         // Add a product to the db with an unmet dependency
-        ScanFolderDatabaseEntry scanFolder("folder", "test", "test", "");
+        ScanFolderDatabaseEntry scanFolder("folder", "test", "test", 0);
         m_stateData->SetScanFolder(scanFolder);
 
         SourceDatabaseEntry source1, source2;
@@ -137,7 +164,8 @@ namespace UnitTests
 
         Util::CreateSourceJobAndProduct(m_stateData.get(), scanFolder.m_scanFolderID, source2, job2, product2, "source2.txt", "product2.jpg");
 
-        manager.RetryDeferredDependencies(source2);
+        manager.QueueSourceForDependencyResolution(source2);
+        manager.ProcessQueuedDependencyResolves();
     }
 
     TEST_F(PathDependencyDeletionTest, NewSourceWithUnmetDependency_RemovedFromDB_DependentSourceCreatedWithoutError)
@@ -147,7 +175,7 @@ namespace UnitTests
         AssetProcessor::PathDependencyManager manager(m_stateData, m_platformConfig.get());
 
         // Add a product to the db with an unmet dependency
-        ScanFolderDatabaseEntry scanFolder("folder", "test", "test", "");
+        ScanFolderDatabaseEntry scanFolder("folder", "test", "test", 0);
         m_stateData->SetScanFolder(scanFolder);
 
         SourceDatabaseEntry source1, source2;
@@ -166,7 +194,8 @@ namespace UnitTests
 
         Util::CreateSourceJobAndProduct(m_stateData.get(), scanFolder.m_scanFolderID, source2, job2, product2, "source2.txt", "product2.jpg");
 
-        manager.RetryDeferredDependencies(source2);
+        manager.QueueSourceForDependencyResolution(source2);
+        manager.ProcessQueuedDependencyResolves();
     }
 
     TEST_F(PathDependencyDeletionTest, NewSourceWithUnmetDependency_RemovedFromDB_DependentProductCreatedWithoutError)
@@ -176,7 +205,7 @@ namespace UnitTests
         AssetProcessor::PathDependencyManager manager(m_stateData, m_platformConfig.get());
 
         // Add a product to the db with an unmet dependency
-        ScanFolderDatabaseEntry scanFolder("folder", "test", "test", "");
+        ScanFolderDatabaseEntry scanFolder("folder", "test", "test", 0);
         m_stateData->SetScanFolder(scanFolder);
 
         SourceDatabaseEntry source1, source2;
@@ -195,7 +224,8 @@ namespace UnitTests
 
         Util::CreateSourceJobAndProduct(m_stateData.get(), scanFolder.m_scanFolderID, source2, job2, product2, "source2.txt", "product2.jpg");
 
-        manager.RetryDeferredDependencies(source2);
+        manager.QueueSourceForDependencyResolution(source2);
+        manager.ProcessQueuedDependencyResolves();
     }
 
     TEST_F(PathDependencyDeletionTest, NewSourceWithUnmetDependency_Wildcard_RemovedFromDB_DependentSourceCreatedWithoutError)
@@ -205,7 +235,7 @@ namespace UnitTests
         AssetProcessor::PathDependencyManager manager(m_stateData, m_platformConfig.get());
 
         // Add a product to the db with an unmet dependency
-        ScanFolderDatabaseEntry scanFolder("folder", "test", "test", "");
+        ScanFolderDatabaseEntry scanFolder("folder", "test", "test", 0);
         m_stateData->SetScanFolder(scanFolder);
 
         SourceDatabaseEntry source1, source2;
@@ -224,6 +254,95 @@ namespace UnitTests
 
         Util::CreateSourceJobAndProduct(m_stateData.get(), scanFolder.m_scanFolderID, source2, job2, product2, "source2.txt", "product2.jpg");
 
-        manager.RetryDeferredDependencies(source2);
+        manager.QueueSourceForDependencyResolution(source2);
+        manager.ProcessQueuedDependencyResolves();
+    }
+
+    using PathDependencyTests = PathDependencyDeletionTest;
+
+    //struct PathDependencyTests : PathDependencyDeletionTest
+    //{
+    //    void SetUp() override
+    //    {
+    //        PathDependencyDeletionTest::SetUp();
+
+
+    //    }
+    //    void TearDown() override
+    //    {
+    //        PathDependencyDeletionTest::TearDown();
+    //    }
+    //};
+
+    TEST_F(PathDependencyTests, Benchmark)
+    {
+        AssetProcessor::PathDependencyManager manager(m_stateData, m_platformConfig.get());
+
+        ScanFolderDatabaseEntry scanFolder("folder", "test", "test", 0);
+        m_stateData->SetScanFolder(scanFolder);
+
+        SourceDatabaseEntry source1, source2;
+        JobDatabaseEntry job1, job2;
+        ProductDatabaseEntry product1, product2;
+
+        Util::CreateSourceJobAndProduct(
+            m_stateData.get(), scanFolder.m_scanFolderID, source1, job1, product1, "source1.txt", "product1.jpg");
+
+        constexpr int NumTestDependencies = 4000;
+        constexpr int NumTestProducts = 10000;
+
+        ProductDependencyDatabaseEntryContainer dependencies;
+        for (int i = 0; i < NumTestDependencies; ++i)
+        {
+            dependencies.emplace_back(product1.m_productID, AZ::Uuid::CreateNull(), 0, 0, "pc", 0, AZStd::string::format("folder/folder2/%d_*2.jpg", i).c_str());
+            ++i;
+            dependencies.emplace_back(product1.m_productID, AZ::Uuid::CreateNull(), 0, 0, "mac", 0, AZStd::string::format("folder/folder2/%d_*2.jpg", i).c_str());
+        }
+
+        m_stateData->SetProductDependencies(dependencies);
+
+        Util::CreateSourceJobAndProduct(
+            m_stateData.get(), scanFolder.m_scanFolderID, source2, job2, product2, "source2.txt", "product2.jpg");
+
+        auto job3 = JobDatabaseEntry(
+            source2.m_sourceID, "jobkey", 1111, "mac", AZ::Uuid::CreateRandom(), AzToolsFramework::AssetSystem::JobStatus::Completed, 4444);
+        EXPECT_TRUE(m_stateData->SetJob(job3));
+
+        ProductDatabaseEntryContainer products;
+
+        for (int i = 0; i < NumTestProducts; ++i)
+        {
+            products.emplace_back(job2.m_jobID, i, AZStd::string::format("pc/folder/folder2/%d_product2.jpg", i).c_str(),
+                                                        AZ::Data::AssetType::CreateRandom());
+            ++i;
+            products.emplace_back(
+                job3.m_jobID, i, AZStd::string::format("mac/folder/folder2/%d_product2.jpg", i).c_str(), AZ::Data::AssetType::CreateRandom());
+        }
+
+        m_stateData->SetProducts(products);
+
+        manager.QueueSourceForDependencyResolution(source2);
+        manager.ProcessQueuedDependencyResolves();
+
+        ProductDependencyDatabaseEntryContainer unresolvedProductDependencies;
+        m_stateData->GetProductDependencies(unresolvedProductDependencies);
+
+        //for (const auto & product : products)
+        //{
+        //    bool found = false;
+
+        //    for (const auto & unresolvedProductDependency : unresolvedProductDependencies)
+        //    {
+        //        if (unresolvedProductDependency.m_dependencySourceGuid == source2.m_sourceGuid
+        //            && unresolvedProductDependency.m_dependencySubID == product.m_subID)
+        //        {
+        //            found = true;
+        //        }
+        //    }
+
+        //    EXPECT_TRUE(found);
+        //}
+
+        EXPECT_EQ(unresolvedProductDependencies.size(), NumTestDependencies * 2);
     }
 }
