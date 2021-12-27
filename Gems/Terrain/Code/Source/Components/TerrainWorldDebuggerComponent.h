@@ -95,12 +95,11 @@ namespace Terrain
         // in each direction, the actual world size will depend on the terrain grid resolution in each direction.
         static constexpr int32_t SectorSizeInGridPoints = 10;
 
-        // For each grid point we will draw half a square (left-right, top-down), so we need 4 vertices for the two lines.
+        // For each grid point we will draw half a square ( _| ), so we need 4 vertices for the two lines.
         static constexpr int32_t VerticesPerGridPoint = 4;
 
-        // Pre-calculate the total number of vertices per sector.
-        static constexpr int32_t VerticesPerSector =
-            (SectorSizeInGridPoints * VerticesPerGridPoint) * (SectorSizeInGridPoints * VerticesPerGridPoint);
+        // Pre-calculate the total number of vertices per sector (N x N grid points, with 4 vertices per grid point)
+        static constexpr int32_t VerticesPerSector = (SectorSizeInGridPoints * SectorSizeInGridPoints) * VerticesPerGridPoint;
 
         // AuxGeom has limits to the number of lines it can draw in a frame, so we'll cap how many total sectors to draw.
         static constexpr int32_t MaxVerticesToDraw = 500000;
@@ -109,6 +108,8 @@ namespace Terrain
         void RebuildSectorWireframe(WireframeSector& sector, const AZ::Vector2& gridResolution, float worldMinZ);
 
         TerrainWorldDebuggerConfig m_configuration;
+
+        // Structures to keep track of all our current wireframe sectors, so that we don't have to recalculate them every frame.
         AZStd::vector<WireframeSector> m_wireframeSectors;
         AZ::Aabb m_wireframeBounds;
         AZ::Aabb m_dirtyRegion;
