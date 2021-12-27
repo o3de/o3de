@@ -58,7 +58,7 @@ def GraphClosed_OnLevelChange():
 
     # Open an existing simple level
     helper.init_idle()
-    helper.open_level("Physics", "Base")
+    helper.open_level("", "Base")
 
     # Open Landscape Canvas tool and verify
     general.open_pane('Landscape Canvas')
@@ -73,7 +73,7 @@ def GraphClosed_OnLevelChange():
     Report.result(Tests.graph_registered, graph_registered)
 
     # Open a different level, which should close any open Landscape Canvas graphs
-    general.open_level_no_prompt('WhiteBox/EmptyLevel')
+    helper.open_level("", "Sponza")
 
     # Make sure the graph we created is now closed
     graphIsOpen = graph.AssetEditorRequestBus(bus.Event, 'ContainsGraph', editorId, newGraphId)

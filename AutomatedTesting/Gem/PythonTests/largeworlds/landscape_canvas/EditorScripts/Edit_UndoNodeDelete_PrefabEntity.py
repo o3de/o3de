@@ -7,9 +7,9 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 
 class Tests:
-    slice_spawned = (
-        "Slice instantiated successfully",
-        "Failed to instantiate slice"
+    prefab_instantiated = (
+        "Prefab instantiated successfully",
+        "Failed to instantiate prefab"
     )
     lc_entity_found = (
         "Landscape Canvas entity found",
@@ -31,17 +31,19 @@ class Tests:
         "Vegetation Layer Spawner node was successfully removed",
         "Failed to remove Vegetation Layer Spawner node"
     )
-def Edit_UndoNodeDelete_SliceEntity():
+
+
+def Edit_UndoNodeDelete_PrefabEntity():
     """
     Summary:
-    This test verifies Editor stability after undoing the deletion of nodes on a slice entity.
+    This test verifies Editor stability after undoing the deletion of nodes on a prefab entity.
 
     Expected Behavior:
     Editor remains stable and free of crashes.
 
     Test Steps:
      1) Open a simple level
-     2) Instantiate a slice with a Landscape Canvas setup
+     2) Instantiate a prefab with a Landscape Canvas setup
      3) Find a specific node on the graph, and delete it
      4) Restore the node with Undo
 
@@ -55,7 +57,6 @@ def Edit_UndoNodeDelete_SliceEntity():
 
     import os
 
-    import azlmbr.asset as asset
     import azlmbr.bus as bus
     import azlmbr.editor as editor
     import azlmbr.entity as entity
@@ -63,7 +64,7 @@ def Edit_UndoNodeDelete_SliceEntity():
     import azlmbr.editor.graph as graph
     import azlmbr.landscapecanvas as landscapecanvas
     import azlmbr.math as math
-    import azlmbr.slice as slice
+    import azlmbr.prefab as prefab
 
     import editor_python_test_tools.hydra_editor_utils as hydra
     from editor_python_test_tools.utils import Report
@@ -71,17 +72,16 @@ def Edit_UndoNodeDelete_SliceEntity():
 
     # Open an existing simple level
     helper.init_idle()
-    helper.open_level("Physics", "Base")
+    helper.open_level("", "Base")
 
     # Instantiate slice
     transform = math.Transform_CreateIdentity()
     position = math.Vector3(64.0, 64.0, 32.0)
     transform.invoke('SetPosition', position)
-    test_slice_path = os.path.join("Slices", "LC_BushFlowerBlender.slice")
-    test_slice_id = asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", test_slice_path, math.Uuid(),
-                                                 False)
-    test_slice = slice.SliceRequestBus(bus.Broadcast, 'InstantiateSliceFromAssetId', test_slice_id, transform)
-    Report.result(Tests.slice_spawned, test_slice.IsValid())
+    test_prefab_path = os.path.join("Assets", "Prefabs", "BushFlowerBlender.prefab")
+    prefab_result = prefab.PrefabPublicRequestBus(bus.Broadcast, 'InstantiatePrefab', test_prefab_path,
+                                                  entity.EntityId(), position)
+    Report.critical_result(Tests.prefab_instantiated, prefab_result.IsSuccess())
 
     # Find root entity in the loaded level
     search_filter = entity.SearchFilter()
@@ -134,5 +134,5 @@ def Edit_UndoNodeDelete_SliceEntity():
 if __name__ == "__main__":
 
     from editor_python_test_tools.utils import Report
-    Report.start_test(Edit_UndoNodeDelete_SliceEntity)
+    Report.start_test(Edit_UndoNodeDelete_PrefabEntity)
 

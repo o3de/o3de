@@ -7,9 +7,9 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 
 class Tests:
-    slice_instantiated = (
-        "Slice instantiated successfully",
-        "Failed to instantiate slice"
+    prefab_instantiated = (
+        "Prefab instantiated successfully",
+        "Failed to instantiate prefab"
     )
     lc_entity_found = (
         "LandscapeCanvas entity found",
@@ -101,7 +101,7 @@ def ComponentUpdates_UpdateGraph():
     import azlmbr.legacy.general as general
     import azlmbr.landscapecanvas as landscapecanvas
     import azlmbr.math as math
-    import azlmbr.slice as slice
+    import azlmbr.prefab as prefab
 
     import editor_python_test_tools.hydra_editor_utils as hydra
     from editor_python_test_tools.utils import Report
@@ -109,15 +109,14 @@ def ComponentUpdates_UpdateGraph():
 
     # Open a simple level and instantiate LC_BushFlowerBlender.slice
     helper.init_idle()
-    helper.open_level("Physics", "Base")
+    helper.open_level("", "Base")
     transform = math.Transform_CreateIdentity()
     position = math.Vector3(64.0, 64.0, 32.0)
     transform.invoke('SetPosition', position)
-    test_slice_path = os.path.join("Slices", "LC_BushFlowerBlender.slice")
-    test_slice_id = asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", test_slice_path, math.Uuid(),
-                                                 False)
-    test_slice = slice.SliceRequestBus(bus.Broadcast, 'InstantiateSliceFromAssetId', test_slice_id, transform)
-    Report.critical_result(Tests.slice_instantiated, test_slice.IsValid())
+    test_prefab_path = os.path.join("Assets", "Prefabs", "BushFlowerBlender.prefab")
+    prefab_result = prefab.PrefabPublicRequestBus(bus.Broadcast, 'InstantiatePrefab', test_prefab_path,
+                                                  entity.EntityId(), position)
+    Report.critical_result(Tests.prefab_instantiated, prefab_result.IsSuccess())
 
     # Find root entity in the loaded level
     search_filter = entity.SearchFilter()

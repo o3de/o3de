@@ -70,7 +70,7 @@ def NewGraph_CreatedSuccessfully():
 
     # Open an existing simple level
     helper.init_idle()
-    helper.open_level("Physics", "Base")
+    helper.open_level("", "Base")
 
     # Listen for entity creation notifications so we can check if the entity created
     # with the new graph has our Landscape Canvas component automatically added

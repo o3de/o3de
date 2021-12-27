@@ -49,7 +49,7 @@ def Component_AddedRemoved():
 
     # Open an existing simple level
     helper.init_idle()
-    helper.open_level("Physics", "Base")
+    helper.open_level("", "Base")
 
     # Create an Entity at the root of the level
     newEntityId = editor.ToolsApplicationRequestBus(bus.Broadcast, 'CreateNewEntity', entity.EntityId())

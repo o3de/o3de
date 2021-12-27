@@ -70,7 +70,7 @@ def GradientNodes_DependentComponentsAdded():
 
     # Open an existing simple level
     helper.init_idle()
-    helper.open_level("Physics", "Base")
+    helper.open_level("", "Base")
 
     # Open Landscape Canvas tool and verify
     general.open_pane('Landscape Canvas')

@@ -7,9 +7,9 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 
 class Tests:
-    slice_instantiated = (
-        "Slice instantiated successfully",
-        "Failed to instantiate slice"
+    prefab_instantiated = (
+        "Prefab instantiated successfully",
+        "Failed to instantiate prefab"
     )
     existing_graph_opened = (
         "Opened existing graph from slice",
@@ -70,7 +70,7 @@ def GraphUpdates_UpdateComponent():
     import azlmbr.editor.graph as graph
     import azlmbr.landscapecanvas as landscapecanvas
     import azlmbr.math as math
-    import azlmbr.slice as slice
+    import azlmbr.prefab as prefab
 
     import automatedtesting_shared.landscape_canvas_utils as lc
     import editor_python_test_tools.hydra_editor_utils as hydra
@@ -79,15 +79,14 @@ def GraphUpdates_UpdateComponent():
 
     # Open a simple level and instantiate LC_BushFlowerBlender.slice
     helper.init_idle()
-    helper.open_level("Physics", "Base")
+    helper.open_level("", "Base")
     transform = math.Transform_CreateIdentity()
     position = math.Vector3(64.0, 64.0, 32.0)
     transform.invoke('SetPosition', position)
-    test_slice_path = os.path.join("Slices", "LC_BushFlowerBlender.slice")
-    test_slice_id = asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", test_slice_path, math.Uuid(),
-                                                 False)
-    test_slice = slice.SliceRequestBus(bus.Broadcast, 'InstantiateSliceFromAssetId', test_slice_id, transform)
-    Report.critical_result(Tests.slice_instantiated, test_slice.IsValid())
+    test_prefab_path = os.path.join("Assets", "Prefabs", "BushFlowerBlender.prefab")
+    prefab_result = prefab.PrefabPublicRequestBus(bus.Broadcast, 'InstantiatePrefab', test_prefab_path,
+                                                  entity.EntityId(), position)
+    Report.critical_result(Tests.prefab_instantiated, prefab_result.IsSuccess())
 
     # Search for root entity to ensure slice is loaded
     search_filter = entity.SearchFilter()
@@ -121,7 +120,10 @@ def GraphUpdates_UpdateComponent():
     Report.result(Tests.component_removed, not has_rotation_modifier)
 
     # Find the Vegetation Layer Spawner node on the BushSpawner entity
-    layer_spawner_node = lc.find_nodes_matching_entity_component('Vegetation Layer Spawner', bush_spawner_id)
+    print(bush_spawner_id)
+    layer_spawner_node = helper.wait_for_condition(len(lc.find_nodes_matching_entity_component('Vegetation Layer Spawner',
+                                                                                           bush_spawner_id)) == 1, 5.0)
+
 
     # Remove the Vegetation Layer Spawner node and verify the corresponding entity is deleted
     graph.GraphControllerRequestBus(bus.Event, 'RemoveNode', open_graph_id, layer_spawner_node[0])
