@@ -138,7 +138,7 @@ class TestHelper:
         :param window: The log's window name. For example, logs printed via script-canvas use the "Script" window. 
         :param unexpected_line: The log message we're hoping to not find.
         :param print_infos: A list of PrintInfos collected by Tracer to search. Example options: your_tracer.warnings, your_tracer.errors, your_tracer.asserts, or your_tracer.prints 
-        :param time_out: The total amount of time to wait before giving up looking for the unexpected line.
+        :param time_out: The total amount of time to wait before giving up looking for the unexpected line. If time runs out and we don't see the unexpected line then report a success.
 
         :return: No return value, but if the unexpected message is found, a failed critical result is reported; otherwise success.
         """
