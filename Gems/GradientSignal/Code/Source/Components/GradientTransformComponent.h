@@ -172,5 +172,6 @@ namespace GradientSignal
         AZ::Matrix3x4 m_shapeTransformInverse = AZ::Matrix3x4::CreateIdentity();
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
         AZStd::atomic_bool m_dirty{ false };
+        GradientTransform m_gradientTransform;
     };
 } //namespace GradientSignal

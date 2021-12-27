@@ -326,51 +326,7 @@ namespace GradientSignal
     {
         AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
 
-        //transforming coordinate into "local" relative space of shape bounds
-        outUVW = m_shapeTransformInverse * inPosition;
-
-        if (!m_configuration.m_advancedMode || !m_configuration.m_is3d)
-        {
-            outUVW.SetZ(0.0f);
-        }
-
-        wasPointRejected = false;
-        if (m_shapeBounds.IsValid())
-        {
-            //all wrap types and transformations are applied after the coordinate is transformed into shape relative space
-            //this allows all calculations to be simplified and done using the shapes untransformed aabb
-            //outputting a value that can be used to sample a gradient in its local space
-            switch (m_configuration.m_wrappingType)
-            {
-            default:
-            case WrappingType::None:
-                outUVW = GetUnboundedPointInAabb(outUVW, m_shapeBounds);
-                break;
-            case WrappingType::ClampToEdge:
-                outUVW = GetClampedPointInAabb(outUVW, m_shapeBounds);
-                break;
-            case WrappingType::ClampToZero:
-                // We don't want to use m_shapeBounds.Contains() here because Contains() is inclusive on all edges.
-                // For uv consistency between clamped and unclamped states, we only want to accept uv ranges of [min, max), 
-                // so we specifically need to exclude the max edges here.
-                wasPointRejected = !(outUVW.IsGreaterEqualThan(m_shapeBounds.GetMin()) && outUVW.IsLessThan(m_shapeBounds.GetMax()));
-                outUVW = GetClampedPointInAabb(outUVW, m_shapeBounds);
-                break;
-            case WrappingType::Mirror:
-                outUVW = GetMirroredPointInAabb(outUVW, m_shapeBounds);
-                break;
-            case WrappingType::Repeat:
-                outUVW = GetWrappedPointInAabb(outUVW, m_shapeBounds);
-                break;
-            }
-        }
-
-        outUVW *= m_configuration.m_frequencyZoom;
-
-        if (shouldNormalizeOutput)
-        {
-            outUVW = GetNormalizedPointInAabb(outUVW, m_shapeBounds);
-        }
+        m_gradientTransform.TransformPositionToUVW(inPosition, outUVW, shouldNormalizeOutput, wasPointRejected);
     }
 
     void GradientTransformComponent::GetGradientLocalBounds(AZ::Aabb& bounds) const
@@ -499,6 +455,13 @@ namespace GradientSignal
         shapeTransformFinal.SetTranslation(m_configuration.m_translate);
         shapeTransformFinal.MultiplyByScale(m_configuration.m_scale);
         m_shapeTransformInverse = shapeTransformFinal.GetInverseFull();
+
+        // Set everything up on the Gradient Transform
+        m_gradientTransform.SetWrappingType(m_configuration.m_wrappingType);
+        m_gradientTransform.SetFrequencyZoom(m_configuration.m_frequencyZoom);
+        m_gradientTransform.SetShapeBounds(m_shapeBounds);
+        m_gradientTransform.SetShapeTransformInverse(m_shapeTransformInverse);
+        m_gradientTransform.SetUse3d(m_configuration.m_advancedMode && m_configuration.m_is3d);
     }
 
     AZ::EntityId GradientTransformComponent::GetShapeEntityId() const
