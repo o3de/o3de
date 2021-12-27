@@ -272,7 +272,7 @@ namespace Terrain
                 int32_t sectorXIndex = ((sectorX % m_sectorGridSize) + m_sectorGridSize) % m_sectorGridSize;
                 int32_t sectorIndex = (sectorYIndex * m_sectorGridSize) + sectorXIndex;
 
-                auto& sector = m_wireframeSectors[sectorIndex];
+                WireframeSector& sector = m_wireframeSectors[sectorIndex];
 
                 // Calculate the new world space box for this sector.
                 AZ::Aabb sectorAabb = AZ::Aabb::CreateFromMinMax(
@@ -351,8 +351,10 @@ namespace Terrain
         sector.m_lineVertices.clear();
         sector.m_lineVertices.reserve(numSamplesX * numSamplesY * 4);
 
-        auto HeightCallback = [gridResolution, &previousHeight, &rowHeights,
-                               &sector](uint32_t xIndex, uint32_t yIndex, const AZ::Vector3& position, [[maybe_unused]] bool terrainExists)
+        // For each terrain height value in the region, create the _| grid lines for that point and cache off the height value
+        // for use with subsequent grid line calculations.
+        auto ProcessHeightValue = [gridResolution, &previousHeight, &rowHeights, &sector]
+            (uint32_t xIndex, uint32_t yIndex, const AZ::Vector3& position, [[maybe_unused]] bool terrainExists)
         {
             // Don't add any vertices for the first column or first row.  These grid lines will be handled by an adjacent sector, if
             // there is one.
@@ -385,7 +387,7 @@ namespace Terrain
                 AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
                     height, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats, x, y,
                     AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, &terrainExists);
-                HeightCallback(xIndex, yIndex, AZ::Vector3(x, y, height), terrainExists);
+                ProcessHeightValue(xIndex, yIndex, AZ::Vector3(x, y, height), terrainExists);
                 xIndex++;
             }
             yIndex++;
