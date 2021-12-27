@@ -202,20 +202,24 @@ namespace Terrain
             return;
         }
 
-        /* This draws a wireframe centered on the camera that extends out to a certain distance at all times.  To reduce the amount of
-         * recalculations we need to do on each camera movement, we divide the world into a conceptual grid of sectors (ex: 10 m x 10 m).
-         * The wireframe draws N x N sectors centered around the camera, as determined by m_sectorGridSize.  Each time the camera moves
-         * into a new sector, we refresh the changed sectors before drawing them.
+        /* This draws a wireframe centered on the camera that extends out to a certain distance at all times. To reduce the amount of
+         * recalculations we need to do on each camera movement, we divide the world into a conceptual grid of sectors, where each sector
+         * contains a fixed number of terrain height points. So for example, if the terrain has height data at 1 m spacing, the sectors
+         * might be 10 m x 10 m in size. If the height data is spaced at 0.5 m, the sectors might be 5 m x 5 m in size. The wireframe
+         * draws N x N sectors centered around the camera, as determined by m_sectorGridSize. So a gridSize of 7 with a sector size of
+         * 10 m means that we'll be drawing 7 x 7 sectors, or 70 m x 70 m, centered around the camera. Each time the camera moves into
+         * a new sector, we refresh the changed sectors before drawing them.
          *
-         * The only tricky bit to this design is the way the sectors are stored and indexed.  They're stored in a single vector as NxN
-         * entries, so they would normally be indexed as (y * N) + x.  Since we want this to be centered on the camera, the easy answer
-         * would be to take the camera position - (N / 2) (since we're centering) as the relative offset to the first entry.  But this
-         * would mean that the entire set of entries would change every time we move the camera.  For example, if we had 5 entries,
+         * The only tricky bit to this design is the way the sectors are stored and indexed. They're stored in a single vector as NxN
+         * entries, so they would normally be indexed as (y * N) + x. Since we want this to be centered on the camera, the easy answer
+         * would be to take the camera position - (N / 2) (since we're centering) as the relative offset to the first entry. But this
+         * would mean that the entire set of entries would change every time we move the camera. For example, if we had 5 entries,
          * they might map to 0-4, 1-5, 2-6, 3-7, etc as the camera moves.
          *
          * Instead, we use mod (%) to rotate our indices around, so it would go (0 1 2 3 4), (5 1 2 3 4), (5 6 2 3 4), (5 6 7 3 4), etc
-         * as the camera moves.  For negative entries, we need to get into positive space, so we mod a second time.  This produces results
-         * that look like (0 1 2 3 4), (0 1 2 3 -1), (0 1 2 -2 -1), (0 1 -3 -2 -1), etc.
+         * as the camera moves. For negative entries, we rotate the indices in reverse, so that we get results like (0 1 2 3 4),
+         * (0 1 2 3 -1), (0 1 2 -2 -1), (0 1 -3 -2 -1), etc. This way we always have the correct range of sectors, and sectors that have
+         * remained visible are left alone and don't need to be updated again.
          */
 
         // Get the terrain world bounds
