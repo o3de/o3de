@@ -42,12 +42,10 @@ def Prefab_CreateInstantiate():
 
     import editor_python_test_tools.hydra_editor_utils as hydra
     from editor_python_test_tools.utils import Report
-    from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.prefab_utils import Prefab
 
     # Open an existing simple level
-    helper.init_idle()
-    helper.open_level("", "Base")
+    hydra.open_base_level()
 
     # Create entity with Landscape Canvas component
     position = math.Vector3(512.0, 512.0, 32.0)
@@ -59,13 +57,11 @@ def Prefab_CreateInstantiate():
     lc_prefab, lc_prefab_instance = Prefab.create_prefab([landscape_canvas], lc_prefab_filename)
 
     # Verify if slice is created
-    helper.wait_for_condition(lambda: lc_prefab.is_prefab_loaded(lc_prefab_filename), 5.0)
     Report.result(Tests.prefab_created, lc_prefab.is_prefab_loaded(lc_prefab_filename))
 
     # Instantiate slice
     lc_prefab_instance2 = lc_prefab.instantiate()
-    helper.wait_for_condition(lambda: lc_prefab_instance2.has_editor_prefab_component(), 5.0)
-    Report.result(Tests.prefab_instantiated, lc_prefab_instance2.has_editor_prefab_component())
+    Report.result(Tests.prefab_instantiated, lc_prefab_instance2.is_valid())
 
 
 if __name__ == "__main__":
