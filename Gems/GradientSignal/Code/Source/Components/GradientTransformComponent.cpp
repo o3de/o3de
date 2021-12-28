@@ -322,11 +322,17 @@ namespace GradientSignal
         return false;
     }
 
-    void GradientTransformComponent::TransformPositionToUVW(const AZ::Vector3& inPosition, AZ::Vector3& outUVW, const bool shouldNormalizeOutput, bool& wasPointRejected) const
+    void GradientTransformComponent::TransformPositionToUVW(const AZ::Vector3& inPosition, AZ::Vector3& outUVW, bool& wasPointRejected) const
     {
         AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
+        m_gradientTransform.TransformPositionToUVW(inPosition, outUVW, wasPointRejected);
+    }
 
-        m_gradientTransform.TransformPositionToUVW(inPosition, outUVW, shouldNormalizeOutput, wasPointRejected);
+    void GradientTransformComponent::TransformPositionToUVWNormalized(
+        const AZ::Vector3& inPosition, AZ::Vector3& outUVW, bool& wasPointRejected) const
+    {
+        AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
+        m_gradientTransform.TransformPositionToUVWNormalized(inPosition, outUVW, wasPointRejected);
     }
 
     void GradientTransformComponent::GetGradientLocalBounds(AZ::Aabb& bounds) const
@@ -457,11 +463,9 @@ namespace GradientSignal
         m_shapeTransformInverse = shapeTransformFinal.GetInverseFull();
 
         // Set everything up on the Gradient Transform
-        m_gradientTransform.SetWrappingType(m_configuration.m_wrappingType);
-        m_gradientTransform.SetFrequencyZoom(m_configuration.m_frequencyZoom);
-        m_gradientTransform.SetShapeBounds(m_shapeBounds);
-        m_gradientTransform.SetShapeTransformInverse(m_shapeTransformInverse);
-        m_gradientTransform.SetUse3d(m_configuration.m_advancedMode && m_configuration.m_is3d);
+        const bool use3dGradients = m_configuration.m_advancedMode && m_configuration.m_is3d;
+        m_gradientTransform = GradientTransform(
+            m_shapeBounds, shapeTransformFinal, use3dGradients, m_configuration.m_frequencyZoom, m_configuration.m_wrappingType);
     }
 
     AZ::EntityId GradientTransformComponent::GetShapeEntityId() const

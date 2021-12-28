@@ -8,58 +8,21 @@
 
 
 #include <AzCore/Math/MathUtils.h>
-#include <GradientSignal/Util.h>
+#include <GradientSignal/GradientTransform.h>
 
 
 namespace GradientSignal
 {
     GradientTransform::GradientTransform(
-        const AZ::Aabb& shapeBounds,
-        const AZ::Matrix3x4& shapeTransformInverse,
-        bool is3d,
-        float frequencyZoom,
-        GradientSignal::WrappingType wrappingType)
+        const AZ::Aabb& shapeBounds, const AZ::Matrix3x4& transform, bool use3d,
+        float frequencyZoom, GradientSignal::WrappingType wrappingType)
+        : m_shapeBounds(shapeBounds)
+        , m_inverseTransform(transform.GetInverseFull())
+        , m_clearWFor2dGradients(1.0f, 1.0f, use3d ? 1.0f : 0.0f)
+        , m_frequencyZoom(frequencyZoom)
+        , m_wrappingTransform(NoTransform)
+        , m_alwaysAcceptPoint(true)
     {
-        SetShapeBounds(shapeBounds);
-        SetShapeTransformInverse(shapeTransformInverse);
-        SetUse3d(is3d);
-        SetFrequencyZoom(frequencyZoom);
-        SetNormalizeOutput(false);
-        SetWrappingType(wrappingType);
-    }
-
-    void GradientTransform::SetShapeBounds(const AZ::Aabb& shapeBounds)
-    {
-        m_shapeBounds = shapeBounds;
-
-        // Refresh the values for anything that depends on shapeBounds.
-        SetWrappingType(m_wrappingType);
-        SetNormalizeOutput(m_shouldNormalize);
-    }
-
-    void GradientTransform::SetShapeTransformInverse(const AZ::Matrix3x4& shapeTransformInverse)
-    {
-        m_shapeTransformInverse = shapeTransformInverse;
-    }
-
-    void GradientTransform::SetUse3d(bool use3d)
-    {
-        // This is used to either clear or preserve the Z component of the passed-in position.  For 2D gradients, we always treat Z as 0.
-        // For 3D gradients, we use the Z as a part of the gradient lookup.
-        m_2dOr3d = use3d ? AZ::Vector3(1.0f, 1.0f, 1.0f) : AZ::Vector3(1.0f, 1.0f, 0.0f);
-    }
-
-    void GradientTransform::SetFrequencyZoom(float frequencyZoom)
-    {
-        m_frequencyZoom = frequencyZoom;
-    }
-
-    void GradientTransform::SetWrappingType(WrappingType wrappingType)
-    {
-        m_wrappingType = wrappingType;
-        m_wrappingTransform = NoTransform;
-        m_pointAcceptanceTest = PointAlwaysAccepted;
-
         if (m_shapeBounds.IsValid())
         {
             // all wrap types and transformations are applied after the coordinate is transformed into shape relative space
@@ -75,7 +38,7 @@ namespace GradientSignal
                 m_wrappingTransform = GetClampedPointInAabb;
                 break;
             case WrappingType::ClampToZero:
-                m_pointAcceptanceTest = PointInShape;
+                m_alwaysAcceptPoint = false;
                 m_wrappingTransform = GetClampedPointInAabb;
                 break;
             case WrappingType::Mirror:
@@ -86,45 +49,37 @@ namespace GradientSignal
                 break;
             }
         }
-    }
 
-    void GradientTransform::SetNormalizeOutput(bool shouldNormalize) const
-    {
-        m_shouldNormalize = shouldNormalize;
-
-        if (shouldNormalize)
-        {
-            m_normalizeMinBounds = m_shapeBounds.GetMin();
-            m_normalizeExtentsReciprocal = AZ::Vector3(
-                AZ::IsClose(0.0f, m_shapeBounds.GetXExtent()) ? 0.0f : (1.0f / m_shapeBounds.GetXExtent()),
-                AZ::IsClose(0.0f, m_shapeBounds.GetYExtent()) ? 0.0f : (1.0f / m_shapeBounds.GetYExtent()),
-                AZ::IsClose(0.0f, m_shapeBounds.GetZExtent()) ? 0.0f : (1.0f / m_shapeBounds.GetZExtent()));
-        }
-        else
-        {
-            m_normalizeMinBounds = AZ::Vector3(0.0f);
-            m_normalizeExtentsReciprocal = AZ::Vector3(1.0f);
-        }
+        m_normalizeExtentsReciprocal = AZ::Vector3(
+            AZ::IsClose(0.0f, m_shapeBounds.GetXExtent()) ? 0.0f : (1.0f / m_shapeBounds.GetXExtent()),
+            AZ::IsClose(0.0f, m_shapeBounds.GetYExtent()) ? 0.0f : (1.0f / m_shapeBounds.GetYExtent()),
+            AZ::IsClose(0.0f, m_shapeBounds.GetZExtent()) ? 0.0f : (1.0f / m_shapeBounds.GetZExtent()));
     }
 
     void GradientTransform::TransformPositionToUVW(const AZ::Vector3& inPosition, AZ::Vector3& outUVW, bool& wasPointRejected) const
     {
-        // Transform coordinate into "local" relative space of shape bounds, and set Z to 0 if this is a 2D gradient.
-        outUVW = m_shapeTransformInverse * inPosition * m_2dOr3d;
-        wasPointRejected = !m_pointAcceptanceTest(outUVW, m_shapeBounds);
+        // Transform coordinate into "local" relative space of shape bounds, and set W to 0 if this is a 2D gradient.
+        outUVW = m_inverseTransform * inPosition * m_clearWFor2dGradients;
+
+        // For most wrapping types, we always accept the point, but for ClampToZero we only accept it if it's within
+        // the shape bounds. We don't use m_shapeBounds.Contains() here because Contains() is inclusive on all edges.
+        // For uv consistency between clamped and unclamped states, we only want to accept uv ranges of [min, max),
+        // so we specifically need to exclude the max edges here.
+        bool wasPointAccepted = m_alwaysAcceptPoint ||
+            (outUVW.IsGreaterEqualThan(m_shapeBounds.GetMin()) && outUVW.IsLessThan(m_shapeBounds.GetMax()));
+        wasPointRejected = !wasPointAccepted;
+
         outUVW = m_wrappingTransform(outUVW, m_shapeBounds);
         outUVW *= m_frequencyZoom;
+    }
+
+    void GradientTransform::TransformPositionToUVWNormalized(const AZ::Vector3& inPosition, AZ::Vector3& outUVW, bool& wasPointRejected) const
+    {
+        TransformPositionToUVW(inPosition, outUVW, wasPointRejected);
 
         // This effectively does AZ::LerpInverse(bounds.GetMin(), bounds.GetMax(), point) if shouldNormalize is true,
         // and just returns outUVW if shouldNormalize is false.
-        outUVW = m_normalizeExtentsReciprocal * (outUVW - m_normalizeMinBounds);
-    }
-
-    void GradientTransform::TransformPositionToUVW(
-        const AZ::Vector3& inPosition, AZ::Vector3& outUVW, const bool shouldNormalize, bool& wasPointRejected) const
-    {
-        SetNormalizeOutput(shouldNormalize);
-        TransformPositionToUVW(inPosition, outUVW, wasPointRejected);
+        outUVW = m_normalizeExtentsReciprocal * (outUVW - m_shapeBounds.GetMin());
     }
 
     AZ::Vector3 GradientTransform::NoTransform(const AZ::Vector3& point, const AZ::Aabb& /*bounds*/)
@@ -188,18 +143,5 @@ namespace GradientSignal
     AZ::Vector3 GradientTransform::GetRelativePointInAabb(const AZ::Vector3& point, const AZ::Aabb& bounds)
     {
         return point - bounds.GetMin();
-    }
-
-    bool GradientTransform::PointAlwaysAccepted([[maybe_unused]] const AZ::Vector3& point, [[maybe_unused]] const AZ::Aabb& bounds)
-    {
-        return true;
-    }
-
-    bool GradientTransform::PointInShape(const AZ::Vector3& point, const AZ::Aabb& bounds)
-    {
-        // We don't want to use m_shapeBounds.Contains() here because Contains() is inclusive on all edges.
-        // For uv consistency between clamped and unclamped states, we only want to accept uv ranges of [min, max),
-        // so we specifically need to exclude the max edges here.
-        return point.IsGreaterEqualThan(bounds.GetMin()) && point.IsLessThan(bounds.GetMax());
     }
 }

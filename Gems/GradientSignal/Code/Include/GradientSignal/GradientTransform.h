@@ -11,26 +11,18 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Transform.h>
+#include <AzCore/std/functional.h>
 
 namespace GradientSignal
 {
+    // This controls how the gradient repeats itself when queried outside the bounds of the shape.
     enum class WrappingType : AZ::u8
     {
-        None = 0,
-        ClampToEdge,
-        Mirror,
-        Repeat,
-        ClampToZero,
-    };
-
-    enum class TransformType : AZ::u8
-    {
-        World_ThisEntity = 0,
-        Local_ThisEntity,
-        World_ReferenceEntity,
-        Local_ReferenceEntity,
-        World_Origin,
-        Relative,
+        None = 0,           // Unbounded - the gradient ignores the shape bounds.
+        ClampToEdge,        // The values on the edge of the shape will be extended outward in each direction.
+        Mirror,             // The gradient signal will be repeated but mirrored on every repeat.
+        Repeat,             // The gradient signal will be repeated in every direction.
+        ClampToZero,        // The value will always be 0 outside of the shape.
     };
 
     class GradientTransform
@@ -38,31 +30,50 @@ namespace GradientSignal
     public:
         GradientTransform() = default;
 
+        /**
+         * Create a GradientTransform with the given parameters.
+         * GradientTransform is a utility class that converts world space positions to gradient space UVW values which can be used
+         * to look up deterministic gradient values for the input spatial locations.
+         * \param shapeBounds The bounds of the shape associated with the gradient, in local space.
+         * \param transform The transform to use to convert from world space to gradient space.
+         * \param use3d True for 3D gradient lookup outputs, false for 2D gradient lookup outputs. (i.e. output W will be nonzero or zero)
+         * \param frequencyZoom Amount to scale the UVW results after wrapping is applied.
+         * \param wrappingType The way in which the gradient repeats itself outside the shape bounds.
+         */
         GradientTransform(
             const AZ::Aabb& shapeBounds,
-            const AZ::Matrix3x4& shapeTransformInverse,
-            bool is3d,
+            const AZ::Matrix3x4& transform,
+            bool use3d,
             float frequencyZoom,
             GradientSignal::WrappingType wrappingType);
 
-        void SetShapeBounds(const AZ::Aabb& shapeBounds);
-        void SetShapeTransformInverse(const AZ::Matrix3x4& shapeTransformInverse);
-        void SetUse3d(bool use3d);
-        void SetFrequencyZoom(float frequencyZoom);
-        void SetWrappingType(WrappingType wrappingType);
-
-        // This is set to const for now to allow it to be called from TransformPositionToUVW.  Once we get rid of the version of that method
-        // that takes in shouldNormalize, this can be set to non-const.
-        void SetNormalizeOutput(bool shouldNormalize) const;
-
+        /**
+         * Transform the given world space position to a gradient space UVW lookup value.
+         * \param inPosition The input world space position to transform.
+         * \param outUVW [out] The UVW value that can be used to look up a deterministic gradient value.
+         * \param wasPointRejected [out] True if the input position doesn't have a gradient value, false if it does.
+         *     Most gradients have values mapped to infinite world space, so wasPointRejected will almost always be false.
+         *     It will only be true when using ClampToZero and the world space position falls outside the shape bounds.
+         */
         void TransformPositionToUVW(const AZ::Vector3& inPosition, AZ::Vector3& outUVW, bool& wasPointRejected) const;
-        void TransformPositionToUVW(
-            const AZ::Vector3& inPosition, AZ::Vector3& outUVW, const bool shouldNormalize, bool& wasPointRejected) const;
+
+        /**
+         * Transform the given world space position to a gradient space UVW lookup value and normalize to the shape bounds.
+         * "Normalizing" in this context means that regardless of the world space coordinates, (0,0,0) represents the minimum
+         * shape bounds corner, and (1,1,1) represents the maximum shape bounds corner. Depending on the wrapping type, it's possible
+         * (and even likely) to get values outside the 0-1 range.
+         * \param inPosition The input world space position to transform.
+         * \param outUVW [out] The UVW value that can be used to look up a deterministic gradient value.
+         * \param wasPointRejected [out] True if the input position doesn't have a gradient value, false if it does.
+         *     Most gradients have values mapped to infinite world space, so wasPointRejected will almost always be false.
+         *     It will only be true when using ClampToZero and the world space position falls outside the shape bounds.
+         */
+        void TransformPositionToUVWNormalized(const AZ::Vector3& inPosition, AZ::Vector3& outUVW, bool& wasPointRejected) const;
 
     private:
-        typedef AZStd::function<AZ::Vector3(const AZ::Vector3& point, const AZ::Aabb& bounds)> TransformFunction;
-        typedef AZStd::function<bool(const AZ::Vector3& point, const AZ::Aabb& bounds)> PointAcceptanceFunction;
 
+        // These are the various transformations that will be performed, based on wrapping type.
+        using WrappingTransformFunction = AZStd::function<AZ::Vector3(const AZ::Vector3& point, const AZ::Aabb& bounds)>;
         static AZ::Vector3 NoTransform(const AZ::Vector3& point, const AZ::Aabb& bounds);
         static AZ::Vector3 GetUnboundedPointInAabb(const AZ::Vector3& point, const AZ::Aabb& bounds);
         static AZ::Vector3 GetClampedPointInAabb(const AZ::Vector3& point, const AZ::Aabb& bounds);
@@ -70,25 +81,33 @@ namespace GradientSignal
         static AZ::Vector3 GetRelativePointInAabb(const AZ::Vector3& point, const AZ::Aabb& bounds);
         static AZ::Vector3 GetWrappedPointInAabb(const AZ::Vector3& point, const AZ::Aabb& bounds);
 
-        static bool PointAlwaysAccepted(const AZ::Vector3& point, const AZ::Aabb& bounds);
-        static bool PointInShape(const AZ::Vector3& point, const AZ::Aabb& bounds);
-
+        // The shape bounds are used for determining the wrapping bounds, and to normalize the UVW results into if requested.
         AZ::Aabb m_shapeBounds = AZ::Aabb::CreateNull();
-        AZ::Matrix3x4 m_shapeTransformInverse = AZ::Matrix3x4::CreateIdentity();
-        AZ::Vector3 m_2dOr3d = AZ::Vector3(1.0f);
+
+        // The relative transform to use for converting from world space to gradient space. We only ever need to use the
+        // inverse transform, so we compute it once and store it instead of keeping the original transform around.
+        // Note that the GradientTransformComponent has many options for choosing which relative space to use for the transform, so
+        // the transform passed in to this class might already have many modifications applied to it.
+        AZ::Matrix3x4 m_inverseTransform = AZ::Matrix3x4::CreateIdentity();
+
+        // This is used as a convenience to either clear or preserve the W component of the output UVW without requiring any
+        // conditional logic.  For 2D gradients, we always return W as 0. For 3D gradients, we provide a valid output W value.
+        AZ::Vector3 m_clearWFor2dGradients = AZ::Vector3(1.0f);
+
+        // Most of the time, the gradient exists everywhere in world space, so we always accept the input point.
+        // The one exception is ClampToZero, which will return that the point is rejected if it falls outside the shape bounds.
+        bool m_alwaysAcceptPoint = true;
+
+        // Apply a scale to the point *after* the wrapping is applied.
         float m_frequencyZoom = 1.0f;
-        TransformFunction m_wrappingTransform = NoTransform;
-        PointAcceptanceFunction m_pointAcceptanceTest = PointAlwaysAccepted;
 
-        // If we normalize the output, we perform an inverse lerp back into the overall shape bounds.
-        // The inverse lerp equation boils down to (point - min) * (1 / (max-min)), so we save off the min bounds
-        // and the (1 / (max-min)) term.
-        // If we're not normalizing the output, min bounds=0 and the reciprocal=1, so the equation just returns the input point.
-        mutable AZ::Vector3 m_normalizeMinBounds = AZ::Vector3(0.0f);
-        mutable AZ::Vector3 m_normalizeExtentsReciprocal = AZ::Vector3(1.0f);
+        // The description of how the gradient repeats itself outside of the shape bounds.
+        WrappingTransformFunction m_wrappingTransform = NoTransform;
 
-        mutable bool m_shouldNormalize = false;
-        WrappingType m_wrappingType = WrappingType::None;
+        // When normalizing the output UVW back into the shape bounds, we perform an inverse lerp.
+        // The inverse lerp equation is (point - min) * (1 / (max-min)), so we save off the (1 / (max-min)) term to avoid
+        // recalculating it on every point.
+        AZ::Vector3 m_normalizeExtentsReciprocal = AZ::Vector3(1.0f);
 
         // To keep things behaving consistently between clamped and unbounded uv ranges, we
         // we want our clamped uvs to use a range of [min, max), so we'll actually clamp to

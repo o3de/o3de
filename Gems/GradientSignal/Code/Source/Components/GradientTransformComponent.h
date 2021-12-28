@@ -101,7 +101,8 @@ namespace GradientSignal
 
         //////////////////////////////////////////////////////////////////////////
         // GradientTransformRequestBus
-        void TransformPositionToUVW(const AZ::Vector3& inPosition, AZ::Vector3& outUVW, const bool shouldNormalizeOutput, bool& wasPointRejected) const override;
+        void TransformPositionToUVW(const AZ::Vector3& inPosition, AZ::Vector3& outUVW, bool& wasPointRejected) const override;
+        void TransformPositionToUVWNormalized(const AZ::Vector3& inPosition, AZ::Vector3& outUVW, bool& wasPointRejected) const override;
         void GetGradientLocalBounds(AZ::Aabb& bounds) const override;
         void GetGradientEncompassingBounds(AZ::Aabb& bounds) const override;
 

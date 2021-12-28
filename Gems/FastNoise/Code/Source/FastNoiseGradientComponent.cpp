@@ -299,9 +299,8 @@ namespace FastNoiseGem
         AZ::Vector3 uvw = sampleParams.m_position;
 
         bool wasPointRejected = false;
-        const bool shouldNormalizeOutput = false;
         GradientSignal::GradientTransformRequestBus::Event(
-            GetEntityId(), &GradientSignal::GradientTransformRequestBus::Events::TransformPositionToUVW, sampleParams.m_position, uvw, shouldNormalizeOutput, wasPointRejected);
+            GetEntityId(), &GradientSignal::GradientTransformRequestBus::Events::TransformPositionToUVW, sampleParams.m_position, uvw, wasPointRejected);
 
         if (!wasPointRejected)
         {
