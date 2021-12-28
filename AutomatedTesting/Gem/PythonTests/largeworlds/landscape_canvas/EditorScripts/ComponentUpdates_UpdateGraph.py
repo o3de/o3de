@@ -108,8 +108,7 @@ def ComponentUpdates_UpdateGraph():
     from editor_python_test_tools.utils import TestHelper as helper
 
     # Open a simple level and instantiate LC_BushFlowerBlender.slice
-    helper.init_idle()
-    helper.open_level("", "Base")
+    hydra.open_base_level()
     transform = math.Transform_CreateIdentity()
     position = math.Vector3(64.0, 64.0, 32.0)
     transform.invoke('SetPosition', position)

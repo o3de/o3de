@@ -58,7 +58,6 @@ def ShapeNodes_EntityCreatedOnNodeAdd():
 
     import editor_python_test_tools.hydra_editor_utils as hydra
     from editor_python_test_tools.utils import Report
-    from editor_python_test_tools.utils import TestHelper as helper
 
     editorId = azlmbr.globals.property.LANDSCAPE_CANVAS_EDITOR_ID
 
@@ -66,10 +65,8 @@ def ShapeNodes_EntityCreatedOnNodeAdd():
         global newEntityId
         newEntityId = parameters[0]
 
-        # Open an existing simple level
-
-    helper.init_idle()
-    helper.open_level("", "Base")
+    # Open an existing simple level
+    hydra.open_base_level()
 
     # Open Landscape Canvas tool and verify
     general.open_pane('Landscape Canvas')

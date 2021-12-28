@@ -60,7 +60,6 @@ def NewGraph_CreatedSuccessfully():
 
     import editor_python_test_tools.hydra_editor_utils as hydra
     from editor_python_test_tools.utils import Report
-    from editor_python_test_tools.utils import TestHelper as helper
 
     editorId = azlmbr.globals.property.LANDSCAPE_CANVAS_EDITOR_ID
 
@@ -69,8 +68,7 @@ def NewGraph_CreatedSuccessfully():
         new_root_entity_id = parameters[0]
 
     # Open an existing simple level
-    helper.init_idle()
-    helper.open_level("", "Base")
+    hydra.open_base_level()
 
     # Listen for entity creation notifications so we can check if the entity created
     # with the new graph has our Landscape Canvas component automatically added
