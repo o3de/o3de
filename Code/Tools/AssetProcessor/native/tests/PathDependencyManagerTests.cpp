@@ -260,6 +260,37 @@ namespace UnitTests
 
     using PathDependencyTests = PathDependencyDeletionTest;
 
+    TEST_F(PathDependencyTests, SourceAndProductHaveSameName_OnlyOneEntryIsSavedToDatabase)
+    {
+        AssetProcessor::PathDependencyManager manager(m_stateData, m_platformConfig.get());
+
+        ScanFolderDatabaseEntry scanFolder("folder", "test", "test", 0);
+        m_stateData->SetScanFolder(scanFolder);
+
+        SourceDatabaseEntry source1, source2;
+        JobDatabaseEntry job1, job2;
+        ProductDatabaseEntry product1, product2;
+
+        Util::CreateSourceJobAndProduct(
+            m_stateData.get(), scanFolder.m_scanFolderID, source1, job1, product1, "source1.txt", "product1.jpg");
+
+        AssetBuilderSDK::ProductPathDependencySet set;
+        set.insert(AssetBuilderSDK::ProductPathDependency("*.xml", AssetBuilderSDK::ProductPathDependencyType::SourceFile));
+
+        manager.SaveUnresolvedDependenciesToDatabase(set, product1, "pc");
+
+        Util::CreateSourceJobAndProduct(
+            m_stateData.get(), scanFolder.m_scanFolderID, source2, job2, product2, "source2.xml", "source2.xml");
+
+        manager.QueueSourceForDependencyResolution(source2);
+        manager.ProcessQueuedDependencyResolves();
+
+        ProductDependencyDatabaseEntryContainer productDependencies;
+        m_stateData->GetProductDependencies(productDependencies);
+
+        EXPECT_EQ(productDependencies.size(), 2);
+    }
+
     TEST_F(PathDependencyTests, Benchmark)
     {
         AssetProcessor::PathDependencyManager manager(m_stateData, m_platformConfig.get());
@@ -322,15 +353,15 @@ namespace UnitTests
         manager.QueueSourceForDependencyResolution(source2);
         manager.ProcessQueuedDependencyResolves();
 
-        ProductDependencyDatabaseEntryContainer unresolvedProductDependencies;
-        m_stateData->GetProductDependencies(unresolvedProductDependencies);
+        ProductDependencyDatabaseEntryContainer productDependencies;
+        m_stateData->GetProductDependencies(productDependencies);
 
         for (int i = 0; i < NumTestDependencies / 2 && i < NumTestProducts; ++i)
         {
             const auto& product = products[i];
             int found = 0;
 
-            for (const auto & unresolvedProductDependency : unresolvedProductDependencies)
+            for (const auto & unresolvedProductDependency : productDependencies)
             {
                 if (unresolvedProductDependency.m_dependencySourceGuid == source2.m_sourceGuid
                     && unresolvedProductDependency.m_dependencySubID == product.m_subID
@@ -353,7 +384,7 @@ namespace UnitTests
             EXPECT_TRUE(found == 2) << product.m_productName.c_str() << " was not found";
         }
 
-        EXPECT_EQ(unresolvedProductDependencies.size(), NumTestDependencies * 2);
+        EXPECT_EQ(productDependencies.size(), NumTestDependencies * 2);
     }
 
 }

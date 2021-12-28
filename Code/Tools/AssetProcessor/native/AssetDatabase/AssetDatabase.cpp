@@ -2313,12 +2313,18 @@ namespace AssetProcessor
             return false;
         }
 
-        bool succeeded = true;
+        ScopedTransaction transaction(m_databaseConnection);
+
         for (auto& entry : container)
         {
-            succeeded &= SetProduct(entry);
+            if(!SetProduct(entry))
+            {
+                return false;
+            }
         }
-        return succeeded;
+
+        transaction.Commit();
+        return true;
     }
 
     //! Clear the products for a given source.  This removes the entry entirely, not just sets it to empty.
