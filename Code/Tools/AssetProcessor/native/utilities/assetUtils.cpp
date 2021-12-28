@@ -873,18 +873,6 @@ namespace AssetUtilities
 
     AZStd::string_view StripAssetPlatformNoCopy(AZStd::string_view relativeProductPath)
     {
-        //static AZStd::unordered_set<AZStd::string> platforms;
-
-        //if (platforms.empty())
-        //{
-        //    auto platformVector = AZ::PlatformHelper::GetPlatformsInterpreted(AZ::PlatformFlags::Platform_ALL);
-
-        //    for (const auto& platform : platformVector)
-        //    {
-        //        platforms.insert(platform);
-        //    }
-        //}
-
         // Skip over the assetPlatform path segment if it is matches one of the platform defaults
         // Otherwise return the path unchanged
 
@@ -900,7 +888,6 @@ namespace AssetUtilities
             AZStd::string_view leftSide{ relativeProductPath.data(), pos };
 
             if (AzFramework::PlatformHelper::GetPlatformIdFromName(leftSide) != AzFramework::PlatformId::Invalid)
-            //if (platforms.contains(leftSide))
             {
                 AZStd::string_view rightSide{ relativeProductPath };
                 // Strip off all previous characters before the delimiter plus the delimiter itself

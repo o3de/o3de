@@ -382,10 +382,7 @@ namespace AssetProcessor
         MapSet exclusionMaps = PopulateExclusionMaps();
 
         AZStd::string sourceNameWithScanFolder = ToScanFolderPrefixedPath(aznumeric_cast<int>(sourceEntry.m_scanFolderPK), sourceEntry.m_sourceName.c_str());
-        AZStd::string sanitizedSourceName = sourceEntry.m_sourceName;
-
         SanitizeForDatabase(sourceNameWithScanFolder);
-        SanitizeForDatabase(sanitizedSourceName);
 
         // We're using a set to make sure we don't save any duplicates.  This can happen if the source/product name are the same for example
         AZStd::unordered_set<AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry> dependencyContainer;
