@@ -2958,12 +2958,25 @@ namespace AssetProcessor
 
         for(auto& entry : container)
         {
-            if (!s_InsertProductDependencyQuery.BindAndStep(
-                    *m_databaseConnection, entry.m_productPK, entry.m_dependencySourceGuid, entry.m_dependencySubID,
-                    entry.m_dependencyFlags.to_ullong(), entry.m_platform.c_str(), entry.m_unresolvedPath.c_str(), entry.m_dependencyType,
-                    entry.m_fromAssetId))
+            if(entry.m_productDependencyID == InvalidEntryId)
             {
-                return false;
+                if (!s_InsertProductDependencyQuery.BindAndStep(
+                        *m_databaseConnection, entry.m_productPK, entry.m_dependencySourceGuid, entry.m_dependencySubID,
+                        entry.m_dependencyFlags.to_ullong(), entry.m_platform.c_str(), entry.m_unresolvedPath.c_str(),
+                        entry.m_dependencyType, entry.m_fromAssetId))
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                if(!s_UpdateProductDependencyQuery.BindAndStep(
+                    *m_databaseConnection, entry.m_productPK, entry.m_dependencySourceGuid, entry.m_dependencySubID,
+                    entry.m_dependencyFlags.to_ullong(), entry.m_platform.c_str(), entry.m_unresolvedPath.c_str(),
+                    entry.m_productDependencyID, entry.m_dependencyType, entry.m_fromAssetId))
+                {
+                    return false;
+                }
             }
         }
 

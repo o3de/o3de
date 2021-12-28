@@ -19,10 +19,11 @@ namespace AssetProcessor
 {
     void SanitizeForDatabase(AZStd::string& str)
     {
+        AZStd::to_lower(str.begin(), str.end());
+
         // Not calling normalize because wildcards should be preserved.
         if (AZ::StringFunc::Contains(str, AZ_WRONG_DATABASE_SEPARATOR, true))
         {
-            AZStd::to_lower(str.begin(), str.end());
             AZStd::replace(str.begin(), str.end(), AZ_WRONG_DATABASE_SEPARATOR, AZ_CORRECT_DATABASE_SEPARATOR);
             AzFramework::StringFunc::Replace(str, AZ_DOUBLE_CORRECT_DATABASE_SEPARATOR, AZ_CORRECT_DATABASE_SEPARATOR_STRING);
         }
@@ -409,7 +410,7 @@ namespace AssetProcessor
             SaveResolvedDependencies(sourceEntry, exclusionMaps, sourceNameWithScanFolder, pair.second, searchEntry->m_path, isSourceDependency, matchedProducts, dependencyContainer);
         }
 
-        // Save everything to the db
+        // Save everything to the db, this will update matched non-wildcard dependencies and add new records for wildcard matches
         if (!m_stateData->UpdateProductDependencies(dependencyContainer))
         {
             AZ_Error("PathDependencyManager", false, "Failed to update product dependencies");
