@@ -18,16 +18,22 @@ namespace GradientSignal
         float frequencyZoom, GradientSignal::WrappingType wrappingType)
         : m_shapeBounds(shapeBounds)
         , m_inverseTransform(transform.GetInverseFull())
-        , m_clearWFor2dGradients(1.0f, 1.0f, use3d ? 1.0f : 0.0f)
         , m_frequencyZoom(frequencyZoom)
         , m_wrappingTransform(NoTransform)
         , m_alwaysAcceptPoint(true)
     {
+        // If we want this to be a 2D gradient lookup, we always want to set the W result in the output to 0.
+        // The easiest / cheapest way to make this happen is just to clear out the third row in the inverseTransform.
+        if (!use3d)
+        {
+            m_inverseTransform.SetRow(2, AZ::Vector4::CreateZero());
+        }
+
+        // Set up the appropriate wrapping transform function for the the given wrapping type.
+        // Also note that ClampToZero is the only wrapping type that allows us to return a "pointIsRejected" result
+        // for points that fall outside the shape bounds.
         if (m_shapeBounds.IsValid())
         {
-            // all wrap types and transformations are applied after the coordinate is transformed into shape relative space
-            // this allows all calculations to be simplified and done using the shapes untransformed aabb
-            // outputting a value that can be used to sample a gradient in its local space
             switch (wrappingType)
             {
             default:
@@ -59,7 +65,7 @@ namespace GradientSignal
     void GradientTransform::TransformPositionToUVW(const AZ::Vector3& inPosition, AZ::Vector3& outUVW, bool& wasPointRejected) const
     {
         // Transform coordinate into "local" relative space of shape bounds, and set W to 0 if this is a 2D gradient.
-        outUVW = m_inverseTransform * inPosition * m_clearWFor2dGradients;
+        outUVW = m_inverseTransform * inPosition;
 
         // For most wrapping types, we always accept the point, but for ClampToZero we only accept it if it's within
         // the shape bounds. We don't use m_shapeBounds.Contains() here because Contains() is inclusive on all edges.
@@ -108,26 +114,35 @@ namespace GradientSignal
 
     AZ::Vector3 GradientTransform::GetMirroredPointInAabb(const AZ::Vector3& point, const AZ::Aabb& bounds)
     {
+        /* For mirroring, we want to produce the following pattern:
+        *   [min, max) : value
+        *   [max, min) : max - value - epsilon
+        *   [min, max) : value
+        *   [max, min) : max - value - epsilon
+        *   ...
+        *   The epsilon is because we always want to keep our output values in the [min, max) range.  We apply the epsilon to all
+        *   the mirrored values so that we get consistent spacing between the values.
+        */
+
         auto GetMirror = [](float value, float min, float max) -> float
         {
+            // To calculate the mirror value, we move our value into relative space of [0, rangeX2), then use
+            // the first half of the range for our "[min, max)" range, and the second half for our "[max, min)" mirrored range.
+
             float relativeValue = value - min;
             float range = max - min;
             float rangeX2 = range * 2.0f;
-            if (relativeValue < 0.0)
-            {
-                relativeValue = rangeX2 - fmod(-relativeValue, rangeX2);
-            }
-            else
-            {
-                relativeValue = fmod(relativeValue, rangeX2);
-            }
+
+            // A positive relativeValue will produce a value of [0, rangeX2) from a single mod, but a negative relativeValue
+            // will produce a value of (-rangeX2, 0]. Adding rangeX2 to the result and taking the mod again puts us back in
+            // the range of [0, rangeX2) for both negative and positive values. This keeps our mirroring pattern consistent and
+            // unbroken across both negative and positive coordinate space.
+            relativeValue = AZ::Mod(AZ::Mod(relativeValue, rangeX2) + rangeX2, rangeX2);
+
+            // [range, rangeX2) is our mirrored range, so flip the value when we're in this range and apply the epsilon so that
+            // we never return the max value, and so that our mirrored values have consistent spacing in the results.
             if (relativeValue >= range)
             {
-                // Since we want our uv range to stay in the [min, max) range,
-                // it means that for mirroring, we want both the "forward" values
-                // and the "mirrored" values to be in [0, range).  We don't want
-                // relativeValue == range, so we shift relativeValue by a small epsilon
-                // in the mirrored case.
                 relativeValue = rangeX2 - (relativeValue + UvEpsilon);
             }
 

@@ -70,6 +70,13 @@ namespace GradientSignal
          */
         void TransformPositionToUVWNormalized(const AZ::Vector3& inPosition, AZ::Vector3& outUVW, bool& wasPointRejected) const;
 
+        // To keep things behaving consistently between clamped and unbounded uv ranges, we
+        // we want our clamped uvs to use a range of [min, max), so we'll actually clamp to
+        // [min, max - epsilon]. Since our floating-point numbers are likely in the
+        // -16384 to 16384 range, an epsilon of 0.001 will work without rounding to 0.
+        // (This is public so that it can be used from unit tests for validating results)
+        static constexpr float UvEpsilon = 0.001f;
+
     private:
 
         // These are the various transformations that will be performed, based on wrapping type.
@@ -90,10 +97,6 @@ namespace GradientSignal
         // the transform passed in to this class might already have many modifications applied to it.
         AZ::Matrix3x4 m_inverseTransform = AZ::Matrix3x4::CreateIdentity();
 
-        // This is used as a convenience to either clear or preserve the W component of the output UVW without requiring any
-        // conditional logic.  For 2D gradients, we always return W as 0. For 3D gradients, we provide a valid output W value.
-        AZ::Vector3 m_clearWFor2dGradients = AZ::Vector3(1.0f);
-
         // Most of the time, the gradient exists everywhere in world space, so we always accept the input point.
         // The one exception is ClampToZero, which will return that the point is rejected if it falls outside the shape bounds.
         bool m_alwaysAcceptPoint = true;
@@ -108,12 +111,6 @@ namespace GradientSignal
         // The inverse lerp equation is (point - min) * (1 / (max-min)), so we save off the (1 / (max-min)) term to avoid
         // recalculating it on every point.
         AZ::Vector3 m_normalizeExtentsReciprocal = AZ::Vector3(1.0f);
-
-        // To keep things behaving consistently between clamped and unbounded uv ranges, we
-        // we want our clamped uvs to use a range of [min, max), so we'll actually clamp to
-        // [min, max - epsilon]. Since our floating-point numbers are likely in the
-        // -16384 to 16384 range, an epsilon of 0.001 will work without rounding to 0.
-        static constexpr float UvEpsilon = 0.001f;
     };
 
 } // namespace GradientSignal

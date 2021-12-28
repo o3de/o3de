@@ -11,6 +11,7 @@ set(FILES
     Tests/GradientSignalReferencesTests.cpp
     Tests/GradientSignalServicesTests.cpp
     Tests/GradientSignalSurfaceTests.cpp
+    Tests/GradientSignalTransformTests.cpp
     Tests/GradientSignalTestMocks.h
     Tests/GradientSignalTest.cpp
     Tests/ImageAssetTests.cpp
