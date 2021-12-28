@@ -260,20 +260,6 @@ namespace UnitTests
 
     using PathDependencyTests = PathDependencyDeletionTest;
 
-    //struct PathDependencyTests : PathDependencyDeletionTest
-    //{
-    //    void SetUp() override
-    //    {
-    //        PathDependencyDeletionTest::SetUp();
-
-
-    //    }
-    //    void TearDown() override
-    //    {
-    //        PathDependencyDeletionTest::TearDown();
-    //    }
-    //};
-
     TEST_F(PathDependencyTests, Benchmark)
     {
         AssetProcessor::PathDependencyManager manager(m_stateData, m_platformConfig.get());
@@ -281,22 +267,34 @@ namespace UnitTests
         ScanFolderDatabaseEntry scanFolder("folder", "test", "test", 0);
         m_stateData->SetScanFolder(scanFolder);
 
-        SourceDatabaseEntry source1, source2;
-        JobDatabaseEntry job1, job2;
-        ProductDatabaseEntry product1, product2;
+        SourceDatabaseEntry source1, source2, source4;
+        JobDatabaseEntry job1, job2, job4;
+        ProductDatabaseEntry product1, product2, product4;
 
         Util::CreateSourceJobAndProduct(
             m_stateData.get(), scanFolder.m_scanFolderID, source1, job1, product1, "source1.txt", "product1.jpg");
+
+        Util::CreateSourceJobAndProduct(
+            m_stateData.get(), scanFolder.m_scanFolderID, source4, job4, product4, "source4.txt", "product4.jpg");
 
         constexpr int NumTestDependencies = 4000;
         constexpr int NumTestProducts = 10000;
 
         ProductDependencyDatabaseEntryContainer dependencies;
-        for (int i = 0; i < NumTestDependencies; ++i)
+        for (int i = 0; i < NumTestDependencies / 2; ++i)
         {
             dependencies.emplace_back(product1.m_productID, AZ::Uuid::CreateNull(), 0, 0, "pc", 0, AZStd::string::format("folder/folder2/%d_*2.jpg", i).c_str());
             ++i;
             dependencies.emplace_back(product1.m_productID, AZ::Uuid::CreateNull(), 0, 0, "mac", 0, AZStd::string::format("folder/folder2/%d_*2.jpg", i).c_str());
+        }
+
+        for (int i = 0; i < NumTestDependencies / 2; ++i)
+        {
+            dependencies.emplace_back(
+                product4.m_productID, AZ::Uuid::CreateNull(), 0, 0, "pc", 0, AZStd::string::format("folder/folder2/%d_*2.jpg", i).c_str());
+            ++i;
+            dependencies.emplace_back(
+                product4.m_productID, AZ::Uuid::CreateNull(), 0, 0, "mac", 0, AZStd::string::format("folder/folder2/%d_*2.jpg", i).c_str());
         }
 
         m_stateData->SetProductDependencies(dependencies);
@@ -327,22 +325,35 @@ namespace UnitTests
         ProductDependencyDatabaseEntryContainer unresolvedProductDependencies;
         m_stateData->GetProductDependencies(unresolvedProductDependencies);
 
-        //for (const auto & product : products)
-        //{
-        //    bool found = false;
+        for (int i = 0; i < NumTestDependencies / 2 && i < NumTestProducts; ++i)
+        {
+            const auto& product = products[i];
+            int found = 0;
 
-        //    for (const auto & unresolvedProductDependency : unresolvedProductDependencies)
-        //    {
-        //        if (unresolvedProductDependency.m_dependencySourceGuid == source2.m_sourceGuid
-        //            && unresolvedProductDependency.m_dependencySubID == product.m_subID)
-        //        {
-        //            found = true;
-        //        }
-        //    }
+            for (const auto & unresolvedProductDependency : unresolvedProductDependencies)
+            {
+                if (unresolvedProductDependency.m_dependencySourceGuid == source2.m_sourceGuid
+                    && unresolvedProductDependency.m_dependencySubID == product.m_subID
+                    && unresolvedProductDependency.m_productPK == product1.m_productID)
+                {
+                    ++found;
+                }
 
-        //    EXPECT_TRUE(found);
-        //}
+                if (unresolvedProductDependency.m_dependencySourceGuid == source2.m_sourceGuid &&
+                    unresolvedProductDependency.m_dependencySubID == product.m_subID &&
+                    unresolvedProductDependency.m_productPK == product4.m_productID)
+                {
+                    ++found;
+                }
+
+                if (found == 2)
+                    break;
+            }
+
+            EXPECT_TRUE(found == 2) << product.m_productName.c_str() << " was not found";
+        }
 
         EXPECT_EQ(unresolvedProductDependencies.size(), NumTestDependencies * 2);
     }
+
 }

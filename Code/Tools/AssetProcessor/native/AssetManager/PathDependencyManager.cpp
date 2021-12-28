@@ -58,8 +58,6 @@ namespace AssetProcessor
         });
 
         // Build up a list of all the paths we need to search for: products + 2 variations of the source path
-        //AZStd::vector<AZStd::pair<AZ::s64, AZStd::string>> searchPaths;
-
         AZStd::vector<SearchEntry> searches;
 
         for (const auto& entry : queuedForResolve)
@@ -71,10 +69,6 @@ namespace AssetProcessor
 
                 // strip path of the <platform>/
                 AZStd::string_view result = AssetUtilities::StripAssetPlatformNoCopy(productName);
-                //AZ::IO::FixedMaxPathString strippedPath = AZ::IO::FixedMaxPathString(result.data(), result.size());
-                //SanitizeForDatabase(strippedPath);
-
-                //searchPaths.push_back({entry.m_sourceID, strippedPath});
                 searches.emplace_back(result, false, &entry, &productEntry);
             }
 
@@ -86,8 +80,6 @@ namespace AssetProcessor
             SanitizeForDatabase(sourceNameWithScanFolder);
             SanitizeForDatabase(sanitizedSourceName);
 
-            //searchPaths.push_back({entry.m_sourceID, sourceNameWithScanFolder});
-            //searchPaths.push_back({entry.m_sourceID, sanitizedSourceName});
             searches.emplace_back(sourceNameWithScanFolder, true, &entry, nullptr);
             searches.emplace_back(sanitizedSourceName, true, &entry, nullptr);
         }
@@ -96,7 +88,7 @@ namespace AssetProcessor
         m_stateData->GetUnresolvedProductDependencies(unresolvedDependencies);
 
         AZStd::recursive_mutex mapMutex;
-        // Map of <Source PK => Map of <Matched Source path => Product Dependency>>
+        // Map of <Source PK => Map of <Matched SearchEntry => Product Dependency>>
         AZStd::unordered_map<AZ::s64, AZStd::unordered_map<const SearchEntry*, AZStd::unordered_set<AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry>>> map;
 
         // For every search path we created, we're going to see if it matches up against any of the unresolved dependencies
@@ -380,7 +372,7 @@ namespace AssetProcessor
             }
         }
     }
-#pragma optimize("", off)
+
     void PathDependencyManager::RetryDeferredDependencies(const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry,
         const AZStd::unordered_map<const SearchEntry*, AZStd::unordered_set<AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry>>& matches,
         const AZStd::vector<AzToolsFramework::AssetDatabase::ProductDatabaseEntry>& products)
@@ -411,65 +403,6 @@ namespace AssetProcessor
             else
             {
                 matchedProducts.push_back(*searchEntry->m_productEntry);
-//
-//                for (const auto& productEntry : products)
-//                {
-//                    const AZStd::string& productName = productEntry.m_productName;
-//
-//
-//                    // strip path of the leading asset platform /<platform>
-//#define OLD_CODE
-//#ifdef OLD_CODE
-//                    AZStd::string_view result = AssetUtilities::StripAssetPlatformNoCopy(productName);
-//                    AZ::IO::FixedMaxPathString strippedPath(result.data(), result.size());
-//                    //SanitizeForDatabase(strippedPath);
-//#else
-//                    AZStd::string_view strippedPath(AssetUtilities::StripAssetPlatformNoCopy(productName));
-//
-//                    AZStd::fixed_vector<char, 1024> dataBuffer(strippedPath.size());
-//                    AZStd::fixed_vector<char, 1024> cleanedDataBuffer(strippedPath.size());
-//
-//                    memcpy_s(dataBuffer.data(), dataBuffer.size(), strippedPath.data(), strippedPath.size());
-//                    AZStd::to_lower(dataBuffer.begin(), dataBuffer.end());
-//                    AZStd::replace(dataBuffer.begin(), dataBuffer.end(), AZ_WRONG_DATABASE_SEPARATOR, AZ_CORRECT_DATABASE_SEPARATOR);
-//                    //AZ::StringFunc::Replace();
-//
-//                    char* readPos = dataBuffer.data();
-//                    char* writePos = cleanedDataBuffer.data();
-//                    char* strchr1 = strchr(dataBuffer.data(), AZ_CORRECT_DATABASE_SEPARATOR);
-//                    while (strchr1 != nullptr)
-//                    {
-//                        auto index = strchr1 - readPos + 1; // +1 to include separator
-//                        memcpy_s(writePos, cleanedDataBuffer.size(), readPos, index);
-//                        writePos += index;
-//                        readPos += index;
-//
-//                        if (*readPos == AZ_CORRECT_DATABASE_SEPARATOR)
-//                        {
-//                            ++readPos;
-//                        }
-//
-//                        strchr1 = strchr(readPos, AZ_CORRECT_DATABASE_SEPARATOR);
-//                    }
-//
-//                    memcpy_s(writePos, cleanedDataBuffer.size(), readPos, dataBuffer.end() - readPos);
-//
-//                    void* stringEnd = memchr(cleanedDataBuffer.data(), '\0', cleanedDataBuffer.size());
-//
-//                    if(stringEnd == nullptr)
-//                    {
-//                        stringEnd = cleanedDataBuffer.end();
-//                    }
-//
-//                    strippedPath = AZStd::string_view(cleanedDataBuffer.data(), static_cast<char*>(stringEnd) - cleanedDataBuffer.data());
-//#endif
-//
-//
-//                    if (strippedPath == matchedPath)
-//                    {
-//                        matchedProducts.push_back(productEntry);
-//                    }
-//                }
             }
 
             // Go through each dependency we're resolving and create a db entry for each product that resolved it (wildcard/source dependencies will generally create more than 1)
@@ -487,7 +420,7 @@ namespace AssetProcessor
             NotifyResolvedDependencies(dependencyContainer);
         }
     }
-#pragma optimize("", on)
+
     void CleanupPathDependency(AssetBuilderSDK::ProductPathDependency& pathDependency)
     {
         if (pathDependency.m_dependencyType == AssetBuilderSDK::ProductPathDependencyType::SourceFile)
