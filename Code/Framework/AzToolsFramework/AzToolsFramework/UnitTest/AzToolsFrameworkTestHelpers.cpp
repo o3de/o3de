@@ -30,8 +30,7 @@ namespace UnitTest
     void MousePressAndMove(
         QWidget* widget, const QPoint& initialPositionWidget, const QPoint& mouseDelta, const Qt::MouseButton mouseButton)
     {
-        QPoint position = widget->mapToGlobal(initialPositionWidget);
-        QTest::mousePress(widget, mouseButton, Qt::NoModifier, position);
+        QTest::mousePress(widget, mouseButton, Qt::NoModifier, initialPositionWidget);
 
         MouseMove(widget, initialPositionWidget, mouseDelta, mouseButton);
     }
@@ -55,6 +54,7 @@ namespace UnitTest
         QMouseEvent mouseMoveEvent(
             QEvent::MouseMove, QPointF(nextLocalPosition), QPointF(nextGlobalPosition), Qt::NoButton, mouseButton, Qt::NoModifier);
         QApplication::sendEvent(widget, &mouseMoveEvent);
+        QApplication::processEvents();
     }
 
     void MouseScroll(QWidget* widget, QPoint localEventPosition, QPoint wheelDelta,
