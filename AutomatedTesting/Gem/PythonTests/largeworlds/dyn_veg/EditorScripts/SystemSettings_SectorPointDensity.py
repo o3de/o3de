@@ -47,8 +47,7 @@ def SystemSettings_SectorPointDensity():
     INSTANCE_COUNT_AFTER_DENSITY_CHANGE = 100
 
     # Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     general.set_current_view_position(512.0, 480.0, 38.0)
 

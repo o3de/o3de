@@ -51,22 +51,18 @@ def AltitudeFilter_ComponentAndOverrides_InstancesPlantAtSpecifiedAltitude():
 
     import os
 
-    import azlmbr.asset as asset
     import azlmbr.editor as editor
     import azlmbr.legacy.general as general
     import azlmbr.bus as bus
     import azlmbr.math as math
-    import azlmbr.prefab as prefab
 
     import editor_python_test_tools.hydra_editor_utils as hydra
-    from editor_python_test_tools.prefab_utils import Prefab
     from largeworlds.large_worlds_utils import editor_dynveg_test_helper as dynveg
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
 
     # 1) Open an existing simple level
-    helper.init_idle()
-    helper.open_level("", "Base")
+    hydra.open_base_level()
 
     # Set view of planting area for visual debugging
     general.set_current_view_position(512.0, 500.0, 38.0)

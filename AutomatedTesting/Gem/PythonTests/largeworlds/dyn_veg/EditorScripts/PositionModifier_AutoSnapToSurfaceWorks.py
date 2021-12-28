@@ -64,8 +64,7 @@ def PositionModifier_AutoSnapToSurfaceWorks():
                                'Configuration|Position Z|Range Min', 'Configuration|Position Z|Range Max']
 
     # 1) Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     # Set view of planting area for visual debugging
     general.set_current_view_position(512.0, 500.0, 38.0)
