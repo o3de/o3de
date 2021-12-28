@@ -53,8 +53,7 @@ def MeshBlocker_InstancesBlockedByMeshHeightTuning():
     from editor_python_test_tools.utils import TestHelper as helper
 
     # 1) Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     general.set_current_view_position(500.49, 498.69, 46.66)
     general.set_current_view_rotation(-42.05, 0.00, -36.33)

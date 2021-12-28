@@ -55,8 +55,7 @@ def PhysXColliderSurfaceTagEmitter_E2E_Editor():
         return behavior_context_test_success
 
     # Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     # Verify all of the BehaviorContext API:
     behavior_context = (

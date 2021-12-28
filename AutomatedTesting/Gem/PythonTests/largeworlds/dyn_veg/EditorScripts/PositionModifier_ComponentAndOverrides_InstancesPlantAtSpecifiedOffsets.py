@@ -102,8 +102,7 @@ def PositionModifier_ComponentAndOverrides_InstancesPlantAtSpecifiedOffsets():
         return offset_success and offset_success2
 
     # 1) Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     # Set view of planting area for visual debugging
     general.set_current_view_position(16.0, -5.0, 32.0)

@@ -52,8 +52,7 @@ def LayerSpawner_InheritBehaviorFlag():
         entity_obj.get_set_test(2, "Configuration|Embedded Assets|[0]", descriptor)
 
     # Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     general.set_current_view_position(512.0, 480.0, 38.0)
 

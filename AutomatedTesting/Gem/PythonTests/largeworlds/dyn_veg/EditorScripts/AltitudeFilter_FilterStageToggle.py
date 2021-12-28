@@ -32,9 +32,7 @@ def AltitudeFilter_FilterStageToggle():
     import os
 
     import azlmbr.legacy.general as general
-    import azlmbr.bus as bus
     import azlmbr.math as math
-    import azlmbr.prefab as prefab
 
     import editor_python_test_tools.hydra_editor_utils as hydra
     from largeworlds.large_worlds_utils import editor_dynveg_test_helper as dynveg
@@ -45,8 +43,7 @@ def AltitudeFilter_FilterStageToggle():
     POSTPROCESS_INSTANCE_COUNT = 34
 
     # Open an existing simple level
-    helper.init_idle()
-    helper.open_level("", "Base")
+    hydra.open_base_level()
     general.set_current_view_position(512.0, 480.0, 38.0)
 
     # Create basic vegetation entity
