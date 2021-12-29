@@ -114,6 +114,7 @@ public Q_SLOTS:
     void HighlightAsset(QString assetPath);
 
     void OnAssetTabChange(int index);
+    void BuilderTabSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
 
 protected Q_SLOTS:
     void ApplyConfig();
