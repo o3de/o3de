@@ -66,7 +66,7 @@ def AssetWeightSelector_InstancesExpressBasedOnWeight():
     # valid slice entity, and one set to None
     spawner_center_point = math.Vector3(512.0, 512.0, 32.0)
     pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
-    pink_flower_prefab = dynveg.create_temp_mesh_prefab(pink_flower_asset_path, "temp_PinkFlower")[0]
+    pink_flower_prefab = dynveg.create_temp_mesh_prefab(pink_flower_asset_path, "AssetWeight_PinkFlower")[0]
     spawner_entity = dynveg.create_temp_prefab_vegetation_area("Instance Spawner", spawner_center_point, 16.0, 16.0, 16.0,
                                                                pink_flower_prefab)
     desc_asset = hydra.get_component_property_value(spawner_entity.components[2],
