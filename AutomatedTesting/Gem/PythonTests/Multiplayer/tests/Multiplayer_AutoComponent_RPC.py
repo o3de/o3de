@@ -63,8 +63,14 @@ def Multiplayer_AutoComponent_RPC():
 
         # 4) Check the editor logs for expected and unexpected log output
         PLAYERID_RPC_WAIT_TIME_SECONDS = 1.0  # The player id is sent from the server as soon as the player script is spawned. 1 second should be more than enough time to send/receive that RPC.
-        helper.wait_for_critical_expected_line('EditorServer', 'Script: AutoComponent_RPC: Sending client PlayerNumber 1', section_tracer.prints, PLAYERID_RPC_WAIT_TIME_SECONDS)
-        helper.wait_for_critical_expected_line('Script', "AutoComponent_RPC: I'm Player #1", section_tracer.prints, PLAYERID_RPC_WAIT_TIME_SECONDS)
+        helper.succeed_if_log_line_found('EditorServer', 'Script: AutoComponent_RPC: Sending client PlayerNumber 1', section_tracer.prints, PLAYERID_RPC_WAIT_TIME_SECONDS)
+        helper.succeed_if_log_line_found('Script', "AutoComponent_RPC: I'm Player #1", section_tracer.prints, PLAYERID_RPC_WAIT_TIME_SECONDS)
+
+        # Uncomment once editor game-play mode supports level entities with net-binding
+        #PLAYFX_RPC_WAIT_TIME_SECONDS = 1.1  # The server will send an RPC to play an fx on the client every second.
+        #helper.succeed_if_log_line_found('EditorServer', "Script: AutoComponent_RPC_NetLevelEntity Activated on entity: NetLevelEntity", section_tracer.prints, PLAYFX_RPC_WAIT_TIME_SECONDS)
+        #helper.succeed_if_log_line_found('EditorServer', "Script: AutoComponent_RPC_NetLevelEntity: Authority sending RPC to play some fx.", section_tracer.prints, PLAYFX_RPC_WAIT_TIME_SECONDS)
+        #helper.succeed_if_log_line_found('Script', "AutoComponent_RPC_NetLevelEntity: I'm a client playing some superficial fx.", section_tracer.prints, PLAYFX_RPC_WAIT_TIME_SECONDS)
 
     
     # Exit game mode
