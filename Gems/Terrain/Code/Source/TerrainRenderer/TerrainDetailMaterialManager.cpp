@@ -11,6 +11,7 @@
 
 #include <AzCore/Console/Console.h>
 
+#include <Atom/RPI.Public/Image/AttachmentImagePool.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
 
