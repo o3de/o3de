@@ -73,6 +73,7 @@ namespace PhysX::Utils::Characters
         physx::PxMaterial* pxMaterial = static_cast<physx::PxMaterial*>(materials.front()->GetNativePointer());
 
         controllerDesc.material = pxMaterial;
+        controllerDesc.position = PxMathConvertExtended(characterConfig.m_position);
         controllerDesc.slopeLimit = cosf(AZ::DegToRad(characterConfig.m_maximumSlopeAngle));
         controllerDesc.stepOffset = characterConfig.m_stepHeight;
         controllerDesc.upDirection = characterConfig.m_upDirection.IsZero()
@@ -95,7 +96,6 @@ namespace PhysX::Utils::Characters
 
             controllerDesc.scaleCoeff = extendedConfig.m_scaleCoefficient;
             controllerDesc.contactOffset = extendedConfig.m_contactOffset;
-            controllerDesc.position = PxMathConvertExtended(extendedConfig.m_position);
             controllerDesc.nonWalkableMode = extendedConfig.m_slopeBehaviour == SlopeBehaviour::PreventClimbing
                 ? physx::PxControllerNonWalkableMode::ePREVENT_CLIMBING
                 : physx::PxControllerNonWalkableMode::ePREVENT_CLIMBING_AND_FORCE_SLIDING;
