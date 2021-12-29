@@ -47,6 +47,23 @@ namespace GradientSignal
             float frequencyZoom,
             GradientSignal::WrappingType wrappingType);
 
+       bool operator==(const GradientTransform& rhs) const
+        {
+            return (
+                (m_shapeBounds == rhs.m_shapeBounds) &&
+                (m_inverseTransform == rhs.m_inverseTransform) &&
+                (m_alwaysAcceptPoint == rhs.m_alwaysAcceptPoint) &&
+                (m_frequencyZoom == rhs.m_frequencyZoom) &&
+                (m_wrappingType == rhs.m_wrappingType) &&
+                (m_normalizeExtentsReciprocal == rhs.m_normalizeExtentsReciprocal));
+        }
+
+        bool operator!=(const GradientTransform& rhs) const
+        {
+            return !(*this == rhs);
+        }
+ 
+
         /**
          * Transform the given world space position to a gradient space UVW lookup value.
          * \param inPosition The input world space position to transform.
@@ -105,6 +122,7 @@ namespace GradientSignal
         float m_frequencyZoom = 1.0f;
 
         // The description of how the gradient repeats itself outside of the shape bounds.
+        WrappingType m_wrappingType = WrappingType::None;
         WrappingTransformFunction m_wrappingTransform = NoTransform;
 
         // When normalizing the output UVW back into the shape bounds, we perform an inverse lerp.

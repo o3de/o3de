@@ -19,6 +19,7 @@ namespace GradientSignal
         : m_shapeBounds(shapeBounds)
         , m_inverseTransform(transform.GetInverseFull())
         , m_frequencyZoom(frequencyZoom)
+        , m_wrappingType(wrappingType)
         , m_wrappingTransform(NoTransform)
         , m_alwaysAcceptPoint(true)
     {
