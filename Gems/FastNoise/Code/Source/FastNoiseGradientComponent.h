@@ -12,6 +12,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
+#include <GradientSignal/Ebuses/GradientTransformRequestBus.h>
 #include <FastNoise/Ebuses/FastNoiseGradientRequestBus.h>
 
 #include <External/FastNoise/FastNoise.h>
@@ -67,6 +68,7 @@ namespace FastNoiseGem
         : public AZ::Component
         , private GradientSignal::GradientRequestBus::Handler
         , private FastNoiseGradientRequestBus::Handler
+        , private GradientSignal::GradientTransformNotificationBus::Handler
     {
     public:
         friend class EditorFastNoiseGradientComponent;
@@ -94,6 +96,12 @@ namespace FastNoiseGem
     protected:
         FastNoiseGradientConfig m_configuration;
         FastNoise m_generator;
+        GradientSignal::GradientTransform m_gradientTransform;
+        mutable AZStd::shared_mutex m_transformMutex;
+
+        /////////////////////////////////////////////////////////////////////////
+        // GradientTransformNotificationBus overrides
+        void OnGradientTransformChanged(const GradientSignal::GradientTransform& newTransform) override;
 
         /////////////////////////////////////////////////////////////////////////
         // FastNoiseGradientRequest overrides

@@ -249,6 +249,9 @@ namespace FastNoiseGem
 
     void FastNoiseGradientComponent::Activate()
     {
+        // This will immediately call OnGradientTransformChanged and initialize m_gradientTransform.
+        GradientSignal::GradientTransformNotificationBus::Handler::BusConnect(GetEntityId());
+
         // Some platforms require random seeds to be > 0.  Clamp to a positive range to ensure we're always safe.
         m_generator.SetSeed(AZ::GetMax(m_configuration.m_seed, 1));
         m_generator.SetFrequency(m_configuration.m_frequency);
@@ -272,6 +275,7 @@ namespace FastNoiseGem
     {
         GradientSignal::GradientRequestBus::Handler::BusDisconnect();
         FastNoiseGradientRequestBus::Handler::BusDisconnect();
+        GradientSignal::GradientTransformNotificationBus::Handler::BusDisconnect();
     }
 
     bool FastNoiseGradientComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
@@ -294,13 +298,20 @@ namespace FastNoiseGem
         return false;
     }
 
+    void FastNoiseGradientComponent::OnGradientTransformChanged(const GradientSignal::GradientTransform& newTransform)
+    {
+        AZStd::unique_lock<decltype(m_transformMutex)> lock(m_transformMutex);
+        m_gradientTransform = newTransform;
+    }
+
     float FastNoiseGradientComponent::GetValue(const GradientSignal::GradientSampleParams& sampleParams) const
     {
+        AZStd::shared_lock<decltype(m_transformMutex)> lock(m_transformMutex);
+
         AZ::Vector3 uvw = sampleParams.m_position;
 
         bool wasPointRejected = false;
-        GradientSignal::GradientTransformRequestBus::Event(
-            GetEntityId(), &GradientSignal::GradientTransformRequestBus::Events::TransformPositionToUVW, sampleParams.m_position, uvw, wasPointRejected);
+        m_gradientTransform.TransformPositionToUVW(sampleParams.m_position, uvw, wasPointRejected);
 
         if (!wasPointRejected)
         {

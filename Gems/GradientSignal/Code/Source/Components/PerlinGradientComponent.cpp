@@ -138,6 +138,9 @@ namespace GradientSignal
 
     void PerlinGradientComponent::Activate()
     {
+        // This will immediately call OnGradientTransformChanged and initialize m_gradientTransform.
+        GradientTransformNotificationBus::Handler::BusConnect(GetEntityId());
+
         m_perlinImprovedNoise.reset(aznew PerlinImprovedNoise(AZ::GetMax(m_configuration.m_randomSeed, 1)));
         GradientRequestBus::Handler::BusConnect(GetEntityId());
         PerlinGradientRequestBus::Handler::BusConnect(GetEntityId());
@@ -148,6 +151,7 @@ namespace GradientSignal
         m_perlinImprovedNoise.reset();
         GradientRequestBus::Handler::BusDisconnect();
         PerlinGradientRequestBus::Handler::BusDisconnect();
+        GradientTransformNotificationBus::Handler::BusDisconnect();
     }
 
     bool PerlinGradientComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
@@ -170,17 +174,22 @@ namespace GradientSignal
         return false;
     }
 
+    void PerlinGradientComponent::OnGradientTransformChanged(const GradientTransform& newTransform)
+    {
+        AZStd::unique_lock<decltype(m_transformMutex)> lock(m_transformMutex);
+        m_gradientTransform = newTransform;
+    }
+
     float PerlinGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
-
         if (m_perlinImprovedNoise)
         {
+            AZStd::shared_lock<decltype(m_transformMutex)> lock(m_transformMutex);
+
             AZ::Vector3 uvw = sampleParams.m_position;
 
             bool wasPointRejected = false;
-            GradientTransformRequestBus::Event(
-                GetEntityId(), &GradientTransformRequestBus::Events::TransformPositionToUVW, sampleParams.m_position, uvw, wasPointRejected);
+            m_gradientTransform.TransformPositionToUVW(sampleParams.m_position, uvw, wasPointRejected);
 
             if (!wasPointRejected)
             {

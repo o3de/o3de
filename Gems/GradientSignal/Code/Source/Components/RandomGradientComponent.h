@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/Component.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
+#include <GradientSignal/Ebuses/GradientTransformRequestBus.h>
 #include <GradientSignal/Ebuses/RandomGradientRequestBus.h>
 
 namespace LmbrCentral
@@ -38,6 +39,7 @@ namespace GradientSignal
         : public AZ::Component
         , private GradientRequestBus::Handler
         , private RandomGradientRequestBus::Handler
+        , private GradientTransformNotificationBus::Handler
     {
     public:
         template<typename, typename> friend class LmbrCentral::EditorWrappedComponentBase;
@@ -64,6 +66,12 @@ namespace GradientSignal
 
     private:
         RandomGradientConfig m_configuration;
+        GradientTransform m_gradientTransform;
+        mutable AZStd::shared_mutex m_transformMutex;
+
+        /////////////////////////////////////////////////////////////////////////
+        // GradientTransformNotificationBus overrides
+        void OnGradientTransformChanged(const GradientTransform& newTransform) override;
 
         /////////////////////////////////////////////////////////////////////////
         // RandomGradientRequest overrides

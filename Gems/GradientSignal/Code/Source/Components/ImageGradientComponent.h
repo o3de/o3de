@@ -11,6 +11,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
+#include <GradientSignal/Ebuses/GradientTransformRequestBus.h>
 #include <GradientSignal/Ebuses/ImageGradientRequestBus.h>
 #include <GradientSignal/ImageAsset.h>
 #include <GradientSignal/Util.h>
@@ -46,6 +47,7 @@ namespace GradientSignal
         , private AZ::Data::AssetBus::Handler
         , private GradientRequestBus::Handler
         , private ImageGradientRequestBus::Handler
+        , private GradientTransformNotificationBus::Handler
     {
     public:
         template<typename, typename> friend class LmbrCentral::EditorWrappedComponentBase;
@@ -77,6 +79,9 @@ namespace GradientSignal
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
     protected:
+        /////////////////////////////////////////////////////////////////////////
+        // GradientTransformNotificationBus overrides
+        void OnGradientTransformChanged(const GradientTransform& newTransform) override;
 
         void SetupDependencies();
 
@@ -95,5 +100,6 @@ namespace GradientSignal
         ImageGradientConfig m_configuration;
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
         mutable AZStd::shared_mutex m_imageMutex;
+        GradientTransform m_gradientTransform;
     };
 }

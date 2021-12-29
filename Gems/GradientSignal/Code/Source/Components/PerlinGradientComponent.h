@@ -12,6 +12,7 @@
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
+#include <GradientSignal/Ebuses/GradientTransformRequestBus.h>
 #include <GradientSignal/Ebuses/PerlinGradientRequestBus.h>
 #include <GradientSignal/PerlinImprovedNoise.h>
 
@@ -47,6 +48,7 @@ namespace GradientSignal
         : public AZ::Component
         , private GradientRequestBus::Handler
         , private PerlinGradientRequestBus::Handler
+        , private GradientTransformNotificationBus::Handler
     {
     public:
         template<typename, typename> friend class LmbrCentral::EditorWrappedComponentBase;
@@ -74,6 +76,12 @@ namespace GradientSignal
     private:
         PerlinGradientConfig m_configuration;
         AZStd::unique_ptr<PerlinImprovedNoise> m_perlinImprovedNoise;
+        GradientTransform m_gradientTransform;
+        mutable AZStd::shared_mutex m_transformMutex;
+
+        /////////////////////////////////////////////////////////////////////////
+        // GradientTransformNotificationBus overrides
+        void OnGradientTransformChanged(const GradientTransform& newTransform) override;
 
         /////////////////////////////////////////////////////////////////////////
         //PerlinGradientRequest overrides
