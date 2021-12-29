@@ -151,6 +151,7 @@
 #include <Editor/QtMetaTypes.h>
 #include <GraphCanvas/Components/SceneBus.h>
 
+#include <Editor/LyViewPaneNames.h>
 
 namespace ScriptCanvasEditor
 {

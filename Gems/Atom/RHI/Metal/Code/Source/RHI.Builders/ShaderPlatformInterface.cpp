@@ -347,7 +347,7 @@ namespace AZ
             // spirv cross compiler executable
             static const char* spirvCrossRelativePath = "Builders/SPIRVCross/spirv-cross";
            
-            AZStd::string spirvCrossCommandOptions = AZStd::string::format("--msl --msl-version 20100 --msl-argument-buffers --msl-decoration-binding --msl-texture-buffer-native --output \"%s\" \"%s\"", shaderMSLOutputFile.c_str(), shaderSpirvOutputFile.c_str());
+            AZStd::string spirvCrossCommandOptions = AZStd::string::format("--msl --msl-version 20100 --msl-invariant-float-math --msl-argument-buffers --msl-decoration-binding --msl-texture-buffer-native --output \"%s\" \"%s\"", shaderMSLOutputFile.c_str(), shaderSpirvOutputFile.c_str());
             
             // Run spirv cross
             if (!RHI::ExecuteShaderCompiler(spirvCrossRelativePath, spirvCrossCommandOptions, shaderSpirvOutputFile, "SpirvCross"))
@@ -426,6 +426,8 @@ namespace AZ
             //Debug symbols are always enabled at the moment. Need to turn them off for optimized shader assets. 
             AZStd::string shaderDebugInfo = "-gline-tables-only -MO";
 
+            AZStd::string shaderMslToAirOptions = "-fpreserve-invariance";
+
             //Apply the correct platform sdk option
             AZStd::string platformSdk = "macosx";
             if (platform.HasTag("mobile"))
@@ -434,7 +436,7 @@ namespace AZ
             }
             
             //Convert to air file
-            AZStd::string mslToAirCommandOptions = AZStd::string::format("-sdk %s metal \"%s\" %s -c -o \"%s\"", platformSdk.c_str(), inputMetalFile.c_str(), shaderDebugInfo.c_str(), outputAirFile.c_str());
+            AZStd::string mslToAirCommandOptions = AZStd::string::format("-sdk %s metal \"%s\" %s %s -c -o \"%s\"", platformSdk.c_str(), inputMetalFile.c_str(), shaderDebugInfo.c_str(), shaderMslToAirOptions.c_str(), outputAirFile.c_str());
             
             if (!RHI::ExecuteShaderCompiler("/usr/bin/xcrun", mslToAirCommandOptions, inputMetalFile, "MslToAir"))
             {

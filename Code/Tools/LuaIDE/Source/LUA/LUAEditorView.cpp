@@ -964,9 +964,11 @@ namespace LUAEditor
         int endLine;
         auto newText = AcumulateSelectedLines(startLine, endLine, callable);
 
-        SetSelection(startLine, 0, endLine + 1, 0);
+        SetSelection(startLine + 1, 0, endLine + 2, 0);
+        RemoveSelectedText();
+        SetCursorPosition(startLine + 1, 0);
         ReplaceSelectedText(newText);
-        SetSelection(startLine, 0, endLine + 1, 0);
+        SetSelection(startLine + 1, 0, endLine + 1, INT_MAX);
     }
 
     void LUAViewWidget::CommentSelectedLines()
@@ -1002,21 +1004,30 @@ namespace LUAEditor
     {
         int startLine;
         int endLine;
-        auto newText = AcumulateSelectedLines(startLine, endLine, [&](QString& newText, QTextBlock& block)
+        auto currText = AcumulateSelectedLines(startLine, endLine, [&](QString& newText, QTextBlock& block)
                 {
             newText.append(block.text());
             newText.append("\n");
         });
+        currText.remove(currText.count() - 1, 1);
+
         if (startLine == 0)
         {
             return;
         }
-
-        SetSelection(startLine - 1, INT_MAX, endLine, INT_MAX);
+        auto upText = GetLineText(startLine -1);
+        SetSelection(startLine, 0, startLine, INT_MAX);
         RemoveSelectedText();
-        SetCursorPosition(startLine - 1, 0);
-        ReplaceSelectedText(newText);
-        SetSelection(startLine - 1, 0, endLine - 1, INT_MAX);
+        SetSelection(startLine + 1, 0, endLine + 1, INT_MAX);
+        RemoveSelectedText();
+
+        SetCursorPosition(startLine , 0);
+        ReplaceSelectedText(currText);
+
+        SetCursorPosition(endLine + 1, 0);
+        ReplaceSelectedText(upText);
+
+        SetSelection(startLine, 0, endLine, INT_MAX);
     }
 
     void LUAViewWidget::MoveSelectedLinesDn()
@@ -1040,11 +1051,11 @@ namespace LUAEditor
             newText.prepend("\n");
         }
 
-        SetSelection(startLine, 0, endLine + 1, 0);
+        SetSelection(startLine + 1, 0, endLine + 2, 0);
         RemoveSelectedText();
-        SetCursorPosition(startLine + 1, 0);
+        SetCursorPosition(startLine + 2, 0);
         ReplaceSelectedText(newText);
-        SetSelection(startLine + 1, 0, endLine + 1, INT_MAX);
+        SetSelection(startLine + 2, 0, endLine + 2, INT_MAX);
     }
 
     void LUAViewWidget::SetReadonly(bool readonly)

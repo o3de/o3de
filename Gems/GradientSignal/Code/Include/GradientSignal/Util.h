@@ -14,11 +14,6 @@
 #include <AzCore/Math/Transform.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 
-namespace LmbrCentral
-{
-    class MeshAsset;
-}
-
 namespace GradientSignal
 {
     enum class WrappingType : AZ::u8

@@ -25,10 +25,12 @@ bool TerrainLayerPriorityComparator::operator()(const AZ::EntityId& layer1id, co
 {
     // Comparator for insertion/keylookup.
     // Sorts into layer/priority order, highest priority first.
-    AZ::u32 priority1, layer1;
+    AZ::u32 priority1 = 0;
+    AZ::u32 layer1 = 0;
     Terrain::TerrainSpawnerRequestBus::Event(layer1id, &Terrain::TerrainSpawnerRequestBus::Events::GetPriority, layer1, priority1);
 
-    AZ::u32 priority2, layer2;
+    AZ::u32 priority2 = 0;
+    AZ::u32 layer2 = 0;
     Terrain::TerrainSpawnerRequestBus::Event(layer2id, &Terrain::TerrainSpawnerRequestBus::Events::GetPriority, layer2, priority2);
 
     if (layer1 < layer2)
@@ -80,7 +82,7 @@ void TerrainSystem::Activate()
     m_requestedSettings.m_systemActive = true;
 
     {
-        AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
+        AZStd::unique_lock<AZStd::shared_mutex> lock(m_areaMutex);
         m_registeredAreas.clear();
     }
 
@@ -109,7 +111,7 @@ void TerrainSystem::Deactivate()
     AzFramework::Terrain::TerrainDataRequestBus::Handler::BusDisconnect();
 
     {
-        AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
+        AZStd::unique_lock<AZStd::shared_mutex> lock(m_areaMutex);
         m_registeredAreas.clear();
     }
 
@@ -163,8 +165,7 @@ void TerrainSystem::ClampPosition(float x, float y, AZ::Vector2& outPosition, AZ
 
 bool TerrainSystem::InWorldBounds(float x, float y) const
 {
-    const float zTestValue = m_currentSettings.m_worldBounds.GetMin().GetX() +
-        ((m_currentSettings.m_worldBounds.GetMax().GetX() - m_currentSettings.m_worldBounds.GetMin().GetX()) / 2.0f);
+    const float zTestValue = m_currentSettings.m_worldBounds.GetMin().GetZ();
     const AZ::Vector3 testValue{ x, y, zTestValue };
     if (m_currentSettings.m_worldBounds.Contains(testValue))
     {
