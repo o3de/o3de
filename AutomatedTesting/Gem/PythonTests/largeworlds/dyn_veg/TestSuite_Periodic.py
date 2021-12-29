@@ -19,21 +19,6 @@ from base import TestAutomationBase
 
 
 @pytest.fixture
-def remove_test_slice(request, workspace, project):
-    file_system.delete([os.path.join(workspace.paths.engine_root(), project, "slices", "TestSlice_1.slice")], True,
-                       True)
-    file_system.delete([os.path.join(workspace.paths.engine_root(), project, "slices", "TestSlice_2.slice")], True,
-                       True)
-
-    def teardown():
-        file_system.delete([os.path.join(workspace.paths.engine_root(), project, "slices", "TestSlice_1.slice")], True,
-                           True)
-        file_system.delete([os.path.join(workspace.paths.engine_root(), project, "slices", "TestSlice_2.slice")], True,
-                           True)
-    request.addfinalizer(teardown)
-
-
-@pytest.fixture
 def remote_console_instance(request):
     console = RemoteConsole()
 
@@ -54,12 +39,12 @@ class TestAutomation(TestAutomationBase):
         from .EditorScripts import AltitudeFilter_ComponentAndOverrides_InstancesPlantAtSpecifiedAltitude as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    def test_AltitudeFilter_ShapeSample_InstancesPlantAtSpecifiedAltitude(self, request, workspace, editor, launcher_platform):
-        from .EditorScripts import AltitudeFilter_ShapeSample_InstancesPlantAtSpecifiedAltitude as test_module
-        self._run_test(request, workspace, editor, test_module)
-
     def test_AltitudeFilter_FilterStageToggle(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import AltitudeFilter_FilterStageToggle as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_AltitudeFilter_ShapeSample_InstancesPlantAtSpecifiedAltitude(self, request, workspace, editor, launcher_platform):
+        from .EditorScripts import AltitudeFilter_ShapeSample_InstancesPlantAtSpecifiedAltitude as test_module
         self._run_test(request, workspace, editor, test_module)
 
     def test_AssetListCombiner_CombinedDescriptorsExpressInConfiguredArea(self, request, workspace, editor, launcher_platform):
@@ -105,118 +90,105 @@ class TestAutomation(TestAutomationBase):
         from .EditorScripts import LayerSpawner_InstancesRefreshUsingCorrectViewportCamera as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    def test_SpawnerSlices_SliceCreationAndVisibilityToggleWorks(self, request, workspace, editor, remove_test_slice, launcher_platform):
-        from .EditorScripts import SpawnerSlices_SliceCreationAndVisibilityToggleWorks as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
-
-    def test_SurfaceDataRefreshes_RemainsStable(self, request, workspace, editor, launcher_platform):
-        from .EditorScripts import SurfaceDataRefreshes_RemainsStable as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
-
-    def test_VegetationInstances_DespawnWhenOutOfRange(self, request, workspace, editor, launcher_platform):
-        from .EditorScripts import VegetationInstances_DespawnWhenOutOfRange as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     def test_MeshBlocker_InstancesBlockedByMesh(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import MeshBlocker_InstancesBlockedByMesh as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     def test_MeshBlocker_InstancesBlockedByMeshHeightTuning(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import MeshBlocker_InstancesBlockedByMeshHeightTuning as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     def test_MeshSurfaceTagEmitter_DependentOnMeshComponent(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import MeshSurfaceTagEmitter_DependentOnMeshComponent as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     def test_MeshSurfaceTagEmitter_SurfaceTagsAddRemoveSuccessfully(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import MeshSurfaceTagEmitter_SurfaceTagsAddRemoveSuccessfully as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     def test_PhysXColliderSurfaceTagEmitter_E2E_Editor(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import PhysXColliderSurfaceTagEmitter_E2E_Editor as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
-
-    def test_PositionModifier_ComponentAndOverrides_InstancesPlantAtSpecifiedOffsets(self, request, workspace, editor, launcher_platform):
-        from .EditorScripts import PositionModifier_ComponentAndOverrides_InstancesPlantAtSpecifiedOffsets as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     def test_PositionModifier_AutoSnapToSurfaceWorks(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import PositionModifier_AutoSnapToSurfaceWorks as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_PositionModifier_ComponentAndOverrides_InstancesPlantAtSpecifiedOffsets(self, request, workspace, editor, launcher_platform):
+        from .EditorScripts import PositionModifier_ComponentAndOverrides_InstancesPlantAtSpecifiedOffsets as test_module
+        self._run_test(request, workspace, editor, test_module)
 
     def test_RotationModifier_InstancesRotateWithinRange(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import RotationModifier_InstancesRotateWithinRange as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     def test_RotationModifierOverrides_InstancesRotateWithinRange(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import RotationModifierOverrides_InstancesRotateWithinRange as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     def test_ScaleModifier_InstancesProperlyScale(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import ScaleModifier_InstancesProperlyScale as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     def test_ScaleModifierOverrides_InstancesProperlyScale(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import ScaleModifierOverrides_InstancesProperlyScale as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
-
-    def test_ShapeIntersectionFilter_InstancesPlantInAssignedShape(self, request, workspace, editor, launcher_platform):
-        from .EditorScripts import ShapeIntersectionFilter_InstancesPlantInAssignedShape as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     def test_ShapeIntersectionFilter_FilterStageToggle(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import ShapeIntersectionFilter_FilterStageToggle as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module, batch_mode=False, use_null_renderer=False)
+
+    def test_ShapeIntersectionFilter_InstancesPlantInAssignedShape(self, request, workspace, editor, launcher_platform):
+        from .EditorScripts import ShapeIntersectionFilter_InstancesPlantInAssignedShape as test_module
+        self._run_test(request, workspace, editor, test_module)
 
     def test_SlopeAlignmentModifier_InstanceSurfaceAlignment(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import SlopeAlignmentModifier_InstanceSurfaceAlignment as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     def test_SlopeAlignmentModifierOverrides_InstanceSurfaceAlignment(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import SlopeAlignmentModifierOverrides_InstanceSurfaceAlignment as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
-
-    def test_SurfaceMaskFilter_BasicSurfaceTagCreation(self, request, workspace, editor, launcher_platform):
-        from .EditorScripts import SurfaceMaskFilter_BasicSurfaceTagCreation as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
-
-    def test_SurfaceMaskFilter_ExclusiveSurfaceTags_Function(self, request, workspace, editor, launcher_platform):
-        from .EditorScripts import SurfaceMaskFilter_ExclusionList as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
-
-    def test_SurfaceMaskFilter_InclusiveSurfaceTags_Function(self, request, workspace, editor, launcher_platform):
-        from .EditorScripts import SurfaceMaskFilter_InclusionList as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
-
-    def test_SurfaceMaskFilterOverrides_MultipleDescriptorOverridesPlantAsExpected(self, request, workspace, editor, launcher_platform):
-        from .EditorScripts import SurfaceMaskFilterOverrides_MultipleDescriptorOverridesPlantAsExpected as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
-
-    def test_SystemSettings_SectorPointDensity(self, request, workspace, editor, launcher_platform):
-        from .EditorScripts import SystemSettings_SectorPointDensity as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
-
-    def test_SystemSettings_SectorSize(self, request, workspace, editor, launcher_platform):
-        from .EditorScripts import SystemSettings_SectorSize as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     def test_SlopeFilter_ComponentAndOverrides_InstancesPlantOnValidSlopes(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import SlopeFilter_ComponentAndOverrides_InstancesPlantOnValidSlope as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_SpawnerPrefabs_PrefabCreationAndVisibilityToggleWorks(self, request, workspace, editor, launcher_platform):
+        from .EditorScripts import SpawnerPrefabs_PrefabCreationAndVisibilityToggleWorks as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_SurfaceDataRefreshes_RemainsStable(self, request, workspace, editor, launcher_platform):
+        from .EditorScripts import SurfaceDataRefreshes_RemainsStable as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_SurfaceMaskFilter_BasicSurfaceTagCreation(self, request, workspace, editor, launcher_platform):
+        from .EditorScripts import SurfaceMaskFilter_BasicSurfaceTagCreation as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_SurfaceMaskFilter_ExclusiveSurfaceTags_Function(self, request, workspace, editor, launcher_platform):
+        from .EditorScripts import SurfaceMaskFilter_ExclusionList as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_SurfaceMaskFilter_InclusiveSurfaceTags_Function(self, request, workspace, editor, launcher_platform):
+        from .EditorScripts import SurfaceMaskFilter_InclusionList as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_SurfaceMaskFilterOverrides_MultipleDescriptorOverridesPlantAsExpected(self, request, workspace, editor, launcher_platform):
+        from .EditorScripts import SurfaceMaskFilterOverrides_MultipleDescriptorOverridesPlantAsExpected as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_SystemSettings_SectorPointDensity(self, request, workspace, editor, launcher_platform):
+        from .EditorScripts import SystemSettings_SectorPointDensity as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_SystemSettings_SectorSize(self, request, workspace, editor, launcher_platform):
+        from .EditorScripts import SystemSettings_SectorSize as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_VegetationInstances_DespawnWhenOutOfRange(self, request, workspace, editor, launcher_platform):
+        from .EditorScripts import VegetationInstances_DespawnWhenOutOfRange as test_module
+        self._run_test(request, workspace, editor, test_module)
 
 
 @pytest.mark.SUITE_periodic
@@ -235,6 +207,7 @@ class TestAutomationE2E(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.parametrize("launcher_platform", ['windows'])
+    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/4170")
     def test_PrefabInstanceSpawner_Embedded_E2E_Launcher(self, workspace, launcher, level,
                                                                remote_console_instance, project, launcher_platform):
 
@@ -256,6 +229,7 @@ class TestAutomationE2E(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.parametrize("launcher_platform", ['windows'])
+    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/4170")
     def test_PrefabInstanceSpawner_External_E2E_Launcher(self, workspace, launcher, level,
                                                                remote_console_instance, project, launcher_platform):
 
@@ -277,7 +251,7 @@ class TestAutomationE2E(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.parametrize("launcher_platform", ['windows'])
-    @pytest.mark.xfail(reason="https://github.com/o3de/o3de/issues/4170")
+    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/4170")
     def test_LayerBlender_E2E_Launcher(self, workspace, launcher, level,
                                                                remote_console_instance, project, launcher_platform):
 

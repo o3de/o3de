@@ -188,6 +188,23 @@ def create_blocker_area(name, center_point, box_size_x, box_size_y, box_size_z):
     return blocker_entity
 
 
+def create_empty_vegetation_area(name, center_point, box_size_x, box_size_y, box_size_z):
+    # Create a vegetation area entity to use as our test vegetation spawner
+    spawner_entity = EditorEntity.create_editor_entity_at(center_point, name=name)
+    spawner_entity.add_components(["Vegetation Layer Spawner", "Box Shape", "Vegetation Asset List"])
+    if spawner_entity.id.IsValid():
+        print(f"'{spawner_entity.get_name()}' created")
+    spawner_entity.components[1].set_component_property_value("Box Shape|Box Configuration|Dimensions",
+                                                              math.Vector3(box_size_x, box_size_y, box_size_z))
+
+    # Set the vegetation area to an empty spawner
+    empty_spawner = vegetation.EmptyInstanceSpawner()
+    descriptor = spawner_entity.components[2].get_component_property_value("Configuration|Embedded Assets|[0]")
+    descriptor.spawner = empty_spawner
+    spawner_entity.components[2].set_component_property_value("Configuration|Embedded Assets|[0]", descriptor)
+    return spawner_entity
+
+
 def validate_instance_count(center, radius, num_expected):
     # Verify that we have the correct number of instances in the given area. This creates a bounding box based on a
     # sphere radius
