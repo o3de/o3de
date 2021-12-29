@@ -101,7 +101,8 @@ namespace GradientSignal
 
         //////////////////////////////////////////////////////////////////////////
         // GradientTransformRequestBus
-        void TransformPositionToUVW(const AZ::Vector3& inPosition, AZ::Vector3& outUVW, const bool shouldNormalizeOutput, bool& wasPointRejected) const override;
+        void TransformPositionToUVW(const AZ::Vector3& inPosition, AZ::Vector3& outUVW, bool& wasPointRejected) const override;
+        void TransformPositionToUVWNormalized(const AZ::Vector3& inPosition, AZ::Vector3& outUVW, bool& wasPointRejected) const override;
         void GetGradientLocalBounds(AZ::Aabb& bounds) const override;
         void GetGradientEncompassingBounds(AZ::Aabb& bounds) const override;
 
@@ -172,5 +173,6 @@ namespace GradientSignal
         AZ::Matrix3x4 m_shapeTransformInverse = AZ::Matrix3x4::CreateIdentity();
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
         AZStd::atomic_bool m_dirty{ false };
+        GradientTransform m_gradientTransform;
     };
 } //namespace GradientSignal

@@ -27,7 +27,8 @@ namespace GradientSignal
 
         virtual ~GradientTransformRequests() = default;
 
-        virtual void TransformPositionToUVW(const AZ::Vector3& inPosition, AZ::Vector3& outUVW, const bool shouldNormalizeOutput, bool& wasPointRejected) const = 0;
+        virtual void TransformPositionToUVW(const AZ::Vector3& inPosition, AZ::Vector3& outUVW, bool& wasPointRejected) const = 0;
+        virtual void TransformPositionToUVWNormalized(const AZ::Vector3& inPosition, AZ::Vector3& outUVW, bool& wasPointRejected) const = 0;
         virtual void GetGradientLocalBounds(AZ::Aabb& bounds) const = 0;
         virtual void GetGradientEncompassingBounds(AZ::Aabb& bounds) const = 0;
     };

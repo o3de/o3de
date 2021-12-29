@@ -179,9 +179,8 @@ namespace GradientSignal
             AZ::Vector3 uvw = sampleParams.m_position;
 
             bool wasPointRejected = false;
-            const bool shouldNormalizeOutput = false;
             GradientTransformRequestBus::Event(
-                GetEntityId(), &GradientTransformRequestBus::Events::TransformPositionToUVW, sampleParams.m_position, uvw, shouldNormalizeOutput, wasPointRejected);
+                GetEntityId(), &GradientTransformRequestBus::Events::TransformPositionToUVW, sampleParams.m_position, uvw, wasPointRejected);
 
             if (!wasPointRejected)
             {
