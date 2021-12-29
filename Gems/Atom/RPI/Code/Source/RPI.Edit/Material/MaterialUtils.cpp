@@ -150,7 +150,6 @@ namespace AZ
 
                 return shouldFinalize;
             }
-
         }
     }
 }
