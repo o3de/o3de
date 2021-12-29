@@ -32,9 +32,6 @@
 
 #include <QElapsedTimer>
 
-//! Amount of time to wait between checking the status of the AssetBuilder process
-static const int s_MaximumSleepTimeMS = 10;
-
 //! CreateJobs will wait up to 2 minutes before timing out
 //! This shouldn't need to be so high but very large slices can take a while to process currently
 //! This should be reduced down to something more reasonable after slice jobs are sped up
