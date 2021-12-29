@@ -24,8 +24,6 @@ class ConnectionManager;
 class IniConfiguration;
 class ApplicationServer;
 class FileServer;
-class ShaderCompilerManager;
-class ShaderCompilerModel;
 
 namespace AssetProcessor
 {
@@ -47,8 +45,6 @@ public:
     ApplicationManager::BeforeRunStatus BeforeRun() override;
     IniConfiguration* GetIniConfiguration() const;
     FileServer* GetFileServer() const;
-    ShaderCompilerManager* GetShaderCompilerManager() const;
-    ShaderCompilerModel* GetShaderCompilerModel() const;
 
     bool Run() override;
     ////////////////////////////////////////////////////
@@ -95,8 +91,7 @@ private:
 
     IniConfiguration* m_iniConfiguration = nullptr;
     FileServer* m_fileServer = nullptr;
-    ShaderCompilerManager* m_shaderCompilerManager = nullptr;
-    ShaderCompilerModel* m_shaderCompilerModel = nullptr;
+
     QFileSystemWatcher m_qtFileWatcher;
     AZ::UserSettingsProvider m_localUserSettings;
     bool m_messageBoxIsVisible = false;
