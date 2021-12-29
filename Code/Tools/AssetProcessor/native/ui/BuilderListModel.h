@@ -9,8 +9,6 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QAbstractListModel>
-#include <AzCore/Interface/Interface.h>
-#include <utilities/BuilderInterface.h>
 #endif
 
 struct BuilderListModel : QAbstractListModel
