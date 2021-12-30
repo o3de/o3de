@@ -277,6 +277,7 @@ namespace GradientSignal
     void GradientTransformComponent::Activate()
     {
         m_dirty = false;
+        m_gradientTransform = GradientTransform();
 
         // Update our GradientTransform to be configured correctly.  We don't need to notify dependents of the change though.
         // If anyone is listening, they're already getting notified below.
@@ -297,6 +298,7 @@ namespace GradientSignal
     void GradientTransformComponent::Deactivate()
     {
         m_dirty = false;
+        m_gradientTransform = GradientTransform();
 
         m_dependencyMonitor.Reset();
         GradientTransformRequestBus::Handler::BusDisconnect();
