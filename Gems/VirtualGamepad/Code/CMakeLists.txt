@@ -21,7 +21,7 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             Legacy::CryCommon
-            Gem::LyShine
+            Gem::LyShine.Clients.API
 )
 
 ly_add_target(

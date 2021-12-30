@@ -9,6 +9,7 @@
 
 #include <AzCore/Math/Vector2.h>
 #include <LyShine/UiBase.h>
+#include <Atom/RPI.Reflect/Image/Image.h>
 
 class IDraw2d;
 class ISprite;
@@ -81,6 +82,9 @@ public:
 
     //! Check if a sprite's texture asset exists. The .sprite sidecar file is optional and is not checked
     virtual bool DoesSpriteTextureAssetExist(const AZStd::string& pathname) = 0;
+
+    //! Load an image asset by texture pathname
+    virtual AZ::Data::Instance<AZ::RPI::Image> LoadTexture(const AZStd::string& pathName) = 0;
 
     //! Perform post-initialization (script system will be available)
     virtual void PostInit() = 0;

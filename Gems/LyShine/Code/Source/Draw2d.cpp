@@ -6,7 +6,7 @@
  *
  */
 
-#include <LyShine/Draw2d.h>
+#include "Draw2d.h"
 #include <LyShine/UiRenderFormats.h>
 #include "LyShinePassDataBus.h"
 
@@ -208,7 +208,7 @@ void CDraw2d::DrawImageAligned(AZ::Data::Instance<AZ::RPI::Image> image, AZ::Vec
     HAlign horizontalAlignment, VAlign verticalAlignment,
     float opacity, float rotation, const AZ::Vector2* minMaxTexCoords, ImageOptions* imageOptions)
 {
-    AZ::Vector2 alignedPosition = Align(position, size, horizontalAlignment, verticalAlignment);
+    AZ::Vector2 alignedPosition = Draw2dHelper::Align(position, size, horizontalAlignment, verticalAlignment);
 
     DrawImage(image, alignedPosition, size, opacity, rotation, &position, minMaxTexCoords, imageOptions);
 }
@@ -516,40 +516,6 @@ void CDraw2d::SetSortKey(int64_t key)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // PUBLIC STATIC FUNCTIONS
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-AZ::Vector2 CDraw2d::Align(AZ::Vector2 position, AZ::Vector2 size,
-    HAlign horizontalAlignment, VAlign verticalAlignment)
-{
-    AZ::Vector2 result = AZ::Vector2::CreateZero();
-    switch (horizontalAlignment)
-    {
-    case HAlign::Left:
-        result.SetX(position.GetX());
-        break;
-    case HAlign::Center:
-        result.SetX(position.GetX() - size.GetX() * 0.5f);
-        break;
-    case HAlign::Right:
-        result.SetX(position.GetX() - size.GetX());
-        break;
-    }
-
-    switch (verticalAlignment)
-    {
-    case VAlign::Top:
-        result.SetY(position.GetY());
-        break;
-    case VAlign::Center:
-        result.SetY(position.GetY() - size.GetY() * 0.5f);
-        break;
-    case VAlign::Bottom:
-        result.SetY(position.GetY() - size.GetY());
-        break;
-    }
-
-    return result;
-}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 AZ::Data::Instance<AZ::RPI::Image> CDraw2d::LoadTexture(const AZStd::string& pathName)
