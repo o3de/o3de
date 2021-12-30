@@ -48,7 +48,7 @@ public:
     //// GradientTransformRequestBus
     const GradientSignal::GradientTransform& GetGradientTransform() const override
     {
-        return {};
+        return m_gradientTransform;
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -97,6 +97,8 @@ public:
 
     bool GetAdvancedMode() const override { return false; }
     void SetAdvancedMode([[maybe_unused]] bool value) override {}
+
+    GradientSignal::GradientTransform m_gradientTransform;
 };
 
 TEST(FastNoiseTest, ComponentsWithComponentApplication)
