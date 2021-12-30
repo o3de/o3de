@@ -33,22 +33,20 @@ class TestAutomation(TestAutomationBase):
     def test_BasicEditorWorkflows_LevelEntityComponentCRUD(self, request, workspace, editor, launcher_platform,
                                                            remove_test_level):
         from .EditorScripts import BasicEditorWorkflows_LevelEntityComponentCRUD as test_module
-        self._run_test(request, workspace, editor, test_module, batch_mode=False, autotest_mode=False, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module, batch_mode=False, autotest_mode=False)
 
     @pytest.mark.REQUIRES_gpu
     def test_BasicEditorWorkflows_GPU_LevelEntityComponentCRUD(self, request, workspace, editor, launcher_platform,
                                                                remove_test_level):
         from .EditorScripts import BasicEditorWorkflows_LevelEntityComponentCRUD as test_module
         self._run_test(request, workspace, editor, test_module, batch_mode=False, autotest_mode=False,
-                       use_null_renderer=False, enable_prefab_system=False)
+                       use_null_renderer=False)
 
-    def test_EntityOutlienr_EntityOrdering(self, request, workspace, editor, launcher_platform):
+    def test_BasicEditorWorkflows_ExistingLevel_EntityComponentCRUD(self, request, workspace, editor,
+                                                                    launcher_platform):
+        from .EditorScripts import BasicEditorWorkflows_ExistingLevel_EntityComponentCRUD as test_module
+        self._run_test(request, workspace, editor, test_module, batch_mode=False, autotest_mode=False)
+
+    def test_EntityOutliner_EntityOrdering(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import EntityOutliner_EntityOrdering as test_module
-        self._run_test(
-            request, 
-            workspace, 
-            editor, 
-            test_module, 
-            batch_mode=False, 
-            autotest_mode=True,
-        )
+        self._run_test(request, workspace, editor, test_module, batch_mode=False)

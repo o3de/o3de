@@ -26,9 +26,9 @@ def Menus_ViewMenuOptions_Work():
     :return: None
     """
 
+    import editor_python_test_tools.hydra_editor_utils as hydra
     import editor_python_test_tools.pyside_utils as pyside_utils
     from editor_python_test_tools.utils import Report
-    from editor_python_test_tools.utils import TestHelper as helper
 
     view_menu_options = [
         ("Center on Selection",),
@@ -45,8 +45,7 @@ def Menus_ViewMenuOptions_Work():
     ]
 
     # 1) Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     # 2) Interact with View Menu options
     editor_window = pyside_utils.get_editor_main_window()

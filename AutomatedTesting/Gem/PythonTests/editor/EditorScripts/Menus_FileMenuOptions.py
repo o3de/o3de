@@ -26,29 +26,27 @@ def Menus_FileMenuOptions_Work():
     :return: None
     """
 
+    import editor_python_test_tools.hydra_editor_utils as hydra
     import editor_python_test_tools.pyside_utils as pyside_utils
     from editor_python_test_tools.utils import Report
-    from editor_python_test_tools.utils import TestHelper as helper
 
     file_menu_options = [
         ("New Level",),
-        ("Open Level",),
+        #("Open Level",),               Temporarily disabled due to https://github.com/o3de/o3de/issues/6605
         ("Import",),
         ("Save",),
-        ("Save As",),
+        #("Save As",),                  Temporarily disabled due to https://github.com/o3de/o3de/issues/6605
         ("Save Level Statistics",),
         ("Edit Project Settings",),
-        ("Edit Platform Settings",),
+        #("Edit Platform Settings",),   Temporarily disabled due to https://github.com/o3de/o3de/issues/6604
         ("New Project",),
         ("Open Project",),
         ("Show Log File",),
-        ("Resave All Slices",),
         ("Exit",),
     ]
 
     # 1) Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     # 2) Interact with File Menu options
     editor_window = pyside_utils.get_editor_main_window()
