@@ -614,7 +614,6 @@ struct SSystemGlobalEnvironment
     ISystem*                   pSystem = nullptr;
     ILog*                      pLog;
     IMovieSystem*              pMovieSystem;
-    ILyShine*                      pLyShine;
     SharedEnvironmentInstance*      pSharedEnvironment;
 
 #if defined(AZ_RESTRICTED_PLATFORM)

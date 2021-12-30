@@ -254,9 +254,9 @@ namespace
 
     UiRenderer* GetUiRendererForGame()
     {
-        if (gEnv && gEnv->pLyShine)
+        if (AZ::Interface<ILyShine>::Get())
         {
-            CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
+            CLyShine* lyShine = static_cast<CLyShine*>(AZ::Interface<ILyShine>::Get());
             return lyShine->GetUiRenderer();
         }
         return nullptr;
@@ -264,9 +264,9 @@ namespace
 
     UiRenderer* GetUiRendererForEditor()
     {
-        if (gEnv && gEnv->pLyShine)
+        if (AZ::Interface<ILyShine>::Get())
         {
-            CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
+            CLyShine* lyShine = static_cast<CLyShine*>(AZ::Interface<ILyShine>::Get());
             return lyShine->GetUiRendererForEditor();
         }
         return nullptr;

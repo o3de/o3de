@@ -473,9 +473,9 @@ public: // static member functions
     //! Helper to get the default IDraw2d interface
     static IDraw2d* GetDefaultDraw2d()
     {
-        if (gEnv && gEnv->pLyShine) // [LYSHINE_ATOM_TODO][GHI #3569] Remove LyShine global interface pointer from legacy global environment
+        if (AZ::Interface<ILyShine>::Get())
         {
-            IDraw2d* draw2d = gEnv->pLyShine->GetDraw2d();
+            IDraw2d* draw2d = AZ::Interface<ILyShine>::Get()->GetDraw2d();
             return reinterpret_cast<IDraw2d*>(draw2d);
         }
 

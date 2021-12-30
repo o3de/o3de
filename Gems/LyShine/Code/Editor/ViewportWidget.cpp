@@ -181,7 +181,7 @@ namespace
         EBUS_EVENT_ID_RESULT(handled, canvasEntityId, UiCanvasBus, HandleInputEvent, inputSnapshot, viewportPos, activeModifierKeys);
 
         // Execute events that have been queued during the input event handler
-        gEnv->pLyShine->ExecuteQueuedEvents();
+        AZ::Interface<ILyShine>::Get()->ExecuteQueuedEvents();
 
         return handled;
     }
@@ -192,7 +192,7 @@ namespace
         EBUS_EVENT_ID_RESULT(handled, canvasEntityId, UiCanvasBus, HandleTextEvent, textUTF8);
 
         // Execute events that have been queued during the input event handler
-        gEnv->pLyShine->ExecuteQueuedEvents();
+        AZ::Interface<ILyShine>::Get()->ExecuteQueuedEvents();
 
         return handled;
     }
@@ -265,7 +265,7 @@ ViewportWidget::~ViewportWidget()
 
     // Notify LyShine that this is no longer a valid UiRenderer.
     // Only one viewport/renderer is currently supported in the UI Editor
-    CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
+    CLyShine* lyShine = static_cast<CLyShine*>(AZ::Interface<ILyShine>::Get());
     lyShine->SetUiRendererForEditor(nullptr);
 }
 
@@ -276,7 +276,7 @@ void ViewportWidget::InitUiRenderer()
     // Notify LyShine that this is the UiRenderer to be used for rendering
     // UI canvases that are loaded in the UI Editor.
     // Only one viewport/renderer is currently supported in the UI Editor
-    CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
+    CLyShine* lyShine = static_cast<CLyShine*>(AZ::Interface<ILyShine>::Get());
     lyShine->SetUiRendererForEditor(m_uiRenderer);
 
     m_draw2d = AZStd::make_shared<CDraw2d>(GetViewportContext());
@@ -1103,7 +1103,7 @@ void ViewportWidget::UpdatePreviewMode(float deltaTime)
         EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, UpdateCanvasInEditorViewport, deltaTime, true);
 
         // Execute events that have been queued during the canvas update
-        gEnv->pLyShine->ExecuteQueuedEvents();
+        AZ::Interface<ILyShine>::Get()->ExecuteQueuedEvents();
     }
 }
 
