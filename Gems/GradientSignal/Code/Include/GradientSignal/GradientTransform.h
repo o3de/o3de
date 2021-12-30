@@ -111,7 +111,6 @@ namespace GradientSignal
     private:
 
         //! These are the various transformations that will be performed, based on wrapping type.
-        using WrappingTransformFunction = AZStd::function<AZ::Vector3(const AZ::Vector3& point, const AZ::Aabb& bounds)>;
         static AZ::Vector3 NoTransform(const AZ::Vector3& point, const AZ::Aabb& bounds);
         static AZ::Vector3 GetUnboundedPointInAabb(const AZ::Vector3& point, const AZ::Aabb& bounds);
         static AZ::Vector3 GetClampedPointInAabb(const AZ::Vector3& point, const AZ::Aabb& bounds);
@@ -144,7 +143,6 @@ namespace GradientSignal
 
         //! How the gradient should repeat itself outside of the shape bounds.
         WrappingType m_wrappingType = WrappingType::None;
-        WrappingTransformFunction m_wrappingTransform = NoTransform;
 
         /**
          * Cached reciprocal for performing an inverse lerp back to shape bounds.

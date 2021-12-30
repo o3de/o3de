@@ -20,7 +20,6 @@ namespace GradientSignal
         , m_inverseTransform(transform.GetInverseFull())
         , m_frequencyZoom(frequencyZoom)
         , m_wrappingType(wrappingType)
-        , m_wrappingTransform(NoTransform)
         , m_alwaysAcceptPoint(true)
     {
         // If we want this to be a 2D gradient lookup, we always want to set the W result in the output to 0.
@@ -30,31 +29,17 @@ namespace GradientSignal
             m_inverseTransform.SetRow(2, AZ::Vector4::CreateZero());
         }
 
-        // Set up the appropriate wrapping transform function for the the given wrapping type.
-        // Also note that ClampToZero is the only wrapping type that allows us to return a "pointIsRejected" result
-        // for points that fall outside the shape bounds.
-        if (m_shapeBounds.IsValid())
+        // If we have invalid shape bounds, reset the wrapping type back to None. Wrapping won't work without valid bounds.
+        if (!m_shapeBounds.IsValid())
         {
-            switch (wrappingType)
-            {
-            default:
-            case WrappingType::None:
-                m_wrappingTransform = GetUnboundedPointInAabb;
-                break;
-            case WrappingType::ClampToEdge:
-                m_wrappingTransform = GetClampedPointInAabb;
-                break;
-            case WrappingType::ClampToZero:
-                m_alwaysAcceptPoint = false;
-                m_wrappingTransform = GetClampedPointInAabb;
-                break;
-            case WrappingType::Mirror:
-                m_wrappingTransform = GetMirroredPointInAabb;
-                break;
-            case WrappingType::Repeat:
-                m_wrappingTransform = GetWrappedPointInAabb;
-                break;
-            }
+            m_wrappingType = WrappingType::None;
+        }
+
+        // ClampToZero is the only wrapping type that allows us to return a "pointIsRejected" result for points that fall
+        // outside the shape bounds.
+        if (m_wrappingType == WrappingType::ClampToZero)
+        {
+            m_alwaysAcceptPoint = false;
         }
 
         m_normalizeExtentsReciprocal = AZ::Vector3(
@@ -76,7 +61,26 @@ namespace GradientSignal
             (outUVW.IsGreaterEqualThan(m_shapeBounds.GetMin()) && outUVW.IsLessThan(m_shapeBounds.GetMax()));
         wasPointRejected = !wasPointAccepted;
 
-        outUVW = m_wrappingTransform(outUVW, m_shapeBounds);
+        switch (m_wrappingType)
+        {
+        default:
+        case WrappingType::None:
+            outUVW = GetUnboundedPointInAabb(outUVW, m_shapeBounds);
+            break;
+        case WrappingType::ClampToEdge:
+            outUVW = GetClampedPointInAabb(outUVW, m_shapeBounds);
+            break;
+        case WrappingType::ClampToZero:
+            outUVW = GetClampedPointInAabb(outUVW, m_shapeBounds);
+            break;
+        case WrappingType::Mirror:
+            outUVW = GetMirroredPointInAabb(outUVW, m_shapeBounds);
+            break;
+        case WrappingType::Repeat:
+            outUVW = GetWrappedPointInAabb(outUVW, m_shapeBounds);
+            break;
+        }
+
         outUVW *= m_frequencyZoom;
     }
 
@@ -121,7 +125,7 @@ namespace GradientSignal
         *   [min, max) : value
         *   [max, min) : max - value - epsilon
         *   ...
-        *   The epsilon is because we always want to keep our output values in the [min, max) range.  We apply the epsilon to all
+        *   The epsilon is because we always want to keep our output values in the [min, max) range. We apply the epsilon to all
         *   the mirrored values so that we get consistent spacing between the values.
         */
 

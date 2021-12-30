@@ -276,24 +276,29 @@ namespace GradientSignal
 
     void GradientTransformComponent::Activate()
     {
+        m_dirty = false;
+        m_gradientTransform = GradientTransform();
+
+        // Update our GradientTransform to be configured correctly. We don't need to notify dependents of the change though.
+        // If anyone is listening, they're already getting notified below.
+        const bool notifyDependentsOfChange = false;
+        UpdateFromShape(notifyDependentsOfChange);
+
         GradientTransformRequestBus::Handler::BusConnect(GetEntityId());
         LmbrCentral::DependencyNotificationBus::Handler::BusConnect(GetEntityId());
         AZ::TickBus::Handler::BusConnect();
         GradientTransformModifierRequestBus::Handler::BusConnect(GetEntityId());
 
-        m_dirty = false;
-
         m_dependencyMonitor.Reset();
         m_dependencyMonitor.ConnectOwner(GetEntityId());
         m_dependencyMonitor.ConnectDependency(GetEntityId());
         m_dependencyMonitor.ConnectDependency(GetShapeEntityId());
-
-        UpdateFromShape();
     }
 
     void GradientTransformComponent::Deactivate()
     {
         m_dirty = false;
+        m_gradientTransform = GradientTransform();
 
         m_dependencyMonitor.Reset();
         GradientTransformRequestBus::Handler::BusDisconnect();
@@ -322,28 +327,10 @@ namespace GradientSignal
         return false;
     }
 
-    void GradientTransformComponent::TransformPositionToUVW(const AZ::Vector3& inPosition, AZ::Vector3& outUVW, bool& wasPointRejected) const
+    const GradientTransform& GradientTransformComponent::GetGradientTransform() const
     {
         AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
-        m_gradientTransform.TransformPositionToUVW(inPosition, outUVW, wasPointRejected);
-    }
-
-    void GradientTransformComponent::TransformPositionToUVWNormalized(
-        const AZ::Vector3& inPosition, AZ::Vector3& outUVW, bool& wasPointRejected) const
-    {
-        AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
-        m_gradientTransform.TransformPositionToUVWNormalized(inPosition, outUVW, wasPointRejected);
-    }
-
-    void GradientTransformComponent::GetGradientLocalBounds(AZ::Aabb& bounds) const
-    {
-        bounds = m_shapeBounds;
-    }
-
-    void GradientTransformComponent::GetGradientEncompassingBounds(AZ::Aabb& bounds) const
-    {
-        bounds = m_shapeBounds;
-        bounds.ApplyMatrix3x4(m_shapeTransformInverse.GetInverseFull());
+        return m_gradientTransform;
     }
 
     void GradientTransformComponent::OnCompositionChanged()
@@ -355,25 +342,16 @@ namespace GradientSignal
     {
         if (m_dirty)
         {
-            const auto configurationOld = m_configuration;
-            const auto shapeBoundsOld = m_shapeBounds;
-            const auto shapeTransformInverseOld = m_shapeTransformInverse;
+            // Updating on tick to query transform bus on main thread.
+            // Also, if the GradientTransform configuration changes, notify listeners so they can refresh themselves.
+            const bool notifyDependentsOfChange = true;
+            UpdateFromShape(notifyDependentsOfChange);
 
-            //updating on tick to query transform bus on main thread
-            UpdateFromShape();
-
-            //notify observers if content has changed
-            if (configurationOld != m_configuration ||
-                shapeBoundsOld != m_shapeBounds ||
-                shapeTransformInverseOld != m_shapeTransformInverse)
-            {
-                LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
-            }
             m_dirty = false;
         }
     }
 
-    void GradientTransformComponent::UpdateFromShape()
+    void GradientTransformComponent::UpdateFromShape(bool notifyDependentsOfChange)
     {
         AZ_PROFILE_FUNCTION(Entity);
 
@@ -384,6 +362,10 @@ namespace GradientSignal
         {
             return;
         }
+
+        const GradientTransform oldGradientTransform = m_gradientTransform;
+        AZ::Aabb shapeBounds = AZ::Aabb::CreateNull();
+        AZ::Matrix3x4 shapeTransformInverse = AZ::Matrix3x4::CreateIdentity();
 
         AZ::Transform shapeTransform = AZ::Transform::CreateIdentity();
         switch (m_configuration.m_transformType)
@@ -428,10 +410,10 @@ namespace GradientSignal
         if (!m_configuration.m_advancedMode || !m_configuration.m_overrideBounds)
         {
             // If we have a shape reference, grab its local space bounds and (inverse) transform into that local space
-            GetObbParamsFromShape(shapeReference, m_shapeBounds, m_shapeTransformInverse);
-            if (m_shapeBounds.IsValid())
+            GetObbParamsFromShape(shapeReference, shapeBounds, shapeTransformInverse);
+            if (shapeBounds.IsValid())
             {
-                m_configuration.m_bounds = m_shapeBounds.GetExtents();
+                m_configuration.m_bounds = shapeBounds.GetExtents();
             }
         }
 
@@ -453,19 +435,34 @@ namespace GradientSignal
 
         //rebuild bounds from parameters
         m_configuration.m_bounds = m_configuration.m_bounds.GetAbs();
-        m_shapeBounds = AZ::Aabb::CreateFromMinMax(-m_configuration.m_bounds * 0.5f, m_configuration.m_bounds * 0.5f);
+        shapeBounds = AZ::Aabb::CreateFromMinMax(-m_configuration.m_bounds * 0.5f, m_configuration.m_bounds * 0.5f);
 
         //rebuild transform from parameters
         AZ::Matrix3x4 shapeTransformFinal;
         shapeTransformFinal.SetFromEulerDegrees(m_configuration.m_rotate);
         shapeTransformFinal.SetTranslation(m_configuration.m_translate);
         shapeTransformFinal.MultiplyByScale(m_configuration.m_scale);
-        m_shapeTransformInverse = shapeTransformFinal.GetInverseFull();
+        shapeTransformInverse = shapeTransformFinal.GetInverseFull();
 
         // Set everything up on the Gradient Transform
         const bool use3dGradients = m_configuration.m_advancedMode && m_configuration.m_is3d;
         m_gradientTransform = GradientTransform(
-            m_shapeBounds, shapeTransformFinal, use3dGradients, m_configuration.m_frequencyZoom, m_configuration.m_wrappingType);
+            shapeBounds, shapeTransformFinal, use3dGradients, m_configuration.m_frequencyZoom, m_configuration.m_wrappingType);
+
+        // If the transform has changed, send out notifications.
+        if (oldGradientTransform != m_gradientTransform)
+        {
+            // Always notify on the GradientTransformNotificationBus.
+            GradientTransformNotificationBus::Event(
+                GetEntityId(), &GradientTransformNotificationBus::Events::OnGradientTransformChanged, m_gradientTransform);
+
+            // Only notify the DependencyNotificationBus when requested by the caller.
+            if (notifyDependentsOfChange)
+            {
+                LmbrCentral::DependencyNotificationBus::Event(
+                    GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
+            }
+        }
     }
 
     AZ::EntityId GradientTransformComponent::GetShapeEntityId() const
