@@ -62,15 +62,13 @@ namespace GradientSignal
         PerlinGradientComponent() = default;
         ~PerlinGradientComponent() = default;
 
-        //////////////////////////////////////////////////////////////////////////
-        // AZ::Component interface implementation
+        // AZ::Component overrides...
         void Activate() override;
         void Deactivate() override;
         bool ReadInConfig(const AZ::ComponentConfig* baseConfig) override;
         bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const override;
 
-        //////////////////////////////////////////////////////////////////////////
-        // GradientRequestBus
+        // GradientRequestBus overrides...
         float GetValue(const GradientSampleParams& sampleParams) const override;
 
     private:
@@ -79,12 +77,10 @@ namespace GradientSignal
         GradientTransform m_gradientTransform;
         mutable AZStd::shared_mutex m_transformMutex;
 
-        /////////////////////////////////////////////////////////////////////////
-        // GradientTransformNotificationBus overrides
+        // GradientTransformNotificationBus overrides...
         void OnGradientTransformChanged(const GradientTransform& newTransform) override;
 
-        /////////////////////////////////////////////////////////////////////////
-        //PerlinGradientRequest overrides
+        // PerlinGradientRequestBus overrides...
         int GetRandomSeed() const override;
         void SetRandomSeed(int seed) override;
 

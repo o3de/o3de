@@ -201,16 +201,19 @@ namespace GradientSignal
 
     float ImageGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
-        AZStd::shared_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
-
         AZ::Vector3 uvw = sampleParams.m_position;
-
         bool wasPointRejected = false;
-        m_gradientTransform.TransformPositionToUVWNormalized(sampleParams.m_position, uvw, wasPointRejected);
 
-        if (!wasPointRejected)
         {
-            return GetValueFromImageAsset(m_configuration.m_imageAsset, uvw, m_configuration.m_tilingX, m_configuration.m_tilingY, 0.0f);
+            AZStd::shared_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
+
+            m_gradientTransform.TransformPositionToUVWNormalized(sampleParams.m_position, uvw, wasPointRejected);
+
+            if (!wasPointRejected)
+            {
+                return GetValueFromImageAsset(
+                    m_configuration.m_imageAsset, uvw, m_configuration.m_tilingX, m_configuration.m_tilingY, 0.0f);
+            }
         }
 
         return 0.0f;

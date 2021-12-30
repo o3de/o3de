@@ -184,16 +184,19 @@ namespace GradientSignal
     {
         if (m_perlinImprovedNoise)
         {
-            AZStd::shared_lock<decltype(m_transformMutex)> lock(m_transformMutex);
-
             AZ::Vector3 uvw = sampleParams.m_position;
-
             bool wasPointRejected = false;
-            m_gradientTransform.TransformPositionToUVW(sampleParams.m_position, uvw, wasPointRejected);
+
+            {
+                AZStd::shared_lock<decltype(m_transformMutex)> lock(m_transformMutex);
+                m_gradientTransform.TransformPositionToUVW(sampleParams.m_position, uvw, wasPointRejected);
+            }
 
             if (!wasPointRejected)
             {
-                return m_perlinImprovedNoise->GenerateOctaveNoise(uvw.GetX(), uvw.GetY(), uvw.GetZ(), m_configuration.m_octave, m_configuration.m_amplitude, m_configuration.m_frequency);
+                return m_perlinImprovedNoise->GenerateOctaveNoise(
+                    uvw.GetX(), uvw.GetY(), uvw.GetZ(), m_configuration.m_octave, m_configuration.m_amplitude,
+                    m_configuration.m_frequency);
             }
         }
 

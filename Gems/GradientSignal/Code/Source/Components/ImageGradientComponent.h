@@ -61,32 +61,27 @@ namespace GradientSignal
         ImageGradientComponent() = default;
         ~ImageGradientComponent() = default;
 
-        //////////////////////////////////////////////////////////////////////////
-        // AZ::Component interface implementation
+        // AZ::Component overrides...
         void Activate() override;
         void Deactivate() override;
         bool ReadInConfig(const AZ::ComponentConfig* baseConfig) override;
         bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const override;
 
-        //////////////////////////////////////////////////////////////////////////
-        // GradientRequestBus
+        // GradientRequestBus overrides...
         float GetValue(const GradientSampleParams& sampleParams) const override;
 
-        //////////////////////////////////////////////////////////////////////////
-        // AZ::Data::AssetBus::Handler
+        // AZ::Data::AssetBus overrides...
         void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         void OnAssetMoved(AZ::Data::Asset<AZ::Data::AssetData> asset, void* oldDataPointer) override;
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
     protected:
-        /////////////////////////////////////////////////////////////////////////
-        // GradientTransformNotificationBus overrides
+        // GradientTransformNotificationBus overrides...
         void OnGradientTransformChanged(const GradientTransform& newTransform) override;
 
         void SetupDependencies();
 
-        //////////////////////////////////////////////////////////////////////////
-        // ImageGradientRequestBus
+        // ImageGradientRequestBus overrides...
         AZStd::string GetImageAssetPath() const override;
         void SetImageAssetPath(const AZStd::string& assetPath) override;
 

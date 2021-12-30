@@ -147,12 +147,14 @@ namespace GradientSignal
 
     float RandomGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
-        AZStd::shared_lock<decltype(m_transformMutex)> lock(m_transformMutex);
 
         AZ::Vector3 uvw = sampleParams.m_position;
-
         bool wasPointRejected = false;
-        m_gradientTransform.TransformPositionToUVW(sampleParams.m_position, uvw, wasPointRejected);
+
+        {
+            AZStd::shared_lock<decltype(m_transformMutex)> lock(m_transformMutex);
+            m_gradientTransform.TransformPositionToUVW(sampleParams.m_position, uvw, wasPointRejected);
+        }
 
         if (!wasPointRejected)
         {

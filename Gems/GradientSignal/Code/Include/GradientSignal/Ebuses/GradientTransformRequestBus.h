@@ -29,7 +29,7 @@ namespace GradientSignal
         virtual ~GradientTransformRequests() = default;
 
         //! Get the GradientTransform that's been configured by the bus listener.
-        //! /return the GradientTransform instance that can be used to transform world points into gradient lookup space.
+        //! \return the GradientTransform instance that can be used to transform world points into gradient lookup space.
         virtual const GradientTransform& GetGradientTransform() const = 0;
     };
 
@@ -50,7 +50,7 @@ namespace GradientSignal
         ////////////////////////////////////////////////////////////////////////
 
         //! Notify listeners that the GradientTransform configuration has changed.
-        //! /return the GradientTransform instance that can be used to transform world points into gradient lookup space.
+        //! \return the GradientTransform instance that can be used to transform world points into gradient lookup space.
         virtual void OnGradientTransformChanged(const GradientTransform& newTransform) = 0;
 
         //! Connection policy that auto-calls OnGradientTransformChanged on connection with the current GradientTransform data.

@@ -82,15 +82,13 @@ namespace FastNoiseGem
         FastNoiseGradientComponent(const FastNoiseGradientConfig& configuration);
         FastNoiseGradientComponent() = default;
 
-        //////////////////////////////////////////////////////////////////////////
-        // AZ::Component interface implementation
+        // AZ::Component overrides...
         void Activate() override;
         void Deactivate() override;
         bool ReadInConfig(const AZ::ComponentConfig* baseConfig) override;
         bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const override;
 
-        //////////////////////////////////////////////////////////////////////////
-        // GradientRequestBus
+        // GradientRequestBus overrides...
         float GetValue(const GradientSignal::GradientSampleParams& sampleParams) const override;
 
     protected:
@@ -99,12 +97,10 @@ namespace FastNoiseGem
         GradientSignal::GradientTransform m_gradientTransform;
         mutable AZStd::shared_mutex m_transformMutex;
 
-        /////////////////////////////////////////////////////////////////////////
-        // GradientTransformNotificationBus overrides
+        // GradientTransformNotificationBus overrides...
         void OnGradientTransformChanged(const GradientSignal::GradientTransform& newTransform) override;
 
-        /////////////////////////////////////////////////////////////////////////
-        // FastNoiseGradientRequest overrides
+        // FastNoiseGradientRequest overrides...
         int GetRandomSeed() const override;
         void SetRandomSeed(int seed) override;
 

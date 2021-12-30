@@ -29,7 +29,7 @@ namespace GradientSignal
             m_inverseTransform.SetRow(2, AZ::Vector4::CreateZero());
         }
 
-        // If we have an invalid shape bounds, reset the wrapping type back to None.  Wrapping won't work without a valid bounds.
+        // If we have invalid shape bounds, reset the wrapping type back to None. Wrapping won't work without valid bounds.
         if (!m_shapeBounds.IsValid())
         {
             m_wrappingType = WrappingType::None;
@@ -125,7 +125,7 @@ namespace GradientSignal
         *   [min, max) : value
         *   [max, min) : max - value - epsilon
         *   ...
-        *   The epsilon is because we always want to keep our output values in the [min, max) range.  We apply the epsilon to all
+        *   The epsilon is because we always want to keep our output values in the [min, max) range. We apply the epsilon to all
         *   the mirrored values so that we get consistent spacing between the values.
         */
 

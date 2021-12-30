@@ -279,7 +279,7 @@ namespace GradientSignal
         m_dirty = false;
         m_gradientTransform = GradientTransform();
 
-        // Update our GradientTransform to be configured correctly.  We don't need to notify dependents of the change though.
+        // Update our GradientTransform to be configured correctly. We don't need to notify dependents of the change though.
         // If anyone is listening, they're already getting notified below.
         const bool notifyDependentsOfChange = false;
         UpdateFromShape(notifyDependentsOfChange);
@@ -456,7 +456,7 @@ namespace GradientSignal
             GradientTransformNotificationBus::Event(
                 GetEntityId(), &GradientTransformNotificationBus::Events::OnGradientTransformChanged, m_gradientTransform);
 
-            // Only notify the DependencyNotificationBus sometimes.
+            // Only notify the DependencyNotificationBus when requested by the caller.
             if (notifyDependentsOfChange)
             {
                 LmbrCentral::DependencyNotificationBus::Event(
