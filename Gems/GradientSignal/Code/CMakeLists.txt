@@ -145,6 +145,12 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         NAME Gem::GradientSignal.Tests
     )
 
+    ly_add_googlebenchmark(
+        NAME Gem::GradientSignal.Benchmarks
+        TARGET Gem::GradientSignal.Tests
+    )
+
+
     if(PAL_TRAIT_BUILD_HOST_TOOLS)
         ly_add_target(
             NAME GradientSignal.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
