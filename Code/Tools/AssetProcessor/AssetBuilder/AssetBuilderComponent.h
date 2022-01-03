@@ -122,9 +122,6 @@ protected:
 
     void ProcessJob(const AssetBuilderSDK::ProcessJobFunction& job, const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& outResponse);
 
-    //! Handles a builder registration request
-    bool HandleRegisterBuilder(const AZStd::string& inputFilePath, const AZStd::string& outputFilePath) const;
-
     //! If needed looks at collected data and updates the result code from the job accordingly.
     void UpdateResultCode(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const;
 

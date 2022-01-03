@@ -16,6 +16,7 @@
 #include <native/utilities/AssetBuilderInfo.h>
 #include <QCoreApplication>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AssetBuilder/AssetBuilderStatic.h>
 
 namespace AssetProcessor
 {
@@ -355,7 +356,7 @@ namespace AssetProcessor
     BuilderManager::BuilderManager(ConnectionManager* connectionManager)
     {
         using namespace AZStd::placeholders;
-        connectionManager->RegisterService(AssetBuilderSDK::BuilderHelloRequest::MessageType(), AZStd::bind(&BuilderManager::IncomingBuilderPing, this, _1, _2, _3, _4, _5));
+        connectionManager->RegisterService(AssetBuilder::BuilderHelloRequest::MessageType(), AZStd::bind(&BuilderManager::IncomingBuilderPing, this, _1, _2, _3, _4, _5));
 
         // Setup a background thread to pump the idle builders so they don't get blocked trying to output to stdout/err
         AZStd::thread_desc desc;
@@ -406,8 +407,8 @@ namespace AssetProcessor
 
     void BuilderManager::IncomingBuilderPing(AZ::u32 connId, AZ::u32 /*type*/, AZ::u32 serial, QByteArray payload, QString platform)
     {
-        AssetBuilderSDK::BuilderHelloRequest requestPing;
-        AssetBuilderSDK::BuilderHelloResponse responsePing;
+        AssetBuilder::BuilderHelloRequest requestPing;
+        AssetBuilder::BuilderHelloResponse responsePing;
 
         if (!AZ::Utils::LoadObjectFromBufferInPlace(payload.data(), payload.length(), requestPing))
         {

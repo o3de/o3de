@@ -25,6 +25,7 @@
 #include <native/InternalBuilders/SettingsRegistryBuilder.h>
 #include <AzToolsFramework/Application/Ticker.h>
 #include <AzToolsFramework/ToolsFileUtils/ToolsFileUtils.h>
+#include <AssetBuilder/AssetBuilderStatic.h>
 
 #include <iostream>
 
@@ -590,10 +591,10 @@ void ApplicationManagerBase::InitConnectionManager()
         );
 
     m_connectionManager->RegisterService(
-        AssetBuilderSDK::BuilderRegistrationRequest::MessageType,
+        AssetBuilder::BuilderRegistrationRequest::MessageType,
         [this](unsigned int /*connId*/, unsigned int /*type*/, unsigned int /*serial*/, QByteArray payload, QString)
     {
-        AssetBuilderSDK::BuilderRegistrationRequest registrationRequest;
+        AssetBuilder::BuilderRegistrationRequest registrationRequest;
 
         if (m_builderRegistrationComplete)
         {
@@ -1338,6 +1339,7 @@ bool ApplicationManagerBase::Activate()
     InitAssetProcessorManager();
     AssetBuilderSDK::InitializeSerializationContext();
     AssetBuilderSDK::InitializeBehaviorContext();
+    AssetBuilder::InitializeSerializationContext();
 
     InitFileStateCache();
     InitFileProcessor();
@@ -1504,7 +1506,7 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
                 do
                 {
                     retryCount++;
-                    result = builderRef->RunJob<AssetBuilderSDK::CreateJobsNetRequest, AssetBuilderSDK::CreateJobsNetResponse>(
+                    result = builderRef->RunJob<AssetBuilder::CreateJobsNetRequest, AssetBuilder::CreateJobsNetResponse>(
                         request, response, s_MaximumCreateJobsTimeSeconds, "create", "", nullptr);
                 } while (result == AssetProcessor::BuilderRunJobOutcome::LostConnection &&
                          retryCount <= AssetProcessor::RetriesForJobNetworkError);
@@ -1532,7 +1534,7 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
                 do
                 {
                     retryCount++;
-                    result = builderRef->RunJob<AssetBuilderSDK::ProcessJobNetRequest, AssetBuilderSDK::ProcessJobNetResponse>(
+                    result = builderRef->RunJob<AssetBuilder::ProcessJobNetRequest, AssetBuilder::ProcessJobNetResponse>(
                         request, response, s_MaximumProcessJobsTimeSeconds, "process", "", &jobCancelListener, request.m_tempDirPath);
                 } while (result == AssetProcessor::BuilderRunJobOutcome::LostConnection &&
                          retryCount <= AssetProcessor::RetriesForJobNetworkError);
