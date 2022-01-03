@@ -123,6 +123,10 @@ namespace ImageProcessingAtomEditor
         {
             readableString = "iOS";
         }
+        else if (platformStrLowerCase == "salem")
+        {
+            readableString = "Salem";
+        }
         else if (platformStrLowerCase == "jasper")
         {
             readableString = "Jasper";

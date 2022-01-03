@@ -6,15 +6,15 @@
  *
  */
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <Builder/ScriptCanvasBuilder.h>
 #include <Builder/ScriptCanvasBuilderWorker.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
+#include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
+#include <ScriptCanvas/Components/EditorDeprecationData.h>
+#include <ScriptCanvas/Components/EditorGraph.h>
 #include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
 #include <ScriptCanvas/Grammar/AbstractCodeModel.h>
-#include <AzCore/Asset/AssetSerializer.h>
-#include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
-#include <ScriptCanvas/Components/EditorGraph.h>
 
 namespace BuildVariableOverridesCpp
 {
@@ -41,7 +41,7 @@ namespace BuildVariableOverridesCpp
             }
 
             auto& sourceElement = rootElement.GetSubElement(sourceIndex);
-            AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset> asset;
+            AZ::Data::Asset<ScriptCanvasEditor::Deprecated::ScriptCanvasAsset> asset;
             if (!sourceElement.GetData(asset))
             {
                 AZ_Error("ScriptCanvas", false, "BuildVariableOverrides coversion failed: could not retrieve 'source' data");

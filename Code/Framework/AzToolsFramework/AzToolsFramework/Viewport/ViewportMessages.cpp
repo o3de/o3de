@@ -89,8 +89,8 @@ namespace AzToolsFramework
         const float rayLength)
     {
         AZ_Assert(rayLength > 0.0f, "Invalid ray length passed to RefreshRayRequest");
-        rayRequest.m_startWorldPosition = viewportRay.origin;
-        rayRequest.m_endWorldPosition = viewportRay.origin + viewportRay.direction * rayLength;
+        rayRequest.m_startWorldPosition = viewportRay.m_origin;
+        rayRequest.m_endWorldPosition = viewportRay.m_origin + viewportRay.m_direction * rayLength;
     }
 
     AZ::Vector3 FindClosestPickIntersection(

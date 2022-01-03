@@ -20,7 +20,6 @@
 #include <GraphCanvas/Editor/EditorTypes.h>
 #include <GraphCanvas/Types/EntitySaveData.h>
 
-#include <Editor/Include/ScriptCanvas/Assets/ScriptCanvasAsset.h>
 #include <Editor/Include/ScriptCanvas/Bus/NodeIdPair.h>
 #include <ScriptCanvas/Core/ExecutionNotificationsBus.h>
 #include <ScriptCanvas/Variable/VariableCore.h>

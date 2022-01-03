@@ -96,13 +96,13 @@ AZ::RPI::ScenePtr UiRenderer::CreateScene(AZStd::shared_ptr<AZ::RPI::ViewportCon
     AZ::RPI::SceneDescriptor sceneDesc;
     sceneDesc.m_nameId = AZ::Name("UiRenderer");
     AZ::RPI::ScenePtr atomScene = AZ::RPI::Scene::CreateScene(sceneDesc);
-    atomScene->EnableAllFeatureProcessors(); // LYSHINE_ATOM_TODO - have a UI pipeline and enable only needed fps
+    atomScene->EnableAllFeatureProcessors(); // [LYSHINE_ATOM_TODO][GHI #6272] Enable minimal feature processors
 
     // Assign the new scene to the specified viewport context
     viewportContext->SetRenderScene(atomScene);
 
     // Create a render pipeline and add it to the scene
-    AZStd::string pipelineAssetPath = "passes/MainRenderPipeline.azasset"; // LYSHINE_ATOM_TODO - make and use a UI pipeline
+    AZStd::string pipelineAssetPath = "passes/MainRenderPipeline.azasset"; // [LYSHINE_ATOM_TODO][GHI #6272] Use a custom UI pipeline
     AZ::Data::Asset<AZ::RPI::AnyAsset> pipelineAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(pipelineAssetPath.c_str(), AZ::RPI::AssetUtils::TraceLevel::Error);
     AZStd::shared_ptr<AZ::RPI::WindowContext> windowContext = viewportContext->GetWindowContext();
     auto renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(pipelineAsset, *windowContext.get());
@@ -436,7 +436,7 @@ void UiRenderer::DebugDisplayTextureData(int recordingOption)
 {
     if (recordingOption > 0)
     {
-#ifdef LYSHINE_ATOM_TODO // Convert debug to use Atom images
+#ifdef LYSHINE_ATOM_TODO // [GHI #3568] Support canvas debug display with Atom
         // compute the total area of all the textures, also create a vector that we can sort by area
         AZStd::vector<ITexture*> textures;
         int totalArea = 0;

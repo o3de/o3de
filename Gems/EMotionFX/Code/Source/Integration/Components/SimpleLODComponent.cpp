@@ -53,6 +53,7 @@ namespace EMotionFX
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->ElementAttribute(AZ::Edit::Attributes::Step, 0.01f)
                             ->ElementAttribute(AZ::Edit::Attributes::Suffix, " m")
+                            ->ElementAttribute(AZ::Edit::Attributes::Min, 0.00f)
                         ->DataElement(0, &SimpleLODComponent::Configuration::m_enableLodSampling,
                             "Enable LOD anim graph sampling", "AnimGraph sample rate will adjust based on LOD level.")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
@@ -61,7 +62,8 @@ namespace EMotionFX
                             ->Attribute(AZ::Edit::Attributes::Visibility, &SimpleLODComponent::Configuration::GetEnableLodSampling)
                             ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                            ->ElementAttribute(AZ::Edit::Attributes::Step, 1.0f);
+                            ->ElementAttribute(AZ::Edit::Attributes::Step, 1.0f)
+                            ->ElementAttribute(AZ::Edit::Attributes::Min, 0.0f);
                 }
             }
         }

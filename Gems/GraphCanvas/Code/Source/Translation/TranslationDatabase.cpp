@@ -163,9 +163,11 @@ namespace GraphCanvas
             }
             else
             {
-                AZStd::string warning = AZStd::string::format("Unable to store key: %s with value: %s because that key already exists with value: %s", entry.first.c_str(), entry.second.c_str(), m_database[entry.first].c_str());
-                AZ_Warning("TranslationSerializer", false, warning.c_str());
-                warnings = true;
+                const bool valueMatches = entry.second == m_database[entry.first];
+                AZ_Warning("TranslationDatabase", valueMatches,
+                    R"(Unable to store key: "%s" with value: "%s" because that key already exists with value: "%s")",
+                    entry.first.c_str(), entry.second.c_str(), m_database[entry.first].c_str());
+                warnings = !valueMatches;
             }
         }
 
