@@ -8,7 +8,6 @@
 
 set(FILES
     StaticLib/GraphCanvas/Widgets/Resources/GraphCanvasEditorResources.qrc
-    StaticLib/GraphCanvas/Widgets/Resources/Resources.h
     StaticLib/GraphCanvas/Widgets/GraphCanvasMimeContainer.cpp
     StaticLib/GraphCanvas/Widgets/GraphCanvasMimeContainer.h
     StaticLib/GraphCanvas/Widgets/GraphCanvasMimeEvent.cpp
@@ -174,8 +173,6 @@ set(FILES
     StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/NodeMenuActions/NodeContextMenuAction.h
     StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/NodeMenuActions/NodeContextMenuActions.cpp
     StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/NodeMenuActions/NodeContextMenuActions.h
-    StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SceneMenuActions/SceneActionsMenuGroup.cpp
-    StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SceneMenuActions/SceneActionsMenuGroup.h
     StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SceneMenuActions/SceneContextMenuAction.h
     StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SceneMenuActions/SceneContextMenuActions.cpp
     StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SceneMenuActions/SceneContextMenuActions.h
