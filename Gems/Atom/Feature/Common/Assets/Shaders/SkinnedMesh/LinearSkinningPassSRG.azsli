@@ -62,6 +62,10 @@ ShaderResourceGroup InstanceSrg : SRG_PerDraw
     uint m_targetTangents;
     uint m_targetBiTangents;
 
+    // Offset to the location in the output stream with the start of the position history
+    // for the particular mesh the dispatch is operating on
+    uint m_targetPositionHistory;
+
     // Optional color output, if colors are being morphed by morph targets
     uint m_targetColors;
 }

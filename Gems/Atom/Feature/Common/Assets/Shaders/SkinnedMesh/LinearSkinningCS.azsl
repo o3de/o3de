@@ -154,9 +154,9 @@ void MainCS(uint3 thread_id: SV_DispatchThreadID)
     if(i < InstanceSrg::m_numVertices)
     {
         // Moving current vertex position updated last frame to a predefined location to maintain a vertex history between two frames
-        PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + (InstanceSrg::m_numVertices + i) * 3] = PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + i * 3];
-        PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + (InstanceSrg::m_numVertices + i) * 3 + 1] = PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + i * 3 + 1];
-        PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + (InstanceSrg::m_numVertices + i) * 3 + 2] = PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + i * 3 + 2];
+        PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositionHistory + i * 3] = PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + i * 3];
+        PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositionHistory + i * 3 + 1] = PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + i * 3 + 1];
+        PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositionHistory + i * 3 + 2] = PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + i * 3 + 2];
 
         float4 blendWeights;
         blendWeights.x = InstanceSrg::m_sourceBlendWeights[i * 4];
@@ -188,12 +188,6 @@ void MainCS(uint3 thread_id: SV_DispatchThreadID)
         blendIndices.y = rawIndices.x & 0x0000FFFF;
         blendIndices.z = rawIndices.y >> 16;
         blendIndices.w = rawIndices.y & 0x0000FFFF;
-        
-
-        // Moving current vertex position updated last frame to a predefined location to maintain a vertex history between two frames
-        PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + (InstanceSrg::m_numVertices + i) * 3] = PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + i * 3];
-        PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + (InstanceSrg::m_numVertices + i) * 3 + 1] = PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + i * 3 + 1];
-        PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + (InstanceSrg::m_numVertices + i) * 3 + 2] = PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetPositions + i * 3 + 2];
 
         if(o_applyMorphTargets)
         {

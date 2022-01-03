@@ -81,6 +81,7 @@ namespace AZ
                     aznew SkinnedMeshDispatchItem{
                         m_inputBuffers,
                         m_instance->m_outputStreamOffsetsInBytes[modelLodIndex][meshIndex],
+                        m_instance->m_positionHistoryBufferOffsetsInBytes[modelLodIndex][meshIndex],
                         modelLodIndex, meshIndex, m_boneTransforms,
                         m_shaderOptions,
                         m_featureProcessor,

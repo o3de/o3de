@@ -724,7 +724,10 @@ namespace AZ
                 //
 
                 AZStd::vector<SkinnedMeshOutputVertexOffsets> meshOffsetsFromBufferStartInBytes;
-                meshOffsetsFromBufferStartInBytes.reserve(lod.m_modelLodAsset->GetMeshes().size());
+                meshOffsetsFromBufferStartInBytes.reserve(lod.m_meshes.size());
+
+                AZStd::vector<uint32_t> meshPositionHistoryBufferOffsetsInBytes;
+                meshPositionHistoryBufferOffsetsInBytes.reserve(lod.m_meshes.size());
 
                 SkinnedMeshOutputVertexOffsets currentMeshOffsetsFromStreamStartInBytes = {0};
                 // Iterate over each sub-mesh for the lod to create views into the buffers
@@ -745,6 +748,15 @@ namespace AZ
                         currentMeshOffsetsFromBufferStartInBytes[outputStreamIndex] = streamOffsetsFromBufferStart[outputStreamIndex] + currentMeshOffsetsFromStreamStartInBytes[outputStreamIndex];
                     }
                     meshOffsetsFromBufferStartInBytes.push_back(currentMeshOffsetsFromBufferStartInBytes);
+
+                    // Track the offset for the position history buffer
+                    uint32_t meshPositionHistoryBufferOffsetInBytes =
+                        currentMeshOffsetsFromBufferStartInBytes[static_cast<uint8_t>(SkinnedMeshOutputVertexStreams::Position)] +
+                        lod.GetVertexCountForStream(SkinnedMeshOutputVertexStreams::Position) *
+                            SkinnedMeshVertexStreamPropertyInterface::Get()
+                                ->GetOutputStreamInfo(SkinnedMeshOutputVertexStreams::Position)
+                                .m_elementSize;
+                    meshPositionHistoryBufferOffsetsInBytes.push_back(meshPositionHistoryBufferOffsetInBytes);
 
                     // Create and set the views into the skinning output buffers
                     for (uint8_t outputStreamIndex = 0; outputStreamIndex < static_cast<uint8_t>(SkinnedMeshOutputVertexStreams::NumVertexStreams); ++outputStreamIndex)
@@ -776,6 +788,7 @@ namespace AZ
 
                 // Add all the mesh offsets for the lod
                 instance->m_outputStreamOffsetsInBytes.push_back(meshOffsetsFromBufferStartInBytes);
+                instance->m_positionHistoryBufferOffsetsInBytes.push_back(meshPositionHistoryBufferOffsetsInBytes);
 
                 Data::Asset<RPI::ModelLodAsset> lodAsset;
                 modelLodCreator.End(lodAsset);

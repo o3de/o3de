@@ -48,6 +48,7 @@ namespace AZ
             explicit SkinnedMeshDispatchItem(
                 AZStd::intrusive_ptr<SkinnedMeshInputBuffers> inputBuffers,
                 const SkinnedMeshOutputVertexOffsets& outputBufferOffsetsInBytes,
+                uint32_t positionHistoryOutputBufferOffsetInBytes,
                 size_t lodIndex,
                 size_t meshIndex,
                 Data::Instance<RPI::Buffer> skinningMatrices,
@@ -78,8 +79,11 @@ namespace AZ
             // The skinning shader used for this instance
             Data::Instance<RPI::Shader> m_skinningShader;
 
-            // Offsets into the SkinnedMeshOutputVertexStream where the lod streams start 
+            // Offsets into the SkinnedMeshOutputVertexStream where the lod streams start for this mesh
             SkinnedMeshOutputVertexOffsets m_outputBufferOffsetsInBytes;
+
+            // Offset into the SkinnedMeshOutputVertexStream where the position history stream starts for this mesh
+            uint32_t m_positionHistoryBufferOffsetInBytes;
 
             // The unskinned vertices used as the source of the skinning
             AZStd::intrusive_ptr<SkinnedMeshInputBuffers> m_inputBuffers;

@@ -35,6 +35,9 @@ namespace AZ
 
             //! Offsets into the skinned vertex data which are used by SkinnedMeshDispatchItem to target the correct location to store the skinning results
             AZStd::vector<AZStd::vector<SkinnedMeshOutputVertexOffsets>> m_outputStreamOffsetsInBytes;
+            
+            //! Offsets to the start of the position history buffer for each mesh
+            AZStd::vector<AZStd::vector<uint32_t>> m_positionHistoryBufferOffsetsInBytes;
 
             //! Virtual addresses that represent the location of the data within the skinned mesh output stream.
             //! When they are released, they automatically mark the memory as freed so the SkinnedMeshOutputStreamManager can re-purpose the memory

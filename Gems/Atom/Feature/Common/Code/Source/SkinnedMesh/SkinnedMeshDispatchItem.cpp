@@ -27,6 +27,7 @@ namespace AZ
         SkinnedMeshDispatchItem::SkinnedMeshDispatchItem(
             AZStd::intrusive_ptr<SkinnedMeshInputBuffers> inputBuffers,
             const SkinnedMeshOutputVertexOffsets& outputBufferOffsetsInBytes,
+            uint32_t positionHistoryOutputBufferOffsetInBytes,
             size_t lodIndex,
             size_t meshIndex,
             Data::Instance<RPI::Buffer> boneTransforms,
@@ -36,6 +37,7 @@ namespace AZ
             float morphTargetDeltaIntegerEncoding)
             : m_inputBuffers(inputBuffers)
             , m_outputBufferOffsetsInBytes(outputBufferOffsetsInBytes)
+            , m_positionHistoryBufferOffsetInBytes(positionHistoryOutputBufferOffsetInBytes)
             , m_lodIndex(lodIndex)
             , m_meshIndex(meshIndex)
             , m_boneTransforms(AZStd::move(boneTransforms))
@@ -148,6 +150,21 @@ namespace AZ
                     // Divide the byte offset here so it doesn't need to be done in the shader
                     m_instanceSrg->SetConstant(outputOffsetIndex, m_outputBufferOffsetsInBytes[outputStream] / 4);
                 }
+
+                // Set the position history buffer offset
+                RHI::ShaderInputConstantIndex outputOffsetIndex =
+                    m_instanceSrg->FindShaderInputConstantIndex(Name{ "m_targetPositionHistory" });
+                if (!outputOffsetIndex.IsValid())
+                {
+                    AZ_Error(
+                        "SkinnedMeshDispatchItem", false,
+                        "Failed to find shader input index for m_targetPositionHistory in the skinning compute shader per-instance SRG.");
+                    return false;
+                }
+
+                // The shader has a view with 4 bytes per element
+                // Divide the byte offset here so it doesn't need to be done in the shader
+                m_instanceSrg->SetConstant(outputOffsetIndex, m_positionHistoryBufferOffsetInBytes / 4);
             }
 
             m_instanceSrg->SetBuffer(actorInstanceBoneTransformsIndex, m_boneTransforms);
