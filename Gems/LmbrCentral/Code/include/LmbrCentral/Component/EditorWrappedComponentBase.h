@@ -56,6 +56,7 @@ namespace LmbrCentral
         TComponent m_component;
         TConfiguration m_configuration;
         bool m_visible = true;
+        bool m_runtimeComponentActive = false;
     };
 
 } // namespace LmbrCentral

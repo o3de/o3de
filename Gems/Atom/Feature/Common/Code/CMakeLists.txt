@@ -40,7 +40,6 @@ ly_add_target(
             Gem::Atom_Feature_Common.Public
             Gem::ImGui.imguilib
             3rdParty::TIFF
-            #3rdParty::lux_core # AZ_TRAIT_LUXCORE_SUPPORTED is disabled in every platform, Issue #3915 will remove
     RUNTIME_DEPENDENCIES
         Gem::ImGui.imguilib
 )
@@ -91,7 +90,6 @@ ly_add_target(
             AZ::AzFramework
             Gem::Atom_Feature_Common.Static
             Gem::Atom_Feature_Common.Public
-            #3rdParty::lux_core # AZ_TRAIT_LUXCORE_SUPPORTED is disabled in every platform, Issue #3915 will remove
 )
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)

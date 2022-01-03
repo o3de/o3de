@@ -8,90 +8,69 @@
 #pragma once
 
 #include <AzTest/AzTest.h>
-#include <AzCore/std/hash.h>
+#include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Casting/lossy_cast.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Memory/PoolAllocator.h>
+#include <AzCore/std/hash.h>
+#include <AzCore/UnitTest/TestTypes.h>
 
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/GradientPreviewContextRequestBus.h>
 #include <GradientSignal/GradientSampler.h>
+#include <GradientSignal/ImageAsset.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
-#include <AzCore/Casting/lossy_cast.h>
-
 #include <SurfaceData/Tests/SurfaceDataTestMocks.h>
 
 namespace UnitTest
 {
-    struct GradientSignalTest
-        : public ::testing::Test
+    // Mock asset handler for GradientSignal::ImageAsset that we can use in unit tests to pretend to load an image asset with.
+    // Also includes utility functions for creating image assets with specific testable patterns.
+    struct ImageAssetMockAssetHandler : public AZ::Data::AssetHandler
     {
-    protected:
-        AZ::ComponentApplication m_app;
-        AZ::Entity* m_systemEntity = nullptr;
+        //! Creates a deterministically random set of pixel data as an ImageAsset.
+        //! \param width The width of the ImageAsset
+        //! \param height The height of the ImageAsset
+        //! \param seed The random seed to use for generating the random data
+        //! \return The ImageAsset in a loaded ready state
+        static AZ::Data::Asset<GradientSignal::ImageAsset> CreateImageAsset(AZ::u32 width, AZ::u32 height, AZ::s32 seed);
 
-        void SetUp() override
+        //! Creates an ImageAsset where all the pixels are 0 except for the one pixel at the given coordinates, which is set to 1.
+        //! \param width The width of the ImageAsset
+        //! \param height The height of the ImageAsset
+        //! \param pixelX The X coordinate of the pixel to set to 1
+        //! \param pixelY The Y coordinate of the pixel to set to 1
+        //! \return The ImageAsset in a loaded ready state
+        static AZ::Data::Asset<GradientSignal::ImageAsset> CreateSpecificPixelImageAsset(
+            AZ::u32 width, AZ::u32 height, AZ::u32 pixelX, AZ::u32 pixelY);
+
+        AZ::Data::AssetPtr CreateAsset(
+            [[maybe_unused]] const AZ::Data::AssetId& id, [[maybe_unused]] const AZ::Data::AssetType& type) override
         {
-            AZ::ComponentApplication::Descriptor appDesc;
-            appDesc.m_memoryBlocksByteSize = 128 * 1024 * 1024;
-            m_systemEntity = m_app.Create(appDesc);
-            m_app.AddEntity(m_systemEntity);
+            return AZ::Data::AssetPtr();
         }
 
-        void TearDown() override
+        void DestroyAsset(AZ::Data::AssetPtr ptr) override
         {
-            m_app.Destroy();
-            m_systemEntity = nullptr;
-        }
-
-        void TestFixedDataSampler(const AZStd::vector<float>& expectedOutput, int size, AZ::EntityId gradientEntityId)
-        {
-            GradientSignal::GradientSampler gradientSampler;
-            gradientSampler.m_gradientId = gradientEntityId;
-
-            for(int y = 0; y < size; ++y)
+            if (ptr)
             {
-                for (int x = 0; x < size; ++x)
-                {
-                    GradientSignal::GradientSampleParams params;
-                    params.m_position = AZ::Vector3(static_cast<float>(x), static_cast<float>(y), 0.0f);
-
-                    const int index = y * size + x;
-                    float actualValue = gradientSampler.GetValue(params);
-                    float expectedValue = expectedOutput[index];
-
-                    EXPECT_NEAR(actualValue, expectedValue, 0.01f);
-                }
+                delete ptr;
             }
         }
 
-        AZStd::unique_ptr<AZ::Entity> CreateEntity()
+        void GetHandledAssetTypes([[maybe_unused]] AZStd::vector<AZ::Data::AssetType>& assetTypes) override
         {
-            return AZStd::make_unique<AZ::Entity>();
         }
 
-        void ActivateEntity(AZ::Entity* entity)
+        AZ::Data::AssetHandler::LoadResult LoadAssetData(
+            [[maybe_unused]] const AZ::Data::Asset<AZ::Data::AssetData>& asset,
+            [[maybe_unused]] AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
+            [[maybe_unused]] const AZ::Data::AssetFilterCB& assetLoadFilterCB) override
         {
-            entity->Init();
-            EXPECT_EQ(AZ::Entity::State::Init, entity->GetState());
-
-            entity->Activate();
-            EXPECT_EQ(AZ::Entity::State::Active, entity->GetState());
-        }
-
-        template <typename Component, typename Configuration>
-        AZ::Component* CreateComponent(AZ::Entity* entity, const Configuration& config)
-        {
-            m_app.RegisterComponentDescriptor(Component::CreateDescriptor());
-            return entity->CreateComponent<Component>(config);
-        }
-
-        template <typename Component>
-        AZ::Component* CreateComponent(AZ::Entity* entity)
-        {
-            m_app.RegisterComponentDescriptor(Component::CreateDescriptor());
-            return entity->CreateComponent<Component>();
+            return AZ::Data::AssetHandler::LoadResult::LoadComplete;
         }
     };
 

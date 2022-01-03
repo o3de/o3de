@@ -155,7 +155,7 @@ IViewPaneClass* CClassFactory::FindViewPaneClassByTitle(const char* pPaneTitle) 
     {
         IViewPaneClass* viewPane = nullptr;
         IClassDesc* desc = m_classes[i];
-        if (SUCCEEDED(desc->QueryInterface(__uuidof(IViewPaneClass), (void**)&viewPane)))
+        if (SUCCEEDED(desc->QueryInterface(__az_uuidof(IViewPaneClass), (void**)&viewPane)))
         {
             if (QString::compare(viewPane->GetPaneTitle(), pPaneTitle) == 0)
             {
