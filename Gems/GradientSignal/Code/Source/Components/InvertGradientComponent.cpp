@@ -6,7 +6,7 @@
  *
  */
 
-#include "InvertGradientComponent.h"
+#include <GradientSignal/Components/InvertGradientComponent.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>

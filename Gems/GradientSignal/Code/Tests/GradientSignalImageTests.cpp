@@ -15,8 +15,8 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
 
-#include <Source/Components/ImageGradientComponent.h>
-#include <Source/Components/GradientTransformComponent.h>
+#include <GradientSignal/Components/ImageGradientComponent.h>
+#include <GradientSignal/Components/GradientTransformComponent.h>
 
 namespace UnitTest
 {

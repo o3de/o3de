@@ -15,7 +15,7 @@
 #include <AzCore/Math/Vector2.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
 
-#include <Source/Components/GradientTransformComponent.h>
+#include <GradientSignal/Components/GradientTransformComponent.h>
 
 namespace UnitTest
 {
