@@ -247,7 +247,6 @@ float DirectionalLightShadow::GetVisibilityFromLightPcf()
         
         if(o_blend_between_cascades_enable) 
         {  
-            float currentPixelsBlendBandLocation;
             const float blendBetweenCascadesAmount = CalculateCascadeBlendAmount(m_shadowCoords[currentCascadeIndex].xyz);
 
             const int nextCascadeIndex = currentCascadeIndex + 1;
