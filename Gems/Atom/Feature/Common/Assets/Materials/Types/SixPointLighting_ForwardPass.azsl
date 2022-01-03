@@ -97,6 +97,24 @@ VSOutput StandardPbr_ForwardPassVS(VSInput IN)
     return OUT;
 }
 
+float4 ReconstructWorldPositionFromDepth(float2 screenCoords)
+{
+    float depth = PassSrg::m_linearDepthTexture.Load(int3(screenCoords,0)).r;
+
+    uint2 dimensions;
+    uint samples;
+    PassSrg::m_linearDepthTexture.GetDimensions(dimensions.x, dimensions.y);
+    float2 UV = saturate(screenCoords / dimensions.xy);
+
+    float x = UV.x * 2.0f - 1.0f;
+    float y = (1.0f - UV.y) * 2.0f - 1.0f;
+    float4 projectedPos = float4(x, y, depth, 1.0f);
+    float4 positionVS = mul(ViewSrg::m_projectionMatrixInverse, projectedPos);
+    positionVS /= positionVS.w;
+    float4 positionWS = mul(ViewSrg::m_viewMatrixInverse, positionVS);
+    return positionWS;
+}
+
 
 // ---------- Pixel Shader ----------
 
@@ -166,6 +184,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     
     float4 topLeftRightBottom = MaterialSrg::m_topLeftRightBottomMap.Sample(MaterialSrg::m_sampler, sixPointUv);
     float4 frontBack = MaterialSrg::m_frontBackMap.Sample(MaterialSrg::m_sampler, sixPointUv);
+    float opaqueDepth = 0.0f;
     if(o_enableDepthTexture)
     {
         float depthOffset = MaterialSrg::m_depthMap.Sample(MaterialSrg::m_sampler, sixPointUv).r * MaterialSrg::m_depthScale;
@@ -185,12 +204,36 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
         {
             dirToCameraWS = ViewSrg::m_worldPosition.xyz - IN.m_worldPosition.xyz;
         }
-        dirToCameraWS = normalize(dirToCameraWS);
-        float3 worldOffset = dirToCameraWS * depthOffset;
+        
+        float3 dirToCameraWSNormalized = normalize(dirToCameraWS);
+        float3 worldOffset = dirToCameraWSNormalized * depthOffset;
         float3 worldOffsetPosition = IN.m_worldPosition.xyz + worldOffset;
         float4 clipOffsetPosition = mul(ViewSrg::m_viewProjectionMatrix, float4(worldOffsetPosition, 1.0));
-        
+        float originalDepthNDC = depthNDC;
         depthNDC = clipOffsetPosition.z / clipOffsetPosition.w;
+        float2 linearDepthUv = ((float2(IN.m_position.x, IN.m_position.y) / IN.m_position.w) + float2(1.0f, 1.0f)) * 0.5f;
+        linearDepthUv = float2(IN.m_position.x, IN.m_position.y) / IN.m_position.w;
+        //linearDepthUv = float2(IN.m_position.x, IN.m_position.y);
+        // Now we want to ramp the alpha value if there is an object between the cutout and the newly re-projected depth.
+        float linearDepth = PassSrg::m_linearDepthTexture.Sample(MaterialSrg::m_sampler, linearDepthUv).r;
+        opaqueDepth = linearDepth;
+        opaqueDepth /= ViewSrg::GetFarZTimesNearZ();
+        opaqueDepth = 1.0 / opaqueDepth;
+        opaqueDepth += ViewSrg::GetFarZ();
+        opaqueDepth /= ViewSrg::GetFarZMinusNearZ();
+        float3 worldDepthBufferPosition = dirToCameraWSNormalized * linearDepth;
+
+        float3 coefficients = float3(ViewSrg::GetNearZ() / ViewSrg::GetFarZMinusNearZ(), ViewSrg::GetNearZ() - ViewSrg::GetFarZ(), ViewSrg::GetFarZ());
+        opaqueDepth = LinearDepthToPerspective(linearDepth, coefficients);
+        //opaqueDepth = depthNDC;
+        opaqueDepth = PassSrg::m_linearDepthTexture.Sample(MaterialSrg::m_sampler, float2(IN.m_position.x, IN.m_position.y)).r;
+        float3 depthPositionWS = ReconstructWorldPositionFromDepth(linearDepthUv).xyz;
+        float4 clipDepthPosition = mul(ViewSrg::m_viewProjectionMatrix, float4(depthPositionWS, 1.0));
+        float linearDepthNDC = clipDepthPosition.z / clipDepthPosition.w;
+        //opaqueDepth = linearDepthNDC;
+
+        //alpha = lerp(0.0f, alpha, saturate((opaqueDepth - originalDepthNDC) / (depthNDC - originalDepthNDC)));
+        alpha = lerp(0.0f, 1.0f, opaqueDepth);
     }
 
     if(o_parallax_highlightClipping && displacementIsClipped)
