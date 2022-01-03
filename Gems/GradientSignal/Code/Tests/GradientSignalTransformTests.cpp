@@ -7,7 +7,7 @@
  */
 
 
-#include "Tests/GradientSignalTestMocks.h"
+#include <Tests/GradientSignalTestFixtures.h>
 
 #include <AzTest/AzTest.h>
 #include <AzCore/Asset/AssetManager.h>
