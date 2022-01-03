@@ -30,12 +30,12 @@ namespace EMotionFX
         motionSetsWindowPlugin->SetSelectedSet(motionSet);
 
         ExecuteCommands({
-        "ImportMotion -filename @devroot@/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin_idle.motion",
-        "MotionSetAddMotion -motionSetID 0 -motionFilenamesAndIds @devroot@/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin_idle.motion;rin_idle"
+        "ImportMotion -filename @engroot@/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin_idle.motion",
+        "MotionSetAddMotion -motionSetID 0 -motionFilenamesAndIds @engroot@/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin_idle.motion;rin_idle"
             });
 
         char resolvedPath[AZ::IO::MaxPathLength];
-        EXPECT_TRUE(AZ::IO::FileIOBase::GetInstance()->ResolvePath("@devroot@/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin_idle.motion", resolvedPath, AZ_ARRAY_SIZE(resolvedPath)));
+        EXPECT_TRUE(AZ::IO::FileIOBase::GetInstance()->ResolvePath("@engroot@/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin_idle.motion", resolvedPath, AZ_ARRAY_SIZE(resolvedPath)));
         m_motionFileName = resolvedPath;
         AzFramework::ApplicationRequests::Bus::Broadcast([](AzFramework::ApplicationRequests* requests, AZStd::string& path) { requests->NormalizePathKeepCase(path); }, m_motionFileName);
         m_motionName = "rin_idle";

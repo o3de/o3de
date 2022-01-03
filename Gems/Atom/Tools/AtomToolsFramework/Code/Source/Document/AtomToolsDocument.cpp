@@ -38,16 +38,16 @@ namespace AtomToolsFramework
         return m_relativePath;
     }
 
-    const AZStd::any& AtomToolsDocument::GetPropertyValue([[maybe_unused]] const AZ::Name& propertyFullName) const
+    const AZStd::any& AtomToolsDocument::GetPropertyValue([[maybe_unused]] const AZ::Name& propertyId) const
     {
-        AZ_UNUSED(propertyFullName);
+        AZ_UNUSED(propertyId);
         AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
         return m_invalidValue;
     }
 
-    const AtomToolsFramework::DynamicProperty& AtomToolsDocument::GetProperty([[maybe_unused]] const AZ::Name& propertyFullName) const
+    const AtomToolsFramework::DynamicProperty& AtomToolsDocument::GetProperty([[maybe_unused]] const AZ::Name& propertyId) const
     {
-        AZ_UNUSED(propertyFullName);
+        AZ_UNUSED(propertyId);
         AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
         return m_invalidProperty;
     }
@@ -59,9 +59,9 @@ namespace AtomToolsFramework
         return false;
     }
 
-    void AtomToolsDocument::SetPropertyValue([[maybe_unused]] const AZ::Name& propertyFullName, [[maybe_unused]] const AZStd::any& value)
+    void AtomToolsDocument::SetPropertyValue([[maybe_unused]] const AZ::Name& propertyId, [[maybe_unused]] const AZStd::any& value)
     {
-        AZ_UNUSED(propertyFullName);
+        AZ_UNUSED(propertyId);
         AZ_UNUSED(value);
         AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
     }

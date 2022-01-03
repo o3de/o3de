@@ -150,6 +150,12 @@ namespace AZ
 
             Data::Asset<BufferAsset> GetIndexBufferAsset() const { return m_indexBuffer; }
         private:
+            // AssetData overrides...
+            bool HandleAutoReload() override
+            {
+                return false;
+            }
+            
             AZStd::vector<Mesh> m_meshes;
             AZ::Aabb m_aabb = AZ::Aabb::CreateNull();
             

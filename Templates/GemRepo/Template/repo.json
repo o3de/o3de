@@ -1,0 +1,11 @@
+{
+    "repo_name":"${Name}",
+    "origin":"Origin for the ${Name} Gem Repository",
+    "repo_uri": "${RepoURI}",
+    "summary": "A Gem Repository with a single Gem in the root of the repository.",
+    "additional_info": "Additional info for ${Name}",
+    "last_updated": "",
+    "gems": [
+        "${RepoURI}"
+    ]
+}

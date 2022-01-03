@@ -11,6 +11,7 @@
 #include <AzCore/Math/Crc.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/std/hash.h>
+#include <AzCore/std/string/fixed_string.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -22,8 +23,7 @@ namespace AzFramework
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Constants
-        static const int NAME_BUFFER_SIZE = 64;
-        static const int MAX_NAME_LENGTH = NAME_BUFFER_SIZE - 1;
+        static constexpr int MAX_NAME_LENGTH = 64;
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
@@ -41,17 +41,16 @@ namespace AzFramework
         //! Constructor
         //! \param[in] name Name of the input device (will be truncated if exceeds MAX_NAME_LENGTH)
         //! \param[in] index Index of the input device (optional)
-        explicit InputDeviceId(const char* name, AZ::u32 index = 0);
+        explicit constexpr InputDeviceId(AZStd::string_view name, AZ::u32 index = 0)
+            : m_name(name.substr(0, MAX_NAME_LENGTH))
+            , m_crc32(name.substr(0, MAX_NAME_LENGTH))
+            , m_index(index)
+        {
+        }
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        //! Copy constructor
-        //! \param[in] other Another instance of the class to copy from
-        InputDeviceId(const InputDeviceId& other);
-
-        ////////////////////////////////////////////////////////////////////////////////////////////
-        //! Copy assignment operator
-        //! \param[in] other Another instance of the class to copy from
-        InputDeviceId& operator=(const InputDeviceId& other);
+        // Default copying and moving
+        AZ_DEFAULT_COPY_MOVE(InputDeviceId);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Default destructor
@@ -60,12 +59,18 @@ namespace AzFramework
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Access to the input device's name
         //! \return Name of the input device
-        const char* GetName() const;
+        constexpr const char* GetName() const
+        {
+            return m_name.c_str();
+        }
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Access to the crc32 of the input device's name
         //! \return crc32 of the input device name
-        const AZ::Crc32& GetNameCrc32() const;
+        constexpr const AZ::Crc32& GetNameCrc32() const
+        {
+            return m_crc32;
+        }
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Access to the input device's index. Used for differentiating between multiple instances
@@ -75,27 +80,45 @@ namespace AzFramework
         //! at startup using indicies 0->3. As gamepads connect/disconnect at runtime we assign the
         //! appropriate (system dependent) local user id (see InputDevice::GetAssignedLocalUserId).
         //! \return Index of the input device
-        AZ::u32 GetIndex() const;
+        constexpr AZ::u32 GetIndex() const
+        {
+            return m_index;
+        }
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        ///@{
         //! Equality comparison operator
         //! \param[in] other Another instance of the class to compare for equality
-        bool operator==(const InputDeviceId& other) const;
-        bool operator!=(const InputDeviceId& other) const;
-        ///@}
+        constexpr bool operator==(const InputDeviceId& other) const
+        {
+            return (m_crc32 == other.m_crc32) && (m_index == other.m_index);
+        }
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! Inequality comparison operator
+        //! \param[in] other Another instance of the class to compare for inequality
+        constexpr bool operator!=(const InputDeviceId& other) const
+        {
+            return !(*this == other);
+        }
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Less than comparison operator
         //! \param[in] other Another instance of the class to compare
-        bool operator<(const InputDeviceId& other) const;
+        constexpr bool operator<(const InputDeviceId& other) const
+        {
+            if (m_index == other.m_index)
+            {
+                return m_crc32 < other.m_crc32;
+            }
+            return m_index < other.m_index;
+        }
 
     private:
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Variables
-        char      m_name[NAME_BUFFER_SIZE]; //!< Name of the input device
-        AZ::Crc32 m_crc32;                  //!< Crc32 of the input device
-        AZ::u32   m_index;                  //!< Index of the input device
+        AZStd::fixed_string<MAX_NAME_LENGTH> m_name; //!< Name of the input device
+        AZ::Crc32 m_crc32; //!< Crc32 of the input device name
+        AZ::u32 m_index; //!< Index of the input device
     };
 } // namespace AzFramework
 

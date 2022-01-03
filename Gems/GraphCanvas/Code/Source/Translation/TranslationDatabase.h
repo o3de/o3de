@@ -43,9 +43,9 @@ namespace GraphCanvas
 
         bool HasKey(const AZStd::string& key) override;
 
-        TranslationRequests::Details GetDetails(const AZStd::string& key) override;
+        TranslationRequests::Details GetDetails(const AZStd::string& key, const Details& value) override;
 
-        const char* Get(const AZStd::string& key) override;
+        bool Get(const AZStd::string& key, AZStd::string& value) override;
 
         bool Add(const TranslationFormat& format) override;
 

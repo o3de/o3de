@@ -6,8 +6,11 @@
  *
  */
 
-
 #include <AzCore/Component/Entity.h>
+#include <AzCore/std/allocator_stateless.h>
+#include <AzCore/std/containers/map.h>
+#include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/Time/ITime.h>
 #include <AzFramework/Components/CameraBus.h>
 #include <Maestro/Bus/SequenceComponentBus.h>
 #include "Movie.h"
@@ -32,9 +35,7 @@
 #include <ISystem.h>
 #include <ILog.h>
 #include <IConsole.h>
-#include <ITimer.h>
 #include <IRenderer.h>
-#include <IViewSystem.h>
 #include <Maestro/Types/AnimNodeType.h>
 #include <Maestro/Types/SequenceType.h>
 #include <Maestro/Types/AnimParamType.h>
@@ -73,22 +74,32 @@ static SMovieSequenceAutoComplete s_movieSequenceAutoComplete;
 #endif
 
 //////////////////////////////////////////////////////////////////////////
-// Serialization for anim nodes & param types
-#define REGISTER_NODE_TYPE(name) assert(g_animNodeEnumToStringMap.find(AnimNodeType::name) == g_animNodeEnumToStringMap.end()); \
-    g_animNodeEnumToStringMap[AnimNodeType::name] = AZ_STRINGIZE(name);                                                         \
-    g_animNodeStringToEnumMap[AZStd::string(AZ_STRINGIZE(name))] = AnimNodeType::name;
+namespace
+{
+    using AnimParamSystemString = AZStd::basic_string<char, AZStd::char_traits<char>, AZStd::stateless_allocator>;
 
-#define REGISTER_PARAM_TYPE(name) assert(g_animParamEnumToStringMap.find(AnimParamType::name) == g_animParamEnumToStringMap.end()); \
-    g_animParamEnumToStringMap[AnimParamType::name] = AZ_STRINGIZE(name);                                                           \
-    g_animParamStringToEnumMap[AZStd::string(AZ_STRINGIZE(name))] = AnimParamType::name;
+    template <typename KeyType, typename MappedType, typename Compare = AZStd::less<KeyType>>
+    using AnimSystemOrderedMap = AZStd::map<KeyType, MappedType, Compare, AZStd::stateless_allocator>;
+    template <typename KeyType, typename MappedType, typename Hasher = AZStd::hash<KeyType>, typename EqualKey = AZStd::equal_to<KeyType>>
+    using AnimSystemUnorderedMap = AZStd::unordered_map<KeyType, MappedType, Hasher, EqualKey, AZStd::stateless_allocator>;
+}
+
+// Serialization for anim nodes & param types
+#define REGISTER_NODE_TYPE(name) assert(!g_animNodeEnumToStringMap.contains(AnimNodeType::name)); \
+    g_animNodeEnumToStringMap[AnimNodeType::name] = AZ_STRINGIZE(name);                          \
+    g_animNodeStringToEnumMap[AnimParamSystemString(AZ_STRINGIZE(name))] = AnimNodeType::name;
+
+#define REGISTER_PARAM_TYPE(name) assert(!g_animParamEnumToStringMap.contains(AnimParamType::name)); \
+    g_animParamEnumToStringMap[AnimParamType::name] = AZ_STRINGIZE(name);                           \
+    g_animParamStringToEnumMap[AnimParamSystemString(AZ_STRINGIZE(name))] = AnimParamType::name;
 
 namespace
 {
-    AZStd::unordered_map<AnimNodeType, AZStd::string> g_animNodeEnumToStringMap;
-    StaticInstance<std::map<AZStd::string, AnimNodeType, stl::less_stricmp<AZStd::string> >> g_animNodeStringToEnumMap;
+    AnimSystemUnorderedMap<AnimNodeType, AnimParamSystemString> g_animNodeEnumToStringMap;
+    AnimSystemOrderedMap<AnimParamSystemString, AnimNodeType, stl::less_stricmp<AnimParamSystemString>> g_animNodeStringToEnumMap;
 
-    AZStd::unordered_map<AnimParamType, AZStd::string> g_animParamEnumToStringMap;
-    StaticInstance<std::map<AZStd::string, AnimParamType, stl::less_stricmp<AZStd::string> >> g_animParamStringToEnumMap;
+    AnimSystemUnorderedMap<AnimParamType, AnimParamSystemString> g_animParamEnumToStringMap;
+    AnimSystemOrderedMap<AnimParamSystemString, AnimParamType, stl::less_stricmp<AnimParamSystemString>> g_animParamStringToEnumMap;
 
     // If you get an assert in this function, it means two node types have the same enum value.
     void RegisterNodeTypes()
@@ -195,6 +206,22 @@ namespace
     }
 }
 
+namespace Internal
+{
+    float ApplyDeltaTimeOverrideIfEnabled(float deltaTime)
+    {
+        if (auto* timeSystem = AZ::Interface<AZ::ITime>::Get())
+        {
+            const AZ::TimeMs deltatimeOverride = timeSystem->GetSimulationTickDeltaOverride();
+            if (deltatimeOverride != AZ::Time::ZeroTimeMs)
+            {
+                deltaTime = AZ::TimeMsToSeconds(deltatimeOverride);
+            }
+        }
+        return deltaTime;
+    }
+} // namespace Internal
+
 //////////////////////////////////////////////////////////////////////////
 CMovieSystem::CMovieSystem(ISystem* pSystem)
 {
@@ -206,18 +233,13 @@ CMovieSystem::CMovieSystem(ISystem* pSystem)
     m_bEnableCameraShake = true;
     m_bCutscenesPausedInEditor = true;
     m_sequenceStopBehavior = eSSB_GotoEndTime;
-    m_lastUpdateTime.SetValue(0);
+    m_lastUpdateTime = AZ::Time::ZeroTimeUs;
     m_bStartCapture = false;
     m_captureFrame = -1;
     m_bEndCapture = false;
-    m_fixedTimeStepBackUp = 0;
-    m_maxStepBackUp = 0;
-    m_smoothingBackUp = 0;
+    m_fixedTimeStepBackUp = AZ::Time::ZeroTimeMs;
     m_cvar_capture_frame_once = nullptr;
     m_cvar_capture_folder = nullptr;
-    m_cvar_t_FixedStep = nullptr;
-    m_cvar_t_MaxStep = nullptr;
-    m_cvar_t_Smoothing = nullptr;
     m_cvar_sys_maxTimeStepForMovieSystem = nullptr;
     m_cvar_capture_frames = nullptr;
     m_cvar_capture_file_prefix = nullptr;
@@ -709,7 +731,7 @@ void CMovieSystem::NotifyListeners(IAnimSequence* sequence, IMovieListener::EMov
     {
         /*
             * When a sequence is stopped, Resume is called just before stopped (not sure why). To ensure that a OnStop notification is sent out after the Resume,
-            * notifications for eMovieEvent_Started and eMovieEvent_Stopped are handled in IAnimSequence::OnStart and IAnimSequence::OnStop 
+            * notifications for eMovieEvent_Started and eMovieEvent_Stopped are handled in IAnimSequence::OnStart and IAnimSequence::OnStop
             */
         case IMovieListener::eMovieEvent_Aborted:
         {
@@ -726,7 +748,7 @@ void CMovieSystem::NotifyListeners(IAnimSequence* sequence, IMovieListener::EMov
             // do nothing for unhandled IMovieListener events
             break;
         }
-    }    
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -763,79 +785,65 @@ bool CMovieSystem::InternalStopSequence(IAnimSequence* sequence, bool bAbort, bo
 {
     assert(sequence != 0);
 
-    bool bRet = false;
     PlayingSequences::iterator it;
 
-    if (FindSequence(sequence, it))
+    if (!FindSequence(sequence, it))
     {
-        if (bAnimate && sequence->IsActivated())
-        {
-            if (m_sequenceStopBehavior == eSSB_GotoEndTime)
-            {
-                SAnimContext ac;
-                ac.singleFrame = true;
-                ac.time = sequence->GetTimeRange().end;
-                sequence->Animate(ac);
-            }
-            else if (m_sequenceStopBehavior == eSSB_GotoStartTime)
-            {
-                SAnimContext ac;
-                ac.singleFrame = true;
-                ac.time = sequence->GetTimeRange().start;
-                sequence->Animate(ac);
-            }
-
-            sequence->Deactivate();
-        }
-
-        // If this sequence is cut scene end it.
-        if (sequence->GetFlags() & IAnimSequence::eSeqFlags_CutScene)
-        {
-            if (!gEnv->IsEditing() || !m_bCutscenesPausedInEditor)
-            {
-                if (m_pUser)
-                {
-                    m_pUser->EndCutScene(sequence, sequence->GetCutSceneFlags(true));
-                }
-            }
-
-            sequence->SetParentSequence(NULL);
-        }
-
-        // tell all interested listeners
-        NotifyListeners(sequence, bAbort ? IMovieListener::eMovieEvent_Aborted : IMovieListener::eMovieEvent_Stopped);
-
-        // erase the sequence after notifying listeners so if they choose to they can get the ending time of this sequence
-        if (FindSequence(sequence, it))
-        {
-            m_playingSequences.erase(it);
-        }
-
-        sequence->Resume();
-        static_cast<CAnimSequence*>(sequence)->OnStop();
-        bRet = true;
+        return false;
     }
 
-    return bRet;
+    if (bAnimate && sequence->IsActivated())
+    {
+        if (m_sequenceStopBehavior == eSSB_GotoEndTime)
+        {
+            SAnimContext ac;
+            ac.singleFrame = true;
+            ac.time = sequence->GetTimeRange().end;
+            sequence->Animate(ac);
+        }
+        else if (m_sequenceStopBehavior == eSSB_GotoStartTime)
+        {
+            SAnimContext ac;
+            ac.singleFrame = true;
+            ac.time = sequence->GetTimeRange().start;
+            sequence->Animate(ac);
+        }
+
+        sequence->Deactivate();
+    }
+
+    // If this sequence is cut scene end it.
+    if (sequence->GetFlags() & IAnimSequence::eSeqFlags_CutScene)
+    {
+        if (!gEnv->IsEditing() || !m_bCutscenesPausedInEditor)
+        {
+            if (m_pUser)
+            {
+                m_pUser->EndCutScene(sequence, sequence->GetCutSceneFlags(true));
+            }
+        }
+
+        sequence->SetParentSequence(NULL);
+    }
+
+    // tell all interested listeners
+    NotifyListeners(sequence, bAbort ? IMovieListener::eMovieEvent_Aborted : IMovieListener::eMovieEvent_Stopped);
+
+    // erase the sequence after notifying listeners so if they choose to they can get the ending time of this sequence
+    if (FindSequence(sequence, it))
+    {
+        m_playingSequences.erase(it);
+    }
+
+    sequence->Resume();
+    static_cast<CAnimSequence*>(sequence)->OnStop();
+
+    return true;
 }
 
 //////////////////////////////////////////////////////////////////////////
 bool CMovieSystem::AbortSequence(IAnimSequence* sequence, bool bLeaveTime)
 {
-    assert(sequence);
-
-    // to avoid any camera blending after aborting a cut scene
-    IViewSystem* pViewSystem = gEnv->pSystem->GetIViewSystem();
-    if (pViewSystem)
-    {
-        pViewSystem->SetBlendParams(0, 0, 0);
-        IView* pView = pViewSystem->GetActiveView();
-        if (pView)
-        {
-            pView->ResetBlending();
-        }
-    }
-
     return InternalStopSequence(sequence, true, !bLeaveTime);
 }
 
@@ -898,7 +906,7 @@ void CMovieSystem::Reset(bool bPlayOnReset, bool bSeekToStart)
     InternalStopAllSequences(true, false);
 
     // Reset all sequences.
-    for (Sequences::iterator iter = m_sequences.begin(); iter != m_sequences.end(); ++iter)
+    for (Sequences::const_iterator iter = m_sequences.cbegin(); iter != m_sequences.cend(); ++iter)
     {
         IAnimSequence* pCurrentSequence = iter->get();
         NotifyListeners(pCurrentSequence, IMovieListener::eMovieEvent_Started);
@@ -932,7 +940,7 @@ void CMovieSystem::Reset(bool bPlayOnReset, bool bSeekToStart)
 //////////////////////////////////////////////////////////////////////////
 void CMovieSystem::PlayOnLoadSequences()
 {
-    for (Sequences::iterator sit = m_sequences.begin(); sit != m_sequences.end(); ++sit)
+    for (Sequences::const_iterator sit = m_sequences.cbegin(); sit != m_sequences.cend(); ++sit)
     {
         IAnimSequence* sequence = sit->get();
         if (sequence->GetFlags() & IAnimSequence::eSeqFlags_PlayOnReset)
@@ -976,15 +984,26 @@ void CMovieSystem::ShowPlayedSequencesDebug()
 {
     float y = 10.0f;
     std::vector<const char*> names;
+    std::vector<float> rows;
+    constexpr f32 green[4]  = {0, 1, 0, 1};
+    constexpr f32 purple[4] = {1, 0, 1, 1};
+    constexpr f32 white[4]  = {1, 1, 1, 1};
+
+    //TODO: needs an implementation
+    auto Draw2dLabel = [](float /*x*/,float /*y*/,float /*depth*/,const f32* /*color*/,bool /*center*/, const char* /*fmt*/, ...) {};
 
     for (PlayingSequences::iterator it = m_playingSequences.begin(); it != m_playingSequences.end(); ++it)
     {
         PlayingSequence& playingSequence = *it;
 
-        if (playingSequence.sequence == NULL)
+        if (playingSequence.sequence == nullptr)
         {
             continue;
         }
+
+        const char* fullname = playingSequence.sequence->GetName();
+
+        Draw2dLabel(1.0f, y, 1.3f, green, false, "Sequence %s : %f (x %f)", fullname, playingSequence.currentTime, playingSequence.currentSpeed);
 
         y += 16.0f;
 
@@ -1006,9 +1025,10 @@ void CMovieSystem::ShowPlayedSequencesDebug()
             if (alreadyThere == false)
             {
                 names.push_back(name);
-            }
-        }
 
+            }
+            Draw2dLabel((21.0f + 100.0f * i), ((i % 2) ? (y + 8.0f) : y), 1.0f, alreadyThere ? white : purple, false, "%s", name);
+        }
         y += 32.0f;
     }
 }
@@ -1028,13 +1048,13 @@ void CMovieSystem::PreUpdate(float deltaTime)
     }
     m_newlyActivatedSequences.clear();
 
-    UpdateInternal(m_cvar_t_FixedStep ? m_cvar_t_FixedStep->GetFVal() : deltaTime, true);
+    UpdateInternal(Internal::ApplyDeltaTimeOverrideIfEnabled(deltaTime), true);
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CMovieSystem::PostUpdate(float deltaTime)
 {
-    UpdateInternal(m_cvar_t_FixedStep ? m_cvar_t_FixedStep->GetFVal() : deltaTime, false);
+    UpdateInternal(Internal::ApplyDeltaTimeOverrideIfEnabled(deltaTime), false);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1048,7 +1068,7 @@ void CMovieSystem::UpdateInternal(const float deltaTime, const bool bPreUpdate)
     }
 
     // don't update more than once if dt==0.0
-    CTimeValue curTime = gEnv->pTimer->GetFrameStartTime();
+    const AZ::TimeUs curTime = AZ::GetLastSimulationTickTime();
     if (deltaTime == 0.0f && curTime == m_lastUpdateTime && !gEnv->IsEditor())
     {
         return;
@@ -1080,7 +1100,8 @@ void CMovieSystem::UpdateInternal(const float deltaTime, const bool bPreUpdate)
 
         // Skip sequence if current update does not apply
         const bool bSequenceEarlyUpdate = (playingSequence.sequence->GetFlags() & IAnimSequence::eSeqFlags_EarlyMovieUpdate) != 0;
-        if (bPreUpdate && !bSequenceEarlyUpdate || !bPreUpdate && bSequenceEarlyUpdate)
+        if ((bPreUpdate && !bSequenceEarlyUpdate ) || (!bPreUpdate && bSequenceEarlyUpdate)
+)
         {
             continue;
         }
@@ -1255,7 +1276,7 @@ void CMovieSystem::PauseCutScenes()
 {
     m_bCutscenesPausedInEditor = true;
 
-    if (m_pUser != NULL)
+    if (m_pUser != nullptr)
     {
         for (PlayingSequences::iterator it = m_playingSequences.begin(); it != m_playingSequences.end(); ++it)
         {
@@ -1277,7 +1298,7 @@ void CMovieSystem::ResumeCutScenes()
 
     m_bCutscenesPausedInEditor = false;
 
-    if (m_pUser != NULL)
+    if (m_pUser != nullptr)
     {
         for (PlayingSequences::iterator it = m_playingSequences.begin(); it != m_playingSequences.end(); ++it)
         {
@@ -1467,7 +1488,7 @@ void CMovieSystem::ListSequencesCmd([[maybe_unused]] IConsoleCmdArgs* pArgs)
 void CMovieSystem::PlaySequencesCmd(IConsoleCmdArgs* pArgs)
 {
     const char* sequenceName = pArgs->GetArg(1);
-    gEnv->pMovieSystem->PlaySequence(sequenceName, NULL, false, false);
+    gEnv->pMovieSystem->PlaySequence(sequenceName, nullptr, false, false);
 }
 #endif //#if !defined(_RELEASE)
 
@@ -1500,34 +1521,11 @@ void CMovieSystem::GoToFrame(const char* seqName, float targetFrame)
 
 void CMovieSystem::EnableFixedStepForCapture(float step)
 {
-    if (nullptr == m_cvar_t_FixedStep)
+    if (auto* timeSystem = AZ::Interface<AZ::ITime>::Get())
     {
-        m_cvar_t_FixedStep = gEnv->pConsole->GetCVar("t_FixedStep");
+        m_fixedTimeStepBackUp = timeSystem->GetSimulationTickDeltaOverride();
+        timeSystem->SetSimulationTickDeltaOverride(AZ::SecondsToTimeMs(step));
     }
-
-    m_fixedTimeStepBackUp = m_cvar_t_FixedStep->GetFVal();
-    m_cvar_t_FixedStep->Set(step);
-
-    if (nullptr == m_cvar_t_MaxStep)
-    {
-        m_cvar_t_MaxStep = gEnv->pConsole->GetCVar("t_MaxStep");
-    }
-
-    // Make sure to make the max step large enough
-    m_maxStepBackUp = m_cvar_t_MaxStep->GetFVal();
-    if (step > m_maxStepBackUp)
-    {
-        m_cvar_t_MaxStep->Set(step);
-    }
-
-    if (nullptr == m_cvar_t_Smoothing)
-    {
-        m_cvar_t_Smoothing = gEnv->pConsole->GetCVar("t_Smoothing");
-    }
-
-    // Turn off framerate smoothing
-    m_smoothingBackUp = m_cvar_t_Smoothing->GetFVal();
-    m_cvar_t_Smoothing->Set(0);
 
     if (nullptr == m_cvar_sys_maxTimeStepForMovieSystem)
     {
@@ -1544,9 +1542,10 @@ void CMovieSystem::EnableFixedStepForCapture(float step)
 
 void CMovieSystem::DisableFixedStepForCapture()
 {
-    m_cvar_t_FixedStep->Set(m_fixedTimeStepBackUp);
-    m_cvar_t_MaxStep->Set(m_maxStepBackUp);
-    m_cvar_t_Smoothing->Set(m_smoothingBackUp);
+    if (auto* timeSystem = AZ::Interface<AZ::ITime>::Get())
+    {
+        timeSystem->SetSimulationTickDeltaOverride(m_fixedTimeStepBackUp);
+    }
     m_cvar_sys_maxTimeStepForMovieSystem->Set(m_maxTimeStepForMovieSystemBackUp);
 }
 
@@ -1858,12 +1857,6 @@ void CMovieSystem::OnSequenceActivated(IAnimSequence* sequence)
 {
     // Queue for processing, sequences will be removed after checked for auto start.
     m_newlyActivatedSequences.push_back(sequence);
-}
-
-//////////////////////////////////////////////////////////////////////////
-ILightAnimWrapper* CMovieSystem::CreateLightAnimWrapper(const char* name) const
-{
-    return CLightAnimWrapper::Create(name);
 }
 
 //////////////////////////////////////////////////////////////////////////

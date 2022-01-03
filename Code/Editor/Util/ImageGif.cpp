@@ -197,11 +197,9 @@ bool CImageGif::Load(const QString& fileName, CImageEx& outImage)
         return false;
     }
 
-    int                numcols;
     unsigned  char ch, ch1;
     uint8* ptr1;
     int   i;
-    short transparency = -1;
 
     TImage<uint8> outImageIndex;
 
@@ -246,7 +244,6 @@ bool CImageGif::Load(const QString& fileName, CImageEx& outImage)
     HasColormap  = ((ch & COLORMAPMASK) ? true : false);
 
     BitsPerPixel = (ch & 7) + 1;
-    numcols      = ColorMapSize = 1 << BitsPerPixel;
     BitMask      = ColorMapSize - 1;
 
     Background   = NEXTBYTE;            /* background color... not used. */
@@ -290,10 +287,6 @@ bool CImageGif::Load(const QString& fileName, CImageEx& outImage)
         {
         case GRAPHIC_EXT:
             ch = NEXTBYTE;
-            if (ptr[0] & 0x1)
-            {
-                transparency = ptr[3];       /* transparent color index */
-            }
             ptr += ch;
             break;
         case PLAINTEXT_EXT:
@@ -316,9 +309,6 @@ bool CImageGif::Load(const QString& fileName, CImageEx& outImage)
             ch = NEXTBYTE;
         }
     }
-
-    //if (transparency >= 0)
-    //mfSet_transparency(transparency);
 
     /* Now read in values from the image descriptor */
 

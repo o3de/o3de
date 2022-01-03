@@ -20,7 +20,6 @@
 #include <RHI/CommandQueue.h>
 #include <RHI/QueryPool.h>
 #include <Atom/RHI/IndirectArguments.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <RHI/RayTracingBlas.h>
 #include <RHI/RayTracingTlas.h>
 #include <RHI/RayTracingPipelineState.h>
@@ -40,6 +39,8 @@
 #define DX12_COMMANDLIST_TIMER(id)
 #define DX12_COMMANDLIST_TIMER_DETAIL(id)
 #endif
+
+#define PIX_MARKER_CMDLIST_COL 0xFF0000FF
 
 namespace AZ
 {
@@ -94,16 +95,22 @@ namespace AZ
         {
             SetName(name);
 
-            PIXBeginEvent(0xFF0000FF, name.GetCStr());
-            PIXBeginEvent(GetCommandList(), 0xFF0000FF, name.GetCStr());
+            PIXBeginEvent(PIX_MARKER_CMDLIST_COL, name.GetCStr());
+            if (RHI::Factory::Get().PixGpuEventsEnabled())
+            {
+                PIXBeginEvent(GetCommandList(), PIX_MARKER_CMDLIST_COL, name.GetCStr());
+            }
         }
 
         void CommandList::Close()
         {
             FlushBarriers();
-
-            PIXEndEvent(GetCommandList());
             PIXEndEvent();
+            if (RHI::Factory::Get().PixGpuEventsEnabled())
+            {
+                PIXEndEvent(GetCommandList());
+            }
+            
 
             CommandListBase::Close();
         }
@@ -555,7 +562,7 @@ namespace AZ
                 return;
             }
 
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             D3D12_VIEWPORT dx12Viewports[D3D12_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE];
 
             const auto& viewports = m_state.m_viewportState.m_states;
@@ -580,7 +587,7 @@ namespace AZ
                 return;
             }
 
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             D3D12_RECT dx12Scissors[D3D12_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE];
 
             const auto& scissors = m_state.m_scissorState.m_states;

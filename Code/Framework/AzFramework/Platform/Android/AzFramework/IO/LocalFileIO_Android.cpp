@@ -13,7 +13,6 @@
 #include <AzCore/Android/Utils.h>
 #include <AzCore/IO/IOUtils.h>
 #include <AzCore/IO/Path/Path.h>
-#include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/functional.h>
 
 #include <android/api-level.h>
@@ -40,32 +39,12 @@ namespace AZ
 {
     namespace IO
     {
-        bool LocalFileIO::IsDirectory(const char* filePath)
-        {
-            ANDROID_IO_PROFILE_SECTION_ARGS("IsDir:%s", filePath);
-
-            char resolvedPath[AZ_MAX_PATH_LEN];
-            ResolvePath(filePath, resolvedPath, AZ_MAX_PATH_LEN);
-
-            if (AZ::Android::Utils::IsApkPath(resolvedPath))
-            {
-                return AZ::Android::APKFileHandler::IsDirectory(AZ::Android::Utils::StripApkPrefix(resolvedPath).c_str());
-            }
-
-            struct stat result;
-            if (stat(resolvedPath, &result) == 0)
-            {
-                return S_ISDIR(result.st_mode);
-            }
-            return false;
-        }
-
         Result LocalFileIO::Copy(const char* sourceFilePath, const char* destinationFilePath)
         {
-            char resolvedSourcePath[AZ_MAX_PATH_LEN];
-            char resolvedDestPath[AZ_MAX_PATH_LEN];
-            ResolvePath(sourceFilePath, resolvedSourcePath, AZ_MAX_PATH_LEN);
-            ResolvePath(destinationFilePath, resolvedDestPath, AZ_MAX_PATH_LEN);
+            char resolvedSourcePath[AZ::IO::MaxPathLength];
+            char resolvedDestPath[AZ::IO::MaxPathLength];
+            ResolvePath(sourceFilePath, resolvedSourcePath, AZ::IO::MaxPathLength);
+            ResolvePath(destinationFilePath, resolvedDestPath, AZ::IO::MaxPathLength);
 
             if (AZ::Android::Utils::IsApkPath(sourceFilePath) || AZ::Android::Utils::IsApkPath(destinationFilePath))
             {
@@ -97,17 +76,16 @@ namespace AZ
         {
             ANDROID_IO_PROFILE_SECTION_ARGS("FindFiles:%s", filePath);
 
-            char resolvedPath[AZ_MAX_PATH_LEN];
-            ResolvePath(filePath, resolvedPath, AZ_MAX_PATH_LEN);
+            char resolvedPath[AZ::IO::MaxPathLength];
+            ResolvePath(filePath, resolvedPath, AZ::IO::MaxPathLength);
 
             AZStd::string pathWithoutSlash = RemoveTrailingSlash(resolvedPath);
             bool isInAPK = AZ::Android::Utils::IsApkPath(pathWithoutSlash.c_str());
 
+            AZ::IO::FixedMaxPath tempBuffer;
             if (isInAPK)
             {
                 AZ::IO::FixedMaxPath strippedPath = AZ::Android::Utils::StripApkPrefix(pathWithoutSlash.c_str());
-
-                char tempBuffer[AZ_MAX_PATH_LEN] = {0};
 
                 AZ::Android::APKFileHandler::ParseDirectory(strippedPath.c_str(), [&](const char* name)
                     {
@@ -118,10 +96,9 @@ namespace AZ
                             AZStd::string foundFilePath = CheckForTrailingSlash(resolvedPath);
                             foundFilePath += name;
                             // if aliased, de-alias!
-                            azstrcpy(tempBuffer, AZ_MAX_PATH_LEN, foundFilePath.c_str());
-                            ConvertToAlias(tempBuffer, AZ_MAX_PATH_LEN);
+                            ConvertToAlias(tempBuffer, AZ::IO::PathView{ foundFilePath });
 
-                            if (!callback(tempBuffer))
+                            if (!callback(tempBuffer.c_str()))
                             {
                                 return false;
                             }
@@ -135,10 +112,6 @@ namespace AZ
 
                 if (dir != nullptr)
                 {
-                    // because the absolute path might actually be SHORTER than the alias ("c:/r/dev" -> "@devroot@"), we need to
-                    // use a static buffer here.
-                    char tempBuffer[AZ_MAX_PATH_LEN];
-
                     // clear the errno state so we can distinguish between errors and end of stream
                     errno = 0;
                     struct dirent* entry = readdir(dir);
@@ -153,10 +126,9 @@ namespace AZ
                             AZStd::string foundFilePath = CheckForTrailingSlash(resolvedPath);
                             foundFilePath += entry->d_name;
                             // if aliased, de-alias!
-                            azstrcpy(tempBuffer, AZ_MAX_PATH_LEN, foundFilePath.c_str());
-                            ConvertToAlias(tempBuffer, AZ_MAX_PATH_LEN);
+                            ConvertToAlias(tempBuffer, AZ::IO::PathView{ foundFilePath });
 
-                            if (!callback(tempBuffer))
+                            if (!callback(tempBuffer.c_str()))
                             {
                                 break;
                             }
@@ -183,8 +155,8 @@ namespace AZ
 
         Result LocalFileIO::CreatePath(const char* filePath)
         {
-            char resolvedPath[AZ_MAX_PATH_LEN];
-            ResolvePath(filePath, resolvedPath, AZ_MAX_PATH_LEN);
+            char resolvedPath[AZ::IO::MaxPathLength];
+            ResolvePath(filePath, resolvedPath, AZ::IO::MaxPathLength);
 
             if (AZ::Android::Utils::IsApkPath(resolvedPath))
             {
@@ -220,34 +192,6 @@ namespace AZ
 
             mkdir(pathBuffer.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
             return IsDirectory(resolvedPath) ? ResultCode::Success : ResultCode::Error;
-        }
-
-        bool LocalFileIO::IsAbsolutePath(const char* path) const
-        {
-            return path && path[0] == '/';
-        }
-
-        bool LocalFileIO::ConvertToAbsolutePath(const char* path, char* absolutePath, AZ::u64 maxLength) const
-        {
-            if (AZ::Android::Utils::IsApkPath(path))
-            {
-                azstrncpy(absolutePath, maxLength, path, maxLength);
-                return true;
-            }
-            AZ_Assert(maxLength >= AZ_MAX_PATH_LEN, "Path length is larger than AZ_MAX_PATH_LEN");
-            if (!IsAbsolutePath(path))
-            {
-                // note that realpath fails if the path does not exist and actually changes the return value
-                // to be the actual place that FAILED, which we don't want.
-                // if we fail, we'd prefer to fall through and at least use the original path.
-                const char* result = realpath(path, absolutePath);
-                if (result)
-                {
-                    return true;
-                }
-            }
-            azstrcpy(absolutePath, maxLength, path);
-            return IsAbsolutePath(absolutePath);
         }
     } // namespace IO
 }//namespace AZ

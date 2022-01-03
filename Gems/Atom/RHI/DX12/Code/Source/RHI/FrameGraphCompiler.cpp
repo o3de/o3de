@@ -15,13 +15,10 @@
 #include <RHI/Device.h>
 #include <RHI/Image.h>
 #include <RHI/Scope.h>
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/FrameGraph.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/ScopeAttachment.h>
 #include <Atom/RHI/SwapChainFrameAttachment.h>
-#include <AzCore/Debug/EventTrace.h>
-
 // #define AZ_DX12_FRAMESCHEDULER_LOG_TRANSITIONS
 
 namespace AZ
@@ -204,7 +201,7 @@ namespace AZ
 
         RHI::MessageOutcome FrameGraphCompiler::CompileInternal(const RHI::FrameGraphCompileRequest& request)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameGraphCompiler: CompileInternal(DX12)");
+            AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: CompileInternal(DX12)");
 
             RHI::FrameGraph& frameGraph = *request.m_frameGraph;
 
@@ -373,7 +370,7 @@ namespace AZ
     
         void FrameGraphCompiler::CompileResourceBarriers(Scope* rootScope, const RHI::FrameGraphAttachmentDatabase& attachmentDatabase)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameGraphCompiler: CompileResourceBarriers(DX12)");
+            AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: CompileResourceBarriers(DX12)");
 
             for (RHI::BufferFrameAttachment* bufferFrameAttachment : attachmentDatabase.GetBufferAttachments())
             {
@@ -394,7 +391,7 @@ namespace AZ
             ResourceTransitionLoggerNull logger(bufferFrameAttachment.GetId());
 #endif
 
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameGraphCompiler: CompileBufferBarriers(DX12)");
+            AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: CompileBufferBarriers(DX12)");
 
             Buffer& buffer = static_cast<Buffer&>(*bufferFrameAttachment.GetBuffer());
             RHI::BufferScopeAttachment* scopeAttachment = bufferFrameAttachment.GetFirstScopeAttachment();
@@ -469,7 +466,7 @@ namespace AZ
             ResourceTransitionLoggerNull logger(imageFrameAttachment.GetId());
 #endif
 
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameGraphCompiler: CompileImageBarriers (DX12)");
+            AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: CompileImageBarriers (DX12)");
 
             Image& image = static_cast<Image&>(*imageFrameAttachment.GetImage());
             RHI::ImageScopeAttachment* scopeAttachment = imageFrameAttachment.GetFirstScopeAttachment();
@@ -480,8 +477,7 @@ namespace AZ
                 return;
             }
 
-            D3D12_RESOURCE_TRANSITION_BARRIER transition;
-            memset(&transition, 0, sizeof(D3D12_RESOURCE_TRANSITION_BARRIER)); // C4701 potentially unitialized local variable 'transition' used
+            D3D12_RESOURCE_TRANSITION_BARRIER transition = {0};
             transition.pResource = image.GetMemoryView().GetMemory();
 
             Scope& firstScope = static_cast<Scope&>(scopeAttachment->GetScope());
@@ -696,7 +692,7 @@ namespace AZ
         {
             Device& device = static_cast<Device&>(GetDevice());
 
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             CommandQueueContext& context = device.GetCommandQueueContext();
 
             for (RHI::Scope* scopeBase : frameGraph.GetScopes())

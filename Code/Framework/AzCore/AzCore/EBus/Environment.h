@@ -96,7 +96,7 @@ namespace AZ
 
             const char* get_name() const { return m_name; }
             void        set_name(const char* name) { m_name = name; }
-            size_type   get_max_size() const { return AZ_CORE_MAX_ALLOCATOR_SIZE; }
+            constexpr size_type   max_size() const { return AZ_CORE_MAX_ALLOCATOR_SIZE; }
             size_type   get_allocated_size() const { return 0; }
 
             bool is_lock_free() { return false; }

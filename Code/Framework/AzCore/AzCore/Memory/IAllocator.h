@@ -14,7 +14,6 @@ namespace AZ
     namespace Debug
     {
         class AllocationRecords;
-        class MemoryDriller;
     }
 
     namespace AllocatorStorage
@@ -62,6 +61,8 @@ namespace AZ
         virtual size_type               Capacity() const = 0;
         /// Returns max allocation size if possible. If not returned value is 0
         virtual size_type               GetMaxAllocationSize() const { return 0; }
+        /// Returns the maximum contiguous allocation size of a single allocation
+        virtual size_type               GetMaxContiguousAllocationSize() const { return 0; }
         /**
          * Returns memory allocated by the allocator and available to the user for allocations.
          * IMPORTANT: this is not the overhead memory this is just the memory that is allocated, but not used. Example: the pool allocators
@@ -81,7 +82,7 @@ namespace AZ
         /// Sets the number of entries to omit from the top of the callstack when recording stack traces.
         AllocatorDebugConfig& StackRecordLevels(int levels) { m_stackRecordLevels = levels; return *this; }
 
-        /// Set to true if this allocator should not have its records recorded and analyzed by systems like the MemoryDriller.
+        /// Set to true if this allocator should not have its records recorded and analyzed.
         AllocatorDebugConfig& ExcludeFromDebugging(bool exclude = true) { m_excludeFromDebugging = exclude; return *this; }
 
         /// Set to true if this allocator expands allocations with guard sections to detect overruns.
@@ -205,8 +206,6 @@ namespace AZ
 
         template<class Allocator>
         friend class AllocatorWrapper;
-
-        friend class Debug::MemoryDriller;
     };
 }
 

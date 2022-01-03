@@ -13,6 +13,7 @@
 
 #include <LyShine/Animation/IUiAnimation.h>
 #include "UiAnimationSystem.h"
+#include <AzCore/std/allocator_stateless.h>
 
 
 /*!
@@ -39,7 +40,7 @@ public:
             , valueType(_valueType)
             , flags(_flags) {};
 
-        AZStd::string name;               // parameter name.
+        AZStd::basic_string<char, AZStd::char_traits<char>, AZStd::stateless_allocator> name;               // parameter name.
         CUiAnimParamType paramType;     // parameter id.
         EUiAnimValue valueType;         // value type, defines type of track to use for animating this parameter.
         ESupportedParamFlags flags;     // combination of flags from ESupportedParamFlags.
@@ -64,10 +65,10 @@ public:
     // Return Animation Sequence that owns this node.
     IUiAnimSequence* GetSequence() const override { return m_pSequence; };
 
-    void SetFlags(int flags);
-    int GetFlags() const;
+    void SetFlags(int flags) override;
+    int GetFlags() const override;
 
-    IUiAnimationSystem* GetUiAnimationSystem() const { return m_pSequence->GetUiAnimationSystem(); };
+    IUiAnimationSystem* GetUiAnimationSystem() const override { return m_pSequence->GetUiAnimationSystem(); };
 
     virtual void OnStart() {}
     void OnReset() override {}
@@ -80,23 +81,23 @@ public:
     virtual Matrix34 GetReferenceMatrix() const;
 
     //////////////////////////////////////////////////////////////////////////
-    bool IsParamValid(const CUiAnimParamType& paramType) const;
+    bool IsParamValid(const CUiAnimParamType& paramType) const override;
     AZStd::string GetParamName(const CUiAnimParamType& param) const override;
-    virtual EUiAnimValue GetParamValueType(const CUiAnimParamType& paramType) const;
-    virtual IUiAnimNode::ESupportedParamFlags GetParamFlags(const CUiAnimParamType& paramType) const;
-    virtual unsigned int GetParamCount() const { return 0; };
+    EUiAnimValue GetParamValueType(const CUiAnimParamType& paramType) const override;
+    IUiAnimNode::ESupportedParamFlags GetParamFlags(const CUiAnimParamType& paramType) const override;
+    unsigned int GetParamCount() const override { return 0; };
 
-    bool SetParamValue(float time, CUiAnimParamType param, float val);
-    bool SetParamValue(float time, CUiAnimParamType param, const Vec3& val);
-    bool SetParamValue(float time, CUiAnimParamType param, const Vec4& val);
-    bool GetParamValue(float time, CUiAnimParamType param, float& val);
-    bool GetParamValue(float time, CUiAnimParamType param, Vec3& val);
-    bool GetParamValue(float time, CUiAnimParamType param, Vec4& val);
+    bool SetParamValue(float time, CUiAnimParamType param, float val) override;
+    bool SetParamValue(float time, CUiAnimParamType param, const Vec3& val) override;
+    bool SetParamValue(float time, CUiAnimParamType param, const Vec4& val) override;
+    bool GetParamValue(float time, CUiAnimParamType param, float& val) override;
+    bool GetParamValue(float time, CUiAnimParamType param, Vec3& val) override;
+    bool GetParamValue(float time, CUiAnimParamType param, Vec4& val) override;
 
     void SetTarget([[maybe_unused]] IUiAnimNode* node) {};
     IUiAnimNode* GetTarget() const { return 0; };
 
-    void StillUpdate() {}
+    void StillUpdate() override {}
     void Animate(SUiAnimContext& ec) override;
 
     virtual void PrecacheStatic([[maybe_unused]] float startTime) {}
@@ -109,7 +110,7 @@ public:
     IUiAnimNodeOwner* GetNodeOwner() override { return m_pOwner; };
 
     // Called by sequence when needs to activate a node.
-    virtual void Activate(bool bActivate);
+    void Activate(bool bActivate) override;
 
     //////////////////////////////////////////////////////////////////////////
     void SetParent(IUiAnimNode* pParent) override;
@@ -132,7 +133,7 @@ public:
     IUiAnimTrack* GetTrackForAzField([[maybe_unused]] const UiAnimParamData& param) const override { return nullptr; }
     IUiAnimTrack* CreateTrackForAzField([[maybe_unused]] const UiAnimParamData& param) override { return nullptr; }
 
-    virtual void SetTrack(const CUiAnimParamType& paramType, IUiAnimTrack* track);
+    void SetTrack(const CUiAnimParamType& paramType, IUiAnimTrack* track) override;
     IUiAnimTrack* CreateTrack(const CUiAnimParamType& paramType) override;
     void SetTimeRange(Range timeRange) override;
     void AddTrack(IUiAnimTrack* track) override;
@@ -147,7 +148,7 @@ public:
     void SetId(int id) { m_id = id; }
     const char* GetNameFast() const { return m_name.c_str(); }
 
-    virtual void Render(){}
+    void Render() override{}
 
     static void Reflect(AZ::SerializeContext* serializeContext);
 
@@ -168,7 +169,7 @@ protected:
     // sets track animNode pointer to this node and sorts tracks
     void RegisterTrack(IUiAnimTrack* track);
 
-    virtual bool NeedToRender() const { return false; }
+    bool NeedToRender() const override { return false; }
 
 protected:
     int m_refCount;
@@ -199,7 +200,7 @@ class CUiAnimNodeGroup
 public:
     CUiAnimNodeGroup(const int id)
         : CUiAnimNode(id, eUiAnimNodeType_Group) { SetFlags(GetFlags() | eUiAnimNodeFlags_CanChangeName); }
-    EUiAnimNodeType GetType() const { return eUiAnimNodeType_Group; }
+    EUiAnimNodeType GetType() const override { return eUiAnimNodeType_Group; }
 
-    virtual CUiAnimParamType GetParamType([[maybe_unused]] unsigned int nIndex) const { return eUiAnimParamType_Invalid; }
+    CUiAnimParamType GetParamType([[maybe_unused]] unsigned int nIndex) const override { return eUiAnimParamType_Invalid; }
 };

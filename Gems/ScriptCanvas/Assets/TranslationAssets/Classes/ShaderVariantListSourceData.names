@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "base": "ShaderVariantListSourceData",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "ShaderVariantListSourceData"
+            }
+        }
+    ]
+}

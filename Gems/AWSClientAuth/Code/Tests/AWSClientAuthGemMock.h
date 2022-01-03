@@ -608,7 +608,6 @@ namespace AWSClientAuthUnitTest
         AZ::Entity* FindEntity(const AZ::EntityId&) override { return nullptr; }
         AZ::BehaviorContext* GetBehaviorContext() override { return nullptr; }
         const char* GetExecutableFolder() const override { return nullptr; }
-        const char* GetAppRoot() const override { return nullptr; }
         const char* GetEngineRoot() const override { return nullptr; }
         void EnumerateEntities(const EntityCallback& /*callback*/) override {}
         void QueryApplicationType(AZ::ApplicationTypeQuery& /*appType*/) const override {}

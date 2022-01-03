@@ -282,6 +282,8 @@ namespace EMotionFX
 
     void BlendSpace2DNode::Output(AnimGraphInstance* animGraphInstance)
     {
+        AZ_PROFILE_SCOPE(Animation, "BlendSpace2DNode::Output");
+
         if (!AnimGraphInstanceExists(animGraphInstance))
         {
             return;
@@ -402,6 +404,8 @@ namespace EMotionFX
 
     void BlendSpace2DNode::Update(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
+        AZ_PROFILE_SCOPE(Animation, "BlendSpace2DNode::Update");
+
         if (!AnimGraphInstanceExists(animGraphInstance))
         {
             return;

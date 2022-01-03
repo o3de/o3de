@@ -23,7 +23,7 @@ public:
         AWSScriptBehaviorDynamoDBNotificationBus::Handler::BusConnect();
     }
 
-    ~AWSScriptBehaviorDynamoDBNotificationBusHandlerMock()
+    ~AWSScriptBehaviorDynamoDBNotificationBusHandlerMock() override
     {
         AWSScriptBehaviorDynamoDBNotificationBus::Handler::BusDisconnect();
     }

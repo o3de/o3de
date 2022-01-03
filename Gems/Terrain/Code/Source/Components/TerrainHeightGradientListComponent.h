@@ -44,6 +44,7 @@ namespace Terrain
         AZStd::vector<AZ::EntityId> m_gradientEntities;
     };
 
+    static const AZ::Uuid TerrainHeightGradientListComponentTypeId = "{1BB3BA6C-6D4A-4636-B542-F23ECBA8F2AB}";
 
     class TerrainHeightGradientListComponent
         : public AZ::Component
@@ -54,7 +55,7 @@ namespace Terrain
     public:
         template<typename, typename>
         friend class LmbrCentral::EditorWrappedComponentBase;
-        AZ_COMPONENT(TerrainHeightGradientListComponent, "{1BB3BA6C-6D4A-4636-B542-F23ECBA8F2AB}");
+        AZ_COMPONENT(TerrainHeightGradientListComponent, TerrainHeightGradientListComponentTypeId);
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services);
@@ -64,8 +65,9 @@ namespace Terrain
         TerrainHeightGradientListComponent() = default;
         ~TerrainHeightGradientListComponent() = default;
 
-        void GetHeight(const AZ::Vector3& inPosition, AZ::Vector3& outPosition, Sampler sampleFilter) override;
-        void GetNormal(const AZ::Vector3& inPosition, AZ::Vector3& outNormal, Sampler sampleFilter) override;
+        //////////////////////////////////////////////////////////////////////////
+        // TerrainAreaHeightRequestBus
+        void GetHeight(const AZ::Vector3& inPosition, AZ::Vector3& outPosition, bool& terrainExists) override;
 
         //////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation
@@ -85,16 +87,15 @@ namespace Terrain
     private:
         TerrainHeightGradientListConfig m_configuration;
 
-        ///////////////////////////////////////////
-        void GetNormalSynchronous(float x, float y, AZ::Vector3& normal);
-
         void RefreshMinMaxHeights();
-        float GetHeight(float x, float y);
 
         float m_cachedMinWorldHeight{ 0.0f };
         float m_cachedMaxWorldHeight{ 0.0f };
         AZ::Vector2 m_cachedHeightQueryResolution{ 1.0f, 1.0f };
         AZ::Aabb m_cachedShapeBounds;
+
+        // prevent recursion in case user attaches cyclic dependences
+        mutable bool m_isRequestInProgress{ false }; 
 
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
     };

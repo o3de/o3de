@@ -23,6 +23,7 @@ struct IAIPathAgent;
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <limits>
+#include <list>
 
 // Hacks to deal with windows header inclusion.
 #ifdef GetObject

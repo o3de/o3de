@@ -8,14 +8,12 @@
 
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/Factory.h>
 
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/Utils/Utils.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <cinttypes>
 
 namespace AZ
@@ -36,11 +34,8 @@ namespace AZ
 
         void TransformServiceFeatureProcessor::Activate()
         {
-            m_sceneSrg = GetParentScene()->GetShaderResourceGroup();
-
-            m_objectToWorldBufferIndex = m_sceneSrg->FindShaderInputBufferIndex(Name{"m_objectToWorldBuffer"});
-            m_objectToWorldInverseTransposeBufferIndex = m_sceneSrg->FindShaderInputBufferIndex(Name{"m_objectToWorldInverseTransposeBuffer"});
-            m_objectToWorldHistoryBufferIndex = m_sceneSrg->FindShaderInputBufferIndex(Name{"m_objectToWorldHistoryBuffer"});
+            m_updateSceneSrgHandler = RPI::Scene::PrepareSceneSrgEvent::Handler([this](RPI::ShaderResourceGroup *sceneSrg) { this->UpdateSceneSrg(sceneSrg); });
+            GetParentScene()->ConnectEvent(m_updateSceneSrgHandler);
 
             m_deviceBufferNeedsUpdate = true;
             m_objectToWorldTransforms.reserve(BufferReserveCount);
@@ -62,9 +57,14 @@ namespace AZ
 
             m_firstAvailableTransformIndex = NoAvailableTransformIndices;
 
+            m_objectToWorldBufferIndex.Reset();
+            m_objectToWorldInverseTransposeBufferIndex.Reset();
+            m_objectToWorldHistoryBufferIndex.Reset();
+
             m_isWriteable = false;
 
             RPI::SceneNotificationBus::Handler::BusDisconnect();
+            m_updateSceneSrgHandler.Disconnect();
         }
         
         void TransformServiceFeatureProcessor::PrepareBuffers()
@@ -131,16 +131,11 @@ namespace AZ
             }
         }
 
-        void TransformServiceFeatureProcessor::Render([[maybe_unused]] const FeatureProcessor::RenderPacket& packet)
+        void TransformServiceFeatureProcessor::UpdateSceneSrg(RPI::ShaderResourceGroup *sceneSrg)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "TransformServiceFeatureProcessor: Render");
-            AZ_UNUSED(packet);
-
-            AZ_Assert(!m_isWriteable, "Must be called between OnBeginPrepareRender() and OnEndPrepareRender()");
-
-            m_sceneSrg->SetBufferView(m_objectToWorldBufferIndex, m_objectToWorldBuffer->GetBufferView());
-            m_sceneSrg->SetBufferView(m_objectToWorldInverseTransposeBufferIndex, m_objectToWorldInverseTransposeBuffer->GetBufferView());
-            m_sceneSrg->SetBufferView(m_objectToWorldHistoryBufferIndex, m_objectToWorldHistoryBuffer->GetBufferView());
+            sceneSrg->SetBufferView(m_objectToWorldBufferIndex, m_objectToWorldBuffer->GetBufferView());
+            sceneSrg->SetBufferView(m_objectToWorldInverseTransposeBufferIndex, m_objectToWorldInverseTransposeBuffer->GetBufferView());
+            sceneSrg->SetBufferView(m_objectToWorldHistoryBufferIndex, m_objectToWorldHistoryBuffer->GetBufferView());
         }
 
         void TransformServiceFeatureProcessor::OnBeginPrepareRender()

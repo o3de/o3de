@@ -1,7 +1,7 @@
 {
     "ENV": {
         "NODE_LABEL": "mac-bigsur-2fc3a22",
-        "LY_3RDPARTY_PATH": "/Users/lybuilder/3rdParty",
+        "LY_3RDPARTY_PATH": "/Users/lybuilder/workspace/3rdParty",
         "TIMEOUT": 30,
         "WORKSPACE": "/Users/lybuilder/workspace",
         "MOUNT_VOLUME": false

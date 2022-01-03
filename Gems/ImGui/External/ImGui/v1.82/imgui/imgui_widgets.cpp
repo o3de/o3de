@@ -58,6 +58,7 @@ Index of this file:
 #pragma warning (disable: 4996)     // 'This function or variable may be unsafe': strcpy, strdup, sprintf, vsnprintf, sscanf, fopen
 #if defined(_MSC_VER) && _MSC_VER >= 1922 // MSVC 2019 16.2 or later
 #pragma warning (disable: 5054)     // operator '|': deprecated between enumerations of different types
+#pragma warning (disable: 4774)     // format string expected in argument 2 is not a string literal
 #endif
 #endif
 

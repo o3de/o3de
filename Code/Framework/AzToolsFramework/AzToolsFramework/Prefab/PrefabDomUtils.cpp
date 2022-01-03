@@ -150,6 +150,24 @@ namespace AzToolsFramework
                 return result.GetOutcome() == AZ::JsonSerializationResult::Outcomes::Success;
             }
 
+            // some assets may come in from the JSON serializer with no AssetID, but have an asset hint
+            // this attempts to fix up the assets using the assetHint field
+            void FixUpInvalidAssets(AZ::Data::Asset<AZ::Data::AssetData>& asset)
+            {
+                if (!asset.GetId().IsValid() && !asset.GetHint().empty())
+                {
+                    AZ::Data::AssetId assetId;
+                    AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                        assetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, asset.GetHint().c_str(),
+                        AZ::Data::s_invalidAssetType, false);
+
+                    if (assetId.IsValid())
+                    {
+                        asset.Create(assetId, false);
+                    }
+                }
+            }
+
             bool LoadInstanceFromPrefabDom(Instance& instance, const PrefabDom& prefabDom, LoadFlags flags)
             {
                 // When entities are rebuilt they are first destroyed. As a result any assets they were exclusively holding on to will
@@ -164,13 +182,17 @@ namespace AzToolsFramework
                     entityIdMapper.SetEntityIdGenerationApproach(InstanceEntityIdMapper::EntityIdGenerationApproach::Random);
                 }
 
+                auto tracker = AZ::Data::SerializedAssetTracker{};
+                tracker.SetAssetFixUp(&FixUpInvalidAssets);
+
                 AZ::JsonDeserializerSettings settings;
                 // The InstanceEntityIdMapper is registered twice because it's used in several places during deserialization where one is
                 // specific for the InstanceEntityIdMapper and once for the generic JsonEntityIdMapper. Because the Json Serializer's meta
                 // data has strict typing and doesn't look for inheritance both have to be explicitly added so they're found both locations.
                 settings.m_metadata.Add(static_cast<AZ::JsonEntityIdSerializer::JsonEntityIdMapper*>(&entityIdMapper));
                 settings.m_metadata.Add(&entityIdMapper);
-                
+                settings.m_metadata.Add(tracker);
+
                 AZ::JsonSerializationResult::ResultCode result =
                     AZ::JsonSerialization::Load(instance, prefabDom, settings);
 
@@ -203,13 +225,16 @@ namespace AzToolsFramework
                     entityIdMapper.SetEntityIdGenerationApproach(InstanceEntityIdMapper::EntityIdGenerationApproach::Random);
                 }
 
+                auto tracker = AZ::Data::SerializedAssetTracker{};
+                tracker.SetAssetFixUp(&FixUpInvalidAssets);
+
                 AZ::JsonDeserializerSettings settings;
                 // The InstanceEntityIdMapper is registered twice because it's used in several places during deserialization where one is
                 // specific for the InstanceEntityIdMapper and once for the generic JsonEntityIdMapper. Because the Json Serializer's meta
                 // data has strict typing and doesn't look for inheritance both have to be explicitly added so they're found both locations.
                 settings.m_metadata.Add(static_cast<AZ::JsonEntityIdSerializer::JsonEntityIdMapper*>(&entityIdMapper));
                 settings.m_metadata.Add(&entityIdMapper);
-                settings.m_metadata.Create<AZ::Data::SerializedAssetTracker>();
+                settings.m_metadata.Add(tracker);
 
                 AZ::JsonSerializationResult::ResultCode result =
                     AZ::JsonSerialization::Load(instance, prefabDom, settings);
@@ -224,6 +249,7 @@ namespace AzToolsFramework
 
                     return false;
                 }
+
                 AZ::Data::SerializedAssetTracker* assetTracker = settings.m_metadata.Find<AZ::Data::SerializedAssetTracker>();
 
                 referencedAssets = AZStd::move(assetTracker->GetTrackedAssets());
@@ -245,6 +271,9 @@ namespace AzToolsFramework
                     entityIdMapper.SetEntityIdGenerationApproach(InstanceEntityIdMapper::EntityIdGenerationApproach::Random);
                 }
 
+                auto tracker = AZ::Data::SerializedAssetTracker{};
+                tracker.SetAssetFixUp(&FixUpInvalidAssets);
+
                 AZ::JsonDeserializerSettings settings;
                 // The InstanceEntityIdMapper is registered twice because it's used in several places during deserialization where one is
                 // specific for the InstanceEntityIdMapper and once for the generic JsonEntityIdMapper. Because the Json Serializer's meta
@@ -252,16 +281,17 @@ namespace AzToolsFramework
                 settings.m_metadata.Add(static_cast<AZ::JsonEntityIdSerializer::JsonEntityIdMapper*>(&entityIdMapper));
                 settings.m_metadata.Add(&entityIdMapper);
                 settings.m_metadata.Create<InstanceEntityScrubber>(newlyAddedEntities);
+                settings.m_metadata.Add(tracker);
 
                 AZStd::string scratchBuffer;
                 auto issueReportingCallback = [&scratchBuffer](
-                                                  AZStd::string_view message, AZ::JsonSerializationResult::ResultCode result,
-                                                  AZStd::string_view path) -> AZ::JsonSerializationResult::ResultCode
+                    AZStd::string_view message, AZ::JsonSerializationResult::ResultCode result,
+                    AZStd::string_view path) -> AZ::JsonSerializationResult::ResultCode
                 {
                     return Internal::JsonIssueReporter(scratchBuffer, message, result, path);
                 };
                 settings.m_reporting = AZStd::move(issueReportingCallback);
-                
+
                 AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::Load(instance, prefabDom, settings);
 
                 AZ::Data::AssetManager::Instance().ResumeAssetRelease();

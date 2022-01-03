@@ -3,6 +3,6 @@ TestAssets/RelativeProductPathsNotDependencies.txt
 Back slashes
 TestAssets\WildcardScanTest1.txt
 Casing doesn't match
-libs/particles/milestone2PARTICLES.XML
-Path inline project.json test
+TESTASSETS/ReportONEmISSINGdEPENDENCY.tXT
+Path inline TestAssets/InvalidAssetIdNoReport.txt test
 Path after=textures/_dev_Purple.tif equal sign

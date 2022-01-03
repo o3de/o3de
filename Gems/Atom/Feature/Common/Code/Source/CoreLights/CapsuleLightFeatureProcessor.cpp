@@ -8,15 +8,12 @@
 
 #include <CoreLights/CapsuleLightFeatureProcessor.h>
 
-#include <AzCore/Debug/EventTrace.h>
-
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Color.h>
 
 #include <Atom/Feature/CoreLights/CoreLightsConstants.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/CpuProfiler.h>
 
 #include <Atom/RPI.Public/ColorManagement/TransformColor.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
@@ -102,7 +99,7 @@ namespace AZ
 
         void CapsuleLightFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "CapsuleLightFeatureProcessor: Simulate");
+            AZ_PROFILE_SCOPE(RPI, "CapsuleLightFeatureProcessor: Simulate");
             AZ_UNUSED(packet);
 
             if (m_deviceBufferNeedsUpdate)
@@ -114,7 +111,7 @@ namespace AZ
 
         void CapsuleLightFeatureProcessor::Render(const CapsuleLightFeatureProcessor::RenderPacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "CapsuleLightFeatureProcessor: Render");
+            AZ_PROFILE_SCOPE(RPI, "CapsuleLightFeatureProcessor: Render");
 
             for (const RPI::ViewPtr& view : packet.m_views)
             {

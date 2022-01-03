@@ -185,6 +185,9 @@ namespace AZ
             VkPhysicalDeviceShaderFloat16Int8FeaturesKHR float16Int8 = {};
             VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR separateDepthStencil = {};
 
+            VkDeviceCreateInfo deviceInfo = {};
+            deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+
             // If we are running Vulkan >= 1.2, then we must use VkPhysicalDeviceVulkan12Features instead
             // of VkPhysicalDeviceShaderFloat16Int8FeaturesKHR or VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR.
             if (majorVersion >= 1 && minorVersion >= 2)
@@ -194,7 +197,14 @@ namespace AZ
                 vulkan12Features.shaderFloat16 = physicalDevice.GetPhysicalDeviceVulkan12Features().shaderFloat16;
                 vulkan12Features.shaderInt8 = physicalDevice.GetPhysicalDeviceVulkan12Features().shaderInt8;
                 vulkan12Features.separateDepthStencilLayouts = physicalDevice.GetPhysicalDeviceVulkan12Features().separateDepthStencilLayouts;
+                vulkan12Features.descriptorBindingPartiallyBound = physicalDevice.GetPhysicalDeviceVulkan12Features().separateDepthStencilLayouts;
+                vulkan12Features.descriptorIndexing = physicalDevice.GetPhysicalDeviceVulkan12Features().separateDepthStencilLayouts;
+                vulkan12Features.descriptorBindingVariableDescriptorCount = physicalDevice.GetPhysicalDeviceVulkan12Features().separateDepthStencilLayouts;
+                vulkan12Features.bufferDeviceAddress = physicalDevice.GetPhysicalDeviceVulkan12Features().bufferDeviceAddress;
+                vulkan12Features.bufferDeviceAddressMultiDevice = physicalDevice.GetPhysicalDeviceVulkan12Features().bufferDeviceAddressMultiDevice;
+                vulkan12Features.runtimeDescriptorArray = physicalDevice.GetPhysicalDeviceVulkan12Features().runtimeDescriptorArray;
                 robustness2.pNext = &vulkan12Features;
+                deviceInfo.pNext = &depthClipEnabled;
             }
             else
             {
@@ -206,11 +216,24 @@ namespace AZ
                 float16Int8.pNext = &separateDepthStencil;
 
                 robustness2.pNext = &float16Int8;
+                deviceInfo.pNext = &descriptorIndexingFeatures;
             }
 
-            VkDeviceCreateInfo deviceInfo = {};
-            deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-            deviceInfo.pNext = &descriptorIndexingFeatures;
+            // set raytracing features if we are running Vulkan >= 1.2
+            VkPhysicalDeviceAccelerationStructureFeaturesKHR accelerationStructureFeatures = {};
+            VkPhysicalDeviceRayTracingPipelineFeaturesKHR rayTracingPipelineFeatures = {};
+
+            if (majorVersion >= 1 && minorVersion >= 2)
+            {
+                accelerationStructureFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
+                accelerationStructureFeatures.accelerationStructure = physicalDevice.GetPhysicalDeviceAccelerationStructureFeatures().accelerationStructure;
+                vulkan12Features.pNext = &accelerationStructureFeatures;
+
+                rayTracingPipelineFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
+                rayTracingPipelineFeatures.rayTracingPipeline = physicalDevice.GetPhysicalDeviceRayTracingPipelineFeatures().rayTracingPipeline;
+                accelerationStructureFeatures.pNext = &rayTracingPipelineFeatures;
+            }
+
             deviceInfo.flags = 0;
             deviceInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreationInfo.size());
             deviceInfo.pQueueCreateInfos = queueCreationInfo.data();
@@ -235,8 +258,6 @@ namespace AZ
 
             //Load device features now that we have loaded all extension info
             physicalDevice.LoadSupportedFeatures();
-
-            InitFeaturesAndLimits(physicalDevice);
             return RHI::ResultCode::Success;
         }
 
@@ -246,6 +267,8 @@ namespace AZ
             commandQueueContextDescriptor.m_frameCountMax = RHI::Limits::Device::FrameCountMax;
             RHI::ResultCode result = m_commandQueueContext.Init(*this, commandQueueContextDescriptor);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
+
+            InitFeaturesAndLimits(static_cast<const Vulkan::PhysicalDevice&>(GetPhysicalDevice()));
 
             // Initialize member variables.
             ReleaseQueue::Descriptor releaseQueueDescriptor;
@@ -547,9 +570,9 @@ namespace AZ
             physicalDevice.CompileMemoryStatistics(builder);
         }
 
-        void Device::UpdateCpuTimingStatisticsInternal(RHI::CpuTimingStatistics& cpuTimingStatistics) const
+        void Device::UpdateCpuTimingStatisticsInternal() const
         {
-            m_commandQueueContext.UpdateCpuTimingStatistics(cpuTimingStatistics);
+            m_commandQueueContext.UpdateCpuTimingStatistics();
         }
 
         AZStd::vector<RHI::Format> Device::GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle) const
@@ -740,7 +763,7 @@ namespace AZ
             vkGetPhysicalDeviceQueueFamilyProperties(nativePhysicalDevice, &queueFamilyCount, m_queueFamilyProperties.data());            
         }
 
-        RHI::Ptr<Memory> Device::AllocateMemory(uint64_t sizeInBytes, const uint32_t memoryTypeMask, const VkMemoryPropertyFlags flags)
+        RHI::Ptr<Memory> Device::AllocateMemory(uint64_t sizeInBytes, const uint32_t memoryTypeMask, const VkMemoryPropertyFlags flags, const RHI::BufferBindFlags bufferBindFlags)
         {
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(GetPhysicalDevice());
             const VkPhysicalDeviceMemoryProperties& memProp = physicalDevice.GetMemoryProperties();
@@ -770,6 +793,7 @@ namespace AZ
                         RHI::CheckBitsAll(memoryTypesToUseMask, memoryTypeBit))
                     {
                         memoryDesc.m_memoryTypeIndex = memoryIndex;
+                        memoryDesc.m_bufferBindFlags = bufferBindFlags;
                         auto result = memory->Init(*this, memoryDesc);
                         if (result == RHI::ResultCode::Success)
                         {

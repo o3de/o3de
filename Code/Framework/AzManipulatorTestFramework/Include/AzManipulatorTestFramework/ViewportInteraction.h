@@ -8,51 +8,76 @@
 
 #pragma once
 
+#include <AzFramework/Visibility/EntityVisibilityQuery.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFramework.h>
+
+namespace AzFramework
+{
+    class DebugDisplayRequests;
+}
 
 namespace AzManipulatorTestFramework
 {
-    class NullDebugDisplayRequests;
-
     //! Implementation of the viewport interaction model to handle viewport interaction requests.
     class ViewportInteraction
         : public ViewportInteractionInterface
-        , private AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler
+        , public AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler
+        , public AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Handler
+        , private AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler
     {
     public:
-        ViewportInteraction();
+        explicit ViewportInteraction(AZStd::shared_ptr<AzFramework::DebugDisplayRequests> debugDisplayRequests);
         ~ViewportInteraction();
 
-        // ViewportInteractionInterface ...
-        AzFramework::CameraState GetCameraState() override;
+        // ViewportInteractionInterface overrides ...
         void SetCameraState(const AzFramework::CameraState& cameraState) override;
         AzFramework::DebugDisplayRequests& GetDebugDisplay() override;
-        void EnableGridSnaping() override;
-        void DisableGridSnaping() override;
-        void EnableAngularSnaping() override;
-        void DisableAngularSnaping() override;
+        void SetGridSnapping(bool enabled) override;
+        void SetAngularSnapping(bool enabled) override;
         void SetGridSize(float size) override;
         void SetAngularStep(float step) override;
-        int GetViewportId() const override;
-        AZStd::optional<AZ::Vector3> ViewportScreenToWorld(const AzFramework::ScreenPoint& screenPosition, float depth) override;
-        AZStd::optional<AzToolsFramework::ViewportInteraction::ProjectedViewportRay> ViewportScreenToWorldRay(
+        AzFramework::ViewportId GetViewportId() const override;
+        void UpdateVisibility() override;
+        void SetStickySelect(bool enabled) override;
+        void SetIconsVisible(bool visible) override;
+        void SetHelpersVisible(bool visible) override;
+
+        // ViewportInteractionRequestBus overrides ...
+        AzFramework::CameraState GetCameraState() override;
+        AzFramework::ScreenPoint ViewportWorldToScreen(const AZ::Vector3& worldPosition) override;
+        AZ::Vector3 ViewportScreenToWorld(const AzFramework::ScreenPoint& screenPosition) override;
+        AzToolsFramework::ViewportInteraction::ProjectedViewportRay ViewportScreenToWorldRay(
             const AzFramework::ScreenPoint& screenPosition) override;
         float DeviceScalingFactor() override;
+
+        // ViewportSettingsRequestBus overrides ...
+        bool GridSnappingEnabled() const override;
+        float GridSize() const override;
+        bool ShowGrid() const override;
+        bool AngleSnappingEnabled() const override;
+        float AngleStep() const override;
+        float ManipulatorLineBoundWidth() const override;
+        float ManipulatorCircleBoundWidth() const override;
+        bool StickySelectEnabled() const override;
+        AZ::Vector3 DefaultEditorCameraPosition() const override;
+        bool IconsVisible() const override;
+        bool HelpersVisible() const override;
+
+        // EditorEntityViewportInteractionRequestBus overrides ...
+        void FindVisibleEntities(AZStd::vector<AZ::EntityId>& visibleEntities) override;
+
     private:
-        // ViewportInteractionRequestBus ...
-        bool GridSnappingEnabled();
-        float GridSize();
-        bool ShowGrid();
-        bool AngleSnappingEnabled();
-        float AngleStep();
-        AzFramework::ScreenPoint ViewportWorldToScreen(const AZ::Vector3& worldPosition);
-    private:
-        AZStd::unique_ptr<NullDebugDisplayRequests> m_nullDebugDisplayRequests;
-        const int m_viewportId = 1234; // Arbitrary viewport id for manipulator tests
+        static constexpr AzFramework::ViewportId m_viewportId = 1234; //!< Arbitrary viewport id for manipulator tests.
+
+        AzFramework::EntityVisibilityQuery m_entityVisibilityQuery;
+        AZStd::shared_ptr<AzFramework::DebugDisplayRequests> m_debugDisplayRequests;
         AzFramework::CameraState m_cameraState;
-        bool m_gridSnapping = false;
-        bool m_angularSnapping = false;
         float m_gridSize = 1.0f;
         float m_angularStep = 0.0f;
+        bool m_gridSnapping = false;
+        bool m_angularSnapping = false;
+        bool m_stickySelect = true;
+        bool m_iconsVisible = true;
+        bool m_helpersVisible = true;
     };
 } // namespace AzManipulatorTestFramework

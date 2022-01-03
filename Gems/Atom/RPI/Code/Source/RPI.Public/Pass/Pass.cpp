@@ -26,6 +26,7 @@
 #include <Atom/RPI.Public/Pass/PassLibrary.h>
 #include <Atom/RPI.Public/Pass/PassDefines.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
+#include <Atom/RPI.Public/Pass/Specific/ImageAttachmentPreviewPass.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 
 #include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
@@ -146,6 +147,11 @@ namespace AZ
             m_treeDepth = m_parent->m_treeDepth + 1;
             m_path = ConcatPassName(m_parent->m_path, m_name);
             m_flags.m_partOfHierarchy = m_parent->m_flags.m_partOfHierarchy;
+
+            if (m_state == PassState::Orphaned)
+            {
+                QueueForBuildAndInitialization();
+            }
         }
 
         void Pass::RemoveFromParent()
@@ -153,7 +159,7 @@ namespace AZ
             AZ_RPI_PASS_ASSERT(m_parent != nullptr, "Trying to remove pass from parent but pointer to the parent pass is null.");
             m_parent->RemoveChild(Ptr<Pass>(this));
             m_queueState = PassQueueState::NoQueue;
-            m_state = PassState::Idle;
+            m_state = PassState::Orphaned;
         }
 
         void Pass::OnOrphan()
@@ -161,6 +167,8 @@ namespace AZ
             m_parent = nullptr;
             m_flags.m_partOfHierarchy = false;
             m_treeDepth = 0;
+            m_queueState = PassQueueState::NoQueue;
+            m_state = PassState::Orphaned;
         }
 
         // --- Getters & Setters ---
@@ -236,6 +244,11 @@ namespace AZ
         {
             uint32_t bindingIndex = m_outputBindingIndices[index];
             return m_attachmentBindings[bindingIndex];
+        }
+
+        const PassTemplate* Pass::GetPassTemplate() const
+        {
+            return m_template.get();
         }
 
         void Pass::AddAttachmentBinding(PassAttachmentBinding attachmentBinding)
@@ -1210,6 +1223,12 @@ namespace AZ
             m_queueState = PassQueueState::NoQueue;
 
             InitializeInternal();
+            
+            // Need to recreate the dest attachment because the source attachment might be changed
+            if (!m_attachmentCopy.expired())
+            {
+                m_attachmentCopy.lock()->InvalidateDestImage();
+            }
 
             m_state = PassState::Initialized;
         }
@@ -1269,6 +1288,7 @@ namespace AZ
 
         void Pass::FrameBegin(FramePrepareParams params)
         {
+            AZ_PROFILE_SCOPE(RPI, "Pass::FrameBegin() - %s", m_path.GetCStr());
             AZ_RPI_BREAK_ON_TARGET_PASS;
 
             if (!IsEnabled())
@@ -1291,10 +1311,16 @@ namespace AZ
 
             // FrameBeginInternal needs to be the last function be called in FrameBegin because its implementation expects 
             // all the attachments are imported to database (for example, ImageAttachmentPreview)
-            FrameBeginInternal(params);
+            {
+                AZ_PROFILE_SCOPE(RPI, "Pass::FrameBeginInternal()");
+                FrameBeginInternal(params);
+            }
             
             // readback attachment with output state
             UpdateReadbackAttachment(params, false);
+
+            // update attachment copy for preview
+            UpdateAttachmentCopy(params);
 
             UpdateConnectedOutputBindings();
         }
@@ -1481,6 +1507,14 @@ namespace AZ
                 // Read the attachment for one frame. The reference can be released afterwards
                 m_attachmentReadback->FrameBegin(params);
                 m_attachmentReadback = nullptr;
+            }
+        }
+
+        void Pass::UpdateAttachmentCopy(FramePrepareParams params)
+        {
+            if (!m_attachmentCopy.expired())
+            {
+                m_attachmentCopy.lock()->FrameBegin(params);
             }
         }
 

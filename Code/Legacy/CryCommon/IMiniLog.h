@@ -119,8 +119,8 @@ struct CNullMiniLog
     //   The default implementation just won't do anything
     //##@{
     void LogV([[maybe_unused]] const char* szFormat, [[maybe_unused]] va_list args) {}
-    void LogV([[maybe_unused]] ELogType nType, [[maybe_unused]] const char* szFormat, [[maybe_unused]] va_list args) {}
-    void LogV ([[maybe_unused]] ELogType nType, [[maybe_unused]] int flags, [[maybe_unused]] const char* szFormat, [[maybe_unused]] va_list args) {}
+    void LogV([[maybe_unused]] ELogType nType, [[maybe_unused]] const char* szFormat, [[maybe_unused]] va_list args) override {}
+    void LogV ([[maybe_unused]] ELogType nType, [[maybe_unused]] int flags, [[maybe_unused]] const char* szFormat, [[maybe_unused]] va_list args) override {}
     //##@}
 };
 

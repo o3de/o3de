@@ -137,8 +137,10 @@ namespace AzQtComponents
 
         int pixelMetric(QStyle::PixelMetric metric, const QStyleOption* option, const QWidget* widget) const override;
 
+        using QProxyStyle::polish;
         void polish(QApplication* application) override;
         void polish(QWidget* widget) override;
+        using QProxyStyle::unpolish;
         void unpolish(QWidget* widget) override;
 
         QPalette standardPalette() const override;

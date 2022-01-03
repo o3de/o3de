@@ -57,7 +57,7 @@ namespace AZ
             // Only allocate buffer if initial data is not empty
             if (initialData != nullptr && initialDataSize > 0)
             {
-                bufferAsset->m_buffer.resize(descriptor.m_byteCount);
+                bufferAsset->m_buffer.resize_no_construct(descriptor.m_byteCount);
                 memcpy(bufferAsset->m_buffer.data(), initialData, initialDataSize);
             }
 

@@ -27,7 +27,7 @@ public:
     CTrackViewSequenceManager();
     ~CTrackViewSequenceManager();
 
-    virtual void OnEditorNotifyEvent(EEditorNotifyEvent event);
+    void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
 
     unsigned int GetCount() const { return static_cast<int>(m_sequences.size()); }
 
@@ -65,7 +65,7 @@ private:
     void OnSequenceAdded(CTrackViewSequence* pSequence);
     void OnSequenceRemoved(CTrackViewSequence* pSequence);
 
-    virtual void OnDataBaseItemEvent(IDataBaseItem* pItem, EDataBaseItemEvent event);
+    void OnDataBaseItemEvent(IDataBaseItem* pItem, EDataBaseItemEvent event) override;
 
     // AZ::EntitySystemBus
     void OnEntityNameChanged(const AZ::EntityId& entityId, const AZStd::string& name) override;

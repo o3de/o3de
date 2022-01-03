@@ -18,7 +18,7 @@ namespace AZ
         {
             void OutputToDebugger([[maybe_unused]] const char* window, [[maybe_unused]] const char* message)
             {
-                __android_log_print(ANDROID_LOG_INFO, window, message);
+                __android_log_print(ANDROID_LOG_INFO, window, "%s", message);
             }
         }
     }

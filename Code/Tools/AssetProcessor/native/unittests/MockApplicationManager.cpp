@@ -22,6 +22,8 @@ namespace AssetProcessor
     struct MockRecognizerConfiguration
         : public RecognizerConfiguration
     {
+        virtual ~MockRecognizerConfiguration() = default;
+
         const RecognizerContainer& GetAssetRecognizerContainer() const override
         {
             return m_container;

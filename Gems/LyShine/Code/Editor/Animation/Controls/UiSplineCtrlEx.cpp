@@ -78,7 +78,7 @@ protected:
         m_splineEntries.resize(m_splineEntries.size() + 1);
         SplineEntry& entry = m_splineEntries.back();
         ISplineSet* pSplineSet = (pCtrl ? pCtrl->m_pSplineSet : 0);
-        entry.id = (pSplineSet ? pSplineSet->GetIDFromSpline(pSpline) : 0);
+        entry.id = (pSplineSet ? pSplineSet->GetIDFromSpline(pSpline) : AZStd::string{});
         entry.pSpline = pSpline;
 
         const int numKeys = pSpline->GetKeyCount();
@@ -2180,18 +2180,6 @@ void AbstractSplineWidget::MoveSelectedKeys(Vec2 offset, bool copyKeys)
             affectedRangeMin = min(affectedRangeMin, (firstAffectedKey <= 0 ? m_timeRange.start : pSpline->GetKeyTime(firstAffectedKey)));
             affectedRangeMax = max(affectedRangeMax, (lastAffectedKey >= keyCount - 1 ? m_timeRange.end : pSpline->GetKeyTime(lastAffectedKey)));
         }
-    }
-
-    int rangeMin = aznumeric_cast<int>(TimeToXOfs(affectedRangeMin));
-    int rangeMax = aznumeric_cast<int>(TimeToXOfs(affectedRangeMax));
-
-    if (m_timeRange.start == affectedRangeMin)
-    {
-        rangeMin = m_rcSpline.left();
-    }
-    if (m_timeRange.end == affectedRangeMax)
-    {
-        rangeMax = m_rcSpline.right();
     }
 
     if (m_pTimelineCtrl)

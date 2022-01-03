@@ -706,7 +706,7 @@ namespace AZ
                             rapidjson::Value(rapidjson::kNullType), field.value, element, settings);
                     }
 
-                    if (result.GetOutcome() == Outcomes::Success)
+                    if (result.GetOutcome() == Outcomes::Success || result.GetOutcome() == Outcomes::PartialDefaults)
                     {
                         rapidjson::Value name;
                         name.CopyFrom(field.name, allocator, true);
@@ -716,6 +716,10 @@ namespace AZ
                     else if (result.GetProcessing() != Processing::Completed)
                     {
                         return result;
+                    }
+                    else
+                    {
+                        resultCode.Combine(result);
                     }
                 }
 
@@ -751,7 +755,7 @@ namespace AZ
                     rapidjson::Value value;
                     ResultCode result = CreateMergePatchInternal(value, allocator,
                         rapidjson::Value(rapidjson::kNullType), field.value, element, settings);
-                    if (result.GetOutcome() == Outcomes::Success)
+                    if (result.GetOutcome() == Outcomes::Success || result.GetOutcome() == Outcomes::PartialDefaults)
                     {
                         rapidjson::Value name;
                         name.CopyFrom(field.name, allocator, true);
@@ -762,11 +766,20 @@ namespace AZ
                     {
                         return result;
                     }
+                    else
+                    {
+                        resultCode.Combine(result);
+                    }
+                }
+                
+                if (target.MemberCount() == 0)
+                {
+                    resultCode.Combine(settings.m_reporting("Added empty object to JSON Merge Patch.",
+                        ResultCode(Tasks::CreatePatch, Outcomes::Success), element));
                 }
             }
 
             patch = AZStd::move(resultValue);
-            resultCode.Combine(ResultCode(Tasks::CreatePatch, Outcomes::Success));
             return resultCode;
         }
         else

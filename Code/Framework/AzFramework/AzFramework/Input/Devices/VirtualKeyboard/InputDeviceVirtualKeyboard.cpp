@@ -15,24 +15,10 @@
 namespace AzFramework
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    const InputDeviceId InputDeviceVirtualKeyboard::Id("virtual_keyboard");
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
     bool InputDeviceVirtualKeyboard::IsVirtualKeyboardDevice(const InputDeviceId& inputDeviceId)
     {
         return (inputDeviceId.GetNameCrc32() == Id.GetNameCrc32());
     }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    const InputChannelId InputDeviceVirtualKeyboard::Command::EditEnter("virtual_keyboard_edit_enter");
-    const InputChannelId InputDeviceVirtualKeyboard::Command::EditClear("virtual_keyboard_edit_clear");
-    const InputChannelId InputDeviceVirtualKeyboard::Command::NavigationBack("virtual_keyboard_navigation_back");
-    const AZStd::array<InputChannelId, 3> InputDeviceVirtualKeyboard::Command::All =
-    {{
-        EditClear,
-        EditEnter,
-        NavigationBack
-    }};
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void InputDeviceVirtualKeyboard::Reflect(AZ::ReflectContext* context)
@@ -62,8 +48,9 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceVirtualKeyboard::InputDeviceVirtualKeyboard()
-        : InputDevice(Id)
+    InputDeviceVirtualKeyboard::InputDeviceVirtualKeyboard(const InputDeviceId& inputDeviceId,
+                                                           ImplementationFactory implementationFactory)
+        : InputDevice(inputDeviceId)
         , m_allChannelsById()
         , m_pimpl()
         , m_implementationRequestHandler(*this)
@@ -76,8 +63,8 @@ namespace AzFramework
             m_commandChannelsById[channelId] = channel;
         }
 
-        // Create the platform specific implementation
-        m_pimpl.reset(Implementation::Create(*this));
+        // Create the platform specific or custom implementation
+        m_pimpl.reset(implementationFactory ? implementationFactory(*this) : nullptr);
 
         // Connect to the text entry request bus
         InputTextEntryRequestBus::Handler::BusConnect(GetInputDeviceId());

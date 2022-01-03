@@ -116,6 +116,9 @@ namespace AZ
             //! Contains data for the top level mesh, including the list of sub-meshes
             struct Mesh
             {
+                // assetId of the model
+                AZ::Data::AssetId m_assetId = AZ::Data::AssetId{};
+
                 // sub-mesh list
                 SubMeshVector m_subMeshes;
 
@@ -124,9 +127,6 @@ namespace AZ
 
                 // mesh non-uniform scale
                 AZ::Vector3 m_nonUniformScale = AZ::Vector3::CreateOne();
-
-                // flag indicating if the Blas objects in the sub-meshes are built
-                bool m_blasBuilt = false;
             };
 
             using MeshMap = AZStd::map<uint32_t, Mesh>;
@@ -134,7 +134,7 @@ namespace AZ
 
             //! Sets ray tracing data for a mesh.
             //! This will cause an update to the RayTracing acceleration structure on the next frame
-            void SetMesh(const ObjectId objectId, const SubMeshVector& subMeshes);
+            void SetMesh(const ObjectId objectId, const AZ::Data::AssetId& assetId, const SubMeshVector& subMeshes);
 
             //! Removes ray tracing data for a mesh.
             //! This will cause an update to the RayTracing acceleration structure on the next frame
@@ -181,6 +181,23 @@ namespace AZ
             //! Updates the RayTracingSceneSrg and RayTracingMaterialSrg, called after the TLAS is allocated in the RayTracingAccelerationStructurePass
             void UpdateRayTracingSrgs();
 
+            struct SubMeshBlasInstance
+            {
+                RHI::Ptr<RHI::RayTracingBlas> m_blas;
+            };
+
+            struct MeshBlasInstance
+            {
+                uint32_t m_count = 0;
+                AZStd::vector<SubMeshBlasInstance> m_subMeshes;
+
+                // flag indicating if the Blas objects in the sub-mesh list are built
+                bool m_blasBuilt = false;
+            };
+
+            using BlasInstanceMap = AZStd::unordered_map<AZ::Data::AssetId, MeshBlasInstance>;
+            BlasInstanceMap& GetBlasInstances() { return m_blasInstanceMap; }
+
         private:
 
             AZ_DISABLE_COPY_MOVE(RayTracingFeatureProcessor);
@@ -220,6 +237,9 @@ namespace AZ
             // cached TransformServiceFeatureProcessor
             TransformServiceFeatureProcessor* m_transformServiceFeatureProcessor = nullptr;
 
+            // mutex for the mesh and BLAS lists
+            AZStd::mutex m_mutex;
+
             // structure for data in the m_meshInfoBuffer, shaders that use the buffer must match this type
             struct MeshInfo
             {
@@ -229,14 +249,12 @@ namespace AZ
                 uint32_t m_tangentOffset;
                 uint32_t m_bitangentOffset;
                 uint32_t m_uvOffset;
-                float m_padding0[2];
-
-                AZStd::array<float, 4> m_irradianceColor;   // float4
-                AZStd::array<float, 9> m_worldInvTranspose; // float3x3
-                float m_padding1;
 
                 RayTracingSubMeshBufferFlags m_bufferFlags = RayTracingSubMeshBufferFlags::None;
                 uint32_t m_bufferStartIndex = 0;
+
+                AZStd::array<float, 4> m_irradianceColor;    // float4
+                AZStd::array<float, 12> m_worldInvTranspose; // float3x4
             };
 
             // buffer containing a MeshInfo for each sub-mesh
@@ -260,6 +278,13 @@ namespace AZ
 
             // flag indicating we need to update the materialInfo buffer
             bool m_materialInfoBufferNeedsUpdate = false;
+
+            // side list for looking up existing BLAS objects so they can be re-used when the same mesh is added multiple times
+            BlasInstanceMap m_blasInstanceMap;
+
+            // Cache view pointers so we dont need to update them if none changed from frame to frame.
+            AZStd::vector<const RHI::BufferView*> m_meshBuffers;
+            AZStd::vector<const RHI::ImageView*> m_materialTextures;
         };
     }
 }

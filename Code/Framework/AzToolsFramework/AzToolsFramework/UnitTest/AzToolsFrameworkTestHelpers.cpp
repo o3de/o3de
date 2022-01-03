@@ -56,6 +56,40 @@ namespace UnitTest
         QApplication::sendEvent(widget, &mouseMoveEvent);
     }
 
+    void MouseScroll(QWidget* widget, QPoint localEventPosition, QPoint wheelDelta,
+        Qt::MouseButtons mouseButtons, Qt::KeyboardModifiers keyboardModifiers)
+    {
+        const QPoint globalEventPos = widget->mapToGlobal(localEventPosition);
+        const QPoint zero = QPoint();
+
+        QWheelEvent wheelEventBegin(globalEventPos, zero, zero, wheelDelta, mouseButtons, keyboardModifiers, Qt::ScrollBegin, false);
+        QApplication::sendEvent(widget, &wheelEventBegin);
+
+        QWheelEvent wheelEventUpdate(globalEventPos, zero, zero, wheelDelta, mouseButtons, keyboardModifiers, Qt::ScrollUpdate, false);
+        QApplication::sendEvent(widget, &wheelEventUpdate);
+
+        QWheelEvent wheelEventEnd(globalEventPos, zero, zero, zero, mouseButtons, keyboardModifiers, Qt::ScrollEnd, false);
+        QApplication::sendEvent(widget, &wheelEventEnd);
+    }
+
+    AZStd::string QtKeyToAzString(Qt::Key key, Qt::KeyboardModifiers modifiers)
+    {
+        QKeySequence keySequence = QKeySequence(key);
+        QString keyText = keySequence.toString();
+
+        // QKeySequence seems to uppercase alpha keys regardless of shift-modifier
+        if (modifiers == Qt::NoModifier && keyText.isUpper())
+        {
+            keyText = keyText.toLower();
+        }
+        else if (modifiers != Qt::ShiftModifier)
+        {
+            keyText = QString();
+        }
+
+        return AZStd::string(keyText.toUtf8().data());
+    }
+
     bool TestWidget::eventFilter(QObject* watched, QEvent* event)
     {
         AZ_UNUSED(watched);
@@ -129,7 +163,7 @@ namespace UnitTest
         using AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus;
 
         AzToolsFramework::EditorActionRequestBus::Handler::BusConnect();
-        EditorComponentModeNotificationBus::Handler::BusConnect(GetEntityContextId());
+        ViewportEditorModeNotificationsBus::Handler::BusConnect(GetEntityContextId());
         m_defaultWidget.setFocus();
     }
 
@@ -137,18 +171,26 @@ namespace UnitTest
     {
         using AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus;
 
-        EditorComponentModeNotificationBus::Handler::BusDisconnect();
+        ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
         AzToolsFramework::EditorActionRequestBus::Handler::BusDisconnect();
     }
 
-    void TestEditorActions::EnteredComponentMode([[maybe_unused]] const AZStd::vector<AZ::Uuid>& componentTypes)
+    void TestEditorActions::OnEditorModeActivated(
+        [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode)
     {
-        m_componentModeWidget.setFocus();
+        if (mode == ViewportEditorMode::Component)
+        {
+            m_componentModeWidget.setFocus();
+        }
     }
 
-    void TestEditorActions::LeftComponentMode([[maybe_unused]] const AZStd::vector<AZ::Uuid>& componentTypes)
+    void TestEditorActions::OnEditorModeDeactivated(
+        [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode)
     {
-        m_defaultWidget.setFocus();
+        if (mode == ViewportEditorMode::Component)
+        {
+            m_defaultWidget.setFocus();
+        }
     }
 
     void TestEditorActions::AddActionViaBus(int id, QAction* action)

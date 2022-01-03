@@ -21,12 +21,10 @@ public:
     MOCK_METHOD1(Init, void(ISystem * pSystem));
     MOCK_METHOD5(RegisterString, ICVar * (const char* sName, const char* sValue, int nFlags, const char* help, ConsoleVarFunc pChangeFunc));
     MOCK_METHOD5(RegisterInt, ICVar * (const char* sName, int iValue, int nFlags, const char* help, ConsoleVarFunc pChangeFunc));
-    MOCK_METHOD5(RegisterInt64, ICVar * (const char* sName, int64 iValue, int nFlags, const char* help, ConsoleVarFunc pChangeFunc));
     MOCK_METHOD5(RegisterFloat, ICVar * (const char* sName, float fValue, int nFlags, const char* help, ConsoleVarFunc pChangeFunc));
     MOCK_METHOD7(Register, ICVar * (const char* name, float* src, float defaultvalue, int nFlags, const char* help, ConsoleVarFunc pChangeFunc, bool allowModify));
     MOCK_METHOD7(Register, ICVar * (const char* name, int* src, int defaultvalue, int nFlags, const char* help, ConsoleVarFunc pChangeFunc, bool allowModify));
     MOCK_METHOD7(Register, ICVar * (const char* name, const char** src, const char* defaultvalue, int nFlags, const char* help, ConsoleVarFunc pChangeFunc, bool allowModify));
-    MOCK_METHOD1(Register, ICVar * (ICVar * pVar));
     MOCK_METHOD2(UnregisterVariable, void(const char* sVarName, bool bDelete ));
     MOCK_METHOD1(SetScrollMax, void(int value));
     MOCK_METHOD1(AddOutputPrintSink, void(IOutputPrintSink * inpSink));
@@ -63,7 +61,6 @@ public:
     MOCK_METHOD2(RegisterAutoComplete, void (const char* sVarOrCommand, IConsoleArgumentAutoComplete * pArgAutoComplete));
     MOCK_METHOD1(UnRegisterAutoComplete, void (const char* sVarOrCommand));
     MOCK_METHOD0(ResetAutoCompletion, void ());
-    MOCK_CONST_METHOD1(GetMemoryUsage, void (ICrySizer * pSizer));
     MOCK_METHOD1(ResetProgressBar, void (int nProgressRange));
     MOCK_METHOD0(TickProgressBar, void ());
     MOCK_METHOD1(SetInputLine, void (const char* szLine));

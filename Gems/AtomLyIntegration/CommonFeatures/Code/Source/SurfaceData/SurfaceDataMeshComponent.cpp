@@ -17,8 +17,6 @@
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
 #include <SurfaceData/Utility/SurfaceDataUtility.h>
 
-#include <MathConversion.h>
-
 namespace SurfaceData
 {
     void SurfaceDataMeshConfig::Reflect(AZ::ReflectContext* context)
@@ -147,8 +145,6 @@ namespace SurfaceData
 
     bool SurfaceDataMeshComponent::DoRayTrace(const AZ::Vector3& inPosition, AZ::Vector3& outPosition, AZ::Vector3& outNormal) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
-
         AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
 
         // test AABB as first pass to claim the point
@@ -233,7 +229,7 @@ namespace SurfaceData
 
     void SurfaceDataMeshComponent::UpdateMeshData()
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_SCOPE(Entity, "SurfaceDataMeshComponent: UpdateMeshData");
 
         bool meshValidBeforeUpdate = false;
         bool meshValidAfterUpdate = false;

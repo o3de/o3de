@@ -112,6 +112,8 @@ namespace AZ
             {
                 infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, TRUE);
                 infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, TRUE);
+                //Un-comment this if you want to break on warnings too
+                //infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, TRUE);
             }
         }
 
@@ -258,6 +260,14 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
+        RHI::ResultCode Device::CreateSwapChain(
+            [[maybe_unused]] const DXGI_SWAP_CHAIN_DESCX& swapChainDesc,
+            [[maybe_unused]] AZStd::array<RHI::Ptr<ID3D12Resource>, RHI::Limits::Device::FrameCountMax>& outSwapChainResources)
+        {
+            AZ_Assert(false, "Wrong Device::CreateSwapChain function called on Windows.");
+            return RHI::ResultCode::Fail;
+        }
+
         AZStd::vector<RHI::Format> Device::GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle) const
         {
             AZStd::vector<RHI::Format> formatsList;
@@ -316,6 +326,11 @@ namespace AZ
             formatsList.push_back(RHI::Format::R8G8B8A8_UNORM);
 
             return formatsList;
+        }
+
+        void Device::BeginFrameInternal()
+        {
+            m_commandQueueContext.Begin();
         }
     }
 }

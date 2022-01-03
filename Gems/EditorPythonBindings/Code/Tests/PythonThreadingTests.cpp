@@ -75,7 +75,7 @@ namespace UnitTest
         void TearDown() override
         {
             // clearing up memory
-            m_testSink = PythonTraceMessageSink();
+            m_testSink.CleanUp();
             PythonTestingFixture::TearDown();
         }
     };
@@ -114,38 +114,29 @@ namespace UnitTest
         try
         {
             // prepare handler on this thread
-            pybind11::exec(R"(
-                import azlmbr.test
+            const AZStd::string_view script =
+                "import azlmbr.test\n"
+                "\n"
+                "def on_notification(args) :\n"
+                "    value = args[0] + 2\n"
+                "    print('RanInThread')\n"
+                "    return value\n"
+                "\n"
+                "handler = azlmbr.test.PythonThreadNotificationBusHandler()\n"
+                "handler.connect()\n"
+                "handler.add_callback('OnNotification', on_notification)\n";
 
-                def on_notification(args):
-                    value = args[0] + 2
-                    print ('RanInThread')
-                    return value
-
-                handler = azlmbr.test.PythonThreadNotificationBusHandler()
-                handler.connect()
-                handler.add_callback('OnNotification', on_notification)
-                )");
+            AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(&AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByString, script, false /*printResult*/);
 
             // start thread; in thread issue notification
             auto threadCallback = []()
             {
                 AZ::s64 result = 0;
-                auto notificationCallback = [&result]()
-                {
-                    PythonThreadNotificationBus::BroadcastResult(result, &PythonThreadNotificationBus::Events::OnNotification, 40);
-                };
-
-                auto editorPythonEventsInterface = AZ::Interface<AzToolsFramework::EditorPythonEventsInterface>::Get();
-                if (editorPythonEventsInterface)
-                {
-                    editorPythonEventsInterface->ExecuteWithLock(notificationCallback);
-                }
+                PythonThreadNotificationBus::BroadcastResult(result, &PythonThreadNotificationBus::Events::OnNotification, 40);
 
                 EXPECT_EQ(42, result);
             };
             AZStd::thread theThread(threadCallback);
-            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(100));
             theThread.join();
         }
         catch ([[maybe_unused]] const std::exception& e)
@@ -187,21 +178,11 @@ namespace UnitTest
             auto threadCallback = []()
             {
                 AZ::s64 result = 0;
-                auto notificationCallback = [&result]()
-                {
-                    PythonThreadNotificationBus::BroadcastResult(result, &PythonThreadNotificationBus::Events::OnNotification, 40);
-                };
-
-                auto editorPythonEventsInterface = AZ::Interface<AzToolsFramework::EditorPythonEventsInterface>::Get();
-                if (editorPythonEventsInterface)
-                {
-                    editorPythonEventsInterface->ExecuteWithLock(notificationCallback);
-                }
+                PythonThreadNotificationBus::BroadcastResult(result, &PythonThreadNotificationBus::Events::OnNotification, 40);
 
                 EXPECT_EQ(0, result);
             };
             AZStd::thread theThread(threadCallback);
-            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(100));
             theThread.join();
 
             // the Python script above raises an exception which causes two AZ_Error() message lines:

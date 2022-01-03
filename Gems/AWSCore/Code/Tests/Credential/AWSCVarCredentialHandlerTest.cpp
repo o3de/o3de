@@ -18,7 +18,7 @@ class AWSCVarCredentialHandlerTest
 {
 public:
     AWSCVarCredentialHandlerTest() = default;
-    virtual ~AWSCVarCredentialHandlerTest() = default;
+    ~AWSCVarCredentialHandlerTest() override = default;
 
     void SetUp() override
     {

@@ -22,6 +22,7 @@ AZ_POP_DISABLE_WARNING
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetManagerBus.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Asset/AssetTypeInfoBus.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/IO/FileIO.h>
@@ -102,7 +103,7 @@ namespace AzToolsFramework
             else
             {
                 AZStd::string error = AZStd::string::format("Could not resolve path name for asset {%s}.", id.ToString<AZStd::string>().c_str());
-                assetCheckoutAndSaveCallback(false, error, nullptr);
+                assetCheckoutAndSaveCallback(false, error, AZStd::string{});
             }
         }
 
@@ -136,7 +137,7 @@ namespace AzToolsFramework
         AssetEditorWidgetUserSettings::AssetEditorWidgetUserSettings()
         {
             char assetRoot[AZ_MAX_PATH_LEN] = { 0 };
-            AZ::IO::FileIOBase::GetInstance()->ResolvePath("@devassets@", assetRoot, AZ_MAX_PATH_LEN);
+            AZ::IO::FileIOBase::GetInstance()->ResolvePath("@projectroot@", assetRoot, AZ_MAX_PATH_LEN);
 
             m_lastSavePath = assetRoot;
         }
@@ -409,7 +410,7 @@ namespace AzToolsFramework
                     filter.append(ext);
                     if (i < n - 1)
                     {
-                        filter.append(", ");
+                        filter.append(" ");
                     }
                 }
                 filter.append(")");

@@ -28,7 +28,7 @@ class XmlNodeRef;
 struct SLocalizedInfoGame
 {
     SLocalizedInfoGame ()
-        : szCharacterName(NULL)
+        : szCharacterName(nullptr)
         , bUseSubtitle(false)
     {
     }
@@ -43,10 +43,6 @@ struct SLocalizedAdvancesSoundEntry
 {
     AZStd::string sName;
     float       fValue;
-    void GetMemoryUsage(ICrySizer* pSizer) const
-    {
-        pSizer->AddObject(sName);
-    }
 };
 
 // Localization Sound Info structure, containing sound related parameters.
@@ -54,15 +50,15 @@ struct SLocalizedSoundInfoGame
     : public SLocalizedInfoGame
 {
     SLocalizedSoundInfoGame()
-        : sSoundEvent(NULL)
+        : sSoundEvent(nullptr)
         , fVolume(0.f)
         , fRadioRatio (0.f)
         , bIsDirectRadio(false)
         , bIsIntercepted(false)
         , nNumSoundMoods(0)
-        , pSoundMoods (NULL)
+        , pSoundMoods (nullptr)
         , nNumEventParameters(0)
-        , pEventParameters(NULL)
+        , pEventParameters(nullptr)
     {
     }
 
@@ -86,10 +82,10 @@ struct SLocalizedInfoEditor
     : public SLocalizedInfoGame
 {
     SLocalizedInfoEditor()
-        : sKey(NULL)
-        , sOriginalCharacterName(NULL)
-        , sOriginalActorLine(NULL)
-        , sUtf8TranslatedActorLine(NULL)
+        : sKey(nullptr)
+        , sOriginalCharacterName(nullptr)
+        , sOriginalActorLine(nullptr)
+        , sUtf8TranslatedActorLine(nullptr)
         , nRow(0)
     {
     }
@@ -137,21 +133,21 @@ struct ILocalizationManager
         ePILID_MAX_OR_INVALID,   //Not a language, denotes the maximum number of languages or an unknown language
     };
 
-    typedef uint32 TLocalizationBitfield;
+    using TLocalizationBitfield = uint32;
 
     // <interfuscator:shuffle>
-    virtual ~ILocalizationManager(){}
+    virtual ~ILocalizationManager()= default;
     virtual const char* LangNameFromPILID(const ILocalizationManager::EPlatformIndependentLanguageID id) = 0;
     virtual ILocalizationManager::EPlatformIndependentLanguageID PILIDFromLangName(AZStd::string langName) = 0;
     virtual ILocalizationManager::EPlatformIndependentLanguageID GetSystemLanguage() { return ILocalizationManager::EPlatformIndependentLanguageID::ePILID_English_US; }
     virtual ILocalizationManager::TLocalizationBitfield MaskSystemLanguagesFromSupportedLocalizations(const ILocalizationManager::TLocalizationBitfield systemLanguages) = 0;
     virtual ILocalizationManager::TLocalizationBitfield IsLanguageSupported(const ILocalizationManager::EPlatformIndependentLanguageID id) = 0;
-    virtual bool SetLanguage([[maybe_unused]] const char* sLanguage) override { return false; }
-    virtual const char* GetLanguage() override { return nullptr; }
+    bool SetLanguage([[maybe_unused]] const char* sLanguage) override { return false; }
+    const char* GetLanguage() override { return nullptr; }
 
-    virtual int GetLocalizationFormat() const { return -1; }
-    virtual AZStd::string GetLocalizedSubtitleFilePath([[maybe_unused]] const AZStd::string& localVideoPath, [[maybe_unused]] const AZStd::string& subtitleFileExtension) const { return ""; }
-    virtual AZStd::string GetLocalizedLocXMLFilePath([[maybe_unused]] const AZStd::string& localXmlPath) const { return ""; }
+    int GetLocalizationFormat() const override { return -1; }
+    AZStd::string GetLocalizedSubtitleFilePath([[maybe_unused]] const AZStd::string& localVideoPath, [[maybe_unused]] const AZStd::string& subtitleFileExtension) const override { return ""; }
+    AZStd::string GetLocalizedLocXMLFilePath([[maybe_unused]] const AZStd::string& localXmlPath) const override { return ""; }
     // load the descriptor file with tag information
     virtual bool InitLocalizationData(const char* sFileName, bool bReload = false) = 0;
     // request to load loca data by tag. Actual loading will happen during next level load begin event.
@@ -161,8 +157,8 @@ struct ILocalizationManager
     virtual bool ReleaseLocalizationDataByTag(const char* sTag) = 0;
 
     virtual bool LoadAllLocalizationData(bool bReload = false) = 0;
-    virtual bool LoadExcelXmlSpreadsheet([[maybe_unused]] const char* sFileName, [[maybe_unused]] bool bReload = false) override { return false; }
-    virtual void ReloadData() override {};
+    bool LoadExcelXmlSpreadsheet([[maybe_unused]] const char* sFileName, [[maybe_unused]] bool bReload = false) override { return false; }
+    void ReloadData() override {};
 
     // Summary:
     //   Free localization data.
@@ -178,15 +174,15 @@ struct ILocalizationManager
     //   bEnglish            - if true, translates the string into the always present English language.
     // Returns:
     //   true if localization was successful, false otherwise
-    virtual bool LocalizeString_ch([[maybe_unused]] const char* sString, [[maybe_unused]] AZStd::string& outLocalizedString, [[maybe_unused]] bool bEnglish = false) override { return false; }
+    bool LocalizeString_ch([[maybe_unused]] const char* sString, [[maybe_unused]] AZStd::string& outLocalizedString, [[maybe_unused]] bool bEnglish = false) override { return false; }
 
     // Summary:
     //   Same as LocalizeString( const char* sString, AZStd::string& outLocalizedString, bool bEnglish=false )
     //   but at the moment this is faster.
-    virtual bool LocalizeString_s([[maybe_unused]] const AZStd::string& sString, [[maybe_unused]] AZStd::string& outLocalizedString, [[maybe_unused]] bool bEnglish = false) override { return false; }
+    bool LocalizeString_s([[maybe_unused]] const AZStd::string& sString, [[maybe_unused]] AZStd::string& outLocalizedString, [[maybe_unused]] bool bEnglish = false) override { return false; }
 
     // Summary:
-    virtual void LocalizeAndSubstituteInternal([[maybe_unused]] AZStd::string& locString, [[maybe_unused]] const AZStd::vector<AZStd::string>& keys, [[maybe_unused]] const AZStd::vector<AZStd::string>& values) override {}
+    void LocalizeAndSubstituteInternal([[maybe_unused]] AZStd::string& locString, [[maybe_unused]] const AZStd::vector<AZStd::string>& keys, [[maybe_unused]] const AZStd::vector<AZStd::string>& values) override {}
     //   Return the localized version corresponding to a label.
     // Description:
     //   A label has to start with '@' sign.
@@ -196,7 +192,7 @@ struct ILocalizationManager
     //   bEnglish            - if true, returns the always present English version of the label.
     // Returns:
     //   True if localization was successful, false otherwise.
-    virtual bool LocalizeLabel([[maybe_unused]] const char* sLabel, [[maybe_unused]] AZStd::string& outLocalizedString, [[maybe_unused]] bool bEnglish = false) override { return false; }
+    bool LocalizeLabel([[maybe_unused]] const char* sLabel, [[maybe_unused]] AZStd::string& outLocalizedString, [[maybe_unused]] bool bEnglish = false) override { return false; }
     virtual bool IsLocalizedInfoFound([[maybe_unused]] const char* sKey) { return false; }
 
     // Summary:
@@ -224,7 +220,7 @@ struct ILocalizationManager
 
     // Summary:
     //   Return number of localization entries.
-    virtual int  GetLocalizedStringCount() override { return -1; }
+    int  GetLocalizedStringCount() override { return -1; }
 
     // Summary:
     //   Get the localization info structure at index nIndex.
@@ -251,7 +247,7 @@ struct ILocalizationManager
     //   sLocalizedString - Corresponding english language string.
     // Returns:
     //   True if successful, false otherwise (key not found).
-    virtual bool GetEnglishString([[maybe_unused]] const char* sKey, [[maybe_unused]] AZStd::string& sLocalizedString) override { return false; }
+    bool GetEnglishString([[maybe_unused]] const char* sKey, [[maybe_unused]] AZStd::string& sLocalizedString) override { return false; }
 
     // Summary:
     //   Get Subtitle for Key or Label .
@@ -261,25 +257,25 @@ struct ILocalizationManager
     //   bForceSubtitle - If true, get subtitle (sLocalized or sEnglish) even if not specified in Data file.
     // Returns:
     //   True if subtitle found (and outSubtitle filled in), false otherwise.
-    virtual bool GetSubtitle([[maybe_unused]] const char* sKeyOrLabel, [[maybe_unused]] AZStd::string& outSubtitle, [[maybe_unused]] bool bForceSubtitle = false) override { return false; }
+    bool GetSubtitle([[maybe_unused]] const char* sKeyOrLabel, [[maybe_unused]] AZStd::string& outSubtitle, [[maybe_unused]] bool bForceSubtitle = false) override { return false; }
 
     // Description:
     //      These methods format outString depending on sString with ordered arguments
     //      FormatStringMessage(outString, "This is %2 and this is %1", "second", "first");
     // Arguments:
     //      outString - This is first and this is second.
-    virtual void FormatStringMessage_List([[maybe_unused]] AZStd::string& outString, [[maybe_unused]] const AZStd::string& sString, [[maybe_unused]] const char** sParams, [[maybe_unused]] int nParams) override {}
-    virtual void FormatStringMessage([[maybe_unused]] AZStd::string& outString, [[maybe_unused]] const AZStd::string& sString, [[maybe_unused]] const char* param1, [[maybe_unused]] const char* param2 = 0, [[maybe_unused]] const char* param3 = 0, [[maybe_unused]] const char* param4 = 0) override {}
+    void FormatStringMessage_List([[maybe_unused]] AZStd::string& outString, [[maybe_unused]] const AZStd::string& sString, [[maybe_unused]] const char** sParams, [[maybe_unused]] int nParams) override {}
+    void FormatStringMessage([[maybe_unused]] AZStd::string& outString, [[maybe_unused]] const AZStd::string& sString, [[maybe_unused]] const char* param1, [[maybe_unused]] const char* param2 = nullptr, [[maybe_unused]] const char* param3 = nullptr, [[maybe_unused]] const char* param4 = nullptr) override {}
 
-    virtual void LocalizeTime([[maybe_unused]] time_t t, [[maybe_unused]] bool bMakeLocalTime, [[maybe_unused]] bool bShowSeconds, [[maybe_unused]] AZStd::string& outTimeString) override {}
-    virtual void LocalizeDate([[maybe_unused]] time_t t, [[maybe_unused]] bool bMakeLocalTime, [[maybe_unused]] bool bShort, [[maybe_unused]] bool bIncludeWeekday, [[maybe_unused]] AZStd::string& outDateString) override {}
-    virtual void LocalizeDuration([[maybe_unused]] int seconds, [[maybe_unused]] AZStd::string& outDurationString) override {}
-    virtual void LocalizeNumber([[maybe_unused]] int number, [[maybe_unused]] AZStd::string& outNumberString) override {}
-    virtual void LocalizeNumber_Decimal([[maybe_unused]] float number, [[maybe_unused]] int decimals, [[maybe_unused]] AZStd::string& outNumberString) override {}
+    void LocalizeTime([[maybe_unused]] time_t t, [[maybe_unused]] bool bMakeLocalTime, [[maybe_unused]] bool bShowSeconds, [[maybe_unused]] AZStd::string& outTimeString) override {}
+    void LocalizeDate([[maybe_unused]] time_t t, [[maybe_unused]] bool bMakeLocalTime, [[maybe_unused]] bool bShort, [[maybe_unused]] bool bIncludeWeekday, [[maybe_unused]] AZStd::string& outDateString) override {}
+    void LocalizeDuration([[maybe_unused]] int seconds, [[maybe_unused]] AZStd::string& outDurationString) override {}
+    void LocalizeNumber([[maybe_unused]] int number, [[maybe_unused]] AZStd::string& outNumberString) override {}
+    void LocalizeNumber_Decimal([[maybe_unused]] float number, [[maybe_unused]] int decimals, [[maybe_unused]] AZStd::string& outNumberString) override {}
 
     // Summary:
     //   Returns true if the project has localization configured for use, false otherwise.
-    virtual bool ProjectUsesLocalization() const override { return false; }
+    bool ProjectUsesLocalization() const override { return false; }
     // </interfuscator:shuffle>
 
     static ILINE TLocalizationBitfield LocalizationBitfieldFromPILID(EPlatformIndependentLanguageID pilid)

@@ -1,6 +1,6 @@
 {
     "description": "",
-    "materialType": "Materials\\Types\\StandardPBR.materialtype",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
     "parentMaterial": "",
     "propertyLayoutVersion": 3,
     "properties": {

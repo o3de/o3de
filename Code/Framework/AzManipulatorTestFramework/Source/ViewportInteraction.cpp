@@ -6,29 +6,29 @@
  *
  */
 
-#include <AzManipulatorTestFramework/ViewportInteraction.h>
-#include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzFramework/Viewport/CameraState.h>
+#include <AzFramework/Viewport/ViewportScreen.h>
+#include <AzManipulatorTestFramework/ViewportInteraction.h>
 #include <AzToolsFramework/Manipulators/ManipulatorBus.h>
+#include <AzManipulatorTestFramework/AzManipulatorTestFrameworkUtils.h>
 
 namespace AzManipulatorTestFramework
 {
-    // Null debug display for dummy draw calls
-    class NullDebugDisplayRequests
-        : public AzFramework::DebugDisplayRequests
-    {
-    public:
-        virtual ~NullDebugDisplayRequests() = default;
-    };
-
-    ViewportInteraction::ViewportInteraction()
-        : m_nullDebugDisplayRequests(AZStd::make_unique<NullDebugDisplayRequests>())
+    ViewportInteraction::ViewportInteraction(AZStd::shared_ptr<AzFramework::DebugDisplayRequests> debugDisplayRequests)
+        : m_debugDisplayRequests(AZStd::move(debugDisplayRequests))
     {
         AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler::BusConnect(m_viewportId);
+        AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Handler::BusConnect(m_viewportId);
+        AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler::BusConnect(m_viewportId);
+
+        m_cameraState =
+            AzFramework::CreateIdentityDefaultCamera(AZ::Vector3::CreateZero(), AzManipulatorTestFramework::DefaultViewportSize);
     }
 
     ViewportInteraction::~ViewportInteraction()
     {
+        AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler::BusDisconnect();
+        AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Handler::BusDisconnect();
         AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler::BusDisconnect();
     }
 
@@ -37,29 +37,54 @@ namespace AzManipulatorTestFramework
         return m_cameraState;
     }
 
-    bool ViewportInteraction::GridSnappingEnabled()
+    bool ViewportInteraction::GridSnappingEnabled() const
     {
         return m_gridSnapping;
     }
 
-    float ViewportInteraction::GridSize()
+    float ViewportInteraction::GridSize() const
     {
         return m_gridSize;
     }
 
-    bool ViewportInteraction::ShowGrid()
+    bool ViewportInteraction::ShowGrid() const
     {
         return false;
     }
 
-    bool ViewportInteraction::AngleSnappingEnabled()
+    bool ViewportInteraction::AngleSnappingEnabled() const
     {
         return m_angularSnapping;
     }
 
-    float ViewportInteraction::AngleStep()
+    float ViewportInteraction::AngleStep() const
     {
         return m_angularStep;
+    }
+
+    float ViewportInteraction::ManipulatorLineBoundWidth() const
+    {
+        return 0.1f;
+    }
+
+    float ViewportInteraction::ManipulatorCircleBoundWidth() const
+    {
+        return 0.1f;
+    }
+
+    bool ViewportInteraction::StickySelectEnabled() const
+    {
+        return m_stickySelect;
+    }
+
+    void ViewportInteraction::FindVisibleEntities(AZStd::vector<AZ::EntityId>& visibleEntitiesOut)
+    {
+        visibleEntitiesOut.assign(m_entityVisibilityQuery.Begin(), m_entityVisibilityQuery.End());
+    }
+
+    void ViewportInteraction::UpdateVisibility()
+    {
+        m_entityVisibilityQuery.UpdateVisibility(m_cameraState);
     }
 
     AzFramework::ScreenPoint ViewportInteraction::ViewportWorldToScreen(const AZ::Vector3& worldPosition)
@@ -74,27 +99,37 @@ namespace AzManipulatorTestFramework
 
     AzFramework::DebugDisplayRequests& ViewportInteraction::GetDebugDisplay()
     {
-        return *m_nullDebugDisplayRequests;
+        return *m_debugDisplayRequests;
     }
 
-    void ViewportInteraction::EnableGridSnaping()
+    void ViewportInteraction::SetGridSnapping(const bool enabled)
     {
-        m_gridSnapping = true;
+        m_gridSnapping = enabled;
     }
 
-    void ViewportInteraction::DisableGridSnaping()
+    void ViewportInteraction::SetAngularSnapping(const bool enabled)
     {
-        m_gridSnapping = false;
+        m_angularSnapping = enabled;
     }
 
-    void ViewportInteraction::EnableAngularSnaping()
+    void ViewportInteraction::SetStickySelect(const bool enabled)
     {
-        m_angularSnapping = true;
+        m_stickySelect = enabled;
     }
 
-    void ViewportInteraction::DisableAngularSnaping()
+    void ViewportInteraction::SetIconsVisible(const bool visible)
     {
-        m_angularSnapping = false;
+        m_iconsVisible = visible;
+    }
+
+    void ViewportInteraction::SetHelpersVisible(const bool visible)
+    {
+        m_helpersVisible = visible;
+    }
+
+    AZ::Vector3 ViewportInteraction::DefaultEditorCameraPosition() const
+    {
+        return {};
     }
 
     void ViewportInteraction::SetGridSize(float size)
@@ -107,25 +142,34 @@ namespace AzManipulatorTestFramework
         m_angularStep = step;
     }
 
-    int ViewportInteraction::GetViewportId() const
+    AzFramework::ViewportId ViewportInteraction::GetViewportId() const
     {
         return m_viewportId;
     }
 
-    AZStd::optional<AZ::Vector3> ViewportInteraction::ViewportScreenToWorld(
-        [[maybe_unused]] const AzFramework::ScreenPoint& screenPosition, [[maybe_unused]] float depth)
+    AZ::Vector3 ViewportInteraction::ViewportScreenToWorld([[maybe_unused]] const AzFramework::ScreenPoint& screenPosition)
     {
-        return {};
+        return AzFramework::ScreenToWorld(screenPosition, m_cameraState);
     }
 
-    AZStd::optional<AzToolsFramework::ViewportInteraction::ProjectedViewportRay> ViewportInteraction::ViewportScreenToWorldRay(
+    AzToolsFramework::ViewportInteraction::ProjectedViewportRay ViewportInteraction::ViewportScreenToWorldRay(
         [[maybe_unused]] const AzFramework::ScreenPoint& screenPosition)
     {
-        return {};
+        return AzToolsFramework::ViewportInteraction::ViewportScreenToWorldRay(m_cameraState, screenPosition);
     }
 
     float ViewportInteraction::DeviceScalingFactor()
     {
         return 1.0f;
     }
-}// namespace AzManipulatorTestFramework
+
+    bool ViewportInteraction::IconsVisible() const
+    {
+        return m_iconsVisible;
+    }
+
+    bool ViewportInteraction::HelpersVisible() const
+    {
+        return m_helpersVisible;
+    }
+} // namespace AzManipulatorTestFramework

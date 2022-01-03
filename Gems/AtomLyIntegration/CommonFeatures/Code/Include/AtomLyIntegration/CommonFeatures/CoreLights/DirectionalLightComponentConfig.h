@@ -101,31 +101,25 @@ namespace AZ
             //! Method of shadow's filtering.
             ShadowFilterMethod m_shadowFilterMethod = ShadowFilterMethod::None;
 
-            //! Width of the boundary between shadowed area and lit one.
-            //! If this is 0, edge softening is disabled.  Units are in meters.
-            float m_boundaryWidth = 0.03f; // 3cm
-
-            //! Sample Count for prediction of whether the pixel is on the boundary (from 4 to 16)
-            //! The value should be less than or equal to m_filteringSampleCount.
-            uint16_t m_predictionSampleCount = 4;
+            // Reduces acne by biasing the shadowmap lookup along the geometric normal.
+            float m_normalShadowBias = 0.0f;
 
             //! Sample Count for filtering (from 4 to 64)
             //! It is used only when the pixel is predicted as on the boundary.
             uint16_t m_filteringSampleCount = 32;
 
-            PcfMethod m_pcfMethod = PcfMethod::Bicubic;
-
             //! Whether not to enable the receiver plane bias.
             //! This uses partial derivatives to reduce shadow acne when using large pcf kernels.
             bool m_receiverPlaneBiasEnabled = true;
+
+            //! Reduces shadow acne by applying a small amount of offset along shadow-space z.
+            float m_shadowBias = 0.0f;
 
             bool IsSplitManual() const;
             bool IsSplitAutomatic() const;
             bool IsCascadeCorrectionDisabled() const;
             bool IsShadowFilteringDisabled() const;
             bool IsShadowPcfDisabled() const;
-            bool IsPcfBoundarySearchDisabled() const;
-            bool IsSofteningBoundaryWidthDisabled() const;
             bool IsEsmDisabled() const;
         };
     } // namespace Render

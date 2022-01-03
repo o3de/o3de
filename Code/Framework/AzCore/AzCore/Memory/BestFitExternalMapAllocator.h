@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZ_BEST_FIT_EXT_MAP_ALLOCATOR_H
-#define AZ_BEST_FIT_EXT_MAP_ALLOCATOR_H
+#pragma once
 
 #include <AzCore/Memory/Memory.h>
 
@@ -63,6 +62,7 @@ namespace AZ
         size_type       NumAllocatedBytes() const override;
         size_type       Capacity() const override;
         size_type       GetMaxAllocationSize() const override;
+        size_type       GetMaxContiguousAllocationSize() const override;
         IAllocatorAllocate*  GetSubAllocator() override;
         //////////////////////////////////////////////////////////////////////////
 
@@ -74,8 +74,4 @@ namespace AZ
         BestFitExternalMapSchema* m_schema;
     };
 }
-
-#endif // AZ_BEST_FIT_EXT_MAP_ALLOCATOR_H
-#pragma once
-
 

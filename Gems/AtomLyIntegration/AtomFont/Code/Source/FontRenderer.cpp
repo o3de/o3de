@@ -311,8 +311,7 @@ Vec2 AZ::FontRenderer::GetKerning(uint32_t leftGlyph, uint32_t rightGlyph)
 #if !defined(_RELEASE)
         if (0 != ftError)
         {
-            AZStd::string warnMsg = AZStd::string::format("FT_Get_Kerning returned %d", ftError);
-            CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, warnMsg.c_str());
+            CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "FT_Get_Kerning returned %d", ftError);
         }
 #endif
     }

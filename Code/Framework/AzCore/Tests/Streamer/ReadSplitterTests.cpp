@@ -359,7 +359,7 @@ namespace AZ::IO
             .Times(2)
             .WillRepeatedly([this](FileRequest* request) { m_context.MarkRequestAsCompleted(request); });
         m_context.FinalizeCompletedRequests();
-        
+
         azfree(memory);
     }
 
@@ -415,7 +415,7 @@ namespace AZ::IO
         m_context.FinalizeCompletedRequests();
 
         EXPECT_EQ(2, completedRequests);
-        
+
         azfree(memory1);
         azfree(memory0);
     }

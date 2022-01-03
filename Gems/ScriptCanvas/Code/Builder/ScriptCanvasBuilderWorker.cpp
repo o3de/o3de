@@ -6,7 +6,6 @@
  *
  */
 
-
 #include <Asset/AssetDescription.h>
 #include <AssetBuilderSDK/SerializationDependencies.h>
 #include <AzCore/Asset/AssetManager.h>
@@ -16,25 +15,24 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Script/ScriptComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-
-#include <ScriptCanvas/Asset/SubgraphInterfaceAssetHandler.h>
+#include <Builder/ScriptCanvasBuilderWorker.h>
 #include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
+#include <ScriptCanvas/Asset/SubgraphInterfaceAssetHandler.h>
+#include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
 #include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
 #include <ScriptCanvas/Core/Connection.h>
+#include <ScriptCanvas/Core/GraphData.h>
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Grammar/AbstractCodeModel.h>
 #include <ScriptCanvas/Results/ErrorText.h>
 #include <ScriptCanvas/Utils/BehaviorContextUtils.h>
-
-#include <Builder/ScriptCanvasBuilderWorker.h>
+#include <ScriptCanvas/Core/Core.h>
 
 namespace ScriptCanvasBuilder
 {
     void Worker::Activate(const AssetHandlers& handlers)
     {
-        m_editorAssetHandler = handlers.m_editorAssetHandler;
         m_runtimeAssetHandler = handlers.m_runtimeAssetHandler;
         m_subgraphInterfaceHandler = handlers.m_subgraphInterfaceHandler;
     }
@@ -46,91 +44,26 @@ namespace ScriptCanvasBuilder
         AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), fullPath, false);
         AzFramework::StringFunc::Path::Normalize(fullPath);
 
-        if (!m_editorAssetHandler)
+        const ScriptCanvasEditor::Graph* sourceGraph = nullptr;
+        const ScriptCanvas::GraphData* graphData = nullptr;
+        ScriptCanvasEditor::SourceHandle sourceHandle;
+
+        auto sourceOutcome = ScriptCanvasEditor::LoadFromFile(fullPath);
+        if (sourceOutcome.IsSuccess())
         {
-            AZ_Error(s_scriptCanvasBuilder, false, R"(CreateJobs for %s failed because the ScriptCanvas Editor Asset handler is missing.)", fullPath.data());
+            sourceHandle = sourceOutcome.TakeValue();
+            sourceGraph = sourceHandle.Get();
+            graphData = sourceGraph->GetGraphDataConst();
+        }
+        else
+        {
+            AZ_TracePrintf(s_scriptCanvasBuilder, "Failed to load the file: %s", fullPath.c_str());
+            response.m_result = AssetBuilderSDK::CreateJobsResultCode::Failed;
         }
 
-        AZStd::shared_ptr<AZ::Data::AssetDataStream> assetDataStream = AZStd::make_shared<AZ::Data::AssetDataStream>();
-
-        AZ::IO::FileIOStream stream(fullPath.c_str(), AZ::IO::OpenMode::ModeRead);
-        if (!AZ::IO::RetryOpenStream(stream))
-        {
-            AZ_Warning(s_scriptCanvasBuilder, false, "CreateJobs for \"%s\" failed because the source file could not be opened.", fullPath.data());
-            return;
-        }
-
-        // Read the asset into a memory buffer, then hand ownership of the buffer to assetDataStream
-        {
-            AZ::IO::FileIOStream ioStream;
-            if (!ioStream.Open(fullPath.data(), AZ::IO::OpenMode::ModeRead))
-            {
-                AZ_Warning(s_scriptCanvasBuilder, false, "CreateJobs for \"%s\" failed because the source file could not be opened.", fullPath.data());
-                return;
-            }
-
-            AZStd::vector<AZ::u8> fileBuffer(ioStream.GetLength());
-            size_t bytesRead = ioStream.Read(fileBuffer.size(), fileBuffer.data());
-            if (bytesRead != ioStream.GetLength())
-            {
-                AZ_Warning(s_scriptCanvasBuilder, false, AZStd::string::format("File failed to read completely: %s", fullPath.data()).c_str());
-                return;
-            }
-
-            assetDataStream->Open(AZStd::move(fileBuffer));
-        }
-
-        m_processEditorAssetDependencies.clear();
-
-        AZStd::unordered_multimap<AZStd::string, AssetBuilderSDK::SourceFileDependency> jobDependenciesByKey;
-
-        auto assetFilter = [this, &jobDependenciesByKey](const AZ::Data::AssetFilterInfo& filterInfo)
-        {
-            // force load these before processing
-            if (filterInfo.m_assetType == azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>()
-            || filterInfo.m_assetType == azrtti_typeid<ScriptEvents::ScriptEventsAsset>())
-            {
-                this->m_processEditorAssetDependencies.push_back(filterInfo);
-            }
-
-            // these trigger re-processing
-            if (filterInfo.m_assetType == azrtti_typeid<ScriptCanvasEditor::ScriptCanvasAsset>())
-            {
-                AZ_Error("ScriptCanvas", false, "ScriptAsset Reference in a graph detected");
-            }
-
-            if (filterInfo.m_assetType == azrtti_typeid<ScriptEvents::ScriptEventsAsset>())
-            {
-                AssetBuilderSDK::SourceFileDependency dependency;
-                dependency.m_sourceFileDependencyUUID = filterInfo.m_assetId.m_guid;
-                jobDependenciesByKey.insert({ ScriptEvents::k_builderJobKey, dependency });
-            }
-
-            if (filterInfo.m_assetType == azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>())
-            {
-                AssetBuilderSDK::SourceFileDependency dependency;
-                dependency.m_sourceFileDependencyUUID = filterInfo.m_assetId.m_guid;
-                jobDependenciesByKey.insert({ s_scriptCanvasProcessJobKey, dependency });
-            }
-
-            // Asset filter always returns false to prevent parsing dependencies, but makes note of the script canvas dependencies
-            return false;
-        };
-
-        AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset> asset;
-        asset.Create(AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
-        if (m_editorAssetHandler->LoadAssetDataFromStream(asset, assetDataStream, assetFilter) != AZ::Data::AssetHandler::LoadResult::LoadComplete)
-        {
-            AZ_Warning(s_scriptCanvasBuilder, false, "CreateJobs for \"%s\" failed because the asset data could not be loaded from the file", fullPath.data());
-            return;
-        }
-
-        // Flush asset database events to ensure no asset references are held by closures queued on Ebuses.
-        AZ::Data::AssetManager::Instance().DispatchEvents();
-
-        auto* scriptCanvasEntity = asset.Get()->GetScriptCanvasEntity();
-        auto* sourceGraph = AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvasEditor::Graph>(scriptCanvasEntity);
+        // in terms of job creation, assert on anything but smooth sailing from this point
         AZ_Assert(sourceGraph, "Graph component is missing from entity.");
+        AZ_Assert(graphData, "GraphData is missing from entity");
 
         struct EntityIdComparer
         {
@@ -141,7 +74,7 @@ namespace ScriptCanvasBuilder
                 return lhsEntityId < rhsEntityId;
             }
         };
-        const AZStd::set<AZ::Entity*, EntityIdComparer> sortedEntities(sourceGraph->GetGraphData()->m_nodes.begin(), sourceGraph->GetGraphData()->m_nodes.end());
+        const AZStd::set<AZ::Entity*, EntityIdComparer> sortedEntities(graphData->m_nodes.begin(), graphData->m_nodes.end());
 
         size_t fingerprint = 0;
         for (const auto& nodeEntity : sortedEntities)
@@ -152,21 +85,61 @@ namespace ScriptCanvasBuilder
             }
         }
 
-        m_processEditorAssetDependencies.clear();
+        AZ::SerializeContext* serializeContext{};
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+        AZ_Assert(serializeContext, "SerializeContext is required to enumerate dependent assets in the ScriptCanvas file");
+
+        AZStd::unordered_multimap<AZStd::string, AssetBuilderSDK::SourceFileDependency> jobDependenciesByKey;
+        auto assetFilter = [this, &jobDependenciesByKey]
+            ( void* instancePointer
+            , const AZ::SerializeContext::ClassData* classData
+            , [[maybe_unused]] const AZ::SerializeContext::ClassElement* classElement)
+        {
+            auto azTypeId = classData->m_azRtti->GetTypeId();
+            
+            if (azTypeId == azrtti_typeid<AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset>>())
+            {
+                const auto* subgraphAsset = reinterpret_cast<AZ::Data::Asset<const ScriptCanvas::SubgraphInterfaceAsset>*>(instancePointer);
+                if (subgraphAsset->GetId().IsValid())
+                {
+                    AssetBuilderSDK::SourceFileDependency dependency;
+                    dependency.m_sourceFileDependencyUUID = subgraphAsset->GetId().m_guid;
+                    jobDependenciesByKey.insert({ s_scriptCanvasProcessJobKey, dependency });
+                    this->m_processEditorAssetDependencies.push_back
+                        ( { subgraphAsset->GetId(), azTypeId, AZ::Data::AssetLoadBehavior::PreLoad });
+                }
+            }
+            else if (azTypeId == azrtti_typeid<AZ::Data::Asset<ScriptEvents::ScriptEventsAsset>>())
+            {
+                const auto* eventAsset = reinterpret_cast<AZ::Data::Asset<const ScriptEvents::ScriptEventsAsset>*>(instancePointer);
+                if (eventAsset->GetId().IsValid())
+                {
+                    AssetBuilderSDK::SourceFileDependency dependency;
+                    dependency.m_sourceFileDependencyUUID = eventAsset->GetId().m_guid;
+                    jobDependenciesByKey.insert({ ScriptEvents::k_builderJobKey, dependency });
+                    this->m_processEditorAssetDependencies.push_back
+                        ( { eventAsset->GetId(), azTypeId, AZ::Data::AssetLoadBehavior::PreLoad });
+                }
+            }
+
+            // always continue, make note of the script canvas dependencies
+            return true;
+        };
+
+        AZ_Verify(serializeContext->EnumerateInstanceConst
+            ( graphData
+            , azrtti_typeid<ScriptCanvas::GraphData>()
+            , assetFilter
+            , {}
+            , AZ::SerializeContext::ENUM_ACCESS_FOR_READ
+            , nullptr
+            , nullptr), "Failed to gather dependencies from graph data");
+
+        // Flush asset database events to ensure no asset references are held by closures queued on Ebuses.
+        AZ::Data::AssetManager::Instance().DispatchEvents();
 
         for (const AssetBuilderSDK::PlatformInfo& info : request.m_enabledPlatforms)
         {
-            if (info.HasTag("tools"))
-            {
-                AssetBuilderSDK::JobDescriptor copyDescriptor;
-                copyDescriptor.m_priority = 2;
-                copyDescriptor.m_critical = true;
-                copyDescriptor.m_jobKey = s_scriptCanvasCopyJobKey;
-                copyDescriptor.SetPlatformIdentifier(info.m_identifier.c_str());
-                copyDescriptor.m_additionalFingerprintInfo = AZStd::string(GetFingerprintString()).append("|").append(AZStd::to_string(static_cast<AZ::u64>(fingerprint)));
-                response.m_createJobOutputs.push_back(copyDescriptor);
-            }
-
             AssetBuilderSDK::JobDescriptor jobDescriptor;
             jobDescriptor.m_priority = 2;
             jobDescriptor.m_critical = true;
@@ -222,7 +195,7 @@ namespace ScriptCanvasBuilder
         bool pathFound = false;
         AZStd::string relativePath;
         AzToolsFramework::AssetSystemRequestBus::BroadcastResult
-        (pathFound
+            ( pathFound
             , &AzToolsFramework::AssetSystem::AssetSystemRequest::GetRelativeProductPathFromFullSourceOrProductPath
             , request.m_fullPath.c_str(), relativePath);
 
@@ -232,52 +205,14 @@ namespace ScriptCanvasBuilder
             return;
         }
 
-        if (!m_editorAssetHandler)
-        {
-            AZ_Error(s_scriptCanvasBuilder, false, R"(Exporting of .scriptcanvas for "%s" file failed as no editor asset handler was registered for script canvas. The ScriptCanvas Gem might not be enabled.)", fullPath.data());
-            return;
-        }
-
         if (!m_runtimeAssetHandler)
         {
             AZ_Error(s_scriptCanvasBuilder, false, R"(Exporting of .scriptcanvas for "%s" file failed as no runtime asset handler was registered for script canvas.)", fullPath.data());
             return;
         }
 
-        AZStd::shared_ptr<AZ::Data::AssetDataStream> assetDataStream = AZStd::make_shared<AZ::Data::AssetDataStream>();
-
-        AZ::IO::FileIOStream stream(fullPath.c_str(), AZ::IO::OpenMode::ModeRead);
-        if (!AZ::IO::RetryOpenStream(stream))
-        {
-            AZ_Warning(s_scriptCanvasBuilder, false, "CreateJobs for \"%s\" failed because the source file could not be opened.", fullPath.data());
-            return;
-        }
-
-        // Read the asset into a memory buffer, then hand ownership of the buffer to assetDataStream
-        {
-            AZ::IO::FileIOStream ioStream;
-            if (!ioStream.Open(fullPath.data(), AZ::IO::OpenMode::ModeRead))
-            {
-                AZ_Warning(s_scriptCanvasBuilder, false, "CreateJobs for \"%s\" failed because the source file could not be opened.", fullPath.data());
-                return;
-            }
-            AZStd::vector<AZ::u8> fileBuffer(ioStream.GetLength());
-            size_t bytesRead = ioStream.Read(fileBuffer.size(), fileBuffer.data());
-            if (bytesRead != ioStream.GetLength())
-            {
-                AZ_Warning(s_scriptCanvasBuilder, false, AZStd::string::format("File failed to read completely: %s", fullPath.data()).c_str());
-                return;
-            }
-
-            assetDataStream->Open(AZStd::move(fileBuffer));
-        }
-
-        AZ::SerializeContext* context{};
-        AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-
-        AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset> asset;
-        asset.Create(request.m_sourceFileUUID);
-        if (m_editorAssetHandler->LoadAssetDataFromStream(asset, assetDataStream, nullptr) != AZ::Data::AssetHandler::LoadResult::LoadComplete)
+        auto loadOutcome = ScriptCanvasEditor::LoadFromFile(request.m_fullPath);
+        if (!loadOutcome.IsSuccess())
         {
             AZ_Error(s_scriptCanvasBuilder, false, R"(Loading of ScriptCanvas asset for source file "%s" has failed)", fullPath.data());
             return;
@@ -290,30 +225,11 @@ namespace ScriptCanvasBuilder
         AzFramework::StringFunc::Path::Join(request.m_tempDirPath.c_str(), fileNameOnly.c_str(), runtimeScriptCanvasOutputPath, true, true);
         AzFramework::StringFunc::Path::ReplaceExtension(runtimeScriptCanvasOutputPath, ScriptCanvas::RuntimeAsset::GetFileExtension());
 
-        if (request.m_jobDescription.m_jobKey == s_scriptCanvasCopyJobKey)
-        {
-            // ScriptCanvas Editor Asset Copy job
-            // The SubID is zero as this represents the main asset
-            AssetBuilderSDK::JobProduct jobProduct;
-            jobProduct.m_productFileName = fullPath;
-            jobProduct.m_productAssetType = azrtti_typeid<ScriptCanvasEditor::ScriptCanvasAsset>();
-            jobProduct.m_productSubID = 0;
-            jobProduct.m_dependenciesHandled = true;
-            jobProduct.m_dependencies.clear();
-            response.m_outputProducts.push_back(AZStd::move(jobProduct));
-            response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        }
-        else
-        {
-            // force load all dependencies into memory
-            for (auto& dependency : m_processEditorAssetDependencies)
-            {
-                auto depAsset = AZ::Data::AssetManager::Instance().GetAsset(dependency.m_assetId, dependency.m_assetType, AZ::Data::AssetLoadBehavior::PreLoad);
-                depAsset.BlockUntilLoadComplete();
-            }
+        auto sourceHandle = loadOutcome.TakeValue();
 
-            AZ::Entity* buildEntity = asset.Get()->GetScriptCanvasEntity();
-
+        if (request.m_jobDescription.m_jobKey == s_scriptCanvasProcessJobKey)
+        {
+            AZ::Entity* buildEntity = sourceHandle.Get()->GetEntity();
             ProcessTranslationJobInput input;
             input.assetID = AZ::Data::AssetId(request.m_sourceFileUUID, AZ_CRC("RuntimeData", 0x163310ae));
             input.request = &request;
@@ -368,13 +284,16 @@ namespace ScriptCanvasBuilder
                 }
                 else
                 {
-                    if (AzFramework::StringFunc::Find(fileNameOnly, s_unitTestParseErrorPrefix) != AZStd::string::npos)
+                    if (!ScriptCanvas::Grammar::g_processingErrorsForUnitTestsEnabled
+                        && AzFramework::StringFunc::Find(fileNameOnly, s_unitTestParseErrorPrefix) != AZStd::string::npos)
                     {
                         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
                     }
                     AZ_Error(s_scriptCanvasBuilder, false, translationOutcome.GetError().c_str());
                 }
             }
+
+            m_processEditorAssetDependencies.clear();
         }
 
         AZ_TracePrintf(s_scriptCanvasBuilder, "Finish Processing Job");

@@ -62,7 +62,7 @@ namespace
         AZ::SerializeContext& context,
         AZ::SerializeContext::DataElementNode& classElement)
     {
-        // This element is a pre-version-8 text component. Prior to version 8 there was no MarkupEnabled 
+        // This element is a pre-version-8 text component. Prior to version 8 there was no MarkupEnabled
         // flag and markup was always enabled. Going forward, for new components we want to default to
         // markupEnabled = false because of the performance hit of parsing text strings for XML.
         // However, we want to be backward compatible with old data so for pre-version-8 components
@@ -168,10 +168,10 @@ namespace
 
     //! Migrate legacy shrink-to-fit setting to new ShrinkToFit enum.
     //!
-    //! As of V8 of text component, the "shrink to fit" setting was a value of 
+    //! As of V8 of text component, the "shrink to fit" setting was a value of
     //! the WrapTextSetting enum. With V9, a new ShrinkToFit enum was introduced
     //! and offered an additional "width-only" option (previously, shrink-to-fit
-    //! only performed uniform scaling along both axes). 
+    //! only performed uniform scaling along both axes).
     bool ConvertV8ShrinkToFitSetting(
         AZ::SerializeContext& context,
         AZ::SerializeContext::DataElementNode& classElement)
@@ -194,7 +194,7 @@ namespace
             if (shrinkToFitSettingNeedsUpdating)
             {
                 // It wasn't possible to word-wrap and have shrink-to-fit before, so we just
-                // reset the wrap text setting to NoWrap to maintain backwards compatibilty. 
+                // reset the wrap text setting to NoWrap to maintain backwards compatibilty.
                 if (!wrapTextSettingNode.SetData<int>(context, static_cast<int>(UiTextInterface::WrapTextSetting::NoWrap)))
                 {
                     AZ_Error("Serialization", false, "Unable to set WrapTextSetting to NoWrap (%d).", static_cast<int>(UiTextInterface::WrapTextSetting::NoWrap));
@@ -598,7 +598,6 @@ namespace
         int curChar = 0;
         float curLineWidth = 0.0f;
         float biggestLineWidth = 0.0f;
-        float widthSum = 0.0f;
 
         // When iterating over batches, we need to know the previous
         // character, which we can only obtain if we keep track of the last
@@ -690,7 +689,6 @@ namespace
                     {
                         // Reset the current line width to account for newline
                         curLineWidth = curCharWidth;
-                        widthSum += curLineWidth;
                     }
                     else if ((lastSpace > 0) && ((curChar - lastSpace) < 16) && (curChar - lastSpace >= 0)) // 16 is the default threshold
                     {
@@ -703,7 +701,6 @@ namespace
                         }
 
                         curLineWidth = curLineWidth - lastSpaceWidth + curCharWidth;
-                        widthSum += curLineWidth;
                     }
                     else
                     {
@@ -723,7 +720,6 @@ namespace
                             biggestLineWidth = curLineWidth;
                         }
 
-                        widthSum += curLineWidth;
                         curLineWidth = curCharWidth;
                     }
 
@@ -964,7 +960,7 @@ namespace
     //! \param imageStartPos Upper-left coordinate of unclipped image
     //! \param imageEndPos Bottom-right coordinate of unclipped image
     void ClipImageQuadAndUvs(
-        AZ::Vector3* imageQuad, 
+        AZ::Vector3* imageQuad,
         AZ::Vector2* uvs,
         const UiTransformInterface::RectPoints& points,
         const UiTextComponent::DrawBatch& drawBatch,
@@ -1022,7 +1018,7 @@ namespace
     //! Note that this assumes the lines have been word-wrapped and don't overflow horizontally.
     int GetNumNonOverflowingLinesForElement(
         const UiTextComponent::DrawBatchLineContainer& batchLines,
-        const AZ::Vector2& currentElementSize, 
+        const AZ::Vector2& currentElementSize,
         float lineSpacing)
     {
         int maxLinesElementCanHold = 0;
@@ -1055,6 +1051,23 @@ namespace
         // div by zero checks etc.
         maxLinesElementCanHold = AZStd::GetMax<int>(maxLinesElementCanHold, 1);
         return maxLinesElementCanHold;
+    }
+
+    //! Converts the vertex format used by FFont to the format being used by the dynamic draw context in LyShine.
+    //!
+    //! Note that the formats are currently identical, but this may change with the removal of more legacy code
+    void FontVertexToUiVertex(const SVF_P2F_C4B_T2F_F4B* fontVertices, LyShine::UiPrimitiveVertex* uiVertices, int numVertices)
+    {
+        for (int i = 0; i < numVertices; ++i)
+        {
+            uiVertices[i].xy = fontVertices[i].xy;
+            uiVertices[i].color.dcolor = fontVertices[i].color.dcolor;
+            uiVertices[i].st = fontVertices[i].st;
+            uiVertices[i].texIndex = fontVertices[i].texIndex;
+            uiVertices[i].texHasColorChannel = fontVertices[i].texHasColorChannel;
+            uiVertices[i].texIndex2 = fontVertices[i].texIndex2;
+            uiVertices[i].pad = fontVertices[i].pad;
+        }
     }
 
 }   // anonymous namespace
@@ -1426,7 +1439,7 @@ bool UiTextComponent::DrawBatchLine::CheckAndSplitLine(const STextDrawContext& c
     DrawBatchLine& newDrawBatchLineOut)
 {
     bool lineSplit = false;
-    
+
     // Allow a space at the end of the line to overflow. This is to remain consistent with the non-image
     // line split implementation. If the space at the end of the line was simply removed, the character
     // indexes wouldn't match the localized text character indexes, and would cause issues with cursor positioning
@@ -1453,7 +1466,7 @@ bool UiTextComponent::DrawBatchLine::CheckAndSplitLine(const STextDrawContext& c
         // Check whether current batch is overflowing and get overflow info
         UiTextComponent::DrawBatch::OverflowInfo overflowInfoOut;
         bool overflowing = drawBatchIterator->GetOverflowInfo(ctx, availableWidth, skipFirstChar, overflowInfoOut);
-        
+
         // Check if this batch has a space and remember for later
         if (overflowInfoOut.lastSpaceIndex >= 0)
         {
@@ -1483,7 +1496,7 @@ bool UiTextComponent::DrawBatchLine::CheckAndSplitLine(const STextDrawContext& c
             isLastSpaceAtEndOfBatch = false;
             numCharsSinceLastSpace = -1;
         }
-        
+
         if (overflowing)
         {
             // Find a batch to split
@@ -1667,13 +1680,13 @@ void UiTextComponent::ResetOverrides()
         m_overrideColor = m_color;
         colorChanged = true;
     }
-    
+
     if (m_overrideAlpha != m_alpha)
     {
         m_overrideAlpha = m_alpha;
         alphaChanged = true;
     }
-    
+
     if (m_overrideFontFamily != m_fontFamily)
     {
         m_overrideFontFamily = m_fontFamily;
@@ -1771,7 +1784,7 @@ void UiTextComponent::Render(LyShine::IRenderGraph* renderGraph)
     float finalAlpha = fade * m_overrideAlpha;
     uint8 finalAlphaByte = static_cast<uint8>(finalAlpha * 255.0f);
 
-    // if we have any cached text batches that have transparency in their font effects then we need to 
+    // if we have any cached text batches that have transparency in their font effects then we need to
     // regenerate the render cache if alpha has changed. This is fairly unusual so it still
     // makes sense to not mark the render cache dirty on most fades or alpha changes.
     if (m_drawBatchLines.m_fontEffectHasTransparency)
@@ -1779,7 +1792,7 @@ void UiTextComponent::Render(LyShine::IRenderGraph* renderGraph)
         if (!m_renderCache.m_batches.empty() && m_renderCache.m_batches[0]->m_color.a != finalAlphaByte)
         {
             MarkRenderCacheDirty();
-        }        
+        }
     }
 
     // If the cache is out of date then regenerate it
@@ -1827,14 +1840,10 @@ void UiTextComponent::Render(LyShine::IRenderGraph* renderGraph)
 
         for (UiTransformInterface::RectPoints& rect : rectPoints)
         {
-            DynUiPrimitive* primitive = renderGraph->GetDynamicQuadPrimitive(rect.pt, packedColor);
+            LyShine::UiPrimitive* primitive = renderGraph->GetDynamicQuadPrimitive(rect.pt, packedColor);
             primitive->m_next = nullptr;
 
-            LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
-            if (lyRenderGraph)
-            {
-                lyRenderGraph->AddPrimitiveAtom(primitive, systemImage, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
-            }
+            renderGraph->AddPrimitive(primitive, systemImage, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
         }
     }
 
@@ -1856,12 +1865,8 @@ void UiTextComponent::Render(LyShine::IRenderGraph* renderGraph)
             }
 
             bool isClampTextureMode = true;
-            LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
-            if (lyRenderGraph)
-            {
-                lyRenderGraph->AddPrimitiveAtom(&batch->m_cachedPrimitive, texture,
-                    isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
-            }
+            renderGraph->AddPrimitive(&batch->m_cachedPrimitive, texture,
+                isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
         }
     }
 
@@ -1871,7 +1876,7 @@ void UiTextComponent::Render(LyShine::IRenderGraph* renderGraph)
 
     for (RenderCacheBatch* batch : m_renderCache.m_batches)
     {
-        AZ::FFont* font = static_cast<AZ::FFont*>(batch->m_font); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
+        AZ::FFont* font = static_cast<AZ::FFont*>(batch->m_font); // LYSHINE_ATOM_TODO - move IFont.h out of CryCommon/engine code
         AZ::Data::Instance<AZ::RPI::Image> fontImage = font->GetFontImage();
         if (fontImage)
         {
@@ -1889,17 +1894,13 @@ void UiTextComponent::Render(LyShine::IRenderGraph* renderGraph)
                 batch->m_color.a = finalAlphaByte;
             }
 
-            // We always use wrap mode for text (isClamp false). This is historically what was done 
+            // We always use wrap mode for text (isClamp false). This is historically what was done
             // in CryFont and without it characters that are on the left of the font texture look bad
             // because there is no padding on the left of the glyphs.
             bool isClampTextureMode = false;
 
-            LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
-            if (lyRenderGraph)
-            {
-                lyRenderGraph->AddPrimitiveAtom(&batch->m_cachedPrimitive, fontImage,
-                    isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
-            }
+            renderGraph->AddPrimitive(&batch->m_cachedPrimitive, fontImage,
+                isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
         }
     }
 }
@@ -2029,7 +2030,7 @@ void UiTextComponent::SetColor(const AZ::Color& color)
     {
         if (m_drawBatchLines.m_fontEffectHasTransparency)
         {
-            MarkRenderCacheDirty();    
+            MarkRenderCacheDirty();
         }
         else
         {
@@ -2378,7 +2379,7 @@ void UiTextComponent::SetSelectionRange(int startIndex, int endIndex, const AZ::
 
     // The render cache stores positions based on these values so mark it dirty
     MarkRenderCacheDirty();
-} 
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiTextComponent::ClearSelectionRange()
@@ -2691,7 +2692,7 @@ void UiTextComponent::GetClickableTextRects(UiClickableTextInterface::ClickableT
                 alignedPosition.SetX(alignedPosition.GetX() + xDrawPosOffset);
                 Vec2 textSize(drawBatch.size.GetX(), drawBatch.size.GetY());
                 xDrawPosOffset = textSize.x;
-                
+
                 if (drawBatch.IsClickable())
                 {
                     UiClickableTextInterface::ClickableTextRect clickableRect;
@@ -2736,7 +2737,7 @@ void UiTextComponent::SetClickableTextColor(int id, const AZ::Color& color)
                 if (id == drawBatch.clickableId)
                 {
                     // Don't return here. We purposely continue iterating in
-                    // case there are subsequent draw batches (especially 
+                    // case there are subsequent draw batches (especially
                     // across multiple draw batch lines) with the same ID.
                     // This will occur with word-wrapped text.
                     drawBatch.color = color.GetAsVector3();
@@ -2851,7 +2852,7 @@ float UiTextComponent::GetTargetWidth(float maxWidth)
     // for rendering, a new empty line will be added to account for the newline that gets added
     // due to not having enough room for the trailing space
     bool excludeTrailingSpaceWidth = false;
-    
+
     DrawBatchLines drawBatchLines;
     CalculateDrawBatchLines(drawBatchLines, forceNoWrap, maxWidth, excludeTrailingSpaceWidth);
 
@@ -2891,7 +2892,7 @@ float UiTextComponent::GetTargetHeight(float maxHeight)
     const bool haveMaxHeight = LyShine::IsUiLayoutCellSizeSpecified(maxHeight);
     const bool ellipsis = m_overflowMode == OverflowMode::Ellipsis;
     const bool shrinkToFit = m_shrinkToFit == ShrinkToFit::Uniform;
-    
+
     const bool handleOverflow = haveMaxHeight && (ellipsis || shrinkToFit);
     const bool handleNoOverflow = !haveMaxHeight && (m_drawBatchLines.fontSizeScale.GetY() != 1.0f);
 
@@ -3431,7 +3432,7 @@ void UiTextComponent::OnFontSizeChange()
 {
     m_isRequestFontSizeDirty = true;
 
-    // We need to re-prepare the text for rendering, however this may not be 
+    // We need to re-prepare the text for rendering, however this may not be
     // very efficient since completely re-preparing the text (parsing markup,
     // preparing batches, etc.) may not be necessary.
     MarkDrawBatchLinesDirty(true);
@@ -3499,7 +3500,7 @@ void UiTextComponent::OnLineSpacingChange()
     // If shrink-to-fit applies, we need to re-create draw batch lines in
     // order to ensure overflow conditions are properly applied.
     if (m_shrinkToFit != ShrinkToFit::None)
-    { 
+    {
         MarkDrawBatchLinesDirty(true);
     }
     else
@@ -3863,7 +3864,7 @@ void UiTextComponent::CalculateDrawBatchLines(
         drawBatches.push_back(DrawBatch());
         drawBatches.front().font = font;
         drawBatches.front().text = m_locText;
-   
+
         // If the font effect we are using has any passes with alpha of less than 1 (not common) then
         // we set a flag in the batch lines since it affects how we can update the alpha in the cache
         drawBatchLinesOut.m_fontEffectHasTransparency = font->DoesEffectHaveTransparency(fontContext.m_fxIdx);
@@ -3875,7 +3876,7 @@ void UiTextComponent::CalculateDrawBatchLines(
         delete image;
     }
     prevInlineImages.clear();
-    
+
     // Check if we have any inline images that require us to connect to the texture atlas bus
     if (drawBatchLinesOut.inlineImages.size() > 0)
     {
@@ -4082,16 +4083,19 @@ void UiTextComponent::RenderDrawBatchLines(
                     cacheBatch->m_font = drawBatch.font;
                     cacheBatch->m_color = batchColor;
 
-                    cacheBatch->m_cachedPrimitive.m_vertices = new SVF_P2F_C4B_T2F_F4B[numQuads * 4];
+                    cacheBatch->m_cachedPrimitive.m_vertices = new LyShine::UiPrimitiveVertex[numQuads * 4];
                     cacheBatch->m_cachedPrimitive.m_indices = new uint16[numQuads * 6];
 
+                    AZStd::vector<SVF_P2F_C4B_T2F_F4B> vertices(numQuads * 4);
                     uint32 numQuadsWritten = cacheBatch->m_font->WriteTextQuadsToBuffers(
-                        cacheBatch->m_cachedPrimitive.m_vertices, cacheBatch->m_cachedPrimitive.m_indices, numQuads,
+                        vertices.data(), cacheBatch->m_cachedPrimitive.m_indices, numQuads,
                         cacheBatch->m_position.GetX(), cacheBatch->m_position.GetY(), 1.0f, cacheBatch->m_text.c_str(), true, fontContext);
 
                     AZ_Assert(numQuadsWritten <= numQuads, "value returned from WriteTextQuadsToBuffers is larger than size allocated");
 
-                    cacheBatch->m_cachedPrimitive.m_numVertices = numQuadsWritten * 4;
+                    int numVertices = numQuadsWritten * 4;
+                    FontVertexToUiVertex(vertices.data(), cacheBatch->m_cachedPrimitive.m_vertices, numVertices);
+                    cacheBatch->m_cachedPrimitive.m_numVertices = numVertices;
                     cacheBatch->m_cachedPrimitive.m_numIndices = numQuadsWritten * 6;
 
                     cacheBatch->m_fontTextureVersion = drawBatch.font->GetFontTextureVersion();
@@ -4107,7 +4111,7 @@ void UiTextComponent::RenderDrawBatchLines(
                 const AZ::Vector2 imageStartPos = AZ::Vector2(
                     alignedPosition.GetX() + drawBatch.image->m_leftPadding,
                     alignedPosition.GetY() + drawBatch.yOffset);
-                
+
                 const AZ::Vector2 imageEndPos = AZ::Vector2(
                     imageStartPos.GetX() + drawBatch.image->m_size.GetX(),
                     imageStartPos.GetY() + drawBatch.image->m_size.GetY());
@@ -4121,7 +4125,7 @@ void UiTextComponent::RenderDrawBatchLines(
                 AZ::Vector2 uvs[4];
                 if (drawBatch.image->m_atlas)
                 {
-                    uvs[0] = AZ::Vector2(static_cast<float>(drawBatch.image->m_coordinates.GetLeft()) / drawBatch.image->m_atlas->GetWidth(), 
+                    uvs[0] = AZ::Vector2(static_cast<float>(drawBatch.image->m_coordinates.GetLeft()) / drawBatch.image->m_atlas->GetWidth(),
                         static_cast<float>(drawBatch.image->m_coordinates.GetTop()) / drawBatch.image->m_atlas->GetHeight());
                     uvs[2] = AZ::Vector2(static_cast<float>(drawBatch.image->m_coordinates.GetRight()) / drawBatch.image->m_atlas->GetWidth(),
                         static_cast<float>(drawBatch.image->m_coordinates.GetBottom()) / drawBatch.image->m_atlas->GetHeight());
@@ -4152,7 +4156,7 @@ void UiTextComponent::RenderDrawBatchLines(
 
                 cacheImageBatch->m_texture = drawBatch.image->m_texture;
 
-                cacheImageBatch->m_cachedPrimitive.m_vertices = new SVF_P2F_C4B_T2F_F4B[4];
+                cacheImageBatch->m_cachedPrimitive.m_vertices = new LyShine::UiPrimitiveVertex[4];
                 for (int i = 0; i < 4; ++i)
                 {
                     cacheImageBatch->m_cachedPrimitive.m_vertices[i].xy = Vec2(imageQuad[i].GetX(), imageQuad[i].GetY());
@@ -4201,15 +4205,19 @@ void UiTextComponent::UpdateTextRenderBatchesForFontTextureChange()
                 delete [] cacheBatch->m_cachedPrimitive.m_vertices;
                 delete [] cacheBatch->m_cachedPrimitive.m_indices;
 
-                cacheBatch->m_cachedPrimitive.m_vertices = new SVF_P2F_C4B_T2F_F4B[numQuads * 4];
+                cacheBatch->m_cachedPrimitive.m_vertices = new LyShine::UiPrimitiveVertex[numQuads * 4];
                 cacheBatch->m_cachedPrimitive.m_indices = new uint16[numQuads * 6];
             }
 
+            AZStd::vector<SVF_P2F_C4B_T2F_F4B> vertices(numQuads * 4);
             uint32 numQuadsWritten = cacheBatch->m_font->WriteTextQuadsToBuffers(
-                cacheBatch->m_cachedPrimitive.m_vertices, cacheBatch->m_cachedPrimitive.m_indices, numQuads,
+                vertices.data(), cacheBatch->m_cachedPrimitive.m_indices, numQuads,
                 cacheBatch->m_position.GetX(), cacheBatch->m_position.GetY(), 1.0f, cacheBatch->m_text.c_str(), true, fontContext);
 
-            cacheBatch->m_cachedPrimitive.m_numVertices = numQuadsWritten * 4;
+            int numVertices = numQuadsWritten * 4;
+            FontVertexToUiVertex(vertices.data(), cacheBatch->m_cachedPrimitive.m_vertices, numVertices);
+
+            cacheBatch->m_cachedPrimitive.m_numVertices = numVertices;
             cacheBatch->m_cachedPrimitive.m_numIndices = numQuadsWritten * 6;
 
             cacheBatch->m_fontTextureVersion = cacheBatch->m_font->GetFontTextureVersion();
@@ -4227,9 +4235,9 @@ STextDrawContext UiTextComponent::GetTextDrawContextPrototype(int requestFontSiz
     // Shrink-to-fit scaling (fontSizeScale) gets applied to font size, but not request size.
     // This means that re-rendered fonts will not re-render characters that are scaled via
     // shrink-to-fit - a scale transformation is applied for these characters instead. For
-    // higher quality font scaling with shrink-to-fit, consider taking m_fontSizeScale into 
+    // higher quality font scaling with shrink-to-fit, consider taking m_fontSizeScale into
     // account.
-    ctx.SetSize(vector2f(m_fontSize * fontSizeScale.GetX(), m_fontSize * fontSizeScale.GetY()));
+    ctx.SetSize(Vec2(m_fontSize * fontSizeScale.GetX(), m_fontSize * fontSizeScale.GetY()));
     ctx.m_requestSize = Vec2i(requestFontSize, requestFontSize);
     ctx.m_processSpecialChars = false;
     ctx.m_tracking = (m_charSpacing * ctx.m_size.x) / 1000.0f; // m_charSpacing units are 1/1000th of ems, 1 em is equal to font size.
@@ -4406,7 +4414,7 @@ void UiTextComponent::HandleShrinkToFitWithWrapping(
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiTextComponent::HandleWidthOnlyShrinkToFitWithWrapping(
     UiTextComponent::DrawBatchLines& drawBatchLinesOut,
-    const AZ::Vector2& currentElementSize, 
+    const AZ::Vector2& currentElementSize,
     int maxLinesElementCanHold)
 {
     bool textStillOverflows = true;
@@ -4418,8 +4426,8 @@ void UiTextComponent::HandleWidthOnlyShrinkToFitWithWrapping(
         DrawBatchLineContainer::reverse_iterator riter;
         int overflowLineCount = 0;
         float overflowingLineSize = 0.0f;
-        for (riter = drawBatchLinesOut.batchLines.rbegin(); 
-            riter != drawBatchLinesOut.batchLines.rend() && overflowLineCount < numOverflowingLines; 
+        for (riter = drawBatchLinesOut.batchLines.rbegin();
+            riter != drawBatchLinesOut.batchLines.rend() && overflowLineCount < numOverflowingLines;
             ++riter, ++overflowLineCount)
         {
             DrawBatchLine& batchLine = *riter;
@@ -4458,7 +4466,7 @@ void UiTextComponent::HandleWidthOnlyShrinkToFitWithWrapping(
         maxLinesElementCanHold = GetNumNonOverflowingLinesForElement(drawBatchLinesOut.batchLines, currentElementSize, m_lineSpacing);
 
         // Just because we applied a scale doesn't mean the text fits. This is due to word wrap.
-        // Even though we calculate the exact scale to accmmodate all the characters for the 
+        // Even though we calculate the exact scale to accmmodate all the characters for the
         // max number of lines the element can hold, word-wrap divides the characters unevenly
         // across the total space required by the text, because overflowing words/characters are
         // wrapped to the next line (and a character is "atomic" and can't be divided arbitrarily
@@ -4485,7 +4493,7 @@ void UiTextComponent::HandleUniformShrinkToFitWithWrapping(
     // This keeps track of the last known largest scale that fits the text
     // to the element bounds with word wrap.
     float bestScaleFoundSoFar = curFontScale;
-    
+
     // Calculate a default scale multiplier used to reduce the font scale by a percentage
     // until the text no longer overflows.
     // The default scale multiplier is the ratio of available height to the required height.
@@ -4500,14 +4508,14 @@ void UiTextComponent::HandleUniformShrinkToFitWithWrapping(
     // If min shrink scale applies, and it's bigger than the default scale multplier,
     // we set the scale to be half the difference between 1.0f (no scale) and the
     // min shrink scale (a "half step"). This gives a starting point that avoids
-    // applying a scale that is too small too soon (esp for text that "almost fits" 
+    // applying a scale that is too small too soon (esp for text that "almost fits"
     // the element bounds).
     const float minShrinkScaleHalfStep = (1.0f - m_minShrinkScale) * 0.5f + m_minShrinkScale;
     const bool useMinShrinkScale = m_minShrinkScale > 0.0f;
 
     const float scaleMultiplierUnclamped = useMinShrinkScale ? minShrinkScaleHalfStep : defaultScaleMultiplier;
     const float scaleMultiplier = AZStd::GetMax<float>(defaultScaleMultiplier, scaleMultiplierUnclamped);
-    
+
     // Text always starts out overflowing
     bool textStillOverflows = true;
 
@@ -4532,7 +4540,7 @@ void UiTextComponent::HandleUniformShrinkToFitWithWrapping(
         maxLinesElementCanHold = GetNumNonOverflowingLinesForElement(drawBatchLinesOut.batchLines, currentElementSize, m_lineSpacing);
 
         // Just because we applied a scale doesn't mean the text fits. This is due to word wrap.
-        // Even though we calculate the exact scale to accmmodate all the characters for the 
+        // Even though we calculate the exact scale to accmmodate all the characters for the
         // max number of lines the element can hold, word-wrap divides the characters unevenly
         // across the total space required by the text, because overflowing words/characters are
         // wrapped to the next line (and a character is "atomic" and can't be divided arbitrarily
@@ -4585,7 +4593,7 @@ void UiTextComponent::HandleEllipsis(UiTextComponent::DrawBatchLines& drawBatchL
     {
         return;
     }
-    
+
     AZ::Vector2 textSize = GetTextSizeFromDrawBatchLines(drawBatchLinesOut);
     AZ::Vector2 currentElementSize;   //  This needs to be computed with the unscaled size. This is because scaling happens after the text is laid out.
     EBUS_EVENT_ID_RESULT(currentElementSize, GetEntityId(), UiTransformBus, GetCanvasSpaceSizeNoScaleRotate);
@@ -4651,7 +4659,7 @@ void UiTextComponent::HandleEllipsis(UiTextComponent::DrawBatchLines& drawBatchL
         const bool noOtherBatches = 1 == lineToEllipsisPtr->drawBatchList.size();
         const bool removeBatchContainingOnlyEllipsis = batchContainsOnlyEllipsis && noOtherBatches;
         if (removeBatchContainingOnlyEllipsis)
-        {            
+        {
             linesToRemove.push_back(lineToEllipsis);
         }
         else
@@ -4716,7 +4724,7 @@ void UiTextComponent::GetLineToEllipsisAndLinesToTruncate(UiTextComponent::DrawB
             prevBatchLine = iter;
             continue;
         }
-            
+
         // Prevent the first line of text from being removed, even if the text
         // is overflowing. With ellipsis enabled, this content will be clipped.
         const bool firstLine = iter == drawBatchLinesOut.batchLines.begin();
@@ -4776,7 +4784,7 @@ UiTextComponent::DrawBatch* UiTextComponent::GetDrawBatchToEllipseAndPositions(c
         ellipsisSize = drawBatchToEllipse->font->GetTextSize(ellipseText, true, ctx).x;
 
         // Calculate where the ellipsis must start in order to be contained within the
-        // element bounds. Also, guard against narrow elements that aren't wide enough 
+        // element bounds. Also, guard against narrow elements that aren't wide enough
         // to accommodate ellipsis.
         *ellipsisPos = AZStd::GetMax<float>(0.0f, currentElementSize.GetX() - ellipsisSize);
         *drawBatchStartPos = startPositions->back().second;
@@ -4838,7 +4846,7 @@ int UiTextComponent::GetStartEllipseIndexInDrawBatch(const DrawBatch* drawBatchT
         char codepoint[5] = { 0 };
         char* codepointPtr = codepoint;
         Utf8::Unchecked::octet_iterator<AZStd::string::iterator>::to_utf8_sequence(ch, codepointPtr, maxSize);
-        
+
         overflowStringSize += drawBatchToEllipse->font->GetTextSize(codepoint, true, ctx).x;
 
         if (prevCh && ctx.m_kerningEnabled)
@@ -4863,7 +4871,7 @@ int UiTextComponent::GetStartEllipseIndexInDrawBatch(const DrawBatch* drawBatchT
         }
 
         ellipsisCharPos = stringBufferIndex;
-        
+
     }
 
     return ellipsisCharPos;
@@ -4936,10 +4944,10 @@ AZStd::string UiTextComponent::GetLocalizedText([[maybe_unused]] const AZStd::st
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 AZ::Vector2 UiTextComponent::CalculateAlignedPositionWithYOffset(const UiTransformInterface::RectPoints& points)
 {
-    AZ::Vector2 pos;
+    AZ::Vector2 pos = AZ::Vector2::CreateZero();
     const DrawBatchLines& drawBatchLines = GetDrawBatchLines();
     size_t numLinesOfText = drawBatchLines.batchLines.size();
-    
+
     switch (m_textHAlignment)
     {
     case IDraw2d::HAlign::Left:
@@ -5047,7 +5055,7 @@ bool UiTextComponent::VersionConverter(AZ::SerializeContext& context,
         }
     }
 
-    // conversion from version 8 to current: 
+    // conversion from version 8 to current:
     // - "shrink to fit" wrap text setting now becomes the "uniform" value of the new "shrink to fit" enum
     // - legacy "ResizeToText" overflow mode (enum value 2) gets reset back to zero (overflow)
     if (classElement.GetVersion() <= 8)

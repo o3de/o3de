@@ -19,6 +19,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/Serialization/IdUtils.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <AzQtComponents/Components/ToastNotification.h>
 #include <GraphCanvas/GraphCanvasBus.h>
 #include <GraphCanvas/Components/GridBus.h>
 #include <GraphCanvas/Components/Nodes/NodeBus.h>
@@ -479,6 +480,7 @@ namespace ScriptCanvasEditor
 
         ScriptCanvas::Graph::Activate();
         PostActivate();
+        m_undoHelper.SetSource(this);
     }
 
     void Graph::Deactivate()
@@ -488,7 +490,7 @@ namespace ScriptCanvasEditor
         EditorGraphRequestBus::Handler::BusDisconnect();
         SceneCounterRequestBus::Handler::BusDisconnect();
         NodeCreationNotificationBus::Handler::BusDisconnect();
-
+        AZ::SystemTickBus::Handler::BusDisconnect();
         GraphCanvas::SceneNotificationBus::Handler::BusDisconnect();
 
         GraphCanvas::GraphModelRequestBus::Handler::BusDisconnect();
@@ -1028,16 +1030,48 @@ namespace ScriptCanvasEditor
     {
         AZStd::any* connectionUserData = nullptr;
         GraphCanvas::ConnectionRequestBus::EventResult(connectionUserData, connectionId, &GraphCanvas::ConnectionRequests::GetUserData);
-        auto scConnectionId = connectionUserData && connectionUserData->is<AZ::EntityId>() ? *AZStd::any_cast<AZ::EntityId>(connectionUserData) : AZ::EntityId();
+        auto scConnectionId = connectionUserData && connectionUserData->is<AZ::EntityId>()
+            ? *AZStd::any_cast<AZ::EntityId>(connectionUserData)
+            : AZ::EntityId();
 
-        ScriptCanvas::Connection* connection = AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Connection>(scConnectionId);
-
-        if (connection)
+        if (ScriptCanvas::Connection* connection = AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Connection>(scConnectionId))
         {
-            ScriptCanvas::GraphNotificationBus::Event(GetScriptCanvasId(), &ScriptCanvas::GraphNotifications::OnDisonnectionComplete, connectionId);
-
+            ScriptCanvas::GraphNotificationBus::Event
+                ( GetScriptCanvasId()
+                , &ScriptCanvas::GraphNotifications::OnDisonnectionComplete
+                , connectionId);
             DisconnectById(scConnectionId);
         }
+    }
+
+    ScriptCanvas::DataPtr Graph::Create()
+    {
+        if (AZ::Entity* entity = aznew AZ::Entity("Script Canvas Graph"))
+        {
+            auto graph = entity->CreateComponent<ScriptCanvasEditor::Graph>();
+            entity->CreateComponent<EditorGraphVariableManagerComponent>(graph->GetScriptCanvasId());
+
+            if (ScriptCanvas::DataPtr data = aznew ScriptCanvas::ScriptCanvasData())
+            {
+                data->m_scriptCanvasEntity.reset(entity);
+                graph->MarkOwnership(*data);
+                entity->Init();
+                entity->Activate();
+                return data;
+            }
+        }
+
+        return nullptr;
+    }
+
+    void Graph::MarkOwnership(ScriptCanvas::ScriptCanvasData& owner)
+    {
+        m_owner = &owner;
+    }
+
+    ScriptCanvas::DataPtr Graph::GetOwnership() const
+    {
+        return const_cast<Graph*>(this)->m_owner;
     }
 
     bool Graph::CreateConnection(const GraphCanvas::ConnectionId& connectionId, const GraphCanvas::Endpoint& sourcePoint, const GraphCanvas::Endpoint& targetPoint)
@@ -1077,9 +1111,11 @@ namespace ScriptCanvasEditor
         return CanCreateConnectionBetween(scSourceEndpoint, scTargetEndpoint).IsSuccess();
     }
 
-    AZStd::string Graph::GetDataTypeString(const AZ::Uuid& typeId)
+    AZStd::string Graph::GetDataTypeString(const AZ::Uuid&)
     {
-        return TranslationHelper::GetSafeTypeName(ScriptCanvas::Data::FromAZType(typeId));
+        // This is used by the default tooltip setting in GraphCanvas, returning an empty string
+        // in order for tooltips to be fully controlled by ScriptCanvas
+        return {};
     }
 
     void Graph::OnRemoveUnusedNodes()
@@ -1320,7 +1356,8 @@ namespace ScriptCanvasEditor
 
     void Graph::SignalDirty()
     {
-        GeneralRequestBus::Broadcast(&GeneralRequests::SignalSceneDirty, GetAssetId());
+        SourceHandle handle(m_owner, {}, {});
+        GeneralRequestBus::Broadcast(&GeneralRequests::SignalSceneDirty, handle);
     }
 
     void Graph::HighlightNodesByType(const ScriptCanvas::NodeTypeIdentifier& nodeTypeIdentifier)
@@ -1931,7 +1968,7 @@ namespace ScriptCanvasEditor
             }
 
             OnSaveDataDirtied(graphCanvasNodeId);
-            Nodes::CopySlotTranslationKeyedNamesToDatums(graphCanvasNodeId);
+            Nodes::UpdateSlotDatumLabels(graphCanvasNodeId);
         }
 
         m_wrappedNodeGroupings.clear();
@@ -1949,7 +1986,7 @@ namespace ScriptCanvasEditor
 
         for (AZ::EntityId graphCanvasNodeId : graphCanvasNodeIds)
         {
-            Nodes::CopySlotTranslationKeyedNamesToDatums(graphCanvasNodeId);
+            Nodes::UpdateSlotDatumLabels(graphCanvasNodeId);
         }
 
         GraphCanvas::ViewId viewId;
@@ -3310,7 +3347,7 @@ namespace ScriptCanvasEditor
 
     void Graph::OnToastInteraction()
     {
-        const GraphCanvas::ToastId* toastId = GraphCanvas::ToastNotificationBus::GetCurrentBusId();
+        const AzToolsFramework::ToastId* toastId = AzToolsFramework::ToastNotificationBus::GetCurrentBusId();
 
         if (toastId)
         {
@@ -3335,7 +3372,7 @@ namespace ScriptCanvasEditor
 
     void Graph::OnToastDismissed()
     {
-        const GraphCanvas::ToastId* toastId = GraphCanvas::ToastNotificationBus::GetCurrentBusId();
+        const AzToolsFramework::ToastId* toastId = AzToolsFramework::ToastNotificationBus::GetCurrentBusId();
 
         if (toastId)
         {
@@ -3351,32 +3388,23 @@ namespace ScriptCanvasEditor
         }
     }
 
-    void Graph::SetAssetType(AZ::Data::AssetType assetType)
-    {
-        m_assetType = assetType;
-    }
-
     void Graph::ReportError(const ScriptCanvas::Node& node, const AZStd::string& errorSource, const AZStd::string& errorMessage)
     {
-        GraphCanvas::ToastConfiguration toastConfiguration(GraphCanvas::ToastType::Error, errorSource, errorMessage);
-
-        toastConfiguration.SetCloseOnClick(true);
-        toastConfiguration.SetDuration(AZStd::chrono::milliseconds(5000));
+        AzQtComponents::ToastConfiguration toastConfiguration(AzQtComponents::ToastType::Error, errorSource.c_str(), errorMessage.c_str());
 
         GraphCanvas::ViewId viewId;
         GraphCanvas::SceneRequestBus::EventResult(viewId, GetGraphCanvasGraphId(), &GraphCanvas::SceneRequests::GetViewId);
 
-        GraphCanvas::ToastId toastId;
-
+        AzToolsFramework::ToastId toastId;
         GraphCanvas::ViewRequestBus::EventResult(toastId, viewId, &GraphCanvas::ViewRequests::ShowToastNotification, toastConfiguration);        
 
-        GraphCanvas::ToastNotificationBus::MultiHandler::BusConnect(toastId);
+        AzToolsFramework::ToastNotificationBus::MultiHandler::BusConnect(toastId);
         m_toastNodeIds[toastId] = node.GetEntityId();
     }
 
-    void Graph::UnregisterToast(const GraphCanvas::ToastId& toastId)
+    void Graph::UnregisterToast(const AzToolsFramework::ToastId& toastId)
     {
-        GraphCanvas::ToastNotificationBus::MultiHandler::BusDisconnect(toastId);
+        AzToolsFramework::ToastNotificationBus::MultiHandler::BusDisconnect(toastId);
         m_toastNodeIds.erase(toastId);
     }
 
@@ -3408,10 +3436,7 @@ namespace ScriptCanvasEditor
 
                 m_updateStrings.clear();
 
-                GraphCanvas::ToastConfiguration toastConfiguration(GraphCanvas::ToastType::Information, "Nodes Updates", displayString);
-                toastConfiguration.SetCloseOnClick(true);
-                toastConfiguration.SetDuration(AZStd::chrono::milliseconds(5000));
-
+                AzQtComponents::ToastConfiguration toastConfiguration(AzQtComponents::ToastType::Information, "Nodes Updates", displayString.c_str());
                 GraphCanvas::ViewRequestBus::Event(viewId, &GraphCanvas::ViewRequests::ShowToastNotification, toastConfiguration);
             }
         }
@@ -3467,11 +3492,12 @@ namespace ScriptCanvasEditor
         m_focusHelper.SetActiveGraph(GetGraphCanvasGraphId());
     }
 
-    bool Graph::UpgradeGraph(const AZ::Data::Asset<AZ::Data::AssetData>& asset)
+    bool Graph::UpgradeGraph(SourceHandle& asset, UpgradeRequest request, bool isVerbose)
     {
         m_upgradeSM.SetAsset(asset);
+        m_upgradeSM.SetVerbose(isVerbose);
 
-        if (!GetVersion().IsLatest())
+        if (request == UpgradeRequest::Forced || !GetVersion().IsLatest())
         {
             m_upgradeSM.Run(Start::StateID());
             return true;

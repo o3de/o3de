@@ -26,7 +26,7 @@ namespace AzFramework
         return m_threadData != nullptr;
     }
 
-    uint64_t SpawnableEntitiesContainer::GetCurrentGeneration() const
+    uint32_t SpawnableEntitiesContainer::GetCurrentGeneration() const
     {
         return m_currentGeneration;
     }
@@ -37,7 +37,7 @@ namespace AzFramework
         SpawnableEntitiesInterface::Get()->SpawnAllEntities(m_threadData->m_spawnedEntitiesTicket);
     }
 
-    void SpawnableEntitiesContainer::SpawnEntities(AZStd::vector<size_t> entityIndices)
+    void SpawnableEntitiesContainer::SpawnEntities(AZStd::vector<uint32_t> entityIndices)
     {
         AZ_Assert(m_threadData, "Calling SpawnEntities on a Spawnable container that's not set.");
         SpawnableEntitiesInterface::Get()->SpawnEntities(
@@ -78,15 +78,21 @@ namespace AzFramework
         }
     }
 
-    void SpawnableEntitiesContainer::Alert(AlertCallback callback)
+    void SpawnableEntitiesContainer::Alert(AlertCallback callback, CheckIfSpawnableIsLoaded spawnableCheck)
     {
         AZ_Assert(m_threadData, "Calling DespawnEntities on a Spawnable container that's not set.");
-        SpawnableEntitiesInterface::Get()->Barrier(
-            m_threadData->m_spawnedEntitiesTicket,
-            [generation = m_threadData->m_generation, callback = AZStd::move(callback)](EntitySpawnTicket::Id)
-            {
-                callback(generation);
-            });
+        auto callbackWrapper = [generation = m_threadData->m_generation, callback = AZStd::move(callback)](EntitySpawnTicket::Id)
+        {
+            callback(generation);
+        };
+        if (spawnableCheck == CheckIfSpawnableIsLoaded::No)
+        {
+            SpawnableEntitiesInterface::Get()->Barrier(m_threadData->m_spawnedEntitiesTicket, AZStd::move(callbackWrapper));
+        }
+        else
+        {
+            SpawnableEntitiesInterface::Get()->LoadBarrier(m_threadData->m_spawnedEntitiesTicket, AZStd::move(callbackWrapper));
+        }
     }
 
     void SpawnableEntitiesContainer::Connect(AZ::Data::Asset<Spawnable> spawnable)

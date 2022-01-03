@@ -209,6 +209,7 @@ namespace Blast
             AZStd::shared_ptr<Physics::Shape>(
                 const Physics::ColliderConfiguration&, const Physics::ShapeConfiguration&));
         MOCK_METHOD1(ReleaseNativeMeshObject, void(void*));
+        MOCK_METHOD1(ReleaseNativeHeightfieldObject, void(void*));
         MOCK_METHOD1(CreateMaterial, AZStd::shared_ptr<Physics::Material>(const Physics::MaterialConfiguration&));
         MOCK_METHOD0(GetDefaultMaterial, AZStd::shared_ptr<Physics::Material>());
         MOCK_METHOD1(
@@ -344,9 +345,9 @@ namespace Blast
 
         void UpdateMassProperties(
             [[maybe_unused]] AzPhysics::MassComputeFlags flags,
-            [[maybe_unused]] const AZ::Vector3* centerOfMassOffsetOverride,
-            [[maybe_unused]] const AZ::Matrix3x3* inertiaTensorOverride,
-            [[maybe_unused]] const float* massOverride) override
+            [[maybe_unused]] const AZ::Vector3& centerOfMassOffsetOverride,
+            [[maybe_unused]] const AZ::Matrix3x3& inertiaTensorOverride,
+            [[maybe_unused]] const float massOverride) override
         {
         }
 

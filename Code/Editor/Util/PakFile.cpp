@@ -68,7 +68,7 @@ bool CPakFile::Open(const char* filename, bool bAbsolutePath)
 
     if (bAbsolutePath)
     {
-        m_pArchive = pCryPak->OpenArchive(filename, nullptr, AZ::IO::INestedArchive::FLAGS_ABSOLUTE_PATHS);
+        m_pArchive = pCryPak->OpenArchive(filename, {}, AZ::IO::INestedArchive::FLAGS_ABSOLUTE_PATHS);
     }
     else
     {
@@ -93,7 +93,7 @@ bool CPakFile::OpenForRead(const char* filename)
     {
         return false;
     }
-    m_pArchive = pCryPak->OpenArchive(filename, nullptr, AZ::IO::INestedArchive::FLAGS_OPTIMIZED_READ_ONLY | AZ::IO::INestedArchive::FLAGS_ABSOLUTE_PATHS);
+    m_pArchive = pCryPak->OpenArchive(filename, {}, AZ::IO::INestedArchive::FLAGS_OPTIMIZED_READ_ONLY | AZ::IO::INestedArchive::FLAGS_ABSOLUTE_PATHS);
     if (m_pArchive)
     {
         return true;

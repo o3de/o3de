@@ -6,25 +6,21 @@
  *
  */
 
-#include <Window/CreateMaterialDialog/CreateMaterialDialog.h>
-
-#include <AzFramework/Application/Application.h>
-#include <AzFramework/StringFunc/StringFunc.h>
-
-#include <AzQtComponents/Components/Widgets/FileDialog.h>
-
-#include <AtomToolsFramework/Util/Util.h>
-
+#include <Atom/Document/MaterialDocumentSettings.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
-
-#include <Atom/Document/MaterialDocumentSettings.h>
+#include <AtomToolsFramework/Util/Util.h>
+#include <AzCore/Utils/Utils.h>
+#include <AzFramework/Application/Application.h>
+#include <AzFramework/StringFunc/StringFunc.h>
+#include <AzQtComponents/Components/Widgets/FileDialog.h>
+#include <Window/CreateMaterialDialog/CreateMaterialDialog.h>
 
 namespace MaterialEditor
 {
     CreateMaterialDialog::CreateMaterialDialog(QWidget* parent)
-        : CreateMaterialDialog(QString(AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@")) + AZ_CORRECT_FILESYSTEM_SEPARATOR + "Materials", parent)
+        : CreateMaterialDialog(QString(AZ::Utils::GetProjectPath().c_str()) + AZ_CORRECT_FILESYSTEM_SEPARATOR + "Assets", parent)
     {
     }
 

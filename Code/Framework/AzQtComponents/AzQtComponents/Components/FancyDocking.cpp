@@ -9,6 +9,7 @@
 #include <cmath>
 
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Debug/Trace.h>
 
 #include <AzQtComponents/Components/DockTabBar.h>
 #include <AzQtComponents/Components/FancyDocking.h>
@@ -52,14 +53,13 @@ static void OptimizedSetParent(QWidget* widget, QWidget* parent)
 
 namespace AzQtComponents
 {
-    static FancyDockingDropZoneConstants g_FancyDockingConstants;
 
     // Constant for the threshold in pixels for snapping to edges while dragging for docking
     static const int g_snapThresholdInPixels = 15;
 
-    static QString g_minimizeButtonObjectName =     "minimizeButton";
-    static QString g_maximizeButtonObjectName =     "maximizeButton";
-    static QString g_closeButtonObjectName =        "closeButton";
+    static const QString MinimizeButtonObjectName =     QStringLiteral("minimizeButton");
+    static const QString MaximizeButtonObjectName =     QStringLiteral("maximizeButton");
+    static const QString CloseButtonObjectName =        QStringLiteral("closeButton");
 
     static Qt::Orientation orientation(Qt::DockWidgetArea area)
     {
@@ -154,7 +154,7 @@ namespace AzQtComponents
 
         // Timer for updating our hovered drop zone opacity
         QObject::connect(m_dropZoneHoverFadeInTimer, &QTimer::timeout, this, &FancyDocking::onDropZoneHoverFadeInUpdate);
-        m_dropZoneHoverFadeInTimer->setInterval(g_FancyDockingConstants.dropZoneHoverFadeUpdateIntervalMS);
+        m_dropZoneHoverFadeInTimer->setInterval(FancyDockingDropZoneConstants::dropZoneHoverFadeUpdateIntervalMS);
         QIcon dragIcon = QIcon(QStringLiteral(":/Cursors/Grabbing.svg"));
         m_dragCursor = QCursor(dragIcon.pixmap(16), 5, 2);
     }
@@ -332,13 +332,13 @@ namespace AzQtComponents
      */
     void FancyDocking::onDropZoneHoverFadeInUpdate()
     {
-        const qreal dropZoneHoverOpacity = g_FancyDockingConstants.dropZoneHoverFadeIncrement + m_dropZoneState.dropZoneHoverOpacity();
+        const qreal dropZoneHoverOpacity = FancyDockingDropZoneConstants::dropZoneHoverFadeIncrement + m_dropZoneState.dropZoneHoverOpacity();
 
         // Once we've reached the full drop zone opacity, cut it off in case we
         // went over and stop the timer
-        if (dropZoneHoverOpacity >= g_FancyDockingConstants.dropZoneOpacity)
+        if (dropZoneHoverOpacity >= FancyDockingDropZoneConstants::dropZoneOpacity)
         {
-            m_dropZoneState.setDropZoneHoverOpacity(g_FancyDockingConstants.dropZoneOpacity);
+            m_dropZoneState.setDropZoneHoverOpacity(FancyDockingDropZoneConstants::dropZoneOpacity);
             m_dropZoneHoverFadeInTimer->stop();
         }
         else
@@ -459,7 +459,7 @@ namespace AzQtComponents
 
         // Minimize Icon
         QAction* minimizeAction = new QAction(tr("Minimize"));
-        minimizeAction->setObjectName(g_minimizeButtonObjectName);
+        minimizeAction->setObjectName(MinimizeButtonObjectName);
 
         connect(minimizeAction, &QAction::triggered, this, [titleBar]() {
             titleBar->handleMinimize();
@@ -469,7 +469,7 @@ namespace AzQtComponents
 
         // Maximize Icon
         QAction* maximizeAction = new QAction(tr("Maximize"));
-        maximizeAction->setObjectName(g_maximizeButtonObjectName);
+        maximizeAction->setObjectName(MaximizeButtonObjectName);
 
         connect(maximizeAction, &QAction::triggered, this, [titleBar]() {
             titleBar->handleMaximize();
@@ -479,7 +479,7 @@ namespace AzQtComponents
 
         // Close Icon
         QAction* closeAction = new QAction(tr("Close"));
-        closeAction->setObjectName(g_closeButtonObjectName);
+        closeAction->setObjectName(CloseButtonObjectName);
 
         connect(closeAction, &QAction::triggered, this, [titleBar]() {
             titleBar->handleClose();
@@ -791,12 +791,12 @@ namespace AzQtComponents
         QPoint mainWindowTopLeft = multiscreenMapFromGlobal(mainWindow->mapToGlobal(mainWindowRect.topLeft()));
         QPoint mainWindowTopRight = multiscreenMapFromGlobal(mainWindow->mapToGlobal(mainWindowRect.topRight()));
         QPoint mainWindowBottomLeft = multiscreenMapFromGlobal(mainWindow->mapToGlobal(mainWindowRect.bottomLeft()));
-        QSize absoluteLeftRightSize(g_FancyDockingConstants.absoluteDropZoneSizeInPixels, mainWindowRect.height());
+        QSize absoluteLeftRightSize(FancyDockingDropZoneConstants::absoluteDropZoneSizeInPixels, mainWindowRect.height());
         QRect absoluteLeftDropZone(mainWindowTopLeft, absoluteLeftRightSize);
-        QRect absoluteRightDropZone(mainWindowTopRight - QPoint(g_FancyDockingConstants.absoluteDropZoneSizeInPixels, 0), absoluteLeftRightSize);
-        QSize absoluteTopBottomSize(mainWindowRect.width(), g_FancyDockingConstants.absoluteDropZoneSizeInPixels);
+        QRect absoluteRightDropZone(mainWindowTopRight - QPoint(FancyDockingDropZoneConstants::absoluteDropZoneSizeInPixels, 0), absoluteLeftRightSize);
+        QSize absoluteTopBottomSize(mainWindowRect.width(), FancyDockingDropZoneConstants::absoluteDropZoneSizeInPixels);
         QRect absoluteTopDropZone(mainWindowTopLeft, absoluteTopBottomSize);
-        QRect absoluteBottomDropZone(mainWindowBottomLeft - QPoint(0, g_FancyDockingConstants.absoluteDropZoneSizeInPixels), absoluteTopBottomSize);
+        QRect absoluteBottomDropZone(mainWindowBottomLeft - QPoint(0, FancyDockingDropZoneConstants::absoluteDropZoneSizeInPixels), absoluteTopBottomSize);
 
         // If the drop target is a main window, then we will only show the absolute
         // drop zone if the cursor is in that zone already
@@ -985,16 +985,16 @@ namespace AzQtComponents
         switch (m_dropZoneState.absoluteDropZoneArea())
         {
         case Qt::LeftDockWidgetArea:
-            dockRect.setX(dockRect.x() + g_FancyDockingConstants.absoluteDropZoneSizeInPixels);
+            dockRect.setX(dockRect.x() + FancyDockingDropZoneConstants::absoluteDropZoneSizeInPixels);
             break;
         case Qt::RightDockWidgetArea:
-            dockRect.setWidth(dockRect.width() - g_FancyDockingConstants.absoluteDropZoneSizeInPixels);
+            dockRect.setWidth(dockRect.width() - FancyDockingDropZoneConstants::absoluteDropZoneSizeInPixels);
             break;
         case Qt::TopDockWidgetArea:
-            dockRect.setY(dockRect.y() + g_FancyDockingConstants.absoluteDropZoneSizeInPixels);
+            dockRect.setY(dockRect.y() + FancyDockingDropZoneConstants::absoluteDropZoneSizeInPixels);
             break;
         case Qt::BottomDockWidgetArea:
-            dockRect.setHeight(dockRect.height() - g_FancyDockingConstants.absoluteDropZoneSizeInPixels);
+            dockRect.setHeight(dockRect.height() - FancyDockingDropZoneConstants::absoluteDropZoneSizeInPixels);
             break;
         }
 
@@ -1033,15 +1033,15 @@ namespace AzQtComponents
         // Set the drop zone width/height to the default, but if the dock widget
         // width and/or height is below the threshold, then switch to scaling them
         // down accordingly
-        int dropZoneWidth = g_FancyDockingConstants.dropZoneSizeInPixels;
-        if (dockWidth < g_FancyDockingConstants.minDockSizeBeforeDropZoneScalingInPixels)
+        int dropZoneWidth = FancyDockingDropZoneConstants::dropZoneSizeInPixels;
+        if (dockWidth < FancyDockingDropZoneConstants::minDockSizeBeforeDropZoneScalingInPixels)
         {
-            dropZoneWidth = aznumeric_cast<int>(dockWidth * g_FancyDockingConstants.dropZoneScaleFactor);
+            dropZoneWidth = aznumeric_cast<int>(dockWidth * FancyDockingDropZoneConstants::dropZoneScaleFactor);
         }
-        int dropZoneHeight = g_FancyDockingConstants.dropZoneSizeInPixels;
-        if (dockHeight < g_FancyDockingConstants.minDockSizeBeforeDropZoneScalingInPixels)
+        int dropZoneHeight = FancyDockingDropZoneConstants::dropZoneSizeInPixels;
+        if (dockHeight < FancyDockingDropZoneConstants::minDockSizeBeforeDropZoneScalingInPixels)
         {
-            dropZoneHeight = aznumeric_cast<int>(dockHeight * g_FancyDockingConstants.dropZoneScaleFactor);
+            dropZoneHeight = aznumeric_cast<int>(dockHeight * FancyDockingDropZoneConstants::dropZoneScaleFactor);
         }
 
         // Calculate the inner corners to be used when constructing the drop zone polygons
@@ -1077,7 +1077,7 @@ namespace AzQtComponents
         int innerDropZoneWidth = m_dropZoneState.innerDropZoneRect().width();
         int innerDropZoneHeight = m_dropZoneState.innerDropZoneRect().height();
         int centerDropZoneDiameter = (innerDropZoneWidth < innerDropZoneHeight) ? innerDropZoneWidth : innerDropZoneHeight;
-        centerDropZoneDiameter = aznumeric_cast<int>(centerDropZoneDiameter * g_FancyDockingConstants.centerTabDropZoneScale);
+        centerDropZoneDiameter = aznumeric_cast<int>(centerDropZoneDiameter * FancyDockingDropZoneConstants::centerTabDropZoneScale);
 
         // Setup our center tab drop zone
         const QSize centerDropZoneSize(centerDropZoneDiameter, centerDropZoneDiameter);
@@ -1614,14 +1614,16 @@ namespace AzQtComponents
             }
 
             // Handle snapping to the screen edges/other floating windows while dragging
-            QScreen* screen = Utilities::ScreenAtPoint(globalPos);
+            QScreen* screen = QApplication::screenAt(globalPos);
 
-            AdjustForSnapping(placeholder, screen);
+            if (screen)
+            {
+                AdjustForSnapping(placeholder, screen);
+                m_state.setPlaceholder(placeholder, screen);
 
-            m_state.setPlaceholder(placeholder, screen);
-
-            m_ghostWidget->Enable();
-            RepaintFloatingIndicators();
+                m_ghostWidget->Enable();
+                RepaintFloatingIndicators();
+            }
         }
 
         return m_dropZoneState.dragging();
@@ -1983,7 +1985,7 @@ namespace AzQtComponents
             // hasn't faded in all the way yet, then ignore the drop zone area
             // which will make the widget floating
             bool modifiedKeyPressed = FancyDockingDropZoneWidget::CheckModifierKey();
-            if (modifiedKeyPressed || m_dropZoneState.dropZoneHoverOpacity() != g_FancyDockingConstants.dropZoneOpacity)
+            if (modifiedKeyPressed || m_dropZoneState.dropZoneHoverOpacity() != FancyDockingDropZoneConstants::dropZoneOpacity)
             {
                 area = Qt::NoDockWidgetArea;
             }
@@ -2460,6 +2462,18 @@ namespace AzQtComponents
                 placeholderRect.translate(0, -margins.bottom());
             }
 
+            // Also adjust the placeholderRect by the relative dpi change from the original screen, since setGeometry uses the screen's
+            // virtualGeometry!
+            QScreen* fromScreen = dock->screen();
+            QScreen* toScreen = Utilities::ScreenAtPoint(placeholderRect.topLeft());
+
+            if (fromScreen != toScreen)
+            {
+                qreal factorRatio = QHighDpiScaling::factor(fromScreen) / QHighDpiScaling::factor(toScreen);
+                placeholderRect.setWidth(aznumeric_cast<int>(aznumeric_cast<qreal>(placeholderRect.width()) * factorRatio));
+                placeholderRect.setHeight(aznumeric_cast<int>(aznumeric_cast<qreal>(placeholderRect.height()) * factorRatio));
+            }
+
             // Place the floating dock widget
             makeDockWidgetFloating(dock, placeholderRect);
             clearDraggingState();
@@ -2770,7 +2784,7 @@ namespace AzQtComponents
                     RepaintFloatingIndicators();
                 }
                 break;
-            case QEvent::WindowDeactivate:
+            case QEvent::WindowBlocked:
                 // If our main window is deactivated while we are in the middle of
                 // a docking drag operation (e.g. popup dialog for new level), we
                 // should cancel our drag operation because the mouse release event
@@ -3011,7 +3025,7 @@ namespace AzQtComponents
         {
             bool modifiedKeyPressed = FancyDockingDropZoneWidget::CheckModifierKey();
 
-            m_ghostWidget->setWindowOpacity(modifiedKeyPressed ? 1.0f : g_FancyDockingConstants.draggingDockWidgetOpacity);
+            m_ghostWidget->setWindowOpacity(modifiedKeyPressed ? 1.0f : FancyDockingDropZoneConstants::draggingDockWidgetOpacity);
             m_ghostWidget->setPixmap(m_state.dockWidgetScreenGrab.screenGrab, m_state.placeholder(), m_state.placeholderScreen());
         }
     }

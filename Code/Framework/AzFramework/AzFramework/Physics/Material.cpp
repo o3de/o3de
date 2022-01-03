@@ -5,6 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Interface/Interface.h>
@@ -357,6 +359,11 @@ namespace Physics
                 ->Version(1)
                 ->Field("MaterialId", &Physics::MaterialId::m_id)
                 ;
+        }
+
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<Physics::MaterialId>()->Attribute(AZ::Script::Attributes::Category, "Physics");
         }
     }
 

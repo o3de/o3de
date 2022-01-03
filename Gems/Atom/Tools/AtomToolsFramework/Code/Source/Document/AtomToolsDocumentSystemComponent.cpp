@@ -24,6 +24,7 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnin
 #include <QApplication>
 #include <QMessageBox>
 #include <QString>
+#include <QTimer>
 AZ_POP_DISABLE_WARNING
 
 namespace AtomToolsFramework
@@ -121,7 +122,6 @@ namespace AtomToolsFramework
 
     void AtomToolsDocumentSystemComponent::Deactivate()
     {
-        AZ::TickBus::Handler::BusDisconnect();
         AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
         AtomToolsDocumentSystemRequestBus::Handler::BusDisconnect();
         m_documentMap.clear();
@@ -159,26 +159,31 @@ namespace AtomToolsFramework
 
     void AtomToolsDocumentSystemComponent::OnDocumentExternallyModified(const AZ::Uuid& documentId)
     {
-        m_documentIdsToReopen.insert(documentId);
-        if (!AZ::TickBus::Handler::BusIsConnected())
-        {
-            AZ::TickBus::Handler::BusConnect();
-        }
+        m_documentIdsWithExternalChanges.insert(documentId);
+        QueueReopenDocuments();
     }
 
     void AtomToolsDocumentSystemComponent::OnDocumentDependencyModified(const AZ::Uuid& documentId)
     {
-        m_documentIdsToReopen.insert(documentId);
-        if (!AZ::TickBus::Handler::BusIsConnected())
+        m_documentIdsWithDependencyChanges.insert(documentId);
+        QueueReopenDocuments();
+    }
+
+    void AtomToolsDocumentSystemComponent::QueueReopenDocuments()
+    {
+        if (!m_queueReopenDocuments)
         {
-            AZ::TickBus::Handler::BusConnect();
+            m_queueReopenDocuments = true;
+            QTimer::singleShot(0, [this] { ReopenDocuments(); });
         }
     }
 
-    void AtomToolsDocumentSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+    void AtomToolsDocumentSystemComponent::ReopenDocuments()
     {
-        for (const AZ::Uuid& documentId : m_documentIdsToReopen)
+        for (const AZ::Uuid& documentId : m_documentIdsWithExternalChanges)
         {
+            m_documentIdsWithDependencyChanges.erase(documentId);
+
             AZStd::string documentPath;
             AtomToolsDocumentRequestBus::EventResult(documentPath, documentId, &AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
 
@@ -204,7 +209,7 @@ namespace AtomToolsFramework
             }
         }
 
-        for (const AZ::Uuid& documentId : m_documentIdsToReopen)
+        for (const AZ::Uuid& documentId : m_documentIdsWithDependencyChanges)
         {
             AZStd::string documentPath;
             AtomToolsDocumentRequestBus::EventResult(documentPath, documentId, &AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
@@ -231,9 +236,9 @@ namespace AtomToolsFramework
             }
         }
 
-        m_documentIdsToReopen.clear();
-        m_documentIdsToReopen.clear();
-        AZ::TickBus::Handler::BusDisconnect();
+        m_documentIdsWithDependencyChanges.clear();
+        m_documentIdsWithExternalChanges.clear();
+        m_queueReopenDocuments = false;
     }
 
     AZ::Uuid AtomToolsDocumentSystemComponent::OpenDocument(AZStd::string_view sourcePath)
@@ -493,8 +498,6 @@ namespace AtomToolsFramework
             return AZ::Uuid::CreateNull();
         }
 
-        traceRecorder.GetDump().clear();
-
         bool openResult = false;
         AtomToolsDocumentRequestBus::EventResult(openResult, documentId, &AtomToolsDocumentRequestBus::Events::Open, requestedPath);
         if (!openResult)
@@ -504,6 +507,12 @@ namespace AtomToolsFramework
                 QString("Failed to open: \n%1\n\n%2").arg(requestedPath.c_str()).arg(traceRecorder.GetDump().c_str()));
             AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsDocumentSystemRequestBus::Events::DestroyDocument, documentId);
             return AZ::Uuid::CreateNull();
+        }
+        else if (traceRecorder.GetWarningCount(true) > 0)
+        {
+            QMessageBox::warning(
+                QApplication::activeWindow(), QString("Document opened with warnings"),
+                QString("Warnings encountered: \n%1\n\n%2").arg(requestedPath.c_str()).arg(traceRecorder.GetDump().c_str()));
         }
 
         return documentId;

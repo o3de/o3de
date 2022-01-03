@@ -9,7 +9,6 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <AzCore/Math/Uuid.h>
 #include <QString>
 #include <QStringList>
 #include <QVector>
@@ -44,12 +43,24 @@ namespace O3DE::ProjectManager
 
         enum GemOrigin
         {
-            Open3DEEngine = 1 << 0,
+            Open3DEngine = 1 << 0,
             Local = 1 << 1,
-            NumGemOrigins = 2
+            Remote = 1 << 2,
+            NumGemOrigins = 3
         };
         Q_DECLARE_FLAGS(GemOrigins, GemOrigin)
         static QString GetGemOriginString(GemOrigin origin);
+
+        enum DownloadStatus
+        {
+            UnknownDownloadStatus = -1,
+            NotDownloaded,
+            Downloading,
+            DownloadSuccessful,
+            DownloadFailed,
+            Downloaded
+        };
+        static QString GetDownloadStatusString(DownloadStatus status);
 
         GemInfo() = default;
         GemInfo(const QString& name, const QString& creator, const QString& summary, Platforms platforms, bool isAdded);
@@ -61,22 +72,25 @@ namespace O3DE::ProjectManager
 
         QString m_path;
         QString m_name = "Unknown Gem Name";
-        QString m_displayName = "Unknown Gem Name";
+        QString m_displayName;
         QString m_creator = "Unknown Creator";
         GemOrigin m_gemOrigin = Local;
-        bool m_isAdded = false; //! Is the gem currently added and enabled in the project?
+        bool m_isAdded = false; //! Is the gem explicitly added (not a dependency) and enabled in the project?
         QString m_summary = "No summary provided.";
         Platforms m_platforms;
         Types m_types; //! Asset and/or Code and/or Tool
+        DownloadStatus m_downloadStatus = UnknownDownloadStatus;
         QStringList m_features;
         QString m_requirement;
+        QString m_licenseText;
+        QString m_licenseLink;
         QString m_directoryLink;
         QString m_documentationLink;
+        QString m_repoUri;
         QString m_version = "Unknown Version";
         QString m_lastUpdatedDate = "Unknown Date";
         int m_binarySizeInKB = 0;
-        QStringList m_dependingGemUuids;
-        QStringList m_conflictingGemUuids;
+        QStringList m_dependencies;
     };
 } // namespace O3DE::ProjectManager
 

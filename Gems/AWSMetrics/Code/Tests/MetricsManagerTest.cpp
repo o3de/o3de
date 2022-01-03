@@ -75,6 +75,23 @@ namespace AZ
 
 namespace AWSMetrics
 {
+    class MetricsManagerMock
+        : public MetricsManager
+    {
+    private:
+        AZ::Outcome<void, AZStd::string> SendMetricsToFile(AZStd::shared_ptr<MetricsQueue> metricsQueue) override
+        {
+            if (AZ::IO::FileIOBase::GetInstance())
+            {
+                return AZ::Success();
+            }
+            else
+            {
+                return AZ::Failure(AZStd::string{ "Invalid File IO" });
+            }
+        }
+    };
+
     class AWSMetricsNotificationBusMock
         : protected AWSMetricsNotificationBus::Handler
     {
@@ -134,13 +151,11 @@ namespace AWSMetrics
             AWSMetricsGemAllocatorFixture::SetUp();
             AWSMetricsRequestBus::Handler::BusConnect();
 
-            m_metricsManager = AZStd::make_unique<MetricsManager>();
+            m_metricsManager = AZStd::make_unique<MetricsManagerMock>();
             AZStd::string configFilePath = CreateClientConfigFile(true, (double) TestMetricsEventSizeInBytes / MbToBytes * 2, DefaultFlushPeriodInSeconds, 0);
             m_settingsRegistry->MergeSettingsFile(configFilePath, AZ::SettingsRegistryInterface::Format::JsonMergePatch, {});
             m_metricsManager->Init();
 
-            RemoveFile(m_metricsManager->GetMetricsFilePath());
-            
             ReplaceLocalFileIOWithMockIO();
         }
 
@@ -149,8 +164,6 @@ namespace AWSMetrics
             RevertMockIOToLocalFileIO();
 
             RemoveFile(GetDefaultTestFilePath());
-            RemoveFile(m_metricsManager->GetMetricsFilePath());
-            RemoveDirectory(m_metricsManager->GetMetricsFileDirectory());
 
             m_metricsManager.reset();
 
@@ -233,7 +246,7 @@ namespace AWSMetrics
             }   
         }
 
-        AZStd::unique_ptr<MetricsManager> m_metricsManager;
+        AZStd::unique_ptr<MetricsManagerMock> m_metricsManager;
         AWSMetricsNotificationBusMock m_notifications;
 
         AZ::IO::FileIOBase* m_fileIOMock;

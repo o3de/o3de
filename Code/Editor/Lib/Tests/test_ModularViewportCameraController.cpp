@@ -9,7 +9,7 @@
 #include <AtomToolsFramework/Viewport/ModularViewportCameraController.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzFramework/Viewport/ViewportControllerList.h>
-#include <AzToolsFramework/Input/QtEventToAzInputManager.h>
+#include <AzToolsFramework/Input/QtEventToAzInputMapper.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <EditorViewportWidget.h>
 #include <Mocks/MockWindowRequests.h>
@@ -38,6 +38,8 @@ namespace UnitTest
         void BeginCursorCapture() override;
         void EndCursorCapture() override;
         bool IsMouseOver() const override;
+        void SetOverrideCursor(AzToolsFramework::ViewportInteraction::CursorStyleOverride cursorStyleOverride) override;
+        void ClearOverrideCursor() override;
 
     private:
         AzToolsFramework::QtEventToAzInputMapper* m_inputChannelMapper = nullptr;
@@ -58,32 +60,21 @@ namespace UnitTest
         return true;
     }
 
-    class TestModularCameraViewportContextImpl : public AtomToolsFramework::ModularCameraViewportContext
+    void ViewportMouseCursorRequestImpl::SetOverrideCursor(
+        [[maybe_unused]] AzToolsFramework::ViewportInteraction::CursorStyleOverride cursorStyleOverride)
     {
-    public:
-        AZ::Transform GetCameraTransform() const override
-        {
-            return m_cameraTransform;
-        }
+        // noop
+    }
 
-        void SetCameraTransform(const AZ::Transform& transform) override
-        {
-            m_cameraTransform = transform;
-        }
-
-        void ConnectViewMatrixChangedHandler(AZ::RPI::ViewportContext::MatrixChangedEvent::Handler&) override
-        {
-            // noop
-        }
-
-    private:
-        AZ::Transform m_cameraTransform = AZ::Transform::CreateIdentity();
-    };
+    void ViewportMouseCursorRequestImpl::ClearOverrideCursor()
+    {
+        // noop
+    }
 
     class ModularViewportCameraControllerFixture : public AllocatorsTestFixture
     {
     public:
-        static const AzFramework::ViewportId TestViewportId;
+        static inline constexpr AzFramework::ViewportId TestViewportId = 1234;
 
         void SetUp() override
         {
@@ -91,6 +82,7 @@ namespace UnitTest
 
             m_rootWidget = AZStd::make_unique<QWidget>();
             m_rootWidget->setFixedSize(WidgetSize);
+            m_rootWidget->move(0, 0); // explicitly set the widget to be in the upper left corner
 
             m_controllerList = AZStd::make_shared<AzFramework::ViewportControllerList>();
             m_controllerList->RegisterViewportContext(TestViewportId);
@@ -146,7 +138,7 @@ namespace UnitTest
             controller->SetCameraViewportContextBuilderCallback(
                 [this](AZStd::unique_ptr<AtomToolsFramework::ModularCameraViewportContext>& cameraViewportContext)
                 {
-                    cameraViewportContext = AZStd::make_unique<TestModularCameraViewportContextImpl>();
+                    cameraViewportContext = AZStd::make_unique<AtomToolsFramework::PlaceholderModularCameraViewportContextImpl>();
                     m_cameraViewportContextView = cameraViewportContext.get();
                 });
 
@@ -154,6 +146,17 @@ namespace UnitTest
             controller->SetCameraPropsBuilderCallback(
                 [](AzFramework::CameraProps& cameraProps)
                 {
+                    // note: rotateSmoothness is also used for roll (not related to camera input directly)
+                    cameraProps.m_rotateSmoothnessFn = []
+                    {
+                        return 5.0f;
+                    };
+
+                    cameraProps.m_translateSmoothnessFn = []
+                    {
+                        return 5.0f;
+                    };
+
                     cameraProps.m_rotateSmoothingEnabledFn = []
                     {
                         return false;
@@ -216,8 +219,6 @@ namespace UnitTest
         AZStd::unique_ptr<AZ::SettingsRegistryInterface> m_settingsRegistry;
         AZStd::unique_ptr<SandboxEditor::EditorModularViewportCameraComposer> m_editorModularViewportCameraComposer;
     };
-
-    const AzFramework::ViewportId ModularViewportCameraControllerFixture::TestViewportId = AzFramework::ViewportId(0);
 
     TEST_F(ModularViewportCameraControllerFixture, MouseMovementDoesNotAccumulateExcessiveDriftInModularViewportCameraWithVaryingDeltaTime)
     {
@@ -362,6 +363,54 @@ namespace UnitTest
         // initial amount of rotation after first mouse move
         using ::testing::FloatNear;
         EXPECT_THAT(eulerAngles.GetZ(), FloatNear(-0.025f, 0.001f));
+
+        // Clean-up
+        HaltCollaborators();
+    }
+
+    // test to verify deltas and cursor positions are handled correctly when the widget is moved
+    TEST_F(ModularViewportCameraControllerFixture, CameraDoesNotStutterAfterWidgetIsMoved)
+    {
+        // Given
+        PrepareCollaborators();
+        SandboxEditor::SetCameraCaptureCursorForLook(true);
+
+        const float deltaTime = 1.0f / 60.0f;
+
+        // When
+        // move cursor to the center of the screen
+        auto start = QPoint(WidgetSize.width() / 2, WidgetSize.height() / 2);
+        MouseMove(m_rootWidget.get(), start, QPoint(0, 0));
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+
+        // move camera right
+        const auto mouseDelta = QPoint(200, 0);
+        MousePressAndMove(m_rootWidget.get(), start, mouseDelta, Qt::MouseButton::RightButton);
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+
+        QTest::mouseRelease(m_rootWidget.get(), Qt::MouseButton::RightButton, Qt::NoModifier, start + mouseDelta);
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+
+        // update the position of the widget
+        const auto offset = QPoint(500, 500);
+        m_rootWidget->move(offset);
+
+        // move cursor back to widget center
+        MouseMove(m_rootWidget.get(), start, QPoint(0, 0));
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+
+        // move camera left
+        MousePressAndMove(m_rootWidget.get(), start, -mouseDelta, Qt::MouseButton::RightButton);
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+
+        // Then
+        // ensure the camera rotation has returned to the identity
+        const AZ::Quaternion cameraRotation = m_cameraViewportContextView->GetCameraTransform().GetRotation();
+        const auto eulerAngles = AzFramework::EulerAngles(AZ::Matrix3x3::CreateFromQuaternion(cameraRotation));
+
+        using ::testing::FloatNear;
+        EXPECT_THAT(eulerAngles.GetX(), FloatNear(0.0f, 0.001f));
+        EXPECT_THAT(eulerAngles.GetZ(), FloatNear(0.0f, 0.001f));
 
         // Clean-up
         HaltCollaborators();

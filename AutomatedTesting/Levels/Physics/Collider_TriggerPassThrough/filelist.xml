@@ -1,0 +1,6 @@
+<download name="Collider_TriggerPassThrough" type="Map">
+ <index src="filelist.xml" dest="filelist.xml"/>
+ <files>
+  <file src="level.pak" dest="level.pak" size="9238" md5="bc81d50908eef71e97034be6077f9874"/>
+ </files>
+</download>

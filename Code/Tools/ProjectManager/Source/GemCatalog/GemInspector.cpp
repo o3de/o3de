@@ -8,11 +8,13 @@
 
 #include <GemCatalog/GemInspector.h>
 #include <GemCatalog/GemItemDelegate.h>
+
 #include <QFrame>
 #include <QLabel>
 #include <QSpacerItem>
 #include <QVBoxLayout>
 #include <QIcon>
+#include <QPushButton>
 
 namespace O3DE::ProjectManager
 {
@@ -51,46 +53,96 @@ namespace O3DE::ProjectManager
         Update(selectedIndices[0]);
     }
 
+    void SetLabelElidedText(QLabel* label, QString text, int labelWidth = 0)
+    {
+        QFontMetrics nameFontMetrics(label->font());
+        if (!labelWidth)
+        {
+            labelWidth = label->width();
+        }
+
+        // Don't elide if the widgets are sized too small (sometimes occurs when loading gem catalog)
+        if (labelWidth > 100)
+        {
+            label->setText(nameFontMetrics.elidedText(text, Qt::ElideRight, labelWidth));
+        }
+        else
+        {
+            label->setText(text);
+        }
+    }
+
     void GemInspector::Update(const QModelIndex& modelIndex)
     {
+        m_curModelIndex = modelIndex;
+
         if (!modelIndex.isValid())
         {
             m_mainWidget->hide();
         }
 
-        m_nameLabel->setText(m_model->GetDisplayName(modelIndex));
-        m_creatorLabel->setText(m_model->GetCreator(modelIndex));
+        SetLabelElidedText(m_nameLabel, m_model->GetDisplayName(modelIndex));
+        SetLabelElidedText(m_creatorLabel, m_model->GetCreator(modelIndex));
 
         m_summaryLabel->setText(m_model->GetSummary(modelIndex));
         m_summaryLabel->adjustSize();
+
+        // Manually define remaining space to elide text because spacer would like to take all of the space
+        SetLabelElidedText(m_licenseLinkLabel, m_model->GetLicenseText(modelIndex), width() - m_licenseLabel->width() - 35);
+        m_licenseLinkLabel->SetUrl(m_model->GetLicenseLink(modelIndex));
 
         m_directoryLinkLabel->SetUrl(m_model->GetDirectoryLink(modelIndex));
         m_documentationLinkLabel->SetUrl(m_model->GetDocLink(modelIndex));
 
         if (m_model->HasRequirement(modelIndex))
         {
-            m_reqirementsIconLabel->show();
-            m_reqirementsTitleLabel->show();
-            m_reqirementsTextLabel->show();
+            m_requirementsIconLabel->show();
+            m_requirementsTitleLabel->show();
+            m_requirementsTextLabel->show();
+            m_requirementsMainSpacer->changeSize(0, 20, QSizePolicy::Fixed, QSizePolicy::Fixed);
 
-            m_reqirementsTitleLabel->setText("Requirement");
-            m_reqirementsTextLabel->setText(m_model->GetRequirement(modelIndex));
+            m_requirementsTitleLabel->setText(tr("Requirement"));
+            m_requirementsTextLabel->setText(m_model->GetRequirement(modelIndex));
         }
         else
         {
-            m_reqirementsIconLabel->hide();
-            m_reqirementsTitleLabel->hide();
-            m_reqirementsTextLabel->hide();
+            m_requirementsIconLabel->hide();
+            m_requirementsTitleLabel->hide();
+            m_requirementsTextLabel->hide();
+            m_requirementsMainSpacer->changeSize(0, 0, QSizePolicy::Fixed, QSizePolicy::Fixed);
         }
 
-        // Depending and conflicting gems
-        m_dependingGems->Update("Depending Gems", "The following Gems will be automatically enabled with this Gem.", m_model->GetDependingGemNames(modelIndex));
-        m_conflictingGems->Update("Conflicting Gems", "The following Gems will be automatically disabled with this Gem.", m_model->GetConflictingGemNames(modelIndex));
+        // Depending gems
+        const QVector<Tag>& dependingGemTags = m_model->GetDependingGemTags(modelIndex);
+        if (!dependingGemTags.isEmpty())
+        {
+            m_dependingGems->Update(tr("Depending Gems"), tr("The following Gems will be automatically enabled with this Gem."), dependingGemTags);
+            m_dependingGems->show();
+        }
+        else
+        {
+            m_dependingGems->hide();
+        }
 
         // Additional information
-        m_versionLabel->setText(QString("Gem Version: %1").arg(m_model->GetVersion(modelIndex)));
-        m_lastUpdatedLabel->setText(QString("Last Updated: %1").arg(m_model->GetLastUpdated(modelIndex)));
-        m_binarySizeLabel->setText(QString("Binary Size:  %1 KB").arg(QString::number(m_model->GetBinarySizeInKB(modelIndex))));
+        m_versionLabel->setText(tr("Gem Version: %1").arg(m_model->GetVersion(modelIndex)));
+        m_lastUpdatedLabel->setText(tr("Last Updated: %1").arg(m_model->GetLastUpdated(modelIndex)));
+        const int binarySize = m_model->GetBinarySizeInKB(modelIndex);
+        m_binarySizeLabel->setText(tr("Binary Size:  %1").arg(binarySize ? tr("%1 KB").arg(binarySize) : tr("Unknown")));
+
+        // Update and Uninstall buttons
+        if (m_model->GetGemOrigin(modelIndex) == GemInfo::Remote &&
+            (m_model->GetDownloadStatus(modelIndex) == GemInfo::Downloaded ||
+             m_model->GetDownloadStatus(modelIndex) == GemInfo::DownloadSuccessful))
+        {
+            m_updateGemButton->show();
+            m_uninstallGemButton->show();
+        }
+        else
+        {
+            m_updateGemButton->hide();
+            m_uninstallGemButton->hide();
+        }
 
         m_mainWidget->adjustSize();
         m_mainWidget->show();
@@ -108,17 +160,35 @@ namespace O3DE::ProjectManager
     {
         // Gem name, creator and summary
         m_nameLabel = CreateStyledLabel(m_mainLayout, 18, s_headerColor);
-        m_creatorLabel = CreateStyledLabel(m_mainLayout, 12, s_headerColor);
+        m_creatorLabel = CreateStyledLabel(m_mainLayout, s_baseFontSize, s_headerColor);
         m_mainLayout->addSpacing(5);
 
         // TODO: QLabel seems to have issues determining the right sizeHint() for our font with the given font size.
         // This results into squeezed elements in the layout in case the text is a little longer than a sentence.
-        m_summaryLabel = CreateStyledLabel(m_mainLayout, 12, s_textColor);
+        m_summaryLabel = CreateStyledLabel(m_mainLayout, s_baseFontSize, s_headerColor);
         m_mainLayout->addWidget(m_summaryLabel);
         m_summaryLabel->setWordWrap(true);
         m_summaryLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
         m_summaryLabel->setOpenExternalLinks(true);
         m_mainLayout->addSpacing(5);
+
+        // License
+        {
+            QHBoxLayout* licenseHLayout = new QHBoxLayout();
+            licenseHLayout->setMargin(0);
+            licenseHLayout->setAlignment(Qt::AlignLeft);
+            m_mainLayout->addLayout(licenseHLayout);
+
+            m_licenseLabel = CreateStyledLabel(licenseHLayout, s_baseFontSize, s_headerColor);
+            m_licenseLabel->setText(tr("License: "));
+
+            m_licenseLinkLabel = new LinkLabel("", QUrl(), s_baseFontSize);
+            licenseHLayout->addWidget(m_licenseLinkLabel);
+
+            licenseHLayout->addStretch();
+
+            m_mainLayout->addSpacing(5);
+        }
 
         // Directory and documentation links
         {
@@ -126,17 +196,15 @@ namespace O3DE::ProjectManager
             linksHLayout->setMargin(0);
             m_mainLayout->addLayout(linksHLayout);
 
-            QSpacerItem* spacerLeft = new QSpacerItem(0, 0, QSizePolicy::Expanding);
-            linksHLayout->addSpacerItem(spacerLeft);
+            linksHLayout->addStretch();
 
-            m_directoryLinkLabel = new LinkLabel("View in Directory");
+            m_directoryLinkLabel = new LinkLabel(tr("View in Directory"));
             linksHLayout->addWidget(m_directoryLinkLabel);
             linksHLayout->addWidget(new QLabel("|"));
-            m_documentationLinkLabel  = new LinkLabel("Read Documentation");
+            m_documentationLinkLabel  = new LinkLabel(tr("Read Documentation"));
             linksHLayout->addWidget(m_documentationLinkLabel);
 
-            QSpacerItem* spacerRight = new QSpacerItem(0, 0, QSizePolicy::Expanding);
-            linksHLayout->addSpacerItem(spacerRight);
+            linksHLayout->addStretch();
 
             m_mainLayout->addSpacing(8);
         }
@@ -144,73 +212,63 @@ namespace O3DE::ProjectManager
         // Separating line
         QFrame* hLine = new QFrame();
         hLine->setFrameShape(QFrame::HLine);
-        hLine->setStyleSheet("color: #666666;");
+        hLine->setObjectName("horizontalSeparatingLine");
         m_mainLayout->addWidget(hLine);
 
         m_mainLayout->addSpacing(10);
 
         // Requirements
-        m_reqirementsTitleLabel = GemInspector::CreateStyledLabel(m_mainLayout, 16, s_headerColor);
+        m_requirementsTitleLabel = GemInspector::CreateStyledLabel(m_mainLayout, 16, s_headerColor);
 
-        QHBoxLayout* requrementsLayout = new QHBoxLayout();
-        requrementsLayout->setAlignment(Qt::AlignTop);
-        requrementsLayout->setMargin(0);
-        requrementsLayout->setSpacing(0);
+        QHBoxLayout* requirementsLayout = new QHBoxLayout();
+        requirementsLayout->setAlignment(Qt::AlignTop);
+        requirementsLayout->setMargin(0);
+        requirementsLayout->setSpacing(0);
 
-        m_reqirementsIconLabel = new QLabel();
-        m_reqirementsIconLabel->setPixmap(QIcon(":/Warning.svg").pixmap(24, 24));
-        requrementsLayout->addWidget(m_reqirementsIconLabel);
+        m_requirementsIconLabel = new QLabel();
+        m_requirementsIconLabel->setPixmap(QIcon(":/Warning.svg").pixmap(24, 24));
+        requirementsLayout->addWidget(m_requirementsIconLabel);
 
-        m_reqirementsTextLabel = GemInspector::CreateStyledLabel(requrementsLayout, 10, s_textColor);
-        m_reqirementsTextLabel->setWordWrap(true);
-        m_reqirementsTextLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
-        m_reqirementsTextLabel->setOpenExternalLinks(true);
+        m_requirementsTextLabel = GemInspector::CreateStyledLabel(requirementsLayout, 10, s_textColor);
+        m_requirementsTextLabel->setWordWrap(true);
+        m_requirementsTextLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
+        m_requirementsTextLabel->setOpenExternalLinks(true);
 
-        QSpacerItem* reqirementsSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding);
-        requrementsLayout->addSpacerItem(reqirementsSpacer);
+        QSpacerItem* requirementsSpacer = new QSpacerItem(0, 0, QSizePolicy::MinimumExpanding);
+        requirementsLayout->addSpacerItem(requirementsSpacer);
 
-        m_mainLayout->addLayout(requrementsLayout);
+        m_mainLayout->addLayout(requirementsLayout);
 
-        m_mainLayout->addSpacing(20);
+        m_requirementsMainSpacer = new QSpacerItem(0, 20, QSizePolicy::Fixed, QSizePolicy::Fixed);
+        m_mainLayout->addSpacerItem(m_requirementsMainSpacer);
 
-        // Depending and conflicting gems
+        // Depending gems
         m_dependingGems = new GemsSubWidget();
+        connect(m_dependingGems, &GemsSubWidget::TagClicked, this, [this](const Tag& tag){ emit TagClicked(tag); });
         m_mainLayout->addWidget(m_dependingGems);
-        m_mainLayout->addSpacing(20);
-
-        m_conflictingGems = new GemsSubWidget();
-        m_mainLayout->addWidget(m_conflictingGems);
         m_mainLayout->addSpacing(20);
 
         // Additional information
         QLabel* additionalInfoLabel = CreateStyledLabel(m_mainLayout, 14, s_headerColor);
-        additionalInfoLabel->setText("Additional Information");
+        additionalInfoLabel->setText(tr("Additional Information"));
 
-        m_versionLabel = CreateStyledLabel(m_mainLayout, 12, s_textColor);
-        m_lastUpdatedLabel = CreateStyledLabel(m_mainLayout, 12, s_textColor);
-        m_binarySizeLabel = CreateStyledLabel(m_mainLayout, 12, s_textColor);
-    }
+        m_versionLabel = CreateStyledLabel(m_mainLayout, s_baseFontSize, s_textColor);
+        m_lastUpdatedLabel = CreateStyledLabel(m_mainLayout, s_baseFontSize, s_textColor);
+        m_binarySizeLabel = CreateStyledLabel(m_mainLayout, s_baseFontSize, s_textColor);
 
-    GemInspector::GemsSubWidget::GemsSubWidget(QWidget* parent)
-        : QWidget(parent)
-    {
-        m_layout = new QVBoxLayout();
-        m_layout->setAlignment(Qt::AlignTop);
-        m_layout->setMargin(0);
-        setLayout(m_layout);
+        m_mainLayout->addSpacing(20);
 
-        m_titleLabel = GemInspector::CreateStyledLabel(m_layout, 16, s_headerColor);
-        m_textLabel = GemInspector::CreateStyledLabel(m_layout, 10, s_textColor);
-        m_textLabel->setWordWrap(true);
+        // Update and Uninstall buttons
+        m_updateGemButton = new QPushButton(tr("Update Gem"));
+        m_updateGemButton->setObjectName("gemCatalogUpdateGemButton");
+        m_mainLayout->addWidget(m_updateGemButton);
+        connect(m_updateGemButton, &QPushButton::clicked, this , [this]{ emit UpdateGem(m_curModelIndex); });
 
-        m_tagWidget = new TagContainerWidget();
-        m_layout->addWidget(m_tagWidget);
-    }
+        m_mainLayout->addSpacing(10);
 
-    void GemInspector::GemsSubWidget::Update(const QString& title, const QString& text, const QStringList& gemNames)
-    {
-        m_titleLabel->setText(title);
-        m_textLabel->setText(text);
-        m_tagWidget->Update(gemNames);
+        m_uninstallGemButton = new QPushButton(tr("Uninstall Gem"));
+        m_uninstallGemButton->setObjectName("gemCatalogUninstallGemButton");
+        m_mainLayout->addWidget(m_uninstallGemButton);
+        connect(m_uninstallGemButton, &QPushButton::clicked, this , [this]{ emit UninstallGem(m_curModelIndex); });
     }
 } // namespace O3DE::ProjectManager

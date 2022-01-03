@@ -16,15 +16,23 @@ ly_append_configurations_options(
         -Wall
         -Werror
 
-        # Disabled warnings (please do not disable any others without first consulting ly-warnings)
+        ###################
+        # Disabled warnings (please do not disable any others without first consulting sig-build)
+        ###################
+        -Wno-inconsistent-missing-override # unfortunately there is no warning in MSVC to detect missing overrides, 
+            # MSVC's static analyzer can, but that is a different run that most developers are not aware of. A pass
+            # was done to fix all hits. Leaving this disabled until there is a matching warning in MSVC.
+
         -Wrange-loop-analysis
         -Wno-unknown-warning-option # used as a way to mark warnings that are MSVC only
-        -Wno-format-security
-        -Wno-inconsistent-missing-override
         -Wno-parentheses
         -Wno-reorder
         -Wno-switch
         -Wno-undefined-var-template
+        
+        ###################
+        # Enabled warnings (that are disabled by default)
+        ###################
 
     COMPILATION_DEBUG
         -O0 # No optimization

@@ -22,7 +22,7 @@ namespace AssetProcessor
         virtual ~AssetServerHandler();
         //////////////////////////////////////////////////////////////////////////
         // AssetServerBus::Handler overrides
-        bool IsServerAddressValid();
+        bool IsServerAddressValid() override;
         //! StoreJobResult will store all the files in the the temp folder provided by AP to a zip file on the network drive 
         //! whose file name will be based on the server key
         bool StoreJobResult(const AssetProcessor::BuilderParams& builderParams, AZStd::vector<AZStd::string>& sourceFileList)  override;

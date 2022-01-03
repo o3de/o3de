@@ -13,9 +13,14 @@
 #include <Components/TerrainSystemComponent.h>
 #include <Components/TerrainWorldComponent.h>
 #include <Components/TerrainWorldDebuggerComponent.h>
+#include <Components/TerrainWorldRendererComponent.h>
 #include <Components/TerrainHeightGradientListComponent.h>
 #include <Components/TerrainLayerSpawnerComponent.h>
+#include <Components/TerrainSurfaceGradientListComponent.h>
 #include <Components/TerrainSurfaceDataSystemComponent.h>
+#include <Components/TerrainPhysicsColliderComponent.h>
+#include <TerrainRenderer/Components/TerrainSurfaceMaterialsListComponent.h>
+#include <TerrainRenderer/Components/TerrainMacroMaterialComponent.h>
 
 namespace Terrain
 {
@@ -23,12 +28,17 @@ namespace Terrain
         : AZ::Module()
     {
         m_descriptors.insert(m_descriptors.end(), {
+                TerrainSurfaceMaterialsListComponent::CreateDescriptor(),
                 TerrainSystemComponent::CreateDescriptor(),
                 TerrainWorldComponent::CreateDescriptor(),
                 TerrainWorldDebuggerComponent::CreateDescriptor(),
+                TerrainWorldRendererComponent::CreateDescriptor(),
                 TerrainHeightGradientListComponent::CreateDescriptor(),
                 TerrainLayerSpawnerComponent::CreateDescriptor(),
+                TerrainMacroMaterialComponent::CreateDescriptor(),
+                TerrainSurfaceGradientListComponent::CreateDescriptor(),
                 TerrainSurfaceDataSystemComponent::CreateDescriptor(),
+                TerrainPhysicsColliderComponent::CreateDescriptor()
             });
     }
 

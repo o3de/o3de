@@ -13,8 +13,6 @@
 
 #if !defined(USE_NULLFONT_ALWAYS)
 
-#include <CryCommon/ISystem.h>
-
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Matrix4x4.h>
 #include <AzCore/Math/MatrixUtils.h>
@@ -124,17 +122,10 @@ bool AZ::FFont::Load(const char* fontFilePath, unsigned int width, unsigned int 
 
     Free();
 
-    auto pPak = gEnv->pCryPak;
+    auto fileIoBase = AZ::IO::FileIOBase::GetInstance();
 
-    AZStd::string fullFile;
-    if (pPak->IsAbsPath(fontFilePath))
-    {
-        fullFile = fontFilePath;
-    }
-    else
-    {
-        fullFile = m_curPath + fontFilePath;
-    }
+    AZ::IO::Path fullFile(m_curPath);
+    fullFile /= fontFilePath;
 
     int smoothMethodFlag = (flags & TTFFLAG_SMOOTH_MASK) >> TTFFLAG_SMOOTH_SHIFT;
     AZ::FontSmoothMethod smoothMethod = AZ::FontSmoothMethod::None;
@@ -161,42 +152,41 @@ bool AZ::FFont::Load(const char* fontFilePath, unsigned int width, unsigned int 
     }
 
 
-    AZ::IO::HandleType fileHandle = pPak->FOpen(fullFile.c_str(), "rb");
+    AZ::IO::HandleType fileHandle = AZ::IO::InvalidHandle;
+    fileIoBase->Open(fullFile.c_str(), AZ::IO::GetOpenModeFromStringMode("rb"), fileHandle);
     if (fileHandle == AZ::IO::InvalidHandle)
     {
         return false;
     }
 
-    size_t fileSize = pPak->FGetSize(fileHandle);
+    AZ::u64 fileSize{};
+    fileIoBase->Size(fileHandle, fileSize);
     if (!fileSize)
     {
-        pPak->FClose(fileHandle);
+        fileIoBase->Close(fileHandle);
         return false;
     }
 
-    unsigned char* buffer = new unsigned char[fileSize];
-    if (!pPak->FReadRaw(buffer, fileSize, 1, fileHandle))
+    auto buffer = AZStd::make_unique<uint8_t[]>(fileSize);
+    if (!fileIoBase->Read(fileHandle, buffer.get(), fileSize))
     {
-        pPak->FClose(fileHandle);
-        delete [] buffer;
+        fileIoBase->Close(fileHandle);
         return false;
     }
 
-    pPak->FClose(fileHandle);
+    fileIoBase->Close(fileHandle);
 
     if (!m_fontTexture)
     {
         m_fontTexture = new FontTexture();
     }
-
-    if (!m_fontTexture || !m_fontTexture->CreateFromMemory(buffer, (int)fileSize, width, height, smoothMethod, smoothAmount, widthNumSlots, heightNumSlots, sizeRatio))
+    if (!m_fontTexture || !m_fontTexture->CreateFromMemory(buffer.get(), (int)fileSize, width, height, smoothMethod, smoothAmount, widthNumSlots, heightNumSlots, sizeRatio))
     {
-        delete [] buffer;
         return false;
     }
 
     m_monospacedFont = m_fontTexture->GetMonospaced();
-    m_fontBuffer = buffer;
+    m_fontBuffer = AZStd::move(buffer);
     m_fontBufferSize = fileSize;
     m_fontTexDirty = false;
     m_sizeRatio = sizeRatio;
@@ -213,10 +203,9 @@ void AZ::FFont::Free()
     m_fontImageVersion = 0;
 
     delete m_fontTexture;
-    m_fontTexture = 0;
+    m_fontTexture = nullptr;
 
-    delete[] m_fontBuffer;
-    m_fontBuffer = 0;
+    m_fontBuffer.reset();
     m_fontBufferSize = 0;
 }
 
@@ -572,12 +561,10 @@ uint32_t AZ::FFont::GetNumQuadsForText(const char* str, const bool asciiMultiLin
             ++numQuads;
         }
 
-        uint32_t nextCh = 0;
         const wchar_t* pChar = strW.c_str();
         while (uint32_t ch = *pChar)
         {
             ++pChar;
-            nextCh = *pChar;
 
             switch (ch)
             {
@@ -1737,15 +1724,13 @@ void AZ::FFont::DrawScreenAlignedText3d(
     {
         return;
     }
-    AZ::Vector3 positionNDC = AzFramework::WorldToScreenNDC(
-        params.m_position,
-        currentView->GetWorldToViewMatrix(),
-        currentView->GetViewToClipMatrix()
-    );
 
-    // Text behind the camera shouldn't get rendered.  WorldToScreenNDC returns values in the range 0 - 1, so Z < 0.5 is behind the screen
+    const AZ::Vector3 positionNdc = AzFramework::WorldToScreenNdc(
+        params.m_position, currentView->GetWorldToViewMatrixAsMatrix3x4(), currentView->GetViewToClipMatrix());
+
+    // Text behind the camera shouldn't get rendered.  WorldToScreenNdc returns values in the range 0 - 1, so Z < 0.5 is behind the screen
     // and >= 0.5 is in front of the screen.
-    if (positionNDC.GetZ() < 0.5f)
+    if (positionNdc.GetZ() < 0.5f)
     {
         return;
     }
@@ -1755,9 +1740,9 @@ void AZ::FFont::DrawScreenAlignedText3d(
     DrawStringUInternal(
         *internalParams.m_viewport, 
         internalParams.m_viewportContext, 
-        positionNDC.GetX() * internalParams.m_viewport->GetWidth(), 
-        (1.0f - positionNDC.GetY()) * internalParams.m_viewport->GetHeight(), 
-        positionNDC.GetZ(), // Z
+        positionNdc.GetX() * internalParams.m_viewport->GetWidth(), 
+        (1.0f - positionNdc.GetY()) * internalParams.m_viewport->GetHeight(), 
+        positionNdc.GetZ(), // Z
         text.data(),
         params.m_multiline,
         internalParams.m_ctx

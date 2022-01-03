@@ -79,7 +79,7 @@ namespace ScriptCanvasEditor
         {
             if (node->GetComponents().empty())
             {
-                AZ_TracePrintf("Script Canvas", "Removing node due to missing components: %s\nVerify that all gems that this script relies on are enabled\n", node->GetName().c_str());
+                AZ_TracePrintf(ScriptCanvas::k_VersionExplorerWindow.data(), "Removing node due to missing components: %s\nVerify that all gems that this script relies on are enabled\n", node->GetName().c_str());
 
                 nodesToRemove.push_back(node);
             }
@@ -193,7 +193,7 @@ namespace ScriptCanvasEditor
             }
             else
             {
-                AZ_Warning("ScriptCanvas", false, "Could not find ScriptCanvas Node with id %llu", static_cast<AZ::u64>(scriptCanvasSourceEndpoint.GetNodeId()));
+                AZ_Warning(ScriptCanvas::k_VersionExplorerWindow.data(), false, "Could not find ScriptCanvas Node with id %llu", static_cast<AZ::u64>(scriptCanvasSourceEndpoint.GetNodeId()));
             }
 
             AZ::EntityId graphCanvasSourceSlotId;
@@ -213,7 +213,7 @@ namespace ScriptCanvasEditor
 
                 if (!graphCanvasSourceSlotId.IsValid())
                 {
-                    AZ_Warning("ScriptCanvas", sm->m_deletedNodes.count(scriptCanvasSourceEndpoint.GetNodeId()) > 0, "Could not create connection(%s) for Node(%s).", connectionId.ToString().c_str(), scriptCanvasSourceEndpoint.GetNodeId().ToString().c_str());
+                    AZ_Warning(ScriptCanvas::k_VersionExplorerWindow.data(), sm->m_deletedNodes.count(scriptCanvasSourceEndpoint.GetNodeId()) > 0, "Could not create connection(%s) for Node(%s).", connectionId.ToString().c_str(), scriptCanvasSourceEndpoint.GetNodeId().ToString().c_str());
                     graph->DisconnectById(connectionId);
                     continue;
                 }
@@ -229,7 +229,7 @@ namespace ScriptCanvasEditor
             }
             else
             {
-                AZ_Warning("ScriptCanvas", false, "Could not find ScriptCanvas Node with id %llu", static_cast<AZ::u64>(scriptCanvasSourceEndpoint.GetNodeId()));
+                AZ_Warning(ScriptCanvas::k_VersionExplorerWindow.data(), false, "Could not find ScriptCanvas Node with id %llu", static_cast<AZ::u64>(scriptCanvasSourceEndpoint.GetNodeId()));
             }
 
             SlotMappingRequestBus::EventResult(graphCanvasTargetEndpoint.m_slotId, graphCanvasTargetEndpoint.GetNodeId(), &SlotMappingRequests::MapToGraphCanvasId, scriptCanvasTargetEndpoint.GetSlotId());
@@ -245,7 +245,7 @@ namespace ScriptCanvasEditor
 
                 if (!graphCanvasTargetEndpoint.IsValid())
                 {
-                    AZ_Warning("ScriptCanvas", sm->m_deletedNodes.count(scriptCanvasTargetEndpoint.GetNodeId()) > 0, "Could not create connection(%s) for Node(%s).", connectionId.ToString().c_str(), scriptCanvasTargetEndpoint.GetNodeId().ToString().c_str());
+                    AZ_Warning(ScriptCanvas::k_VersionExplorerWindow.data(), sm->m_deletedNodes.count(scriptCanvasTargetEndpoint.GetNodeId()) > 0, "Could not create connection(%s) for Node(%s).", connectionId.ToString().c_str(), scriptCanvasTargetEndpoint.GetNodeId().ToString().c_str());
                     graph->DisconnectById(connectionId);
                     continue;
                 }
@@ -422,7 +422,7 @@ namespace ScriptCanvasEditor
         if (!sm->m_updateReport.IsEmpty())
         {
             // currently, it is expected that there are no deleted old slots, those need manual correction
-            AZ_Error("ScriptCanvas", sm->m_updateReport.m_deletedOldSlots.empty(), "Graph upgrade path: If old slots are deleted, manual upgrading is required");
+            AZ_Error(ScriptCanvas::k_VersionExplorerWindow.data(), sm->m_updateReport.m_deletedOldSlots.empty(), "Graph upgrade path: If old slots are deleted, manual upgrading is required");
             UpdateConnectionStatus(*graph, sm->m_updateReport);
         }
     }
@@ -438,10 +438,11 @@ namespace ScriptCanvasEditor
             if (nodeConfig.IsValid())
             {
                 ScriptCanvas::NodeUpdateSlotReport nodeUpdateSlotReport;
+                auto nodeEntity = node->GetEntityId();
                 auto nodeOutcome = graph->ReplaceNodeByConfig(node, nodeConfig, nodeUpdateSlotReport);
                 if (nodeOutcome.IsSuccess())
                 {
-                    ScriptCanvas::MergeUpdateSlotReport(node->GetEntityId(), sm->m_updateReport, nodeUpdateSlotReport);
+                    ScriptCanvas::MergeUpdateSlotReport(nodeEntity, sm->m_updateReport, nodeUpdateSlotReport);
 
                     sm->m_allNodes.erase(node);
                     sm->m_outOfDateNodes.erase(node);
@@ -511,17 +512,19 @@ namespace ScriptCanvasEditor
         bool saveRawTranslationOuputToFile = ScriptCanvas::Grammar::g_saveRawTranslationOuputToFile;
         ScriptCanvas::Grammar::g_saveRawTranslationOuputToFile = false;
 
+
+        // save parsing status before after, just because it didn't parse after doesn't mean it didn't before
         graph->Parse(validationResults);
 
         ScriptCanvas::Grammar::g_saveRawTranslationOuputToFile = saveRawTranslationOuputToFile;
 
-        if (validationResults.HasResults())
+        if (validationResults.HasErrors())
         {
+            sm->MarkError("Failed to Parse");
+
             for (auto& err : validationResults.GetEvents())
             {
                 // Register this graph as needing manual updates
-                AZ::Interface<IUpgradeRequests>::Get()->GraphNeedsManualUpgrade(sm->m_asset.GetId());
-
                 Log("%s: %s\n", err->GetIdentifier().c_str(), err->GetDescription().data());
             }
         }
@@ -673,23 +676,28 @@ namespace ScriptCanvasEditor
         RegisterState(ParseGraph);
     }
 
-    void EditorGraphUpgradeMachine::SetAsset(const AZ::Data::Asset<AZ::Data::AssetData>& asset)
+    void EditorGraphUpgradeMachine::SetAsset(SourceHandle& asset)
     {
         if (m_asset != asset)
         {
             m_asset = asset;
+            SetDebugPrefix(asset.Path().c_str());
         }
     }
 
     void EditorGraphUpgradeMachine::OnComplete(IState::ExitStatus exitStatus)
     {
-        UpgradeNotifications::Bus::Broadcast(&UpgradeNotifications::OnGraphUpgradeComplete, m_asset, exitStatus == IState::ExitStatus::Skipped);
-
-        m_asset = {};
+        UpgradeNotificationsBus::Broadcast(&UpgradeNotifications::OnGraphUpgradeComplete, m_asset, exitStatus == IState::ExitStatus::Skipped);
+        // releasing the asset at this stage of the system tick causes a memory crash
+        // m_asset = {};
     }
 
     //////////////////////////////////////////////////////////////////////
     // State Machine Internals
+    bool StateMachine::GetVerbose() const
+    {
+        return m_isVerbose;
+    }
 
     void StateMachine::OnSystemTick()
     {
@@ -728,7 +736,7 @@ namespace ScriptCanvasEditor
         {
             AZ::SystemTickBus::Handler::BusDisconnect();
 
-            OnComplete(exitStatus);
+            OnComplete(m_error.empty() ? exitStatus : IState::ExitStatus::Skipped);
         }
     }
 
@@ -743,7 +751,22 @@ namespace ScriptCanvasEditor
 
             AZ::SystemTickBus::Handler::BusConnect();
         }
-
     }
+
+    void StateMachine::SetVerbose(bool isVerbose)
+    {
+        m_isVerbose = isVerbose;
+    }
+
+    const AZStd::string& StateMachine::GetDebugPrefix() const
+    {
+        return m_debugPrefix;
+    }
+
+    void StateMachine::SetDebugPrefix(AZStd::string_view prefix)
+    {
+        m_debugPrefix = prefix;
+    }
+
 
 }

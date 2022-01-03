@@ -199,7 +199,7 @@ namespace AzFramework
         {
             activeFile = &m_filePaths[m_activeCacheSlot];
         }
-            
+
         // Estimate requests in this stack entry.
         for (FileRequest* request : m_pendingRequests)
         {
@@ -279,9 +279,9 @@ namespace AzFramework
         using namespace AZ::IO;
 
         AZ_PROFILE_FUNCTION(AzCore);
-            
+
         auto data = AZStd::get_if<FileRequest::ReadData>(&request->GetCommand());
-        AZ_Assert(data, "Request doing reading in the RemoteStorageDrive didn't contain read data.")
+        AZ_Assert(data, "Request doing reading in the RemoteStorageDrive didn't contain read data.");
 
         HandleType file = InvalidHandle;
 
@@ -292,7 +292,7 @@ namespace AzFramework
             file = m_fileHandles[cacheIndex];
             m_fileLastUsed[cacheIndex] = AZStd::chrono::high_resolution_clock::now();
         }
-            
+
         // If the file is not open, eject the oldest entry from the cache and open the file for reading.
         if (file == InvalidHandle)
         {
@@ -325,7 +325,7 @@ namespace AzFramework
         }
         m_activeCacheSlot = cacheIndex;
 
-        AZ_Assert(file != InvalidHandle, 
+        AZ_Assert(file != InvalidHandle,
             "While searching for file '%s' RemoteStorageDevice::ReadFile encountered a problem that wasn't reported.", data->m_path.GetRelativePath());
         {
             TIMED_AVERAGE_WINDOW_SCOPE(m_readTimeAverage);
@@ -357,7 +357,7 @@ namespace AzFramework
             }
         }
         m_readSizeAverage.PushEntry(data->m_size);
-            
+
         request->SetStatus(IStreamerTypes::RequestStatus::Completed);
         m_context->MarkRequestAsCompleted(request);
     }
@@ -507,7 +507,7 @@ namespace AzFramework
         using namespace AZ::IO;
 
         using DoubleSeconds = AZStd::chrono::duration<double>;
-            
+
         double totalBytesReadMB = m_readSizeAverage.GetTotal() / (1024.0 * 1024.0);
         double totalReadTimeSec = AZStd::chrono::duration_cast<DoubleSeconds>(m_readTimeAverage.GetTotal()).count();
         if (m_readSizeAverage.GetTotal() > 1) // A default is always added.

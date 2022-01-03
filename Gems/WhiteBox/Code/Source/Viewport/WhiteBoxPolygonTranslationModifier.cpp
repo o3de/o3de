@@ -169,7 +169,7 @@ namespace WhiteBox
                     sharedState->m_appendStage == AppendStage::Complete)
                 {
                     size_t vertexIndex = 0;
-                    for (const Api::VertexHandle vertexHandle : m_vertexHandles)
+                    for (const Api::VertexHandle& vertexHandle : m_vertexHandles)
                     {
                         const AZ::Vector3 vertexPosition = sharedState->m_vertexPositions[vertexIndex++] +
                             action.LocalPositionOffset() - sharedState->m_activeAppendOffset;

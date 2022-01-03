@@ -597,7 +597,10 @@ namespace AZ::IO
         path.InitFromAbsolutePath(m_dummyFilepath);
 
         request->CreateRead(nullptr, buffer.get(), fileSize, path, 0, fileSize);
+        AZ_PUSH_DISABLE_WARNING(5233, "-Wunknown-warning-option") // Older versions of MSVC toolchain require to pass constexpr in the
+                                                                  // capture. Newer versions issue unused warning
         auto callback = [&fileSize, this](const FileRequest& request)
+        AZ_POP_DISABLE_WARNING
         {
             EXPECT_EQ(request.GetStatus(), AZ::IO::IStreamerTypes::RequestStatus::Completed);
             auto& readRequest = AZStd::get<AZ::IO::FileRequest::ReadData>(request.GetCommand());
@@ -639,7 +642,10 @@ namespace AZ::IO
         path.InitFromAbsolutePath(m_dummyFilepath);
 
         request->CreateRead(nullptr, buffer, unalignedSize + 4, path, unalignedOffset, unalignedSize);
+        AZ_PUSH_DISABLE_WARNING(5233, "-Wunknown-warning-option") // Older versions of MSVC toolchain require to pass constexpr in the
+                                                                  // capture. Newer versions issue unused warning
         auto callback = [unalignedOffset, unalignedSize, this](const FileRequest& request)
+        AZ_POP_DISABLE_WARNING
         {
             EXPECT_EQ(request.GetStatus(), AZ::IO::IStreamerTypes::RequestStatus::Completed);
             auto& readRequest = AZStd::get<AZ::IO::FileRequest::ReadData>(request.GetCommand());
@@ -784,7 +790,10 @@ namespace AZ::IO
             requests[i] = m_context->GetNewInternalRequest();
 
             requests[i]->CreateRead(nullptr, buffers[i].get(), chunkSize, path, i * chunkSize, chunkSize);
+            AZ_PUSH_DISABLE_WARNING(5233, "-Wunknown-warning-option") // Older versions of MSVC toolchain require to pass constexpr in the
+                                                                      // capture. Newer versions issue unused warning
             auto callback = [chunkSize, i](const FileRequest& request)
+            AZ_POP_DISABLE_WARNING
             {
                 EXPECT_EQ(request.GetStatus(), AZ::IO::IStreamerTypes::RequestStatus::Completed);
                 auto& readRequest = AZStd::get<AZ::IO::FileRequest::ReadData>(request.GetCommand());
@@ -970,7 +979,10 @@ namespace AZ::IO
                 i * chunkSize
             ));
 
+            AZ_PUSH_DISABLE_WARNING(5233, "-Wunknown-warning-option") // Older versions of MSVC toolchain require to pass constexpr in the
+                                                                      // capture. Newer versions issue unused warning
             auto callback = [numChunks, &numCallbacks, &waitForReads](FileRequestHandle request)
+            AZ_POP_DISABLE_WARNING
             {
                 IStreamer* streamer = Interface<IStreamer>::Get();
                 if (streamer)
@@ -1038,7 +1050,10 @@ namespace AZ::IO
                 i * chunkSize
             ));
 
+            AZ_PUSH_DISABLE_WARNING(5233, "-Wunknown-warning-option") // Older versions of MSVC toolchain require to pass constexpr in the
+                                                                      // capture. Newer versions issue unused warning
             auto callback = [numChunks, &waitForReads, &waitForSingleRead, &numReadCallbacks]([[maybe_unused]] FileRequestHandle request)
+            AZ_POP_DISABLE_WARNING
             {
                 numReadCallbacks++;
                 if (numReadCallbacks == 1)
@@ -1059,7 +1074,10 @@ namespace AZ::IO
         for (size_t i = 0; i < numChunks; ++i)
         {
             cancels.push_back(m_streamer->Cancel(requests[numChunks - i - 1]));
+            AZ_PUSH_DISABLE_WARNING(5233, "-Wunknown-warning-option") // Older versions of MSVC toolchain require to pass constexpr in the
+                                                                      // capture. Newer versions issue unused warning
             auto callback = [&numCancelCallbacks, &waitForCancels, numChunks](FileRequestHandle request)
+            AZ_POP_DISABLE_WARNING
             {
                 auto result = Interface<IStreamer>::Get()->GetRequestStatus(request);
                 EXPECT_EQ(result, IStreamerTypes::RequestStatus::Completed);
@@ -1155,6 +1173,23 @@ namespace Benchmark
 {
     class StorageDriveWindowsFixture : public benchmark::Fixture
     {
+        void internalTearDown()
+        {
+            using namespace AZ::IO;
+
+            AZStd::string temp;
+            m_absolutePath.swap(temp);
+
+            delete m_streamer;
+            m_streamer = nullptr;
+
+            SystemFile::Delete(TestFileName);
+
+            AZ::IO::FileIOBase::SetInstance(nullptr);
+            AZ::IO::FileIOBase::SetInstance(m_previousFileIO);
+            delete m_fileIO;
+            m_fileIO = nullptr;
+        }
     public:
         constexpr static const char* TestFileName = "StreamerBenchmark.bin";
         constexpr static size_t FileSize = 64_mib;
@@ -1197,20 +1232,13 @@ namespace Benchmark
             }
         }
 
-        void TearDown([[maybe_unused]] const ::benchmark::State& state) override
+        void TearDown(const benchmark::State&) override
         {
-            using namespace AZ::IO;
-
-            AZStd::string temp;
-            m_absolutePath.swap(temp);
-
-            delete m_streamer;
-
-            SystemFile::Delete(TestFileName);
-            
-            AZ::IO::FileIOBase::SetInstance(nullptr);
-            AZ::IO::FileIOBase::SetInstance(m_previousFileIO);
-            delete m_fileIO;
+            internalTearDown();
+        }
+        void TearDown(benchmark::State&) override
+        {
+            internalTearDown();
         }
 
         void RepeatedlyReadFile(benchmark::State& state)

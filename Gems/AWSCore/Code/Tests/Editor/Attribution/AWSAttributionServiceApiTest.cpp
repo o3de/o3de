@@ -21,6 +21,8 @@ namespace AWSCoreUnitTest
         : public AWSCore::JsonReader
     {
     public:
+        virtual ~JsonReaderMock() = default;
+
         MOCK_METHOD0(Ignore, bool());
         MOCK_METHOD1(Accept, bool(bool& target));
         MOCK_METHOD1(Accept, bool(AZStd::string& target));

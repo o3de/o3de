@@ -120,79 +120,51 @@ namespace EMStudio
         MotionSetsWindowPlugin* m_plugin;
     };
 
-
-    // constructor
     MotionSetsWindowPlugin::MotionSetsWindowPlugin()
         : EMStudio::DockWidgetPlugin()
     {
         m_dialogStack                    = nullptr;
         m_selectedSet                    = nullptr;
-        m_createMotionSetCallback        = nullptr;
-        m_reinitCallback                = nullptr;
-        m_adjustMotionSetCallback        = nullptr;
-        m_motionSetAddMotionCallback     = nullptr;
-        m_motionSetRemoveMotionCallback  = nullptr;
-        m_motionSetAdjustMotionCallback  = nullptr;
-        m_loadMotionSetCallback          = nullptr;
         m_motionSetManagementWindow      = nullptr;
         m_motionSetWindow                = nullptr;
         m_dirtyFilesCallback             = nullptr;
     }
 
-
-    // destructor
     MotionSetsWindowPlugin::~MotionSetsWindowPlugin()
     {
-        GetCommandManager()->RemoveCommandCallback(m_createMotionSetCallback, false);
-        GetCommandManager()->RemoveCommandCallback(m_reinitCallback, false);
-        GetCommandManager()->RemoveCommandCallback(m_adjustMotionSetCallback, false);
-        GetCommandManager()->RemoveCommandCallback(m_motionSetAddMotionCallback, false);
-        GetCommandManager()->RemoveCommandCallback(m_motionSetRemoveMotionCallback, false);
-        GetCommandManager()->RemoveCommandCallback(m_motionSetAdjustMotionCallback, false);
-        GetCommandManager()->RemoveCommandCallback(m_loadMotionSetCallback, false);
-
-        delete m_createMotionSetCallback;
-        delete m_reinitCallback;
-        delete m_adjustMotionSetCallback;
-        delete m_motionSetAddMotionCallback;
-        delete m_motionSetRemoveMotionCallback;
-        delete m_motionSetAdjustMotionCallback;
-        delete m_loadMotionSetCallback;
+        for (MCore::Command::Callback* callback : m_callbacks)
+        {
+            GetCommandManager()->RemoveCommandCallback(callback, false);
+            delete callback;
+        }
 
         GetMainWindow()->GetDirtyFileManager()->RemoveCallback(m_dirtyFilesCallback, false);
         delete m_dirtyFilesCallback;
     }
 
-
-    // clone the log window
     EMStudioPlugin* MotionSetsWindowPlugin::Clone()
     {
         MotionSetsWindowPlugin* newPlugin = new MotionSetsWindowPlugin();
         return newPlugin;
     }
 
-
     // init after the parent dock window has been created
     bool MotionSetsWindowPlugin::Init()
     {
-        m_createMotionSetCallback        = new CommandCreateMotionSetCallback(false);
-        m_reinitCallback                = new CommandReinitCallback(false);
-        m_adjustMotionSetCallback        = new CommandAdjustMotionSetCallback(false);
-        m_motionSetAddMotionCallback     = new CommandMotionSetAddMotionCallback(false);
-        m_motionSetRemoveMotionCallback  = new CommandMotionSetRemoveMotionCallback(false);
-        m_motionSetAdjustMotionCallback  = new CommandMotionSetAdjustMotionCallback(false);
-        m_loadMotionSetCallback          = new CommandLoadMotionSetCallback(false);
+        auto AddCallback = [=](const char* commandName, MCore::Command::Callback* callback)
+        {
+            m_callbacks.emplace_back(callback);
+            GetCommandManager()->RegisterCommandCallback(commandName, m_callbacks.back());
+        };
 
-        GetCommandManager()->RegisterCommandCallback("CreateMotionSet", m_createMotionSetCallback);
-        GetCommandManager()->RegisterCommandCallback("RemoveMotionSet", m_reinitCallback);
-        GetCommandManager()->RegisterCommandCallback("AdjustMotionSet", m_adjustMotionSetCallback);
-
-        GetCommandManager()->RegisterCommandCallback("MotionSetAddMotion", m_motionSetAddMotionCallback);
-        GetCommandManager()->RegisterCommandCallback("MotionSetRemoveMotion", m_motionSetRemoveMotionCallback);
-        GetCommandManager()->RegisterCommandCallback("MotionSetAdjustMotion", m_motionSetAdjustMotionCallback);
-        GetCommandManager()->RegisterCommandCallback("LoadMotionSet", m_loadMotionSetCallback);
-
-        GetCommandManager()->RegisterCommandCallback("RemoveMotion", m_reinitCallback);
+        AddCallback("CreateMotionSet", new CommandReinitCallback(false));
+        AddCallback("RemoveMotionSet", new CommandReinitCallback(false));
+        AddCallback("RemoveMotion", new CommandReinitCallback(false));
+        AddCallback("AdjustMotionSet", new CommandAdjustMotionSetCallback(false));
+        AddCallback("MotionSetAddMotion", new CommandMotionSetAddMotionCallback(false));
+        AddCallback("MotionSetRemoveMotion", new CommandMotionSetRemoveMotionCallback(false));
+        AddCallback("MotionSetAdjustMotion", new CommandMotionSetAdjustMotionCallback(false));
+        AddCallback("LoadMotionSet", new CommandLoadMotionSetCallback(false));
 
         // create the dialog stack
         assert(m_dialogStack == nullptr);
@@ -393,12 +365,7 @@ namespace EMStudio
         }
 
         MotionSetsWindowPlugin* motionSetsPlugin = (MotionSetsWindowPlugin*)plugin;
-
-        // is the plugin visible? only update it if it is visible
-        if (motionSetsPlugin->GetDockWidget()->visibleRegion().isEmpty() == false)
-        {
-            motionSetsPlugin->ReInit();
-        }
+        motionSetsPlugin->ReInit();
 
         return true;
     }
@@ -504,25 +471,13 @@ namespace EMStudio
     }
 
 
-    bool MotionSetsWindowPlugin::CommandCreateMotionSetCallback::Execute([[maybe_unused]] MCore::Command* command, const MCore::CommandLine& commandLine)
-    {
-        MCORE_UNUSED(commandLine);
-        return ReInitMotionSetsPlugin();
-    }
-
-
-    bool MotionSetsWindowPlugin::CommandCreateMotionSetCallback::Undo(MCore::Command* command, const MCore::CommandLine& commandLine)                   { MCORE_UNUSED(command); MCORE_UNUSED(commandLine); return ReInitMotionSetsPlugin(); }
-
-
     bool MotionSetsWindowPlugin::CommandReinitCallback::Execute([[maybe_unused]] MCore::Command* command, const MCore::CommandLine& commandLine)
     {
         MCORE_UNUSED(commandLine);
         return ReInitMotionSetsPlugin();
     }
 
-
     bool MotionSetsWindowPlugin::CommandReinitCallback::Undo(MCore::Command* command, const MCore::CommandLine& commandLine)                   { MCORE_UNUSED(command); MCORE_UNUSED(commandLine); return ReInitMotionSetsPlugin(); }
-
 
     bool MotionSetsWindowPlugin::CommandAdjustMotionSetCallback::Execute(MCore::Command* command, const MCore::CommandLine& commandLine)
     {
@@ -543,7 +498,6 @@ namespace EMStudio
 
         return true;
     }
-
 
     bool MotionSetsWindowPlugin::CommandAdjustMotionSetCallback::Undo(MCore::Command* command, const MCore::CommandLine& commandLine)
     {

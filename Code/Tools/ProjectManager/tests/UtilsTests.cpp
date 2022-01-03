@@ -202,7 +202,7 @@ namespace O3DE::ProjectManager
         TEST_F(ProjectManagerUtilsTests, ReplaceFile_Succeeds)
 #endif // !AZ_TRAIT_DISABLE_FAILED_PROJECT_MANAGER_TESTS
         {
-            EXPECT_TRUE(ReplaceFile(m_projectAOrigFilePath, m_projectAReplaceFilePath, nullptr, false));
+            EXPECT_TRUE(ReplaceProjectFile(m_projectAOrigFilePath, m_projectAReplaceFilePath, nullptr, false));
 
             QFile origFile(m_projectAOrigFilePath);
             EXPECT_TRUE(origFile.open(QIODevice::ReadOnly));

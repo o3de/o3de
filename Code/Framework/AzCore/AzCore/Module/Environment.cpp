@@ -24,10 +24,10 @@ namespace AZ
         class OSStdAllocator
         {
         public:
-            typedef void*               pointer_type;
-            typedef AZStd::size_t       size_type;
-            typedef AZStd::ptrdiff_t    difference_type;
-            typedef AZStd::false_type   allow_memory_leaks;         ///< Regular allocators should not leak.
+            using pointer_type = void *;
+            using size_type = AZStd::size_t;
+            using difference_type = AZStd::ptrdiff_t;
+            using allow_memory_leaks = AZStd::false_type;         ///< Regular allocators should not leak.
 
             OSStdAllocator(Environment::AllocatorInterface* allocator)
                 : m_name("GlobalEnvironmentAllocator")
@@ -61,7 +61,7 @@ namespace AZ
 
             const char* get_name() const            { return m_name; }
             void        set_name(const char* name)  { m_name = name; }
-            size_type   get_max_size() const        { return AZ_CORE_MAX_ALLOCATOR_SIZE; }
+            constexpr size_type max_size() const    { return AZ_CORE_MAX_ALLOCATOR_SIZE; }
             size_type   get_allocated_size() const  { return 0; }
 
             bool is_lock_free()                     { return false; }
@@ -122,7 +122,7 @@ namespace AZ
             : public EnvironmentInterface
         {
         public:
-            typedef AZStd::unordered_map<u32, void*, AZStd::hash<u32>, AZStd::equal_to<u32>, OSStdAllocator> MapType;
+            using MapType = AZStd::unordered_map<u32, void *, AZStd::hash<u32>, AZStd::equal_to<u32>, OSStdAllocator>;
 
             static EnvironmentInterface* Get();
             static void Attach(EnvironmentInstance sourceEnvironment, bool useAsGetFallback);

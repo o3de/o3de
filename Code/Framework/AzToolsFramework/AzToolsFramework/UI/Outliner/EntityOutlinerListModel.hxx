@@ -17,6 +17,7 @@
 
 #include <AzToolsFramework/API/EntityCompositionNotificationBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/ContainerEntity/ContainerEntityNotificationBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityRuntimeActivationBus.h>
@@ -36,6 +37,8 @@
 namespace AzToolsFramework
 {
     class EditorEntityUiInterface;
+    class FocusModeInterface;
+    class ReadOnlyEntityPublicInterface;
 
     namespace EntityOutliner
     {
@@ -53,6 +56,7 @@ namespace AzToolsFramework
         , private EntityCompositionNotificationBus::Handler
         , private EditorEntityRuntimeActivationChangeNotificationBus::Handler
         , private AZ::EntitySystemBus::Handler
+        , private ContainerEntityNotificationBus::Handler
     {
         Q_OBJECT;
 
@@ -67,6 +71,13 @@ namespace AzToolsFramework
             ColumnLockToggle,           //!< Lock Icons
             ColumnSortIndex,            //!< Index of sort order
             ColumnCount                 //!< Total number of columns
+        };
+
+        enum ReparentForInvalid 
+        {
+            None,                       //!< For an invalid location the entity does not change location
+            AppendEnd,                  //!< Append Item to end of target parent list
+            AppendBeginning,            //!< Append Item to the beginning of target parent list
         };
 
         // Note: the ColumnSortIndex column isn't shown, hence the -1 and the need for a separate counter.
@@ -142,6 +153,8 @@ namespace AzToolsFramework
 
         void SetSortMode(EntityOutliner::DisplaySortMode sortMode) { m_sortMode = sortMode; }
         void SetDropOperationInProgress(bool inProgress);
+        void ProcessEntityUpdates();
+
     Q_SIGNALS:
         void ExpandEntity(const AZ::EntityId& entityId, bool expand);
         void SelectEntity(const AZ::EntityId& entityId, bool select);
@@ -157,7 +170,7 @@ namespace AzToolsFramework
 
         // Buffer Processing Slots - These are called using single-shot events when the buffers begin to fill.
         bool CanReparentEntities(const AZ::EntityId& newParentId, const EntityIdList& selectedEntityIds) const;
-        bool ReparentEntities(const AZ::EntityId& newParentId, const EntityIdList& selectedEntityIds, const AZ::EntityId& beforeEntityId = AZ::EntityId());
+        bool ReparentEntities(const AZ::EntityId& newParentId, const EntityIdList& selectedEntityIds, const AZ::EntityId& beforeEntityId = AZ::EntityId(), ReparentForInvalid forInvalid = None);
 
         //! Use the current filter setting and re-evaluate the filter.
         void InvalidateFilter();
@@ -175,7 +188,6 @@ namespace AzToolsFramework
         void QueueEntityUpdate(AZ::EntityId entityId);
         void QueueAncestorUpdate(AZ::EntityId entityId);
         void QueueEntityToExpand(AZ::EntityId entityId, bool expand);
-        void ProcessEntityUpdates();
         void ProcessEntityInfoResetEnd();
         AZStd::unordered_set<AZ::EntityId> m_entitySelectQueue;
         AZStd::unordered_set<AZ::EntityId> m_entityExpandQueue;
@@ -215,6 +227,9 @@ namespace AzToolsFramework
         // EditorEntityRuntimeActivationChangeNotificationBus::Handler
         void OnEntityRuntimeActivationChanged(AZ::EntityId entityId, bool activeOnStart) override;
 
+        // ContainerEntityNotificationBus overrides ...
+        void OnContainerEntityStatusChanged(AZ::EntityId entityId, bool open) override;
+
         // Drag/Drop of components from Component Palette.
         bool dropMimeDataComponentPalette(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent);
 
@@ -230,7 +245,7 @@ namespace AzToolsFramework
         bool DropMimeDataAssets(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent);
         bool CanDropMimeDataAssets(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) const;
 
-        QMap<int, QVariant> itemData(const QModelIndex& index) const;
+        QMap<int, QVariant> itemData(const QModelIndex& index) const override;
         QVariant dataForAll(const QModelIndex& index, int role) const;
         QVariant dataForName(const QModelIndex& index, int role) const;
         QVariant dataForVisibility(const QModelIndex& index, int role) const;
@@ -273,7 +288,9 @@ namespace AzToolsFramework
         QVariant GetEntityIcon(const AZ::EntityId& id) const;
         QVariant GetEntityTooltip(const AZ::EntityId& id) const;
         
-        EditorEntityUiInterface* m_editorEntityFrameworkInterface = nullptr;
+        EditorEntityUiInterface* m_editorEntityUiInterface = nullptr;
+        FocusModeInterface* m_focusModeInterface = nullptr;
+        ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
     };
 
     class EntityOutlinerCheckBox
@@ -329,6 +346,9 @@ namespace AzToolsFramework
         // Paint the entity name using rich text
         void PaintEntityNameAsRichText(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
 
+        // Paint the read-only icon on the entity
+        void PaintReadOnlyIcon(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
+
         struct CheckboxGroup
         {
             EntityOutlinerCheckBox m_default;
@@ -357,10 +377,17 @@ namespace AzToolsFramework
         // this is a cache, and is hence mutable
         mutable QRect m_cachedBoundingRectOfTallCharacter;
 
-        const QColor m_selectedColor = QColor(255, 255, 255, 45);
-        const QColor m_hoverColor = QColor(255, 255, 255, 30);
+        inline static const QColor s_selectedColor = QColor(255, 255, 255, 45);
+        inline static const QColor s_hoverColor = QColor(255, 255, 255, 30);
+
+        inline static const QColor s_readOnlyBackgroundColor = QColor("#444444");
+        inline static const QPoint s_readOnlyOffset = QPoint(10, 10);
+        inline static const int s_readOnlyRadius = 6;
+
+        QIcon s_readOnlyIcon = QIcon(QString(":/Entity/readonly.svg"));
 
         EditorEntityUiInterface* m_editorEntityFrameworkInterface = nullptr;
+        ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
     };
 
 }

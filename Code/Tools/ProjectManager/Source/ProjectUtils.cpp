@@ -9,6 +9,8 @@
 #include <ProjectUtils.h>
 #include <ProjectManagerDefs.h>
 #include <PythonBindingsInterface.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/IO/Path/Path.h>
 
 #include <QFileDialog>
 #include <QDir>
@@ -21,6 +23,13 @@
 #include <QProgressDialog>
 #include <QSpacerItem>
 #include <QGridLayout>
+#include <QTextEdit>
+#include <QByteArray>
+#include <QScrollBar>
+#include <QProgressBar>
+#include <QLabel>
+
+#include <AzCore/std/chrono/chrono.h>
 
 namespace O3DE::ProjectManager
 {
@@ -441,7 +450,7 @@ namespace O3DE::ProjectManager
             return true;
         }
 
-        bool ReplaceFile(const QString& origFile, const QString& newFile, QWidget* parent, bool interactive)
+        bool ReplaceProjectFile(const QString& origFile, const QString& newFile, QWidget* parent, bool interactive)
         {
             QFileInfo original(origFile);
             if (original.exists())
@@ -506,6 +515,168 @@ namespace O3DE::ProjectManager
             }
 
             return ProjectManagerScreen::Invalid;
+        }
+
+        AZ::Outcome<QString, QString> ExecuteCommandResultModalDialog(
+            const QString& cmd,
+            const QStringList& arguments,
+            const QString& title)
+        {
+            QString resultOutput;
+            QProcess execProcess;
+            execProcess.setProcessChannelMode(QProcess::MergedChannels);
+
+            QProgressDialog dialog(title, QObject::tr("Cancel"), /*minimum=*/0, /*maximum=*/0);
+            dialog.setMinimumWidth(500);
+            dialog.setAutoClose(false);
+
+            QProgressBar* bar = new QProgressBar(&dialog);
+            bar->setTextVisible(false);
+            bar->setMaximum(0); // infinite
+            dialog.setBar(bar);
+
+            QLabel* progressLabel = new QLabel(&dialog);
+            QVBoxLayout* layout = new QVBoxLayout();
+
+            // pre-fill the field with the title and command
+            const QString commandOutput = QString("%1<br>%2 %3<br>").arg(title).arg(cmd).arg(arguments.join(' '));
+
+            // replace the label with a scrollable text edit
+            QTextEdit* detailTextEdit = new QTextEdit(commandOutput, &dialog);
+            detailTextEdit->setReadOnly(true);
+            layout->addWidget(detailTextEdit);
+            layout->setMargin(0);
+            progressLabel->setLayout(layout);
+            progressLabel->setMinimumHeight(150);
+            dialog.setLabel(progressLabel);
+
+            auto readConnection = QObject::connect(&execProcess, &QProcess::readyReadStandardOutput,
+                [&]()
+                {
+                    QScrollBar* scrollBar = detailTextEdit->verticalScrollBar();
+                    bool autoScroll = scrollBar->value() == scrollBar->maximum();
+
+                    QString output = execProcess.readAllStandardOutput();
+                    detailTextEdit->append(output);
+                    resultOutput.append(output);
+
+                    if (autoScroll)
+                    {
+                        scrollBar->setValue(scrollBar->maximum());
+                    }
+                });
+
+            auto exitConnection = QObject::connect(&execProcess,
+                QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+                [&](int exitCode, [[maybe_unused]] QProcess::ExitStatus exitStatus)
+                {
+                    QScrollBar* scrollBar = detailTextEdit->verticalScrollBar();
+                    dialog.setMaximum(100);
+                    dialog.setValue(dialog.maximum());
+                    if (exitCode == 0 && scrollBar->value() == scrollBar->maximum())
+                    {
+                        dialog.close();
+                    }
+                    else
+                    {
+                        // keep the dialog open so the user can look at the output
+                        dialog.setCancelButtonText(QObject::tr("Continue"));
+                    }
+                });
+
+            execProcess.start(cmd, arguments);
+
+            dialog.exec();
+
+            QObject::disconnect(readConnection);
+            QObject::disconnect(exitConnection);
+
+            if (execProcess.state() == QProcess::Running)
+            {
+                execProcess.kill();
+                return AZ::Failure(QObject::tr("Process for command '%1' was canceled").arg(cmd));
+            }
+
+            int resultCode = execProcess.exitCode();
+            if (resultCode != 0)
+            {
+                return AZ::Failure(QObject::tr("Process for command '%1' failed (result code %2").arg(cmd).arg(resultCode));
+            }
+
+            return AZ::Success(resultOutput);
+        }
+
+        AZ::Outcome<QString, QString> ExecuteCommandResult(
+            const QString& cmd,
+            const QStringList& arguments,
+            int commandTimeoutSeconds /*= ProjectCommandLineTimeoutSeconds*/)
+        {
+            QProcess execProcess;
+            execProcess.setProcessChannelMode(QProcess::MergedChannels);
+            execProcess.start(cmd, arguments);
+            if (!execProcess.waitForStarted())
+            {
+                return AZ::Failure(QObject::tr("Unable to start process for command '%1'").arg(cmd));
+            }
+
+            if (!execProcess.waitForFinished(commandTimeoutSeconds * 1000 /* Milliseconds per second */))
+            {
+                return AZ::Failure(QObject::tr("Process for command '%1' timed out at %2 seconds").arg(cmd).arg(commandTimeoutSeconds));
+            }
+            int resultCode = execProcess.exitCode();
+            QString resultOutput = execProcess.readAllStandardOutput();
+            if (resultCode != 0)
+            {
+                return AZ::Failure(QObject::tr("Process for command '%1' failed (result code %2) %3").arg(cmd).arg(resultCode).arg(resultOutput));
+            }
+            return AZ::Success(resultOutput);
+        }
+
+        AZ::Outcome<QString, QString> GetProjectBuildPath(const QString& projectPath)
+        {
+            auto registry = AZ::SettingsRegistry::Get();
+
+            // the project_build_path should be in the user settings registry inside the project folder
+            AZ::IO::FixedMaxPath projectUserPath(projectPath.toUtf8().constData());
+            projectUserPath /= AZ::SettingsRegistryInterface::DevUserRegistryFolder;
+            if (!QDir(projectUserPath.c_str()).exists())
+            {
+                return AZ::Failure(QObject::tr("Failed to find the user registry folder %1").arg(projectUserPath.c_str()));
+            }
+
+            AZ::SettingsRegistryInterface::Specializations specializations;
+            if(!registry->MergeSettingsFolder(projectUserPath.Native(), specializations, AZ_TRAIT_OS_PLATFORM_CODENAME))
+            {
+                return AZ::Failure(QObject::tr("Failed to merge registry settings in user registry folder %1").arg(projectUserPath.c_str()));
+            }
+
+            AZ::IO::FixedMaxPath projectBuildPath;
+            if (!registry->Get(projectBuildPath.Native(), AZ::SettingsRegistryMergeUtils::ProjectBuildPath))
+            {
+                return AZ::Failure(QObject::tr("No project build path setting was found in the user registry folder %1").arg(projectUserPath.c_str()));
+            }
+
+            return AZ::Success(QString(projectBuildPath.c_str()));
+        }
+
+        void DisplayDetailedError(const QString& title, const AZ::Outcome<void, AZStd::pair<AZStd::string, AZStd::string>>& outcome, QWidget* parent)
+        {
+            const AZStd::string& generalError = outcome.GetError().first;
+            const AZStd::string& detailedError = outcome.GetError().second;
+
+            if (!detailedError.empty())
+            {
+                QMessageBox errorDialog(parent);
+                errorDialog.setIcon(QMessageBox::Critical);
+                errorDialog.setWindowTitle(title);
+                errorDialog.setText(generalError.c_str());
+                errorDialog.setDetailedText(detailedError.c_str());
+                errorDialog.exec();
+            }
+            else
+            {
+                QMessageBox::critical(parent, title, generalError.c_str());
+            }
         }
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager

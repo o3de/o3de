@@ -1,5 +1,5 @@
 {
-    "Source" : "DepthOfFieldMask",
+    "Source" : "DepthOfFieldMask.azsl",
 
     "DepthStencilState" : {
         "Depth" : { "Enable" : false }

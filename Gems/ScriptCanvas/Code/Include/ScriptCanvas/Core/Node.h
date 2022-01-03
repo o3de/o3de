@@ -69,14 +69,14 @@ namespace ScriptCanvas
     {
     public:
         /// Called right before we start reading from the instance pointed by classPtr.
-        void OnReadBegin(void* objectPtr)
+        void OnReadBegin(void* objectPtr) override
         {
             t_Class* deserializedObject = reinterpret_cast<t_Class*>(objectPtr);
             deserializedObject->OnReadBegin();
         }
 
         /// Called after we are done reading from the instance pointed by classPtr.
-        void OnReadEnd(void* objectPtr)
+        void OnReadEnd(void* objectPtr) override
         {
             t_Class* deserializedObject = reinterpret_cast<t_Class*>(objectPtr);
             deserializedObject->OnReadEnd();
@@ -178,8 +178,8 @@ namespace ScriptCanvas
         NodePropertyInterface() = default;
 
     public:
-
         AZ_RTTI(NodePropertyInterface, "{265A2163-D3AE-4C4E-BDCC-37BA0084BF88}");
+        virtual ~NodePropertyInterface() = default;
 
         virtual Data::Type GetDataType() = 0;
 
@@ -217,14 +217,14 @@ namespace ScriptCanvas
         AZ_RTTI((TypedNodePropertyInterface<DataType>, "{24248937-86FB-406C-8DD5-023B10BD0B60}", DataType), NodePropertyInterface);
 
         TypedNodePropertyInterface() = default;
-        ~TypedNodePropertyInterface() = default;
+        virtual ~TypedNodePropertyInterface() = default;
 
         void SetPropertyReference(DataType* dataReference)
         {
             m_dataType = dataReference;
         }
 
-        virtual Data::Type GetDataType() override
+        Data::Type GetDataType() override
         {
             return Data::FromAZType(azrtti_typeid<DataType>());
         }
@@ -283,7 +283,7 @@ namespace ScriptCanvas
         AZ_RTTI((TypedComboBoxNodePropertyInterface<DataType>, "{24248937-86FB-406C-8DD5-023B10BD0B60}", DataType), TypedNodePropertyInterface<DataType>, ComboBoxPropertyInterface);
 
         TypedComboBoxNodePropertyInterface() = default;
-        ~TypedComboBoxNodePropertyInterface() = default;
+        virtual ~TypedComboBoxNodePropertyInterface() = default;
 
         // TypedNodePropertyInterface
         void ResetToDefault() override
@@ -310,7 +310,7 @@ namespace ScriptCanvas
         }
 
         // ComboBoxPropertyInterface
-        int GetSelectedIndex() const
+        int GetSelectedIndex() const override
         {
             int counter = -1;
 
@@ -328,7 +328,7 @@ namespace ScriptCanvas
             return counter;
         }
 
-        void SetSelectedIndex(int index)
+        void SetSelectedIndex(int index) override
         {
             if (index >= 0 || index < m_displaySet.size())
             {
@@ -354,6 +354,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_RTTI(EnumComboBoxNodePropertyInterface, "{7D46B998-9E05-401A-AC92-37A90BAF8F60}", TypedComboBoxNodePropertyInterface<int32_t>);
+        virtual ~EnumComboBoxNodePropertyInterface() = default;
 
         // No way of identifying Enum types properly yet. Going to fake a BCO object type for now.
         static const AZ::Uuid k_EnumUUID;
@@ -512,18 +513,19 @@ namespace ScriptCanvas
 
 
         //! Node internal initialization, for custom init, use OnInit
-        void Init() override final;
+        void Init() final;
 
         //! Node internal activation and housekeeping, for custom activation configuration use OnActivate
-        void Activate() override final;
+        void Activate() final;
 
         //! Node internal deactivation and housekeeping, for custom deactivation configuration use OnDeactivate
-        void Deactivate() override final;
+        void Deactivate() final;
 
         void PostActivate();
 
         void SignalDeserialized();
 
+        virtual AZStd::string GetNodeTypeName() const;
         virtual AZStd::string GetDebugName() const;
         virtual AZStd::string GetNodeName() const;
 
@@ -590,7 +592,7 @@ namespace ScriptCanvas
         NodeDisabledFlag GetNodeDisabledFlag() const;
         void SetNodeDisabledFlag(NodeDisabledFlag disabledFlag);
 
-        bool RemoveVariableReferences(const AZStd::unordered_set< ScriptCanvas::VariableId >& variableIds);
+        bool RemoveVariableReferences(const AZStd::unordered_set< ScriptCanvas::VariableId >& variableIds) override;
         ////
 
         Slot* GetSlotByName(AZStd::string_view slotName) const;
@@ -885,6 +887,8 @@ protected:
         // The SlotIterator& parameter is populated with an iterator to the inserted or found slot within the slot list 
         AZ::Outcome<SlotIdIteratorMap::iterator, AZStd::string> FindOrInsertSlot(AZ::s64 index, const SlotConfiguration& slotConfig, SlotIterator& iterOut);
 
+    public:
+
         // This function is only called once, when the node is added to a graph, as opposed to Init(), which will be called 
         // soon after construction, or after deserialization. So the functionality in configure does not need to be idempotent.
         void Configure();
@@ -1090,7 +1094,7 @@ protected:
             {
                 DataSlotConfiguration slotConfiguration;
 
-                slotConfiguration.m_name = AZStd::string::format("%s: %s", t_Traits::GetResultName(0), Data::GetName(Data::FromAZType<AZStd::decay_t<ResultType>>()).data());
+                slotConfiguration.m_name = t_Traits::GetResultName(0);
                 slotConfiguration.SetType(Data::FromAZType<AZStd::decay_t<ResultType>>());
                 slotConfiguration.SetConnectionType(ConnectionType::Output);
 
@@ -1112,7 +1116,7 @@ protected:
             {
                 DataSlotConfiguration slotConfiguration;
 
-                slotConfiguration.m_name = AZStd::string::format("%s: %s", t_Traits::GetResultName(Index), Data::GetName(Data::FromAZType<AZStd::decay_t<AZStd::tuple_element_t<Index, ResultType>>>()).data());
+                slotConfiguration.m_name = t_Traits::GetResultName(Index);
                 slotConfiguration.SetType(Data::FromAZType<AZStd::decay_t<AZStd::tuple_element_t<Index, ResultType>>>());
 
                 slotConfiguration.SetConnectionType(connectionType);                

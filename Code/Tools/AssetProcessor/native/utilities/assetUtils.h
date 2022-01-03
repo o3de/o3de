@@ -238,7 +238,6 @@ namespace AssetUtilities
     // hashMsDelay is only for automated tests to test that writing to a file while it's hashing does not cause a crash.
     // hashMsDelay is not used in non-unit test builds.
     AZ::u64 GetFileHash(const char* filePath, bool force = false, AZ::IO::SizeType* bytesReadOut = nullptr, int hashMsDelay = 0);
-    inline constexpr AZ::u64 FileHashBufferSize = 1024 * 64;
 
     //! Adjusts a timestamp to fix timezone settings and account for any precision adjustment needed
     AZ::u64 AdjustTimestamp(QDateTime timestamp);

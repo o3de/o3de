@@ -37,7 +37,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "debug",
       "OUTPUT_DIRECTORY": "build/linux",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all"
     }
@@ -53,7 +53,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/linux",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all"
     }
@@ -66,7 +66,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/linux",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=FALSE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_UNITY_BUILD=FALSE -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all"
     }
@@ -80,10 +80,11 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/linux",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all",
-      "CTEST_OPTIONS": "-E Gem::EMotionFX.Editor.Tests -LE SUITE_sandbox -L FRAMEWORK_googletest"
+      "CTEST_OPTIONS": "-E (AutomatedTesting::Atom_TestSuite_Main|AutomatedTesting::TerrainTests_Main|Gem::EMotionFX.Editor.Tests) -L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error",
+      "TEST_RESULTS": "False"
     }
   },
   "test_profile_nounity": {
@@ -92,10 +93,11 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/linux",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=FALSE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_UNITY_BUILD=FALSE -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all",
-      "CTEST_OPTIONS": "-E Gem::EMotionFX.Editor.Tests -LE SUITE_sandbox -L FRAMEWORK_googletest"
+      "CTEST_OPTIONS": "-E (AutomatedTesting::Atom_TestSuite_Main|AutomatedTesting::TerrainTests_Main|Gem::EMotionFX.Editor.Tests) -L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error",
+      "TEST_RESULTS": "False"
     }
   },
   "asset_profile": {
@@ -108,7 +110,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/linux",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "AssetProcessorBatch",
       "ASSET_PROCESSOR_BINARY": "bin/profile/AssetProcessorBatch",
@@ -122,12 +124,41 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/linux",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=FALSE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_UNITY_BUILD=FALSE -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "AssetProcessorBatch",
       "ASSET_PROCESSOR_BINARY": "bin/profile/AssetProcessorBatch",
       "ASSET_PROCESSOR_OPTIONS": "/zeroAnalysisMode",
       "ASSET_PROCESSOR_PLATFORMS": "linux,server"
+    }
+  },
+  "awsi_test_profile_pipe": {
+    "TAGS": [
+      "nightly-incremental",
+      "nightly-clean"
+    ],
+    "steps": [
+      "awsi_deployment",
+      "awsi_test_profile",
+      "awsi_destruction"
+    ]
+  },
+  "awsi_test_profile": {
+    "TAGS": [
+        "weekly-build-metrics"
+    ],
+    "PIPELINE_ENV": {
+      "NONBLOCKING_STEP": "True"
+    },
+    "COMMAND": "build_test_linux.sh",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build\\linux",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "TEST_SUITE_awsi",
+      "CTEST_OPTIONS": "-L \"(SUITE_awsi)\" --no-tests=error",
+      "TEST_RESULTS": "True"
     }
   },
   "periodic_test_profile": {
@@ -140,10 +171,11 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/linux",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_periodic",
-      "CTEST_OPTIONS": "-L (SUITE_periodic)"
+      "CTEST_OPTIONS": "-L (SUITE_periodic) --no-tests=error",
+      "TEST_RESULTS": "False"
     }
   },
   "sandbox_test_profile": {
@@ -159,10 +191,10 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/linux",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4 -DO3DE_HOME_PATH=\"${WORKSPACE}/home\" -DO3DE_REGISTER_ENGINE_PATH=\"${WORKSPACE}/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all",
-      "CTEST_OPTIONS": "-L (SUITE_sandbox)"
+      "CTEST_OPTIONS": "-L (SUITE_sandbox) --no-tests=error"
     }
   },
   "benchmark_test_profile": {
@@ -175,10 +207,11 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/linux",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_benchmark",
-      "CTEST_OPTIONS": "-L (SUITE_benchmark)"
+      "CTEST_OPTIONS": "-L (SUITE_benchmark) --no-tests=error",
+      "TEST_RESULTS": "False"
     }
   },
   "release": {
@@ -191,7 +224,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "release",
       "OUTPUT_DIRECTORY": "build/linux",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all"
     }
@@ -206,9 +239,90 @@
     "PARAMETERS": {
       "CONFIGURATION": "release",
       "OUTPUT_DIRECTORY": "build/mono_linux",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_MONOLITHIC_GAME=TRUE -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_MONOLITHIC_GAME=TRUE -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all"
+    }
+  },
+  "install_profile": {
+    "TAGS": [],
+    "COMMAND": "build_linux.sh",
+    "PARAMETERS": {
+        "CONFIGURATION": "profile",
+        "OUTPUT_DIRECTORY": "build/linux",
+        "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4 -DLY_DISABLE_TEST_MODULES=TRUE",
+        "CMAKE_TARGET": "install"
+    }
+  },
+  "installer": {
+    "TAGS": [
+      "nightly-clean",
+      "nightly-installer"
+    ],
+    "PIPELINE_ENV":{
+      "NODE_LABEL":"linux-707531fc7-packaging"
+    },
+    "COMMAND": "build_installer_linux.sh",
+    "PARAMETERS": {
+        "CONFIGURATION": "profile",
+        "OUTPUT_DIRECTORY": "build/linux",
+        "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4 -DLY_DISABLE_TEST_MODULES=TRUE -DLY_VERSION_ENGINE_NAME=o3de-sdk",
+        "EXTRA_CMAKE_OPTIONS": "-DLY_INSTALLER_AUTO_GEN_TAG=TRUE -DLY_INSTALLER_DOWNLOAD_URL=${INSTALLER_DOWNLOAD_URL} -DLY_INSTALLER_LICENSE_URL=${INSTALLER_DOWNLOAD_URL}/license",
+        "CPACK_OPTIONS": "-D CPACK_UPLOAD_URL=${CPACK_UPLOAD_URL}",
+        "CMAKE_TARGET": "all"
+    }
+  },
+  "install_profile_pipe": {
+    "TAGS": [
+      "nightly-incremental",
+      "nightly-clean"
+    ],
+    "PIPELINE_ENV": {
+      "PROJECT_REPOSITORY_NAME": "TestProject"
+    },
+    "steps": [
+      "install_profile",
+      "project_generate",
+      "project_engineinstall_profile"
+    ]
+  },
+  "project_generate": {
+    "TAGS": [],
+    "COMMAND": "python_linux.sh",
+    "PARAMETERS": {
+      "SCRIPT_PATH": "install/scripts/o3de.py",
+      "SCRIPT_PARAMETERS": "create-project -pp ${WORKSPACE}/${PROJECT_REPOSITORY_NAME} --force"
+    }
+  },
+  "project_engineinstall_profile": {
+    "TAGS": [],
+    "COMMAND": "build_linux.sh",
+    "PARAMETERS": {
+      "COMMAND_CWD": "${WORKSPACE}/${PROJECT_REPOSITORY_NAME}",
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build/linux",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4 -DCMAKE_MODULE_PATH=${WORKSPACE}/o3de/install/cmake",
+      "CMAKE_TARGET": "all"
+    }
+  },
+  "awsi_deployment": {
+    "TAGS": [],
+    "PIPELINE_ENV": {
+      "NONBLOCKING_STEP": "True"
+    },
+    "COMMAND": "deploy_cdk_applications.sh",
+    "PARAMETERS": {
+      "NVM_VERSION": "v0.39.1"
+    }
+  },
+  "awsi_destruction": {
+    "TAGS": [],
+    "PIPELINE_ENV": {
+      "NONBLOCKING_STEP": "True"
+    },
+    "COMMAND": "destroy_cdk_applications.sh",
+    "PARAMETERS": {
+      "NVM_VERSION": "v0.39.1"
     }
   }
 }

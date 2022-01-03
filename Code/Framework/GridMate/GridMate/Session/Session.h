@@ -28,10 +28,6 @@ namespace GridMate
 
     extern const EndianType kSessionEndian;
 
-    namespace Debug {
-        class SessionDriller;
-    }
-
     typedef AZ::u32 MemberIDCompact;
     /**
      * MemberID interface class.
@@ -403,7 +399,6 @@ namespace GridMate
         friend class Internal::GridSessionReplica;
         friend class Internal::GridMemberStateReplica;
         friend class SessionService;
-        friend class Debug::SessionDriller;
     public:
         enum CarrierChannels
         {
@@ -698,7 +693,7 @@ namespace GridMate
         static void* UserDataCopier(const void* sourceData, unsigned int sourceDataSize)
         {
             (void)sourceDataSize;
-            AZ_Assert(sizeof(T) == sourceDataSize, "Data size %d doesn't match the type size %d", sourceDataSize, sizeof(T))
+            AZ_Assert(sizeof(T) == sourceDataSize, "Data size %d doesn't match the type size %d", sourceDataSize, sizeof(T));
             return azcreate(T, (*static_cast<const T*>(sourceData)), GridMateAllocatorMP, "UserDataCopier");
         }
         template<class T>
@@ -742,7 +737,6 @@ namespace GridMate
         : public GridMateService
     {
         friend class GridSession;
-        friend class Debug::SessionDriller;
         friend class GridSearch;
     public:
         typedef vector<GridSession*> SessionArrayType;
@@ -936,62 +930,6 @@ namespace GridMate
         };
     }
 
-    namespace Debug
-    {
-        /**
-         * Session driller events,
-         * this events are in addition to the session event bus
-         */
-        class SessionDrillerEvents
-            : public AZ::Debug::DrillerEBusTraits
-        {
-        public:
-            virtual ~SessionDrillerEvents() {}
-
-            /// Callback that is called when the Session service is ready to process sessions.
-            virtual void OnSessionServiceReady() {}
-
-            //virtual OnCommucationChanged() = 0  Callback that notifies the title when a member's communication settings change.
-
-            /// Callback when we start a grid search.
-            virtual void OnGridSearchStart(GridSearch* gridSearch) { (void)gridSearch; }
-            /// Callback that notifies the title when a game search query have completed.
-            virtual void OnGridSearchComplete(GridSearch* gridSearch) { (void)gridSearch; }
-            /// Callback when we release (delete) a grid search. It's not safe to hold the grid pointer after this.
-            virtual void OnGridSearchRelease(GridSearch* gridSearch) { (void)gridSearch; }
-
-            /// Callback that notifies the title when a new member joins the game session.
-            virtual void OnMemberJoined(GridSession* session, GridMember* member) { (void)session; (void)member; }
-            /// Callback that notifies the title that a member is leaving the game session. member pointer is NOT valid after the callback returns.
-            virtual void OnMemberLeaving(GridSession* session, GridMember* member) { (void)session; (void)member; }
-            // \todo a better way will be (after we solve migration) is to supply a reason to OnMemberLeaving... like the member was kicked.
-            // this will require that we actually remove the replica at the same moment.
-            /// Callback that host decided to kick a member. You will receive a OnMemberLeaving when the actual member leaves the session.
-            virtual void OnMemberKicked(GridSession* session, GridMember* member) { (void)session; (void)member; }
-            /// After this callback it is safe to access session features. If host session is fully operational if client wait for OnSessionJoined.
-            virtual void OnSessionCreated(GridSession* session) { (void)session; }
-            /// Called on client machines to indicate that we join successfully.
-            virtual void OnSessionJoined(GridSession* session) { (void)session; }
-            /// Callback that notifies the title when a session will be left. session pointer is NOT valid after the callback returns.
-            virtual void OnSessionDelete(GridSession* session) { (void)session; }
-            /// Called when a session error occurs.
-            virtual void OnSessionError(GridSession* session, const AZStd::string& errorMsg) { (void)session; (void)errorMsg; }
-            /// Called when the actual game(match) starts
-            virtual void OnSessionStart(GridSession* session) { (void)session; }
-            /// Called when the actual game(match) ends
-            virtual void OnSessionEnd(GridSession* session) { (void)session; }
-            /// Called when we start a host migration.
-            virtual void OnMigrationStart(GridSession* session) { (void)session; }
-            /// Called so the user can select a member that should be the new Host. Value will be ignored if NULL, current host or the member has invalid connection id.
-            virtual void OnMigrationElectHost(GridSession* session, GridMember*& newHost) { (void)session; (void)newHost; }
-            /// Called when the host migration has completed.
-            virtual void OnMigrationEnd(GridSession* session, GridMember* newHost) { (void)session; (void)newHost; }
-            /// Called when we have our last chance to write statistics data for member in the session.
-            virtual void OnWriteStatistics(GridSession* session, GridMember* member, StatisticsData& data) { (void)session; (void)member; (void)data; }
-        };
-
-        typedef AZ::EBus<SessionDrillerEvents> SessionDrillerBus;
-    }
 }   // namespace GridMate
 
 #endif  // GM_SESSION_H

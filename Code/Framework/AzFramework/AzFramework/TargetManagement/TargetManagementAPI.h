@@ -195,7 +195,7 @@ namespace AzFramework
         TmMsgCallback(const MsgCB& cb = NULL)
             : m_cb(cb) {}
 
-        virtual void OnReceivedMsg(TmMsgPtr msg)
+        void OnReceivedMsg(TmMsgPtr msg) override
         {
             if (m_cb)
             {

@@ -26,19 +26,19 @@ public:
     CAnimMaterialNode(const int id);
     static void Initialize();
 
-    virtual void SetName(const char* name);
+    void SetName(const char* name) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Overrides from CAnimNode
     //////////////////////////////////////////////////////////////////////////
-    void Animate(SAnimContext& ec);
+    void Animate(SAnimContext& ec) override;
     void AddTrack(IAnimTrack* track) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Supported tracks description.
     //////////////////////////////////////////////////////////////////////////
-    virtual unsigned int GetParamCount() const;
-    virtual CAnimParamType GetParamType(unsigned int nIndex) const;
+    unsigned int GetParamCount() const override;
+    CAnimParamType GetParamType(unsigned int nIndex) const override;
     AZStd::string GetParamName(const CAnimParamType& paramType) const override;
 
     virtual void GetKeyValueRange(float& fMin, float& fMax) const { fMin = m_fMinKeyValue; fMax = m_fMaxKeyValue; };
@@ -49,12 +49,12 @@ public:
 
     static void Reflect(AZ::ReflectContext* context);
 protected:
-    virtual bool GetParamInfoFromType(const CAnimParamType& paramId, SParamInfo& info) const;
+    bool GetParamInfoFromType(const CAnimParamType& paramId, SParamInfo& info) const override;
 
     void UpdateDynamicParamsInternal() override;
 private:
     void AnimateNamedParameter(SAnimContext& ec, IRenderShaderResources* pShaderResources, const char* name, IAnimTrack* pTrack);
-    _smart_ptr<IMaterial> GetMaterialByName(const char* pName);
+    IMaterial * GetMaterialByName(const char* pName);
 
     float m_fMinKeyValue;
     float m_fMaxKeyValue;

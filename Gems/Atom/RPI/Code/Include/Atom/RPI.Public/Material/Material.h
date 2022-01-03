@@ -70,10 +70,13 @@ namespace AZ
 
             virtual ~Material();
 
-            //! Finds the material property index from the material property name
-            MaterialPropertyIndex FindPropertyIndex(const Name& name) const;
+            //! Finds the material property index from the material property ID
+            //! @param wasRenamed optional parameter that is set to true if @propertyId is an old name and an automatic rename was applied to find the index.
+            //! @param newName optional parameter that is set to the new property name, if the property was renamed.
+            MaterialPropertyIndex FindPropertyIndex(const Name& propertyId, bool* wasRenamed = nullptr, Name* newName = nullptr) const;
 
             //! Sets the value of a material property. The template data type must match the property's data type.
+            //! @return true if property value was changed
             template<typename Type>
             bool SetPropertyValue(MaterialPropertyIndex index, const Type& value);
 
@@ -81,12 +84,15 @@ namespace AZ
             template<typename Type>
             const Type& GetPropertyValue(MaterialPropertyIndex index) const;
 
-            //! Gets flags indicating which properties have been modified.
-            const MaterialPropertyFlags& GetPropertyDirtyFlags() const;
-
+            //! Sets the value of a material property. The @value data type must match the property's data type.
+            //! @return true if property value was changed
             bool SetPropertyValue(MaterialPropertyIndex index, const MaterialPropertyValue& value);
+
             const MaterialPropertyValue& GetPropertyValue(MaterialPropertyIndex index) const;
             const AZStd::vector<MaterialPropertyValue>& GetPropertyValues() const;
+            
+            //! Gets flags indicating which properties have been modified.
+            const MaterialPropertyFlags& GetPropertyDirtyFlags() const;
 
             //! Gets the material properties layout.
             RHI::ConstPtr<MaterialPropertiesLayout> GetMaterialPropertiesLayout() const;
@@ -110,6 +116,12 @@ namespace AZ
             //! @param value the new value for the shader option(s)
             //! @param return the number of shader options that were updated, or Failure if the material owns the indicated shader option.
             AZ::Outcome<uint32_t> SetSystemShaderOption(const Name& shaderOptionName, RPI::ShaderOptionValue value);
+
+            //! Override the material's default PSO handling setting.
+            //! This is normally used in tools like Asset Processor or Material Editor to allow changes that impact
+            //! Pipeline State Objects which is not allowed at runtime. See MaterialPropertyPsoHandling for more details.
+            //! Do not set this in the shipping runtime unless you know what you are doing.
+            void SetPsoHandlingOverride(MaterialPropertyPsoHandling psoHandlingOverride);
 
             const RHI::ShaderResourceGroup* GetRHIShaderResourceGroup() const;
 
@@ -189,6 +201,10 @@ namespace AZ
 
             //! Records the m_currentChangeId when the material was last compiled.
             ChangeId m_compiledChangeId = DEFAULT_CHANGE_ID;
+
+            bool m_isInitializing = false;
+                
+            MaterialPropertyPsoHandling m_psoHandling = MaterialPropertyPsoHandling::Warning;
         };
 
     } // namespace RPI

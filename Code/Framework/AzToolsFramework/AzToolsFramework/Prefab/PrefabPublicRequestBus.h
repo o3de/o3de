@@ -8,8 +8,10 @@
 
 #pragma once
 
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/containers/vector.h>
@@ -22,8 +24,11 @@ namespace AzToolsFramework
 
     namespace Prefab
     {
-        using PrefabOperationResult = AZ::Outcome<void, AZStd::string>;
+        using CreatePrefabResult = AZ::Outcome<AZ::EntityId, AZStd::string>;
         using InstantiatePrefabResult = AZ::Outcome<AZ::EntityId, AZStd::string>;
+        using DuplicatePrefabResult = AZ::Outcome<EntityIdList, AZStd::string>;
+        using PrefabOperationResult = AZ::Outcome<void, AZStd::string>;
+        using CreateSpawnableResult = AZ::Outcome<AZ::Data::AssetId, AZStd::string>;
 
         /**
         * The primary purpose of this bus is to facilitate writing automated tests for prefabs.
@@ -47,14 +52,16 @@ namespace AzToolsFramework
             /**
              * Create a prefab out of the entities provided, at the path provided, and keep it in memory.
              * Automatically detects descendants of entities, and discerns between entities and child instances.
-             * Return whether the creation succeeded or not.
+             * Return an outcome object with an container entity id of the prefab created if creation succeeded;
+             * on failure, it comes with an error message detailing the cause of the error.
              */
-            virtual PrefabOperationResult CreatePrefabInMemory(
+            virtual CreatePrefabResult CreatePrefabInMemory(
                 const EntityIdList& entityIds, AZStd::string_view filePath) = 0;
 
             /**
              * Instantiate a prefab from a prefab file.
-             * Return the container entity id of the prefab instantiated if instantiation succeeded.
+             * Return an outcome object with an container entity id of the prefab instantiated if instantiation succeeded; 
+             * on failure, it comes with an error message detailing the cause of the error.
              */
             virtual InstantiatePrefabResult InstantiatePrefab(
                 AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position) = 0;
@@ -62,10 +69,60 @@ namespace AzToolsFramework
             /**
              * Deletes all entities and their descendants from the owning instance. Bails if the entities don't
              * all belong to the same instance.
-             * Return whether the deletion succeeded or not.
+             * Return an outcome object; on failure, it comes with an error message detailing the cause of the error.
              */
             virtual PrefabOperationResult DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds) = 0;
 
+            /**
+              * If the entity id is a container entity id, detaches the prefab instance corresponding to it. This includes converting
+              * the container entity into a regular entity and putting it under the parent prefab, removing the link between this
+              * instance and the parent, removing links between this instance and its nested instances, and adding entities directly
+              * owned by this instance under the parent instance.
+              * Bails if the entity is not a container entity or belongs to the level prefab instance.
+              * Return an outcome object; on failure, it comes with an error message detailing the cause of the error.
+              */
+            virtual PrefabOperationResult DetachPrefab(const AZ::EntityId& containerEntityId) = 0;
+
+            /**
+              * Duplicates all entities in the owning instance. Bails if the entities don't all belong to the same instance.
+              * Return an outcome object with a list of ids of given entities' duplicates if duplication succeeded;
+              * on failure, it comes with an error message detailing the cause of the error.
+              */
+            virtual DuplicatePrefabResult DuplicateEntitiesInInstance(const EntityIdList& entityIds) = 0;
+
+            /**
+             * Get the file path to the prefab file for the prefab instance owning the entity provided.
+             * Returns the path to the prefab, or an empty path if the entity is owned by the level.
+             */
+            virtual AZStd::string GetOwningInstancePrefabPath(AZ::EntityId entityId) const = 0;
+
+            /**
+             * Convert a prefab on given file path with given name to in-memory spawnable asset. 
+             * Returns the asset id of the produced spawnable if creation succeeded;
+             * on failure, it comes with an error message detailing the cause of the error.
+             */
+            virtual CreateSpawnableResult CreateInMemorySpawnableAsset(AZStd::string_view prefabFilePath, AZStd::string_view spawnableName) = 0;
+
+            /**
+             * Remove in-memory spawnable asset with given name.
+             * Return an outcome object; on failure, it comes with an error message detailing the cause of the error.
+             */
+            virtual PrefabOperationResult RemoveInMemorySpawnableAsset(AZStd::string_view spawnableName) = 0;
+
+            /**
+             * Return whether an in-memory spawnable with given name exists or not.
+             */
+            virtual bool HasInMemorySpawnableAsset(AZStd::string_view spawnableName) const = 0;
+
+            /**
+             * Return an asset id of a spawnalbe with given name. Invalid asset id will be returned if the spawnable doesn't exist.
+             */
+            virtual AZ::Data::AssetId GetInMemorySpawnableAssetId(AZStd::string_view spawnableName) const = 0;
+
+            /**
+             * Remove all the in-memory spawnable assets.
+             */
+            virtual void RemoveAllInMemorySpawnableAssets() = 0;
         };
 
         using PrefabPublicRequestBus = AZ::EBus<PrefabPublicRequests>;

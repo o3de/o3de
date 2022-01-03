@@ -276,30 +276,6 @@ struct Matrix44_tpl
         m32 = m.m32;
         m33 = m.m33;
     }
-    //CONSTRUCTOR for identical types which converts between double/float
-    //Matrix44 m=m44r;
-    //Matrix44r m=m44;
-    template<class F1>
-    ILINE Matrix44_tpl<F>(const Matrix44_tpl<F1>&m)
-    {
-        assert(m.IsValid());
-        m00 = F(m.m00);
-        m01 = F(m.m01);
-        m02 = F(m.m02);
-        m03 = F(m.m03);
-        m10 = F(m.m10);
-        m11 = F(m.m11);
-        m12 = F(m.m12);
-        m13 = F(m.m13);
-        m20 = F(m.m20);
-        m21 = F(m.m21);
-        m22 = F(m.m22);
-        m23 = F(m.m23);
-        m30 = F(m.m30);
-        m31 = F(m.m31);
-        m32 = F(m.m32);
-        m33 = F(m.m33);
-    }
 
     //---------------------------------------------------------------------
 
@@ -568,12 +544,12 @@ struct Matrix44_tpl
     ILINE F& operator () (uint32 i, uint32 j)   {   assert ((i < 4) && (j < 4));    F* p_data = (F*)(&m00);       return p_data[i * 4 + j];   }
 
     ILINE void SetRow(int i, const Vec3_tpl<F>& v)  {   assert(i < 4);    F* p = (F*)(&m00);    p[0 + 4 * i] = v.x;   p[1 + 4 * i] = v.y;   p[2 + 4 * i] = v.z;       }
-    ILINE void SetRow4(int i, const Vec4_tpl<F>& v)   {   assert(i < 4);    F* p = (F*)(&m00);    p[0 + 4 * i] = v.x;   p[1 + 4 * i] = v.y;   p[2 + 4 * i] = v.z;   p[3 + 4 * i] = v.w;   }
+    ILINE void SetRow4(int i, const Vec4& v)   {   assert(i < 4);    F* p = (F*)(&m00);    p[0 + 4 * i] = v.x;   p[1 + 4 * i] = v.y;   p[2 + 4 * i] = v.z;   p[3 + 4 * i] = v.w;   }
     ILINE const Vec3_tpl<F>& GetRow(int i) const    {   assert(i < 4); return *(const Vec3_tpl<F>*)(&m00 + 4 * i);  }
 
     ILINE void SetColumn(int i, const Vec3_tpl<F>& v)   {   assert(i < 4);    F* p = (F*)(&m00);    p[i + 4 * 0] = v.x;   p[i + 4 * 1] = v.y;   p[i + 4 * 2] = v.z;       }
     ILINE Vec3_tpl<F> GetColumn(int i) const    {   assert(i < 4);    F* p = (F*)(&m00);    return Vec3(p[i + 4 * 0], p[i + 4 * 1], p[i + 4 * 2]);    }
-    ILINE Vec4_tpl<F> GetColumn4(int i) const {   assert(i < 4);    F* p = (F*)(&m00);    return Vec4(p[i + 4 * 0], p[i + 4 * 1], p[i + 4 * 2], p[i + 4 * 3]);   }
+    ILINE Vec4 GetColumn4(int i) const {   assert(i < 4);    F* p = (F*)(&m00);    return Vec4(p[i + 4 * 0], p[i + 4 * 1], p[i + 4 * 2], p[i + 4 * 3]);   }
 
     ILINE Vec3 GetTranslation() const { return Vec3(m03, m13, m23);   }
     ILINE void SetTranslation(const Vec3& t)  {   m03 = t.x; m13 = t.y; m23 = t.z; }
@@ -662,13 +638,6 @@ struct Matrix44_tpl
 ///////////////////////////////////////////////////////////////////////////////
 
 typedef Matrix44_tpl<f32>  Matrix44;   //always 32 bit
-typedef Matrix44_tpl<f64>  Matrix44d;  //always 64 bit
-typedef Matrix44_tpl<real> Matrix44r;  //variable float precision. depending on the target system it can be between 32, 64 or 80 bit
-#if AZ_COMPILER_MSVC
-    typedef __declspec(align(16)) Matrix44_tpl<f32> Matrix44A;
-#elif AZ_COMPILER_CLANG
-    typedef Matrix44_tpl<f32> __attribute__((aligned(16))) Matrix44A;
-#endif
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
@@ -792,24 +761,24 @@ ILINE Matrix44_tpl<F1> operator * (const Matrix44_tpl<F1>& l, const Matrix44_tpl
 }
 
 //post-multiply
-template<class F1, class F2>
-ILINE Vec4_tpl<F1> operator*(const Matrix44_tpl<F2>& m, const Vec4_tpl<F1>& v)
+template<class F2>
+ILINE Vec4 operator*(const Matrix44_tpl<F2>& m, const Vec4& v)
 {
     assert(m.IsValid());
     assert(v.IsValid());
-    return Vec4_tpl<F1>(v.x * m.m00 + v.y * m.m01 + v.z * m.m02 + v.w * m.m03,
+    return Vec4(v.x * m.m00 + v.y * m.m01 + v.z * m.m02 + v.w * m.m03,
         v.x * m.m10 + v.y * m.m11 + v.z * m.m12 + v.w * m.m13,
         v.x * m.m20 + v.y * m.m21 + v.z * m.m22 + v.w * m.m23,
         v.x * m.m30 + v.y * m.m31 + v.z * m.m32 + v.w * m.m33);
 }
 
 //pre-multiply
-template<class F1, class F2>
-ILINE Vec4_tpl<F1> operator*(const Vec4_tpl<F1>& v, const Matrix44_tpl<F2>& m)
+template<class F2>
+ILINE Vec4 operator*(const Vec4& v, const Matrix44_tpl<F2>& m)
 {
     assert(m.IsValid());
     assert(v.IsValid());
-    return Vec4_tpl<F1>(v.x * m.m00 + v.y * m.m10 + v.z * m.m20 + v.w * m.m30,
+    return Vec4(v.x * m.m00 + v.y * m.m10 + v.z * m.m20 + v.w * m.m30,
         v.x * m.m01 + v.y * m.m11 + v.z * m.m21 + v.w * m.m31,
         v.x * m.m02 + v.y * m.m12 + v.z * m.m22 + v.w * m.m32,
         v.x * m.m03 + v.y * m.m13 + v.z * m.m23 + v.w * m.m33);

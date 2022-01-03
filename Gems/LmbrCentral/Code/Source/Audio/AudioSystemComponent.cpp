@@ -35,12 +35,12 @@ namespace LmbrCentral
             OnGameUnpaused
         );
 
-        void OnGamePaused()
+        void OnGamePaused() override
         {
             Call(FN_OnGamePaused);
         }
 
-        void OnGameUnpaused()
+        void OnGameUnpaused() override
         {
             Call(FN_OnGameUnpaused);
         }

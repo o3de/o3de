@@ -41,7 +41,6 @@ enum EEfResTextures : int // This needs a fixed size so the enum can be forward 
 enum EParamType
 {
     eType_UNKNOWN,
-    eType_BYTE,
     eType_BOOL,
     eType_SHORT,
     eType_INT,
@@ -53,7 +52,6 @@ enum EParamType
 };
 
 struct IShader;
-class CCamera;
 
 union UParamVal
 {
@@ -65,7 +63,6 @@ union UParamVal
     char* m_String;
     float m_Color[4];
     float m_Vector[3];
-    CCamera* m_pCamera;
 };
 
 struct SShaderParam
@@ -90,10 +87,6 @@ struct SShaderItem
     IRenderShaderResources* m_pShaderResources;
     int32 m_nTechnique;
     uint32 m_nPreprocessFlags;
-
-    bool Update();
-    bool RefreshResourceConstants();
-    inline struct SShaderTechnique* GetTechnique() const;
 };
 
 struct IAnimNode;

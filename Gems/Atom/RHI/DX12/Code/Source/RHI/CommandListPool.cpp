@@ -9,9 +9,6 @@
 #include <RHI/CommandList.h>
 #include <RHI/Conversions.h>
 #include <RHI/DescriptorContext.h>
-#include <Atom/RHI/CpuProfiler.h>
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace DX12
@@ -29,7 +26,7 @@ namespace AZ
 
             RHI::Ptr<ID3D12CommandAllocator> CommandAllocatorFactory::CreateObject()
             {
-                AZ_TRACE_METHOD();
+                AZ_PROFILE_FUNCTION(RHI);
                 Microsoft::WRL::ComPtr<ID3D12CommandAllocator> allocator;
                 AssertSuccess(m_descriptor.m_dx12Device->CreateCommandAllocator(
                     ConvertHardwareQueueClass(m_descriptor.m_hardwareQueueClass),
@@ -40,7 +37,7 @@ namespace AZ
 
             void CommandAllocatorFactory::ResetObject(ID3D12CommandAllocator& allocator)
             {
-                AZ_TRACE_METHOD();
+                AZ_PROFILE_FUNCTION(RHI);
                 allocator.Reset();
             }
 
@@ -175,7 +172,7 @@ namespace AZ
 
         void CommandListAllocator::Collect()
         {
-            AZ_ATOM_PROFILE_FUNCTION("DX12", "CommandListAllocator: Collect");
+            AZ_PROFILE_SCOPE(RHI, "CommandListAllocator: Collect(DX12)");
             for (uint32_t queueIdx = 0; queueIdx < RHI::HardwareQueueClassCount; ++queueIdx)
             {
                 m_commandListSubAllocators[queueIdx].ForEach([](Internal::CommandListSubAllocator& commandListSubAllocator)

@@ -18,16 +18,16 @@ namespace AzFramework
     //! The properties for handling join session request.
     struct SessionConnectionConfig
     {
-        // A unique identifier for registered player in session.
+        //! A unique identifier for registered player in session.
         AZStd::string m_playerSessionId;
 
-        // The DNS identifier assigned to the instance that is running the session.
+        //! The DNS identifier assigned to the instance that is running the session.
         AZStd::string m_dnsName;
 
-        // The IP address of the session.
+        //! The IP address of the session.
         AZStd::string m_ipAddress;
 
-        // The port number for the session.
+        //! The port number for the session.
         uint16_t m_port = 0;
     };
 
@@ -35,10 +35,10 @@ namespace AzFramework
     //! The properties for handling player connect/disconnect
     struct PlayerConnectionConfig
     {
-        // A unique identifier for player connection.
+        //! A unique identifier for player connection.
         uint32_t m_playerConnectionId = 0;
 
-        // A unique identifier for registered player in session.
+        //! A unique identifier for registered player in session.
         AZStd::string m_playerSessionId;
     };
 
@@ -51,12 +51,12 @@ namespace AzFramework
         ISessionHandlingClientRequests() = default;
         virtual ~ISessionHandlingClientRequests() = default;
 
-        // Request the player join session
-        // @param  sessionConnectionConfig The required properties to handle the player join session process
-        // @return The result of player join session process
+        //! Request the player join session
+        //! @param  sessionConnectionConfig The required properties to handle the player join session process
+        //! @return The result of player join session process
         virtual bool RequestPlayerJoinSession(const SessionConnectionConfig& sessionConnectionConfig) = 0;
 
-        // Request the connected player leave session
+        //! Request the connected player leave session
         virtual void RequestPlayerLeaveSession() = 0;
     };
 
@@ -69,26 +69,26 @@ namespace AzFramework
         ISessionHandlingProviderRequests() = default;
         virtual ~ISessionHandlingProviderRequests() = default;
 
-        // Handle the destroy session process
+        //! Handle the destroy session process
         virtual void HandleDestroySession() = 0;
 
-        // Validate the player join session process
-        // @param  playerConnectionConfig The required properties to validate the player join session process
-        // @return The result of player join session validation
+        //! Validate the player join session process
+        //! @param  playerConnectionConfig The required properties to validate the player join session process
+        //! @return The result of player join session validation
         virtual bool ValidatePlayerJoinSession(const PlayerConnectionConfig& playerConnectionConfig) = 0;
 
-        // Handle the player leave session process
-        // @param  playerConnectionConfig The required properties to handle the player leave session process
+        //! Handle the player leave session process
+        //! @param  playerConnectionConfig The required properties to handle the player leave session process
         virtual void HandlePlayerLeaveSession(const PlayerConnectionConfig& playerConnectionConfig) = 0;
 
-        // Retrieves the file location of a pem-encoded TLS certificate for Client to Server communication
-        // @return If successful, returns the file location of TLS certificate file; if not successful, returns
-        //         empty string.
+        //! Retrieves the file location of a pem-encoded TLS certificate for Client to Server communication
+        //! @return If successful, returns the file location of TLS certificate file; if not successful, returns
+        //!         empty string.
         virtual AZ::IO::Path GetExternalSessionCertificate() = 0;
 
-        // Retrieves the file location of a pem-encoded TLS certificate for Server to Server communication
-        // @return If successful, returns the file location of TLS certificate file; if not successful, returns
-        //         empty string.
+        //! Retrieves the file location of a pem-encoded TLS certificate for Server to Server communication
+        //! @return If successful, returns the file location of TLS certificate file; if not successful, returns
+        //!         empty string.
         virtual AZ::IO::Path GetInternalSessionCertificate() = 0;
     };
 } // namespace AzFramework

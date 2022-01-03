@@ -32,6 +32,7 @@
 #include <AzFramework/API/ApplicationAPI.h>
 
 // AzToolsFramework
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 
 // AzQtComponents
@@ -103,6 +104,11 @@ namespace
         }
     }
 
+    // Currently (December 13, 2021), this function is only used by slice editor code.
+    // When the slice editor is not enabled, there are no references to the
+    // HideActionWhileEntitiesDeselected function, causing a compiler warning and
+    // subsequently a build error.
+#ifdef ENABLE_SLICE_EDITOR
     void HideActionWhileEntitiesDeselected(QAction* action, EEditorNotifyEvent editorNotifyEvent)
     {
         if (action == nullptr)
@@ -126,6 +132,7 @@ namespace
             break;
         }
     }
+#endif
 
     void DisableActionWhileInSimMode(QAction* action, EEditorNotifyEvent editorNotifyEvent)
     {
@@ -166,15 +173,14 @@ LevelEditorMenuHandler::LevelEditorMenuHandler(MainWindow* mainWindow, QtViewPan
     m_mainWindow->menuBar()->setNativeMenuBar(true);
 #endif
 
-    ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusConnect(
-        AzToolsFramework::GetEntityContextId());
+    ViewportEditorModeNotificationsBus::Handler::BusConnect(GetEntityContextId());
     EditorMenuRequestBus::Handler::BusConnect();
 }
 
 LevelEditorMenuHandler::~LevelEditorMenuHandler()
 {
     EditorMenuRequestBus::Handler::BusDisconnect();
-    ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusDisconnect();
+    ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
 }
 
 void LevelEditorMenuHandler::Initialize()
@@ -374,7 +380,6 @@ QMenu* LevelEditorMenuHandler::CreateFileMenu()
     {
         DisableActionWhileLevelChanges(fileOpenSlice, e);
     }));
-#endif
 
     // Save Selected Slice
     auto saveSelectedSlice = fileMenu.AddAction(ID_FILE_SAVE_SELECTED_SLICE);
@@ -391,7 +396,7 @@ QMenu* LevelEditorMenuHandler::CreateFileMenu()
     {
         HideActionWhileEntitiesDeselected(saveSliceToRoot, e);
     }));
-
+#endif
     // Open Recent
     m_mostRecentLevelsMenu = fileMenu.AddMenu(tr("Open Recent"));
     connect(m_mostRecentLevelsMenu, &QMenu::aboutToShow, this, &LevelEditorMenuHandler::UpdateMRUFiles);
@@ -439,9 +444,10 @@ QMenu* LevelEditorMenuHandler::CreateFileMenu()
     // Show Log File
     fileMenu.AddAction(ID_FILE_EDITLOGFILE);
 
+#ifdef ENABLE_SLICE_EDITOR
     fileMenu.AddSeparator();
-
     fileMenu.AddAction(ID_FILE_RESAVESLICES);
+#endif
 
     fileMenu.AddSeparator();
 
@@ -487,8 +493,6 @@ void LevelEditorMenuHandler::PopulateEditMenu(ActionManager::MenuWrapper& editMe
     editMenu.AddAction(AzToolsFramework::EditPivot);
     editMenu.AddAction(AzToolsFramework::EditReset);
     editMenu.AddAction(AzToolsFramework::EditResetManipulator);
-    editMenu.AddAction(AzToolsFramework::EditResetLocal);
-    editMenu.AddAction(AzToolsFramework::EditResetWorld);
 
     // Hide Selection
     editMenu.AddAction(AzToolsFramework::HideSelection);
@@ -540,6 +544,7 @@ void LevelEditorMenuHandler::PopulateEditMenu(ActionManager::MenuWrapper& editMe
     auto snapMenu = modifyMenu.AddMenu(tr("Snap"));
 
     snapMenu.AddAction(AzToolsFramework::SnapAngle);
+    snapMenu.AddAction(AzToolsFramework::SnapToGrid);
 
     auto transformModeMenu = modifyMenu.AddMenu(tr("Transform Mode"));
     transformModeMenu.AddAction(AzToolsFramework::EditModeMove);
@@ -725,7 +730,8 @@ QMenu* LevelEditorMenuHandler::CreateViewMenu()
     // MISSING AVIRECORDER
 
     viewportViewsMenuWrapper.AddSeparator();
-    viewportViewsMenuWrapper.AddAction(ID_DISPLAY_SHOWHELPERS);
+    viewportViewsMenuWrapper.AddAction(AzToolsFramework::Helpers);
+    viewportViewsMenuWrapper.AddAction(AzToolsFramework::Icons);
 
     // Refresh Style
     viewMenu.AddAction(ID_SKINS_REFRESH);
@@ -834,7 +840,7 @@ QAction* LevelEditorMenuHandler::CreateViewPaneAction(const QtViewPane* view)
 
         if (view->m_options.showOnToolsToolbar)
         {
-            action->setIcon(QIcon(view->m_options.toolbarIcon));
+            action->setIcon(QIcon(view->m_options.toolbarIcon.c_str()));
         }
 
         m_actionManager->AddAction(view->m_id, action);
@@ -1186,36 +1192,44 @@ void LevelEditorMenuHandler::AddDisableActionInSimModeListener(QAction* action)
     }));
 }
 
-void LevelEditorMenuHandler::EnteredComponentMode(const AZStd::vector<AZ::Uuid>& /*componentModeTypes*/)
+void LevelEditorMenuHandler::OnEditorModeActivated(
+    [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode)
 {
-    auto menuWrapper = m_actionManager->FindMenu(s_editMenuId);
-    if (!menuWrapper.isNull())
+    if (mode == ViewportEditorMode::Component)
     {
-        // copy of menu actions
-        auto actions = menuWrapper.Get()->actions();
-        // remove all non-reserved edit menu options
-        actions.erase(
-            std::remove_if(actions.begin(), actions.end(), [](QAction* action)
-            {
-                return !action->property("Reserved").toBool();
-            }),
-            actions.end());
+        if (auto menuWrapper = m_actionManager->FindMenu(s_editMenuId);
+            !menuWrapper.isNull())
+        {
+            // copy of menu actions
+            auto actions = menuWrapper.Get()->actions();
+            // remove all non-reserved edit menu options
+            actions.erase(
+                std::remove_if(actions.begin(), actions.end(), [](QAction* action)
+                {
+                    return !action->property("Reserved").toBool();
+                }),
+                actions.end());
 
-        // clear and update the menu with new actions
-        menuWrapper.Get()->clear();
-        menuWrapper.Get()->addActions(actions);
+            // clear and update the menu with new actions
+            menuWrapper.Get()->clear();
+            menuWrapper.Get()->addActions(actions);
+        }
     }
 }
 
-void LevelEditorMenuHandler::LeftComponentMode(const AZStd::vector<AZ::Uuid>& /*componentModeTypes*/)
+void LevelEditorMenuHandler::OnEditorModeDeactivated(
+    [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode)
 {
-    RestoreEditMenuToDefault();
+    if (mode == ViewportEditorMode::Component)
+    {
+        RestoreEditMenuToDefault();
+    }
 }
 
 void LevelEditorMenuHandler::AddEditMenuAction(QAction* action)
 {
-    auto menuWrapper = m_actionManager->FindMenu(s_editMenuId);
-    if (!menuWrapper.isNull())
+    if (auto menuWrapper = m_actionManager->FindMenu(s_editMenuId);
+        !menuWrapper.isNull())
     {
         menuWrapper.Get()->addAction(action);
     }
@@ -1239,8 +1253,8 @@ void LevelEditorMenuHandler::AddMenuAction(AZStd::string_view categoryId, QActio
 
 void LevelEditorMenuHandler::RestoreEditMenuToDefault()
 {
-    auto menuWrapper = m_actionManager->FindMenu(s_editMenuId);
-    if (!menuWrapper.isNull())
+    if (auto menuWrapper = m_actionManager->FindMenu(s_editMenuId);
+        !menuWrapper.isNull())
     {
         menuWrapper.Get()->clear();
         PopulateEditMenu(menuWrapper);

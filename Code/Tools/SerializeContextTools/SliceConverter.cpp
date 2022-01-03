@@ -38,7 +38,7 @@
 
 // SliceConverter reads in a slice file (saved in an ObjectStream format), instantiates it, creates a prefab out of the data,
 // and saves the prefab in a JSON format.  This can be used for one-time migrations of slices or slice-based levels to prefabs.
-// 
+//
 // If the slice contains legacy data, it will print out warnings / errors about the data that couldn't be serialized.
 // The prefab will be generated without that data.
 
@@ -56,7 +56,7 @@ namespace AZ
                 AZ_Error("SerializeContextTools", false, "Command line not available.");
                 return false;
             }
-            
+
             JsonSerializerSettings convertSettings;
             convertSettings.m_keepDefaults = commandLine->HasSwitch("keepdefaults");
             convertSettings.m_registrationContext = application.GetJsonRegistrationContext();
@@ -81,8 +81,6 @@ namespace AZ
 
             // Load the asset catalog so that we can find any nested assets successfully.  We also need to tick the tick bus
             // so that the OnCatalogLoaded event gets processed now, instead of during application shutdown.
-            AZ::Data::AssetCatalogRequestBus::Broadcast(
-                &AZ::Data::AssetCatalogRequestBus::Events::LoadCatalog, "@assets@/assetcatalog.xml");
             application.Tick();
 
             AZStd::string logggingScratchBuffer;
@@ -558,7 +556,7 @@ namespace AZ
             AZStd::string instanceAlias = GetInstanceAlias(instance);
 
             // Create a new unmodified prefab Instance for the nested slice instance.
-            auto nestedInstance = AZStd::make_unique<AzToolsFramework::Prefab::Instance>();
+            auto nestedInstance = AZStd::make_unique<AzToolsFramework::Prefab::Instance>(AZStd::move(instanceAlias));
             AzToolsFramework::Prefab::Instance::EntityList newEntities;
             if (!AzToolsFramework::Prefab::PrefabDomUtils::LoadInstanceFromPrefabDom(
                     *nestedInstance, newEntities, nestedTemplate->get().GetPrefabDom()))
@@ -742,7 +740,7 @@ namespace AZ
             instanceToTemplateInterface->GenerateDomForInstance(topLevelInstanceDomBefore, *topLevelInstance);
 
             // Use the deterministic instance alias for this new instance
-            AzToolsFramework::Prefab::Instance& addedInstance = topLevelInstance->AddInstance(AZStd::move(nestedInstance), instanceAlias);
+            AzToolsFramework::Prefab::Instance& addedInstance = topLevelInstance->AddInstance(AZStd::move(nestedInstance));
 
             AzToolsFramework::Prefab::PrefabDom topLevelInstanceDomAfter;
             instanceToTemplateInterface->GenerateDomForInstance(topLevelInstanceDomAfter, *topLevelInstance);
@@ -870,7 +868,7 @@ namespace AZ
 
             // Wait for the disconnect to finish.
             bool disconnected = false;
-            AzFramework::AssetSystemRequestBus::BroadcastResult(disconnected, 
+            AzFramework::AssetSystemRequestBus::BroadcastResult(disconnected,
                 &AzFramework::AssetSystem::AssetSystemRequests::WaitUntilAssetProcessorDisconnected, AZStd::chrono::seconds(30));
 
             AZ_Error("Convert-Slice", disconnected, "Asset Processor failed to disconnect successfully.");

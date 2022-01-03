@@ -48,6 +48,7 @@ namespace EditorPythonBindings
         bool IsPythonActive() override;
         void WaitForInitialization() override;
         void ExecuteWithLock(AZStd::function<void()> executionCallback) override;
+        bool TryExecuteWithLock(AZStd::function<void()> executionCallback) override;
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////
@@ -60,11 +61,13 @@ namespace EditorPythonBindings
         
     private:
         class SymbolLogHelper;
+        class PythonGILScopedLock;
 
         // handle multiple Python initializers and threads
         AZStd::atomic_int m_initalizeWaiterCount {0};
         AZStd::semaphore m_initalizeWaiter;
         AZStd::recursive_mutex m_lock;
+        int m_lockRecursiveCounter = 0;
         AZStd::shared_ptr<SymbolLogHelper> m_symbolLogHelper;
     
         enum class Result

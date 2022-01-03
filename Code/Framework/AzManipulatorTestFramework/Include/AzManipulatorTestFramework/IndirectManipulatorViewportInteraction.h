@@ -9,8 +9,8 @@
 #pragma once
 
 #include <AzManipulatorTestFramework/AzManipulatorTestFramework.h>
-#include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorDefaultSelection.h>
+#include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 
 namespace AzManipulatorTestFramework
 {
@@ -18,16 +18,18 @@ namespace AzManipulatorTestFramework
     class IndirectCallManipulatorManager;
 
     //! Implementation of manipulator viewport interaction that manipulates the manager indirectly via bus calls.
-    class IndirectCallManipulatorViewportInteraction
-        : public ManipulatorViewportInteraction
+    class IndirectCallManipulatorViewportInteraction : public ManipulatorViewportInteraction
     {
     public:
-        IndirectCallManipulatorViewportInteraction();
+        explicit IndirectCallManipulatorViewportInteraction(AZStd::shared_ptr<AzFramework::DebugDisplayRequests> debugDisplayRequests);
         ~IndirectCallManipulatorViewportInteraction();
-        
-        // ManipulatorViewportInteractionInterface ...
+
+        // ManipulatorViewportInteraction overrides ...
         const ViewportInteractionInterface& GetViewportInteraction() const override;
         const ManipulatorManagerInterface& GetManipulatorManager() const override;
+        // make non-const overloads visible
+        using ManipulatorViewportInteraction::GetViewportInteraction;
+        using ManipulatorViewportInteraction::GetManipulatorManager;
 
     private:
         AZStd::unique_ptr<ViewportInteraction> m_viewportInteraction;

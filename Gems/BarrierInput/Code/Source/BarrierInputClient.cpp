@@ -254,7 +254,7 @@ namespace BarrierInput
 
     static bool barrierBye([[maybe_unused]]BarrierClient* pContext, [[maybe_unused]]int* pArgs, [[maybe_unused]]Stream* pStream, [[maybe_unused]]int streamLeft)
     {
-        AZLOG_INFO("BarrierClient: Server said bye. Disconnecting\n");
+        AZLOG_INFO("BarrierClient: Server said bye. Disconnecting");
         return false;
     }
 
@@ -284,7 +284,7 @@ namespace BarrierInput
             const char* packetStart = stream.GetData();
             if (packetLength > streamLength)
             {
-                AZLOG_INFO("BarrierClient: Packet overruns buffer (Packet Length: %d Buffer Length: %d), probably lots of data on clipboard?\n", packetLength, streamLength);
+                AZLOG_INFO("BarrierClient: Packet overruns buffer (Packet Length: %d Buffer Length: %d), probably lots of data on clipboard?", packetLength, streamLength);
                 return false;
             }
 
@@ -347,7 +347,7 @@ namespace BarrierInput
     {
         AZStd::thread_desc threadDesc;
         threadDesc.m_name = "BarrierInputClientThread";
-        m_threadHandle = AZStd::thread(AZStd::bind(&BarrierClient::Run, this), &threadDesc);
+        m_threadHandle = AZStd::thread(threadDesc, AZStd::bind(&BarrierClient::Run, this));
     }
     
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -377,7 +377,7 @@ namespace BarrierInput
             const int lengthReceived = AZ::AzSock::Recv(m_socket, stream.GetBuffer(), stream.GetBufferSize(), 0);
             if (lengthReceived <= 0)
             {
-                AZLOG_INFO("BarrierClient: Receive failed, reconnecting.\n");
+                AZLOG_INFO("BarrierClient: Receive failed, reconnecting.");
                 connected = false;
                 continue;
             }
@@ -386,7 +386,7 @@ namespace BarrierInput
             stream.SetLength(lengthReceived);
             if (!ProcessPackets(this, stream))
             {
-                AZLOG_INFO("BarrierClient: Packet processing failed, reconnecting.\n");
+                AZLOG_INFO("BarrierClient: Packet processing failed, reconnecting.");
                 connected = false;
                 continue;
             }

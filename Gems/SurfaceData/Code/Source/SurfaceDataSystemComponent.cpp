@@ -229,8 +229,6 @@ namespace SurfaceData
 
     void SurfaceDataSystemComponent::GetSurfacePointsFromRegion(const AZ::Aabb& inRegion, const AZ::Vector2 stepSize, const SurfaceTagVector& desiredTags, SurfacePointListPerPosition& surfacePointListPerPosition) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
-
         AZStd::lock_guard<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
 
         surfacePointListPerPosition.clear();

@@ -158,7 +158,7 @@ namespace GraphCanvas
         ////
 
         // SceneMemberNotificationBus
-        void OnSceneSet(const AZ::EntityId& sceneId);
+        void OnSceneSet(const AZ::EntityId& sceneId) override;
         ////
 
         // SlotLayoutRequestBus
@@ -168,7 +168,7 @@ namespace GraphCanvas
 
         bool IsSlotGroupVisible(SlotGroup group) const override;
         void SetSlotGroupVisible(SlotGroup group, bool visible) override;
-        void ClearSlotGroup(SlotGroup group);
+        void ClearSlotGroup(SlotGroup group) override;
         ////
 
         // StyleNotificationBus

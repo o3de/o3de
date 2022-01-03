@@ -1,5 +1,6 @@
 {
     "project_name": "${Name}",
+    "project_id": "${ProjectId}",
     "origin": "The primary repo for ${Name} goes here: i.e. http://www.mydomain.com",
     "license": "What license ${Name} uses goes here: i.e. https://opensource.org/licenses/MIT",
     "display_name": "${Name}",
@@ -11,5 +12,6 @@
         "${Name}"
     ],
     "icon_path": "preview.png",
-    "engine": "o3de"
+    "engine": "o3de",
+    "external_subdirectories": []
 }

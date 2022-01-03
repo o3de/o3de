@@ -11,5 +11,6 @@
 namespace O3DE::ProjectManager
 {
     const QString ProjectBuildPathPostfix = ProjectBuildDirectoryName + "/mac_xcode";
+    const QString GetPythonScriptPath = "python/get_python.sh";
 
 } // namespace O3DE::ProjectManager

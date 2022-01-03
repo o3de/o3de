@@ -54,9 +54,10 @@ namespace EMotionFX
         static void AddCollider(const QModelIndexList& modelIndices, const AZ::TypeId& colliderType);
         static void CopyColliders(const QModelIndexList& modelIndices, PhysicsSetup::ColliderConfigType copyFrom);
 
-        void Render(EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo) override;
-        void RenderRagdoll(ActorInstance* actorInstance, bool renderColliders, bool renderJointLimits, EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo);
-        void RenderJointLimit(
+        //! Deprecated: All legacy render function is tied to openGL. Will be removed after openGLPlugin is completely removed.
+        void LegacyRender(EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo) override;
+        void LegacyRenderRagdoll(ActorInstance* actorInstance, bool renderColliders, bool renderJointLimits, EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo);
+        void LegacyRenderJointLimit(
             const AzPhysics::JointConfiguration& jointConfiguration,
             const ActorInstance* actorInstance,
             const Node* node,
@@ -64,13 +65,33 @@ namespace EMotionFX
             EMStudio::RenderPlugin* renderPlugin,
             EMStudio::EMStudioPlugin::RenderInfo* renderInfo,
             const MCore::RGBAColor& color);
-        void RenderJointFrame(
+        void LegacyRenderJointFrame(
             const AzPhysics::JointConfiguration& jointConfiguration,
             const ActorInstance* actorInstance,
             const Node* node,
             const Node* parentNode,
             EMStudio::EMStudioPlugin::RenderInfo* renderInfo,
             const MCore::RGBAColor& color);
+
+        //! Those function replaces legacyRender function and calls atom auxGeom render internally.
+        void Render(EMotionFX::ActorRenderFlagBitset renderFlags) override;
+        void RenderRagdoll(
+            ActorInstance* actorInstance,
+            bool renderColliders,
+            bool renderJointLimits);
+        void RenderJointLimit(
+            const AzPhysics::JointConfiguration& jointConfiguration,
+            const ActorInstance* actorInstance,
+            const Node* node,
+            const Node* parentNode,
+            const AZ::Color& regularColor,
+            const AZ::Color& violatedColor);
+        void RenderJointFrame(
+            const AzPhysics::JointConfiguration& jointConfiguration,
+            const ActorInstance* actorInstance,
+            const Node* node,
+            const Node* parentNode,
+            const AZ::Color& color);
 
     public slots:
         void OnAddToRagdoll();
@@ -80,7 +101,7 @@ namespace EMotionFX
         void OnPasteJointLimits();
 
     private:
-        bool PhysXGemAvailable() const;
+        bool IsPhysXGemAvailable() const;
 
         RagdollNodeWidget*          m_nodeWidget;
 

@@ -48,7 +48,7 @@ namespace SandboxEditor
         {
             AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
                 viewportContext->GetId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform,
-                AZ::Transform::CreateFromQuaternionAndTranslation(CameraRotation(pitch, yaw), position), 0.0f);
+                AZ::Transform::CreateFromQuaternionAndTranslation(CameraRotation(pitch, yaw), position));
         }
     }
 

@@ -55,6 +55,7 @@ namespace AZ
             // change notifications
             AZ::u32 OnUseBakedCubemapChanged();
             AZ::u32 OnAuthoredCubemapChanged();
+            AZ::u32 OnBakeExposureChanged();
 
             // retrieves visibility for baked or authored cubemap controls
             AZ::u32 GetBakedCubemapVisibilitySetting();
@@ -77,6 +78,7 @@ namespace AZ
             AZStd::string m_bakedCubeMapRelativePath;
             Data::Asset<RPI::StreamingImageAsset> m_bakedCubeMapAsset;
             Data::Asset<RPI::StreamingImageAsset> m_authoredCubeMapAsset;
+            float m_bakeExposure = 0.0f;
 
             // flag indicating if a cubemap bake is currently in progress
             AZStd::atomic_bool m_bakeInProgress = false;

@@ -32,7 +32,7 @@ namespace AZ
 
             //! The asset cache relative path of the only common shader asset for the RPI system that is used
             //! as means to load the layout for scene srg and view srg. This is used to create any RPI::Scene.
-            AZStd::string m_commonSrgsShaderAssetPath = "shader/sceneandviewsrgs.azshader";
+            AZStd::string m_commonSrgsShaderAssetPath = "shaders/sceneandviewsrgs.azshader";
 
             ImageSystemDescriptor m_imageSystemDescriptor;
             GpuQuerySystemDescriptor m_gpuQuerySystemDescriptor;

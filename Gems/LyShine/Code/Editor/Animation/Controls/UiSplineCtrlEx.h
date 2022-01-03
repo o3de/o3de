@@ -345,8 +345,8 @@ public:
     SplineWidget(QWidget* parent);
     virtual ~SplineWidget();
 
-    void update() { QWidget::update(); }
-    void update(const QRect& rect) { QWidget::update(rect); }
+    void update() override { QWidget::update(); }
+    void update(const QRect& rect) override { QWidget::update(rect); }
 
     QPoint mapFromGlobal(const QPoint& point) const override { return QWidget::mapFromGlobal(point); }
 

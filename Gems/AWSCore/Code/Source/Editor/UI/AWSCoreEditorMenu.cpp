@@ -54,7 +54,7 @@ namespace AWSCore
         {
             if (m_resourceMappingToolWatcher->IsProcessRunning())
             {
-                m_resourceMappingToolWatcher->TerminateProcess(AZ::u32(-1));
+                m_resourceMappingToolWatcher->TerminateProcess(static_cast<AZ::u32>(-1));
             }
             m_resourceMappingToolWatcher.reset();
         }
@@ -78,7 +78,7 @@ namespace AWSCore
 
     void AWSCoreEditorMenu::InitializeResourceMappingToolAction()
     {
-#ifdef AWSCORE_EDITOR_RESOURCE_MAPPING_TOOL_ENABLED
+#if AWSCORE_EDITOR_RESOURCE_MAPPING_TOOL_ENABLED
         AWSCoreResourceMappingToolAction* resourceMappingTool =
             new AWSCoreResourceMappingToolAction(QObject::tr(AWSResourceMappingToolActionText), this);
         QObject::connect(resourceMappingTool, &QAction::triggered, this,
@@ -156,6 +156,11 @@ namespace AWSCore
         metrics->setIcon(QIcon(QString(":/Notifications/download.svg")));
         metrics->setDisabled(true);
         this->addAction(metrics);
+
+        QAction* gamelift = new QAction(QObject::tr(AWSGameLiftActionText));
+        gamelift->setIcon(QIcon(QString(":/Notifications/download.svg")));
+        gamelift->setDisabled(true);
+        this->addAction(gamelift);
     }
 
     void AWSCoreEditorMenu::SetAWSClientAuthEnabled()
@@ -181,6 +186,23 @@ namespace AWSCore
         AddSpaceForIcon(subMenu);
     }
 
+    void AWSCoreEditorMenu::SetAWSGameLiftEnabled()
+    {
+        // TODO: instead of creating submenu in core editor, aws feature gem should return submenu component directly
+        QMenu* subMenu = SetAWSFeatureSubMenu(AWSGameLiftActionText);
+
+        subMenu->addAction(AddExternalLinkAction(AWSGameLiftGemOverviewActionText, AWSGameLiftGemOverviewUrl, ":/Notifications/link.svg"));
+        subMenu->addAction(AddExternalLinkAction(AWSGameLiftGemSetupActionText, AWSGameLiftGemSetupUrl, ":/Notifications/link.svg"));
+        subMenu->addAction(AddExternalLinkAction(AWSMGameLiftScriptingActionText, AWSGameLiftScriptingUrl, ":/Notifications/link.svg"));
+        subMenu->addAction(AddExternalLinkAction(AWSGameLiftAPIReferenceActionText, AWSGameLiftAPIReferenceUrl, ":/Notifications/link.svg"));
+        subMenu->addAction(AddExternalLinkAction(AWSGameLiftAdvancedTopicsActionText, AWSGameLiftAdvancedTopicsUrl, ":/Notifications/link.svg"));
+        subMenu->addAction(AddExternalLinkAction(AWSGameLiftLocalTestingActionText, AWSGameLiftLocalTestingUrl, ":/Notifications/link.svg"));
+        subMenu->addAction(AddExternalLinkAction(AWSGameLiftBuildPackagingActionText, AWSGameLiftBuildPackagingUrl, ":/Notifications/link.svg"));
+        subMenu->addAction(AddExternalLinkAction(AWSGameLiftResourceManagementActionText, AWSGameLiftResourceManagementUrl, ":/Notifications/link.svg"));
+
+        AddSpaceForIcon(subMenu);
+    }
+
     void AWSCoreEditorMenu::SetAWSMetricsEnabled()
     {
         // TODO: instead of creating submenu in core editor, aws feature gem should return submenu component directly
@@ -197,7 +219,7 @@ namespace AWSCore
         subMenu->addAction(AddExternalLinkAction(
             AWSMetricsAdvancedTopicsActionText, AWSMetricsAdvancedTopicsUrl, ":/Notifications/link.svg"));
 
-        AZStd::string priorAlias = AZ::IO::FileIOBase::GetInstance()->GetAlias("@devroot@");
+        AZStd::string priorAlias = AZ::IO::FileIOBase::GetInstance()->GetAlias("@engroot@");
         AZStd::string configFilePath = priorAlias + "\\Gems\\AWSMetrics\\Code\\" + AZ::SettingsRegistryInterface::RegistryFolder;
         AzFramework::StringFunc::Path::Normalize(configFilePath);
 
@@ -214,7 +236,7 @@ namespace AWSCore
     QMenu* AWSCoreEditorMenu::SetAWSFeatureSubMenu(const AZStd::string& menuText)
     {
         auto actionList = this->actions();
-        for (QList<QAction*>::iterator itr = actionList.begin(); itr != actionList.end(); itr++)
+        for (QList<QAction*>::iterator itr = actionList.begin(); itr != actionList.end(); ++itr)
         {
             if (QString::compare((*itr)->text(), menuText.c_str()) == 0)
             {

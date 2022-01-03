@@ -37,7 +37,7 @@
     [
         {
             "Name": "",
-            "PlusArguments": "",
+            "PlusArguments": "--no-alignment-validation",
             "MinusArguments": "--strip-unused-srgs"
         }
     ]  

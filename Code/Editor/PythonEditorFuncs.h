@@ -91,7 +91,7 @@ namespace AzToolsFramework
 
         void SetAxisConstraint(AZStd::string_view pConstrain) override;
 
-        const char* GetPakFromFile(const char* filename) override;
+        AZ::IO::Path GetPakFromFile(const char* filename) override;
 
         void Log(const char* pMessage) override;
 

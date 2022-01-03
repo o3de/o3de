@@ -168,8 +168,6 @@ enum EEditorNotifyEvent
     eNotify_OnVegetationObjectSelection, // When vegetation objects selection change.
     eNotify_OnVegetationPanelUpdate,   // When vegetation objects selection change.
 
-    eNotify_OnDisplayRenderUpdate,     // Sent when editor finish terrain texture generation.
-
     eNotify_OnDataBaseUpdate,          // DataBase Library was modified.
 
     eNotify_OnLayerImportBegin,         //layer import was started
@@ -508,8 +506,6 @@ struct IEditor
     virtual CBaseObject* NewObject(const char* typeName, const char* fileName = "", const char* name = "", float x = 0.0f, float y = 0.0f, float z = 0.0f, bool modifyDoc = true) = 0;
     //! Delete object
     virtual void DeleteObject(CBaseObject* obj) = 0;
-    //! Clone object
-    virtual CBaseObject* CloneObject(CBaseObject* obj) = 0;
     //! Get current selection group
     virtual CSelectionGroup* GetSelection() = 0;
     virtual CBaseObject* GetSelectedObject() = 0;
@@ -701,7 +697,6 @@ struct IEditor
 
     virtual CUIEnumsDatabase* GetUIEnumsDatabase() = 0;
     virtual void AddUIEnums() = 0;
-    virtual void GetMemoryUsage(ICrySizer* pSizer) = 0;
     virtual void ReduceMemory() = 0;
 
     //! Export manager for exporting objects and a terrain from the game to DCC tools

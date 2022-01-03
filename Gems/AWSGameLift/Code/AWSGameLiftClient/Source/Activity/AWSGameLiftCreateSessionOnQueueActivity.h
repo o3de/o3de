@@ -10,9 +10,7 @@
 
 #include <Request/AWSGameLiftCreateSessionOnQueueRequest.h>
 
-#include <aws/core/utils/Outcome.h>
 #include <aws/gamelift/GameLiftClient.h>
-#include <aws/gamelift/model/StartGameSessionPlacementRequest.h>
 
 namespace AWSGameLift
 {
@@ -25,9 +23,7 @@ namespace AWSGameLift
             const AWSGameLiftCreateSessionOnQueueRequest& createSessionOnQueueRequest);
 
         // Create StartGameSessionPlacementRequest and make a CreateGameSession call through GameLift client
-        AZStd::string CreateSessionOnQueue(
-            const Aws::GameLift::GameLiftClient& gameliftClient,
-            const AWSGameLiftCreateSessionOnQueueRequest& createSessionOnQueueRequest);
+        AZStd::string CreateSessionOnQueue(const AWSGameLiftCreateSessionOnQueueRequest& createSessionOnQueueRequest);
 
         // Validate CreateSessionOnQueueRequest and check required request parameters
         bool ValidateCreateSessionOnQueueRequest(const AzFramework::CreateSessionRequest& createSessionRequest);

@@ -7,9 +7,7 @@
  */
 
 #include <RayTracing/RayTracingFeatureProcessor.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/Scene.h>
@@ -79,7 +77,7 @@ namespace AZ
             AZ_Assert(m_rayTracingMaterialSrg, "Failed to create RayTracingMaterialSrg");
         }
 
-        void RayTracingFeatureProcessor::SetMesh(const ObjectId objectId, const SubMeshVector& subMeshes)
+        void RayTracingFeatureProcessor::SetMesh(const ObjectId objectId, const AZ::Data::AssetId& assetId, const SubMeshVector& subMeshes)
         {
             if (!m_rayTracingEnabled)
             {
@@ -89,10 +87,13 @@ namespace AZ
             RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
             uint32_t objectIndex = objectId.GetIndex();
 
+            // lock the mutex to protect the mesh and BLAS lists
+            AZStd::unique_lock<AZStd::mutex> lock(m_mutex);
+
             MeshMap::iterator itMesh = m_meshes.find(objectIndex);
             if (itMesh == m_meshes.end())
             {
-                m_meshes.insert(AZStd::make_pair(objectIndex, Mesh{ subMeshes }));
+                m_meshes.insert(AZStd::make_pair(objectIndex, Mesh{ assetId, subMeshes }));
             }
             else
             {
@@ -102,11 +103,31 @@ namespace AZ
                 m_meshes[objectIndex].m_subMeshes = subMeshes;
             }
 
-            // create the BLAS buffers for each sub-mesh
-            // Note: the buffer is just reserved here, the BLAS is built in the RayTracingAccelerationStructurePass
             Mesh& mesh = m_meshes[objectIndex];
-            for (auto& subMesh : mesh.m_subMeshes)
+
+            // search for an existing BLAS instance entry for this mesh using the assetId
+            BlasInstanceMap::iterator itMeshBlasInstance = m_blasInstanceMap.find(assetId);
+            if (itMeshBlasInstance == m_blasInstanceMap.end())
             {
+                // make a new BLAS map entry for this mesh
+                MeshBlasInstance meshBlasInstance;
+                meshBlasInstance.m_count = 1;
+                meshBlasInstance.m_subMeshes.reserve(mesh.m_subMeshes.size());
+                itMeshBlasInstance = m_blasInstanceMap.insert({ assetId, meshBlasInstance }).first;
+            }
+            else
+            {
+                itMeshBlasInstance->second.m_count++;
+            }
+
+            // create the BLAS buffers for each sub-mesh, or re-use existing BLAS objects if they were already created.
+            // Note: all sub-meshes must either create new BLAS objects or re-use existing ones, otherwise it's an error (it's the same model in both cases)
+            // Note: the buffer is just reserved here, the BLAS is built in the RayTracingAccelerationStructurePass
+            bool blasInstanceFound = false;
+            for (uint32_t subMeshIndex = 0; subMeshIndex < mesh.m_subMeshes.size(); ++subMeshIndex)
+            {
+                SubMesh& subMesh = mesh.m_subMeshes[subMeshIndex];
+
                 RHI::RayTracingBlasDescriptor blasDescriptor;
                 blasDescriptor.Build()
                     ->Geometry()
@@ -115,11 +136,29 @@ namespace AZ
                         ->IndexBuffer(subMesh.m_indexBufferView)
                 ;
 
-                // create the BLAS object
-                subMesh.m_blas = AZ::RHI::RayTracingBlas::CreateRHIRayTracingBlas();
+                // determine if we have an existing BLAS object for this subMesh
+                if (itMeshBlasInstance->second.m_subMeshes.size() >= subMeshIndex + 1)
+                {
+                    // re-use existing BLAS
+                    subMesh.m_blas = itMeshBlasInstance->second.m_subMeshes[subMeshIndex].m_blas;
 
-                // create the buffers from the descriptor
-                subMesh.m_blas->CreateBuffers(*device, &blasDescriptor, *m_bufferPools);
+                    // keep track of the fact that we re-used a BLAS
+                    blasInstanceFound = true;
+                }
+                else
+                {
+                    AZ_Assert(blasInstanceFound == false, "Partial set of RayTracingBlas objects found for mesh");
+
+                    // create the BLAS object and store it in the BLAS list
+                    RHI::Ptr<RHI::RayTracingBlas> rayTracingBlas = AZ::RHI::RayTracingBlas::CreateRHIRayTracingBlas();
+                    itMeshBlasInstance->second.m_subMeshes.push_back({ rayTracingBlas });
+
+                    // create the buffers from the BLAS descriptor
+                    rayTracingBlas->CreateBuffers(*device, &blasDescriptor, *m_bufferPools);
+
+                    // store the BLAS in the mesh
+                    subMesh.m_blas = rayTracingBlas;
+                }
             }
 
             // set initial transform
@@ -140,12 +179,26 @@ namespace AZ
                 return;
             }
 
+            // lock the mutex to protect the mesh and BLAS lists
+            AZStd::unique_lock<AZStd::mutex> lock(m_mutex);
+
             MeshMap::iterator itMesh = m_meshes.find(objectId.GetIndex());
             if (itMesh != m_meshes.end())
             {
                 m_subMeshCount -= aznumeric_cast<uint32_t>(itMesh->second.m_subMeshes.size());
                 m_meshes.erase(itMesh);
                 m_revision++;
+
+                // decrement the count from the BLAS instances, and check to see if we can remove them
+                BlasInstanceMap::iterator itBlas = m_blasInstanceMap.find(itMesh->second.m_assetId);
+                if (itBlas != m_blasInstanceMap.end())
+                {
+                    itBlas->second.m_count--;
+                    if (itBlas->second.m_count == 0)
+                    {
+                        m_blasInstanceMap.erase(itBlas);
+                    }
+                }
             }
 
             m_meshInfoBufferNeedsUpdate = true;
@@ -259,7 +312,8 @@ namespace AZ
                         }
 
                         subMesh.m_irradianceColor.StoreToFloat4(meshInfo.m_irradianceColor.data());
-                        rotationMatrix.StoreToRowMajorFloat9(meshInfo.m_worldInvTranspose.data());
+                        Matrix3x4 worldInvTranspose3x4 = Matrix3x4::CreateFromMatrix3x3(rotationMatrix);
+                        worldInvTranspose3x4.StoreToRowMajorFloat12(meshInfo.m_worldInvTranspose.data());
                         meshInfo.m_bufferFlags = subMesh.m_bufferFlags;
                         meshInfo.m_bufferStartIndex = bufferStartIndex;
 
@@ -448,8 +502,14 @@ namespace AZ
                     }
                 }
 
-                RHI::ShaderInputBufferUnboundedArrayIndex bufferUnboundedArrayIndex = srgLayout->FindShaderInputBufferUnboundedArrayIndex(AZ::Name("m_meshBuffers"));
-                m_rayTracingSceneSrg->SetBufferViewUnboundedArray(bufferUnboundedArrayIndex, meshBuffers);
+                // Check if buffer view data changed from previous frame.
+                // Look into making 'm_meshBuffers != meshBuffers' faster by possibly building a crc and doing a crc check.
+                if (m_meshBuffers.size() != meshBuffers.size() || m_meshBuffers != meshBuffers)
+                {
+                    m_meshBuffers = meshBuffers;
+                    RHI::ShaderInputBufferUnboundedArrayIndex bufferUnboundedArrayIndex = srgLayout->FindShaderInputBufferUnboundedArrayIndex(AZ::Name("m_meshBuffers"));
+                    m_rayTracingSceneSrg->SetBufferViewUnboundedArray(bufferUnboundedArrayIndex, m_meshBuffers);
+                }
             }
 
             m_rayTracingSceneSrg->Compile();
@@ -495,8 +555,13 @@ namespace AZ
                     }
                 }
 
-                RHI::ShaderInputImageUnboundedArrayIndex textureUnboundedArrayIndex = srgLayout->FindShaderInputImageUnboundedArrayIndex(AZ::Name("m_materialTextures"));
-                m_rayTracingMaterialSrg->SetImageViewUnboundedArray(textureUnboundedArrayIndex, materialTextures);
+                // Check if image view data changed from previous frame. 
+                if (m_materialTextures.size() != materialTextures.size() || m_materialTextures != materialTextures)
+                {
+                    m_materialTextures = materialTextures;
+                    RHI::ShaderInputImageUnboundedArrayIndex textureUnboundedArrayIndex = srgLayout->FindShaderInputImageUnboundedArrayIndex(AZ::Name("m_materialTextures"));
+                    m_rayTracingMaterialSrg->SetImageViewUnboundedArray(textureUnboundedArrayIndex, materialTextures);
+                }
             }
 
             m_rayTracingMaterialSrg->Compile();

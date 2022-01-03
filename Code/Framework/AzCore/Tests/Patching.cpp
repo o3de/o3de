@@ -2651,7 +2651,7 @@ namespace UnitTest
                         if (!rootElement.GetChildData(AZ_CRC("InnerBaseStringField"), stringField))
                         {
                             AZ_Error("PatchingTest", false, "Unable to retrieve 'InnerBaseStringField' data for %u version of the InnerObjectFieldConverterClass",
-                                rootElement.GetVersion())
+                                rootElement.GetVersion());
                             return false;
                         }
 

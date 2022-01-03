@@ -225,7 +225,7 @@ namespace Audio
             AZStd::thread_desc threadDesc;
             threadDesc.m_name = "MicrophoneCapture-WASAPI";
             auto captureFunc = AZStd::bind(&MicrophoneSystemComponentWindows::RunAudioCapture, this);
-            m_captureThread = AZStd::thread(captureFunc, &threadDesc);
+            m_captureThread = AZStd::thread(threadDesc, captureFunc);
 
             return true;
         }

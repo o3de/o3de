@@ -1,0 +1,6 @@
+<download name="Ragdoll_WorldBodyBusWorks" type="Map">
+ <index src="filelist.xml" dest="filelist.xml"/>
+ <files>
+  <file src="level.pak" dest="level.pak" size="7863" md5="281f21b6468cb7a4ab691f3afcb6f8a0"/>
+ </files>
+</download>

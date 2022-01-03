@@ -13,9 +13,9 @@ ly_add_target(
         awsmetrics_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
-            Include/Public
+            Include
         PRIVATE
-            Include/Private
+            Source
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
@@ -32,24 +32,49 @@ ly_add_target(
         awsmetrics_shared_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
-            Include/Public
+            Include
         PRIVATE
-            Include/Private
+            Source
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
             Gem::AWSMetrics.Static
-    RUNTIME_DEPENDENCIES
-        Gem::AWSCore
 )
 
 # Load the "Gem::AWSMetrics" module in all types of applications.
-ly_create_alias(NAME AWSMetrics.Servers NAMESPACE Gem TARGETS Gem::AWSMetrics)
-ly_create_alias(NAME AWSMetrics.Clients NAMESPACE Gem TARGETS Gem::AWSMetrics)
+ly_create_alias(
+    NAME AWSMetrics.Servers
+    NAMESPACE Gem
+    TARGETS
+        Gem::AWSCore.Servers
+        Gem::AWSMetrics
+)
+
+ly_create_alias(
+    NAME AWSMetrics.Clients
+    NAMESPACE Gem
+    TARGETS
+        Gem::AWSCore.Clients
+        Gem::AWSMetrics
+)
+
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
-    ly_create_alias(NAME AWSMetrics.Tools NAMESPACE Gem TARGETS Gem::AWSMetrics)
-    ly_create_alias(NAME AWSMetrics.Builders NAMESPACE Gem TARGETS Gem::AWSMetrics)
+    ly_create_alias(
+        NAME AWSMetrics.Tools
+        NAMESPACE Gem
+        TARGETS
+            Gem::AWSCore.Tools
+            Gem::AWSMetrics
+    )
+
+    ly_create_alias(
+        NAME AWSMetrics.Builders
+        NAMESPACE Gem
+        TARGETS
+            Gem::AWSCore.Builders
+            Gem::AWSMetrics
+    )
 endif()
 
 ################################################################################
@@ -63,8 +88,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             awsmetrics_tests_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
-                Include/Private
-                Include/Public
+                Include
+                Source
                 Tests
         BUILD_DEPENDENCIES
             PRIVATE

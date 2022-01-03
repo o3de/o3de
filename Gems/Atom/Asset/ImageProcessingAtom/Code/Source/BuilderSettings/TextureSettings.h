@@ -43,7 +43,7 @@ namespace ImageProcessingAtom
         /**
          * Apply value of some preset settings to this texture settings
          */
-        void ApplyPreset(AZ::Uuid presetId);
+        void ApplyPreset(PresetName presetName);
 
         /**
         * Performs a comprehensive comparison between two TextureSettings instances.
@@ -116,7 +116,10 @@ namespace ImageProcessingAtom
         static const size_t s_MaxMipMaps = 6;
 
         // uuid of selected preset for this texture
-        AZ::Uuid m_preset;
+        // We are deprecating preset UUID and switching to preset name as an unique id
+        AZ::Uuid m_presetId;
+
+        PresetName m_preset;
 
         // texture size reduce level. the value of this variable will override the same variable in PresetSettings
         unsigned int m_sizeReduceLevel;

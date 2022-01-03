@@ -12,12 +12,12 @@
 #include <Atom/Features/PBR/Microfacet/Fresnel.azsli>
 
 // compute final probe specular using the probe cubemap and the roughness, normals, and specularF0 for the surface
-bool ComputeProbeSpecular(float2 screenCoords, float3 positionWS, float3 aabbMin, float3 aabbMax, uint sampleIndex, out float3 specular)
+bool ComputeProbeSpecular(float2 screenCoords, float3 positionWS, float4x4 obbTransformInverse, float3 outerObbHalfLengths, uint sampleIndex, out float3 specular)
 {
     // make sure the pixel belongs to this probe volume
     // this is necessary since it could have the correct stencil value but actually reside 
     // in another volume that's in between the camera and the volume we're rendering
-    if (!AabbContainsPoint(aabbMin, aabbMax, positionWS))
+    if (!ObbContainsPoint(obbTransformInverse, outerObbHalfLengths, positionWS))
     {
         return false;
     }
@@ -47,7 +47,11 @@ bool ComputeProbeSpecular(float2 screenCoords, float3 positionWS, float3 aabbMin
     float3 localReflectDir = reflectDir;
     if (ObjectSrg::m_useParallaxCorrection)
     {
-        localReflectDir = ApplyParallaxCorrection(ObjectSrg::m_outerAabbMin, ObjectSrg::m_outerAabbMax, ObjectSrg::m_aabbPos, positionWS, reflectDir);
+        localReflectDir = ApplyParallaxCorrectionOBB(
+            ObjectSrg::GetWorldMatrixInverse(),
+            ObjectSrg::m_outerObbHalfLengths,
+            positionWS,
+            reflectDir);
     }
 
     // sample reflection cubemap with the appropriate roughness mip

@@ -98,11 +98,6 @@ namespace AzToolsFramework
     QWidget* IntSpinBoxHandler<ValueType>::CreateGUI(QWidget* parent)
     {
         PropertyIntSpinCtrl* newCtrl = static_cast<PropertyIntSpinCtrl*>(BaseHandler::CreateGUI(parent));
-        this->connect(newCtrl, &PropertyIntSpinCtrl::valueChanged, [newCtrl]()
-        {
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Handler::RequestWrite, newCtrl);
-        });
-
         return newCtrl;
     }
 

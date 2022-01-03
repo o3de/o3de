@@ -12,6 +12,7 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Module/Environment.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <SceneAPI/SceneCore/Components/BehaviorComponent.h>
@@ -186,6 +187,7 @@ namespace AZ
 
                     // Register utilities
                     AZ::SceneAPI::SceneCore::PatternMatcher::Reflect(context);
+                    AZ::SceneAPI::Utilities::DebugSceneGraph::Reflect(context);
                 }
             }
 

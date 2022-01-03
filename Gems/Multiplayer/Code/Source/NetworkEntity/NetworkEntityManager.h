@@ -31,15 +31,15 @@ namespace Multiplayer
         NetworkEntityManager();
         ~NetworkEntityManager();
 
-        //! Only invoked for authoritative hosts
-        void Initialize(HostId hostId, AZStd::unique_ptr<IEntityDomain> entityDomain);
-
         //! INetworkEntityManager overrides.
         //! @{
+        void Initialize(const HostId& hostId, AZStd::unique_ptr<IEntityDomain> entityDomain) override;
+        bool IsInitialized() const override;
+        IEntityDomain* GetEntityDomain() const override;
         NetworkEntityTracker* GetNetworkEntityTracker() override;
         NetworkEntityAuthorityTracker* GetNetworkEntityAuthorityTracker() override;
         MultiplayerComponentRegistry* GetMultiplayerComponentRegistry() override;
-        HostId GetHostId() const override;
+        const HostId& GetHostId() const override;
         ConstNetworkEntityHandle GetEntity(NetEntityId netEntityId) const override;
         NetEntityId GetNetEntityIdById(const AZ::EntityId& entityId) const override;
 
@@ -60,8 +60,9 @@ namespace Multiplayer
             const AZ::Transform& transform
         ) override;
 
+        AZStd::unique_ptr<AzFramework::EntitySpawnTicket> RequestNetSpawnableInstantiation(
+            const AZ::Data::Asset<AzFramework::Spawnable>& netSpawnable, const AZ::Transform& transform) override;
         void SetupNetEntity(AZ::Entity* netEntity, PrefabEntityId prefabEntityId, NetEntityRole netEntityRole) override;
-
         uint32_t GetEntityCount() const override;
         NetworkEntityHandle AddEntityToEntityMap(NetEntityId netEntityId, AZ::Entity* entity) override;
         void MarkForRemoval(const ConstNetworkEntityHandle& entityHandle) override;
@@ -78,20 +79,27 @@ namespace Multiplayer
         void NotifyControllersActivated(const ConstNetworkEntityHandle& entityHandle, EntityIsMigrating entityIsMigrating) override;
         void NotifyControllersDeactivated(const ConstNetworkEntityHandle& entityHandle, EntityIsMigrating entityIsMigrating) override;
         void HandleLocalRpcMessage(NetworkEntityRpcMessage& message) override;
+        void HandleEntitiesExitDomain(const NetEntityIdSet& entitiesNotInDomain) override;
+        void ForceAssumeAuthority(const ConstNetworkEntityHandle& entityHandle) override;
+        void SetMigrateTimeoutTimeMs(AZ::TimeMs timeoutTimeMs) override;
+        void DebugDraw() const override;
         //! @}
 
         void DispatchLocalDeferredRpcMessages();
-        void UpdateEntityDomain();
-        void OnEntityExitDomain(NetEntityId entityId);
+
         //! RootSpawnableNotificationBus
         //! @{
         void OnRootSpawnableAssigned(AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, uint32_t generation) override;
         void OnRootSpawnableReleased(uint32_t generation) override;
         //! @}
 
+        //! Used to release all memory prior to shutdown.
+        void Reset();
+
     private:
         void RemoveEntities();
         NetEntityId NextId();
+        bool IsHierarchySafeToExit(NetworkEntityHandle& entityHandle, const NetEntityIdSet& entitiesNotInDomain);
 
         NetworkEntityTracker m_networkEntityTracker;
         NetworkEntityAuthorityTracker m_networkEntityAuthorityTracker;
@@ -100,10 +108,6 @@ namespace Multiplayer
         AZ::ScheduledEvent m_removeEntitiesEvent;
         AZStd::vector<NetEntityId> m_removeList;
         AZStd::unique_ptr<IEntityDomain> m_entityDomain;
-        AZ::ScheduledEvent m_updateEntityDomainEvent;
-
-        IEntityDomain::EntitiesNotInDomain m_entitiesNotInDomain;
-        OwnedEntitySet m_ownedEntities;
 
         EntityExitDomainEvent m_entityExitDomainEvent;
         AZ::Event<> m_onEntityMarkedDirty;

@@ -6,7 +6,9 @@
  *
  */
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/RTTI/AttributeReader.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Json/JsonSerializer.h>
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
@@ -148,7 +150,7 @@ namespace AZ
             {
                 // Not using InsertTypeId here to avoid needing to create the temporary value and swap it in that call.
                 node.AddMember(rapidjson::StringRef(JsonSerialization::TypeIdFieldIdentifier),
-                    StoreTypeName(classData, context), context.GetJsonAllocator());
+                    StoreTypeName(classData, classData.m_typeId, context), context.GetJsonAllocator());
                 result = ResultCode(Tasks::WriteValue, Outcomes::Success);
             }
             return result.Combine(StoreClass(node, object, defaultObject, classData, context));
@@ -529,7 +531,7 @@ namespace AZ
         return ResolvePointerResult::ContinueProcessing;
     }
 
-    rapidjson::Value JsonSerializer::StoreTypeName(const SerializeContext::ClassData& classData, JsonSerializerContext& context)
+    rapidjson::Value JsonSerializer::StoreTypeName(const SerializeContext::ClassData& classData, const Uuid& typeId, JsonSerializerContext& context)
     {
         rapidjson::Value result;
         AZStd::vector<Uuid> ids = context.GetSerializeContext()->FindClassId(Crc32(classData.m_name));
@@ -542,7 +544,7 @@ namespace AZ
             // Only write the Uuid for the class if there are multiple classes sharing the same name.
             // In this case it wouldn't be enough to determine which class needs to be used. The 
             // class name is still added as a comment for be friendlier for users to read.
-            AZStd::string fullName = classData.m_typeId.ToString<AZStd::string>();
+            AZStd::string fullName = typeId.ToString<AZStd::string>();
             fullName += ' ';
             fullName += classData.m_name;
             result.SetString(fullName.c_str(), aznumeric_caster(fullName.size()), context.GetJsonAllocator());
@@ -558,7 +560,7 @@ namespace AZ
         const SerializeContext::ClassData* data = context.GetSerializeContext()->FindClassData(typeId);
         if (data)
         {
-            output = JsonSerializer::StoreTypeName(*data, context);
+            output = JsonSerializer::StoreTypeName(*data, typeId, context);
             return context.Report(Tasks::WriteValue, Outcomes::Success, "Type id successfully stored to json value.");
         }
         else
@@ -578,7 +580,7 @@ namespace AZ
         {
             rapidjson::Value insertedObject(rapidjson::kObjectType);
             insertedObject.AddMember(
-                rapidjson::StringRef(JsonSerialization::TypeIdFieldIdentifier), StoreTypeName(classData, context),
+                rapidjson::StringRef(JsonSerialization::TypeIdFieldIdentifier), StoreTypeName(classData, classData.m_typeId, context),
                 context.GetJsonAllocator());
 
             for (auto& element : output.GetObject())

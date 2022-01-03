@@ -1438,15 +1438,12 @@ namespace ImageProcessingAtom
         int32 a_Channel2Src, int32 a_Channel3Src )
     {
         int32 iFace, iMipLevel, u, v, k;
-        int32 size;
         CP_ITYPE texelData[4];
         int32 channelSrcArray[4];
 
         //since output is being modified, terminate any active filtering threads
         TerminateActiveThreads();
 
-        size = m_OutputSize;
-    
         channelSrcArray[0] = a_Channel0Src;
         channelSrcArray[1] = a_Channel1Src;
         channelSrcArray[2] = a_Channel2Src;

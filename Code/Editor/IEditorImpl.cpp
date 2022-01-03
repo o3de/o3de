@@ -397,11 +397,6 @@ void CEditorImpl::Update()
     // Make sure this is not called recursively
     m_bUpdates = false;
 
-    //@FIXME: Restore this latter.
-    //if (GetGameEngine() && GetGameEngine()->IsLevelLoaded())
-    {
-        m_pObjectManager->Update();
-    }
     if (IsInPreviewMode())
     {
         SetModifiedFlag(false);
@@ -632,14 +627,7 @@ void CEditorImpl::SetReferenceCoordSys(RefCoordSys refCoords)
     CViewport* pViewport = GetActiveView();
     if (pViewport)
     {
-        //Pre and Post widget rendering calls are made here to make sure that the proper camera state is set.
-        //MakeConstructionPlane will make a call to ViewToWorldRay which needs the correct camera state
-        //in the CRenderViewport to be set.
-        pViewport->PreWidgetRendering();
-
         pViewport->MakeConstructionPlane(GetIEditor()->GetAxisConstrains());
-
-        pViewport->PostWidgetRendering();
     }
 
     Notify(eNotify_OnRefCoordSysChange);
@@ -680,8 +668,8 @@ const SGizmoParameters& CEditorImpl::GetGlobalGizmoParameters()
 
     m_pGizmoParameters->axisConstraint = m_selectedAxis;
     m_pGizmoParameters->referenceCoordSys = m_refCoordsSys;
-    m_pGizmoParameters->axisGizmoScale = gSettings.gizmo.axisGizmoSize;
-    m_pGizmoParameters->axisGizmoText = gSettings.gizmo.axisGizmoText;
+    m_pGizmoParameters->axisGizmoScale = 1.0f;
+    m_pGizmoParameters->axisGizmoText = false;
 
     return *m_pGizmoParameters;
 }
@@ -692,13 +680,6 @@ void CEditorImpl::DeleteObject(CBaseObject* obj)
     SetModifiedFlag();
     GetIEditor()->SetModifiedModule(eModifiedBrushes);
     GetObjectManager()->DeleteObject(obj);
-}
-
-CBaseObject* CEditorImpl::CloneObject(CBaseObject* obj)
-{
-    SetModifiedFlag();
-    GetIEditor()->SetModifiedModule(eModifiedBrushes);
-    return GetObjectManager()->CloneObject(obj);
 }
 
 CBaseObject* CEditorImpl::GetSelectedObject()
@@ -1464,7 +1445,7 @@ ISourceControl* CEditorImpl::GetSourceControl()
         {
             IClassDesc* pClass = classes[i];
             ISourceControl* pSCM = nullptr;
-            HRESULT hRes = pClass->QueryInterface(__uuidof(ISourceControl), (void**)&pSCM);
+            HRESULT hRes = pClass->QueryInterface(__az_uuidof(ISourceControl), (void**)&pSCM);
             if (!FAILED(hRes) && pSCM)
             {
                 m_pSourceControl = pSCM;
@@ -1504,18 +1485,6 @@ void CEditorImpl::SetMatEditMode(bool bIsMatEditMode)
 void CEditorImpl::ShowStatusText(bool bEnable)
 {
     m_bShowStatusText = bEnable;
-}
-
-void CEditorImpl::GetMemoryUsage(ICrySizer* pSizer)
-{
-    SIZER_COMPONENT_NAME(pSizer, "Editor");
-
-    if (GetDocument())
-    {
-        SIZER_COMPONENT_NAME(pSizer, "Document");
-
-        GetDocument()->GetMemoryUsage(pSizer);
-    }
 }
 
 void CEditorImpl::ReduceMemory()

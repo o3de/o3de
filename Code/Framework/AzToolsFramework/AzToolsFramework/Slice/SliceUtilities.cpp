@@ -2648,16 +2648,15 @@ namespace AzToolsFramework
                 }
                 else
                 {
-                    QString cleanSaveAs(QDir::cleanPath(slicePath));
+                    AZ::IO::FixedMaxPath lexicallyNormalPath = AZ::IO::PathView(slicePath.toUtf8().constData()).LexicallyNormal();
 
                     bool isPathSafeForAssets = false;
-                    for (AZStd::string assetSafeFolder : assetSafeFolders)
+                    for (const AZStd::string& assetSafeFolder : assetSafeFolders)
                     {
-                        QString cleanAssetSafeFolder(QDir::cleanPath(assetSafeFolder.c_str()));
-                        // Compare using clean paths so slash direction does not matter.
-                        // Note that this comparison is case sensitive because some file systems
-                        // Open 3D Engine supports are case sensitive.
-                        if (cleanSaveAs.startsWith(cleanAssetSafeFolder))
+                        AZ::IO::PathView assetSafeFolderView(assetSafeFolder);
+                        // Check if the slice path is relative to the safe asset directory.
+                        // The Path classes are being used to make this check case insensitive.
+                        if (lexicallyNormalPath.IsRelativeTo(assetSafeFolderView))
                         {
                             isPathSafeForAssets = true;
                             break;
@@ -2667,19 +2666,15 @@ namespace AzToolsFramework
                     if (!isPathSafeForAssets)
                     {
                         // Put an error in the console, so the log files have info about this error, or the user can look up the error after dismissing it.
-                        AZStd::string errorMessage = "You can save slices only to your game project folder or the Gems folder. Update the location and try again.\n\n"
-                            "You can also review and update your save locations in the AssetProcessorPlatformConfig.ini file.";
+                        AZStd::string errorMessage = "You can save slices only to your game project folder or the Gems folder. Update the location and try again.\n\n";
                         AZ_Error("Slice", false, errorMessage.c_str());
-
-                        QString learnMoreLink(QObject::tr(""));
-                        QString learnMoreDescription(QObject::tr(" <a href='%1'>Learn more</a>").arg(learnMoreLink));
 
                         // Display a pop-up, the logs are easy to miss. This will make sure a user who encounters this error immediately knows their slice save has failed.
                         QMessageBox msgBox(activeWindow);
                         msgBox.setIcon(QMessageBox::Icon::Warning);
                         msgBox.setTextFormat(Qt::RichText);
                         msgBox.setWindowTitle(QObject::tr("Invalid save location"));
-                        msgBox.setText(QString("%1 %2").arg(QObject::tr(errorMessage.c_str())).arg(learnMoreDescription));
+                        msgBox.setText(QString("%1").arg(QObject::tr(errorMessage.c_str())));
                         msgBox.setStandardButtons(QMessageBox::Cancel | QMessageBox::Retry);
                         msgBox.setDefaultButton(QMessageBox::Retry);
                         const int response = msgBox.exec();
@@ -2690,7 +2685,16 @@ namespace AzToolsFramework
                             // so set the suggested save path to a known valid location.
                             if (assetSafeFolders.size() > 0)
                             {
-                                retrySavePath = assetSafeFolders[0];
+                                QStringList strList = slicePath.split("/");
+                                if (strList.size() > 0)
+                                {
+                                    retrySavePath = assetSafeFolders[0] + ("/" + strList[strList.size() - 1]).toUtf8().data();
+                                }
+                                else
+                                {
+                                    retrySavePath = assetSafeFolders[0];
+                                }
+
                             }
                             return SliceSaveResult::Retry;
                         case QMessageBox::Cancel:

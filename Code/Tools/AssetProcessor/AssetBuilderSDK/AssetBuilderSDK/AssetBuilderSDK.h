@@ -10,12 +10,13 @@
 #pragma once
 
 #include <AzCore/Debug/TraceMessageBus.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/AZStdContainers.inl>
 #include <AzCore/std/string/regex.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/parallel/atomic.h>
 #include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/bitset.h>
 #include <AzFramework/Asset/AssetProcessorMessages.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
@@ -910,6 +911,19 @@ namespace AssetBuilderSDK
         //! There can be multiple builders running at once, so we need to filter out ones coming from other builders
         AZStd::thread_id m_jobThreadId;
     };
+
+    //! Get hash for a whole file
+    //! @filePath the path for the file
+    //! @bytesReadOut output the read file size in bytes
+    //! @hashMsDelay [Do not use except for unit test] add a delay in ms for between each block reading.
+    AZ::u64 GetFileHash(const char* filePath, AZ::IO::SizeType* bytesReadOut = nullptr, int hashMsDelay = 0);
+
+    //! Get hash for a generic IO stream
+    //! @readStream the input readable stream
+    //! @bytesReadOut output the read size in bytes
+    //! @hashMsDelay [Do not use except for unit test] add a delay in ms for between each block reading.
+    AZ::u64 GetHashFromIOStream(AZ::IO::GenericStream& readStream, AZ::IO::SizeType* bytesReadOut = nullptr, int hashMsDelay = 0);
+
 } // namespace AssetBuilderSDK
 
 namespace AZ

@@ -14,7 +14,6 @@
 #include <AzCore/EBus/EBus.h>
 
 struct IShader;
-struct ISurfaceType;
 struct SShaderItem;
 
 namespace AZ
@@ -38,12 +37,7 @@ namespace AZ
 struct IMaterial
 {
     // TODO: Remove it!
-
     virtual ~IMaterial() {}
-    virtual void AddRef() = 0;
-    virtual void Release() = 0;
-
     virtual SShaderItem& GetShaderItem() = 0;
     virtual const SShaderItem& GetShaderItem() const = 0;
-
 };

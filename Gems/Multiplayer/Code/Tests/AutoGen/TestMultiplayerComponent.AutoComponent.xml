@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+
+<Component
+    Name="TestMultiplayerComponent"
+    Namespace="MultiplayerTest"
+    OverrideComponent="true"
+    OverrideController="true"
+    OverrideInclude="Tests/TestMultiplayerComponent.h"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <NetworkInput Type="uint64_t"   Name="OwnerId"  Init="0" />
+
+</Component>

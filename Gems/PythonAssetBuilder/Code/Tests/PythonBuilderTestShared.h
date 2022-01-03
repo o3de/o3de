@@ -37,7 +37,7 @@ namespace UnitTest
             return response;
         }
 
-        AssetBuilderSDK::ProcessJobResponse OnProcessJobRequest(const AssetBuilderSDK::ProcessJobRequest& request)
+        AssetBuilderSDK::ProcessJobResponse OnProcessJobRequest(const AssetBuilderSDK::ProcessJobRequest& request) override
         {
             if (request.m_sourceFileUUID.IsNull())
             {
@@ -49,12 +49,12 @@ namespace UnitTest
             return response;
         }
 
-        void OnShutdown()
+        void OnShutdown() override
         {
             ++m_onShutdownCount;
         }
 
-        void OnCancel()
+        void OnCancel() override
         {
             ++m_onCancelCount;
         }

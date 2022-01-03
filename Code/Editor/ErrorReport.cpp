@@ -250,60 +250,6 @@ void CErrorReport::SetImmediateMode(bool bEnable)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CErrorReport::Report(SValidatorRecord& record)
-{
-    if ((record.flags & VALIDATOR_FLAG_IGNORE_IN_EDITOR))
-    {
-        return;
-    }
-
-    CErrorRecord err;
-    if (record.text)
-    {
-        err.error = record.text;
-    }
-    if (record.description)
-    {
-        err.description = record.description;
-    }
-    if (record.file)
-    {
-        err.file = record.file;
-    }
-    else
-    {
-        err.file = m_currentFilename;
-    }
-    err.severity = (CErrorRecord::ESeverity)record.severity;
-
-    err.assetScope = record.assetScope;
-
-    err.flags = 0;
-    if (record.flags & VALIDATOR_FLAG_FILE)
-    {
-        err.flags |= CErrorRecord::FLAG_NOFILE;
-    }
-    if (record.flags & VALIDATOR_FLAG_TEXTURE)
-    {
-        err.flags |= CErrorRecord::FLAG_TEXTURE;
-    }
-    if (record.flags & VALIDATOR_FLAG_SCRIPT)
-    {
-        err.flags |= CErrorRecord::FLAG_SCRIPT;
-    }
-    if (record.flags & VALIDATOR_FLAG_AI)
-    {
-        err.flags |= CErrorRecord::FLAG_AI;
-    }
-
-    err.module = record.module;
-    err.pObject = m_pObject;
-    err.pItem = m_pItem;
-
-    ReportError(err);
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CErrorReport::SetCurrentValidatorObject(CBaseObject* pObject)
 {
     m_pObject = pObject;

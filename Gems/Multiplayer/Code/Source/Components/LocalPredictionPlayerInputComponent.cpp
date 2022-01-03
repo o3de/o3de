@@ -14,6 +14,7 @@
 #include <AzNetworking/Serialization/NetworkOutputSerializer.h>
 #include <AzNetworking/Serialization/StringifySerializer.h>
 #include <AzNetworking/Serialization/TrackChangedSerializer.h>
+#include <Multiplayer/Components/NetworkHierarchyRootComponent.h>
 
 namespace Multiplayer
 {
@@ -63,11 +64,6 @@ namespace Multiplayer
 
             AZLOG_ERROR("    %s Server=%s Client=%s", iter->first.c_str(), serverValueIter->second.c_str(), clientValueIter->second.c_str());
         }
-    }
-
-    inline double ConvertTimeMsToSeconds(AZ::TimeMs value)
-    {
-        return static_cast<double>(static_cast<AZ::TimeMs>(value)) / 1000.0;
     }
 
     void LocalPredictionPlayerInputComponent::LocalPredictionPlayerInputComponent::Reflect(AZ::ReflectContext* context)
@@ -123,8 +119,8 @@ namespace Multiplayer
         if (IsAutonomous())
         {
             m_autonomousUpdateEvent.Enqueue(AZ::TimeMs{ 1 }, true);
-            GetParent().GetNetBindComponent()->AddEntityMigrationStartEventHandler(m_migrateStartHandler);
-            GetParent().GetNetBindComponent()->AddEntityMigrationEndEventHandler(m_migrateEndHandler);
+            GetMultiplayer()->AddClientMigrationStartEventHandler(m_migrateStartHandler);
+            GetMultiplayer()->AddClientMigrationEndEventHandler(m_migrateEndHandler);
         }
     }
 
@@ -161,7 +157,7 @@ namespace Multiplayer
         }
 
         const AZ::TimeMs currentTimeMs = AZ::GetElapsedTimeMs();
-        const double clientInputRateSec = ConvertTimeMsToSeconds(cl_InputRateMs);
+        const double clientInputRateSec = AZ::TimeMsToSecondsDouble(cl_InputRateMs);
         m_lastInputReceivedTimeMs = currentTimeMs;
 
         // Keep track of last inputs received, also allows us to update frame ids
@@ -185,12 +181,9 @@ namespace Multiplayer
             // Discard move input events, client may be speed hacking
             if (m_clientBankedTime < sv_MaxBankTimeWindowSec)
             {
-                // Client blends from previous frame to target so here we subtract blend factor to get to that state
-                const float blendFactor = AZStd::min(AZStd::max(0.f, input.GetHostBlendFactor()), 1.0f);
-                const AZ::TimeMs blendMs = AZ::TimeMs(static_cast<float>(static_cast<AZ::TimeMs>(cl_InputRateMs)) * (1.0f - blendFactor));
                 m_clientBankedTime = AZStd::min(m_clientBankedTime + clientInputRateSec, (double)sv_MaxBankTimeWindowSec); // clamp to boundary
                 {
-                    ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs() - blendMs, input.GetHostBlendFactor(), invokingConnection->GetConnectionId());
+                    ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs(), input.GetHostBlendFactor(), invokingConnection->GetConnectionId());
                     GetNetBindComponent()->ProcessInput(input, static_cast<float>(clientInputRateSec));
                 }
 
@@ -214,7 +207,7 @@ namespace Multiplayer
             m_lastCorrectionSentTimeMs = currentTimeMs;
 
             AzNetworking::HashSerializer hashSerializer;
-            GetNetBindComponent()->SerializeEntityCorrection(hashSerializer);
+            SerializeEntityCorrection(hashSerializer);
 
             const AZ::HashValue32 localAuthorityHash = hashSerializer.GetHash();
 
@@ -236,7 +229,7 @@ namespace Multiplayer
                 // only deserialize if we have data (for client/server profile/debug mismatches)
                 if (correction.GetSize() > 0)
                 {
-                    GetNetBindComponent()->SerializeEntityCorrection(serializer);
+                    SerializeEntityCorrection(serializer);
                 }
 
                 correction.Resize(serializer.GetSize());
@@ -269,7 +262,7 @@ namespace Multiplayer
             return;
         }
 
-        const double clientInputRateSec = ConvertTimeMsToSeconds(cl_InputRateMs);
+        const double clientInputRateSec = AZ::TimeMsToSecondsDouble(cl_InputRateMs);
 
         // Copy array so we can modify input ids
         NetworkInputMigrationVector inputArrayCopy = inputArray;
@@ -316,7 +309,7 @@ namespace Multiplayer
 
         // Apply the correction
         AzNetworking::TrackChangedSerializer<AzNetworking::NetworkOutputSerializer> serializer(correction.GetBuffer(), static_cast<uint32_t>(correction.GetSize()));
-        GetNetBindComponent()->SerializeEntityCorrection(serializer);
+        SerializeEntityCorrection(serializer);
         GetNetBindComponent()->NotifyCorrection();
 
 #ifndef AZ_RELEASE_BUILD
@@ -328,7 +321,7 @@ namespace Multiplayer
             {
                 // Read out state values
                 AzNetworking::StringifySerializer serverValues;
-                GetNetBindComponent()->SerializeEntityCorrection(serverValues);
+                SerializeEntityCorrection(serverValues);
                 PrintCorrectionDifferences(*iter->second, serverValues);
             }
             else
@@ -344,7 +337,7 @@ namespace Multiplayer
         // If this correction is for a move outside our input history window, just start replaying from the oldest move we have available
         const uint32_t startReplayIndex = (inputHistorySize > historicalDelta) ? (inputHistorySize - historicalDelta) : 0;
 
-        const double clientInputRateSec = ConvertTimeMsToSeconds(cl_InputRateMs);
+        const double clientInputRateSec = AZ::TimeMsToSecondsDouble(cl_InputRateMs);
         for (uint32_t replayIndex = startReplayIndex; replayIndex < inputHistorySize; ++replayIndex)
         {
             // Reprocess the input for this frame
@@ -354,6 +347,16 @@ namespace Multiplayer
 
             AZLOG(NET_Prediction, "Replayed InputId=%d", aznumeric_cast<int32_t>(input.GetClientInputId()));
         }
+    }
+
+    void LocalPredictionPlayerInputComponentController::ForceEnableAutonomousUpdate()
+    {
+        m_autonomousUpdateEvent.Enqueue(AZ::TimeMs{ 1 }, true);
+    }
+
+    void LocalPredictionPlayerInputComponentController::ForceDisableAutonomousUpdate()
+    {
+        m_autonomousUpdateEvent.RemoveFromQueue();
     }
 
     bool LocalPredictionPlayerInputComponentController::IsMigrating() const
@@ -415,9 +418,9 @@ namespace Multiplayer
 
     void LocalPredictionPlayerInputComponentController::UpdateAutonomous(AZ::TimeMs deltaTimeMs)
     {
-        const double deltaTime = ConvertTimeMsToSeconds(deltaTimeMs);
-        const double clientInputRateSec = ConvertTimeMsToSeconds(cl_InputRateMs);
-        const double maxRewindHistory = ConvertTimeMsToSeconds(cl_MaxRewindHistoryMs);
+        const double deltaTime = AZ::TimeMsToSecondsDouble(deltaTimeMs);
+        const double clientInputRateSec = AZ::TimeMsToSecondsDouble(cl_InputRateMs);
+        const double maxRewindHistory = AZ::TimeMsToSecondsDouble(cl_MaxRewindHistoryMs);
 
 #ifndef AZ_RELEASE_BUILD
         m_moveAccumulator += deltaTime * cl_DebugHackTimeMultiplier;
@@ -436,10 +439,13 @@ namespace Multiplayer
 
             NetworkInputArray inputArray(GetEntityHandle());
             NetworkInput& input = inputArray[0];
+            const float blendFactor = AZStd::min(AZStd::max(0.f, multiplayer->GetCurrentBlendFactor()), 1.0f);
+            const AZ::TimeMs blendMs = AZ::TimeMs(static_cast<float>(static_cast<AZ::TimeMs>(cl_InputRateMs)) * (1.0f - blendFactor));
 
             input.SetClientInputId(m_clientInputId);
             input.SetHostFrameId(networkTime->GetHostFrameId());
-            input.SetHostTimeMs(multiplayer->GetCurrentHostTimeMs());
+            // Account for the client blending from previous frame to current
+            input.SetHostTimeMs(multiplayer->GetCurrentHostTimeMs() - blendMs);
             input.SetHostBlendFactor(multiplayer->GetCurrentBlendFactor());
 
             // Allow components to form the input for this frame
@@ -452,7 +458,7 @@ namespace Multiplayer
 
             // Generate a hash based on the current client predicted states
             AzNetworking::HashSerializer hashSerializer;
-            GetNetBindComponent()->SerializeEntityCorrection(hashSerializer);
+            SerializeEntityCorrection(hashSerializer);
 
             // Save this input and discard move history outside our client rewind window
             m_inputHistory.PushBack(input);
@@ -480,7 +486,7 @@ namespace Multiplayer
                 {
                     m_predictiveStateHistory.erase(m_predictiveStateHistory.begin());
                 }
-                GetNetBindComponent()->SerializeEntityCorrection(*inputHistory);
+                SerializeEntityCorrection(*inputHistory);
                 m_predictiveStateHistory.emplace(m_clientInputId, AZStd::move(inputHistory));
             }
 #endif
@@ -491,6 +497,18 @@ namespace Multiplayer
                 SendClientInput(inputArray, hashSerializer.GetHash());
             }
         }
+    }
+
+    bool LocalPredictionPlayerInputComponentController::SerializeEntityCorrection(AzNetworking::ISerializer& serializer)
+    {
+        bool result = GetNetBindComponent()->SerializeEntityCorrection(serializer);
+
+        NetworkHierarchyRootComponent* hierarchyComponent = GetParent().GetNetworkHierarchyRootComponent();
+        if (result && hierarchyComponent)
+        {
+            result = hierarchyComponent->SerializeEntityCorrection(serializer);
+        }
+        return result;
     }
 
     void LocalPredictionPlayerInputComponentController::UpdateBankedTime(AZ::TimeMs deltaTimeMs)

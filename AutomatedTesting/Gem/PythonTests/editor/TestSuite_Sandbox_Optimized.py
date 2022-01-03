@@ -11,7 +11,6 @@ import pytest
 from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorSharedTest, EditorParallelTest, EditorTestSuite
 
 
-@pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_sandbox
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
@@ -19,6 +18,8 @@ class TestAutomationAutoTestMode(EditorTestSuite):
 
     # Enable only -autotest_mode for these tests. Tests cannot run in -BatchMode due to UI interactions
     global_extra_cmdline_args = ["-autotest_mode"]
+
+    enable_prefab_system = False
 
     class test_Docking_BasicDockedTools(EditorSharedTest):
         from .EditorScripts import Docking_BasicDockedTools as test_module

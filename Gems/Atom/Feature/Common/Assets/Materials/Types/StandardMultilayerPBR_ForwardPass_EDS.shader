@@ -49,5 +49,13 @@
       ]
     },
 
+    "Supervariants":
+    [
+        {
+            "Name": "",
+            "PlusArguments": "--no-alignment-validation"
+        }
+    ],
+
     "DrawList" : "forward"
 }

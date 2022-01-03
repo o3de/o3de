@@ -29,7 +29,6 @@ namespace MaterialEditor
         : public AtomToolsFramework::AtomToolsDocument
         , public MaterialDocumentRequestBus::Handler
         , private AZ::TickBus::Handler
-        , private AZ::Data::AssetBus::MultiHandler
         , private AzToolsFramework::AssetSystemBus::Handler
     {
     public:
@@ -43,10 +42,10 @@ namespace MaterialEditor
         ////////////////////////////////////////////////////////////////////////
         // AtomToolsFramework::AtomToolsDocument
         ////////////////////////////////////////////////////////////////////////
-        const AZStd::any& GetPropertyValue(const AZ::Name& propertyFullName) const override;
-        const AtomToolsFramework::DynamicProperty& GetProperty(const AZ::Name& propertyFullName) const override;
+        const AZStd::any& GetPropertyValue(const AZ::Name& propertyId) const override;
+        const AtomToolsFramework::DynamicProperty& GetProperty(const AZ::Name& propertyId) const override;
         bool IsPropertyGroupVisible(const AZ::Name& propertyGroupFullName) const override;
-        void SetPropertyValue(const AZ::Name& propertyFullName, const AZStd::any& value) override;
+        void SetPropertyValue(const AZ::Name& propertyId, const AZStd::any& value) override;
         bool Open(AZStd::string_view loadPath) override;
         bool Reopen() override;
         bool Save() override;
@@ -105,12 +104,8 @@ namespace MaterialEditor
         void SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid sourceUUID) override;
         //////////////////////////////////////////////////////////////////////////
 
-        //////////////////////////////////////////////////////////////////////////
-        // AZ::Data::AssetBus::Router overrides...
-        void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
-        //////////////////////////////////////////////////////////////////////////
-
-        bool SavePropertiesToSourceData(AZ::RPI::MaterialSourceData& sourceData, PropertyFilterFunction propertyFilter) const;
+        bool SavePropertiesToSourceData(
+            const AZStd::string& exportPath, AZ::RPI::MaterialSourceData& sourceData, PropertyFilterFunction propertyFilter) const;
 
         bool OpenInternal(AZStd::string_view loadPath);
 
@@ -137,11 +132,8 @@ namespace MaterialEditor
         // Material instance being edited
         AZ::Data::Instance<AZ::RPI::Material> m_materialInstance;
 
-        // Asset used to open document
-        AZ::Data::AssetId m_sourceAssetId;
-
         // Set of assets that can trigger a document reload
-        AZStd::unordered_set<AZ::Data::AssetId> m_dependentAssetIds;
+        AZStd::unordered_set<AZStd::string> m_sourceDependencies;
 
         // Track if document saved itself last to skip external modification notification
         bool m_saveTriggeredInternally = false;

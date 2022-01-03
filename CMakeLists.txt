@@ -14,6 +14,7 @@ include(cmake/Version.cmake)
 include(cmake/OutputDirectory.cmake)
 
 if(NOT PROJECT_NAME)
+    include(cmake/CompilerSettings.cmake)
     project(O3DE
         LANGUAGES C CXX
         VERSION ${LY_VERSION_STRING}
@@ -29,11 +30,11 @@ include(cmake/PAL.cmake)
 include(cmake/PALTools.cmake)
 include(cmake/RuntimeDependencies.cmake)
 include(cmake/Configurations.cmake) # Requires to be after PAL so we get platform variable definitions
-include(cmake/Install.cmake)
 include(cmake/Dependencies.cmake)
 include(cmake/Deployment.cmake)
 include(cmake/3rdParty.cmake)
 include(cmake/LYPython.cmake)
+include(cmake/Install.cmake)
 include(cmake/LYWrappers.cmake)
 include(cmake/Gems.cmake)
 include(cmake/UnitTest.cmake)
@@ -132,7 +133,7 @@ ly_delayed_generate_runtime_dependencies()
 ly_test_impact_post_step()
 
 # 7. Generate the O3DE find file and setup install locations for scripts, tools, assets etc., required by the engine
-if(NOT INSTALLED_ENGINE)
+if(LY_INSTALL_ENABLED)
     # 8. Generate the O3DE find file and setup install locations for scripts, tools, assets etc., required by the engine
     ly_setup_o3de_install()
     # 9. CPack information (to be included after install)

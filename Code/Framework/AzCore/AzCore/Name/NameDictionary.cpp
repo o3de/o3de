@@ -21,23 +21,23 @@ namespace AZ
 
     namespace NameDictionaryInternal
     {
-        static AZ::EnvironmentVariable<NameDictionary*> s_instance = nullptr;
+        static AZ::EnvironmentVariable<NameDictionary> s_instance = nullptr;
     }
 
     void NameDictionary::Create()
     {
         using namespace NameDictionaryInternal;
 
-        AZ_Assert(!s_instance || !s_instance.Get(), "NameDictionary already created!");
+        AZ_Assert(!s_instance, "NameDictionary already created!");
 
         if (!s_instance)
         {
-            s_instance = AZ::Environment::CreateVariable<NameDictionary*>(NameDictionaryInstanceName);
-        }
-
-        if (!s_instance.Get())
-        {
-            s_instance.Set(aznew NameDictionary());
+            // Because the NameDictionary allocates memory using the AZ::Allocator and it is created
+            // in the executable memory space, it's ownership cannot be transferred to other module memory spaces
+            // Otherwise this could cause the the NameDictionary to be destroyed in static de-init
+            // after the AZ::Allocators have been destroyed
+            // Therefore we supply the isTransferOwnership value of false using CreateVariableEx
+            s_instance = AZ::Environment::CreateVariableEx<NameDictionary>(NameDictionaryInstanceName, true, false);
         }
     }
 
@@ -46,8 +46,7 @@ namespace AZ
         using namespace NameDictionaryInternal;
 
         AZ_Assert(s_instance, "NameDictionary not created!");
-        delete (*s_instance);
-        *s_instance = nullptr;
+        s_instance.Reset();
     }
 
     bool NameDictionary::IsReady()
@@ -56,10 +55,15 @@ namespace AZ
 
         if (!s_instance)
         {
-            s_instance = Environment::FindVariable<NameDictionary*>(NameDictionaryInstanceName);
+            // Because the NameDictionary allocates memory using the AZ::Allocator and it is created
+            // in the executable memory space, it's ownership cannot be transferred to other module memory spaces
+            // Otherwise this could cause the the NameDictionary to be destroyed in static de-init
+            // after the AZ::Allocators have been destroyed
+            // Therefore we supply the isTransferOwnership value of false using CreateVariableEx
+            s_instance = AZ::Environment::CreateVariableEx<NameDictionary>(NameDictionaryInstanceName, true, false);
         }
 
-        return s_instance && *s_instance;
+        return s_instance.IsConstructed();
     }
 
     NameDictionary& NameDictionary::Instance()
@@ -68,12 +72,12 @@ namespace AZ
 
         if (!s_instance)
         {
-            s_instance = Environment::FindVariable<NameDictionary*>(NameDictionaryInstanceName);
+            s_instance = Environment::FindVariable<NameDictionary>(NameDictionaryInstanceName);
         }
 
-        AZ_Assert(s_instance && *s_instance, "NameDictionary has not been initialized yet.");
+        AZ_Assert(s_instance.IsConstructed(), "NameDictionary has not been initialized yet.");
 
-        return *(*s_instance);
+        return *s_instance;
     }
     
     NameDictionary::NameDictionary()

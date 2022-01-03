@@ -347,8 +347,6 @@ namespace spline
                 m_c[3] = T((2.0f * v0 - 2.0f * v1 + s0 + s1) * idt * idt * idt);
             }
         }
-
-        void GetMemoryUsage(ICrySizer* pSizer) const {}
     };
 
     inline float fast_fmod(float x, float y)
@@ -410,7 +408,7 @@ namespace spline
 
     //! TCB spline key used in quaternion spline with angle axis as input.
     struct TCBAngAxisKey
-        :  public TCBSplineKey<CryQuat>
+        :  public TCBSplineKey<Quat>
     {
         float angle;
         Vec3 axis;

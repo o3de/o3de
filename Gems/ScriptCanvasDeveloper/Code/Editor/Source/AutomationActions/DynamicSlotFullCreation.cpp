@@ -39,13 +39,14 @@ namespace ScriptCanvasDeveloperEditor
         {
         public:
 
-            DynamicSlotFullCreationInterface(DeveloperUtils::ConnectionStyle connectionStyle)                
+            DynamicSlotFullCreationInterface(DeveloperUtils::ConnectionStyle connectionStyle)
             {
                 m_chainConfig.m_connectionStyle = connectionStyle;
                 m_chainConfig.m_skipHandlers = true;
             }
+            virtual ~DynamicSlotFullCreationInterface() = default;
 
-            void SetupInterface(const AZ::EntityId& activeGraphCanvasGraphId, const ScriptCanvas::ScriptCanvasId& scriptCanvasId)
+            void SetupInterface(const AZ::EntityId& activeGraphCanvasGraphId, const ScriptCanvas::ScriptCanvasId& scriptCanvasId) override
             {
                 m_graphCanvasGraphId = activeGraphCanvasGraphId;
                 m_scriptCanvasId = scriptCanvasId;
@@ -142,12 +143,12 @@ namespace ScriptCanvasDeveloperEditor
                 }
             }
 
-            bool ShouldProcessItem([[maybe_unused]] const GraphCanvas::NodePaletteTreeItem* nodePaletteTreeItem) const
+            bool ShouldProcessItem([[maybe_unused]] const GraphCanvas::NodePaletteTreeItem* nodePaletteTreeItem) const override
             {
                 return !m_availableVariableIds.empty();
             }
 
-            void ProcessItem(const GraphCanvas::NodePaletteTreeItem* nodePaletteTreeItem)
+            void ProcessItem(const GraphCanvas::NodePaletteTreeItem* nodePaletteTreeItem) override
             {
                 AZStd::unordered_set<ScriptCanvasEditor::NodeIdPair> createdPairs;
                 GraphCanvas::GraphCanvasMimeEvent* mimeEvent = nodePaletteTreeItem->CreateMimeEvent();

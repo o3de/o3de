@@ -12,6 +12,7 @@
 #include <AzCore/std/string/string.h>
 #include <aws/core/utils/memory/stl/AWSVector.h>
 #include <aws/gamelift/model/GameProperty.h>
+#include <aws/gamelift/model/AttributeValue.h>
 
 namespace AWSGameLift
 {
@@ -21,5 +22,17 @@ namespace AWSGameLift
             const AZStd::unordered_map<AZStd::string, AZStd::string>& sessionProperties,
             Aws::Vector<Aws::GameLift::Model::GameProperty>& outGameProperties,
             AZStd::string& outGamePropertiesOutput);
+
+        void ConvertPlayerAttributes(
+            const AZStd::unordered_map<AZStd::string, AZStd::string>& playerAttributes,
+            Aws::Map<Aws::String, Aws::GameLift::Model::AttributeValue>& outPlayerAttributes);
+
+        void ConvertRegionToLatencyMap(
+            const AZStd::unordered_map<AZStd::string, int>& regionToLatencyMap,
+            Aws::Map<Aws::String, int>& outRegionToLatencyMap);
+
+        bool ValidatePlayerAttributes(
+            const AZStd::unordered_map<AZStd::string, AZStd::string>& playerAttributes);
+
     } // namespace AWSGameLiftActivityUtils
 } // namespace AWSGameLift

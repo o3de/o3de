@@ -15,6 +15,7 @@
 #include <QBasicTimer>
 #include <QEvent>
 
+#include <AzToolsFramework/FocusMode/FocusModeNotificationBus.h>
 #include <AzQtComponents/Components/Widgets/TreeView.h>
 #endif
 
@@ -25,6 +26,7 @@ class QMouseEvent;
 namespace AzToolsFramework
 {
     class EditorEntityUiInterface;
+    class ReadOnlyEntityPublicInterface;
 
     //! This class largely exists to emit events for the OutlinerWidget to listen in on.
     //! The logic for these events is best off not happening within the tree itself,
@@ -35,6 +37,7 @@ namespace AzToolsFramework
     //! of other entities. If the selection updates instantly, this would never be possible.
     class EntityOutlinerTreeView
         : public AzQtComponents::StyledTreeView
+        , private FocusModeNotificationBus::Handler
     {
         Q_OBJECT;
     public:
@@ -59,6 +62,10 @@ namespace AzToolsFramework
         void startDrag(Qt::DropActions supportedActions) override;
         void dragMoveEvent(QDragMoveEvent* event) override;
         void dropEvent(QDropEvent* event) override;
+        void leaveEvent(QEvent* event) override;
+
+        // FocusModeNotificationBus overrides ...
+        void OnEditorFocusChanged(AZ::EntityId previousFocusEntityId, AZ::EntityId newFocusEntityId) override;
 
         //! Renders the left side of the item: appropriate background, branch lines, icons.
         void drawBranches(QPainter* painter, const QRect& rect, const QModelIndex& index) const override;
@@ -72,8 +79,10 @@ namespace AzToolsFramework
         void StartCustomDrag(const QModelIndexList& indexList, Qt::DropActions supportedActions) override;
 
         void PaintBranchBackground(QPainter* painter, const QRect& rect, const QModelIndex& index) const;
+        void PaintBranchSelectionHoverRect(QPainter* painter, const QRect& rect, bool isSelected, bool isHovered) const;
         
         QMouseEvent* m_queuedMouseEvent;
+        QPoint m_mousePosition;
         bool m_draggingUnselectedItem; // This is set when an item is dragged outside its bounding box.
 
         int m_expandOnlyDelay = -1;
@@ -82,7 +91,10 @@ namespace AzToolsFramework
         const QColor m_selectedColor = QColor(255, 255, 255, 45);
         const QColor m_hoverColor = QColor(255, 255, 255, 30);
 
-        EditorEntityUiInterface* m_editorEntityFrameworkInterface;
+        QModelIndex m_currentHoveredIndex;
+
+        EditorEntityUiInterface* m_editorEntityFrameworkInterface = nullptr;
+        ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
     };
 
 }

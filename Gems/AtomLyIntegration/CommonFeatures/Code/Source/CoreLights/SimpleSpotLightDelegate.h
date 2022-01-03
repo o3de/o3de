@@ -34,7 +34,7 @@ namespace AZ
             void SetShutterAngles(float innerAngleDegrees, float outerAngleDegrees) override;
 
         private:
-            virtual void HandleShapeChanged();
+            void HandleShapeChanged() override;
         };
 
     } // namespace Render

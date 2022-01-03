@@ -22,6 +22,7 @@ namespace GraphCanvas
         CutGraphSelectionMenuAction(QObject* parent);
         virtual ~CutGraphSelectionMenuAction() = default;
 
+        using EditContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
     };
 
@@ -34,6 +35,7 @@ namespace GraphCanvas
         CopyGraphSelectionMenuAction(QObject* parent);
         virtual ~CopyGraphSelectionMenuAction() = default;
 
+        using EditContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
     };
 
@@ -49,6 +51,8 @@ namespace GraphCanvas
         virtual ~PasteGraphSelectionMenuAction() = default;
 
         void RefreshAction() override;
+
+        using EditContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
     };
     
@@ -61,6 +65,7 @@ namespace GraphCanvas
         DeleteGraphSelectionMenuAction(QObject* parent);
         virtual ~DeleteGraphSelectionMenuAction() = default;
 
+        using EditContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
     };
 
@@ -73,6 +78,7 @@ namespace GraphCanvas
         DuplicateGraphSelectionMenuAction(QObject* parent);
         virtual ~DuplicateGraphSelectionMenuAction() = default;
 
+        using EditContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
     };
 }

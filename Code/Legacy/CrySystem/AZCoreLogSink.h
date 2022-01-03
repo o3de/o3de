@@ -16,7 +16,7 @@
 
 #include <CryAssert.h>
 
-namespace AZ
+namespace AZ::Debug
 {
     AZ_CVAR_EXTERNED(int, bg_traceLogLevel);
 }
@@ -31,9 +31,15 @@ class AZCoreLogSink
     : public AZ::Debug::TraceMessageBus::Handler
 {
 public:
-    inline static void Connect()
+    ~AZCoreLogSink()
+    {
+        Disconnect();
+    }
+
+    inline static void Connect(bool suppressSystemOutput)
     {
         GetInstance().m_ignoredAsserts = new IgnoredAssertMap();
+        GetInstance().m_suppressSystemOutput = suppressSystemOutput;
         GetInstance().BusConnect();
     }
 
@@ -41,6 +47,7 @@ public:
     {
         GetInstance().BusDisconnect();
         delete GetInstance().m_ignoredAsserts;
+        GetInstance().m_ignoredAsserts = nullptr;
     }
 
     static AZCoreLogSink& GetInstance()
@@ -58,7 +65,7 @@ public:
         if(!hasSetCVar && ready)
         {
             // AZ logging only has a concept of 3 levels (error, warning, info) but cry logging has 4 levels (..., messaging).  If info level is set, we'll turn on messaging as well
-            int logLevel = AZ::bg_traceLogLevel == AZ::Debug::LogLevel::Info ? 4 : AZ::bg_traceLogLevel;
+            int logLevel = AZ::Debug::bg_traceLogLevel == AZ::Debug::LogLevel::Info ? 4 : AZ::Debug::bg_traceLogLevel;
 
             gEnv->pConsole->GetCVar("log_WriteToFileVerbosity")->Set(logLevel);
             hasSetCVar = true;
@@ -120,7 +127,7 @@ public:
             CryLogAlways("%s", message);
         }
 
-        return true; // suppress default AzCore behavior.
+        return m_suppressSystemOutput;
 #else
         AZ_UNUSED(fileName);
         AZ_UNUSED(line);
@@ -140,7 +147,7 @@ public:
             return false; // allow AZCore to do its default behavior.
         }
         gEnv->pLog->LogError("(%s) - %s", window, message);
-        return true; // suppress default AzCore behavior.
+        return m_suppressSystemOutput;
     }
 
     bool OnPreWarning(const char* window, const char* fileName, int line, const char* func, const char* message) override
@@ -155,7 +162,7 @@ public:
         }
 
         CryWarning(VALIDATOR_MODULE_UNKNOWN, VALIDATOR_WARNING, "(%s) - %s", window, message);
-        return true; // suppress default AzCore behavior.
+        return m_suppressSystemOutput;
     }
 
     bool OnOutput(const char* window, const char* message)  override
@@ -173,12 +180,13 @@ public:
         {
             CryLog("(%s) - %s", window, message);
         }
-
-        return true; // suppress default AzCore behavior.
+        
+        return m_suppressSystemOutput;
     }
 
 private:
 
     using IgnoredAssertMap = AZStd::unordered_map<AZ::Crc32, bool, AZStd::hash<AZ::Crc32>, AZStd::equal_to<AZ::Crc32>, AZ::OSStdAllocator>;
     IgnoredAssertMap* m_ignoredAsserts;
+    bool m_suppressSystemOutput = true;
 };

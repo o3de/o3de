@@ -37,14 +37,14 @@ namespace MaterialEditor
         void Reset() override;
 
     protected:
-        bool ShouldGroupAutoExpanded(const AZStd::string& groupNameId) const override;
-        void OnGroupExpanded(const AZStd::string& groupNameId) override;
-        void OnGroupCollapsed(const AZStd::string& groupNameId) override;
+        bool ShouldGroupAutoExpanded(const AZStd::string& groupName) const override;
+        void OnGroupExpanded(const AZStd::string& groupName) override;
+        void OnGroupCollapsed(const AZStd::string& groupName) override;
 
     private:
-        AZ::Crc32 GetGroupSaveStateKey(const AZStd::string& groupNameId) const;
-        bool CompareInstanceNodeProperties(
-            const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target) const;
+        AZ::Crc32 GetGroupSaveStateKey(const AZStd::string& groupName) const;
+        bool IsInstanceNodePropertyModifed(const AzToolsFramework::InstanceDataNode* node) const;
+        const char* GetInstanceNodePropertyIndicator(const AzToolsFramework::InstanceDataNode* node) const;
 
         void AddOverviewGroup();
         void AddUvNamesGroup();

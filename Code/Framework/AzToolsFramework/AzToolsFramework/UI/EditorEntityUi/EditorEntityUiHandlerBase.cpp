@@ -37,52 +37,89 @@ namespace AzToolsFramework
         return m_handlerId;
     }
     
-    QString EditorEntityUiHandlerBase::GenerateItemInfoString(AZ::EntityId /*entityId*/) const
+    QString EditorEntityUiHandlerBase::GenerateItemInfoString([[maybe_unused]] AZ::EntityId entityId) const
     {
         return QString();
     }
 
-    QString EditorEntityUiHandlerBase::GenerateItemTooltip(AZ::EntityId /*entityId*/) const
+    QString EditorEntityUiHandlerBase::GenerateItemTooltip([[maybe_unused]] AZ::EntityId entityId) const
     {
         return QString();
     }
 
-    QPixmap EditorEntityUiHandlerBase::GenerateItemIcon(AZ::EntityId /*entityId*/) const
+    QIcon EditorEntityUiHandlerBase::GenerateItemIcon([[maybe_unused]] AZ::EntityId entityId) const
     {
-        return QPixmap();
+        return QIcon();
     }
 
-    bool EditorEntityUiHandlerBase::CanToggleLockVisibility(AZ::EntityId /*entityId*/) const
+    bool EditorEntityUiHandlerBase::CanToggleLockVisibility([[maybe_unused]] AZ::EntityId entityId) const
     {
         return true;
     }
 
-    bool EditorEntityUiHandlerBase::CanRename(AZ::EntityId /*entityId*/) const
+    bool EditorEntityUiHandlerBase::CanRename([[maybe_unused]] AZ::EntityId entityId) const
     {
         return true;
     }
 
-    void EditorEntityUiHandlerBase::PaintItemBackground(QPainter* /*painter*/, const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const
+    void EditorEntityUiHandlerBase::PaintItemBackground(
+        [[maybe_unused]] QPainter* painter,
+        [[maybe_unused]] const QStyleOptionViewItem& option,
+        [[maybe_unused]] const QModelIndex& index) const
     {
     }
 
-    void EditorEntityUiHandlerBase::PaintDescendantBackground(QPainter* /*painter*/, const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/,
-        const QModelIndex& /*descendantIndex*/) const
+    void EditorEntityUiHandlerBase::PaintDescendantBackground(
+        [[maybe_unused]] QPainter* painter,
+        [[maybe_unused]] const QStyleOptionViewItem& option,
+        [[maybe_unused]] const QModelIndex& index,
+        [[maybe_unused]] const QModelIndex& descendantIndex) const
     {
     }
 
-    void EditorEntityUiHandlerBase::PaintDescendantBranchBackground(QPainter* /*painter*/, const QTreeView* /*view*/, const QRect& /*rect*/,
-        const QModelIndex& /*index*/, const QModelIndex& /*descendantIndex*/) const
+    void EditorEntityUiHandlerBase::PaintDescendantBranchBackground(
+        [[maybe_unused]] QPainter* painter,
+        [[maybe_unused]] const QTreeView* view,
+        [[maybe_unused]] const QRect& rect,
+        [[maybe_unused]] const QModelIndex& index,
+        [[maybe_unused]] const QModelIndex& descendantIndex) const
     {
     }
 
-    void EditorEntityUiHandlerBase::PaintItemForeground(QPainter* /*painter*/, const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const
+    void EditorEntityUiHandlerBase::PaintItemForeground(
+        [[maybe_unused]] QPainter* painter,
+        [[maybe_unused]] const QStyleOptionViewItem& option,
+        [[maybe_unused]] const QModelIndex& index) const
     {
     }
 
-    void EditorEntityUiHandlerBase::PaintDescendantForeground(QPainter* /*painter*/, const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/,
-        const QModelIndex& /*descendantIndex*/) const
+    void EditorEntityUiHandlerBase::PaintDescendantForeground(
+        [[maybe_unused]] QPainter* painter,
+        [[maybe_unused]] const QStyleOptionViewItem& option,
+        [[maybe_unused]] const QModelIndex& index,
+        [[maybe_unused]] const QModelIndex& descendantIndex) const
     {
+    }
+
+    bool EditorEntityUiHandlerBase::OnOutlinerItemClick(
+        [[maybe_unused]] const QPoint& position,
+        [[maybe_unused]] const QStyleOptionViewItem& option,
+        [[maybe_unused]] const QModelIndex& index) const
+    {
+        return false;
+    }
+
+    void EditorEntityUiHandlerBase::OnOutlinerItemExpand([[maybe_unused]] const QModelIndex& index) const
+    {
+    }
+    
+    void EditorEntityUiHandlerBase::OnOutlinerItemCollapse([[maybe_unused]] const QModelIndex& index) const
+    {
+    }
+
+    bool EditorEntityUiHandlerBase::OnEntityDoubleClick([[maybe_unused]] AZ::EntityId entityId) const
+    {
+        return false;
     }
 
 } // namespace AzToolsFramework

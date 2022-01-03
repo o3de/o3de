@@ -34,7 +34,7 @@ print(_config)
 # this is an alternative to "from dynaconf import settings" with Qt
 settings = _config.get_config_settings(setup_ly_pyside=True)
 
-# app_path = Path.joinpath(settings.DCCSIG_PATH, < relative path to current script dir >).resolve()
+# app_path = Path.joinpath(settings.PATH_DCCSIG, < relative path to current script dir >).resolve()
 
 # 3rd Party (we may or do provide)
 from box import Box
@@ -51,8 +51,8 @@ module_name = 'kitbash_converter.main'
 log_file_path = os.path.join(settings.DCCSI_LOG_PATH, f'{module_name}.log')
 
 _log_level = int(20)
-_G_DEBUG = True
-if _G_DEBUG:
+_DCCSI_GDEBUG = True
+if _DCCSI_GDEBUG:
     _log_level = int(10)
 
 from azpy.constants import FRMT_LOG_LONG
@@ -507,7 +507,7 @@ class FBXConverter(QtWidgets.QDialog):
         _LOGGER.debug('get_material_definition, os.getcwd() is: {}'.format(os.getcwd()))
         
         # build a resolved absolute path because cwd may be unknown and change running externally
-        material_file = Path(settings.DCCSIG_PATH,
+        material_file = Path(settings.PATH_DCCSIG,
                              'SDK', 'Maya', 'Scripts', 'Python', 'kitbash_converter',
                              material_file).resolve()
         

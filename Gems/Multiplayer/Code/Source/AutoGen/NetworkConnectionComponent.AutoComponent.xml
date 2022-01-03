@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+
+<Component
+    Name="NetworkConnectionComponent"
+    Namespace="Multiplayer"
+    OverrideComponent="false"
+    OverrideController="false"
+    OverrideInclude=""
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+	<NetworkProperty Type="uint64_t"    Name="UserIdentifier"   Init="0"                  ReplicateFrom="Authority" ReplicateTo="Client" IsRewindable="false" IsPredictable="false" IsPublic="true" Container="Object" ExposeToEditor="false" ExposeToScript="false" GenerateEventBindings="false" />
+	<NetworkProperty Type="HostId"      Name="MigrationHostId"  Init="InvalidHostId"      ReplicateFrom="Authority" ReplicateTo="Client" IsRewindable="false" IsPredictable="false" IsPublic="true" Container="Object" ExposeToEditor="false" ExposeToScript="false" GenerateEventBindings="false" />
+	<NetworkProperty Type="NetEntityId" Name="ControlledEntity" Init="InvalidNetEntityId" ReplicateFrom="Authority" ReplicateTo="Server" IsRewindable="false" IsPredictable="false" IsPublic="true" Container="Object" ExposeToEditor="false" ExposeToScript="false" GenerateEventBindings="false" />
+</Component>

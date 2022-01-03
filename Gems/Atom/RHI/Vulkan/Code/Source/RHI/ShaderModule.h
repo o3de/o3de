@@ -9,8 +9,6 @@
 
 #include <Atom/RHI/DeviceObject.h>
 #include <AzCore/Memory/PoolAllocator.h>
-#include <Atom/RHI.Reflect/Vulkan/ShaderDescriptor.h>
-#include <Atom/RHI.Reflect/Vulkan/ShaderDescriptor.h>
 #include <Atom/RHI.Reflect/Vulkan/ShaderStageFunction.h>
 
 namespace AZ

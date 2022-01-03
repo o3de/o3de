@@ -120,10 +120,9 @@ namespace AZ
         */
         class AllocationRecords
         {
-            friend class MemoryDriller;
+         public:
             AZ_CLASS_ALLOCATOR(AllocationRecords, OSAllocator, 0);
 
-        public:
             enum Mode : int
             {
                 RECORD_NO_RECORDS,              ///< Never record any information.
@@ -178,15 +177,13 @@ namespace AZ
             /// Returns peak of requested memory. IMPORTANT: This is user requested memory! Any allocator overhead is NOT included.
             size_t  RequestedBytesPeak() const                  { return m_requestedBytesPeak; }
             /// Reset the peak allocation to the current requested memory.
-            void    ResetPeakBytes()                            { m_requestedBytesPeak = m_requestedBytes; }
+            void    ResetPeakBytes()                            { m_requestedBytesPeak.store(m_requestedBytes); }
             /// Return requested user bytes. IMPORTANT: This is user requested memory! Any allocator overhead is NOT included.
             size_t  RequestedBytes() const                      { return m_requestedBytes; }
             /// Returns total number of requested allocations.
             size_t  RequestedAllocs() const                     { return m_requestedAllocs; }
 
             const char* GetAllocatorName() const                { return m_allocatorName; }
-
-        protected:
 
             // @{ Allocation tracking management - we assume this functions are called with the lock locked.
             const AllocationInfo*   RegisterAllocation(void* address, size_t byteSize, size_t alignment, const char* name, const char* fileName, int lineNum, unsigned int stackSuppressCount);
@@ -195,9 +192,9 @@ namespace AZ
             void    ResizeAllocation(void* address, size_t newSize);
             // @}
 
-            void    IntegrityCheckNoLock() const;
-
+        protected:
             Debug::AllocationRecordsType    m_records;
+            AZStd::spin_mutex               m_recordsMutex;
             Mode                            m_mode;
             bool                            m_isAutoIntegrityCheck;
             bool                            m_isMarkUnallocatedMemory;      ///< True if we want to set value 0xcd in unallocated memory.
@@ -205,9 +202,9 @@ namespace AZ
             bool                            m_decodeImmediately;
             unsigned char                   m_numStackLevels;
             unsigned int                    m_memoryGuardSize;
-            size_t                          m_requestedAllocs;
-            size_t                          m_requestedBytes;
-            size_t                          m_requestedBytesPeak;
+            AZStd::atomic<size_t>           m_requestedAllocs;
+            AZStd::atomic<size_t>           m_requestedBytes;
+            AZStd::atomic<size_t>           m_requestedBytesPeak;
 
             const char*                     m_allocatorName;
         };

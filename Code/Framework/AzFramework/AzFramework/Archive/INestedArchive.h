@@ -9,9 +9,11 @@
 
 #pragma once
 
+#include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/Math/Crc.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
-#include <AzCore/std/string/string_view.h>
+#include <AzCore/std/string/string.h>
 #include <AzFramework/Archive/Codec.h>
 
 namespace AZ::IO
@@ -71,28 +73,17 @@ namespace AZ::IO
             // multiple times
             FLAGS_DONT_COMPACT = 1 << 5,
 
-            // flag is set when complete pak has been loaded into memory
-            FLAGS_IN_MEMORY = 1 << 6,
-            FLAGS_IN_MEMORY_CPU = 1 << 7,
-            FLAGS_IN_MEMORY_MASK = FLAGS_IN_MEMORY | FLAGS_IN_MEMORY_CPU,
+            // if this is set, validate header data when opening the archive
+            FLAGS_VALIDATE_HEADERS = 1 << 9,
 
-            // Store all file names as crc32 in a flat directory structure.
-            FLAGS_FILENAMES_AS_CRC32 = 1 << 8,
-
-            // flag is set when pak is stored on HDD
-            FLAGS_ON_HDD = 1 << 9,
-
-            //Override pak - paks opened with this flag go at the end of the list and contents will be found before other paks
-            //Used for patching
-            FLAGS_OVERRIDE_PAK = 1 << 10,
+            // if this is set, validate header data when opening the archive and validate CRCs when decompressing
+            // & reading files.
+            FLAGS_FULL_VALIDATE = 1 << 10,
 
             // Disable a pak file without unloading it, this flag is used in combination with patches and multiplayer
-            // to ensure that specific paks stay in the position(to keep the same priority) but beeing disabled
+            // to ensure that specific paks stay in the position(to keep the same priority) but being disabled
             // when running multiplayer
             FLAGS_DISABLE_PAK = 1 << 11,
-
-            // flag is set when pak is inside another pak
-            FLAGS_INSIDE_PAK = 1 << 12,
         };
 
         using Handle = void*;
@@ -122,7 +113,7 @@ namespace AZ::IO
         virtual int StartContinuousFileUpdate(AZStd::string_view szRelativePath, uint64_t nSize) = 0;
 
         // Summary:
-        //   Adds a new file to the zip or update an existing's segment if it is not compressed - just stored
+        //   Adds a new file to the zip or update an existing segment if it is not compressed - just stored
         //   adds a directory (creates several nested directories if needed)
         //   ( name might be misleading as if nOverwriteSeekPos is used the update is not continuous )
         // Arguments:
@@ -147,6 +138,10 @@ namespace AZ::IO
         virtual int RemoveAll() = 0;
 
         // Summary:
+        //   Lists all the files in the archive.
+        virtual int ListAllFiles(AZStd::vector<AZ::IO::Path>& outFileEntries) = 0;
+
+        // Summary:
         //   Finds the file; you don't have to close the returned handle.
         // Returns:
         //   NULL if the file doesn't exist
@@ -164,7 +159,7 @@ namespace AZ::IO
 
         // Summary:
         //   Get the full path to the archive file.
-        virtual const char* GetFullPath() const = 0;
+        virtual AZ::IO::PathView GetFullPath() const = 0;
 
         // Summary:
         //   Get the flags of this object.

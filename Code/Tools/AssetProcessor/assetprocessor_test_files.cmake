@@ -36,6 +36,7 @@ set(FILES
     native/tests/platformconfiguration/platformconfigurationtests.h
     native/tests/utilities/JobModelTest.cpp
     native/tests/utilities/JobModelTest.h
+    native/tests/utilities/StatsCaptureTest.cpp
     native/tests/AssetCatalog/AssetCatalogUnitTests.cpp
     native/tests/assetscanner/AssetScannerTests.h
     native/tests/assetscanner/AssetScannerTests.cpp
@@ -66,8 +67,6 @@ set(FILES
     native/unittests/PlatformConfigurationUnitTests.h
     native/unittests/RCcontrollerUnitTests.cpp
     native/unittests/RCcontrollerUnitTests.h
-    native/unittests/ShaderCompilerUnitTests.cpp
-    native/unittests/ShaderCompilerUnitTests.h
     native/unittests/UnitTestRunner.cpp
     native/unittests/UnitTestRunner.h
     native/unittests/UtilitiesUnitTests.cpp

@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Serialization/SerializeContext.h>

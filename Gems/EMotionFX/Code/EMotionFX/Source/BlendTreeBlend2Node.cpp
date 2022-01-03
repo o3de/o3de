@@ -45,6 +45,8 @@ namespace EMotionFX
 
     void BlendTreeBlend2Node::Update(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
+        AZ_PROFILE_SCOPE(Animation, "BlendTreeBlend2Node::Update");
+
         if (m_disabled)
         {
             AnimGraphNodeData* uniqueData = FindOrCreateUniqueNodeData(animGraphInstance);
@@ -88,9 +90,10 @@ namespace EMotionFX
         }
     }
 
-
     void BlendTreeBlend2Node::Output(AnimGraphInstance* animGraphInstance)
     {
+        AZ_PROFILE_SCOPE(Animation, "BlendTreeBlend2Node::Output");
+
         if (m_disabled)
         {
             RequestPoses(animGraphInstance);

@@ -34,12 +34,10 @@ namespace AZ
                     // Shadows
                     ->Field("Enable Shadow", &AreaLightComponentConfig::m_enableShadow)
                     ->Field("Shadow Bias", &AreaLightComponentConfig::m_bias)
+                    ->Field("Normal Shadow Bias", &AreaLightComponentConfig::m_normalShadowBias)
                     ->Field("Shadowmap Max Size", &AreaLightComponentConfig::m_shadowmapMaxSize)
                     ->Field("Shadow Filter Method", &AreaLightComponentConfig::m_shadowFilterMethod)
-                    ->Field("Softening Boundary Width", &AreaLightComponentConfig::m_boundaryWidthInDegrees)
-                    ->Field("Prediction Sample Count", &AreaLightComponentConfig::m_predictionSampleCount)
                     ->Field("Filtering Sample Count", &AreaLightComponentConfig::m_filteringSampleCount)
-                    ->Field("Pcf Method", &AreaLightComponentConfig::m_pcfMethod)
                     ->Field("Esm Exponent", &AreaLightComponentConfig::m_esmExponent)
                     ;
             }
@@ -182,31 +180,9 @@ namespace AZ
                 m_shadowFilterMethod == ShadowFilterMethod::EsmPcf);
         }
 
-        bool AreaLightComponentConfig::IsPcfBoundarySearchDisabled() const
-        {
-            if (IsShadowPcfDisabled())
-            {
-                return true;
-            }
-
-            return m_pcfMethod != PcfMethod::BoundarySearch;
-        }
-
         bool AreaLightComponentConfig::IsEsmDisabled() const
         {
             return !(m_shadowFilterMethod == ShadowFilterMethod::Esm || m_shadowFilterMethod == ShadowFilterMethod::EsmPcf);
         }
-
-        bool AreaLightComponentConfig::IsSofteningBoundaryWidthDisabled() const
-        {
-            // softening boundary width is always available with ESM. It controls the width of the blur kernel during the ESM gaussian
-            // blur passes
-            if (!IsEsmDisabled())
-                return false;
-
-            // with PCF, softening boundary width is used with the boundary search method and NOT the bicubic pcf methods
-            return IsPcfBoundarySearchDisabled();
-        }
-
     }
 }

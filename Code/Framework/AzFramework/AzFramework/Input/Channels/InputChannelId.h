@@ -11,6 +11,7 @@
 #include <AzCore/Math/Crc.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/std/hash.h>
+#include <AzCore/std/string/fixed_string.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -22,8 +23,7 @@ namespace AzFramework
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Constants
-        static const int NAME_BUFFER_SIZE = 64;
-        static const int MAX_NAME_LENGTH = NAME_BUFFER_SIZE - 1;
+        static constexpr int MAX_NAME_LENGTH = 64;
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
@@ -40,17 +40,15 @@ namespace AzFramework
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor
         //! \param[in] name Name of the input channel (will be truncated if exceeds MAX_NAME_LENGTH)
-        explicit InputChannelId(const char* name = "");
+        explicit constexpr InputChannelId(AZStd::string_view name = "")
+            : m_name(name.substr(0, MAX_NAME_LENGTH))
+            , m_crc32(name.substr(0, MAX_NAME_LENGTH))
+        {
+        }
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        //! Copy constructor
-        //! \param[in] other Another instance of the class to copy from
-        InputChannelId(const InputChannelId& other);
-
-        ////////////////////////////////////////////////////////////////////////////////////////////
-        //! Copy assignment operator
-        //! \param[in] other Another instance of the class to copy from
-        InputChannelId& operator=(const InputChannelId& other);
+        // Default copying and moving
+        AZ_DEFAULT_COPY_MOVE(InputChannelId);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Default destructor
@@ -59,26 +57,40 @@ namespace AzFramework
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Access to the input channel's name
         //! \return Name of the input channel
-        const char* GetName() const;
+        constexpr const char* GetName() const
+        {
+            return m_name.c_str();
+        }
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Access to the crc32 of the input channel's name
         //! \return crc32 of the input channel name
-        const AZ::Crc32& GetNameCrc32() const;
+        constexpr const AZ::Crc32& GetNameCrc32() const
+        {
+            return m_crc32;
+        }
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        ///@{
         //! Equality comparison operator
         //! \param[in] other Another instance of the class to compare for equality
-        bool operator==(const InputChannelId& other) const;
-        bool operator!=(const InputChannelId& other) const;
-        ///@}
+        constexpr bool operator==(const InputChannelId& other) const
+        {
+            return m_crc32 == other.m_crc32;
+        }
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! Inequality comparison operator
+        //! \param[in] other Another instance of the class to compare for inequality
+        constexpr bool operator!=(const InputChannelId& other) const
+        {
+            return !(*this == other);
+        }
 
     private:
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Variables
-        char      m_name[NAME_BUFFER_SIZE]; //!< Name of the input channel
-        AZ::Crc32 m_crc32;                  //!< Crc32 of the input channel
+        AZStd::fixed_string<MAX_NAME_LENGTH> m_name; //!< Name of the input channel
+        AZ::Crc32 m_crc32; //!< Crc32 of the input channel name
     };
 } // namespace AzFramework
 

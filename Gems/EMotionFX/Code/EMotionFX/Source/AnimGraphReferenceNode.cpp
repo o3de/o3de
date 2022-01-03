@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/sort.h>
@@ -641,6 +642,8 @@ namespace EMotionFX
 
     void AnimGraphReferenceNode::OnAnimGraphAssetChanged()
     {
+        AnimGraphNotificationBus::Broadcast(&AnimGraphNotificationBus::Events::OnReferenceAnimGraphAboutToBeChanged, this);
+
         ReleaseAnimGraphInstances();
 
         AnimGraphNotificationBus::Broadcast(&AnimGraphNotificationBus::Events::OnReferenceAnimGraphChanged, this);

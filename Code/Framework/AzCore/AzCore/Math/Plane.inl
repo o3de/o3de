@@ -19,12 +19,14 @@ namespace AZ
 
     AZ_MATH_INLINE Plane Plane::CreateFromNormalAndPoint(const Vector3& normal, const Vector3& point)
     {
+        AZ_MATH_ASSERT(normal.IsNormalized(), "This normal is not normalized");
         return Plane(Simd::Vec4::ConstructPlane(normal.GetSimdValue(), point.GetSimdValue()));
     }
 
 
     AZ_MATH_INLINE Plane Plane::CreateFromNormalAndDistance(const Vector3& normal, float dist)
     {
+        AZ_MATH_ASSERT(normal.IsNormalized(), "This normal is not normalized");
         Plane result;
         result.Set(normal, dist);
         return result;
@@ -33,6 +35,7 @@ namespace AZ
 
     AZ_MATH_INLINE Plane Plane::CreateFromCoefficients(const float a, const float b, const float c, const float d)
     {
+        AZ_MATH_ASSERT(Vector3(a, b, c).IsNormalized(), "This normal is notormalized");
         Plane result;
         result.Set(a, b, c, d);
         return result;
@@ -65,18 +68,21 @@ namespace AZ
 
     AZ_MATH_INLINE void Plane::Set(const Vector3& normal, float d)
     {
+        AZ_MATH_ASSERT(normal.IsNormalized(), "This normal is notormalized");
         m_plane.Set(normal, d);
     }
 
 
     AZ_MATH_INLINE void Plane::Set(float a, float b, float c, float d)
     {
+        AZ_MATH_ASSERT(Vector3(a, b, c).IsNormalized(), "This normal is notormalized");
         m_plane.Set(a, b, c, d);
     }
 
 
     AZ_MATH_INLINE void Plane::SetNormal(const Vector3& normal)
     {
+        AZ_MATH_ASSERT(normal.IsNormalized(), "This normal is notormalized");
         m_plane.SetX(normal.GetX());
         m_plane.SetY(normal.GetY());
         m_plane.SetZ(normal.GetZ());

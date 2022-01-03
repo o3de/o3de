@@ -82,4 +82,18 @@ namespace PhysX
     };
 
     using EditorColliderComponentRequestBus = AZ::EBus<EditorColliderComponentRequests>;
+
+    /// <EditorColliderValidationRequests>
+    /// This is a Bus in order to communicate the status of the meshes of the collider and avoid dependencies with the rigidbody
+    /// </EditorColliderValidationRequests>
+    class EditorColliderValidationRequests : public AZ::ComponentBus
+    {
+    public:
+        /// Checks if the the mesh in the collider is correct with the current state of the Rigidbody!
+        virtual void ValidateRigidBodyMeshGeometryType() = 0;
+    };
+
+    using EditorColliderValidationRequestBus = AZ::EBus<EditorColliderValidationRequests>;
 }
+
+

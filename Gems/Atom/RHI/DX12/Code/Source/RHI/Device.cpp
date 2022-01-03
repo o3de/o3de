@@ -14,7 +14,6 @@
 #include <RHI/Fence.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 #include <Atom/RHI.Reflect/DX12/PlatformLimitsDescriptor.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
@@ -184,19 +183,14 @@ namespace AZ
             m_stagingMemoryAllocator.ReportMemoryUsage(builder);
         }
 
-        void Device::UpdateCpuTimingStatisticsInternal(RHI::CpuTimingStatistics& cpuTimingStatistics) const
+        void Device::UpdateCpuTimingStatisticsInternal() const
         {
-            m_commandQueueContext.UpdateCpuTimingStatistics(cpuTimingStatistics);
-        }
-
-        void Device::BeginFrameInternal()
-        {
-            m_commandQueueContext.Begin();
+            m_commandQueueContext.UpdateCpuTimingStatistics();
         }
 
         void Device::EndFrameInternal()
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             m_commandQueueContext.End();
 
             m_commandListAllocator.Collect();
@@ -364,7 +358,7 @@ namespace AZ
             D3D12_RESOURCE_STATES initialState,
             D3D12_HEAP_TYPE heapType)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             D3D12_RESOURCE_DESC resourceDesc;
             ConvertImageDescriptor(imageDescriptor, resourceDesc);
@@ -629,6 +623,21 @@ namespace AZ
         bool Device::IsAftermathInitialized() const
         {
             return m_isAftermathInitialized;
+        }
+
+        RHI::ResultCode Device::CompactSRGMemory()
+        {
+            if (m_isDescriptorHeapCompactionNeeded)
+            {
+                m_isDescriptorHeapCompactionNeeded = false;
+                return m_descriptorContext->CompactDescriptorHeap();
+            }
+            return RHI::ResultCode::Success;
+        }
+
+        void Device::DescriptorHeapCompactionNeeded()
+        {
+            m_isDescriptorHeapCompactionNeeded = true;
         }
     }
 }

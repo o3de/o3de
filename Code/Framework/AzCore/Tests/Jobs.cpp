@@ -1704,7 +1704,7 @@ namespace Benchmark
         static const AZ::u32 MEDIUM_NUMBER_OF_JOBS = 1024;
         static const AZ::u32 LARGE_NUMBER_OF_JOBS = 16384;
 
-        void SetUp([[maybe_unused]] ::benchmark::State& state) override
+        void internalSetUp()
         {
             AllocatorInstance<PoolAllocator>::Create();
             AllocatorInstance<ThreadPoolAllocator>::Create();
@@ -1749,8 +1749,16 @@ namespace Benchmark
                 return randomDepthDistribution(randomDepthGenerator);
             });
         }
+        void SetUp(::benchmark::State&) override
+        {
+            internalSetUp();
+        }
+        void SetUp(const ::benchmark::State&) override
+        {
+            internalSetUp();
+        }
 
-        void TearDown([[maybe_unused]] ::benchmark::State& state) override
+        void internalTearDown()
         {
             JobContext::SetGlobalContext(nullptr);
 
@@ -1762,6 +1770,14 @@ namespace Benchmark
 
             AllocatorInstance<ThreadPoolAllocator>::Destroy();
             AllocatorInstance<PoolAllocator>::Destroy();
+        }
+        void TearDown(::benchmark::State&) override
+        {
+            internalTearDown();
+        }
+        void TearDown(const ::benchmark::State&) override
+        {
+            internalTearDown();
         }
 
     protected:

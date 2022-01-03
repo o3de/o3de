@@ -6,11 +6,9 @@
  *
  */
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI/MemoryStatisticsBus.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/std/sort.h>
 
 namespace AZ
@@ -113,7 +111,7 @@ namespace AZ
 
         ResultCode Device::BeginFrame()
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             if (ValidateIsInitialized() && ValidateIsNotInFrame())
             {
@@ -128,7 +126,7 @@ namespace AZ
         {
             if (ValidateIsInitialized() && ValidateIsInFrame())
             {
-                AZ_ATOM_PROFILE_FUNCTION("RHI", "Device: EndFrame");
+                AZ_PROFILE_SCOPE(RHI, "Device: EndFrame");
                 EndFrameInternal();
                 m_isInFrame = false;
                 return ResultCode::Success;
@@ -150,7 +148,7 @@ namespace AZ
         {
             if (ValidateIsInitialized() && ValidateIsNotInFrame())
             {
-                AZ_ATOM_PROFILE_FUNCTION("RHI", "Device: CompileMemoryStatistics");
+                AZ_PROFILE_SCOPE(RHI, "Device: CompileMemoryStatistics");
                 MemoryStatisticsBuilder builder;
                 builder.Begin(memoryStatistics, reportFlags);
                 CompileMemoryStatisticsInternal(builder);
@@ -161,11 +159,11 @@ namespace AZ
             return ResultCode::InvalidOperation;
         }
 
-        ResultCode Device::UpdateCpuTimingStatistics(CpuTimingStatistics& cpuTimingStatistics) const
+        ResultCode Device::UpdateCpuTimingStatistics() const
         {
             if (ValidateIsNotInFrame())
             {
-                UpdateCpuTimingStatisticsInternal(cpuTimingStatistics);
+                UpdateCpuTimingStatisticsInternal();
                 return ResultCode::Success;
             }
             return ResultCode::InvalidOperation;

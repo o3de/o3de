@@ -39,7 +39,7 @@ namespace ScriptCanvas
                 void OnInit() override;
                 void ConfigureVisualExtensions() override;
 
-                bool OnValidateNode(ValidationResults& validationResults);
+                bool OnValidateNode(ValidationResults& validationResults) override;
 
                 SlotId HandleExtension(AZ::Crc32 extensionId) override;
 

@@ -9,7 +9,6 @@
 
 #include <AzCore/Console/Console.h>
 #include <AzCore/IO/FileIO.h>
-#include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/string/conversions.h>
 
 #include <AzFramework/Archive/ZipFileFormat.h>
@@ -102,26 +101,24 @@ namespace AZ::IO::ZipDir
         FileEntry* operator -> () { return m_pFileEntry; }
         FileEntryTransactionAdd(Cache* pCache, AZStd::string_view szRelativePath)
             : m_pCache(pCache)
+            , m_szRelativePath(AZ::IO::PosixPathSeparator)
             , m_bCommitted(false)
         {
-            AZ::IO::PathString normalizedPath{ szRelativePath };
-            AZ::StringFunc::Path::Normalize(normalizedPath);
-            AZStd::to_lower(AZStd::begin(normalizedPath), AZStd::end(normalizedPath));
             // Update the cache string pool with the relative path to the file
-            auto pathIt = m_pCache->m_relativePathPool.emplace(normalizedPath);
+            auto pathIt = m_pCache->m_relativePathPool.emplace(AZ::IO::PathView(szRelativePath, AZ::IO::PosixPathSeparator).LexicallyNormal());
             m_szRelativePath = *pathIt.first;
             // this is the name of the directory - create it or find it
-            m_pFileEntry = m_pCache->GetRoot()->Add(m_szRelativePath);
+            m_pFileEntry = m_pCache->GetRoot()->Add(m_szRelativePath.Native());
             if (m_pFileEntry && az_archive_zip_directory_cache_verbosity)
             {
-                AZ_TracePrintf("Archive", R"(File "%s" has been added to archive at root "%s")", normalizedPath.c_str(), pCache->GetFilePath());
+                AZ_TracePrintf("Archive", R"(File "%s" has been added to archive at root "%s")", pathIt.first->c_str(), pCache->GetFilePath());
             }
         }
         ~FileEntryTransactionAdd()
         {
             if (m_pFileEntry && !m_bCommitted)
             {
-                m_pCache->RemoveFile(m_szRelativePath);
+                m_pCache->RemoveFile(m_szRelativePath.Native());
                 m_pCache->m_relativePathPool.erase(m_szRelativePath);
             }
         }
@@ -131,11 +128,11 @@ namespace AZ::IO::ZipDir
         }
         AZStd::string_view GetRelativePath() const
         {
-            return m_szRelativePath;
+            return m_szRelativePath.Native();
         }
     private:
         Cache* m_pCache;
-        AZStd::string_view m_szRelativePath;
+        AZ::IO::PathView m_szRelativePath;
         FileEntry* m_pFileEntry;
         bool m_bCommitted;
     };
@@ -587,34 +584,27 @@ namespace AZ::IO::ZipDir
     // deletes the file from the archive
     ErrorEnum Cache::RemoveFile(AZStd::string_view szRelativePathSrc)
     {
-        // Normalize and lower case the relative path
-        AZ::IO::PathString szRelativePath{ szRelativePathSrc };
-        AZ::StringFunc::Path::Normalize(szRelativePath);
-        AZStd::to_lower(AZStd::begin(szRelativePath), AZStd::end(szRelativePath));
-        AZStd::string_view normalizedRelativePath = szRelativePath;
-
-        // find the last slash in the path
-        size_t slashOffset = normalizedRelativePath.find_last_of(AZ_CORRECT_AND_WRONG_FILESYSTEM_SEPARATOR);
+        AZ::IO::PathView szRelativePath{ szRelativePathSrc };
 
         AZStd::string_view fileName; // the name of the file to delete
 
         FileEntryTree* pDir; // the dir from which the subdir will be deleted
 
-        if (slashOffset != AZStd::string_view::npos)
+        if (szRelativePath.HasParentPath())
         {
             FindDir fd(GetRoot());
             // the directory to remove
-            pDir = fd.FindExact(normalizedRelativePath.substr(0, slashOffset));
+            pDir = fd.FindExact(szRelativePath.ParentPath());
             if (!pDir)
             {
                 return ZD_ERROR_DIR_NOT_FOUND;// there is no such directory
             }
-            fileName = normalizedRelativePath.substr(slashOffset + 1);
+            fileName = szRelativePath.Filename().Native();
         }
         else
         {
             pDir = GetRoot();
-            fileName = normalizedRelativePath;
+            fileName = szRelativePath.Native();
         }
 
         ErrorEnum e = pDir->RemoveFile(fileName);
@@ -625,7 +615,7 @@ namespace AZ::IO::ZipDir
             if (az_archive_zip_directory_cache_verbosity)
             {
                 AZ_TracePrintf("Archive", R"(File "%.*s" has been remove from archive at root "%s")",
-                    aznumeric_cast<int>(fileName.size()), fileName.data(), GetFilePath());
+                    AZ_STRING_ARG(szRelativePath.Native()), GetFilePath());
             }
         }
         return e;
@@ -635,45 +625,38 @@ namespace AZ::IO::ZipDir
     // deletes the directory, with all its descendants (files and subdirs)
     ErrorEnum Cache::RemoveDir(AZStd::string_view szRelativePathSrc)
     {
-        // Normalize and lower case the relative path
-        AZ::IO::PathString szRelativePath{ szRelativePathSrc };
-        AZ::StringFunc::Path::Normalize(szRelativePath);
-        AZStd::to_lower(AZStd::begin(szRelativePath), AZStd::end(szRelativePath));
-        AZStd::string_view normalizedRelativePath = szRelativePath;
-
-        // find the last slash in the path
-        size_t slashOffset = normalizedRelativePath.find_last_of(AZ_CORRECT_AND_WRONG_FILESYSTEM_SEPARATOR);
+        AZ::IO::PathView szRelativePath{ szRelativePathSrc };
 
         AZStd::string_view dirName; // the name of the dir to delete
 
         FileEntryTree* pDir; // the dir from which the subdir will be deleted
 
-        if (slashOffset != AZStd::string_view::npos)
+        if (szRelativePath.HasParentPath())
         {
             FindDir fd(GetRoot());
             // the directory to remove
-            pDir = fd.FindExact(normalizedRelativePath.substr(0, slashOffset));
+            pDir = fd.FindExact(szRelativePath.ParentPath());
             if (!pDir)
             {
                 return ZD_ERROR_DIR_NOT_FOUND;// there is no such directory
             }
-            dirName = normalizedRelativePath.substr(slashOffset + 1);
+            dirName = szRelativePath.Filename().Native();
         }
         else
         {
             pDir = GetRoot();
-            dirName = normalizedRelativePath;
+            dirName = szRelativePath.Native();
         }
 
-        ErrorEnum e = pDir->RemoveDir(normalizedRelativePath);
+        ErrorEnum e = pDir->RemoveDir(dirName);
         if (e == ZD_ERROR_SUCCESS)
         {
             m_nFlags |= FLAGS_UNCOMPACTED | FLAGS_CDR_DIRTY;
 
             if (az_archive_zip_directory_cache_verbosity)
             {
-                AZ_TracePrintf("Archive", R"(File "%.*s" has been remove from archive at root "%s")",
-                    aznumeric_cast<int>(normalizedRelativePath.size()), normalizedRelativePath.data(), GetFilePath());
+                AZ_TracePrintf("Archive", R"(Directory "%.*s" has been remove from archive at root "%s")",
+                    AZ_STRING_ARG(szRelativePath.Native()), GetFilePath());
             }
         }
         return e;
@@ -758,6 +741,16 @@ namespace AZ::IO::ZipDir
                 {
                     return ZD_ERROR_CORRUPTED_DATA;
                 }
+                if (pFileEntry->bCheckCRCNextRead)
+                {
+                    pFileEntry->bCheckCRCNextRead = false;
+                    uLong uCRC32 = AZ::Crc32((Bytef*)pUncompressed, nSizeUncompressed);
+                    if (uCRC32 != pFileEntry->desc.lCRC32)
+                    {
+                        AZ_Warning("Archive", false, "ZD_ERROR_CRC32_CHECK: Uncompressed stream CRC32 check failed");
+                        return ZD_ERROR_CRC32_CHECK;
+                    }
+                }
             }
         }
 
@@ -769,9 +762,7 @@ namespace AZ::IO::ZipDir
     // finds the file by exact path
     FileEntry* Cache::FindFile(AZStd::string_view szPathSrc, [[maybe_unused]] bool bFullInfo)
     {
-        AZ::IO::PathString szPath{ szPathSrc };
-        AZ::StringFunc::Path::Normalize(szPath);
-        AZStd::to_lower(AZStd::begin(szPath), AZStd::end(szPath));
+        AZ::IO::PathView szPath{ szPathSrc };
 
         ZipDir::FindFile fd(GetRoot());
         FileEntry* fileEntry = fd.FindExact(szPath);
@@ -779,17 +770,11 @@ namespace AZ::IO::ZipDir
         {
             if (az_archive_zip_directory_cache_verbosity)
             {
-                AZ_TracePrintf("Archive", "FindExact failed to find file %s at root %s", szPath.c_str(), GetFilePath());
+                AZ_TracePrintf("Archive", "FindExact failed to find file %.*s at root %s", AZ_STRING_ARG(szPath.Native()), GetFilePath());
             }
             return {};
         }
         return fileEntry;
-    }
-
-    // returns the size of memory occupied by the instance referred to by this cache
-    size_t Cache::GetSize() const
-    {
-        return sizeof(*this) + m_strFilePath.capacity() + m_treeDir.GetSize() - sizeof(m_treeDir);
     }
 
     // refreshes information about the given file entry into this file entry
@@ -800,7 +785,7 @@ namespace AZ::IO::ZipDir
             return ZD_ERROR_INVALID_CALL;
         }
 
-        if (pFileEntry->nFileDataOffset != pFileEntry->INVALID_DATA_OFFSET)
+        if (pFileEntry->nFileDataOffset != FileEntryBase::INVALID_DATA_OFFSET)
         {
             return ZD_ERROR_SUCCESS; // the data offset has been successfully read..
         }

@@ -7,10 +7,7 @@
  */
 
 #include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace RHI
@@ -120,7 +117,7 @@ namespace AZ
 
         ResultCode BufferPool::InitBuffer(const BufferInitRequest& initRequest)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             if (!ValidateInitRequest(initRequest))
             {
@@ -163,13 +160,13 @@ namespace AZ
                 return ResultCode::InvalidArgument;
             }
             
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "BufferPool::OrphanBuffer");
+            AZ_PROFILE_SCOPE(RHI, "BufferPool::OrphanBuffer");
             return OrphanBufferInternal(buffer);
         }
 
         ResultCode BufferPool::MapBuffer(const BufferMapRequest& request, BufferMapResponse& response)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             if (!ValidateIsInitialized() || !ValidateNotProcessingFrame())
             {

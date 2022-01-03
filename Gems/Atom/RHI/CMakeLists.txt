@@ -6,6 +6,8 @@
 #
 #
 
+ly_add_external_target_path(${CMAKE_CURRENT_LIST_DIR}/3rdParty)
+
 add_subdirectory(Code)
 add_subdirectory(DX12)
 add_subdirectory(Metal)

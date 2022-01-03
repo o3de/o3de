@@ -9,6 +9,7 @@ import os
 import pytest
 
 import ly_test_tools.environment.file_system as file_system
+import ly_test_tools._internal.pytest_plugin as internal_plugin
 from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorSharedTest, EditorParallelTest, EditorTestSuite
 
 
@@ -16,6 +17,8 @@ from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorSharedTest, E
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(EditorTestSuite):
+
+    enable_prefab_system = False
 
     class test_LandscapeCanvas_SlotConnections_UpdateComponentReferences(EditorSharedTest):
         from .EditorScripts import SlotConnections_UpdateComponentReferences as test_module
@@ -58,11 +61,11 @@ class TestAutomation(EditorTestSuite):
         from .EditorScripts import GraphClosed_TabbedGraph as test_module
 
     class test_LandscapeCanvas_Slice_CreateInstantiate(EditorSingleTest):
+        from .EditorScripts import Slice_CreateInstantiate as test_module
         # Custom teardown to remove slice asset created during test
         def teardown(self, request, workspace, editor, editor_test_results, launcher_platform):
             file_system.delete([os.path.join(workspace.paths.engine_root(), "AutomatedTesting", "slices",
                                              "TestSlice.slice")], True, True)
-        from .EditorScripts import Slice_CreateInstantiate as test_module
 
     class test_LandscapeCanvas_GradientModifierNodes_EntityCreatedOnNodeAdd(EditorSharedTest):
         from .EditorScripts import GradientModifierNodes_EntityCreatedOnNodeAdd as test_module
@@ -79,6 +82,8 @@ class TestAutomation(EditorTestSuite):
     class test_LandscapeCanvas_GradientNodes_EntityRemovedOnNodeDelete(EditorSharedTest):
         from .EditorScripts import GradientNodes_EntityRemovedOnNodeDelete as test_module
 
+    @pytest.mark.skipif("debug" == os.path.basename(internal_plugin.build_directory),
+                        reason="https://github.com/o3de/o3de/issues/4872")
     class test_LandscapeCanvas_GraphUpdates_UpdateComponents(EditorSharedTest):
         from .EditorScripts import GraphUpdates_UpdateComponents as test_module
 

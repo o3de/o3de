@@ -5,9 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Atom/RHI/CpuProfiler.h>
+
 #include <Atom/RHI/FrameGraph.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <RHI/Device.h>
 #include <RHI/FrameGraphCompiler.h>
 #include <RHI/Scope.h>
@@ -33,7 +32,7 @@ namespace AZ
         
         RHI::MessageOutcome FrameGraphCompiler::CompileInternal(const RHI::FrameGraphCompileRequest& request)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameGraphCompiler: CompileInternal(Metal)");
+            AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: CompileInternal(Metal)");
             RHI::FrameGraph& frameGraph = *request.m_frameGraph;
             if (!RHI::CheckBitsAny(request.m_compileFlags, RHI::FrameSchedulerCompileFlags::DisableAsyncQueues))
             {
@@ -47,7 +46,7 @@ namespace AZ
         {
             Device& device = static_cast<Device&>(GetDevice());
 
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             CommandQueueContext& context = device.GetCommandQueueContext();
 
             for (RHI::Scope* scopeBase : frameGraph.GetScopes())

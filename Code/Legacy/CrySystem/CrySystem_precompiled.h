@@ -60,13 +60,6 @@
 
 #include <platform.h>
 
-#if defined(WIN32) || defined(WIN64) || defined(APPLE) || defined(LINUX)
-#if defined(DEDICATED_SERVER)
-// enable/disable map load slicing functionality from the build
-#define MAP_LOADING_SLICING
-#endif
-#endif
-
 #ifdef WIN32
 #include <AzCore/PlatformIncl.h>
 #include <tlhelp32.h>
@@ -78,10 +71,8 @@
 // CRY Stuff ////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
 #include "Cry_Math.h"
-#include <Cry_Camera.h>
 #include <smartptr.h>
 #include <Range.h>
-#include <CrySizer.h>
 #include <StlUtils.h>
 
 
@@ -98,7 +89,6 @@ inline int RoundToClosestMB(size_t memSize)
 #include <IRenderer.h>
 #include <CryFile.h>
 #include <ISystem.h>
-#include <ITimer.h>
 #include <IXml.h>
 #include <ICmdLine.h>
 #include <IConsole.h>

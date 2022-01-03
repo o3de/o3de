@@ -9,9 +9,10 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <EMotionStudio/EMStudioSDK/Source/EMStudioConfig.h>
-#include <EMotionStudio/EMStudioSDK/Source/GUIOptions.h>
-#include <EMotionStudio/EMStudioSDK/Source/PluginOptionsBus.h>
+#include <AzCore/Component/TickBus.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioConfig.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/GUIOptions.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/PluginOptionsBus.h>
 #include <AzCore/std/containers/vector.h>
 #include <MCore/Source/Command.h>
 #include <MCore/Source/StandardHeaders.h>
@@ -99,8 +100,9 @@ namespace EMStudio
         : public AzQtComponents::DockMainWindow
         , private PluginOptionsNotificationsBus::Router
         , public EMotionFX::ActorEditorRequestBus::Handler
+        , private AZ::TickBus::Handler
     {
-        Q_OBJECT
+        Q_OBJECT // AUTOMOC
         MCORE_MEMORYOBJECTCATEGORY(MainWindow, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_EMSTUDIOSDK)
 
     public:
@@ -290,7 +292,7 @@ namespace EMStudio
             /// CommandManagerCallback implementation
             void OnPreExecuteCommand(MCore::CommandGroup* group, MCore::Command* command, const MCore::CommandLine& commandLine) override;
             void OnPostExecuteCommand(MCore::CommandGroup* /*group*/, MCore::Command* /*command*/, const MCore::CommandLine& /*commandLine*/, bool /*wasSuccess*/, const AZStd::string& /*outResult*/) override { }
-            void OnPreUndoCommand(MCore::Command* command, const MCore::CommandLine& commandLine);
+            void OnPreUndoCommand(MCore::Command* command, const MCore::CommandLine& commandLine) override;
             void OnPreExecuteCommandGroup(MCore::CommandGroup* /*group*/, bool /*undo*/) override { }
             void OnPostExecuteCommandGroup(MCore::CommandGroup* /*group*/, bool /*wasSuccess*/) override { }
             void OnAddCommandToHistory(size_t /*historyIndex*/, MCore::CommandGroup* /*group*/, MCore::Command* /*command*/, const MCore::CommandLine& /*commandLine*/) override { }
@@ -303,6 +305,16 @@ namespace EMStudio
         };
 
         MainWindowCommandManagerCallback m_mainWindowCommandManagerCallback;
+
+    private:
+        // AZ::TickBus::Handler overrides
+        void OnTick(float delta, AZ::ScriptTimePoint timePoint) override;
+        int GetTickOrder() override;
+
+        void UpdatePlugins(float timeDelta);
+
+        void EnableUpdatingPlugins();
+        void DisableUpdatingPlugins();
 
     public slots:
         void OnFileOpenActor();

@@ -45,7 +45,7 @@ namespace MCore
         // overloaded from the attribute base class
         Attribute* Clone() const override                           { return AttributeInt32::Create(m_value); }
         const char* GetTypeString() const override                  { return "AttributeInt32"; }
-        bool InitFrom(const Attribute* other);
+        bool InitFrom(const Attribute* other) override;
         bool InitFromString(const AZStd::string& valueString) override
         {
             return AzFramework::StringFunc::LooksLikeInt(valueString.c_str(), &m_value);

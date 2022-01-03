@@ -12,6 +12,7 @@
 #include <AzCore/RTTI/RTTI.h>
 
 #include <AzToolsFramework/Prefab/PrefabPublicRequestBus.h>
+#include <AzToolsFramework/Prefab/Spawnable/InMemorySpawnableAssetContainer.h>
 
 namespace AzToolsFramework
 {
@@ -31,12 +32,24 @@ namespace AzToolsFramework
             void Connect();
             void Disconnect();
 
-            PrefabOperationResult CreatePrefabInMemory(const EntityIdList& entityIds, AZStd::string_view filePath) override;
+            CreatePrefabResult CreatePrefabInMemory(const EntityIdList& entityIds, AZStd::string_view filePath) override;
             InstantiatePrefabResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position) override;
             PrefabOperationResult DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds) override;
+            PrefabOperationResult DetachPrefab(const AZ::EntityId& containerEntityId) override;
+            DuplicatePrefabResult DuplicateEntitiesInInstance(const EntityIdList& entityIds) override;
+            AZStd::string GetOwningInstancePrefabPath(AZ::EntityId entityId) const override;
+            CreateSpawnableResult CreateInMemorySpawnableAsset(AZStd::string_view prefabFilePath, AZStd::string_view spawnableName) override;
+            PrefabOperationResult RemoveInMemorySpawnableAsset(AZStd::string_view spawnableName) override;
+            bool HasInMemorySpawnableAsset(AZStd::string_view spawnableName) const override;
+            AZ::Data::AssetId GetInMemorySpawnableAssetId(AZStd::string_view spawnableName) const override;
+            void RemoveAllInMemorySpawnableAssets() override;
 
         private:
+            bool TryActivateSpawnableAssetContainer();
+
+            PrefabConversionUtils::InMemorySpawnableAssetContainer m_spawnableAssetContainer;
             PrefabPublicInterface* m_prefabPublicInterface = nullptr;
+
         };
     } // namespace Prefab
 } // namespace AzToolsFramework

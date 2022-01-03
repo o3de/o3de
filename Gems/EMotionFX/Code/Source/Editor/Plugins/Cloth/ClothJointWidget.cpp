@@ -69,7 +69,7 @@ namespace EMotionFX
 
     void ClothJointWidget::InternalReinit()
     {
-        if (m_selectedModelIndices.size() == 1)
+        if (GetSelectedModelIndices().size() == 1)
         {
             Physics::CharacterColliderNodeConfiguration* nodeConfig = GetNodeConfig();
             if (nodeConfig)
@@ -94,17 +94,17 @@ namespace EMotionFX
 
     void ClothJointWidget::OnAddCollider(const AZ::TypeId& colliderType)
     {
-        ColliderHelpers::AddCollider(m_selectedModelIndices , PhysicsSetup::Cloth, colliderType);
+        ColliderHelpers::AddCollider(GetSelectedModelIndices(), PhysicsSetup::Cloth, colliderType);
     }
 
     void ClothJointWidget::OnCopyCollider(size_t colliderIndex)
     {
-        ColliderHelpers::CopyColliderToClipboard(m_selectedModelIndices.first(), colliderIndex, PhysicsSetup::Cloth);
+        ColliderHelpers::CopyColliderToClipboard(GetSelectedModelIndices().first(), colliderIndex, PhysicsSetup::Cloth);
     }
 
     void ClothJointWidget::OnPasteCollider(size_t colliderIndex, bool replace)
     {
-        ColliderHelpers::PasteColliderFromClipboard(m_selectedModelIndices.first(), colliderIndex, PhysicsSetup::Cloth, replace);
+        ColliderHelpers::PasteColliderFromClipboard(GetSelectedModelIndices().first(), colliderIndex, PhysicsSetup::Cloth, replace);
     }
 
     void ClothJointWidget::OnRemoveCollider(size_t colliderIndex)
@@ -114,7 +114,7 @@ namespace EMotionFX
 
     Physics::CharacterColliderNodeConfiguration* ClothJointWidget::GetNodeConfig() const
     {
-        AZ_Assert(m_selectedModelIndices.size() == 1, "Get Node config function only return the config when it is single seleted");
+        AZ_Assert(GetSelectedModelIndices().size() == 1, "Get Node config function only return the config when it is single seleted");
         Actor* actor = GetActor();
         Node* joint = GetNode();
         if (!actor || !joint)

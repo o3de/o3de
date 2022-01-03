@@ -7,6 +7,7 @@
 #
 
 set(FILES
+    Include/Atom/Feature/RenderCommon.h
     Include/Atom/Feature/Utils/EditorRenderComponentAdapter.h
     Include/Atom/Feature/Utils/EditorRenderComponentAdapter.inl
     Include/Atom/Feature/Utils/EditorLightingPreset.h
@@ -16,7 +17,6 @@ set(FILES
     Source/EditorCommonSystemComponent.cpp
     Source/EditorCommonSystemComponent.h
     Source/CommonModule.cpp
-    Source/RenderCommon.h
     Source/Material/ConvertEmissiveUnitFunctorSourceData.cpp
     Source/Material/ConvertEmissiveUnitFunctorSourceData.h
     Source/Material/MaterialConverterSystemComponent.cpp

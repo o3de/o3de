@@ -14,7 +14,6 @@
 
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/CommandSystem/Source/RagdollCommands.h>
-#include <EMotionFX/Source/AutoRegisteredActor.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <Editor/Plugins/Ragdoll/RagdollJointLimitWidget.h>
 #include <Editor/Plugins/Ragdoll/RagdollNodeInspectorPlugin.h>
@@ -25,6 +24,7 @@
 #include <Tests/Mocks/PhysicsSystem.h>
 #include <Tests/TestAssetCode/ActorFactory.h>
 #include <Tests/TestAssetCode/SimpleActors.h>
+#include <Tests/TestAssetCode/TestActorAssets.h>
 #include <Tests/UI/UIFixture.h>
 
 namespace EMotionFX
@@ -41,7 +41,10 @@ namespace EMotionFX
     {
         using testing::_;
 
-        D6JointLimitConfiguration::Reflect(GetSerializeContext());
+        AZ::SerializeContext* serializeContext = GetSerializeContext();
+
+        Physics::MockPhysicsSystem::Reflect(serializeContext); // Required by Ragdoll plugin to fake PhysX Gem is available
+        D6JointLimitConfiguration::Reflect(serializeContext);
 
         EMStudio::GetMainWindow()->ApplicationModeChanged("Physics");
 
@@ -73,7 +76,9 @@ namespace EMotionFX
                     return AZStd::make_unique<D6JointLimitConfiguration>();
                 });
 
-        AutoRegisteredActor actor {ActorFactory::CreateAndInit<SimpleJointChainActor>(4)};
+        AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
+        AZ::Data::Asset<Integration::ActorAsset>  actorAsset = TestActorAssets::CreateActorAssetAndRegister<SimpleJointChainActor>(actorAssetId, 4);
+        const Actor* actor = actorAsset->GetActor();
 
         {
             AZStd::string result;

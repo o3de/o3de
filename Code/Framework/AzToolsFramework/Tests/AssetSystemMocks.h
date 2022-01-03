@@ -18,8 +18,6 @@ namespace UnitTests
     {
     public:
         MOCK_METHOD1(GetAbsoluteAssetDatabaseLocation, bool(AZStd::string&));
-        MOCK_METHOD0(GetAbsoluteDevGameFolderPath, const char* ());
-        MOCK_METHOD0(GetAbsoluteDevRootFolderPath, const char* ());
         MOCK_METHOD2(GetRelativeProductPathFromFullSourceOrProductPath, bool(const AZStd::string& fullPath, AZStd::string& relativeProductPath));
         MOCK_METHOD3(GenerateRelativeSourcePath,
             bool(const AZStd::string& sourcePath, AZStd::string& relativePath, AZStd::string& watchFolder));

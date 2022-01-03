@@ -27,7 +27,7 @@
     #define AZ_RESTRICTED_SECTION PROJECTDEFINES_H_SECTION_STATS_AGENT
     #include AZ_RESTRICTED_FILE(ProjectDefines_h)
 #elif defined(WIN32) || defined(WIN64)
-    #if !defined(_RELEASE) || defined(PERFORMANCE_BUILD)
+    #if !defined(_RELEASE)
         #define ENABLE_STATS_AGENT
     #endif
 #endif
@@ -71,7 +71,7 @@
     #define REMOTE_ASSET_PROCESSOR
 #endif
 
-#if (!defined(_RELEASE) || defined(PERFORMANCE_BUILD))
+#if !defined(_RELEASE)
     #define USE_HTTP_WEBSOCKETS 0
 #endif
 
@@ -81,9 +81,6 @@
     #include AZ_RESTRICTED_FILE(ProjectDefines_h)
 #else
     #define PROJECTDEFINES_H_TRAIT_DISABLE_MONOLITHIC_PROFILING_MARKERS 1
-    #if !defined(LINUX) && !defined(APPLE)
-        #define PROJECTDEFINES_H_TRAIT_ENABLE_SOFTCODE_SYSTEM 1
-    #endif
     #if defined(WIN32) || defined(WIN64) || defined(LINUX) || defined(APPLE)
         #define PROJECTDEFINES_H_TRAIT_USE_GPU_PARTICLES 1
     #endif
@@ -97,7 +94,7 @@
     #endif
 #endif
 
-#if (!defined(_RELEASE) || defined(PERFORMANCE_BUILD))
+#if !defined(_RELEASE)
     #ifndef ENABLE_PROFILING_CODE
         #define ENABLE_PROFILING_CODE
     #endif

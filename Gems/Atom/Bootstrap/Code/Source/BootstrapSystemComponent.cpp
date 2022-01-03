@@ -10,10 +10,12 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/NativeUI/NativeUIRequests.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzCore/Utils/Utils.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Components/TransformComponent.h>
@@ -33,6 +35,7 @@
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
+#include <Atom/RPI.Public/Shader/ShaderSystem.h>
 
 #include <Atom/Bootstrap/DefaultWindowBus.h>
 #include <Atom/Bootstrap/BootstrapNotificationBus.h>
@@ -87,6 +90,7 @@ namespace AZ
                 dependent.push_back(AZ_CRC("CoreLightsService", 0x91932ef6));
                 dependent.push_back(AZ_CRC("DynamicDrawService", 0x023c1673));
                 dependent.push_back(AZ_CRC("CommonService", 0x6398eec4));
+                dependent.push_back(AZ_CRC_CE("HairService"));
             }
 
             void BootstrapSystemComponent::GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& incompatible)
@@ -113,7 +117,9 @@ namespace AZ
                 {
                     // GFX TODO - investigate window creation being part of the GameApplication.
 
-                    m_nativeWindow = AZStd::make_unique<AzFramework::NativeWindow>("O3DELauncher", AzFramework::WindowGeometry(0, 0, 1920, 1080));
+                    auto projectTitle = AZ::Utils::GetProjectName();
+
+                    m_nativeWindow = AZStd::make_unique<AzFramework::NativeWindow>(projectTitle.c_str(), AzFramework::WindowGeometry(0, 0, 1920, 1080));
                     AZ_Assert(m_nativeWindow, "Failed to create the game window\n");
 
                     m_nativeWindow->Activate();
@@ -127,7 +133,6 @@ namespace AZ
                     m_createDefaultScene = false;
                 }
 
-                AzFramework::AssetCatalogEventBus::Handler::BusConnect();
                 TickBus::Handler::BusConnect();
 
                 // Listen for window system requests (e.g. requests for default window handle)
@@ -138,6 +143,20 @@ namespace AZ
 
                 Render::Bootstrap::DefaultWindowBus::Handler::BusConnect();
                 Render::Bootstrap::RequestBus::Handler::BusConnect();
+
+                // If the settings registry isn't available, something earlier in startup will report that failure.
+                if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+                {
+                    // Automatically register the event if it's not registered, because
+                    // this system is initialized before the settings registry has loaded the event list.
+                    AZ::ComponentApplicationLifecycle::RegisterHandler(
+                        *settingsRegistry, m_componentApplicationLifecycleHandler,
+                        [this](AZStd::string_view /*path*/, AZ::SettingsRegistryInterface::Type /*type*/)
+                        {
+                            Initialize();
+                        },
+                        "LegacySystemInterfaceCreated");
+                }
             }
 
             void BootstrapSystemComponent::Deactivate()
@@ -148,7 +167,6 @@ namespace AZ
                 AzFramework::WindowSystemRequestBus::Handler::BusDisconnect();
                 AzFramework::WindowSystemNotificationBus::Handler::BusDisconnect();
                 TickBus::Handler::BusDisconnect();
-                AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
 
                 m_brdfTexture = nullptr;
                 RemoveRenderPipeline();
@@ -159,16 +177,19 @@ namespace AZ
                 m_windowHandle = nullptr;
             }
 
-            void BootstrapSystemComponent::OnCatalogLoaded(const char* /*catalogFile*/)
+            void BootstrapSystemComponent::Initialize()
             {
-                if (m_isAssetCatalogLoaded)
+                if (m_isInitialized)
                 {
                     return;
                 }
 
-                m_isAssetCatalogLoaded = true;
+                m_isInitialized = true;
 
-                RPI::RPISystemInterface::Get()->InitializeSystemAssets();
+                if (!RPI::RPISystemInterface::Get()->IsInitialized())
+                {
+                    RPI::RPISystemInterface::Get()->InitializeSystemAssets();
+                }
 
                 if (!RPI::RPISystemInterface::Get()->IsInitialized())
                 {
@@ -208,7 +229,7 @@ namespace AZ
                 {
                     m_windowHandle = windowHandle;
 
-                    if (m_isAssetCatalogLoaded)
+                    if (m_isInitialized)
                     {
                         CreateWindowContext();
                         if (m_createDefaultScene)
@@ -251,36 +272,9 @@ namespace AZ
 
                 // Create and register a scene with all available feature processors
                 RPI::SceneDescriptor sceneDesc;
+                sceneDesc.m_nameId = AZ::Name("Main");
                 AZ::RPI::ScenePtr atomScene = RPI::Scene::CreateScene(sceneDesc);
                 atomScene->EnableAllFeatureProcessors();
-
-                // Setup scene srg modification callback.
-                RPI::ShaderResourceGroupCallback callback = [this](RPI::ShaderResourceGroup* srg)
-                    {
-                        if (srg == nullptr)
-                        {
-                            return;
-                        }
-                        bool needCompile = false;
-                        RHI::ShaderInputConstantIndex timeIndex = srg->FindShaderInputConstantIndex(Name{ "m_time" });
-                        if (timeIndex.IsValid())
-                        {
-                            srg->SetConstant(timeIndex, m_simulateTime);
-                            needCompile = true;
-                        }
-                        RHI::ShaderInputConstantIndex deltaTimeIndex = srg->FindShaderInputConstantIndex(Name{ "m_deltaTime" });
-                        if (deltaTimeIndex.IsValid())
-                        {
-                            srg->SetConstant(deltaTimeIndex, m_deltaTime);
-                            needCompile = true;
-                        }
-
-                        if (needCompile)
-                        {
-                            srg->Compile();
-                        }
-                    };
-                atomScene->SetShaderResourceGroupCallback(callback);
                 atomScene->Activate();
 
                 // Register scene to RPI system so it will be processed/rendered per tick
@@ -323,6 +317,11 @@ namespace AZ
                 Data::Asset<RPI::AnyAsset> pipelineAsset = RPI::AssetUtils::LoadAssetByProductPath<RPI::AnyAsset>(pipelineName.data(), RPI::AssetUtils::TraceLevel::Error);
                 RPI::RenderPipelineDescriptor renderPipelineDescriptor = *RPI::GetDataFromAnyAsset<RPI::RenderPipelineDescriptor>(pipelineAsset);
                 renderPipelineDescriptor.m_name = AZStd::string::format("%s_%i", renderPipelineDescriptor.m_name.c_str(), viewportContext->GetId());
+
+                // Make sure non-msaa super variant is used for non-msaa pipeline
+                bool isNonMsaaPipeline = (renderPipelineDescriptor.m_renderSettings.m_multisampleState.m_samples == 1);
+                const char* supervariantName = isNonMsaaPipeline ? AZ::RPI::NoMsaaSupervariantName : "";
+                AZ::RPI::ShaderSystemInterface::Get()->SetSupervariantName(AZ::Name(supervariantName));
 
                 if (!scene->GetRenderPipeline(AZ::Name(renderPipelineDescriptor.m_name)))
                 {
@@ -391,7 +390,7 @@ namespace AZ
                     // Unbind m_defaultScene to the GameEntityContext's AzFramework::Scene
                     if (m_defaultFrameworkScene)
                     {
-                        m_defaultFrameworkScene->UnsetSubsystem<RPI::Scene>();
+                        m_defaultFrameworkScene->UnsetSubsystem(m_defaultScene);
                     }
 
                     m_defaultScene = nullptr;
@@ -408,11 +407,8 @@ namespace AZ
                 m_renderPipelineId = "";
             }
 
-            void BootstrapSystemComponent::OnTick(float deltaTime, [[maybe_unused]] ScriptTimePoint time)
+            void BootstrapSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] ScriptTimePoint time)
             {
-                m_simulateTime += deltaTime;
-                m_deltaTime = deltaTime;
-
                 // Temp: When running in the launcher without the legacy renderer
                 // we need to call RenderTick on the viewport context each frame.
                 if (m_viewportContext)

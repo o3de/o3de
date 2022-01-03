@@ -10,6 +10,8 @@
 #include "CrySystem_precompiled.h"
 #include "SerializeXMLWriter.h"
 
+#include <AzCore/Time/ITime.h>
+
 static const size_t MAX_NODE_STACK_DEPTH = 40;
 
 #define TAG_SCRIPT_VALUE "v"
@@ -18,7 +20,9 @@ static const size_t MAX_NODE_STACK_DEPTH = 40;
 
 CSerializeXMLWriterImpl::CSerializeXMLWriterImpl(const XmlNodeRef& nodeRef)
 {
-    m_curTime = gEnv->pTimer->GetFrameStartTime();
+    const AZ::TimeMs elaspsedTimeMs = AZ::GetRealElapsedTimeMs();
+    const double elaspedTimeSec = AZ::TimeMsToSecondsDouble(elaspsedTimeMs);
+    m_curTime = CTimeValue(elaspedTimeSec);
     assert(!!nodeRef);
     m_nodeStack.push_back(nodeRef);
 
@@ -45,16 +49,6 @@ bool CSerializeXMLWriterImpl::Value(const char* name, CTimeValue value)
     else
     {
         AddValue(name, (value - m_curTime).GetSeconds());
-    }
-    return true;
-}
-
-bool CSerializeXMLWriterImpl::Value(const char* name, XmlNodeRef& value)
-{
-    if (BeginOptionalGroup(name, value != NULL))
-    {
-        CurNode()->addChild(value);
-        EndGroup();
     }
     return true;
 }
@@ -102,13 +96,6 @@ void CSerializeXMLWriterImpl::EndGroup()
     assert(!m_nodeStack.empty());
     m_nodeStack.pop_back();
     assert(!m_nodeStack.empty());
-}
-
-void CSerializeXMLWriterImpl::GetMemoryUsage(ICrySizer* pSizer) const
-{
-    pSizer->Add(*this);
-    pSizer->AddObject(m_nodeStack);
-    pSizer->AddContainer(m_luaSaveStack);
 }
 
 //////////////////////////////////////////////////////////////////////////

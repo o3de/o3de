@@ -7,9 +7,12 @@
  */
 #include <RHI/MemoryView.h>
 
-#include <AzCore/Debug/EventTrace.h>
+#include <AzCore/Debug/Profiler.h>
+#include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/conversions.h>
+
+AZ_DECLARE_BUDGET(RHI);
 
 namespace AZ
 {
@@ -54,8 +57,6 @@ namespace AZ
 
         CpuVirtualAddress MemoryView::Map(RHI::HostMemoryAccess hostAccess) const
         {
-            AZ_TRACE_METHOD();
-
             CpuVirtualAddress cpuAddress = nullptr;
             D3D12_RANGE readRange = {};
             if (hostAccess == RHI::HostMemoryAccess::Read)
@@ -95,7 +96,17 @@ namespace AZ
             {
                 AZStd::wstring wname;
                 AZStd::to_wstring(wname, name);
-                m_memoryAllocation.m_memory->SetName(wname.data());
+                m_memoryAllocation.m_memory->SetPrivateData(
+                    WKPDID_D3DDebugObjectNameW, aznumeric_cast<unsigned int>(wname.size() * sizeof(wchar_t)), wname.data());
+            }
+        }
+
+        void MemoryView::SetName(const AZStd::wstring_view& name)
+        {
+            if (m_memoryAllocation.m_memory)
+            {
+                m_memoryAllocation.m_memory->SetPrivateData(
+                    WKPDID_D3DDebugObjectNameW, aznumeric_cast<unsigned int>(name.size() * sizeof(wchar_t)), name.data());
             }
         }
 

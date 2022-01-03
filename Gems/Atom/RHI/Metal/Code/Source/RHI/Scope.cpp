@@ -5,10 +5,9 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Atom/RHI/CpuProfiler.h>
+
 #include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/ResolveScopeAttachment.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <RHI/CommandList.h>
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
@@ -273,7 +272,7 @@ namespace AZ
             AZ::u32 commandListIndex,
             AZ::u32 commandListCount) const
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             if(m_isWritingToSwapChainScope)
             {
@@ -331,7 +330,7 @@ namespace AZ
             AZ::u32 commandListIndex,
             AZ::u32 commandListCount) const
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             const bool isEpilogue = (commandListIndex + 1) == commandListCount;
             
             commandList.FlushEncoder();

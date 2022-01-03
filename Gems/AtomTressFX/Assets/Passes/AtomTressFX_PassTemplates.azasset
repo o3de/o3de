@@ -1,0 +1,68 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AssetAliasesSourceData",
+    "ClassData": {
+        "AssetPaths": [
+            {
+                "Name": "HairParentPassTemplate",
+                "Path": "Passes/HairParentPass.pass"
+            },
+            {
+                "Name": "HairParentShortCutPassTemplate",
+                "Path": "Passes/HairParentShortCutPass.pass"
+            },
+
+            {
+                "Name": "HairGlobalShapeConstraintsComputePassTemplate",
+                "Path": "Passes/HairGlobalShapeConstraintsCompute.pass"
+            },
+            {
+                "Name": "HairCalculateStrandLevelDataComputePassTemplate",
+                "Path": "Passes/HairCalculateStrandLevelDataCompute.pass"
+            },
+            {
+                "Name": "HairVelocityShockPropagationComputePassTemplate",
+                "Path": "Passes/HairVelocityShockPropagationCompute.pass"
+            },
+            {
+                "Name": "HairLocalShapeConstraintsComputePassTemplate",
+                "Path": "Passes/HairLocalShapeConstraintsCompute.pass"
+            },
+            {
+                "Name": "HairLengthConstraintsWindAndCollisionComputePassTemplate",
+                "Path": "Passes/HairLengthConstraintsWindAndCollisionCompute.pass"
+            },
+            {
+                "Name": "HairUpdateFollowHairComputePassTemplate",
+                "Path": "Passes/HairUpdateFollowHairCompute.pass"
+            },
+
+            {
+                "Name": "HairPPLLRasterPassTemplate",
+                "Path": "Passes/HairFillPPLL.pass"
+            },
+            {
+                "Name": "HairPPLLResolvePassTemplate",
+                "Path": "Passes/HairResolvePPLL.pass"
+            },
+
+            {
+                "Name": "HairShortCutGeometryDepthAlphaPassTemplate",
+                "Path": "Passes/HairShortCutGeometryDepthAlpha.pass"
+            },
+            {
+                "Name": "HairShortCutResolveDepthPassTemplate",
+                "Path": "Passes/HairShortCutResolveDepth.pass"
+            },
+            {
+                "Name": "HairShortCutGeometryShadingPassTemplate",
+                "Path": "Passes/HairShortCutGeometryShading.pass"
+            },
+            {
+                "Name": "HairShortCutResolveColorPassTemplate",
+                "Path": "Passes/HairShortCutResolveColor.pass"
+            }
+        ]
+    }
+}

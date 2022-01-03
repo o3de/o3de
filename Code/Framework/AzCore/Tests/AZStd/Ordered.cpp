@@ -1095,7 +1095,7 @@ namespace UnitTest
     >;
     TYPED_TEST_CASE(TreeSetDifferentAllocatorFixture, SetTemplateConfigs);
 
-#if GTEST_OS_SUPPORTS_DEATH_TEST
+#if GTEST_HAS_DEATH_TEST
     TYPED_TEST(TreeSetDifferentAllocatorFixture, InsertNodeHandleWithDifferentAllocatorsLogsTraceMessages)
     {
         using ContainerType = typename TypeParam::ContainerType;
@@ -1117,7 +1117,7 @@ namespace UnitTest
                 }
             }, ".*");
     }
-#endif // GTEST_OS_SUPPORTS_DEATH_TEST
+#endif // GTEST_HAS_DEATH_TEST
 
     TYPED_TEST(TreeSetDifferentAllocatorFixture, SwapMovesElementsWhenAllocatorsDiffer)
     {
@@ -1516,7 +1516,7 @@ namespace UnitTest
     >;
     TYPED_TEST_CASE(TreeMapDifferentAllocatorFixture, MapTemplateConfigs);
 
-#if GTEST_OS_SUPPORTS_DEATH_TEST
+#if GTEST_HAS_DEATH_TEST
     TYPED_TEST(TreeMapDifferentAllocatorFixture, InsertNodeHandleWithDifferentAllocatorsLogsTraceMessages)
     {
         using ContainerType = typename TypeParam::ContainerType;
@@ -1538,7 +1538,7 @@ namespace UnitTest
                 }
             }, ".*");
     }
-#endif // GTEST_OS_SUPPORTS_DEATH_TEST
+#endif // GTEST_HAS_DEATH_TEST
 
     TYPED_TEST(TreeMapDifferentAllocatorFixture, SwapMovesElementsWhenAllocatorsDiffer)
     {

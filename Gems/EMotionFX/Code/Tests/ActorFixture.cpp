@@ -10,12 +10,15 @@
 #include <MCore/Source/ReflectionSerializer.h>
 #include <EMotionFX/Source/Actor.h>
 #include <EMotionFX/Source/ActorInstance.h>
+#include <EMotionFX/Source/ActorManager.h>
 #include <EMotionFX/Source/Importer/Importer.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <EMotionFX/Source/SimulatedObjectSetup.h>
 
 #include <Tests/TestAssetCode/JackActor.h>
 #include <Tests/TestAssetCode/ActorFactory.h>
+#include <Tests/TestAssetCode/TestActorAssets.h>
+
 
 namespace EMotionFX
 {
@@ -23,8 +26,9 @@ namespace EMotionFX
     {
         SystemComponentFixture::SetUp();
 
-        m_actor = ActorFactory::CreateAndInit<JackNoMeshesActor>();
-        m_actorInstance = ActorInstance::Create(m_actor.get());
+        AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
+        m_actorAsset = TestActorAssets::CreateActorAssetAndRegister<JackNoMeshesActor>(actorAssetId);
+        m_actorInstance = ActorInstance::Create(GetActor());
     }
 
     void ActorFixture::TearDown()
@@ -35,6 +39,7 @@ namespace EMotionFX
             m_actorInstance = nullptr;
         }
 
+        GetEMotionFX().GetActorManager()->UnregisterAllActors();
         SystemComponentFixture::TearDown();
     }
 
@@ -71,7 +76,7 @@ namespace EMotionFX
 
         AZ::ObjectStream::FilterDescriptor loadFilter(nullptr, AZ::ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES);
         SimulatedObjectSetup* setup = AZ::Utils::LoadObjectFromBuffer<EMotionFX::SimulatedObjectSetup>(data.data(), data.size(), serializeContext, loadFilter);
-        setup->InitAfterLoad(m_actor.get());
+        setup->InitAfterLoad(GetActor());
         return setup;
     }
 
@@ -79,5 +84,11 @@ namespace EMotionFX
     AZStd::vector<AZStd::string> ActorFixture::GetTestJointNames() const
     {
          return { "Bip01__pelvis", "l_upLeg", "l_loLeg", "l_ankle" };
+    }
+
+
+    Actor* ActorFixture::GetActor() const
+    {
+        return m_actorAsset->GetActor();
     }
 } // namespace EMotionFX

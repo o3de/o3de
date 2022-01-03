@@ -33,9 +33,9 @@ namespace ScriptCanvas
                 void OnConfigured() override;
                 void ConfigureVisualExtensions() override;
 
-                bool CanDeleteSlot(const SlotId& slotId) const;
+                bool CanDeleteSlot(const SlotId& slotId) const override;
 
-                SlotId HandleExtension(AZ::Crc32 extensionId);
+                SlotId HandleExtension(AZ::Crc32 extensionId) override;
 
                 // Script Canvas Translation...
                 bool IsSwitchStatement() const override { return true; }

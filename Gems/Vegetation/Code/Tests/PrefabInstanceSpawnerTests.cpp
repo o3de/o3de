@@ -51,76 +51,21 @@ namespace UnitTest
         }
     };
 
-    // To test prefab spawning, we need to mock up enough of the asset management system and the spawnable
-    // asset handling to pretend like we're loading/unloading spawnables successfully.
-    class PrefabInstanceSpawnerTests
-        : public VegetationComponentTests
-        , public UnitTest::SetRestoreFileIOBaseRAII
-        , public Vegetation::DescriptorNotificationBus::Handler
+    class PrefabInstanceHandlerAndCatalog
+        : public Vegetation::DescriptorNotificationBus::Handler
         , public AZ::Data::AssetCatalogRequestBus::Handler
         , public AZ::Data::AssetHandler
         , public AZ::Data::AssetCatalog
     {
     public:
-        PrefabInstanceSpawnerTests()
-            : UnitTest::SetRestoreFileIOBaseRAII(m_fileIOMock)
+        PrefabInstanceHandlerAndCatalog()
         {
-            AZ::IO::MockFileIOBase::InstallDefaultReturns(m_fileIOMock);
-            AzFramework::MockSpawnableEntitiesInterface::InstallDefaultReturns(m_spawnableEntitiesInterfaceMock);
-        }
-
-        void RegisterComponentDescriptors() override
-        {
-            m_app.RegisterComponentDescriptor(MockPrefabInstanceVegetationSystemComponent::CreateDescriptor());
-        }
-
-        void SetUp() override
-        {
-            VegetationComponentTests::SetUp();
-
-            // Create a real Asset Mananger, and point to ourselves as the handler for Spawnable.
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
-
-            // Initialize the job manager with 1 thread for the AssetManager to use.
-            AZ::JobManagerDesc jobDesc;
-            AZ::JobManagerThreadDesc threadDesc;
-            jobDesc.m_workerThreads.push_back(threadDesc);
-            m_jobManager = aznew AZ::JobManager(jobDesc);
-            m_jobContext = aznew AZ::JobContext(*m_jobManager);
-            AZ::JobContext::SetGlobalContext(m_jobContext);
-
-            AZ::Data::AssetManager::Descriptor descriptor;
-            AZ::Data::AssetManager::Create(descriptor);
-            AZ::Data::AssetManager::Instance().RegisterHandler(this, AZ::AzTypeInfo<AzFramework::Spawnable>::Uuid());
-            AZ::Data::AssetManager::Instance().RegisterCatalog(this, AZ::AzTypeInfo<AzFramework::Spawnable>::Uuid());
-
-            // Intercept messages for finding assets by name.
             AZ::Data::AssetCatalogRequestBus::Handler::BusConnect();
         }
 
-        void TearDown() override
+        ~PrefabInstanceHandlerAndCatalog()
         {
-            // Give the AssetManager a chance to fire off any lingering events and perform cleanup for any
-            // spawnable assets we loaded.
-            AZ::Data::AssetManager::Instance().DispatchEvents();
-
-            AZ::Data::AssetManager::Instance().UnregisterCatalog(this);
-            AZ::Data::AssetManager::Instance().UnregisterHandler(this);
-
             AZ::Data::AssetCatalogRequestBus::Handler::BusDisconnect();
-
-            AZ::Data::AssetManager::Destroy();
-
-            AZ::JobContext::SetGlobalContext(nullptr);
-            delete m_jobContext;
-            delete m_jobManager;
-
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-
-            VegetationComponentTests::TearDown();
         }
 
         // Helper methods:
@@ -185,7 +130,7 @@ namespace UnitTest
         AZ::Data::AssetHandler::LoadResult LoadAssetData(
             const AZ::Data::Asset<AZ::Data::AssetData>& asset,
             AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
-            [[maybe_unused]] const AZ::Data::AssetFilterCB& assetLoadFilterCB)
+            [[maybe_unused]] const AZ::Data::AssetFilterCB& assetLoadFilterCB) override
         {
             MockAssetData* temp = reinterpret_cast<MockAssetData*>(asset.GetData());
             temp->SetStatus(AZ::Data::AssetData::AssetStatus::Ready);
@@ -227,9 +172,79 @@ namespace UnitTest
         AZStd::string m_assetPath;
         AZ::Data::AssetId m_assetId;
         int m_numOnLoadedCalls = 0;
+    };
 
+    // To test Dynamic Slice spawning, we need to mock up enough of the asset management system and the dynamic slice
+   // asset handling to pretend like we're loading/unloading dynamic slices successfully.
+    class PrefabInstanceSpawnerTests
+        : public VegetationComponentTests
+    {
+    public:
+        PrefabInstanceSpawnerTests()
+            : m_restoreFileIO(m_fileIOMock)
+        {
+            AZ::IO::MockFileIOBase::InstallDefaultReturns(m_fileIOMock);
+            AzFramework::MockSpawnableEntitiesInterface::InstallDefaultReturns(m_spawnableEntitiesInterfaceMock);
+        }
+
+        void SetUp() override
+        {
+            VegetationComponentTests::SetUp();
+
+            // Create a real Asset Mananger, and point to ourselves as the handler for DynamicSliceAsset.
+            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
+            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
+
+            // Initialize the job manager with 1 thread for the AssetManager to use.
+            AZ::JobManagerDesc jobDesc;
+            AZ::JobManagerThreadDesc threadDesc;
+            jobDesc.m_workerThreads.push_back(threadDesc);
+            m_jobManager = aznew AZ::JobManager(jobDesc);
+            m_jobContext = aznew AZ::JobContext(*m_jobManager);
+            AZ::JobContext::SetGlobalContext(m_jobContext);
+
+            AZ::Data::AssetManager::Descriptor descriptor;
+            AZ::Data::AssetManager::Create(descriptor);
+            m_testHandler = AZStd::make_unique<PrefabInstanceHandlerAndCatalog>();
+            AZ::Data::AssetManager::Instance().RegisterHandler(m_testHandler.get(), AZ::AzTypeInfo<AzFramework::Spawnable>::Uuid());
+            AZ::Data::AssetManager::Instance().RegisterCatalog(m_testHandler.get(), AZ::AzTypeInfo<AzFramework::Spawnable>::Uuid());
+
+            m_app.RegisterComponentDescriptor(AZ::SliceComponent::CreateDescriptor());
+        }
+
+        void TearDown() override
+        {
+            // Clear out the list of queued AssetBus Events before unregistering the AssetHandler
+            // to make sure pending references to Asset<AssetData> instances are cleared
+            AZ::Data::AssetManager::Instance().DispatchEvents();
+            AZ::Data::AssetManager::Instance().UnregisterHandler(m_testHandler.get());
+            AZ::Data::AssetManager::Instance().UnregisterCatalog(m_testHandler.get());
+            AZ::Data::AssetManager::Destroy();
+
+            m_testHandler.reset();
+
+            AZ::JobContext::SetGlobalContext(nullptr);
+            delete m_jobContext;
+            delete m_jobManager;
+
+            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
+            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
+
+            VegetationComponentTests::TearDown();
+        }
+
+        void RegisterComponentDescriptors() override
+        {
+            m_app.RegisterComponentDescriptor(MockPrefabInstanceVegetationSystemComponent::CreateDescriptor());
+        }
+
+    protected:
+        AZStd::unique_ptr<PrefabInstanceHandlerAndCatalog> m_testHandler;
+
+    private:
         AZ::JobManager* m_jobManager{ nullptr };
         AZ::JobContext* m_jobContext{ nullptr };
+        SetRestoreFileIOBaseRAII m_restoreFileIO;
         ::testing::NiceMock<AZ::IO::MockFileIOBase> m_fileIOMock;
         ::testing::NiceMock<AzFramework::MockSpawnableEntitiesInterface> m_spawnableEntitiesInterfaceMock;
     };
@@ -259,7 +274,7 @@ namespace UnitTest
         Vegetation::PrefabInstanceSpawner instanceSpawner2;
 
         // Give the second instance spawner a non-default asset reference.
-        CreateAndSetMockAsset(instanceSpawner2, AZ::Uuid::CreateRandom(), "test");
+        m_testHandler->CreateAndSetMockAsset(instanceSpawner2, AZ::Uuid::CreateRandom(), "test");
 
         // The test is written this way because only the == operator is overloaded.
         EXPECT_TRUE(!(instanceSpawner1 == instanceSpawner2));
@@ -275,14 +290,14 @@ namespace UnitTest
         EXPECT_TRUE(instanceSpawner.HasEmptyAssetReferences());
 
         // This will test the asset load.
-        CreateAndSetMockAsset(instanceSpawner, AZ::Uuid::CreateRandom(), "test");
+        m_testHandler->CreateAndSetMockAsset(instanceSpawner, AZ::Uuid::CreateRandom(), "test");
 
         // Test the asset unload works too.
-        Vegetation::DescriptorNotificationBus::Handler::BusConnect(&instanceSpawner);
+        m_testHandler->Vegetation::DescriptorNotificationBus::Handler::BusConnect(&instanceSpawner);
         instanceSpawner.UnloadAssets();
         EXPECT_FALSE(instanceSpawner.IsLoaded());
         EXPECT_FALSE(instanceSpawner.IsSpawnable());
-        Vegetation::DescriptorNotificationBus::Handler::BusDisconnect();
+        m_testHandler->Vegetation::DescriptorNotificationBus::Handler::BusDisconnect();
     }
 
     TEST_F(PrefabInstanceSpawnerTests, CreateAndDestroyInstance)
@@ -291,7 +306,7 @@ namespace UnitTest
 
         Vegetation::PrefabInstanceSpawner instanceSpawner;
 
-        CreateAndSetMockAsset(instanceSpawner, AZ::Uuid::CreateRandom(), "test");
+        m_testHandler->CreateAndSetMockAsset(instanceSpawner, AZ::Uuid::CreateRandom(), "test");
 
         instanceSpawner.OnRegisterUniqueDescriptor();
 

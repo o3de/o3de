@@ -12,6 +12,7 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Debug/Trace.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Slice/SliceAsset.h>
 #include <AzCore/Slice/SliceAssetHandler.h>
@@ -29,7 +30,7 @@
 namespace LevelBuilder
 {
     const char s_materialExtension[] = ".mtl";
-    const char s_audioControlFilesLevelPath[] = "@devassets@/libs/gameaudio/wwise/levels/%s";
+    const char s_audioControlFilesLevelPath[] = "@projectroot@/libs/gameaudio/wwise/levels/%s";
     const char s_audioControlFilter[] = "*.xml";
 
     AZ::u64 readXmlDataLength(AZ::IO::GenericStream* stream, int& charSize)
@@ -155,35 +156,15 @@ namespace LevelBuilder
     {
         PopulateOptionalLevelDependencies(sourceRelativeFile, productPathDependencies);
 
-        AZStd::binary_semaphore extractionCompleteSemaphore;
-        auto extractResponseLambda = [&]([[maybe_unused]] bool success) {
-            AZStd::string levelsubfolder;
-            AzFramework::StringFunc::Path::Join(tempDirectory.c_str(), "level", levelsubfolder);
+        std::future<bool> extractResult;
+        AzToolsFramework::ArchiveCommandsBus::BroadcastResult(
+            extractResult, &AzToolsFramework::ArchiveCommandsBus::Events::ExtractArchive, levelPakFile, tempDirectory);
 
-            PopulateLevelSliceDependencies(levelsubfolder, productDependencies, productPathDependencies);
-            PopulateMissionDependencies(levelPakFile, levelsubfolder, productPathDependencies);
-            PopulateLevelAudioControlDependencies(levelPakFile, productPathDependencies);
+        extractResult.wait();
 
-            extractionCompleteSemaphore.release();
-        };
-
-        AZ::Uuid handle = AZ::Uuid::Create();
-        AzToolsFramework::ArchiveCommands::Bus::Broadcast(
-            &AzToolsFramework::ArchiveCommands::ExtractArchive,
-            levelPakFile,
-            tempDirectory,
-            handle,
-            extractResponseLambda);
-
-        const int archiveExtractSleepMS = 20;
-        bool extractionCompleted = false;
-        while (!extractionCompleted)
-        {
-            extractionCompleted = extractionCompleteSemaphore.try_acquire_for(AZStd::chrono::milliseconds(archiveExtractSleepMS));
-            // When the archive extraction is completed, the response lambda is queued on the the tick bus.
-            // This loop will keep executing queued events on the tickbus until the response unlocks the semaphore.
-            AZ::TickBus::ExecuteQueuedEvents();
-        }
+        PopulateLevelSliceDependencies(tempDirectory, productDependencies, productPathDependencies);
+        PopulateMissionDependencies(levelPakFile, tempDirectory, productPathDependencies);
+        PopulateLevelAudioControlDependencies(levelPakFile, productPathDependencies);
     }
 
     AZStd::string GetLastFolderFromPath(const AZStd::string& path)

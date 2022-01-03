@@ -66,9 +66,9 @@ namespace AzToolsFramework
         return result;
     }
 
-    QPixmap LayerUiHandler::GenerateItemIcon(AZ::EntityId /*entityId*/) const
+    QIcon LayerUiHandler::GenerateItemIcon(AZ::EntityId /*entityId*/) const
     {
-        return QPixmap(m_layerIconPath);
+        return QIcon(m_layerIconPath);
     }
 
     void LayerUiHandler::PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const

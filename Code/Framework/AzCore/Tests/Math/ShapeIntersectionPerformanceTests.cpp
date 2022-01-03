@@ -35,8 +35,7 @@ namespace Benchmark
     class BM_MathShapeIntersection
         : public benchmark::Fixture
     {
-    public:
-        void SetUp([[maybe_unused]] const ::benchmark::State& state) override
+        void internalSetUp()
         {
             m_testDataArray.resize(1000);
 
@@ -57,6 +56,15 @@ namespace Benchmark
                 testData.vector2 = AZ::Vector3(unif(rng), unif(rng), unif(rng));
                 return testData;
             });
+        }
+    public:
+        void SetUp(const benchmark::State&) override
+        {
+            internalSetUp();
+        }
+        void SetUp(benchmark::State&) override
+        {
+            internalSetUp();
         }
 
         struct TestData

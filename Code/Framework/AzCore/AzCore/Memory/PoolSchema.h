@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZ_POOL_ALLOCATION_SCHEME_H
-#define AZ_POOL_ALLOCATION_SCHEME_H
+#pragma once
 
 #include <AzCore/Memory/SystemAllocator.h>
 
@@ -70,6 +69,7 @@ namespace AZ
         /// Return unused memory to the OS. Don't call this too often because you will force unnecessary allocations.
         void GarbageCollect() override;
 
+        size_type GetMaxContiguousAllocationSize() const override;
         size_type NumAllocatedBytes() const override;
         size_type Capacity() const override;
         IAllocatorAllocate* GetSubAllocator() override;
@@ -115,6 +115,7 @@ namespace AZ
         /// Return unused memory to the OS. Don't call this too often because you will force unnecessary allocations.
         void GarbageCollect() override;
 
+        size_type GetMaxContiguousAllocationSize() const override;
         size_type NumAllocatedBytes() const override;
         size_type Capacity() const override;
         IAllocatorAllocate* GetSubAllocator() override;
@@ -162,8 +163,3 @@ namespace AZ
     template<class Allocator>
     AZ_THREAD_LOCAL ThreadPoolData* ThreadPoolSchemaHelper<Allocator>::m_threadData = 0;
 }
-
-#endif // AZ_POOL_ALLOCATION_SCHEME_H
-#pragma once
-
-

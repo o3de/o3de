@@ -13,6 +13,7 @@
 #include <AzFramework/InGameUI/UiFrameworkBus.h>
 
 #include <LmbrCentral/Rendering/MaterialAsset.h>
+#include <ILevelSystem.h>
 
 #include <LyShine/Bus/UiSystemBus.h>
 #include <LyShine/Bus/UiCanvasManagerBus.h>
@@ -37,6 +38,7 @@ namespace LyShine
         , protected LyShineAllocatorScope
         , protected UiFrameworkBus::Handler
         , protected CrySystemEventBus::Handler
+        , public ILevelSystemListener
     {
     public:
         AZ_COMPONENT(LyShineSystemComponent, lyShineSystemComponentUuid);
@@ -65,7 +67,7 @@ namespace LyShine
         // UiSystemBus interface implementation
         void RegisterComponentTypeForMenuOrdering(const AZ::Uuid& typeUuid) override;
         const AZStd::vector<AZ::Uuid>* GetComponentTypesForMenuOrdering() override;
-        const AZStd::list<AZ::ComponentDescriptor*>* GetLyShineComponentDescriptors();
+        const AZStd::list<AZ::ComponentDescriptor*>* GetLyShineComponentDescriptors() override;
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////
@@ -89,8 +91,12 @@ namespace LyShine
 
         // CrySystemEventBus ///////////////////////////////////////////////////////
         void OnCrySystemInitialized(ISystem& system, const SSystemInitParams&) override;
-        virtual void OnCrySystemShutdown(ISystem&) override;
+        void OnCrySystemShutdown(ISystem&) override;
         ////////////////////////////////////////////////////////////////////////////
+
+        ////////////////////////////////////////////////////////////////////////
+        // ILevelSystemListener interface implementation
+        void OnUnloadComplete(const char* levelName) override;
 
         void BroadcastCursorImagePathname();
 

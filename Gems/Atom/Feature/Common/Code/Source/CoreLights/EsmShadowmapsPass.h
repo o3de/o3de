@@ -21,12 +21,17 @@
 
 namespace AZ
 {
+    namespace RPI
+    {
+        class ShaderResourceGroup;
+    }
+
     namespace Render
     {
         AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(EsmChildPassKind, uint32_t,
             (Exponentiation, 0),
-            HorizontalFilter,
-            VerticalFilter);
+            KawaseBlur0,
+            KawaseBlur1);
 
         //! This pass outputs filtered shadowmap images used in ESM.
         //! ESM is an abbreviation of Exponential Shadow Maps.
@@ -45,27 +50,17 @@ namespace AZ
                 uint32_t m_isEnabled = false;
                 AZStd::array<uint32_t, 2> m_shadowmapOriginInSlice = { {0, 0 } }; // shadowmap origin in the slice of the atlas.
                 uint32_t m_shadowmapSize = static_cast<uint32_t>(ShadowmapSize::None); // width and height of shadowmap.
-                uint32_t m_parameterOffset; // offset of the filter parameter.
-                uint32_t m_parameterCount; // element count of the filter parameter.
                 float m_lightDistanceOfCameraViewFrustum = 0.f;
                 float m_n_f_n = 0.f; // n / (f - n)
                 float m_n_f = 0.f;   // n - f
                 float m_f = 0.f;     // f
                                      // where n: nearDepth, f: farDepth.
-                AZStd::array<float, 2> m_padding = {{0.f, 0.f}}; // explicit padding
             };
 
             virtual ~EsmShadowmapsPass() = default;
             static RPI::Ptr<EsmShadowmapsPass> Create(const RPI::PassDescriptor& descriptor);
 
             const Name& GetLightTypeName() const;
-
-            //! This sets the standard deviations of the Gaussian filter
-            //! for each cascade.
-            void SetFilterParameters(const AZStd::array_view<float>& standardDeviations);
-
-            //! This returns element count of filters.
-            AZStd::array_view<uint32_t> GetFilterCounts() const;
 
             //! This sets the buffer of the table which enable to get shadowmap index
             //! from the coordinate in the atlas.
@@ -88,6 +83,9 @@ namespace AZ
             void FrameBeginInternal(FramePrepareParams params) override;
 
             void UpdateChildren();
+            // Parameters for both the depth exponentiation pass along with the kawase blur passes
+            void SetBlurParameters(Data::Instance<RPI::ShaderResourceGroup> srg, const uint32_t childPassIndex);
+            void SetKawaseBlurSpecificParameters(Data::Instance<RPI::ShaderResourceGroup> srg, const uint32_t kawaseBlurIndex);
 
             bool m_computationEnabled = false;
             Name m_lightTypeName;
@@ -102,6 +100,8 @@ namespace AZ
             Data::Instance<RPI::Buffer> m_shadowmapIndexTableBuffer;
             AZStd::array<RHI::ShaderInputBufferIndex, EsmChildPassKindCount> m_filterParameterBufferIndices;
             Data::Instance<RPI::Buffer> m_filterParameterBuffer;
+
+            AZStd::array<RHI::ShaderInputConstantIndex, 2> m_kawaseBlurConstantIndices;
         };
     } // namespace Render
 } // namespace AZ

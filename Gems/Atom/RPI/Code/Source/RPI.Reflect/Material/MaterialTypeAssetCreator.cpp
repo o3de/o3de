@@ -38,7 +38,7 @@ namespace AZ
 
         bool MaterialTypeAssetCreator::End(Data::Asset<MaterialTypeAsset>& result)
         {
-            if (!ValidateIsReady() || !ValidateEndMaterialProperty())
+            if (!ValidateIsReady() || !ValidateEndMaterialProperty() || !ValidateMaterialVersion())
             {
                 return false; 
             }
@@ -100,6 +100,48 @@ namespace AZ
             }
         }
 
+        bool MaterialTypeAssetCreator::ValidateMaterialVersion()
+        {
+            if (m_asset->m_materialVersionUpdates.empty())
+            {
+                return true;
+            }
+
+            uint32_t prevVersion = 0;
+            for(const MaterialVersionUpdate& versionUpdate : m_asset->m_materialVersionUpdates)
+            {
+                if (versionUpdate.GetVersion() <= prevVersion)
+                {
+                    ReportError("Version updates are not sequential. See version update '%u'.", versionUpdate.GetVersion());
+                    return false;
+                }
+                
+                if (versionUpdate.GetVersion() > m_asset->m_version)
+                {
+                    ReportError("Version updates go beyond the current material type version. See version update '%u'.", versionUpdate.GetVersion());
+                    return false;
+                }
+
+                prevVersion = versionUpdate.GetVersion();
+            }
+
+            const auto& lastMaterialVersionUpdate = m_asset->m_materialVersionUpdates.back();
+            for (const auto& action : lastMaterialVersionUpdate.GetActions())
+            {                
+                const auto propertyIndex = m_asset->m_materialPropertiesLayout->FindPropertyIndex(AZ::Name{ action.m_toPropertyId });
+                if (!propertyIndex.IsValid())
+                {
+                    ReportError("Renamed property '%s' not found in material property layout. Check that the property name has been "
+                            "upgraded to the correct version",
+                            action.m_toPropertyId.GetCStr());
+                    return false;
+                }
+
+            }
+
+            return true;
+        }
+
         void MaterialTypeAssetCreator::AddShader(const AZ::Data::Asset<ShaderAsset>& shaderAsset, const ShaderVariantId& shaderVaraintId, const AZ::Name& shaderTag)
         {
             if (ValidateIsReady() && ValidateNotNull(shaderAsset, "ShaderAsset"))
@@ -121,6 +163,16 @@ namespace AZ
         void MaterialTypeAssetCreator::AddShader(const AZ::Data::Asset<ShaderAsset>& shaderAsset, const AZ::Name& shaderTag)
         {
             AddShader(shaderAsset, ShaderVariantId{}, shaderTag);
+        }
+
+        void MaterialTypeAssetCreator::SetVersion(uint32_t version)
+        {
+            m_asset->m_version = version;
+        }
+
+        void MaterialTypeAssetCreator::AddVersionUpdate(const MaterialVersionUpdate& materialVersionUpdate)
+        {
+            m_asset->m_materialVersionUpdates.push_back(materialVersionUpdate);
         }
 
         void MaterialTypeAssetCreator::ClaimShaderOptionOwnership(const Name& shaderOptionName)

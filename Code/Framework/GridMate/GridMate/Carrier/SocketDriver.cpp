@@ -1694,7 +1694,7 @@ namespace GridMate
         //worker packet send thread
         AZStd::thread_desc workerSendThreadDesc;
         workerSendThreadDesc.m_name = "GridMate-Carrier Packet Send Thread";
-        m_workerSendThread = AZStd::thread(AZStd::bind(&SocketDriverCommon::RIOPlatformSocketDriver::WorkerSendThread, this), &workerSendThreadDesc);
+        m_workerSendThread = AZStd::thread(workerSendThreadDesc, AZStd::bind(&SocketDriverCommon::RIOPlatformSocketDriver::WorkerSendThread, this));
         if (m_workerSendThread.get_id() == AZStd::native_thread_invalid_id)
         {
             AZ_Error("GridMate", false, "Could not create worker thread.");

@@ -40,7 +40,7 @@ namespace AZ
             //!                by ShaderVariantAssetBuilder this is 1+.
             static uint32_t MakeAssetProductSubId(
                 uint32_t rhiApiUniqueIndex, uint32_t supervariantIndex, ShaderVariantStableId variantStableId,
-                uint32_t subProductType = ShaderVariantAssetSubProductType);
+                uint32_t subProductType = 0);
 
             ShaderVariantAsset() = default;
             ~ShaderVariantAsset() = default;
@@ -61,7 +61,7 @@ namespace AZ
 
             //! Return the timestamp when this asset was built, and it must be >= than the timestamp of the main ShaderAsset.
             //! This is used to synchronize versions of the ShaderAsset and ShaderVariantAsset, especially during hot-reload.
-            AZStd::sys_time_t GetBuildTimestamp() const;
+            AZ::u64 GetBuildTimestamp() const;
 
             bool IsRootVariant() const { return m_stableId == RPI::RootShaderVariantStableId; } 
 
@@ -80,7 +80,7 @@ namespace AZ
             AZStd::array<RHI::Ptr<RHI::ShaderStageFunction>, RHI::ShaderStageCount> m_functionsByStage;
 
             //! Used to synchronize versions of the ShaderAsset and ShaderVariantAsset, especially during hot-reload.
-            AZStd::sys_time_t m_buildTimestamp = 0;
+            AZ::u64 m_buildTimestamp = 0;
         };
 
         class ShaderVariantAssetHandler final

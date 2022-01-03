@@ -26,9 +26,6 @@
 #include <AzQtComponents/Components/Widgets/ScrollBar.h>
 #include <AzQtComponents/Components/Widgets/SliderCombo.h>
 
-// CryCommon
-#include <CryCommon/SFunctor.h>
-
 // Editor
 #include "QtViewPaneManager.h"
 #include "Core/QtEditorApplication.h"
@@ -392,7 +389,7 @@ void CConsoleSCB::RegisterViewClass()
     opts.showInMenu = true;
     opts.builtInActionId = ID_VIEW_CONSOLEWINDOW;
     opts.shortcut = QKeySequence(Qt::Key_QuoteLeft);
-    
+
     AzToolsFramework::RegisterViewPane<CConsoleSCB>(LyViewPane::Console, LyViewPane::CategoryTools, opts);
 }
 
@@ -421,9 +418,6 @@ void CConsoleSCB::RefreshStyle()
         m_colorTable[6] = QColor(0xff, 0xaa, 0x22);     // Warning (Yellow)
     }
 
-    m_colorTable[0] = textColor;
-    m_colorTable[1] = textColor;
-
     const bool uiAndDark = !GetIEditor()->IsInConsolewMode() && CConsoleSCB::GetCreatedInstance() && m_backgroundTheme == AzToolsFramework::ConsoleColorTheme::Dark;
 
     QColor bgColor;
@@ -435,8 +429,13 @@ void CConsoleSCB::RefreshStyle()
     else
     {
         bgColor = Qt::white;
+        textColor = Qt::black;
         AzQtComponents::ScrollBar::applyDarkStyle(ui->textEdit);
     }
+
+    m_colorTable[0] = textColor;
+    m_colorTable[1] = textColor;
+
     ui->textEdit->setBackgroundVisible(!uiAndDark);
     ui->textEdit->setStyleSheet(uiAndDark ? QString() : QString("QPlainTextEdit{ background: %1 }").arg(bgColor.name(QColor::HexRgb)));
 
@@ -604,8 +603,7 @@ static CVarBlock* VarBlockFromConsoleVars()
 
         // Add our on change handler so we can update the CVariable created for
         // the matching ICVar that has been modified
-        SFunctor onChange;
-        onChange.Set(OnVariableUpdated, i, pCVar);
+        AZStd::function<void()> onChange = [row=i,pCVar=pCVar]() { OnVariableUpdated(row,pCVar); };
         pCVar->AddOnChangeFunctor(onChange);
 
         pVariable->SetDescription(pCVar->GetHelp());
@@ -927,7 +925,7 @@ QWidget* ConsoleVariableItemDelegate::createEditor(QWidget* parent, const QStyle
             return editor;
         }
     }
-    
+
     // If we get here, value being edited is a string, so use our styled line
     // edit widget
     AzQtComponents::StyledLineEdit* lineEdit = new AzQtComponents::StyledLineEdit(parent);

@@ -23,10 +23,10 @@ class TestAutomation(TestAutomationBase):
 
     use_null_renderer = False  # Use default renderer (needs gpu)
 
-    def test_C18977329_NvCloth_AddClothSimulationToMesh(self, request, workspace, editor, launcher_platform):
-        from . import C18977329_NvCloth_AddClothSimulationToMesh as test_module
+    def test_NvCloth_AddClothSimulationToMesh(self, request, workspace, editor, launcher_platform):
+        from .tests import NvCloth_AddClothSimulationToMesh as test_module
         self._run_test(request, workspace, editor, test_module, use_null_renderer = self.use_null_renderer)
 
-    def test_C18977330_NvCloth_AddClothSimulationToActor(self, request, workspace, editor, launcher_platform):
-        from . import C18977330_NvCloth_AddClothSimulationToActor as test_module
+    def test_NvCloth_AddClothSimulationToActor(self, request, workspace, editor, launcher_platform):
+        from .tests import NvCloth_AddClothSimulationToActor as test_module
         self._run_test(request, workspace, editor, test_module, use_null_renderer = self.use_null_renderer)

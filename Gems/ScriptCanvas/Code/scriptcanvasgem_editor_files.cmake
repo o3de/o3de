@@ -15,22 +15,10 @@ set(FILES
     Editor/SystemComponent.h
     Editor/SystemComponent.cpp
     Editor/QtMetaTypes.h
-    Editor/Assets/ScriptCanvasAssetTracker.cpp
-    Editor/Assets/ScriptCanvasAssetTracker.h
-    Editor/Assets/ScriptCanvasAssetTrackerBus.h
     Editor/Assets/ScriptCanvasAssetHelpers.h
     Editor/Assets/ScriptCanvasAssetHelpers.cpp
-    Editor/Assets/ScriptCanvasAssetTrackerDefinitions.h
-    Editor/Include/ScriptCanvas/Assets/ScriptCanvasAsset.h
-    Editor/Assets/ScriptCanvasAsset.cpp
-    Editor/Include/ScriptCanvas/Assets/ScriptCanvasAssetBus.h
-    Editor/Include/ScriptCanvas/Assets/ScriptCanvasAssetTypes.h
-    Editor/Include/ScriptCanvas/Assets/ScriptCanvasAssetHandler.h
-    Editor/Assets/ScriptCanvasAssetHandler.cpp
-    Editor/Assets/ScriptCanvasAssetHolder.h
-    Editor/Assets/ScriptCanvasAssetHolder.cpp
-    Editor/Assets/ScriptCanvasMemoryAsset.h
-    Editor/Assets/ScriptCanvasMemoryAsset.cpp
+    Editor/Include/ScriptCanvas/Assets/ScriptCanvasFileHandling.h
+    Editor/Assets/ScriptCanvasFileHandling.cpp
     Editor/Assets/ScriptCanvasUndoHelper.h
     Editor/Assets/ScriptCanvasUndoHelper.cpp
     Editor/Include/ScriptCanvas/Bus/RequestBus.h
@@ -52,7 +40,11 @@ set(FILES
     Editor/Include/ScriptCanvas/Components/EditorGraphVariableManagerComponent.h
     Editor/Components/EditorGraphVariableManagerComponent.cpp
     Editor/Include/ScriptCanvas/Components/EditorScriptCanvasComponent.h
+    Editor/Include/ScriptCanvas/Components/EditorDeprecationData.h
+    Editor/Include/ScriptCanvas/Components/EditorDeprecationData.cpp
     Editor/Components/EditorScriptCanvasComponent.cpp
+    Editor/Include/ScriptCanvas/Components/EditorScriptCanvasComponentSerializer.h
+    Editor/Include/ScriptCanvas/Components/EditorScriptCanvasComponentSerializer.cpp
     Editor/Components/IconComponent.h
     Editor/Components/IconComponent.cpp
     Editor/Include/ScriptCanvas/GraphCanvas/DynamicSlotBus.h
@@ -176,6 +168,8 @@ set(FILES
     Editor/View/Widgets/ScriptCanvasNodePaletteDockWidget.h
     Editor/View/Widgets/ScriptCanvasNodePaletteDockWidget.cpp
     Editor/View/Widgets/ScriptCanvasNodePaletteToolbar.ui
+    Editor/View/Widgets/SourceHandlePropertyAssetCtrl.h
+    Editor/View/Widgets/SourceHandlePropertyAssetCtrl.cpp
     Editor/View/Widgets/WidgetBus.h
     Editor/View/Widgets/DataTypePalette/DataTypePaletteModel.cpp
     Editor/View/Widgets/DataTypePalette/DataTypePaletteModel.h
@@ -257,15 +251,24 @@ set(FILES
     Editor/View/Windows/ScriptCanvasContextMenus.cpp
     Editor/View/Windows/ScriptCanvasContextMenus.h
     Editor/View/Windows/ScriptCanvasEditorResources.qrc
-    Editor/View/Windows/Tools/UpgradeTool/UpgradeHelper.h
+    Editor/View/Windows/Tools/UpgradeTool/Controller.cpp
+    Editor/View/Windows/Tools/UpgradeTool/Controller.h
+    Editor/View/Windows/Tools/UpgradeTool/FileSaver.cpp
+    Editor/View/Windows/Tools/UpgradeTool/FileSaver.h
+    Editor/View/Windows/Tools/UpgradeTool/LogTraits.h
+    Editor/View/Windows/Tools/UpgradeTool/Model.cpp
+    Editor/View/Windows/Tools/UpgradeTool/Model.h
+    Editor/View/Windows/Tools/UpgradeTool/Modifier.cpp
+    Editor/View/Windows/Tools/UpgradeTool/Modifier.h
+    Editor/View/Windows/Tools/UpgradeTool/ModelTraits.h
+    Editor/View/Windows/Tools/UpgradeTool/Scanner.cpp
+    Editor/View/Windows/Tools/UpgradeTool/Scanner.h
     Editor/View/Windows/Tools/UpgradeTool/UpgradeHelper.cpp
+    Editor/View/Windows/Tools/UpgradeTool/UpgradeHelper.h
     Editor/View/Windows/Tools/UpgradeTool/UpgradeHelper.ui
-    Editor/View/Windows/Tools/UpgradeTool/UpgradeTool.cpp
-    Editor/View/Windows/Tools/UpgradeTool/UpgradeTool.h
-    Editor/View/Windows/Tools/UpgradeTool/UpgradeTool.ui
-    Editor/View/Windows/Tools/UpgradeTool/VersionExplorer.h
-    Editor/View/Windows/Tools/UpgradeTool/VersionExplorer.cpp
-    Editor/View/Windows/Tools/UpgradeTool/VersionExplorer.ui
+    Editor/View/Windows/Tools/UpgradeTool/VersionExplorerLog.cpp
+    Editor/View/Windows/Tools/UpgradeTool/VersionExplorerLog.h
+    Editor/View/Windows/Tools/UpgradeTool/View.ui
     Editor/Framework/ScriptCanvasGraphUtilities.inl
     Editor/Framework/ScriptCanvasGraphUtilities.h
     Editor/Framework/ScriptCanvasTraceUtilities.h

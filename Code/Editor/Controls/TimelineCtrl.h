@@ -56,7 +56,7 @@ public:
     void setGeometry(const QRect& r) override { QWidget::setGeometry(r); }
 
     void SetTimeRange(const Range& r) { m_timeRange = r; }
-    void SetTimeMarker(float fTime);
+    void SetTimeMarker(float fTime) override;
     float GetTimeMarker() const { return m_fTimeMarker; }
 
     void SetZoom(float fZoom);
@@ -113,7 +113,7 @@ protected:
     void OnLButtonUp(const QPoint& point, Qt::KeyboardModifiers modifiers);
     void OnRButtonDown(const QPoint& point, Qt::KeyboardModifiers modifiers);
     void OnRButtonUp(const QPoint& point, Qt::KeyboardModifiers modifiers);
-    void keyPressEvent(QKeyEvent* event);
+    void keyPressEvent(QKeyEvent* event) override;
 
     // Drawing functions
     float  ClientToTime(int x);

@@ -16,7 +16,7 @@ namespace AZ
 {
     namespace ShaderBuilder
     {
-        static const char* s_azslShaderCompilerName = "AZSL Compiler";
+        [[maybe_unused]] static const char* s_azslShaderCompilerName = "AZSL Compiler";
 
         AZ::RHI::Format StringToFormat(const char* format)
         {

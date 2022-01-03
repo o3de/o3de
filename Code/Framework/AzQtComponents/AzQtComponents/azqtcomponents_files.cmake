@@ -49,6 +49,11 @@ set(FILES
     Components/Titlebar.h
     Components/TitleBarOverdrawHandler.cpp
     Components/TitleBarOverdrawHandler.h
+    Components/ToastNotification.cpp
+    Components/ToastNotification.h
+    Components/ToastNotificationConfiguration.h
+    Components/ToastNotificationConfiguration.cpp
+    Components/ToastNotification.ui
     Components/ToolButtonComboBox.cpp
     Components/ToolButtonComboBox.h
     Components/ToolButtonLineEdit.cpp
@@ -271,11 +276,12 @@ set(FILES
     Utilities/ColorUtilities.h
     Utilities/Conversions.h
     Utilities/Conversions.cpp
-    Utilities/DesktopUtilities.cpp
     Utilities/DesktopUtilities.h
     Utilities/HandleDpiAwareness.cpp
     Utilities/HandleDpiAwareness.h
     Utilities/MouseHider.h
+    Utilities/PixmapScaleUtilities.cpp
+    Utilities/PixmapScaleUtilities.h
     Utilities/QtPluginPaths.cpp
     Utilities/QtPluginPaths.h
     Utilities/QtWindowUtilities.cpp

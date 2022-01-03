@@ -48,6 +48,15 @@ namespace Terrain
                     ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("GradientService"))
                 ;
             }
+
+            if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+            {
+                behaviorContext->Class<TerrainHeightGradientListConfig>()
+                    ->Attribute(AZ::Script::Attributes::Category, "Terrain")
+                    ->Constructor()
+                    ->Property("gradientEntities", BehaviorValueProperty(&TerrainHeightGradientListConfig::m_gradientEntities))
+                ;
+            }
         }
     }
 
@@ -65,7 +74,7 @@ namespace Terrain
     void TerrainHeightGradientListComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
         services.push_back(AZ_CRC_CE("TerrainAreaService"));
-        services.push_back(AZ_CRC_CE("BoxShapeService"));
+        services.push_back(AZ_CRC_CE("AxisAlignedBoxShapeService"));
     }
 
     void TerrainHeightGradientListComponent::Reflect(AZ::ReflectContext* context)
@@ -119,7 +128,9 @@ namespace Terrain
         LmbrCentral::DependencyNotificationBus::Handler::BusDisconnect();
 
         // Since this height data will no longer exist, notify the terrain system to refresh the area.
-        TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId());
+        TerrainSystemServiceRequestBus::Broadcast(
+            &TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId(),
+            AzFramework::Terrain::TerrainDataNotifications::HeightData);
     }
 
     bool TerrainHeightGradientListComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
@@ -142,60 +153,51 @@ namespace Terrain
         return false;
     }
 
-    float TerrainHeightGradientListComponent::GetHeight(float x, float y)
+    void TerrainHeightGradientListComponent::GetHeight(
+        const AZ::Vector3& inPosition,
+        AZ::Vector3& outPosition,
+        bool& terrainExists)
     {
         float maxSample = 0.0f;
-
-        GradientSignal::GradientSampleParams params(AZ::Vector3(x, y, 0.0f));
-
-        // Right now, when the list contains multiple entries, we will use the highest point from each gradient.
-        // This is needed in part because gradients don't really have world bounds, so they exist everywhere but generally have a value
-        // of 0 outside their data bounds if they're using bounded data.  We should examine the possibility of extending the gradient API
-        // to provide actual bounds so that it's possible to detect if the gradient even 'exists' in an area, at which point we could just
-        // make this list a prioritized list from top to bottom for any points that overlap.
-        for (auto& gradientId : m_configuration.m_gradientEntities)
+        terrainExists = false;
+        AZ_WarningOnce("Terrain", !m_isRequestInProgress, "Detected cyclic dependences with terrain height entity references");
+        if (!m_isRequestInProgress)
         {
-            float sample = 0.0f;
-            GradientSignal::GradientRequestBus::EventResult(sample, gradientId, &GradientSignal::GradientRequestBus::Events::GetValue, params);
-            maxSample = AZ::GetMax(maxSample, sample);
+            m_isRequestInProgress = true;
+            GradientSignal::GradientSampleParams params(AZ::Vector3(inPosition.GetX(), inPosition.GetY(), 0.0f));
+
+            // Right now, when the list contains multiple entries, we will use the highest point from each gradient.
+            // This is needed in part because gradients don't really have world bounds, so they exist everywhere but generally have a value
+            // of 0 outside their data bounds if they're using bounded data.  We should examine the possibility of extending the gradient
+            // API to provide actual bounds so that it's possible to detect if the gradient even 'exists' in an area, at which point we
+            // could just make this list a prioritized list from top to bottom for any points that overlap.
+            for (auto& gradientId : m_configuration.m_gradientEntities)
+            {
+                if (gradientId.IsValid())
+                {
+                    // If gradients ever provide bounds, or if we add a value threshold in this component, it would be possible for terrain
+                    // to *not* exist at a specific point.
+                    terrainExists = true;
+
+                    float sample = 0.0f;
+                    GradientSignal::GradientRequestBus::EventResult(
+                        sample, gradientId, &GradientSignal::GradientRequestBus::Events::GetValue, params);
+                    maxSample = AZ::GetMax(maxSample, sample);
+                }
+            }
+            m_isRequestInProgress = false;
         }
 
         const float height = AZ::Lerp(m_cachedShapeBounds.GetMin().GetZ(), m_cachedShapeBounds.GetMax().GetZ(), maxSample);
-
-        return AZ::GetClamp(height, m_cachedMinWorldHeight, m_cachedMaxWorldHeight);
+        outPosition.SetZ(AZ::GetClamp(height, m_cachedMinWorldHeight, m_cachedMaxWorldHeight));
     }
-
-    void TerrainHeightGradientListComponent::GetHeight(
-        const AZ::Vector3& inPosition, AZ::Vector3& outPosition, [[maybe_unused]] Sampler sampleFilter = Sampler::DEFAULT)
-    {
-        const float height = GetHeight(inPosition.GetX(), inPosition.GetY());
-        outPosition.SetZ(height);
-    }
-
-    void TerrainHeightGradientListComponent::GetNormal(
-        const AZ::Vector3& inPosition, AZ::Vector3& outNormal, [[maybe_unused]] Sampler sampleFilter = Sampler::DEFAULT)
-    {
-        const float x = inPosition.GetX();
-        const float y = inPosition.GetY();
-
-        if ((x >= m_cachedShapeBounds.GetMin().GetX()) && (x <= m_cachedShapeBounds.GetMax().GetX()) &&
-            (y >= m_cachedShapeBounds.GetMin().GetY()) && (y <= m_cachedShapeBounds.GetMax().GetY()))
-        {
-            AZ::Vector2 fRange = (m_cachedHeightQueryResolution / 2.0f) + AZ::Vector2(0.05f);
-
-            AZ::Vector3 v1(x - fRange.GetX(), y - fRange.GetY(), GetHeight(x - fRange.GetX(), y - fRange.GetY()));
-            AZ::Vector3 v2(x - fRange.GetX(), y + fRange.GetY(), GetHeight(x - fRange.GetX(), y + fRange.GetY()));
-            AZ::Vector3 v3(x + fRange.GetX(), y - fRange.GetY(), GetHeight(x + fRange.GetX(), y - fRange.GetY()));
-            AZ::Vector3 v4(x + fRange.GetX(), y + fRange.GetY(), GetHeight(x + fRange.GetX(), y + fRange.GetY()));
-            outNormal = (v3 - v2).Cross(v4 - v1).GetNormalized();
-        }
-    }
-
 
     void TerrainHeightGradientListComponent::OnCompositionChanged()
     {
         RefreshMinMaxHeights();
-        TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId());
+        TerrainSystemServiceRequestBus::Broadcast(
+            &TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId(),
+            AzFramework::Terrain::TerrainDataNotifications::HeightData);
     }
 
     void TerrainHeightGradientListComponent::RefreshMinMaxHeights()
@@ -206,7 +208,7 @@ namespace Terrain
         // Get the height range of the entire world
         m_cachedHeightQueryResolution = AZ::Vector2(1.0f);
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-            m_cachedHeightQueryResolution, &AzFramework::Terrain::TerrainDataRequestBus::Events::GetTerrainGridResolution);
+            m_cachedHeightQueryResolution, &AzFramework::Terrain::TerrainDataRequestBus::Events::GetTerrainHeightQueryResolution);
 
         AZ::Aabb worldBounds = AZ::Aabb::CreateNull();
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(

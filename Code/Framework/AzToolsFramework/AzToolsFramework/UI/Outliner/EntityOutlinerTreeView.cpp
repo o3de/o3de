@@ -14,6 +14,7 @@
 #include <AzCore/std/algorithm.h>
 
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiInterface.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiHandlerBase.h>
 
@@ -35,13 +36,27 @@ namespace AzToolsFramework
         setHeaderHidden(true);
 
         m_editorEntityFrameworkInterface = AZ::Interface<AzToolsFramework::EditorEntityUiInterface>::Get();
-
         AZ_Assert((m_editorEntityFrameworkInterface != nullptr),
             "EntityOutlinerTreeView requires a EditorEntityFrameworkInterface instance on Construction.");
+
+        m_readOnlyEntityPublicInterface = AZ::Interface<AzToolsFramework::ReadOnlyEntityPublicInterface>::Get();
+        AZ_Assert(
+            (m_readOnlyEntityPublicInterface != nullptr),
+            "EntityOutlinerTreeView requires a ReadOnlyEntityPublicInterface instance on Construction.");
+
+        AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+            editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
+
+        FocusModeNotificationBus::Handler::BusConnect(editorEntityContextId);
+
+        viewport()->setMouseTracking(true);
     }
 
     EntityOutlinerTreeView::~EntityOutlinerTreeView()
     {
+        FocusModeNotificationBus::Handler::BusDisconnect();
+
         ClearQueuedMouseEvent();
     }
 
@@ -57,6 +72,13 @@ namespace AzToolsFramework
             delete m_queuedMouseEvent;
             m_queuedMouseEvent = nullptr;
         }
+    }
+
+    void EntityOutlinerTreeView::leaveEvent([[maybe_unused]] QEvent* event)
+    {
+        m_mousePosition = QPoint(-1, -1);
+        m_currentHoveredIndex = QModelIndex();
+        update();
     }
 
     void EntityOutlinerTreeView::mousePressEvent(QMouseEvent* event)
@@ -112,6 +134,13 @@ namespace AzToolsFramework
             setSelectionMode(selectionModeBefore);
         }
 
+        m_mousePosition = event->pos();
+        if (QModelIndex hoveredIndex = indexAt(m_mousePosition); m_currentHoveredIndex != indexAt(m_mousePosition))
+        {
+            m_currentHoveredIndex = hoveredIndex;
+            update();
+        }
+
         //process mouse movement as normal, potentially triggering drag and drop
         QTreeView::mouseMoveEvent(event);
     }
@@ -132,11 +161,22 @@ namespace AzToolsFramework
 
     void EntityOutlinerTreeView::startDrag(Qt::DropActions supportedActions)
     {
+        QModelIndex index = indexAt(m_queuedMouseEvent->pos());
+        AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
+
+        AZ::EntityId parentEntityId;
+        EditorEntityInfoRequestBus::EventResult(parentEntityId, entityId, &EditorEntityInfoRequestBus::Events::GetParent);
+
+        // If the entity is parented to a read-only entity, cancel the drag operation.
+        if (m_readOnlyEntityPublicInterface->IsReadOnly(parentEntityId))
+        {
+            return;
+        }
+
         //if we are attempting to drag an unselected item then we must special case drag and drop logic
         //QAbstractItemView::startDrag only supports selected items
         if (m_queuedMouseEvent)
         {
-            QModelIndex index = indexAt(m_queuedMouseEvent->pos());
             if (!index.isValid() || index.column() != 0)
             {
                 return;
@@ -172,10 +212,43 @@ namespace AzToolsFramework
 
     void EntityOutlinerTreeView::drawBranches(QPainter* painter, const QRect& rect, const QModelIndex& index) const
     {
+        const bool isEnabled = (this->model()->flags(index) & Qt::ItemIsEnabled);
+
+        const bool isSelected = selectionModel()->isSelected(index);
+        const bool isHovered = (index == indexAt(m_mousePosition).siblingAtColumn(0)) && isEnabled;
+
+        // Paint the branch Selection/Hover Rect
+        PaintBranchSelectionHoverRect(painter, rect, isSelected, isHovered);
+        
         // Paint the branch background as defined by the entity's handler, or its closes ancestor's.
         PaintBranchBackground(painter, rect, index);
 
         QTreeView::drawBranches(painter, rect, index);
+    }
+
+    void EntityOutlinerTreeView::PaintBranchSelectionHoverRect(
+        QPainter* painter, const QRect& rect, bool isSelected, bool isHovered) const
+    {
+        painter->save();
+        painter->setRenderHint(QPainter::Antialiasing, false);
+
+        if (isSelected || isHovered)
+        {
+            QPainterPath backgroundPath;
+            QRect backgroundRect(rect);
+
+            backgroundPath.addRect(backgroundRect);
+
+            QColor backgroundColor = m_hoverColor;
+            if (isSelected)
+            {
+                backgroundColor = m_selectedColor;
+            }
+
+            painter->fillPath(backgroundPath, backgroundColor);
+        }
+
+        painter->restore();
     }
 
     void EntityOutlinerTreeView::PaintBranchBackground(QPainter* painter, const QRect& rect, const QModelIndex& index) const
@@ -260,6 +333,12 @@ namespace AzToolsFramework
         });
 
         StyledTreeView::StartCustomDrag(indexListSorted, supportedActions);
+    }
+
+    void EntityOutlinerTreeView::OnEditorFocusChanged(
+        [[maybe_unused]] AZ::EntityId previousFocusEntityId, [[maybe_unused]] AZ::EntityId newFocusEntityId)
+    {
+        viewport()->repaint();
     }
 }
 

@@ -57,8 +57,8 @@ public slots:
 protected:
     void SanityCheckDetectionTimeout();
 
-    void timerEvent(QTimerEvent *event);
-    void closeEvent(QCloseEvent *event);
+    void timerEvent(QTimerEvent *event) override;
+    void closeEvent(QCloseEvent *event) override;
     void SystemTick();
 
 private:
@@ -125,7 +125,7 @@ public:
     /// Callback that is called when the Session service is ready to process sessions.
     void OnSessionServiceReady() override {}
     /// Callback that notifies the title when a game search query have completed.
-    void OnGridSearchComplete(GridMate::GridSearch* gridSearch) { (void)gridSearch; }
+    void OnGridSearchComplete(GridMate::GridSearch* gridSearch) override { (void)gridSearch; }
     /// Callback that notifies the title when a new member joins the game session.
     void OnMemberJoined(GridMate::GridSession* session, GridMate::GridMember* member) override;
     /// Callback that notifies the title that a member is leaving the game session. member pointer is NOT valid after the callback returns.
@@ -133,25 +133,25 @@ public:
     // \todo a better way will be (after we solve migration) is to supply a reason to OnMemberLeaving... like the member was kicked.
     // this will require that we actually remove the replica at the same moment.
     /// Callback that host decided to kick a member. You will receive a OnMemberLeaving when the actual member leaves the session.
-    void OnMemberKicked(GridMate::GridSession* session, GridMate::GridMember* member, AZ::u8 reason) { (void)session;(void)member;(void)reason; }
+    void OnMemberKicked(GridMate::GridSession* session, GridMate::GridMember* member, AZ::u8 reason) override { (void)session;(void)member;(void)reason; }
     /// After this callback it is safe to access session features. If host session is fully operational if client wait for OnSessionJoined.
     void OnSessionCreated(GridMate::GridSession* session) override;
     /// Called on client machines to indicate that we join successfully.
-    void OnSessionJoined(GridMate::GridSession* session) { (void)session; }
+    void OnSessionJoined(GridMate::GridSession* session) override { (void)session; }
     /// Callback that notifies the title when a session will be left. session pointer is NOT valid after the callback returns.
     void OnSessionDelete(GridMate::GridSession* session) override;
     /// Called when a session error occurs.
-    void OnSessionError(GridMate::GridSession* session, const AZStd::string& errorMsg ) { (void)session; (void)errorMsg; }
+    void OnSessionError(GridMate::GridSession* session, const AZStd::string& errorMsg ) override { (void)session; (void)errorMsg; }
     /// Called when the actual game(match) starts
-    void OnSessionStart(GridMate::GridSession* session) { (void)session; }
+    void OnSessionStart(GridMate::GridSession* session) override { (void)session; }
     /// Called when the actual game(match) ends
-    void OnSessionEnd(GridMate::GridSession* session) { (void)session; }
+    void OnSessionEnd(GridMate::GridSession* session) override { (void)session; }
     /// Called when we start a host migration.
-    void OnMigrationStart(GridMate::GridSession* session) { (void)session; }
+    void OnMigrationStart(GridMate::GridSession* session) override { (void)session; }
     /// Called so the user can select a member that should be the new Host. Value will be ignored if NULL, current host or the member has invalid connection id.
-    void OnMigrationElectHost(GridMate::GridSession* session,GridMate::GridMember*& newHost) { (void)session;(void)newHost; }
+    void OnMigrationElectHost(GridMate::GridSession* session,GridMate::GridMember*& newHost) override { (void)session;(void)newHost; }
     /// Called when the host migration has completed.
-    void OnMigrationEnd(GridMate::GridSession* session,GridMate::GridMember* newHost) { (void)session;(void)newHost; }
+    void OnMigrationEnd(GridMate::GridSession* session,GridMate::GridMember* newHost) override { (void)session;(void)newHost; }
     //////////////////////////////////////////////////////////////////////////
 
     void SetUI(GridHub* ui)    { m_ui = ui; }

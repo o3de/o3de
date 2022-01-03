@@ -14,8 +14,6 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AtomLyIntegration/AtomFont/FontCommon.h>
 
-class ICrySizer;
-
 namespace AZ
 {
     class GlyphBitmap
@@ -39,8 +37,6 @@ namespace AZ
 
         int GetWidth() { return m_width; }
         int GetHeight() { return m_height; }
-
-        void GetMemoryUsage([[maybe_unused]] ICrySizer* sizer) const {}
 
     private:
 

@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __EMSTUDIO_EMSTUDIOPLUGIN_H
-#define __EMSTUDIO_EMSTUDIOPLUGIN_H
+#pragma once
 
 // include MCore
 #if !defined(Q_MOC_RUN)
@@ -15,6 +14,7 @@
 #include <MCore/Source/MemoryFile.h>
 #include <EMotionFX/Rendering/Common/RenderUtil.h>
 #include <EMotionFX/Rendering/Common/Camera.h>
+#include <Integration/Rendering/RenderFlag.h>
 #include "EMStudioConfig.h"
 #include <QString>
 #include <QObject>
@@ -92,7 +92,15 @@ namespace EMStudio
             uint32                      m_screenHeight;
         };
 
-        virtual void Render(RenderPlugin* renderPlugin, RenderInfo* renderInfo)             { MCORE_UNUSED(renderPlugin); MCORE_UNUSED(renderInfo); }
+        //! Deprecated: LegacyRender will call EMotionFX::DebugDraw that tied to OpenGL render.
+        //! It will be removed after OpenGLPlugin and GLWidget is gone.
+        virtual void LegacyRender(RenderPlugin* renderPlugin, RenderInfo* renderInfo)             { MCORE_UNUSED(renderPlugin); MCORE_UNUSED(renderInfo); }
+
+        //! Render function will call atom auxGeom internally to render. This is the replacement for LegacyRender function.
+        virtual void Render(EMotionFX::ActorRenderFlagBitset renderFlags)
+        {
+            AZ_UNUSED(renderFlags);
+        };
 
         virtual PluginOptions* GetOptions() { return nullptr; }
 
@@ -118,5 +126,3 @@ namespace EMStudio
         virtual void AddWindowMenuEntries([[maybe_unused]] QMenu* parent) { }
     };
 }   // namespace EMStudio
-
-#endif

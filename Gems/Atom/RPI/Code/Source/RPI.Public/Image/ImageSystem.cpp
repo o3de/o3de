@@ -23,16 +23,16 @@
 #include <Atom/RHI.Reflect/ImagePoolDescriptor.h>
 #include <Atom/RHI/ImagePool.h>
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/RHISystemInterface.h>
 
 #include <AtomCore/Instance/InstanceDatabase.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Math/Color.h>
+
+AZ_DECLARE_BUDGET(RPI);
 
 namespace AZ
 {
@@ -171,7 +171,7 @@ namespace AZ
 
         void ImageSystem::Update()
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "ImageSystem: Update");
+            AZ_PROFILE_SCOPE(RPI, "ImageSystem: Update");
 
             AZStd::lock_guard<AZStd::mutex> lock(m_activeStreamingPoolMutex);
             for (StreamingImagePool* imagePool : m_activeStreamingPools)

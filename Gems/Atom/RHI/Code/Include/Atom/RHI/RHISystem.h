@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <Atom/RHI/CpuProfilerImpl.h>
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI/DrawListTagRegistry.h>
 #include <Atom/RHI/FrameScheduler.h>
@@ -48,7 +47,7 @@ namespace AZ
             RHI::PipelineStateCache* GetPipelineStateCache() override;
             const RHI::FrameSchedulerCompileRequest& GetFrameSchedulerCompileRequest() const override;
             void ModifyFrameSchedulerStatisticsFlags(RHI::FrameSchedulerStatisticsFlags statisticsFlags, bool enableFlags) override;
-            const RHI::CpuTimingStatistics* GetCpuTimingStatistics() const override;
+            double GetCpuFrameTime() const override;
             const RHI::TransientAttachmentStatistics* GetTransientAttachmentStatistics() const override;
             const RHI::MemoryStatistics* GetMemoryStatistics() const override;
             const RHI::TransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const override;
@@ -66,8 +65,6 @@ namespace AZ
             RHI::Ptr<RHI::PipelineStateCache> m_pipelineStateCache;
             RHI::FrameScheduler m_frameScheduler;
             RHI::FrameSchedulerCompileRequest m_compileRequest;
-
-            RHI::CpuProfilerImpl m_cpuProfiler;
         };
     } // namespace RPI
 } // namespace AZ

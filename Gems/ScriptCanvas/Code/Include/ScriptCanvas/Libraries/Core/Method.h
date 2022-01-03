@@ -107,7 +107,7 @@ namespace ScriptCanvas
 
                 SlotId GetBusSlotId() const;
 
-                void OnDeserialize();
+                void OnDeserialize() override;
 
 #if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
                 void OnWriteEnd();
@@ -168,7 +168,7 @@ namespace ScriptCanvas
 
                 AZ_INLINE void SetWarnOnMissingFunction(bool enabled) { m_warnOnMissingFunction = enabled; }
 
-                bool GetBehaviorContextClassMethod(const AZStd::string& name, const AZ::BehaviorClass*& outClass, const AZ::BehaviorMethod*& outMethod, EventType& outType) const;
+                bool GetBehaviorContextClassMethod(const AZ::BehaviorClass*& outClass, const AZ::BehaviorMethod*& outMethod, EventType& outType) const;
 
             private:
                 friend struct ScriptCanvas::BehaviorContextMethodHelper;

@@ -37,7 +37,7 @@ namespace AZ
 {
     namespace RPI
     {
-        static const char* s_exporterName = "Atom Model Builder";
+        [[maybe_unused]] static const char* s_exporterName = "Atom Model Builder";
 
         ModelExporterComponent::ModelExporterComponent()
         {

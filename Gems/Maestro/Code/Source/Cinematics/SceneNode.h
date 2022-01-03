@@ -13,6 +13,7 @@
 #pragma once
 
 #include <AzCore/std/containers/map.h>
+#include <AzCore/Time/ITime.h>
 
 #include "AnimNode.h"
 #include "SoundTrack.h"
@@ -65,12 +66,12 @@ public:
     //////////////////////////////////////////////////////////////////////////
     // Overrides from CAnimNode
     //////////////////////////////////////////////////////////////////////////
-    void Animate(SAnimContext& ec);
-    void CreateDefaultTracks();
+    void Animate(SAnimContext& ec) override;
+    void CreateDefaultTracks() override;
 
-    virtual void Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks);
+    void Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks) override;
 
-    virtual void Activate(bool bActivate);
+    void Activate(bool bActivate) override;
 
     // overridden from IAnimNode/CAnimNode
     void OnStart() override;
@@ -80,11 +81,11 @@ public:
     void OnLoop() override;
 
     //////////////////////////////////////////////////////////////////////////
-    virtual unsigned int GetParamCount() const;
-    virtual CAnimParamType GetParamType(unsigned int nIndex) const;
+    unsigned int GetParamCount() const override;
+    CAnimParamType GetParamType(unsigned int nIndex) const override;
 
-    virtual void PrecacheStatic(float startTime) override;
-    virtual void PrecacheDynamic(float time) override;
+    void PrecacheStatic(float startTime) override;
+    void PrecacheDynamic(float time) override;
 
     static void Reflect(AZ::ReflectContext* context);
 
@@ -92,7 +93,7 @@ public:
     static IAnimSequence* GetSequenceFromSequenceKey(const ISequenceKey& sequenceKey);
 
 protected:
-    virtual bool GetParamInfoFromType(const CAnimParamType& paramId, SParamInfo& info) const;
+    bool GetParamInfoFromType(const CAnimParamType& paramId, SParamInfo& info) const override;
 
     void ResetSounds() override;
     void ReleaseSounds();   // Stops audio
@@ -111,7 +112,7 @@ private:
     void InterpolateCameras(SCameraParams& retInterpolatedCameraParams, ISceneCamera* firstCamera,
         ISelectKey& firstKey, ISelectKey& secondKey, float time);
 
-    virtual void InitializeTrackDefaultValue(IAnimTrack* pTrack, const CAnimParamType& paramType) override;
+    void InitializeTrackDefaultValue(IAnimTrack* pTrack, const CAnimParamType& paramType) override;
 
     // Cached parameters of node at given time.
     float m_time = 0.0f;
@@ -149,7 +150,8 @@ private:
 
     std::vector<SSoundInfo> m_SoundInfo;
 
-    ICVar* m_cvar_t_FixedStep;
+    AZ::TimeMs m_simulationTickOverrideBackup = AZ::Time::ZeroTimeMs;
+    float m_timeScaleBackup = 1.0f;
 };
 
 #endif // CRYINCLUDE_CRYMOVIE_SCENENODE_H

@@ -8,6 +8,7 @@
 #include <Editor/EditorClassConverters.h>
 #include <Source/EditorColliderComponent.h>
 #include <PhysX/MeshAsset.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
 

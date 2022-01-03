@@ -27,9 +27,19 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
+        //! Type of branch icon the delegate should paint.
+        enum EntryBranchType
+        {
+            First,
+            Middle,
+            Last,
+            OneChild,
+            Count
+        };
+
         class AssetBrowserFilterModel;
 
-        //! EntryDelegate draws a single item in AssetBrowser
+        //! EntryDelegate draws a single item in AssetBrowser.
         class EntryDelegate
             : public QStyledItemDelegate
         {
@@ -51,6 +61,24 @@ namespace AzToolsFramework
             bool m_showSourceControl = false;
             //! Draw a thumbnail and return its width
             int DrawThumbnail(QPainter* painter, const QPoint& point, const QSize& size, Thumbnailer::SharedThumbnailKey thumbnailKey) const;
+        };
+
+        //! SearchEntryDelegate draws a single item in AssetBrowserTableView.
+        class SearchEntryDelegate
+            : public EntryDelegate
+        {
+            Q_OBJECT
+        public:
+            explicit SearchEntryDelegate(QWidget* parent = nullptr);
+
+            void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+
+        private:
+            void LoadBranchPixMaps();
+            void DrawBranchPixMap(EntryBranchType branchType, QPainter* painter, const QPoint& point, const QSize& size) const;
+
+        private:
+            QMap<EntryBranchType, QPixmap> m_branchIcons;
         };
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

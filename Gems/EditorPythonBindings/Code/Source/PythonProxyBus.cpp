@@ -20,6 +20,7 @@
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/std/optional.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 
 namespace EditorPythonBindings
 {
@@ -194,7 +195,7 @@ namespace EditorPythonBindings
 
                 if (!m_handler)
                 {
-                    AZ_Error("python", false, "No EBus connection deteced; missing call or failed call to connect()?");
+                    AZ_Error("python", false, "No EBus connection detected; missing call or failed call to connect()?");
                     return false;
                 }
 
@@ -205,10 +206,7 @@ namespace EditorPythonBindings
                     if (eventName == e.m_name)
                     {
                         AZStd::string eventNameValue{ eventName };
-#if defined(AZ_ENABLE_TRACING)
-                        const auto& callbackIt = m_callbackMap.find(eventNameValue);
-#endif
-                        AZ_Warning("python", m_callbackMap.end() == callbackIt, "Replacing callback for eventName:%s", eventNameValue.c_str());
+                        AZ_Warning("python", m_callbackMap.end() == m_callbackMap.find(eventNameValue), "Replacing callback for eventName:%s", eventNameValue.c_str());
                         m_callbackMap[eventNameValue] = callback;
                         return true;
                     }
@@ -261,19 +259,39 @@ namespace EditorPythonBindings
 
             static void OnEventGenericHook(void* userData, const char* eventName, int eventIndex, AZ::BehaviorValueParameter* result, int numParameters, AZ::BehaviorValueParameter* parameters)
             {
-                reinterpret_cast<PythonProxyNotificationHandler*>(userData)->OnEventGenericHook(eventName, eventIndex, result, numParameters, parameters);
-            }
-
-            void OnEventGenericHook(const char* eventName, [[maybe_unused]] int eventIndex, AZ::BehaviorValueParameter* result, int numParameters, AZ::BehaviorValueParameter* parameters)
-            {
-                // find the callback for the event
-                const auto& callbackEntry = m_callbackMap.find(eventName);
-                if (callbackEntry == m_callbackMap.end())
+                auto editorPythonEventsInterface = AZ::Interface<AzToolsFramework::EditorPythonEventsInterface>::Get();
+                if (!editorPythonEventsInterface)
                 {
                     return;
                 }
-                pybind11::function callback = callbackEntry->second;
 
+                // find the callback for the event
+                auto* handler = reinterpret_cast<PythonProxyNotificationHandler*>(userData);
+                const auto& callbackEntry = handler->m_callbackMap.find(eventName);
+                if (callbackEntry == handler->m_callbackMap.end())
+                {
+                    return;
+                }
+
+                // This function can reach from multiple threads, which means OnEventGenericHook
+                // will require to acquire the Python GIL, make sure it tries to lock it using TryExecuteWithLock.
+                [[maybe_unused]] const bool executed = editorPythonEventsInterface->TryExecuteWithLock(
+                    [handler, eventName, callback = callbackEntry->second, eventIndex, result, numParameters, parameters]()
+                    {
+                        handler->OnEventGenericHook(eventName, callback, eventIndex, result, numParameters, parameters);
+                    });
+
+                AZ_Error("python", executed,
+                    "Ebus(%s) event(%s) could not be executed because it could not acquire the Python GIL. "
+                    "This occurs when there is already another thread executing python, which has the GIL locked, "
+                    "making it not possible for this thread to callback python at the same time. "
+                    "This is a limitation of python interpreter. Python scripts executions and event callbacks "
+                    "from EBuses need be designed to avoid this scenario.",
+                    handler->m_ebus->m_name.c_str(), eventName);
+            }
+
+            void OnEventGenericHook([[maybe_unused]] const char* eventName, pybind11::function callback, [[maybe_unused]] int eventIndex, AZ::BehaviorValueParameter* result, int numParameters, AZ::BehaviorValueParameter* parameters)
+            {
                 // build the parameters to send to callback
                 Convert::StackVariableAllocator stackVariableAllocator;
                 pybind11::tuple pythonParamters(numParameters);

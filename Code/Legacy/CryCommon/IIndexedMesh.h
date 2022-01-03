@@ -10,13 +10,7 @@
 #pragma once
 
 #include "Cry_Color.h"
-#include "StlUtils.h"
-#include "CryEndian.h"
-
-#include <Cry_Geo.h>    // for AABB
-#include <VertexFormats.h>
 #include <Vertex.h>
-#include <AzCore/Casting/numeric_cast.h>
 
 // Description:
 //    2D Texture coordinates used by CMesh.
@@ -28,32 +22,6 @@ private:
     float s, t;
 
 public:
-    explicit SMeshTexCoord(float x, float y)
-    {
-        s = x;
-        t = y;
-    }
-
-    explicit SMeshTexCoord(const Vec2f16& other)
-    {
-        const Vec2 uv = other.ToVec2();
-
-        s = uv.x;
-        t = uv.y;
-    }
-
-    explicit SMeshTexCoord(const Vec2& other)
-    {
-        s = other.x;
-        t = other.y;
-    }
-
-    explicit SMeshTexCoord(const Vec4& other)
-    {
-        s = other.x;
-        t = other.y;
-    }
-
     bool IsEquivalent(const SMeshTexCoord& other, float epsilon = 0.00005f) const
     {
         return
@@ -83,139 +51,4 @@ public:
         b = otherb;
         a = othera;
     }
-};
-
-
-// Description:
-//    Defines a single triangle face in the CMesh topology.
-struct SMeshFace
-{
-    int v[3]; // indices to vertex, normals and optionally tangent basis arrays
-    unsigned char nSubset; // index to mesh subsets array.
-};
-
-// Description:
-//    3D Normal Vector used by CMesh.
-struct SMeshNormal
-{
-    SMeshNormal() {}
-
-private:
-    Vec3 Normal;
-
-public:
-    explicit SMeshNormal(const Vec3& othern)
-    {
-        Normal = othern;
-    }
-
-    Vec3 GetN() const { return Normal; }
-
-};
-
-
-struct SMeshBoneMapping_uint8
-{
-    typedef uint8 BoneId;
-    typedef uint8 Weight;
-
-    BoneId boneIds[4];
-    Weight weights[4];
-};
-
-// Subset of mesh is a continuous range of vertices and indices that share same material.
-struct SMeshSubset
-{
-    Vec3 vCenter;
-    float fRadius;
-    float fTexelDensity;
-
-    int nFirstIndexId;
-    int nNumIndices;
-
-    int nFirstVertId;
-    int nNumVerts;
-
-    int nMatID; // Material Sub-object id.
-    int nMatFlags; // Special Material flags.
-    int nPhysicalizeType; // Type of physicalization for this subset.
-
-    AZ::Vertex::Format vertexFormat;
-
-    SMeshSubset()
-        : vCenter(0, 0, 0)
-        , fRadius(0)
-        , fTexelDensity(0)
-        , nFirstIndexId(0)
-        , nNumIndices(0)
-        , nFirstVertId(0)
-        , nNumVerts(0)
-        , nMatID(0)
-        , nMatFlags(0)
-        , nPhysicalizeType(0x1000)
-        , vertexFormat(eVF_P3S_C4B_T2S)
-    {
-    }
-
-};
-
-// Description:
-//    Editable mesh interface.
-//    IndexedMesh can be created directly or loaded from CGF file, before rendering it is converted into IRenderMesh.
-//    IStatObj is used to host IIndexedMesh, and corresponding IRenderMesh.
-struct IIndexedMesh
-{
-    /*! Structure used for read-only access to mesh data. Used by GetMesh() function */
-    struct SMeshDescription
-    {
-        const SMeshFace*     m_pFaces;    // pointer to array of faces
-        const Vec3*          m_pVerts;    // pointer to array of vertices in f32 format
-        const Vec3f16*       m_pVertsF16; // pointer to array of vertices in f16 format
-        const SMeshNormal*   m_pNorms;    // pointer to array of normals
-        const SMeshColor*    m_pColor;    // pointer to array of vertex colors
-        const SMeshTexCoord* m_pTexCoord; // pointer to array of texture coordinates
-        const vtx_idx*   m_pIndices;  // pointer to array of indices
-        int m_nFaceCount;  // number of elements m_pFaces array
-        int m_nVertCount;  // number of elements in m_pVerts, m_pNorms and m_pColor arrays
-        int m_nCoorCount;  // number of elements in m_pTexCoord array
-        int m_nIndexCount; // number of elements in m_pIndices array
-    };
-
-    // <interfuscator:shuffle>
-    virtual ~IIndexedMesh() {}
-
-    // Release indexed mesh.
-    virtual void Release() = 0;
-
-    //! Gives read-only access to mesh data
-    virtual void GetMeshDescription(SMeshDescription& meshDesc) const = 0;
-
-    /*! Frees vertex and face streams. Calling this function invalidates SMeshDescription pointers */
-    virtual void FreeStreams() = 0;
-
-    //! Return number of allocated faces
-    virtual int GetFaceCount() const = 0;
-
-    /*! Reallocates faces. Calling this function invalidates SMeshDescription pointers */
-    virtual void SetFaceCount(int nNewCount) = 0;
-
-    //! Return number of allocated vertices, normals and colors
-    virtual int GetVertexCount() const = 0;
-
-    /*! Reallocates vertices, normals and colors. Calling this function invalidates SMeshDescription pointers */
-    virtual void SetVertexCount(int nNewCount) = 0;
-
-    //! Return number of allocated texture coordinates
-    virtual int GetTexCoordCount() const = 0;
-
-    // Get number of indices in the mesh.
-    virtual int GetIndexCount() const = 0;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Subset access.
-    //////////////////////////////////////////////////////////////////////////
-    virtual int GetSubSetCount() const = 0;
-    virtual const SMeshSubset& GetSubSet(int nIndex) const = 0;
-
-    // </interfuscator:shuffle>
 };

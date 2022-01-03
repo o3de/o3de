@@ -57,6 +57,10 @@ namespace AZ
                 const DXGI_SWAP_CHAIN_DESCX& swapChainDesc,
                 RHI::Ptr<IDXGISwapChainX>& swapChain);
 
+            RHI::ResultCode CreateSwapChain(
+                const DXGI_SWAP_CHAIN_DESCX& swapChainDesc,
+                AZStd::array<RHI::Ptr<ID3D12Resource>, RHI::Limits::Device::FrameCountMax>& outSwapChainResources);
+
             void GetImageAllocationInfo(
                 const RHI::ImageDescriptor& descriptor,
                 D3D12_RESOURCE_ALLOCATION_INFO& info);
@@ -94,39 +98,27 @@ namespace AZ
                 D3D12_RESOURCE_STATES initialState,
                 ImageTileLayout& imageTilingInfo);
 
-            /**
-             * Queues a DX12 COM object for release (by taking a reference) after the current frame has flushed
-             * through the GPU.
-             */
+            //! Queues a DX12 COM object for release (by taking a reference) after the current frame has flushed
+            //! through the GPU.
             void QueueForRelease(RHI::Ptr<ID3D12Object> dx12Object);
 
-            /**
-             * Queues the backing Memory instance of a MemoryView for release (by taking a reference) after the
-             * current frame has flushed through the GPU. The reference on the MemoryView itself is not released.
-             */
+            //! Queues the backing Memory instance of a MemoryView for release (by taking a reference) after the
+            //! current frame has flushed through the GPU. The reference on the MemoryView itself is not released.
             void QueueForRelease(const MemoryView& memoryView);
 
-            /**
-             * Allocates host memory from the internal frame allocator that is suitable for staging
-             * uploads to the GPU for the current frame. The memory is valid for the lifetime of
-             * the frame and is automatically reclaimed after the frame has completed on the GPU.
-             */
+            //! Allocates host memory from the internal frame allocator that is suitable for staging
+            //! uploads to the GPU for the current frame. The memory is valid for the lifetime of
+            //! the frame and is automatically reclaimed after the frame has completed on the GPU.
             MemoryView AcquireStagingMemory(size_t size, size_t alignment);
 
-            /**
-             * Acquires a pipeline layout from the internal cache.
-             */
+            //! Acquires a pipeline layout from the internal cache.
             RHI::ConstPtr<PipelineLayout> AcquirePipelineLayout(const RHI::PipelineLayoutDescriptor& descriptor);
 
-            /**
-             * Acquires a new command list for the frame given the hardware queue class. The command list is
-             * automatically reclaimed after the current frame has flushed through the GPU.
-             */
+            //! Acquires a new command list for the frame given the hardware queue class. The command list is
+            //! automatically reclaimed after the current frame has flushed through the GPU.
             CommandList* AcquireCommandList(RHI::HardwareQueueClass hardwareQueueClass);
 
-            /**
-             * Acquires a sampler from the internal cache.
-             */
+            //! Acquires a sampler from the internal cache.
             RHI::ConstPtr<Sampler> AcquireSampler(const RHI::SamplerState& state);
 
             const PhysicalDevice& GetPhysicalDevice() const;
@@ -142,6 +134,10 @@ namespace AZ
             AsyncUploadQueue& GetAsyncUploadQueue();
 
             bool IsAftermathInitialized() const;
+
+            //! Indicate that we need to compact the shader visible srv/uav/cbv shader visible heap. 
+            void DescriptorHeapCompactionNeeded();
+
         private:
             Device();
 
@@ -151,7 +147,7 @@ namespace AZ
 
             void ShutdownInternal() override;
             void CompileMemoryStatisticsInternal(RHI::MemoryStatisticsBuilder& builder) override;
-            void UpdateCpuTimingStatisticsInternal(RHI::CpuTimingStatistics& cpuTimingStatistics) const override;
+            void UpdateCpuTimingStatisticsInternal() const override;
             void BeginFrameInternal() override;
             void EndFrameInternal() override;
             void WaitForIdleInternal() override;
@@ -163,6 +159,7 @@ namespace AZ
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements(const RHI::ImageDescriptor & descriptor) override;
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements(const RHI::BufferDescriptor & descriptor) override;
             void ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction) override;
+            RHI::ResultCode CompactSRGMemory() override;
             //////////////////////////////////////////////////////////////////////////
 
             RHI::ResultCode InitSubPlatform(RHI::PhysicalDevice& physicalDevice);
@@ -194,6 +191,9 @@ namespace AZ
             AZStd::mutex m_samplerCacheMutex;
 
             bool m_isAftermathInitialized = false;
+
+            // Boolean used to compact the view specific shader visible heap
+            bool m_isDescriptorHeapCompactionNeeded = false;
         };
     }
 }

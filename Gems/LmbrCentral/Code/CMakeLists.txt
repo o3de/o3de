@@ -13,6 +13,7 @@ ly_add_target(
     NAME LmbrCentral.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
+        lmbrcentral_headers_files.cmake
         lmbrcentral_files.cmake
         ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
@@ -25,6 +26,16 @@ ly_add_target(
         PRIVATE
             Legacy::CryCommon
             AZ::AzFramework
+)
+
+ly_add_target(
+    NAME LmbrCentral.API HEADERONLY
+    NAMESPACE Gem
+    FILES_CMAKE
+        lmbrcentral_headers_files.cmake
+    INCLUDE_DIRECTORIES
+        INTERFACE
+            include
 )
 
 ly_add_target(
@@ -115,6 +126,16 @@ endif()
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
+        NAME LmbrCentral.Mocks HEADERONLY
+        NAMESPACE Gem
+        FILES_CMAKE
+            lmbrcentral_mocks_files.cmake
+        INCLUDE_DIRECTORIES
+            INTERFACE
+                Mocks
+    )
+    
+    ly_add_target(
         NAME LmbrCentral.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
@@ -131,6 +152,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 Legacy::CryCommon
                 AZ::AzFramework
                 Gem::LmbrCentral.Static
+                Gem::LmbrCentral.Mocks
     )
     ly_add_googletest(
         NAME Gem::LmbrCentral.Tests

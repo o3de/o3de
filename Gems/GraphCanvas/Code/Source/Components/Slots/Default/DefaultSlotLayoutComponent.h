@@ -43,7 +43,7 @@ namespace GraphCanvas
         ////
 
         // StyleNotificationBus
-        void OnStyleChanged();
+        void OnStyleChanged() override;
         ////        
 
     private:

@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Math/Matrix3x4.h>
 #include <RHI/RayTracingTlas.h>
 #include <RHI/RayTracingBlas.h>
@@ -66,7 +65,7 @@ namespace AZ
                 AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to create TLAS instances buffer");
             
                 MemoryView& tlasInstancesMemoryView = static_cast<Buffer*>(buffers.m_tlasInstancesBuffer.get())->GetMemoryView();
-                tlasInstancesMemoryView.SetName("TLAS Instance");
+                tlasInstancesMemoryView.SetName(L"TLAS Instance");
             
                 RHI::BufferMapResponse mapResponse;
                 resultCode = bufferPools.GetTlasInstancesBufferPool()->MapBuffer(RHI::BufferMapRequest(*buffers.m_tlasInstancesBuffer, 0, instanceDescsSizeInBytes), mapResponse);
@@ -120,7 +119,7 @@ namespace AZ
             // create scratch buffer
             buffers.m_scratchBuffer = RHI::Factory::Get().CreateBuffer();
             AZ::RHI::BufferDescriptor scratchBufferDescriptor;
-            scratchBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite;
+            scratchBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::RayTracingScratchBuffer;
             scratchBufferDescriptor.m_byteCount = prebuildInfo.ScratchDataSizeInBytes;
             
             AZ::RHI::BufferInitRequest scratchBufferRequest;
@@ -130,7 +129,7 @@ namespace AZ
             AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to create TLAS scratch buffer");
             
             MemoryView& scratchMemoryView = static_cast<Buffer*>(buffers.m_scratchBuffer.get())->GetMemoryView();
-            scratchMemoryView.SetName("TLAS Scratch");
+            scratchMemoryView.SetName(L"TLAS Scratch");
             
             // create TLAS buffer
             buffers.m_tlasBuffer = RHI::Factory::Get().CreateBuffer();
@@ -145,7 +144,7 @@ namespace AZ
             AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to create TLAS buffer");
             
             MemoryView& tlasMemoryView = static_cast<Buffer*>(buffers.m_tlasBuffer.get())->GetMemoryView();
-            tlasMemoryView.SetName("TLAS");
+            tlasMemoryView.SetName(L"TLAS");
 #endif
             return RHI::ResultCode::Success;
         }

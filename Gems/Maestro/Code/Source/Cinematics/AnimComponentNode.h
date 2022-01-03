@@ -86,7 +86,7 @@ public:
     // EditorSequenceAgentComponentNotificationBus::Handler Interface
     void OnSequenceAgentConnected() override;
 
-    void Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks);
+    void Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks) override;
 
     const AZ::Uuid& GetComponentTypeId() const { return m_componentTypeId; }
 
