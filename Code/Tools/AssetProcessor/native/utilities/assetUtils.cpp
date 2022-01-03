@@ -57,7 +57,6 @@
 #endif // defined(AZ_PLATFORM_LINUX)
 
 #include <sstream>
-#include <AzCore/std/containers/fixed_unordered_set.h>
 
 namespace AssetUtilsInternal
 {
