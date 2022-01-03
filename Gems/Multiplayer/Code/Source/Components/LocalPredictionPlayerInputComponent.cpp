@@ -15,7 +15,7 @@
 #include <AzNetworking/Serialization/StringifySerializer.h>
 #include <AzNetworking/Serialization/TrackChangedSerializer.h>
 #include <Multiplayer/Components/NetworkHierarchyRootComponent.h>
-#include <Multiplayer/IMultiplayerDebug.h>
+#include <Multiplayer/MultiplayerDebug.h>
 
 namespace Multiplayer
 {
@@ -226,7 +226,7 @@ namespace Multiplayer
                     AZStd::vector<MultiplayerAuditingElement> inputLogs = input.GetComponentInputDeltaLogs();
                     if (!inputLogs.empty())
                     {
-                        AZ::Interface<IMultiplayerDebug>::Get()->AddAuditEntry( MultiplayerAuditCategory::MP_AUDIT_INPUT,
+                        AZ::Interface<IMultiplayerDebug>::Get()->AddAuditEntry( MultiplayerAuditCategory::Input,
                             input.GetClientInputId(), input.GetHostFrameId(), GetEntity()->GetName(), AZStd::move(inputLogs));
                     }
                     AZLOG(NET_Prediction, "Processed InputId=%u", aznumeric_cast<uint32_t>(input.GetClientInputId()));
@@ -376,7 +376,7 @@ namespace Multiplayer
                 PrintCorrectionDifferences(*iter->second, serverValues, &detail);
                 detail.name = AZStd::string::format("Autonomous Desync - Correcting clientInputId=%d from index=%d",
                     aznumeric_cast<int32_t>(inputId), startReplayIndex);
-                AZ::Interface<IMultiplayerDebug>::Get()->AddAuditEntry(MultiplayerAuditCategory::MP_AUDIT_DESYNC,
+                AZ::Interface<IMultiplayerDebug>::Get()->AddAuditEntry(MultiplayerAuditCategory::Desync,
                     inputId, startReplayInput.GetHostFrameId(), GetEntity()->GetName(), { AZStd::move(detail) });
             }
             else
@@ -542,7 +542,7 @@ namespace Multiplayer
                 AZStd::vector<MultiplayerAuditingElement> inputLogs = input.GetComponentInputDeltaLogs();
                 if (!inputLogs.empty())
                 {
-                    AZ::Interface<IMultiplayerDebug>::Get()->AddAuditEntry(MultiplayerAuditCategory::MP_AUDIT_INPUT,
+                    AZ::Interface<IMultiplayerDebug>::Get()->AddAuditEntry(MultiplayerAuditCategory::Input,
                         input.GetClientInputId(), input.GetHostFrameId(), GetEntity()->GetName(), AZStd::move(inputLogs));
                 }
 

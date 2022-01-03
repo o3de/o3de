@@ -81,8 +81,8 @@ namespace Multiplayer
             const AZStd::string& name,
             AZStd::vector<MultiplayerAuditingElement>&& entryDetails)
     {
-        if ((!net_DebugEntities_AuditInputs && category == MultiplayerAuditCategory::MP_AUDIT_INPUT)
-            || (!net_DebugEntities_AuditEvents && category == MultiplayerAuditCategory::MP_AUDIT_EVENT))
+        if ((!net_DebugEntities_AuditInputs && category == MultiplayerAuditCategory::Input)
+            || (!net_DebugEntities_AuditEvents && category == MultiplayerAuditCategory::Event))
         {
             return;
         }
@@ -94,7 +94,7 @@ namespace Multiplayer
 
         m_auditTrailElems.emplace_front(category, inputId, frameId, name, AZStd::move(entryDetails));
 
-        if (m_auditTrail == nullptr && category == MultiplayerAuditCategory::MP_AUDIT_DESYNC)
+        if (m_auditTrail == nullptr && category == MultiplayerAuditCategory::Desync)
         {
             while (m_auditTrailElems.size() > 0)
             {

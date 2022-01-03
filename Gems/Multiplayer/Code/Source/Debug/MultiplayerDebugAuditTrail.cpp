@@ -60,7 +60,7 @@ namespace Multiplayer
 
             for (auto elem = auditTrailElems.begin(); elem != auditTrailElems.end(); ++elem)
             {
-                if (elem == auditTrailElems.begin() && elem->m_category != MultiplayerAuditCategory::MP_AUDIT_DESYNC)
+                if (elem == auditTrailElems.begin() && elem->m_category != MultiplayerAuditCategory::Desync)
                 {
                     ImGui::TableNextRow();
                     ImGui::TableNextColumn();
@@ -70,23 +70,23 @@ namespace Multiplayer
                     ImGui::TableNextColumn();
                     ImGui::TableNextColumn();
                 }
-                else if (!atRootLevel && elem != auditTrailElems.begin() && elem->m_category == MultiplayerAuditCategory::MP_AUDIT_DESYNC)
+                else if (!atRootLevel && elem != auditTrailElems.begin() && elem->m_category == MultiplayerAuditCategory::Desync)
                 {
                     atRootLevel = true;
                     ImGui::TreePop();
                 }
 
-                if (!atRootLevel || elem->m_category == MultiplayerAuditCategory::MP_AUDIT_DESYNC)
+                if (!atRootLevel || elem->m_category == MultiplayerAuditCategory::Desync)
                 {
                     ImGui::TableNextRow();
                     ImGui::TableNextColumn();
 
-                    const char* nodeTitle = elem->m_category == MultiplayerAuditCategory::MP_AUDIT_DESYNC
+                    const char* nodeTitle = elem->m_category == MultiplayerAuditCategory::Desync
                         ? DESYNC_TITLE
-                        : (elem->m_category == MultiplayerAuditCategory::MP_AUDIT_INPUT ? INPUT_TITLE : EVENT_TITLE);
+                        : (elem->m_category == MultiplayerAuditCategory::Input ? INPUT_TITLE : EVENT_TITLE);
 
                     // Draw Events as a single line entry, they should only have one line item
-                    if (elem->m_category == MultiplayerAuditCategory::MP_AUDIT_EVENT)
+                    if (elem->m_category == MultiplayerAuditCategory::Event)
                     {
                         if (elem->m_children.size() > 0 && elem->m_children.front().elements.size() > 0)
                         {
@@ -124,7 +124,7 @@ namespace Multiplayer
                             ImGui::TableNextColumn();
                             if (child.elements.size() > 0)
                             {
-                                const ImGuiTableFlags childFlags = elem->m_category == MultiplayerAuditCategory::MP_AUDIT_DESYNC
+                                const ImGuiTableFlags childFlags = elem->m_category == MultiplayerAuditCategory::Desync
                                     ? ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_DefaultOpen
                                     : ImGuiTreeNodeFlags_SpanFullWidth;
                                 if (ImGui::TreeNodeEx(child.name.c_str(), childFlags))
@@ -161,7 +161,7 @@ namespace Multiplayer
                                 ImGui::TableNextColumn();
                             }
                         }
-                        if (elem->m_category != MultiplayerAuditCategory::MP_AUDIT_DESYNC)
+                        if (elem->m_category != MultiplayerAuditCategory::Desync)
                         {
                             ImGui::TreePop();
                         }
