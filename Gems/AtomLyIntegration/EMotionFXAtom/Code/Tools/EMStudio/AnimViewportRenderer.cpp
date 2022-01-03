@@ -116,7 +116,7 @@ namespace EMStudio
 
         // Load light preset
         AZ::Data::Asset<AZ::RPI::AnyAsset> lightingPresetAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
-            "lightingpresets/default.lightingpreset.azasset", AZ::RPI::AssetUtils::TraceLevel::Warning);
+            "lightingpresets/AnimEditor.lightingpreset.azasset", AZ::RPI::AssetUtils::TraceLevel::Warning);
         const AZ::Render::LightingPreset* preset = lightingPresetAsset->GetDataAs<AZ::Render::LightingPreset>();
         SetLightingPreset(preset);
 

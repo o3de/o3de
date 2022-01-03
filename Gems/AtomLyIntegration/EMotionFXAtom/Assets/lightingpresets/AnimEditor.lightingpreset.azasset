@@ -1,0 +1,44 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AZ::Render::LightingPreset",
+    "ClassData": {
+        "displayName": "Default",
+        "skyboxImageAsset": {
+            "assetId": {
+                "guid": "{A5767C6B-5DB4-5999-A717-4587BEDF5CDE}",
+                "subId": 3000
+            },
+            "assetHint": "lightingpresets/default_iblskyboxcm_ibldiffuse.exr.streamingimage"
+        },
+        "iblSpecularImageAsset": {
+            "assetId": {
+                "guid": "{A5767C6B-5DB4-5999-A717-4587BEDF5CDE}",
+                "subId": 2000
+            },
+            "assetHint": "lightingpresets/default_iblskyboxcm_iblspecular.exr.streamingimage"
+        },
+        "iblDiffuseImageAsset": {
+            "assetId": {
+                "guid": "{A5767C6B-5DB4-5999-A717-4587BEDF5CDE}",
+                "subId": 3000
+            },
+            "assetHint": "lightingpresets/default_iblskyboxcm_ibldiffuse.exr.streamingimage"
+        },
+        "shadowCatcherOpacity": 0.5,
+        "lights": [
+            {
+                "direction": [
+                    0.0,
+                    -1.0,
+                    -0.5
+                ],
+                "intensity": 4.0,
+                "shadowCascadeCount": 4,
+                "shadowRatioLogarithmUniform": 1.0,
+                "shadowmapSize": "Size2048"
+            }
+        ]
+    }
+    
+}
