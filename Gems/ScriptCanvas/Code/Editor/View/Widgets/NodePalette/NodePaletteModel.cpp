@@ -16,7 +16,6 @@
 
 #include <Editor/View/Widgets/NodePalette/NodePaletteModel.h>
 
-#include <Editor/Assets/ScriptCanvasAssetHelpers.h>
 #include <Editor/Include/ScriptCanvas/Bus/RequestBus.h>
 #include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
 #include <Editor/Nodes/NodeUtils.h>

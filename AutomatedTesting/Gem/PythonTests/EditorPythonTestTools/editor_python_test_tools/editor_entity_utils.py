@@ -25,7 +25,7 @@ class EditorComponent:
     """
     EditorComponent class used to set and get the component property value using path
     EditorComponent object is returned from either of
-        EditorEntity.add_component() or Entity.add_components() or EditorEntity.get_component_objects()
+        EditorEntity.add_component() or Entity.add_components() or EditorEntity.get_components_of_type()
     which also assigns self.id and self.type_id to the EditorComponent object.
     """
 
@@ -94,6 +94,13 @@ class EditorComponent:
         """
         return editor.EditorComponentAPIBus(bus.Broadcast, "IsComponentEnabled", self.id)
 
+    def disable_component(self):
+        """
+        Used to disable the component using its id value.
+        :return: None
+        """
+        editor.EditorComponentAPIBus(bus.Broadcast, "DisableComponents", [self.id])
+
     @staticmethod
     def get_type_ids(component_names: list) -> list:
         """
@@ -136,10 +143,11 @@ class EditorEntity:
 
     # Creation functions
     @classmethod
-    def find_editor_entity(cls, entity_name: str, must_be_unique : bool = False) -> EditorEntity:
+    def find_editor_entity(cls, entity_name: str, must_be_unique: bool = False) -> EditorEntity:
         """
         Given Entity name, outputs entity object
         :param entity_name: Name of entity to find
+        :param must_be_unique: bool that asserts the entity_name specified is unique when set to True
         :return: EditorEntity class object
         """
         entities = cls.find_editor_entities([entity_name])
@@ -147,14 +155,14 @@ class EditorEntity:
         if must_be_unique:
             assert len(entities) == 1, f"Failure: Multiple entities with name: '{entity_name}' when expected only one"
 
-        entity = cls(entities[0])
+        entity = entities[0]
         return entity
 
     @classmethod
-    def find_editor_entities(cls, entity_names: List[str]) -> EditorEntity:
+    def find_editor_entities(cls, entity_names: List[str]) -> List[EditorEntity]:
         """
         Given Entities names, returns a list of EditorEntity 
-        :param entity_name: Name of entity to find
+        :param entity_names: List of entity names to find
         :return: List[EditorEntity] class object
         """
         searchFilter = azlmbr.entity.SearchFilter()
@@ -438,7 +446,7 @@ class EditorEntity:
     def set_local_rotation(self, new_rotation) -> None:
         """
         Sets the set the local rotation(relative to the parent) of the current entity.
-        :param vector3_rotation: The math.Vector3 value to use for rotation on the entity (uses radians).
+        :param new_rotation: The math.Vector3 value to use for rotation on the entity (uses radians).
         :return: None
         """
         new_rotation = convert_to_azvector3(new_rotation)
@@ -454,7 +462,7 @@ class EditorEntity:
     def set_local_translation(self, new_translation) -> None:
         """
         Sets the local translation(relative to the parent) of the current entity.
-        :param vector3_translation: The math.Vector3 value to use for translation on the entity.
+        :param new_translation: The math.Vector3 value to use for translation on the entity.
         :return: None
         """
         new_translation = convert_to_azvector3(new_translation)

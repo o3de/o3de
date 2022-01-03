@@ -42,6 +42,11 @@ namespace AzToolsFramework
 
     bool ReadOnlyEntitySystemComponent::IsReadOnly(const AZ::EntityId& entityId)
     {
+        if (!entityId.IsValid())
+        {
+            return false;
+        }
+
         if (!m_readOnlystates.contains(entityId))
         {
             QueryReadOnlyStateForEntity(entityId);

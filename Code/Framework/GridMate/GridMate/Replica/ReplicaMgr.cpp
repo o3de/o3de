@@ -17,7 +17,6 @@
 #include <GridMate/Replica/MigrationSequence.h>
 #include <GridMate/Replica/Tasks/ReplicaMarshalTasks.h>
 #include <GridMate/Replica/Tasks/ReplicaUpdateTasks.h>
-#include <GridMate/Replica/ReplicaDrillerEvents.h>
 #include <GridMate/Replica/ReplicaChunkDescriptor.h>
 #include <GridMate/Serialize/CompressionMarshal.h>
 
@@ -147,8 +146,6 @@ namespace GridMate
 
             auto callback = AZStd::make_unique<PeerAckCallbacks>((m_reliableCallbacks));
             carrier->SendWithCallback(m_reliableOutBuffer.Get(), static_cast<unsigned int>(m_reliableOutBuffer.Size()), AZStd::move(callback), GetConnectionId(), Carrier::SEND_RELIABLE, Carrier::PRIORITY_NORMAL, commChannel);
-
-            EBUS_EVENT(Debug::ReplicaDrillerBus, OnSend, GetId(), m_reliableOutBuffer.Get(), m_reliableOutBuffer.Size(), true);
         }
 
         if (hasUnreliableData)
@@ -164,8 +161,6 @@ namespace GridMate
 
             auto callback = AZStd::make_unique<PeerAckCallbacks>((m_unreliableCallbacks));
             carrier->SendWithCallback(m_unreliableOutBuffer.Get(), static_cast<unsigned int>(m_unreliableOutBuffer.Size()), AZStd::move(callback), GetConnectionId(), Carrier::SEND_UNRELIABLE, Carrier::PRIORITY_NORMAL, commChannel);
-
-            EBUS_EVENT(Debug::ReplicaDrillerBus, OnSend, GetId(), m_unreliableOutBuffer.Get(), m_unreliableOutBuffer.Size(), false);
         }
         // prepare for next cycle
         ResetBuffer();
@@ -1024,9 +1019,6 @@ namespace GridMate
          */
         while (!rb.IsEmptyIgnoreTrailingBits())
         {
-            // This is used later to report the buffer information to driller.
-            const char* cmdBufferBegin = rb.GetCurrent();
-
             CmdId cmdhdr;
             if (!rb.Read(cmdhdr))
             {
@@ -1179,10 +1171,8 @@ namespace GridMate
                         return;
                     }
 
-                    EBUS_EVENT(Debug::ReplicaDrillerBus, OnReceiveReplicaBegin, pReplica.get(), cmdBufferBegin, rb.GetCurrent() - cmdBufferBegin);
                     pReplica->Unmarshal(mc);
                     OnReplicaUnmarshaled(pReplica);
-                    EBUS_EVENT(Debug::ReplicaDrillerBus, OnReceiveReplicaEnd, pReplica.get());
                 }
                 else
                 {
@@ -1195,12 +1185,10 @@ namespace GridMate
                     pReplica->SetSyncStage(isSyncStage);
                     pReplica->SetMigratable(isMigratable);
 
-                    EBUS_EVENT(Debug::ReplicaDrillerBus, OnReceiveReplicaBegin, pReplica.get(), cmdBufferBegin, rb.GetCurrent() - cmdBufferBegin);
                     pReplica->Unmarshal(mc);
                     ReplicaContext rc(this, GetTime(), pFrom);
                     RegisterReplica(pReplica, false, rc);
                     OnReplicaUnmarshaled(pReplica);
-                    EBUS_EVENT(Debug::ReplicaDrillerBus, OnReceiveReplicaEnd, pReplica.get());
                 }
                 break;
             }
@@ -1268,11 +1256,9 @@ namespace GridMate
                 }
                 if (pObj->m_upstreamHop)
                 {
-                    EBUS_EVENT(Debug::ReplicaDrillerBus, OnReceiveReplicaBegin, pObj.get(), cmdBufferBegin, rb.GetCurrent() - cmdBufferBegin);
                     mc.m_peer = pFrom;
                     pObj->Unmarshal(mc);
                     OnReplicaUnmarshaled(pObj);
-                    EBUS_EVENT(Debug::ReplicaDrillerBus, OnReceiveReplicaEnd, pObj.get());
                 }
                 else
                 {
@@ -1332,7 +1318,6 @@ namespace GridMate
                     }
 
                     ReadBuffer rb(GetGridMate()->GetDefaultEndianType(), m_receiveBuffer.data(), result.m_numBytes);
-                    EBUS_EVENT(Debug::ReplicaDrillerBus, OnReceive, peer->GetId(), rb.Get(), rb.Size().GetSizeInBytesRoundUp());
                     _Unmarshal(rb, peer);
                     AZ_Assert(rb.IsEmptyIgnoreTrailingBits(), "We did not process the whole message!");
                 }
@@ -1655,7 +1640,6 @@ namespace GridMate
         {
             replica->SetPrimary(isPrimary);
             replica->OnChangeOwnership(rc);
-            EBUS_EVENT(Debug::ReplicaDrillerBus, OnReplicaChangeOwnership, replica.get(), wasPrimary);
         }
     }
     //-----------------------------------------------------------------------------

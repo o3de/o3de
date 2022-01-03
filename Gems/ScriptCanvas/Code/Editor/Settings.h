@@ -11,6 +11,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/UserSettings/UserSettings.h>
+#include <ScriptCanvas/Core/Core.h>
 
 // qdatastream.h(173): warning C4251: 'QDataStream::d': class 'QScopedPointer<QDataStreamPrivate,QScopedPointerDeleter<T>>' needs to have dll-interface to be used by clients of class 'QDataStream'
 // qwidget.h(858): warning C4800: 'uint': forcing value to bool 'true' or 'false' (performance warning)
@@ -53,11 +54,10 @@ namespace ScriptCanvasEditor
                 AZ_RTTI(WorkspaceAssetSaveData, "{927368CA-096F-4CF1-B2E0-1B9E4A93EA57}");
 
                 WorkspaceAssetSaveData();
-                WorkspaceAssetSaveData(const AZ::Data::AssetId& assetId);
+                WorkspaceAssetSaveData(SourceHandle assetId);
                 virtual ~WorkspaceAssetSaveData() = default;
 
-                AZ::Data::AssetId m_assetId;
-                AZ::Data::AssetType m_assetType;
+                SourceHandle m_assetId;
             };
 
         
@@ -69,9 +69,9 @@ namespace ScriptCanvasEditor
 
             EditorWorkspace() = default;
 
-            void ConfigureActiveAssets(AZ::Data::AssetId focusedAssetId, const AZStd::vector< WorkspaceAssetSaveData >& activeAssetIds);
+            void ConfigureActiveAssets(SourceHandle focusedAsset, const AZStd::vector< WorkspaceAssetSaveData >& activeAssetIds);
             
-            AZ::Data::AssetId GetFocusedAssetId() const;
+            SourceHandle GetFocusedAssetId() const;
             AZStd::vector< WorkspaceAssetSaveData > GetActiveAssetData() const;
 
             void Init(const QByteArray& windowState, const QByteArray& windowGeometry);
@@ -79,7 +79,7 @@ namespace ScriptCanvasEditor
 
             void Clear()
             {
-                m_focusedAssetId.SetInvalid();
+                m_focusedAssetId.Clear();
                 m_activeAssetData.clear();
             }
 
@@ -91,7 +91,7 @@ namespace ScriptCanvasEditor
             AZStd::vector<AZ::u8> m_windowGeometry;
             AZStd::vector<AZ::u8> m_windowState;
 
-            AZ::Data::AssetId m_focusedAssetId;
+            SourceHandle m_focusedAssetId;
             AZStd::vector< WorkspaceAssetSaveData > m_activeAssetData;
 
         };

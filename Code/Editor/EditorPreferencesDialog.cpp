@@ -112,6 +112,31 @@ void EditorPreferencesDialog::showEvent(QShowEvent* event)
     QDialog::showEvent(event);
 }
 
+void WidgetHandleKeyPressEvent(QWidget* widget, QKeyEvent* event)
+{
+    // If the enter key is pressed during any text input, the dialog box will close
+    // making it inconvenient to do multiple edits. This routine captures the
+    // Key_Enter or Key_Return and clears the focus to give a visible cue that
+    // editing of that field has finished and then doesn't propogate it.
+    if (event->key() != Qt::Key::Key_Enter && event->key() != Qt::Key::Key_Return)
+    {
+        QApplication::sendEvent(widget, event);
+    }
+    else
+    {
+        if (QWidget* editWidget = QApplication::focusWidget())
+        {
+            editWidget->clearFocus();
+        }
+    }
+}
+
+
+void EditorPreferencesDialog::keyPressEvent(QKeyEvent* event)
+{
+    WidgetHandleKeyPressEvent(this, event);
+}
+
 void EditorPreferencesDialog::OnTreeCurrentItemChanged()
 {
     QTreeWidgetItem* currentItem = ui->pageTree->currentItem();

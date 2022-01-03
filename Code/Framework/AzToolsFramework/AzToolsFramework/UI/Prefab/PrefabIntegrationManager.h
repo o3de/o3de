@@ -29,6 +29,7 @@
 namespace AzToolsFramework
 {
     class ContainerEntityInterface;
+    class ReadOnlyEntityPublicInterface;
 
     namespace Prefab
     {
@@ -74,7 +75,7 @@ namespace AzToolsFramework
             void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags) override;
 
             // EditorEventsBus overrides ...
-            void OnEscape();
+            void OnEscape() override;
 
             // EntityOutlinerSourceDropHandlingBus overrides ...
             void HandleSourceFileType(AZStd::string_view sourceFilePath, AZ::EntityId parentId, AZ::Vector3 position) const override;
@@ -169,6 +170,8 @@ namespace AzToolsFramework
             static PrefabLoaderInterface* s_prefabLoaderInterface;
             static PrefabPublicInterface* s_prefabPublicInterface;
             static PrefabSystemComponentInterface* s_prefabSystemComponentInterface;
+
+            ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
         };
     }
 }

@@ -43,6 +43,8 @@ namespace AzToolsFramework
     class EntityOutlinerListModel;
     class EntityOutlinerContainerProxyModel;
     class EntityOutlinerSortFilterProxyModel;
+    class FocusModeInterface;
+    class ReadOnlyEntityPublicInterface;
 
     namespace EntityOutliner
     {
@@ -203,7 +205,11 @@ namespace AzToolsFramework
         EntityOutliner::DisplaySortMode m_sortMode;
         bool m_sortContentQueued;
 
+        AzFramework::EntityContextId m_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+
         EditorEntityUiInterface* m_editorEntityUiInterface = nullptr;
+        FocusModeInterface* m_focusModeInterface = nullptr;
+        ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
     };
 
 }

@@ -74,11 +74,6 @@
 
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 
-#if AZ_TRAIT_LUXCORE_SUPPORTED
-#include <Atom/Feature/LuxCore/RenderTexturePass.h>
-#include <Atom/Feature/LuxCore/LuxCoreTexturePass.h>
-#endif
-
 #include <Checkerboard/CheckerboardPass.h>
 #include <Checkerboard/CheckerboardColorResolvePass.h>
 
@@ -97,9 +92,11 @@
 #include <DiffuseGlobalIllumination/DiffuseProbeGridBorderUpdatePass.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridRelocationPass.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridClassificationPass.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridDownsamplePass.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridRenderPass.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.h>
 #include <DiffuseGlobalIllumination/DiffuseGlobalIlluminationFeatureProcessor.h>
+#include <DiffuseGlobalIllumination/DiffuseCompositePass.h>
 #include <ReflectionScreenSpace/ReflectionScreenSpaceTracePass.h>
 #include <ReflectionScreenSpace/ReflectionScreenSpaceBlurPass.h>
 #include <ReflectionScreenSpace/ReflectionScreenSpaceBlurChildPass.h>
@@ -220,11 +217,6 @@ namespace AZ
             passSystem->AddPassCreator(Name("DisplayMapperFullScreenPass"), &DisplayMapperFullScreenPass::Create);
             passSystem->AddPassCreator(Name("OutputTransformPass"), &OutputTransformPass::Create);
             passSystem->AddPassCreator(Name("EyeAdaptationPass"), &EyeAdaptationPass::Create);
-            // Add RenderTexture and LuxCoreTexture pass
-#if AZ_TRAIT_LUXCORE_SUPPORTED
-            passSystem->AddPassCreator(Name("RenderTexturePass"), &RenderTexturePass::Create);
-            passSystem->AddPassCreator(Name("LuxCoreTexturePass"), &LuxCoreTexturePass::Create);
-#endif
             passSystem->AddPassCreator(Name("ImGuiPass"), &ImGuiPass::Create);
             passSystem->AddPassCreator(Name("LightCullingPass"), &LightCullingPass::Create);
             passSystem->AddPassCreator(Name("LightCullingRemapPass"), &LightCullingRemap::Create);
@@ -285,7 +277,9 @@ namespace AZ
             passSystem->AddPassCreator(Name("DiffuseProbeGridBorderUpdatePass"), &Render::DiffuseProbeGridBorderUpdatePass::Create);
             passSystem->AddPassCreator(Name("DiffuseProbeGridRelocationPass"), &Render::DiffuseProbeGridRelocationPass::Create);
             passSystem->AddPassCreator(Name("DiffuseProbeGridClassificationPass"), &Render::DiffuseProbeGridClassificationPass::Create);
+            passSystem->AddPassCreator(Name("DiffuseProbeGridDownsamplePass"), &Render::DiffuseProbeGridDownsamplePass::Create);
             passSystem->AddPassCreator(Name("DiffuseProbeGridRenderPass"), &Render::DiffuseProbeGridRenderPass::Create);
+            passSystem->AddPassCreator(Name("DiffuseCompositePass"), &Render::DiffuseCompositePass::Create);
 
             passSystem->AddPassCreator(Name("LuminanceHistogramGeneratorPass"), &LuminanceHistogramGeneratorPass::Create);
 

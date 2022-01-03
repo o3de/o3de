@@ -11,6 +11,8 @@
                 1.0,
                 1.0
             ],
+            "textureBlendMode": "Lerp",
+            "textureMap": "20_neutral_8-0_0-23D_sRGB.tif",
             "useTexture": true
         }
     }

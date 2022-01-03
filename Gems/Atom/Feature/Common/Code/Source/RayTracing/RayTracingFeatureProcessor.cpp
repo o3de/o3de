@@ -7,7 +7,6 @@
  */
 
 #include <RayTracing/RayTracingFeatureProcessor.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
@@ -150,21 +149,16 @@ namespace AZ
                 {
                     AZ_Assert(blasInstanceFound == false, "Partial set of RayTracingBlas objects found for mesh");
 
-                    // create the BLAS object
-                    subMesh.m_blas = AZ::RHI::RayTracingBlas::CreateRHIRayTracingBlas();
+                    // create the BLAS object and store it in the BLAS list
+                    RHI::Ptr<RHI::RayTracingBlas> rayTracingBlas = AZ::RHI::RayTracingBlas::CreateRHIRayTracingBlas();
+                    itMeshBlasInstance->second.m_subMeshes.push_back({ rayTracingBlas });
 
-                    // create the buffers from the descriptor
-                    subMesh.m_blas->CreateBuffers(*device, &blasDescriptor, *m_bufferPools);
+                    // create the buffers from the BLAS descriptor
+                    rayTracingBlas->CreateBuffers(*device, &blasDescriptor, *m_bufferPools);
 
-                    // store the BLAS in the side list
-                    itMeshBlasInstance->second.m_subMeshes.push_back({ subMesh.m_blas });
+                    // store the BLAS in the mesh
+                    subMesh.m_blas = rayTracingBlas;
                 }
-            }
-
-            if (blasInstanceFound)
-            {
-                // set the mesh BLAS flag so we don't try to rebuild it in the RayTracingAccelerationStructurePass
-                mesh.m_blasBuilt = true;
             }
 
             // set initial transform
@@ -318,7 +312,8 @@ namespace AZ
                         }
 
                         subMesh.m_irradianceColor.StoreToFloat4(meshInfo.m_irradianceColor.data());
-                        rotationMatrix.StoreToRowMajorFloat9(meshInfo.m_worldInvTranspose.data());
+                        Matrix3x4 worldInvTranspose3x4 = Matrix3x4::CreateFromMatrix3x3(rotationMatrix);
+                        worldInvTranspose3x4.StoreToRowMajorFloat12(meshInfo.m_worldInvTranspose.data());
                         meshInfo.m_bufferFlags = subMesh.m_bufferFlags;
                         meshInfo.m_bufferStartIndex = bufferStartIndex;
 
