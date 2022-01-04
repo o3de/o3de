@@ -14,7 +14,8 @@
     ],
     "steps": [
       "profile",
-      "asset_profile"
+      "asset_profile",
+      "test_profile"
     ]
   },
   "metrics": {
@@ -91,8 +92,6 @@
   },
   "test_profile": {
     "TAGS": [
-        "nightly-incremental",
-        "nightly-clean",
         "daily-pipeline-metrics",
         "weekly-build-metrics"
     ],
