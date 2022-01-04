@@ -42,6 +42,7 @@ ly_add_target(
             AZ::AzQtComponents
             AZ::AzToolsFramework
             AZ::AssetBuilderSDK
+            AZ::AssetBuilder.Static
             ${additional_dependencies}
     RUNTIME_DEPENDENCIES
         AZ::AssetBuilder

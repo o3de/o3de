@@ -297,8 +297,6 @@ set(FILES
     Util/AffineParts.cpp
     Objects/BaseObject.cpp
     Objects/BaseObject.h
-    Animation/AnimationBipedBoneNames.cpp
-    Animation/AnimationBipedBoneNames.h
     AnimationContext.cpp
     AnimationContext.h
     AzAssetBrowser/AzAssetBrowserRequestHandler.cpp
