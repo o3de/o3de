@@ -51,5 +51,4 @@ set(FILES
     include/LmbrCentral/Shape/ReferenceShapeComponentBus.h
     include/LmbrCentral/Shape/SplineAttribute.h
     include/LmbrCentral/Shape/SplineAttribute.inl
-    include/LmbrCentral/Terrain/TerrainSystemRequestBus.h
 )
