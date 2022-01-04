@@ -319,8 +319,8 @@ public:
         keys.push_back(QPair<QString, QString>("Edit Menu.Duplicate", "Ctrl+D"));
         keys.push_back(QPair<QString, QString>("Edit Menu.Undo", "Ctrl+Z"));
         keys.push_back(QPair<QString, QString>("Edit Menu.Redo", "Ctrl+Shift+Z"));
-        keys.push_back(QPair<QString, QString>("Edit Menu.Group", "Ctrl+G"));
-        keys.push_back(QPair<QString, QString>("Edit Menu.Ungroup", "Ctrl+Shift+G"));
+        keys.push_back(QPair<QString, QString>("Edit Menu.Group", "Ctrl+Alt+O"));
+        keys.push_back(QPair<QString, QString>("Edit Menu.Ungroup", "Ctrl+Alt+P"));
         keys.push_back(QPair<QString, QString>("Edit Menu.Rename", "Ctrl+R"));
         keys.push_back(QPair<QString, QString>("Edit Menu.Reset", ""));
         keys.push_back(QPair<QString, QString>("Edit Menu.Edit Hotkeys", ""));

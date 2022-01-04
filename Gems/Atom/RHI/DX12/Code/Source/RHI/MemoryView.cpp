@@ -57,8 +57,6 @@ namespace AZ
 
         CpuVirtualAddress MemoryView::Map(RHI::HostMemoryAccess hostAccess) const
         {
-            AZ_PROFILE_FUNCTION(RHI);
-
             CpuVirtualAddress cpuAddress = nullptr;
             D3D12_RANGE readRange = {};
             if (hostAccess == RHI::HostMemoryAccess::Read)

@@ -91,6 +91,10 @@ function ProcessEditor(context)
     if(mainVisibility == MaterialPropertyVisibility_Enabled) then
         local alphaSource = context:GetMaterialPropertyValue_enum("opacity.alphaSource")
 
+        if (opacityMode == OpacityMode_Cutout and alphaSource == AlphaSource_None) then
+            context:SetMaterialPropertyVisibility("opacity.factor", MaterialPropertyVisibility_Hidden)
+        end
+
         if(alphaSource ~= AlphaSource_Split) then
             context:SetMaterialPropertyVisibility("opacity.textureMap", MaterialPropertyVisibility_Hidden)
             context:SetMaterialPropertyVisibility("opacity.textureMapUv", MaterialPropertyVisibility_Hidden)

@@ -37,7 +37,6 @@
 #include "../connection/connection.h"
 #include "../resourcecompiler/rccontroller.h"
 #include "../resourcecompiler/RCJobSortFilterProxyModel.h"
-#include "../shadercompiler/shadercompilerModel.h"
 
 
 #include <QClipboard>
@@ -148,7 +147,6 @@ void MainWindow::Activate()
     ui->buttonList->addTab(QStringLiteral("Jobs"));
     ui->buttonList->addTab(QStringLiteral("Assets"));
     ui->buttonList->addTab(QStringLiteral("Logs"));
-    ui->buttonList->addTab(QStringLiteral("Shaders"));
     ui->buttonList->addTab(QStringLiteral("Connections"));
     ui->buttonList->addTab(QStringLiteral("Tools"));
 
@@ -316,14 +314,6 @@ void MainWindow::Activate()
         this, writeJobFilterSettings);
     connect(ui->jobFilteredSearchWidget, &AzQtComponents::FilteredSearchWidget::TextFilterChanged,
         this, writeJobFilterSettings);
-
-    //Shader view
-    ui->shaderTreeView->setModel(m_guiApplicationManager->GetShaderCompilerModel());
-    ui->shaderTreeView->header()->resizeSection(ShaderCompilerModel::ColumnTimeStamp, 80);
-    ui->shaderTreeView->header()->resizeSection(ShaderCompilerModel::ColumnServer, 40);
-    ui->shaderTreeView->header()->resizeSection(ShaderCompilerModel::ColumnError, 220);
-    ui->shaderTreeView->header()->setSectionResizeMode(ShaderCompilerModel::ColumnError, QHeaderView::Stretch);
-    ui->shaderTreeView->header()->setStretchLastSection(false);
 
     // Asset view
     m_sourceAssetTreeFilterModel = new AssetProcessor::AssetTreeFilterModel(this);
