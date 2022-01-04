@@ -356,6 +356,12 @@ namespace AZ::SceneAPI::Behaviors
             EditorPythonConsoleNotificationHandler logger;
             m_editorPythonEventsInterface->ExecuteWithLock(executeCallback);
 
+            // if the returned scene manifest is empty then ignore the script update
+            if (manifestUpdate.empty())
+            {
+                return Events::ProcessingResult::Ignored;
+            }
+
             EntityUtilityBus::Broadcast(&EntityUtilityBus::Events::ResetEntityContext);
             AZ::Interface<Prefab::PrefabSystemComponentInterface>::Get()->RemoveAllTemplates();
 
