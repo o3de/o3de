@@ -85,7 +85,9 @@ void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingD
         // shadow
         float litRatio = 1.0;
 
-        // Distance travelled by the light inside the object. If not redefined, it will take mode-specific null behaviors (see GetBackLighting())
+        // Distance travelled by the light inside the object. If not redefined to a non-negative value, it will take the following behavior:
+        // - If transmission mode is thick object -> use transmission thickness parameter instead
+        // - If transmission mode is thin object -> ignore back lighting
         float transmissionDistance = -1.0f;
 
         if (o_enableShadows)

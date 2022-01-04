@@ -75,8 +75,9 @@ float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightI
                 // Increase angle of influence (angle(N,L) -> angle(N,L) + acos(transmissionNdLBias)) to smooth transition regions
                 float3 E = surface.albedo * saturate(lightingData.transmissionNdLBias + dot(-surface.normal, dirToLight));
 
-                // Transmission distance modulated by hardcoded constant (could be exposed as a weight of scattering distance for transmission)
-                float s = transmissionDistance * 100.0;
+                // Transmission distance modulated by hardcoded constant C (could be exposed as a weight of scattering distance for transmission)
+                const float C = 100.0f;
+                float s = transmissionDistance * C;
                 
                 // Use scattering color to weight thin object transmission color
                 const float3 invScattering = rcp(transmissionParams.xyz);
