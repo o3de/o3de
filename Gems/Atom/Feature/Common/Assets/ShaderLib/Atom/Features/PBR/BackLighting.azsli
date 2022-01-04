@@ -90,7 +90,7 @@ float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightI
                 // result = T(s) * lightIntensity * surface.albedo * E * transmissionParams.w;
                 
                 // Distance attenuation applied to hide artifacts due to low-res projected areas onto shadowmaps (might need some work in the future)
-                result *= 1.0 / pow(max(1.0, sqrt(attenuationDistance)), lightingData.distanceAttenuation + 1.0);
+                result /= max(1.0, attenuationDistance * attenuationDistance * lightingData.distanceAttenuation);
             }
             break;
     }

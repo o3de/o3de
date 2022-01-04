@@ -668,9 +668,9 @@
                     "displayName": "    Distance Attenuation",
                     "description": "Attenuation applied to hide artifacts due to low-res shadow maps (e.g. objects far to the camera when using directional lights or objects far to the light when using sphere/disk lights",
                     "type": "float",
-                    "defaultValue": 4.0,
+                    "defaultValue": 0.5,
                     "min": 0.0,
-                    "softMax": 10.0,
+                    "softMax": 4.0,
                     "connection": {
                         "type": "ShaderInput",
                         "name": "m_distanceAttenuation"
