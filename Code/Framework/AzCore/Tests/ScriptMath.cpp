@@ -1409,13 +1409,25 @@ namespace UnitTest
         script->Execute("AZTestAssertFloatClose(pl:GetNormal().y,-1)");
         script->Execute("AZTestAssertFloatClose(pl:GetNormal().z,0)");
 
+#if AZ_DEBUG_BUILD
+        AZ_TEST_START_TRACE_SUPPRESSION;
+#endif
         script->Execute("pl:Set(12, 13, 14, 15)");
+#if AZ_DEBUG_BUILD
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+#endif
         script->Execute("AZTestAssertFloatClose(pl:GetDistance(), 15)");
         script->Execute("AZTestAssertFloatClose(pl:GetNormal().x, 12)");
         script->Execute("AZTestAssertFloatClose(pl:GetNormal().y, 13)");
         script->Execute("AZTestAssertFloatClose(pl:GetNormal().z, 14)");
 
+#if AZ_DEBUG_BUILD
+        AZ_TEST_START_TRACE_SUPPRESSION;
+#endif
         script->Execute("pl:Set(Vector3(22, 23, 24), 25)");
+#if AZ_DEBUG_BUILD
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+#endif
         script->Execute("AZTestAssertFloatClose(pl:GetDistance(), 25)");
         script->Execute("AZTestAssertFloatClose(pl:GetNormal().x, 22)");
         script->Execute("AZTestAssertFloatClose(pl:GetNormal().y, 23)");
@@ -1493,7 +1505,13 @@ namespace UnitTest
 
         script->Execute("pl:Set(1, 0, 0, 0)");
         script->Execute("AZTestAssert(pl:IsFinite())");
+#if AZ_DEBUG_BUILD
+        AZ_TEST_START_TRACE_SUPPRESSION;
+#endif
         script->Execute("pl:Set(math.huge, math.huge, math.huge, math.huge)");
+#if AZ_DEBUG_BUILD
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+#endif
         script->Execute("AZTestAssert( not pl:IsFinite())");
     }
 

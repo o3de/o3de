@@ -47,7 +47,13 @@ namespace UnitTest
     TEST(MATH_Plane, TestSet)
     {
         Plane pl;
+#if AZ_DEBUG_BUILD
+        AZ_TEST_START_TRACE_SUPPRESSION;
+#endif
         pl.Set(12.0f, 13.0f, 14.0f, 15.0f);
+#if AZ_DEBUG_BUILD
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+#endif
         AZ_TEST_ASSERT_FLOAT_CLOSE(pl.GetDistance(), 15.0f);
         AZ_TEST_ASSERT_FLOAT_CLOSE(pl.GetNormal().GetX(), 12.0f);
         AZ_TEST_ASSERT_FLOAT_CLOSE(pl.GetNormal().GetY(), 13.0f);
@@ -57,7 +63,13 @@ namespace UnitTest
     TEST(MATH_Plane, TestSetVector3)
     {
         Plane pl;
+#if AZ_DEBUG_BUILD
+        AZ_TEST_START_TRACE_SUPPRESSION;
+#endif
         pl.Set(Vector3(22.0f, 23.0f, 24.0f), 25.0f);
+#if AZ_DEBUG_BUILD
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+#endif
         AZ_TEST_ASSERT_FLOAT_CLOSE(pl.GetDistance(), 25.0f);
         AZ_TEST_ASSERT_FLOAT_CLOSE(pl.GetNormal().GetX(), 22.0f);
         AZ_TEST_ASSERT_FLOAT_CLOSE(pl.GetNormal().GetY(), 23.0f);
@@ -177,16 +189,28 @@ namespace UnitTest
         pl.Set(1.0f, 0.0f, 0.0f, 0.0f);
         AZ_TEST_ASSERT(pl.IsFinite());
         const float infinity = std::numeric_limits<float>::infinity();
+#if AZ_DEBUG_BUILD
+        AZ_TEST_START_TRACE_SUPPRESSION;
+#endif
         pl.Set(infinity, infinity, infinity, infinity);
+#if AZ_DEBUG_BUILD
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+#endif
         AZ_TEST_ASSERT(!pl.IsFinite());
     }
 
     TEST(MATH_Plane, CreateFromVectorCoefficients_IsEquivalentToCreateFromCoefficients)
     {
+#if AZ_DEBUG_BUILD
+        AZ_TEST_START_TRACE_SUPPRESSION;
+#endif
         Plane planeFromCoefficients = Plane::CreateFromCoefficients(1.0, 2.0, 3.0, 4.0);
-
+#if AZ_DEBUG_BUILD
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+#endif
         Vector4 coefficients(1.0, 2.0, 3.0, 4.0);
         Plane planeFromVectorCoefficients = Plane::CreateFromVectorCoefficients(coefficients);
+
 
         EXPECT_EQ(planeFromVectorCoefficients, planeFromCoefficients);
     }
