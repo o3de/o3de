@@ -50,7 +50,7 @@ class EditorComponent:
         assert len(type_names) != 0, "Component object does not have type id"
         return type_names[0]
 
-    def get_property_tree(self):
+    def get_property_tree(self, force_get: bool = False):
         """
         Used to get the property tree object of component that has following functions associated with it:
             1. prop_tree.is_container(path)
@@ -60,9 +60,10 @@ class EditorComponent:
             5. prop_tree.remove_container_item(path, key)
             6. prop_tree.update_container_item(path, key, value)
             7. prop_tree.get_container_item(path, key)
+        :param force_get: Force a fresh property tree to be returned rather than using an existing self.property_tree
         :return: Property tree object of a component
         """
-        if self.property_tree is not None:
+        if (not force_get) and (self.property_tree is not None):
             return self.property_tree
 
         build_prop_tree_outcome = editor.EditorComponentAPIBus(
@@ -244,6 +245,7 @@ class EditorComponent:
     def disable_component(self):
         """
         Used to disable the component using its id value.
+        Deprecation warning! Use set_enable(False) instead as this method is in deprecation
         :return: None
         """
         warnings.warn("disable_component is deprecated, use set_enabled(False) instead.", DeprecationWarning)
