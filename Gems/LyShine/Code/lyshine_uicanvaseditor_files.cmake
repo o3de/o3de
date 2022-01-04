@@ -54,8 +54,6 @@ set(FILES
     Editor/CommandHierarchyItemToggleIsVisible.h
     Editor/CommandPropertiesChange.cpp
     Editor/CommandPropertiesChange.h
-    Editor/CommandViewportInteractionMode.cpp
-    Editor/CommandViewportInteractionMode.h
     Editor/ComponentAssetHelpers.h
     Editor/ComponentButton.cpp
     Editor/ComponentButton.h
