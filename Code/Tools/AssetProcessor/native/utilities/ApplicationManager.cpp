@@ -231,44 +231,6 @@ bool ApplicationManager::InitiatedShutdown() const
     return m_duringShutdown;
 }
 
-void ApplicationManager::GetExternalBuilderFileList(QStringList& externalBuilderModules)
-{
-    externalBuilderModules.clear();
-
-    static const char* builder_folder_name = "Builders";
-
-    // LY_ASSET_BUILDERS is defined by the CMakeLists.txt. The asset builders add themselves to a variable that
-    // is populated to allow selective building of those asset builder targets.
-    // This allows left over Asset builders in the output directory to not be loaded by the AssetProcessor
-#if !defined(LY_ASSET_BUILDERS)
-    #error LY_ASSET_BUILDERS was not defined for ApplicationManager.cpp
-#endif
-
-    QDir builderDir = QDir::toNativeSeparators(QString(this->m_frameworkApp.GetExecutableFolder()));
-    builderDir.cd(QString(builder_folder_name));
-    if (builderDir.exists())
-    {
-        AZStd::vector<AZStd::string> tokens;
-        AZ::StringFunc::Tokenize(AZStd::string_view(LY_ASSET_BUILDERS), tokens, ',');
-        AZStd::string builderLibrary;
-        for (const AZStd::string& token : tokens)
-        {
-            QString assetBuilderPath(token.c_str());
-            if (builderDir.exists(assetBuilderPath))
-            {
-                externalBuilderModules.push_back(builderDir.absoluteFilePath(assetBuilderPath));
-            }
-        }
-    }
-
-    if (externalBuilderModules.empty())
-    {
-        AZ_TracePrintf(AssetProcessor::ConsoleChannel, "AssetProcessor was unable to locate any external builders\n");
-    }
-}
-
-
-
 QDir ApplicationManager::GetSystemRoot() const
 {
     return m_systemRoot;
@@ -458,15 +420,6 @@ void ApplicationManager::PopulateApplicationDependencies()
         QString pathWithPlatformExtension = pathName + QString(AZ_DYNAMIC_LIBRARY_EXTENSION);
         m_filesOfInterest.push_back(dir.absoluteFilePath(pathWithPlatformExtension));
     }
-
-    // Get the external builder modules to add to the files of interest
-    QStringList builderModuleFileList;
-    GetExternalBuilderFileList(builderModuleFileList);
-    for (const QString& builderModuleFile : builderModuleFileList)
-    {
-        m_filesOfInterest.push_back(builderModuleFile);
-    }
-
 
     QDir assetRoot;
     AssetUtilities::ComputeAssetRoot(assetRoot);

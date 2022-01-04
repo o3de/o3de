@@ -11,6 +11,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
+#include <GradientSignal/Ebuses/GradientTransformRequestBus.h>
 #include <GradientSignal/Ebuses/ImageGradientRequestBus.h>
 #include <GradientSignal/ImageAsset.h>
 #include <GradientSignal/Util.h>
@@ -46,6 +47,7 @@ namespace GradientSignal
         , private AZ::Data::AssetBus::Handler
         , private GradientRequestBus::Handler
         , private ImageGradientRequestBus::Handler
+        , private GradientTransformNotificationBus::Handler
     {
     public:
         template<typename, typename> friend class LmbrCentral::EditorWrappedComponentBase;
@@ -59,29 +61,27 @@ namespace GradientSignal
         ImageGradientComponent() = default;
         ~ImageGradientComponent() = default;
 
-        //////////////////////////////////////////////////////////////////////////
-        // AZ::Component interface implementation
+        // AZ::Component overrides...
         void Activate() override;
         void Deactivate() override;
         bool ReadInConfig(const AZ::ComponentConfig* baseConfig) override;
         bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const override;
 
-        //////////////////////////////////////////////////////////////////////////
-        // GradientRequestBus
+        // GradientRequestBus overrides...
         float GetValue(const GradientSampleParams& sampleParams) const override;
 
-        //////////////////////////////////////////////////////////////////////////
-        // AZ::Data::AssetBus::Handler
+        // AZ::Data::AssetBus overrides...
         void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         void OnAssetMoved(AZ::Data::Asset<AZ::Data::AssetData> asset, void* oldDataPointer) override;
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
     protected:
+        // GradientTransformNotificationBus overrides...
+        void OnGradientTransformChanged(const GradientTransform& newTransform) override;
 
         void SetupDependencies();
 
-        //////////////////////////////////////////////////////////////////////////
-        // ImageGradientRequestBus
+        // ImageGradientRequestBus overrides...
         AZStd::string GetImageAssetPath() const override;
         void SetImageAssetPath(const AZStd::string& assetPath) override;
 
@@ -95,5 +95,6 @@ namespace GradientSignal
         ImageGradientConfig m_configuration;
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
         mutable AZStd::shared_mutex m_imageMutex;
+        GradientTransform m_gradientTransform;
     };
 }

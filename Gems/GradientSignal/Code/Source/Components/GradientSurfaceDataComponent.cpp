@@ -6,7 +6,7 @@
  *
  */
 
-#include "GradientSurfaceDataComponent.h"
+#include <GradientSignal/Components/GradientSurfaceDataComponent.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>

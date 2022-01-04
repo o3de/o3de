@@ -297,8 +297,6 @@ set(FILES
     Util/AffineParts.cpp
     Objects/BaseObject.cpp
     Objects/BaseObject.h
-    Animation/AnimationBipedBoneNames.cpp
-    Animation/AnimationBipedBoneNames.h
     AnimationContext.cpp
     AnimationContext.h
     AzAssetBrowser/AzAssetBrowserRequestHandler.cpp
@@ -526,8 +524,6 @@ set(FILES
     PythonEditorFuncs.h
     QtUI/QCollapsibleGroupBox.h
     QtUI/QCollapsibleGroupBox.cpp
-    QtUI/ClickableLabel.h
-    QtUI/ClickableLabel.cpp
     QtUI/PixmapLabelPreview.h
     QtUI/PixmapLabelPreview.cpp
     QtUI/WaitCursor.h

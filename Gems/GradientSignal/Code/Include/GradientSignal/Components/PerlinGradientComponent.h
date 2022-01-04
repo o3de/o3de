@@ -12,6 +12,7 @@
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
+#include <GradientSignal/Ebuses/GradientTransformRequestBus.h>
 #include <GradientSignal/Ebuses/PerlinGradientRequestBus.h>
 #include <GradientSignal/PerlinImprovedNoise.h>
 
@@ -47,6 +48,7 @@ namespace GradientSignal
         : public AZ::Component
         , private GradientRequestBus::Handler
         , private PerlinGradientRequestBus::Handler
+        , private GradientTransformNotificationBus::Handler
     {
     public:
         template<typename, typename> friend class LmbrCentral::EditorWrappedComponentBase;
@@ -60,23 +62,25 @@ namespace GradientSignal
         PerlinGradientComponent() = default;
         ~PerlinGradientComponent() = default;
 
-        //////////////////////////////////////////////////////////////////////////
-        // AZ::Component interface implementation
+        // AZ::Component overrides...
         void Activate() override;
         void Deactivate() override;
         bool ReadInConfig(const AZ::ComponentConfig* baseConfig) override;
         bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const override;
 
-        //////////////////////////////////////////////////////////////////////////
-        // GradientRequestBus
+        // GradientRequestBus overrides...
         float GetValue(const GradientSampleParams& sampleParams) const override;
 
     private:
         PerlinGradientConfig m_configuration;
         AZStd::unique_ptr<PerlinImprovedNoise> m_perlinImprovedNoise;
+        GradientTransform m_gradientTransform;
+        mutable AZStd::shared_mutex m_transformMutex;
 
-        /////////////////////////////////////////////////////////////////////////
-        //PerlinGradientRequest overrides
+        // GradientTransformNotificationBus overrides...
+        void OnGradientTransformChanged(const GradientTransform& newTransform) override;
+
+        // PerlinGradientRequestBus overrides...
         int GetRandomSeed() const override;
         void SetRandomSeed(int seed) override;
 

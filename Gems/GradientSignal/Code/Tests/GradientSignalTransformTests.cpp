@@ -7,7 +7,7 @@
  */
 
 
-#include "Tests/GradientSignalTestMocks.h"
+#include <Tests/GradientSignalTestFixtures.h>
 
 #include <AzTest/AzTest.h>
 #include <AzCore/Asset/AssetManager.h>
@@ -15,7 +15,7 @@
 #include <AzCore/Math/Vector2.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
 
-#include <Source/Components/GradientTransformComponent.h>
+#include <GradientSignal/Components/GradientTransformComponent.h>
 
 namespace UnitTest
 {
