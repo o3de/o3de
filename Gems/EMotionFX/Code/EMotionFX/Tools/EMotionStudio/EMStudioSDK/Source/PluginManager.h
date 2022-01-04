@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __EMSTUDIO_PLUGINMANAGER_H
-#define __EMSTUDIO_PLUGINMANAGER_H
+#pragma once
 
 #include <AzCore/std/typetraits/conditional.h>
 #include <AzCore/std/typetraits/is_convertible.h>
@@ -68,5 +67,3 @@ namespace EMStudio
         void UnloadPlugins();
     };
 }   // namespace EMStudio
-
-#endif

@@ -40,15 +40,26 @@ namespace AZ
             return 0;
         }
 
-        const BufferView* FrameGraphCompileContext::GetBufferView(const AttachmentId& attachmentId, size_t index) const
+        const BufferView* FrameGraphCompileContext::GetBufferView(const ScopeAttachment* scopeAttacment) const
         {
-            const ScopeAttachment* scopeAttacment = m_attachmentDatabase->FindScopeAttachment(m_scopeId, attachmentId, index);
             const BufferScopeAttachment* attachment = azrtti_cast<const BufferScopeAttachment*>(scopeAttacment);
             if (!attachment)
             {
                 return nullptr;
             }
             return attachment->GetBufferView();
+        }
+
+        const BufferView* FrameGraphCompileContext::GetBufferView(const AttachmentId& attachmentId) const
+        {
+            const ScopeAttachment* scopeAttacment = m_attachmentDatabase->FindScopeAttachment(m_scopeId, attachmentId);
+            return GetBufferView(scopeAttacment);
+        }
+
+        const BufferView* FrameGraphCompileContext::GetBufferView(const AttachmentId& attachmentId, const RHI::ScopeAttachmentUsage attachmentUsage) const
+        {
+            const ScopeAttachment* scopeAttacment = m_attachmentDatabase->FindScopeAttachment(m_scopeId, attachmentId, attachmentUsage);
+            return GetBufferView(scopeAttacment);
         }
 
         const Buffer* FrameGraphCompileContext::GetBuffer(const AttachmentId& attachmentId) const
@@ -61,15 +72,26 @@ namespace AZ
             return nullptr;
         }
 
-        const ImageView* FrameGraphCompileContext::GetImageView(const AttachmentId& attachmentId, size_t index) const
+        const ImageView* FrameGraphCompileContext::GetImageView(const ScopeAttachment* scopeAttacment) const
         {
-            const ScopeAttachment* scopeAttacment = m_attachmentDatabase->FindScopeAttachment(m_scopeId, attachmentId, index);
             const ImageScopeAttachment* attachment = azrtti_cast<const ImageScopeAttachment*>(scopeAttacment);
             if (!attachment)
             {
                 return nullptr;
             }
             return attachment->GetImageView();
+        }
+
+        const ImageView* FrameGraphCompileContext::GetImageView(const AttachmentId& attachmentId, const ImageViewDescriptor& imageViewDescriptor, RHI::ScopeAttachmentUsage attachmentUsage) const
+        {
+            const ScopeAttachment* scopeAttacment = m_attachmentDatabase->FindScopeAttachment(m_scopeId, attachmentId, imageViewDescriptor, attachmentUsage);
+            return GetImageView(scopeAttacment);
+        }
+
+        const ImageView* FrameGraphCompileContext::GetImageView(const AttachmentId& attachmentId) const
+        {
+            const ScopeAttachment* scopeAttacment = m_attachmentDatabase->FindScopeAttachment(m_scopeId, attachmentId);
+            return GetImageView(scopeAttacment);
         }
 
         const Image* FrameGraphCompileContext::GetImage(const AttachmentId& attachmentId) const

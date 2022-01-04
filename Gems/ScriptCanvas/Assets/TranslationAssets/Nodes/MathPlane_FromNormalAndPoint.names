@@ -7,35 +7,35 @@
             "details": {
                 "name": "From Normal And Point",
                 "category": "Math/Plane",
-                "tooltip": "Returns the plane which includes the Point with the specified Normal"
+                "tooltip": "returns the plane which includes the Point with the specified Normal"
             },
             "slots": [
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "base": "DataInput_Normal",
+                    "base": "DataInput_Normal_0",
                     "details": {
                         "name": "Normal"
                     }
                 },
                 {
-                    "base": "DataInput_Point",
+                    "base": "DataInput_Point_1",
                     "details": {
                         "name": "Point"
                     }
                 },
                 {
-                    "base": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

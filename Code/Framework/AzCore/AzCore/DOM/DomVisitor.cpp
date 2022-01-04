@@ -8,7 +8,7 @@
 
 #include <AzCore/DOM/DomVisitor.h>
 
-namespace AZ::DOM
+namespace AZ::Dom
 {
     const char* VisitorError::CodeToString(VisitorErrorCode code)
     {
@@ -236,4 +236,4 @@ namespace AZ::DOM
     {
         return (GetVisitorFlags() & VisitorFlags::SupportsOpaqueValues) != VisitorFlags::Null;
     }
-} // namespace AZ::DOM
+} // namespace AZ::Dom

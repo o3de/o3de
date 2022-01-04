@@ -7,7 +7,7 @@
  */
 
 
-#include "Tests/GradientSignalTestMocks.h"
+#include <Tests/GradientSignalTestFixtures.h>
 
 #include <GradientSignal/PerlinImprovedNoise.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
@@ -157,19 +157,14 @@ namespace UnitTest
         // matches a previously-calculated "golden" set of values.
 
         constexpr int dataSize = 4;
-        AZStd::vector<float> expectedOutput =
-        {
-            0.5000f, 0.5456f, 0.5138f, 0.4801f,
-            0.4174f, 0.4942f, 0.5493f, 0.5431f,
-            0.4984f, 0.5204f, 0.5526f, 0.5840f,
-            0.5251f, 0.5029f, 0.6153f, 0.5802f,
-        };
 
         GradientSignal::PerlinGradientConfig config;
         config.m_randomSeed = 7878;
         config.m_octave = 4;
         config.m_amplitude = 3.0f;
         config.m_frequency = 1.13f;
+
+        AZStd::vector<float> expectedOutput = { AZ_TRAIT_UNIT_TEST_PERLINE_GRADIANT_GOLDEN_VALUES_7878 };
 
         auto entity = CreateEntity();
         CreateComponent<GradientSignal::PerlinGradientComponent>(entity.get(), config);

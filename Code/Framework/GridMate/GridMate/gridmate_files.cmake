@@ -45,12 +45,6 @@ set(FILES
     Containers/unordered_map.h
     Containers/unordered_set.h
     Containers/vector.h
-    Drillers/CarrierDriller.cpp
-    Drillers/CarrierDriller.h
-    Drillers/ReplicaDriller.cpp
-    Drillers/ReplicaDriller.h
-    Drillers/SessionDriller.cpp
-    Drillers/SessionDriller.h
     Online/OnlineUtilityThread.h
     Online/UserServiceTypes.h
     Replica/BasicHostChunkDescriptor.h
@@ -71,7 +65,6 @@ set(FILES
     Replica/ReplicaChunkInterface.h
     Replica/ReplicaCommon.h
     Replica/ReplicaDefs.h
-    Replica/ReplicaDrillerEvents.h
     Replica/ReplicaFunctions.h
     Replica/ReplicaFunctions.inl
     Replica/ReplicaInline.inl

@@ -21,7 +21,12 @@
 namespace AzFramework
 {
     struct ScreenPoint;
-}
+
+    namespace RenderGeometry
+    {
+        struct RayRequest;
+    }
+} // namespace AzFramework
 
 namespace AzToolsFramework
 {
@@ -145,13 +150,6 @@ namespace AzToolsFramework
             static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         };
 
-        //! A ray projection, originating from a point and extending in a direction specified as a normal.
-        struct ProjectedViewportRay
-        {
-            AZ::Vector3 origin;
-            AZ::Vector3 direction;
-        };
-
         //! Requests that can be made to the viewport to query and modify its state.
         class ViewportInteractionRequests
         {
@@ -177,6 +175,17 @@ namespace AzToolsFramework
         //! Type to inherit to implement ViewportInteractionRequests.
         using ViewportInteractionRequestBus = AZ::EBus<ViewportInteractionRequests, ViewportEBusTraits>;
 
+        //! Utility function to return a viewport ray using the ViewportInteractionRequestBus.
+        inline ProjectedViewportRay ViewportScreenToWorldRay(
+            const AzFramework::ViewportId viewportId, const AzFramework::ScreenPoint& screenPoint)
+        {
+            ProjectedViewportRay viewportRay{};
+            ViewportInteractionRequestBus::EventResult(
+                viewportRay, viewportId, &ViewportInteractionRequestBus::Events::ViewportScreenToWorldRay, screenPoint);
+
+            return viewportRay;
+        }
+
         //! Interface to return only viewport specific settings (e.g. snapping).
         class ViewportSettingsRequests
         {
@@ -199,6 +208,10 @@ namespace AzToolsFramework
             virtual bool StickySelectEnabled() const = 0;
             //! Returns the default viewport camera position.
             virtual AZ::Vector3 DefaultEditorCameraPosition() const = 0;
+            //! Returns if icons are visible in the viewport.
+            virtual bool IconsVisible() const = 0;
+            //! Returns if viewport helpers (additional debug drawing) are visible in the viewport.
+            virtual bool HelpersVisible() const = 0;
 
         protected:
             ~ViewportSettingsRequests() = default;
@@ -228,10 +241,6 @@ namespace AzToolsFramework
         class MainEditorViewportInteractionRequests
         {
         public:
-            //! Given a point in screen space, return the terrain position in world space.
-            virtual AZ::Vector3 PickTerrain(const AzFramework::ScreenPoint& point) = 0;
-            //! Return the terrain height given a world position in 2d (xy plane).
-            virtual float TerrainHeight(const AZ::Vector2& position) = 0;
             //! Is the user holding a modifier key to move the manipulator space from local to world.
             virtual bool ShowingWorldSpace() = 0;
             //! Return the widget to use as the parent for the viewport context menu.
@@ -337,8 +346,17 @@ namespace AzToolsFramework
     //! Performs an intersection test against meshes in the scene, if there is a hit (the ray intersects
     //! a mesh), that position is returned, otherwise a point projected defaultDistance from the
     //! origin of the ray will be returned.
+    //! @note The intersection will only consider visible objects.
     AZ::Vector3 FindClosestPickIntersection(
         AzFramework::ViewportId viewportId, const AzFramework::ScreenPoint& screenPoint, float rayLength, float defaultDistance);
+
+    //! Overload of FindClosestPickIntersection taking a RenderGeometry::RayRequest directly.
+    //! @note rayRequest must contain a valid ray/line segment (start/endWorldPosition must not be at the same position).
+    AZ::Vector3 FindClosestPickIntersection(const AzFramework::RenderGeometry::RayRequest& rayRequest, float defaultDistance);
+
+    //! Update the in/out parameter rayRequest based on the latest viewport ray.
+    void RefreshRayRequest(
+        AzFramework::RenderGeometry::RayRequest& rayRequest, const ViewportInteraction::ProjectedViewportRay& viewportRay, float rayLength);
 
     //! Maps a mouse interaction event to a ClickDetector event.
     //! @note Function only cares about up or down events, all other events are mapped to Nil (ignored).

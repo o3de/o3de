@@ -966,18 +966,18 @@ void ApplicationManagerBase::HandleFileRelocation() const
             AZ_Printf(AssetProcessor::ConsoleChannel, "SETTING: Preview file move.  Run again with --%s to actually make changes\n", ConfirmCommand);
         }
 
-        auto* interface = AZ::Interface<AssetProcessor::ISourceFileRelocation>::Get();
+        auto* relocationInterface = AZ::Interface<AssetProcessor::ISourceFileRelocation>::Get();
 
-        if(interface)
+        if(relocationInterface)
         {
-            auto result = interface->Move(source, destination, previewOnly, allowBrokenDependencies, !leaveEmptyFolders, updateReferences, excludeMetaDataFiles);
+            auto result = relocationInterface->Move(source, destination, previewOnly, allowBrokenDependencies, !leaveEmptyFolders, updateReferences, excludeMetaDataFiles);
 
             if (result.IsSuccess())
             {
                 AssetProcessor::RelocationSuccess success = result.TakeValue();
 
                 // The report can be too long for the AZ_Printf buffer, so split it into individual lines
-                AZStd::string report = interface->BuildReport(success.m_relocationContainer, success.m_updateTasks, true, updateReferences);
+                AZStd::string report = relocationInterface->BuildReport(success.m_relocationContainer, success.m_updateTasks, true, updateReferences);
                 AZStd::vector<AZStd::string> lines;
                 AzFramework::StringFunc::Tokenize(report.c_str(), lines, "\n");
 
@@ -1051,18 +1051,18 @@ void ApplicationManagerBase::HandleFileRelocation() const
             AZ_Printf(AssetProcessor::ConsoleChannel, "SETTING: Preview file delete.  Run again with --%s to actually make changes\n", ConfirmCommand);
         }
 
-        auto* interface = AZ::Interface<AssetProcessor::ISourceFileRelocation>::Get();
+        auto* relocationInterface = AZ::Interface<AssetProcessor::ISourceFileRelocation>::Get();
 
-        if (interface)
+        if (relocationInterface)
         {
-            auto result = interface->Delete(source, previewOnly, allowBrokenDependencies, !leaveEmptyFolders, excludeMetaDataFiles);
+            auto result = relocationInterface->Delete(source, previewOnly, allowBrokenDependencies, !leaveEmptyFolders, excludeMetaDataFiles);
 
             if (result.IsSuccess())
             {
                 AssetProcessor::RelocationSuccess success = result.TakeValue();
 
                 // The report can be too long for the AZ_Printf buffer, so split it into individual lines
-                AZStd::string report = interface->BuildReport(success.m_relocationContainer, success.m_updateTasks, false, updateReferences);
+                AZStd::string report = relocationInterface->BuildReport(success.m_relocationContainer, success.m_updateTasks, false, updateReferences);
                 AZStd::vector<AZStd::string> lines;
                 AzFramework::StringFunc::Tokenize(report.c_str(), lines, "\n");
 
@@ -1482,7 +1482,7 @@ bool ApplicationManagerBase::WaitForBuilderExit(AzFramework::ProcessWatcher* pro
     AZ::u32 exitCode = 0;
     bool finishedOK = false;
     QElapsedTimer ticker;
-    CommunicatorTracePrinter tracer(processWatcher->GetCommunicator(), "AssetBuilder");
+    ProcessCommunicatorTracePrinter tracer(processWatcher->GetCommunicator(), "AssetBuilder");
 
     ticker.start();
 

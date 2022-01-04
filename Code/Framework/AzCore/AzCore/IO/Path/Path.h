@@ -78,7 +78,8 @@ namespace AZ::IO
 
         // native format observers
         //! Returns string_view stored within the PathView
-        constexpr AZStd::string_view Native() const noexcept;
+        constexpr const AZStd::string_view& Native() const noexcept;
+        constexpr AZStd::string_view& Native() noexcept;
         //! Conversion operator to retrieve string_view stored within the PathView
         constexpr explicit operator AZStd::string_view() const noexcept;
 
@@ -483,6 +484,7 @@ namespace AZ::IO
         // as_posix
         //! Replicates the behavior of the Python pathlib as_posix method
         //! by replacing the Windows Path Separator with the Posix Path Seperator
+        constexpr string_type AsPosix() const;
         AZStd::string StringAsPosix() const;
         constexpr AZStd::fixed_string<MaxPathLength> FixedMaxPathStringAsPosix() const noexcept;
 

@@ -52,10 +52,10 @@ namespace PhysX
 
         JointComponent() = default;
         JointComponent(
-            const JointComponentConfiguration& configuration, 
+            const JointComponentConfiguration& configuration,
             const JointGenericProperties& genericProperties);
         JointComponent(
-            const JointComponentConfiguration& configuration, 
+            const JointComponentConfiguration& configuration,
             const JointGenericProperties& genericProperties,
             const JointLimitProperties& limitProperties);
 

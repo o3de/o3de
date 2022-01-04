@@ -1,8 +1,8 @@
 {
     "description": "",
-    "materialType": "Materials\\Types\\StandardPBR.materialtype",
-    "parentMaterial": "Materials\\Presets\\MacBeth\\04_foliage.material",
-    "propertyLayoutVersion": 3,
+    "parentMaterial": "04_foliage.material",
+    "materialType": "../../Types/StandardPBR.materialtype",
+    "materialTypeVersion": 4,
     "properties": {
         "baseColor": {
             "color": [
@@ -11,7 +11,8 @@
                 1.0,
                 1.0
             ],
-            "textureMap": "Materials/Presets/MacBeth/04_foliage_sRGB.tif"
+            "textureBlendMode": "Lerp",
+            "textureMap": "04_foliage_sRGB.tif"
         }
     }
 }

@@ -5,40 +5,39 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "MultiplyByVector",
+                "name": "Multiply By Vector",
                 "category": "Deprecated",
-                "tooltip": "This node is deprecated, use Multiply (*), it provides contextual type and slots",
-                "subtitle": "Deprecated"
+                "tooltip": "This node is deprecated, use Multiply (*), it provides contextual type and slots"
             },
             "slots": [
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "base": "DataInput_Vector4: Source",
+                    "base": "DataInput_Source_0",
                     "details": {
-                        "name": "Vector4: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "base": "DataInput_Vector4: Multiplier",
+                    "base": "DataInput_Multiplier_1",
                     "details": {
-                        "name": "Vector4: Multiplier"
+                        "name": "Multiplier"
                     }
                 },
                 {
-                    "base": "DataOutput_Result: Vector4",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Result: Vector4"
+                        "name": "Result"
                     }
                 }
             ]

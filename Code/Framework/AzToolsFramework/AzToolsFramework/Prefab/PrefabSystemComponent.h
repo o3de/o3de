@@ -56,7 +56,7 @@ namespace AzToolsFramework
         public:
 
             using TargetTemplateIdToLinkIdMap = AZStd::unordered_map<TemplateId, AZStd::pair<AZStd::unordered_set<LinkId>, bool>>;
-            
+
             AZ_COMPONENT(PrefabSystemComponent, "{27203AE6-A398-4614-881B-4EEB5E9B34E9}");
 
             PrefabSystemComponent() = default;
@@ -220,7 +220,7 @@ namespace AzToolsFramework
                 const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume,
                 AZ::IO::PathView filePath, AZStd::unique_ptr<AZ::Entity> containerEntity = nullptr,
                 InstanceOptionalReference parent = AZStd::nullopt, bool shouldCreateLinks = true) override;
-            
+
             PrefabDom& FindTemplateDom(TemplateId templateId) override;
 
             /**
@@ -244,7 +244,7 @@ namespace AzToolsFramework
 
         private:
             AZ_DISABLE_COPY_MOVE(PrefabSystemComponent);
-            
+
             /**
             * Builds a new Prefab Template out of entities and instances and returns the first instance comprised of
             * these entities and instances.
@@ -263,14 +263,14 @@ namespace AzToolsFramework
             /**
              * Updates all the linked Instances corresponding to the linkIds in the provided queue.
              * Queue gets populated with more linkId lists as linked instances are updated. Updating stops when the queue is empty.
-             * 
+             *
              * @param linkIdsQueue A queue of vector of link-Ids to update.
              */
             void UpdateLinkedInstances(AZStd::queue<LinkIds>& linkIdsQueue);
 
             /**
              * Given a vector of link ids to update, splits them into smaller lists based on the target template id of the links.
-             * 
+             *
              * @param linkIdsToUpdate The list of link ids to update.
              * @param targetTemplateIdToLinkIdMap The map of target templateIds to a pair of lists of linkIds and a bool flag indicating
              *                                    whether any of the instances of the target template were updated.
@@ -279,9 +279,9 @@ namespace AzToolsFramework
                 TargetTemplateIdToLinkIdMap& targetTemplateIdToLinkIdMap);
 
             /**
-             * Updates a single linked instance corresponding to the given link Id and adds more linkIds to the 
+             * Updates a single linked instance corresponding to the given link Id and adds more linkIds to the
              * template change propagation queue(linkIdsQueue) when necessary.
-             * 
+             *
              * @param linkIdToUpdate The id of the linked instance to update
              * @param targetTemplateIdToLinkIdMap The map of target templateIds to a pair of lists of linkIds and a bool flag indicating
              *                                    whether any of the instances of the target template were updated.
@@ -293,7 +293,7 @@ namespace AzToolsFramework
             /**
              * If all linked instances of a target template are updated and if the content of any of the linked instances changed,
              * this method fetches all the linked instances sourced by it and adds their corresponding ids to the LinkIdsQueue.
-             * 
+             *
              * @param targetTemplateIdToLinkIdMap The map of target templateIds to a pair of lists of linkIds and a bool flag indicating
              *                                    whether any of the instances of the target template were updated.
              * @param targetTemplateId The id of the template, whose linked instances we need to find if the template was updated.
@@ -414,6 +414,9 @@ namespace AzToolsFramework
             PrefabPublicRequestHandler m_prefabPublicRequestHandler;
 
             PrefabSystemScriptingHandler m_prefabSystemScriptingHandler;
+
+            // If true, individual template-remove messages will be suppressed
+            bool m_removingAllTemplates = false;
         };
     } // namespace Prefab
 } // namespace AzToolsFramework

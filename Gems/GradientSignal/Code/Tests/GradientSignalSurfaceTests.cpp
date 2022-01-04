@@ -9,7 +9,7 @@
 #include <AzTest/AzTest.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Math/MathUtils.h>
-#include "Tests/GradientSignalTestMocks.h"
+#include <Tests/GradientSignalTestFixtures.h>
 
 #include <Source/Components/ConstantGradientComponent.h>
 #include <Source/Components/GradientSurfaceDataComponent.h>

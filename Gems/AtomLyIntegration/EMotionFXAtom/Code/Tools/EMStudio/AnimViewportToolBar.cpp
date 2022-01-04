@@ -8,8 +8,10 @@
 
 #include <QToolButton>
 #include <QMenu>
+#include <QSettings>
 #include <EMStudio/AnimViewportToolBar.h>
 #include <EMStudio/AnimViewportRequestBus.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <AzCore/std/string/string.h>
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
 
@@ -109,6 +111,13 @@ namespace EMStudio
             cameraButton->setIcon(QIcon(":/EMotionFXAtom/Camera_category.svg"));
             addWidget(cameraButton);
         }
+
+        LoadSettings();
+    }
+
+    AnimViewportToolBar::~AnimViewportToolBar()
+    {
+        SaveSettings();
     }
 
     void AnimViewportToolBar::CreateViewOptionEntry(
@@ -143,5 +152,25 @@ namespace EMStudio
                 action->setChecked(renderFlags[i]);
             }
         }
+    }
+
+    void AnimViewportToolBar::LoadSettings()
+    {
+        AZStd::string renderFlagsFilename(EMStudioManager::GetInstance()->GetAppDataFolder());
+        renderFlagsFilename += "AnimViewportRenderFlags.cfg";
+        QSettings settings(renderFlagsFilename.c_str(), QSettings::IniFormat, this);
+
+        const bool isChecked = settings.value("CameraFollowUp", false).toBool();
+        m_followCharacterAction->setChecked(isChecked);
+        AnimViewportRequestBus::Broadcast(&AnimViewportRequestBus::Events::SetFollowCharacter, isChecked);
+    }
+
+    void AnimViewportToolBar::SaveSettings()
+    {
+        AZStd::string renderFlagsFilename(EMStudioManager::GetInstance()->GetAppDataFolder());
+        renderFlagsFilename += "AnimViewportRenderFlags.cfg";
+        QSettings settings(renderFlagsFilename.c_str(), QSettings::IniFormat, this);
+
+        settings.setValue("CameraFollowUp", m_followCharacterAction->isChecked());
     }
 } // namespace EMStudio

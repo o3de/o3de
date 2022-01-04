@@ -129,8 +129,8 @@ namespace SandboxEditor
                 ViewportInteractionRequestBus::EventResult(
                     ray, GetViewportId(), &ViewportInteractionRequestBus::Events::ViewportScreenToWorldRay, screenPoint);
 
-                m_mouseInteraction.m_mousePick.m_rayOrigin = ray.origin;
-                m_mouseInteraction.m_mousePick.m_rayDirection = ray.direction;
+                m_mouseInteraction.m_mousePick.m_rayOrigin = ray.m_origin;
+                m_mouseInteraction.m_mousePick.m_rayDirection = ray.m_direction;
                 m_mouseInteraction.m_mousePick.m_screenCoordinates = screenPoint;
             }
 

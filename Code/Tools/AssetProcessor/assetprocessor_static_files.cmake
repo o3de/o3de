@@ -63,13 +63,6 @@ set(FILES
     native/resourcecompiler/RCJobSortFilterProxyModel.h
     native/resourcecompiler/RCQueueSortModel.cpp
     native/resourcecompiler/RCQueueSortModel.h
-    native/shadercompiler/shadercompilerjob.cpp
-    native/shadercompiler/shadercompilerjob.h
-    native/shadercompiler/shadercompilerManager.cpp
-    native/shadercompiler/shadercompilerManager.h
-    native/shadercompiler/shadercompilerMessages.h
-    native/shadercompiler/shadercompilerModel.cpp
-    native/shadercompiler/shadercompilerModel.h
     native/utilities/ApplicationManagerAPI.h
     native/utilities/ApplicationManager.cpp
     native/utilities/ApplicationManager.h
@@ -92,8 +85,6 @@ set(FILES
     native/utilities/BuilderManager.inl
     native/utilities/ByteArrayStream.cpp
     native/utilities/ByteArrayStream.h
-    native/utilities/CommunicatorTracePrinter.cpp
-    native/utilities/CommunicatorTracePrinter.h
     native/utilities/IniConfiguration.cpp
     native/utilities/IniConfiguration.h
     native/utilities/JobDiagnosticTracker.cpp

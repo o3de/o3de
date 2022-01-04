@@ -26,12 +26,18 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/UserSettings/UserSettings.h>
 #include <AzCore/std/containers/map.h>
+
+#include <AzFramework/Gem/GemInfo.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetEditor/AssetEditorUtils.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
+
+#include <AzQtComponents/Utilities/DesktopUtilities.h>
+
 #include <Editor/Assets/ScriptCanvasAssetHelpers.h>
 #include <Editor/Components/IconComponent.h>
 #include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
@@ -50,9 +56,11 @@
 #include <Editor/View/Widgets/NodePalette/VariableNodePaletteTreeItemTypes.h>
 #include <Editor/View/Widgets/ScriptCanvasNodePaletteDockWidget.h>
 #include <Editor/View/Widgets/ui_ScriptCanvasNodePaletteToolbar.h>
+
 #include <GraphCanvas/Widgets/NodePalette/NodePaletteTreeView.h>
 #include <GraphCanvas/Widgets/NodePalette/NodePaletteWidget.h>
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
+
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Core/Attributes.h>
 #include <ScriptCanvas/Core/SubgraphInterfaceUtility.h>
@@ -63,7 +71,6 @@
 #include <ScriptCanvas/Libraries/Libraries.h>
 #include <ScriptCanvas/Utils/NodeUtils.h>
 #include <ScriptEvents/ScriptEventsAsset.h>
-#include "AzQtComponents/Utilities/DesktopUtilities.h"
 
 namespace ScriptCanvasEditor
 {
@@ -449,37 +456,38 @@ namespace ScriptCanvasEditor
                         return;
                     }
 
-                    if (!data->m_runtimeData.m_interface.HasAnyFunctionality())
+                    if (!data->m_interfaceData.m_interface.HasAnyFunctionality())
                     {
                         // check for deleting the old entry
                         return;
                     }
 
+
                     AZStd::string rootPath, absolutePath;
                     AZ::Data::AssetInfo assetInfo = AssetHelpers::GetAssetInfo(assetId, rootPath);
                     AzFramework::StringFunc::Path::Join(rootPath.c_str(), assetInfo.m_relativePath.c_str(), absolutePath);
-
+ 
                     AZStd::string normPath = absolutePath;
                     AzFramework::StringFunc::Path::Normalize(normPath);
-
+ 
                     AZStd::string watchFolder;
                     bool sourceInfoFound{};
                     AzToolsFramework::AssetSystemRequestBus::BroadcastResult(sourceInfoFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, normPath.c_str(), assetInfo, watchFolder);
-
+ 
                     if (!sourceInfoFound)
                     {
                         return;
                     }
-
+ 
                     CreateFunctionPaletteItem(asset, assetInfo);
-
+ 
                     treePaletteIter = m_globalFunctionTreeItems.find(asset->GetId());
-
+ 
                     if (treePaletteIter != m_globalFunctionTreeItems.end())
                     {
                         treePaletteIter->second->ClearError();
                     }
-
+ 
                     m_monitoredAssets.emplace(asset->GetId(), asset);
                 }
                 else 
@@ -509,7 +517,7 @@ namespace ScriptCanvasEditor
                 return;
             }
 
-            const ScriptCanvas::Grammar::SubgraphInterface& graphInterface = data->m_runtimeData.m_interface;
+            const ScriptCanvas::Grammar::SubgraphInterface& graphInterface = data->m_interfaceData.m_interface;
             if (!graphInterface.HasAnyFunctionality())
             {
                 return;
@@ -558,7 +566,7 @@ namespace ScriptCanvasEditor
                 return;
             }
 
-            const ScriptCanvas::Grammar::SubgraphInterface& graphInterface = data->m_runtimeData.m_interface;
+            const ScriptCanvas::Grammar::SubgraphInterface& graphInterface = data->m_interfaceData.m_interface;
             if (!graphInterface.HasAnyFunctionality())
             {
                 return;
