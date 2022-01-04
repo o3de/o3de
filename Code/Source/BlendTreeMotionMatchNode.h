@@ -15,8 +15,8 @@
 #include <AzCore/Debug/Timer.h>
 #include <EMotionFX/Source/AnimGraphNode.h>
 #include <EMotionFX/Source/EMotionFXConfig.h>
-#include <BehaviorInstance.h>
-#include <LocomotionBehavior.h>
+#include <MotionMatchingInstance.h>
+#include <LocomotionConfig.h>
 #include <ImGuiMonitor.h>
 
 namespace EMotionFX
@@ -58,15 +58,15 @@ namespace EMotionFX
 
                 ~UniqueData()
                 {
-                    delete m_behavior;
-                    delete m_behaviorInstance;
+                    delete m_config;
+                    delete m_instance;
                 }
 
                 void Update() override;
 
             public:
-                MotionMatching::BehaviorInstance* m_behaviorInstance = nullptr;
-                MotionMatching::LocomotionBehavior* m_behavior = nullptr;
+                MotionMatching::MotionMatchingInstance* m_instance = nullptr;
+                MotionMatching::LocomotionConfig* m_config = nullptr;
             };
 
             BlendTreeMotionMatchNode();

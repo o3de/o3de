@@ -19,7 +19,6 @@
 #include <EMotionFX/Source/EventManager.h>
 #include <EMotionFX/Source/Motion.h>
 #include <BlendTreeMotionMatchNode.h>
-#include <MotionMatchSystem.h>
 #include <EMotionFX/Source/MotionSet.h>
 #include <EMotionFX/Source/Node.h>
 #include <EMotionFX/Source/Recorder.h>
@@ -82,11 +81,11 @@ namespace EMotionFX
             ActorInstance* actorInstance = m_animGraphInstance->GetActorInstance();
 
             // Clear existing data.
-            delete m_behaviorInstance;
-            delete m_behavior;
+            delete m_instance;
+            delete m_config;
 
-            m_behavior = aznew MotionMatching::LocomotionBehavior();
-            m_behaviorInstance = aznew MotionMatching::BehaviorInstance();
+            m_config = aznew MotionMatching::LocomotionConfig();
+            m_instance = aznew MotionMatching::MotionMatchingInstance();
 
             MotionSet* motionSet = m_animGraphInstance->GetMotionSet();
             if (!motionSet)
@@ -101,19 +100,19 @@ namespace EMotionFX
 
             // Build a list of motions we want to import the frames from.
             AZ_Printf("EMotionFX", "[MotionMatching] Importing frames...");
-            MotionMatching::Behavior::InitSettings behaviorSettings;
-            behaviorSettings.m_actorInstance = actorInstance;
-            behaviorSettings.m_frameImportSettings.m_sampleRate = animGraphNode->m_sampleRate;
-            behaviorSettings.m_importMirrored = animGraphNode->m_mirror;
-            behaviorSettings.m_maxKdTreeDepth = animGraphNode->m_maxKdTreeDepth;
-            behaviorSettings.m_minFramesPerKdTreeNode = animGraphNode->m_minFramesPerKdTreeNode;
-            behaviorSettings.m_motionList.reserve(animGraphNode->m_motionIds.size());
+            MotionMatching::MotionMatchingConfig::InitSettings settings;
+            settings.m_actorInstance = actorInstance;
+            settings.m_frameImportSettings.m_sampleRate = animGraphNode->m_sampleRate;
+            settings.m_importMirrored = animGraphNode->m_mirror;
+            settings.m_maxKdTreeDepth = animGraphNode->m_maxKdTreeDepth;
+            settings.m_minFramesPerKdTreeNode = animGraphNode->m_minFramesPerKdTreeNode;
+            settings.m_motionList.reserve(animGraphNode->m_motionIds.size());
             for (const AZStd::string& id : animGraphNode->m_motionIds)
             {
                 Motion* motion = motionSet->RecursiveFindMotionById(id);
                 if (motion)
                 {
-                    behaviorSettings.m_motionList.emplace_back(motion);
+                    settings.m_motionList.emplace_back(motion);
                 }
                 else
                 {
@@ -121,24 +120,24 @@ namespace EMotionFX
                 }
             }
 
-            // Initialize the behavior (slow).
-            AZ_Printf("EMotionFX", "[MotionMatching] Initializing behavior...");
-            if (!m_behavior->Init(behaviorSettings))
+            // Initialize the config (slow).
+            AZ_Printf("EMotionFX", "[MotionMatching] Initializing config...");
+            if (!m_config->Init(settings))
             {
-                AZ_Warning("EMotionFX", false, "Failed to initialize the motion matching behavior for anim graph node '%s'!", animGraphNode->GetName());
+                AZ_Warning("EMotionFX", false, "Failed to initialize the motion matching config for anim graph node '%s'!", animGraphNode->GetName());
                 SetHasError(true);
                 return;
             }
 
-            // Initialize the behavior instance.
-            AZ_Printf("EMotionFX", "[MotionMatching] Initializing behavior instance...");
-            MotionMatching::BehaviorInstance::InitSettings initSettings;
+            // Initialize the instance.
+            AZ_Printf("EMotionFX", "[MotionMatching] Initializing instance...");
+            MotionMatching::MotionMatchingInstance::InitSettings initSettings;
             initSettings.m_actorInstance = actorInstance;
-            initSettings.m_behavior = m_behavior;
-            m_behaviorInstance->Init(initSettings);
+            initSettings.m_config = m_config;
+            m_instance->Init(initSettings);
 
             const float initTime = timer.GetDeltaTimeInSeconds();
-            const size_t memUsage = m_behavior->GetFrameDatabase().CalcMemoryUsageInBytes();
+            const size_t memUsage = m_config->GetFrameDatabase().CalcMemoryUsageInBytes();
             AZ_Printf("EMotionFX", "[MotionMatching] Finished in %.2f seconds (mem usage=%d bytes or %.2f mb)", initTime, memUsage, memUsage / (float)(1024 * 1024));
             //---------------------------------
 
@@ -168,13 +167,13 @@ namespace EMotionFX
             AZ::Vector3 targetFacingDir = AZ::Vector3::CreateAxisY();
             TryGetInputVector3(animGraphInstance, INPUTPORT_TARGETFACINGDIR, targetFacingDir);
 
-            MotionMatching::BehaviorInstance* behaviorInstance = uniqueData->m_behaviorInstance;
-            behaviorInstance->Update(timePassedInSeconds, targetPos, targetFacingDir, m_trajectoryQueryMode, m_pathRadius, m_pathSpeed);
+            MotionMatching::MotionMatchingInstance* instance = uniqueData->m_instance;
+            instance->Update(timePassedInSeconds, targetPos, targetFacingDir, m_trajectoryQueryMode, m_pathRadius, m_pathSpeed);
 
             // set the current time to the new calculated time
             uniqueData->ClearInheritFlags();
-            uniqueData->SetPreSyncTime(behaviorInstance->GetMotionInstance()->GetCurrentTime());
-            uniqueData->SetCurrentPlayTime(behaviorInstance->GetNewMotionTime());
+            uniqueData->SetPreSyncTime(instance->GetMotionInstance()->GetCurrentTime());
+            uniqueData->SetCurrentPlayTime(instance->GetNewMotionTime());
 
             if (uniqueData->GetPreSyncTime() > uniqueData->GetCurrentPlayTime())
             {
@@ -201,7 +200,7 @@ namespace EMotionFX
             }
 
             UniqueData* uniqueData = static_cast<UniqueData*>(FindOrCreateUniqueNodeData(animGraphInstance));
-            MotionMatching::BehaviorInstance* behaviorInstance = uniqueData->m_behaviorInstance;
+            MotionMatching::MotionMatchingInstance* instance = uniqueData->m_instance;
 
             RequestRefDatas(animGraphInstance);
             AnimGraphRefCountedData* data = uniqueData->GetRefCountedData();
@@ -213,15 +212,15 @@ namespace EMotionFX
                 return;
             }
 
-            MotionInstance* motionInstance = behaviorInstance->GetMotionInstance();
+            MotionInstance* motionInstance = instance->GetMotionInstance();
             motionInstance->UpdateByTimeValues(uniqueData->GetPreSyncTime(), uniqueData->GetCurrentPlayTime(), &data->GetEventBuffer());
 
             uniqueData->SetCurrentPlayTime(motionInstance->GetCurrentTime());
             data->GetEventBuffer().UpdateEmitters(this);
 
-            behaviorInstance->PostUpdate(timePassedInSeconds);
+            instance->PostUpdate(timePassedInSeconds);
 
-            const Transform& trajectoryDelta = behaviorInstance->GetMotionExtractionDelta();
+            const Transform& trajectoryDelta = instance->GetMotionExtractionDelta();
             data->SetTrajectoryDelta(trajectoryDelta);
             data->SetTrajectoryDeltaMirrored(trajectoryDelta); // TODO: use a real mirrored version here.
 
@@ -264,18 +263,18 @@ namespace EMotionFX
 
             Pose& outTransformPose = outputPose->GetPose();
 
-            MotionMatching::LocomotionBehavior* behavior = uniqueData->m_behavior;
-            MotionMatching::LocomotionBehavior::FactorWeights& factors = behavior->GetFactorWeights();
+            MotionMatching::LocomotionConfig* config = uniqueData->m_config;
+            MotionMatching::LocomotionConfig::FactorWeights& factors = config->GetFactorWeights();
             factors.m_footPositionFactor = m_footPositionFactor;
             factors.m_footVelocityFactor = m_footVelocityFactor;
             factors.m_rootFutureFactor = m_rootFutureFactor;
             factors.m_rootPastFactor = m_rootPastFactor;
             factors.m_differentMotionFactor = m_differentMotionFactor;
-            behavior->SetFactorWeights(factors);
+            config->SetFactorWeights(factors);
 
-            MotionMatching::BehaviorInstance* behaviorInstance = uniqueData->m_behaviorInstance;
-            behaviorInstance->SetLowestCostSearchFrequency(m_lowestCostSearchFrequency);
-            behaviorInstance->Output(outTransformPose);
+            MotionMatching::MotionMatchingInstance* instance = uniqueData->m_instance;
+            instance->SetLowestCostSearchFrequency(m_lowestCostSearchFrequency);
+            instance->Output(outTransformPose);
 
             // Performance metrics
             m_outputTimeInMs = m_timer.GetDeltaTimeInSeconds() * 1000.0f;
@@ -286,14 +285,11 @@ namespace EMotionFX
                 ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushPerformanceHistogramValue, "Output", m_outputTimeInMs);
             }
 
-            behaviorInstance->DebugDraw();
+            instance->DebugDraw();
         }
 
         void BlendTreeMotionMatchNode::Reflect(AZ::ReflectContext* context)
         {
-            // Reflect the motion matching system first.
-            MotionMatching::MotionMatchSystem::Reflect(context);
-
             AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
             if (!serializeContext)
             {

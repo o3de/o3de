@@ -4,9 +4,21 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
-#include <BlendTreeMotionMatchNode.h>
 #include <EMotionFX/Source/AnimGraphObjectFactory.h>
+#include <EMotionFX/Source/EMotionFXManager.h>
+#include <EMotionFX/Source/PoseDataFactory.h>
 #include <Integration/EMotionFXBus.h>
+
+#include <MotionMatchingConfig.h>
+#include <MotionMatchingInstance.h>
+#include <Feature.h>
+#include <LocomotionConfig.h>
+#include <MotionMatchEventData.h>
+#include <FeaturePosition.h>
+#include <FeatureTrajectory.h>
+#include <FeatureVelocity.h>
+#include <PoseDataJointVelocities.h>
+#include <BlendTreeMotionMatchNode.h>
 
 namespace MotionMatching
 {
@@ -27,6 +39,19 @@ namespace MotionMatching
                     ;
             }
         }
+
+        EMotionFX::MotionMatching::MotionMatchEventData::Reflect(context);
+
+        EMotionFX::MotionMatching::MotionMatchingInstance::Reflect(context);
+        EMotionFX::MotionMatching::MotionMatchingConfig::Reflect(context);
+        EMotionFX::MotionMatching::LocomotionConfig::Reflect(context);
+
+        EMotionFX::MotionMatching::Feature::Reflect(context);
+        EMotionFX::MotionMatching::FeaturePosition::Reflect(context);
+        EMotionFX::MotionMatching::FeatureTrajectory::Reflect(context);
+        EMotionFX::MotionMatching::FeatureVelocity::Reflect(context);
+
+        EMotionFX::MotionMatching::PoseDataJointVelocities::Reflect(context);
 
         EMotionFX::MotionMatching::BlendTreeMotionMatchNode::Reflect(context);
     }

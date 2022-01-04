@@ -15,8 +15,8 @@
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <EMotionFX/Source/EventManager.h>
 #include <EMotionFX/Source/TransformData.h>
-#include <Behavior.h>
-#include <BehaviorInstance.h>
+#include <MotionMatchingConfig.h>
+#include <MotionMatchingInstance.h>
 #include <FrameDatabase.h>
 #include <FeatureVelocity.h>
 
@@ -67,7 +67,7 @@ namespace EMotionFX
         }
 
         void FeatureVelocity::DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
-            BehaviorInstance* behaviorInstance,
+            MotionMatchingInstance* instance,
             const AZ::Vector3& velocity,
             size_t jointIndex,
             size_t relativeToJointIndex,
@@ -80,7 +80,7 @@ namespace EMotionFX
             }
 
             const float scale = 0.15f;
-            const ActorInstance* actorInstance = behaviorInstance->GetActorInstance();
+            const ActorInstance* actorInstance = instance->GetActorInstance();
             const Pose* pose = actorInstance->GetTransformData()->GetCurrentPose();
             const Transform jointModelTM = pose->GetModelSpaceTransform(jointIndex);
             const Transform relativeToWorldTM = pose->GetWorldSpaceTransform(relativeToJointIndex);
@@ -105,7 +105,7 @@ namespace EMotionFX
         }
 
         void FeatureVelocity::DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
-            BehaviorInstance* behaviorInstance,
+            MotionMatchingInstance* instance,
             size_t frameIndex)
         {
             if (m_nodeIndex == InvalidIndex)
@@ -113,9 +113,9 @@ namespace EMotionFX
                 return;
             }
 
-            const Behavior* behavior = behaviorInstance->GetBehavior();
-            const AZ::Vector3 velocity = GetFeatureData(behavior->GetFeatures().GetFeatureMatrix(), frameIndex);
-            DebugDraw(debugDisplay, behaviorInstance, velocity, m_nodeIndex, m_relativeToNodeIndex, m_debugColor);
+            const MotionMatchingConfig* config = instance->GetConfig();
+            const AZ::Vector3 velocity = GetFeatureData(config->GetFeatures().GetFeatureMatrix(), frameIndex);
+            DebugDraw(debugDisplay, instance, velocity, m_nodeIndex, m_relativeToNodeIndex, m_debugColor);
         }
 
         float FeatureVelocity::CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const
