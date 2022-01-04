@@ -10,7 +10,7 @@
 #include "SpawnableLevelSystem.h"
 #include "IMovieSystem.h"
 
-#include <LoadScreenBus.h>
+#include <CryCommon/LoadScreenBus.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/IO/FileOperations.h>

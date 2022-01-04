@@ -17,7 +17,7 @@
 #include "CmdLine.h"
 
 #include <AzFramework/Archive/ArchiveVars.h>
-#include <LoadScreenBus.h>
+#include <CryCommon/LoadScreenBus.h>
 
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/Math/Crc.h>

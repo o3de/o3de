@@ -51,7 +51,7 @@
 #include <AzFramework/Archive/INestedArchive.h>
 #include <AzFramework/Archive/ArchiveFileIO.h>
 
-#include <LoadScreenBus.h>
+#include <CryCommon/LoadScreenBus.h>
 #include <AzFramework/Logging/MissingAssetLogger.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
 #include <AzCore/Interface/Interface.h>
