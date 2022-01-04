@@ -93,23 +93,13 @@ namespace AzToolsFramework
                 toolTipString += "\n";
             }
             toolTipString += "[";
-            if (propertyControl->minimum() <= aznumeric_cast<AZ::s64>(QtWidgetLimits<T>::Min()))
-            {
-                toolTipString += "-" + QObject::tr(PropertyQTConstant_InfinityString);
-            }
-            else
-            {
-                toolTipString += QString::number(propertyControl->minimum());
-            }
+
+            const QString minString = QLocale().toString(propertyControl->minimum());
+            const QString maxString = QLocale().toString(propertyControl->maximum());
+
+            toolTipString += minString;
             toolTipString += ", ";
-            if (propertyControl->maximum() >= aznumeric_cast<AZ::s64>(QtWidgetLimits<T>::Max()))
-            {
-                toolTipString += QObject::tr(PropertyQTConstant_InfinityString);
-            }
-            else
-            {
-                toolTipString += QString::number(propertyControl->maximum());
-            }
+            toolTipString += maxString;
             toolTipString += "]";
             return true;
         }
@@ -128,15 +118,12 @@ namespace AzToolsFramework
             {
                 toolTipString += "\n";
             }
-            toolTipString += "[" + QString::number(propertyControl->minimum()) + ", ";
-            if (propertyControl->maximum() >= aznumeric_cast<AZ::s64>(QtWidgetLimits<T>::Max()))
-            {
-                toolTipString += QObject::tr(PropertyQTConstant_InfinityString);
-            }
-            else
-            {
-                toolTipString += QString::number(propertyControl->maximum());
-            }
+
+            const QString minString = QLocale().toString(propertyControl->minimum());
+            const QString maxString = QLocale().toString(propertyControl->maximum());
+
+            toolTipString += "[" + minString + ", ";
+            toolTipString += maxString;
             toolTipString += "]";
             return true;
         }
@@ -196,7 +183,7 @@ namespace AzToolsFramework
             }
             else
             {
-                AZ_WarningOnce("AzToolsFramework", false, "Property %s: 'Min' attribute from property '%s' into widget", debugName);
+                AZ_WarningOnce("AzToolsFramework", false, "Failed to read 'Min' attribute from property '%s' into widget", debugName);
             }
         }
         else if (attrib == AZ::Edit::Attributes::Max)
