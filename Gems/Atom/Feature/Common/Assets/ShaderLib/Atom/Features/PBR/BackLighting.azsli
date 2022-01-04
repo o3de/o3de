@@ -25,6 +25,7 @@ float3 TransmissionKernel(float t, float3 s)
 
 // [specific profile for SKIN (not used ATM, replaced by TransmissionKernel)]
 // Analytical integation (approximation) of diffusion profile over radius, could be precomputed in a LUT
+// From d'Eon and Luebke (https://developer.nvidia.com/gpugems/gpugems3/part-iii-rendering/chapter-14-advanced-techniques-realistic-real-time-skin, section 14.4.7)
 float3 T(float s) 
 {
     // dipoles and multipoles are approximated with sums of a small number of Gaussians with variable weights and variances
