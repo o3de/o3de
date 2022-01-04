@@ -50,8 +50,6 @@ set(FILES
     Editor/CommandHierarchyItemToggleIsExpanded.h
     Editor/CommandHierarchyItemToggleIsSelectable.cpp
     Editor/CommandHierarchyItemToggleIsSelectable.h
-    Editor/CommandHierarchyItemToggleIsSelected.cpp
-    Editor/CommandHierarchyItemToggleIsSelected.h
     Editor/CommandHierarchyItemToggleIsVisible.cpp
     Editor/CommandHierarchyItemToggleIsVisible.h
     Editor/CommandPropertiesChange.cpp
