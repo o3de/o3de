@@ -17,8 +17,6 @@ ly_add_target(
     PLATFORM_INCLUDE_FILES
         ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
-        PRIVATE
-            Include
         PUBLIC
             Source
     BUILD_DEPENDENCIES
