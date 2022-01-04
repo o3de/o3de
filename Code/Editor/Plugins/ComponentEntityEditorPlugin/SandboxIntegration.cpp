@@ -69,7 +69,6 @@
 #include "ISourceControl.h"
 #include "UI/QComponentEntityEditorMainWindow.h"
 
-#include <LmbrCentral/Rendering/EditorLightComponentBus.h>
 #include <LmbrCentral/Scripting/TagComponentBus.h>
 #include <LmbrCentral/Scripting/EditorTagComponentBus.h>
 

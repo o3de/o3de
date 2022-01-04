@@ -60,7 +60,6 @@
 #include <AzCore/Slice/SliceAsset.h>
 #include <LmbrCentral/Rendering/MaterialAsset.h>
 #include <LmbrCentral/Rendering/MeshAsset.h>
-#include <LmbrCentral/Rendering/MaterialHandle.h>
 
 // Scriptable Ebus Registration
 #include "Events/ReflectScriptableEvents.h"
