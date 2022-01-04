@@ -157,7 +157,7 @@ namespace EMotionFX
             // Initialize the kd-tree used to accelerate the searches.
             if (!m_kdTree->Init(*frameDatabase, *this, maxKdTreeDepth, minFramesPerKdTreeNode)) // Internally automatically clears any existing contents.
             {
-                AZ_Error("EMotionFX", false, "Failed to initialize KdTree acceleration structure inside motion matching behavior.");
+                AZ_Error("EMotionFX", false, "Failed to initialize KdTree acceleration structure.");
                 return false;
             }
 
@@ -190,7 +190,7 @@ namespace EMotionFX
         }
 
         void FeatureDatabase::DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
-            BehaviorInstance* behaviorInstance,
+            MotionMatchingInstance* instance,
             size_t frameIndex)
         {
             for (Feature* feature: m_features)
@@ -202,7 +202,7 @@ namespace EMotionFX
 
                 if (feature->GetDebugDrawEnabled())
                 {
-                    feature->DebugDraw(debugDisplay, behaviorInstance, frameIndex);
+                    feature->DebugDraw(debugDisplay, instance, frameIndex);
                 }
             }
         }

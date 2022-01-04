@@ -16,8 +16,8 @@
 #include <EMotionFX/Source/AnimGraphPosePool.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <EMotionFX/Source/Motion.h>
-#include <Behavior.h>
-#include <BehaviorInstance.h>
+#include <MotionMatchingConfig.h>
+#include <MotionMatchingInstance.h>
 #include <Frame.h>
 #include <Feature.h>
 #include <FrameDatabase.h>

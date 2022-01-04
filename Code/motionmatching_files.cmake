@@ -6,10 +6,6 @@ set(FILES
     Source/MotionMatchingSystemComponent.h
     Source/Allocators.cpp
     Source/Allocators.h
-    Source/Behavior.cpp
-    Source/Behavior.h
-    Source/BehaviorInstance.cpp
-    Source/BehaviorInstance.h
     Source/BlendTreeMotionMatchNode.cpp
     Source/BlendTreeMotionMatchNode.h
     Source/Frame.cpp
@@ -37,10 +33,12 @@ set(FILES
     Source/ImGuiMonitorBus.h
     Source/KdTree.cpp
     Source/KdTree.h
-    Source/LocomotionBehavior.cpp
-    Source/LocomotionBehavior.h
+    Source/LocomotionConfig.cpp
+    Source/LocomotionConfig.h
     Source/MotionMatchEventData.cpp
     Source/MotionMatchEventData.h
-    Source/MotionMatchSystem.cpp
-    Source/MotionMatchSystem.h
+    Source/MotionMatchingConfig.cpp
+    Source/MotionMatchingConfig.h
+    Source/MotionMatchingInstance.cpp
+    Source/MotionMatchingInstance.h
 )

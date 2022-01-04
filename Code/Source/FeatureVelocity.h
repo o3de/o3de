@@ -46,14 +46,14 @@ namespace EMotionFX
             void ExtractFeatureValues(const ExtractFeatureContext& context) override;
 
             static void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
-                BehaviorInstance* behaviorInstance,
+                MotionMatchingInstance* instance,
                 const AZ::Vector3& velocity, // in world space
                 size_t jointIndex,
                 size_t relativeToJointIndex,
                 const AZ::Color& color);
 
             void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
-                BehaviorInstance* behaviorInstance,
+                MotionMatchingInstance* instance,
                 size_t frameIndex) override;
 
             struct EMFX_API FrameCostContext

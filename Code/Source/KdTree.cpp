@@ -39,7 +39,7 @@ namespace EMotionFX
             m_numDimensions = featureDatabase.CalcNumDataDimensionsForKdTree(featureDatabase);
             if (m_numDimensions == 0 || m_numDimensions > 20)
             {
-                AZ_Error("EMotionFX", false, "KdTree dimension (%d) have to be between 1 and 20. Cannot continue. Please use Feature::SetIncludeInKdTree(false) on some of your frame data objects for your behavior.", m_numDimensions);
+                AZ_Error("EMotionFX", false, "KdTree dimension (%d) have to be between 1 and 20. Cannot continue. Please use Feature::SetIncludeInKdTree(false) on some of your frame data objects.", m_numDimensions);
                 return false;
             }
 

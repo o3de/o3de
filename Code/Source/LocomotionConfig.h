@@ -18,7 +18,7 @@
 
 #include <EMotionFX/Source/EMotionFXConfig.h>
 #include <EMotionFX/Source/Pose.h>
-#include <Behavior.h>
+#include <MotionMatchingConfig.h>
 #include <TrajectoryHistory.h>
 
 namespace EMotionFX
@@ -29,11 +29,11 @@ namespace EMotionFX
         class FeatureVelocity;
         class FeatureTrajectory;
 
-        class EMFX_API LocomotionBehavior
-            : public Behavior
+        class EMFX_API LocomotionConfig
+            : public MotionMatchingConfig
         {
         public:
-            AZ_RTTI(LocomotionBehavior, "{ACCA8610-5F87-49D7-8064-17DA281F8CD0}", Behavior)
+            AZ_RTTI(LocomotionConfig, "{ACCA8610-5F87-49D7-8064-17DA281F8CD0}", MotionMatchingConfig)
             AZ_CLASS_ALLOCATOR_DECL
 
             struct EMFX_API FactorWeights
@@ -45,14 +45,14 @@ namespace EMotionFX
                 float m_differentMotionFactor = 1.0f;
             };
 
-            LocomotionBehavior();
-            ~LocomotionBehavior() override = default;
+            LocomotionConfig();
+            ~LocomotionConfig() override = default;
 
             bool RegisterFeatures(const InitSettings& settings) override;
 
-            void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay, BehaviorInstance* behaviorInstance) override;
+            void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay, MotionMatchingInstance* instance) override;
 
-            size_t FindLowestCostFrameIndex(BehaviorInstance* behaviorInstance, const Pose& currentPose, size_t currentFrameIndex) override;
+            size_t FindLowestCostFrameIndex(MotionMatchingInstance* instance, const Pose& currentPose, size_t currentFrameIndex) override;
 
             static void Reflect(AZ::ReflectContext* context);
 

@@ -48,7 +48,7 @@ namespace EMotionFX
 
             bool ExtractFeatures(ActorInstance* actorInstance, FrameDatabase* frameDatabase, size_t maxKdTreeDepth=20, size_t minFramesPerKdTreeNode=2000);
             void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
-                BehaviorInstance* behaviorInstance,
+                MotionMatchingInstance* instance,
                 size_t frameIndex);
 
             // KD-Tree

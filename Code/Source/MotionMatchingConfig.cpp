@@ -13,8 +13,8 @@
 #include <EMotionFX/Source/ActorInstance.h>
 #include <Allocators.h>
 #include <EMotionFX/Source/Motion.h>
-#include <Behavior.h>
-#include <BehaviorInstance.h>
+#include <MotionMatchingConfig.h>
+#include <MotionMatchingInstance.h>
 #include <Feature.h>
 #include <FrameDatabase.h>
 #include <EMotionFX/Source/TransformData.h>
@@ -27,11 +27,11 @@ namespace EMotionFX
 {
     namespace MotionMatching
     {
-        AZ_CLASS_ALLOCATOR_IMPL(Behavior, MotionMatchAllocator, 0)
+        AZ_CLASS_ALLOCATOR_IMPL(MotionMatchingConfig, MotionMatchAllocator, 0)
 
-        bool Behavior::Init(const InitSettings& settings)
+        bool MotionMatchingConfig::Init(const InitSettings& settings)
         {
-            AZ_PROFILE_SCOPE(Animation, "Behavior::Init");
+            AZ_PROFILE_SCOPE(Animation, "MotionMatchingConfig::Init");
 
             // Import all motion frames.
             size_t totalNumFramesImported = 0;
@@ -54,47 +54,26 @@ namespace EMotionFX
 
             if (totalNumFramesImported > 0 || totalNumFramesDiscarded > 0)
             {
-                AZ_TracePrintf("EMotionFX", "Motion matching behavior '%s' has imported a total of %d frames (%d frames discarded) across %d motions. This is %.2f seconds (%.2f minutes) of motion data.", RTTI_GetTypeName(), totalNumFramesImported, totalNumFramesDiscarded, settings.m_motionList.size(), totalNumFramesImported / (float)settings.m_frameImportSettings.m_sampleRate, (totalNumFramesImported / (float)settings.m_frameImportSettings.m_sampleRate) / 60.0f);
+                AZ_TracePrintf("EMotionFX", "Motion matching config '%s' has imported a total of %d frames (%d frames discarded) across %d motions. This is %.2f seconds (%.2f minutes) of motion data.", RTTI_GetTypeName(), totalNumFramesImported, totalNumFramesDiscarded, settings.m_motionList.size(), totalNumFramesImported / (float)settings.m_frameImportSettings.m_sampleRate, (totalNumFramesImported / (float)settings.m_frameImportSettings.m_sampleRate) / 60.0f);
             }
 
             if (!RegisterFeatures(settings))
             {
-                AZ_Error("EMotionFX", false, "Failed to register features inside motion matching behavior.");
+                AZ_Error("EMotionFX", false, "Failed to register features inside motion matching config.");
                 return false;
             }
 
             // Now build the per frame data (slow).
             if (!m_features.ExtractFeatures(settings.m_actorInstance, &m_frameDatabase, settings.m_maxKdTreeDepth, settings.m_minFramesPerKdTreeNode))
             {
-                AZ_Error("EMotionFX", false, "Failed to generate frame datas inside motion matching behavior.");
+                AZ_Error("EMotionFX", false, "Failed to generate frame datas inside motion matching config.");
                 return false;
             }
 
             return true;
         }
 
-        Behavior* Behavior::CreateBehaviorByType(const AZ::TypeId& typeId)
-        {
-            AZ::SerializeContext* context = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-            if (!context)
-            {
-                AZ_Error("EMotionFX", false, "Can't get serialize context from component application.");
-                return nullptr;
-            }
-
-            const AZ::SerializeContext::ClassData* classData = context->FindClassData(typeId);
-            if (!classData)
-            {
-                AZ_Warning("EMotionFX", false, "Can't find class data for this type.");
-                return nullptr;
-            }
-
-            Behavior* behavior = reinterpret_cast<Behavior*>(classData->m_factory->Create(classData->m_name));
-            return behavior;
-        }
-
-        void Behavior::Reflect(AZ::ReflectContext* context)
+        void MotionMatchingConfig::Reflect(AZ::ReflectContext* context)
         {
             AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
             if (!serializeContext)
@@ -102,7 +81,7 @@ namespace EMotionFX
                 return;
             }
 
-            serializeContext->Class<Behavior>()
+            serializeContext->Class<MotionMatchingConfig>()
                 ->Version(1);
 
             AZ::EditContext* editContext = serializeContext->GetEditContext();
@@ -111,7 +90,7 @@ namespace EMotionFX
                 return;
             }
 
-            editContext->Class<Behavior>("MotionMatchBehavior", "Base class for motion matching behaviors")
+            editContext->Class<MotionMatchingConfig>("MotionMatchingConfig", "Base class for motion matching configs")
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);

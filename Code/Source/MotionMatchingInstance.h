@@ -28,23 +28,24 @@ namespace AZ
 namespace EMotionFX
 {
     class ActorInstance;
+    class Motion;
 
     namespace MotionMatching
     {
-        class Behavior;
+        class MotionMatchingConfig;
 
-        class EMFX_API BehaviorInstance
+        class EMFX_API MotionMatchingInstance
         {
         public:
-            AZ_RTTI(BehaviorInstance, "{1ED03AD8-0FB2-431B-AF01-02F7E930EB73}")
+            AZ_RTTI(MotionMatchingInstance, "{1ED03AD8-0FB2-431B-AF01-02F7E930EB73}")
             AZ_CLASS_ALLOCATOR_DECL
 
-            virtual ~BehaviorInstance();
+            virtual ~MotionMatchingInstance();
 
             struct EMFX_API InitSettings
             {
                 ActorInstance* m_actorInstance = nullptr;
-                Behavior* m_behavior = nullptr;
+                MotionMatchingConfig* m_config = nullptr;
             };
             void Init(const InitSettings& settings);
             
@@ -56,7 +57,7 @@ namespace EMotionFX
 
             MotionInstance* GetMotionInstance() const { return m_motionInstance; }
             ActorInstance* GetActorInstance() const { return m_actorInstance; }
-            Behavior* GetBehavior() const { return m_behavior; }
+            MotionMatchingConfig* GetConfig() const { return m_config; }
 
             size_t GetLowestCostFrameIndex() const;
 
@@ -88,11 +89,13 @@ namespace EMotionFX
         private:
             MotionInstance* CreateMotionInstance() const;
             void SamplePose(MotionInstance* motionInstance, Pose& outputPose);
+            void SamplePose(Motion* motion, Pose& outputPose, float sampleTime) const;
 
-            Behavior* m_behavior = nullptr;
+            MotionMatchingConfig* m_config = nullptr;
             ActorInstance* m_actorInstance = nullptr;
             Pose m_blendSourcePose;
             Pose m_blendTargetPose;
+            Pose m_queryPose; //! Input query pose for the motion matching search.
             MotionInstance* m_motionInstance = nullptr;
             MotionInstance* m_prevMotionInstance = nullptr;
             Transform m_motionExtractionDelta = Transform::CreateIdentity();

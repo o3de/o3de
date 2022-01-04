@@ -35,13 +35,13 @@ namespace EMotionFX
 
     namespace MotionMatching
     {
-        class BehaviorInstance;
+        class MotionMatchingInstance;
         class FeatureTrajectory;
 
-        class EMFX_API Behavior
+        class EMFX_API MotionMatchingConfig
         {
         public:
-            AZ_RTTI(Behavior, "{7BC3DFF5-8864-4518-B6F0-0553ADFAB5C1}")
+            AZ_RTTI(MotionMatchingConfig, "{7BC3DFF5-8864-4518-B6F0-0553ADFAB5C1}")
             AZ_CLASS_ALLOCATOR_DECL
 
             struct EMFX_API InitSettings
@@ -55,19 +55,18 @@ namespace EMotionFX
 
             };
 
-            Behavior() = default;
-            virtual ~Behavior() = default;
+            MotionMatchingConfig() = default;
+            virtual ~MotionMatchingConfig() = default;
 
             virtual bool RegisterFeatures(const InitSettings& settings) = 0;
             virtual bool Init(const InitSettings& settings);
             virtual void DebugDraw([[maybe_unused]] AzFramework::DebugDisplayRequests& debugDisplay,
-                [[maybe_unused]] BehaviorInstance* behaviorInstance) {}
+                [[maybe_unused]] MotionMatchingInstance* instance) {}
             virtual FeatureTrajectory* GetTrajectoryFeature() const = 0;
 
-            virtual size_t FindLowestCostFrameIndex(BehaviorInstance* behaviorInstance, const Pose& currentPose, size_t currentFrameIndex) = 0;
+            virtual size_t FindLowestCostFrameIndex(MotionMatchingInstance* instance, const Pose& currentPose, size_t currentFrameIndex) = 0;
 
             static void Reflect(AZ::ReflectContext* context);
-            static Behavior* CreateBehaviorByType(const AZ::TypeId& typeId);
 
             const FrameDatabase& GetFrameDatabase() const { return m_frameDatabase; }
             FrameDatabase& GetFrameDatabase() { return m_frameDatabase; }

@@ -35,7 +35,7 @@ namespace EMotionFX
     {
         class Frame;
         class FrameDatabase;
-        class BehaviorInstance;
+        class MotionMatchingInstance;
         class TrajectoryQuery;
 
         class EMFX_API Feature
@@ -86,7 +86,7 @@ namespace EMotionFX
             };
 
             virtual void DebugDraw([[maybe_unused]] AzFramework::DebugDisplayRequests& debugDisplay,
-                [[maybe_unused]] BehaviorInstance* behaviorInstance,
+                [[maybe_unused]] MotionMatchingInstance* instance,
                 [[maybe_unused]] size_t frameIndex) {}
 
             void SetDebugDrawColor(const AZ::Color& color);
