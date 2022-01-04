@@ -82,7 +82,7 @@ namespace AZ
         {
             int errorCode = mcpp_lib_main(argc, argv);
             // convert from std::ostringstring to AZStd::string
-            m_outputData.code = m_outStream.str().c_str();
+            m_outputData.code = TransformPathsContainingAssetProcessorTemp(m_outStream.str().c_str());
             m_outputData.diagnostics = m_errStream.str().c_str();
             return errorCode == 0;
         }
@@ -238,14 +238,14 @@ namespace AZ
             return result;
         }
 
-        static void VerifySameFolder([[maybe_unused]] AZStd::string_view path1, [[maybe_unused]] AZStd::string_view path2)
-        {
-            AZ_Warning("Preprocessing",
-                AZ::IO::PathView(path1).ParentPath().LexicallyNormal() == AZ::IO::PathView(path2).ParentPath().LexicallyNormal(),
-                "The preprocessed file %.*s is in a different folder than its origin %.*s. Watch for #include problems with relative paths.",
-                AZ_STRING_ARG(path1), AZ_STRING_ARG(path2)
-            );
-        }
+        //static void VerifySameFolder([[maybe_unused]] AZStd::string_view path1, [[maybe_unused]] AZStd::string_view path2)
+        //{
+        //    AZ_Warning("Preprocessing",
+        //        AZ::IO::PathView(path1).ParentPath().LexicallyNormal() == AZ::IO::PathView(path2).ParentPath().LexicallyNormal(),
+        //        "The preprocessed file %.*s is in a different folder than its origin %.*s. Watch for #include problems with relative paths.",
+        //        AZ_STRING_ARG(path1), AZ_STRING_ARG(path2)
+        //    );
+        //}
 
         // change/add the #line on all appearances, to fake the origin of the source, to its original file path.
         // Because the asset processor moves source files around, to hack them with binding points, or common headers,
@@ -256,29 +256,29 @@ namespace AZ
         // That gymnastic is better for error messages anyway, so instead of making the SRG layout builder more intelligent,
         // we'll fake the origin of the file, by setting the original source as a filename
         //  note that it is not possible to build a file in a different folder and fake it to a file elsewhere because relative includes will fail.
-        void MutateLineDirectivesFileOrigin(
-            AZStd::string& sourceCode,
-            AZStd::string newFileOrigin)
-        {
-            // don't let backslashes pass, they will cause "token recognition error" in azslc
-            AZStd::replace(newFileOrigin.begin(), newFileOrigin.end(), '\\', '/');
-
-            // mcpp has good manners so it inserts a line directive immediately at the beginning.
-            // we will use that as the information of the source path to mutate.
-            if (sourceCode.starts_with("#line"))
-            {
-                auto firstQuote = sourceCode.find('"');
-                auto secondQuote = firstQuote != AZStd::string::npos ? sourceCode.find('"', firstQuote + 1) : AZStd::string::npos;
-                auto originalFile = sourceCode.substr(firstQuote + 1, secondQuote - firstQuote - 1);  // start +1, count -1 because we don't want the quotes included.
-                VerifySameFolder(originalFile, newFileOrigin);
-                [[maybe_unused]] bool didReplace = AZ::StringFunc::Replace(sourceCode, originalFile.c_str(), newFileOrigin.c_str(), true /*case sensitive*/);
-                AZ_Assert(didReplace, "Failed to replace %s for %s in preprocessed source.", originalFile.c_str(), newFileOrigin.c_str());
-            }
-            else
-            {
-                AZ_Assert(false, "preprocessed sources must start with #line directive, otherwise it's impossible to auto-detect the original file to mutate.")
-            }
-        }
+        //void MutateLineDirectivesFileOrigin(
+        //    AZStd::string& sourceCode,
+        //    AZStd::string newFileOrigin)
+        //{
+        //    // don't let backslashes pass, they will cause "token recognition error" in azslc
+        //    AZStd::replace(newFileOrigin.begin(), newFileOrigin.end(), '\\', '/');
+        //
+        //    // mcpp has good manners so it inserts a line directive immediately at the beginning.
+        //    // we will use that as the information of the source path to mutate.
+        //    if (sourceCode.starts_with("#line"))
+        //    {
+        //        auto firstQuote = sourceCode.find('"');
+        //        auto secondQuote = firstQuote != AZStd::string::npos ? sourceCode.find('"', firstQuote + 1) : AZStd::string::npos;
+        //        auto originalFile = sourceCode.substr(firstQuote + 1, secondQuote - firstQuote - 1);  // start +1, count -1 because we don't want the quotes included.
+        //        VerifySameFolder(originalFile, newFileOrigin);
+        //        [[maybe_unused]] bool didReplace = AZ::StringFunc::Replace(sourceCode, originalFile.c_str(), newFileOrigin.c_str(), true /*case sensitive*/);
+        //        AZ_Assert(didReplace, "Failed to replace %s for %s in preprocessed source.", originalFile.c_str(), newFileOrigin.c_str());
+        //    }
+        //    else
+        //    {
+        //        AZ_Assert(false, "preprocessed sources must start with #line directive, otherwise it's impossible to auto-detect the original file to mutate.")
+        //    }
+        //}
 
         // populate options with scan folders and contents of parsing shader_global_build_options.json
         void InitializePreprocessorOptions(
@@ -345,6 +345,81 @@ namespace AZ
                     options.m_projectIncludePaths.emplace_back(AZStd::move(engineGemsFolder.Native()));
                 }
             }
+        }
+
+        AZStd::string TransformPathsContainingAssetProcessorTemp(const char * source)
+        {
+            //                        
+            //                            /   line token
+            //                            |       | decimal
+            // custom raw string          |       |       |   filename between quotes
+            //         delimiter ──┐      |       |       |
+            AZStd::regex lineRegex(R"__(#line\s+(\d+)\s*"(.*)")__", AZStd::regex::ECMAScript);
+            auto matchFunc = [&lineRegex](const char * src, size_t srcSize, int& endPos, int& lineNumber) -> AZStd::string
+            {
+                AZStd::smatch match;
+                if (AZStd::regex_search(src, src + srcSize, match, lineRegex))
+                {
+                    if (match.size() > 1)
+                    {
+                        const char * endOfMatch = match.suffix().first;
+                        endPos = aznumeric_caster(endOfMatch - src);
+                        lineNumber = atoi(match[1].str().c_str());
+                        AZStd::string fileName(match[2].str().c_str());
+                        return fileName;
+                    }
+                }
+                // This could happen if an arbitrary "#line xxx" exists in the input string.
+                return AZStd::string();
+            };
+
+            AZStd::string output;
+            size_t totalCharCount = strlen(source);
+            output.reserve(totalCharCount);
+
+            // Find occurrences of #line.
+            const char* current = source;
+            size_t pendingCharCount = totalCharCount;
+            while (*current != '\0')
+            {
+                const char* found = strstr(current, "#line ");
+                if (!found)
+                {
+                    // Append the remainings and return.
+                    output.append(current);
+                    return output;
+                }
+                // Let's add everything before "#line".
+                //size_t sizeBeforeLine = found - current;
+                size_t countToAppend = found - current;
+                output.append(current, countToAppend);
+                pendingCharCount -= countToAppend;
+
+                // Update @current, and see if the #line is a path inside AssetProcessorTemp
+                current = found;
+                int endPos = 0;
+                int lineNumber = 0;
+                AZStd::string filePath = matchFunc(current, pendingCharCount, endPos, lineNumber);
+
+                if (filePath.empty())
+                {
+                    endPos = 1;
+                    output.append(current, endPos);
+                }
+                else if (AZ::StringFunc::Contains(filePath, "JobTemp-"))
+                {
+                    AZStd::string fileNameWithExtension;
+                    AZ::StringFunc::Path::GetFullFileName(filePath.c_str(), fileNameWithExtension);
+                    output.append(AZStd::string::format("#line %d \"%s\"", lineNumber, fileNameWithExtension.c_str()));
+                }
+                else
+                {
+                    output.append(current, endPos);
+                }
+                current += endPos;
+                pendingCharCount -= endPos;
+            }
+            return output;
         }
 
     } // namespace ShaderBuilder

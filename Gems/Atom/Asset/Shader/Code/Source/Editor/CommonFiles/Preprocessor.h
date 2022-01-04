@@ -101,9 +101,11 @@ namespace AZ
             bool preprocessIncludedFiles = true);
 
         //! Replace all ocurrences of #line "whatever" by #line "whatwewant"
-        void MutateLineDirectivesFileOrigin(
-            AZStd::string& sourceCode,
-            AZStd::string newFileOrigin);
+        //void MutateLineDirectivesFileOrigin(
+        //    AZStd::string& sourceCode,
+        //    AZStd::string newFileOrigin);
+
+        AZStd::string TransformPathsContainingAssetProcessorTemp(const char* source);
 
         //! Binder helper to Matsui C-Pre-Processor library
         class McppBinder
