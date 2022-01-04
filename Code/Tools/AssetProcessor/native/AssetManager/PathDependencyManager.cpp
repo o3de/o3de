@@ -100,7 +100,9 @@ namespace AssetProcessor
                 AZStd::unordered_set<AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry> matches;
                 for (const auto& entry: unresolvedDependencies)
                 {
-                    if (AZStd::wildcard_match(entry.m_unresolvedPath, search.m_path))
+                    AZ::IO::PathView searchPath(search.m_path);
+
+                    if(searchPath.Match(entry.m_unresolvedPath))
                     {
                         matches.insert(entry);
                     }

@@ -875,28 +875,15 @@ namespace AssetUtilities
         // Skip over the assetPlatform path segment if it is matches one of the platform defaults
         // Otherwise return the path unchanged
 
-        if (size_t pos = relativeProductPath.find_first_of(AZ_CORRECT_AND_WRONG_FILESYSTEM_SEPARATOR); pos == AZStd::string_view::npos)
+        AZStd::string_view originalPath = relativeProductPath;
+        AZStd::optional firstPathSegment = AZ::StringFunc::TokenizeNext(relativeProductPath, AZ_CORRECT_AND_WRONG_FILESYSTEM_SEPARATOR);
+
+        if (firstPathSegment && AzFramework::PlatformHelper::GetPlatformIdFromName(*firstPathSegment) != AzFramework::PlatformId::Invalid)
         {
-            // There's no separators, just return the path as is
             return relativeProductPath;
         }
-        else
-        {
-            // Grab the contents to the left of the separator and see if it matches a known platform string
-            // If it does, we'll return the right side, otherwise we assume there's no platform and return the whole string
-            AZStd::string_view leftSide{ relativeProductPath.data(), pos };
 
-            if (AzFramework::PlatformHelper::GetPlatformIdFromName(leftSide) != AzFramework::PlatformId::Invalid)
-            {
-                AZStd::string_view rightSide{ relativeProductPath };
-                // Strip off all previous characters before the delimiter plus the delimiter itself
-                rightSide.remove_prefix(pos + 1);
-
-                return rightSide;
-            }
-
-            return relativeProductPath;
-        }
+        return originalPath;
     }
 
     QString StripAssetPlatform(AZStd::string_view relativeProductPath)

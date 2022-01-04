@@ -44,7 +44,6 @@ namespace UnitTest
 
         void SetupAllocator(const AZ::SystemAllocator::Descriptor& allocatorDesc = {})
         {
-            AZ::Environment::Create(nullptr);
             AZ::AllocatorManager::Instance().EnterProfilingMode();
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
 
@@ -68,26 +67,14 @@ namespace UnitTest
 
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
             AZ::AllocatorManager::Instance().ExitProfilingMode();
-            AZ::Environment::Destroy();
         }
     };
 
     /**
-    * RAII wrapper of AllocatorBase.
-    * The benefit of using this wrapper instead of AllocatorsTestFixture is that SetUp/TearDown of the allocator is managed
-    * on construction/destruction, allowing member variables of derived classes to exist as value (and do heap allocation).
-    */
-    class ScopedAllocatorSetupFixture
-        : public ::testing::Test
-        , AllocatorsBase
-    {
-    public:
-        ScopedAllocatorSetupFixture() { SetupAllocator(); }
-        explicit ScopedAllocatorSetupFixture(const AZ::SystemAllocator::Descriptor& allocatorDesc) { SetupAllocator(allocatorDesc); }
-        ~ScopedAllocatorSetupFixture() { TeardownAllocator(); }
-    };
-
-    // Like ScopedAllocatorSetupFixture, but test/benchmark agnostic
+     * RAII wrapper of AllocatorBase.
+     * The benefit of using this wrapper instead of AllocatorsTestFixture is that SetUp/TearDown of the allocator is managed
+     * on construction/destruction, allowing member variables of derived classes to exist as value (and do heap allocation).
+     */
     class ScopedAllocatorFixture : AllocatorsBase
     {
     public:
@@ -103,6 +90,16 @@ namespace UnitTest
         {
             TeardownAllocator();
         }
+    };
+
+    // Like ScopedAllocatorFixture, but includes the Test base class
+    class ScopedAllocatorSetupFixture
+        : public ::testing::Test
+        , public ScopedAllocatorFixture
+    {
+    public:
+        ScopedAllocatorSetupFixture() = default;
+        explicit ScopedAllocatorSetupFixture(const AZ::SystemAllocator::Descriptor& allocatorDesc) : ScopedAllocatorFixture(allocatorDesc){}
     };
 
     /**
