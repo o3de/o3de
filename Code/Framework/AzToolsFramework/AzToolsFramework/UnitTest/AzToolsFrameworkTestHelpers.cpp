@@ -56,6 +56,40 @@ namespace UnitTest
         QApplication::sendEvent(widget, &mouseMoveEvent);
     }
 
+    void MouseScroll(QWidget* widget, QPoint localEventPosition, QPoint wheelDelta,
+        Qt::MouseButtons mouseButtons, Qt::KeyboardModifiers keyboardModifiers)
+    {
+        const QPoint globalEventPos = widget->mapToGlobal(localEventPosition);
+        const QPoint zero = QPoint();
+
+        QWheelEvent wheelEventBegin(globalEventPos, zero, zero, wheelDelta, mouseButtons, keyboardModifiers, Qt::ScrollBegin, false);
+        QApplication::sendEvent(widget, &wheelEventBegin);
+
+        QWheelEvent wheelEventUpdate(globalEventPos, zero, zero, wheelDelta, mouseButtons, keyboardModifiers, Qt::ScrollUpdate, false);
+        QApplication::sendEvent(widget, &wheelEventUpdate);
+
+        QWheelEvent wheelEventEnd(globalEventPos, zero, zero, zero, mouseButtons, keyboardModifiers, Qt::ScrollEnd, false);
+        QApplication::sendEvent(widget, &wheelEventEnd);
+    }
+
+    AZStd::string QtKeyToAzString(Qt::Key key, Qt::KeyboardModifiers modifiers)
+    {
+        QKeySequence keySequence = QKeySequence(key);
+        QString keyText = keySequence.toString();
+
+        // QKeySequence seems to uppercase alpha keys regardless of shift-modifier
+        if (modifiers == Qt::NoModifier && keyText.isUpper())
+        {
+            keyText = keyText.toLower();
+        }
+        else if (modifiers != Qt::ShiftModifier)
+        {
+            keyText = QString();
+        }
+
+        return AZStd::string(keyText.toUtf8().data());
+    }
+
     bool TestWidget::eventFilter(QObject* watched, QEvent* event)
     {
         AZ_UNUSED(watched);

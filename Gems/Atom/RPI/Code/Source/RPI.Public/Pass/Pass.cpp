@@ -147,6 +147,11 @@ namespace AZ
             m_treeDepth = m_parent->m_treeDepth + 1;
             m_path = ConcatPassName(m_parent->m_path, m_name);
             m_flags.m_partOfHierarchy = m_parent->m_flags.m_partOfHierarchy;
+
+            if (m_state == PassState::Orphaned)
+            {
+                QueueForBuildAndInitialization();
+            }
         }
 
         void Pass::RemoveFromParent()
@@ -154,7 +159,7 @@ namespace AZ
             AZ_RPI_PASS_ASSERT(m_parent != nullptr, "Trying to remove pass from parent but pointer to the parent pass is null.");
             m_parent->RemoveChild(Ptr<Pass>(this));
             m_queueState = PassQueueState::NoQueue;
-            m_state = PassState::Idle;
+            m_state = PassState::Orphaned;
         }
 
         void Pass::OnOrphan()
@@ -162,6 +167,8 @@ namespace AZ
             m_parent = nullptr;
             m_flags.m_partOfHierarchy = false;
             m_treeDepth = 0;
+            m_queueState = PassQueueState::NoQueue;
+            m_state = PassState::Orphaned;
         }
 
         // --- Getters & Setters ---
@@ -1281,6 +1288,7 @@ namespace AZ
 
         void Pass::FrameBegin(FramePrepareParams params)
         {
+            AZ_PROFILE_SCOPE(RPI, "Pass::FrameBegin() - %s", m_path.GetCStr());
             AZ_RPI_BREAK_ON_TARGET_PASS;
 
             if (!IsEnabled())
@@ -1303,7 +1311,10 @@ namespace AZ
 
             // FrameBeginInternal needs to be the last function be called in FrameBegin because its implementation expects 
             // all the attachments are imported to database (for example, ImageAttachmentPreview)
-            FrameBeginInternal(params);
+            {
+                AZ_PROFILE_SCOPE(RPI, "Pass::FrameBeginInternal()");
+                FrameBeginInternal(params);
+            }
             
             // readback attachment with output state
             UpdateReadbackAttachment(params, false);

@@ -64,6 +64,14 @@ namespace AZ
         //! Mutable to allow GetElapsedTimeMs/TimeUs() to be a const functions.
         mutable TimeUs m_accumulatedTimeUs = AZ::Time::ZeroTimeUs;
 
+        //! Used to calculate the delta time between calls to GetRealElapsedTimeMs/TimeUs().
+        //! Mutable to allow GetRealElapsedTimeMs/TimeUs() to be a const functions.
+        mutable TimeUs m_realLastInvokedTimeUs = AZ::Time::ZeroTimeUs;
+
+        //! Accumulates the delta time of GetRealElapsedTimeMs/TimeUs() calls.
+        //! Mutable to allow GetRealElapsedTimeMs/TimeUs() to be a const functions.
+        mutable TimeUs m_realAccumulatedTimeUs = AZ::Time::ZeroTimeUs;
+
         //! The current game tick delta time.
         //! Can be affected by time system cvars.
         //! Updated in AdvanceTickDeltaTimes().

@@ -7,68 +7,67 @@
             "details": {
                 "name": "Indexer",
                 "category": "Logic/Deprecated",
-                "tooltip": "An execution flow gate that activates each input flow in sequential order",
-                "subtitle": "Deprecated"
+                "tooltip": "An execution flow gate that activates each input flow in sequential order"
             },
             "slots": [
                 {
-                    "base": "Input_In0",
+                    "base": "Input_In0_0",
                     "details": {
                         "name": "In0",
                         "tooltip": "Input 0"
                     }
                 },
                 {
-                    "base": "Input_In1",
+                    "base": "Input_In1_1",
                     "details": {
                         "name": "In1",
                         "tooltip": "Input 1"
                     }
                 },
                 {
-                    "base": "Input_In2",
+                    "base": "Input_In2_2",
                     "details": {
                         "name": "In2",
                         "tooltip": "Input 2"
                     }
                 },
                 {
-                    "base": "Input_In3",
+                    "base": "Input_In3_3",
                     "details": {
                         "name": "In3",
                         "tooltip": "Input 3"
                     }
                 },
                 {
-                    "base": "Input_In4",
+                    "base": "Input_In4_4",
                     "details": {
                         "name": "In4",
                         "tooltip": "Input 4"
                     }
                 },
                 {
-                    "base": "Input_In5",
+                    "base": "Input_In5_5",
                     "details": {
                         "name": "In5",
                         "tooltip": "Input 5"
                     }
                 },
                 {
-                    "base": "Input_In6",
+                    "base": "Input_In6_6",
                     "details": {
                         "name": "In6",
                         "tooltip": "Input 6"
                     }
                 },
                 {
-                    "base": "Input_In7",
+                    "base": "Input_In7_7",
                     "details": {
                         "name": "In7",
                         "tooltip": "Input 7"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out",
                         "tooltip": "Signaled when the node is triggered."

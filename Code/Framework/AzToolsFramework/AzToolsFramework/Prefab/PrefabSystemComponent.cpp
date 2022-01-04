@@ -160,7 +160,7 @@ namespace AzToolsFramework
                 newInstance->SetTemplateId(newTemplateId);
             }
         }
-        
+
         void PrefabSystemComponent::PropagateTemplateChanges(TemplateId templateId, InstanceOptionalConstReference instanceToExclude)
         {
             auto templateIdToLinkIdsIterator = m_templateToLinkIdsMap.find(templateId);
@@ -442,7 +442,7 @@ namespace AzToolsFramework
             }
 
             m_templateFilePathToIdMap.emplace(AZStd::make_pair(filePath, newTemplateId));
-            
+
             return newTemplateId;
         }
 
@@ -469,7 +469,7 @@ namespace AzToolsFramework
             {
                 return;
             }
-            
+
             m_templateFilePathToIdMap.erase(templateToChange.GetFilePath());
             if (!m_templateFilePathToIdMap.try_emplace(filePath, templateId).second)
             {
@@ -500,7 +500,7 @@ namespace AzToolsFramework
 
                 return;
             }
-            
+
             //Remove all Links owned by the Template from TemplateToLinkIdsMap.
             Template& templateToDelete = findTemplateResult->get();
             const Template::Links& linkIdsToDelete = templateToDelete.GetLinks();
@@ -546,7 +546,7 @@ namespace AzToolsFramework
                 templateId, templateToDelete.GetFilePath().c_str());
 
             m_templateInstanceMapper.UnregisterTemplate(templateId);
-            
+
             result = m_templateIdMap.erase(templateId) != 0;
             AZ_Assert(result,
                 "Prefab - PrefabSystemComponent::RemoveTemplate - "
@@ -554,7 +554,10 @@ namespace AzToolsFramework
                 "from Template Id Map.",
                 templateId, templateToDelete.GetFilePath().c_str());
 
-            return;
+            if (!m_removingAllTemplates)
+            {
+                PrefabPublicNotificationBus::Broadcast(&PrefabPublicNotificationBus::Events::OnTemplateRemoved, templateId);
+            }
         }
 
         void PrefabSystemComponent::RemoveAllTemplates()
@@ -568,10 +571,15 @@ namespace AzToolsFramework
                 templateIds.emplace_back(id);
             }
 
+            m_removingAllTemplates = true;
+
             for (auto id : templateIds)
             {
                 RemoveTemplate(id);
             }
+
+            m_removingAllTemplates = false;
+            PrefabPublicNotificationBus::Broadcast(&PrefabPublicNotificationBus::Events::OnAllTemplatesRemoved);
         }
 
         LinkId PrefabSystemComponent::AddLink(
@@ -859,7 +867,7 @@ namespace AzToolsFramework
 
         void PrefabSystemComponent::SaveAllDirtyTemplates(TemplateId rootTemplateId)
         {
-            AZStd::set<AZ::IO::PathView> dirtyTemplatePaths = GetDirtyTemplatePaths(rootTemplateId);  
+            AZStd::set<AZ::IO::PathView> dirtyTemplatePaths = GetDirtyTemplatePaths(rootTemplateId);
 
             for (AZ::IO::PathView dirtyTemplatePath : dirtyTemplatePaths)
             {

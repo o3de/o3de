@@ -15,7 +15,7 @@
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/IconDecoratedNodePaletteTreeItem.h>
 
 #include <Editor/View/Widgets/NodePalette/NodePaletteModel.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
+
 #include <ScriptCanvas/Components/EditorUtils.h>
 
 namespace ScriptCanvasEditor
@@ -94,15 +94,16 @@ namespace ScriptCanvasEditor
         void SetActiveNodeType(const ScriptCanvas::NodeTypeIdentifier& nodeTypeIdentifier);
         int GetNodeCount() const;
 
+    private:
+
         // AZ::Data::AssetBus::Handler
+        /*
         void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         void OnAssetSaved(AZ::Data::Asset<AZ::Data::AssetData> asset, bool isSuccessful) override;
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+        */
         ////
-
-    private:
-
-        void ProcessAsset(const AZ::Data::Asset<ScriptCanvas::ScriptCanvasAssetBase>& scriptCanvasAsset);
+        // void ProcessAsset(const AZ::Data::Asset<LegacyScriptCanvasBaseAsset>& scriptCanvasAsset);
 
         QString m_name;
         QIcon   m_icon;

@@ -82,7 +82,9 @@ namespace AZ
             const VkPhysicalDeviceVulkan12Features& GetPhysicalDeviceVulkan12Features() const;
             const VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR& GetPhysicalDeviceSeparateDepthStencilFeatures() const;
             const VkPhysicalDeviceAccelerationStructurePropertiesKHR& GetPhysicalDeviceAccelerationStructureProperties() const;
+            const VkPhysicalDeviceAccelerationStructureFeaturesKHR& GetPhysicalDeviceAccelerationStructureFeatures() const;
             const VkPhysicalDeviceRayTracingPipelinePropertiesKHR& GetPhysicalDeviceRayTracingPipelineProperties() const;
+            const VkPhysicalDeviceRayTracingPipelineFeaturesKHR& GetPhysicalDeviceRayTracingPipelineFeatures() const;
             VkFormatProperties GetFormatProperties(RHI::Format format, bool raiseAsserts = true) const;
             StringList GetDeviceLayerNames() const;
             StringList GetDeviceExtensionNames(const char* layerName = nullptr) const;
@@ -116,7 +118,9 @@ namespace AZ
             VkPhysicalDeviceBufferDeviceAddressFeaturesEXT m_bufferDeviceAddressFeatures{};
             VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR m_separateDepthStencilFeatures{};
             VkPhysicalDeviceAccelerationStructurePropertiesKHR m_accelerationStructureProperties{};
+            VkPhysicalDeviceAccelerationStructureFeaturesKHR m_accelerationStructureFeatures{};
             VkPhysicalDeviceRayTracingPipelinePropertiesKHR m_rayTracingPipelineProperties{};
+            VkPhysicalDeviceRayTracingPipelineFeaturesKHR m_rayTracingPipelineFeatures{};
             VkPhysicalDeviceVulkan12Features m_vulkan12Features{};
         };
     }

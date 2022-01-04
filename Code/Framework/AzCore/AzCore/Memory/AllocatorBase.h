@@ -8,7 +8,6 @@
 #pragma once
 
 #include <AzCore/Memory/IAllocator.h>
-#include <AzCore/Memory/PlatformMemoryInstrumentation.h>
 
 namespace AZ
 {
@@ -103,16 +102,13 @@ namespace AZ
 
         const char* m_name = nullptr;
         const char* m_desc = nullptr;
-        Debug::AllocationRecords* m_records = nullptr;  // Cached pointer to allocation records. Works together with the MemoryDriller.
+        Debug::AllocationRecords* m_records = nullptr;  // Cached pointer to allocation records
         size_t m_memoryGuardSize = 0;
         bool m_isLazilyCreated = false;
         bool m_isProfilingActive = false;
         bool m_isReady = false;
         bool m_canBeOverridden = true;
         bool m_registrationEnabled = true;
-#if PLATFORM_MEMORY_INSTRUMENTATION_ENABLED
-        uint16_t m_platformMemoryInstrumentationGroupId = 0;
-#endif
     };
 
     namespace Internal  {

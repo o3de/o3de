@@ -39,7 +39,8 @@ def Menus_ViewMenuOptions_Work():
         ("Viewport", "Go to Location"),
         ("Viewport", "Remember Location"),
         ("Viewport", "Switch Camera"),
-        ("Viewport", "Show/Hide Helpers"),
+        ("Viewport", "Show Helpers"),
+        ("Viewport", "Show Icons"),
         ("Refresh Style",),
     ]
 
