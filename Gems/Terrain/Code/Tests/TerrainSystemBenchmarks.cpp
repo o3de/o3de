@@ -250,7 +250,7 @@ namespace UnitTest
 
                 // Give each gradient a new surface tag
                 surfaceConfig.m_gradientSurfaceMappings.emplace_back(
-                    surfaceGradientEntity->GetId(), SurfaceData::SurfaceTag(AZStd::string::format("test%zu", surfaces)));
+                    surfaceGradientEntity->GetId(), SurfaceData::SurfaceTag(AZStd::string::format("test%u", surfaces)));
 
                 surfaceGradientEntities.emplace_back(AZStd::move(surfaceGradientEntity));
                 surfaceGradientShapeRequests.emplace_back(AZStd::move(shapeRequests));
