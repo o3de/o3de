@@ -14,7 +14,7 @@ ly_associate_package(PACKAGE_NAME cityhash-1.1-multiplatform         TARGETS cit
 ly_associate_package(PACKAGE_NAME expat-2.1.0-multiplatform          TARGETS expat     PACKAGE_HASH 452256acd1fd699cef24162575b3524fccfb712f5321c83f1df1ce878de5b418)
 ly_associate_package(PACKAGE_NAME zstd-1.35-multiplatform            TARGETS zstd      PACKAGE_HASH 45d466c435f1095898578eedde85acf1fd27190e7ea99aeaa9acfd2f09e12665)
 ly_associate_package(PACKAGE_NAME glad-2.0.0-beta-rev2-multiplatform TARGETS glad      PACKAGE_HASH ff97ee9664e97d0854b52a3734c2289329d9f2b4cd69478df6d0ca1f1c9392ee)
-ly_associate_package(PACKAGE_NAME lux_core-2.2-rev5-multiplatform    TARGETS lux_core  PACKAGE_HASH c8c13cf7bc351643e1abd294d0841b24dee60e51647dff13db7aec396ad1e0b5)
+
 # platform-specific:
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-rev4-android         TARGETS TIFF            PACKAGE_HASH 2c62cdf34a8ee6c7eb091d05d98f60b4da7634c74054d4dbb8736886182f4589)
 ly_associate_package(PACKAGE_NAME freetype-2.10.4.16-android         TARGETS freetype        PACKAGE_HASH df9e4d559ea0f03b0666b48c79813b1cd4d9624429148a249865de9f5c2c11cd)
