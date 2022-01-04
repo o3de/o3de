@@ -136,6 +136,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzTest
+                AZ::AzTestShared
                 Gem::GradientSignal.Static
                 Gem::LmbrCentral
                 Gem::GradientSignal.Mocks
@@ -143,6 +144,12 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_googletest(
         NAME Gem::GradientSignal.Tests
     )
+
+    ly_add_googlebenchmark(
+        NAME Gem::GradientSignal.Benchmarks
+        TARGET Gem::GradientSignal.Tests
+    )
+
 
     if(PAL_TRAIT_BUILD_HOST_TOOLS)
         ly_add_target(
@@ -157,6 +164,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             BUILD_DEPENDENCIES
                 PRIVATE
                     AZ::AzTest
+                    AZ::AzTestShared
                     Gem::GradientSignal.Static
                     Gem::GradientSignal.Editor.Static
                     Gem::LmbrCentral.Editor
