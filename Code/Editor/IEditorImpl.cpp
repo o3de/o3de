@@ -397,11 +397,6 @@ void CEditorImpl::Update()
     // Make sure this is not called recursively
     m_bUpdates = false;
 
-    //@FIXME: Restore this latter.
-    //if (GetGameEngine() && GetGameEngine()->IsLevelLoaded())
-    {
-        m_pObjectManager->Update();
-    }
     if (IsInPreviewMode())
     {
         SetModifiedFlag(false);
@@ -685,13 +680,6 @@ void CEditorImpl::DeleteObject(CBaseObject* obj)
     SetModifiedFlag();
     GetIEditor()->SetModifiedModule(eModifiedBrushes);
     GetObjectManager()->DeleteObject(obj);
-}
-
-CBaseObject* CEditorImpl::CloneObject(CBaseObject* obj)
-{
-    SetModifiedFlag();
-    GetIEditor()->SetModifiedModule(eModifiedBrushes);
-    return GetObjectManager()->CloneObject(obj);
 }
 
 CBaseObject* CEditorImpl::GetSelectedObject()
@@ -1457,7 +1445,7 @@ ISourceControl* CEditorImpl::GetSourceControl()
         {
             IClassDesc* pClass = classes[i];
             ISourceControl* pSCM = nullptr;
-            HRESULT hRes = pClass->QueryInterface(__uuidof(ISourceControl), (void**)&pSCM);
+            HRESULT hRes = pClass->QueryInterface(__az_uuidof(ISourceControl), (void**)&pSCM);
             if (!FAILED(hRes) && pSCM)
             {
                 m_pSourceControl = pSCM;

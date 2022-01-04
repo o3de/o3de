@@ -27,13 +27,13 @@ namespace MaterialEditor
         MaterialViewportRequestBus::BroadcastResult(presets, &MaterialViewportRequestBus::Events::GetModelPresets);
         AZStd::sort(presets.begin(), presets.end(), [](const auto& a, const auto& b) { return a->m_displayName < b->m_displayName; });
 
+        const int itemSize = aznumeric_cast<int>(
+            AtomToolsFramework::GetSettingOrDefault<AZ::u64>("/O3DE/Atom/MaterialEditor/PresetBrowserDialog/ModelItemSize", 90));
+
         QListWidgetItem* selectedItem = nullptr;
         for (const auto& preset : presets)
         {
-            QImage image;
-            MaterialViewportRequestBus::BroadcastResult(image, &MaterialViewportRequestBus::Events::GetModelPresetPreview, preset);
-
-            QListWidgetItem* item = CreateListItem(preset->m_displayName.c_str(), image);
+            QListWidgetItem* item = CreateListItem(preset->m_displayName.c_str(), preset->m_modelAsset.GetId(), QSize(itemSize, itemSize));
 
             m_listItemToPresetMap[item] = preset;
 

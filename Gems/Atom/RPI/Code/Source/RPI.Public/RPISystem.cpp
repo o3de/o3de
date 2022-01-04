@@ -31,8 +31,8 @@
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Time/ITime.h>
 
 #include <AzFramework/Asset/AssetSystemBus.h>
 
@@ -276,15 +276,10 @@ namespace AZ
             }
         }
 
-        float RPISystem::GetCurrentTime()
+        float RPISystem::GetCurrentTime() const
         {
-            ScriptTimePoint timeAtCurrentTick;
-            AZ::TickRequestBus::BroadcastResult(timeAtCurrentTick, &AZ::TickRequestBus::Events::GetTimeAtCurrentTick);
-
-            // We subtract the start time to maximize precision of the time value, since we will be converting it to a float.
-            double currentTime = timeAtCurrentTick.GetSeconds() - m_startTime.GetSeconds();
-
-            return aznumeric_cast<float>(currentTime);
+            const AZ::TimeUs currentSimulationTimeUs = AZ::GetRealElapsedTimeUs();
+            return AZ::TimeUsToSeconds(currentSimulationTimeUs);
         }
 
         void RPISystem::RenderTick()

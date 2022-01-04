@@ -642,6 +642,8 @@ namespace EMotionFX
 
     void AnimGraphReferenceNode::OnAnimGraphAssetChanged()
     {
+        AnimGraphNotificationBus::Broadcast(&AnimGraphNotificationBus::Events::OnReferenceAnimGraphAboutToBeChanged, this);
+
         ReleaseAnimGraphInstances();
 
         AnimGraphNotificationBus::Broadcast(&AnimGraphNotificationBus::Events::OnReferenceAnimGraphChanged, this);

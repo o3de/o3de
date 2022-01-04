@@ -54,10 +54,10 @@ namespace Multiplayer
         m_maxPayloadSize = connection.GetConnectionMtu() - UdpPacketHeaderSerializeSize - ReplicationManagerPacketOverhead;
 
         // Schedule ClearRemovedReplicators()
-        m_clearRemovedReplicators.Enqueue(AZ::TimeMs{ 0 }, true);
+        m_clearRemovedReplicators.Enqueue(AZ::Time::ZeroTimeMs, true);
 
         // Start window update events
-        m_updateWindow.Enqueue(AZ::TimeMs{ 0 }, true);
+        m_updateWindow.Enqueue(AZ::Time::ZeroTimeMs, true);
 
         INetworkEntityManager* networkEntityManager = GetNetworkEntityManager();
         if (networkEntityManager != nullptr)
@@ -97,7 +97,7 @@ namespace Multiplayer
                     notReadyEntities.push_back(entityId);
                 }
             }
-            if (m_entityActivationTimeSliceMs > AZ::TimeMs{ 0 } && AZ::GetElapsedTimeMs() > endTimeMs)
+            if (m_entityActivationTimeSliceMs > AZ::Time::ZeroTimeMs && AZ::GetElapsedTimeMs() > endTimeMs)
             {
                 // If we go over our timeslice, break out the loop
                 break;

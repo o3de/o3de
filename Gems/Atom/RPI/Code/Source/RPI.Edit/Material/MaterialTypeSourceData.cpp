@@ -451,19 +451,20 @@ namespace AZ
                         {
                         case MaterialPropertyDataType::Image:
                         {
-                            auto imageAssetResult = MaterialUtils::GetImageAssetReference(
-                                materialTypeSourceFilePath, property.m_value.GetValue<AZStd::string>());
+                            Data::Asset<ImageAsset> imageAsset;
 
-                            if (imageAssetResult)
-                            {
-                                auto imageAsset = imageAssetResult.GetValue();
-                                materialTypeAssetCreator.SetPropertyValue(propertyId.GetFullName(), imageAsset);
-                            }
-                            else
+                            MaterialUtils::GetImageAssetResult result = MaterialUtils::GetImageAssetReference(
+                                imageAsset, materialTypeSourceFilePath, property.m_value.GetValue<AZStd::string>());
+
+                            if (result == MaterialUtils::GetImageAssetResult::Missing)
                             {
                                 materialTypeAssetCreator.ReportError(
                                     "Material property '%s': Could not find the image '%s'", propertyId.GetFullName().GetCStr(),
                                     property.m_value.GetValue<AZStd::string>().data());
+                            }
+                            else
+                            {
+                                materialTypeAssetCreator.SetPropertyValue(propertyId.GetFullName(), imageAsset);
                             }
                         }
                         break;

@@ -43,11 +43,14 @@ import types
 import functools
 import re
 
+from os import path
+
 import ly_test_tools.environment.file_system as file_system
 import ly_test_tools.environment.waiter as waiter
 import ly_test_tools.environment.process_utils as process_utils
 import ly_test_tools.o3de.editor_test
 import ly_test_tools.o3de.editor_test_utils as editor_utils
+import ly_test_tools._internal.pytest_plugin
 
 from ly_test_tools.o3de.asset_processor import AssetProcessor
 from ly_test_tools.launchers.exceptions import WaitTimeoutError
@@ -303,6 +306,8 @@ class EditorTestSuite():
     use_null_renderer = True
     # Maximum time for a single editor to stay open on a shared test
     timeout_editor_shared_test = 300
+    # Flag to determine whether to use new prefab system or use deprecated slice system for this test suite
+    enable_prefab_system = True
 
     # Function to calculate number of editors to run in parallel, this can be overriden by the user
     @staticmethod
@@ -741,7 +746,13 @@ class EditorTestSuite():
             test_cmdline_args += ["--attach-debugger"]
         if test_spec.wait_for_debugger:
             test_cmdline_args += ["--wait-for-debugger"]
-            
+        if self.enable_prefab_system:
+            test_cmdline_args += [
+                "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
+                f"--regset-file={path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
+        else:
+            test_cmdline_args += ["--regset=/Amazon/Preferences/EnablePrefabSystem=false"]
+
         # Cycle any old crash report in case it wasn't cycled properly
         editor_utils.cycle_crash_report(run_id, workspace)
 
@@ -751,7 +762,7 @@ class EditorTestSuite():
         cmdline = [
             "--runpythontest", test_filename,
             "-logfile", f"@log@/{log_name}",
-            "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
+            "-project-log-path", ly_test_tools._internal.pytest_plugin.output_path] + test_cmdline_args
         editor.args.extend(cmdline)
         editor.start(backupFiles = False, launch_ap = False, configure_settings=False)
 
@@ -804,7 +815,13 @@ class EditorTestSuite():
             test_cmdline_args += ["--attach-debugger"]
         if any([t.wait_for_debugger for t in test_spec_list]):
             test_cmdline_args += ["--wait-for-debugger"]
-            
+        if self.enable_prefab_system:
+            test_cmdline_args += [
+                "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
+                f"--regset-file={path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
+        else:
+            test_cmdline_args += ["--regset=/Amazon/Preferences/EnablePrefabSystem=false"]
+
         # Cycle any old crash report in case it wasn't cycled properly
         editor_utils.cycle_crash_report(run_id, workspace)
 
@@ -813,7 +830,7 @@ class EditorTestSuite():
         cmdline = [
             "--runpythontest", test_filenames_str,
             "-logfile", f"@log@/{log_name}",
-            "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
+            "-project-log-path", ly_test_tools._internal.pytest_plugin.output_path] + test_cmdline_args
 
         editor.args.extend(cmdline)
         editor.start(backupFiles = False, launch_ap = False, configure_settings=False)
@@ -890,7 +907,6 @@ class EditorTestSuite():
                 results[test_spec_name] = Result.Timeout.create(timed_out_result.test_spec,
                                                                 results[test_spec_name].output,
                                                                 self.timeout_editor_shared_test, result.editor_log)
-
         return results
     
     def _run_single_test(self, request: Request, workspace: AbstractWorkspace, editor: Editor,

@@ -29,7 +29,6 @@ public:
         assert(libMgr);
 
         m_itemPath = libItem->GetFullName();
-        m_description = "Lib item changed: " + m_itemPath;
 
         //serialize the lib item to undo
         m_undoCtx.node = GetIEditor()->GetSystem()->CreateXmlNode("Undo");
@@ -45,23 +44,13 @@ public:
         m_size = sizeof(CUndoBaseLibraryItem);
         m_size += static_cast<int>(xmlStr.GetAllocatedMemory());
         m_size += m_itemPath.length();
-        m_size += m_description.length();
     }
 
-    QString GetEditorObjectName() override
-    {
-        return m_itemPath;
-    }
 
 protected:
     int GetSize() override
     {
         return m_size;
-    }
-
-    QString GetDescription() override
-    {
-        return m_description;
     }
 
     void Undo(bool bUndo) override
@@ -111,7 +100,6 @@ protected:
     }
 
 private:
-    QString m_description;
     QString m_itemPath;
     IDataBaseItem::SerializeContext m_undoCtx; //saved before operation
     IDataBaseItem::SerializeContext m_redoCtx; //saved after operation so used for redo

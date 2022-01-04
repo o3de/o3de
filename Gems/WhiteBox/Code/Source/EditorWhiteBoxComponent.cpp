@@ -92,7 +92,7 @@ namespace WhiteBox
         };
 
         const auto faceHandles = Api::MeshFaceHandles(whiteBox);
-        for (const auto faceHandle : faceHandles)
+        for (const auto& faceHandle : faceHandles)
         {
             faceData.push_back(createWhiteBoxFaceFromHandle(faceHandle));
         }
@@ -720,7 +720,6 @@ namespace WhiteBox
         // must have at least one triangle
         if (m_faces->empty())
         {
-            distance = std::numeric_limits<float>::max();
             return false;
         }
 
@@ -735,7 +734,6 @@ namespace WhiteBox
         const AZ::Vector3 localRayEnd = localRayOrigin + localRayDirection * rayLength;
 
         bool intersection = false;
-        distance = std::numeric_limits<float>::max();
         for (const auto& face : m_faces.value())
         {
             float t;
@@ -817,7 +815,7 @@ namespace WhiteBox
 
         debugDisplay.DepthTestOn();
 
-        for (const auto faceHandle : Api::MeshFaceHandles(whiteBoxMesh))
+        for (const auto& faceHandle : Api::MeshFaceHandles(whiteBoxMesh))
         {
             const auto faceHalfedgeHandles = Api::FaceHalfedgeHandles(whiteBoxMesh, faceHandle);
 
@@ -832,7 +830,7 @@ namespace WhiteBox
                     }) /
                 3.0f;
 
-            for (const auto halfedgeHandle : faceHalfedgeHandles)
+            for (const auto& halfedgeHandle : faceHalfedgeHandles)
             {
                 const Api::VertexHandle vertexHandleAtTip =
                     Api::HalfedgeVertexHandleAtTip(whiteBoxMesh, halfedgeHandle);
@@ -887,7 +885,7 @@ namespace WhiteBox
 
         if (cl_whiteBoxDebugEdgeHandles)
         {
-            for (const auto edgeHandle : Api::MeshEdgeHandles(whiteBoxMesh))
+            for (const auto& edgeHandle : Api::MeshEdgeHandles(whiteBoxMesh))
             {
                 const AZ::Vector3 localEdgeMidpoint = Api::EdgeMidpoint(whiteBoxMesh, edgeHandle);
                 const AZ::Vector3 worldEdgeMidpoint = worldFromLocal.TransformPoint(localEdgeMidpoint);

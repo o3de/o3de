@@ -18,7 +18,6 @@ ly_associate_package(PACKAGE_NAME expat-2.1.0-multiplatform                     
 ly_associate_package(PACKAGE_NAME zstd-1.35-multiplatform                           TARGETS zstd                        PACKAGE_HASH 45d466c435f1095898578eedde85acf1fd27190e7ea99aeaa9acfd2f09e12665)
 ly_associate_package(PACKAGE_NAME SQLite-3.32.2-rev3-multiplatform                  TARGETS SQLite                      PACKAGE_HASH dd4d3de6cbb4ce3d15fc504ba0ae0587e515dc89a25228037035fc0aef4831f4)
 ly_associate_package(PACKAGE_NAME glad-2.0.0-beta-rev2-multiplatform                TARGETS glad                        PACKAGE_HASH ff97ee9664e97d0854b52a3734c2289329d9f2b4cd69478df6d0ca1f1c9392ee)
-ly_associate_package(PACKAGE_NAME lux_core-2.2-rev5-multiplatform                   TARGETS lux_core                    PACKAGE_HASH c8c13cf7bc351643e1abd294d0841b24dee60e51647dff13db7aec396ad1e0b5)
 ly_associate_package(PACKAGE_NAME xxhash-0.7.4-rev1-multiplatform                   TARGETS xxhash                      PACKAGE_HASH e81f3e6c4065975833996dd1fcffe46c3cf0f9e3a4207ec5f4a1b564ba75861e)
 
 # platform-specific:
@@ -27,7 +26,7 @@ ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-rev3-linux                      
 ly_associate_package(PACKAGE_NAME freetype-2.10.4.16-linux                          TARGETS freetype                    PACKAGE_HASH 3f10c703d9001ecd2bb51a3bd003d3237c02d8f947ad0161c0252fdc54cbcf97)
 ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev6-linux                   TARGETS AWSNativeSDK                PACKAGE_HASH 490291e4c8057975c3ab86feb971b8a38871c58bac5e5d86abdd1aeb7141eec4)
 ly_associate_package(PACKAGE_NAME Lua-5.3.5-rev5-linux                              TARGETS Lua                         PACKAGE_HASH 1adc812abe3dd0dbb2ca9756f81d8f0e0ba45779ac85bf1d8455b25c531a38b0)
-ly_associate_package(PACKAGE_NAME PhysX-4.1.2.29882248-rev3-linux                   TARGETS PhysX                       PACKAGE_HASH a110249cbef4f266b0002c4ee9a71f59f373040cefbe6b82f1e1510c811edde6)
+ly_associate_package(PACKAGE_NAME PhysX-4.1.2.29882248-rev5-linux                   TARGETS PhysX                       PACKAGE_HASH fa72365df409376aef02d1763194dc91d255bdfcb4e8febcfbb64d23a3e50b96)
 ly_associate_package(PACKAGE_NAME mcpp-2.7.2_az.2-rev1-linux                        TARGETS mcpp                        PACKAGE_HASH df7a998d0bc3fedf44b5bdebaf69ddad6033355b71a590e8642445ec77bc6c41)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-linux                           TARGETS mikkelsen                   PACKAGE_HASH 5973b1e71a64633588eecdb5b5c06ca0081f7be97230f6ef64365cbda315b9c8)
 ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-linux                       TARGETS googletest                  PACKAGE_HASH 7b7ad330f369450c316a4c4592d17fbb4c14c731c95bd8f37757203e8c2bbc1b)
@@ -43,6 +42,7 @@ ly_associate_package(PACKAGE_NAME SPIRVCross-2021.04.29-rev1-linux              
 ly_associate_package(PACKAGE_NAME azslc-1.7.34-rev1-linux                           TARGETS azslc                       PACKAGE_HASH 6d7dc671936c34ff70d2632196107ca1b8b2b41acdd021bfbc69a9fd56215c22)
 ly_associate_package(PACKAGE_NAME zlib-1.2.11-rev5-linux                            TARGETS ZLIB                        PACKAGE_HASH 9be5ea85722fc27a8645a9c8a812669d107c68e6baa2ca0740872eaeb6a8b0fc)
 ly_associate_package(PACKAGE_NAME squish-ccr-deb557d-rev1-linux                     TARGETS squish-ccr                  PACKAGE_HASH 85fecafbddc6a41a27c5f59ed4a5dfb123a94cb4666782cf26e63c0a4724c530)
-ly_associate_package(PACKAGE_NAME astc-encoder-3.2-rev1-linux                       TARGETS astc-encoder                PACKAGE_HASH 2ba97a06474d609945f0ab4419af1f6bbffdd294ca6b869f5fcebec75c573c0f)
+ly_associate_package(PACKAGE_NAME astc-encoder-3.2-rev2-linux                       TARGETS astc-encoder                PACKAGE_HASH 71549d1ca9e4d48391b92a89ea23656d3393810e6777879f6f8a9def2db1610c)
 ly_associate_package(PACKAGE_NAME ISPCTexComp-36b80aa-rev1-linux                    TARGETS ISPCTexComp                 PACKAGE_HASH 065fd12abe4247dde247330313763cf816c3375c221da030bdec35024947f259)
 ly_associate_package(PACKAGE_NAME lz4-1.9.3-vcpkg-rev4-linux                        TARGETS lz4                         PACKAGE_HASH 5de3dbd3e2a3537c6555d759b3c5bb98e5456cf85c74ff6d046f809b7087290d)
+ly_associate_package(PACKAGE_NAME pyside2-5.15.2-rev2-linux                         TARGETS pyside2                     PACKAGE_HASH 7589c397c8224d0c3ad691ff02e1afd55d9a1f9de1967c14eb8105dd2b0c4dd1)

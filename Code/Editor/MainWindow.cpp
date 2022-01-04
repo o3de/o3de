@@ -47,6 +47,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/API/EditorAnimationSystemRequestBus.h>
 #include <AzToolsFramework/SourceControl/QtSourceControlNotificationHandler.h>
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
+#include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 
 // AzQtComponents
@@ -445,10 +446,10 @@ void MainWindow::Initialize()
 {
     m_viewPaneManager->SetMainWindow(m_viewPaneHost, &m_settings, /*unused*/ QByteArray());
 
+    InitActions();
+
     RegisterStdViewClasses();
     InitCentralWidget();
-
-    InitActions();
 
     // load toolbars ("shelves") and macros
     GetIEditor()->GetToolBoxManager()->Load(m_actionManager);
@@ -519,7 +520,7 @@ MainWindow* MainWindow::instance()
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
-    gSettings.Save();
+    gSettings.Save(true);
 
     AzFramework::SystemCursorState currentCursorState;
     bool isInGameMode = false;
@@ -576,7 +577,6 @@ void MainWindow::closeEvent(QCloseEvent* event)
     }
     // Close all edit panels.
     GetIEditor()->ClearSelection();
-    GetIEditor()->GetObjectManager()->EndEditParams();
 
     // force clean up of all deferred deletes, so that we don't have any issues with windows from plugins not being deleted yet
     qApp->sendPostedEvents(nullptr, QEvent::DeferredDelete);
@@ -708,14 +708,10 @@ void MainWindow::InitActions()
         .SetShortcut(QKeySequence::Undo)
         .SetReserved()
         .SetStatusTip(tr("Undo last operation"))
-        //.SetMenu(new QMenu("FIXME"))
-        .SetApplyHoverEffect()
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateUndo);
     am->AddAction(ID_REDO, tr("&Redo"))
         .SetShortcut(AzQtComponents::RedoKeySequence)
         .SetReserved()
-        //.SetMenu(new QMenu("FIXME"))
-        .SetApplyHoverEffect()
         .SetStatusTip(tr("Redo last undo operation"))
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateRedo);
 
@@ -731,7 +727,6 @@ void MainWindow::InitActions()
     // Modify actions
     am->AddAction(AzToolsFramework::EditModeMove, tr("Move"))
         .SetIcon(Style::icon("Move"))
-        .SetApplyHoverEffect()
         .SetShortcut(tr("1"))
         .SetToolTip(tr("Move (1)"))
         .SetCheckable(true)
@@ -757,7 +752,6 @@ void MainWindow::InitActions()
             });                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
     am->AddAction(AzToolsFramework::EditModeRotate, tr("Rotate"))
         .SetIcon(Style::icon("Translate"))
-        .SetApplyHoverEffect()
         .SetShortcut(tr("2"))
         .SetToolTip(tr("Rotate (2)"))
         .SetCheckable(true)
@@ -783,7 +777,6 @@ void MainWindow::InitActions()
             });
     am->AddAction(AzToolsFramework::EditModeScale, tr("Scale"))
         .SetIcon(Style::icon("Scale"))
-        .SetApplyHoverEffect()
         .SetShortcut(tr("3"))
         .SetToolTip(tr("Scale (3)"))
         .SetCheckable(true)
@@ -806,29 +799,40 @@ void MainWindow::InitActions()
                     EditorTransformComponentSelectionRequests::Mode::Scale);
             });
 
-    am->AddAction(AzToolsFramework::SnapToGrid, tr("Snap to grid"))
+    am->AddAction(AzToolsFramework::SnapToGrid, tr("Grid snapping"))
         .SetIcon(Style::icon("Grid"))
-        .SetApplyHoverEffect()
+        .SetStatusTip(tr("Toggle grid snapping"))
         .SetShortcut(tr("G"))
-        .SetToolTip(tr("Snap to grid (G)"))
-        .SetStatusTip(tr("Toggles snap to grid"))
         .SetCheckable(true)
-        .RegisterUpdateCallback([](QAction* action) {
-            Q_ASSERT(action->isCheckable());
-            action->setChecked(SandboxEditor::GridSnappingEnabled());
-        })
-        .Connect(&QAction::triggered, []() { SandboxEditor::SetGridSnapping(!SandboxEditor::GridSnappingEnabled()); });
+        .RegisterUpdateCallback(
+            [](QAction* action)
+            {
+                Q_ASSERT(action->isCheckable());
+                action->setChecked(SandboxEditor::GridSnappingEnabled());
+            })
+        .Connect(
+            &QAction::triggered,
+            []
+            {
+                SandboxEditor::SetGridSnapping(!SandboxEditor::GridSnappingEnabled());
+            });
 
-    am->AddAction(AzToolsFramework::SnapAngle, tr("Snap angle"))
+    am->AddAction(AzToolsFramework::SnapAngle, tr("Angle snapping"))
         .SetIcon(Style::icon("Angle"))
-        .SetApplyHoverEffect()
-        .SetStatusTip(tr("Snap angle"))
+        .SetStatusTip(tr("Toggle angle snapping"))
         .SetCheckable(true)
-        .RegisterUpdateCallback([](QAction* action) {
-            Q_ASSERT(action->isCheckable());
-            action->setChecked(SandboxEditor::AngleSnappingEnabled());
-        })
-        .Connect(&QAction::triggered, []() { SandboxEditor::SetAngleSnapping(!SandboxEditor::AngleSnappingEnabled()); });
+        .RegisterUpdateCallback(
+            [](QAction* action)
+            {
+                Q_ASSERT(action->isCheckable());
+                action->setChecked(SandboxEditor::AngleSnappingEnabled());
+            })
+        .Connect(
+            &QAction::triggered,
+            []
+            {
+                SandboxEditor::SetAngleSnapping(!SandboxEditor::AngleSnappingEnabled());
+            });
 
     // Display actions
     am->AddAction(ID_SWITCHCAMERA_DEFAULTCAMERA, tr("Default Camera")).SetCheckable(true)
@@ -928,9 +932,41 @@ void MainWindow::InitActions()
         .SetStatusTip(tr("Cycle 2D Viewport"))
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateNonGameMode);
 #endif
-    am->AddAction(ID_DISPLAY_SHOWHELPERS, tr("Show/Hide Helpers"))
+    am->AddAction(AzToolsFramework::Helpers, tr("Show Helpers"))
         .SetShortcut(tr("Shift+Space"))
-        .SetToolTip(tr("Show/Hide Helpers (Shift+Space)"));
+        .SetToolTip(tr("Show/Hide Helpers (Shift+Space)"))
+        .SetCheckable(true)
+        .RegisterUpdateCallback(
+            [](QAction* action)
+            {
+                Q_ASSERT(action->isCheckable());
+                action->setChecked(AzToolsFramework::HelpersVisible());
+            })
+        .Connect(
+            &QAction::triggered,
+            []()
+            {
+                AzToolsFramework::SetHelpersVisible(!AzToolsFramework::HelpersVisible());
+                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
+                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnDrawHelpersChanged,
+                    AzToolsFramework::HelpersVisible());
+            });
+    am->AddAction(AzToolsFramework::Icons, tr("Show Icons"))
+        .SetShortcut(tr("Ctrl+Space"))
+        .SetToolTip(tr("Show/Hide Icons (Ctrl+Space)"))
+        .SetCheckable(true)
+        .RegisterUpdateCallback(
+            [](QAction* action)
+            {
+                Q_ASSERT(action->isCheckable());
+                action->setChecked(AzToolsFramework::IconsVisible());
+            })
+        .Connect(
+            &QAction::triggered,
+            []()
+            {
+                AzToolsFramework::SetIconsVisible(!AzToolsFramework::IconsVisible());
+            });
 
     // Audio actions
     am->AddAction(ID_SOUND_STOPALLSOUNDS, tr("Stop All Sounds"))
@@ -939,29 +975,28 @@ void MainWindow::InitActions()
         .Connect(&QAction::triggered, this, &MainWindow::OnRefreshAudioSystem);
 
     // Game actions
-    am->AddAction(ID_VIEW_SWITCHTOGAME, tr("Play &Game"))
+    am->AddAction(ID_VIEW_SWITCHTOGAME, tr("Play Game"))
         .SetIcon(QIcon(":/stylesheet/img/UI20/toolbar/Play.svg"))
+        .SetToolTip(tr("Play Game"))
+        .SetStatusTip(tr("Activate the game input mode"))
+        .SetCheckable(true)
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdatePlayGame);
+    am->AddAction(ID_VIEW_SWITCHTOGAME_VIEWPORT, tr("Play Game"))
         .SetShortcut(tr("Ctrl+G"))
         .SetToolTip(tr("Play Game (Ctrl+G)"))
         .SetStatusTip(tr("Activate the game input mode"))
-        .SetApplyHoverEffect()
-        .SetCheckable(true)
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdatePlayGame);
-    am->AddAction(ID_VIEW_SWITCHTOGAME_FULLSCREEN, tr("Play &Game (Maximized)"))
+    am->AddAction(ID_VIEW_SWITCHTOGAME_FULLSCREEN, tr("Play Game (Maximized)"))
         .SetShortcut(tr("Ctrl+Shift+G"))
         .SetStatusTip(tr("Activate the game input mode (maximized)"))
-        .SetIcon(Style::icon("Play"))
-        .SetApplyHoverEffect()
-        .SetCheckable(true);
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdatePlayGame);
     am->AddAction(ID_TOOLBAR_WIDGET_PLAYCONSOLE_LABEL, tr("Play Controls"))
         .SetText(tr("Play Controls"));
     am->AddAction(ID_SWITCH_PHYSICS, tr("Simulate"))
         .SetIcon(QIcon(":/stylesheet/img/UI20/toolbar/Simulate_Physics.svg"))
         .SetShortcut(tr("Ctrl+P"))
         .SetToolTip(tr("Simulate (Ctrl+P)"))
-        .SetCheckable(true)
         .SetStatusTip(tr("Enable processing of Physics and AI."))
-        .SetApplyHoverEffect()
         .SetCheckable(true)
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnSwitchPhysicsUpdate);
     am->AddAction(ID_GAME_SYNCPLAYER, tr("Move Player and Camera Separately")).SetCheckable(true)
@@ -1051,8 +1086,7 @@ void MainWindow::InitActions()
 
     // Editors Toolbar actions
     am->AddAction(ID_OPEN_ASSET_BROWSER, tr("Asset browser"))
-        .SetToolTip(tr("Open Asset Browser"))
-        .SetApplyHoverEffect();
+        .SetToolTip(tr("Open Asset Browser"));
 
     AZ::EBusReduceResult<bool, AZStd::logical_or<bool>> emfxEnabled(false);
     using AnimationRequestBus = AzToolsFramework::EditorAnimationSystemRequestsBus;
@@ -1062,8 +1096,7 @@ void MainWindow::InitActions()
     {
         QAction* action = am->AddAction(ID_OPEN_EMOTIONFX_EDITOR, tr("Animation Editor"))
             .SetToolTip(tr("Open Animation Editor"))
-            .SetIcon(QIcon(":/EMotionFX/EMFX_icon_32x32.png"))
-            .SetApplyHoverEffect();
+            .SetIcon(QIcon(":/EMotionFX/EMFX_icon_32x32.png"));
         QObject::connect(action, &QAction::triggered, this, []() {
             QtViewPaneManager::instance()->OpenPane(LyViewPane::AnimationEditor);
         });
@@ -1071,12 +1104,10 @@ void MainWindow::InitActions()
 
     am->AddAction(ID_OPEN_AUDIO_CONTROLS_BROWSER, tr("Audio Controls Editor"))
         .SetToolTip(tr("Open Audio Controls Editor"))
-        .SetIcon(Style::icon("Audio"))
-        .SetApplyHoverEffect();
+        .SetIcon(Style::icon("Audio"));
 
     am->AddAction(ID_OPEN_UICANVASEDITOR, tr(LyViewPane::UiEditor))
-        .SetToolTip(tr("Open UI Editor"))
-        .SetApplyHoverEffect();
+        .SetToolTip(tr("Open UI Editor"));
 
     // Edit Mode Toolbar Actions
     am->AddAction(IDC_SELECTION_MASK, tr("Selected Object Types"));
@@ -1089,12 +1120,10 @@ void MainWindow::InitActions()
     // Object Toolbar Actions
     am->AddAction(ID_GOTO_SELECTED, tr("Go to selected object"))
         .SetIcon(Style::icon("select_object"))
-        .SetApplyHoverEffect()
         .Connect(&QAction::triggered, this, &MainWindow::OnGotoSelected);
 
     // Misc Toolbar Actions
-    am->AddAction(ID_OPEN_SUBSTANCE_EDITOR, tr("Open Substance Editor"))
-        .SetApplyHoverEffect();
+    am->AddAction(ID_OPEN_SUBSTANCE_EDITOR, tr("Open Substance Editor"));
 }
 
 void MainWindow::InitToolActionHandlers()
@@ -1266,7 +1295,9 @@ void MainWindow::OnGameModeChanged(bool inGameMode)
     // block signals on the switch to game actions before setting the checked state, as
     // setting the checked state triggers the action, which will re-enter this function
     // and result in an infinite loop
-    AZStd::vector<QAction*> actions = { m_actionManager->GetAction(ID_VIEW_SWITCHTOGAME), m_actionManager->GetAction(ID_VIEW_SWITCHTOGAME_FULLSCREEN) };
+    AZStd::vector<QAction*> actions = { m_actionManager->GetAction(ID_VIEW_SWITCHTOGAME_VIEWPORT),
+                                        m_actionManager->GetAction(ID_VIEW_SWITCHTOGAME_FULLSCREEN),
+                                        m_actionManager->GetAction(ID_VIEW_SWITCHTOGAME)};
     for (auto action : actions)
     {
         action->blockSignals(true);

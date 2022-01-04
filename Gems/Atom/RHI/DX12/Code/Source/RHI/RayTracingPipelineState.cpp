@@ -10,8 +10,6 @@
 #include <Atom/RHI.Reflect/DX12/ShaderStageFunction.h>
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace DX12

@@ -167,6 +167,7 @@ namespace AtomToolsFramework
 
     bool ConvertToExportFormat(
         const AZStd::string& exportPath,
+        [[maybe_unused]] const AZ::Name& propertyId,
         const AZ::RPI::MaterialTypeSourceData::PropertyDefinition& propertyDefinition,
         AZ::RPI::MaterialPropertyValue& propertyValue)
     {
@@ -175,7 +176,7 @@ namespace AtomToolsFramework
             const uint32_t index = propertyValue.GetValue<uint32_t>();
             if (index >= propertyDefinition.m_enumValues.size())
             {
-                AZ_Error("AtomToolsFramework", false, "Invalid value for material enum property: '%s'.", propertyDefinition.m_name.c_str());
+                AZ_Error("AtomToolsFramework", false, "Invalid value for material enum property: '%s'.", propertyId.GetCStr());
                 return false;
             }
 
@@ -186,18 +187,33 @@ namespace AtomToolsFramework
         // Image asset references must be converted from asset IDs to a relative source file path
         if (propertyDefinition.m_dataType == AZ::RPI::MaterialPropertyDataType::Image)
         {
+            AZStd::string imagePath;
+            AZ::Data::AssetId imageAssetId;
+
             if (propertyValue.Is<AZ::Data::Asset<AZ::RPI::ImageAsset>>())
             {
                 const auto& imageAsset = propertyValue.GetValue<AZ::Data::Asset<AZ::RPI::ImageAsset>>();
-                const auto& imagePath = AZ::RPI::AssetUtils::GetSourcePathByAssetId(imageAsset.GetId());
-                propertyValue = GetExteralReferencePath(exportPath, imagePath);
-                return true;
+                imageAssetId = imageAsset.GetId();
             }
 
             if (propertyValue.Is<AZ::Data::Instance<AZ::RPI::Image>>())
             {
                 const auto& image = propertyValue.GetValue<AZ::Data::Instance<AZ::RPI::Image>>();
-                const auto& imagePath = image ? AZ::RPI::AssetUtils::GetSourcePathByAssetId(image->GetAssetId()) : "";
+                if (image)
+                {
+                    imageAssetId = image->GetAssetId();
+                }
+            }
+            
+            imagePath = AZ::RPI::AssetUtils::GetSourcePathByAssetId(imageAssetId);
+
+            if (imageAssetId.IsValid() && imagePath.empty())
+            {
+                AZ_Error("AtomToolsFramework", false, "Image asset could not be found for property: '%s'.", propertyId.GetCStr());
+                return false;
+            }
+            else
+            {
                 propertyValue = GetExteralReferencePath(exportPath, imagePath);
                 return true;
             }
@@ -206,31 +222,15 @@ namespace AtomToolsFramework
         return true;
     }
 
-    AZStd::string GetExteralReferencePath(const AZStd::string& exportPath, const AZStd::string& referencePath, const uint32_t maxPathDepth)
+    AZStd::string GetExteralReferencePath(
+        const AZStd::string& exportPath, const AZStd::string& referencePath, const bool relativeToExportPath)
     {
         if (referencePath.empty())
         {
             return {};
         }
 
-        AZ::IO::BasicPath<AZStd::string> exportFolder(exportPath);
-        exportFolder.RemoveFilename();
-
-        const AZStd::string relativePath = AZ::IO::PathView(referencePath).LexicallyRelative(exportFolder).StringAsPosix();
-
-        // Count the difference in depth between the export file path and the referenced file path.
-        uint32_t parentFolderCount = 0;
-        AZStd::string::size_type pos = 0;
-        const AZStd::string parentFolderToken = "..";
-        while ((pos = relativePath.find(parentFolderToken, pos)) != AZStd::string::npos)
-        {
-            parentFolderCount++;
-            pos += parentFolderToken.length();
-        }
-
-        // If the difference in depth is too great then revert to using the asset folder relative path.
-        // We could change this to only use relative paths for references in subfolders.
-        if (parentFolderCount > maxPathDepth)
+        if (!relativeToExportPath)
         {
             AZStd::string watchFolder;
             AZ::Data::AssetInfo assetInfo;
@@ -244,7 +244,9 @@ namespace AtomToolsFramework
             }
         }
 
-        return relativePath;
+        AZ::IO::BasicPath<AZStd::string> exportFolder(exportPath);
+        exportFolder.RemoveFilename();
+        return AZ::IO::PathView(referencePath).LexicallyRelative(exportFolder).StringAsPosix();
     }
 
     const AtomToolsFramework::DynamicProperty* FindDynamicPropertyForInstanceDataNode(const AzToolsFramework::InstanceDataNode* pNode)

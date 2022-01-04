@@ -1,0 +1,58 @@
+{
+    "entries": [
+        {
+            "base": "ConstantGradientRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Constant Gradient"
+            },
+            "methods": [
+                {
+                    "base": "GetConstantValue",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetConstantValue"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetConstantValue is invoked"
+                    },
+                    "details": {
+                        "name": "GetConstantValue"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetConstantValue",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetConstantValue"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetConstantValue is invoked"
+                    },
+                    "details": {
+                        "name": "SetConstantValue"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

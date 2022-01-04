@@ -14,6 +14,7 @@
 #include <GemRepo/GemRepoInspector.h>
 #include <PythonBindingsInterface.h>
 #include <ProjectManagerDefs.h>
+#include <ProjectUtils.h>
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -75,7 +76,7 @@ namespace O3DE::ProjectManager
         // Select the first entry after everything got correctly sized
         QTimer::singleShot(200, [=]{
             QModelIndex firstModelIndex = m_gemRepoListView->model()->index(0,0);
-            m_gemRepoListView->selectionModel()->select(firstModelIndex, QItemSelectionModel::ClearAndSelect);
+            m_gemRepoListView->selectionModel()->setCurrentIndex(firstModelIndex, QItemSelectionModel::ClearAndSelect);
         });
     }
 
@@ -92,8 +93,8 @@ namespace O3DE::ProjectManager
                 return;
             }
 
-            bool addGemRepoResult = PythonBindingsInterface::Get()->AddGemRepo(repoUri);
-            if (addGemRepoResult)
+            auto addGemRepoResult = PythonBindingsInterface::Get()->AddGemRepo(repoUri);
+            if (addGemRepoResult.IsSuccess())
             {
                 Reinit();
                 emit OnRefresh();
@@ -101,8 +102,8 @@ namespace O3DE::ProjectManager
             else
             {
                 QString failureMessage = tr("Failed to add gem repo: %1.").arg(repoUri);
-                QMessageBox::critical(this, tr("Operation failed"), failureMessage);
-                AZ_Error("Project Manger", false, failureMessage.toUtf8());
+                ProjectUtils::DisplayDetailedError(failureMessage, addGemRepoResult, this);
+                AZ_Error("Project Manager", false, failureMessage.toUtf8());
             }
         }
     }

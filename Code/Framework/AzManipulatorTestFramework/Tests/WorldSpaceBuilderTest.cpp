@@ -75,9 +75,11 @@ namespace UnitTest
         void SetUpEditorFixtureImpl() override
         {
             m_directState =
-                AZStd::make_unique<State>(AZStd::make_unique<AzManipulatorTestFramework::DirectCallManipulatorViewportInteraction>());
+                AZStd::make_unique<State>(AZStd::make_unique<AzManipulatorTestFramework::DirectCallManipulatorViewportInteraction>(
+                    AZStd::make_shared<NullDebugDisplayRequests>()));
             m_busState =
-                AZStd::make_unique<State>(AZStd::make_unique<AzManipulatorTestFramework::IndirectCallManipulatorViewportInteraction>());
+                AZStd::make_unique<State>(AZStd::make_unique<AzManipulatorTestFramework::IndirectCallManipulatorViewportInteraction>(
+                    AZStd::make_shared<NullDebugDisplayRequests>()));
             m_cameraState =
                 AzFramework::CreateIdentityDefaultCamera(AZ::Vector3::CreateZero(), AzManipulatorTestFramework::DefaultViewportSize);
         }
@@ -140,8 +142,8 @@ namespace UnitTest
         // given a left mouse down ray in world space
         // consume the mouse move event
         state.m_actionDispatcher->CameraState(m_cameraState)
-            ->MouseLButtonDown()
             ->MousePosition(AzManipulatorTestFramework::GetCameraStateViewportCenter(m_cameraState))
+            ->MouseLButtonDown()
             ->ExpectTrue(state.m_linearManipulator->PerformingAction())
             ->ExpectManipulatorBeingInteracted()
             ->MouseLButtonUp()

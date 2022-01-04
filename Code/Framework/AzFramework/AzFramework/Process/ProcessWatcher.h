@@ -13,6 +13,7 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzFramework/Process/ProcessCommon_fwd.h>
+#include <AzCore/std/containers/variant.h>
 
 namespace AzFramework
 {
@@ -37,7 +38,7 @@ namespace AzFramework
              * On windows, the command line will be passed as-is to the shell (with quotes)
              * on UNIX/OSX, the command line will be converted as appropriate (quotes removed, but used to chop up parameters)
              */
-            AZStd::string m_commandlineParameters;
+            AZStd::variant<AZStd::string, AZStd::vector<AZStd::string>> m_commandlineParameters;
             
             /**
              * (optional) If you specify a working directory, the command will be executed with that directory as the current directory.
@@ -50,6 +51,8 @@ namespace AzFramework
 
             //Not Supported On Mac
             bool m_showWindow = true;
+
+            AZStd::string GetCommandLineParametersAsString() const;
         };
 
         static const AZ::u32 INFINITE_TIMEOUT = (AZ::u32) -1;

@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "base": "ReferenceGradientComponent",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "ReferenceGradientComponent"
+            }
+        }
+    ]
+}

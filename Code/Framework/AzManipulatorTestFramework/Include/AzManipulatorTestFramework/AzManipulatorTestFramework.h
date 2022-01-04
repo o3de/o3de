@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzFramework/Viewport/ViewportId.h>
 #include <AzToolsFramework/Manipulators/ManipulatorBus.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
@@ -25,29 +26,33 @@ namespace AzManipulatorTestFramework
     {
     public:
         virtual ~ViewportInteractionInterface() = default;
-        //! Return the camera state.
+        //! Returns the camera state.
         virtual AzFramework::CameraState GetCameraState() = 0;
-        //! Set the camera state.
+        //! Sets the camera state.
         virtual void SetCameraState(const AzFramework::CameraState& cameraState) = 0;
-        //! Retrieve the debug display.
+        //! Retrieves the debug display.
         virtual AzFramework::DebugDisplayRequests& GetDebugDisplay() = 0;
-        //! Set if grid snapping is enabled or not.
+        //! Sets if grid snapping is enabled or not.
         virtual void SetGridSnapping(bool enabled) = 0;
-        //! Set if angular snapping is enabled or not.
+        //! Sets if angular snapping is enabled or not.
         virtual void SetAngularSnapping(bool enabled) = 0;
-        //! Set the grid size.
+        //! Sets the grid size.
         virtual void SetGridSize(float size) = 0;
-        //! Set the angular step.
+        //! Sets the angular step.
         virtual void SetAngularStep(float step) = 0;
-        //! Get the viewport id.
-        virtual int GetViewportId() const = 0;
+        //! Gets the viewport id.
+        virtual AzFramework::ViewportId GetViewportId() const = 0;
         //! Updates the visibility state.
         //! Updates which entities are currently visible given the current camera state.
         virtual void UpdateVisibility() = 0;
-        //! Set if sticky select is enabled or not.
+        //! Sets if sticky select is enabled or not.
         virtual void SetStickySelect(bool enabled) = 0;
-        //! Get default Editor Camera Position.
+        //! Gets default Editor Camera Position.
         virtual AZ::Vector3 DefaultEditorCameraPosition() const = 0;
+        //! Sets if icons are visible in the viewport.
+        virtual void SetIconsVisible(bool visible) = 0;
+        //! Sets if helpers are visible in the viewport.
+        virtual void SetHelpersVisible(bool visible) = 0;
     };
 
     //! This interface is used to simulate the manipulator manager while the manipulators are under test.

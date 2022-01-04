@@ -138,6 +138,7 @@ namespace Terrain
 
     private:
         void ClampPosition(float x, float y, AZ::Vector2& outPosition, AZ::Vector2& normalizedDelta) const;
+        bool InWorldBounds(float x, float y) const;
 
         AZ::EntityId FindBestAreaEntityAtPosition(float x, float y, AZ::Aabb& bounds) const;
         void GetOrderedSurfaceWeights(

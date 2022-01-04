@@ -201,9 +201,9 @@ namespace Multiplayer
         AZStd::unique_ptr<IReplicationWindow> m_replicationWindow;
         AZStd::unique_ptr<IEntityDomain> m_remoteEntityDomain;
 
-        AZ::TimeMs m_entityActivationTimeSliceMs = AZ::TimeMs{ 0 };
-        AZ::TimeMs m_entityPendingRemovalMs = AZ::TimeMs{ 0 };
-        AZ::TimeMs m_frameTimeMs = AZ::TimeMs{ 0 };
+        AZ::TimeMs m_entityActivationTimeSliceMs = AZ::Time::ZeroTimeMs;
+        AZ::TimeMs m_entityPendingRemovalMs = AZ::Time::ZeroTimeMs;
+        AZ::TimeMs m_frameTimeMs = AZ::Time::ZeroTimeMs;
         HostId m_remoteHostId = InvalidHostId;
         uint32_t m_maxRemoteEntitiesPendingCreationCount = AZStd::numeric_limits<uint32_t>::max();
         uint32_t m_maxPayloadSize = 0;

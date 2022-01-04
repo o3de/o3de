@@ -9,7 +9,6 @@
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI/MemoryStatisticsBus.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/std/sort.h>
 
 namespace AZ
@@ -112,7 +111,7 @@ namespace AZ
 
         ResultCode Device::BeginFrame()
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             if (ValidateIsInitialized() && ValidateIsNotInFrame())
             {

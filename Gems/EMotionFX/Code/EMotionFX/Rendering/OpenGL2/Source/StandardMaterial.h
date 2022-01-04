@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __RENDERGL_STANDARD_MATERIAL_H
-#define __RENDERGL_STANDARD_MATERIAL_H
+#pragma once
 
 #include <AzCore/Math/Transform.h>
 #include <EMotionFX/Source/StandardMaterial.h>
@@ -54,6 +53,3 @@ namespace RenderGL
         Texture*                        m_normalMap;
     };
 } // namespace RenderGL
-
-
-#endif

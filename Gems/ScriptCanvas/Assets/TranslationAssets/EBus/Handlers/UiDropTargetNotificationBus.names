@@ -1,0 +1,63 @@
+{
+    "entries": [
+        {
+            "base": "UiDropTargetNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "UI Drop Target",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "base": "OnDropHoverStart",
+                    "details": {
+                        "name": "On Drop Hover Start",
+                        "tooltip": "Executes when the focus starts to be on the drop target during dragging"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Dragged EntityID",
+                                "tooltip": "The draggable element that is being dragged"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnDropHoverEnd",
+                    "details": {
+                        "name": "On Drop Hover End",
+                        "tooltip": "Executes when the focus stops being on the drop target during dragging"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Dragged EntityID",
+                                "tooltip": "The draggable element that is being dragged"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnDrop",
+                    "details": {
+                        "name": "On Drop",
+                        "tooltip": "Executes when a draggable element is dropped on the drop target. Implement the game logic of what should happen on drag and drop here"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Dropped EntityID",
+                                "tooltip": "The draggable element that was dropped"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

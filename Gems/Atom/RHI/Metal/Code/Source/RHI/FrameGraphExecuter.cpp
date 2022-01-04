@@ -7,7 +7,6 @@
  */
 
 #include <Atom/RHI/FrameGraph.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <RHI/Device.h>
 #include <RHI/FrameGraphExecuter.h>
 #include <RHI/FrameGraphExecuteGroupMerged.h>

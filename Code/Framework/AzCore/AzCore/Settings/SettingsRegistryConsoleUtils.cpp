@@ -9,6 +9,7 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ConsoleFunctor.h>
 #include <AzCore/IO/ByteContainerStream.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistryConsoleUtils.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
@@ -36,7 +37,7 @@ namespace AZ::SettingsRegistryConsoleUtils
                 combinedKeyValueCommand.c_str());
             AZ::Debug::Trace::Output("SettingsRegistry", setOutput.c_str());
         }
-    };
+    }
 
     static void ConsoleRemoveSettingsRegistryValue(SettingsRegistryInterface& settingsRegistry, const ConsoleCommandContainer& commandArgs)
     {
@@ -57,7 +58,7 @@ namespace AZ::SettingsRegistryConsoleUtils
                 AZ::Debug::Trace::Output("SettingsRegistry", removeOutput.c_str());
             }
         }
-    };
+    }
 
     static void ConsoleDumpSettingsRegistryValue(SettingsRegistryInterface& settingsRegistry, const ConsoleCommandContainer& commandArgs)
     {
@@ -88,13 +89,39 @@ namespace AZ::SettingsRegistryConsoleUtils
         }
 
         AZ::Debug::Trace::Output("SettingsRegistry", outputString.c_str());
-    };
+    }
 
     static void ConsoleDumpAllSettingsRegistryValues(SettingsRegistryInterface& settingsRegistry,
         [[maybe_unused]] const ConsoleCommandContainer& commandArgs)
     {
         ConsoleDumpSettingsRegistryValue(settingsRegistry, { "" });
-    };
+    }
+
+    static void ConsoleMergeFileToSettingsRegistry(SettingsRegistryInterface& settingsRegistry, const ConsoleCommandContainer& commandArgs)
+    {
+        if (commandArgs.empty())
+        {
+            AZ_Error("SettingsRegistryConsoleUtils", false, "Command %s requires a <file path> argument to locate json file to merge",
+                SettingsRegistryMergeFile);
+            return;
+        }
+
+        auto commandArgumentsIter = commandArgs.begin();
+        // Extract the JSON pointer path from the argument list
+        AZStd::string_view filePath{ *commandArgumentsIter++ };
+        AZ::SettingsRegistryInterface::FixedValueString jsonAnchorPath;
+        AZ::StringFunc::Join(jsonAnchorPath, commandArgumentsIter, commandArgs.end(), ' ');
+
+        const auto mergeFormat = AZ::IO::PathView(filePath).Extension() != ".setregpatch" ? AZ::SettingsRegistryInterface::Format::JsonMergePatch : AZ::SettingsRegistryInterface::Format::JsonPatch;
+        if (settingsRegistry.MergeSettingsFile(filePath, mergeFormat, jsonAnchorPath))
+        {
+            const auto mergeFileOutput = AZ::SettingsRegistryInterface::FixedValueString::format(
+                R"(Merged json file "%*.s" anchored to json path "%s" into the global settings registry)" "\n",
+                AZ_STRING_ARG(filePath), jsonAnchorPath.c_str());
+            AZ::Debug::Trace::Output("SettingsRegistry", mergeFileOutput.c_str());
+        }
+    }
+
 
     [[nodiscard]] ConsoleFunctorHandle RegisterAzConsoleCommands(SettingsRegistryInterface& registry, AZ::IConsole& azConsole)
     {
@@ -115,6 +142,11 @@ namespace AZ::SettingsRegistryConsoleUtils
         resultHandle.m_consoleFunctors.emplace_back(azConsole, SettingsRegistryDumpAll,
             R"(Dumps all values from the global settings registry)" "\n",
             ConsoleFunctorFlags::Null, AZ::TypeId::CreateNull(), registry, &ConsoleDumpAllSettingsRegistryValues);
+        resultHandle.m_consoleFunctors.emplace_back(azConsole, SettingsRegistryMergeFile,
+            R"(Merges File into the global settings registry)" "\n"
+            R"(@param file-path - path to JSON formatted file to merge)" "\n"
+            R"(@param anchor-path - JSON path to anchor merge operation. Defaults to "")" "\n",
+            ConsoleFunctorFlags::Null, AZ::TypeId::CreateNull(), registry, &ConsoleMergeFileToSettingsRegistry);
 
         return resultHandle;
     }

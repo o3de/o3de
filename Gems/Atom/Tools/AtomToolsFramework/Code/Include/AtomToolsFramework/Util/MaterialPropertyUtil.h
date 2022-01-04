@@ -49,17 +49,16 @@ namespace AtomToolsFramework
     //! @param propertyValue the value being converted before saving
     bool ConvertToExportFormat(
         const AZStd::string& exportPath,
+        [[maybe_unused]] const AZ::Name& propertyId,
         const AZ::RPI::MaterialTypeSourceData::PropertyDefinition& propertyDefinition,
         AZ::RPI::MaterialPropertyValue& propertyValue);
 
-    //! Generate a file path from the exported file to the external reference.
-    //! This function returns a relative path from the export file to the reference file.
-    //! If the relative path is too different or distant from the export path then we return the asset folder relative path.
+    //! Generate a file path that is relative to either the source asset root or the export path
     //! @param exportPath absolute path of the file being saved
     //! @param referencePath absolute path of a file that will be treated as an external reference
-    //! @param maxPathDepth the maximum relative depth or number of parent or child folders between the export path and the reference path
+    //! @param relativeToExportPath specifies if the path is relative to the source asset root or the export path
     AZStd::string GetExteralReferencePath(
-        const AZStd::string& exportPath, const AZStd::string& referencePath, const uint32_t maxPathDepth = 2);
+        const AZStd::string& exportPath, const AZStd::string& referencePath, const bool relativeToExportPath = false);
 
     //! Traverse up the instance data node hierarchy to find the containing dynamic property object 
     const AtomToolsFramework::DynamicProperty* FindDynamicPropertyForInstanceDataNode(const AzToolsFramework::InstanceDataNode* pNode);

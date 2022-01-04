@@ -151,7 +151,7 @@ def AtomEditorComponents_GlobalSkylightIBL_AddedToEntity():
         Report.result(Tests.is_visible, global_skylight_entity.is_visible() is True)
 
         # 8. Set the Diffuse Image asset on the Global Skylight (IBL) entity.
-        diffuse_image_path = os.path.join("LightingPresets", "greenwich_park_02_4k_iblskyboxcm.exr.streamingimage")
+        diffuse_image_path = os.path.join("LightingPresets", "default_iblskyboxcm.exr.streamingimage")
         diffuse_image_asset = Asset.find_asset_by_path(diffuse_image_path, False)
         global_skylight_component.set_component_property_value(
             AtomComponentProperties.global_skylight('Diffuse Image'), diffuse_image_asset.id)
@@ -161,7 +161,7 @@ def AtomEditorComponents_GlobalSkylightIBL_AddedToEntity():
                                           AtomComponentProperties.global_skylight('Diffuse Image')))
 
         # 9. Set the Specular Image asset on the Global Light (IBL) entity.
-        specular_image_path = os.path.join("LightingPresets", "greenwich_park_02_4k_iblskyboxcm.exr.streamingimage")
+        specular_image_path = os.path.join("LightingPresets", "default_iblskyboxcm.exr.streamingimage")
         specular_image_asset = Asset.find_asset_by_path(specular_image_path, False)
         global_skylight_component.set_component_property_value(
             AtomComponentProperties.global_skylight('Specular Image'), specular_image_asset.id)

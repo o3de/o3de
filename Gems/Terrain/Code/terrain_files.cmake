@@ -8,6 +8,7 @@
 
 set(FILES
     Include/Terrain/Ebuses/TerrainAreaSurfaceRequestBus.h
+    Include/Terrain/TerrainDataConstants.h
     Source/Components/TerrainHeightGradientListComponent.cpp
     Source/Components/TerrainHeightGradientListComponent.h
     Source/Components/TerrainLayerSpawnerComponent.cpp
@@ -33,6 +34,7 @@ set(FILES
     Source/TerrainRenderer/TerrainFeatureProcessor.cpp
     Source/TerrainRenderer/TerrainFeatureProcessor.h
     Source/TerrainRenderer/TerrainAreaMaterialRequestBus.h
+    Source/TerrainRenderer/TerrainMacroMaterialBus.cpp
     Source/TerrainRenderer/TerrainMacroMaterialBus.h
     Source/TerrainSystem/TerrainSystem.cpp
     Source/TerrainSystem/TerrainSystem.h

@@ -12,34 +12,48 @@ import ly_test_tools.environment.file_system as file_system
 from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorSharedTest, EditorParallelTest, EditorTestSuite
 
 
-@pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(EditorTestSuite):
+    class test_AltitudeFilter_ComponentAndOverrides_InstancesPlantAtSpecifiedAltitude(EditorParallelTest):
+        from .EditorScripts import AltitudeFilter_ComponentAndOverrides_InstancesPlantAtSpecifiedAltitude as test_module
+    
+    class test_AltitudeFilter_FilterStageToggle(EditorParallelTest):
+        from .EditorScripts import AltitudeFilter_FilterStageToggle as test_module
 
+    class test_AltitudeFilter_ShapeSample_InstancesPlantAtSpecifiedAltitude(EditorParallelTest):
+        from .EditorScripts import AltitudeFilter_ShapeSample_InstancesPlantAtSpecifiedAltitude as test_module
+
+
+@pytest.mark.SUITE_main
+@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
+@pytest.mark.parametrize("project", ["AutomatedTesting"])
+class TestAutomation_PrefabNotEnabled(EditorTestSuite):
+
+    enable_prefab_system = False
+
+    # Helpers for test asset cleanup
+    def cleanup_test_level(self, workspace):
+        file_system.delete([os.path.join(workspace.paths.engine_root(), "AutomatedTesting", "Levels", "tmp_level")],
+                           True, True)
+
+    def cleanup_test_slices(self, workspace):
+        file_system.delete([os.path.join(workspace.paths.engine_root(), "AutomatedTesting", "slices",
+                                         "TestSlice_1.slice")], True, True)
+        file_system.delete([os.path.join(workspace.paths.engine_root(), "AutomatedTesting", "slices",
+                                         "TestSlice_2.slice")], True, True)
+    
     class test_DynamicSliceInstanceSpawner_DynamicSliceSpawnerWorks(EditorParallelTest):
         from .EditorScripts import DynamicSliceInstanceSpawner_DynamicSliceSpawnerWorks as test_module
 
     class test_EmptyInstanceSpawner_EmptySpawnerWorks(EditorParallelTest):
         from .EditorScripts import EmptyInstanceSpawner_EmptySpawnerWorks as test_module
 
-    class test_AltitudeFilter_ComponentAndOverrides_InstancesPlantAtSpecifiedAltitude(EditorParallelTest):
-        from .EditorScripts import AltitudeFilter_ComponentAndOverrides_InstancesPlantAtSpecifiedAltitude as test_module
-
-    class test_AltitudeFilter_ShapeSample_InstancesPlantAtSpecifiedAltitude(EditorParallelTest):
-        from .EditorScripts import AltitudeFilter_ShapeSample_InstancesPlantAtSpecifiedAltitude as test_module
-
-    class test_AltitudeFilter_FilterStageToggle(EditorParallelTest):
-        from .EditorScripts import AltitudeFilter_FilterStageToggle as test_module
-
     class test_SpawnerSlices_SliceCreationAndVisibilityToggleWorks(EditorSingleTest):
         # Custom teardown to remove slice asset created during test
         def teardown(self, request, workspace, editor, editor_test_results, launcher_platform):
-            file_system.delete([os.path.join(workspace.paths.engine_root(), "AutomatedTesting", "slices",
-                                             "TestSlice_1.slice")], True, True)
-            file_system.delete([os.path.join(workspace.paths.engine_root(), "AutomatedTesting", "slices",
-                                             "TestSlice_2.slice")], True, True)
+            TestAutomation_PrefabNotEnabled.cleanup_test_slices(self, workspace)
         from .EditorScripts import SpawnerSlices_SliceCreationAndVisibilityToggleWorks as test_module
 
     class test_AssetListCombiner_CombinedDescriptorsExpressInConfiguredArea(EditorParallelTest):
@@ -150,23 +164,29 @@ class TestAutomation(EditorTestSuite):
     class test_DynamicSliceInstanceSpawner_Embedded_E2E_Editor(EditorSingleTest):
         from .EditorScripts import DynamicSliceInstanceSpawner_Embedded_E2E as test_module
 
-        # Custom teardown to remove test level created during test
+        # Custom setup/teardown to remove test level created during test
+        def setup(self, request, workspace, editor, editor_test_results, launcher_platform):
+            TestAutomation_PrefabNotEnabled.cleanup_test_level(self, workspace)
+
         def teardown(self, request, workspace, editor, editor_test_results, launcher_platform):
-            file_system.delete([os.path.join(workspace.paths.engine_root(), "AutomatedTesting", "Levels", "tmp_level")],
-                               True, True)
+            TestAutomation_PrefabNotEnabled.cleanup_test_level(self, workspace)
 
     class test_DynamicSliceInstanceSpawner_External_E2E_Editor(EditorSingleTest):
         from .EditorScripts import DynamicSliceInstanceSpawner_External_E2E as test_module
 
-        # Custom teardown to remove test level created during test
+        # Custom setup/teardown to remove test level created during test
+        def setup(self, request, workspace, editor, editor_test_results, launcher_platform):
+            TestAutomation_PrefabNotEnabled.cleanup_test_level(self, workspace)
+
         def teardown(self, request, workspace, editor, editor_test_results, launcher_platform):
-            file_system.delete([os.path.join(workspace.paths.engine_root(), "AutomatedTesting", "Levels", "tmp_level")],
-                               True, True)
-        
+            TestAutomation_PrefabNotEnabled.cleanup_test_level(self, workspace)
+
     class test_LayerBlender_E2E_Editor(EditorSingleTest):
         from .EditorScripts import LayerBlender_E2E_Editor as test_module
 
-        # Custom teardown to remove test level created during test
+        # Custom setup/teardown to remove test level created during test
+        def setup(self, request, workspace, editor, editor_test_results, launcher_platform):
+            TestAutomation_PrefabNotEnabled.cleanup_test_level(self, workspace)
+
         def teardown(self, request, workspace, editor, editor_test_results, launcher_platform):
-            file_system.delete([os.path.join(workspace.paths.engine_root(), "AutomatedTesting", "Levels", "tmp_level")],
-                               True, True)
+            TestAutomation_PrefabNotEnabled.cleanup_test_level(self, workspace)

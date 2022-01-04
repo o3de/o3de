@@ -55,13 +55,13 @@ namespace EMStudio
 
     void AnimViewportWidget::Reinit(bool resetCamera)
     {
+        m_renderer->Reinit();
+        m_renderer->UpdateActorRenderFlag(m_renderFlags);
+
         if (resetCamera)
         {
             ResetCamera();
         }
-
-        m_renderer->Reinit();
-        m_renderer->UpdateActorRenderFlag(m_renderFlags);
     }
 
     EMotionFX::ActorRenderFlagBitset AnimViewportWidget::GetRenderFlags() const
@@ -147,29 +147,56 @@ namespace EMStudio
         switch (mode)
         {
         case CameraViewMode::FRONT:
-            cameraPosition.Set(0.0f, CameraDistance, targetPosition.GetZ());
+            cameraPosition.Set(targetPosition.GetX(), targetPosition.GetY() + CameraDistance, targetPosition.GetZ());
             break;
         case CameraViewMode::BACK:
-            cameraPosition.Set(0.0f, -CameraDistance, targetPosition.GetZ());
+            cameraPosition.Set(targetPosition.GetX(), targetPosition.GetY() - CameraDistance, targetPosition.GetZ());
             break;
         case CameraViewMode::TOP:
-            cameraPosition.Set(0.0f, 0.0f, CameraDistance + targetPosition.GetZ());
+            cameraPosition.Set(targetPosition.GetX(), targetPosition.GetY(), CameraDistance + targetPosition.GetZ());
             break;
         case CameraViewMode::BOTTOM:
-            cameraPosition.Set(0.0f, 0.0f, -CameraDistance + targetPosition.GetZ());
+            cameraPosition.Set(targetPosition.GetX(), targetPosition.GetY(), -CameraDistance + targetPosition.GetZ());
             break;
         case CameraViewMode::LEFT:
-            cameraPosition.Set(-CameraDistance, 0.0f, targetPosition.GetZ());
+            cameraPosition.Set(targetPosition.GetX() - CameraDistance, targetPosition.GetY(), targetPosition.GetZ());
             break;
         case CameraViewMode::RIGHT:
-            cameraPosition.Set(CameraDistance, 0.0f, targetPosition.GetZ());
+            cameraPosition.Set(targetPosition.GetX() + CameraDistance, targetPosition.GetY(), targetPosition.GetZ());
             break;
         case CameraViewMode::DEFAULT:
             // The default view mode is looking from the top left of the character.
-            cameraPosition.Set(-CameraDistance, CameraDistance, CameraDistance + targetPosition.GetZ());
+            cameraPosition.Set(
+                targetPosition.GetX() - CameraDistance, targetPosition.GetY() + CameraDistance, targetPosition.GetZ() + CameraDistance);
             break;
         }
+
         GetViewportContext()->SetCameraTransform(AZ::Transform::CreateLookAt(cameraPosition, targetPosition));
+
+        AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+            GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetCameraOffset,
+            AZ::Vector3::CreateAxisY(-CameraDistance));
+    }
+
+    void AnimViewportWidget::SetFollowCharacter(bool follow)
+    {
+        if (follow)
+        {
+            AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetCameraOffset,
+                AZ::Vector3::CreateAxisY(-CameraDistance));
+        }
+        else
+        {
+            AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetCameraOffset,
+                AZ::Vector3::CreateZero());
+            AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetCameraPivotAttached,
+                GetViewportContext()->GetCameraTransform().GetTranslation());
+        }
+
+        m_followCharacter = follow;
     }
 
     void AnimViewportWidget::OnTick(float deltaTime, AZ::ScriptTimePoint time)
@@ -177,13 +204,14 @@ namespace EMStudio
         RenderViewportWidget::OnTick(deltaTime, time);
         CalculateCameraProjection();
         RenderCustomPluginData();
+        FollowCharacter();
     }
 
     void AnimViewportWidget::CalculateCameraProjection()
     {
         auto viewportContext = GetViewportContext();
         auto windowSize = viewportContext->GetViewportSize();
-        // Prevent devided by zero
+        // Prevent division by zero
         const float height = AZStd::max<float>(aznumeric_cast<float>(windowSize.m_height), 1.0f);
         const float aspectRatio = aznumeric_cast<float>(windowSize.m_width) / height;
 
@@ -202,6 +230,16 @@ namespace EMStudio
         {
             EMStudioPlugin* plugin = GetPluginManager()->GetActivePlugin(i);
             plugin->Render(m_renderFlags);
+        }
+    }
+
+    void AnimViewportWidget::FollowCharacter()
+    {
+        if (m_followCharacter)
+        {
+            AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                GetViewportId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetCameraPivotAttached,
+                m_renderer->GetCharacterCenter());
         }
     }
 

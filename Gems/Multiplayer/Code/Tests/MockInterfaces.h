@@ -103,13 +103,6 @@ namespace UnitTest
         MOCK_METHOD3(OnDisconnect, void(IConnection*, DisconnectReason, TerminationEndpoint));
     };
 
-    class MockTime : public AZ::ITime
-    {
-    public:
-        MOCK_CONST_METHOD0(GetElapsedTimeUs, AZ::TimeUs());
-        MOCK_CONST_METHOD0(GetElapsedTimeMs, AZ::TimeMs());
-    };
-
     class MockNetworkTime : public Multiplayer::INetworkTime
     {
     public:
@@ -149,10 +142,8 @@ namespace UnitTest
         MOCK_METHOD0(GetSerializeContext, AZ::SerializeContext* ());
         MOCK_METHOD0(GetBehaviorContext, AZ::BehaviorContext* ());
         MOCK_METHOD0(GetJsonRegistrationContext, AZ::JsonRegistrationContext* ());
-        MOCK_CONST_METHOD0(GetAppRoot, const char* ());
         MOCK_CONST_METHOD0(GetEngineRoot, const char* ());
         MOCK_CONST_METHOD0(GetExecutableFolder, const char* ());
-        MOCK_METHOD0(GetDrillerManager, AZ::Debug::DrillerManager* ());
         MOCK_METHOD1(ResolveModulePath, void(AZ::OSString&));
         MOCK_METHOD0(GetAzCommandLine, AZ::CommandLine* ());
         MOCK_CONST_METHOD1(QueryApplicationType, void(AZ::ApplicationTypeQuery&));

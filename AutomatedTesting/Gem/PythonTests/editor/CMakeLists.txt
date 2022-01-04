@@ -7,60 +7,6 @@
 #
 
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_FOUNDATION_TEST_SUPPORTED)
-    ly_add_pytest(
-        NAME AutomatedTesting::EditorTests_Main
-        TEST_SUITE main
-        TEST_SERIAL
-        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Main.py
-        PYTEST_MARKS "not REQUIRES_gpu"
-        RUNTIME_DEPENDENCIES
-            Legacy::Editor
-            AZ::AssetProcessor
-            AutomatedTesting.Assets
-        COMPONENT
-            Editor
-    )
-
-    ly_add_pytest(
-        NAME AutomatedTesting::EditorTests_Main_GPU
-        TEST_SUITE main
-        TEST_SERIAL
-        TEST_REQUIRES gpu
-        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Main.py
-        PYTEST_MARKS "REQUIRES_gpu"
-        RUNTIME_DEPENDENCIES
-            Legacy::Editor
-            AZ::AssetProcessor
-            AutomatedTesting.Assets
-        COMPONENT
-            Editor
-    )
-
-    ly_add_pytest(
-        NAME AutomatedTesting::EditorTests_Periodic
-        TEST_SUITE periodic
-        TEST_SERIAL
-        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Periodic.py
-        RUNTIME_DEPENDENCIES
-            Legacy::Editor
-            AZ::AssetProcessor
-            AutomatedTesting.Assets
-        COMPONENT
-            Editor
-    )
-
-    ly_add_pytest(
-        NAME AutomatedTesting::EditorTests_Sandbox
-        TEST_SUITE sandbox
-        TEST_SERIAL
-        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Sandbox.py
-        RUNTIME_DEPENDENCIES
-            Legacy::Editor
-            AZ::AssetProcessor
-            AutomatedTesting.Assets
-        COMPONENT
-            Editor
-    )
 
     ly_add_pytest(
         NAME AutomatedTesting::EditorTests_Main_Optimized

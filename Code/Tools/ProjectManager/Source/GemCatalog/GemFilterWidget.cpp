@@ -7,6 +7,9 @@
  */
 
 #include <GemCatalog/GemFilterWidget.h>
+
+#include <AzCore/Math/MathUtils.h>
+
 #include <QButtonGroup>
 #include <QCheckBox>
 #include <QLabel>
@@ -221,7 +224,6 @@ namespace O3DE::ProjectManager
         ResetGemStatusFilter();
         ResetGemOriginFilter();
         ResetTypeFilter();
-        ResetPlatformFilter();
         ResetFeatureFilter();
     }
 

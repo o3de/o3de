@@ -7,6 +7,8 @@
 #
 
 set(FILES
+
+# EditorAutomation
     Editor/Include/ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationAction.h
     Editor/Include/ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationModelIds.h
     Editor/Include/ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationTest.h
@@ -27,6 +29,8 @@ set(FILES
     Editor/Include/ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationStates/GraphStates.h
     Editor/Include/ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationStates/UtilityStates.h
     Editor/Include/ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationStates/VariableStates.h
+
+# Includes    
     Editor/Include/ScriptCanvasDeveloperEditor/Developer.h
     Editor/Include/ScriptCanvasDeveloperEditor/DeveloperUtils.h
     Editor/Include/ScriptCanvasDeveloperEditor/ScriptCanvasDeveloperEditorComponent.h
@@ -37,6 +41,8 @@ set(FILES
     Editor/Include/ScriptCanvasDeveloperEditor/WrapperMock.h
     Editor/Include/ScriptCanvasDeveloperEditor/AutomationActions/DynamicSlotFullCreation.h
     Editor/Include/ScriptCanvasDeveloperEditor/AutomationActions/VariableListFullCreation.h
+
+# Source
     Editor/Source/Developer.cpp
     Editor/Source/DeveloperUtils.cpp
     Editor/Source/EditorAutomationTestDialog.h
@@ -49,9 +55,13 @@ set(FILES
     Editor/Source/WrapperMock.cpp
     Editor/Source/XMLDoc.cpp
     Editor/Source/XMLDoc.h
+
+# AutomationActions
     Editor/Source/AutomationActions/DynamicSlotFullCreation.cpp
     Editor/Source/AutomationActions/NodePaletteFullCreation.cpp
     Editor/Source/AutomationActions/VariableListFullCreation.cpp
+
+# EditorAutomation
     Editor/Source/EditorAutomation/EditorAutomationTest.cpp
     Editor/Source/EditorAutomation/EditorAutomationActions/ScriptCanvasActions/ConnectionActions.cpp
     Editor/Source/EditorAutomation/EditorAutomationActions/ScriptCanvasActions/CreateElementsActions.cpp
@@ -70,6 +80,8 @@ set(FILES
     Editor/Source/EditorAutomation/EditorAutomationStates/GraphStates.cpp
     Editor/Source/EditorAutomation/EditorAutomationStates/UtilityStates.cpp
     Editor/Source/EditorAutomation/EditorAutomationStates/VariableStates.cpp
+
+# EditorAutomationTests
     Editor/Source/EditorAutomationTests/EditorAutomationTests.h
     Editor/Source/EditorAutomationTests/GraphCreationTests.h
     Editor/Source/EditorAutomationTests/GraphCreationTests.cpp

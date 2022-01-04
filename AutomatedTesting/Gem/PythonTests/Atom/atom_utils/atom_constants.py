@@ -19,6 +19,20 @@ LIGHT_TYPES = {
 }
 
 
+# Attenuation Radius Mode options for the Light component.
+ATTENUATION_RADIUS_MODE = {
+    'automatic': 1,
+    'explicit': 0,
+}
+
+# Qualiity Level settings for Diffuse Global Illumination level component
+GLOBAL_ILLUMINATION_QUALITY = {
+    'Low': 0,
+    'Medium': 1,
+    'High': 2,
+}
+
+
 class AtomComponentProperties:
     """
     Holds Atom component related constants
@@ -57,11 +71,13 @@ class AtomComponentProperties:
     def camera(property: str = 'name') -> str:
         """
         Camera component properties.
+          - 'Field of view': Sets the value for the camera's FOV (Field of View) in degrees, i.e. 60.0
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Camera',
+            'Field of view': 'Controller|Configuration|Field of view'
         }
         return properties[property]
 
@@ -115,6 +131,21 @@ class AtomComponentProperties:
         return properties[property]
 
     @staticmethod
+    def diffuse_global_illumination(property: str = 'name') -> str:
+        """
+        Diffuse Global Illumination level component properties.
+        Controls global settings for Diffuse Probe Grid components.
+          - 'Quality Level' from atom_constants.py GLOBAL_ILLUMINATION_QUALITY
+        :param property: From the last element of the property tree path. Default 'name' for component name string.
+        :return: Full property path OR component name if no property specified.
+        """
+        properties = {
+            'name': 'Diffuse Global Illumination',
+            'Quality Level': 'Controller|Configuration|Quality Level'
+        }
+        return properties[property]
+
+    @staticmethod
     def diffuse_probe_grid(property: str = 'name') -> str:
         """
         Diffuse Probe Grid component properties. Requires one of 'shapes'.
@@ -146,12 +177,17 @@ class AtomComponentProperties:
     @staticmethod
     def display_mapper(property: str = 'name') -> str:
         """
-        Display Mapper component properties.
+        Display Mapper level component properties.
+          - 'Enable LDR color grading LUT' toggles the use of LDR color grading LUT
+          - 'LDR color Grading LUT' is the Low Definition Range (LDR) color grading for Look-up Textures (LUT) which is
+            an Asset.id value corresponding to a lighting asset file.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Display Mapper',
+            'Enable LDR color grading LUT': 'Controller|Configuration|Enable LDR color grading LUT',
+            'LDR color Grading LUT': 'Controller|Configuration|LDR color Grading LUT',
         }
         return properties[property]
 
@@ -202,11 +238,13 @@ class AtomComponentProperties:
     def grid(property: str = 'name') -> str:
         """
         Grid component properties.
+          - 'Secondary Grid Spacing': The spacing value for the secondary grid, i.e. 1.0
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Grid',
+            'Secondary Grid Spacing': 'Controller|Configuration|Secondary Grid Spacing',
         }
         return properties[property]
 
@@ -231,11 +269,13 @@ class AtomComponentProperties:
     def hdri_skybox(property: str = 'name') -> str:
         """
         HDRi Skybox component properties.
+          - 'Cubemap Texture': Asset.id for the cubemap texture to set.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'HDRi Skybox',
+            'Cubemap Texture': 'Controller|Configuration|Cubemap Texture',
         }
         return properties[property]
 
@@ -243,13 +283,27 @@ class AtomComponentProperties:
     def light(property: str = 'name') -> str:
         """
         Light component properties.
+          - 'Attenuation Radius Mode' controls whether the attenuation radius is calculated automatically or explicitly.
+          - 'Color' the RGB value to set for the color of the light.
+          - 'Enable shadow' toggle for enabling shadows for the light.
+          - 'Enable shutters' toggle for enabling shutters for the light.
+          - 'Inner angle' inner angle value for the shutters (in degrees)
+          - 'Intensity' the intensity of the light in the set photometric unit (float with no ceiling).
           - 'Light type' from atom_constants.py LIGHT_TYPES
+          - 'Outer angle' outer angle value for the shutters (in degrees)
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Light',
+            'Attenuation Radius Mode': 'Controller|Configuration|Attenuation radius|Mode',
+            'Color': 'Controller|Configuration|Color',
+            'Enable shadow': 'Controller|Configuration|Shadows|Enable shadow',
+            'Enable shutters': 'Controller|Configuration|Shutters|Enable shutters',
+            'Inner angle': 'Controller|Configuration|Shutters|Inner angle',
+            'Intensity': 'Controller|Configuration|Intensity',
             'Light type': 'Controller|Configuration|Light type',
+            'Outer angle': 'Controller|Configuration|Shutters|Outer angle',
         }
         return properties[property]
 
@@ -259,12 +313,16 @@ class AtomComponentProperties:
         Look Modification component properties. Requires PostFX Layer component.
           - 'requires' a list of component names as strings required by this component.
             Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
+          - 'Enable look modification' Toggle active state of the component True/False
+          - 'Color Grading LUT' Asset.id for the LUT used for affecting level look.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Look Modification',
             'requires': [AtomComponentProperties.postfx_layer()],
+            'Enable look modification': 'Controller|Configuration|Enable look modification',
+            'Color Grading LUT': 'Controller|Configuration|Color Grading LUT',
         }
         return properties[property]
 
@@ -274,12 +332,14 @@ class AtomComponentProperties:
         Material component properties. Requires one of Actor OR Mesh component.
           - 'requires' a list of component names as strings required by this component.
             Only one of these is required at a time for this component.\n
+          - 'Material Asset': the material Asset.id of the material.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Material',
             'requires': [AtomComponentProperties.actor(), AtomComponentProperties.mesh()],
+            'Material Asset': 'Default Material|Material Asset',
         }
         return properties[property]
 
@@ -378,7 +438,7 @@ class AtomComponentProperties:
             'name': 'PostFX Shape Weight Modifier',
             'requires': [AtomComponentProperties.postfx_layer()],
             'shapes': ['Axis Aligned Box Shape', 'Box Shape', 'Capsule Shape', 'Compound Shape', 'Cylinder Shape',
-                       'Disk Shape', 'Polygon Prism Shape', 'Quad Shape', 'Sphere Shape', 'Vegetation Reference Shape'],
+                       'Disk Shape', 'Polygon Prism Shape', 'Quad Shape', 'Sphere Shape', 'Shape Reference'],
         }
         return properties[property]
 

@@ -37,11 +37,6 @@ namespace AZ
         class ComponentFactoryInterface;
     }
 
-    namespace Debug
-    {
-        class DrillerManager;
-    }
-
     struct ApplicationTypeQuery
     {
         bool IsEditor() const;
@@ -174,10 +169,6 @@ namespace AZ
         //! @return The Json Registration context, if there is one. JsonRegistrationContext is a class that contains
         //! the serializers used by the best-effort json serialization.
         virtual class JsonRegistrationContext* GetJsonRegistrationContext() = 0;
-
-        //! Gets the name of the working root folder that was registered with the app.
-        //! @return a pointer to the name of the app's root folder, if a root folder was registered.
-        virtual const char* GetAppRoot() const = 0;
 
         //! Gets the path of the working engine folder that the app is a part of.
         //! @return a pointer to the engine path.

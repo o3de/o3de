@@ -1,0 +1,48 @@
+{
+    "entries": [
+        {
+            "base": "{A10AD4C7-B633-4A75-8210-1353A87441E4}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Subtract",
+                "category": "Math/Number/Deprecated",
+                "tooltip": "Subtract"
+            },
+            "slots": [
+                {
+                    "base": "DataOutput_Result_0",
+                    "details": {
+                        "name": "Result"
+                    }
+                },
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In",
+                        "tooltip": "Signal to perform the evaluation when desired."
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out",
+                        "tooltip": "Signaled after the arithmetic operation is done."
+                    }
+                },
+                {
+                    "base": "DataInput_Value A_0",
+                    "details": {
+                        "name": "Value A"
+                    }
+                },
+                {
+                    "base": "DataInput_Value B_1",
+                    "details": {
+                        "name": "Value B"
+                    }
+                }
+            ]
+        }
+    ]
+}

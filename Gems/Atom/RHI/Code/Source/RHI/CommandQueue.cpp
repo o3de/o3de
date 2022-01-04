@@ -71,6 +71,7 @@ namespace AZ
             {
                 m_isQuitting = true;
                 m_workQueueCondition.notify_all();
+                m_flushCommandsCondition.notify_all();
                 if (m_thread.joinable())
                 {
                    m_thread.join();
@@ -102,9 +103,10 @@ namespace AZ
         void CommandQueue::FlushCommands()
         {
             AZ_PROFILE_SCOPE(RHI, "CommandQueue: FlushCommands");
-            while (!m_isWorkQueueEmpty && !m_isQuitting)
+            AZStd::unique_lock<AZStd::mutex> lock(m_flushCommandsMutex);
+            if (!m_isWorkQueueEmpty && !m_isQuitting)
             {
-                AZStd::this_thread::yield();
+                m_flushCommandsCondition.wait(lock, [this]() { return m_isWorkQueueEmpty.load() || m_isQuitting.load(); });
             }
         }
         
@@ -119,7 +121,11 @@ namespace AZ
                     
                     if (m_workQueue.empty())
                     {
-                        m_isWorkQueueEmpty = true;
+                        {
+                            AZStd::unique_lock<AZStd::mutex> flushCommandsLock(m_flushCommandsMutex);
+                            m_isWorkQueueEmpty = true;
+                            m_flushCommandsCondition.notify_all();
+                        }
                         m_workQueueCondition.wait(lock, [this]() { return !m_workQueue.empty() || m_isQuitting; });
                     }
                     

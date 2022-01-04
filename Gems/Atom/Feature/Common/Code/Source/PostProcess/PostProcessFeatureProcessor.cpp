@@ -15,8 +15,6 @@
 // Using ebus as a temporary workaround
 #include <AzFramework/Components/CameraBus.h>
 
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace Render
@@ -37,12 +35,27 @@ namespace AZ
             m_currentTime = AZStd::chrono::system_clock::now();
         }
 
+        void PostProcessFeatureProcessor::Deactivate()
+        {
+            m_viewAliasMap.clear();
+        }
+
         void PostProcessFeatureProcessor::UpdateTime()
         {
             AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
             AZStd::chrono::duration<float> deltaTime = now - m_currentTime;
             m_currentTime = now;
             m_deltaTime = deltaTime.count();
+        }
+
+        void PostProcessFeatureProcessor::SetViewAlias(const AZ::RPI::ViewPtr sourceView, const AZ::RPI::ViewPtr targetView)
+        {
+            m_viewAliasMap[sourceView.get()] = targetView.get();
+        }
+
+        void PostProcessFeatureProcessor::RemoveViewAlias(const AZ::RPI::ViewPtr sourceView)
+        {
+            m_viewAliasMap.erase(sourceView.get());
         }
 
         void PostProcessFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
@@ -200,8 +213,12 @@ namespace AZ
 
         AZ::Render::PostProcessSettings* PostProcessFeatureProcessor::GetLevelSettingsFromView(AZ::RPI::ViewPtr view)
         {
+            // check for view aliases first
+            auto viewAliasiterator = m_viewAliasMap.find(view.get());
+            
+            // Use the view alias if it exists
+            auto settingsIterator = m_blendedPerViewSettings.find(viewAliasiterator != m_viewAliasMap.end() ? viewAliasiterator->second : view.get());
             // If no settings for the view is found, the global settings is returned.
-            auto settingsIterator = m_blendedPerViewSettings.find(view.get());
             return settingsIterator != m_blendedPerViewSettings.end()
                 ? &settingsIterator->second
                 : m_globalAggregateLevelSettings.get();

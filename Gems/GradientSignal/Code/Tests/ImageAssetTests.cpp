@@ -111,7 +111,10 @@ namespace
         constexpr auto numChannels = 1;
         constexpr auto bytesPerPixel = numChannels * sizeof(AZ::u8);
         constexpr auto outputSize = imageDimensions * imageDimensions;
-        constexpr auto scaling = 25;
+        // Adjust the test scale so that none of the input data overflows the cast to AZ::u8. 
+        // The overflow behavior when casting from float to uint8 is undefined so we want to 
+        // avoid that consistently across all platforms
+        constexpr auto scaling = 255.0f / aznumeric_cast<float>(imageDimensions * imageDimensions);
 
         auto inputData = Detail::GenerateInput<AZ::u8, imageDimensions, numChannels>(scaling);
 

@@ -8,17 +8,58 @@
 
 import os
 import sys
+from pathlib import Path
 
+import azlmbr.areasystem as areasystem
 import azlmbr.asset as asset
 import azlmbr.bus as bus
 import azlmbr.components as components
 import azlmbr.math as math
-import azlmbr.vegetation as vegetation
-import azlmbr.areasystem as areasystem
 import azlmbr.paths
+import azlmbr.prefab as prefab
+import azlmbr.vegetation as vegetation
 
 sys.path.append(os.path.join(azlmbr.paths.projectroot, 'Gem', 'PythonTests'))
 import editor_python_test_tools.hydra_editor_utils as hydra
+from editor_python_test_tools.editor_entity_utils import EditorEntity
+from editor_python_test_tools.prefab_utils import Prefab
+
+
+def create_temp_mesh_prefab(mesh_asset_path, prefab_filename):
+    # Create initial entity
+    root = EditorEntity.create_editor_entity(name=prefab_filename)
+    assert root.exists(), "Failed to create entity"
+    # Add mesh component
+    mesh_component = root.add_component("Mesh")
+    assert root.has_component("Mesh") and mesh_component.is_enabled(), "Failed to add/activate Mesh component"
+    # Assign the specified mesh asset
+    mesh_asset = asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", mesh_asset_path, math.Uuid(), False)
+    mesh_component.set_component_property_value("Controller|Configuration|Mesh Asset", mesh_asset)
+    assert mesh_component.get_component_property_value("Controller|Configuration|Mesh Asset") == mesh_asset, \
+        "Failed to set Mesh asset"
+    # Create and return the temporary/in-memory prefab
+    temp_prefab = Prefab.create_prefab([root], prefab_filename)
+    return temp_prefab
+
+
+def create_temp_physx_mesh_collider(physx_mesh_id, prefab_filename):
+    # Create initial entity
+    root = EditorEntity.create_editor_entity(name=prefab_filename)
+    assert root.exists(), "Failed to create entity"
+    # Add PhysX Collider component
+    collider_component = root.add_component("PhysX Collider")
+    assert root.has_component("PhysX Collider") and collider_component.is_enabled(), \
+        "Failed to add/activate PhysX Collider component"
+    # Set the Collider's Shape Configuration field to PhysicsAsset, and assign the specified PhysX Mesh asset
+    collider_component.set_component_property_value("Shape Configuration|Shape", 7)
+    assert collider_component.get_component_property_value("Shape Configuration|Shape") == 7, \
+        "Failed to set Collider Shape to PhysicsAsset"
+    collider_component.set_component_property_value("Shape Configuration|Asset|PhysX Mesh", physx_mesh_id)
+    assert collider_component.get_component_property_value("Shape Configuration|Asset|PhysX Mesh") == physx_mesh_id, \
+        "Failed to assign PhysX Mesh asset"
+    # Create and return the temporary/in-memory prefab
+    temp_prefab = Prefab.create_prefab([root], prefab_filename)
+    return temp_prefab
 
 
 def create_surface_entity(name, center_point, box_size_x, box_size_y, box_size_z):
@@ -52,7 +93,7 @@ def create_mesh_surface_entity_with_slopes(name, center_point, uniform_scale):
     return surface_entity
 
 
-def create_vegetation_area(name, center_point, box_size_x, box_size_y, box_size_z, dynamic_slice_asset_path):
+def create_dynamic_slice_vegetation_area(name, center_point, box_size_x, box_size_y, box_size_z, dynamic_slice_asset_path):
     # Create a vegetation area entity to use as our test vegetation spawner
     spawner_entity = hydra.Entity(name)
     spawner_entity.create_entity(
@@ -65,10 +106,44 @@ def create_vegetation_area(name, center_point, box_size_x, box_size_y, box_size_
                                                                                           box_size_z))
 
     # Set the vegetation area to a Dynamic Slice spawner with a specific slice asset selected
+    descriptor = hydra.get_component_property_value(spawner_entity.components[2], 'Configuration|Embedded Assets|[0]')
     dynamic_slice_spawner = vegetation.DynamicSliceInstanceSpawner()
     dynamic_slice_spawner.SetSliceAssetPath(dynamic_slice_asset_path)
-    descriptor = hydra.get_component_property_value(spawner_entity.components[2], 'Configuration|Embedded Assets|[0]')
     descriptor.spawner = dynamic_slice_spawner
+    spawner_entity.get_set_test(2, "Configuration|Embedded Assets|[0]", descriptor)
+    return spawner_entity
+
+
+def create_prefab_vegetation_area(name, center_point, box_size_x, box_size_y, box_size_z, target_prefab):
+    # Create a vegetation area entity to use as our test vegetation spawner
+    spawner_entity = hydra.Entity(name)
+    spawner_entity.create_entity(
+        center_point,
+        ["Vegetation Layer Spawner", "Box Shape", "Vegetation Asset List"]
+        )
+    if spawner_entity.id.IsValid():
+        print(f"'{spawner_entity.name}' created")
+    spawner_entity.get_set_test(1, "Box Shape|Box Configuration|Dimensions", math.Vector3(box_size_x, box_size_y,
+                                                                                          box_size_z))
+    # Get the in-memory spawnable asset id if exists
+    spawnable_name = Path(target_prefab.file_path).stem
+    spawnable_asset_id = prefab.PrefabPublicRequestBus(bus.Broadcast, 'GetInMemorySpawnableAssetId', 
+                                                      spawnable_name)
+
+    # Create the in-memory spawnable asset from given prefab if the spawnable does not exist
+    if not spawnable_asset_id.is_valid():
+        create_spawnable_result = prefab.PrefabPublicRequestBus(bus.Broadcast, 'CreateInMemorySpawnableAsset', 
+                                                                target_prefab.file_path, 
+                                                                spawnable_name)
+        assert create_spawnable_result.IsSuccess(), \
+            f"Prefab operation 'CreateInMemorySpawnableAssets' failed. Error: {create_spawnable_result.GetError()}"
+        spawnable_asset_id = create_spawnable_result.GetValue()
+
+    # Set the vegetation area to a prefab instance spawner with a specific prefab asset selected
+    descriptor = hydra.get_component_property_value(spawner_entity.components[2], 'Configuration|Embedded Assets|[0]')
+    prefab_spawner = vegetation.PrefabInstanceSpawner()
+    prefab_spawner.SetPrefabAssetId(spawnable_asset_id)
+    descriptor.spawner = prefab_spawner
     spawner_entity.get_set_test(2, "Configuration|Embedded Assets|[0]", descriptor)
     return spawner_entity
 

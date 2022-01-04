@@ -22,7 +22,6 @@
 #include <AzToolsFramework/UI/Prefab/PrefabViewportFocusPathHandler.h>
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
 
-#include <HMDBus.h>
 #endif
 
 // CViewportTitleDlg dialog
@@ -44,7 +43,6 @@ class CViewportTitleDlg
     : public QWidget
     , public IEditorNotifyListener
     , public ISystemEventListener
-    , public AZ::VR::VREventBus::Handler
 {
     Q_OBJECT
 public:
@@ -82,15 +80,7 @@ protected:
     void OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam) override;
 
     void OnMaximize();
-    void OnToggleHelpers();
     void UpdateDisplayInfo();
-
-    //////////////////////////////////////////////////////////////////////////
-    /// VR Event Bus Implementation
-    //////////////////////////////////////////////////////////////////////////
-    void OnHMDInitialized() override;
-    void OnHMDShutdown() override;
-    //////////////////////////////////////////////////////////////////////////
 
     void SetupCameraDropdownMenu();
     void SetupResolutionDropdownMenu();
@@ -140,7 +130,6 @@ protected:
 
     void OnBnClickedGotoPosition();
     void OnBnClickedMuteAudio();
-    void OnBnClickedEnableVR();
 
     void UpdateMuteActionText();
 
@@ -163,12 +152,14 @@ protected:
     QMenu* m_aspectMenu = nullptr;
     QMenu* m_resolutionMenu = nullptr;
     QMenu* m_viewportInformationMenu = nullptr;
+    QMenu* m_helpersMenu = nullptr;
+    QAction* m_helpersAction = nullptr;
+    QAction* m_iconsAction = nullptr;
     QAction* m_noInformationAction = nullptr;
     QAction* m_normalInformationAction = nullptr;
     QAction* m_fullInformationAction = nullptr;
     QAction* m_compactInformationAction = nullptr;
     QAction* m_audioMuteAction = nullptr;
-    QAction* m_enableVRAction = nullptr;
     QAction* m_enableGridSnappingAction = nullptr;
     QAction* m_enableAngleSnappingAction = nullptr;
     QComboBox* m_cameraSpeed = nullptr;

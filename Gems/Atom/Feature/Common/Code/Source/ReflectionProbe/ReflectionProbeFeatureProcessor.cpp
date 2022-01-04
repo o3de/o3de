@@ -17,8 +17,6 @@
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/PipelineState.h>
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace Render
@@ -281,6 +279,18 @@ namespace AZ
         {
             AZ_Assert(probe.get(), "ShowProbeVisualization called with an invalid handle");
             probe->ShowVisualization(showVisualization);
+        }
+
+        void ReflectionProbeFeatureProcessor::SetRenderExposure(const ReflectionProbeHandle& probe, float renderExposure)
+        {
+            AZ_Assert(probe.get(), "SetRenderExposure called with an invalid handle");
+            probe->SetRenderExposure(renderExposure);
+        }
+
+        void ReflectionProbeFeatureProcessor::SetBakeExposure(const ReflectionProbeHandle& probe, float bakeExposure)
+        {
+            AZ_Assert(probe.get(), "SetBakeExposure called with an invalid handle");
+            probe->SetBakeExposure(bakeExposure);
         }
 
         void ReflectionProbeFeatureProcessor::FindReflectionProbes(const Vector3& position, ReflectionProbeVector& reflectionProbes)

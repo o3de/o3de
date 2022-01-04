@@ -22,7 +22,7 @@ namespace LmbrCentral
 {
     AZ_CLASS_ALLOCATOR_IMPL(EditorTubeShapeComponentMode, AZ::SystemAllocator, 0)
 
-    static const AZ::Crc32 s_resetVariableRadii = AZ_CRC("com.o3de.action.tubeshape.reset_radii", 0x0f2ef8e2);
+    static const AZ::Crc32 s_resetVariableRadii = AZ_CRC("com.o3de.action.tubeshape.reset_radii", 0xa987659c);
     static const char* const s_resetRadiiTitle = "Reset Radii";
     static const char* const s_resetRadiiDesc = "Reset all variable radius values to the default";
 

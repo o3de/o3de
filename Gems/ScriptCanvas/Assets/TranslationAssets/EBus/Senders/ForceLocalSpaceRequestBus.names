@@ -1,0 +1,102 @@
+{
+    "entries": [
+        {
+            "base": "ForceLocalSpaceRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Force Local Space"
+            },
+            "methods": [
+                {
+                    "base": "SetDirection",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Direction"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetDirection is invoked"
+                    },
+                    "details": {
+                        "name": "Set Direction"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Direction"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetDirection",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Direction"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Direction is invoked"
+                    },
+                    "details": {
+                        "name": "Get Direction"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Direction"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetMagnitude",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Magnitude"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Magnitude is invoked"
+                    },
+                    "details": {
+                        "name": "Set Magnitude"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Magnitude"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetMagnitude",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Magnitude"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Magnitude is invoked"
+                    },
+                    "details": {
+                        "name": "Get Magnitude"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Magnitude"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

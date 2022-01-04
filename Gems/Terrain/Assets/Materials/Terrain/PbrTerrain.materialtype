@@ -88,62 +88,20 @@
                     }
                 }
             ],
+            "baseColor": [
+                {
+                    "name": "color",
+                    "displayName": "Color",
+                    "description": "Color is displayed as sRGB but the values are stored as linear color.",
+                    "type": "Color",
+                    "defaultValue": [ 1.0, 1.0, 1.0 ],
+                    "connection": {
+                        "type": "ShaderInput",
+                        "name": "m_baseColor"
+                    }
+                }
+            ],
             "settings": [
-                {
-                    "id": "heightmapImage",
-                    "displayName": "Heightmap Image",
-                    "description": "Heightmap of the terrain. Controlled by the runtime.",
-                    "visibility": "Hidden",
-                    "type": "Image",
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_heightmapImage"
-                    }
-                },
-                {
-                    "id": "detailMaterialIdImage",
-                    "displayName": "Detail Material Id Image",
-                    "description": "Texture containing detail material Ids and weights. Controlled by the runtime.",
-                    "visibility": "Hidden",
-                    "type": "Image",
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_detailMaterialIdImage"
-                    }
-                },
-                {
-                    "id": "detailMaterialIdCenter",
-                    "displayName": "Detail Material Id Image Center",
-                    "description": "The center position of the detail material Id image. Controlled by the runtime.",
-                    "visibility": "Hidden",
-                    "type": "Vector2",
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_detailMaterialIdImageCenter"
-                    }
-                },
-                {
-                    "id": "detailAabb",
-                    "displayName": "Detail material bounds in 2d",
-                    "description": "The 2d world space bounds of the detail id material. Controlled by the runtime.",
-                    "visibility": "Hidden",
-                    "type": "Vector4",
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_detailAabb"
-                    }
-                },
-                {
-                    "id": "detailHalfPixelUv",
-                    "displayName": "Detail texture half pixel uv size",
-                    "description": "Uv size of a half pixel in the detail material id texture. Controlled by the runtime.",
-                    "visibility": "Hidden",
-                    "type": "float",
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_detailHalfPixelUv"
-                    }
-                },
                 {
                     "id": "detailTextureMultiplier",
                     "displayName": "Detail Texture UV Multiplier",
@@ -177,178 +135,6 @@
                         "id": "m_detailFadeLength"
                     }
                 }
-            ],
-            "baseColor": [
-                {
-                    "id": "color",
-                    "displayName": "Color",
-                    "description": "Color is displayed as sRGB but the values are stored as linear color.",
-                    "type": "Color",
-                    "defaultValue": [ 1.0, 1.0, 1.0 ],
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_baseColor"
-                    }
-                },
-                {
-                    "id": "factor",
-                    "displayName": "Factor",
-                    "description": "Strength factor for scaling the base color values. Zero (0.0) is black, white (1.0) is full color.",
-                    "type": "Float",
-                    "defaultValue": 1.0,
-                    "min": 0.0,
-                    "max": 1.0,
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_baseColorFactor"
-                    }
-                },
-                {
-                    "id": "textureMap",
-                    "displayName": "Texture",
-                    "description": "Base color texture map",
-                    "type": "Image",
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_baseColorMap"
-                    }
-                },
-                {
-                    "id": "useTexture",
-                    "displayName": "Use Texture",
-                    "description": "Whether to use the texture.",
-                    "type": "Bool",
-                    "defaultValue": true
-                },
-                {
-                    "id": "textureBlendMode",
-                    "displayName": "Texture Blend Mode",
-                    "description": "Selects the equation to use when combining Color, Factor, and Texture.",
-                    "type": "Enum",
-                    "enumValues": [ "Multiply", "LinearLight", "Lerp", "Overlay" ],
-                    "defaultValue": "Overlay",
-                    "connection": {
-                        "type": "ShaderOption",
-                        "id": "o_baseColorTextureBlendMode"
-                    }
-                }
-            ],
-            "normal": [
-                {
-                    "id": "textureMap",
-                    "displayName": "Texture",
-                    "description": "Texture for defining surface normal direction.",
-                    "type": "Image",
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_normalMap"
-                    }
-                },
-                {
-                    "id": "useTexture",
-                    "displayName": "Use Texture",
-                    "description": "Whether to use the texture, or just rely on vertex normals.",
-                    "type": "Bool",
-                    "defaultValue": true
-                },
-                {
-                    "id": "flipX",
-                    "displayName": "Flip X Channel",
-                    "description": "Flip tangent direction for this normal map.",
-                    "type": "Bool",
-                    "defaultValue": false,
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_flipNormalX"
-                    }
-                },
-                {
-                    "id": "flipY",
-                    "displayName": "Flip Y Channel",
-                    "description": "Flip bitangent direction for this normal map.",
-                    "type": "Bool",
-                    "defaultValue": false,
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_flipNormalY"
-                    }
-                },
-                {
-                    "id": "factor",
-                    "displayName": "Factor",
-                    "description": "Strength factor for scaling the values",
-                    "type": "Float",
-                    "defaultValue": 1.0,
-                    "min": 0.0,
-                    "softMax": 2.0,
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_normalFactor"
-                    }
-                }
-            ],
-            "roughness": [
-                {
-                    "id": "textureMap",
-                    "displayName": "Texture",
-                    "description": "Texture for defining surface roughness.",
-                    "type": "Image",
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_roughnessMap"
-                    }
-                },
-                {
-                    "id": "useTexture",
-                    "description": "Whether to use the texture, or just default to the Factor value.",
-                    "type": "Bool",
-                    "defaultValue": true
-                },
-                {
-                    "id": "factor",
-                    "displayName": "Factor",
-                    "description": "Controls the roughness value",
-                    "type": "Float",
-                    "defaultValue": 1.0,
-                    "min": 0.0,
-                    "max": 1.0,
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_roughnessFactor"
-                    }
-                }
-            ],
-            "specularF0": [
-                {
-                    "id": "textureMap",
-                    "displayName": "Texture",
-                    "description": "Texture for defining surface reflectance.",
-                    "type": "Image",
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_specularF0Map"
-                    }
-                },
-                {
-                    "id": "useTexture",
-                    "displayName": "Use Texture",
-                    "description": "Whether to use the texture, or just default to the Factor value.",
-                    "type": "Bool",
-                    "defaultValue": true
-                },
-                {
-                    "id": "factor",
-                    "displayName": "Factor",
-                    "description": "The default IOR is 1.5, which gives you 0.04 (4% of light reflected at 0 degree angle for dielectric materials). F0 values lie in the range 0-0.08, so that is why the default F0 slider is set on 0.5.",
-                    "type": "Float",
-                    "defaultValue": 0.5,
-                    "min": 0.0,
-                    "max": 1.0,
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_specularF0Factor"
-                    }
-                }
             ]
         }
     },
@@ -364,39 +150,5 @@
         }
     ],
     "functors": [
-        {
-            "type": "UseTexture",
-            "args": {
-                "textureProperty": "baseColor.textureMap",
-                "useTextureProperty": "baseColor.useTexture",
-                "dependentProperties": ["baseColor.textureBlendMode"],
-                "shaderOption": "o_baseColor_useTexture"
-            }
-        },
-        {
-            "type": "UseTexture",
-            "args": {
-                "textureProperty": "specularF0.textureMap",
-                "useTextureProperty": "specularF0.useTexture",
-                "shaderOption": "o_specularF0_useTexture"
-            }
-        },
-        {
-            "type": "UseTexture",
-            "args": {
-                "textureProperty": "normal.textureMap",
-                "useTextureProperty": "normal.useTexture",
-                "dependentProperties": ["normal.factor", "normal.flipX", "normal.flipY"],
-                "shaderOption": "o_normal_useTexture"
-            }
-        },
-        {
-            "type": "UseTexture",
-            "args": {
-                "textureProperty": "roughness.textureMap",
-                "useTextureProperty": "roughness.useTexture",
-                "shaderOption": "o_roughness_useTexture"
-            }
-        }
     ]
 }

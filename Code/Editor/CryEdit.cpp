@@ -33,6 +33,7 @@ AZ_POP_DISABLE_WARNING
 #include <QScopedValueRollback>
 #include <QClipboard>
 #include <QMenuBar>
+#include <QMessageBox>
 #include <QDialogButtonBox>
 
 // Aws Native SDK
@@ -80,7 +81,6 @@ AZ_POP_DISABLE_WARNING
 #include <AzQtComponents/Utilities/QtPluginPaths.h>
 
 // CryCommon
-#include <CryCommon/ITimer.h>
 #include <CryCommon/ILevelSystem.h>
 
 // Editor
@@ -371,10 +371,8 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_EDIT_FETCH, OnEditFetch)
     ON_COMMAND(ID_FILE_EXPORTTOGAMENOSURFACETEXTURE, OnFileExportToGameNoSurfaceTexture)
     ON_COMMAND(ID_VIEW_SWITCHTOGAME, OnViewSwitchToGame)
-    MainWindow::instance()->GetActionManager()->RegisterActionHandler(ID_VIEW_SWITCHTOGAME_FULLSCREEN, [this]() {
-        ed_previewGameInFullscreen_once = true;
-        OnViewSwitchToGame();
-    });
+    ON_COMMAND(ID_VIEW_SWITCHTOGAME_VIEWPORT, OnViewSwitchToGame)
+    ON_COMMAND(ID_VIEW_SWITCHTOGAME_FULLSCREEN, OnViewSwitchToGameFullScreen)
     ON_COMMAND(ID_MOVE_OBJECT, OnMoveObject)
     ON_COMMAND(ID_RENAME_OBJ, OnRenameObj)
     ON_COMMAND(ID_UNDO, OnUndo)
@@ -447,7 +445,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_OPEN_ASSET_BROWSER, OnOpenAssetBrowserView)
     ON_COMMAND(ID_OPEN_AUDIO_CONTROLS_BROWSER, OnOpenAudioControlsEditor)
 
-    ON_COMMAND(ID_DISPLAY_SHOWHELPERS, OnShowHelpers)
     ON_COMMAND(ID_OPEN_TRACKVIEW, OnOpenTrackView)
     ON_COMMAND(ID_OPEN_UICANVASEDITOR, OnOpenUICanvasEditor)
 
@@ -914,13 +911,9 @@ namespace
     QWidget* g_splashScreen = nullptr;
 }
 
-QString FormatVersion(const SFileVersion& v)
+QString FormatVersion([[maybe_unused]] const SFileVersion& v)
 {
-#if defined(LY_BUILD)
-    return QObject::tr("Version %1.%2.%3.%4 - Build %5").arg(v[3]).arg(v[2]).arg(v[1]).arg(v[0]).arg(LY_BUILD);
-#else
-    return QObject::tr("Version %1.%2.%3.%4").arg(v[3]).arg(v[2]).arg(v[1]).arg(v[0]);
-#endif
+    return QObject::tr("Version %1").arg(LY_VERSION_BUILD_NUMBER);
 }
 
 QString FormatRichTextCopyrightNotice()
@@ -1361,16 +1354,6 @@ void CCryEditApp::CompileCriticalAssets() const
     assetsInQueueNotifcation.BusDisconnect();
     CCryEditApp::OutputStartupMessage(QString("Asset Processor is now ready."));
 
-    // VERY early on, as soon as we can, request that the asset system make sure the following assets take priority over others,
-    // so that by the time we ask for them there is a greater likelihood that they're already good to go.
-    // these can be loaded later but are still important:
-    AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, "/texturemsg/");
-    AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, "engineassets/materials");
-    AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, "engineassets/geomcaches");
-    AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, "engineassets/objects");
-
-    // some are specifically extra important and will cause issues if missing completely:
-    AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::CompileAssetSync, "engineassets/objects/default.cgf");
 }
 
 bool CCryEditApp::ConnectToAssetProcessor() const
@@ -2584,6 +2567,12 @@ void CCryEditApp::OnViewSwitchToGame()
     GetIEditor()->SetInGameMode(inGame);
 }
 
+void CCryEditApp::OnViewSwitchToGameFullScreen()
+{
+    ed_previewGameInFullscreen_once = true;
+    OnViewSwitchToGame();
+}
+
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnExportSelectedObjects()
 {
@@ -2625,12 +2614,6 @@ void CCryEditApp::OnOpenAssetImporter()
 void CCryEditApp::OnUpdateSelected(QAction* action)
 {
     action->setEnabled(!GetIEditor()->GetSelection()->IsEmpty());
-}
-
-void CCryEditApp::OnShowHelpers()
-{
-    GetIEditor()->GetDisplaySettings()->DisplayHelpers(!GetIEditor()->GetDisplaySettings()->IsDisplayHelpers());
-    GetIEditor()->Notify(eNotify_OnDisplayRenderUpdate);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2820,14 +2803,11 @@ void CCryEditApp::OpenProjectManager(const AZStd::string& screen)
 {
     // provide the current project path for in case we want to update the project
     AZ::IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
-#if !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
-    const char* argumentQuoteString = R"(")";
-#else
-    const char* argumentQuoteString = R"(\")";
-#endif
-    const AZStd::string commandLineOptions = AZStd::string::format(R"( --screen %s --project-path %s%s%s)",
-        screen.c_str(),
-        argumentQuoteString, projectPath.c_str(), argumentQuoteString);
+
+    const AZStd::vector<AZStd::string> commandLineOptions {
+        "--screen", screen,
+        "--project-path", AZStd::string::format(R"("%s")", projectPath.c_str()) };
+
     bool launchSuccess = AzFramework::ProjectManager::LaunchProjectManager(commandLineOptions);
     if (!launchSuccess)
     {
@@ -3974,9 +3954,8 @@ void CCryEditApp::OpenLUAEditor(const char* files)
         }
     }
 
-    const char* engineRoot = nullptr;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
-    AZ_Assert(engineRoot != nullptr, "Unable to communicate to AzFramework::ApplicationRequests::Bus");
+    AZ::IO::FixedMaxPathString engineRoot = AZ::Utils::GetEnginePath();
+    AZ_Assert(!engineRoot.empty(), "Unable to query Engine Path");
 
     AZStd::string_view exePath;
     AZ::ComponentApplicationBus::BroadcastResult(exePath, &AZ::ComponentApplicationRequests::GetExecutableFolder);
@@ -3995,7 +3974,7 @@ void CCryEditApp::OpenLUAEditor(const char* files)
 #endif
         "%s", argumentQuoteString, aznumeric_cast<int>(exePath.size()), exePath.data(), argumentQuoteString);
 
-    AZStd::string processArgs = AZStd::string::format("%s -engine-path \"%s\"", args.c_str(), engineRoot);
+    AZStd::string processArgs = AZStd::string::format("%s -engine-path \"%s\"", args.c_str(), engineRoot.c_str());
     StartProcessDetached(process.c_str(), processArgs.c_str());
 }
 
@@ -4028,7 +4007,7 @@ void CCryEditApp::OnError(AzFramework::AssetSystem::AssetSystemErrors error)
         break;
     }
 
-    CryMessageBox(errorMessage.c_str(), "Error", MB_OK | MB_ICONERROR | MB_SETFOREGROUND);
+    QMessageBox::critical(nullptr,"Error",errorMessage.c_str());
 }
 
 void CCryEditApp::OnOpenProceduralMaterialEditor()
@@ -4195,6 +4174,8 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
         AZ_Error("Editor", didCryEditStart, "O3DE Editor did not initialize correctly, and will close."
             "\nThis could be because of incorrectly configured components, or missing required gems."
             "\nSee other errors for more details.");
+
+        AzToolsFramework::EditorEventsBus::Broadcast(&AzToolsFramework::EditorEvents::NotifyEditorInitialized);
 
         if (didCryEditStart)
         {
