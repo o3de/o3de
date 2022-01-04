@@ -304,6 +304,56 @@ namespace AzToolsFramework
             }
         }
 
+        QString GenerateFormattedHTMLQString(const QString& displayString, const QFont& font, int availableWidth, const QString& text)
+        {
+            const QRegularExpression htmlMarkupRegex("<[^>]*>");
+
+            QString displayStringRichText = displayString;
+
+            // If there is any HTML markup in the display text, don't elide.
+            if (!htmlMarkupRegex.match(displayStringRichText).hasMatch())
+            {
+                const QFontMetrics fontMetrics(font);
+                int textWidthAvailable = availableWidth;
+                // Qt uses "..." for elide, but there doesn't seem to be a way to retrieve this exact string from Qt.
+                // Subtract the elide string from the width available, so it can actually appear.
+                textWidthAvailable -= fontMetrics.horizontalAdvance(QObject::tr("..."));
+                if (!displayString.isEmpty())
+                {
+                    QString htmlStripped = displayString;
+                    htmlStripped.remove(htmlMarkupRegex);
+                    textWidthAvailable -= fontMetrics.horizontalAdvance(htmlStripped) + 5;
+                }
+
+                displayStringRichText = fontMetrics.elidedText(text, Qt::TextElideMode::ElideRight, textWidthAvailable);
+            }
+
+            return displayStringRichText;
+        }
+
+        void DrawFromFormattedHTMLQString(
+            const QString& formattedString,
+            const QFont& font,
+            const QStyle::State state,
+            const QRect& remainingRect,
+            AZStd::function<void(const QRect& availableRect, QTextDocument& textDoc)> printer)
+        {
+            // Now we setup a Text Document so it can draw the rich text
+            QTextDocument textDoc;
+            textDoc.setDefaultFont(font);
+            if (state & QStyle::State_Enabled)
+            {
+                textDoc.setDefaultStyleSheet("body {color: white}");
+            }
+            else
+            {
+                textDoc.setDefaultStyleSheet("body {color: #7C7C7C}");
+            }
+            textDoc.setHtml("<body>" + formattedString + "</body>");
+            printer(remainingRect, textDoc);
+
+        }
+
         void SearchEntryDelegate::PaintEntryDisplayStringAsRichText(
             QPainter* painter,
             const QStyleOptionViewItem& option,
@@ -319,44 +369,17 @@ namespace AzToolsFramework
             optionV4.state &= ~(QStyle::State_HasFocus | QStyle::State_Selected);
 
             const QRect textRect = optionV4.widget->style()->proxy()->subElementRect(QStyle::SE_ItemViewItemText, &optionV4);
-
-            const QRegularExpression htmlMarkupRegex("<[^>]*>");
-
-            QString displayStringRichText = displayString;
-
-            // If there is any HTML markup in the display text, don't elide.
-            if (!htmlMarkupRegex.match(displayStringRichText).hasMatch())
-            {
-                const QFontMetrics fontMetrics(optionV4.font);
-                int textWidthAvailable = textRect.width();
-                // Qt uses "..." for elide, but there doesn't seem to be a way to retrieve this exact string from Qt.
-                // Subtract the elide string from the width available, so it can actually appear.
-                textWidthAvailable -= fontMetrics.horizontalAdvance(QObject::tr("..."));
-                if (!displayString.isEmpty())
-                {
-                    QString htmlStripped = displayString;
-                    htmlStripped.remove(htmlMarkupRegex);
-                    textWidthAvailable -= fontMetrics.horizontalAdvance(htmlStripped) + 5;
-                }
-
-                displayStringRichText = fontMetrics.elidedText(optionV4.text, Qt::TextElideMode::ElideRight, textWidthAvailable);
-            }
+            QString displayStringRichText = GenerateFormattedHTMLQString(displayString, optionV4.font, textRect.width(), optionV4.text);
 
             // Now we setup a Text Document so it can draw the rich text
-            QTextDocument textDoc;
-            textDoc.setDefaultFont(optionV4.font);
-            if (option.state & QStyle::State_Enabled)
-            {
-                textDoc.setDefaultStyleSheet("body {color: white}");
-            }
-            else
-            {
-                textDoc.setDefaultStyleSheet("body {color: #7C7C7C}");
-            }
-            textDoc.setHtml("<body>" + displayStringRichText + "</body>");
-            painter->translate(remainingRect.topLeft());
-            textDoc.setTextWidth(remainingRect.width());
-            textDoc.drawContents(painter, QRectF(0, 0, remainingRect.width(), remainingRect.height()));
+            DrawFromFormattedHTMLQString(
+                displayStringRichText, optionV4.font, option.state, remainingRect,
+                [&painter](const QRect& availableRect, QTextDocument& textDoc)
+                {
+                    painter->translate(availableRect.topLeft());
+                    textDoc.setTextWidth(availableRect.width());
+                    textDoc.drawContents(painter, QRectF(0, 0, availableRect.width(), availableRect.height()));
+                });
 
             painter->restore();
         }
