@@ -25,8 +25,6 @@
 #include <AzCore/Android/Utils.h>
 #include <AzCore/Android/JNI/Object.h>
 
-#include <Microphone/WAVUtil.h>
-
 namespace Audio
 {
     class MicrophoneSystemEventsAndroid : public AZ::EBusTraits 
