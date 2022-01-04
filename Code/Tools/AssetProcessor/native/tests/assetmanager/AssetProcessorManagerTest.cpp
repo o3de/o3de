@@ -17,6 +17,7 @@
 #include <limits>
 #include <AzCore/Jobs/JobContext.h>
 #include <AzCore/Jobs/JobManager.h>
+#include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/Jobs/JobManagerDesc.h>
 
 using namespace AssetProcessor;
@@ -183,18 +184,17 @@ void AssetProcessorManagerTest::SetUp()
     AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
     AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
 
-    AZ::JobManagerDesc jobDesc;
-    AZ::JobManagerThreadDesc threadDesc;
-    for (int i = 0; i < 4; ++i)
-    {
-        jobDesc.m_workerThreads.push_back(threadDesc);
-    }
-
-    m_jobManager = aznew AZ::JobManager(jobDesc);
-    m_jobContext = aznew AZ::JobContext(*m_jobManager);
-    AZ::JobContext::SetGlobalContext(m_jobContext);
-
     m_data = AZStd::make_unique<StaticData>();
+
+    m_data->m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
+
+    m_data->m_descriptor = AZ::JobManagerComponent::CreateDescriptor();
+    m_data->m_descriptor->Reflect(m_data->m_serializeContext.get());
+
+    m_data->m_jobManagerEntity = aznew AZ::Entity{};
+    m_data->m_jobManagerEntity->CreateComponent<AZ::JobManagerComponent>();
+    m_data->m_jobManagerEntity->Init();
+    m_data->m_jobManagerEntity->Activate();
 
     m_config.reset(new AssetProcessor::PlatformConfiguration());
     m_mockApplicationManager.reset(new AssetProcessor::MockApplicationManager());
@@ -274,6 +274,10 @@ void AssetProcessorManagerTest::SetUp()
 
 void AssetProcessorManagerTest::TearDown()
 {
+    m_data->m_jobManagerEntity->Deactivate();
+    delete m_data->m_jobManagerEntity;
+    delete m_data->m_descriptor;
+
     m_data = nullptr;
 
     QObject::disconnect(m_idleConnection);
@@ -288,10 +292,6 @@ void AssetProcessorManagerTest::TearDown()
     m_config.reset();
     m_qApp.reset();
     m_scopeDir.reset();
-
-    AZ::JobContext::SetGlobalContext(nullptr);
-    delete m_jobContext;
-    delete m_jobManager;
 
     AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
     AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();

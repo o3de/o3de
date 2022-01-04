@@ -12,6 +12,9 @@
 #include "AzToolsFramework/API/AssetDatabaseBus.h"
 #include "AssetDatabase/AssetDatabase.h"
 #include <AssetManager/PathDependencyManager.h>
+#include <AzCore/Jobs/JobContext.h>
+#include <AzCore/Jobs/JobManager.h>
+#include <AzCore/Jobs/JobManagerComponent.h>
 
 namespace UnitTests
 {
@@ -55,8 +58,9 @@ namespace UnitTests
         MockDatabaseLocationListener m_databaseLocationListener;
         AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> m_stateData;
         AZStd::unique_ptr<AssetProcessor::PlatformConfiguration> m_platformConfig;
-        AZ::JobManager* m_jobManager{};
-        AZ::JobContext* m_jobContext{};
+        AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
+        AZ::Entity* m_jobManagerEntity{};
+        AZ::ComponentDescriptor* m_descriptor{};
     };
 
     struct PathDependencyDeletionTest
@@ -103,16 +107,14 @@ namespace UnitTests
         AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
         AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
 
-        AZ::JobManagerDesc jobDesc;
-        AZ::JobManagerThreadDesc threadDesc;
-        for (int i = 0; i < 16; ++i)
-        {
-            jobDesc.m_workerThreads.push_back(threadDesc);
-        }
+        m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
+        m_descriptor = AZ::JobManagerComponent::CreateDescriptor();
+        m_descriptor->Reflect(m_serializeContext.get());
 
-        m_jobManager = aznew AZ::JobManager(jobDesc);
-        m_jobContext = aznew AZ::JobContext(*m_jobManager);
-        AZ::JobContext::SetGlobalContext(m_jobContext);
+        m_jobManagerEntity = aznew AZ::Entity{};
+        m_jobManagerEntity->CreateComponent<AZ::JobManagerComponent>();
+        m_jobManagerEntity->Init();
+        m_jobManagerEntity->Activate();
     }
 
     void PathDependencyBase::Destroy()
@@ -120,9 +122,10 @@ namespace UnitTests
         m_stateData = nullptr;
         m_platformConfig = nullptr;
 
-        AZ::JobContext::SetGlobalContext(nullptr);
-        delete m_jobContext;
-        delete m_jobManager;
+        m_jobManagerEntity->Deactivate();
+        delete m_jobManagerEntity;
+
+        delete m_descriptor;
 
         AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
         AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
@@ -280,6 +283,8 @@ namespace UnitTests
 
     TEST_F(PathDependencyTests, SourceAndProductHaveSameName_OnlyOneEntryIsSavedToDatabase)
     {
+        using namespace AzToolsFramework::AssetDatabase;
+
         AssetProcessor::PathDependencyManager manager(m_stateData, m_platformConfig.get());
 
         ScanFolderDatabaseEntry scanFolder("folder", "test", "test", 0);
@@ -389,6 +394,8 @@ namespace UnitTests
 
         void VerifyResult()
         {
+            using namespace AzToolsFramework::AssetDatabase;
+
             ProductDependencyDatabaseEntryContainer productDependencies;
             m_stateData->GetProductDependencies(productDependencies);
 

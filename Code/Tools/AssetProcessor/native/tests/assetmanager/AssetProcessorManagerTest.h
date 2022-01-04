@@ -69,10 +69,11 @@ protected:
     {
         AZStd::string m_databaseLocation;
         ::testing::NiceMock<MockDatabaseLocationListener> m_databaseLocationListener;
+        AZ::Entity* m_jobManagerEntity{};
+        AZ::ComponentDescriptor* m_descriptor{};
+        AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
     };
 
-    AZ::JobManager* m_jobManager{};
-    AZ::JobContext* m_jobContext{};
     AZStd::unique_ptr<StaticData> m_data;
 
 private:
