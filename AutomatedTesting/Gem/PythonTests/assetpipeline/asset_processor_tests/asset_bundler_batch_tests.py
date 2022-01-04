@@ -191,7 +191,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         """
         helper = bundler_batch_helper
         seed_list = os.path.join(workspace.paths.engine_root(), "Assets", "Engine", "SeedAssetList.seed")  # Engine seed list
-        asset = r"levels\testdependencieslevel\testdependencieslevel.prefab"
+        asset = r"levels\testdependencieslevel\testdependencieslevel.spawnable"
 
         # Useful bundle locations / names (2 for comparing contents)
         # fmt:off
