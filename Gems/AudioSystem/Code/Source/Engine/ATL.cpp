@@ -21,9 +21,6 @@
 #include <ATLAudioObject.h>
 #include <IAudioSystemImplementation.h>
 
-#include <ISystem.h>
-#include <CryCommon/StlUtils.h>
-#include <algorithm>
 #include <IRenderAuxGeom.h>
 
 namespace Audio
@@ -39,7 +36,7 @@ namespace Audio
         {
             case EAudioRequestStatus::Success:
             {
-                eResult = eARR_SUCCESS;
+                eResult = EAudioRequestResult::Success;
                 break;
             }
             case EAudioRequestStatus::Failure:
@@ -52,14 +49,13 @@ namespace Audio
                 [[fallthrough]];
             case EAudioRequestStatus::PartialSuccess:
             {
-                eResult = eARR_FAILURE;
+                eResult = EAudioRequestResult::Failure;
                 break;
             }
             default:
             {
-                g_audioLogger.Log(eALT_ERROR, "Invalid AudioRequestStatus '%u'. Cannot be converted to an AudioRequestResult. ", eAudioRequestStatus);
-                AZ_Assert(false, "Invalid AudioRequestStatus '%u'.  Cannot be converted to and AudioRequestResult.", eAudioRequestStatus);
-                eResult = eARR_FAILURE;
+                g_audioLogger.Log(LogType::Assert, "Invalid AudioRequestStatus '%u'. Cannot be converted to an AudioRequestResult. ", eAudioRequestStatus);
+                eResult = EAudioRequestResult::Failure;
                 break;
             }
         }
@@ -81,7 +77,7 @@ namespace Audio
         , m_oXmlProcessor(m_cTriggers, m_cRtpcs, m_cSwitches, m_cEnvironments, m_cPreloadRequests, m_oFileCacheMgr)
         , m_nFlags(eAIS_NONE)
     {
-        gEnv->pSystem->GetISystemEventDispatcher()->RegisterListener(this);
+        GetISystem()->GetISystemEventDispatcher()->RegisterListener(this);
 
 #if !defined(AUDIO_RELEASE)
         m_oAudioEventMgr.SetDebugNameStore(&m_oDebugNameStore);
@@ -95,8 +91,7 @@ namespace Audio
     {
         // By the time ATL is being destroyed, ReleaseImplComponent should have been called already
         // to release the implementation object.  See CAudioSystem::Release().
-
-        gEnv->pSystem->GetISystemEventDispatcher()->RemoveListener(this);
+        GetISystem()->GetISystemEventDispatcher()->RemoveListener(this);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -436,7 +431,7 @@ namespace Audio
                     }
                     else
                     {
-                        g_audioLogger.Log(eALT_COMMENT, "ATL received request to set position on the global audio object!");
+                        g_audioLogger.Log(LogType::Comment, "ATL received request to set position on the global audio object!");
                         result = EAudioRequestStatus::FailureInvalidObjectId;
                     }
                 }
@@ -491,7 +486,7 @@ namespace Audio
                     }
                     else
                     {
-                        g_audioLogger.Log(eALT_COMMENT, "ATL received request to set environment value on the global audio object!");
+                        g_audioLogger.Log(LogType::Comment, "ATL received request to set environment value on the global audio object!");
                         result = EAudioRequestStatus::FailureInvalidObjectId;
                     }
                 }
@@ -514,7 +509,7 @@ namespace Audio
                     }
                     else
                     {
-                        g_audioLogger.Log(eALT_COMMENT, "ATL received request to release the global audio object!");
+                        g_audioLogger.Log(LogType::Comment, "ATL received request to release the global audio object!");
                         result = EAudioRequestStatus::FailureInvalidObjectId;
                     }
                 }
@@ -556,7 +551,7 @@ namespace Audio
                     }
                     else
                     {
-                        g_audioLogger.Log(eALT_COMMENT, "ATL received request to set multiple positions on the global audio object!");
+                        g_audioLogger.Log(LogType::Comment, "ATL received request to set multiple positions on the global audio object!");
                         result = EAudioRequestStatus::FailureInvalidObjectId;
                     }
                 }
@@ -608,7 +603,7 @@ namespace Audio
                     }
                     else
                     {
-                        g_audioLogger.Log(eALT_COMMENT, "ATL could not find listener with ID %u", listenerId);
+                        g_audioLogger.Log(LogType::Comment, "ATL could not find listener with ID %u", listenerId);
                         result = EAudioRequestStatus::FailureInvalidObjectId;
                     }
                 }
@@ -626,7 +621,7 @@ namespace Audio
 
         if (status != EAudioRequestStatus::Success)
         {
-            g_audioLogger.Log(eALT_ERROR, "Audio Request did not succeed!\n");
+            g_audioLogger.Log(LogType::Error, "Audio Request did not succeed!\n");
         }
     }
     //~ NEW AUDIO REQUESTS
@@ -868,7 +863,7 @@ namespace Audio
     //        }
     //        default:
     //        {
-    //            g_audioLogger.Log(eALT_ASSERT, "Unknown request type during CAudioTranslationLayer::NotifyListener!");
+    //            g_audioLogger.Log(LogType::Assert, "Unknown request type during CAudioTranslationLayer::NotifyListener!");
     //            break;
     //        }
     //    }
@@ -963,7 +958,7 @@ namespace Audio
     //                    }
     //                    else
     //                    {
-    //                        g_audioLogger.Log(eALT_WARNING, "ATL - Trigger not found for: ATLInternalControlIDs::LoseFocusTriggerID");
+    //                        g_audioLogger.Log(LogType::Warning, "ATL - Trigger not found for: ATLInternalControlIDs::LoseFocusTriggerID");
     //                    }
 
     //                    AudioSystemImplementationNotificationBus::Broadcast(&AudioSystemImplementationNotificationBus::Events::OnAudioSystemLoseFocus);
@@ -985,7 +980,7 @@ namespace Audio
     //                    }
     //                    else
     //                    {
-    //                        g_audioLogger.Log(eALT_WARNING, "ATL - Trigger not found for: ATLInternalControlIDs::GetFocusTriggerID");
+    //                        g_audioLogger.Log(LogType::Warning, "ATL - Trigger not found for: ATLInternalControlIDs::GetFocusTriggerID");
     //                    }
     //                }
     //                break;
@@ -1077,7 +1072,7 @@ namespace Audio
     //            }
     //            default:
     //            {
-    //                g_audioLogger.Log(eALT_WARNING, "ATL received an unknown AudioManager request: %u", pRequestDataBase->eType);
+    //                g_audioLogger.Log(LogType::Warning, "ATL received an unknown AudioManager request: %u", pRequestDataBase->eType);
     //                eResult = EAudioRequestStatus::FailureInvalidRequest;
     //                break;
     //            }
@@ -1152,7 +1147,7 @@ namespace Audio
     //            default:
     //            {
     //                eResult = EAudioRequestStatus::FailureInvalidRequest;
-    //                g_audioLogger.Log(eALT_WARNING, "ATL received an unknown AudioCallbackManager request: %u", pRequestDataBase->eType);
+    //                g_audioLogger.Log(LogType::Warning, "ATL received an unknown AudioCallbackManager request: %u", pRequestDataBase->eType);
     //                break;
     //            }
     //        }
@@ -1284,7 +1279,7 @@ namespace Audio
     //                    }
     //                    else
     //                    {
-    //                        g_audioLogger.Log(eALT_WARNING, "ATL received a request to set a position on a global object");
+    //                        g_audioLogger.Log(LogType::Warning, "ATL received a request to set a position on a global object");
     //                    }
     //                    break;
     //                }
@@ -1332,7 +1327,7 @@ namespace Audio
     //                    }
     //                    else
     //                    {
-    //                        g_audioLogger.Log(eALT_WARNING, "ATL received a request to set an environment on a global object");
+    //                        g_audioLogger.Log(LogType::Warning, "ATL received a request to set an environment on a global object");
     //                    }
     //                    break;
     //                }
@@ -1361,7 +1356,7 @@ namespace Audio
     //                    }
     //                    else
     //                    {
-    //                        g_audioLogger.Log(eALT_WARNING, "ATL received a request to release the GlobalAudioObject");
+    //                        g_audioLogger.Log(LogType::Warning, "ATL received a request to release the GlobalAudioObject");
     //                    }
     //                    break;
     //                }
@@ -1410,7 +1405,7 @@ namespace Audio
     //                    }
     //                    else
     //                    {
-    //                        g_audioLogger.Log(eALT_WARNING, "ATL received a request to set multiple positions on a global object");
+    //                        g_audioLogger.Log(LogType::Warning, "ATL received a request to set multiple positions on a global object");
     //                    }
     //                    break;
     //                }
@@ -1422,7 +1417,7 @@ namespace Audio
     //                default:
     //                {
     //                    eResult = EAudioRequestStatus::FailureInvalidRequest;
-    //                    g_audioLogger.Log(eALT_WARNING, "ATL received an unknown AudioObject request type: %u", pBaseRequestData->eType);
+    //                    g_audioLogger.Log(LogType::Warning, "ATL received an unknown AudioObject request type: %u", pBaseRequestData->eType);
     //                    break;
     //                }
     //            }
@@ -1430,7 +1425,7 @@ namespace Audio
     //    }
     //    else
     //    {
-    //        g_audioLogger.Log(eALT_WARNING, "ATL received a request to a non-existent AudioObject: %u", rRequest.nAudioObjectID);
+    //        g_audioLogger.Log(LogType::Warning, "ATL received a request to a non-existent AudioObject: %u", rRequest.nAudioObjectID);
     //        eResult = EAudioRequestStatus::FailureInvalidObjectId;
     //    }
 
@@ -1505,7 +1500,7 @@ namespace Audio
     //                default:
     //                {
     //                    eResult = EAudioRequestStatus::FailureInvalidRequest;
-    //                    g_audioLogger.Log(eALT_WARNING, "ATL received an unknown AudioListener request type: %u", pBaseRequestData->eType);
+    //                    g_audioLogger.Log(LogType::Warning, "ATL received an unknown AudioListener request type: %u", pBaseRequestData->eType);
     //                    break;
     //                }
     //            }
@@ -1513,7 +1508,7 @@ namespace Audio
     //    }
     //    else
     //    {
-    //        g_audioLogger.Log(eALT_COMMENT, "Could not find listener with ID: %u", listenerID);
+    //        g_audioLogger.Log(LogType::Comment, "Could not find listener with ID: %u", listenerID);
     //    }
 
     //    return eResult;
@@ -1549,7 +1544,7 @@ namespace Audio
         {
             const char* implementationName = nullptr;
             AudioSystemImplementationRequestBus::BroadcastResult(implementationName, &AudioSystemImplementationRequestBus::Events::GetImplementationNameString);
-            g_audioLogger.Log(eALT_ERROR, "Failed to Initialize the AudioSystemImplementationComponent '%s'\n", implementationName);
+            g_audioLogger.Log(LogType::Error, "Failed to Initialize the AudioSystemImplementationComponent '%s'\n", implementationName);
         }
 #endif // !AUDIO_RELEASE
 
@@ -1662,7 +1657,7 @@ namespace Audio
                 }
                 default:
                 {
-                    g_audioLogger.Log(eALT_ERROR, "Unknown ATL Recipient");
+                    g_audioLogger.Log(LogType::Error, "Unknown ATL Recipient");
                     break;
                 }
             }
@@ -1684,7 +1679,7 @@ namespace Audio
         if (eResult != EAudioRequestStatus::Success)
         {
             // No TriggerImpl produced an active event.
-            g_audioLogger.Log(eALT_WARNING, "PrepUnprepTriggerAsync failed on AudioObject \"%s\" (ID: %u)", m_oDebugNameStore.LookupAudioObjectName(nATLObjectID), nATLObjectID);
+            g_audioLogger.Log(LogType::Warning, "PrepUnprepTriggerAsync failed on AudioObject \"%s\" (ID: %u)", m_oDebugNameStore.LookupAudioObjectName(nATLObjectID), nATLObjectID);
         }
 #endif // !AUDIO_RELEASE
 
@@ -1749,7 +1744,7 @@ namespace Audio
                 }
                 default:
                 {
-                    g_audioLogger.Log(eALT_ERROR, "Unknown ATL Recipient");
+                    g_audioLogger.Log(LogType::Error, "Unknown ATL Recipient");
                     break;
                 }
             }
@@ -1790,7 +1785,7 @@ namespace Audio
         if (eResult != EAudioRequestStatus::Success)
         {
             // No TriggerImpl generated an active event.
-            g_audioLogger.Log(eALT_WARNING, "Trigger \"%s\" failed on AudioObject \"%s\" (ID: %u)", m_oDebugNameStore.LookupAudioTriggerName(nATLTriggerID), m_oDebugNameStore.LookupAudioObjectName(pAudioObject->GetID()), pAudioObject->GetID());
+            g_audioLogger.Log(LogType::Warning, "Trigger \"%s\" failed on AudioObject \"%s\" (ID: %u)", m_oDebugNameStore.LookupAudioTriggerName(nATLTriggerID), m_oDebugNameStore.LookupAudioObjectName(pAudioObject->GetID()), pAudioObject->GetID());
         }
 #endif // !AUDIO_RELEASE
 
@@ -1830,7 +1825,7 @@ namespace Audio
                     }
                     default:
                     {
-                        g_audioLogger.Log(eALT_ERROR, "ATL - StopTrigger: Unknown ATL Recipient");
+                        g_audioLogger.Log(LogType::Error, "ATL - StopTrigger: Unknown ATL Recipient");
                         break;
                     }
                 }
@@ -1883,7 +1878,7 @@ namespace Audio
 
                         default:
                         {
-                            g_audioLogger.Log(eALT_ERROR, "ATL - StopAllTriggersFiltered: Unknown ATL Recipient");
+                            g_audioLogger.Log(LogType::Error, "ATL - StopAllTriggersFiltered: Unknown ATL Recipient");
                             break;
                         }
                     }
@@ -1927,7 +1922,7 @@ namespace Audio
                 }
                 default:
                 {
-                    g_audioLogger.Log(eALT_ERROR, "Unknown ATL Recipient");
+                    g_audioLogger.Log(LogType::Error, "Unknown ATL Recipient");
                     break;
                 }
             }
@@ -1948,7 +1943,7 @@ namespace Audio
             const char* const sSwitchName = m_oDebugNameStore.LookupAudioSwitchName(pState->GetParentID());
             const char* const sSwitchStateName = m_oDebugNameStore.LookupAudioSwitchStateName(pState->GetParentID(), pState->GetID());
             const char* const sAudioObjectName = m_oDebugNameStore.LookupAudioObjectName(pAudioObject->GetID());
-            g_audioLogger.Log(eALT_WARNING, "Failed to set the ATLSwitch \"%s\" to ATLSwitchState \"%s\" on AudioObject \"%s\" (ID: %u)", sSwitchName, sSwitchStateName, sAudioObjectName, pAudioObject->GetID());
+            g_audioLogger.Log(LogType::Warning, "Failed to set the ATLSwitch \"%s\" to ATLSwitchState \"%s\" on AudioObject \"%s\" (ID: %u)", sSwitchName, sSwitchStateName, sAudioObjectName, pAudioObject->GetID());
         }
 #endif // !AUDIO_RELEASE
 
@@ -1985,7 +1980,7 @@ namespace Audio
                 }
                 default:
                 {
-                    g_audioLogger.Log(eALT_ERROR, "Unknown ATL Recipient");
+                    g_audioLogger.Log(LogType::Error, "Unknown ATL Recipient");
                     break;
                 }
             }
@@ -2005,7 +2000,7 @@ namespace Audio
         {
             const char* const sRtpcName = m_oDebugNameStore.LookupAudioRtpcName(pRtpc->GetID());
             const char* const sAudioObjectName = m_oDebugNameStore.LookupAudioObjectName(pAudioObject->GetID());
-            g_audioLogger.Log(eALT_WARNING, "Failed to set the ATLRtpc \"%s\" to %f on AudioObject \"%s\" (ID: %u)", sRtpcName, fValue, sAudioObjectName, pAudioObject->GetID());
+            g_audioLogger.Log(LogType::Warning, "Failed to set the ATLRtpc \"%s\" to %f on AudioObject \"%s\" (ID: %u)", sRtpcName, fValue, sAudioObjectName, pAudioObject->GetID());
         }
 #endif // !AUDIO_RELEASE
 
@@ -2045,7 +2040,7 @@ namespace Audio
 
                         default:
                         {
-                            g_audioLogger.Log(eALT_ERROR, "ATL - ResetRtpc: Unknown ATL Recipient");
+                            g_audioLogger.Log(LogType::Error, "ATL - ResetRtpc: Unknown ATL Recipient");
                             break;
                         }
                     }
@@ -2068,7 +2063,7 @@ namespace Audio
         {
             const TAudioObjectID objectId = pAudioObject->GetID();
 
-            g_audioLogger.Log(eALT_WARNING,
+            g_audioLogger.Log(LogType::Warning,
                 "Failed to Reset Rtpcs on AudioObject \"%s\" (ID: %u)",
                 m_oDebugNameStore.LookupAudioObjectName(objectId),
                 objectId);
@@ -2108,7 +2103,7 @@ namespace Audio
                 }
                 default:
                 {
-                    g_audioLogger.Log(eALT_ERROR, "Unknown ATL Recipient");
+                    g_audioLogger.Log(LogType::Error, "Unknown ATL Recipient");
                     break;
                 }
             }
@@ -2128,7 +2123,7 @@ namespace Audio
         {
             const char* const sEnvironmentName = m_oDebugNameStore.LookupAudioEnvironmentName(pEnvironment->GetID());
             const char* const sAudioObjectName = m_oDebugNameStore.LookupAudioObjectName(pAudioObject->GetID());
-            g_audioLogger.Log(eALT_WARNING, "Failed to set the ATLAudioEnvironment \"%s\" to %f on AudioObject \"%s\" (ID: %u)", sEnvironmentName, fAmount, sAudioObjectName, pAudioObject->GetID());
+            g_audioLogger.Log(LogType::Warning, "Failed to set the ATLAudioEnvironment \"%s\" to %f on AudioObject \"%s\" (ID: %u)", sEnvironmentName, fAmount, sAudioObjectName, pAudioObject->GetID());
         }
 #endif // !AUDIO_RELEASE
 
@@ -2167,7 +2162,7 @@ namespace Audio
             const TAudioObjectID nObjectID = pAudioObject->GetID();
 
             g_audioLogger.Log(
-                eALT_WARNING,
+                LogType::Warning,
                 "Failed to Reset AudioEnvironments on AudioObject \"%s\" (ID: %u)",
                 m_oDebugNameStore.LookupAudioObjectName(nObjectID),
                 nObjectID);
@@ -2248,7 +2243,7 @@ namespace Audio
                 }
                 else
                 {
-                    g_audioLogger.Log(eALT_WARNING, "SetInternalSwitchState - Unknown value specified for SetObstructionOcclusionCalc");
+                    g_audioLogger.Log(LogType::Warning, "SetInternalSwitchState - Unknown value specified for SetObstructionOcclusionCalc");
                 }
             }
         }
@@ -2267,7 +2262,7 @@ namespace Audio
                 }
                 else
                 {
-                    g_audioLogger.Log(eALT_WARNING, "SetInternalSwitchState - Unknown value specified for SetVelocityTracking (ly-fixit update this name!)");
+                    g_audioLogger.Log(LogType::Warning, "SetInternalSwitchState - Unknown value specified for SetVelocityTracking (ly-fixit update this name!)");
                 }
             }
         }
@@ -2289,7 +2284,12 @@ namespace Audio
     EAudioRequestStatus CAudioTranslationLayer::MuteAll()
     {
         EAudioRequestStatus result = EAudioRequestStatus::Failure;
-        const CATLTrigger* const trigger = stl::find_in_map(m_cTriggers, ATLInternalControlIDs::MuteAllTriggerID, nullptr);
+        const CATLTrigger* trigger = nullptr;
+        if (auto it = m_cTriggers.find(ATLInternalControlIDs::MuteAllTriggerID);
+            it != m_cTriggers.end())
+        {
+            trigger = it->second;
+        }
 
         if (trigger)
         {
@@ -2297,7 +2297,7 @@ namespace Audio
         }
         else
         {
-            g_audioLogger.Log(eALT_WARNING, "ATL - Trigger not found for: ATLInternalControlIDs::MuteAllTriggerID");
+            g_audioLogger.Log(LogType::Warning, "ATL - Trigger not found for: ATLInternalControlIDs::MuteAllTriggerID");
         }
 
         if (result == EAudioRequestStatus::Success)
@@ -2313,7 +2313,12 @@ namespace Audio
     EAudioRequestStatus CAudioTranslationLayer::UnmuteAll()
     {
         EAudioRequestStatus result = EAudioRequestStatus::Failure;
-        const CATLTrigger* const trigger = stl::find_in_map(m_cTriggers, ATLInternalControlIDs::UnmuteAllTriggerID, nullptr);
+        const CATLTrigger* trigger = nullptr;
+        if (auto it = m_cTriggers.find(ATLInternalControlIDs::UnmuteAllTriggerID);
+            it != m_cTriggers.end())
+        {
+            trigger = it->second;
+        }
 
         if (trigger)
         {
@@ -2321,7 +2326,7 @@ namespace Audio
         }
         else
         {
-            g_audioLogger.Log(eALT_WARNING, "ATL - Trigger not found for: ATLInternalControlIDs::UnmuteAllTriggerID");
+            g_audioLogger.Log(LogType::Warning, "ATL - Trigger not found for: ATLInternalControlIDs::UnmuteAllTriggerID");
         }
 
         if (result == EAudioRequestStatus::Success)
@@ -2391,11 +2396,11 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     EAudioRequestStatus CAudioTranslationLayer::RefreshAudioSystem(const char* const controlsPath, const char* const levelName, TAudioPreloadRequestID levelPreloadId)
     {
-        g_audioLogger.Log(eALT_ALWAYS, "$8Beginning to refresh the AudioSystem!");
+        g_audioLogger.Log(LogType::Always, "$8Beginning to refresh the AudioSystem!");
 
         if (!controlsPath || controlsPath[0] == '\0')
         {
-            g_audioLogger.Log(eALT_ERROR, "ATL RefreshAudioSystem - Controls path is null, can't complete the refresh!");
+            g_audioLogger.Log(LogType::Error, "ATL RefreshAudioSystem - Controls path is null, can't complete the refresh!");
             return EAudioRequestStatus::Failure;
         }
 
@@ -2453,7 +2458,7 @@ namespace Audio
             MuteAll();
         }
 
-        g_audioLogger.Log(eALT_ALWAYS, "$3Done refreshing the AudioSystem!");
+        g_audioLogger.Log(LogType::Always, "$3Done refreshing the AudioSystem!");
 
         return EAudioRequestStatus::Success;
     }

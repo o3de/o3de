@@ -63,20 +63,27 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     // <title EAudioRequestStatus>
     // Summary:
-    //      An enum that lists possible statuses of an AudioRequest.
-    //      Used as a return type for many function used by the AudioSystem internally,
+    //      An enum that lists possible statuses of an in-progress AudioRequest.
+    //      Used as a return type for many function used by the AudioSystem/ATL internally,
     //      and also for most of the IAudioSystemImplementation calls.
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     enum class EAudioRequestStatus
     {
         None,
         Success,
-        PartialSuccess,
         Failure,
+        PartialSuccess,
         Pending,
         FailureInvalidObjectId,
         FailureInvalidControlId,
         FailureInvalidRequest,
+    };
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    enum class EAudioRequestResult
+    {
+        Success,
+        Failure,
     };
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -203,14 +210,6 @@ namespace Audio
         eART_AUDIO_OBJECT_REQUEST           = 3,
         eART_AUDIO_LISTENER_REQUEST         = 4,
         eART_AUDIO_ALL_REQUESTS             = static_cast<TATLEnumFlagsType>(-1),
-    };
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    enum EAudioRequestResult : TATLEnumFlagsType
-    {
-        eARR_NONE       = 0,
-        eARR_SUCCESS    = 1,
-        eARR_FAILURE    = 2,
     };
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////

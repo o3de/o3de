@@ -147,7 +147,7 @@ namespace AudioEngineWwiseGem
         m_engineWwise = AZStd::make_unique<Audio::CAudioSystemImpl_wwise>(assetPlatform.c_str());
         if (m_engineWwise)
         {
-            Audio::g_audioImplLogger_wwise.Log(Audio::eALT_ALWAYS, "AudioEngineWwise created!");
+            Audio::g_audioImplLogger_wwise.Log(Audio::LogType::Always, "AudioEngineWwise created!");
 
             Audio::System::Initialize initRequest;
             AZ::Interface<Audio::IAudioSystem>::Get()->PushRequestBlockingNew(AZStd::move(initRequest));
@@ -156,7 +156,7 @@ namespace AudioEngineWwiseGem
         }
         else
         {
-            Audio::g_audioImplLogger_wwise.Log(Audio::eALT_ALWAYS, "Could not create AudioEngineWwise!");
+            Audio::g_audioImplLogger_wwise.Log(Audio::LogType::Always, "Could not create AudioEngineWwise!");
         }
 
         return success;

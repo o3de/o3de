@@ -375,7 +375,7 @@ namespace LmbrCentral
         if (requestInfo->eAudioRequestType == eART_AUDIO_CALLBACK_MANAGER_REQUEST)
         {
             const auto notificationType = static_cast<EAudioCallbackManagerRequestType>(requestInfo->nSpecificAudioRequest);
-            if (notificationType == eACMRT_REPORT_FINISHED_TRIGGER_INSTANCE && requestInfo->eResult == eARR_SUCCESS)
+            if (notificationType == eACMRT_REPORT_FINISHED_TRIGGER_INSTANCE && requestInfo->eResult == EAudioRequestResult::Success)
             {
                 AZ::EntityId callbackOwnerEntityId(reinterpret_cast<AZ::u64>(requestInfo->pUserData));
                 AudioTriggerComponentNotificationBus::Event(callbackOwnerEntityId, &AudioTriggerComponentNotificationBus::Events::OnTriggerFinished, requestInfo->nAudioControlID);

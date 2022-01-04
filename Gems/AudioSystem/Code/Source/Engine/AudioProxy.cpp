@@ -79,7 +79,7 @@ namespace Audio
     #if !defined(AUDIO_RELEASE)
             if (m_nAudioObjectID == INVALID_AUDIO_OBJECT_ID)
             {
-                g_audioLogger.Log(eALT_ASSERT, "Failed to reserve audio object ID on AudioProxy (%s)!", sObjectName);
+                g_audioLogger.Log(LogType::Assert, "Failed to reserve audio object ID on AudioProxy (%s)!", sObjectName);
             }
     #endif // !AUDIO_RELEASE
         }
@@ -525,7 +525,7 @@ namespace Audio
                     }
                     default:
                     {
-                        g_audioLogger.Log(eALT_ASSERT, "Unknown command type in CAudioProxy::ExecuteQueuedCommands!");
+                        g_audioLogger.Log(LogType::Assert, "Unknown command type in CAudioProxy::ExecuteQueuedCommands!");
                         break;
                     }
                 }
@@ -672,7 +672,7 @@ namespace Audio
             }
             default:
             {
-                g_audioLogger.Log(eALT_ERROR, "Unknown queued command type [%d] in CAudioProxy::TryAddQueuedCommand!", refCommand.eType);
+                g_audioLogger.Log(LogType::Error, "Unknown queued command type [%d] in CAudioProxy::TryAddQueuedCommand!", refCommand.eType);
                 bAdd = false;
                 break;
             }
@@ -696,7 +696,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioProxy::OnAudioEvent(const SAudioRequestInfo* const pAudioRequestInfo)
     {
-        if (pAudioRequestInfo->eResult == eARR_SUCCESS && pAudioRequestInfo->eAudioRequestType == eART_AUDIO_MANAGER_REQUEST)
+        if (pAudioRequestInfo->eResult == EAudioRequestResult::Success && pAudioRequestInfo->eAudioRequestType == eART_AUDIO_MANAGER_REQUEST)
         {
             const auto eAudioManagerRequestType = static_cast<const EAudioManagerRequestType>(pAudioRequestInfo->nSpecificAudioRequest);
 

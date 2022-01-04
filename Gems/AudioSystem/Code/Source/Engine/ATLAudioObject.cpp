@@ -71,7 +71,7 @@ namespace Audio
         }
         else
         {
-            g_audioLogger.Log(eALT_WARNING, "Reported a started instance %u that couldn't be found on an object %u",
+            g_audioLogger.Log(LogType::Warning, "Reported a started instance %u that couldn't be found on an object %u",
                 audioTriggerInstanceID, GetID());
         }
     }
@@ -181,7 +181,7 @@ namespace Audio
         }
         else
         {
-            g_audioLogger.Log(eALT_WARNING, "Reported finished event %u on an inactive trigger %u", pEvent->GetID(), pEvent->m_nTriggerID);
+            g_audioLogger.Log(LogType::Warning, "Reported finished event %u on an inactive trigger %u", pEvent->GetID(), pEvent->m_nTriggerID);
         }
     }
 
@@ -711,13 +711,13 @@ namespace Audio
         if (!m_cActiveEvents.empty())
         {
             const char* const sEventString = GetEventIDs("; ").c_str();
-            g_audioLogger.Log(eALT_WARNING, "Active events on an object (ID: %u) being released!  #Events: %u   EventIDs: %s", GetID(), m_cActiveEvents.size(), sEventString);
+            g_audioLogger.Log(LogType::Warning, "Active events on an object (ID: %u) being released!  #Events: %u   EventIDs: %s", GetID(), m_cActiveEvents.size(), sEventString);
         }
 
         if (!m_cTriggers.empty())
         {
             const char* const sTriggerString = GetTriggerNames("; ", pDebugNameStore).c_str();
-            g_audioLogger.Log(eALT_WARNING, "Active triggers on an object (ID: %u) being released!  #Triggers: %u   TriggerNames: %s", GetID(), m_cTriggers.size(), sTriggerString);
+            g_audioLogger.Log(LogType::Warning, "Active triggers on an object (ID: %u) being released!  #Triggers: %u   TriggerNames: %s", GetID(), m_cTriggers.size(), sTriggerString);
         }
     }
 

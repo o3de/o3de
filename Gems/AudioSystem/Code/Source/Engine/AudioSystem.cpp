@@ -369,7 +369,7 @@ namespace Audio
         else
         {
             g_audioLogger.Log(
-                eALT_ERROR, "AudioSystem::UpdateControlsPath - failed to normalize the controls path '%s'!", controlsPath.c_str());
+                LogType::Error, "AudioSystem::UpdateControlsPath - failed to normalize the controls path '%s'!", controlsPath.c_str());
         }
     }
 
@@ -417,7 +417,7 @@ namespace Audio
         #if !defined(AUDIO_RELEASE)
             if (!audioProxy)
             {
-                g_audioLogger.Log(eALT_ASSERT, "AudioSystem::GetFreeAudioProxy - failed to create new AudioProxy instance!");
+                g_audioLogger.Log(LogType::Assert, "AudioSystem::GetFreeAudioProxy - failed to create new AudioProxy instance!");
             }
         #endif // !AUDIO_RELEASE
         }
@@ -431,7 +431,8 @@ namespace Audio
         AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::FreeAudioProxy - called from a non-Main thread!");
         auto const audioProxy = static_cast<CAudioProxy*>(audioProxyI);
 
-        if (AZStd::find(m_apAudioProxiesToBeFreed.begin(), m_apAudioProxiesToBeFreed.end(), audioProxy) != m_apAudioProxiesToBeFreed.end() || AZStd::find(m_apAudioProxies.begin(), m_apAudioProxies.end(), audioProxy) != m_apAudioProxies.end())
+        if (AZStd::find(m_apAudioProxiesToBeFreed.begin(), m_apAudioProxiesToBeFreed.end(), audioProxy) != m_apAudioProxiesToBeFreed.end()
+            || AZStd::find(m_apAudioProxies.begin(), m_apAudioProxies.end(), audioProxy) != m_apAudioProxies.end())
         {
             AZ_Warning("AudioSystem", false, "Attempting to free an already freed audio proxy");
             return;
@@ -506,7 +507,7 @@ namespace Audio
                 [[fallthrough]];
             default:
             {
-                g_audioLogger.Log(eALT_WARNING, "AudioSystem::GetAudioControlName - called with invalid EAudioControlType!");
+                g_audioLogger.Log(LogType::Warning, "AudioSystem::GetAudioControlName - called with invalid EAudioControlType!");
                 break;
             }
         }

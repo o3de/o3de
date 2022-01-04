@@ -83,7 +83,7 @@ namespace Audio
             }
             else
             {
-                g_audioLogger.Log(eALT_ERROR, "An AudioSystem InstanceManager ID counter wrapped around.");
+                g_audioLogger.Log(LogType::Error, "An AudioSystem InstanceManager ID counter wrapped around.");
                 m_nIDCounter = m_nMinCounterValue;
                 return m_nIDCounter;
             }

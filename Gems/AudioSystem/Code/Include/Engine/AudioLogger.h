@@ -15,13 +15,13 @@
 namespace Audio
 {
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    enum EAudioLogType
+    enum class LogType
     {
-        eALT_ASSERT,
-        eALT_ERROR,
-        eALT_WARNING,
-        eALT_COMMENT,
-        eALT_ALWAYS,
+        Assert,
+        Error,
+        Warning,
+        Comment,
+        Always,
     };
 
     namespace Log
@@ -41,18 +41,18 @@ namespace Audio
         // all audio log calls to use Audio::Log::Print.
         // Audio::Log::Print will take variadic arguments, but for now format the
         // arguments in CAudioLogger::Log and call this PrintMsg.
-        inline void PrintMsg(const EAudioLogType type, const char* const message)
+        inline void PrintMsg(const Audio::LogType type, const char* const message)
         {
             static constexpr const char* AudioWindow = "Audio";
 
             switch (type)
             {
-                case eALT_ASSERT:
+                case LogType::Assert:
                 {
                     AZ_Assert(false, message);
                     break;
                 }
-                case eALT_ERROR:
+                case LogType::Error:
                 {
                     if ((s_audioLogOptions & Log::Options::Errors) != 0)
                     {
@@ -60,7 +60,7 @@ namespace Audio
                     }
                     break;
                 }
-                case eALT_WARNING:
+                case LogType::Warning:
                 {
                     if ((s_audioLogOptions & Log::Options::Warnings) != 0)
                     {
@@ -68,7 +68,7 @@ namespace Audio
                     }
                     break;
                 }
-                case eALT_COMMENT:
+                case LogType::Comment:
                 {
                     if ((s_audioLogOptions & Log::Options::Comments) != 0)
                     {
@@ -76,7 +76,7 @@ namespace Audio
                     }
                     break;
                 }
-                case eALT_ALWAYS:
+                case LogType::Always:
                 {
                     AZ_Printf(AudioWindow, message);
                     break;
@@ -109,10 +109,10 @@ namespace Audio
         // Summary:
         //      Log a message
         // Arguments:
-        //      type        - log message type (e.g. eALT_ERROR, eALT_WARNING, eALT_COMMENT, etc)
+        //      type        - log message type (e.g. LogType::Error, LogType::Warning, LogType::Comment, etc)
         //      format, ... - printf-style format string and its arguments
         ///////////////////////////////////////////////////////////////////////////////////////////////
-        void Log([[maybe_unused]] const EAudioLogType type, [[maybe_unused]] const char* const format, ...) const
+        void Log([[maybe_unused]] const Audio::LogType type, [[maybe_unused]] const char* const format, ...) const
         {
         #if defined(ENABLE_AUDIO_LOGGING)
             if (format && format[0] != '\0')

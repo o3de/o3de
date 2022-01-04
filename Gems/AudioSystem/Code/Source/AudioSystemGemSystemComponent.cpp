@@ -140,7 +140,7 @@ namespace AudioSystemGem
 
         if (CreateAudioSystem())
         {
-            g_audioLogger.Log(eALT_ALWAYS, "AudioSystem created!");
+            g_audioLogger.Log(LogType::Always, "AudioSystem created!");
 
             // Initialize the implementation module...
             bool initImplSuccess = false;
@@ -156,11 +156,11 @@ namespace AudioSystemGem
             {
                 if (Gem::AudioEngineGemRequestBus::HasHandlers())
                 {
-                    g_audioLogger.Log(eALT_ERROR, "The Audio Engine did not initialize correctly!");
+                    g_audioLogger.Log(LogType::Error, "The Audio Engine did not initialize correctly!");
                 }
                 else
                 {
-                    g_audioLogger.Log(eALT_WARNING, "Running without any AudioEngine!");
+                    g_audioLogger.Log(LogType::Warning, "Running without any AudioEngine!");
                 }
             }
 
@@ -262,7 +262,7 @@ namespace AudioSystemGem
         }
         else
         {
-            Audio::g_audioLogger.Log(Audio::eALT_ERROR, "Could not create AudioSystem!");
+            Audio::g_audioLogger.Log(Audio::LogType::Error, "Could not create AudioSystem!");
         }
 
         return success;

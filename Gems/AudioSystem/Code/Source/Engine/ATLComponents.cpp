@@ -222,7 +222,7 @@ namespace Audio
             {
                 --m_oAudioEventPool.m_nIDCounter;
 
-                g_audioLogger.Log(eALT_WARNING, "Failed to get a new instance of an AudioEvent from the implementation");
+                g_audioLogger.Log(LogType::Warning, "Failed to get a new instance of an AudioEvent from the implementation");
                 //failed to get a new instance from the implementation
             }
         }
@@ -427,7 +427,7 @@ namespace Audio
             else
             {
                 g_audioLogger.Log(
-                    eALT_WARNING,
+                    LogType::Warning,
                     "Failed to report starting event %u on object %s as it does not exist!",
                     pEvent->GetID(),
                     m_pDebugNameStore->LookupAudioObjectName(pEvent->m_nObjectID));
@@ -436,7 +436,7 @@ namespace Audio
         }
         else
         {
-            g_audioLogger.Log(eALT_WARNING, "NULL pEvent in CAudioObjectManager::ReportStartedEvent");
+            g_audioLogger.Log(LogType::Warning, "NULL pEvent in CAudioObjectManager::ReportStartedEvent");
         }
     }
 
@@ -460,7 +460,7 @@ namespace Audio
             else
             {
                 g_audioLogger.Log(
-                    eALT_WARNING,
+                    LogType::Warning,
                     "Removing Event %u from Object %s: Object no longer exists!",
                     pEvent->GetID(),
                     m_pDebugNameStore->LookupAudioObjectName(pEvent->m_nObjectID));
@@ -469,7 +469,7 @@ namespace Audio
         }
         else
         {
-            g_audioLogger.Log(eALT_WARNING, "nullptr pEvent in CAudioObjectManager::ReportFinishedEvent");
+            g_audioLogger.Log(LogType::Warning, "nullptr pEvent in CAudioObjectManager::ReportFinishedEvent");
         }
     }
 
@@ -515,7 +515,7 @@ namespace Audio
                     "If this limit was reached from legitimate content creation and not a scripting error, "
                     "try increasing the Capacity of Audio::AudioSystemAllocator.";
 
-                g_audioLogger.Log(eALT_ASSERT, msg);
+                g_audioLogger.Log(LogType::Assert, msg);
                 //failed to get a new instance from the implementation
             }
         }
@@ -812,7 +812,7 @@ namespace Audio
         }
         else
         {
-            g_audioLogger.Log(eALT_WARNING, "CAudioListenerManager::ReserveID - Reserved pool of pre-allocated Audio Listeners has been exhausted!");
+            g_audioLogger.Log(LogType::Warning, "CAudioListenerManager::ReserveID - Reserved pool of pre-allocated Audio Listeners has been exhausted!");
         }
 
         return bSuccess;
@@ -904,7 +904,7 @@ namespace Audio
             if (currentListener == listener)
             {
             #if !defined(AUDIO_RELEASE)
-                g_audioLogger.Log(eALT_WARNING, "AudioEventListenerManager::AddRequestListener - Request listener being added already exists!");
+                g_audioLogger.Log(LogType::Warning, "AudioEventListenerManager::AddRequestListener - Request listener being added already exists!");
             #endif // !AUDIO_RELEASE
                 return;
             }
@@ -928,7 +928,7 @@ namespace Audio
         }
 
     #if !defined(AUDIO_RELEASE)
-        g_audioLogger.Log(eALT_WARNING, "AudioEventListenerManager::RemoveRequestListener - Failed to remove a request listener (not found)!");
+        g_audioLogger.Log(LogType::Warning, "AudioEventListenerManager::RemoveRequestListener - Failed to remove a request listener (not found)!");
     #endif // !AUDIO_RELEASE
     }
 
@@ -1010,7 +1010,7 @@ namespace Audio
         for (const auto& file : foundFiles)
         {
             AZ_Assert(AZ::IO::FileIOBase::GetInstance()->Exists(file.c_str()), "FindFiles found file '%s' but FileIO says it doesn't exist!", file.c_str());
-            g_audioLogger.Log(eALT_COMMENT, "Loading Audio Controls Library: '%s'", file.c_str());
+            g_audioLogger.Log(LogType::Comment, "Loading Audio Controls Library: '%s'", file.c_str());
 
             Audio::ScopedXmlLoader xmlFileLoader(file.Native());
             if (xmlFileLoader.HasError())
@@ -1058,7 +1058,7 @@ namespace Audio
         for (const auto& file : foundFiles)
         {
             AZ_Assert(AZ::IO::FileIOBase::GetInstance()->Exists(file.c_str()), "FindFiles found file '%s' but FileIO says it doesn't exist!", file.c_str());
-            g_audioLogger.Log(eALT_COMMENT, "Loading Audio Preloads Library: '%s'", file.c_str());
+            g_audioLogger.Log(LogType::Comment, "Loading Audio Preloads Library: '%s'", file.c_str());
 
             Audio::ScopedXmlLoader xmlFileLoader(file.Native());
             if (xmlFileLoader.HasError())

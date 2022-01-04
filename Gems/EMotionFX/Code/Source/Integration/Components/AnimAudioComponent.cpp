@@ -619,7 +619,7 @@ namespace EMotionFX
                 const auto notificationType = static_cast<Audio::EAudioCallbackManagerRequestType>(requestInfo->nSpecificAudioRequest);
                 if (notificationType == Audio::eACMRT_REPORT_FINISHED_TRIGGER_INSTANCE)
                 {
-                    if (requestInfo->eResult == Audio::eARR_SUCCESS)
+                    if (requestInfo->eResult == Audio::EAudioRequestResult::Success)
                     {
                         AZ::EntityId entityId(reinterpret_cast<AZ::u64>(requestInfo->pUserData));
                         AnimAudioComponentNotificationBus::Event(entityId, &AnimAudioComponentNotificationBus::Events::OnTriggerFinished, requestInfo->nAudioControlID);

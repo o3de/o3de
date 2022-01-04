@@ -134,7 +134,7 @@ namespace Audio
                         // This file entry is upgraded from "manual loading" to "auto loading" but needs a reset to "manual loading" again!
                         it->second->m_flags.AddFlags(eAFF_NEEDS_RESET_TO_MANUAL_LOADING);
                         it->second->m_flags.ClearFlags(eAFF_USE_COUNTED);
-                        g_audioLogger.Log(eALT_COMMENT, "Upgraded file entry from 'Manual' to 'Auto' loading: %s", it->second->m_filePath.c_str());
+                        g_audioLogger.Log(LogType::Comment, "Upgraded file entry from 'Manual' to 'Auto' loading: %s", it->second->m_filePath.c_str());
                     }
 
                     // Entry already exists, free the memory!
@@ -168,7 +168,7 @@ namespace Audio
             {
                 audioFileEntry->m_flags.AddFlags(eAFF_USE_COUNTED);
                 audioFileEntry->m_flags.ClearFlags(eAFF_NEEDS_RESET_TO_MANUAL_LOADING);
-                g_audioLogger.Log(eALT_COMMENT, "Downgraded file entry from 'Auto' to 'Manual' loading: %s", audioFileEntry->m_filePath.c_str());
+                g_audioLogger.Log(LogType::Comment, "Downgraded file entry from 'Auto' to 'Manual' loading: %s", audioFileEntry->m_filePath.c_str());
             }
         }
 
@@ -329,7 +329,7 @@ namespace Audio
             }
             else if (audioFileEntry->m_flags.AreAnyFlagsActive(eAFF_LOADING | eAFF_MEMALLOCFAIL))
             {
-                g_audioLogger.Log(eALT_ALWAYS, "FileCacheManager - Trying to remove a loading or mem-failed file cache entry '%s'", audioFileEntry->m_filePath.c_str());
+                g_audioLogger.Log(LogType::Always, "FileCacheManager - Trying to remove a loading or mem-failed file cache entry '%s'", audioFileEntry->m_filePath.c_str());
 
                 // Reset the entry in case it's still loading or was a memory allocation fail.
                 UncacheFile(audioFileEntry);
@@ -566,7 +566,7 @@ namespace Audio
                     AudioSystemImplementationRequestBus::Broadcast(&AudioSystemImplementationRequestBus::Events::RegisterInMemoryFile, &fileEntryInfo);
                     success = true;
 
-                    g_audioLogger.Log(eALT_COMMENT, "FileCacheManager - File Cached: '%s'\n", fileEntryInfo.sFileName);
+                    g_audioLogger.Log(LogType::Comment, "FileCacheManager - File Cached: '%s'\n", fileEntryInfo.sFileName);
                 }
                 break;
             }
@@ -578,7 +578,7 @@ namespace Audio
             }
             case AZ::IO::IStreamerTypes::RequestStatus::Canceled:
             {
-                g_audioLogger.Log(eALT_COMMENT, "FileCacheManager - Async file stream '%s' was canceled by user!", audioFileEntry->m_filePath.c_str());
+                g_audioLogger.Log(LogType::Comment, "FileCacheManager - Async file stream '%s' was canceled by user!", audioFileEntry->m_filePath.c_str());
                 UncacheFileCacheEntryInternal(audioFileEntry, true, true);
                 break;
             }
@@ -700,11 +700,11 @@ namespace Audio
             AudioSystemImplementationRequestBus::BroadcastResult(result, &AudioSystemImplementationRequestBus::Events::UnregisterInMemoryFile, &fileEntryInfo);
             if (result == EAudioRequestStatus::Success)
             {
-                g_audioLogger.Log(eALT_COMMENT, "FileCacheManager - File Uncached: '%s'\n", fileEntryInfo.sFileName);
+                g_audioLogger.Log(LogType::Comment, "FileCacheManager - File Uncached: '%s'\n", fileEntryInfo.sFileName);
             }
             else
             {
-                g_audioLogger.Log(eALT_COMMENT, "FileCacheManager - Unable to uncache file '%s'\n", fileEntryInfo.sFileName);
+                g_audioLogger.Log(LogType::Comment, "FileCacheManager - Unable to uncache file '%s'\n", fileEntryInfo.sFileName);
                 return;
             }
         }
@@ -865,17 +865,17 @@ namespace Audio
                 audioFileEntry->m_flags.AddFlags(eAFF_MEMALLOCFAIL);
 
                 // The user should be made aware of it.
-                g_audioLogger.Log(eALT_ERROR, "FileCacheManager - Could not cache '%s' - out of memory or fragmented memory!", audioFileEntry->m_filePath.c_str());
+                g_audioLogger.Log(LogType::Error, "FileCacheManager - Could not cache '%s' - out of memory or fragmented memory!", audioFileEntry->m_filePath.c_str());
             }
         }
         else if (audioFileEntry->m_flags.AreAnyFlagsActive(eAFF_CACHED | eAFF_LOADING))
         {
-            g_audioLogger.Log(eALT_COMMENT, "FileCacheManager - Skipping '%s' - it's either already loaded or currently loading!", audioFileEntry->m_filePath.c_str());
+            g_audioLogger.Log(LogType::Comment, "FileCacheManager - Skipping '%s' - it's either already loaded or currently loading!", audioFileEntry->m_filePath.c_str());
             success = true;
         }
         else if (audioFileEntry->m_flags.AreAnyFlagsActive(eAFF_NOTFOUND))
         {
-            g_audioLogger.Log(eALT_WARNING, "FileCacheManager - Could not cache '%s' - file was not found at that location!", audioFileEntry->m_filePath.c_str());
+            g_audioLogger.Log(LogType::Warning, "FileCacheManager - Could not cache '%s' - file was not found at that location!", audioFileEntry->m_filePath.c_str());
         }
 
         // Increment the used count on manually-loaded files.
