@@ -92,15 +92,11 @@ namespace AzToolsFramework
             {
                 toolTipString += "\n";
             }
-            toolTipString += "[";
 
             const QString minString = QLocale().toString(propertyControl->minimum());
             const QString maxString = QLocale().toString(propertyControl->maximum());
+            toolTipString += QString("[%1, %2]").arg(minString).arg(maxString);
 
-            toolTipString += minString;
-            toolTipString += ", ";
-            toolTipString += maxString;
-            toolTipString += "]";
             return true;
         }
         return false;
@@ -121,10 +117,8 @@ namespace AzToolsFramework
 
             const QString minString = QLocale().toString(propertyControl->minimum());
             const QString maxString = QLocale().toString(propertyControl->maximum());
+            toolTipString += QString("[%1, %2]").arg(minString).arg(maxString);
 
-            toolTipString += "[" + minString + ", ";
-            toolTipString += maxString;
-            toolTipString += "]";
             return true;
         }
         return false;
