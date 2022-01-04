@@ -22,7 +22,6 @@ set(FILES
     Source/Cinematics/CharacterTrackAnimator.h
     Source/Cinematics/Movie.h
     Source/Cinematics/TCBSpline.h
-    Source/Cinematics/resource.h
     Source/Cinematics/AssetBlendTrack.cpp
     Source/Cinematics/BoolTrack.cpp
     Source/Cinematics/CaptureTrack.cpp
