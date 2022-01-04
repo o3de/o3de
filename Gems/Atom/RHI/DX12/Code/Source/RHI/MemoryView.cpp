@@ -9,6 +9,7 @@
 
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/conversions.h>
 
