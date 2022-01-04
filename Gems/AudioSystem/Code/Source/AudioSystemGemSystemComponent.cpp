@@ -99,11 +99,11 @@ namespace AudioSystemGem
 
     void AudioSystemGemSystemComponent::Init()
     {
-        m_loseFocusRequest.nFlags = Audio::eARF_PRIORITY_HIGH;
-        m_loseFocusRequest.pData = &m_loseFocusData;
+        //m_loseFocusRequest.nFlags = Audio::eARF_PRIORITY_HIGH;
+        //m_loseFocusRequest.pData = &m_loseFocusData;
 
-        m_getFocusRequest.nFlags = Audio::eARF_PRIORITY_HIGH;
-        m_getFocusRequest.pData = &m_getFocusData;
+        //m_getFocusRequest.nFlags = Audio::eARF_PRIORITY_HIGH;
+        //m_getFocusRequest.pData = &m_getFocusData;
     }
 
     void AudioSystemGemSystemComponent::Activate()
@@ -217,7 +217,7 @@ namespace AudioSystemGem
     {
         if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
         {
-            audioSystem->PushRequest(m_loseFocusRequest);
+            //audioSystem->PushRequest(m_loseFocusRequest);
         }
     }
 
@@ -225,7 +225,7 @@ namespace AudioSystemGem
     {
         if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
         {
-            audioSystem->PushRequest(m_getFocusRequest);
+            //audioSystem->PushRequest(m_getFocusRequest);
         }
     }
 
@@ -279,22 +279,23 @@ namespace AudioSystemGem
             audioSystem->UpdateControlsPath();
 
             // Must be blocking requests.
-            SAudioRequest oAudioRequestData;
-            oAudioRequestData.nFlags = eARF_PRIORITY_HIGH | eARF_EXECUTE_BLOCKING;
+            // TODO:
+            //SAudioRequest oAudioRequestData;
+            //oAudioRequestData.nFlags = eARF_PRIORITY_HIGH | eARF_EXECUTE_BLOCKING;
 
-            const char* controlsPath = audioSystem->GetControlsPath();
+            //const char* controlsPath = audioSystem->GetControlsPath();
 
-            SAudioManagerRequestData<eAMRT_PARSE_CONTROLS_DATA> oAMData(controlsPath, eADS_GLOBAL);
-            oAudioRequestData.pData = &oAMData;
-            audioSystem->PushRequestBlocking(oAudioRequestData);
+            //SAudioManagerRequestData<eAMRT_PARSE_CONTROLS_DATA> oAMData(controlsPath, eADS_GLOBAL);
+            //oAudioRequestData.pData = &oAMData;
+            //audioSystem->PushRequestBlocking(oAudioRequestData);
 
-            SAudioManagerRequestData<eAMRT_PARSE_PRELOADS_DATA> oAMData2(controlsPath, eADS_GLOBAL);
-            oAudioRequestData.pData = &oAMData2;
-            audioSystem->PushRequestBlocking(oAudioRequestData);
+            //SAudioManagerRequestData<eAMRT_PARSE_PRELOADS_DATA> oAMData2(controlsPath, eADS_GLOBAL);
+            //oAudioRequestData.pData = &oAMData2;
+            //audioSystem->PushRequestBlocking(oAudioRequestData);
 
-            SAudioManagerRequestData<eAMRT_PRELOAD_SINGLE_REQUEST> oAMData3(ATLInternalControlIDs::GlobalPreloadRequestID);
-            oAudioRequestData.pData = &oAMData3;
-            audioSystem->PushRequestBlocking(oAudioRequestData);
+            //SAudioManagerRequestData<eAMRT_PRELOAD_SINGLE_REQUEST> oAMData3(ATLInternalControlIDs::GlobalPreloadRequestID);
+            //oAudioRequestData.pData = &oAMData3;
+            //audioSystem->PushRequestBlocking(oAudioRequestData);
         }
     }
 

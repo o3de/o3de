@@ -357,10 +357,10 @@ namespace Audio
 
         if (pNewObject)
         {
-            EAudioRequestStatus eImplResult = eARS_FAILURE;
+            EAudioRequestStatus eImplResult = EAudioRequestStatus::Failure;
             AudioSystemImplementationRequestBus::BroadcastResult(eImplResult, &AudioSystemImplementationRequestBus::Events::RegisterAudioObject, pNewObject->GetImplDataPtr(), nullptr);
 
-            if (eImplResult == eARS_SUCCESS)
+            if (eImplResult == EAudioRequestStatus::Success)
             {
                 pNewObject->IncrementRefCount();
                 rAudioObjectID = pNewObject->GetID();
@@ -538,9 +538,9 @@ namespace Audio
         #endif // !AUDIO_RELEASE
 
             pOldObject->Clear();
-            EAudioRequestStatus eResult = eARS_FAILURE;
+            EAudioRequestStatus eResult = EAudioRequestStatus::Failure;
             AudioSystemImplementationRequestBus::BroadcastResult(eResult, &AudioSystemImplementationRequestBus::Events::UnregisterAudioObject, pOldObject->GetImplDataPtr());
-            bSuccess = (eResult == eARS_SUCCESS);
+            bSuccess = (eResult == EAudioRequestStatus::Success);
 
             if (m_cObjectPool.m_cReserved.size() < m_cObjectPool.m_nReserveSize)
             {
@@ -585,9 +585,9 @@ namespace Audio
             szAudioObjectName = m_pDebugNameStore->LookupAudioObjectName(pAudioObject->GetID());
         #endif // !AUDIO_RELEASE
 
-            EAudioRequestStatus eResult = eARS_FAILURE;
+            EAudioRequestStatus eResult = EAudioRequestStatus::Failure;
             AudioSystemImplementationRequestBus::BroadcastResult(eResult, &AudioSystemImplementationRequestBus::Events::RegisterAudioObject, pAudioObject->GetImplDataPtr(), szAudioObjectName);
-            AZ_Assert(eResult == eARS_SUCCESS, "RegisterAudioObject failed to register object named '%s'", szAudioObjectName);
+            AZ_Assert(eResult == EAudioRequestStatus::Success, "RegisterAudioObject failed to register object named '%s'", szAudioObjectName);
         }
     }
 
@@ -607,11 +607,11 @@ namespace Audio
             CATLAudioObject* const pAudioObject = audioObjectPair.second;
             if (auto implObject = pAudioObject->GetImplDataPtr())
             {
-                EAudioRequestStatus eResult = eARS_FAILURE;
+                EAudioRequestStatus eResult = EAudioRequestStatus::Failure;
                 AudioSystemImplementationRequestBus::BroadcastResult(eResult, &AudioSystemImplementationRequestBus::Events::UnregisterAudioObject, implObject);
-                AZ_Error("CAudioObjectManager", eResult == eARS_SUCCESS, "Failed to Unregister Audio Object!");
+                AZ_Error("CAudioObjectManager", eResult == EAudioRequestStatus::Success, "Failed to Unregister Audio Object!");
                 AudioSystemImplementationRequestBus::BroadcastResult(eResult, &AudioSystemImplementationRequestBus::Events::ResetAudioObject, implObject);
-                AZ_Error("CAudioObjectManager", eResult == eARS_SUCCESS, "Failed to Reset Audio Object!");
+                AZ_Error("CAudioObjectManager", eResult == EAudioRequestStatus::Success, "Failed to Reset Audio Object!");
                 AudioSystemImplementationRequestBus::Broadcast(&AudioSystemImplementationRequestBus::Events::DeleteAudioObjectData, implObject);
                 pAudioObject->SetImplDataPtr(nullptr);
             }
@@ -1834,10 +1834,10 @@ namespace Audio
 
         if (pNewObject)
         {
-            EAudioRequestStatus eImplResult = eARS_FAILURE;
+            EAudioRequestStatus eImplResult = EAudioRequestStatus::Failure;
             AudioSystemImplementationRequestBus::BroadcastResult(eImplResult, &AudioSystemImplementationRequestBus::Events::RegisterAudioObject, pNewObject->GetImplDataPtr(), sAudioObjectName);
 
-            if (eImplResult == eARS_SUCCESS)
+            if (eImplResult == EAudioRequestStatus::Success)
             {
                 pNewObject->IncrementRefCount();
                 rAudioObjectID = pNewObject->GetID();

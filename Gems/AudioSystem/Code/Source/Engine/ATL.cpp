@@ -37,16 +37,20 @@ namespace Audio
 
         switch (eAudioRequestStatus)
         {
-            case eARS_SUCCESS:
+            case EAudioRequestStatus::Success:
             {
                 eResult = eARR_SUCCESS;
                 break;
             }
-            case eARS_FAILURE:
-            case eARS_FAILURE_INVALID_OBJECT_ID:
-            case eARS_FAILURE_INVALID_CONTROL_ID:
-            case eARS_FAILURE_INVALID_REQUEST:
-            case eARS_PARTIAL_SUCCESS:
+            case EAudioRequestStatus::Failure:
+                [[fallthrough]];
+            case EAudioRequestStatus::FailureInvalidObjectId:
+                [[fallthrough]];
+            case EAudioRequestStatus::FailureInvalidControlId:
+                [[fallthrough]];
+            case EAudioRequestStatus::FailureInvalidRequest:
+                [[fallthrough]];
+            case EAudioRequestStatus::PartialSuccess:
             {
                 eResult = eARR_FAILURE;
                 break;
@@ -98,7 +102,6 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     bool CAudioTranslationLayer::Initialize()
     {
-
         m_lastUpdateTime = AZStd::chrono::system_clock::now();
         return true;
     }
@@ -106,45 +109,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     bool CAudioTranslationLayer::ShutDown()
     {
-
         return true;
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioTranslationLayer::ProcessRequest(CAudioRequestInternal& rRequest)
-    {
-        EAudioRequestStatus eResult = eARS_NONE;
-
-        switch (rRequest.pData->eRequestType)
-        {
-            case eART_AUDIO_OBJECT_REQUEST:
-            {
-                eResult = ProcessAudioObjectRequest(rRequest);
-                break;
-            }
-            case eART_AUDIO_LISTENER_REQUEST:
-            {
-                eResult = ProcessAudioListenerRequest(rRequest);
-                break;
-            }
-            case eART_AUDIO_CALLBACK_MANAGER_REQUEST:
-            {
-                eResult = ProcessAudioCallbackManagerRequest(rRequest.pData);
-                break;
-            }
-            case eART_AUDIO_MANAGER_REQUEST:
-            {
-                eResult = ProcessAudioManagerRequest(rRequest);
-                break;
-            }
-            default:
-            {
-                g_audioLogger.Log(eALT_ERROR, "Unknown audio request type: %d", static_cast<int>(rRequest.pData->eRequestType));
-                break;
-            }
-        }
-
-        rRequest.eStatus = eResult;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -166,6 +131,505 @@ namespace Audio
 
         AudioSystemImplementationRequestBus::Broadcast(&AudioSystemImplementationRequestBus::Events::Update, elapsedMs);
     }
+
+    //! NEW AUDIO REQUESTS
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    void CAudioTranslationLayer::ProcessRequestNew(AudioRequestType&& request)
+    {
+        // Version A - AZStd::visit w/ a processor object
+        // Pros: No wonky syntax, can move the processor elsewhere
+        // Cons: Where's the connection to ATL here?
+        //
+        // Version B - AZStd::visit w/ a lambda and if constexpr on type
+        // Pros: Syntax is a little more messy, but can pass the ATL as lambda capture
+        // Cons: Seems like it can only be an inline lambda because of the 'auto&' parameter
+        //
+        // Version A...
+        //struct RequestProcessor
+        //{
+        //    void operator()([[maybe_unused]] Audio::System::Initialize& request)
+        //    {
+        //        AZ_Printf("ATL Request Processor", "Initialize Audio System\n");
+        //        request.SetStatus(EAudioRequestStatus::Pending);
+        //        // do stuff ...
+        //    }
+
+        //    void operator()([[maybe_unused]] Audio::System::Shutdown& request)
+        //    {
+        //        AZ_Printf("ATL Request Processor", "Shutdown Audio System\n");
+        //    }
+
+        //    void operator()([[maybe_unused]] Audio::System::ReserveObject& request)
+        //    {
+        //    }
+        //    void operator()([[maybe_unused]] Audio::System::CreateSource& request)
+        //    {
+        //    }
+        //    void operator()([[maybe_unused]] Audio::System::DestroySource& request)
+        //    {
+        //    }
+        //    void operator()([[maybe_unused]] Audio::System::LoadControls& request)
+        //    {
+        //    }
+        //    void operator()([[maybe_unused]] Audio::System::UnloadControls& request)
+        //    {
+        //    }
+        //    void operator()([[maybe_unused]] Audio::System::LoadBank& request)
+        //    {
+        //    }
+        //    void operator()([[maybe_unused]] Audio::System::UnloadBank& request)
+        //    {
+        //    }
+        //    void operator()([[maybe_unused]] Audio::System::UnloadBanksByScope& request)
+        //    {
+        //    }
+        //    void operator()([[maybe_unused]] Audio::System::ReloadAll& request)
+        //    {
+        //    }
+        //    void operator()([[maybe_unused]] Audio::System::ChangeLanguage& request)
+        //    {
+        //    }
+        //    void operator()([[maybe_unused]] Audio::System::SetPanningMode& request)
+        //    {
+        //    }
+
+        //    void operator()([[maybe_unused]] Audio::Object::ExecuteTrigger& request)
+        //    {
+        //    }
+        //    void operator()([[maybe_unused]] Audio::Object::PrepareTrigger& request)
+        //    {
+        //    }
+        //    void operator()([[maybe_unused]] Audio::Object::UnprepareTrigger& request)
+        //    {
+        //    }
+        //    void operator()([[maybe_unused]] Audio::Object::StopTrigger& request)
+        //    {
+        //    }
+        //    void operator()([[maybe_unused]] Audio::Object::StopAllTriggers& request)
+        //    {
+        //    }
+        //    void operator()([[maybe_unused]] Audio::Object::SetPosition& request)
+        //    {
+        //    }
+        //    void operator()([[maybe_unused]] Audio::Object::SetParameterValue& request)
+        //    {
+        //    }
+        //    void operator()([[maybe_unused]] Audio::Object::SetSwitchValue& request)
+        //    {
+        //    }
+        //    void operator()([[maybe_unused]] Audio::Object::SetEnvironmentValue& request)
+        //    {
+        //    }
+        //    void operator()([[maybe_unused]] Audio::Object::ResetParameters& request)
+        //    {
+        //    }
+        //    void operator()([[maybe_unused]] Audio::Object::ResetEnvironments& request)
+        //    {
+        //    }
+        //    void operator()([[maybe_unused]] Audio::Object::Release& request)
+        //    {
+        //    }
+        //    void operator()([[maybe_unused]] Audio::Object::ExecuteSourceTrigger& request)
+        //    {
+        //    }
+        //    void operator()([[maybe_unused]] Audio::Object::SetMultiplePositions& request)
+        //    {
+        //    }
+
+        //    void operator()([[maybe_unused]] Audio::Listener::SetWorldTransform& request)
+        //    {
+        //    }
+        //};
+
+        //AZStd::visit(RequestProcessor{}, request);
+
+
+        // VERSION B
+        EAudioRequestStatus status = AZStd::visit(
+            [this]([[maybe_unused]] auto&& request) -> EAudioRequestStatus
+            {
+                EAudioRequestStatus result = EAudioRequestStatus::None;
+
+                // This should at least get the global audio object.
+                auto audioObject = GetRequestObject(request.m_audioObjectId);
+                if (audioObject == nullptr)
+                {
+                    request.SetStatus(EAudioRequestStatus::FailureInvalidObjectId);
+                    return request.GetStatus();
+                }
+
+                request.SetStatus(EAudioRequestStatus::Pending);
+
+                using T = AZStd::decay_t<decltype(request)>;
+
+                if constexpr (AZStd::is_same_v<T, Audio::System::Initialize>)
+                {
+                    AZ_Printf("ATL Request Lambda", "Initialize Audio System\n");
+
+                    result = InitializeImplComponent();
+                    // Immediately release the impl if it failed to init...
+                    if (result != EAudioRequestStatus::Success)
+                    {
+                        ReleaseImplComponent();
+                    }
+                }
+
+                else if constexpr (AZStd::is_same_v<T, Audio::System::Shutdown>)
+                {
+                    AZ_Printf("ATL Request Lambda", "Shutdown Audio System\n");
+                    ReleaseImplComponent();
+                    result = EAudioRequestStatus::Success;
+                }
+
+                else if constexpr (AZStd::is_same_v<T, Audio::System::ReserveObject>)
+                {
+                #if !defined(AUDIO_RELEASE)
+                    result = BoolToARS(ReserveAudioObjectID(*request.m_objectId, request.m_objectName.c_str()));
+                #else
+                    result = BoolToARS(ReserveAudioObjectID(*request.m_objectId));
+                #endif // !AUDIO_RELEASE
+                }
+
+                else if constexpr (AZStd::is_same_v<T, Audio::System::CreateSource>)
+                {
+                    bool created = false;
+                    AudioSystemImplementationRequestBus::BroadcastResult(
+                        created, &AudioSystemImplementationRequestBus::Events::CreateAudioSource, request.m_sourceConfig);
+                    result = BoolToARS(created);
+                }
+
+                else if constexpr (AZStd::is_same_v<T, Audio::System::DestroySource>)
+                {
+                    AudioSystemImplementationRequestBus::Broadcast(
+                        &AudioSystemImplementationRequestBus::Events::DestroyAudioSource, request.m_sourceId);
+                    result = EAudioRequestStatus::Success;
+                }
+
+                else if constexpr (AZStd::is_same_v<T, Audio::System::LoadControls>)
+                {
+                    result = ParseControlsData(request.m_controlsPath.c_str(), request.m_scope);
+                    //!  COMBINE THESE FUNCTIONS  !//
+                    //result = ParsePreloadsData(request.m_controlsPath.c_str(), request.m_scope);
+                }
+
+                else if constexpr (AZStd::is_same_v<T, Audio::System::UnloadControls>)
+                {
+                    result = ClearControlsData(request.m_scope);
+                    //!  COMBINE THESE FUNCTIONS  !//
+                    //result = ClearPreloadsData(request.m_scope);
+                }
+
+                else if constexpr (AZStd::is_same_v<T, Audio::System::LoadBank>)
+                {
+                    //!  NEED A BLOCKING FLAG TO INDICATE WHETHER IT SHOULD LOAD ASYNC OR NOT  !//
+                    result = m_oFileCacheMgr.TryLoadRequest(request.m_preloadRequestId, true, request.m_autoLoadOnly);
+                }
+
+                else if constexpr (AZStd::is_same_v<T, Audio::System::UnloadBank>)
+                {
+                    result = m_oFileCacheMgr.TryUnloadRequest(request.m_preloadRequestId);
+                }
+
+                else if constexpr (AZStd::is_same_v<T, Audio::System::UnloadBanksByScope>)
+                {
+                    result = m_oFileCacheMgr.UnloadDataByScope(request.m_scope);
+                }
+
+                else if constexpr (AZStd::is_same_v<T, Audio::System::ReloadAll>)
+                {
+                    result = RefreshAudioSystem(request.m_controlsPath.c_str(), request.m_levelName.c_str(), request.m_levelPreloadId);
+                }
+
+                else if constexpr (AZStd::is_same_v<T, Audio::System::ChangeLanguage>)
+                {
+                    SetImplLanguage();
+                    m_oFileCacheMgr.UpdateLocalizedFileCacheEntries();
+                    result = EAudioRequestStatus::Success;
+                }
+
+                else if constexpr (AZStd::is_same_v<T, Audio::System::SetPanningMode>)
+                {
+                    AudioSystemImplementationRequestBus::Broadcast(
+                        &AudioSystemImplementationRequestBus::Events::SetPanningMode, request.m_panningMode);
+                    result = EAudioRequestStatus::Success;
+                }
+
+                else if constexpr (AZStd::is_same_v<T, Audio::Object::ExecuteTrigger>)
+                {
+                    if (auto it = m_cTriggers.find(request.m_triggerId);
+                        it != m_cTriggers.end())
+                    {
+                        result = ActivateTrigger(
+                            audioObject, it->second
+                            //... request.pOwner
+                            //... request.pUserData
+                            //... request.pUserDataOwner
+                            //... request.nFlags
+                        );
+                    }
+                    else
+                    {
+                        result = EAudioRequestStatus::FailureInvalidControlId;
+                    }
+                }
+
+                else if constexpr (AZStd::is_same_v<T, Audio::Object::PrepareTrigger>)
+                {
+                    if (auto it = m_cTriggers.find(request.m_triggerId);
+                        it != m_cTriggers.end())
+                    {
+                        result = PrepUnprepTriggerAsync(audioObject, it->second, true);
+                    }
+                    else
+                    {
+                        result = EAudioRequestStatus::FailureInvalidControlId;
+                    }
+                }
+
+                else if constexpr (AZStd::is_same_v<T, Audio::Object::UnprepareTrigger>)
+                {
+                    if (auto it = m_cTriggers.find(request.m_triggerId);
+                        it != m_cTriggers.end())
+                    {
+                        result = PrepUnprepTriggerAsync(audioObject, it->second, false);
+                    }
+                    else
+                    {
+                        result = EAudioRequestStatus::FailureInvalidControlId;
+                    }
+                }
+
+                else if constexpr (AZStd::is_same_v<T, Audio::Object::StopTrigger>)
+                {
+                    if (auto it = m_cTriggers.find(request.m_triggerId);
+                        it != m_cTriggers.end())
+                    {
+                        result = StopTrigger(audioObject, it->second);
+                    }
+                    else
+                    {
+                        result = EAudioRequestStatus::FailureInvalidControlId;
+                    }
+                }
+
+                else if constexpr (AZStd::is_same_v<T, Audio::Object::StopAllTriggers>)
+                {
+                    // TODO: Filter by Owner - there is no owner in the request
+                    StopAllTriggers(audioObject);
+                    // Should we return the result of StopAllTriggers call instead?
+                    result = EAudioRequestStatus::Success;
+                }
+
+                else if constexpr (AZStd::is_same_v<T, Audio::Object::SetPosition>)
+                {
+                    if (audioObject->HasPosition())
+                    {
+                        auto const positionalObject = static_cast<CATLAudioObject*>(audioObject);
+                        AudioSystemImplementationRequestBus::BroadcastResult(
+                            result, &AudioSystemImplementationRequestBus::Events::SetPosition, positionalObject->GetImplDataPtr(),
+                            request.m_position);
+
+                        if (result == EAudioRequestStatus::Success)
+                        {
+                            positionalObject->SetPosition(request.m_position);
+                        }
+                    }
+                    else
+                    {
+                        g_audioLogger.Log(eALT_COMMENT, "ATL received request to set position on the global audio object!");
+                        result = EAudioRequestStatus::FailureInvalidObjectId;
+                    }
+                }
+
+                else if constexpr (AZStd::is_same_v<T, Audio::Object::SetParameterValue>)
+                {
+                    if (auto it = m_cRtpcs.find(request.m_parameterId);
+                        it != m_cRtpcs.end())
+                    {
+                        result = SetRtpc(audioObject, it->second, request.m_value);
+                    }
+                    else
+                    {
+                        result = EAudioRequestStatus::FailureInvalidControlId;
+                    }
+                }
+
+                else if constexpr (AZStd::is_same_v<T, Audio::Object::SetSwitchValue>)
+                {
+                    if (auto itSwitch = m_cSwitches.find(request.m_switchId);
+                        itSwitch != m_cSwitches.end())
+                    {
+                        if (auto itState = itSwitch->second->cStates.find(request.m_stateId);
+                            itState != itSwitch->second->cStates.end())
+                        {
+                            result = SetSwitchState(audioObject, itState->second);
+                        }
+                        else
+                        {
+                            result = EAudioRequestStatus::FailureInvalidControlId;
+                        }
+                    }
+                    else
+                    {
+                        result = EAudioRequestStatus::FailureInvalidControlId;
+                    }
+                }
+
+                else if constexpr (AZStd::is_same_v<T, Audio::Object::SetEnvironmentValue>)
+                {
+                    if (audioObject->HasPosition())
+                    {
+                        if (auto it = m_cEnvironments.find(request.m_environmentId);
+                            it != m_cEnvironments.end())
+                        {
+                            result = SetEnvironment(audioObject, it->second, request.m_value);
+                        }
+                        else
+                        {
+                            result = EAudioRequestStatus::FailureInvalidControlId;
+                        }
+                    }
+                    else
+                    {
+                        g_audioLogger.Log(eALT_COMMENT, "ATL received request to set environment value on the global audio object!");
+                        result = EAudioRequestStatus::FailureInvalidObjectId;
+                    }
+                }
+
+                else if constexpr (AZStd::is_same_v<T, Audio::Object::ResetParameters>)
+                {
+                    result = ResetRtpcs(audioObject);
+                }
+
+                else if constexpr (AZStd::is_same_v<T, Audio::Object::ResetEnvironments>)
+                {
+                    result = ResetEnvironments(audioObject);
+                }
+
+                else if constexpr (AZStd::is_same_v<T, Audio::Object::Release>)
+                {
+                    if (request.m_audioObjectId != m_nGlobalAudioObjectID)
+                    {
+                        result = BoolToARS(ReleaseAudioObjectID(request.m_audioObjectId));
+                    }
+                    else
+                    {
+                        g_audioLogger.Log(eALT_COMMENT, "ATL received request to release the global audio object!");
+                        result = EAudioRequestStatus::FailureInvalidObjectId;
+                    }
+                }
+
+                else if constexpr (AZStd::is_same_v<T, Audio::Object::ExecuteSourceTrigger>)
+                {
+                    if (auto it = m_cTriggers.find(request.m_triggerId);
+                        it != m_cTriggers.end())
+                    {
+                        SATLSourceData sourceData(request.m_sourceInfo);
+                        result = ActivateTrigger(audioObject, it->second,
+                            nullptr, // request.pOwner
+                            nullptr, // request.pUserData
+                            nullptr, // request.pUserDataOwner
+                            0,       // request.nFlags
+                            &sourceData
+                        );
+                    }
+                    else
+                    {
+                        result = EAudioRequestStatus::FailureInvalidControlId;
+                    }
+                }
+
+                else if constexpr (AZStd::is_same_v<T, Audio::Object::SetMultiplePositions>)
+                {
+                    if (audioObject->HasPosition())
+                    {
+                        auto const positionalObject = static_cast<CATLAudioObject*>(audioObject);
+                        AudioSystemImplementationRequestBus::BroadcastResult(
+                            result, &AudioSystemImplementationRequestBus::Events::SetMultiplePositions, positionalObject->GetImplDataPtr(),
+                            request.m_params);
+
+                        if (result == EAudioRequestStatus::Success)
+                        {
+                            // This is odd, why is this being done?
+                            positionalObject->SetPosition(SATLWorldPosition());
+                        }
+                    }
+                    else
+                    {
+                        g_audioLogger.Log(eALT_COMMENT, "ATL received request to set multiple positions on the global audio object!");
+                        result = EAudioRequestStatus::FailureInvalidObjectId;
+                    }
+                }
+
+                else if constexpr (AZStd::is_same_v<T, Audio::Listener::SetWorldTransform>)
+                {
+                    TAudioObjectID listenerId = INVALID_AUDIO_OBJECT_ID;
+                    // Check for an audio listener override
+                    TAudioObjectID overrideListenerId = m_oAudioListenerMgr.GetOverrideListenerID();
+                    if (overrideListenerId != INVALID_AUDIO_OBJECT_ID)
+                    {
+                        if (request.m_audioObjectId == overrideListenerId)
+                        {
+                            // Have an override set, and the ID in the request matches the override.
+                            // Reroute to the default listener.
+                            listenerId = m_oAudioListenerMgr.GetDefaultListenerID();
+                        }
+                        else if (request.m_audioObjectId != INVALID_AUDIO_OBJECT_ID)
+                        {
+                            // Override is set, but the request specified a different listener ID, allow it.
+                            listenerId = request.m_audioObjectId;
+                        }
+                        else
+                        {
+                            // Override is set, but no listener ID specified.  Typically this would go
+                            // to the default listener, but with overrides we explicitly ignore this.
+                            return EAudioRequestStatus::FailureInvalidObjectId;
+                        }
+                    }
+                    else if (request.m_audioObjectId == INVALID_AUDIO_OBJECT_ID)
+                    {
+                        listenerId = m_oAudioListenerMgr.GetDefaultListenerID();
+                    }
+                    else
+                    {
+                        listenerId = request.m_audioObjectId;
+                    }
+
+                    if (CATLListenerObject* listener = m_oAudioListenerMgr.LookupID(listenerId); listener != nullptr)
+                    {
+                        AudioSystemImplementationRequestBus::BroadcastResult(
+                            result, &AudioSystemImplementationRequestBus::Events::SetListenerPosition, listener->m_pImplData,
+                            request.m_transform);
+
+                        if (result == EAudioRequestStatus::Success)
+                        {
+                            listener->oPosition = request.m_transform;
+                        }
+                    }
+                    else
+                    {
+                        g_audioLogger.Log(eALT_COMMENT, "ATL could not find listener with ID %u", listenerId);
+                        result = EAudioRequestStatus::FailureInvalidObjectId;
+                    }
+                }
+
+                else
+                {
+                    static_assert(false, "AudioRequestType visitor is non-exhaustive across all variant types!");
+                    result = EAudioRequestStatus::FailureInvalidRequest;
+                }
+
+                request.SetStatus(result);
+                return result;
+            }
+            , request);
+
+        if (status != EAudioRequestStatus::Success)
+        {
+            g_audioLogger.Log(eALT_ERROR, "Audio Request did not succeed!\n");
+        }
+    }
+    //~ NEW AUDIO REQUESTS
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     TAudioControlID CAudioTranslationLayer::GetAudioTriggerID(const char* const audioTriggerName) const
@@ -304,28 +768,16 @@ namespace Audio
     EAudioRequestStatus CAudioTranslationLayer::ParseControlsData(const char* const pConfigFolderPath, const EATLDataScope eDataScope)
     {
         m_oXmlProcessor.ParseControlsData(pConfigFolderPath, eDataScope);
-        return eARS_SUCCESS;
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    EAudioRequestStatus CAudioTranslationLayer::ParsePreloadsData(const char* const pConfigFolderPath, const EATLDataScope eDataScope)
-    {
         m_oXmlProcessor.ParsePreloadsData(pConfigFolderPath, eDataScope);
-        return eARS_SUCCESS;
+        return EAudioRequestStatus::Success;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     EAudioRequestStatus CAudioTranslationLayer::ClearControlsData(const EATLDataScope eDataScope)
     {
         m_oXmlProcessor.ClearControlsData(eDataScope);
-        return eARS_SUCCESS;
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    EAudioRequestStatus CAudioTranslationLayer::ClearPreloadsData(const EATLDataScope eDataScope)
-    {
         m_oXmlProcessor.ClearPreloadsData(eDataScope);
-        return eARS_SUCCESS;
+        return EAudioRequestStatus::Success;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -340,745 +792,740 @@ namespace Audio
         AZ_Assert(sourceConfig.m_sourceId == INVALID_AUDIO_SOURCE_ID, "ATL - Request to CreateAudioSource already contains a valid source Id.\n");
 
         TAudioSourceId sourceId = ++m_nextSourceId;
-        SAudioRequest request;
-        SAudioManagerRequestData<eAMRT_CREATE_SOURCE> requestData(sourceConfig);
-        requestData.m_sourceConfig.m_sourceId = sourceId;
-        request.nFlags = (eARF_PRIORITY_HIGH | eARF_EXECUTE_BLOCKING);
-        request.pData = &requestData;
 
-        AZ::Interface<IAudioSystem>::Get()->PushRequestBlocking(request);
+        Audio::System::CreateSource createSourceRequest(sourceConfig);
+        createSourceRequest.m_sourceConfig.m_sourceId = sourceId;
+        AZ::Interface<IAudioSystem>::Get()->PushRequestBlockingNew(AZStd::move(createSourceRequest));
+
         return sourceId;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioTranslationLayer::DestroyAudioSource(TAudioSourceId sourceId)
+    void CAudioTranslationLayer::DestroyAudioSource([[maybe_unused]] TAudioSourceId sourceId)
     {
-        SAudioRequest request;
-        SAudioManagerRequestData<eAMRT_DESTROY_SOURCE> requestData(sourceId);
-        request.nFlags = (eARF_PRIORITY_NORMAL);
-        request.pData = &requestData;
-
-        AZ::Interface<IAudioSystem>::Get()->PushRequest(request);
+        Audio::System::DestroySource destroySourceRequest(sourceId);
+        AZ::Interface<IAudioSystem>::Get()->PushRequestNew(AZStd::move(destroySourceRequest));
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioTranslationLayer::NotifyListener(const CAudioRequestInternal& rRequest)
-    {
-        // This should always be the main thread!
-        TATLEnumFlagsType nSpecificAudioRequest = INVALID_AUDIO_ENUM_FLAG_TYPE;
-        TAudioControlID nAudioControlID = INVALID_AUDIO_CONTROL_ID;
-        TAudioEventID audioEventID = INVALID_AUDIO_EVENT_ID;
+    //void CAudioTranslationLayer::NotifyListener(const CAudioRequestInternal& rRequest)
+    //{
+    //    // This should always be the main thread!
+    //    TATLEnumFlagsType nSpecificAudioRequest = INVALID_AUDIO_ENUM_FLAG_TYPE;
+    //    TAudioControlID nAudioControlID = INVALID_AUDIO_CONTROL_ID;
+    //    TAudioEventID audioEventID = INVALID_AUDIO_EVENT_ID;
 
-        switch (rRequest.pData->eRequestType)
-        {
-            case eART_AUDIO_MANAGER_REQUEST:
-            {
-                auto const pRequestDataBase = static_cast<const SAudioManagerRequestDataInternalBase*>(rRequest.pData.get());
-                nSpecificAudioRequest = static_cast<TATLEnumFlagsType>(pRequestDataBase->eType);
-                break;
-            }
-            case eART_AUDIO_CALLBACK_MANAGER_REQUEST:
-            {
-                auto const pRequestDataBase = static_cast<const SAudioCallbackManagerRequestDataInternalBase*>(rRequest.pData.get());
-                nSpecificAudioRequest = static_cast<TATLEnumFlagsType>(pRequestDataBase->eType);
-                switch (pRequestDataBase->eType)
-                {
-                    case eACMRT_REPORT_FINISHED_TRIGGER_INSTANCE:
-                    {
-                        auto const pRequestData = static_cast<const SAudioCallbackManagerRequestDataInternal<eACMRT_REPORT_FINISHED_TRIGGER_INSTANCE>*>(pRequestDataBase);
-                        nAudioControlID = pRequestData->nAudioTriggerID;
-                        break;
-                    }
-                    case eACMRT_REPORT_STARTED_EVENT:
-                    {
-                        auto const pRequestData = static_cast<const SAudioCallbackManagerRequestDataInternal<eACMRT_REPORT_STARTED_EVENT>*>(pRequestDataBase);
-                        audioEventID = pRequestData->nEventID;
-                        break;
-                    }
-                }
-                break;
-            }
-            case eART_AUDIO_OBJECT_REQUEST:
-            {
-                auto const pRequestDataBase = static_cast<const SAudioObjectRequestDataInternalBase*>(rRequest.pData.get());
-                nSpecificAudioRequest = static_cast<TATLEnumFlagsType>(pRequestDataBase->eType);
+    //    switch (rRequest.pData->eRequestType)
+    //    {
+    //        case eART_AUDIO_MANAGER_REQUEST:
+    //        {
+    //            auto const pRequestDataBase = static_cast<const SAudioManagerRequestDataInternalBase*>(rRequest.pData.get());
+    //            nSpecificAudioRequest = static_cast<TATLEnumFlagsType>(pRequestDataBase->eType);
+    //            break;
+    //        }
+    //        case eART_AUDIO_CALLBACK_MANAGER_REQUEST:
+    //        {
+    //            auto const pRequestDataBase = static_cast<const SAudioCallbackManagerRequestDataInternalBase*>(rRequest.pData.get());
+    //            nSpecificAudioRequest = static_cast<TATLEnumFlagsType>(pRequestDataBase->eType);
+    //            switch (pRequestDataBase->eType)
+    //            {
+    //                case eACMRT_REPORT_FINISHED_TRIGGER_INSTANCE:
+    //                {
+    //                    auto const pRequestData = static_cast<const SAudioCallbackManagerRequestDataInternal<eACMRT_REPORT_FINISHED_TRIGGER_INSTANCE>*>(pRequestDataBase);
+    //                    nAudioControlID = pRequestData->nAudioTriggerID;
+    //                    break;
+    //                }
+    //                case eACMRT_REPORT_STARTED_EVENT:
+    //                {
+    //                    auto const pRequestData = static_cast<const SAudioCallbackManagerRequestDataInternal<eACMRT_REPORT_STARTED_EVENT>*>(pRequestDataBase);
+    //                    audioEventID = pRequestData->nEventID;
+    //                    break;
+    //                }
+    //            }
+    //            break;
+    //        }
+    //        case eART_AUDIO_OBJECT_REQUEST:
+    //        {
+    //            auto const pRequestDataBase = static_cast<const SAudioObjectRequestDataInternalBase*>(rRequest.pData.get());
+    //            nSpecificAudioRequest = static_cast<TATLEnumFlagsType>(pRequestDataBase->eType);
 
-                switch (pRequestDataBase->eType)
-                {
-                    case eAORT_EXECUTE_TRIGGER:
-                    {
-                        auto const pRequestData = static_cast<const SAudioObjectRequestDataInternal<eAORT_EXECUTE_TRIGGER>*>(pRequestDataBase);
-                        nAudioControlID = pRequestData->nTriggerID;
-                        break;
-                    }
-                }
-                break;
-            }
-            case eART_AUDIO_LISTENER_REQUEST:
-            {
-                auto const pRequestDataBase = static_cast<const SAudioListenerRequestDataInternalBase*>(rRequest.pData.get());
-                nSpecificAudioRequest = static_cast<TATLEnumFlagsType>(pRequestDataBase->eType);
-                break;
-            }
-            default:
-            {
-                g_audioLogger.Log(eALT_ASSERT, "Unknown request type during CAudioTranslationLayer::NotifyListener!");
-                break;
-            }
-        }
+    //            switch (pRequestDataBase->eType)
+    //            {
+    //                case eAORT_EXECUTE_TRIGGER:
+    //                {
+    //                    auto const pRequestData = static_cast<const SAudioObjectRequestDataInternal<eAORT_EXECUTE_TRIGGER>*>(pRequestDataBase);
+    //                    nAudioControlID = pRequestData->nTriggerID;
+    //                    break;
+    //                }
+    //            }
+    //            break;
+    //        }
+    //        case eART_AUDIO_LISTENER_REQUEST:
+    //        {
+    //            auto const pRequestDataBase = static_cast<const SAudioListenerRequestDataInternalBase*>(rRequest.pData.get());
+    //            nSpecificAudioRequest = static_cast<TATLEnumFlagsType>(pRequestDataBase->eType);
+    //            break;
+    //        }
+    //        default:
+    //        {
+    //            g_audioLogger.Log(eALT_ASSERT, "Unknown request type during CAudioTranslationLayer::NotifyListener!");
+    //            break;
+    //        }
+    //    }
 
-        const SAudioRequestInfo oResult(
-            ConvertToRequestResult(rRequest.eStatus),
-            rRequest.pOwner,
-            rRequest.pUserData,
-            rRequest.pUserDataOwner,
-            rRequest.pData->eRequestType,
-            nSpecificAudioRequest,
-            nAudioControlID,
-            rRequest.nAudioObjectID,
-            audioEventID);
+    //    const SAudioRequestInfo oResult(
+    //        ConvertToRequestResult(rRequest.eStatus),
+    //        rRequest.pOwner,
+    //        rRequest.pUserData,
+    //        rRequest.pUserDataOwner,
+    //        rRequest.pData->eRequestType,
+    //        nSpecificAudioRequest,
+    //        nAudioControlID,
+    //        rRequest.nAudioObjectID,
+    //        audioEventID);
 
-        m_oAudioEventListenerMgr.NotifyListener(&oResult);
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    EAudioRequestStatus CAudioTranslationLayer::ProcessAudioManagerRequest(const CAudioRequestInternal& rRequest)
-    {
-        EAudioRequestStatus eResult = eARS_FAILURE;
-
-        if (rRequest.pData)
-        {
-            auto const pRequestDataBase = static_cast<const SAudioManagerRequestDataInternalBase*>(rRequest.pData.get());
-
-            switch (pRequestDataBase->eType)
-            {
-                case eAMRT_RESERVE_AUDIO_OBJECT_ID:
-                {
-                    auto const pRequestData = static_cast<const SAudioManagerRequestDataInternal<eAMRT_RESERVE_AUDIO_OBJECT_ID>*>(rRequest.pData.get());
-                #if !defined(AUDIO_RELEASE)
-                    eResult = BoolToARS(ReserveAudioObjectID(*pRequestData->pObjectID, pRequestData->sObjectName.c_str()));
-                #else
-                    eResult = BoolToARS(ReserveAudioObjectID(*pRequestData->pObjectID));
-                #endif // !AUDIO_RELEASE
-                    break;
-                }
-                case eAMRT_CREATE_SOURCE:
-                {
-                    auto const pRequestData = static_cast<const SAudioManagerRequestDataInternal<eAMRT_CREATE_SOURCE>*>(rRequest.pData.get());
-                    bool result = false;
-                    AudioSystemImplementationRequestBus::BroadcastResult(result, &AudioSystemImplementationRequestBus::Events::CreateAudioSource, pRequestData->m_sourceConfig);
-                    eResult = BoolToARS(result);
-                    break;
-                }
-                case eAMRT_DESTROY_SOURCE:
-                {
-                    auto const pRequestData = static_cast<const SAudioManagerRequestDataInternal<eAMRT_DESTROY_SOURCE>*>(rRequest.pData.get());
-                    AudioSystemImplementationRequestBus::Broadcast(&AudioSystemImplementationRequestBus::Events::DestroyAudioSource, pRequestData->m_sourceId);
-                    eResult = eARS_SUCCESS;
-                    break;
-                }
-                case eAMRT_INIT_AUDIO_IMPL:
-                {
-                    eResult = InitializeImplComponent();
-
-                    // Initializing the implementation failed, immediately release it...
-                    if (eResult != eARS_SUCCESS)
-                    {
-                        ReleaseImplComponent();
-                    }
-                    break;
-                }
-                case eAMRT_RELEASE_AUDIO_IMPL:
-                {
-                    ReleaseImplComponent();
-                    eResult = eARS_SUCCESS;
-                    break;
-                }
-                case eAMRT_REFRESH_AUDIO_SYSTEM:
-                {
-                #if !defined(AUDIO_RELEASE)
-                    auto const pRequestData = static_cast<const SAudioManagerRequestDataInternal<eAMRT_REFRESH_AUDIO_SYSTEM>*>(rRequest.pData.get());
-                    eResult = RefreshAudioSystem(pRequestData->m_controlsPath.c_str(), pRequestData->m_levelName.c_str(), pRequestData->m_levelPreloadId);
-                #else
-                    eResult = eARS_FAILURE_INVALID_REQUEST;
-                #endif // !AUDIO_RELEASE
-                    break;
-                }
-                case eAMRT_LOSE_FOCUS:
-                {
-                #if !defined(AUDIO_RELEASE)
-                    if (!Audio::CVars::s_IgnoreWindowFocus && (m_nFlags & eAIS_IS_MUTED) == 0)
-                #endif // !AUDIO_RELEASE
-                    {
-                        auto it = m_cTriggers.find(ATLInternalControlIDs::LoseFocusTriggerID);
-                        if (it != m_cTriggers.end())
-                        {
-                            eResult = ActivateTrigger(m_pGlobalAudioObject, it->second);
-                        }
-                        else
-                        {
-                            g_audioLogger.Log(eALT_WARNING, "ATL - Trigger not found for: ATLInternalControlIDs::LoseFocusTriggerID");
-                        }
-
-                        AudioSystemImplementationNotificationBus::Broadcast(&AudioSystemImplementationNotificationBus::Events::OnAudioSystemLoseFocus);
-                    }
-                    break;
-                }
-                case eAMRT_GET_FOCUS:
-                {
-                #if !defined(AUDIO_RELEASE)
-                    if (!Audio::CVars::s_IgnoreWindowFocus && (m_nFlags & eAIS_IS_MUTED) == 0)
-                #endif // !AUDIO_RELEASE
-                    {
-                        AudioSystemImplementationNotificationBus::Broadcast(&AudioSystemImplementationNotificationBus::Events::OnAudioSystemGetFocus);
-
-                        auto it = m_cTriggers.find(ATLInternalControlIDs::GetFocusTriggerID);
-                        if (it != m_cTriggers.end())
-                        {
-                            eResult = ActivateTrigger(m_pGlobalAudioObject, it->second);
-                        }
-                        else
-                        {
-                            g_audioLogger.Log(eALT_WARNING, "ATL - Trigger not found for: ATLInternalControlIDs::GetFocusTriggerID");
-                        }
-                    }
-                    break;
-                }
-                case eAMRT_MUTE_ALL:
-                {
-                    eResult = MuteAll();
-                    break;
-                }
-                case eAMRT_UNMUTE_ALL:
-                {
-                    eResult = UnmuteAll();
-                    break;
-                }
-                case eAMRT_STOP_ALL_SOUNDS:
-                {
-                    AudioSystemImplementationRequestBus::BroadcastResult(eResult, &AudioSystemImplementationRequestBus::Events::StopAllSounds);
-                    break;
-                }
-                case eAMRT_PARSE_CONTROLS_DATA:
-                {
-                    auto const pRequestData = static_cast<const SAudioManagerRequestDataInternal<eAMRT_PARSE_CONTROLS_DATA>*>(rRequest.pData.get());
-                    eResult = ParseControlsData(pRequestData->sControlsPath.c_str(), pRequestData->eDataScope);
-                    break;
-                }
-                case eAMRT_PARSE_PRELOADS_DATA:
-                {
-                    auto const pRequestData = static_cast<const SAudioManagerRequestDataInternal<eAMRT_PARSE_PRELOADS_DATA>*>(rRequest.pData.get());
-                    eResult = ParsePreloadsData(pRequestData->sControlsPath.c_str(), pRequestData->eDataScope);
-                    break;
-                }
-                case eAMRT_CLEAR_CONTROLS_DATA:
-                {
-                    auto const pRequestData = static_cast<const SAudioManagerRequestDataInternal<eAMRT_CLEAR_CONTROLS_DATA>*>(rRequest.pData.get());
-                    eResult = ClearControlsData(pRequestData->eDataScope);
-                    break;
-                }
-                case eAMRT_CLEAR_PRELOADS_DATA:
-                {
-                    auto const pRequestData = static_cast<const SAudioManagerRequestDataInternal<eAMRT_CLEAR_PRELOADS_DATA>*>(rRequest.pData.get());
-                    eResult = ClearPreloadsData(pRequestData->eDataScope);
-                    break;
-                }
-                case eAMRT_PRELOAD_SINGLE_REQUEST:
-                {
-                    auto const pRequestData = static_cast<const SAudioManagerRequestDataInternal<eAMRT_PRELOAD_SINGLE_REQUEST>*>(rRequest.pData.get());
-                    eResult = m_oFileCacheMgr.TryLoadRequest(pRequestData->nPreloadRequest, ((rRequest.nFlags & eARF_EXECUTE_BLOCKING) != 0), pRequestData->bAutoLoadOnly);
-                    break;
-                }
-                case eAMRT_UNLOAD_SINGLE_REQUEST:
-                {
-                    auto const pRequestData = static_cast<const SAudioManagerRequestDataInternal<eAMRT_UNLOAD_SINGLE_REQUEST>*>(rRequest.pData.get());
-                    eResult = m_oFileCacheMgr.TryUnloadRequest(pRequestData->nPreloadRequest);
-                    break;
-                }
-                case eAMRT_UNLOAD_AFCM_DATA_BY_SCOPE:
-                {
-                    auto const pRequestData = static_cast<const SAudioManagerRequestDataInternal<eAMRT_UNLOAD_AFCM_DATA_BY_SCOPE>*>(rRequest.pData.get());
-                    eResult = m_oFileCacheMgr.UnloadDataByScope(pRequestData->eDataScope);
-                    break;
-                }
-                case eAMRT_CHANGE_LANGUAGE:
-                {
-                    SetImplLanguage();
-
-                    m_oFileCacheMgr.UpdateLocalizedFileCacheEntries();
-                    eResult = eARS_SUCCESS;
-                    break;
-                }
-                case eAMRT_SET_AUDIO_PANNING_MODE:
-                {
-                    auto const requestData = static_cast<const SAudioManagerRequestDataInternal<eAMRT_SET_AUDIO_PANNING_MODE>*>(rRequest.pData.get());
-                    AudioSystemImplementationRequestBus::Broadcast(&AudioSystemImplementationRequestBus::Events::SetPanningMode, requestData->m_panningMode);
-                    eResult = eARS_SUCCESS;
-                    break;
-                }
-                case eAMRT_DRAW_DEBUG_INFO:
-                {
-                #if !defined(AUDIO_RELEASE)
-                    DrawAudioSystemDebugInfo();
-                    eResult = eARS_SUCCESS;
-                #endif // !AUDIO_RELEASE
-                    break;
-                }
-                case eAMRT_NONE:
-                {
-                    eResult = eARS_SUCCESS;
-                    break;
-                }
-                default:
-                {
-                    g_audioLogger.Log(eALT_WARNING, "ATL received an unknown AudioManager request: %u", pRequestDataBase->eType);
-                    eResult = eARS_FAILURE_INVALID_REQUEST;
-                    break;
-                }
-            }
-        }
-
-        return eResult;
-    }
+    //    m_oAudioEventListenerMgr.NotifyListener(&oResult);
+    //}
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    EAudioRequestStatus CAudioTranslationLayer::ProcessAudioCallbackManagerRequest(const SAudioRequestDataInternal* pPassedRequestData)
-    {
-        EAudioRequestStatus eResult = eARS_FAILURE;
+    //EAudioRequestStatus CAudioTranslationLayer::ProcessAudioManagerRequest(const CAudioRequestInternal& rRequest)
+    //{
+    //    EAudioRequestStatus eResult = EAudioRequestStatus::Failure; // can this be changed to None?
 
-        if (pPassedRequestData)
-        {
-            auto const pRequestDataBase = static_cast<const SAudioCallbackManagerRequestDataInternalBase*>(pPassedRequestData);
+    //    if (rRequest.pData)
+    //    {
+    //        auto const pRequestDataBase = static_cast<const SAudioManagerRequestDataInternalBase*>(rRequest.pData.get());
 
-            switch (pRequestDataBase->eType)
-            {
-                case eACMRT_REPORT_STARTED_EVENT:
-                {
-                    auto const pRequestData = static_cast<const SAudioCallbackManagerRequestDataInternal<eACMRT_REPORT_STARTED_EVENT>*>(pPassedRequestData);
-                    CATLEvent* const pEvent = m_oAudioEventMgr.LookupID(pRequestData->nEventID);
+    //        switch (pRequestDataBase->eType)
+    //        {
+    //            case eAMRT_RESERVE_AUDIO_OBJECT_ID:
+    //            {
+    //                auto const pRequestData = static_cast<const SAudioManagerRequestDataInternal<eAMRT_RESERVE_AUDIO_OBJECT_ID>*>(rRequest.pData.get());
+    //            #if !defined(AUDIO_RELEASE)
+    //                eResult = BoolToARS(ReserveAudioObjectID(*pRequestData->pObjectID, pRequestData->sObjectName.c_str()));
+    //            #else
+    //                eResult = BoolToARS(ReserveAudioObjectID(*pRequestData->pObjectID));
+    //            #endif // !AUDIO_RELEASE
+    //                break;
+    //            }
+    //            case eAMRT_CREATE_SOURCE:
+    //            {
+    //                auto const pRequestData = static_cast<const SAudioManagerRequestDataInternal<eAMRT_CREATE_SOURCE>*>(rRequest.pData.get());
+    //                bool result = false;
+    //                AudioSystemImplementationRequestBus::BroadcastResult(result, &AudioSystemImplementationRequestBus::Events::CreateAudioSource, pRequestData->m_sourceConfig);
+    //                eResult = BoolToARS(result);
+    //                break;
+    //            }
+    //            case eAMRT_DESTROY_SOURCE:
+    //            {
+    //                auto const pRequestData = static_cast<const SAudioManagerRequestDataInternal<eAMRT_DESTROY_SOURCE>*>(rRequest.pData.get());
+    //                AudioSystemImplementationRequestBus::Broadcast(&AudioSystemImplementationRequestBus::Events::DestroyAudioSource, pRequestData->m_sourceId);
+    //                eResult = EAudioRequestStatus::Success;
+    //                break;
+    //            }
+    //            case eAMRT_INIT_AUDIO_IMPL:
+    //            {
+    //                eResult = InitializeImplComponent();
 
-                    if (pEvent)
-                    {
-                        pEvent->m_audioEventState = eAES_PLAYING_DELAYED;
+    //                // Initializing the implementation failed, immediately release it...
+    //                if (eResult != EAudioRequestStatus::Success)
+    //                {
+    //                    ReleaseImplComponent();
+    //                }
+    //                break;
+    //            }
+    //            case eAMRT_RELEASE_AUDIO_IMPL:
+    //            {
+    //                ReleaseImplComponent();
+    //                eResult = EAudioRequestStatus::Success;
+    //                break;
+    //            }
+    //            case eAMRT_REFRESH_AUDIO_SYSTEM:
+    //            {
+    //            #if !defined(AUDIO_RELEASE)
+    //                auto const pRequestData = static_cast<const SAudioManagerRequestDataInternal<eAMRT_REFRESH_AUDIO_SYSTEM>*>(rRequest.pData.get());
+    //                eResult = RefreshAudioSystem(pRequestData->m_controlsPath.c_str(), pRequestData->m_levelName.c_str(), pRequestData->m_levelPreloadId);
+    //            #else
+    //                eResult = eARS_FAILURE_INVALID_REQUEST;
+    //            #endif // !AUDIO_RELEASE
+    //                break;
+    //            }
+    //            case eAMRT_LOSE_FOCUS:
+    //            {
+    //            #if !defined(AUDIO_RELEASE)
+    //                if (!Audio::CVars::s_IgnoreWindowFocus && (m_nFlags & eAIS_IS_MUTED) == 0)
+    //            #endif // !AUDIO_RELEASE
+    //                {
+    //                    auto it = m_cTriggers.find(ATLInternalControlIDs::LoseFocusTriggerID);
+    //                    if (it != m_cTriggers.end())
+    //                    {
+    //                        eResult = ActivateTrigger(m_pGlobalAudioObject, it->second);
+    //                    }
+    //                    else
+    //                    {
+    //                        g_audioLogger.Log(eALT_WARNING, "ATL - Trigger not found for: ATLInternalControlIDs::LoseFocusTriggerID");
+    //                    }
 
-                        if (pEvent->m_nObjectID != m_nGlobalAudioObjectID)
-                        {
-                            m_oAudioObjectMgr.ReportStartedEvent(pEvent);
-                        }
-                        else
-                        {
-                            m_pGlobalAudioObject->ReportStartedEvent(pEvent);
-                        }
-                    }
+    //                    AudioSystemImplementationNotificationBus::Broadcast(&AudioSystemImplementationNotificationBus::Events::OnAudioSystemLoseFocus);
+    //                }
+    //                break;
+    //            }
+    //            case eAMRT_GET_FOCUS:
+    //            {
+    //            #if !defined(AUDIO_RELEASE)
+    //                if (!Audio::CVars::s_IgnoreWindowFocus && (m_nFlags & eAIS_IS_MUTED) == 0)
+    //            #endif // !AUDIO_RELEASE
+    //                {
+    //                    AudioSystemImplementationNotificationBus::Broadcast(&AudioSystemImplementationNotificationBus::Events::OnAudioSystemGetFocus);
 
-                    eResult = eARS_SUCCESS;
-                    break;
-                }
-                case eACMRT_REPORT_FINISHED_EVENT:
-                {
-                    auto const pRequestData = static_cast<const SAudioCallbackManagerRequestDataInternal<eACMRT_REPORT_FINISHED_EVENT>*>(pPassedRequestData);
-                    CATLEvent* const pEvent = m_oAudioEventMgr.LookupID(pRequestData->nEventID);
+    //                    auto it = m_cTriggers.find(ATLInternalControlIDs::GetFocusTriggerID);
+    //                    if (it != m_cTriggers.end())
+    //                    {
+    //                        eResult = ActivateTrigger(m_pGlobalAudioObject, it->second);
+    //                    }
+    //                    else
+    //                    {
+    //                        g_audioLogger.Log(eALT_WARNING, "ATL - Trigger not found for: ATLInternalControlIDs::GetFocusTriggerID");
+    //                    }
+    //                }
+    //                break;
+    //            }
+    //            case eAMRT_MUTE_ALL:
+    //            {
+    //                eResult = MuteAll();
+    //                break;
+    //            }
+    //            case eAMRT_UNMUTE_ALL:
+    //            {
+    //                eResult = UnmuteAll();
+    //                break;
+    //            }
+    //            case eAMRT_STOP_ALL_SOUNDS:
+    //            {
+    //                AudioSystemImplementationRequestBus::BroadcastResult(eResult, &AudioSystemImplementationRequestBus::Events::StopAllSounds);
+    //                break;
+    //            }
+    //            case eAMRT_PARSE_CONTROLS_DATA:
+    //            {
+    //                auto const pRequestData = static_cast<const SAudioManagerRequestDataInternal<eAMRT_PARSE_CONTROLS_DATA>*>(rRequest.pData.get());
+    //                eResult = ParseControlsData(pRequestData->sControlsPath.c_str(), pRequestData->eDataScope);
+    //                break;
+    //            }
+    //            case eAMRT_PARSE_PRELOADS_DATA:
+    //            {
+    //                auto const pRequestData = static_cast<const SAudioManagerRequestDataInternal<eAMRT_PARSE_PRELOADS_DATA>*>(rRequest.pData.get());
+    //                eResult = ParsePreloadsData(pRequestData->sControlsPath.c_str(), pRequestData->eDataScope);
+    //                break;
+    //            }
+    //            case eAMRT_CLEAR_CONTROLS_DATA:
+    //            {
+    //                auto const pRequestData = static_cast<const SAudioManagerRequestDataInternal<eAMRT_CLEAR_CONTROLS_DATA>*>(rRequest.pData.get());
+    //                eResult = ClearControlsData(pRequestData->eDataScope);
+    //                break;
+    //            }
+    //            case eAMRT_CLEAR_PRELOADS_DATA:
+    //            {
+    //                auto const pRequestData = static_cast<const SAudioManagerRequestDataInternal<eAMRT_CLEAR_PRELOADS_DATA>*>(rRequest.pData.get());
+    //                eResult = ClearPreloadsData(pRequestData->eDataScope);
+    //                break;
+    //            }
+    //            case eAMRT_PRELOAD_SINGLE_REQUEST:
+    //            {
+    //                auto const pRequestData = static_cast<const SAudioManagerRequestDataInternal<eAMRT_PRELOAD_SINGLE_REQUEST>*>(rRequest.pData.get());
+    //                eResult = m_oFileCacheMgr.TryLoadRequest(pRequestData->nPreloadRequest, ((rRequest.nFlags & eARF_EXECUTE_BLOCKING) != 0), pRequestData->bAutoLoadOnly);
+    //                break;
+    //            }
+    //            case eAMRT_UNLOAD_SINGLE_REQUEST:
+    //            {
+    //                auto const pRequestData = static_cast<const SAudioManagerRequestDataInternal<eAMRT_UNLOAD_SINGLE_REQUEST>*>(rRequest.pData.get());
+    //                eResult = m_oFileCacheMgr.TryUnloadRequest(pRequestData->nPreloadRequest);
+    //                break;
+    //            }
+    //            case eAMRT_UNLOAD_AFCM_DATA_BY_SCOPE:
+    //            {
+    //                auto const pRequestData = static_cast<const SAudioManagerRequestDataInternal<eAMRT_UNLOAD_AFCM_DATA_BY_SCOPE>*>(rRequest.pData.get());
+    //                eResult = m_oFileCacheMgr.UnloadDataByScope(pRequestData->eDataScope);
+    //                break;
+    //            }
+    //            case eAMRT_CHANGE_LANGUAGE:
+    //            {
+    //                SetImplLanguage();
 
-                    if (pEvent)
-                    {
-                        if (pEvent->m_nObjectID != m_nGlobalAudioObjectID)
-                        {
-                            m_oAudioObjectMgr.ReportFinishedEvent(pEvent, pRequestData->bSuccess);
-                        }
-                        else if (m_pGlobalAudioObject)
-                        {   // safety-net check to prevent crash if a finished callback is received very late
-                            m_pGlobalAudioObject->ReportFinishedEvent(pEvent, pRequestData->bSuccess);
-                        }
+    //                m_oFileCacheMgr.UpdateLocalizedFileCacheEntries();
+    //                eResult = EAudioRequestStatus::Success;
+    //                break;
+    //            }
+    //            case eAMRT_SET_AUDIO_PANNING_MODE:
+    //            {
+    //                auto const requestData = static_cast<const SAudioManagerRequestDataInternal<eAMRT_SET_AUDIO_PANNING_MODE>*>(rRequest.pData.get());
+    //                AudioSystemImplementationRequestBus::Broadcast(&AudioSystemImplementationRequestBus::Events::SetPanningMode, requestData->m_panningMode);
+    //                eResult = EAudioRequestStatus::Success;
+    //                break;
+    //            }
+    //            case eAMRT_DRAW_DEBUG_INFO:
+    //            {
+    //            #if !defined(AUDIO_RELEASE)
+    //                DrawAudioSystemDebugInfo();
+    //                eResult = EAudioRequestStatus::Success;
+    //            #endif // !AUDIO_RELEASE
+    //                break;
+    //            }
+    //            case eAMRT_NONE:
+    //            {
+    //                eResult = EAudioRequestStatus::Success;
+    //                break;
+    //            }
+    //            default:
+    //            {
+    //                g_audioLogger.Log(eALT_WARNING, "ATL received an unknown AudioManager request: %u", pRequestDataBase->eType);
+    //                eResult = EAudioRequestStatus::FailureInvalidRequest;
+    //                break;
+    //            }
+    //        }
+    //    }
 
-                        m_oAudioEventMgr.ReleaseEvent(pEvent);
-                    }
-
-                    eResult = eARS_SUCCESS;
-                    break;
-                }
-                case eACMRT_REPORT_FINISHED_TRIGGER_INSTANCE:
-                case eACMRT_NONE:
-                {
-                    eResult = eARS_SUCCESS;
-                    break;
-                }
-                default:
-                {
-                    eResult = eARS_FAILURE_INVALID_REQUEST;
-                    g_audioLogger.Log(eALT_WARNING, "ATL received an unknown AudioCallbackManager request: %u", pRequestDataBase->eType);
-                    break;
-                }
-            }
-        }
-
-        return eResult;
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    EAudioRequestStatus CAudioTranslationLayer::ProcessAudioObjectRequest(const CAudioRequestInternal& rRequest)
-    {
-        EAudioRequestStatus eResult = eARS_FAILURE;
-        CATLAudioObjectBase* pObject = static_cast<CATLAudioObjectBase*>(m_pGlobalAudioObject);
-
-        if (rRequest.nAudioObjectID != INVALID_AUDIO_OBJECT_ID)
-        {
-            pObject = static_cast<CATLAudioObjectBase*>(m_oAudioObjectMgr.LookupID(rRequest.nAudioObjectID));
-        }
-
-        if (pObject)
-        {
-            const SAudioRequestDataInternal* const pPassedRequestData = rRequest.pData;
-
-            if (pPassedRequestData)
-            {
-                auto const pBaseRequestData = static_cast<const SAudioObjectRequestDataInternalBase*>(pPassedRequestData);
-
-                switch (pBaseRequestData->eType)
-                {
-                    case eAORT_PREPARE_TRIGGER:
-                    {
-                        auto const pRequestData = static_cast<const SAudioObjectRequestDataInternal<eAORT_PREPARE_TRIGGER>*>(pPassedRequestData);
-
-                        auto it = m_cTriggers.find(pRequestData->nTriggerID);
-                        if (it != m_cTriggers.end())
-                        {
-                            eResult = PrepUnprepTriggerAsync(pObject, it->second, true);
-                        }
-                        else
-                        {
-                            eResult = eARS_FAILURE_INVALID_CONTROL_ID;
-                        }
-                        break;
-                    }
-                    case eAORT_UNPREPARE_TRIGGER:
-                    {
-                        auto const pRequestData = static_cast<const SAudioObjectRequestDataInternal<eAORT_UNPREPARE_TRIGGER>*>(pPassedRequestData);
-
-                        auto it = m_cTriggers.find(pRequestData->nTriggerID);
-                        if (it != m_cTriggers.end())
-                        {
-                            eResult = PrepUnprepTriggerAsync(pObject, it->second, false);
-                        }
-                        else
-                        {
-                            eResult = eARS_FAILURE_INVALID_CONTROL_ID;
-                        }
-                        break;
-                    }
-                    case eAORT_EXECUTE_TRIGGER:
-                    {
-                        auto const pRequestData = static_cast<const SAudioObjectRequestDataInternal<eAORT_EXECUTE_TRIGGER>*>(pPassedRequestData);
-
-                        auto it = m_cTriggers.find(pRequestData->nTriggerID);
-                        if (it != m_cTriggers.end())
-                        {
-                            eResult = ActivateTrigger(
-                                pObject,
-                                it->second,
-                                rRequest.pOwner,
-                                rRequest.pUserData,
-                                rRequest.pUserDataOwner,
-                                rRequest.nFlags);
-                        }
-                        else
-                        {
-                            eResult = eARS_FAILURE_INVALID_CONTROL_ID;
-                        }
-                        break;
-                    }
-                    case eAORT_STOP_TRIGGER:
-                    {
-                        auto const pRequestData = static_cast<const SAudioObjectRequestDataInternal<eAORT_STOP_TRIGGER>*>(pPassedRequestData);
-
-                        auto it = m_cTriggers.find(pRequestData->nTriggerID);
-                        if (it != m_cTriggers.end())
-                        {
-                            eResult = StopTrigger(pObject, it->second);
-                        }
-                        else
-                        {
-                            eResult = eARS_FAILURE_INVALID_CONTROL_ID;
-                        }
-                        break;
-                    }
-                    case eAORT_STOP_ALL_TRIGGERS:
-                    {
-                        auto const pRequestData = static_cast<const SAudioObjectRequestDataInternal<eAORT_STOP_ALL_TRIGGERS>*>(pPassedRequestData);
-
-                        if (pRequestData->m_filterByOwner)
-                        {
-                            StopAllTriggers(pObject, rRequest.pOwner);
-                        }
-                        else
-                        {
-                            StopAllTriggers(pObject);
-                        }
-
-                        // Why not return the result of StopAllTriggers call?
-                        eResult = eARS_SUCCESS;
-                        break;
-                    }
-                    case eAORT_SET_POSITION:
-                    {
-                        if (pObject->HasPosition())
-                        {
-                            auto const pRequestData = static_cast<const SAudioObjectRequestDataInternal<eAORT_SET_POSITION>*>(pPassedRequestData);
-
-                            auto const pPositionedObject = static_cast<CATLAudioObject*>(pObject);
-
-                            AudioSystemImplementationRequestBus::BroadcastResult(eResult, &AudioSystemImplementationRequestBus::Events::SetPosition,
-                                pPositionedObject->GetImplDataPtr(),
-                                pRequestData->oPosition);
-
-                            if (eResult == eARS_SUCCESS)
-                            {
-                                pPositionedObject->SetPosition(pRequestData->oPosition);
-                            }
-                        }
-                        else
-                        {
-                            g_audioLogger.Log(eALT_WARNING, "ATL received a request to set a position on a global object");
-                        }
-                        break;
-                    }
-                    case eAORT_SET_RTPC_VALUE:
-                    {
-                        eResult = eARS_FAILURE_INVALID_CONTROL_ID;
-
-                        auto const pRequestData = static_cast<const SAudioObjectRequestDataInternal<eAORT_SET_RTPC_VALUE>*>(pPassedRequestData);
-
-                        auto it = m_cRtpcs.find(pRequestData->nControlID);
-                        if (it != m_cRtpcs.end())
-                        {
-                            eResult = SetRtpc(pObject, it->second, pRequestData->fValue);
-                        }
-                        break;
-                    }
-                    case eAORT_SET_SWITCH_STATE:
-                    {
-                        eResult = eARS_FAILURE_INVALID_CONTROL_ID;
-                        auto const pRequestData = static_cast<const SAudioObjectRequestDataInternal<eAORT_SET_SWITCH_STATE>*>(pPassedRequestData);
-
-                        auto itSwitch = m_cSwitches.find(pRequestData->nSwitchID);
-                        if (itSwitch != m_cSwitches.end())
-                        {
-                            auto itState = itSwitch->second->cStates.find(pRequestData->nStateID);
-                            if (itState != itSwitch->second->cStates.end())
-                            {
-                                eResult = SetSwitchState(pObject, itState->second);
-                            }
-                        }
-                        break;
-                    }
-                    case eAORT_SET_ENVIRONMENT_AMOUNT:
-                    {
-                        if (pObject->HasPosition())
-                        {
-                            eResult = eARS_FAILURE_INVALID_CONTROL_ID;
-                            auto const pRequestData = static_cast<const SAudioObjectRequestDataInternal<eAORT_SET_ENVIRONMENT_AMOUNT>*>(pPassedRequestData);
-
-                            auto it = m_cEnvironments.find(pRequestData->nEnvironmentID);
-                            if (it != m_cEnvironments.end())
-                            {
-                                eResult = SetEnvironment(pObject, it->second, pRequestData->fAmount);
-                            }
-                        }
-                        else
-                        {
-                            g_audioLogger.Log(eALT_WARNING, "ATL received a request to set an environment on a global object");
-                        }
-                        break;
-                    }
-                    case eAORT_RESET_ENVIRONMENTS:
-                    {
-                        eResult = ResetEnvironments(pObject);
-                        break;
-                    }
-                    case eAORT_RESET_RTPCS:
-                    {
-                        eResult = ResetRtpcs(pObject);
-                        break;
-                    }
-                    case eAORT_RELEASE_OBJECT:
-                    {
-                        eResult = eARS_FAILURE;
-
-                        const TAudioObjectID nObjectID = pObject->GetID();
-
-                        if (nObjectID != m_nGlobalAudioObjectID)
-                        {
-                            if (ReleaseAudioObjectID(nObjectID))
-                            {
-                                eResult = eARS_SUCCESS;
-                            }
-                        }
-                        else
-                        {
-                            g_audioLogger.Log(eALT_WARNING, "ATL received a request to release the GlobalAudioObject");
-                        }
-                        break;
-                    }
-                    case eAORT_EXECUTE_SOURCE_TRIGGER:
-                    {
-                        eResult = eARS_FAILURE;
-                        auto const requestData = static_cast<const SAudioObjectRequestDataInternal<eAORT_EXECUTE_SOURCE_TRIGGER>*>(pPassedRequestData);
-
-                        auto it = m_cTriggers.find(requestData->m_triggerId);
-                        if (it != m_cTriggers.end())
-                        {
-                            SATLSourceData sourceData(requestData->m_sourceInfo);
-                            eResult = ActivateTrigger(
-                                pObject,
-                                it->second,
-                                rRequest.pOwner,
-                                rRequest.pUserData,
-                                rRequest.pUserDataOwner,
-                                rRequest.nFlags,
-                                &sourceData
-                            );
-                        }
-                        else
-                        {
-                            eResult = eARS_FAILURE_INVALID_CONTROL_ID;
-                        }
-
-                        break;
-                    }
-                    case eAORT_SET_MULTI_POSITIONS:
-                    {
-                        if (pObject->HasPosition())
-                        {
-                            auto const pRequestData = static_cast<const SAudioObjectRequestDataInternal<eAORT_SET_MULTI_POSITIONS>*>(pPassedRequestData);
-
-                            auto const pPositionedObject = static_cast<CATLAudioObject*>(pObject);
-
-                            AudioSystemImplementationRequestBus::BroadcastResult(eResult, &AudioSystemImplementationRequestBus::Events::SetMultiplePositions,
-                                pPositionedObject->GetImplDataPtr(),
-                                pRequestData->m_params);
-
-                            if (eResult == eARS_SUCCESS)
-                            {
-                                pPositionedObject->SetPosition(SATLWorldPosition());
-                            }
-                        }
-                        else
-                        {
-                            g_audioLogger.Log(eALT_WARNING, "ATL received a request to set multiple positions on a global object");
-                        }
-                        break;
-                    }
-                    case eAORT_NONE:
-                    {
-                        eResult = eARS_SUCCESS;
-                        break;
-                    }
-                    default:
-                    {
-                        eResult = eARS_FAILURE_INVALID_REQUEST;
-                        g_audioLogger.Log(eALT_WARNING, "ATL received an unknown AudioObject request type: %u", pBaseRequestData->eType);
-                        break;
-                    }
-                }
-            }
-        }
-        else
-        {
-            g_audioLogger.Log(eALT_WARNING, "ATL received a request to a non-existent AudioObject: %u", rRequest.nAudioObjectID);
-            eResult = eARS_FAILURE_INVALID_OBJECT_ID;
-        }
-
-        return eResult;
-    }
+    //    return eResult;
+    //}
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    EAudioRequestStatus CAudioTranslationLayer::ProcessAudioListenerRequest(const CAudioRequestInternal& rRequest)
-    {
-        EAudioRequestStatus eResult = eARS_FAILURE;
-        TAudioObjectID listenerID = INVALID_AUDIO_OBJECT_ID;
+    //EAudioRequestStatus CAudioTranslationLayer::ProcessAudioCallbackManagerRequest(const SAudioRequestDataInternal* pPassedRequestData)
+    //{
+    //    EAudioRequestStatus eResult = EAudioRequestStatus::Failure;     // can we switch this to None?
 
-        // Check for an Audio Listener Override.
-        TAudioObjectID overrideListenerID = m_oAudioListenerMgr.GetOverrideListenerID();
-        if (overrideListenerID != INVALID_AUDIO_OBJECT_ID)
-        {
-            if (rRequest.nAudioObjectID == overrideListenerID)
-            {
-                // Have an override set, and the ID in the request matches the override.
-                // Reroute to the default listener.
-                listenerID = m_oAudioListenerMgr.GetDefaultListenerID();
-            }
-            else if (rRequest.nAudioObjectID != INVALID_AUDIO_OBJECT_ID)
-            {
-                // Override is set, but the request specified a different listener ID, allow it.
-                listenerID = rRequest.nAudioObjectID;
-            }
-            else
-            {
-                // Override is set, but no listener ID specified.  Typically this would go
-                // to the default listener, but with overrides we explicitly ignore this.
-                return eResult;
-            }
-        }
-        else if (rRequest.nAudioObjectID == INVALID_AUDIO_OBJECT_ID)
-        {
-            listenerID = m_oAudioListenerMgr.GetDefaultListenerID();
-        }
-        else
-        {
-            listenerID = rRequest.nAudioObjectID;
-        }
+    //    if (pPassedRequestData)
+    //    {
+    //        auto const pRequestDataBase = static_cast<const SAudioCallbackManagerRequestDataInternalBase*>(pPassedRequestData);
 
-        CATLListenerObject* const pListener = m_oAudioListenerMgr.LookupID(listenerID);
-        if (pListener)
-        {
-            if (rRequest.pData)
-            {
-                auto const pBaseRequestData = static_cast<const SAudioListenerRequestDataInternalBase*>(rRequest.pData.get());
+    //        switch (pRequestDataBase->eType)
+    //        {
+    //            case eACMRT_REPORT_STARTED_EVENT:
+    //            {
+    //                auto const pRequestData = static_cast<const SAudioCallbackManagerRequestDataInternal<eACMRT_REPORT_STARTED_EVENT>*>(pPassedRequestData);
+    //                CATLEvent* const pEvent = m_oAudioEventMgr.LookupID(pRequestData->nEventID);
 
-                switch (pBaseRequestData->eType)
-                {
-                    case eALRT_SET_POSITION:
-                    {
-                        auto const pRequestData = static_cast<const SAudioListenerRequestDataInternal<eALRT_SET_POSITION>*>(rRequest.pData.get());
+    //                if (pEvent)
+    //                {
+    //                    pEvent->m_audioEventState = eAES_PLAYING_DELAYED;
 
-                        AudioSystemImplementationRequestBus::BroadcastResult(eResult, &AudioSystemImplementationRequestBus::Events::SetListenerPosition,
-                            pListener->m_pImplData,
-                            pRequestData->oNewPosition);
+    //                    if (pEvent->m_nObjectID != m_nGlobalAudioObjectID)
+    //                    {
+    //                        m_oAudioObjectMgr.ReportStartedEvent(pEvent);
+    //                    }
+    //                    else
+    //                    {
+    //                        m_pGlobalAudioObject->ReportStartedEvent(pEvent);
+    //                    }
+    //                }
 
-                        if (eResult == eARS_SUCCESS)
-                        {
-                            pListener->oPosition = pRequestData->oNewPosition;
-                        }
-                        break;
-                    }
-                    case eALRT_NONE:
-                    {
-                        eResult = eARS_SUCCESS;
-                        break;
-                    }
-                    default:
-                    {
-                        eResult = eARS_FAILURE_INVALID_REQUEST;
-                        g_audioLogger.Log(eALT_WARNING, "ATL received an unknown AudioListener request type: %u", pBaseRequestData->eType);
-                        break;
-                    }
-                }
-            }
-        }
-        else
-        {
-            g_audioLogger.Log(eALT_COMMENT, "Could not find listener with ID: %u", listenerID);
-        }
+    //                eResult = EAudioRequestStatus::Success;
+    //                break;
+    //            }
+    //            case eACMRT_REPORT_FINISHED_EVENT:
+    //            {
+    //                auto const pRequestData = static_cast<const SAudioCallbackManagerRequestDataInternal<eACMRT_REPORT_FINISHED_EVENT>*>(pPassedRequestData);
+    //                CATLEvent* const pEvent = m_oAudioEventMgr.LookupID(pRequestData->nEventID);
 
-        return eResult;
-    }
+    //                if (pEvent)
+    //                {
+    //                    if (pEvent->m_nObjectID != m_nGlobalAudioObjectID)
+    //                    {
+    //                        m_oAudioObjectMgr.ReportFinishedEvent(pEvent, pRequestData->bSuccess);
+    //                    }
+    //                    else if (m_pGlobalAudioObject)
+    //                    {   // safety-net check to prevent crash if a finished callback is received very late
+    //                        m_pGlobalAudioObject->ReportFinishedEvent(pEvent, pRequestData->bSuccess);
+    //                    }
+
+    //                    m_oAudioEventMgr.ReleaseEvent(pEvent);
+    //                }
+
+    //                eResult = EAudioRequestStatus::Success;
+    //                break;
+    //            }
+    //            case eACMRT_REPORT_FINISHED_TRIGGER_INSTANCE:
+    //                [[fallthrough]];
+    //            case eACMRT_NONE:
+    //            {
+    //                eResult = EAudioRequestStatus::Success;
+    //                break;
+    //            }
+    //            default:
+    //            {
+    //                eResult = EAudioRequestStatus::FailureInvalidRequest;
+    //                g_audioLogger.Log(eALT_WARNING, "ATL received an unknown AudioCallbackManager request: %u", pRequestDataBase->eType);
+    //                break;
+    //            }
+    //        }
+    //    }
+
+    //    return eResult;
+    //}
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    //EAudioRequestStatus CAudioTranslationLayer::ProcessAudioObjectRequest(const CAudioRequestInternal& rRequest)
+    //{
+    //    EAudioRequestStatus eResult = EAudioRequestStatus::Failure;     // can this be switched to None?
+    //    CATLAudioObjectBase* pObject = static_cast<CATLAudioObjectBase*>(m_pGlobalAudioObject);
+
+    //    if (rRequest.nAudioObjectID != INVALID_AUDIO_OBJECT_ID)
+    //    {
+    //        pObject = static_cast<CATLAudioObjectBase*>(m_oAudioObjectMgr.LookupID(rRequest.nAudioObjectID));
+    //    }
+
+    //    if (pObject)
+    //    {
+    //        const SAudioRequestDataInternal* const pPassedRequestData = rRequest.pData;
+
+    //        if (pPassedRequestData)
+    //        {
+    //            auto const pBaseRequestData = static_cast<const SAudioObjectRequestDataInternalBase*>(pPassedRequestData);
+
+    //            switch (pBaseRequestData->eType)
+    //            {
+    //                case eAORT_PREPARE_TRIGGER:
+    //                {
+    //                    auto const pRequestData = static_cast<const SAudioObjectRequestDataInternal<eAORT_PREPARE_TRIGGER>*>(pPassedRequestData);
+
+    //                    auto it = m_cTriggers.find(pRequestData->nTriggerID);
+    //                    if (it != m_cTriggers.end())
+    //                    {
+    //                        eResult = PrepUnprepTriggerAsync(pObject, it->second, true);
+    //                    }
+    //                    else
+    //                    {
+    //                        eResult = EAudioRequestStatus::FailureInvalidControlId;
+    //                    }
+    //                    break;
+    //                }
+    //                case eAORT_UNPREPARE_TRIGGER:
+    //                {
+    //                    auto const pRequestData = static_cast<const SAudioObjectRequestDataInternal<eAORT_UNPREPARE_TRIGGER>*>(pPassedRequestData);
+
+    //                    auto it = m_cTriggers.find(pRequestData->nTriggerID);
+    //                    if (it != m_cTriggers.end())
+    //                    {
+    //                        eResult = PrepUnprepTriggerAsync(pObject, it->second, false);
+    //                    }
+    //                    else
+    //                    {
+    //                        eResult = EAudioRequestStatus::FailureInvalidControlId;
+    //                    }
+    //                    break;
+    //                }
+    //                case eAORT_EXECUTE_TRIGGER:
+    //                {
+    //                    auto const pRequestData = static_cast<const SAudioObjectRequestDataInternal<eAORT_EXECUTE_TRIGGER>*>(pPassedRequestData);
+
+    //                    auto it = m_cTriggers.find(pRequestData->nTriggerID);
+    //                    if (it != m_cTriggers.end())
+    //                    {
+    //                        eResult = ActivateTrigger(
+    //                            pObject,
+    //                            it->second,
+    //                            rRequest.pOwner,
+    //                            rRequest.pUserData,
+    //                            rRequest.pUserDataOwner,
+    //                            rRequest.nFlags);
+    //                    }
+    //                    else
+    //                    {
+    //                        eResult = EAudioRequestStatus::FailureInvalidControlId;
+    //                    }
+    //                    break;
+    //                }
+    //                case eAORT_STOP_TRIGGER:
+    //                {
+    //                    auto const pRequestData = static_cast<const SAudioObjectRequestDataInternal<eAORT_STOP_TRIGGER>*>(pPassedRequestData);
+
+    //                    auto it = m_cTriggers.find(pRequestData->nTriggerID);
+    //                    if (it != m_cTriggers.end())
+    //                    {
+    //                        eResult = StopTrigger(pObject, it->second);
+    //                    }
+    //                    else
+    //                    {
+    //                        eResult = EAudioRequestStatus::FailureInvalidControlId;
+    //                    }
+    //                    break;
+    //                }
+    //                case eAORT_STOP_ALL_TRIGGERS:
+    //                {
+    //                    auto const pRequestData = static_cast<const SAudioObjectRequestDataInternal<eAORT_STOP_ALL_TRIGGERS>*>(pPassedRequestData);
+
+    //                    if (pRequestData->m_filterByOwner)
+    //                    {
+    //                        StopAllTriggers(pObject, rRequest.pOwner);
+    //                    }
+    //                    else
+    //                    {
+    //                        StopAllTriggers(pObject);
+    //                    }
+
+    //                    // Why not return the result of StopAllTriggers call?
+    //                    eResult = EAudioRequestStatus::Success;
+    //                    break;
+    //                }
+    //                case eAORT_SET_POSITION:
+    //                {
+    //                    if (pObject->HasPosition())
+    //                    {
+    //                        auto const pRequestData = static_cast<const SAudioObjectRequestDataInternal<eAORT_SET_POSITION>*>(pPassedRequestData);
+
+    //                        auto const pPositionedObject = static_cast<CATLAudioObject*>(pObject);
+
+    //                        AudioSystemImplementationRequestBus::BroadcastResult(eResult, &AudioSystemImplementationRequestBus::Events::SetPosition,
+    //                            pPositionedObject->GetImplDataPtr(),
+    //                            pRequestData->oPosition);
+
+    //                        if (eResult == EAudioRequestStatus::Success)
+    //                        {
+    //                            pPositionedObject->SetPosition(pRequestData->oPosition);
+    //                        }
+    //                    }
+    //                    else
+    //                    {
+    //                        g_audioLogger.Log(eALT_WARNING, "ATL received a request to set a position on a global object");
+    //                    }
+    //                    break;
+    //                }
+    //                case eAORT_SET_RTPC_VALUE:
+    //                {
+    //                    eResult = EAudioRequestStatus::FailureInvalidControlId;
+
+    //                    auto const pRequestData = static_cast<const SAudioObjectRequestDataInternal<eAORT_SET_RTPC_VALUE>*>(pPassedRequestData);
+
+    //                    auto it = m_cRtpcs.find(pRequestData->nControlID);
+    //                    if (it != m_cRtpcs.end())
+    //                    {
+    //                        eResult = SetRtpc(pObject, it->second, pRequestData->fValue);
+    //                    }
+    //                    break;
+    //                }
+    //                case eAORT_SET_SWITCH_STATE:
+    //                {
+    //                    eResult = EAudioRequestStatus::FailureInvalidControlId;
+    //                    auto const pRequestData = static_cast<const SAudioObjectRequestDataInternal<eAORT_SET_SWITCH_STATE>*>(pPassedRequestData);
+
+    //                    auto itSwitch = m_cSwitches.find(pRequestData->nSwitchID);
+    //                    if (itSwitch != m_cSwitches.end())
+    //                    {
+    //                        auto itState = itSwitch->second->cStates.find(pRequestData->nStateID);
+    //                        if (itState != itSwitch->second->cStates.end())
+    //                        {
+    //                            eResult = SetSwitchState(pObject, itState->second);
+    //                        }
+    //                    }
+    //                    break;
+    //                }
+    //                case eAORT_SET_ENVIRONMENT_AMOUNT:
+    //                {
+    //                    if (pObject->HasPosition())
+    //                    {
+    //                        eResult = EAudioRequestStatus::FailureInvalidControlId;
+    //                        auto const pRequestData = static_cast<const SAudioObjectRequestDataInternal<eAORT_SET_ENVIRONMENT_AMOUNT>*>(pPassedRequestData);
+
+    //                        auto it = m_cEnvironments.find(pRequestData->nEnvironmentID);
+    //                        if (it != m_cEnvironments.end())
+    //                        {
+    //                            eResult = SetEnvironment(pObject, it->second, pRequestData->fAmount);
+    //                        }
+    //                    }
+    //                    else
+    //                    {
+    //                        g_audioLogger.Log(eALT_WARNING, "ATL received a request to set an environment on a global object");
+    //                    }
+    //                    break;
+    //                }
+    //                case eAORT_RESET_ENVIRONMENTS:
+    //                {
+    //                    eResult = ResetEnvironments(pObject);
+    //                    break;
+    //                }
+    //                case eAORT_RESET_RTPCS:
+    //                {
+    //                    eResult = ResetRtpcs(pObject);
+    //                    break;
+    //                }
+    //                case eAORT_RELEASE_OBJECT:
+    //                {
+    //                    eResult = EAudioRequestStatus::Failure;  // redundant?
+
+    //                    const TAudioObjectID nObjectID = pObject->GetID();
+
+    //                    if (nObjectID != m_nGlobalAudioObjectID)
+    //                    {
+    //                        if (ReleaseAudioObjectID(nObjectID))
+    //                        {
+    //                            eResult = EAudioRequestStatus::Success;
+    //                        }
+    //                    }
+    //                    else
+    //                    {
+    //                        g_audioLogger.Log(eALT_WARNING, "ATL received a request to release the GlobalAudioObject");
+    //                    }
+    //                    break;
+    //                }
+    //                case eAORT_EXECUTE_SOURCE_TRIGGER:
+    //                {
+    //                    eResult = EAudioRequestStatus::Failure;  // redundant?
+    //                    auto const requestData = static_cast<const SAudioObjectRequestDataInternal<eAORT_EXECUTE_SOURCE_TRIGGER>*>(pPassedRequestData);
+
+    //                    auto it = m_cTriggers.find(requestData->m_triggerId);
+    //                    if (it != m_cTriggers.end())
+    //                    {
+    //                        SATLSourceData sourceData(requestData->m_sourceInfo);
+    //                        eResult = ActivateTrigger(
+    //                            pObject,
+    //                            it->second,
+    //                            rRequest.pOwner,
+    //                            rRequest.pUserData,
+    //                            rRequest.pUserDataOwner,
+    //                            rRequest.nFlags,
+    //                            &sourceData
+    //                        );
+    //                    }
+    //                    else
+    //                    {
+    //                        eResult = EAudioRequestStatus::FailureInvalidControlId;
+    //                    }
+
+    //                    break;
+    //                }
+    //                case eAORT_SET_MULTI_POSITIONS:
+    //                {
+    //                    if (pObject->HasPosition())
+    //                    {
+    //                        auto const pRequestData = static_cast<const SAudioObjectRequestDataInternal<eAORT_SET_MULTI_POSITIONS>*>(pPassedRequestData);
+
+    //                        auto const pPositionedObject = static_cast<CATLAudioObject*>(pObject);
+
+    //                        AudioSystemImplementationRequestBus::BroadcastResult(eResult, &AudioSystemImplementationRequestBus::Events::SetMultiplePositions,
+    //                            pPositionedObject->GetImplDataPtr(),
+    //                            pRequestData->m_params);
+
+    //                        if (eResult == EAudioRequestStatus::Success)
+    //                        {
+    //                            pPositionedObject->SetPosition(SATLWorldPosition());
+    //                        }
+    //                    }
+    //                    else
+    //                    {
+    //                        g_audioLogger.Log(eALT_WARNING, "ATL received a request to set multiple positions on a global object");
+    //                    }
+    //                    break;
+    //                }
+    //                case eAORT_NONE:
+    //                {
+    //                    eResult = EAudioRequestStatus::Success;
+    //                    break;
+    //                }
+    //                default:
+    //                {
+    //                    eResult = EAudioRequestStatus::FailureInvalidRequest;
+    //                    g_audioLogger.Log(eALT_WARNING, "ATL received an unknown AudioObject request type: %u", pBaseRequestData->eType);
+    //                    break;
+    //                }
+    //            }
+    //        }
+    //    }
+    //    else
+    //    {
+    //        g_audioLogger.Log(eALT_WARNING, "ATL received a request to a non-existent AudioObject: %u", rRequest.nAudioObjectID);
+    //        eResult = EAudioRequestStatus::FailureInvalidObjectId;
+    //    }
+
+    //    return eResult;
+    //}
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    //EAudioRequestStatus CAudioTranslationLayer::ProcessAudioListenerRequest(const CAudioRequestInternal& rRequest)
+    //{
+    //    EAudioRequestStatus eResult = EAudioRequestStatus::Failure;     // can this be switched to None?
+    //    TAudioObjectID listenerID = INVALID_AUDIO_OBJECT_ID;
+
+    //    // Check for an Audio Listener Override.
+    //    TAudioObjectID overrideListenerID = m_oAudioListenerMgr.GetOverrideListenerID();
+    //    if (overrideListenerID != INVALID_AUDIO_OBJECT_ID)
+    //    {
+    //        if (rRequest.nAudioObjectID == overrideListenerID)
+    //        {
+    //            // Have an override set, and the ID in the request matches the override.
+    //            // Reroute to the default listener.
+    //            listenerID = m_oAudioListenerMgr.GetDefaultListenerID();
+    //        }
+    //        else if (rRequest.nAudioObjectID != INVALID_AUDIO_OBJECT_ID)
+    //        {
+    //            // Override is set, but the request specified a different listener ID, allow it.
+    //            listenerID = rRequest.nAudioObjectID;
+    //        }
+    //        else
+    //        {
+    //            // Override is set, but no listener ID specified.  Typically this would go
+    //            // to the default listener, but with overrides we explicitly ignore this.
+    //            return eResult;
+    //        }
+    //    }
+    //    else if (rRequest.nAudioObjectID == INVALID_AUDIO_OBJECT_ID)
+    //    {
+    //        listenerID = m_oAudioListenerMgr.GetDefaultListenerID();
+    //    }
+    //    else
+    //    {
+    //        listenerID = rRequest.nAudioObjectID;
+    //    }
+
+    //    CATLListenerObject* const pListener = m_oAudioListenerMgr.LookupID(listenerID);
+    //    if (pListener)
+    //    {
+    //        if (rRequest.pData)
+    //        {
+    //            auto const pBaseRequestData = static_cast<const SAudioListenerRequestDataInternalBase*>(rRequest.pData.get());
+
+    //            switch (pBaseRequestData->eType)
+    //            {
+    //                case eALRT_SET_POSITION:
+    //                {
+    //                    auto const pRequestData = static_cast<const SAudioListenerRequestDataInternal<eALRT_SET_POSITION>*>(rRequest.pData.get());
+
+    //                    AudioSystemImplementationRequestBus::BroadcastResult(eResult, &AudioSystemImplementationRequestBus::Events::SetListenerPosition,
+    //                        pListener->m_pImplData,
+    //                        pRequestData->oNewPosition);
+
+    //                    if (eResult == EAudioRequestStatus::Success)
+    //                    {
+    //                        pListener->oPosition = pRequestData->oNewPosition;
+    //                    }
+    //                    break;
+    //                }
+    //                case eALRT_NONE:
+    //                {
+    //                    eResult = EAudioRequestStatus::Success;
+    //                    break;
+    //                }
+    //                default:
+    //                {
+    //                    eResult = EAudioRequestStatus::FailureInvalidRequest;
+    //                    g_audioLogger.Log(eALT_WARNING, "ATL received an unknown AudioListener request type: %u", pBaseRequestData->eType);
+    //                    break;
+    //                }
+    //            }
+    //        }
+    //    }
+    //    else
+    //    {
+    //        g_audioLogger.Log(eALT_COMMENT, "Could not find listener with ID: %u", listenerID);
+    //    }
+
+    //    return eResult;
+    //}
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     EAudioRequestStatus CAudioTranslationLayer::InitializeImplComponent()
     {
-        EAudioRequestStatus eResult = eARS_FAILURE;
+        EAudioRequestStatus eResult = EAudioRequestStatus::Failure;     // can this be switched to None?
 
         AudioSystemImplementationRequestBus::BroadcastResult(eResult, &AudioSystemImplementationRequestBus::Events::Initialize);
-        if (eResult == eARS_SUCCESS)
+        if (eResult == EAudioRequestStatus::Success)
         {
             IATLAudioObjectData* pGlobalObjectData = nullptr;
             AudioSystemImplementationRequestBus::BroadcastResult(pGlobalObjectData, &AudioSystemImplementationRequestBus::Events::NewGlobalAudioObjectData, m_nGlobalAudioObjectID);
@@ -1133,15 +1580,17 @@ namespace Audio
 
         m_implSubPath.clear();
 
-        EAudioRequestStatus eResult = eARS_FAILURE;
+        EAudioRequestStatus eResult = EAudioRequestStatus::Failure;     // can this be switched to None?
         AudioSystemImplementationRequestBus::BroadcastResult(eResult, &AudioSystemImplementationRequestBus::Events::ShutDown);
 
         // If we allow developers to change the audio implementation module at run-time, these should be at Warning level.
         // If we ever revoke that functionality, these should be promoted to Asserts.
-        AZ_Warning("ATL", eResult == eARS_SUCCESS, "ATL ReleaseImplComponent - Shutting down the audio implementation failed!");
+        AZ_Warning("ATL", eResult == EAudioRequestStatus::Success,
+            "ATL ReleaseImplComponent - Shutting down the audio implementation failed!");
 
         AudioSystemImplementationRequestBus::BroadcastResult(eResult, &AudioSystemImplementationRequestBus::Events::Release);
-        AZ_Warning("ATL", eResult == eARS_SUCCESS, "ATL ReleaseImplComponent - Releasing the audio implementation failed!");
+        AZ_Warning("ATL", eResult == EAudioRequestStatus::Success,
+            "ATL ReleaseImplComponent - Releasing the audio implementation failed!");
 
         m_nFlags &= ~eAIS_AUDIO_MIDDLEWARE_SHUTTING_DOWN;
     }
@@ -1152,7 +1601,7 @@ namespace Audio
         const CATLTrigger* const pTrigger,
         const bool bPrepare)
     {
-        EAudioRequestStatus eResult = eARS_FAILURE;
+        EAudioRequestStatus eResult = EAudioRequestStatus::Failure;     // can this be switched to None?
 
         const TAudioObjectID nATLObjectID = pAudioObject->GetID();
         const TObjectTriggerImplStates& rTriggerImplStates = pAudioObject->GetTriggerImpls();
@@ -1169,7 +1618,7 @@ namespace Audio
             const EATLSubsystem eReceiver = triggerImpl->GetReceiver();
             CATLEvent* pEvent = m_oAudioEventMgr.GetEvent(eReceiver);
 
-            EAudioRequestStatus ePrepUnprepResult = eARS_FAILURE;
+            EAudioRequestStatus ePrepUnprepResult = EAudioRequestStatus::Failure;
 
             switch (eReceiver)
             {
@@ -1196,7 +1645,7 @@ namespace Audio
                         }
                     }
 
-                    if (ePrepUnprepResult ==  eARS_SUCCESS)
+                    if (ePrepUnprepResult == EAudioRequestStatus::Success)
                     {
                         pEvent->m_nObjectID = nATLObjectID;
                         pEvent->m_nTriggerID = triggerImpl->m_nATLID;
@@ -1218,12 +1667,12 @@ namespace Audio
                 }
             }
 
-            if (ePrepUnprepResult == eARS_SUCCESS)
+            if (ePrepUnprepResult == EAudioRequestStatus::Success)
             {
                 pEvent->SetDataScope(pTrigger->GetDataScope());
                 pAudioObject->ReportStartedEvent(pEvent);
                 pAudioObject->IncrementRefCount();
-                eResult = eARS_SUCCESS; // if at least one event fires, it is a success
+                eResult = EAudioRequestStatus::Success; // if at least one event fires, it is a success
             }
             else
             {
@@ -1232,7 +1681,7 @@ namespace Audio
         }
 
 #if !defined(AUDIO_RELEASE)
-        if (eResult != eARS_SUCCESS)
+        if (eResult != EAudioRequestStatus::Success)
         {
             // No TriggerImpl produced an active event.
             g_audioLogger.Log(eALT_WARNING, "PrepUnprepTriggerAsync failed on AudioObject \"%s\" (ID: %u)", m_oDebugNameStore.LookupAudioObjectName(nATLObjectID), nATLObjectID);
@@ -1252,7 +1701,7 @@ namespace Audio
         const TATLEnumFlagsType nFlags /* = INVALID_AUDIO_ENUM_FLAG_TYPE */,
         const SATLSourceData* pSourceData /* = nullptr */)
     {
-        EAudioRequestStatus eResult = eARS_FAILURE;
+        EAudioRequestStatus eResult = EAudioRequestStatus::Failure;     // can this be switched to None?
 
         if (pAudioObject->HasPosition())
         {
@@ -1277,7 +1726,7 @@ namespace Audio
             CATLEvent* const pEvent = m_oAudioEventMgr.GetEvent(eReceiver);
             pEvent->m_pImplData->m_triggerId = nATLTriggerID;
 
-            EAudioRequestStatus eActivateResult = eARS_FAILURE;
+            EAudioRequestStatus eActivateResult = EAudioRequestStatus::Failure;
 
             switch (eReceiver)
             {
@@ -1305,7 +1754,7 @@ namespace Audio
                 }
             }
 
-            if (eActivateResult == eARS_SUCCESS || eActivateResult == eARS_PENDING)
+            if (eActivateResult == EAudioRequestStatus::Success || eActivateResult == EAudioRequestStatus::Pending)
             {
                 pEvent->m_nObjectID = pAudioObject->GetID();
                 pEvent->m_nTriggerID = nATLTriggerID;
@@ -1313,11 +1762,11 @@ namespace Audio
                 pEvent->m_nTriggerInstanceID = m_nTriggerInstanceIDCounter;
                 pEvent->SetDataScope(pTrigger->GetDataScope());
 
-                if (eActivateResult == eARS_SUCCESS)
+                if (eActivateResult == EAudioRequestStatus::Success)
                 {
                     pEvent->m_audioEventState = eAES_PLAYING;
                 }
-                else if (eActivateResult == eARS_PENDING)
+                else if (eActivateResult == EAudioRequestStatus::Pending)
                 {
                     pEvent->m_audioEventState = eAES_LOADING;
                 }
@@ -1326,7 +1775,7 @@ namespace Audio
                 pAudioObject->IncrementRefCount();
 
                 // If at least one event fires, it is a success: the trigger has been activated.
-                eResult = eARS_SUCCESS;
+                eResult = EAudioRequestStatus::Success;
             }
             else
             {
@@ -1338,7 +1787,7 @@ namespace Audio
         pAudioObject->ReportStartedTriggerInstance(m_nTriggerInstanceIDCounter++, pOwner, pUserData, pUserDataOwner, nFlags);
 
 #if !defined(AUDIO_RELEASE)
-        if (eResult != eARS_SUCCESS)
+        if (eResult != EAudioRequestStatus::Success)
         {
             // No TriggerImpl generated an active event.
             g_audioLogger.Log(eALT_WARNING, "Trigger \"%s\" failed on AudioObject \"%s\" (ID: %u)", m_oDebugNameStore.LookupAudioTriggerName(nATLTriggerID), m_oDebugNameStore.LookupAudioObjectName(pAudioObject->GetID()), pAudioObject->GetID());
@@ -1353,7 +1802,7 @@ namespace Audio
         CATLAudioObjectBase* const pAudioObject,
         const CATLTrigger* const pTrigger)
     {
-        EAudioRequestStatus eResult = eARS_FAILURE;
+        EAudioRequestStatus eResult = EAudioRequestStatus::Failure;     // can this be switched to None?
 
         const TAudioControlID nATLTriggerID = pTrigger->GetID();
 
@@ -1396,13 +1845,13 @@ namespace Audio
     {
         if (!pOwner)
         {
-            EAudioRequestStatus eResult = eARS_FAILURE;
+            EAudioRequestStatus eResult = EAudioRequestStatus::Failure;
             AudioSystemImplementationRequestBus::BroadcastResult(eResult, &AudioSystemImplementationRequestBus::Events::StopAllEvents, pAudioObject->GetImplDataPtr());
             return eResult;
         }
         else
         {
-            EAudioRequestStatus eResult = eARS_SUCCESS;
+            EAudioRequestStatus eResult = EAudioRequestStatus::Success;
 
             auto triggerInstances = pAudioObject->GetTriggerInstancesByOwner(pOwner);
 
@@ -1414,7 +1863,7 @@ namespace Audio
 
                 if (atlEvent && triggerInstances.find(atlEvent->m_nTriggerInstanceID) != triggerInstances.end())
                 {
-                    EAudioRequestStatus eSingleResult = eARS_FAILURE;
+                    EAudioRequestStatus eSingleResult = EAudioRequestStatus::Failure;
 
                     switch (atlEvent->m_eSender)
                     {
@@ -1439,9 +1888,9 @@ namespace Audio
                         }
                     }
 
-                    if (eSingleResult != eARS_SUCCESS)
+                    if (eSingleResult != EAudioRequestStatus::Success)
                     {
-                        eResult = eARS_FAILURE;
+                        eResult = EAudioRequestStatus::Failure;     // should we report partial failure?
                     }
                 }
             }
@@ -1455,12 +1904,12 @@ namespace Audio
         CATLAudioObjectBase* const pAudioObject,
         const CATLSwitchState* const pState)
     {
-        EAudioRequestStatus eResult = eARS_FAILURE;
+        EAudioRequestStatus eResult = EAudioRequestStatus::Failure;     // can this be switched to None?
 
         for (auto switchStateImpl : pState->m_cImplPtrs)
         {
             const EATLSubsystem eReceiver = switchStateImpl->GetReceiver();
-            EAudioRequestStatus eSetStateResult = eARS_FAILURE;
+            EAudioRequestStatus eSetStateResult = EAudioRequestStatus::Failure;
 
             switch (eReceiver)
             {
@@ -1483,13 +1932,13 @@ namespace Audio
                 }
             }
 
-            if (eSetStateResult == eARS_SUCCESS)
+            if (eSetStateResult == EAudioRequestStatus::Success)
             {
-                eResult = eARS_SUCCESS;// if at least one of the implementations is set successfully, it is a success
+                eResult = EAudioRequestStatus::Success; // if at least one of the implementations is set successfully, it is a success
             }
         }
 
-        if (eResult == eARS_SUCCESS)
+        if (eResult == EAudioRequestStatus::Success)
         {
             pAudioObject->SetSwitchState(pState->GetParentID(), pState->GetID());
         }
@@ -1512,12 +1961,12 @@ namespace Audio
         const CATLRtpc* const pRtpc,
         const float fValue)
     {
-        EAudioRequestStatus eResult = eARS_FAILURE;
+        EAudioRequestStatus eResult = EAudioRequestStatus::Failure;     // can this be switched to None?
 
         for (auto rtpcImpl : pRtpc->m_cImplPtrs)
         {
             const EATLSubsystem eReceiver = rtpcImpl->GetReceiver();
-            EAudioRequestStatus eSetRtpcResult = eARS_FAILURE;
+            EAudioRequestStatus eSetRtpcResult = EAudioRequestStatus::Failure;
 
             switch (eReceiver)
             {
@@ -1541,13 +1990,13 @@ namespace Audio
                 }
             }
 
-            if (eSetRtpcResult == eARS_SUCCESS)
+            if (eSetRtpcResult == EAudioRequestStatus::Success)
             {
-                eResult = eARS_SUCCESS;// if at least one of the implementations is set successfully, it is a success
+                eResult = EAudioRequestStatus::Success; // if at least one of the implementations is set successfully, it is a success
             }
         }
 
-        if (eResult == eARS_SUCCESS)
+        if (eResult == EAudioRequestStatus::Success)
         {
             pAudioObject->SetRtpc(pRtpc->GetID(), fValue);
         }
@@ -1567,7 +2016,7 @@ namespace Audio
     EAudioRequestStatus CAudioTranslationLayer::ResetRtpcs(CATLAudioObjectBase* const pAudioObject)
     {
         const TObjectRtpcMap rRtpcs = pAudioObject->GetRtpcs();
-        EAudioRequestStatus eResult = eARS_SUCCESS;
+        EAudioRequestStatus eResult = EAudioRequestStatus::Success;     // why is this one Success?
 
         for (auto& rtpcPair : rRtpcs)
         {
@@ -1576,7 +2025,7 @@ namespace Audio
             {
                 for (auto rtpcImpl : it->second->m_cImplPtrs)
                 {
-                    EAudioRequestStatus eResetRtpcResult = eARS_FAILURE;
+                    EAudioRequestStatus eResetRtpcResult = EAudioRequestStatus::Failure;
                     switch (rtpcImpl->GetReceiver())
                     {
                         case eAS_AUDIO_SYSTEM_IMPLEMENTATION:
@@ -1590,7 +2039,7 @@ namespace Audio
                         case eAS_ATL_INTERNAL:
                         {
                             // Implement internal Rtpcs later
-                            eResetRtpcResult = eARS_SUCCESS;
+                            eResetRtpcResult = EAudioRequestStatus::Success;
                             break;
                         }
 
@@ -1602,15 +2051,15 @@ namespace Audio
                     }
 
                     // If any reset failed, consider it an overall failure
-                    if (eResetRtpcResult != eARS_SUCCESS)
+                    if (eResetRtpcResult != EAudioRequestStatus::Success)
                     {
-                        eResult = eARS_FAILURE;
+                        eResult = EAudioRequestStatus::Failure;
                     }
                 }
             }
         }
 
-        if (eResult == eARS_SUCCESS)
+        if (eResult == EAudioRequestStatus::Success)
         {
             pAudioObject->ClearRtpcs();
         }
@@ -1635,12 +2084,12 @@ namespace Audio
         const CATLAudioEnvironment* const pEnvironment,
         const float fAmount)
     {
-        EAudioRequestStatus eResult = eARS_FAILURE;
+        EAudioRequestStatus eResult = EAudioRequestStatus::Failure;     // can this be switched to None?
 
         for (auto environmentImpl : pEnvironment->m_cImplPtrs)
         {
             const EATLSubsystem eReceiver = environmentImpl->GetReceiver();
-            EAudioRequestStatus eSetEnvResult = eARS_FAILURE;
+            EAudioRequestStatus eSetEnvResult = EAudioRequestStatus::Failure;
 
             switch (eReceiver)
             {
@@ -1664,13 +2113,13 @@ namespace Audio
                 }
             }
 
-            if (eSetEnvResult == eARS_SUCCESS)
+            if (eSetEnvResult == EAudioRequestStatus::Success)
             {
-                eResult = eARS_SUCCESS;// if at least one of the implementations is set successfully, it is a success
+                eResult = EAudioRequestStatus::Success; // if at least one of the implementations is set successfully, it is a success
             }
         }
 
-        if (eResult == eARS_SUCCESS)
+        if (eResult == EAudioRequestStatus::Success)
         {
             pAudioObject->SetEnvironmentAmount(pEnvironment->GetID(), fAmount);
         }
@@ -1691,7 +2140,7 @@ namespace Audio
     {
         const TObjectEnvironmentMap rEnvironments = pAudioObject->GetEnvironments();
 
-        EAudioRequestStatus eResult = eARS_SUCCESS;
+        EAudioRequestStatus eResult = EAudioRequestStatus::Success;
 
         for (auto& environmentAmountPair : rEnvironments)
         {
@@ -1700,15 +2149,15 @@ namespace Audio
             {
                 const EAudioRequestStatus eSetEnvResult = SetEnvironment(pAudioObject, it->second, 0.0f);
 
-                if (eSetEnvResult != eARS_SUCCESS)
+                if (eSetEnvResult != EAudioRequestStatus::Success)
                 {
                     // If setting at least one Environment fails, we consider this a failure.
-                    eResult = eARS_FAILURE;
+                    eResult = EAudioRequestStatus::Failure;
                 }
             }
         }
 
-        if (eResult == eARS_SUCCESS)
+        if (eResult == EAudioRequestStatus::Success)
         {
             pAudioObject->ClearEnvironments();
         }
@@ -1735,7 +2184,7 @@ namespace Audio
         [[maybe_unused]] IATLEventData* const pEventData)
     {
         //TODO implement
-        return eARS_FAILURE;
+        return EAudioRequestStatus::Failure;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1744,14 +2193,14 @@ namespace Audio
         [[maybe_unused]] const IATLEventData* const pEventData)
     {
         //TODO implement
-        return eARS_FAILURE;
+        return EAudioRequestStatus::Failure;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     EAudioRequestStatus CAudioTranslationLayer::StopAllInternalEvents([[maybe_unused]] CATLAudioObjectBase* const pAudioObject)
     {
         //TODO implement
-        return eARS_FAILURE;
+        return EAudioRequestStatus::Failure;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1761,7 +2210,7 @@ namespace Audio
         [[maybe_unused]] const float fValue)
     {
         //TODO implement
-        return eARS_FAILURE;
+        return EAudioRequestStatus::Failure;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1823,7 +2272,7 @@ namespace Audio
             }
         }
 
-        return eARS_SUCCESS;
+        return EAudioRequestStatus::Success;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1833,13 +2282,13 @@ namespace Audio
         [[maybe_unused]] const float fAmount)
     {
         // TODO: implement
-        return eARS_FAILURE;
+        return EAudioRequestStatus::Failure;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     EAudioRequestStatus CAudioTranslationLayer::MuteAll()
     {
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
         const CATLTrigger* const trigger = stl::find_in_map(m_cTriggers, ATLInternalControlIDs::MuteAllTriggerID, nullptr);
 
         if (trigger)
@@ -1851,7 +2300,7 @@ namespace Audio
             g_audioLogger.Log(eALT_WARNING, "ATL - Trigger not found for: ATLInternalControlIDs::MuteAllTriggerID");
         }
 
-        if (result == eARS_SUCCESS)
+        if (result == EAudioRequestStatus::Success)
         {
             m_nFlags |= eAIS_IS_MUTED;
         }
@@ -1863,7 +2312,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     EAudioRequestStatus CAudioTranslationLayer::UnmuteAll()
     {
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
         const CATLTrigger* const trigger = stl::find_in_map(m_cTriggers, ATLInternalControlIDs::UnmuteAllTriggerID, nullptr);
 
         if (trigger)
@@ -1875,7 +2324,7 @@ namespace Audio
             g_audioLogger.Log(eALT_WARNING, "ATL - Trigger not found for: ATLInternalControlIDs::UnmuteAllTriggerID");
         }
 
-        if (result == eARS_SUCCESS)
+        if (result == EAudioRequestStatus::Success)
         {
             m_nFlags &= ~eAIS_IS_MUTED;
         }
@@ -1901,6 +2350,19 @@ namespace Audio
                 AudioSystemImplementationRequestBus::Broadcast(
                     &AudioSystemImplementationRequestBus::Events::SetLanguage, languageAudio.data());
             }
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    CATLAudioObjectBase* CAudioTranslationLayer::GetRequestObject(TAudioObjectID objectId)
+    {
+        if (objectId == INVALID_AUDIO_OBJECT_ID)
+        {
+            return static_cast<CATLAudioObjectBase*>(m_pGlobalAudioObject);
+        }
+        else
+        {
+            return static_cast<CATLAudioObjectBase*>(m_oAudioObjectMgr.LookupID(objectId));
         }
     }
 
@@ -1934,37 +2396,37 @@ namespace Audio
         if (!controlsPath || controlsPath[0] == '\0')
         {
             g_audioLogger.Log(eALT_ERROR, "ATL RefreshAudioSystem - Controls path is null, can't complete the refresh!");
-            return eARS_FAILURE;
+            return EAudioRequestStatus::Failure;
         }
 
-        EAudioRequestStatus eResult = eARS_FAILURE;
+        EAudioRequestStatus eResult = EAudioRequestStatus::Failure;
         AudioSystemImplementationRequestBus::BroadcastResult(eResult, &AudioSystemImplementationRequestBus::Events::StopAllSounds);
-        AZ_Error("AudioTranslationLayer", eResult == eARS_SUCCESS, "ATL RefreshAudioSystem - Failed to StopAllSounds!");
+        AZ_Error("AudioTranslationLayer", eResult == EAudioRequestStatus::Success,
+            "ATL RefreshAudioSystem - Failed to StopAllSounds!");
 
         eResult = m_oFileCacheMgr.UnloadDataByScope(eADS_LEVEL_SPECIFIC);
-        AZ_Error("AudioTranslationLayer", eResult == eARS_SUCCESS, "ATL RefreshAudioSystem - Failed to unload old level data!");
+        AZ_Error("AudioTranslationLayer", eResult == EAudioRequestStatus::Success,
+            "ATL RefreshAudioSystem - Failed to unload old level banks!");
 
         eResult = m_oFileCacheMgr.UnloadDataByScope(eADS_GLOBAL);
-        AZ_Error("AudioTranslationLayer", eResult == eARS_SUCCESS, "ATL RefreshAudioSystem - Failed to unload old global data!");
+        AZ_Error("AudioTranslationLayer", eResult == EAudioRequestStatus::Success,
+            "ATL RefreshAudioSystem - Failed to unload old global banks!");
 
         eResult = ClearControlsData(eADS_ALL);
-        AZ_Error("AudioTranslationLayer", eResult == eARS_SUCCESS, "ATL RefreshAudioSystem - Failed to clear old controls data!");
-
-        eResult = ClearPreloadsData(eADS_ALL);
-        AZ_Error("AudioTranslationLayer", eResult == eARS_SUCCESS, "ATL RefreshAudioSystem - Failed to clear old preloads data!");
+        AZ_Error("AudioTranslationLayer", eResult == EAudioRequestStatus::Success,
+            "ATL RefreshAudioSystem - Failed to clear old controls data!");
 
         AudioSystemImplementationNotificationBus::Broadcast(&AudioSystemImplementationNotificationBus::Events::OnAudioSystemRefresh);
 
         SetImplLanguage();
 
         eResult = ParseControlsData(controlsPath, eADS_GLOBAL);
-        AZ_Error("AudioTranslationLayer", eResult == eARS_SUCCESS, "ATL RefreshAudioSystem - Failed to parse fresh global controls data!");
-
-        eResult = ParsePreloadsData(controlsPath, eADS_GLOBAL);
-        AZ_Error("AudioTranslationLayer", eResult == eARS_SUCCESS, "ATL RefreshAudioSystem - Failed to parse fresh global preloads data!");
+        AZ_Error("AudioTranslationLayer", eResult == EAudioRequestStatus::Success,
+            "ATL RefreshAudioSystem - Failed to load fresh global controls data!");
 
         eResult = m_oFileCacheMgr.TryLoadRequest(ATLInternalControlIDs::GlobalPreloadRequestID, true, true);
-        AZ_Error("AudioTranslationLayer", eResult == eARS_SUCCESS, "ATL RefreshAudioSystem - Failed to load fresh global preloads!");
+        AZ_Error("AudioTranslationLayer", eResult == EAudioRequestStatus::Success,
+            "ATL RefreshAudioSystem - Failed to load fresh global banks!");
 
         if (levelName && levelName[0] != '\0')
         {
@@ -1974,15 +2436,14 @@ namespace Audio
             AZ::StringFunc::RelativePath::Normalize(levelControlsPath);
 
             eResult = ParseControlsData(levelControlsPath.c_str(), eADS_LEVEL_SPECIFIC);
-            AZ_Error("AudioTranslationLayer", eResult == eARS_SUCCESS, "ATL RefreshAudioSystem - Failed to parse fresh level controls data!");
-
-            eResult = ParsePreloadsData(levelControlsPath.c_str(), eADS_LEVEL_SPECIFIC);
-            AZ_Error("AudioTranslationLayer", eResult == eARS_SUCCESS, "ATL RefreshAudioSystem - Failed to parse fresh level preloads data!");
+            AZ_Error("AudioTranslationLayer", eResult == EAudioRequestStatus::Success,
+                "ATL RefreshAudioSystem - Failed to parse fresh level controls data!");
 
             if (levelPreloadId != INVALID_AUDIO_PRELOAD_REQUEST_ID)
             {
                 eResult = m_oFileCacheMgr.TryLoadRequest(levelPreloadId, true, true);
-                AZ_Error("AudioTranslationLayer", eResult == eARS_SUCCESS, "ATL RefreshAudioSystem - Failed to load fresh level preloads!");
+                AZ_Error("AudioTranslationLayer", eResult == EAudioRequestStatus::Success,
+                    "ATL RefreshAudioSystem - Failed to load fresh level banks!");
             }
         }
 
@@ -1994,7 +2455,7 @@ namespace Audio
 
         g_audioLogger.Log(eALT_ALWAYS, "$3Done refreshing the AudioSystem!");
 
-        return eARS_SUCCESS;
+        return EAudioRequestStatus::Success;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////

@@ -123,12 +123,13 @@ namespace Audio
 
             if (eventData)
             {
-                SAudioRequest request;
-                SAudioCallbackManagerRequestData<eACMRT_REPORT_FINISHED_EVENT> requestData(eventData->nATLID, true);
-                request.nFlags = eARF_THREAD_SAFE_PUSH;
-                request.pData = &requestData;
+                // TODO:
+                //SAudioRequest request;
+                //SAudioCallbackManagerRequestData<eACMRT_REPORT_FINISHED_EVENT> requestData(eventData->nATLID, true);
+                //request.nFlags = eARF_THREAD_SAFE_PUSH;
+                //request.pData = &requestData;
 
-                AudioSystemThreadSafeRequestBus::Broadcast(&AudioSystemThreadSafeRequestBus::Events::PushRequestThreadSafe, request);
+                //AudioSystemThreadSafeRequestBus::Broadcast(&AudioSystemThreadSafeRequestBus::Events::PushRequestThreadSafe, request);
 
                 if (eventData->nSourceId != INVALID_AUDIO_SOURCE_ID)
                 {
@@ -168,7 +169,7 @@ namespace Audio
     void PrepareEventCallback(
         AkUniqueID akEventId,
         [[maybe_unused]] const void* bankPtr,
-        AKRESULT loadResult,
+        [[maybe_unused]] AKRESULT loadResult,
         [[maybe_unused]] AkMemPoolId memPoolId,
         void* cookie)
     {
@@ -178,12 +179,13 @@ namespace Audio
         {
             eventData->nAKID = akEventId;
 
-            SAudioRequest request;
-            SAudioCallbackManagerRequestData<eACMRT_REPORT_FINISHED_EVENT> requestData(eventData->nATLID, loadResult ==  AK_Success);
-            request.nFlags = eARF_THREAD_SAFE_PUSH;
-            request.pData = &requestData;
+            // TODO:
+            //SAudioRequest request;
+            //SAudioCallbackManagerRequestData<eACMRT_REPORT_FINISHED_EVENT> requestData(eventData->nATLID, loadResult ==  AK_Success);
+            //request.nFlags = eARF_THREAD_SAFE_PUSH;
+            //request.pData = &requestData;
 
-            AudioSystemThreadSafeRequestBus::Broadcast(&AudioSystemThreadSafeRequestBus::Events::PushRequestThreadSafe, request);
+            //AudioSystemThreadSafeRequestBus::Broadcast(&AudioSystemThreadSafeRequestBus::Events::PushRequestThreadSafe, request);
         }
     }
 
@@ -423,7 +425,7 @@ namespace Audio
     EAudioRequestStatus CAudioSystemImpl_wwise::Initialize()
     {
         // If something fails so severely during initialization that we need to fall back to a 'Null' implementation
-        // we will need to shut down what has been initialized so far. Therefore make sure to call Shutdown() before returning eARS_FAILURE!
+        // we will need to shut down what has been initialized so far. Therefore make sure to call Shutdown() before returning EAudioRequestStatus::Failure!
 
         AkMemSettings akMemSettings;
         AK::MemoryMgr::GetDefaultSettings(akMemSettings);
@@ -442,7 +444,7 @@ namespace Audio
         {
             g_audioImplLogger_wwise.Log(eALT_ERROR, "AK::MemoryMgr::Init() returned AKRESULT %d", akResult);
             ShutDown();
-            return eARS_FAILURE;
+            return EAudioRequestStatus::Failure;
         }
 
         akResult = AK::SoundEngine::RegisterAudioDeviceStatusCallback(AudioDeviceCallback);
@@ -458,7 +460,7 @@ namespace Audio
         {
             g_audioImplLogger_wwise.Log(eALT_ERROR, "AK::StreamMgr::Create() failed!\n");
             ShutDown();
-            return eARS_FAILURE;
+            return EAudioRequestStatus::Failure;
         }
 
         akResult = m_fileIOHandler.Init(Wwise::Cvars::s_StreamDeviceMemorySize << 10);
@@ -467,7 +469,7 @@ namespace Audio
         {
             g_audioImplLogger_wwise.Log(eALT_ERROR, "m_fileIOHandler.Init() returned AKRESULT %d", akResult);
             ShutDown();
-            return eARS_FAILURE;
+            return EAudioRequestStatus::Failure;
         }
 
         m_fileIOHandler.SetBankPath(m_soundbankFolder.c_str());
@@ -497,7 +499,7 @@ namespace Audio
         {
             g_audioImplLogger_wwise.Log(eALT_ERROR, "AK::SoundEngine::Init() returned AKRESULT %d", akResult);
             ShutDown();
-            return eARS_FAILURE;
+            return EAudioRequestStatus::Failure;
         }
 
         AkMusicSettings akMusicSettings;
@@ -509,7 +511,7 @@ namespace Audio
         {
             g_audioImplLogger_wwise.Log(eALT_ERROR, "AK::MusicEngine::Init() returned AKRESULT %d", akResult);
             ShutDown();
-            return eARS_FAILURE;
+            return EAudioRequestStatus::Failure;
         }
 
         AkSpatialAudioInitSettings akSpatialAudioSettings;
@@ -519,7 +521,7 @@ namespace Audio
         {
             g_audioImplLogger_wwise.Log(eALT_ERROR, "AK::SpatialAudio::Init() returned AKRESULT %d", akResult);
             ShutDown();
-            return eARS_FAILURE;
+            return EAudioRequestStatus::Failure;
         }
 
 #if !defined(WWISE_RELEASE)
@@ -571,7 +573,7 @@ namespace Audio
             m_initBankID = AK_INVALID_BANK_ID;
         }
 
-        return eARS_SUCCESS;
+        return EAudioRequestStatus::Success;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -641,21 +643,21 @@ namespace Audio
             AK::MemoryMgr::Term();
         }
 
-        return eARS_SUCCESS;
+        return EAudioRequestStatus::Success;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     EAudioRequestStatus CAudioSystemImpl_wwise::Release()
     {
         // Deleting this object and destroying the allocator has been moved to AudioEngineWwiseSystemComponent
-        return eARS_SUCCESS;
+        return EAudioRequestStatus::Success;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     EAudioRequestStatus CAudioSystemImpl_wwise::StopAllSounds()
     {
         AK::SoundEngine::StopAll();
-        return eARS_SUCCESS;
+        return EAudioRequestStatus::Success;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -681,7 +683,7 @@ namespace Audio
         else
         {
             g_audioImplLogger_wwise.Log(eALT_WARNING, "Wwise RegisterGameObj failed, audioObjectData was null");
-            return eARS_FAILURE;
+            return EAudioRequestStatus::Failure;
         }
     }
 
@@ -706,7 +708,7 @@ namespace Audio
         else
         {
             g_audioImplLogger_wwise.Log(eALT_WARNING, "Wwise UnregisterGameObj failed, audioObjectData was null");
-            return eARS_FAILURE;
+            return EAudioRequestStatus::Failure;
         }
     }
 
@@ -720,12 +722,12 @@ namespace Audio
             implObjectData->cEnvironmentImplAmounts.clear();
             implObjectData->bNeedsToUpdateEnvironments = false;
 
-            return eARS_SUCCESS;
+            return EAudioRequestStatus::Success;
         }
         else
         {
             g_audioImplLogger_wwise.Log(eALT_WARNING, "Resetting Audio object failed, audioObjectData was null");
-            return eARS_FAILURE;
+            return EAudioRequestStatus::Failure;
         }
     }
 
@@ -734,7 +736,7 @@ namespace Audio
     {
         AZ_PROFILE_FUNCTION(Audio);
 
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
 
         if (audioObjectData)
         {
@@ -790,7 +792,7 @@ namespace Audio
         IATLEventData* const eventData,
         const SATLSourceData* const sourceData)
     {
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
 
         auto const implObjectData = static_cast<SATLAudioObjectData_wwise*>(audioObjectData);
         auto const implTriggerData = static_cast<const SATLTriggerImplData_wwise*>(triggerData);
@@ -844,7 +846,7 @@ namespace Audio
                     {
                         implEventData->audioEventState = eAES_PLAYING;
                         implEventData->nAKID = akPlayingId;
-                        result = eARS_SUCCESS;
+                        result = EAudioRequestStatus::Success;
                     }
                     else
                     {
@@ -883,7 +885,7 @@ namespace Audio
 
                         implEventData->audioEventState = eAES_PLAYING;
                         implEventData->nAKID = akPlayingId;
-                        result = eARS_SUCCESS;
+                        result = EAudioRequestStatus::Success;
                     }
                     else
                     {
@@ -907,7 +909,7 @@ namespace Audio
         [[maybe_unused]] IATLAudioObjectData* const audioObjectData,
         const IATLEventData* const eventData)
     {
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
 
         auto const implEventData = static_cast<const SATLEventData_wwise*>(eventData);
 
@@ -918,7 +920,7 @@ namespace Audio
                 case eAES_PLAYING:
                 {
                     AK::SoundEngine::StopPlayingID(implEventData->nAKID, 10);
-                    result = eARS_SUCCESS;
+                    result = EAudioRequestStatus::Success;
                     break;
                 }
                 default:
@@ -939,7 +941,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     EAudioRequestStatus CAudioSystemImpl_wwise::StopAllEvents(IATLAudioObjectData* const audioObjectData)
     {
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
 
         auto const implObjectData = static_cast<SATLAudioObjectData_wwise*>(audioObjectData);
 
@@ -949,7 +951,7 @@ namespace Audio
 
             AK::SoundEngine::StopAll(akObjectId);
 
-            result = eARS_SUCCESS;
+            result = EAudioRequestStatus::Success;
         }
         else
         {
@@ -963,7 +965,7 @@ namespace Audio
         IATLAudioObjectData* const audioObjectData,
         const SATLWorldPosition& worldPosition)
     {
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
 
         auto const implObjectData = static_cast<SATLAudioObjectData_wwise*>(audioObjectData);
 
@@ -975,7 +977,7 @@ namespace Audio
             const AKRESULT akResult = AK::SoundEngine::SetPosition(implObjectData->nAKID, akSoundPos);
             if (IS_WWISE_OK(akResult))
             {
-                result = eARS_SUCCESS;
+                result = EAudioRequestStatus::Success;
             }
             else
             {
@@ -995,7 +997,7 @@ namespace Audio
         IATLAudioObjectData* const audioObjectData,
         const MultiPositionParams& multiPositionParams)
     {
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
 
         auto const implObjectData = static_cast<SATLAudioObjectData_wwise*>(audioObjectData);
 
@@ -1019,7 +1021,7 @@ namespace Audio
             const AKRESULT akResult = AK::SoundEngine::SetMultiplePositions(implObjectData->nAKID, akPositions.data(), static_cast<AkUInt16>(akPositions.size()), type);
             if (IS_WWISE_OK(akResult))
             {
-                result = eARS_SUCCESS;
+                result = EAudioRequestStatus::Success;
             }
             else
             {
@@ -1042,7 +1044,7 @@ namespace Audio
     {
         static const float s_envEpsilon = 0.0001f;
 
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
 
         auto const implObjectData = static_cast<SATLAudioObjectData_wwise*>(audioObjectData);
         auto const implEnvironmentData = static_cast<const SATLEnvironmentImplData_wwise*>(environmentData);
@@ -1066,7 +1068,7 @@ namespace Audio
                         implObjectData->bNeedsToUpdateEnvironments = true;
                     }
 
-                    result = eARS_SUCCESS;
+                    result = EAudioRequestStatus::Success;
                     break;
                 }
                 case eWAET_RTPC:
@@ -1077,7 +1079,7 @@ namespace Audio
 
                     if (IS_WWISE_OK(akResult))
                     {
-                        result = eARS_SUCCESS;
+                        result = EAudioRequestStatus::Success;
                     }
                     else
                     {
@@ -1110,7 +1112,7 @@ namespace Audio
         const IATLRtpcImplData* const rtpcData,
         const float value)
     {
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
 
         auto const implObjectData = static_cast<SATLAudioObjectData_wwise*>(audioObjectData);
         auto const implRtpcData = static_cast<const SATLRtpcImplData_wwise*>(rtpcData);
@@ -1123,7 +1125,7 @@ namespace Audio
 
             if (IS_WWISE_OK(akResult))
             {
-                result = eARS_SUCCESS;
+                result = EAudioRequestStatus::Success;
             }
             else
             {
@@ -1148,7 +1150,7 @@ namespace Audio
         IATLAudioObjectData* const audioObjectData,
         const IATLSwitchStateImplData* const switchStateData)
     {
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
 
         auto const implObjectData = static_cast<SATLAudioObjectData_wwise*>(audioObjectData);
         auto const implSwitchStateData = static_cast<const SATLSwitchStateImplData_wwise*>(switchStateData);
@@ -1168,7 +1170,7 @@ namespace Audio
 
                     if (IS_WWISE_OK(akResult))
                     {
-                        result = eARS_SUCCESS;
+                        result = EAudioRequestStatus::Success;
                     }
                     else
                     {
@@ -1189,7 +1191,7 @@ namespace Audio
 
                     if (IS_WWISE_OK(akResult))
                     {
-                        result = eARS_SUCCESS;
+                        result = EAudioRequestStatus::Success;
                     }
                     else
                     {
@@ -1212,7 +1214,7 @@ namespace Audio
 
                     if (IS_WWISE_OK(akResult))
                     {
-                        result = eARS_SUCCESS;
+                        result = EAudioRequestStatus::Success;
                     }
                     else
                     {
@@ -1267,7 +1269,7 @@ namespace Audio
                 occlusion, ObstructionOcclusionMin, ObstructionOcclusionMax);
         }
 
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
 
         auto const implObjectData = static_cast<SATLAudioObjectData_wwise*>(audioObjectData);
 
@@ -1281,7 +1283,7 @@ namespace Audio
 
             if (IS_WWISE_OK(akResult))
             {
-                result = eARS_SUCCESS;
+                result = EAudioRequestStatus::Success;
             }
             else
             {
@@ -1306,7 +1308,7 @@ namespace Audio
         IATLListenerData* const listenerData,
         const SATLWorldPosition& newPosition)
     {
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
 
         auto const implListenerData = static_cast<SATLListenerData_wwise*>(listenerData);
 
@@ -1319,7 +1321,7 @@ namespace Audio
 
             if (IS_WWISE_OK(akResult))
             {
-                result = eARS_SUCCESS;
+                result = EAudioRequestStatus::Success;
             }
             else
             {
@@ -1337,7 +1339,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     EAudioRequestStatus CAudioSystemImpl_wwise::ResetRtpc(IATLAudioObjectData* const audioObjectData, const IATLRtpcImplData* const rtpcData)
     {
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
 
         auto const implObjectData = static_cast<SATLAudioObjectData_wwise*>(audioObjectData);
         auto const implRtpcDat = static_cast<const SATLRtpcImplData_wwise*>(rtpcData);
@@ -1348,7 +1350,7 @@ namespace Audio
 
             if (IS_WWISE_OK(akResult))
             {
-                result = eARS_SUCCESS;
+                result = EAudioRequestStatus::Success;
             }
             else
             {
@@ -1370,7 +1372,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     EAudioRequestStatus CAudioSystemImpl_wwise::RegisterInMemoryFile(SATLAudioFileEntryInfo* const fileEntryInfo)
     {
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
 
         if (fileEntryInfo)
         {
@@ -1388,7 +1390,7 @@ namespace Audio
                 if (IS_WWISE_OK(akResult))
                 {
                     implFileEntryData->nAKBankID = akBankId;
-                    result = eARS_SUCCESS;
+                    result = EAudioRequestStatus::Success;
                 }
                 else
                 {
@@ -1408,7 +1410,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     EAudioRequestStatus CAudioSystemImpl_wwise::UnregisterInMemoryFile(SATLAudioFileEntryInfo* const fileEntryInfo)
     {
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
 
         if (fileEntryInfo)
         {
@@ -1420,7 +1422,7 @@ namespace Audio
 
                 if (IS_WWISE_OK(akResult))
                 {
-                    result = eARS_SUCCESS;
+                    result = EAudioRequestStatus::Success;
                 }
                 else
                 {
@@ -1439,7 +1441,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     EAudioRequestStatus CAudioSystemImpl_wwise::ParseAudioFileEntry(const AZ::rapidxml::xml_node<char>* audioFileEntryNode, SATLAudioFileEntryInfo* const fileEntryInfo)
     {
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
 
         if (audioFileEntryNode && azstricmp(audioFileEntryNode->name(), WwiseXmlTags::WwiseFileTag) == 0 && fileEntryInfo)
         {
@@ -1473,7 +1475,7 @@ namespace Audio
                 fileEntryInfo->sFileName = audioFileEntryName;
                 fileEntryInfo->nMemoryBlockAlignment = AK_BANK_PLATFORM_DATA_ALIGNMENT;
                 fileEntryInfo->pImplData = azcreate(SATLAudioFileEntryData_wwise, (), Audio::AudioImplAllocator, "ATLAudioFileEntryData_wwise");
-                result = eARS_SUCCESS;
+                result = EAudioRequestStatus::Success;
             }
             else
             {
@@ -1932,7 +1934,7 @@ namespace Audio
         const IATLTriggerImplData* const triggerData,
         bool prepare)
     {
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
 
         auto const implTriggerData = static_cast<const SATLTriggerImplData_wwise*>(triggerData);
 
@@ -1947,7 +1949,7 @@ namespace Audio
 
             if (IS_WWISE_OK(akResult))
             {
-                result = eARS_SUCCESS;
+                result = EAudioRequestStatus::Success;
             }
             else
             {
@@ -1975,7 +1977,7 @@ namespace Audio
         [[maybe_unused]] IATLEventData* const eventData,
         [[maybe_unused]] bool prepare)
     {
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
 
 #if 0   // Turned off, PrepareEvent is not supported yet.
         auto const implTriggerData = static_cast<const SATLTriggerImplData_wwise*>(triggerData);
@@ -1997,7 +1999,7 @@ namespace Audio
                 implEventData->nAKID = akUniqueId;
                 implEventData->audioEventState = eAES_UNLOADING;
 
-                result = eARS_SUCCESS;
+                result = EAudioRequestStatus::Success;
             }
             else
             {
@@ -2078,7 +2080,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     EAudioRequestStatus CAudioSystemImpl_wwise::PostEnvironmentAmounts(IATLAudioObjectData* const audioObjectData)
     {
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
         auto const implObjectData = static_cast<SATLAudioObjectData_wwise*>(audioObjectData);
 
         if (implObjectData)
@@ -2147,7 +2149,7 @@ namespace Audio
 
             if (IS_WWISE_OK(akResult))
             {
-                result = eARS_SUCCESS;
+                result = EAudioRequestStatus::Success;
             }
             else
             {

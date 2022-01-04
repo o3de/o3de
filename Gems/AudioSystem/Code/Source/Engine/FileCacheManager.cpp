@@ -84,9 +84,9 @@ namespace Audio
         TAudioFileEntryID fileEntryId = INVALID_AUDIO_FILE_ENTRY_ID;
         SATLAudioFileEntryInfo fileEntryInfo;
 
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::None;
         AudioSystemImplementationRequestBus::BroadcastResult(result, &AudioSystemImplementationRequestBus::Events::ParseAudioFileEntry, fileXmlNode, &fileEntryInfo);
-        if (result == eARS_SUCCESS)
+        if (result == EAudioRequestStatus::Success)
         {
             const char* fileLocation = nullptr;
             AudioSystemImplementationRequestBus::BroadcastResult(fileLocation, &AudioSystemImplementationRequestBus::Events::GetAudioFileLocation, &fileEntryInfo);
@@ -236,7 +236,9 @@ namespace Audio
             }
         }
 
-        return (fullSuccess ? eARS_SUCCESS : (fullFailure ? eARS_FAILURE : eARS_PARTIAL_SUCCESS));
+        return (
+            fullSuccess ? EAudioRequestStatus::Success
+                        : (fullFailure ? EAudioRequestStatus::Failure : EAudioRequestStatus::PartialSuccess));
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -271,7 +273,9 @@ namespace Audio
             }
         }
 
-        return (fullSuccess ? eARS_SUCCESS : (fullFailure ? eARS_FAILURE : eARS_PARTIAL_SUCCESS));
+        return (
+            fullSuccess ? EAudioRequestStatus::Success
+                        : (fullFailure ? EAudioRequestStatus::Failure : EAudioRequestStatus::PartialSuccess));
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -293,7 +297,7 @@ namespace Audio
             ++it;
         }
 
-        return eARS_SUCCESS;
+        return EAudioRequestStatus::Success;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -692,9 +696,9 @@ namespace Audio
             AZ::IO::PathView filePath{ audioFileEntry->m_filePath };
             fileEntryInfo.sFileName = filePath.Filename().Native().data();
 
-            EAudioRequestStatus result = eARS_SUCCESS;
+            EAudioRequestStatus result = EAudioRequestStatus::None;
             AudioSystemImplementationRequestBus::BroadcastResult(result, &AudioSystemImplementationRequestBus::Events::UnregisterInMemoryFile, &fileEntryInfo);
-            if (result == eARS_SUCCESS)
+            if (result == EAudioRequestStatus::Success)
             {
                 g_audioLogger.Log(eALT_COMMENT, "FileCacheManager - File Uncached: '%s'\n", fileEntryInfo.sFileName);
             }

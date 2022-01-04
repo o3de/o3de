@@ -149,12 +149,8 @@ namespace AudioEngineWwiseGem
         {
             Audio::g_audioImplLogger_wwise.Log(Audio::eALT_ALWAYS, "AudioEngineWwise created!");
 
-            Audio::SAudioRequest oAudioRequestData;
-            oAudioRequestData.nFlags = (Audio::eARF_PRIORITY_HIGH | Audio::eARF_EXECUTE_BLOCKING);
-
-            Audio::SAudioManagerRequestData<Audio::eAMRT_INIT_AUDIO_IMPL> oAMData;
-            oAudioRequestData.pData = &oAMData;
-            AZ::Interface<Audio::IAudioSystem>::Get()->PushRequestBlocking(oAudioRequestData);
+            Audio::System::Initialize initRequest;
+            AZ::Interface<Audio::IAudioSystem>::Get()->PushRequestBlockingNew(AZStd::move(initRequest));
 
             success = true;
         }

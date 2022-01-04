@@ -52,42 +52,13 @@ namespace Audio
 
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    class AudioSystemInternalRequests
-    {
-    public:
-        AZ_RTTI(AudioSystemInternalRequests, "{27EB3273-8DA7-4E3D-9B64-F5F4B6F95444}");
-
-        virtual ~AudioSystemInternalRequests() = default;
-
-        virtual void ProcessRequestByPriority(CAudioRequestInternal audioRequestData) = 0;
-    };
-
-    class AudioSystemInternalEBusTraits
-        : public AZ::EBusTraits
-    {
-    public:
-        ///////////////////////////////////////////////////////////////////////////////////////////////
-        // EBusTraits - Single Address, Single Handler, Recursive Mutex, Queued
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
-        static const bool EnableEventQueue = true;
-        using MutexType = AZStd::recursive_mutex;
-        ///////////////////////////////////////////////////////////////////////////////////////////////
-    };
-
-    using AudioSystemInternalRequestBus = AZ::EBus<AudioSystemInternalRequests, AudioSystemInternalEBusTraits>;
-
-
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
     class CAudioSystem
         : public IAudioSystem
-        , public AudioSystemInternalRequestBus::Handler
     {
         friend class CAudioThread;
 
     public:
-        AZ_RTTI(CAudioSystem, "{96254647-000D-4896-93C4-92E0F258F21D}", IAudioSystem, AudioSystemInternalRequestBus::Handler);
+        AZ_RTTI(CAudioSystem, "{96254647-000D-4896-93C4-92E0F258F21D}", IAudioSystem);
         AZ_CLASS_ALLOCATOR(CAudioSystem, AZ::SystemAllocator, 0);
 
         CAudioSystem();
@@ -99,10 +70,16 @@ namespace Audio
         bool Initialize() override;
         void Release() override;
 
-        void PushRequest(const SAudioRequest& audioRequestData) override;
-        void PushRequestBlocking(const SAudioRequest& audioRequestData) override;
-        void PushRequestThreadSafe(const SAudioRequest& audioRequestData) override;
-        void ProcessRequestByPriority(CAudioRequestInternal audioRequestInternalData) override;
+        // OLD REQUESTS API
+        //void PushRequest(const SAudioRequest& audioRequestData) override;
+        //void PushRequestBlocking(const SAudioRequest& audioRequestData) override;
+        //void PushRequestThreadSafe(const SAudioRequest& audioRequestData) override;
+        //void ProcessRequestByPriority(CAudioRequestInternal audioRequestInternalData) override;
+
+        //! NEW AUDIO REQUESTS
+        void PushRequestNew(AudioRequestType&& request) override;
+        void PushRequestBlockingNew(AudioRequestType&& request) override;
+        //~ NEW AUDIO REQUESTS
 
         void ExternalUpdate() override;
 
@@ -120,7 +97,6 @@ namespace Audio
         bool ReleaseAudioListenerID(const TAudioObjectID nAudioObjectID) override;
         bool SetAudioListenerOverrideID(const TAudioObjectID nAudioObjectID) override;
 
-        void GetInfo(SAudioSystemInfo& rAudioSystemInfo) override;
         const char* GetControlsPath() const override;
         void UpdateControlsPath() override;
         void RefreshAudioSystem(const char* const levelName) override;
@@ -135,19 +111,10 @@ namespace Audio
         const char* GetAudioControlName(const EAudioControlType controlType, const TATLIDType atlID) const override;
         const char* GetAudioSwitchStateName(const TAudioControlID switchID, const TAudioSwitchStateID stateID) const override;
 
-    protected:
-        void ProcessRequestThreadSafe(CAudioRequestInternal audioRequestInternalData);
-
     private:
-        using TAudioRequests = AZStd::deque<CAudioRequestInternal, Audio::AudioSystemStdAllocator>;
         using TAudioProxies = AZStd::vector<CAudioProxy*, Audio::AudioSystemStdAllocator>;
 
         void InternalUpdate();
-        bool ProcessRequests(TAudioRequests& rRequestQueue);
-        void ProcessRequestBlocking(CAudioRequestInternal& audioRequestInternalData);
-
-        void ExecuteRequestCompletionCallbacks(TAudioRequests& requestQueue, AZStd::mutex& requestQueueMutex, bool bTryLock = false);
-        void ExtractCompletedRequests(TAudioRequests& rRequestQueue, TAudioRequests& rSyncCallbacksQueue);
 
         bool m_bSystemInitialized;
 
@@ -158,14 +125,13 @@ namespace Audio
         CAudioThread m_audioSystemThread;
 
 
-        TAudioRequests m_blockingRequestsQueue;     // blocking requests go here, main thread will wait for audio thread to process
-        TAudioRequests m_threadSafeCallbacksQueue;  // requests coming from any thread go here.
-        TAudioRequests m_pendingCallbacksQueue;     // this queue holds pending callbacks, agreggated from processed requests
-
+        //! NEW AUDIO REQUESTS
+        using TAudioRequestQueue = AZStd::deque<AudioRequestType, Audio::AudioSystemStdAllocator>;
+        TAudioRequestQueue m_pendingRequestsQueue;
+        TAudioRequestQueue m_blockingRequestsQueue;     // maybe doesn't need a queue, and these can be handled one at a time.
+        AZStd::mutex m_pendingRequestsMutex;
         AZStd::mutex m_blockingRequestsMutex;
-        AZStd::mutex m_threadSafeCallbacksMutex;
-        AZStd::mutex m_pendingCallbacksMutex;
-
+        //~ NEW AUDIO REQUESTS
 
         // Synchronization objects
         AZStd::binary_semaphore m_mainEvent;

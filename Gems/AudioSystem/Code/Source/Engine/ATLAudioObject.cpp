@@ -307,21 +307,22 @@ namespace Audio
     void CATLAudioObjectBase::ReportFinishedTriggerInstance(TObjectTriggerStates::iterator& iTriggerEntry)
     {
         SATLTriggerInstanceState& rTriggerInstState = iTriggerEntry->second;
-        SAudioRequest oRequest;
-        SAudioCallbackManagerRequestData<eACMRT_REPORT_FINISHED_TRIGGER_INSTANCE> oRequestData(rTriggerInstState.nTriggerID);
-        oRequest.nFlags = (eARF_PRIORITY_HIGH | eARF_THREAD_SAFE_PUSH | eARF_SYNC_CALLBACK);
-        oRequest.nAudioObjectID = GetID();
-        oRequest.pData = &oRequestData;
-        oRequest.pOwner = rTriggerInstState.pOwnerOverride;
-        oRequest.pUserData = rTriggerInstState.pUserData;
-        oRequest.pUserDataOwner = rTriggerInstState.pUserDataOwner;
+        // TODO:
+        //SAudioRequest oRequest;
+        //SAudioCallbackManagerRequestData<eACMRT_REPORT_FINISHED_TRIGGER_INSTANCE> oRequestData(rTriggerInstState.nTriggerID);
+        //oRequest.nFlags = (eARF_PRIORITY_HIGH | eARF_THREAD_SAFE_PUSH | eARF_SYNC_CALLBACK);
+        //oRequest.nAudioObjectID = GetID();
+        //oRequest.pData = &oRequestData;
+        //oRequest.pOwner = rTriggerInstState.pOwnerOverride;
+        //oRequest.pUserData = rTriggerInstState.pUserData;
+        //oRequest.pUserDataOwner = rTriggerInstState.pUserDataOwner;
 
-        if ((rTriggerInstState.nFlags & eATS_CALLBACK_ON_AUDIO_THREAD) != 0)
-        {
-            oRequest.nFlags &= ~eARF_SYNC_CALLBACK;
-        }
+        //if ((rTriggerInstState.nFlags & eATS_CALLBACK_ON_AUDIO_THREAD) != 0)
+        //{
+        //    oRequest.nFlags &= ~eARF_SYNC_CALLBACK;
+        //}
 
-        AudioSystemThreadSafeRequestBus::Broadcast(&AudioSystemThreadSafeRequestBus::Events::PushRequestThreadSafe, oRequest);
+        //AudioSystemThreadSafeRequestBus::Broadcast(&AudioSystemThreadSafeRequestBus::Events::PushRequestThreadSafe, oRequest);
 
         if ((rTriggerInstState.nFlags & eATS_PREPARED) != 0)
         {
@@ -386,13 +387,14 @@ namespace Audio
         if (AZ::GetAbs(fCurrentVelocity - m_fPreviousVelocity) > Audio::CVars::s_VelocityTrackingThreshold)
         {
             m_fPreviousVelocity = fCurrentVelocity;
-            SAudioRequest oRequest;
-            SAudioObjectRequestData<eAORT_SET_RTPC_VALUE> oRequestData(ATLInternalControlIDs::ObjectSpeedRtpcID, fCurrentVelocity);
+            // TODO:
+            //SAudioRequest oRequest;
+            //SAudioObjectRequestData<eAORT_SET_RTPC_VALUE> oRequestData(ATLInternalControlIDs::ObjectSpeedRtpcID, fCurrentVelocity);
 
-            oRequest.nAudioObjectID = GetID();
-            oRequest.nFlags = eARF_THREAD_SAFE_PUSH;
-            oRequest.pData = &oRequestData;
-            AudioSystemThreadSafeRequestBus::Broadcast(&AudioSystemThreadSafeRequestBus::Events::PushRequestThreadSafe, oRequest);
+            //oRequest.nAudioObjectID = GetID();
+            //oRequest.nFlags = eARF_THREAD_SAFE_PUSH;
+            //oRequest.pData = &oRequestData;
+            //AudioSystemThreadSafeRequestBus::Broadcast(&AudioSystemThreadSafeRequestBus::Events::PushRequestThreadSafe, oRequest);
         }
 
         m_oPreviousPosition = m_oPosition;

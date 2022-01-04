@@ -183,27 +183,29 @@ namespace LmbrCentral
     {
         Audio::AudioPreloadNotificationBus::MultiHandler::BusConnect(preloadId);
 
-        if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
-        {
-            Audio::SAudioRequest request;
-            Audio::SAudioManagerRequestData<Audio::eAMRT_PRELOAD_SINGLE_REQUEST> requestData(preloadId);
-            request.nFlags = (Audio::eARF_PRIORITY_NORMAL);
-            request.pData = &requestData;
-            audioSystem->PushRequest(request);
-        }
+        // TODO:
+        //if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+        //{
+        //    Audio::SAudioRequest request;
+        //    Audio::SAudioManagerRequestData<Audio::eAMRT_PRELOAD_SINGLE_REQUEST> requestData(preloadId);
+        //    request.nFlags = (Audio::eARF_PRIORITY_NORMAL);
+        //    request.pData = &requestData;
+        //    audioSystem->PushRequest(request);
+        //}
     }
 
     //=========================================================================
-    void AudioPreloadComponent::UnloadPreloadById(Audio::TAudioPreloadRequestID preloadId)
+    void AudioPreloadComponent::UnloadPreloadById([[maybe_unused]] Audio::TAudioPreloadRequestID preloadId)
     {
-        if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
-        {
-            Audio::SAudioRequest request;
-            Audio::SAudioManagerRequestData<Audio::eAMRT_UNLOAD_SINGLE_REQUEST> requestData(preloadId);
-            request.nFlags = (Audio::eARF_PRIORITY_NORMAL);
-            request.pData = &requestData;
-            audioSystem->PushRequest(request);
-        }
+        // TODO:
+        //if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+        //{
+        //    Audio::SAudioRequest request;
+        //    Audio::SAudioManagerRequestData<Audio::eAMRT_UNLOAD_SINGLE_REQUEST> requestData(preloadId);
+        //    request.nFlags = (Audio::eARF_PRIORITY_NORMAL);
+        //    request.pData = &requestData;
+        //    audioSystem->PushRequest(request);
+        //}
     }
 
 } // namespace LmbrCentral

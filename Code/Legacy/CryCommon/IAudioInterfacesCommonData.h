@@ -67,16 +67,16 @@ namespace Audio
     //      Used as a return type for many function used by the AudioSystem internally,
     //      and also for most of the IAudioSystemImplementation calls.
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    enum EAudioRequestStatus : TATLEnumFlagsType
+    enum class EAudioRequestStatus
     {
-        eARS_NONE = 0,
-        eARS_SUCCESS = 1,
-        eARS_PARTIAL_SUCCESS = 2,
-        eARS_FAILURE = 3,
-        eARS_PENDING = 4,
-        eARS_FAILURE_INVALID_OBJECT_ID = 5,
-        eARS_FAILURE_INVALID_CONTROL_ID = 6,
-        eARS_FAILURE_INVALID_REQUEST = 7,
+        None,
+        Success,
+        PartialSuccess,
+        Failure,
+        Pending,
+        FailureInvalidObjectId,
+        FailureInvalidControlId,
+        FailureInvalidRequest,
     };
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -85,7 +85,7 @@ namespace Audio
     //! @return eARS_SUCCESS if result is true, eARS_FAILURE otherwise.
     inline EAudioRequestStatus BoolToARS(bool result)
     {
-        return result ? eARS_SUCCESS : eARS_FAILURE;
+        return result ? EAudioRequestStatus::Success : EAudioRequestStatus::Failure;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////

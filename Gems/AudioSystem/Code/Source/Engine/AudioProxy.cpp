@@ -52,12 +52,13 @@ namespace Audio
 
                 m_nFlags |= eAPF_WAITING_FOR_ID;
 
-                SAudioRequest oRequest;
-                SAudioManagerRequestData<eAMRT_RESERVE_AUDIO_OBJECT_ID> oRequestData(&m_nAudioObjectID, sObjectName);
-                oRequest.nFlags = (eARF_PRIORITY_HIGH | eARF_SYNC_CALLBACK);
-                oRequest.pOwner = this;
-                oRequest.pData = &oRequestData;
-                AZ::Interface<IAudioSystem>::Get()->PushRequest(oRequest);
+                // TODO:
+                //SAudioRequest oRequest;
+                //SAudioManagerRequestData<eAMRT_RESERVE_AUDIO_OBJECT_ID> oRequestData(&m_nAudioObjectID, sObjectName);
+                //oRequest.nFlags = (eARF_PRIORITY_HIGH | eARF_SYNC_CALLBACK);
+                //oRequest.pOwner = this;
+                //oRequest.pData = &oRequestData;
+                //AZ::Interface<IAudioSystem>::Get()->PushRequest(oRequest);
             }
             else
             {
@@ -68,11 +69,12 @@ namespace Audio
         }
         else
         {
-            SAudioRequest oRequest;
-            SAudioManagerRequestData<eAMRT_RESERVE_AUDIO_OBJECT_ID> oRequestData(&m_nAudioObjectID, sObjectName);
-            oRequest.nFlags = (eARF_PRIORITY_HIGH | eARF_EXECUTE_BLOCKING);
-            oRequest.pData = &oRequestData;
-            AZ::Interface<IAudioSystem>::Get()->PushRequestBlocking(oRequest);
+            // TODO:
+            //SAudioRequest oRequest;
+            //SAudioManagerRequestData<eAMRT_RESERVE_AUDIO_OBJECT_ID> oRequestData(&m_nAudioObjectID, sObjectName);
+            //oRequest.nFlags = (eARF_PRIORITY_HIGH | eARF_EXECUTE_BLOCKING);
+            //oRequest.pData = &oRequestData;
+            //AZ::Interface<IAudioSystem>::Get()->PushRequestBlocking(oRequest);
 
     #if !defined(AUDIO_RELEASE)
             if (m_nAudioObjectID == INVALID_AUDIO_OBJECT_ID)
@@ -93,16 +95,17 @@ namespace Audio
         {
             AZ_Assert(m_nAudioObjectID != INVALID_AUDIO_OBJECT_ID, "Invalid AudioObjectID found when an audio proxy is executing a source trigger!");
 
-            SAudioRequest oRequest;
-            oRequest.nAudioObjectID = m_nAudioObjectID;
-            oRequest.nFlags = rCallbackInfos.nRequestFlags;
+            // TODO:
+            //SAudioRequest oRequest;
+            //oRequest.nAudioObjectID = m_nAudioObjectID;
+            //oRequest.nFlags = rCallbackInfos.nRequestFlags;
 
-            SAudioObjectRequestData<eAORT_EXECUTE_SOURCE_TRIGGER> oRequestData(nTriggerID, rSourceInfo);
-            oRequest.pOwner = (rCallbackInfos.pObjectToNotify != nullptr) ? rCallbackInfos.pObjectToNotify : this;
-            oRequest.pUserData = rCallbackInfos.pUserData;
-            oRequest.pUserDataOwner = rCallbackInfos.pUserDataOwner;
-            oRequest.pData = &oRequestData;
-            AZ::Interface<IAudioSystem>::Get()->PushRequest(oRequest);
+            //SAudioObjectRequestData<eAORT_EXECUTE_SOURCE_TRIGGER> oRequestData(nTriggerID, rSourceInfo);
+            //oRequest.pOwner = (rCallbackInfos.pObjectToNotify != nullptr) ? rCallbackInfos.pObjectToNotify : this;
+            //oRequest.pUserData = rCallbackInfos.pUserData;
+            //oRequest.pUserDataOwner = rCallbackInfos.pUserDataOwner;
+            //oRequest.pData = &oRequestData;
+            //AZ::Interface<IAudioSystem>::Get()->PushRequest(oRequest);
         }
         else
         {
@@ -126,16 +129,17 @@ namespace Audio
         {
             AZ_Assert(m_nAudioObjectID != INVALID_AUDIO_OBJECT_ID, "Invalid AudioObjectID found when an audio proxy is executing a trigger!");
 
-            SAudioRequest oRequest;
-            oRequest.nAudioObjectID = m_nAudioObjectID;
-            oRequest.nFlags = rCallbackInfos.nRequestFlags;
+            // TODO:
+            //SAudioRequest oRequest;
+            //oRequest.nAudioObjectID = m_nAudioObjectID;
+            //oRequest.nFlags = rCallbackInfos.nRequestFlags;
 
-            SAudioObjectRequestData<eAORT_EXECUTE_TRIGGER> oRequestData(nTriggerID);
-            oRequest.pOwner = (rCallbackInfos.pObjectToNotify != nullptr) ? rCallbackInfos.pObjectToNotify : this;
-            oRequest.pUserData = rCallbackInfos.pUserData;
-            oRequest.pUserDataOwner = rCallbackInfos.pUserDataOwner;
-            oRequest.pData = &oRequestData;
-            AZ::Interface<IAudioSystem>::Get()->PushRequest(oRequest);
+            //SAudioObjectRequestData<eAORT_EXECUTE_TRIGGER> oRequestData(nTriggerID);
+            //oRequest.pOwner = (rCallbackInfos.pObjectToNotify != nullptr) ? rCallbackInfos.pObjectToNotify : this;
+            //oRequest.pUserData = rCallbackInfos.pUserData;
+            //oRequest.pUserDataOwner = rCallbackInfos.pUserDataOwner;
+            //oRequest.pData = &oRequestData;
+            //AZ::Interface<IAudioSystem>::Get()->PushRequest(oRequest);
         }
         else
         {
@@ -154,13 +158,14 @@ namespace Audio
     {
         if ((m_nFlags & eAPF_WAITING_FOR_ID) == 0)
         {
-            SAudioRequest oRequest;
-            SAudioObjectRequestData<eAORT_STOP_ALL_TRIGGERS> oRequestData;
-            oRequest.nAudioObjectID = m_nAudioObjectID;
-            oRequest.nFlags = eARF_PRIORITY_NORMAL;
-            oRequest.pData = &oRequestData;
-            oRequest.pOwner = this;
-            AZ::Interface<IAudioSystem>::Get()->PushRequest(oRequest);
+            // TODO:
+            //SAudioRequest oRequest;
+            //SAudioObjectRequestData<eAORT_STOP_ALL_TRIGGERS> oRequestData;
+            //oRequest.nAudioObjectID = m_nAudioObjectID;
+            //oRequest.nFlags = eARF_PRIORITY_NORMAL;
+            //oRequest.pData = &oRequestData;
+            //oRequest.pOwner = this;
+            //AZ::Interface<IAudioSystem>::Get()->PushRequest(oRequest);
         }
         else
         {
@@ -174,13 +179,14 @@ namespace Audio
     {
         if ((m_nFlags & eAPF_WAITING_FOR_ID) == 0)
         {
-            SAudioRequest oRequest;
-            SAudioObjectRequestData<eAORT_STOP_TRIGGER> oRequestData(nTriggerID);
-            oRequest.nAudioObjectID = m_nAudioObjectID;
-            oRequest.nFlags = eARF_PRIORITY_NORMAL;
-            oRequest.pData = &oRequestData;
-            oRequest.pOwner = this;
-            AZ::Interface<IAudioSystem>::Get()->PushRequest(oRequest);
+            // TODO:
+            //SAudioRequest oRequest;
+            //SAudioObjectRequestData<eAORT_STOP_TRIGGER> oRequestData(nTriggerID);
+            //oRequest.nAudioObjectID = m_nAudioObjectID;
+            //oRequest.nFlags = eARF_PRIORITY_NORMAL;
+            //oRequest.pData = &oRequestData;
+            //oRequest.pOwner = this;
+            //AZ::Interface<IAudioSystem>::Get()->PushRequest(oRequest);
         }
         else
         {
@@ -195,13 +201,14 @@ namespace Audio
     {
         if ((m_nFlags & eAPF_WAITING_FOR_ID) == 0)
         {
-            SAudioRequest oRequest;
-            SAudioObjectRequestData<eAORT_SET_SWITCH_STATE> oRequestData(nSwitchID, nStateID);
-            oRequest.nAudioObjectID = m_nAudioObjectID;
-            oRequest.nFlags = eARF_PRIORITY_NORMAL;
-            oRequest.pData = &oRequestData;
-            oRequest.pOwner = this;
-            AZ::Interface<IAudioSystem>::Get()->PushRequest(oRequest);
+            // TODO:
+            //SAudioRequest oRequest;
+            //SAudioObjectRequestData<eAORT_SET_SWITCH_STATE> oRequestData(nSwitchID, nStateID);
+            //oRequest.nAudioObjectID = m_nAudioObjectID;
+            //oRequest.nFlags = eARF_PRIORITY_NORMAL;
+            //oRequest.pData = &oRequestData;
+            //oRequest.pOwner = this;
+            //AZ::Interface<IAudioSystem>::Get()->PushRequest(oRequest);
         }
         else
         {
@@ -217,13 +224,14 @@ namespace Audio
     {
         if ((m_nFlags & eAPF_WAITING_FOR_ID) == 0)
         {
-            SAudioRequest oRequest;
-            SAudioObjectRequestData<eAORT_SET_RTPC_VALUE> oRequestData(nRtpcID, fValue);
-            oRequest.nAudioObjectID = m_nAudioObjectID;
-            oRequest.nFlags = eARF_PRIORITY_NORMAL;
-            oRequest.pData = &oRequestData;
-            oRequest.pOwner = this;
-            AZ::Interface<IAudioSystem>::Get()->PushRequest(oRequest);
+            // TODO:
+            //SAudioRequest oRequest;
+            //SAudioObjectRequestData<eAORT_SET_RTPC_VALUE> oRequestData(nRtpcID, fValue);
+            //oRequest.nAudioObjectID = m_nAudioObjectID;
+            //oRequest.nFlags = eARF_PRIORITY_NORMAL;
+            //oRequest.pData = &oRequestData;
+            //oRequest.pOwner = this;
+            //AZ::Interface<IAudioSystem>::Get()->PushRequest(oRequest);
         }
         else
         {
@@ -260,13 +268,14 @@ namespace Audio
                 m_oPosition.NormalizeForwardVec();
                 m_oPosition.NormalizeUpVec();
 
-                SAudioRequest oRequest;
-                SAudioObjectRequestData<eAORT_SET_POSITION> oRequestData(m_oPosition);
-                oRequest.nAudioObjectID = m_nAudioObjectID;
-                oRequest.nFlags = eARF_PRIORITY_NORMAL;
-                oRequest.pData = &oRequestData;
-                oRequest.pOwner = this;
-                AZ::Interface<IAudioSystem>::Get()->PushRequest(oRequest);
+                // TODO:
+                //SAudioRequest oRequest;
+                //SAudioObjectRequestData<eAORT_SET_POSITION> oRequestData(m_oPosition);
+                //oRequest.nAudioObjectID = m_nAudioObjectID;
+                //oRequest.nFlags = eARF_PRIORITY_NORMAL;
+                //oRequest.pData = &oRequestData;
+                //oRequest.pOwner = this;
+                //AZ::Interface<IAudioSystem>::Get()->PushRequest(oRequest);
             }
         }
         else
@@ -288,13 +297,14 @@ namespace Audio
     {
         if ((m_nFlags & eAPF_WAITING_FOR_ID) == 0)
         {
-            SAudioRequest request;
-            SAudioObjectRequestData<eAORT_SET_MULTI_POSITIONS> requestData(params);
-            request.nAudioObjectID = m_nAudioObjectID;
-            request.nFlags = eARF_PRIORITY_NORMAL;
-            request.pData = &requestData;
-            request.pOwner = this;
-            AZ::Interface<IAudioSystem>::Get()->PushRequest(request);
+            // TODO:
+            //SAudioRequest request;
+            //SAudioObjectRequestData<eAORT_SET_MULTI_POSITIONS> requestData(params);
+            //request.nAudioObjectID = m_nAudioObjectID;
+            //request.nFlags = eARF_PRIORITY_NORMAL;
+            //request.pData = &requestData;
+            //request.pOwner = this;
+            //AZ::Interface<IAudioSystem>::Get()->PushRequest(request);
         }
         else
         {
@@ -309,13 +319,14 @@ namespace Audio
     {
         if ((m_nFlags & eAPF_WAITING_FOR_ID) == 0)
         {
-            SAudioRequest oRequest;
-            SAudioObjectRequestData<eAORT_SET_ENVIRONMENT_AMOUNT> oRequestData(nEnvironmentID, fValue);
-            oRequest.nAudioObjectID = m_nAudioObjectID;
-            oRequest.nFlags = eARF_PRIORITY_NORMAL;
-            oRequest.pData = &oRequestData;
-            oRequest.pOwner = this;
-            AZ::Interface<IAudioSystem>::Get()->PushRequest(oRequest);
+            // TODO:
+            //SAudioRequest oRequest;
+            //SAudioObjectRequestData<eAORT_SET_ENVIRONMENT_AMOUNT> oRequestData(nEnvironmentID, fValue);
+            //oRequest.nAudioObjectID = m_nAudioObjectID;
+            //oRequest.nFlags = eARF_PRIORITY_NORMAL;
+            //oRequest.pData = &oRequestData;
+            //oRequest.pOwner = this;
+            //AZ::Interface<IAudioSystem>::Get()->PushRequest(oRequest);
         }
         else
         {
@@ -341,13 +352,14 @@ namespace Audio
     {
         if ((m_nFlags & eAPF_WAITING_FOR_ID) == 0)
         {
-            SAudioRequest oRequest;
-            SAudioObjectRequestData<eAORT_RESET_ENVIRONMENTS> oRequestData;
-            oRequest.nAudioObjectID = m_nAudioObjectID;
-            oRequest.nFlags = eARF_PRIORITY_NORMAL;
-            oRequest.pData = &oRequestData;
-            oRequest.pOwner = this;
-            AZ::Interface<IAudioSystem>::Get()->PushRequest(oRequest);
+            // TODO:
+            //SAudioRequest oRequest;
+            //SAudioObjectRequestData<eAORT_RESET_ENVIRONMENTS> oRequestData;
+            //oRequest.nAudioObjectID = m_nAudioObjectID;
+            //oRequest.nFlags = eARF_PRIORITY_NORMAL;
+            //oRequest.pData = &oRequestData;
+            //oRequest.pOwner = this;
+            //AZ::Interface<IAudioSystem>::Get()->PushRequest(oRequest);
         }
         else
         {
@@ -360,13 +372,14 @@ namespace Audio
     {
         if ((m_nFlags & eAPF_WAITING_FOR_ID) == 0)
         {
-            SAudioRequest request;
-            SAudioObjectRequestData<eAORT_RESET_RTPCS> requestData;
-            request.nAudioObjectID = m_nAudioObjectID;
-            request.nFlags = eARF_PRIORITY_NORMAL;
-            request.pData = &requestData;
-            request.pOwner = this;
-            AZ::Interface<IAudioSystem>::Get()->PushRequest(request);
+            // TODO:
+            //SAudioRequest request;
+            //SAudioObjectRequestData<eAORT_RESET_RTPCS> requestData;
+            //request.nAudioObjectID = m_nAudioObjectID;
+            //request.nFlags = eARF_PRIORITY_NORMAL;
+            //request.pData = &requestData;
+            //request.pOwner = this;
+            //AZ::Interface<IAudioSystem>::Get()->PushRequest(request);
         }
         else
         {
@@ -396,11 +409,12 @@ namespace Audio
             if (m_nAudioObjectID != INVALID_AUDIO_OBJECT_ID)
             {
                 // Request must be asynchronous and lowest priority!
-                SAudioRequest oRequest;
-                SAudioObjectRequestData<eAORT_RELEASE_OBJECT> oRequestData;
-                oRequest.nAudioObjectID = m_nAudioObjectID;
-                oRequest.pData = &oRequestData;
-                AZ::Interface<IAudioSystem>::Get()->PushRequest(oRequest);
+                // TODO:
+                //SAudioRequest oRequest;
+                //SAudioObjectRequestData<eAORT_RELEASE_OBJECT> oRequestData;
+                //oRequest.nAudioObjectID = m_nAudioObjectID;
+                //oRequest.pData = &oRequestData;
+                //AZ::Interface<IAudioSystem>::Get()->PushRequest(oRequest);
 
                 m_nAudioObjectID = INVALID_AUDIO_OBJECT_ID;
             }

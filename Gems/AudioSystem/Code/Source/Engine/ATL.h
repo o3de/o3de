@@ -35,9 +35,13 @@ namespace Audio
 
         bool Initialize();
         bool ShutDown();
-
-        void ProcessRequest(CAudioRequestInternal& rRequest);
         void Update();
+
+
+        //! NEW AUDIO REQUESTS
+        void ProcessRequestNew(AudioRequestType&& request);
+        //~ NEW AUDIO REQUESTS
+
 
         TAudioControlID GetAudioTriggerID(const char* const sAudioTriggerName) const;
         TAudioControlID GetAudioRtpcID(const char* const sAudioRtpcName) const;
@@ -60,22 +64,15 @@ namespace Audio
 
         EAudioRequestStatus ParseControlsData(const char* const pFolderPath, const EATLDataScope eDataScope);
         EAudioRequestStatus ClearControlsData(const EATLDataScope eDataScope);
-        EAudioRequestStatus ParsePreloadsData(const char* const pFolderPath, const EATLDataScope eDataScope);
-        EAudioRequestStatus ClearPreloadsData(const EATLDataScope eDataScope);
 
         const AZStd::string& GetControlsImplSubPath() const;
 
         TAudioSourceId CreateAudioSource(const SAudioInputConfig& sourceConfig);
         void DestroyAudioSource(TAudioSourceId sourceId);
 
-        void NotifyListener(const CAudioRequestInternal& rRequest);
+        //void NotifyListener(const CAudioRequestInternal& rRequest);
 
     private:
-        EAudioRequestStatus ProcessAudioManagerRequest(const CAudioRequestInternal& rRequest);
-        EAudioRequestStatus ProcessAudioCallbackManagerRequest(const SAudioRequestDataInternal* const pPassedRequestData);
-        EAudioRequestStatus ProcessAudioObjectRequest(const CAudioRequestInternal& rRequest);
-        EAudioRequestStatus ProcessAudioListenerRequest(const CAudioRequestInternal& rRequest);
-
         EAudioRequestStatus InitializeImplComponent();
         void ReleaseImplComponent();
 
@@ -133,6 +130,8 @@ namespace Audio
         EAudioRequestStatus UnmuteAll();
         void UpdateSharedData();
         void SetImplLanguage();
+
+        CATLAudioObjectBase* GetRequestObject(TAudioObjectID objectId);
 
         enum EATLInternalStates : TATLEnumFlagsType
         {

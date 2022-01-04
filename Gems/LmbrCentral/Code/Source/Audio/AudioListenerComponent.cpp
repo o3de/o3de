@@ -197,16 +197,17 @@ namespace LmbrCentral
         transform.SetTranslation(m_transform.GetTranslation() + m_fixedOffset);
 
         // Send an update request
-        if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
-        {
-            Audio::SAudioListenerRequestData<Audio::eALRT_SET_POSITION> requestData(transform);
-            Audio::SAudioRequest request;
-            request.nAudioObjectID = m_listenerObjectId;
-            request.nFlags = Audio::eARF_PRIORITY_NORMAL;
-            request.pOwner = this;
-            request.pData = &requestData;
-            audioSystem->PushRequest(request);
-        }
+        // TODO:
+        //if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+        //{
+        //    Audio::SAudioListenerRequestData<Audio::eALRT_SET_POSITION> requestData(transform);
+        //    Audio::SAudioRequest request;
+        //    request.nAudioObjectID = m_listenerObjectId;
+        //    request.nFlags = Audio::eARF_PRIORITY_NORMAL;
+        //    request.pOwner = this;
+        //    request.pData = &requestData;
+        //    audioSystem->PushRequest(request);
+        //}
     }
 
     //=========================================================================
