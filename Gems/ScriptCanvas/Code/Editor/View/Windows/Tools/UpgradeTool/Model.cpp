@@ -8,11 +8,10 @@
 
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <CryCommon/CrySystemBus.h>
-#include <Editor/Assets/ScriptCanvasAssetHelpers.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/Model.h>
 #include <IConsole.h>
 #include <ISystem.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
+
 
 namespace ModifierCpp
 {

@@ -73,6 +73,7 @@ namespace WhiteBox
     void EditorWhiteBoxColliderComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
         incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
+        incompatible.push_back(AZ_CRC_CE("WhiteBoxColliderService"));
     }
 
     void EditorWhiteBoxColliderComponent::Activate()

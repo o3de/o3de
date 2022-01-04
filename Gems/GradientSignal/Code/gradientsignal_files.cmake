@@ -8,6 +8,7 @@
 
 set(FILES
     Include/GradientSignal/GradientSampler.h
+    Include/GradientSignal/GradientTransform.h
     Include/GradientSignal/SmoothStep.h
     Include/GradientSignal/ImageAsset.h
     Include/GradientSignal/ImageSettings.h
@@ -77,10 +78,10 @@ set(FILES
     Source/GradientSampler.cpp
     Source/GradientSignalSystemComponent.cpp
     Source/GradientSignalSystemComponent.h
+    Source/GradientTransform.cpp
     Source/SmoothStep.cpp
     Source/ImageAsset.cpp
     Source/ImageSettings.cpp
     Source/PerlinImprovedNoise.cpp
-    Source/Util.cpp
     Source/GradientImageConversion.cpp
 )

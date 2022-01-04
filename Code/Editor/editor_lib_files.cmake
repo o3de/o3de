@@ -526,8 +526,6 @@ set(FILES
     PythonEditorFuncs.h
     QtUI/QCollapsibleGroupBox.h
     QtUI/QCollapsibleGroupBox.cpp
-    QtUI/ClickableLabel.h
-    QtUI/ClickableLabel.cpp
     QtUI/PixmapLabelPreview.h
     QtUI/PixmapLabelPreview.cpp
     QtUI/WaitCursor.h

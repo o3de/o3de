@@ -101,9 +101,7 @@ namespace GradientSignal
 
         //////////////////////////////////////////////////////////////////////////
         // GradientTransformRequestBus
-        void TransformPositionToUVW(const AZ::Vector3& inPosition, AZ::Vector3& outUVW, const bool shouldNormalizeOutput, bool& wasPointRejected) const override;
-        void GetGradientLocalBounds(AZ::Aabb& bounds) const override;
-        void GetGradientEncompassingBounds(AZ::Aabb& bounds) const override;
+        const GradientTransform& GetGradientTransform() const override;
 
         //////////////////////////////////////////////////////////////////////////
         // DependencyNotificationBus
@@ -113,7 +111,7 @@ namespace GradientSignal
         // AZ::TickBus::Handler
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
-        void UpdateFromShape();
+        void UpdateFromShape(bool notifyDependentsOfChange);
 
         AZ::EntityId GetShapeEntityId() const;
 
@@ -168,9 +166,8 @@ namespace GradientSignal
     private:
         mutable AZStd::recursive_mutex m_cacheMutex;
         GradientTransformConfig m_configuration;
-        AZ::Aabb m_shapeBounds = AZ::Aabb::CreateNull();
-        AZ::Matrix3x4 m_shapeTransformInverse = AZ::Matrix3x4::CreateIdentity();
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
         AZStd::atomic_bool m_dirty{ false };
+        GradientTransform m_gradientTransform;
     };
 } //namespace GradientSignal

@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __RENDERGL_TEXTURECACHE_H
-#define __RENDERGL_TEXTURECACHE_H
+#pragma once
 
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/vector.h>
@@ -76,7 +75,4 @@ namespace RenderGL
         Texture*                m_whiteTexture;
         Texture*                m_defaultNormalTexture;
     };
-}
-
-
-#endif
+} // namespace RenderGL
