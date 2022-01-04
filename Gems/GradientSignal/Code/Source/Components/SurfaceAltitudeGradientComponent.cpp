@@ -6,7 +6,7 @@
  *
  */
 
-#include "SurfaceAltitudeGradientComponent.h"
+#include <GradientSignal/Components/SurfaceAltitudeGradientComponent.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
