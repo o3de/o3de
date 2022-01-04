@@ -52,7 +52,7 @@ get_property(asset_builders GLOBAL PROPERTY LY_ASSET_BUILDERS)
 string (REPLACE ";" "," asset_builders "${asset_builders}")
 ly_add_source_properties(
     SOURCES native/utilities/ApplicationManager.cpp
-    PROPERTY COMPILE_DEFINITIONS 
+    PROPERTY COMPILE_DEFINITIONS
     VALUES LY_ASSET_BUILDERS="${asset_builders}"
 )
 
@@ -147,9 +147,9 @@ endif()
 # Tests
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
-    
+
     ly_add_target(
-        NAME AssetProcessor.Tests EXECUTABLE
+        NAME AssetProcessor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE AZ
         AUTOMOC
         AUTORCC
@@ -167,12 +167,12 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     )
     ly_add_source_properties(
         SOURCES native/tests/assetBuilderSDK/assetBuilderSDKTest.cpp
-        PROPERTY COMPILE_DEFINITIONS 
+        PROPERTY COMPILE_DEFINITIONS
         VALUES ${LY_PAL_TOOLS_DEFINES}
     )
     ly_add_source_properties(
         SOURCES native/unittests/AssetProcessorManagerUnitTests.cpp
-        PROPERTY COMPILE_DEFINITIONS 
+        PROPERTY COMPILE_DEFINITIONS
         VALUES LY_CMAKE_BINARY_DIR="${CMAKE_BINARY_DIR}"
     )
 
@@ -266,7 +266,10 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
     ly_add_googletest(
         NAME AZ::AssetProcessor.Tests
-        TEST_COMMAND $<TARGET_FILE:AZ::AssetProcessor.Tests> --unittest --gtest_filter=-*.SUITE_sandbox*
+    )
+    ly_add_googlebenchmark(
+        NAME AZ::AssetProcessor.Benchmarks
+        TARGET AZ::AssetProcessor.Tests
     )
 
 endif()
