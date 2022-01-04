@@ -309,11 +309,11 @@ void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(const {{ Prop
 {#
 
 #}
-{% macro PrintRpcParameters(printPrefix, paramDefines) %}
-{% if paramDefines|count > 0 %}
+{% macro PrintRpcParameters(printPrefix, paramDefines) -%}
+{% if paramDefines|count > 0 -%}
 {{ printPrefix }}{{ ', '.join(paramDefines) }}
-{% endif %}
-{% endmacro %}
+{%- endif %}
+{%- endmacro -%}
 {#
 
 #}
@@ -366,47 +366,45 @@ void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}({{ PrintRpcParam
 {%     set paramTypes   = [] %}
 {%     set paramDefines = [] %}
 {{     AutoComponentMacros.ParseRpcParams(Property, paramNames, paramTypes, paramDefines) }}
-            ->Method("{{ UpperFirst(Property.attrib['Name']) }}", []({{ ClassName }}* self{{ PrintRpcParameters(', ', paramDefines) }}) {
-{%                    if (InvokeFrom == 'Server')  %}
-                        self->{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(paramNames) }});
-{%                    elif (InvokeFrom == 'Authority') or (InvokeFrom == 'Autonomous') %}
-                        if (self->m_controller)
-                        {
-                            self->m_controller->{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(paramNames) }});
-                        }
-                        else
-                        {
-                            AZ_Warning("Network RPC", false, "{{ ClassName }} {{ UpperFirst(Property.attrib['Name']) }} method failed. Entity '%s' (id: %s) {{ ClassName }} is missing the network controller. This remote-procedure can only be invoked from {{InvokeFrom}} network entities, because this entity doesn't have a controller, it must not be a {{InvokeFrom}} entity. Please check your network context before attempting to call {{ UpperFirst(Property.attrib['Name']) }}.", self->GetEntity()->GetName().c_str(), self->GetEntityId().ToString().c_str())
-                        }
-{%                    endif %}
-                    })
+            ->Method("{{ UpperFirst(Property.attrib['Name']) }}", []({{ ClassName }}* self{{ PrintRpcParameters(', ', paramDefines) }}){
+{%            if (InvokeFrom == 'Server')  %}
+                self->{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(paramNames) }});
+{%            elif (InvokeFrom == 'Authority') or (InvokeFrom == 'Autonomous') %}
+                if (self->m_controller)
+                {
+                    self->m_controller->{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(paramNames) }});
+                }
+                else
+                {
+                    AZ_Warning("Network RPC", false, "{{ ClassName }} {{ UpperFirst(Property.attrib['Name']) }} method failed. Entity '%s' (id: %s) {{ ClassName }} is missing the network controller. This remote-procedure can only be invoked from {{InvokeFrom}} network entities, because this entity doesn't have a controller, it must not be a {{InvokeFrom}} entity. Please check your network context before attempting to call {{ UpperFirst(Property.attrib['Name']) }}.", self->GetEntity()->GetName().c_str(), self->GetEntityId().ToString().c_str())
+                }
+{%            endif %}
+            })
             ->Method("{{ UpperFirst(Property.attrib['Name']) }}ByEntityId", [](AZ::EntityId id{{ PrintRpcParameters(', ', paramDefines) }}) {
-
-                        AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
-                        if (!entity)
-                        {
-                            AZ_Warning("Network RPC", false, "{{ ClassName }} {{ UpperFirst(Property.attrib['Name']) }}ByEntityId failed. The entity with id %s doesn't exist, please provide a valid entity id.", id.ToString().c_str())
-                            return;
-                        }
-
-                        {{ ClassName }}* networkComponent = entity->FindComponent<{{ ClassName }}>();
-                        if (!networkComponent)
-                        {
-                            AZ_Warning("Network RPC", false, "{{ ClassName }} {{ UpperFirst(Property.attrib['Name']) }}ByEntityId failed. Entity '%s' (id: %s) is missing {{ ClassName }}, be sure to add {{ ClassName }} to this entity.", entity->GetName().c_str(), id.ToString().c_str())
-                            return;
-                        }
-{%                    if (InvokeFrom == 'Server') %}
-                        networkComponent->{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(paramNames) }});
-{%                    elif (InvokeFrom == 'Authority') or (InvokeFrom == 'Autonomous') %}
-                        {{ ClassName }}Controller* controller = static_cast<{{ ClassName }}Controller*>(networkComponent->GetController());
-                        if (!controller)
-                        {
-                            AZ_Warning("Network RPC", false, "{{ ClassName }} {{ UpperFirst(Property.attrib['Name']) }}ByEntityId method failed. Entity '%s' (id: %s) {{ ClassName }} is missing the network controller. This RemoteProcedure can only be invoked from {{InvokeFrom}} network entities, because this entity doesn't have a controller, it must not be a {{InvokeFrom}} entity. Please check your network context before attempting to call {{ UpperFirst(Property.attrib['Name']) }}.", entity->GetName().c_str(), id.ToString().c_str())
-                            return;
-                        }
-                        controller->{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(paramNames) }});
-{%                    endif %}
-                    }, { { { "Source", "The Source containing the {{ ClassName }}Controller" }{% for paramName in paramNames %}, {"{{ paramName }}"}{% endfor %}}})
+                AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
+                if (!entity)
+                {
+                    AZ_Warning("Network RPC", false, "{{ ClassName }} {{ UpperFirst(Property.attrib['Name']) }}ByEntityId failed. The entity with id %s doesn't exist, please provide a valid entity id.", id.ToString().c_str())
+                    return;
+                }
+                {{ ClassName }}* networkComponent = entity->FindComponent<{{ ClassName }}>();
+                if (!networkComponent)
+                {
+                    AZ_Warning("Network RPC", false, "{{ ClassName }} {{ UpperFirst(Property.attrib['Name']) }}ByEntityId failed. Entity '%s' (id: %s) is missing {{ ClassName }}, be sure to add {{ ClassName }} to this entity.", entity->GetName().c_str(), id.ToString().c_str())
+                    return;
+                }
+{%            if (InvokeFrom == 'Server') %}
+                networkComponent->{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(paramNames) }});
+{%            elif (InvokeFrom == 'Authority') or (InvokeFrom == 'Autonomous') %}
+                {{ ClassName }}Controller* controller = static_cast<{{ ClassName }}Controller*>(networkComponent->GetController());
+                if (!controller)
+                {
+                    AZ_Warning("Network RPC", false, "{{ ClassName }} {{ UpperFirst(Property.attrib['Name']) }}ByEntityId method failed. Entity '%s' (id: %s) {{ ClassName }} is missing the network controller. This RemoteProcedure can only be invoked from {{InvokeFrom}} network entities, because this entity doesn't have a controller, it must not be a {{InvokeFrom}} entity. Please check your network context before attempting to call {{ UpperFirst(Property.attrib['Name']) }}.", entity->GetName().c_str(), id.ToString().c_str())
+                    return;
+                }
+                controller->{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(paramNames) }});
+{%            endif %}
+            }, { { { "Source", "The Source containing the {{ ClassName }}Controller" }{% for paramName in paramNames %}, {"{{ paramName }}"}{% endfor %}}})
                 ->Attribute(AZ::Script::Attributes::ToolTip, "{{Property.attrib['Description']}}")
 {%    endif %}
 {% endcall %}
