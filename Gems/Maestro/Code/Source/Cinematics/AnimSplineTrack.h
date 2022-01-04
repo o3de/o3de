@@ -13,7 +13,6 @@
 #pragma once
 
 #include "IMovieSystem.h"
-#include "TCBSpline.h"
 #include "2DSpline.h"
 
 #define MIN_TIME_PRECISION 0.01f
