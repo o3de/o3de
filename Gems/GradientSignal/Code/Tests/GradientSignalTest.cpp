@@ -7,7 +7,7 @@
  */
 
 
-#include "Tests/GradientSignalTestMocks.h"
+#include <Tests/GradientSignalTestFixtures.h>
 
 #include <GradientSignal/PerlinImprovedNoise.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>

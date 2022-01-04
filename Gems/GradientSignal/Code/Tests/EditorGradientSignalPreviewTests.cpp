@@ -6,7 +6,7 @@
  *
  */
 
-#include "Tests/GradientSignalTestMocks.h"
+#include <Tests/GradientSignalTestFixtures.h>
 #include <GradientSignal/Editor/EditorGradientPreviewRenderer.h>
 
 #include <AzTest/AzTest.h>
@@ -28,7 +28,6 @@ namespace UnitTest
         void SetUp() override
         {
             GradientSignalTest::SetUp();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
 
             // Set up job manager with two threads so that we can run and test the preview job logic.
             AZ::JobManagerDesc desc;
@@ -46,7 +45,6 @@ namespace UnitTest
             delete m_jobContext;
             delete m_jobManager;
 
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
             GradientSignalTest::TearDown();
         }
 
