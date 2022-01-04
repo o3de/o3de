@@ -139,7 +139,7 @@ protected:
     void RegisterObjectForQuit(QObject* source, bool insertInFront = false);
     bool NeedRestart() const;
     void addRunningThread(AssetProcessor::ThreadWorker* thread);
-    
+
     template<class BuilderClass>
     void RegisterInternalBuilder(const QString& builderName);
 
@@ -151,9 +151,6 @@ protected:
     bool m_duringStartup = true;
     AssetProcessorAZApplication m_frameworkApp;
     QCoreApplication* m_qApp = nullptr;
-    
-    //! Get the list of external builder files for this asset processor
-    void GetExternalBuilderFileList(QStringList& externalBuilderModules);
 
     virtual void Reflect() = 0;
     virtual const char* GetLogBaseName() = 0;
