@@ -94,12 +94,10 @@ set(FILES
     Editor/GraphCanvas/DataInterfaces/ScriptCanvasAssetIdDataInterface.h
     Editor/GraphCanvas/DataInterfaces/ScriptCanvasBoolDataInterface.h
     Editor/GraphCanvas/DataInterfaces/ScriptCanvasEntityIdDataInterface.h
-    Editor/GraphCanvas/DataInterfaces/ScriptCanvasEnumDataInterface.h
     Editor/GraphCanvas/DataInterfaces/ScriptCanvasDataInterface.h
     Editor/GraphCanvas/DataInterfaces/ScriptCanvasColorDataInterface.h
     Editor/GraphCanvas/DataInterfaces/ScriptCanvasCRCDataInterface.h
     Editor/GraphCanvas/DataInterfaces/ScriptCanvasNumericDataInterface.h
-    Editor/GraphCanvas/DataInterfaces/ScriptCanvasReadOnlyDataInterface.h
     Editor/GraphCanvas/DataInterfaces/ScriptCanvasStringDataInterface.h
     Editor/GraphCanvas/DataInterfaces/ScriptCanvasVectorDataInterface.h
     Editor/GraphCanvas/DataInterfaces/ScriptCanvasVariableDataInterface.h
