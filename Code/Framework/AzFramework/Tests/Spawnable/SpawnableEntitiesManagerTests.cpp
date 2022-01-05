@@ -101,6 +101,8 @@ namespace UnitTest
     class SpawnableEntitiesManagerTest : public AllocatorsFixture
     {
     public:
+        constexpr static AZ::u64 EntityIdStartId = 40;
+
         void SetUp() override
         {
             AllocatorsFixture::SetUp();
@@ -156,7 +158,7 @@ namespace UnitTest
             {
                 auto entry = AZStd::make_unique<AZ::Entity>();
                 entry->AddComponent(aznew SourceSpawnableComponent());
-                entry->SetId(AZ::EntityId(40 + i));
+                entry->SetId(AZ::EntityId(EntityIdStartId + i));
                 entities.push_back(AZStd::move(entry));
             }
         }
@@ -175,13 +177,13 @@ namespace UnitTest
                     auto entry = AZStd::make_unique<AZ::Entity>();
                     if (i != 0)
                     {
-                        entry->AddComponent(aznew TargetSpawnableComponent(AZ::EntityId(40 + i - 1)));
+                        entry->AddComponent(aznew TargetSpawnableComponent(AZ::EntityId(EntityIdStartId + i - 1)));
                     }
                     else
                     {
                         entry->AddComponent(aznew TargetSpawnableComponent());
                     }
-                    entry->SetId(AZ::EntityId(40 + i));
+                    entry->SetId(AZ::EntityId(EntityIdStartId + i));
                     entities.push_back(AZStd::move(entry));
                 }
             }

@@ -38,6 +38,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         if (!m_prefabNames.contains(name))
         {
             m_prefabNames.emplace(AZStd::move(name));
+            // If currently iterating add to pending queue to avoid invalidating the container that's being iterated over.
             PrefabContainer& container = m_isIterating ? m_pendingPrefabAdditions : m_prefabs;
             container.push_back(AZStd::move(document));
             return true;
@@ -47,6 +48,8 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 
     void PrefabProcessorContext::ListPrefabs(const AZStd::function<void(PrefabDocument&)>& callback)
     {
+        // Enable iterating state so the prefab container doesn't get invalided. Enabling this flag will cause new prefabs
+        // to be stored in a temporary buffer that can be moved into the regular prefab container after iterating.
         m_isIterating = true;
         for (PrefabDocument& document : m_prefabs)
         {
