@@ -55,7 +55,7 @@ namespace AZ::Dom::Tests
         m_value.SetArray();
 
         EXPECT_TRUE(m_value.IsArray());
-        EXPECT_EQ(m_value.Size(), 0);
+        EXPECT_EQ(m_value.ArraySize(), 0);
 
         PerformValueChecks();
     }
@@ -66,8 +66,8 @@ namespace AZ::Dom::Tests
 
         for (int i = 0; i < 5; ++i)
         {
-            m_value.PushBack(Value(i));
-            EXPECT_EQ(m_value.Size(), i + 1);
+            m_value.ArrayPushBack(Value(i));
+            EXPECT_EQ(m_value.ArraySize(), i + 1);
             EXPECT_EQ(m_value[i].GetInt32(), i);
         }
 
@@ -82,15 +82,15 @@ namespace AZ::Dom::Tests
             Value nestedArray(Type::Array);
             for (int i = 0; i < 5; ++i)
             {
-                nestedArray.PushBack(Value(i));
+                nestedArray.ArrayPushBack(Value(i));
             }
-            m_value.PushBack(AZStd::move(nestedArray));
+            m_value.ArrayPushBack(AZStd::move(nestedArray));
         }
 
-        EXPECT_EQ(m_value.Size(), 5);
+        EXPECT_EQ(m_value.ArraySize(), 5);
         for (int i = 0; i < 3; ++i)
         {
-            EXPECT_EQ(m_value[i].Size(), 5);
+            EXPECT_EQ(m_value[i].ArraySize(), 5);
             for (int j = 0; j < 5; ++j)
             {
                 EXPECT_EQ(m_value[i][j].GetInt32(), j);
@@ -154,7 +154,7 @@ namespace AZ::Dom::Tests
         m_value.SetNode("Test");
         EXPECT_EQ(m_value.GetNodeName(), AZ::Name("Test"));
         EXPECT_EQ(m_value.MemberCount(), 0);
-        EXPECT_EQ(m_value.Size(), 0);
+        EXPECT_EQ(m_value.ArraySize(), 0);
 
         PerformValueChecks();
     }
@@ -165,8 +165,8 @@ namespace AZ::Dom::Tests
 
         for (int i = 0; i < 10; ++i)
         {
-            m_value.PushBack(Value(i));
-            EXPECT_EQ(m_value.Size(), i + 1);
+            m_value.ArrayPushBack(Value(i));
+            EXPECT_EQ(m_value.ArraySize(), i + 1);
             EXPECT_EQ(m_value[i].GetInt32(), i);
 
             if (i < 5)
@@ -196,10 +196,10 @@ namespace AZ::Dom::Tests
             childNode.AddMember("foo", i);
             childNode.AddMember("bar", Value("test", false));
 
-            m_value.PushBack(childNode);
+            m_value.ArrayPushBack(childNode);
         }
 
-        EXPECT_EQ(m_value.Size(), 5);
+        EXPECT_EQ(m_value.ArraySize(), 5);
         for (int i = 0; i < 5; ++i)
         {
             const Value& childNode = m_value[i];
@@ -334,30 +334,30 @@ namespace AZ::Dom::Tests
     TEST_F(DomValueTests, CopyOnWrite_Array)
     {
         Value v1(Type::Array);
-        v1.PushBack(1);
-        v1.PushBack(2);
+        v1.ArrayPushBack(1);
+        v1.ArrayPushBack(2);
 
         Value nestedArray(Type::Array);
-        v1.PushBack(nestedArray);
+        v1.ArrayPushBack(nestedArray);
         Value v2 = v1;
 
         EXPECT_EQ(&v1.GetArray(), &v2.GetArray());
-        EXPECT_EQ(&v1.At(2).GetArray(), &v2.At(2).GetArray());
+        EXPECT_EQ(&v1.ArrayAt(2).GetArray(), &v2.ArrayAt(2).GetArray());
 
         v2[0] = 0;
 
         EXPECT_NE(&v1.GetArray(), &v2.GetArray());
-        EXPECT_EQ(&v1.At(2).GetArray(), &v2.At(2).GetArray());
+        EXPECT_EQ(&v1.ArrayAt(2).GetArray(), &v2.ArrayAt(2).GetArray());
 
-        v2[2].PushBack(42);
+        v2[2].ArrayPushBack(42);
 
         EXPECT_NE(&v1.GetArray(), &v2.GetArray());
-        EXPECT_NE(&v1.At(2).GetArray(), &v2.At(2).GetArray());
+        EXPECT_NE(&v1.ArrayAt(2).GetArray(), &v2.ArrayAt(2).GetArray());
 
         v2 = v1;
 
         EXPECT_EQ(&v1.GetArray(), &v2.GetArray());
-        EXPECT_EQ(&v1.At(2).GetArray(), &v2.At(2).GetArray());
+        EXPECT_EQ(&v1.ArrayAt(2).GetArray(), &v2.ArrayAt(2).GetArray());
     }
 
     TEST_F(DomValueTests, CopyOnWrite_Node)
@@ -365,8 +365,8 @@ namespace AZ::Dom::Tests
         Value v1;
         v1.SetNode("TopLevel");
 
-        v1.PushBack(1);
-        v1.PushBack(2);
+        v1.ArrayPushBack(1);
+        v1.ArrayPushBack(2);
         v1["obj"].SetNode("Nested");
         Value v2 = v1;
 
@@ -378,7 +378,7 @@ namespace AZ::Dom::Tests
         EXPECT_NE(&v1.GetNode(), &v2.GetNode());
         EXPECT_EQ(&v1["obj"].GetNode(), &v2["obj"].GetNode());
 
-        v2["obj"].PushBack(42);
+        v2["obj"].ArrayPushBack(42);
 
         EXPECT_NE(&v1.GetNode(), &v2.GetNode());
         EXPECT_NE(&v1["obj"].GetNode(), &v2["obj"].GetNode());
