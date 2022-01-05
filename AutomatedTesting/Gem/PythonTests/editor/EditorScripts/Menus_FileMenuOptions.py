@@ -26,8 +26,6 @@ def Menus_FileMenuOptions_Work():
     :return: None
     """
 
-    import azlmbr.legacy.general as general
-
     import editor_python_test_tools.hydra_editor_utils as hydra
     import editor_python_test_tools.pyside_utils as pyside_utils
     from editor_python_test_tools.utils import Report
@@ -65,9 +63,6 @@ def Menus_FileMenuOptions_Work():
             f"Failed to trigger {action.iconText()} action"
         )
         Report.result(menu_action_triggered, action_triggered)
-
-    # Wait a few seconds for Project Settings dialogs to load so teardown can properly close them
-    general.idle_wait(2.0)
 
 
 if __name__ == "__main__":

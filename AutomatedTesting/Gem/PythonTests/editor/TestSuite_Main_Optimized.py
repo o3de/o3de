@@ -24,11 +24,11 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
     class test_AssetPicker_UI_UX(EditorSharedTest):
         from .EditorScripts import AssetPicker_UI_UX as test_module
 
-    class test_BasicEditorWorkflows_ExistingLevel_EntityComponentCRUD(EditorSingleTest):
+    class test_BasicEditorWorkflows_ExistingLevel_EntityComponentCRUD(EditorSharedTest):
         from .EditorScripts import BasicEditorWorkflows_ExistingLevel_EntityComponentCRUD as test_module
 
     class test_BasicEditorWorkflows_LevelEntityComponentCRUD(EditorSingleTest):
-        # Custom teardown to remove slice asset created during test
+        # Custom teardown to remove level created during test
         def teardown(self, request, workspace, editor, editor_test_results, launcher_platform):
             file_system.delete([os.path.join(workspace.paths.engine_root(), "AutomatedTesting", "Levels", "tmp_level")],
                                True, True)
@@ -39,7 +39,7 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
         # Disable null renderer
         use_null_renderer = False
 
-        # Custom teardown to remove slice asset created during test
+        # Custom teardown to remove level created during test
         def teardown(self, request, workspace, editor, editor_test_results, launcher_platform):
             file_system.delete([os.path.join(workspace.paths.engine_root(), "AutomatedTesting", "Levels", "tmp_level")],
                                True, True)
