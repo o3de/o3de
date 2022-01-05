@@ -297,8 +297,6 @@ set(FILES
     Util/AffineParts.cpp
     Objects/BaseObject.cpp
     Objects/BaseObject.h
-    Animation/AnimationBipedBoneNames.cpp
-    Animation/AnimationBipedBoneNames.h
     AnimationContext.cpp
     AnimationContext.h
     AzAssetBrowser/AzAssetBrowserRequestHandler.cpp
@@ -336,23 +334,12 @@ set(FILES
     Controls/ConsoleSCB.qrc
     Controls/FolderTreeCtrl.cpp
     Controls/FolderTreeCtrl.h
-    Controls/HotTrackingTreeCtrl.cpp
-    Controls/HotTrackingTreeCtrl.h
     Controls/ImageHistogramCtrl.cpp
     Controls/ImageHistogramCtrl.h
-    Controls/ImageListCtrl.cpp
-    Controls/ImageListCtrl.h
-    Controls/MultiMonHelper.cpp
-    Controls/MultiMonHelper.h
-    Controls/NumberCtrl.cpp
-    Controls/NumberCtrl.h
-    Controls/NumberCtrl.h
     Controls/SplineCtrl.cpp
     Controls/SplineCtrl.h
     Controls/SplineCtrlEx.cpp
     Controls/SplineCtrlEx.h
-    Controls/TextEditorCtrl.cpp
-    Controls/TextEditorCtrl.h
     Controls/TimelineCtrl.cpp
     Controls/TimelineCtrl.h
     Controls/WndGridHelper.h
@@ -526,8 +513,6 @@ set(FILES
     PythonEditorFuncs.h
     QtUI/QCollapsibleGroupBox.h
     QtUI/QCollapsibleGroupBox.cpp
-    QtUI/ClickableLabel.h
-    QtUI/ClickableLabel.cpp
     QtUI/PixmapLabelPreview.h
     QtUI/PixmapLabelPreview.cpp
     QtUI/WaitCursor.h
@@ -800,9 +785,6 @@ set(FILES
     ViewportTitleDlg.h
     EditorEnvironment.cpp
     EditorEnvironment.h
-    IEditorPanelUtils.h
-    EditorPanelUtils.h
-    EditorPanelUtils.cpp
 )
 
 

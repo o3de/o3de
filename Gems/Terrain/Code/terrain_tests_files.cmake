@@ -16,4 +16,5 @@ set(FILES
     Tests/TerrainHeightGradientListTests.cpp
     Tests/TerrainMacroMaterialTests.cpp
     Tests/TerrainSurfaceGradientListTests.cpp
+    Tests/TerrainSystemBenchmarks.cpp
 )

@@ -205,6 +205,9 @@ public: // member functions
     //! Get the height of the rendering viewport (in pixels).
     float GetViewportHeight() const;
 
+    //! Get dpi scale factor
+    float GetViewportDpiScalingFactor() const;
+
     //! Get the default values that would be used if no image options were passed in
     //
     //! This is a convenient way to initialize the imageOptions struct

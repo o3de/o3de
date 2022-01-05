@@ -101,6 +101,13 @@ namespace AZ
         void EsmShadowmapsPass::UpdateChildren()
         {
             const RPI::PassAttachmentBinding& inputBinding = GetInputBinding(0);
+            
+            if (!inputBinding.m_attachment)
+            {
+                AZ_Assert(false, "[EsmShadowmapsPass %s] requires an input attachment", GetPathName().GetCStr());
+                return;
+            }
+
             AZ_Assert(inputBinding.m_attachment->m_descriptor.m_type == RHI::AttachmentType::Image, "[EsmShadowmapsPass %s] input attachment requires an image attachment", GetPathName().GetCStr());
             m_shadowmapImageSize = inputBinding.m_attachment->m_descriptor.m_image.m_size;
             m_shadowmapArraySize = inputBinding.m_attachment->m_descriptor.m_image.m_arraySize;

@@ -242,7 +242,7 @@ namespace ScriptCanvasEditor
         SetName(m_sourceHandle.Path().Filename().Native());
     }
 
-    void EditorScriptCanvasComponent::OpenEditor(const AZ::Data::AssetId&, const AZ::Data::AssetType&)
+    void EditorScriptCanvasComponent::OpenEditor([[maybe_unused]] const AZ::Data::AssetId& assetId, const AZ::Data::AssetType&)
     {
         AzToolsFramework::OpenViewPane(LyViewPane::ScriptCanvas);
          
