@@ -12,7 +12,6 @@
 #include <AzCore/std/typetraits/is_signed.h>
 #include "IntegerPrimtitiveTestConfig.h"
 #include <QApplication>
-#include <QLocale.h>
 #include <sstream>
 
 namespace UnitTest
