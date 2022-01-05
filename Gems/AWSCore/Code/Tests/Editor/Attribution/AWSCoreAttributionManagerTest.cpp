@@ -10,7 +10,6 @@
 #include <Editor/Attribution/AWSCoreAttributionMetric.h>
 #include <Credential/AWSCredentialBus.h>
 
-#include <AzFramework/IO/LocalFileIO.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/base.h>
@@ -23,7 +22,6 @@
 #include <AzCore/Jobs/JobManagerBus.h>
 #include <AzCore/Jobs/JobContext.h>
 #include <AzCore/Utils/Utils.h>
-#include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Module/ModuleManagerBus.h>
 #include <AzCore/PlatformId/PlatformId.h>
@@ -167,7 +165,6 @@ namespace AWSAttributionUnitTest
         AZStd::unique_ptr<AZ::JobManager> m_jobManager;
         AZStd::array<char, AZ::IO::MaxPathLength> m_resolvedSettingsPath;
         ModuleManagerRequestBusMock m_moduleManagerRequestBusMock;
-        AWSCredentialRquestsBusMock m_credentialRequestBusMock;
 
         void SetUp() override
         {
@@ -221,6 +218,7 @@ namespace AWSAttributionUnitTest
     TEST_F(AttributionManagerTest, MetricsSettings_ConsentShown_AttributionDisabled_SkipsSend)
     {
         // GIVEN
+        AWSCredentialRquestsBusMock credentialRequestBusMock;
         AWSAttributionManagerMock manager;
        
         CreateFile(m_resolvedSettingsPath.data(), R"({
@@ -239,7 +237,7 @@ namespace AWSAttributionUnitTest
 
         EXPECT_CALL(manager, SubmitMetric(testing::_)).Times(0);
         EXPECT_CALL(m_moduleManagerRequestBusMock, EnumerateModules(testing::_)).Times(0);
-        EXPECT_CALL(m_credentialRequestBusMock, GetCredentialsProvider()).Times(1);
+        EXPECT_CALL(credentialRequestBusMock, GetCredentialsProvider()).Times(1);
 
         // WHEN
         manager.MetricCheck();
@@ -255,6 +253,7 @@ namespace AWSAttributionUnitTest
     TEST_F(AttributionManagerTest, AttributionEnabled_ContentShown_NoPreviousTimeStamp_SendSuccess)
     {
         // GIVEN
+        AWSCredentialRquestsBusMock credentialRequestBusMock;
         AWSAttributionManagerMock manager;
 
         CreateFile(m_resolvedSettingsPath.data(), R"({
@@ -272,7 +271,7 @@ namespace AWSAttributionUnitTest
 
         EXPECT_CALL(manager, SubmitMetric(testing::_)).Times(1);
         EXPECT_CALL(m_moduleManagerRequestBusMock, EnumerateModules(testing::_)).Times(1);
-        EXPECT_CALL(m_credentialRequestBusMock, GetCredentialsProvider()).Times(1);
+        EXPECT_CALL(credentialRequestBusMock, GetCredentialsProvider()).Times(1);
 
         // WHEN
         manager.MetricCheck();
@@ -289,6 +288,7 @@ namespace AWSAttributionUnitTest
     TEST_F(AttributionManagerTest, AttributionEnabled_ContentShown_ValidPreviousTimeStamp_SendSuccess)
     {
         // GIVEN
+        AWSCredentialRquestsBusMock credentialRequestBusMock;
         AWSAttributionManagerMock manager;
 
         CreateFile(m_resolvedSettingsPath.data(), R"({
@@ -308,7 +308,7 @@ namespace AWSAttributionUnitTest
 
         EXPECT_CALL(manager, SubmitMetric(testing::_)).Times(1);
         EXPECT_CALL(m_moduleManagerRequestBusMock, EnumerateModules(testing::_)).Times(1);
-        EXPECT_CALL(m_credentialRequestBusMock, GetCredentialsProvider()).Times(1);
+        EXPECT_CALL(credentialRequestBusMock, GetCredentialsProvider()).Times(1);
 
         // WHEN
         manager.MetricCheck();
@@ -324,6 +324,7 @@ namespace AWSAttributionUnitTest
     TEST_F(AttributionManagerTest, AttributionEnabled_ContentShown_DelayNotSatisfied_SendFail)
     {
         // GIVEN
+        AWSCredentialRquestsBusMock credentialRequestBusMock;
         AWSAttributionManagerMock manager;
 
         CreateFile(m_resolvedSettingsPath.data(), R"({
@@ -346,7 +347,7 @@ namespace AWSAttributionUnitTest
 
         EXPECT_CALL(manager, SubmitMetric(testing::_)).Times(0);
         EXPECT_CALL(m_moduleManagerRequestBusMock, EnumerateModules(testing::_)).Times(0);
-        EXPECT_CALL(m_credentialRequestBusMock, GetCredentialsProvider()).Times(1);
+        EXPECT_CALL(credentialRequestBusMock, GetCredentialsProvider()).Times(1);
 
         // WHEN
         manager.MetricCheck();
@@ -362,6 +363,7 @@ namespace AWSAttributionUnitTest
     TEST_F(AttributionManagerTest, AttributionEnabledNotFound_ContentShown_SendFail)
     {
         // GIVEN
+        AWSCredentialRquestsBusMock credentialRequestBusMock;
         AWSAttributionManagerMock manager;
 
         CreateFile(m_resolvedSettingsPath.data(), R"({
@@ -378,7 +380,7 @@ namespace AWSAttributionUnitTest
 
         EXPECT_CALL(manager, SubmitMetric(testing::_)).Times(0);
         EXPECT_CALL(m_moduleManagerRequestBusMock, EnumerateModules(testing::_)).Times(0);
-        EXPECT_CALL(m_credentialRequestBusMock, GetCredentialsProvider()).Times(1);
+        EXPECT_CALL(credentialRequestBusMock, GetCredentialsProvider()).Times(1);
 
         // WHEN
         manager.MetricCheck();
@@ -394,12 +396,13 @@ namespace AWSAttributionUnitTest
     TEST_F(AttributionManagerTest, AttributionEnabledNotFound_ContentNotShown_SendFail)
     {
         // GIVEN
+        AWSCredentialRquestsBusMock credentialRequestBusMock;
         AWSAttributionManagerMock manager;
         manager.Init();
 
         EXPECT_CALL(manager, SubmitMetric(testing::_)).Times(0);
         EXPECT_CALL(m_moduleManagerRequestBusMock, EnumerateModules(testing::_)).Times(0);
-        EXPECT_CALL(m_credentialRequestBusMock, GetCredentialsProvider()).Times(1);
+        EXPECT_CALL(credentialRequestBusMock, GetCredentialsProvider()).Times(1);
         EXPECT_CALL(manager, ShowConsentDialog()).Times(1);
 
         // WHEN

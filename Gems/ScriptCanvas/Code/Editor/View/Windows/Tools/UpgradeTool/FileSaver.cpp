@@ -14,7 +14,6 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/FileSaver.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
 #include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
 
 namespace ScriptCanvasEditor

@@ -132,6 +132,35 @@
       "ASSET_PROCESSOR_PLATFORMS": "linux,server"
     }
   },
+  "awsi_test_profile_pipe": {
+    "TAGS": [
+      "nightly-incremental",
+      "nightly-clean"
+    ],
+    "steps": [
+      "awsi_deployment",
+      "awsi_test_profile",
+      "awsi_destruction"
+    ]
+  },
+  "awsi_test_profile": {
+    "TAGS": [
+        "weekly-build-metrics"
+    ],
+    "PIPELINE_ENV": {
+      "NONBLOCKING_STEP": "True"
+    },
+    "COMMAND": "build_test_linux.sh",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build\\linux",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "TEST_SUITE_awsi",
+      "CTEST_OPTIONS": "-L \"(SUITE_awsi)\" --no-tests=error",
+      "TEST_RESULTS": "True"
+    }
+  },
   "periodic_test_profile": {
     "TAGS": [
       "nightly-incremental",
@@ -276,17 +305,24 @@
       "CMAKE_TARGET": "all"
     }
   },
-  "test_gcc_gcov_profile_nounity": {
+  "awsi_deployment": {
     "TAGS": [],
-    "COMMAND": "build_test_linux.sh",
+    "PIPELINE_ENV": {
+      "NONBLOCKING_STEP": "True"
+    },
+    "COMMAND": "deploy_cdk_applications.sh",
     "PARAMETERS": {
-      "CONFIGURATION": "profile",
-      "OUTPUT_DIRECTORY": "build/linux",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DLY_UNITY_BUILD=FALSE -DLY_PARALLEL_LINK_JOBS=4 -DLY_GCC_BUILD_FOR_GCOV=ON",
-      "CMAKE_LY_PROJECTS": "AutomatedTesting",
-      "CMAKE_TARGET": "all",
-      "CTEST_OPTIONS": "-E (AutomatedTesting::Atom_TestSuite_Main|AutomatedTesting::TerrainTests_Main|Gem::EMotionFX.Editor.Tests) -L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error",
-      "TEST_RESULTS": "False"
+      "NVM_VERSION": "v0.39.1"
+    }
+  },
+  "awsi_destruction": {
+    "TAGS": [],
+    "PIPELINE_ENV": {
+      "NONBLOCKING_STEP": "True"
+    },
+    "COMMAND": "destroy_cdk_applications.sh",
+    "PARAMETERS": {
+      "NVM_VERSION": "v0.39.1"
     }
   }
 }

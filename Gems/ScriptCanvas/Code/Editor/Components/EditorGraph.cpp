@@ -77,7 +77,6 @@ AZ_POP_DISABLE_WARNING
 #include <Libraries/Core/EBusEventHandler.h>
 #include <Libraries/Core/ReceiveScriptEvent.h>
 #include <Libraries/Core/ScriptEventBase.h>
-#include <ScriptCanvas/Assets/ScriptCanvasBaseAssetData.h>
 #include <Libraries/Core/SendScriptEvent.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Core/Connection.h>

@@ -81,9 +81,6 @@ AZ_POP_DISABLE_WARNING
 // AWSNativeSDK
 #include <AWSNativeSDKInit/AWSNativeSDKInit.h>
 
-#include "IEditorPanelUtils.h"
-#include "EditorPanelUtils.h"
-
 #include "Core/QtEditorApplication.h"                               // for Editor::EditorQtApplication
 
 static CCryEditDoc * theDocument;
@@ -143,7 +140,6 @@ CEditorImpl::CEditorImpl()
     , m_QtApplication(static_cast<Editor::EditorQtApplication*>(qApp))
     , m_pImageUtil(nullptr)
     , m_pLogFile(nullptr)
-    , m_panelEditorUtils(nullptr)
 {
     // note that this is a call into EditorCore.dll, which stores the g_pEditorPointer for all shared modules that share EditorCore.dll
     // this means that they don't need to do SetIEditor(...) themselves and its available immediately
@@ -166,8 +162,6 @@ CEditorImpl::CEditorImpl()
     m_pDisplaySettings = new CDisplaySettings;
     m_pDisplaySettings->LoadRegistry();
     m_pPluginManager = new CPluginManager;
-
-    m_panelEditorUtils = CreateEditorPanelUtils();
 
     m_pObjectManager = new CObjectManager;
     m_pViewManager = new CViewManager;
@@ -300,8 +294,6 @@ CEditorImpl::~CEditorImpl()
     SAFE_DELETE(m_pIconManager)
     SAFE_DELETE(m_pViewManager)
     SAFE_DELETE(m_pObjectManager) // relies on prefab manager
-
-    SAFE_DELETE(m_panelEditorUtils);
 
     // some plugins may be exporter - this must be above plugin manager delete.
     SAFE_DELETE(m_pExportManager);
@@ -1445,7 +1437,7 @@ ISourceControl* CEditorImpl::GetSourceControl()
         {
             IClassDesc* pClass = classes[i];
             ISourceControl* pSCM = nullptr;
-            HRESULT hRes = pClass->QueryInterface(__uuidof(ISourceControl), (void**)&pSCM);
+            HRESULT hRes = pClass->QueryInterface(__az_uuidof(ISourceControl), (void**)&pSCM);
             if (!FAILED(hRes) && pSCM)
             {
                 m_pSourceControl = pSCM;
@@ -1657,9 +1649,4 @@ QMimeData* CEditorImpl::CreateQMimeData() const
 void CEditorImpl::DestroyQMimeData(QMimeData* data) const
 {
     delete data;
-}
-
-IEditorPanelUtils* CEditorImpl::GetEditorPanelUtils()
-{
-    return m_panelEditorUtils;
 }

@@ -729,9 +729,9 @@ namespace O3DE::ProjectManager
 
             auto createProjectResult = m_engineTemplate.attr("create_project")(
                 projectPath,
-                QString_To_Py_String(projectInfo.m_projectName),
-                QString_To_Py_Path(projectTemplatePath)
-                );
+                QString_To_Py_String(projectInfo.m_projectName), // project_path
+                QString_To_Py_Path(projectTemplatePath)          // template_path
+            );
             if (createProjectResult.cast<int>() == 0)
             {
                 createdProjectInfo = ProjectInfoFromPath(projectPath);
@@ -864,6 +864,7 @@ namespace O3DE::ProjectManager
             {
                 projectInfo.m_projectName = Py_To_String(projectData["project_name"]);
                 projectInfo.m_displayName = Py_To_String_Optional(projectData, "display_name", projectInfo.m_projectName);
+                projectInfo.m_id = Py_To_String_Optional(projectData, "project_id", projectInfo.m_id);
                 projectInfo.m_origin = Py_To_String_Optional(projectData, "origin", projectInfo.m_origin);
                 projectInfo.m_summary = Py_To_String_Optional(projectData, "summary", projectInfo.m_summary);
                 projectInfo.m_iconPath = Py_To_String_Optional(projectData, "icon", ProjectPreviewImagePath);
@@ -968,6 +969,7 @@ namespace O3DE::ProjectManager
                     QString_To_Py_Path(projectInfo.m_path),
                     pybind11::none(), // proj_name not used
                     QString_To_Py_String(projectInfo.m_projectName),
+                    QString_To_Py_String(projectInfo.m_id),
                     QString_To_Py_String(projectInfo.m_origin),
                     QString_To_Py_String(projectInfo.m_displayName),
                     QString_To_Py_String(projectInfo.m_summary),

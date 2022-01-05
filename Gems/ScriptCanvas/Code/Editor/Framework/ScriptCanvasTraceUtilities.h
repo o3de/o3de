@@ -42,8 +42,6 @@ namespace ScriptCanvas
 
 namespace ScriptCanvasEditor
 {
-    class ScriptCanvasAsset;
-
     struct LoadTestGraphResult
     {
         AZStd::unique_ptr<AZ::Entity> m_entity;

@@ -23,7 +23,7 @@
 //! The CDraw2d class implements the IDraw2d interface for drawing 2D images, shapes and text.
 //! Positions and sizes are specified in pixels in the associated 2D viewport.
 class CDraw2d
-    : public IDraw2d // LYSHINE_ATOM_TODO - keep around until gEnv->pLyShine is replaced by bus interface
+    : public IDraw2d // [LYSHINE_ATOM_TODO][GHI #3573] Make Draw2d work better as an API
     , public AZ::Render::Bootstrap::NotificationBus::Handler
 {
 public: // types
@@ -50,6 +50,7 @@ public: // types
     {
         AZ::Vector3 color = AZ::Vector3(1.0f, 1.0f, 1.0f);
         Rounding pixelRounding = Rounding::Nearest;
+        bool m_clamp = false;
         RenderState m_renderState;
     };
 
@@ -145,6 +146,7 @@ public: // member functions
     virtual void DrawQuad(AZ::Data::Instance<AZ::RPI::Image> image,
         VertexPosColUV* verts,
         Rounding pixelRounding = Rounding::Nearest,
+        bool clamp = false,
         const RenderState& renderState = RenderState{});
 
     //! Draw a line
@@ -205,6 +207,9 @@ public: // member functions
     //! Get the height of the rendering viewport (in pixels).
     float GetViewportHeight() const;
 
+    //! Get dpi scale factor
+    float GetViewportDpiScalingFactor() const;
+
     //! Get the default values that would be used if no image options were passed in
     //
     //! This is a convenient way to initialize the imageOptions struct
@@ -254,6 +259,8 @@ protected: // types and constants
     {
         AZ::RHI::ShaderInputImageIndex m_imageInputIndex;
         AZ::RHI::ShaderInputConstantIndex m_viewProjInputIndex;
+        AZ::RPI::ShaderVariantId m_shaderOptionsClamp;
+        AZ::RPI::ShaderVariantId m_shaderOptionsWrap;
     };
 
     class DeferredPrimitive
@@ -278,6 +285,7 @@ protected: // types and constants
         AZ::Vector2 m_texCoords[4];
         uint32      m_packedColors[4];
         AZ::Data::Instance<AZ::RPI::Image> m_image;
+        bool m_clamp;
         RenderState m_renderState;
     };
 
@@ -452,11 +460,12 @@ public: // member functions
     //! See IDraw2d:DrawQuad for parameter descriptions
     void DrawQuad(AZ::Data::Instance<AZ::RPI::Image> image, CDraw2d::VertexPosColUV* verts,
         IDraw2d::Rounding pixelRounding = IDraw2d::Rounding::Nearest,
+        bool clamp = false,
         const CDraw2d::RenderState& renderState = CDraw2d::RenderState{})
     {
         if (m_draw2d)
         {
-            m_draw2d->DrawQuad(image, verts, pixelRounding, renderState);
+            m_draw2d->DrawQuad(image, verts, pixelRounding, clamp, renderState);
         }
     }
 
@@ -542,6 +551,9 @@ public: // member functions
     //! Set the base state (that blend mode etc is combined with) used for images, default is GS_NODEPTHTEST.
     void SetImageDepthState(const AZ::RHI::DepthState& depthState) { m_imageOptions.m_renderState.m_depthState = depthState; }
 
+    //! Set image clamp mode
+    void SetImageClamp(bool clamp) { m_imageOptions.m_clamp = clamp; }
+
     //! Set the text font.
     void SetTextFont(AZStd::string_view fontName) { m_textOptions.fontName = fontName; }
 
@@ -582,7 +594,7 @@ public: // static member functions
     //! Helper to get the default IDraw2d interface
     static CDraw2d* GetDefaultDraw2d()
     {
-        if (gEnv && gEnv->pLyShine) // LYSHINE_ATOM_TODO - remove pLyShine and use bus interface
+        if (gEnv && gEnv->pLyShine) // [LYSHINE_ATOM_TODO][GHI #3569] Remove LyShine global interface pointer from legacy global environment
         {
             IDraw2d* draw2d = gEnv->pLyShine->GetDraw2d();
             return reinterpret_cast<CDraw2d*>(draw2d);

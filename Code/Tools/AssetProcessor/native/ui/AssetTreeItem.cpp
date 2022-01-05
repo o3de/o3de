@@ -29,14 +29,16 @@ namespace AssetProcessor
     AssetTreeItem::AssetTreeItem(
         AZStd::shared_ptr<AssetTreeItemData> data,
         QIcon errorIcon,
+        QIcon folderIcon,
+        QIcon fileIcon,
         AssetTreeItem* parentItem) :
         m_data(data),
         m_parent(parentItem),
-        m_errorIcon(errorIcon), // QIcon is implicitily shared.
-        m_folderIcon(QIcon(QStringLiteral(":/Gallery/Asset_Folder.svg"))),
-        m_fileIcon(QIcon(QStringLiteral(":/Gallery/Asset_File.svg")))
+        m_errorIcon(errorIcon), // QIcon is implicitly shared.
+        m_folderIcon(folderIcon),
+        m_fileIcon(fileIcon)
     {
-        m_folderIcon.addFile(QStringLiteral(":/Gallery/Asset_Folder.svg"), QSize(), QIcon::Selected);
+
     }
 
     AssetTreeItem::~AssetTreeItem()
@@ -45,7 +47,7 @@ namespace AssetProcessor
 
     AssetTreeItem* AssetTreeItem::CreateChild(AZStd::shared_ptr<AssetTreeItemData> data)
     {
-        m_childItems.emplace_back(new AssetTreeItem(data, m_errorIcon, this));
+        m_childItems.emplace_back(new AssetTreeItem(data, m_errorIcon, m_folderIcon, m_fileIcon, this));
         return m_childItems.back().get();
     }
 
