@@ -44,7 +44,7 @@ namespace AZ
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<MaterialAssetDependenciesComponent, Component>()
-                    ->Version(5) // Set materialtype dependency to OrderOnce
+                    ->Version(6) // Add productSubId dependency for materialtype
                     ->Attribute(Edit::Attributes::SystemComponentTags, AZStd::vector<Crc32>({ AssetBuilderSDK::ComponentTags::AssetBuilder }));
             }
         }
@@ -87,6 +87,7 @@ namespace AZ
                 jobDependency.m_jobKey = "Atom Material Builder";
                 jobDependency.m_sourceFile = materialTypeSource;
                 jobDependency.m_platformIdentifier = platformIdentifier;
+                jobDependency.m_productSubIds.push_back(0);
 
                 // If includeMaterialPropertyNames is false, then a job dependency is needed so the material builder can validate
                 // MaterialAsset properties against the MaterialTypeAsset at asset build time. If includeMaterialPropertyNames is true, the

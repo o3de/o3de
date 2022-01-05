@@ -47,7 +47,7 @@ namespace AZ
         {
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = JobKey;
-            materialBuilderDescriptor.m_version = 110; // Material version auto update feature
+            materialBuilderDescriptor.m_version = 111; // Job Dependency subIds
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.material", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.materialtype", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_busId = azrtti_typeid<MaterialBuilder>();
@@ -83,7 +83,8 @@ namespace AZ
             AZStd::string_view referencedParentPath,
             const char* jobKey,
             AZStd::vector<AssetBuilderSDK::JobDependency>& jobDependencies,
-            bool isOrderedOnceForMaterialTypes = false)
+            bool isOrderedOnceForMaterialTypes = false,
+            AZStd::optional<AZ::u32> productSubId = AZStd::nullopt)
         {
             bool dependencyFileFound = false;
 
@@ -103,6 +104,11 @@ namespace AZ
                         AssetBuilderSDK::JobDependency jobDependency;
                         jobDependency.m_jobKey = jobKey;
                         jobDependency.m_sourceFile.m_sourceFileDependencyPath = file;
+
+                        if(productSubId)
+                        {
+                            jobDependency.m_productSubIds.push_back(productSubId.value());
+                        }
 
                         const bool isMaterialTypeFile = AzFramework::StringFunc::Path::IsExtension(file.c_str(), MaterialTypeSourceData::Extension);
                         jobDependency.m_type = (isMaterialTypeFile && isOrderedOnceForMaterialTypes) ? AssetBuilderSDK::JobDependencyType::OrderOnce : AssetBuilderSDK::JobDependencyType::Order;
@@ -188,7 +194,9 @@ namespace AZ
                         AddPossibleDependencies(request.m_sourceFile,
                             shader.m_shaderFilePath,
                             "Shader Asset",
-                            outputJobDescriptor.m_jobDependencyList);
+                            outputJobDescriptor.m_jobDependencyList,
+                            false,
+                            0);
                     }
 
                     for (auto& functor : materialTypeSourceData.GetValue().m_materialFunctorSourceData)
@@ -250,7 +258,8 @@ namespace AZ
                         parentMaterialPath,
                         JobKey,
                         outputJobDescriptor.m_jobDependencyList,
-                        includeMaterialPropertyNames);
+                        includeMaterialPropertyNames,
+                        0);
                 }
             }
             
