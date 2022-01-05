@@ -6,10 +6,10 @@
  *
  */
 
+#include <AzCore/Debug/StackTracer.h>
 #include <AzCore/Debug/TraceMessageBus.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/string/string_view.h>
-#include <AzCore/Debug/StackTracer.h>
 
 #include <signal.h>
 
@@ -33,7 +33,7 @@ namespace AZ::Debug
                 return false;
             }
 
-            char buffer[4096];
+            char buffer[MaxMessageLength];
             AZ::IO::SystemFile::SizeType numRead = processStatusFile.Read(sizeof(buffer), buffer);
 
             const AZStd::string_view processStatusView(buffer, buffer + numRead);
@@ -72,10 +72,6 @@ namespace AZ::Debug
             return false;
         }
 
-        void SignalHandler(int handler)
-        {
-        }
-
         void HandleExceptions(bool isEnabled)
         {
             if (isEnabled)
@@ -108,20 +104,22 @@ namespace AZ::Debug
     void ExceptionHandler(int signal)
     {
         char message[MaxMessageLength];
-        Debug::Trace::Instance().Output(nullptr, "==================================================================\n");
+        // Trace::RawOutput
+        Debug::Trace::Instance().RawOutput(nullptr, "==================================================================\n");
         azsnprintf(message, MaxMessageLength, "Error: signal %s: \n", strsignal(signal));
-        Debug::Trace::Instance().Output(nullptr, message);
+        Debug::Trace::Instance().RawOutput(nullptr, message);
 
         StackFrame frames[MaxStackLines];
         SymbolStorage::StackLine stackLines[MaxStackLines];
         SymbolStorage decoder;
         const unsigned int numberOfFrames = StackRecorder::Record(frames, MaxStackLines);
-        decoder.DecodeFrames(frames,  numberOfFrames, stackLines);
-        for(int i = 0; i < numberOfFrames; ++i) {
+        decoder.DecodeFrames(frames, numberOfFrames, stackLines);
+        for (int i = 0; i < numberOfFrames; ++i)
+        {
             azsnprintf(message, MaxMessageLength, "%s \n", stackLines[i]);
-            Debug::Trace::Instance().Output(nullptr, message);
+            Debug::Trace::Instance().RawOutput(nullptr, message);
         }
-        Debug::Trace::Instance().Output(nullptr, "==================================================================\n");
+        Debug::Trace::Instance().RawOutput(nullptr, "==================================================================\n");
     }
 #endif
 
