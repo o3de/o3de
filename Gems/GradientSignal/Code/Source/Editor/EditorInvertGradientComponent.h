@@ -26,6 +26,6 @@ namespace GradientSignal
         static constexpr const char* const s_componentDescription = "Inverts a gradient's values";
         static constexpr const char* const s_icon = "Editor/Icons/Components/GradientModifier.svg";
         static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/GradientModifier.svg";
-        static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/";
+        static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/gradient-modifiers/invert-gradient-modifier/";
     };
 }

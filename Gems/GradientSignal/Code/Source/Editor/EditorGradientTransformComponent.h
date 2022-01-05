@@ -35,7 +35,7 @@ namespace GradientSignal
         static constexpr const char* const s_componentDescription = "Transforms coordinates into a space relative to a shape, allowing other transform and sampling modifications";
         static constexpr const char* const s_icon = "Editor/Icons/Components/GradientModifier.svg";
         static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/GradientModifier.svg";
-        static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/reference/";
+        static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/reference/gradient-modifiers/gradient-transform-modifier/";
 
     private:
         AZ::u32 ConfigurationChanged() override;

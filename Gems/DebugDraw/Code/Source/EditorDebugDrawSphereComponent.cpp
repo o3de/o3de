@@ -35,6 +35,7 @@ namespace DebugDraw
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/DebugDrawSphere.svg")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/DebugDrawSphere.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                    ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/debugdraw/debugdraw-sphere/")
                     ->DataElement(0, &EditorDebugDrawSphereComponent::m_element, "Sphere element settings", "Settings for the sphere element.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDebugDrawSphereComponent::OnPropertyUpdate)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)

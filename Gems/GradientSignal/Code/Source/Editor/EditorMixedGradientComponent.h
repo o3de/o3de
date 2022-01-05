@@ -58,7 +58,7 @@ namespace GradientSignal
         static constexpr const char* const s_componentDescription = "Generates a new gradient by combining other gradients";
         static constexpr const char* const s_icon = "Editor/Icons/Components/GradientModifier.svg";
         static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/GradientModifier.svg";
-        static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/Reference/";
+        static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/Reference/gradient-modifier/gradient-mixer/";
 
     protected:
 
