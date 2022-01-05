@@ -6,24 +6,24 @@
  *
  */
 
-#include <AzTest/AzTest.h>
-
 #include <Framework/HttpRequestJob.h>
 #include <TestFramework/AWSCoreFixture.h>
 
 using namespace AWSCore;
 
 class HttpRequestJobTest
-    : public UnitTest::ScopedAllocatorSetupFixture
+    : public AWSCoreFixture
 {
     void SetUp() override
     {
+        AWSCoreFixture::SetUpFixture();
         HttpRequestJob::StaticInit();
     }
 
     void TearDown() override
     {
         HttpRequestJob::StaticShutdown();
+        AWSCoreFixture::TearDownFixture();
     }
 };
 

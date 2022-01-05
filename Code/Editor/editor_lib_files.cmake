@@ -269,9 +269,6 @@ set(FILES
     LevelTreeModel.h
     Include/Command.h
     Include/HitContext.h
-    Include/IAnimationCompressionManager.h
-    Include/IAssetItem.h
-    Include/IAssetItemDatabase.h
     Include/ICommandManager.h
     Include/IConsoleConnectivity.h
     Include/IDataBaseItem.h
@@ -334,23 +331,12 @@ set(FILES
     Controls/ConsoleSCB.qrc
     Controls/FolderTreeCtrl.cpp
     Controls/FolderTreeCtrl.h
-    Controls/HotTrackingTreeCtrl.cpp
-    Controls/HotTrackingTreeCtrl.h
     Controls/ImageHistogramCtrl.cpp
     Controls/ImageHistogramCtrl.h
-    Controls/ImageListCtrl.cpp
-    Controls/ImageListCtrl.h
-    Controls/MultiMonHelper.cpp
-    Controls/MultiMonHelper.h
-    Controls/NumberCtrl.cpp
-    Controls/NumberCtrl.h
-    Controls/NumberCtrl.h
     Controls/SplineCtrl.cpp
     Controls/SplineCtrl.h
     Controls/SplineCtrlEx.cpp
     Controls/SplineCtrlEx.h
-    Controls/TextEditorCtrl.cpp
-    Controls/TextEditorCtrl.h
     Controls/TimelineCtrl.cpp
     Controls/TimelineCtrl.h
     Controls/WndGridHelper.h
@@ -468,18 +454,14 @@ set(FILES
     GameResourcesExporter.cpp
     GameExporter.h
     GameResourcesExporter.h
-    Geometry/TriMesh.cpp
-    Geometry/TriMesh.h
     AboutDialog.h
     AboutDialog.ui
     DocMultiArchive.h
-    EditMode/DeepSelection.h
     FBXExporterDialog.h
     FileTypeUtils.h
     GridUtils.h
     IObservable.h
     IPostRenderer.h
-    LightmapCompiler/SimpleTriangleRasterizer.h
     ToolBox.h
     TrackViewNewSequenceDialog.h
     UndoConfigSpec.h
@@ -570,11 +552,9 @@ set(FILES
     AboutDialog.cpp
     ErrorReportTableModel.h
     ErrorReportTableModel.cpp
-    EditMode/DeepSelection.cpp
     FBXExporterDialog.cpp
     FBXExporterDialog.ui
     FileTypeUtils.cpp
-    LightmapCompiler/SimpleTriangleRasterizer.cpp
     ToolBox.cpp
     TrackViewNewSequenceDialog.cpp
     TrackViewNewSequenceDialog.ui
@@ -796,9 +776,6 @@ set(FILES
     ViewportTitleDlg.h
     EditorEnvironment.cpp
     EditorEnvironment.h
-    IEditorPanelUtils.h
-    EditorPanelUtils.h
-    EditorPanelUtils.cpp
 )
 
 

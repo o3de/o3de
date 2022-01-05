@@ -353,7 +353,6 @@ void UiImageComponent::SetOverrideSprite(ISprite* sprite, AZ::u32 cellIndex)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiImageComponent::Render(LyShine::IRenderGraph* renderGraph)
 {
-
     // get fade value (tracked by UiRenderer) and compute the desired alpha for the image
     float fade = renderGraph->GetAlphaFade();
     float desiredAlpha = m_overrideAlpha * fade;
@@ -376,9 +375,8 @@ void UiImageComponent::Render(LyShine::IRenderGraph* renderGraph)
 
         ImageType imageType = m_imageType;
 
-#ifdef LYSHINE_ATOM_TODO // support default white texture
         // if there is no texture we will just use a white texture and want to stretch it
-        const bool spriteOrTextureIsNull = sprite == nullptr || sprite->GetTexture() == nullptr;
+        const bool spriteOrTextureIsNull = sprite == nullptr || sprite->GetImage() == nullptr;
 
         // Zero texture size may occur even if the UiImageComponent has a valid non-zero-sized texture,
         // because a canvas can be requested to Render() before the texture asset is done loading.
@@ -399,12 +397,6 @@ void UiImageComponent::Render(LyShine::IRenderGraph* renderGraph)
         {
             imageType = ImageType::Stretched;
         }
-#else
-        if (sprite == nullptr)
-        {
-            imageType = ImageType::Stretched;
-        }
-#endif
 
         switch (imageType)
         {
