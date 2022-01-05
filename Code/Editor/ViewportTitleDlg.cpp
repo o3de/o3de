@@ -273,6 +273,11 @@ void CViewportTitleDlg::SetupOverflowMenu()
     private:
         void keyPressEvent([[maybe_unused]] QKeyEvent* event) override
         {
+            // regular escape key handling
+            if (event->key() == Qt::Key_Escape)
+            {
+                QMenu::keyPressEvent(event);
+            }
         }
     };
 
