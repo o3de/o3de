@@ -42,10 +42,11 @@ def palSh(cmd, lbl = '', winSlashReplacement = true) {
     if (env.IS_UNIX) {
         sh label: lbl,
            script: cmd
-    } else if (winSlashReplacement) {
-        bat label: lbl,
-            script: cmd.replace('/','\\')
     } else {
+        if (winSlashReplacement) {
+            cmd = cmd.replace('/','\\')
+        }
+        cmd = cmd.replace('%', '%%')
         bat label: lbl,
             script: cmd
     }
