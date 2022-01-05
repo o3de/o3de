@@ -352,7 +352,7 @@ namespace AZ::Dom
                 }
                 else
                 {
-                    static_assert(false, "AZ::Dom::Value::GetType: m_value has an unexpected type");
+                    AZ_Assert(false, "AZ::Dom::Value::GetType: m_value has an unexpected type");
                 }
             },
             m_value);
