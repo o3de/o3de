@@ -17,6 +17,7 @@
 #include <Atom/RPI.Reflect/Pass/PassTemplate.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/Scene.h>
+#include <Atom_Feature_Traits_Platform.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridClassificationPass.h>
 #include <RayTracing/RayTracingFeatureProcessor.h>
@@ -34,7 +35,15 @@ namespace AZ
         DiffuseProbeGridClassificationPass::DiffuseProbeGridClassificationPass(const RPI::PassDescriptor& descriptor)
             : RPI::RenderPass(descriptor)
         {
-            LoadShader();
+            if (!AZ_TRAIT_DIFFUSE_GI_PASSES_SUPPORTED)
+            {
+                // GI is not supported on this platform
+                SetEnabled(false);
+            }
+            else
+            {
+                LoadShader();
+            }
         }
 
         void DiffuseProbeGridClassificationPass::LoadShader()

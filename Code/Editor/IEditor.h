@@ -69,7 +69,6 @@ class CSelectionTreeManager;
 struct SEditorSettings;
 class CGameExporter;
 class IAWSResourceManager;
-struct IEditorPanelUtils;
 
 namespace WinWidget
 {
@@ -167,8 +166,6 @@ enum EEditorNotifyEvent
     eNotify_OnEndTerrainRebuild,       // Sent when terrain end rebuilt (resized,...)
     eNotify_OnVegetationObjectSelection, // When vegetation objects selection change.
     eNotify_OnVegetationPanelUpdate,   // When vegetation objects selection change.
-
-    eNotify_OnDisplayRenderUpdate,     // Sent when editor finish terrain texture generation.
 
     eNotify_OnDataBaseUpdate,          // DataBase Library was modified.
 
@@ -528,8 +525,6 @@ struct IEditor
     virtual IEditorMaterialManager* GetIEditorMaterialManager() = 0; // Vladimir@Conffx
     //! Returns IconManager.
     virtual IIconManager* GetIconManager() = 0;
-    //! Get Panel Editor Utilities
-    virtual IEditorPanelUtils* GetEditorPanelUtils() = 0;
     //! Get Music Manager.
     virtual CMusicManager* GetMusicManager() = 0;
     virtual float GetTerrainElevation(float x, float y) = 0;

@@ -456,37 +456,38 @@ namespace ScriptCanvasEditor
                         return;
                     }
 
-                    if (!data->m_runtimeData.m_interface.HasAnyFunctionality())
+                    if (!data->m_interfaceData.m_interface.HasAnyFunctionality())
                     {
                         // check for deleting the old entry
                         return;
                     }
 
+
                     AZStd::string rootPath, absolutePath;
                     AZ::Data::AssetInfo assetInfo = AssetHelpers::GetAssetInfo(assetId, rootPath);
                     AzFramework::StringFunc::Path::Join(rootPath.c_str(), assetInfo.m_relativePath.c_str(), absolutePath);
-
+ 
                     AZStd::string normPath = absolutePath;
                     AzFramework::StringFunc::Path::Normalize(normPath);
-
+ 
                     AZStd::string watchFolder;
                     bool sourceInfoFound{};
                     AzToolsFramework::AssetSystemRequestBus::BroadcastResult(sourceInfoFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, normPath.c_str(), assetInfo, watchFolder);
-
+ 
                     if (!sourceInfoFound)
                     {
                         return;
                     }
-
+ 
                     CreateFunctionPaletteItem(asset, assetInfo);
-
+ 
                     treePaletteIter = m_globalFunctionTreeItems.find(asset->GetId());
-
+ 
                     if (treePaletteIter != m_globalFunctionTreeItems.end())
                     {
                         treePaletteIter->second->ClearError();
                     }
-
+ 
                     m_monitoredAssets.emplace(asset->GetId(), asset);
                 }
                 else 
@@ -516,7 +517,7 @@ namespace ScriptCanvasEditor
                 return;
             }
 
-            const ScriptCanvas::Grammar::SubgraphInterface& graphInterface = data->m_runtimeData.m_interface;
+            const ScriptCanvas::Grammar::SubgraphInterface& graphInterface = data->m_interfaceData.m_interface;
             if (!graphInterface.HasAnyFunctionality())
             {
                 return;
@@ -565,7 +566,7 @@ namespace ScriptCanvasEditor
                 return;
             }
 
-            const ScriptCanvas::Grammar::SubgraphInterface& graphInterface = data->m_runtimeData.m_interface;
+            const ScriptCanvas::Grammar::SubgraphInterface& graphInterface = data->m_interfaceData.m_interface;
             if (!graphInterface.HasAnyFunctionality())
             {
                 return;

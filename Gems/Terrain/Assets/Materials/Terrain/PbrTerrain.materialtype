@@ -107,7 +107,7 @@
                     "displayName": "Detail Texture UV Multiplier",
                     "description": "How many times to repeat the detail texture per sector",
                     "type": "Float",
-                    "defaultValue": 8.0,
+                    "defaultValue": 0.5,
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_detailTextureMultiplier"

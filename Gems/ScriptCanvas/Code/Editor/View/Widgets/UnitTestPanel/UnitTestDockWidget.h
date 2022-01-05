@@ -162,7 +162,7 @@ namespace ScriptCanvasEditor
         void OpenTestResults(AZ::Uuid sourceUuid, AZStd::string_view sourceDisplayName);
         void RunTests(const AZStd::vector<AZ::Uuid>& scriptUuids);
 
-        void RunTestGraph(AZ::Data::Asset<AZ::Data::AssetData>, ScriptCanvas::ExecutionMode);
+        void RunTestGraph(SourceHandle sourceHandle, ScriptCanvas::ExecutionMode);
 
         void OnTestsComplete();
 
@@ -184,15 +184,15 @@ namespace ScriptCanvasEditor
         {
         public:
 
-            void Add(AZ::Data::AssetId assetId, ExecutionMode mode);
+            void Add(ScriptCanvasEditor::SourceHandle assetId, ExecutionMode mode);
 
-            void Complete(AZ::Data::AssetId assetId, ExecutionMode mode);
+            void Complete(ScriptCanvasEditor::SourceHandle assetId, ExecutionMode mode);
 
             bool IsFinished() const;
 
         private:
 
-            AZStd::vector<AZStd::pair<AZ::Data::AssetId, ExecutionMode>> m_pendingTests;
+            AZStd::vector<AZStd::pair<SourceHandle, ExecutionMode>> m_pendingTests;
         };
 
         PendingTests m_pendingTests;

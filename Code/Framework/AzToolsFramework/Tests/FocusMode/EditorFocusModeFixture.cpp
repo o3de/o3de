@@ -12,7 +12,7 @@
 
 #include <Tests/BoundsTestComponent.h>
 
-namespace AzToolsFramework
+namespace UnitTest
 {
     void ClearSelectedEntities()
     {
@@ -31,14 +31,14 @@ namespace AzToolsFramework
     void EditorFocusModeFixture::SetUpEditorFixtureImpl()
     {
         // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-        // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
+        // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
         // in the unit tests.
         AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
-        m_containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get();
+        m_containerEntityInterface = AZ::Interface<AzToolsFramework::ContainerEntityInterface>::Get();
         ASSERT_TRUE(m_containerEntityInterface != nullptr);
 
-        m_focusModeInterface = AZ::Interface<FocusModeInterface>::Get();
+        m_focusModeInterface = AZ::Interface<AzToolsFramework::FocusModeInterface>::Get();
         ASSERT_TRUE(m_focusModeInterface != nullptr);
 
         // register a simple component implementing BoundsRequestBus and EditorComponentSelectionRequestsBus
@@ -68,26 +68,26 @@ namespace AzToolsFramework
         ClearSelectedEntities();
     }
 
-    void EditorFocusModeFixture::GenerateTestHierarchy() 
+    void EditorFocusModeFixture::GenerateTestHierarchy()
     {
         /*
-        *   City
-        *   |_  Street
-        *       |_  Car
-        *       |   |_ Passenger
-        *       |_  SportsCar
-        *           |_ Passenger
-        */
+         *   City
+         *   |_  Street
+         *       |_  Car
+         *       |   |_ Passenger
+         *       |_  SportsCar
+         *           |_ Passenger
+         */
 
-        m_entityMap[CityEntityName] =       CreateEditorEntity(CityEntityName,          AZ::EntityId());
-        m_entityMap[StreetEntityName] =     CreateEditorEntity(StreetEntityName,        m_entityMap[CityEntityName]);
-        m_entityMap[CarEntityName] =        CreateEditorEntity(CarEntityName,           m_entityMap[StreetEntityName]);
-        m_entityMap[Passenger1EntityName] = CreateEditorEntity(Passenger1EntityName,    m_entityMap[CarEntityName]);
-        m_entityMap[SportsCarEntityName] =  CreateEditorEntity(SportsCarEntityName,     m_entityMap[StreetEntityName]);
-        m_entityMap[Passenger2EntityName] = CreateEditorEntity(Passenger2EntityName,    m_entityMap[SportsCarEntityName]);
+        m_entityMap[CityEntityName] = CreateEditorEntity(CityEntityName, AZ::EntityId());
+        m_entityMap[StreetEntityName] = CreateEditorEntity(StreetEntityName, m_entityMap[CityEntityName]);
+        m_entityMap[CarEntityName] = CreateEditorEntity(CarEntityName, m_entityMap[StreetEntityName]);
+        m_entityMap[Passenger1EntityName] = CreateEditorEntity(Passenger1EntityName, m_entityMap[CarEntityName]);
+        m_entityMap[SportsCarEntityName] = CreateEditorEntity(SportsCarEntityName, m_entityMap[StreetEntityName]);
+        m_entityMap[Passenger2EntityName] = CreateEditorEntity(Passenger2EntityName, m_entityMap[SportsCarEntityName]);
 
         // Add a BoundsTestComponent to the Car entity.
-        AZ::Entity* entity = GetEntityById(m_entityMap[CarEntityName]);
+        AZ::Entity* entity = AzToolsFramework::GetEntityById(m_entityMap[CarEntityName]);
 
         entity->Deactivate();
         entity->CreateComponent<UnitTest::BoundsTestComponent>();
@@ -113,4 +113,4 @@ namespace AzToolsFramework
 
         return entity->GetId();
     }
-}
+} // namespace UnitTest

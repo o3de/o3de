@@ -455,7 +455,7 @@ void UiFaderComponent::CreateOrResizeRenderTarget(const AZ::Vector2& pixelAligne
     m_viewportTopLeft = pixelAlignedTopLeft;
     m_viewportSize = renderTargetSize;
 
-    // LYSHINE_ATOM_TODO: optimize by reusing/resizing targets
+    // [LYSHINE_ATOM_TODO][GHI #6271] Optimize by reusing existing render targets
     DestroyRenderTarget();
 
     // Create a render target that this element and its children will be rendered to
@@ -573,8 +573,7 @@ void UiFaderComponent::RenderRttFader(LyShine::IRenderGraph* renderGraph, UiElem
         AZ::Color clearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
         // Start building the render to texture node in the render graph
-        LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
-        lyRenderGraph->BeginRenderToTexture(attachmentImage, m_viewportTopLeft, m_viewportSize, clearColor);
+        renderGraph->BeginRenderToTexture(attachmentImage, m_viewportTopLeft, m_viewportSize, clearColor);
 
         // We don't want this fader or parent faders to affect what is rendered to the render target since we will
         // apply those fades when we render from the render target.
@@ -613,17 +612,13 @@ void UiFaderComponent::RenderRttFader(LyShine::IRenderGraph* renderGraph, UiElem
 
         // Add a primitive to render a quad using the render target we have created
         {
-            LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
-            if (lyRenderGraph)
-            {
-                // Set the texture and other render state required
-                AZ::Data::Instance<AZ::RPI::Image> image = attachmentImage;
-                bool isClampTextureMode = true;
-                bool isTextureSRGB = true;
-                bool isTexturePremultipliedAlpha = true;
-                LyShine::BlendMode blendMode = LyShine::BlendMode::Normal;
-                lyRenderGraph->AddPrimitiveAtom(&m_cachedPrimitive, image, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
-            }
+            // Set the texture and other render state required
+            AZ::Data::Instance<AZ::RPI::Image> image = attachmentImage;
+            bool isClampTextureMode = true;
+            bool isTextureSRGB = true;
+            bool isTexturePremultipliedAlpha = true;
+            LyShine::BlendMode blendMode = LyShine::BlendMode::Normal;
+            renderGraph->AddPrimitive(&m_cachedPrimitive, image, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
         }
     }
 }

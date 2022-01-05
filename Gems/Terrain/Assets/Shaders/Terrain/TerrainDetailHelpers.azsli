@@ -123,7 +123,7 @@ float3 GetDetailColor(TerrainSrg::DetailMaterialData materialData, float2 uv, fl
     float3 color = materialData.m_baseColor;
     if ((materialData.m_flags & DetailTextureFlags::UseTextureBaseColor) > 0)
     {
-        color = TerrainSrg::m_detailTextures[GetDetailColorIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).rgb;
+        color = TerrainSrg::m_textures[GetDetailColorIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).rgb;
     }
     return color * materialData.m_baseColorFactor;
 }
@@ -133,7 +133,7 @@ float3 GetDetailNormal(TerrainSrg::DetailMaterialData materialData, float2 uv, f
     float2 normal = float2(0.0, 0.0);
     if ((materialData.m_flags & DetailTextureFlags::UseTextureNormal) > 0)
     {
-        normal = TerrainSrg::m_detailTextures[GetDetailNormalIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).rg;
+        normal = TerrainSrg::m_textures[GetDetailNormalIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).rg;
     }
     
     // X and Y are inverted here to be consistent with SampleNormalXY in NormalInput.azsli.
@@ -153,7 +153,7 @@ float GetDetailRoughness(TerrainSrg::DetailMaterialData materialData, float2 uv,
     float roughness = materialData.m_roughnessScale;
     if ((materialData.m_flags & DetailTextureFlags::UseTextureRoughness) > 0)
     {
-        roughness = TerrainSrg::m_detailTextures[GetDetailRoughnessIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).r;
+        roughness = TerrainSrg::m_textures[GetDetailRoughnessIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).r;
         roughness = materialData.m_roughnessBias + roughness * materialData.m_roughnessScale;
     }
     return roughness;
@@ -164,7 +164,7 @@ float GetDetailMetalness(TerrainSrg::DetailMaterialData materialData, float2 uv,
     float metalness = 1.0;
     if ((materialData.m_flags & DetailTextureFlags::UseTextureMetallic) > 0)
     {
-        metalness = TerrainSrg::m_detailTextures[GetDetailMetalnessIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).r;
+        metalness = TerrainSrg::m_textures[GetDetailMetalnessIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).r;
     }
     return metalness * materialData.m_metalFactor;
 }
@@ -174,7 +174,7 @@ float GetDetailSpecularF0(TerrainSrg::DetailMaterialData materialData, float2 uv
     float specularF0 = 1.0;
     if ((materialData.m_flags & DetailTextureFlags::UseTextureSpecularF0) > 0)
     {
-        specularF0 = TerrainSrg::m_detailTextures[GetDetailSpecularF0Index(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).r;
+        specularF0 = TerrainSrg::m_textures[GetDetailSpecularF0Index(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).r;
     }
     return specularF0 * materialData.m_specularF0Factor;
 }
@@ -184,7 +184,7 @@ float GetDetailOcclusion(TerrainSrg::DetailMaterialData materialData, float2 uv,
     float occlusion = 1.0;
     if ((materialData.m_flags & DetailTextureFlags::UseTextureOcclusion) > 0)
     {
-        occlusion = TerrainSrg::m_detailTextures[GetDetailOcclusionIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).r;
+        occlusion = TerrainSrg::m_textures[GetDetailOcclusionIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).r;
     }
     return occlusion * materialData.m_occlusionFactor;
 }
@@ -194,7 +194,7 @@ float GetDetailHeight(TerrainSrg::DetailMaterialData materialData, float2 uv, fl
     float height = materialData.m_heightFactor;
     if ((materialData.m_flags & DetailTextureFlags::UseTextureHeight) > 0)
     {
-        height = TerrainSrg::m_detailTextures[GetDetailHeightIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).r;
+        height = TerrainSrg::m_textures[GetDetailHeightIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).r;
         height = materialData.m_heightOffset + height * materialData.m_heightFactor;
     }
     return height;
