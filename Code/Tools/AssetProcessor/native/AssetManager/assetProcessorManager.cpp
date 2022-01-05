@@ -1312,7 +1312,7 @@ namespace AssetProcessor
 
                 // relative file path is gotten by removing the platform and game from the product name
                 // Strip the <asset_platform> from the front of a relative product path
-                AZStd::string_view relativeProductPath = AssetUtilities::StripAssetPlatformNoCopy(productName.toUtf8().constData());
+                AZStd::string relativeProductPath = AssetUtilities::StripAssetPlatform(productName.toUtf8().constData()).toUtf8().constData();
 
                 AssetNotificationMessage message(relativeProductPath, AssetNotificationMessage::AssetChanged, newProduct.m_assetType, processedAsset.m_entry.m_platformInfo.m_identifier.c_str());
                 AZ::Data::AssetId assetId(source.m_sourceGuid, newProduct.m_subID);
