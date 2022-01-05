@@ -26,13 +26,6 @@ def remove_test_level(request, workspace, project):
     request.addfinalizer(teardown)
 
 
-@pytest.fixture
-def kill_external_tools(request):
-    def teardown():
-        process_utils.kill_processes_named("o3de.exe")
-    request.addfinalizer(teardown)
-
-
 @pytest.mark.SUITE_periodic
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
@@ -40,7 +33,7 @@ class TestAutomation(TestAutomationBase):
 
     def test_AssetBrowser_SearchFiltering(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import AssetBrowser_SearchFiltering as test_module
-        self._run_test(request, workspace, editor, test_module, batch_mode=False)
+        self._run_test(request, workspace, editor, test_module, batch_mode=False, use_null_renderer=False)
 
     def test_AssetBrowser_TreeNavigation(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import AssetBrowser_TreeNavigation as test_module
@@ -58,7 +51,7 @@ class TestAutomation(TestAutomationBase):
         from .EditorScripts import InputBindings_Add_Remove_Input_Events as test_module
         self._run_test(request, workspace, editor, test_module, batch_mode=False, autotest_mode=False)
 
-    def test_Menus_FileMenuOptions_Work(self, request, workspace, editor, launcher_platform, kill_external_tools):
+    def test_Menus_FileMenuOptions_Work(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import Menus_FileMenuOptions as test_module
         self._run_test(request, workspace, editor, test_module, batch_mode=False)
 
