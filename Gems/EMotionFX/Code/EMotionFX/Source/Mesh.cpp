@@ -581,8 +581,8 @@ namespace EMotionFX
                     &curTangent, &curBitangent);
 
                 // normalize the vectors
-                curTangent = MCore::SafeNormalize(curTangent);
-                curBitangent = MCore::SafeNormalize(curBitangent);
+                curTangent.NormalizeSafe();
+                curBitangent.NormalizeSafe();
 
                 // store the tangents in the orgTangents array
                 const AZ::Vector4 vec4Tangent(curTangent.GetX(), curTangent.GetY(), curTangent.GetZ(), 1.0f);
@@ -605,7 +605,7 @@ namespace EMotionFX
         {
             // get the normal
             AZ::Vector3 normal(normals[i]);
-            normal = MCore::SafeNormalize(normal);
+            normal.NormalizeSafe();
 
             // get the tangent
             AZ::Vector3 tangent = AZ::Vector3(orgTangents[i].GetX(), orgTangents[i].GetY(), orgTangents[i].GetZ());
@@ -631,7 +631,7 @@ namespace EMotionFX
 
             // Gram-Schmidt orthogonalize
             AZ::Vector3 fixedTangent = tangent - (normal * normal.Dot(tangent));
-            fixedTangent = MCore::SafeNormalize(fixedTangent);
+            fixedTangent.NormalizeSafe();
 
             // calculate handedness
             const AZ::Vector3 crossResult = normal.Cross(tangent);
@@ -1671,7 +1671,7 @@ namespace EMotionFX
                     const AZ::Vector3& posA = positions[ indexA ];
                     const AZ::Vector3& posB = positions[ indexB ];
                     const AZ::Vector3& posC = positions[ indexC ];
-                    AZ::Vector3 faceNormal = MCore::SafeNormalize((posB - posA).Cross(posC - posB));
+                    AZ::Vector3 faceNormal = (posB - posA).Cross(posC - posB).GetNormalizedSafe();
 
                     // store the tangents in the orgTangents array
                     smoothNormals[ orgVerts[indexA] ] += faceNormal;
@@ -1684,7 +1684,7 @@ namespace EMotionFX
             // normalize
             for (uint32 i = 0; i < m_numOrgVerts; ++i)
             {
-                smoothNormals[i] = MCore::SafeNormalize(smoothNormals[i]);
+                smoothNormals[i].NormalizeSafe();
             }
 
             for (uint32 i = 0; i < m_numVertices; ++i)
@@ -1721,7 +1721,7 @@ namespace EMotionFX
                     const AZ::Vector3& posA = positions[ indexA ];
                     const AZ::Vector3& posB = positions[ indexB ];
                     const AZ::Vector3& posC = positions[ indexC ];
-                    AZ::Vector3 faceNormal = MCore::SafeNormalize((posB - posA).Cross(posC - posB));
+                    AZ::Vector3 faceNormal = (posB - posA).Cross(posC - posB).GetNormalizedSafe();
 
                     // store the tangents in the orgTangents array
                     normals[indexA] = normals[indexA] + faceNormal;
@@ -1734,7 +1734,7 @@ namespace EMotionFX
             // normalize the normals
             for (uint32 i = 0; i < m_numVertices; ++i)
             {
-                normals[i] = MCore::SafeNormalize(normals[i]);
+                normals[i].NormalizeSafe();
             }
         }
     }
