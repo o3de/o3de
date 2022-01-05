@@ -18,7 +18,7 @@ namespace UnitTests
     using namespace testing;
     using ::testing::NiceMock;
     using namespace AssetProcessor;
-    
+
     using AzToolsFramework::AssetDatabase::ProductDatabaseEntry;
     using AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry;
     using AzToolsFramework::AssetDatabase::SourceDatabaseEntry;
@@ -30,7 +30,7 @@ namespace UnitTests
     using AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer;
     using AzToolsFramework::AssetDatabase::AssetDatabaseConnection;
     using AzToolsFramework::AssetDatabase::FileDatabaseEntry;
-    
+
     class AssetDatabaseTestMockDatabaseLocationListener : public AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler
     {
     public:
@@ -46,11 +46,11 @@ namespace UnitTests
             m_data.reset(new StaticData());
             m_data->m_databaseLocation = ":memory:"; // this special string causes SQLITE to open the database in memory and not touch disk at all.
             m_data->m_databaseLocationListener.BusConnect();
-            
+
             ON_CALL(m_data->m_databaseLocationListener, GetAssetDatabaseLocation(_))
-                .WillByDefault( 
+                .WillByDefault(
                     DoAll( // set the 0th argument ref (string) to the database location and return true.
-                        SetArgReferee<0>(":memory:"), 
+                        SetArgReferee<0>(":memory:"),
                         Return(true)));
 
             // Initialize the database:
@@ -79,12 +79,12 @@ namespace UnitTests
         {
             m_data->m_scanFolder = { "c:/O3DE/dev", "dev", "rootportkey" };
             ASSERT_TRUE(m_data->m_connection.SetScanFolder(m_data->m_scanFolder));
-            
+
             m_data->m_sourceFile1 = { m_data->m_scanFolder.m_scanFolderID, "somefile.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint1"};
             m_data->m_sourceFile2 = { m_data->m_scanFolder.m_scanFolderID, "otherfile.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint2"};
             ASSERT_TRUE(m_data->m_connection.SetSource(m_data->m_sourceFile1));
             ASSERT_TRUE(m_data->m_connection.SetSource(m_data->m_sourceFile2));
-            
+
             m_data->m_job1 = { m_data->m_sourceFile1.m_sourceID, "some job key", 123, "pc", AZ::Uuid::CreateRandom(), AzToolsFramework::AssetSystem::JobStatus::Completed, 1 };
             m_data->m_job2 = { m_data->m_sourceFile2.m_sourceID, "some other job key", 345, "osx", AZ::Uuid::CreateRandom(), AzToolsFramework::AssetSystem::JobStatus::Failed, 2 };
             ASSERT_TRUE(m_data->m_connection.SetJob(m_data->m_job1));
@@ -126,7 +126,7 @@ namespace UnitTests
             ProductDatabaseEntry m_product2;
             ProductDatabaseEntry m_product3;
             ProductDatabaseEntry m_product4;
-            
+
         };
 
         // we store the above data in a unique_ptr so that its memory can be cleared during TearDown() in one call, before we destroy the memory
@@ -169,13 +169,13 @@ namespace UnitTests
         ProductDatabaseEntryContainer products;
         EXPECT_FALSE(m_data->m_connection.GetProductsLikeProductName("none", AzToolsFramework::AssetDatabase::AssetDatabaseConnection::Raw, products));
         EXPECT_EQ(products.size(), 0);
-        
+
         EXPECT_FALSE(m_data->m_connection.GetProductsLikeProductName("none", AzToolsFramework::AssetDatabase::AssetDatabaseConnection::StartsWith, products));
         EXPECT_EQ(products.size(), 0);
-        
+
         EXPECT_FALSE(m_data->m_connection.GetProductsLikeProductName("none", AzToolsFramework::AssetDatabase::AssetDatabaseConnection::EndsWith, products));
         EXPECT_EQ(products.size(), 0);
-        
+
         EXPECT_FALSE(m_data->m_connection.GetProductsLikeProductName("none", AzToolsFramework::AssetDatabase::AssetDatabaseConnection::Matches, products));
         EXPECT_EQ(products.size(), 0);
     }
@@ -197,7 +197,7 @@ namespace UnitTests
         EXPECT_FALSE(m_data->m_connection.SetProduct(product));
         EXPECT_GT(m_errorAbsorber->m_numErrorsAbsorbed, 0);
         EXPECT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0); // not allowed to assert on this
-        
+
         // make sure it didn't actually touch the db as a side effect:
         ProductDatabaseEntryContainer products;
         EXPECT_FALSE(m_data->m_connection.GetProducts(products));
@@ -237,7 +237,7 @@ namespace UnitTests
         //add a scanfolder.  None of this has to exist in real disk, this is a db test only.
         ScanFolderDatabaseEntry scanFolder{ "c:/O3DE/dev", "dev", "rootportkey" };
         EXPECT_TRUE(m_data->m_connection.SetScanFolder(scanFolder));
-        ASSERT_NE(scanFolder.m_scanFolderID, AzToolsFramework::AssetDatabase::InvalidEntryId); 
+        ASSERT_NE(scanFolder.m_scanFolderID, AzToolsFramework::AssetDatabase::InvalidEntryId);
 
         SourceDatabaseEntry sourceEntry {scanFolder.m_scanFolderID, "somefile.tif", AZ::Uuid::CreateRandom(), "fingerprint1"};
         EXPECT_TRUE(m_data->m_connection.SetSource(sourceEntry));
@@ -276,7 +276,7 @@ namespace UnitTests
         // we'll create all of those first (except product) before starting the product test.
         ScanFolderDatabaseEntry scanFolder{ "c:/O3DE/dev", "dev", "rootportkey" };
         ASSERT_TRUE(m_data->m_connection.SetScanFolder(scanFolder));
-        
+
         SourceDatabaseEntry sourceEntry{ scanFolder.m_scanFolderID, "somefile.tif", AZ::Uuid::CreateRandom(), "fingerprint1" };
         ASSERT_TRUE(m_data->m_connection.SetSource(sourceEntry));
 
@@ -288,7 +288,7 @@ namespace UnitTests
 
         ProductDatabaseEntry product{ AzToolsFramework::AssetDatabase::InvalidEntryId, jobEntry.m_jobID, 1, "SomeProduct1.dds", validAssetType1 };
         ASSERT_TRUE(m_data->m_connection.SetProduct(product));
-        
+
         // --- set up complete --- perform the test!
         // update all the fields of that product and then write it to the db.
         ProductDatabaseEntry newProductData = product; // copy first
@@ -378,7 +378,7 @@ namespace UnitTests
         // since there is no ordering, we just have to find both of them:
         EXPECT_NE(AZStd::find(resultProducts.begin(), resultProducts.end(), m_data->m_product1), resultProducts.end());
         EXPECT_NE(AZStd::find(resultProducts.begin(), resultProducts.end(), m_data->m_product2), resultProducts.end());
-        
+
         EXPECT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0); // not allowed to assert on this
     }
 
@@ -433,7 +433,7 @@ namespace UnitTests
 
         EXPECT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0);
     }
- 
+
     // --------------------------------------------------------------------------------------------------------------------
     // ------------------------------------------ GetProductsByProductName ------------------------------------------------
     // --------------------------------------------------------------------------------------------------------------------
@@ -471,14 +471,14 @@ namespace UnitTests
 
         EXPECT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0); // not allowed to assert on this
     }
-    
+
     // tests all of the filters (beside name) to make sure they all function as expected.
     TEST_F(AssetDatabaseTest, GetProductsByProductName_FilterTest_BuilderGUID)
     {
         CreateCoverageTestData();
 
         ProductDatabaseEntryContainer resultProducts;
-        
+
         // give it a random builder guid.  This should make it not match any products:
         EXPECT_FALSE(m_data->m_connection.GetProductsByProductName("someproduct4.dds", resultProducts, AZ::Uuid::CreateRandom()));
         EXPECT_EQ(resultProducts.size(), 0);
@@ -624,7 +624,7 @@ namespace UnitTests
         CreateCoverageTestData();
 
         ProductDatabaseEntryContainer resultProducts;
-        
+
         // a very broad search that matches all products.
         EXPECT_TRUE(m_data->m_connection.GetProductsLikeProductName("someproduct", AssetDatabaseConnection::StartsWith, resultProducts));
         EXPECT_EQ(resultProducts.size(), 4);
@@ -741,7 +741,7 @@ namespace UnitTests
         EXPECT_EQ(resultProducts.size(), 2);
         EXPECT_NE(AZStd::find(resultProducts.begin(), resultProducts.end(), m_data->m_product1), resultProducts.end());
         EXPECT_NE(AZStd::find(resultProducts.begin(), resultProducts.end(), m_data->m_product2), resultProducts.end());
-        
+
         EXPECT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0); // not allowed to assert on this
     }
 
@@ -1161,7 +1161,7 @@ namespace UnitTests
 
         EXPECT_NE(requestProducts[0].m_productID, AzToolsFramework::AssetDatabase::InvalidEntryId);
         EXPECT_NE(requestProducts[1].m_productID, AzToolsFramework::AssetDatabase::InvalidEntryId);
-        
+
         EXPECT_EQ(newProductCount, priorProductCount + 2);
         EXPECT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0); // not allowed to assert on this
     }
@@ -1178,9 +1178,9 @@ namespace UnitTests
         resultProducts.clear();
         EXPECT_TRUE(m_data->m_connection.GetProducts(resultProducts));
         size_t priorProductCount = resultProducts.size();
-        
+
         EXPECT_FALSE(m_data->m_connection.RemoveProduct(-1));
-       
+
         resultProducts.clear();
         EXPECT_TRUE(m_data->m_connection.GetProducts(resultProducts));
         size_t newProductCount = resultProducts.size();
@@ -1352,7 +1352,7 @@ namespace UnitTests
         size_t priorProductCount = resultProducts.size();
 
         EXPECT_FALSE(m_data->m_connection.RemoveProductsBySourceID(-1));
-        
+
         resultProducts.clear();
         EXPECT_TRUE(m_data->m_connection.GetProducts(resultProducts));
         size_t newProductCount = resultProducts.size();
@@ -1399,7 +1399,7 @@ namespace UnitTests
         resultProducts.clear();
         EXPECT_TRUE(m_data->m_connection.GetProducts(resultProducts));
         size_t newProductCount = resultProducts.size();
-        EXPECT_EQ(newProductCount, priorProductCount); 
+        EXPECT_EQ(newProductCount, priorProductCount);
 
         // give it a correct data but the wrong builder (a valid, but wrong one)
         EXPECT_FALSE(m_data->m_connection.RemoveProductsBySourceID(m_data->m_sourceFile1.m_sourceID, m_data->m_job2.m_builderGuid));
@@ -1554,7 +1554,7 @@ namespace UnitTests
             ProductDependencyDatabaseEntry entry(resultProducts[0].m_productID, m_data->m_sourceFile1.m_sourceGuid, productIndex, dependencyFlags, platform, true, pathDep);
             productDependencies.emplace_back(AZStd::move(entry));
         }
-        
+
         // make 100 product dependencies on the second productID
         for (AZ::u32 productIndex = 0; productIndex < 100; ++productIndex)
         {
@@ -1567,7 +1567,7 @@ namespace UnitTests
 
         // now, read all the data back and verify each field:
         productDependencies.clear();
-        
+
         // searching for the first product should only result in the first 100 results:
         EXPECT_TRUE(m_data->m_connection.GetProductDependenciesByProductID(resultProducts[0].m_productID, productDependencies));
         EXPECT_EQ(productDependencies.size(), 100);
@@ -1677,7 +1677,7 @@ namespace UnitTests
         EXPECT_TRUE(m_data->m_connection.GetMissingProductDependencyByMissingProductDependencyId(
             writeMissingDependency.m_missingProductDependencyId,
             readMissingDependency));
-        
+
         EXPECT_EQ(writeMissingDependency, readMissingDependency);
     }
 
@@ -2009,7 +2009,7 @@ namespace UnitTests
         for (AZ::u32 sourceIndex = 0; sourceIndex < 20000; ++sourceIndex)
         {
             AZStd::string dependentFile = AZStd::string::format("otherfile%i.txt", sourceIndex);
-            SourceFileDependencyEntry entry(builderGuid, originFile.c_str(), dependentFile.c_str(), SourceFileDependencyEntry::DEP_SourceToSource, true);
+            SourceFileDependencyEntry entry(builderGuid, originFile.c_str(), dependentFile.c_str(), SourceFileDependencyEntry::DEP_SourceToSource, true, "");
             resultSourceDependencies.emplace_back(AZStd::move(entry));
         }
 
@@ -2028,22 +2028,22 @@ namespace UnitTests
         CreateCoverageTestData();
         AZ::Uuid builderGuid1 = AZ::Uuid::CreateRandom();
         AZ::Uuid builderGuid2 = AZ::Uuid::CreateRandom();
-        
+
         SourceFileDependencyEntryContainer entries;
 
         // add the two different kinds of dependencies.
-        entries.push_back(SourceFileDependencyEntry(builderGuid1, "file1.txt", "file1dependson1.txt", SourceFileDependencyEntry::DEP_SourceToSource, true));
-        entries.push_back(SourceFileDependencyEntry(builderGuid2, "file1.txt", "file1dependson2.txt", SourceFileDependencyEntry::DEP_SourceToSource, true));
-        entries.push_back(SourceFileDependencyEntry(builderGuid1, "file1.txt", "file1dependson1job.txt", SourceFileDependencyEntry::DEP_JobToJob, true));
-        entries.push_back(SourceFileDependencyEntry(builderGuid2, "file1.txt", "file1dependson2job.txt", SourceFileDependencyEntry::DEP_JobToJob, true));
-        
-        entries.push_back(SourceFileDependencyEntry(builderGuid1, "file2.txt", "file2dependson1.txt", SourceFileDependencyEntry::DEP_SourceToSource, true));
-        entries.push_back(SourceFileDependencyEntry(builderGuid1, "file2.txt", "file2dependson1job.txt", SourceFileDependencyEntry::DEP_JobToJob, true));
+        entries.push_back(SourceFileDependencyEntry(builderGuid1, "file1.txt", "file1dependson1.txt", SourceFileDependencyEntry::DEP_SourceToSource, true, ""));
+        entries.push_back(SourceFileDependencyEntry(builderGuid2, "file1.txt", "file1dependson2.txt", SourceFileDependencyEntry::DEP_SourceToSource, true, ""));
+        entries.push_back(SourceFileDependencyEntry(builderGuid1, "file1.txt", "file1dependson1job.txt", SourceFileDependencyEntry::DEP_JobToJob, true, ""));
+        entries.push_back(SourceFileDependencyEntry(builderGuid2, "file1.txt", "file1dependson2job.txt", SourceFileDependencyEntry::DEP_JobToJob, true, ""));
+
+        entries.push_back(SourceFileDependencyEntry(builderGuid1, "file2.txt", "file2dependson1.txt", SourceFileDependencyEntry::DEP_SourceToSource, true, ""));
+        entries.push_back(SourceFileDependencyEntry(builderGuid1, "file2.txt", "file2dependson1job.txt", SourceFileDependencyEntry::DEP_JobToJob, true, ""));
 
         ASSERT_TRUE(m_data->m_connection.SetSourceFileDependencies(entries));
 
         SourceFileDependencyEntryContainer resultEntries;
-        
+
         AZStd::string searchFor;
         auto SearchPredicate = [&searchFor](const SourceFileDependencyEntry& element)
         {
@@ -2119,7 +2119,7 @@ namespace UnitTests
         searchFor = "file1.txt";
         EXPECT_NE(AZStd::find_if(resultEntries.begin(), resultEntries.end(), SearchPredicateReverse), resultEntries.end());
         resultEntries.clear();
-        
+
         // now try the other file - remember the ID for later
         ASSERT_TRUE(m_data->m_connection.GetSourceFileDependenciesByBuilderGUIDAndSource(builderGuid1, "file2.txt", SourceFileDependencyEntry::DEP_SourceToSource, resultEntries));
         EXPECT_EQ(resultEntries.size(), 1);
@@ -2127,7 +2127,7 @@ namespace UnitTests
         EXPECT_NE(AZStd::find_if(resultEntries.begin(), resultEntries.end(), SearchPredicate), resultEntries.end());
         AZ::s64 entryIdSource = resultEntries[0].m_sourceDependencyID;
         resultEntries.clear();
-        
+
         // and with Job-to-job dependencies
         EXPECT_TRUE(m_data->m_connection.GetSourceFileDependenciesByBuilderGUIDAndSource(builderGuid1, "file2.txt", SourceFileDependencyEntry::DEP_JobToJob, resultEntries));
         ASSERT_EQ(resultEntries.size(), 1);
@@ -2138,7 +2138,7 @@ namespace UnitTests
         EXPECT_EQ(resultEntries[0].m_typeOfDependency,  SourceFileDependencyEntry::DEP_JobToJob);
         AZ::s64 entryIdJob = resultEntries[0].m_sourceDependencyID;
         resultEntries.clear();
-        
+
         SourceFileDependencyEntry resultValue;
         EXPECT_TRUE(m_data->m_connection.GetSourceFileDependencyBySourceDependencyId(entryIdSource, resultValue));
         EXPECT_EQ(resultValue.m_sourceDependencyID, entryIdSource);
@@ -2181,7 +2181,7 @@ namespace UnitTests
         FileDatabaseEntry entry;
         entry.m_fileName = "testfile.txt";
         entry.m_scanFolderPK = m_data->m_scanFolder.m_scanFolderID;
-        
+
         bool entryAlreadyExists;
         ASSERT_TRUE(m_data->m_connection.InsertFile(entry, entryAlreadyExists));
         ASSERT_FALSE(entryAlreadyExists);

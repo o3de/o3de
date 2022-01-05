@@ -23,7 +23,7 @@
 #include <AzCore/std/string/string_view.h>
 #include "AssetBuilderBusses.h"
 
-/** 
+/**
 * this define exists to turn on and off the support for legacy m_platformFlags and the concept of platforms as an enum
 * If you want to upgrade your system to use the new platform tag system, you can turn this define off in order to strip out
 * any references to the old stuff and cause compile-time errors anywhere your code tries to use the legacy API.
@@ -153,7 +153,7 @@ namespace AssetBuilderSDK
         Platform_SALEM      = 0x40,
         Platform_JASPER     = 0x80,
 
-        //! if you add a new platform entry to this enum, you must add it to allplatforms as well otherwise that platform would not be considered valid. 
+        //! if you add a new platform entry to this enum, you must add it to allplatforms as well otherwise that platform would not be considered valid.
         AllPlatforms = Platform_PC | Platform_LINUX | Platform_ANDROID | Platform_IOS | Platform_MAC | Platform_PROVO | Platform_SALEM | Platform_JASPER
     };
 #endif // defined(ENABLE_LEGACY_PLATFORMFLAGS_SUPPORT)
@@ -215,7 +215,7 @@ namespace AssetBuilderSDK
 
     protected:
         static bool ValidatePatternRegex(const AZStd::string& pattern);
-        
+
         AssetBuilderSDK::AssetBuilderPattern    m_pattern;
         RegexType           m_regex;
         AZStd::string       m_errorString;
@@ -242,7 +242,7 @@ namespace AssetBuilderSDK
             BF_EmitsNoDependencies = 1<<0, // if you set this flag, dependency-related parts in the code will be skipped
             BF_DeleteLastKnownGoodProductOnFailure = 1<<1,  // if processing fails, delete previous successful product if it exists
         };
-        
+
         //! The name of the Builder
         AZStd::string m_name;
 
@@ -265,7 +265,7 @@ namespace AssetBuilderSDK
         AssetBuilderType m_builderType = AssetBuilderType::External;
 
         /** Analysis Fingerprint
-         * you can optionally emit an analysis fingerprint, or leave this empty.  
+         * you can optionally emit an analysis fingerprint, or leave this empty.
          * The Analysis Fingerprint, used to quickly skip analysis if the source files modtime has not changed.
          * If your analysis fingerprint DOES change, then all source files will be sent to your CreateJobs function regardless of modtime changes.
          * This does not necessarily mean that the jobs will need doing, just that CreateJobs will be called.
@@ -309,17 +309,17 @@ namespace AssetBuilderSDK
             Absolute, // Corresponds to DEP_SourceToSource
             Wildcards // DEP_SourceLikeMatch
         };
-        /** Filepath on which the source file depends, it can be either be a relative path from the assets folder, or an absolute path. 
-        * if it's relative, the asset processor will check every watched folder in the order specified in the assetprocessor config file until it finds that file. 
+        /** Filepath on which the source file depends, it can be either be a relative path from the assets folder, or an absolute path.
+        * if it's relative, the asset processor will check every watched folder in the order specified in the assetprocessor config file until it finds that file.
         * For example if the builder sends a SourceFileDependency with m_sourceFileDependencyPath = "texture/blah.tif" to the asset processor,
         * it will check all watch folders for a file whose relative path with regard to it is "texture/blah.tif".
         * and supposing it finds it in "C:/dev/gamename/texture/blah.tif", it will use that as the dependency.
         * You can also send absolute path, which will obey the usual overriding rules.
-        *     @note You must EITHER provide the m_sourceFileDependencyPath OR the m_sourceFileDependencyUUID. 
+        *     @note You must EITHER provide the m_sourceFileDependencyPath OR the m_sourceFileDependencyUUID.
         **/
         AZStd::string m_sourceFileDependencyPath;
 
-        /** UUID of the file on which the source file depends.  
+        /** UUID of the file on which the source file depends.
         *     @note You must EITHER provide the m_sourceFileDependencyPath OR the m_sourceFileDependencyUUID if you have that instead.
         */
         AZ::Uuid m_sourceFileDependencyUUID = AZ::Uuid::CreateNull();
@@ -327,7 +327,7 @@ namespace AssetBuilderSDK
         SourceFileDependencyType m_sourceDependencyType{ SourceFileDependencyType::Absolute };
 
         SourceFileDependency() = default;
-        
+
         SourceFileDependency(const AZStd::string& sourceFileDependencyPath, AZ::Uuid sourceFileDependencyUUID, SourceFileDependencyType sourceDependencyType = SourceFileDependencyType::Absolute)
             : m_sourceFileDependencyPath(sourceFileDependencyPath)
             , m_sourceFileDependencyUUID(sourceFileDependencyUUID)
@@ -356,7 +356,7 @@ namespace AssetBuilderSDK
 
         //! This is similiar to Order where the dependent job should only run after all the jobs it depends on are processed by the assetprocessor.
         //! The difference is that here only those dependent jobs matter that have never been processed by the asset processor.
-        //! Also important to note is the fingerprint of the dependent jobs will not alter the the fingerprint of the job.  
+        //! Also important to note is the fingerprint of the dependent jobs will not alter the the fingerprint of the job.
         OrderOnce,
     };
 
@@ -369,18 +369,24 @@ namespace AssetBuilderSDK
         //! It is important to note that the builder do not need to provide both the sourceFileDependencyUUID or sourceFileDependencyPath info to the asset processor,
         //! any one of them should be sufficient
         SourceFileDependency m_sourceFile;
-        
+
         //! JobKey of the dependent job
         AZStd::string m_jobKey;
-        
+
         //! Platform Identifier of the dependent job
         AZStd::string m_platformIdentifier;
 
         //! Type of Job Dependency (order or fingerprint)
         JobDependencyType m_type;
 
+        //! An optional list of Asset SubIds to filter the dependency to.  Only products in this list which have changed will cause
+        //! CreateJobs to be called. If the list is empty, AP will assume every emitted product will trigger the dependency.
+        AZStd::vector<AZ::u32> m_productSubIds;
+
         JobDependency() = default;
         JobDependency(const AZStd::string& jobKey, const AZStd::string& platformIdentifier, const JobDependencyType& type, const SourceFileDependency& sourceFile);
+
+        AZStd::string ConcatenateSubIds() const;
 
         static void Reflect(AZ::ReflectContext* context);
     };
@@ -396,7 +402,7 @@ namespace AssetBuilderSDK
 
         //! Any additional info that should be taken into account during fingerprinting for this job
         AZStd::string m_additionalFingerprintInfo;
-        
+
         //! Job specific key, e.g. TIFF Job, etc
         AZStd::string m_jobKey;
 
@@ -420,23 +426,23 @@ namespace AssetBuilderSDK
         //! Flag to determine whether we need to check the input file for exclusive lock before we process the job
         bool m_checkExclusiveLock = false;
 
-        //! Flag to determine whether we need to check the server for the outputs of this job 
+        //! Flag to determine whether we need to check the server for the outputs of this job
         //! before we start processing the job locally.
-        //! If the asset processor is running in server mode then this will be used to determine whether we need 
+        //! If the asset processor is running in server mode then this will be used to determine whether we need
         //! to store the outputs of this jobs in the server.
         bool m_checkServer = false;
 
-        //! This is required for jobs that want to declare job dependency on other jobs. 
+        //! This is required for jobs that want to declare job dependency on other jobs.
         AZStd::vector<JobDependency> m_jobDependencyList;
 
         //! If set to true, reported errors, asserts and exceptions will automatically cause the job to fail even is ProcessJobResult_Success is the result code.
         bool m_failOnError = false;
 
-        /** 
+        /**
         * construct using a platformIdentifier from your CreateJobsRequest.  it is the m_identifier member of the PlatformInfo.
         */
-        JobDescriptor(const AZStd::string& additionalFingerprintInfo, AZStd::string jobKey, const char* platformIdentifier); 
-        
+        JobDescriptor(const AZStd::string& additionalFingerprintInfo, AZStd::string jobKey, const char* platformIdentifier);
+
 #if defined(ENABLE_LEGACY_PLATFORMFLAGS_SUPPORT)
         /**
         * DEPRECATED - please use the above constructor
@@ -445,7 +451,7 @@ namespace AssetBuilderSDK
         */
         JobDescriptor(AZStd::string additionalFingerprintInfo, int platform, const AZStd::string& jobKey);
 #endif // defined(ENABLE_LEGACY_PLATFORMFLAGS_SUPPORT)
-        
+
         JobDescriptor() = default;
 
         static void Reflect(AZ::ReflectContext* context);
@@ -504,7 +510,7 @@ namespace AssetBuilderSDK
 
         AZ::Uuid m_sourceFileUUID; ///< each source file has a unique UUID.
 
-        
+
         //! Information about each platform you are expected to build is stored here.
         //! You can emit any number of jobs to produce some or all of the assets for each of these platforms.
         AZStd::vector<PlatformInfo> m_enabledPlatforms;
@@ -525,7 +531,7 @@ namespace AssetBuilderSDK
         bool HasPlatformWithTag(const char* platformTag) const;
 
 #if defined(ENABLE_LEGACY_PLATFORMFLAGS_SUPPORT)
-        /** 
+        /**
         * Legacy - DEPRECATED - use m_enabledPlatforms instead.
         * returns the number of platforms that are enabled for the source file
         */
@@ -533,13 +539,13 @@ namespace AssetBuilderSDK
 
         /***
         * Legacy - DEPRECATED - use m_enabledPlatforms instead.
-        * returns the enabled platform by index, if no platform is found then we will return  Platform_NONE. 
+        * returns the enabled platform by index, if no platform is found then we will return  Platform_NONE.
         */
         AssetBuilderSDK::Platform GetEnabledPlatformAt(size_t index) const;
 
         /***
         * Legacy - DEPRECATED - use m_enabledPlatforms instead.
-        * determine whether the platform is enabled or not, returns true if enabled  otherwise false  
+        * determine whether the platform is enabled or not, returns true if enabled  otherwise false
         */
         bool IsPlatformEnabled(AZ::u32 platform) const;
 
@@ -555,10 +561,10 @@ namespace AssetBuilderSDK
         int m_platformFlags = 0;
 #endif // defined(ENABLE_LEGACY_PLATFORMFLAGS_SUPPORT)
 
-        
+
         static void Reflect(AZ::ReflectContext* context);
 
-        
+
     };
 
     //! Possible result codes from CreateJobs requests
@@ -634,7 +640,7 @@ namespace AssetBuilderSDK
         /// canonical product SubID, the system will attempt to look it up in the list of "previously known as..." legacy subIds in case
         /// the source data it is reading is old.  This allows you to change your subID scheme at any time as long as you include
         /// the old scheme in the legacySubIDs list.
-        AZStd::vector<AZ::u32> m_legacySubIDs; 
+        AZStd::vector<AZ::u32> m_legacySubIDs;
 
         // SUB ID context: A Stable sub id means a few things. Products (game ready assets) are identified in the engine by AZ::Data::AssetId, which is a combination of source guid which is random and this product sub id. AssetType is currently NOT USED to differentiate assets by the system. So if two or more products of the same source are for the same platform they can not generate the same sub id!!! If they did this would be a COLLISION!!! which would not allow the rngine to access one or more of the products!!! Not using asset type in the differentiation may change in the future, but it is the way it is done for now.
         // SUB ID RULES:
@@ -714,14 +720,14 @@ namespace AssetBuilderSDK
     {
         AZ_CLASS_ALLOCATOR(ProcessJobResponse, AZ::SystemAllocator, 0);
         AZ_TYPE_INFO(ProcessJobResponse, "{6b48ada5-0d52-43be-ad57-0bf8aeaef04b}");
-        
+
         ProcessJobResultCode m_resultCode = ProcessJobResult_Failed;
         AZStd::vector<JobProduct> m_outputProducts;
         bool m_requiresSubIdGeneration = true; //!< Used to determine if legacy RC products need sub ids generated for them.
         //! Populate m_sourcesToReprocess with sources by absolute path which you want to trigger a rebuild for
         //! To reprocess these sources, make sure to update fingerprints in CreateJobs of those builders which process them, like changing source dependencies.
-        AZStd::vector<AZStd::string> m_sourcesToReprocess; 
-        
+        AZStd::vector<AZStd::string> m_sourcesToReprocess;
+
         bool Succeeded() const;
 
         static void Reflect(AZ::ReflectContext* context);
@@ -741,7 +747,7 @@ namespace AssetBuilderSDK
         JobCancelListener(const JobCancelListener&) = delete;
         //////////////////////////////////////////////////////////////////////////
         //!JobCommandBus::Handler overrides
-        //!Note: This will be called on a thread other than your processing job thread. 
+        //!Note: This will be called on a thread other than your processing job thread.
         //!You can derive from JobCancelListener and reimplement Cancel if you need to do something special in order to cancel your job.
         void Cancel() override;
         ///////////////////////////////////////////////////////////////////////
@@ -762,7 +768,7 @@ namespace AssetBuilderSDK
         ~AssertAbsorber();
 
         bool OnAssert(const char* message) override;
-                
+
         AZStd::string m_assertMessage;
         // only absorb messages for your thread!
         static AZ_THREAD_LOCAL bool s_onAbsorbThread;
@@ -788,7 +794,7 @@ namespace AssetBuilderSDK
         bool m_errorsWillFailJob;
         size_t m_errorsOccurred = 0;
 
-        //! The id of the thread that created this object.  
+        //! The id of the thread that created this object.
         //! There can be multiple builders running at once, so we need to filter out ones coming from other builders
         AZStd::thread_id m_jobThreadId;
     };

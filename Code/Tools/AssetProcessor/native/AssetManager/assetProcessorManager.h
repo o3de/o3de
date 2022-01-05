@@ -205,7 +205,7 @@ namespace AssetProcessor
         void EmitResolvedDependency(const AZ::Data::AssetId& assetId, const AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry& entry);
 
         //! Internal structure that will hold all the necessary information to process jobs later.
-        //! We need to hold these jobs because they have declared either source dependency on other sources 
+        //! We need to hold these jobs because they have declared either source dependency on other sources
         //! or a job dependency and we can only resolve these dependencies once all the create jobs are completed.
         struct JobToProcessEntry
         {
@@ -229,14 +229,14 @@ namespace AssetProcessor
 
         //! Emit whenever a new asset is found or an existing asset is updated
         void AssetMessage(AzFramework::AssetSystem::AssetNotificationMessage message);
-        
+
         // InputAssetProcessed - uses absolute asset path of input file
         void InputAssetProcessed(QString fullAssetPath, QString platform);
 
         void RequestInputAssetStatus(QString inputAssetPath, QString platform, QString jobDescription);
         void RequestPriorityAssetCompile(QString inputAssetPath, QString platform, QString jobDescription);
 
-        //! AssetProcessorManagerIdleState is emitted when APM idle state changes, we emit true when 
+        //! AssetProcessorManagerIdleState is emitted when APM idle state changes, we emit true when
         //! APM is waiting for outside stimulus i.e its has eaten through all of its queues and is only waiting for
         //! responses back from other systems (like its waiting for responses back from the compiler)
         void AssetProcessorManagerIdleState(bool state);
@@ -277,7 +277,7 @@ namespace AssetProcessor
         void AssessDeletedFile(QString filePath);
         void OnAssetScannerStatusChange(AssetProcessor::AssetScanningStatus status);
         void OnJobStatusChanged(JobEntry jobEntry, JobStatus status);
-        
+
         void CheckAssetProcessorIdleState();
 
         void QuitRequested();
@@ -290,7 +290,7 @@ namespace AssetProcessor
 
         //! A network request came in asking for asset database location
         GetAbsoluteAssetDatabaseLocationResponse ProcessGetAbsoluteAssetDatabaseLocationRequest(MessageData<GetAbsoluteAssetDatabaseLocationRequest> messageData);
-        
+
         //! This request comes in and is expected to do whatever heuristic is required in order to determine if an asset actually exists in the database.
         void OnRequestAssetExists(NetworkRequestID requestId, QString platform, QString searchTerm, AZ::Data::AssetId assetId);
 
@@ -329,7 +329,7 @@ namespace AssetProcessor
         bool InitializeCacheRoot();
         void PopulateJobStateCache();
         void AutoFailJob(const AZStd::string& consoleMsg, const AZStd::string& autoFailReason, const AZStd::vector<AssetProcessedEntry>::iterator& assetIter);
-        
+
         using ProductInfoList = AZStd::vector<AZStd::pair<AzToolsFramework::AssetDatabase::ProductDatabaseEntry, const AssetBuilderSDK::JobProduct*>>;
 
         void WriteProductTableInfo(AZStd::pair<AzToolsFramework::AssetDatabase::ProductDatabaseEntry, const AssetBuilderSDK::JobProduct*>& pair, AZStd::vector<AZ::u32>& subIds, AZStd::unordered_set<AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry>& dependencyContainer, const AZStd::string& platform);
@@ -362,7 +362,7 @@ namespace AssetProcessor
 
         //! Search the database and the the source dependency maps for the the sourceUuid. if found returns the cached info
         bool SearchSourceInfoBySourceUUID(const AZ::Uuid& sourceUuid, AssetProcessorManager::SourceInfo& result);
-        
+
         //!  Adds the source to the database and returns the corresponding sourceDatabase Entry
         void AddSourceToDatabase(AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceDatabaseEntry, const ScanFolderInfo* scanFolder, QString relativeSourceFilePath);
 
@@ -378,9 +378,9 @@ namespace AssetProcessor
         // Load the old scan folders and match them up with new scan folders.  Make sure they're
         bool MigrateScanFolders();
 
-        //! Checks whether the AP is aware of any source file that has indicated the inputted 
-        //! source file as its dependency, and if found do we need to put that file back in the asset pipeline queue again  
-        QStringList GetSourceFilesWhichDependOnSourceFile(const QString& sourcePath);
+        //! Checks whether the AP is aware of any source file that has indicated the inputted
+        //! source file as its dependency, and if found do we need to put that file back in the asset pipeline queue again
+        QStringList GetSourceFilesWhichDependOnSourceFile(const QString& sourcePath, const ProductInfoList& updatedProducts);
 
         /** Given a BuilderSDK SourceFileDependency, try to find out what actual database source name is.
         *   If it cannot be resolved but a UUID is available, the string result will contain the UUID (and we will return true).
@@ -399,9 +399,9 @@ namespace AssetProcessor
         void UpdateWildcardDependencies(JobDetails& job, size_t jobDependencySlot, QStringList& resolvedDependencyList);
 
         //! Check whether the job can be analyzed by APM,
-        //! A job cannot be analyzed if any of its dependent job hasn't been fingerprinted  
+        //! A job cannot be analyzed if any of its dependent job hasn't been fingerprinted
         bool CanAnalyzeJob(const JobDetails& jobDetails);
-        
+
         //! Analyzes and forward the job to the RCController if the job requires processing
         void ProcessJob(JobDetails& jobDetails);
 
@@ -417,7 +417,7 @@ namespace AssetProcessor
         ThreadController<AssetCatalog>* m_assetCatalog;
         typedef QHash<QString, FileEntry> FileExamineContainer;
         FileExamineContainer m_filesToExamine; // order does not actually matter in this (yet)
-        
+
         // this map contains a list of source files that were discovered in the database before asset scanning began.
         // (so files from a previous run).
         // as asset scanning encounters files, it will remove them from this map, and when its done,
@@ -455,20 +455,20 @@ namespace AssetProcessor
         AZ::s64 m_highestJobRunKeySoFar = 0;
         AZStd::vector<JobToProcessEntry> m_jobEntries;
         AZStd::unordered_set<JobDetails> m_jobsToProcess;
-        //! This map is required to prevent multiple sourceFile modified events been send by the APM 
+        //! This map is required to prevent multiple sourceFile modified events been send by the APM
         AZStd::unordered_map<AZ::Uuid, qint64> m_sourceFileModTimeMap;
-        AZStd::unordered_map<JobIndentifier, AZ::u32> m_jobFingerprintMap; 
+        AZStd::unordered_map<JobIndentifier, AZ::u32> m_jobFingerprintMap;
         AZStd::unordered_map<JobDesc, AZStd::unordered_set<AZ::Uuid>> m_jobDescToBuilderUuidMap;
-        
+
         AZStd::unique_ptr<PathDependencyManager> m_pathDependencyManager;
         AZStd::unique_ptr<SourceFileRelocator> m_sourceFileRelocator;
 
         JobDiagnosticTracker m_jobDiagnosticTracker{};
-        
-        QSet<QString> m_checkFoldersToRemove; //!< List of folders that needs to be checked for removal later by AP  
+
+        QSet<QString> m_checkFoldersToRemove; //!< List of folders that needs to be checked for removal later by AP
         //! List of all scanfolders that are present in the database but not currently watched by AP
         AZStd::unordered_map<AZStd::string, AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry> m_scanFoldersInDatabase;
-        
+
         int m_numOfJobsToAnalyze = 0;
         bool m_alreadyQueuedCheckForIdle = false;
 
@@ -501,7 +501,7 @@ namespace AssetProcessor
           * full absolute paths.
           */
         void QueryAbsolutePathDependenciesRecursive(QString inputDatabasePath, SourceFilesForFingerprintingContainer& finalDependencyList, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency dependencyType, bool reverseQuery);
-        
+
         // we can't write a job to the database as not needing analysis the next time around,
         // until all jobs related to it are finished.  This is becuase the jobs themselves are not written to the database
         // so until all jobs are finished, we need to re-analyze the source file next time.
@@ -528,7 +528,7 @@ namespace AssetProcessor
             JobStarted,
             JobFinished,
         };
-        
+
         // ideally you would already have the absolute path to the file, and call this function with it:
         void UpdateAnalysisTrackerForFile(const char* fullPathToFile, AnalysisTrackerUpdateType updateType);
 
