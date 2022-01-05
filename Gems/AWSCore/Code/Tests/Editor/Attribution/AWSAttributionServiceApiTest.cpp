@@ -11,7 +11,7 @@
 #include <Editor/Attribution/AWSAttributionServiceApi.h>
 #include <Framework/JsonObjectHandler.h>
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <TestFramework/AWSCoreFixture.h>
 
 using namespace AWSCore;
 
@@ -36,7 +36,7 @@ namespace AWSCoreUnitTest
     };
 
     class AWSAttributionServiceApiTest
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public AWSCoreFixture
     {
     public:
         testing::NiceMock<JsonReaderMock> JsonReader;

@@ -6,7 +6,7 @@
  *
  */
 
-#include "PerlinGradientComponent.h"
+#include <GradientSignal/Components/PerlinGradientComponent.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Jobs/Job.h>
 #include <AzCore/Jobs/JobFunction.h>
