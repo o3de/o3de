@@ -1,13 +1,9 @@
 {
     "description": "",
-    "materialType": "Materials/Types/StandardPBR.materialtype",
     "parentMaterial": "Materials/Presets/PBR/metal_brass.material",
-    "propertyLayoutVersion": 3,
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 4,
     "properties": {
-        "occlusion": {
-            "diffuseTextureMap": "Objects/Lucy/Lucy_ao.tif",
-            "diffuseTextureMapUv": "Unwrapped"
-        },
         "baseColor": {
             "color": [
                 1.0,
@@ -17,7 +13,7 @@
             ],
             "factor": 1.0,
             "textureBlendMode": "Lerp",
-            "textureMap": "Objects/Lucy/Lucy_Stone_BaseColor.png",
+            "textureMap": "Hermanubis_Stone_BaseColor.png",
             "textureMapUv": "Unwrapped"
         },
         "clearCoat": {
@@ -39,13 +35,17 @@
         },
         "normal": {
             "flipY": true,
-            "textureMap": "Objects/Lucy/Lucy_Normal.png",
+            "textureMap": "Hermanubis_Normal.png",
             "textureMapUv": "Unwrapped"
+        },
+        "occlusion": {
+            "diffuseTextureMap": "Hermanubis_ao.tif",
+            "diffuseTextureMapUv": "Unwrapped"
         },
         "roughness": {
             "factor": 1.0,
-            "lowerBound": 0.15000000596046449,
-            "textureMap": "Objects/Lucy/Lucy_bronze_Roughness.png",
+            "lowerBound": 0.15000000596046448,
+            "textureMap": "Hermanubis_bronze_Roughness.png",
             "textureMapUv": "Unwrapped",
             "upperBound": 0.7300000190734863
         }
