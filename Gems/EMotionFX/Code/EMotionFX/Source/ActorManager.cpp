@@ -434,6 +434,20 @@ namespace EMotionFX
     }
 
 
+    ActorInstance* ActorManager::GetFirstEditorActorInstance() const
+    {
+        const size_t numActorInstances = m_actorInstances.size();
+        for (size_t i = 0; i < numActorInstances; ++i)
+        {
+            if (!m_actorInstances[i]->GetIsOwnedByRuntime())
+            {
+                return m_actorInstances[i];
+            }
+        }
+        return nullptr;
+    }
+
+
     const AZStd::vector<ActorInstance*>& ActorManager::GetActorInstanceArray() const
     {
         return m_actorInstances;

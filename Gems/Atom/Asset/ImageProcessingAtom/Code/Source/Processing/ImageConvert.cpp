@@ -193,7 +193,7 @@ namespace ImageProcessingAtom
                     }
 
                     m_image->Get()->Swizzle(swizzle.c_str());
-                    if (!m_input->m_presetSetting.m_discardAlpha)
+                    if (m_input->m_presetSetting.m_discardAlpha)
                     {
                         m_alphaContent = EAlphaContent::eAlphaContent_Absent;
                     }

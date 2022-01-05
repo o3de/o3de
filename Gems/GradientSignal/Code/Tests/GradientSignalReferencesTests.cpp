@@ -10,18 +10,18 @@
 #include <AzTest/AzTest.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Math/MathUtils.h>
-#include "Tests/GradientSignalTestMocks.h"
+#include <Tests/GradientSignalTestFixtures.h>
 
-#include <Source/Components/MixedGradientComponent.h>
-#include <Source/Components/ReferenceGradientComponent.h>
-#include <Source/Components/ShapeAreaFalloffGradientComponent.h>
-#include <Source/Components/SurfaceAltitudeGradientComponent.h>
-#include <Source/Components/SurfaceMaskGradientComponent.h>
-#include <Source/Components/SurfaceSlopeGradientComponent.h>
-#include <Source/Components/RandomGradientComponent.h>
-#include <Source/Components/ConstantGradientComponent.h>
-#include <Source/Components/DitherGradientComponent.h>
-#include <Components/ImageGradientComponent.h>
+#include <GradientSignal/Components/MixedGradientComponent.h>
+#include <GradientSignal/Components/ReferenceGradientComponent.h>
+#include <GradientSignal/Components/ShapeAreaFalloffGradientComponent.h>
+#include <GradientSignal/Components/SurfaceAltitudeGradientComponent.h>
+#include <GradientSignal/Components/SurfaceMaskGradientComponent.h>
+#include <GradientSignal/Components/SurfaceSlopeGradientComponent.h>
+#include <GradientSignal/Components/RandomGradientComponent.h>
+#include <GradientSignal/Components/ConstantGradientComponent.h>
+#include <GradientSignal/Components/DitherGradientComponent.h>
+#include <GradientSignal/Components/ImageGradientComponent.h>
 
 namespace UnitTest
 {
