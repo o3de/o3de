@@ -67,6 +67,16 @@ namespace AZ::Dom
         return Internal::ExtractTypeArgs<Value::ValueType>::GetTypeIndex<T>();
     }
 
+    const Array::ContainerType& Array::GetValues() const
+    {
+        return m_values;
+    }
+
+    const Object::ContainerType& Object::GetValues() const
+    {
+        return m_values;
+    }
+
     Node::Node(AZ::Name name)
         : m_name(AZStd::move(name))
     {
@@ -130,8 +140,8 @@ namespace AZ::Dom
         }
     }
 
-    Value::Value(const AZStd::any& value)
-        : m_value(AZStd::allocate_shared<AZStd::any>(StdValueAllocator(), value))
+    Value::Value(AZStd::any opaqueValue)
+        : m_value(AZStd::allocate_shared<AZStd::any>(StdValueAllocator(), AZStd::move(opaqueValue)))
     {
     }
 
@@ -660,7 +670,9 @@ namespace AZ::Dom
     Value& Value::AddMember(KeyType name, const Value& value)
     {
         Object::ContainerType& object = GetObjectInternal();
-        object.reserve((object.size() / Object::ReserveIncrement + 1) * Object::ReserveIncrement);
+        // Reserve in ReserveIncremenet chunks instead of the default vector doubling strategy
+        // Profiling has found that this is an aggregate performance gain for typical workflows
+        object.reserve(AZ_SIZE_ALIGN_UP(object.size() + 1, Object::ReserveIncrement));
         if (auto memberIt = FindMutableMember(name); memberIt != object.end())
         {
             memberIt->second = value;
@@ -833,7 +845,9 @@ namespace AZ::Dom
     Value& Value::ArrayPushBack(Value value)
     {
         Array::ContainerType& array = GetArrayInternal();
-        array.reserve((array.size() / Array::ReserveIncrement + 1) * Array::ReserveIncrement);
+        // Reserve in ReserveIncremenet chunks instead of the default vector doubling strategy
+        // Profiling has found that this is an aggregate performance gain for typical workflows
+        array.reserve(AZ_SIZE_ALIGN_UP(array.size() + 1, Array::ReserveIncrement));
         array.push_back(AZStd::move(value));
         return *this;
     }
@@ -1231,137 +1245,8 @@ namespace AZ::Dom
         return AZStd::make_unique<ValueWriter>(*this);
     }
 
-    bool Value::DeepCompareIsEqual(const Value& other) const
+    const Value::ValueType& Value::GetInternalValue() const
     {
-        if (IsString() && other.IsString())
-        {
-            // If we both hold the same ref counted string we don't need to do a full comparison
-            if (AZStd::holds_alternative<SharedStringType>(m_value) && m_value == other.m_value)
-            {
-                return true;
-            }
-            return GetString() == other.GetString();
-        }
-
-        if (m_value.index() != other.m_value.index())
-        {
-            return false;
-        }
-
-        return AZStd::visit(
-            [&](auto&& ourValue) -> bool
-            {
-                using Alternative = AZStd::decay_t<decltype(ourValue)>;
-                auto&& theirValue = AZStd::get<AZStd::remove_cvref_t<decltype(ourValue)>>(other.m_value);
-
-                if constexpr (AZStd::is_same_v<Alternative, AZStd::monostate>)
-                {
-                    return true;
-                }
-                else if constexpr (AZStd::is_same_v<Alternative, ObjectPtr>)
-                {
-                    if (ourValue == theirValue)
-                    {
-                        return true;
-                    }
-
-                    if (ourValue->m_values.size() != theirValue->m_values.size())
-                    {
-                        return false;
-                    }
-
-                    for (size_t i = 0; i < ourValue->m_values.size(); ++i)
-                    {
-                        const Object::EntryType& lhs = ourValue->m_values[i];
-                        const Object::EntryType& rhs = theirValue->m_values[i];
-                        if (lhs.first != rhs.first || !lhs.second.DeepCompareIsEqual(rhs.second))
-                        {
-                            return false;
-                        }
-                    }
-
-                    return true;
-                }
-                else if constexpr (AZStd::is_same_v<Alternative, ArrayPtr>)
-                {
-                    if (ourValue == theirValue)
-                    {
-                        return true;
-                    }
-
-                    if (ourValue->m_values.size() != theirValue->m_values.size())
-                    {
-                        return false;
-                    }
-
-                    for (size_t i = 0; i < ourValue->m_values.size(); ++i)
-                    {
-                        const Value& lhs = ourValue->m_values[i];
-                        const Value& rhs = theirValue->m_values[i];
-                        if (!lhs.DeepCompareIsEqual(rhs))
-                        {
-                            return false;
-                        }
-                    }
-
-                    return true;
-                }
-                else if constexpr (AZStd::is_same_v<Alternative, NodePtr>)
-                {
-                    if (ourValue == theirValue)
-                    {
-                        return true;
-                    }
-
-                    const Node& ourNode = *ourValue;
-                    const Node& theirNode = *theirValue;
-
-                    const Object::ContainerType& ourProperties = ourNode.GetProperties();
-                    const Object::ContainerType& theirProperties = theirNode.GetProperties();
-
-                    if (ourProperties.size() != theirProperties.size())
-                    {
-                        return false;
-                    }
-
-                    for (size_t i = 0; i < ourProperties.size(); ++i)
-                    {
-                        const Object::EntryType& lhs = ourProperties[i];
-                        const Object::EntryType& rhs = theirProperties[i];
-                        if (lhs.first != rhs.first || !lhs.second.DeepCompareIsEqual(rhs.second))
-                        {
-                            return false;
-                        }
-                    }
-
-                    const Array::ContainerType& ourChildren = ourNode.GetChildren();
-                    const Array::ContainerType& theirChildren = theirNode.GetChildren();
-
-                    for (size_t i = 0; i < ourChildren.size(); ++i)
-                    {
-                        const Value& lhs = ourChildren[i];
-                        const Value& rhs = theirChildren[i];
-                        if (!lhs.DeepCompareIsEqual(rhs))
-                        {
-                            return false;
-                        }
-                    }
-
-                    return true;
-                }
-                else
-                {
-                    return ourValue == theirValue;
-                }
-            },
-            m_value);
-    }
-
-    Value Value::DeepCopy(bool copyStrings) const
-    {
-        Value newValue;
-        AZStd::unique_ptr<Visitor> writer = newValue.GetWriteHandler();
-        Accept(*writer, copyStrings);
-        return newValue;
+        return m_value;
     }
 } // namespace AZ::Dom

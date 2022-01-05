@@ -41,10 +41,10 @@ namespace AZ::Dom::Tests
         {
             Value shallowCopy = m_value;
             EXPECT_EQ(m_value, shallowCopy);
-            EXPECT_TRUE(m_value.DeepCompareIsEqual(shallowCopy));
+            EXPECT_TRUE(Utils::DeepCompareIsEqual(m_value, shallowCopy));
 
-            Value deepCopy = m_value.DeepCopy();
-            EXPECT_TRUE(m_value.DeepCompareIsEqual(deepCopy));
+            Value deepCopy = Utils::DeepCopy(m_value);
+            EXPECT_TRUE(Utils::DeepCompareIsEqual(m_value, deepCopy));
         }
 
         Value m_value;

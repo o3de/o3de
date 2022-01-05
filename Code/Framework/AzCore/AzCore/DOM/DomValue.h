@@ -67,6 +67,9 @@ namespace AZ::Dom
         using Iterator = ContainerType::iterator;
         using ConstIterator = ContainerType::const_iterator;
         static constexpr const size_t ReserveIncrement = 4;
+        static_assert((ReserveIncrement & (ReserveIncrement - 1)) == 0, "ReserveIncremenet must be a power of 2");
+
+        const ContainerType& GetValues() const;
 
     private:
         ContainerType m_values;
@@ -86,6 +89,9 @@ namespace AZ::Dom
         using Iterator = ContainerType::iterator;
         using ConstIterator = ContainerType::const_iterator;
         static constexpr const size_t ReserveIncrement = 8;
+        static_assert((ReserveIncrement & (ReserveIncrement - 1)) == 0, "ReserveIncremenet must be a power of 2");
+
+        const ContainerType& GetValues() const;
 
     private:
         ContainerType m_values;
@@ -374,8 +380,9 @@ namespace AZ::Dom
         Visitor::Result Accept(Visitor& visitor, bool copyStrings) const;
         AZStd::unique_ptr<Visitor> GetWriteHandler();
 
-        bool DeepCompareIsEqual(const Value& other) const;
-        Value DeepCopy(bool copyStrings = true) const;
+        //! Gets the internal value of this Value. Note that this value's types may not correspond one-to-one with the Type enumeration,
+        //! as internally the same type might have different storage mechanisms. Where possible, prefer using the typed API.
+        const ValueType& GetInternalValue() const;
 
     private:
         const Node& GetNodeInternal() const;
@@ -385,7 +392,7 @@ namespace AZ::Dom
         const Array::ContainerType& GetArrayInternal() const;
         Array::ContainerType& GetArrayInternal();
 
-        explicit Value(const AZStd::any& opaqueValue);
+        explicit Value(AZStd::any opaqueValue);
 
         static_assert(
             sizeof(ValueType) == sizeof(ShortStringType) + sizeof(size_t), "ValueType should have no members larger than ShortStringType");
