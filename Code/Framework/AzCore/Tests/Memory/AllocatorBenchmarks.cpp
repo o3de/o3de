@@ -20,6 +20,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/Utils/Utils.h>
 
 #include <benchmark/benchmark.h>

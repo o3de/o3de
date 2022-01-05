@@ -133,13 +133,13 @@ namespace AZ
 
     BestFitExternalMapSchema::size_type BestFitExternalMapSchema::Resize(pointer_type, size_type)
     {
-        AZ_Assert(false, AZ_FUNCTION_SIGNATURE " unsupported");
+        AZ_Assert(false, "%s unsupported", AZ_FUNCTION_SIGNATURE);
         return 0;
     }
 
     BestFitExternalMapSchema::pointer_type BestFitExternalMapSchema::ReAllocate(pointer_type, size_type, size_type)
     {
-        AZ_Assert(false, AZ_FUNCTION_SIGNATURE " unsupported");
+        AZ_Assert(false, "%s unsupported", AZ_FUNCTION_SIGNATURE);
         return nullptr;
     }
 
