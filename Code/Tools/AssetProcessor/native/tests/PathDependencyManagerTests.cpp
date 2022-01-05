@@ -330,7 +330,7 @@ namespace UnitTests
         void SetupTestData()
         {
             ScanFolderDatabaseEntry scanFolder("folder", "test", "test", 0);
-            m_stateData->SetScanFolder(scanFolder);
+            ASSERT_TRUE(m_stateData->SetScanFolder(scanFolder));
 
             Util::CreateSourceJobAndProduct(
                 m_stateData.get(), scanFolder.m_scanFolderID, m_source1, m_job1, m_product1, "source1.txt", "product1.jpg");
@@ -360,7 +360,7 @@ namespace UnitTests
                     AZStd::string::format("folder/folder2/%d_*2.jpg", i).c_str());
             }
 
-            m_stateData->SetProductDependencies(m_dependencies);
+            ASSERT_TRUE(m_stateData->SetProductDependencies(m_dependencies));
 
             Util::CreateSourceJobAndProduct(
                 m_stateData.get(), scanFolder.m_scanFolderID, m_source2, m_job2, m_product2, "source2.txt", "product2.jpg");
@@ -368,7 +368,7 @@ namespace UnitTests
             auto job3 = JobDatabaseEntry(
                 m_source2.m_sourceID, "jobkey", 1111, "mac", AZ::Uuid::CreateRandom(), AzToolsFramework::AssetSystem::JobStatus::Completed,
                 4444);
-            EXPECT_TRUE(m_stateData->SetJob(job3));
+            ASSERT_TRUE(m_stateData->SetJob(job3));
 
             for (int i = 0; i < NumTestProducts; ++i)
             {
@@ -381,7 +381,7 @@ namespace UnitTests
                     AZ::Data::AssetType::CreateRandom());
             }
 
-            m_stateData->SetProducts(m_products);
+            ASSERT_TRUE(m_stateData->SetProducts(m_products));
         }
 
         void DoTest()
