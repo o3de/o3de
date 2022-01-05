@@ -287,8 +287,7 @@ def ProcessExpansionRule(sourceFiles, templateFiles, templateCache, outputDir, p
             else:
                 # Process all matches in one batch
                 # Due to the lack of wildcards in the output file, we've determined we'll glob all matching input files into the template conversion 
-                for filename in fnmatch.filter(sourceFiles, inputFiles):
-                    dataInputFiles = [os.path.abspath(file) for file in fnmatch.filter(sourceFiles, inputFiles)]
+                dataInputFiles = [os.path.abspath(file) for file in fnmatch.filter(sourceFiles, inputFiles)]
                 outputFileAbsolute = outputFile.replace("$path", ComputeOutputPath(dataInputFiles, projectDir, outputDir))
                 outputFileAbsolute = SanitizePath(outputFileAbsolute)
                 ProcessTemplateConversion(dataInputSet, dataInputFiles, templateFile, outputFileAbsolute, templateCache, dryrun, verbose)
