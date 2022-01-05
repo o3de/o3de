@@ -155,7 +155,7 @@ float DirectionalLightShadow::GetThickness(uint lightIndex, float3 shadowCoords[
         {
             const float depthBufferValue = shadowmap.Sample(PassSrg::LinearSampler, float3(shadowCoord.xy, indexOfCascade)).r;
             
-            // Normalized thickness (avoid negative values given by to precission or shrinking offsets)
+            // Normalized thickness (avoid negative values given by precission errors or shrinking offsets)
             const float deltaDepth = max(shadowCoord.z - depthBufferValue,0.0);
 
             const float viewSpaceThickness = ViewSrg::m_directionalLightShadows[lightIndex].m_far_minus_near * deltaDepth;            
