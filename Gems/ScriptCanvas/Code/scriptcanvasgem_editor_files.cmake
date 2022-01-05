@@ -106,8 +106,6 @@ set(FILES
     Editor/GraphCanvas/PropertyInterfaces/ScriptCanvasStringPropertyDataInterface.h
     Editor/Model/EntityMimeDataHandler.h
     Editor/Model/EntityMimeDataHandler.cpp
-    Editor/Model/LibraryDataModel.h
-    Editor/Model/LibraryDataModel.cpp
     Editor/Model/UnitTestBrowserFilterModel.h
     Editor/Model/UnitTestBrowserFilterModel.cpp
     Editor/Nodes/NodeCreateUtils.h
