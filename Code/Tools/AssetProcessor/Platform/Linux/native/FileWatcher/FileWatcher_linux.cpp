@@ -176,10 +176,25 @@ void FileWatcher::WatchFolderLoop()
 
                 if (event->mask & (IN_CREATE | IN_MOVED_TO))
                 {
-                    if (event->mask & IN_ISDIR /*&& m_recursive*/)
+                    if (event->mask & IN_ISDIR)
                     {
-                        // New Directory, add it to the watch
-                        m_platformImpl->AddWatchFolder(pathStr, true);
+                        // New Directory, see if it should be added to the watched directories
+                        // It is only added if it is a child of a recursively watched directory
+                        const auto found = AZStd::find_if(begin(m_folderWatchRoots), end(m_folderWatchRoots), [this, event](const WatchRoot& watchRoot)
+                        {
+                            return watchRoot.m_directory == m_platformImpl->m_handleToFolderMap[event->wd];
+                        });
+
+                        // If the path is not in m_folderWatchRoots, it must
+                        // be a new subdirectory of a subdirectory of some
+                        // other root that is being watched recursively.
+                        // Maintain the recursive nature of that root.
+                        const bool shouldAddFolder = (found == end(m_folderWatchRoots)) ? true : found->m_recursive;
+
+                        if (shouldAddFolder)
+                        {
+                            m_platformImpl->AddWatchFolder(pathStr, true);
+                        }
                     }
                     else
                     {
