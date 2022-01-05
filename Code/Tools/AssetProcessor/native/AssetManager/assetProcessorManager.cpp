@@ -766,7 +766,7 @@ namespace AssetProcessor
         // Asset Catalog may not realize that things are dirty by that point.
         QueueIdleCheck();
     }
-
+#pragma optimize("", off)
     void AssetProcessorManager::AssetProcessed_Impl()
     {
         m_processedQueued = false;
@@ -1092,6 +1092,7 @@ namespace AssetProcessor
                 newProduct.m_productName = newProductName.toUtf8().constData();
                 newProduct.m_assetType = product.m_productAssetType;
                 newProduct.m_subID = product.m_productSubID;
+                newProduct.m_hash = AssetUtilities::GetFileHash(product.m_productFileName.c_str());
 
                 //This is the legacy product guid, its only use is for backward compatibility as before the asset id's guid was created off of the relative product name.
                 // Right now when we query for an asset guid we first match on the source guid which is correct and secondarily match on the product guid. Eventually this will go away.
@@ -1103,6 +1104,16 @@ namespace AssetProcessor
                 //push back the new product into the new products list
                 newProducts.emplace_back(newProduct, &product);
                 newLegacySubIDs.push_back(product.m_legacySubIDs);
+            }
+
+            auto updatedProducts = newProducts;
+
+            if(!updatedProducts.empty())
+            {
+                for (const auto& priorProductEntry : priorProducts)
+                {
+                    updatedProducts.erase(AZStd::remove_if(updatedProducts.begin(), updatedProducts.end(), [&priorProductEntry](const auto& pair){ return pair.first == priorProductEntry; }), updatedProducts.end());
+                }
             }
 
             //now we want to remove any lingering product files from the previous build that no longer exist
@@ -1239,6 +1250,16 @@ namespace AssetProcessor
             for (const AZStd::string& affectedSourceFile : processedAsset.m_response.m_sourcesToReprocess)
             {
                 AssessFileInternal(affectedSourceFile.c_str(), false);
+            }
+
+            if(!updatedProducts.empty())
+            {
+                QStringList dependencies = GetSourceFilesWhichDependOnSourceFile(processedAsset.m_entry.GetAbsoluteSourcePath(), updatedProducts);
+
+                for(const auto& dependency : dependencies)
+                {
+                    AssessFileInternal(dependency, false);
+                }
             }
 
             //set the new products
@@ -1380,7 +1401,7 @@ namespace AssetProcessor
         // Asset Catalog may not realize that things are dirty by that point.
         QueueIdleCheck();
     }
-
+#pragma optimize("", on)
     void AssetProcessorManager::WriteProductTableInfo(AZStd::pair<AzToolsFramework::AssetDatabase::ProductDatabaseEntry, const AssetBuilderSDK::JobProduct*>& pair, AZStd::vector<AZ::u32>& subIds, AZStd::unordered_set<AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry>& dependencyContainer, const AZStd::string& platform)
     {
         AzToolsFramework::AssetDatabase::ProductDatabaseEntry& newProduct = pair.first;
@@ -1529,7 +1550,7 @@ namespace AssetProcessor
         {
             // since the scanner walks over EVERY file, there's no reason to process dependencies during scan but it is necessary to process deletes.
             // if modtime skipping is enabled, only changed files are processed, so we actually DO need to do this work when enabled
-            QStringList absoluteSourcePathList = GetSourceFilesWhichDependOnSourceFile(normalizedFilePath);
+            QStringList absoluteSourcePathList = GetSourceFilesWhichDependOnSourceFile(normalizedFilePath, {});
 
             for (const QString& absolutePath : absoluteSourcePathList)
             {
@@ -3750,7 +3771,8 @@ namespace AssetProcessor
                     entry.m_sourceFileInfo.m_databasePath.toUtf8().constData(),
                     thisEntry.toUtf8().constData(),
                     SourceFileDependencyEntry::DEP_SourceToSource,
-                    false);
+                    false,
+                    "");
                 newDependencies.push_back(AZStd::move(newDependencyEntry));
             }
 
@@ -3759,7 +3781,8 @@ namespace AssetProcessor
                 entry.m_sourceFileInfo.m_databasePath.toUtf8().constData(),
                 resolvedDatabaseName.toUtf8().constData(),
                 sourceDependency.second.m_sourceDependencyType == AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards ? SourceFileDependencyEntry::DEP_SourceLikeMatch : SourceFileDependencyEntry::DEP_SourceToSource,
-                !sourceDependency.second.m_sourceFileDependencyUUID.IsNull()); // If the UUID is null, then record that this dependency came from a (resolved) path
+                !sourceDependency.second.m_sourceFileDependencyUUID.IsNull(), // If the UUID is null, then record that this dependency came from a (resolved) path
+                "");
             newDependencies.push_back(AZStd::move(newDependencyEntry));
         }
 
@@ -3778,6 +3801,8 @@ namespace AssetProcessor
                     continue;
                 }
 
+                AZStd::string subIds = jobDependency.m_jobDependency.ConcatenateSubIds();
+
                 for (const auto& thisEntry : resolvedDependencyList)
                 {
                     SourceFileDependencyEntry newDependencyEntry(
@@ -3785,7 +3810,8 @@ namespace AssetProcessor
                         entry.m_sourceFileInfo.m_databasePath.toUtf8().constData(),
                         thisEntry.toUtf8().constData(),
                         SourceFileDependencyEntry::DEP_JobToJob,   // significant line in this code block
-                        false);
+                        false,
+                        subIds.c_str());
                     newDependencies.push_back(AZStd::move(newDependencyEntry));
                 }
 
@@ -3794,7 +3820,8 @@ namespace AssetProcessor
                     entry.m_sourceFileInfo.m_databasePath.toUtf8().constData(),
                     resolvedDatabaseName.toUtf8().constData(),
                     jobDependency.m_jobDependency.m_sourceFile.m_sourceDependencyType == AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards ? SourceFileDependencyEntry::DEP_SourceLikeMatch : SourceFileDependencyEntry::DEP_JobToJob,    // significant line in this code block
-                    !entry.m_sourceFileInfo.m_uuid.IsNull());
+                    !entry.m_sourceFileInfo.m_uuid.IsNull(),
+                    subIds.c_str());
                 newDependencies.push_back(AZStd::move(newDependencyEntry));
 
             }
@@ -4055,8 +4082,12 @@ namespace AssetProcessor
         }
     }
 
-    QStringList AssetProcessorManager::GetSourceFilesWhichDependOnSourceFile(const QString& sourcePath)
+    QStringList AssetProcessorManager::GetSourceFilesWhichDependOnSourceFile(const QString& sourcePath, const ProductInfoList& updatedProducts)
     {
+        // If updatedProducts != empty, we only return dependencies which match a subId in the updatedProducts list (called after process job to start dependencies which do care about specific products)
+        // If updatedProducts == empty, we only return dependencies with EMPTY m_subIds (called before create jobs to start dependencies which don't care about specific products)
+        // Note that dependencies with subIds are always JOB dependencies, pure source dependencies will never have any subIds
+
         // The purpose of this function is to find anything that depends on this given file, so that they can be added to the queue.
         // this is NOT a recursive query, because recursion will happen automatically as those files are in turn
         // analyzed.
@@ -4067,8 +4098,45 @@ namespace AssetProcessor
         QString databasePath;
         QString scanFolder;
 
-        auto callbackFunction = [this, &absoluteSourceFilePathQueue](SourceFileDependencyEntry& entry)
+        auto callbackFunction = [this, &absoluteSourceFilePathQueue, &updatedProducts](SourceFileDependencyEntry& entry)
         {
+            if(updatedProducts.empty() != entry.m_subIds.empty())
+            {
+                return true;
+            }
+
+            if(!updatedProducts.empty())
+            {
+                // Filter the dependencies to those which match the list of updated products
+                bool matched = false;
+
+                AZStd::vector<AZStd::string> dependencyProducts;
+                AZ::StringFunc::Tokenize(entry.m_subIds, dependencyProducts, ",", false, false);
+
+                for(const AZStd::string& dependencySubId : dependencyProducts)
+                {
+                    for(const auto& product : updatedProducts)
+                    {
+                        int subId = 0;
+                        if (AZ::StringFunc::LooksLikeInt(dependencySubId.c_str(), &subId) && static_cast<AZ::u32>(subId) == product.first.m_subID)
+                        {
+                            matched = true;
+                            break;
+                        }
+                    }
+
+                    if(matched)
+                    {
+                        break;
+                    }
+                }
+
+                if (!matched)
+                {
+                    return true;
+                }
+            }
+
             QString relativeDatabaseName = QString::fromUtf8(entry.m_source.c_str());
             QString absolutePath = m_platformConfig->FindFirstMatchingFile(relativeDatabaseName);
             if (!absolutePath.isEmpty())
