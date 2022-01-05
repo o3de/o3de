@@ -47,7 +47,6 @@ namespace AssetProcessor
 
 class ApplicationServer;
 class ConnectionManager;
-class FolderWatchCallbackEx;
 class ControlRequestHandler;
 
 class ApplicationManagerBase
@@ -192,9 +191,7 @@ protected:
     bool m_sourceControlReady = false;
     bool m_fullIdle = false;
 
-    AZStd::vector<AZStd::unique_ptr<FolderWatchCallbackEx> > m_folderWatches;
     FileWatcher m_fileWatcher;
-    AZStd::vector<int> m_watchHandles;
     AssetProcessor::PlatformConfiguration* m_platformConfiguration = nullptr;
     AssetProcessor::AssetProcessorManager* m_assetProcessorManager = nullptr;
     AssetProcessor::AssetCatalog* m_assetCatalog = nullptr;
