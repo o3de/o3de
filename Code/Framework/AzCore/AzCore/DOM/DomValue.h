@@ -103,9 +103,9 @@ namespace AZ::Dom
     {
     public:
         Node() = default;
+        Node(const Node&) = default;
+        Node(Node&&) = default;
         explicit Node(AZ::Name name);
-        explicit Node(const Node&) = default;
-        explicit Node(Node&&) = default;
 
         Node& operator=(const Node&) = default;
         Node& operator=(Node&&) = default;
@@ -174,7 +174,7 @@ namespace AZ::Dom
             double,
             // Bool
             bool,
-            // StringType
+            // String
             AZStd::string_view,
             SharedStringType,
             ShortStringType,
@@ -280,28 +280,28 @@ namespace AZ::Dom
         // Array API (also used by Node)...
         Value& SetArray();
 
-        size_t Size() const;
-        size_t Capacity() const;
-        bool Empty() const;
-        void Clear();
+        size_t ArraySize() const;
+        size_t ArrayCapacity() const;
+        bool IsArrayEmpty() const;
+        void ClearArray();
 
         Value& operator[](size_t index);
         const Value& operator[](size_t index) const;
 
-        Value& MutableAt(size_t index);
-        const Value& At(size_t index) const;
+        Value& MutableArrayAt(size_t index);
+        const Value& ArrayAt(size_t index) const;
 
-        Array::ConstIterator Begin() const;
-        Array::ConstIterator End() const;
-        Array::Iterator Begin();
-        Array::Iterator End();
+        Array::ConstIterator ArrayBegin() const;
+        Array::ConstIterator ArrayEnd() const;
+        Array::Iterator ArrayBegin();
+        Array::Iterator ArrayEnd();
 
-        Value& Reserve(size_t newCapacity);
-        Value& PushBack(Value value);
-        Value& PopBack();
+        Value& ArrayReserve(size_t newCapacity);
+        Value& ArrayPushBack(Value value);
+        Value& ArrayPopBack();
 
-        Array::Iterator Erase(Array::ConstIterator pos);
-        Array::Iterator Erase(Array::ConstIterator first, Array::ConstIterator last);
+        Array::Iterator ArrayErase(Array::ConstIterator pos);
+        Array::Iterator ArrayErase(Array::ConstIterator first, Array::ConstIterator last);
 
         Array::ContainerType& GetMutableArray();
         const Array::ContainerType& GetArray() const;
@@ -365,7 +365,7 @@ namespace AZ::Dom
         //! serialize an opaque type into a DOM value instead, as serializers
         //! and other systems will have no means of dealing with fully arbitrary
         //! values.
-        void SetOpaqueValue(const AZStd::any&);
+        void SetOpaqueValue(AZStd::any);
 
         // Null API...
         void SetNull();

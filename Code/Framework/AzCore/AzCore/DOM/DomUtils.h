@@ -16,5 +16,5 @@ namespace AZ::Dom::Utils
     Visitor::Result ReadFromString(Backend& backend, AZStd::string_view string, AZ::Dom::Lifetime lifetime, Visitor& visitor);
     Visitor::Result ReadFromStringInPlace(Backend& backend, AZStd::string& string, Visitor& visitor);
 
-    AZ::Outcome<Value, AZStd::string> WriteToValue(Backend::WriteCallback writeCallback);
+    AZ::Outcome<Value, AZStd::string> WriteToValue(const Backend::WriteCallback& writeCallback);
 } // namespace AZ::Dom::Utils

@@ -77,7 +77,7 @@ namespace AZ::Dom::Benchmark
                 Value array(Type::Array);
                 for (int i = 0; i < entryCount; ++i)
                 {
-                    array.PushBack(createEntry(i));
+                    array.ArrayPushBack(createEntry(i));
                 }
                 return array;
             };
@@ -152,7 +152,7 @@ namespace AZ::Dom::Benchmark
         for (auto _ : state)
         {
             Value copy = original;
-            copy["entries"]["Key0"].PushBack(42);
+            copy["entries"]["Key0"].ArrayPushBack(42);
             TakeAndDiscardWithoutTimingDtor(AZStd::move(copy), state);
         }
 

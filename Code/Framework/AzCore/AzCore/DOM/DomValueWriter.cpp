@@ -129,7 +129,7 @@ namespace AZ::Dom
                 AZStd::string::format("AZ::Dom::ValueWriter: %s called from within a different container type", endMethodName));
         }
 
-        if (static_cast<AZ::u64>(buffer.m_attributes.size()) != attributeCount)
+        if (aznumeric_cast<AZ::u64>(buffer.m_attributes.size()) != attributeCount)
         {
             return VisitorFailure(
                 VisitorErrorCode::InternalError,
@@ -138,7 +138,7 @@ namespace AZ::Dom
                     buffer.m_attributes.size()));
         }
 
-        if (static_cast<AZ::u64>(buffer.m_elements.size()) != elementCount)
+        if (aznumeric_cast<AZ::u64>(buffer.m_elements.size()) != elementCount)
         {
             return VisitorFailure(
                 VisitorErrorCode::InternalError,
