@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZ_BEST_FIT_EXT_MAP_ALLOCATOR_H
-#define AZ_BEST_FIT_EXT_MAP_ALLOCATOR_H
+#pragma once
 
 #include <AzCore/Memory/Memory.h>
 
@@ -72,8 +71,4 @@ namespace AZ
         Descriptor m_desc;
     };
 }
-
-#endif // AZ_BEST_FIT_EXT_MAP_ALLOCATOR_H
-#pragma once
-
 

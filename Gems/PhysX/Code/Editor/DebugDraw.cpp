@@ -56,9 +56,9 @@ namespace PhysX
         bool IsDrawColliderReadOnly()
         {
             bool helpersVisible = false;
-            AzToolsFramework::EditorRequestBus::BroadcastResult(helpersVisible,
-                &AzToolsFramework::EditorRequests::DisplayHelpersVisible);
-            // if helpers are visible, draw colliders is NOT read only and can be changed.
+            AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::BroadcastResult(
+                helpersVisible, &AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Events::HelpersVisible);
+            // if helpers are visible, draw colliders is not read only and can be changed
             return !helpersVisible;
         }
 

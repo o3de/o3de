@@ -136,6 +136,12 @@ namespace UnitTest
         auto jsonOutcome = AZ::JsonSerializationUtils::ReadJsonString(Data::jsonPrefab);
         ASSERT_TRUE(jsonOutcome);
 
+        // Register the asset to generate an AssetId in the catalog
+        AZ::Data::AssetId assetId;
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+            assetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, "fake_prefab.procprefab",
+            azrtti_typeid<AZ::Prefab::ProceduralPrefabAsset>(), true);
+
         auto prefabGroup = AZStd::make_shared<AZ::SceneAPI::SceneData::PrefabGroup>();
         prefabGroup.get()->SetId(AZ::Uuid::CreateRandom());
         prefabGroup.get()->SetName("fake_prefab");

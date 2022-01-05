@@ -17,7 +17,7 @@
 #include <AzFramework/Input/Channels/InputChannelDigitalWithSharedPosition2D.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
-
+#include <AzFramework/Input/Events/InputChannelEventListener.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 #include <QEvent>
@@ -34,7 +34,9 @@ namespace AzToolsFramework
 {
     //! Maps events from the Qt input system to synthetic InputChannels in AzFramework
     //! that can be used by AzFramework::ViewportControllers.
-    class QtEventToAzInputMapper final : public QObject
+    class QtEventToAzInputMapper final
+        : public QObject
+        , public AzFramework::InputChannelNotificationBus::Handler
     {
         Q_OBJECT
 
@@ -68,6 +70,11 @@ namespace AzToolsFramework
         //! \param channel The AZ input channel that has been updated.
         //! \param event The underlying Qt event that triggered this change, if applicable.
         void InputChannelUpdated(const AzFramework::InputChannel* channel, QEvent* event);
+
+    protected:
+        // AzFramework::InputChannelNotificationBus overrides ...
+        AZ::s32 GetPriority() const override;
+        void OnInputChannelEvent(const AzFramework::InputChannel& inputChannel, bool& hasBeenConsumed) override;
 
     private:
         // Gets an input channel of the specified type by ID.
@@ -161,6 +168,8 @@ namespace AzToolsFramework
         AZStd::unordered_set<Qt::Key> m_highPriorityKeys;
         // A lookup table for AZ input channel ID -> physical input channel on our mouse or keyboard device.
         AZStd::unordered_map<AzFramework::InputChannelId, AzFramework::InputChannel*> m_channels;
+        // The crc32 of the last consumed input event's channel id.
+        AZ::Crc32 m_lastConsumedInputChannelIdCrc32 = 0;
         // Where the mouse cursor was at the last cursor event.
         QPoint m_previousGlobalCursorPosition;
         // The source widget to map events from, used to calculate the relative mouse position within the widget bounds.

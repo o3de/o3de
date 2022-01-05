@@ -2504,6 +2504,28 @@ namespace AzToolsFramework
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
+        // do not create manipulators for the container entity of the focused prefab.
+        if (auto prefabFocusPublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusPublicInterface>::Get())
+        {
+            AzFramework::EntityContextId editorEntityContextId = GetEntityContextId();
+            if (AZ::EntityId focusRoot = prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId);
+                focusRoot.IsValid())
+            {
+                m_selectedEntityIds.erase(focusRoot);
+            }
+        }
+
+        // do not create manipulators for any entities marked as read only
+        if (auto readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get())
+        {
+            AZStd::erase_if(
+                m_selectedEntityIds,
+                [readOnlyEntityPublicInterface](auto entityId)
+                {
+                    return readOnlyEntityPublicInterface->IsReadOnly(entityId);
+                });
+        }
+
         // note: create/destroy pattern to be addressed
         DestroyManipulators(m_entityIdManipulators);
         CreateEntityIdManipulators();
@@ -3238,13 +3260,34 @@ namespace AzToolsFramework
     void EditorTransformComponentSelection::PopulateEditorGlobalContextMenu(
         QMenu* menu, [[maybe_unused]] const AZ::Vector2& point, [[maybe_unused]] int flags)
     {
-        QAction* action = menu->addAction(QObject::tr(TogglePivotTitleRightClick));
-        QObject::connect(
-            action, &QAction::triggered, action,
-            [this]
+        // Don't show the Toggle Pivot option if any read-only entities are in the current selection
+        // We need to request the selected entities instead of just using the m_selectedEntities variable
+        // because we filter out any read-only entities from the m_selectedEntities so that the manipulators
+        // will be hidden
+        EntityIdList selectedEntityIds;
+        ToolsApplicationRequests::Bus::BroadcastResult(selectedEntityIds, &ToolsApplicationRequests::GetSelectedEntities);
+
+        auto readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get();
+        bool readOnlyEntityInSelection = false;
+        for (const auto& entityId : selectedEntityIds)
+        {
+            if (readOnlyEntityPublicInterface->IsReadOnly(entityId))
             {
-                ToggleCenterPivotSelection();
-            });
+                readOnlyEntityInSelection = true;
+                break;
+            }
+        }
+
+        if (!readOnlyEntityInSelection)
+        {
+            QAction* action = menu->addAction(QObject::tr(TogglePivotTitleRightClick));
+            QObject::connect(
+                action, &QAction::triggered, action,
+                [this]
+                {
+                    ToggleCenterPivotSelection();
+                });
+        }
     }
 
     void EditorTransformComponentSelection::BeforeEntitySelectionChanged()
@@ -3565,10 +3608,9 @@ namespace AzToolsFramework
         debugDisplay.SetLineWidth(1.0f);
 
         const float labelOffset = ed_viewportGizmoAxisLabelOffset;
-        const float screenScale = GetScreenDisplayScaling(viewportId);
-        const auto labelXScreenPosition = (gizmoStart + (gizmoAxisX * labelOffset)) * editorCameraState.m_viewportSize * screenScale;
-        const auto labelYScreenPosition = (gizmoStart + (gizmoAxisY * labelOffset)) * editorCameraState.m_viewportSize * screenScale;
-        const auto labelZScreenPosition = (gizmoStart + (gizmoAxisZ * labelOffset)) * editorCameraState.m_viewportSize * screenScale;
+        const auto labelXScreenPosition = (gizmoStart + (gizmoAxisX * labelOffset)) * editorCameraState.m_viewportSize;
+        const auto labelYScreenPosition = (gizmoStart + (gizmoAxisY * labelOffset)) * editorCameraState.m_viewportSize;
+        const auto labelZScreenPosition = (gizmoStart + (gizmoAxisZ * labelOffset)) * editorCameraState.m_viewportSize;
 
         // draw the label of of each axis for the gizmo
         const float labelSize = ed_viewportGizmoAxisLabelSize;
@@ -3615,29 +3657,6 @@ namespace AzToolsFramework
         m_selectedEntityIds.clear();
         m_selectedEntityIds.reserve(selectedEntityIds.size());
         AZStd::copy(selectedEntityIds.begin(), selectedEntityIds.end(), AZStd::inserter(m_selectedEntityIds, m_selectedEntityIds.end()));
-
-        // Do not create manipulators for the container entity of the focused prefab.
-        if (auto prefabFocusPublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusPublicInterface>::Get())
-        {
-            AzFramework::EntityContextId editorEntityContextId = GetEntityContextId();
-            if (AZ::EntityId focusRoot = prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId);
-                focusRoot.IsValid())
-            {
-                m_selectedEntityIds.erase(focusRoot);
-            }
-        }
-
-        // Do not create manipulators for any entities marked as read only
-        if (auto readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get())
-        {
-            AZStd::erase_if(
-                m_selectedEntityIds,
-                [readOnlyEntityPublicInterface](auto entityId)
-                {
-                    return readOnlyEntityPublicInterface->IsReadOnly(entityId);
-                }
-            );
-        }
     }
 
     void EditorTransformComponentSelection::OnTransformChanged(

@@ -13,54 +13,10 @@
 #include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Transform.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
-
-namespace LmbrCentral
-{
-    class MeshAsset;
-}
+#include <GradientSignal/GradientTransform.h>
 
 namespace GradientSignal
 {
-    enum class WrappingType : AZ::u8
-    {
-        None = 0,
-        ClampToEdge,
-        Mirror,
-        Repeat,
-        ClampToZero,
-    };
-
-    enum class TransformType : AZ::u8
-    {
-        World_ThisEntity = 0,
-        Local_ThisEntity,
-        World_ReferenceEntity,
-        Local_ReferenceEntity,
-        World_Origin,
-        Relative,
-    };
-
-    AZ::Vector3 GetUnboundedPointInAabb(const AZ::Vector3& point, const AZ::Aabb& bounds);
-    AZ::Vector3 GetClampedPointInAabb(const AZ::Vector3& point, const AZ::Aabb& bounds);
-    AZ::Vector3 GetMirroredPointInAabb(const AZ::Vector3& point, const AZ::Aabb& bounds);
-    AZ::Vector3 GetRelativePointInAabb(const AZ::Vector3& point, const AZ::Aabb& bounds);
-
-    inline AZ::Vector3 GetWrappedPointInAabb(const AZ::Vector3& point, const AZ::Aabb& bounds)
-    {
-        return AZ::Vector3(
-            AZ::Wrap(point.GetX(), bounds.GetMin().GetX(), bounds.GetMax().GetX()),
-            AZ::Wrap(point.GetY(), bounds.GetMin().GetY(), bounds.GetMax().GetY()),
-            AZ::Wrap(point.GetZ(), bounds.GetMin().GetZ(), bounds.GetMax().GetZ()));
-    }
-
-    inline AZ::Vector3 GetNormalizedPointInAabb(const AZ::Vector3& point, const AZ::Aabb& bounds)
-    {
-        return AZ::Vector3(
-            AZ::LerpInverse(bounds.GetMin().GetX(), bounds.GetMax().GetX(), point.GetX()),
-            AZ::LerpInverse(bounds.GetMin().GetY(), bounds.GetMax().GetY(), point.GetY()),
-            AZ::LerpInverse(bounds.GetMin().GetZ(), bounds.GetMax().GetZ(), point.GetZ()));
-    }
-
     inline void GetObbParamsFromShape(const AZ::EntityId& entity, AZ::Aabb& bounds, AZ::Matrix3x4& worldToBoundsTransform)
     {
         //get bound and transform data for associated shape
@@ -120,4 +76,5 @@ namespace GradientSignal
 
         return AZ::Lerp(outputMin, outputMax, inputCorrected);
     }
+
 } // namespace GradientSignal

@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZ_POOL_ALLOCATION_SCHEME_H
-#define AZ_POOL_ALLOCATION_SCHEME_H
+#pragma once
 
 #include <AzCore/Memory/SystemAllocator.h>
 
@@ -162,8 +161,3 @@ namespace AZ
     template<class Allocator>
     AZ_THREAD_LOCAL ThreadPoolData* ThreadPoolSchemaHelper<Allocator>::m_threadData = 0;
 }
-
-#endif // AZ_POOL_ALLOCATION_SCHEME_H
-#pragma once
-
-

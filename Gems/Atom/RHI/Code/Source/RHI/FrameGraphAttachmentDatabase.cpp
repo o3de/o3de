@@ -209,7 +209,11 @@ namespace AZ
             return nullptr;
         }
 
-        const ScopeAttachment* FrameGraphAttachmentDatabase::FindScopeAttachment(const ScopeId& scopeId, const AttachmentId& attachmentId, size_t index) const
+        const ScopeAttachment* FrameGraphAttachmentDatabase::FindScopeAttachment(
+            const ScopeId& scopeId,
+            const AttachmentId& attachmentId,
+            const ImageViewDescriptor& imageViewDescriptor,
+            const RHI::ScopeAttachmentUsage attachmentUsage) const
         {
             const ScopeAttachmentPtrList* scopeAttachmentList = FindScopeAttachmentList(scopeId, attachmentId);
             if (!scopeAttachmentList)
@@ -217,21 +221,93 @@ namespace AZ
                 return nullptr;
             }
 
-            if (index >= scopeAttachmentList->size())
+            if (scopeAttachmentList->size() > 1)
             {
-                AZ_Error("AttachmentDatabase", false,
-                    "Attempting to access scope attachment [%d], but list only has [%d] elements. ScopeId: [%s]. AttachmentId: [%s]",
-                    index,
-                    scopeAttachmentList->size(),
-                    scopeId.GetCStr(),
-                    attachmentId.GetCStr());
+                //Find the attachment with the same view and usage
+                auto findIter = AZStd::find_if(scopeAttachmentList->begin(), scopeAttachmentList->end(), [&](const ScopeAttachment* scopeAttacment)
+                {
+                    const ImageScopeAttachment* imageAttachment = azrtti_cast<const ImageScopeAttachment*>(scopeAttacment);
+                    bool isSameView = imageAttachment->GetDescriptor().m_imageViewDescriptor.IsSameSubResource(imageViewDescriptor);
 
+                    if (isSameView)
+                    {
+                        AZStd::vector<ScopeAttachmentUsageAndAccess> usageAndAccessVec = imageAttachment->GetUsageAndAccess();
+                        auto usageAccessIter = AZStd::find_if(usageAndAccessVec.begin(), usageAndAccessVec.end(), [&](const ScopeAttachmentUsageAndAccess usageAndAccess)
+                        {
+                            return usageAndAccess.m_usage == attachmentUsage;
+                        });
+
+                        return usageAccessIter != usageAndAccessVec.end();
+                    }
+                    return false;
+                });
+
+                if (findIter != scopeAttachmentList->end())
+                {
+                    return *findIter;
+                }
+
+                AZ_Error("AttachmentDatabase", false, "Couldnt find ScopeAttachment %s with the same view and usage for scope %s", attachmentId.GetCStr(), scopeId.GetCStr());
+                return nullptr;
+            }
+            else
+            {
+                return (*scopeAttachmentList)[0];
+            }
+        }
+
+        const ScopeAttachment* FrameGraphAttachmentDatabase::FindScopeAttachment(
+            const ScopeId& scopeId,
+            const AttachmentId& attachmentId,
+            const RHI::ScopeAttachmentUsage attachmentUsage) const
+        {
+            const ScopeAttachmentPtrList* scopeAttachmentList = FindScopeAttachmentList(scopeId, attachmentId);
+            if (!scopeAttachmentList)
+            {
                 return nullptr;
             }
 
-            return (*scopeAttachmentList)[index];
-        }
+            //More than one entry indicates that the same attachment is used multiple times in a scope. 
+            if (scopeAttachmentList->size() > 1)
+            {
+                //Find the attachment with the same usage
+                auto findIter = AZStd::find_if(scopeAttachmentList->begin(), scopeAttachmentList->end(), [&](const ScopeAttachment* scopeAttacment)
+                {
+                    AZStd::vector<ScopeAttachmentUsageAndAccess> usageAndAccessVec = scopeAttacment->GetUsageAndAccess();
+                    auto usageAccessIter = AZStd::find_if(usageAndAccessVec.begin(), usageAndAccessVec.end(), [&](const ScopeAttachmentUsageAndAccess usageAndAccess)
+                    {
+                        return usageAndAccess.m_usage == attachmentUsage;
+                    });
 
+                    return usageAccessIter != usageAndAccessVec.end();
+                });
+
+                if (findIter != scopeAttachmentList->end())
+                {
+                    return *findIter;
+                }
+
+                AZ_Error("AttachmentDatabase", false, "Couldnt find ScopeAttachment %s with the same view and usage for scope %s", attachmentId.GetCStr(), scopeId.GetCStr());
+                return nullptr;
+            }
+            else
+            {
+                return (*scopeAttachmentList)[0];
+            }
+        }
+        
+        const ScopeAttachment* FrameGraphAttachmentDatabase::FindScopeAttachment(const ScopeId& scopeId, const AttachmentId& attachmentId) const
+        {
+            const ScopeAttachmentPtrList* scopeAttachmentList = FindScopeAttachmentList(scopeId, attachmentId);
+            if (!scopeAttachmentList)
+            {
+                return nullptr;
+            }
+
+            AZ_Error( "AttachmentDatabase", scopeAttachmentList->size() > 0, "Couldnt fine Scopeattachment %s for scope %s", attachmentId.GetCStr(), scopeId.GetCStr());
+            return (*scopeAttachmentList)[0];
+        }
+        
         const AZStd::vector<ImageFrameAttachment*>& FrameGraphAttachmentDatabase::GetImageAttachments() const
         {
             return m_imageAttachments;

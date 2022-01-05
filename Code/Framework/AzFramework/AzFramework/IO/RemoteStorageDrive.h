@@ -53,7 +53,7 @@ namespace AzFramework
 
     protected:
         static constexpr AZ::s32 s_maxRequests = 1;
-            
+
         void ReadFile(AZ::IO::FileRequest* request);
         bool CancelRequest(AZ::IO::FileRequest* cancelRequest, AZ::IO::FileRequestPtr& target);
         void FileExistsRequest(AZ::IO::FileRequest* request);

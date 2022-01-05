@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZ_BEST_FIT_EXT_MAP_ALLOCATION_SCHEME_H
-#define AZ_BEST_FIT_EXT_MAP_ALLOCATION_SCHEME_H
+#pragma once
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Memory/Memory.h>
@@ -78,8 +77,3 @@ namespace AZ
         AllocMapType        m_allocChunksMap;
     };
 }
-
-#endif // AZ_BEST_FIT_EXT_MAP_ALLOCATION_SCHEME_H
-#pragma once
-
-

@@ -29,7 +29,6 @@
 #include <Editor/Settings.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/Controller.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/LogTraits.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
 
@@ -188,6 +187,11 @@ namespace ScriptCanvasEditor
             OnButtonPressUpgradeImplementation(info);
         }
 
+        void Controller::OnUpgradeDependencyWaitInterval([[maybe_unused]] const SourceHandle& info)
+        {
+            AddLogEntries();
+        }
+
         void Controller::OnUpgradeModificationBegin([[maybe_unused]] const ModifyConfiguration& config, const SourceHandle& info)
         {
             for (auto* item : FindTableItems(info))
@@ -210,6 +214,8 @@ namespace ScriptCanvasEditor
             else
             {
                 VE_LOG("Failed to modify %s: %s", result.asset.Path().c_str(), result.errorMessage.data());
+                AZ_Warning(ScriptCanvas::k_VersionExplorerWindow.data()
+                    , false, "Failed to modify %s: %s", result.asset.Path().c_str(), result.errorMessage.data());
             }
 
             for (auto* item : FindTableItems(info))

@@ -629,23 +629,23 @@ void UiCanvasManager::RenderLoadedCanvases()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasManager::DestroyLoadedCanvases(bool keepCrossLevelCanvases)
 {
-    // Delete all the canvases loaded in game (but not loaded in editor)
-    for (auto iter = m_loadedCanvases.begin(); iter != m_loadedCanvases.end(); ++iter)
+    // Find all the canvases loaded in game (but not loaded in editor) that need destroying
+    AZStd::vector<AZ::EntityId> canvasesToUnload;
+    canvasesToUnload.reserve(m_loadedCanvases.size());
+    for (auto canvas : m_loadedCanvases)
     {
-        auto canvas = *iter;
-
         if (!(keepCrossLevelCanvases && canvas->GetKeepLoadedOnLevelUnload()))
         {
-            // no longer used by game so delete the canvas
-            delete canvas->GetEntity();
-            *iter = nullptr;    // mark for removal from container
+            canvasesToUnload.push_back(canvas->GetEntityId());
         }
     }
 
-    // now remove the nullptr entries
-    m_loadedCanvases.erase(
-        std::remove(m_loadedCanvases.begin(), m_loadedCanvases.end(), nullptr),
-        m_loadedCanvases.end());
+    // Unload the canvases. This will also send the OnCanvasUnloaded notification which
+    // ensures that components such as UiCanvasAsserRefComponent can clean up properly
+    for (auto canvasEntityId : canvasesToUnload)
+    {
+        UnloadCanvas(canvasEntityId);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -999,26 +999,23 @@ void UiCanvasManager::DebugDisplayCanvasData(int setting) const
 
     CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
-    float xOffset = 20.0f;
-    float yOffset = 20.0f;
+    float dpiScale = draw2d->GetViewportDpiScalingFactor();
+    float xOffset = 20.0f * dpiScale;
+    float yOffset = 20.0f * dpiScale;
 
     const int elementNameFieldLength = 20;
 
     auto blackTexture = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::Black);
-
     float textOpacity = 1.0f;
-    float backgroundRectOpacity = 0.75f;
+    float backgroundRectOpacity = 0.0f; // 0.75f; // [GHI #6515] Reenable background rect
 
     const AZ::Vector3 white(1.0f, 1.0f, 1.0f);
     const AZ::Vector3 grey(0.5f, 0.5f, 0.5f);
     const AZ::Vector3 red(1.0f, 0.3f, 0.3f);
     const AZ::Vector3 blue(0.3f, 0.3f, 1.0f);
 
-    // If the viewport is narrow then a font size of 16 might be too large, so we use a size between 12 and 16 depending
-    // on the viewport width.
-    float fontSize(draw2d->GetViewportWidth() / 75.f);
-    fontSize = AZ::GetClamp(fontSize, 12.f, 16.f);
-    const float lineSpacing = fontSize;
+    const float fontSize = 8.0f;
+    const float lineSpacing = 20.0f * dpiScale;
 
     // local function to write a line of text (with a background rect) and increment Y offset
     AZStd::function<void(const char*, const AZ::Vector3&)> WriteLine = [&](const char* buffer, const AZ::Vector3& color)
@@ -1157,13 +1154,13 @@ void UiCanvasManager::DebugDisplayDrawCallData() const
 {
     CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
-    float xOffset = 20.0f;
-    float yOffset = 20.0f;
+    float dpiScale = draw2d->GetViewportDpiScalingFactor();
+    float xOffset = 20.0f * dpiScale;
+    float yOffset = 20.0f * dpiScale;
 
     auto blackTexture = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::Black);
     float textOpacity = 1.0f;
-    float backgroundRectOpacity = 0.75f;
-    const float lineSpacing = 20.0f;
+    float backgroundRectOpacity = 0.0f; // 0.75f; // [GHI #6515] Reenable background rect
 
     const AZ::Vector3 white(1,1,1);
     const AZ::Vector3 red(1,0.3f,0.3f);
@@ -1171,16 +1168,19 @@ void UiCanvasManager::DebugDisplayDrawCallData() const
     const AZ::Vector3 green(0.3f,1,0.3f);
     const AZ::Vector3 yellow(0.7f,0.7f,0.2f);
 
+    const float fontSize = 8.0f;
+    const float lineSpacing = 20.0f * dpiScale;
+
     // local function to write a line of text (with a background rect) and increment Y offset
     AZStd::function<void(const char*, const AZ::Vector3&)> WriteLine = [&](const char* buffer, const AZ::Vector3& color)
     {
         CDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
         textOptions.color = color;
-        AZ::Vector2 textSize = draw2d->GetTextSize(buffer, 16, &textOptions);
+        AZ::Vector2 textSize = draw2d->GetTextSize(buffer, fontSize, &textOptions);
         AZ::Vector2 rectTopLeft = AZ::Vector2(xOffset - 2, yOffset);
         AZ::Vector2 rectSize = AZ::Vector2(textSize.GetX() + 4, lineSpacing);
         draw2d->DrawImage(blackTexture, rectTopLeft, rectSize, backgroundRectOpacity);
-        draw2d->DrawText(buffer, AZ::Vector2(xOffset, yOffset), 16, textOpacity, &textOptions);
+        draw2d->DrawText(buffer, AZ::Vector2(xOffset, yOffset), fontSize, textOpacity, &textOptions);
         yOffset += lineSpacing;
     };
 

@@ -8,7 +8,7 @@
 import azlmbr.bus
 import azlmbr.math
 
-from scene_api.scene_data import PrimitiveShape, DecompositionMode
+from scene_api.scene_data import PrimitiveShape, DecompositionMode, ColorChannel, TangentSpaceSource, TangentSpaceMethod
 from scene_helpers import *
 
 
@@ -71,6 +71,7 @@ def add_physx_meshes(scene_manifest: sceneData.SceneManifest, source_file_name: 
     triangle = scene_manifest.add_physx_triangle_mesh_group(source_file_name + "_triangle", False, True, True, True, True, True)
     scene_manifest.physx_mesh_group_add_selected_unselected_nodes(triangle, [first_mesh], all_except_first_mesh)
 
+
 def update_manifest(scene):
     import uuid, os
     import azlmbr.scene.graph
@@ -114,10 +115,11 @@ def update_manifest(scene):
             if node != mesh_path:
                 scene_manifest.mesh_group_unselect_node(mesh_group, node)
 
-        scene_manifest.mesh_group_add_cloth_rule(mesh_group, mesh_path, "Col0", 1, "Col0", 2, "Col0", 2, 3)
+        scene_manifest.mesh_group_add_cloth_rule(mesh_group, mesh_path, "Col0", ColorChannel.GREEN, "Col0",
+                                                 ColorChannel.BLUE, "Col0", ColorChannel.BLUE, ColorChannel.ALPHA)
         scene_manifest.mesh_group_add_advanced_mesh_rule(mesh_group, True, False, True, "Col0")
         scene_manifest.mesh_group_add_skin_rule(mesh_group, 3, 0.002)
-        scene_manifest.mesh_group_add_tangent_rule(mesh_group, 1, 0)
+        scene_manifest.mesh_group_add_tangent_rule(mesh_group, TangentSpaceSource.MIKKT_GENERATION, TangentSpaceMethod.TSPACE_BASIC)
 
         # Create an editor entity
         entity_id = azlmbr.entity.EntityUtilityBus(azlmbr.bus.Broadcast, "CreateEditorReadyEntity", mesh_group_name)
