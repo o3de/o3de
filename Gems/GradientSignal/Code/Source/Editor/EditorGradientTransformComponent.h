@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Components/GradientTransformComponent.h>
+#include <GradientSignal/Components/GradientTransformComponent.h>
 #include <LmbrCentral/Component/EditorWrappedComponentBase.h>
 
 namespace GradientSignal
