@@ -36,7 +36,7 @@ namespace AZ
                 AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
                 if (serializeContext)
                 {
-                    serializeContext->Class<ScriptProcessorRule, DataTypes::IScriptProcessorRule>()->Version(1)
+                    serializeContext->Class<ScriptProcessorRule, DataTypes::IScriptProcessorRule>()->Version(2)
                         ->Field("scriptFilename", &ScriptProcessorRule::m_scriptFilename)
                         ->Field("fallbackLogic", &ScriptProcessorRule::m_fallbackLogic);
 
