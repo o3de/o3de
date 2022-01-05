@@ -12,6 +12,7 @@
 #include "ConnectionEditDialog.h"
 #include "ProductAssetTreeItemData.h"
 #include "ProductAssetTreeModel.h"
+#include "ProductDependencyTreeItemData.h"
 #include "SourceAssetTreeItemData.h"
 #include "SourceAssetTreeModel.h"
 

@@ -11,8 +11,6 @@
 #include "AssetTreeItem.h"
 #include "ProductAssetTreeItemData.h"
 
-#include <AzCore/Component/TickBus.h>
-#include <AzCore/Console/IConsole.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzCore/std/smart_ptr/make_shared.h>

@@ -9,16 +9,12 @@
 
 #include <AssetDatabase/AssetDatabase.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <AzToolsFramework/API/AssetDatabaseBus.h>
-#include <native/utilities/ApplicationManagerAPI.h>
 #include <QAbstractItemModel>
-#include <QFileIconProvider>
-#include <QItemSelectionModel>
 #include "AssetTreeFilterModel.h"
-#include "ProductDependencyTreeItemData.h"
 
 namespace AssetProcessor
 {
+    class ProductDependencyTreeItem;
     class ProductDependencyTreeItemData;
 
     enum class DependencyTreeType
