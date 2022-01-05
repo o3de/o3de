@@ -30,8 +30,6 @@ namespace ScriptCanvasEditor
 
     using GraphItemCommandNotificationBus = AZ::EBus<GraphItemCommandNotifications>;
 
-    class ScriptCanvasMemoryAsset;
-
     // This command is the base URSequencePoint command from which all Script Canvas undo/redo commands derive
     class GraphItemCommand
         : public AzToolsFramework::UndoSystem::URSequencePoint

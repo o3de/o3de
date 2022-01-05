@@ -6,7 +6,7 @@
  *
  */
 
-#include "SurfaceSlopeGradientComponent.h"
+#include <GradientSignal/Components/SurfaceSlopeGradientComponent.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/RTTI/BehaviorContext.h>

@@ -74,8 +74,6 @@ namespace AZ
 
         RHI::ResultCode ShaderResourceGroup::Init(ShaderAsset& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName)
         {
-            AZ_PROFILE_FUNCTION(RPI);
-
             const auto& lay = shaderAsset.FindShaderResourceGroupLayout(srgName, supervariantIndex);
             m_layout = lay.get();
             

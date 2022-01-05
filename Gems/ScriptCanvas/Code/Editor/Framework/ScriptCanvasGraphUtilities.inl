@@ -16,7 +16,7 @@
 #include <Editor/Framework/ScriptCanvasReporter.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
+
 #include <ScriptCanvas/Execution/ExecutionState.h>
 #include <ScriptCanvas/Execution/Interpreted/ExecutionInterpretedAPI.h>
 #include <ScriptCanvas/Execution/RuntimeComponent.h>
@@ -30,8 +30,8 @@ namespace ScriptCanvasEditor
     // over to the override data to simulate build step that does this when building prefabs
     AZ_INLINE void CopyAssetEntityIdsToOverrides(RuntimeDataOverrides& runtimeDataOverrides)
     {
-        runtimeDataOverrides.m_entityIds.reserve(runtimeDataOverrides.m_runtimeAsset->GetData().m_input.m_entityIds.size());
-        for (auto& varEntityPar : runtimeDataOverrides.m_runtimeAsset->GetData().m_input.m_entityIds)
+        runtimeDataOverrides.m_entityIds.reserve(runtimeDataOverrides.m_runtimeAsset->m_runtimeData.m_input.m_entityIds.size());
+        for (auto& varEntityPar : runtimeDataOverrides.m_runtimeAsset->m_runtimeData.m_input.m_entityIds)
         {
             runtimeDataOverrides.m_entityIds.push_back(varEntityPar.second);
         }
@@ -149,36 +149,33 @@ namespace ScriptCanvasEditor
         }
     }
 
-    AZ_INLINE void RunEditorAsset(AZ::Data::Asset<AZ::Data::AssetData> asset, Reporter& reporter, ScriptCanvas::ExecutionMode mode)
+    AZ_INLINE void RunEditorAsset(SourceHandle asset, Reporter& reporter, ScriptCanvas::ExecutionMode mode)
     {
-        if (asset.IsReady())
+        AZ::Data::AssetId assetId = asset.Id();
+        AZ::Data::AssetId runtimeAssetId(assetId.m_guid, AZ_CRC("RuntimeData", 0x163310ae));
+        AZ::Data::Asset<ScriptCanvas::RuntimeAsset> runtimeAsset;
+        if (!runtimeAsset.Create(runtimeAssetId, true))
         {
-            AZ::Data::AssetId assetId = asset.GetId();
-            AZ::Data::AssetId runtimeAssetId(assetId.m_guid, AZ_CRC("RuntimeData", 0x163310ae));
-            AZ::Data::Asset<ScriptCanvas::RuntimeAsset> runtimeAsset;
-            if (!runtimeAsset.Create(runtimeAssetId, true))
-            {
-                return;
-            }
-
-            reporter.SetExecutionMode(mode);
-
-            LoadTestGraphResult loadResult;
-            loadResult.m_editorAsset = SourceHandle(nullptr, assetId.m_guid, asset.GetHint());
-            AZ::EntityId scriptCanvasId;
-            loadResult.m_entity = AZStd::make_unique<AZ::Entity>("Loaded test graph");
-            loadResult.m_runtimeAsset = runtimeAsset;
-
-            RunGraphSpec runGraphSpec;
-            runGraphSpec.dirPath = "";
-            runGraphSpec.graphPath = asset.GetHint().c_str();
-            runGraphSpec.runSpec.duration.m_spec = eDuration::Ticks;
-            runGraphSpec.runSpec.duration.m_ticks = 10;
-            runGraphSpec.runSpec.execution = mode;
-            runGraphSpec.runSpec.release = true;
-            runGraphSpec.runSpec.debug = runGraphSpec.runSpec.traced = false;
-            RunGraphImplementation(runGraphSpec, loadResult, reporter);
+            return;
         }
+
+        reporter.SetExecutionMode(mode);
+
+        LoadTestGraphResult loadResult;
+        loadResult.m_editorAsset = SourceHandle(nullptr, assetId.m_guid, asset.Path());
+        AZ::EntityId scriptCanvasId;
+        loadResult.m_entity = AZStd::make_unique<AZ::Entity>("Loaded test graph");
+        loadResult.m_runtimeAsset = runtimeAsset;
+
+        RunGraphSpec runGraphSpec;
+        runGraphSpec.dirPath = "";
+        runGraphSpec.graphPath = asset.Path().c_str();
+        runGraphSpec.runSpec.duration.m_spec = eDuration::Ticks;
+        runGraphSpec.runSpec.duration.m_ticks = 10;
+        runGraphSpec.runSpec.execution = mode;
+        runGraphSpec.runSpec.release = true;
+        runGraphSpec.runSpec.debug = runGraphSpec.runSpec.traced = false;
+        RunGraphImplementation(runGraphSpec, loadResult, reporter);
     }
 
     AZ_INLINE void RunGraphImplementation(const RunGraphSpec& runGraphSpec, Reporter& reporter)
@@ -284,14 +281,14 @@ namespace ScriptCanvasEditor
 #endif //////////////////////////////////////////////////////////////////////////////////////
 
                         loadResult.m_scriptAsset = luaAssetResult.m_scriptAsset;
-                        loadResult.m_runtimeAsset.Get()->GetData().m_script = loadResult.m_scriptAsset;
-                        loadResult.m_runtimeAsset.Get()->GetData().m_input = luaAssetResult.m_runtimeInputs;
-                        loadResult.m_runtimeAsset.Get()->GetData().m_debugMap = luaAssetResult.m_debugMap;
+                        loadResult.m_runtimeAsset.Get()->m_runtimeData.m_script = loadResult.m_scriptAsset;
+                        loadResult.m_runtimeAsset.Get()->m_runtimeData.m_input = luaAssetResult.m_runtimeInputs;
+                        loadResult.m_runtimeAsset.Get()->m_runtimeData.m_debugMap = luaAssetResult.m_debugMap;
                         loadResult.m_runtimeComponent = loadResult.m_entity->CreateComponent<ScriptCanvas::RuntimeComponent>();
                         CopyAssetEntityIdsToOverrides(runtimeDataOverrides);
                         loadResult.m_runtimeComponent->TakeRuntimeDataOverrides(AZStd::move(runtimeDataOverrides));
-                        Execution::Context::InitializeActivationData(loadResult.m_runtimeAsset->GetData());
-                        Execution::InitializeInterpretedStatics(loadResult.m_runtimeAsset->GetData());
+                        Execution::Context::InitializeActivationData(loadResult.m_runtimeAsset->m_runtimeData);
+                        Execution::InitializeInterpretedStatics(loadResult.m_runtimeAsset->m_runtimeData);
                     }
                     else
                     {

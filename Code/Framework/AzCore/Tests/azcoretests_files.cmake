@@ -111,6 +111,7 @@ set(FILES
     Serialization/Json/MapSerializerTests.cpp
     Serialization/Json/MathVectorSerializerTests.cpp
     Serialization/Json/MathMatrixSerializerTests.cpp
+    Serialization/Json/PathSerializerTests.cpp
     Serialization/Json/SmartPointerSerializerTests.cpp
     Serialization/Json/StringSerializerTests.cpp
     Serialization/Json/TestCases.h
@@ -169,6 +170,7 @@ set(FILES
     Math/Vector3Tests.cpp
     Math/Vector4PerformanceTests.cpp
     Math/Vector4Tests.cpp
+    Memory/AllocatorBenchmarks.cpp
     Memory/AllocatorManager.cpp
     Memory/HphaSchema.cpp
     Memory/HphaSchemaErrorDetection.cpp
