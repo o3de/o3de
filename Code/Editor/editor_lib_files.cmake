@@ -334,23 +334,12 @@ set(FILES
     Controls/ConsoleSCB.qrc
     Controls/FolderTreeCtrl.cpp
     Controls/FolderTreeCtrl.h
-    Controls/HotTrackingTreeCtrl.cpp
-    Controls/HotTrackingTreeCtrl.h
     Controls/ImageHistogramCtrl.cpp
     Controls/ImageHistogramCtrl.h
-    Controls/ImageListCtrl.cpp
-    Controls/ImageListCtrl.h
-    Controls/MultiMonHelper.cpp
-    Controls/MultiMonHelper.h
-    Controls/NumberCtrl.cpp
-    Controls/NumberCtrl.h
-    Controls/NumberCtrl.h
     Controls/SplineCtrl.cpp
     Controls/SplineCtrl.h
     Controls/SplineCtrlEx.cpp
     Controls/SplineCtrlEx.h
-    Controls/TextEditorCtrl.cpp
-    Controls/TextEditorCtrl.h
     Controls/TimelineCtrl.cpp
     Controls/TimelineCtrl.h
     Controls/WndGridHelper.h
@@ -796,9 +785,6 @@ set(FILES
     ViewportTitleDlg.h
     EditorEnvironment.cpp
     EditorEnvironment.h
-    IEditorPanelUtils.h
-    EditorPanelUtils.h
-    EditorPanelUtils.cpp
 )
 
 
