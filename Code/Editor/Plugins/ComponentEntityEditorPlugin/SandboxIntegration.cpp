@@ -1986,8 +1986,3 @@ void SandboxIntegrationManager::BrowseForAssets(AssetSelectionModel& selection)
 {
     AssetBrowserComponentRequestBus::Broadcast(&AssetBrowserComponentRequests::PickAssets, selection, GetMainWindow());
 }
-
-bool SandboxIntegrationManager::DisplayHelpersVisible()
-{
-    return GetIEditor()->GetDisplaySettings()->IsDisplayHelpers();
-}

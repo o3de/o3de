@@ -15,7 +15,6 @@
 
 namespace ScriptCanvasEditor
 {
-    class ScriptCanvasAsset;
     class EditorAssetTree;
 }
 

@@ -380,13 +380,13 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_IMPORT_ASSET, OnOpenAssetImporter)
     ON_COMMAND(ID_EDIT_LEVELDATA, OnEditLevelData)
     ON_COMMAND(ID_FILE_EDITLOGFILE, OnFileEditLogFile)
-    ON_COMMAND(ID_FILE_RESAVESLICES, OnFileResaveSlices)
     ON_COMMAND(ID_FILE_EDITEDITORINI, OnFileEditEditorini)
     ON_COMMAND(ID_PREFERENCES, OnPreferences)
     ON_COMMAND(ID_REDO, OnRedo)
     ON_COMMAND(ID_TOOLBAR_WIDGET_REDO, OnRedo)
     ON_COMMAND(ID_FILE_OPEN_LEVEL, OnOpenLevel)
 #ifdef ENABLE_SLICE_EDITOR
+    ON_COMMAND(ID_FILE_RESAVESLICES, OnFileResaveSlices)
     ON_COMMAND(ID_FILE_NEW_SLICE, OnCreateSlice)
     ON_COMMAND(ID_FILE_OPEN_SLICE, OnOpenSlice)
 #endif
@@ -445,7 +445,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_OPEN_ASSET_BROWSER, OnOpenAssetBrowserView)
     ON_COMMAND(ID_OPEN_AUDIO_CONTROLS_BROWSER, OnOpenAudioControlsEditor)
 
-    ON_COMMAND(ID_DISPLAY_SHOWHELPERS, OnShowHelpers)
     ON_COMMAND(ID_OPEN_TRACKVIEW, OnOpenTrackView)
     ON_COMMAND(ID_OPEN_UICANVASEDITOR, OnOpenUICanvasEditor)
 
@@ -2617,12 +2616,6 @@ void CCryEditApp::OnUpdateSelected(QAction* action)
     action->setEnabled(!GetIEditor()->GetSelection()->IsEmpty());
 }
 
-void CCryEditApp::OnShowHelpers()
-{
-    GetIEditor()->GetDisplaySettings()->DisplayHelpers(!GetIEditor()->GetDisplaySettings()->IsDisplayHelpers());
-    GetIEditor()->Notify(eNotify_OnDisplayRenderUpdate);
-}
-
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnEditLevelData()
 {
@@ -2636,6 +2629,7 @@ void CCryEditApp::OnFileEditLogFile()
     CFileUtil::EditTextFile(CLogFile::GetLogFileName(), 0, IFileUtil::FILE_TYPE_SCRIPT);
 }
 
+#ifdef ENABLE_SLICE_EDITOR
 void CCryEditApp::OnFileResaveSlices()
 {
     AZStd::vector<AZ::Data::AssetInfo> sliceAssetInfos;
@@ -2766,6 +2760,7 @@ void CCryEditApp::OnFileResaveSlices()
     }
 
 }
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnFileEditEditorini()

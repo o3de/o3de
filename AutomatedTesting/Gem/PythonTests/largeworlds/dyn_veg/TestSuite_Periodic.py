@@ -52,15 +52,15 @@ class TestAutomation(TestAutomationBase):
 
     def test_AltitudeFilter_ComponentAndOverrides_InstancesPlantAtSpecifiedAltitude(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import AltitudeFilter_ComponentAndOverrides_InstancesPlantAtSpecifiedAltitude as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     def test_AltitudeFilter_ShapeSample_InstancesPlantAtSpecifiedAltitude(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import AltitudeFilter_ShapeSample_InstancesPlantAtSpecifiedAltitude as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     def test_AltitudeFilter_FilterStageToggle(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import AltitudeFilter_FilterStageToggle as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     def test_SpawnerSlices_SliceCreationAndVisibilityToggleWorks(self, request, workspace, editor, remove_test_slice, launcher_platform):
         from .EditorScripts import SpawnerSlices_SliceCreationAndVisibilityToggleWorks as test_module

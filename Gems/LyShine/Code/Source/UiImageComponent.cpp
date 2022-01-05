@@ -278,11 +278,7 @@ namespace
         AZ::Data::Instance<AZ::RPI::Image> image;
         if (sprite)
         {
-            CSprite* cSprite = static_cast<CSprite*>(sprite); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
-            if (cSprite)
-            {
-                image = cSprite->GetImage();
-            }
+            image = sprite->GetImage();
         }
 
         return image;
@@ -357,7 +353,6 @@ void UiImageComponent::SetOverrideSprite(ISprite* sprite, AZ::u32 cellIndex)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiImageComponent::Render(LyShine::IRenderGraph* renderGraph)
 {
-
     // get fade value (tracked by UiRenderer) and compute the desired alpha for the image
     float fade = renderGraph->GetAlphaFade();
     float desiredAlpha = m_overrideAlpha * fade;
@@ -380,9 +375,8 @@ void UiImageComponent::Render(LyShine::IRenderGraph* renderGraph)
 
         ImageType imageType = m_imageType;
 
-#ifdef LYSHINE_ATOM_TODO // support default white texture
         // if there is no texture we will just use a white texture and want to stretch it
-        const bool spriteOrTextureIsNull = sprite == nullptr || sprite->GetTexture() == nullptr;
+        const bool spriteOrTextureIsNull = sprite == nullptr || sprite->GetImage() == nullptr;
 
         // Zero texture size may occur even if the UiImageComponent has a valid non-zero-sized texture,
         // because a canvas can be requested to Render() before the texture asset is done loading.
@@ -403,12 +397,6 @@ void UiImageComponent::Render(LyShine::IRenderGraph* renderGraph)
         {
             imageType = ImageType::Stretched;
         }
-#else
-        if (sprite == nullptr)
-        {
-            imageType = ImageType::Stretched;
-        }
-#endif
 
         switch (imageType)
         {
@@ -469,7 +457,7 @@ void UiImageComponent::Render(LyShine::IRenderGraph* renderGraph)
             }
         }
 
-#ifdef LYSHINE_ATOM_TODO // keeping this code for future phase (masks and render targets)
+#ifdef LYSHINE_ATOM_TODO // [GHI #6270] Support RTT using Atom
         ITexture* texture = (sprite) ? sprite->GetTexture() : nullptr;
         bool isClampTextureMode = m_imageType == ImageType::Tiled ? false : true;
         bool isTextureSRGB = IsSpriteTypeRenderTarget() && m_isRenderTargetSRGB;
@@ -482,11 +470,7 @@ void UiImageComponent::Render(LyShine::IRenderGraph* renderGraph)
         bool isTextureSRGB = IsSpriteTypeRenderTarget() && m_isRenderTargetSRGB;
         bool isTexturePremultipliedAlpha = false; // we are not rendering from a render target with alpha in it
 
-        LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
-        if (lyRenderGraph)
-        {
-            lyRenderGraph->AddPrimitiveAtom(&m_cachedPrimitive, image, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, m_blendMode);
-        }
+        renderGraph->AddPrimitive(&m_cachedPrimitive, image, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, m_blendMode);
 #endif
     }
 }

@@ -1655,6 +1655,12 @@
         {
             "type": "Lua",
             "args": {
+                "file": "EnhancedPBR_Anisotropy.lua"
+            }
+        },
+        {
+            "type": "Lua",
+            "args": {
                 "file": "StandardPBR_HandleOpacityDoubleSided.lua"
             }
         },

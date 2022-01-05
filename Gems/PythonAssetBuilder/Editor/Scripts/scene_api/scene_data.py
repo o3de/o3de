@@ -1,14 +1,14 @@
-"""
-Copyright (c) Contributors to the Open 3D Engine Project.
-For complete copyright and license terms please see the LICENSE at the root of this distribution.
-
-SPDX-License-Identifier: Apache-2.0 OR MIT
-"""
+#
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+#
 import typing
 import json
 import azlmbr.scene as sceneApi
 from enum import IntEnum
-
 
 # Wraps the AZ.SceneAPI.Containers.SceneGraph.NodeIndex internal class
 class SceneGraphNodeIndex:
@@ -198,6 +198,16 @@ class SceneManifest:
         }
         self.manifest['values'].append(prefab_group)
         return prefab_group
+
+    def add_actor_group(self, group) -> dict:
+        groupDict = group.to_dict()
+        self.manifest['values'].append(groupDict)
+        return groupDict
+
+    def add_motion_group(self, group) -> dict:
+        groupDict = group.to_dict()
+        self.manifest['values'].append(groupDict)
+        return groupDict
 
     def mesh_group_select_node(self, mesh_group: dict, node_name: str) -> None:
         """Adds a node as a selected node.

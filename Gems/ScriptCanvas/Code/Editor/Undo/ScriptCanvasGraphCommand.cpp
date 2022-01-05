@@ -19,7 +19,6 @@
 #include <Editor/Undo/ScriptCanvasGraphCommand.h>
 
 #include <Editor/Include/ScriptCanvas/Bus/EditorScriptCanvasBus.h>
-#include <Editor/Assets/ScriptCanvasAssetTrackerBus.h>
 
 namespace ScriptCanvasEditor
 {

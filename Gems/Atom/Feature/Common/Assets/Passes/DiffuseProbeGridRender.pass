@@ -10,7 +10,12 @@
                 {
                     "Name": "DepthStencilTextureInput",
                     "SlotType": "Input",
-                    "ScopeAttachmentUsage": "Shader"
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "AspectFlags": [
+                            "Depth"
+                        ]
+                    }
                 },
                 {
                     "Name": "NormalInput",
@@ -20,7 +25,12 @@
                 {
                     "Name": "DepthStencilInput",
                     "SlotType": "Input",
-                    "ScopeAttachmentUsage": "DepthStencil"
+                    "ScopeAttachmentUsage": "DepthStencil",
+                    "ImageViewDesc": {
+                        "AspectFlags": [
+                            "Depth"
+                        ]
+                    }
                 },
                 {
                     "Name": "Output",

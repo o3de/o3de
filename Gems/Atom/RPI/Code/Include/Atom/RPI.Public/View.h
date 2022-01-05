@@ -24,6 +24,9 @@ class MaskedOcclusionCulling;
 
 namespace AZ
 {
+    // forward declares
+    class Job;
+    class TaskGraphEvent;
     namespace  RHI
     {
         class FrameScheduler;
@@ -102,7 +105,8 @@ namespace AZ
 
             //! Finalize draw lists in this view. This function should only be called when all
             //! draw packets for current frame are added. 
-            void FinalizeDrawLists();
+            void FinalizeDrawListsJob(AZ::Job* parentJob);
+            void FinalizeDrawListsTG(AZ::TaskGraphEvent& finalizeDrawListsTGEvent);
 
             bool HasDrawListTag(RHI::DrawListTag drawListTag);
 
@@ -142,7 +146,8 @@ namespace AZ
             View(const AZ::Name& name, UsageFlags usage);
 
             //! Sorts the finalized draw lists in this view
-            void SortFinalizedDrawLists();
+            void SortFinalizedDrawListsJob(AZ::Job* parentJob);
+            void SortFinalizedDrawListsTG(AZ::TaskGraphEvent& finalizeDrawListsTGEvent);
 
             //! Sorts a drawList using the sort function from a pass with the corresponding drawListTag
             void SortDrawList(RHI::DrawList& drawList, RHI::DrawListTag tag);

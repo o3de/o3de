@@ -610,7 +610,7 @@ namespace LUAEditor
                         {
                             m_resultList[qAssetName].m_assetId = docInfo.m_assetId;
                         }
-                        entry.m_lineNumber = line;
+                        entry.m_lineNumber = line + 1;
                         entry.m_lineText = entry.m_lineText.trimmed();
 
                         while (index > -1)

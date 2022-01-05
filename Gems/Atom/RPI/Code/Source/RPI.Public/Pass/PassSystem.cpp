@@ -39,6 +39,7 @@
 #include <Atom/RPI.Reflect/Pass/PassTemplate.h>
 #include <Atom/RPI.Reflect/Pass/RasterPassData.h>
 #include <Atom/RPI.Reflect/Pass/RenderPassData.h>
+#include <Atom/RPI.Reflect/Pass/SlowClearPassData.h>
 
 namespace AZ
 {
@@ -67,6 +68,7 @@ namespace AZ
             PassSlot::Reflect(context);
 
             PassData::Reflect(context);
+            SlowClearPassData::Reflect(context);
             CopyPassData::Reflect(context);
             RenderPassData::Reflect(context);
             ComputePassData::Reflect(context);

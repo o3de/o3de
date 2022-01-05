@@ -91,13 +91,15 @@ namespace AZ
             m_pageAllocator = &pageAllocator;
             m_descriptor = descriptor;
             m_descriptor.m_addressBase = 0;
-            m_descriptor.m_capacityInBytes = m_pageAllocator->GetPageSize();
+            if (m_descriptor.m_capacityInBytes == 0)
+            {
+                m_descriptor.m_capacityInBytes = m_pageAllocator->GetPageSize();
+            }
         }
 
         template <class Traits>
         typename MemorySubAllocator<Traits>::memory_allocation MemorySubAllocator<Traits>::Allocate(size_t sizeInBytes, size_t alignmentInBytes)
         {
-            AZ_PROFILE_FUNCTION(RHI);
             if (RHI::AlignUp(sizeInBytes, alignmentInBytes) > m_descriptor.m_capacityInBytes)
             {
                 return memory_allocation();

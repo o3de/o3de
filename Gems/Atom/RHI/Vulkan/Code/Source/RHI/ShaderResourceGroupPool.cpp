@@ -104,13 +104,13 @@ namespace AZ
         RHI::ResultCode ShaderResourceGroupPool::CompileGroupInternal(RHI::ShaderResourceGroup& groupBase, const RHI::ShaderResourceGroupData& groupData)
         {
             auto& group = static_cast<ShaderResourceGroup&>(groupBase);
-            group.UpdateCompiledDataIndex(m_currentIteration);
 
             if (!groupData.IsAnyResourceTypeUpdated())
             {
                 return RHI::ResultCode::Success;
             }
 
+            group.UpdateCompiledDataIndex(m_currentIteration);
             DescriptorSet& descriptorSet = *group.m_compiledData[group.GetCompileDataIndex()];
 
             const RHI::ShaderResourceGroupLayout* layout = groupData.GetLayout();
