@@ -21,7 +21,6 @@
 #include "native/assetprocessor.h"
 #endif
 
-class FolderWatchCallbackEx;
 class QCoreApplication;
 
 namespace AZ
