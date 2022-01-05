@@ -262,7 +262,7 @@ void CViewportTitleDlg::SetupHelpersButton()
 void CViewportTitleDlg::SetupOverflowMenu()
 {
     // simple override of QMenu that does not respond to keyboard events
-    // note: this prevent the menu from being prematurely closed
+    // note: this prevents the menu from being prematurely closed
     class IgnoreKeyboardMenu : public QMenu
     {
     public:
