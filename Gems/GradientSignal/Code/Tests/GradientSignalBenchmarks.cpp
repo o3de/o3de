@@ -16,10 +16,10 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
 
-#include <Source/Components/ImageGradientComponent.h>
-#include <Source/Components/PerlinGradientComponent.h>
-#include <Source/Components/RandomGradientComponent.h>
-#include <Source/Components/GradientTransformComponent.h>
+#include <GradientSignal/Components/ImageGradientComponent.h>
+#include <GradientSignal/Components/PerlinGradientComponent.h>
+#include <GradientSignal/Components/RandomGradientComponent.h>
+#include <GradientSignal/Components/GradientTransformComponent.h>
 
 namespace UnitTest
 {

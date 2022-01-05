@@ -23,7 +23,6 @@
 #include <native/resourcecompiler/RCBuilder.h>
 #include <AssetBuilder/AssetBuilderInfo.h>
 
-class FolderWatchCallbackEx;
 class QCoreApplication;
 
 namespace AssetProcessor
