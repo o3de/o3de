@@ -23,7 +23,6 @@ set(FILES
     Include/ScriptCanvas/Core/NodeBus.h
     Include/ScriptCanvas/Core/EBusNodeBus.h
     Include/ScriptCanvas/Core/NodelingBus.h
-    Include/ScriptCanvas/Core/ContractBus.h
     Include/ScriptCanvas/Core/Attributes.h
     Include/ScriptCanvas/Core/Connection.h
     Include/ScriptCanvas/Core/ConnectionBus.h

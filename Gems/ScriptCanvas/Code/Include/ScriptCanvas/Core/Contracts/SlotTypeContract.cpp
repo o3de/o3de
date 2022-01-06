@@ -7,7 +7,6 @@
  */
 
 #include "SlotTypeContract.h"
-#include <ScriptCanvas/Core/ContractBus.h>
 #include <ScriptCanvas/Core/Slot.h>
 
 namespace ScriptCanvas

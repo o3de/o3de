@@ -8,7 +8,6 @@
 
 #include "MethodOverloadContract.h"
 
-#include <ScriptCanvas/Core/ContractBus.h>
 #include <ScriptCanvas/Core/Slot.h>
 
 #include <ScriptCanvas/Core/Node.h>
