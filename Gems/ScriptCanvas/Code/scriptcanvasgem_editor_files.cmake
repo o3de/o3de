@@ -232,7 +232,6 @@ set(FILES
     Editor/View/Windows/MainWindow.cpp
     Editor/View/Windows/MainWindow.h
     Editor/View/Windows/mainwindow.ui
-    Editor/View/Windows/MainWindowBus.h
     Editor/View/Windows/ScriptCanvasContextMenus.cpp
     Editor/View/Windows/ScriptCanvasContextMenus.h
     Editor/View/Windows/ScriptCanvasEditorResources.qrc
