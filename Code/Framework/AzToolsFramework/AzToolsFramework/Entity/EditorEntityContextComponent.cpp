@@ -226,7 +226,15 @@ namespace AzToolsFramework
     AZ::EntityId EditorEntityContextComponent::CreateNewEditorEntity(const char* name)
     {
         AZ::Entity* entity = CreateEntity(name);
-        FinalizeEditorEntity(entity);
+        AZ_Assert(entity != nullptr, "Entity with name %s couldn't be created.", name);
+        if (m_isLegacySliceService)
+        {
+            FinalizeEditorEntity(entity);
+        }
+        else
+        {
+            EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnEditorEntityCreated, entity->GetId());
+        }
         return entity->GetId();
     }
 
@@ -254,7 +262,15 @@ namespace AzToolsFramework
         }
         entity = aznew AZ::Entity(entityId, name);
         AddEntity(entity);
-        FinalizeEditorEntity(entity);
+        AZ_Assert(entity != nullptr, "Entity with name %s couldn't be created.", name);
+        if (m_isLegacySliceService)
+        {
+            FinalizeEditorEntity(entity);
+        }
+        else
+        {
+            EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnEditorEntityCreated, entity->GetId());
+        }
 
         return entity->GetId();
     }
