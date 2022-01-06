@@ -54,7 +54,6 @@ set(FILES
     Include/ScriptCanvas/Core/SlotNames.h
     Include/ScriptCanvas/Core/SubgraphInterface.h
     Include/ScriptCanvas/Core/SubgraphInterfaceUtility.h
-    Include/ScriptCanvas/Translation/AbstractModelTranslator.h
     Include/ScriptCanvas/Translation/Configuration.h
     Include/ScriptCanvas/Translation/GraphToCPlusPlus.h
     Include/ScriptCanvas/Translation/GraphToLua.h
