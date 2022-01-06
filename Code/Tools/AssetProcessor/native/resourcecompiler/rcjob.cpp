@@ -22,7 +22,6 @@
 
 namespace
 {
-    unsigned long s_jobSerial = 1;
     bool s_typesRegistered = false;
     // You have up to 60 minutes to finish processing an asset.
     // This was increased from 10 to account for PVRTC compression

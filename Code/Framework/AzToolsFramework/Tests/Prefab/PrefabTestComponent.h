@@ -27,4 +27,22 @@ namespace UnitTest
         int  m_intProperty = 0;
         AZ::EntityId m_entityIdProperty;
     };
+
+    class UnReflectedType
+    {
+    public:
+        AZ_TYPE_INFO(UnReflectedType, "{FB65262C-CE9A-45CA-99EB-4DDCB19B32DB}");
+        int m_unReflectedInt = 42;
+    };
+
+    class PrefabTestComponentWithUnReflectedTypeMember
+        : public AzToolsFramework::Components::EditorComponentBase
+    {
+    public:
+        AZ_EDITOR_COMPONENT(PrefabTestComponentWithUnReflectedTypeMember, "{726281E1-8E47-46AB-8018-D3F4BA823D74}");
+        static void Reflect(AZ::ReflectContext* reflection);
+
+        UnReflectedType m_unReflectedType;
+        int             m_reflectedType = 52;
+    };
 }

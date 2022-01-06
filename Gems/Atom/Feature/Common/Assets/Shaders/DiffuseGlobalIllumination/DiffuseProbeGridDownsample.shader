@@ -1,5 +1,5 @@
 {
-    "Source" : "DiffuseProbeGridDownsample",
+    "Source" : "DiffuseProbeGridDownsample.azsl",
 
     "RasterState" :
     {

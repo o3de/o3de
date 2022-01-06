@@ -81,7 +81,7 @@ namespace GridMate
 #define GM_ENABLE_PROFILE_USER_CALLBACKS 1
 
 #if (GM_ENABLE_PROFILE_USER_CALLBACKS)
-#define GM_PROFILE_USER_CALLBACK(callback) AZ_PROFILE_TIMER("GridMate User Code", callback);
+#define GM_PROFILE_USER_CALLBACK(callback) AZ_PROFILE_SCOPE(GridMate, "GridMate User Code: %s", callback);
 #else
 #define GM_PROFILE_USER_CALLBACK(callback)
 #endif

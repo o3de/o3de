@@ -70,7 +70,7 @@ public: // member functions
     // ~UiInitializationInterface
 
     //! IUiAnimationListener
-    void OnUiAnimationEvent(EUiAnimationEvent uiAnimationEvent, IUiAnimSequence* pAnimSequence);
+    void OnUiAnimationEvent(EUiAnimationEvent uiAnimationEvent, IUiAnimSequence* pAnimSequence) override;
     // ~IUiAnimationListener
 
     State GetState();

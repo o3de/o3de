@@ -38,8 +38,7 @@ namespace ImageProcessingAtom
             EQuality compressQuality = eQuality_Normal;
             //required for CTSquisher
             AZ::Vector3 rgbWeight = AZ::Vector3(0.3333f, 0.3334f, 0.3333f);
-            //required for ISPC texture compressor
-            bool ispcDiscardAlpha = false;
+            bool discardAlpha = false;
         };
 
     public:
@@ -48,6 +47,7 @@ namespace ImageProcessingAtom
         virtual IImageObjectPtr DecompressImage(IImageObjectPtr srcImage, EPixelFormat fmtDst) const = 0;
         virtual EPixelFormat GetSuggestedUncompressedFormat(EPixelFormat compressedfmt, EPixelFormat uncompressedfmt) const = 0;
         virtual ColorSpace GetSupportedColorSpace(EPixelFormat compressFormat) const = 0;
+        virtual const char* GetName() const = 0;
 
         //find compressor for specified compressed pixel format. isCompressing to indicate if it's for compressing or decompressing
         static ICompressorPtr FindCompressor(EPixelFormat fmt, ColorSpace colorSpace, bool isCompressing);

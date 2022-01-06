@@ -28,7 +28,7 @@ namespace UnitTest
 
         ScriptContext* m_scriptContext;
 
-        ~EntityScriptTest()
+        ~EntityScriptTest() override
         {
         }
 

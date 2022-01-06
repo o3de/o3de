@@ -11,7 +11,7 @@
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <Atom/RHI.Edit/ShaderPlatformInterface.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/Asset/AssetReference.h>
@@ -26,7 +26,7 @@ namespace AZ
 {
     namespace
     {
-        static const char* PrecompiledShaderBuilderName = "PrecompiledShaderBuilder";
+        [[maybe_unused]] static const char* PrecompiledShaderBuilderName = "PrecompiledShaderBuilder";
         static const char* PrecompiledShaderBuilderJobKey = "PrecompiledShader Asset Builder";
         static const char* ShaderAssetExtension = "azshader";
     }

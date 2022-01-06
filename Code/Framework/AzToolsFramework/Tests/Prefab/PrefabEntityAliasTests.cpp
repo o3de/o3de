@@ -160,9 +160,6 @@ namespace UnitTest
 
         ASSERT_TRUE(secondRootInstance);
 
-        // Find the new instances versions of the new and referenced entities using the aliases we saved
-        AZ::EntityId secondNewEntityId = secondRootInstance->GetEntityId(newEntityAlias);
-
         InstanceOptionalReference secondNestedInstance = secondRootInstance->FindNestedInstance(nestedAlias);
         ASSERT_TRUE(secondNestedInstance);
         AZ::EntityId secondReferencedEntityId = secondNestedInstance->get().GetEntityId(referencedEntityAlias);

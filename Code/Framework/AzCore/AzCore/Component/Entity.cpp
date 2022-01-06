@@ -189,7 +189,7 @@ namespace AZ
 
     void Entity::Activate()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         AZ_Assert(m_state == State::Init, "Entity should be in Init state to be Activated!");
 
@@ -207,12 +207,6 @@ namespace AZ
             ActivateComponent(**it);
         }
 
-        // Cache the transform interface to the transform interface
-        // Generally this pattern is not recommended unless for component event buses
-        // As we have a guarantee (by design) that components can't change during active state)
-        // Even though technically they can connect disconnect from the bus.
-        m_transform = TransformBus::FindFirstHandler(m_id);
-
         SetState(State::Active);
 
         EBUS_EVENT_ID(m_id, EntityBus, OnEntityActivated, m_id);
@@ -226,7 +220,7 @@ namespace AZ
 
     void Entity::Deactivate()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         AZ::ComponentApplicationRequests* componentApplication = AZ::Interface<AZ::ComponentApplicationRequests>::Get();
         if (componentApplication != nullptr)
@@ -655,6 +649,16 @@ namespace AZ
         m_stateEvent.Signal(oldState, m_state);
     }
 
+    void Entity::SetSpawnTicketId(u32 spawnTicketId)
+    {
+        m_spawnTicketId = spawnTicketId;
+    }
+
+    u32 Entity::GetSpawnTicketId() const
+    {
+        return m_spawnTicketId;
+    }
+
     void Entity::OnNameChanged() const
     {
         EBUS_EVENT_ID(GetId(), EntityBus, OnEntityNameChanged, m_name);
@@ -807,12 +811,12 @@ namespace AZ
         if (behaviorContext)
         {
             behaviorContext->Class<EntityId>()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::ListOnly)
                 ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Module, "entity")
                 ->Method("IsValid", &EntityId::IsValid)
-                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::ListOnly)
                 ->Method("ToString", &EntityId::ToString)
                     ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::ToString)
                     ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
@@ -1034,7 +1038,7 @@ namespace AZ
 
     Entity::DependencySortOutcome Entity::DependencySort(ComponentArrayType& inOutComponents)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         using DependencySortInternal::ComponentInfo;
         using DependencySortInternal::InvalidEntry;
@@ -1318,6 +1322,19 @@ namespace AZ
             processSignature = Environment::CreateVariable<AZ::u32>(AZ_CRC("MachineProcessSignature", 0x47681763), signature);
         }
         return *processSignature;
+    }
+
+    AZ::TransformInterface* Entity::GetTransform() const
+    {
+        // Lazy evaluation of the cached entity transform.
+        if(!m_transform)
+        {
+            // Generally this pattern is not recommended unless for component event buses
+            // As we have a guarantee (by design) that components can't change during active state)
+            // Even though technically they can connect disconnect from the bus.
+            m_transform = TransformBus::FindFirstHandler(m_id);
+        }
+        return m_transform;
     }
 
     //=========================================================================

@@ -57,7 +57,6 @@ protected:
     }
 
     int GetSize() override { return sizeof(*this); }
-    QString GetDescription() override { return "UndoTrackViewSplineCtrl"; };
 
     void Undo(bool bUndo) override
     {
@@ -611,7 +610,6 @@ void CTrackViewSplineCtrl::mouseMoveEvent(QMouseEvent* event)
 
     CTrackViewSequenceNotificationContext context(pSequence);
 
-    QPoint cMousePosPrev = m_cMousePos;
     m_cMousePos = point;
 
     if (m_editMode == NothingMode)
@@ -706,7 +704,7 @@ void CTrackViewSplineCtrl::mouseMoveEvent(QMouseEvent* event)
         QString                         tipText;
         bool                            boFoundTheSelectedKey(false);
 
-        for (int splineIndex = 0, endSpline = m_splines.size(); splineIndex < endSpline; ++splineIndex)
+        for (size_t splineIndex = 0, endSpline = m_splines.size(); splineIndex < endSpline; ++splineIndex)
         {
             ISplineInterpolator* pSpline = m_splines[splineIndex].pSpline;
             CTrackViewTrack* pTrack = m_tracks[splineIndex];
@@ -796,7 +794,7 @@ void CTrackViewSplineCtrl::AdjustTCB(float d_tension, float d_continuity, float 
 
     SendNotifyEvent(SPLN_BEFORE_CHANGE);
 
-    for (int splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
+    for (size_t splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
     {
         ISplineInterpolator* pSpline = m_splines[splineIndex].pSpline;
         CTrackViewTrack* pTrack = m_tracks[splineIndex];
@@ -892,7 +890,7 @@ void CTrackViewSplineCtrl::OnUserCommand(UINT cmd)
 
 bool CTrackViewSplineCtrl::IsUnifiedKeyCurrentlySelected() const
 {
-    for (int splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
+    for (size_t splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
     {
         ISplineInterpolator* pSpline = m_splines[splineIndex].pSpline;
 

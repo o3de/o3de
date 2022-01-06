@@ -21,9 +21,6 @@
 #include "Node.h"
 #include "Attributes.h"
 
-#pragma warning( push )
-#pragma warning( disable : 5046) // 'function' : Symbol involving type with internal linkage not defined
-
 /**
  * NodeFunctionGeneric.h
  * 
@@ -83,9 +80,7 @@ namespace ScriptCanvas
         using ResultType = FunctionTraits::result_type;\
         static const size_t s_numArgs = FunctionTraits::arity;\
         static const size_t s_numNames = SCRIPT_CANVAS_FUNCTION_VAR_ARGS(__VA_ARGS__);\
-        static const size_t s_argsSlotIndicesStart = 2;\
-        static const size_t s_resultsSlotIndicesStart = s_argsSlotIndicesStart + s_numArgs;\
-        static const size_t s_numResults = ScriptCanvas::Internal::extended_tuple_size<ResultType>::value;\
+        /*static const size_t s_numResults = ScriptCanvas::Internal::extended_tuple_size<ResultType>::value;*/\
         \
         static const char* GetArgName(size_t i)\
         {\
@@ -99,7 +94,7 @@ namespace ScriptCanvas
         }\
         \
         static const char* GetDependency() { return CATEGORY; }\
-        static const char* GetCategory() { if (ISDEPRECATED) return AZ_STRINGIZE(CATEGORY /Deprecated); else return CATEGORY; };\
+        static const char* GetCategory() { if (IsDeprecated()) return "Deprecated"; else return CATEGORY; };\
         static const char* GetDescription() { return DESCRIPTION; };\
         static const char* GetNodeName() { return #NODE_NAME; };\
         static bool IsDeprecated() { return ISDEPRECATED; };\
@@ -107,7 +102,9 @@ namespace ScriptCanvas
     private:\
         static AZStd::string_view GetName(size_t i)\
         {\
+            AZ_PUSH_DISABLE_WARNING(4296, "-Wunknown-warning-option")\
             static_assert(s_numArgs <= s_numNames, "Number of arguments is greater than number of names in " #NODE_NAME );\
+            AZ_POP_DISABLE_WARNING\
             /*static_assert(s_numResults <= s_numNames, "Number of results is greater than number of names in " #NODE_NAME );*/\
             /*static_assert((s_numResults + s_numArgs) == s_numNames, "Argument name count + result name count != name count in " #NODE_NAME );*/\
             static const AZStd::array<AZStd::string_view, s_numNames> s_names = {{ __VA_ARGS__ }};\
@@ -151,7 +148,7 @@ namespace ScriptCanvas
         {
             static int indices[] = { inputDatumIndices... };
             static_assert(sizeof...(Is) == AZ_ARRAY_SIZE(indices), "size of default values doesn't match input datum indices for them");
-            std::initializer_list<int> { (MoreHelp(node, indices[Is], AZStd::forward<t_Args>(args)), 0)... };
+            [[maybe_unused]] std::initializer_list<int> dummy = { (MoreHelp(node, indices[Is], AZStd::forward<t_Args>(args)), 0)... };
         }
 
         template<typename ArgType>
@@ -184,9 +181,12 @@ namespace ScriptCanvas
         : public Node
     {
     public:
+    AZ_PUSH_DISABLE_WARNING(5046, "-Wunknown-warning-option") // 'function' : Symbol involving type with internal linkage not defined
         AZ_RTTI(((NodeFunctionGenericMultiReturn<t_Func, t_Traits, function>), "{DC5B1799-6C5B-4190-8D90-EF0C2D1BCE4E}", t_Func, t_Traits), Node);
         AZ_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(NodeFunctionGenericMultiReturn);
         AZ_COMPONENT_BASE(NodeFunctionGenericMultiReturn, Node);
+    AZ_POP_DISABLE_WARNING
+
 
         static const char* GetNodeFunctionName()
         {
@@ -256,7 +256,7 @@ namespace ScriptCanvas
         {
             DataSlotConfiguration slotConfiguration;
 
-            slotConfiguration.m_name = AZStd::string::format("%s: %s", Data::Traits<ArgType>::GetName().data(), t_Traits::GetArgName(Index));
+            slotConfiguration.m_name = t_Traits::GetArgName(Index);
             slotConfiguration.ConfigureDatum(AZStd::move(Datum(Data::FromAZType(Data::Traits<ArgType>::GetAZType()), Datum::eOriginality::Copy)));
 
             slotConfiguration.SetConnectionType(connectionType);
@@ -372,5 +372,3 @@ namespace ScriptCanvas
     }
 
 }
-
-#pragma warning( pop )

@@ -11,16 +11,17 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Memory/AllocatorScope.h>
 #include <CrySystemBus.h>
+#include <CryCommon/LegacyAllocator.h>
 
 #include "Cinematics/Movie.h"
 #include "Maestro/MaestroBus.h"
 
 namespace Maestro
 {
-    // Ensure that Maestro always has the LegacyAllocator and CryStringAllocators available
+    // Ensure that Maestro always has the LegacyAllocator available
     // NOTE: This component is only activated in the AssetBuilder, as the required allocators are
     // booted by the launcher or editor.
-    using MaestroAllocatorScope = AZ::AllocatorScope<AZ::LegacyAllocator, CryStringAllocator>;
+    using MaestroAllocatorScope = AZ::AllocatorScope<AZ::LegacyAllocator>;
 
     class MaestroAllocatorComponent
         : public AZ::Component

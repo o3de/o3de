@@ -14,6 +14,9 @@
                 "Platform server": {
                     "tags": "server"
                 },
+                "Platform linux": {
+                    "tags": "tools,renderer"
+                },
                 "Platforms": {
                     "android": "enabled",
                     "server": "enabled"
@@ -47,10 +50,10 @@
                     "order": 6000
                 },
                 "Exclude HoldFiles": {
-                    "pattern": ".*\\\\/Levels\\\\/.*_hold\\\\/.*"
+                    "pattern": "(^|.+/)Levels/.*_hold(/.*)?$"
                 },
                 "Exclude TempFiles": {
-                    "pattern": ".*\\\\/\\\\$tmp[0-9]*_.*"
+                    "pattern": "(^|.+/)\\\\$tmp[0-9]*_.*"
                 },
                 "RC i_caf": {
                     "glob": "*.i_caf",

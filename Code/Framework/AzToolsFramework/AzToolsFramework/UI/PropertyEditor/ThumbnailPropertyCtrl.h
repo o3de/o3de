@@ -1,5 +1,3 @@
-#pragma once
-
 /*
  * Copyright (c) Contributors to the Open 3D Engine Project.
  * For complete copyright and license terms please see the LICENSE at the root of this distribution.
@@ -7,6 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
+#pragma once
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/PlatformDef.h>
@@ -35,25 +35,38 @@ namespace AzToolsFramework
 
         //! Call this to set what thumbnail widget will display
         void SetThumbnailKey(Thumbnailer::SharedThumbnailKey key, const char* contextName = "Default");
+
         //! Remove current thumbnail
         void ClearThumbnail();
 
+        //! Display a clickable dropdown arrow next to the thumbnail
         void ShowDropDownArrow(bool visible);
 
-        bool event(QEvent* e) override;
+        //! Override the thumbnail widget with a custom image
+        void SetCustomThumbnailEnabled(bool enabled);
+
+        //! Assign a custom image to display in place of thumbnail
+        void SetCustomThumbnailPixmap(const QPixmap& pixmap);
 
     Q_SIGNALS:
         void clicked();
 
-    protected:
+    private:
+        void UpdateVisibility();
+
+        bool event(QEvent* e) override;
         void paintEvent(QPaintEvent* e) override;
         void enterEvent(QEvent* e) override;
         void leaveEvent(QEvent* e) override;
 
-    private:
         Thumbnailer::SharedThumbnailKey m_key;
         Thumbnailer::ThumbnailWidget* m_thumbnail = nullptr;
-        QScopedPointer<Thumbnailer::ThumbnailWidget> m_thumbnailEnlarged;
+        Thumbnailer::ThumbnailWidget* m_thumbnailEnlarged = nullptr;
+
+        QLabel* m_customThumbnail = nullptr;
+        QLabel* m_customThumbnailEnlarged = nullptr;
+        bool m_customThumbnailEnabled = false;
+
         QLabel* m_emptyThumbnail = nullptr;
         AspectRatioAwarePixmapWidget* m_dropDownArrow = nullptr;
     };

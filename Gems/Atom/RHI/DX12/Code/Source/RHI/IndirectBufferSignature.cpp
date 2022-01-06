@@ -111,6 +111,8 @@ namespace AZ
 
         void IndirectBufferSignature::ShutdownInternal()
         {
+            auto& device = static_cast<Device&>(GetDevice());
+            device.QueueForRelease(m_signature);
             m_signature = nullptr;
             m_stride = 0;
         }

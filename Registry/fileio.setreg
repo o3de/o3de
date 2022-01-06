@@ -1,0 +1,26 @@
+{
+    "O3DE": {
+        "AzCore": {
+            "FileIO": {
+                "DeprecatedAliases": [
+                    {
+                        "OldAlias": "@assets@",
+                        "NewAlias": "@products@"
+                    },
+                    {
+                        "OldAlias": "@root@",
+                        "NewAlias": "@products@"
+                    },
+                    {
+                        "OldAlias": "@devassets@",
+                        "NewAlias": "@projectroot@"
+                    },
+                    {
+                        "OldAlias": "@devroot@",
+                        "NewAlias": "@engroot@"
+                    }
+                ]
+            }
+        }
+    }
+}

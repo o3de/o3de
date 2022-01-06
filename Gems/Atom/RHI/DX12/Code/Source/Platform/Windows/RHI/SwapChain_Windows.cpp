@@ -5,15 +5,28 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <RHI/SwapChain.h>
+
+#include <RHI/SwapChain_Windows.h>
+
 #include <RHI/Device.h>
 #include <RHI/Conversions.h>
+#include <RHI/Image.h>
 #include <RHI/NsightAftermath.h>
 
 namespace AZ
 {
     namespace DX12
     {
+        RHI::Ptr<SwapChain> SwapChain::Create()
+        {
+            return aznew SwapChain();
+        }
+
+        Device& SwapChain::GetDevice() const
+        {
+            return static_cast<Device&>(RHI::SwapChain::GetDevice());
+        }
+
         RHI::ResultCode SwapChain::InitInternal(RHI::Device& deviceBase, const RHI::SwapChainDescriptor& descriptor, RHI::SwapChainDimensions* nativeDimensions)
         {
             // Check whether tearing support is available for full screen borderless windowed mode.
@@ -69,9 +82,6 @@ namespace AZ
                     // ALT+ENTER fullscreen switching using IDXGIFactory::MakeWindowAssociation (see also implementation of SwapChain::PresentInternal).
                     // You must call the MakeWindowAssociation method after the creation of the swap chain, and on the factory object associated with the
                     // target HWND swap chain, which you can guarantee by calling the IDXGIObject::GetParent method on the swap chain to locate the factory.
-                    //
-                    // ToDo: ATOM-14673 We should handle ALT+ENTER in the windows message loop and call AzFramework::NativeWindow::ToggleFullScreenState in
-                    // response, but that will have to wait until the WndProc function moves out of CrySystem (ideally into AzFramework::ApplicationWindows).
                     IDXGIFactoryX* parentFactory = nullptr;
                     m_swapChain->GetParent(__uuidof(IDXGIFactoryX), (void **)&parentFactory);
                     DX12::AssertSuccess(parentFactory->MakeWindowAssociation(reinterpret_cast<HWND>(window), DXGI_MWA_NO_ALT_ENTER));
@@ -163,6 +173,47 @@ namespace AZ
             }
 
             return GetCurrentImageIndex();
+        }
+
+        RHI::ResultCode SwapChain::InitImageInternal(const InitImageRequest& request)
+        {
+            Device& device = GetDevice();
+
+            Microsoft::WRL::ComPtr<ID3D12Resource> resource;
+            DX12::AssertSuccess(m_swapChain->GetBuffer(request.m_imageIndex, IID_GRAPHICS_PPV_ARGS(resource.GetAddressOf())));
+
+            D3D12_RESOURCE_ALLOCATION_INFO allocationInfo;
+            device.GetImageAllocationInfo(request.m_descriptor, allocationInfo);
+
+            Name name(AZStd::string::format("SwapChainImage_%d", request.m_imageIndex));
+
+            Image& image = static_cast<Image&>(*request.m_image);
+            image.m_memoryView = MemoryView(resource.Get(), 0, allocationInfo.SizeInBytes, allocationInfo.Alignment, MemoryViewType::Image);
+            image.SetName(name);
+            image.GenerateSubresourceLayouts();
+            // Overwrite m_initialAttachmentState because Swapchain images are created with D3D12_RESOURCE_STATE_COMMON state
+            image.SetAttachmentState(D3D12_RESOURCE_STATE_COMMON);
+
+            RHI::HeapMemoryUsage& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
+            memoryUsage.m_reservedInBytes += allocationInfo.SizeInBytes;
+            memoryUsage.m_residentInBytes += allocationInfo.SizeInBytes;
+
+            return RHI::ResultCode::Success;
+        }
+
+        void SwapChain::ShutdownResourceInternal(RHI::Resource& resourceBase)
+        {
+            Image& image = static_cast<Image&>(resourceBase);
+
+            const size_t sizeInBytes = image.GetMemoryView().GetSize();
+
+            RHI::HeapMemoryUsage& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
+            memoryUsage.m_reservedInBytes -= sizeInBytes;
+            memoryUsage.m_residentInBytes -= sizeInBytes;
+
+            GetDevice().QueueForRelease(image.m_memoryView);
+
+            image.m_memoryView = {};
         }
 
         RHI::ResultCode SwapChain::ResizeInternal(const RHI::SwapChainDimensions& dimensions, RHI::SwapChainDimensions* nativeDimensions)

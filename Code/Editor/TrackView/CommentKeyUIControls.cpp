@@ -52,7 +52,7 @@ public:
         CFileUtil::ScanDirectory((Path::GetEditingGameDataFolder() + "/Fonts/").c_str(), "*.xml", fa, true);
         for (size_t i = 0; i < fa.size(); ++i)
         {
-            string name = fa[i].filename.toUtf8().data();
+            AZStd::string name = fa[i].filename.toUtf8().data();
             PathUtil::RemoveExtension(name);
             mv_font->AddEnumItem(name.c_str(), name.c_str());
         }
@@ -122,7 +122,7 @@ void CCommentKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& sel
 
     for (size_t keyIndex = 0, num = selectedKeys.GetKeyCount(); keyIndex < num; keyIndex++)
     {
-        CTrackViewKeyHandle keyHandle = selectedKeys.GetKey(keyIndex);
+        CTrackViewKeyHandle keyHandle = selectedKeys.GetKey(static_cast<unsigned int>(keyIndex));
 
         CAnimParamType paramType = keyHandle.GetTrack()->GetParameterType();
         if (paramType == AnimParamType::CommentText)

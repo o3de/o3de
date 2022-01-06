@@ -74,7 +74,7 @@ namespace ScriptCanvas
         ScriptCanvasId FindScriptCanvasId(AZ::Entity* graphEntity) override;
         ScriptCanvas::Node* GetNode(const AZ::EntityId&, const AZ::Uuid&) override;
         ScriptCanvas::Node* CreateNodeOnEntity(const AZ::EntityId& entityId, ScriptCanvasId scriptCanvasId, const AZ::Uuid& nodeType) override;
-        SystemComponentConfiguration GetSystemComponentConfiguration()
+        SystemComponentConfiguration GetSystemComponentConfiguration() override
         {
             SystemComponentConfiguration configuration;
             configuration.m_maxIterationsForInfiniteLoopDetection = m_infiniteLoopDetectionMaxIterations;

@@ -9,7 +9,6 @@
 #define GM_TRAFFIC_CONTROL_H
 
 #include <GridMate/Types.h>
-#include <GridMate/String/string.h>
 
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
 

@@ -239,7 +239,7 @@ namespace GraphCanvas
         ////
 
         // SystemTickBus
-        void OnSystemTick();
+        void OnSystemTick() override;
         ////
 
         // VisualNotificationBus
@@ -446,13 +446,13 @@ namespace GraphCanvas
         ////
 
         // CommentNotificationBus
-        void OnEditBegin();
-        void OnEditEnd();
+        void OnEditBegin() override;
+        void OnEditEnd() override;
 
         void OnCommentSizeChanged(const QSizeF& oldSize, const QSizeF& newSize) override;
 
-        void OnCommentFontReloadBegin();
-        void OnCommentFontReloadEnd();
+        void OnCommentFontReloadBegin() override;
+        void OnCommentFontReloadEnd() override;
         ////
 
         // QGraphicsItem

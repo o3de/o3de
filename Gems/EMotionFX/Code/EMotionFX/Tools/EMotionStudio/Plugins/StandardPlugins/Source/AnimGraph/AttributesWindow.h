@@ -152,7 +152,7 @@ namespace EMStudio
         void OnDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles);
     private:
         AddConditionButton* m_addConditionButton = nullptr;
-        void contextMenuEvent(QContextMenuEvent* event);
+        void contextMenuEvent(QContextMenuEvent* event) override;
 
         void PasteTransition(bool pasteTransitionProperties, bool pasteConditions);
 

@@ -6,15 +6,13 @@
  *
  */
 
-#include <AzTest/AzTest.h>
-
 #include <Framework/RequestBuilder.h>
 #include <TestFramework/AWSCoreFixture.h>
 
 using namespace AWSCore;
 using namespace AWSCoreTestingUtils;
 
-using RequestBuilderTest = UnitTest::ScopedAllocatorSetupFixture;
+using RequestBuilderTest = AWSCoreFixture;
 
 TEST_F(RequestBuilderTest, WriteJsonBodyParameter_UseTestJsonBody_GetExpectedValue)
 {

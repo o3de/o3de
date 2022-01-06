@@ -124,10 +124,9 @@ AllocateConstIntCVar(CLyShine, CV_ui_RunUnitTestsOnStartup);
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-CLyShine::CLyShine(ISystem* system)
+CLyShine::CLyShine([[maybe_unused]] ISystem* system)
     : AzFramework::InputChannelEventListener(AzFramework::InputChannelEventListener::GetPriorityUI())
     , AzFramework::InputTextEventListener(AzFramework::InputTextEventListener::GetPriorityUI())
-    , m_system(system)
     , m_draw2d(new CDraw2d)
     , m_uiRenderer(new UiRenderer)
     , m_uiCanvasManager(new UiCanvasManager)
@@ -291,7 +290,7 @@ AZ::EntityId CLyShine::CreateCanvas()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-AZ::EntityId CLyShine::LoadCanvas(const string& assetIdPathname)
+AZ::EntityId CLyShine::LoadCanvas(const AZStd::string& assetIdPathname)
 {
     return m_uiCanvasManager->LoadCanvas(assetIdPathname.c_str());
 }
@@ -303,7 +302,7 @@ AZ::EntityId CLyShine::CreateCanvasInEditor(UiEntityContext* entityContext)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-AZ::EntityId CLyShine::LoadCanvasInEditor(const string& assetIdPathname, const string& sourceAssetPathname, UiEntityContext* entityContext)
+AZ::EntityId CLyShine::LoadCanvasInEditor(const AZStd::string& assetIdPathname, const AZStd::string& sourceAssetPathname, UiEntityContext* entityContext)
 {
     return m_uiCanvasManager->LoadCanvasInEditor(assetIdPathname, sourceAssetPathname, entityContext);
 }
@@ -321,7 +320,7 @@ AZ::EntityId CLyShine::FindCanvasById(LyShine::CanvasId id)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-AZ::EntityId CLyShine::FindLoadedCanvasByPathName(const string& assetIdPathname)
+AZ::EntityId CLyShine::FindLoadedCanvasByPathName(const AZStd::string& assetIdPathname)
 {
     return m_uiCanvasManager->FindLoadedCanvasByPathName(assetIdPathname.c_str());
 }
@@ -339,13 +338,13 @@ void CLyShine::ReleaseCanvasDeferred(AZ::EntityId canvas)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-ISprite* CLyShine::LoadSprite(const string& pathname)
+ISprite* CLyShine::LoadSprite(const AZStd::string& pathname)
 {
     return CSprite::LoadSprite(pathname);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-ISprite* CLyShine::CreateSprite(const string& renderTargetName)
+ISprite* CLyShine::CreateSprite(const AZStd::string& renderTargetName)
 {
     return CSprite::CreateSprite(renderTargetName);
 }
@@ -377,8 +376,6 @@ void CLyShine::SetViewportSize(AZ::Vector2 viewportSize)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CLyShine::Update(float deltaTimeInSeconds)
 {
-    FRAME_PROFILER(__FUNCTION__, gEnv->pSystem, PROFILE_UI);
-
     if (!m_uiRenderer->IsReady())
     {
         return;
@@ -408,8 +405,6 @@ void CLyShine::Update(float deltaTimeInSeconds)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CLyShine::Render()
 {
-    FRAME_PROFILER(__FUNCTION__, gEnv->pSystem, PROFILE_UI);
-
     if (AZ::RHI::IsNullRenderer())
     {
         return;
@@ -526,12 +521,6 @@ void CLyShine::OnLoadScreenUnloaded()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void CLyShine::OnDebugDraw()
-{
-    LyShineDebug::RenderDebug();
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
 void CLyShine::IncrementVisibleCounter()
 {
     ++m_uiCursorVisibleCounter;
@@ -587,8 +576,6 @@ AZ::Vector2 CLyShine::GetUiCursorPosition()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 bool CLyShine::OnInputChannelEventFiltered(const AzFramework::InputChannel& inputChannel)
 {
-    FUNCTION_PROFILER(GetISystem(), PROFILE_ACTION);
-
     // disable UI inputs when console is open except for a primary release
     // if we ignore the primary release when there is an active interactable then it will miss its release
     // which leaves it in a bad state. E.g. a drag operation will be left in flight and not properly
@@ -624,8 +611,6 @@ bool CLyShine::OnInputChannelEventFiltered(const AzFramework::InputChannel& inpu
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 bool CLyShine::OnInputTextEventFiltered(const AZStd::string& textUTF8)
 {
-    FUNCTION_PROFILER(GetISystem(), PROFILE_ACTION);
-
     if (gEnv->pConsole->GetStatus()) // disable UI inputs when console is open
     {
         return false;
@@ -662,12 +647,12 @@ void CLyShine::OnRenderTick()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void CLyShine::OnBootstrapSceneReady([[maybe_unused]] AZ::RPI::Scene* bootstrapScene)
+void CLyShine::OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene)
 {
     // Load cursor if its path was set before RPI was initialized
     LoadUiCursor();
 
-    LyShinePassDataRequestBus::Handler::BusConnect(AZ::RPI::RPISystemInterface::Get()->GetDefaultScene()->GetId());
+    LyShinePassDataRequestBus::Handler::BusConnect(bootstrapScene->GetId());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -683,7 +668,7 @@ void CLyShine::LoadUiCursor()
 {
     if (!m_cursorImagePathToLoad.empty())
     {
-        m_uiCursorTexture = CDraw2d::LoadTexture(m_cursorImagePathToLoad); // LYSHINE_ATOM_TODO - add clamp option to draw2d and set cursor to clamp
+        m_uiCursorTexture = CDraw2d::LoadTexture(m_cursorImagePathToLoad);
         m_cursorImagePathToLoad.clear();
     }
 }
@@ -706,7 +691,13 @@ void CLyShine::RenderUiCursor()
     AZ::RHI::Size cursorSize = m_uiCursorTexture->GetDescriptor().m_size;
     const AZ::Vector2 dimensions(aznumeric_cast<float>(cursorSize.m_width), aznumeric_cast<float>(cursorSize.m_height));
 
-    m_draw2d->DrawImage(m_uiCursorTexture, position, dimensions);
+    CDraw2d::ImageOptions imageOptions;
+    imageOptions.m_clamp = true;
+    const float opacity = 1.0f;
+    const float rotation = 0.0f;
+    const AZ::Vector2* pivotPoint = nullptr;
+    const AZ::Vector2* minMaxTexCoords = nullptr;
+    m_draw2d->DrawImage(m_uiCursorTexture, position, dimensions, opacity, rotation, pivotPoint, minMaxTexCoords, &imageOptions);
 }
 
 #ifndef _RELEASE

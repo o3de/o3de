@@ -11,6 +11,8 @@
 #include <RHI/PipelineLayout.h>
 #include <RHI/PipelineState.h>
 #include <RHI/MemoryView.h>
+#include <RHI/ShaderResourceGroup.h>
+#include <RHI/Conversions.h>
 #include <Atom/RHI.Reflect/ClearValue.h>
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/CommandListValidator.h>
@@ -388,7 +390,6 @@ namespace AZ
             }
 
             const PipelineLayout& pipelineLayout = pipelineState->GetPipelineLayout();
-            const RHI::PipelineLayoutDescriptor& pipelineLayoutDescriptor = pipelineLayout.GetPipelineLayoutDescriptor();
 
             // Pull from slot bindings dictated by the pipeline layout. Re-bind anything that has changed
             // at the flat index level.
@@ -436,7 +437,7 @@ namespace AZ
                     switch (pipelineType)
                     {
                     case RHI::PipelineStateType::Draw:
-                        if (binding.m_resourceTable.IsValid())
+                        if (binding.m_resourceTable.IsValid() && compiledData.m_gpuViewsDescriptorHandle.ptr)
                         {
                             GetCommandList()->SetGraphicsRootDescriptorTable(binding.m_resourceTable.GetIndex(), compiledData.m_gpuViewsDescriptorHandle);
                         }
@@ -446,14 +447,15 @@ namespace AZ
                             GetCommandList()->SetGraphicsRootConstantBufferView(binding.m_constantBuffer.GetIndex(), compiledData.m_gpuConstantAddress);
                         }
 
-                        if (binding.m_samplerTable.IsValid())
+                        if (binding.m_samplerTable.IsValid() && compiledData.m_gpuSamplersDescriptorHandle.ptr)
                         {
                             GetCommandList()->SetGraphicsRootDescriptorTable(binding.m_samplerTable.GetIndex(), compiledData.m_gpuSamplersDescriptorHandle);
                         }
 
                         for (uint32_t unboundedArrayIndex = 0; unboundedArrayIndex < ShaderResourceGroupCompiledData::MaxUnboundedArrays; ++unboundedArrayIndex)
                         {
-                            if (binding.m_unboundedArrayResourceTables[unboundedArrayIndex].IsValid())
+                            if (binding.m_unboundedArrayResourceTables[unboundedArrayIndex].IsValid() &&
+                                compiledData.m_gpuUnboundedArraysDescriptorHandles[unboundedArrayIndex].ptr)
                             {
                                 GetCommandList()->SetGraphicsRootDescriptorTable(
                                     binding.m_unboundedArrayResourceTables[unboundedArrayIndex].GetIndex(),
@@ -463,7 +465,7 @@ namespace AZ
                         break;
 
                     case RHI::PipelineStateType::Dispatch:
-                        if (binding.m_resourceTable.IsValid())
+                        if (binding.m_resourceTable.IsValid() && compiledData.m_gpuViewsDescriptorHandle.ptr)
                         {
                             GetCommandList()->SetComputeRootDescriptorTable(binding.m_resourceTable.GetIndex(), compiledData.m_gpuViewsDescriptorHandle);
                         }
@@ -473,14 +475,15 @@ namespace AZ
                             GetCommandList()->SetComputeRootConstantBufferView(binding.m_constantBuffer.GetIndex(), compiledData.m_gpuConstantAddress);
                         }
 
-                        if (binding.m_samplerTable.IsValid())
+                        if (binding.m_samplerTable.IsValid() && compiledData.m_gpuSamplersDescriptorHandle.ptr)
                         {
                             GetCommandList()->SetComputeRootDescriptorTable(binding.m_samplerTable.GetIndex(), compiledData.m_gpuSamplersDescriptorHandle);
                         }
 
                         for (uint32_t unboundedArrayIndex = 0; unboundedArrayIndex < ShaderResourceGroupCompiledData::MaxUnboundedArrays; ++unboundedArrayIndex)
                         {
-                            if (binding.m_unboundedArrayResourceTables[unboundedArrayIndex].IsValid())
+                            if (binding.m_unboundedArrayResourceTables[unboundedArrayIndex].IsValid() &&
+                                compiledData.m_gpuUnboundedArraysDescriptorHandles[unboundedArrayIndex].ptr)
                             {
                                 GetCommandList()->SetComputeRootDescriptorTable(
                                     binding.m_unboundedArrayResourceTables[unboundedArrayIndex].GetIndex(),
@@ -495,12 +498,15 @@ namespace AZ
                     }
                 }
 
+#if defined (AZ_RHI_ENABLE_VALIDATION)
                 if (updatePipelineState || updateSRG)
                 {
+                    const RHI::PipelineLayoutDescriptor& pipelineLayoutDescriptor = pipelineLayout.GetPipelineLayoutDescriptor();
                     m_validator.ValidateShaderResourceGroup(
                         *shaderResourceGroup,
                         pipelineLayoutDescriptor.GetShaderResourceGroupBindingInfo(srgIndex));
                 }
+#endif
             }
             return true;
         }

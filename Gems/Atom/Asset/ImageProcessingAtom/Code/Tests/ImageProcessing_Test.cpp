@@ -12,10 +12,15 @@
 
 #include <AzQtComponents/Utilities/QtPluginPaths.h>
 
+#include <AzCore/AzCore_Traits_Platform.h>
+
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetManagerComponent.h>
+#include <AzCore/Jobs/JobContext.h>
+#include <AzCore/Jobs/JobManager.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/PoolAllocator.h>
+#include <AzCore/Name/NameDictionary.h>
 #include <AzCore/RTTI/ReflectionManager.h>
 #include <AzCore/Serialization/DataPatch.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
@@ -71,11 +76,6 @@ using namespace ImageProcessingAtom;
 
 namespace UnitTest
 {
-    namespace
-    {
-        static const char* s_gemFolder;
-    }
-
     // Expose AZ::AssetManagerComponent::Reflect function for testing
     class MyAssetManagerComponent
         : public AZ::AssetManagerComponent
@@ -111,10 +111,8 @@ namespace UnitTest
         AZ::SerializeContext* GetSerializeContext() override { return m_context.get(); }
         AZ::BehaviorContext*  GetBehaviorContext() override { return nullptr; }
         AZ::JsonRegistrationContext* GetJsonRegistrationContext() override { return m_jsonRegistrationContext.get(); }
-        const char* GetAppRoot() const override { return nullptr; }
         const char* GetEngineRoot() const override { return nullptr; }
         const char* GetExecutableFolder() const override { return nullptr; }
-        AZ::Debug::DrillerManager* GetDrillerManager() override { return nullptr; }
         void EnumerateEntities(const AZ::ComponentApplicationRequests::EntityCallback& /*callback*/) override {}
         void QueryApplicationType(AZ::ApplicationTypeQuery& /*appType*/) const override {}
         //////////////////////////////////////////////////////////////////////////
@@ -126,6 +124,11 @@ namespace UnitTest
         AZStd::unique_ptr<AZ::JsonSystemComponent> m_jsonSystemComponent;
         AZStd::vector<AZStd::unique_ptr<AZ::Data::AssetHandler>> m_assetHandlers;
         AZStd::string m_gemFolder;
+        AZStd::string m_outputRootFolder;
+        AZStd::string m_outputFolder;
+
+        AZStd::unique_ptr<AZ::JobManager> m_jobManager;
+        AZStd::unique_ptr<AZ::JobContext> m_jobContext;
 
         void SetUp() override
         {
@@ -142,6 +145,8 @@ namespace UnitTest
             AZ::Data::AssetManager::Descriptor desc;
             AZ::Data::AssetManager::Create(desc);
 
+            AZ::NameDictionary::Create();
+
             m_assetHandlers.emplace_back(AZ::RPI::MakeAssetHandler<AZ::RPI::ImageMipChainAssetHandler>());
             m_assetHandlers.emplace_back(AZ::RPI::MakeAssetHandler<AZ::RPI::StreamingImageAssetHandler>());
             m_assetHandlers.emplace_back(AZ::RPI::MakeAssetHandler<AZ::RPI::StreamingImagePoolAssetHandler>());
@@ -150,6 +155,7 @@ namespace UnitTest
 
             //prepare reflection
             m_context = AZStd::make_unique<AZ::SerializeContext>();
+            AZ::Name::Reflect(m_context.get());
             BuilderPluginComponent::Reflect(m_context.get());
             AZ::DataPatch::Reflect(m_context.get());
             AZ::RHI::ReflectSystemComponent::Reflect(m_context.get());
@@ -161,7 +167,29 @@ namespace UnitTest
             m_jsonRegistrationContext = AZStd::make_unique<AZ::JsonRegistrationContext>();
             m_jsonSystemComponent = AZStd::make_unique<AZ::JsonSystemComponent>();
             m_jsonSystemComponent->Reflect(m_jsonRegistrationContext.get());
+            AZ::Name::Reflect(m_jsonRegistrationContext.get());
             BuilderPluginComponent::Reflect(m_jsonRegistrationContext.get());
+
+            // Setup job context for job system
+            JobManagerDesc jobManagerDesc;
+            JobManagerThreadDesc threadDesc;
+#if AZ_TRAIT_SET_JOB_PROCESSOR_ID
+            threadDesc.m_cpuId = 0; // Don't set processors IDs on windows
+#endif 
+
+            uint32_t numWorkerThreads = AZStd::thread::hardware_concurrency();
+
+            for (unsigned int i = 0; i < numWorkerThreads; ++i)
+            {
+                jobManagerDesc.m_workerThreads.push_back(threadDesc);
+#if AZ_TRAIT_SET_JOB_PROCESSOR_ID
+                threadDesc.m_cpuId++;
+#endif 
+            }
+
+            m_jobManager = AZStd::make_unique<JobManager>(jobManagerDesc);
+            m_jobContext = AZStd::make_unique<JobContext>(*m_jobManager);
+            JobContext::SetGlobalContext(m_jobContext.get());
 
             // Startup default local FileIO (hits OSAllocator) if not already setup.
             if (AZ::IO::FileIOBase::GetInstance() == nullptr)
@@ -173,9 +201,9 @@ namespace UnitTest
             AzQtComponents::PrepareQtPaths();
 
             m_gemFolder = AZ::Test::GetEngineRootPath() + "/Gems/Atom/Asset/ImageProcessingAtom/";
-            s_gemFolder = m_gemFolder.c_str();
+            m_outputFolder = m_gemFolder + AZStd::string("Code/Tests/TestAssets/temp/");
 
-            m_defaultSettingFolder = m_gemFolder + AZStd::string("Config/");
+            m_defaultSettingFolder = m_gemFolder + AZStd::string("Assets/Config/");
             m_testFileFolder = m_gemFolder + AZStd::string("Code/Tests/TestAssets/");
 
             InitialImageFilenames();
@@ -186,7 +214,7 @@ namespace UnitTest
         void TearDown() override
         {
             m_gemFolder = AZStd::string();
-            s_gemFolder = "";
+            m_outputFolder = AZStd::string();
             m_defaultSettingFolder = AZStd::string();
             m_testFileFolder = AZStd::string();
 
@@ -196,16 +224,24 @@ namespace UnitTest
             delete AZ::IO::FileIOBase::GetInstance();
             AZ::IO::FileIOBase::SetInstance(nullptr);
 
+            JobContext::SetGlobalContext(nullptr);
+            m_jobContext = nullptr;
+            m_jobManager = nullptr;
+
             m_jsonRegistrationContext->EnableRemoveReflection();
             m_jsonSystemComponent->Reflect(m_jsonRegistrationContext.get());
             BuilderPluginComponent::Reflect(m_jsonRegistrationContext.get());
+            AZ::Name::Reflect(m_jsonRegistrationContext.get());
             m_jsonRegistrationContext->DisableRemoveReflection();
             m_jsonRegistrationContext.reset();
             m_jsonSystemComponent.reset();
 
             m_context.reset();
             BuilderSettingManager::DestroyInstance();
+
             CPixelFormats::DestroyInstance();
+
+            AZ::NameDictionary::Destroy();
 
             AZ::Data::AssetManager::Destroy();
 
@@ -227,16 +263,16 @@ namespace UnitTest
             Image_512X288_RGB8_Tga,
             Image_1024X1024_RGB8_Tif,
             Image_UpperCase_Tga,
-            Image_512x512_Normal_Tga,
+            Image_1024x1024_normal_tiff,
             Image_128x128_Transparent_Tga,
             Image_237x177_RGB_Jpg,
             Image_GreyScale_Png,
-            Image_BlackWhite_Png,
             Image_Alpha8_64x64_Mip7_Dds,
             Image_BGRA_64x64_Mip7_Dds,
             Image_Luminance8bpp_66x33_dds,
             Image_BGR_64x64_dds,
-            Image_Sunset_4096x2048_R16G16B16A16F_exr
+            Image_defaultprobe_cm_1536x256_64bits_tif,
+            Image_workshop_iblskyboxcm_exr
         };
 
         //image file names for testing
@@ -255,36 +291,48 @@ namespace UnitTest
             m_imagFileNameMap[Image_512X288_RGB8_Tga] = m_testFileFolder + "512x288_24bit.tga";
             m_imagFileNameMap[Image_1024X1024_RGB8_Tif] = m_testFileFolder + "1024x1024_24bit.tif";
             m_imagFileNameMap[Image_UpperCase_Tga] = m_testFileFolder + "uppercase.TGA";
-            m_imagFileNameMap[Image_512x512_Normal_Tga] = m_testFileFolder + "512x512_RGB_N.tga";
+            m_imagFileNameMap[Image_1024x1024_normal_tiff] = m_testFileFolder + "1024x1024_normal.tiff";
             m_imagFileNameMap[Image_128x128_Transparent_Tga] = m_testFileFolder + "128x128_RGBA8.tga";
             m_imagFileNameMap[Image_237x177_RGB_Jpg] = m_testFileFolder + "237x177_RGB.jpg";
             m_imagFileNameMap[Image_GreyScale_Png] = m_testFileFolder + "greyscale.png";
-            m_imagFileNameMap[Image_BlackWhite_Png] = m_testFileFolder + "BlackWhite.png";
             m_imagFileNameMap[Image_Alpha8_64x64_Mip7_Dds] = m_testFileFolder + "Alpha8_64x64_Mip7.dds";
             m_imagFileNameMap[Image_BGRA_64x64_Mip7_Dds] = m_testFileFolder + "BGRA_64x64_MIP7.dds";
             m_imagFileNameMap[Image_Luminance8bpp_66x33_dds] = m_testFileFolder + "Luminance8bpp_66x33.dds";
             m_imagFileNameMap[Image_BGR_64x64_dds] = m_testFileFolder + "RGBA_64x64.dds";
-            m_imagFileNameMap[Image_Sunset_4096x2048_R16G16B16A16F_exr] = m_testFileFolder + "sunset_cm.exr";
+            m_imagFileNameMap[Image_defaultprobe_cm_1536x256_64bits_tif] = m_testFileFolder + "defaultProbe_cm.tif";
+            m_imagFileNameMap[Image_workshop_iblskyboxcm_exr] = m_testFileFolder + "workshop_iblskyboxcm.exr";
         }
 
     public:
+        void SetOutputSubFolder(const char* subFolderName)
+        {
+            if (subFolderName)
+            {
+                m_outputFolder = m_outputRootFolder + "/" + subFolderName;
+            }
+            else
+            {
+                m_outputFolder  = m_outputRootFolder;
+            }
+        }
+
         //helper function to save an image object to a file through QtImage
-        static void SaveImageToFile(const IImageObjectPtr imageObject, const AZStd::string imageName, AZ::u32 maxMipCnt = 100)
+        void SaveImageToFile([[maybe_unused]] const IImageObjectPtr imageObject, [[maybe_unused]] const AZStd::string imageName, [[maybe_unused]] AZ::u32 maxMipCnt = 100)
         {
     #ifndef DEBUG_OUTPUT_IMAGES
             return;
-    #endif
+    #else
             if (imageObject == nullptr)
             {
                 return;
             }
 
-            //create the directory if it's not exist
-            AZStd::string outputDir = s_gemFolder + AZStd::string("Code/Tests/TestAssets/Output/");
-            QDir dir(outputDir.data());
-            if (!dir.exists())
+            // create dir if it doesn't exist
+            QDir dir;
+            QDir outputDir(m_outputFolder.c_str());
+            if (!outputDir.exists())
             {
-                dir.mkpath(".");
+                dir.mkpath(m_outputFolder.c_str());
             }
 
             //save origin file pixel format so we could use it to generate name later
@@ -304,16 +352,18 @@ namespace UnitTest
                 finalImage->GetImagePointer(mip, imageBuf, pitch);
                 uint32 width = finalImage->GetWidth(mip);
                 uint32 height = finalImage->GetHeight(mip);
+                uint32 originalSize = imageObject->GetMipBufSize(mip);
 
                 //generate file name
                 char filePath[2048];
-                azsprintf(filePath, "%s%s_%s_mip%d_%dx%d.png", outputDir.data(), imageName.c_str()
+                azsprintf(filePath, "%s%s_%s_mip%d_%dx%d_%d.png", m_outputFolder.data(), imageName.c_str()
                     , CPixelFormats::GetInstance().GetPixelFormatInfo(originPixelFormat)->szName
-                    , mip, width, height);
+                    , mip, width, height, originalSize);
 
                 QImage qimage(imageBuf, width, height, pitch, QImage::Format_RGBA8888);
                 qimage.save(filePath);
             }
+    #endif
         }
 
         static bool GetComparisonResult(IImageObjectPtr image1, IImageObjectPtr image2, QString& output)
@@ -384,94 +434,12 @@ namespace UnitTest
             return isDifferent;
         }
 
-
-        static bool CompareDDSImage(const QString& imagePath1, const QString& imagePath2, QString& output)
-        {
-            IImageObjectPtr image1, alphaImage1, image2, alphaImage2;
-
-
-            image1 = IImageObjectPtr(DdsLoader::LoadImageFromFileLegacy(imagePath1.toUtf8().constData()));
-            if (image1 && image1->HasImageFlags(EIF_AttachedAlpha))
-            {
-                if (image1->HasImageFlags(EIF_Splitted))
-                {
-                    alphaImage1 = IImageObjectPtr(DdsLoader::LoadImageFromFileLegacy(QString(imagePath1 + ".a").toUtf8().constData()));
-                }
-                else
-                {
-                    alphaImage1 = IImageObjectPtr(DdsLoader::LoadAttachedImageFromDdsFileLegacy(imagePath1.toUtf8().constData(), image1));
-                }
-            }
-
-            image2 = IImageObjectPtr(DdsLoader::LoadImageFromFileLegacy(imagePath2.toUtf8().constData()));
-            if (image2 && image2->HasImageFlags(EIF_AttachedAlpha))
-            {
-                if (image2->HasImageFlags(EIF_Splitted))
-                {
-                    alphaImage2 = IImageObjectPtr(DdsLoader::LoadImageFromFileLegacy(QString(imagePath2 + ".a").toUtf8().constData()));
-                }
-                else
-                {
-                    alphaImage2 = IImageObjectPtr(DdsLoader::LoadAttachedImageFromDdsFileLegacy(imagePath2.toUtf8().constData(), image2));
-                }
-            }
-
-            if (!image1 && !image2)
-            {
-                output += "Cannot load both image file! ";
-                return false;
-            }
-            bool isDifferent = false;
-
-            isDifferent = GetComparisonResult(image1, image2, output);
-
-
-            QFileInfo fi(imagePath1);
-            AZStd::string imageName = fi.baseName().toUtf8().constData();
-            SaveImageToFile(image1, imageName + "_new");
-            SaveImageToFile(image2, imageName + "_old");
-
-            if (alphaImage1 || alphaImage2)
-            {
-                isDifferent |= GetComparisonResult(alphaImage1, alphaImage2, output);
-            }
-
-            return isDifferent;
-        }
     };
 
     // test CPixelFormats related functions
     TEST_F(ImageProcessingTest, TestPixelFormats)
     {
         CPixelFormats& pixelFormats = CPixelFormats::GetInstance();
-
-        //verify names which was used for legacy rc.ini
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("BC7t") == ePixelFormat_BC7t);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("ETC2A") == ePixelFormat_ETC2a);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("PVRTC4") == ePixelFormat_PVRTC4);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("BC1") == ePixelFormat_BC1);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("ETC2") == ePixelFormat_ETC2);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("BC1a") == ePixelFormat_BC1a);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("BC3") == ePixelFormat_BC3);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("BC7") == ePixelFormat_BC7);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("BC5s") == ePixelFormat_BC5s);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("EAC_RG11") == ePixelFormat_EAC_RG11);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("BC4") == ePixelFormat_BC4);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("EAC_R11") == ePixelFormat_EAC_R11);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("A8R8G8B8") == ePixelFormat_R8G8B8A8);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("BC6UH") == ePixelFormat_BC6UH);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("R9G9B9E5") == ePixelFormat_R9G9B9E5);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("X8R8G8B8") == ePixelFormat_R8G8B8X8);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("A16B16G16R16F") == ePixelFormat_R16G16B16A16F);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("G8R8") == ePixelFormat_R8G8);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("G16R16") == ePixelFormat_R16G16);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("G16R16F") == ePixelFormat_R16G16F);
-
-        //some legacy format need to be mapping to new format.
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("DXT1") == ePixelFormat_BC1);
-        ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("DXT5") == ePixelFormat_BC3);
-
-        //calculate mipmap count. no cubemap support at this moment
 
         //for all the non-compressed textures, if there minimum required texture size is 1x1
         for (uint32 i = 0; i < ePixelFormat_Count; i++)
@@ -501,13 +469,6 @@ namespace UnitTest
         }
 
         //check function IsImageSizeValid && EvaluateImageDataSize function
-        ASSERT_TRUE(pixelFormats.IsImageSizeValid(ePixelFormat_PVRTC4, 2, 1, false) == false);
-        ASSERT_TRUE(pixelFormats.IsImageSizeValid(ePixelFormat_PVRTC4, 4, 4, false) == false);
-        ASSERT_TRUE(pixelFormats.IsImageSizeValid(ePixelFormat_PVRTC4, 16, 16, false) == true);
-        ASSERT_TRUE(pixelFormats.IsImageSizeValid(ePixelFormat_PVRTC4, 16, 32, false) == false);
-        ASSERT_TRUE(pixelFormats.IsImageSizeValid(ePixelFormat_PVRTC4, 34, 34, false) == false);
-        ASSERT_TRUE(pixelFormats.IsImageSizeValid(ePixelFormat_PVRTC4, 256, 256, false) == true);
-
         ASSERT_TRUE(pixelFormats.IsImageSizeValid(ePixelFormat_BC1, 2, 1, false) == false);
         ASSERT_TRUE(pixelFormats.IsImageSizeValid(ePixelFormat_BC1, 16, 16, false) == true);
         ASSERT_TRUE(pixelFormats.IsImageSizeValid(ePixelFormat_BC1, 16, 32, false) == true);
@@ -530,15 +491,7 @@ namespace UnitTest
     TEST_F(ImageProcessingTest, TestCubemapLayouts)
     {
         {
-            IImageObjectPtr srcImage(LoadImageFromFile(m_imagFileNameMap[Image_Sunset_4096x2048_R16G16B16A16F_exr]));
-            ImageToProcess imageToProcess(srcImage);
-            imageToProcess.ConvertCubemapLayout(CubemapLayoutHorizontalCross);
-            ASSERT_TRUE(imageToProcess.Get()->GetWidth(0) * 3 == imageToProcess.Get()->GetHeight(0) * 4);
-            SaveImageToFile(imageToProcess.Get(), "LatLong", 1);
-        }
-
-        {
-            IImageObjectPtr srcImage(LoadImageFromFile(m_testFileFolder + "defaultProbe_cm.tif"));
+            IImageObjectPtr srcImage(LoadImageFromFile(m_imagFileNameMap[Image_defaultprobe_cm_1536x256_64bits_tif]));
             ImageToProcess imageToProcess(srcImage);
 
             imageToProcess.ConvertCubemapLayout(CubemapLayoutVertical);
@@ -635,12 +588,8 @@ namespace UnitTest
         ASSERT_TRUE(img != nullptr);
         ASSERT_TRUE(img->GetPixelFormat() == ePixelFormat_B8G8R8);
 
-        // Exr files
-        img = IImageObjectPtr(LoadImageFromFile(m_imagFileNameMap[Image_Sunset_4096x2048_R16G16B16A16F_exr]));
-        ASSERT_TRUE(img != nullptr);
-        img = IImageObjectPtr(LoadImageFromFile(m_testFileFolder + "abandoned_sanatorium_staircase_cm.exr"));
-        ASSERT_TRUE(img != nullptr);
-        img = IImageObjectPtr(LoadImageFromFile(m_testFileFolder + "road_in_tenerife_mountain_cm.exr"));
+        // Exr file
+        img = IImageObjectPtr(LoadImageFromFile(m_imagFileNameMap[Image_workshop_iblskyboxcm_exr]));
         ASSERT_TRUE(img != nullptr);
     }
 
@@ -783,39 +732,33 @@ namespace UnitTest
         ASSERT_TRUE(dstImage3->CompareImage(dstImage1));
     }
 
-    TEST_F(ImageProcessingTest, DISABLED_TestConvertPVRTC)
+    TEST_F(ImageProcessingTest, TestConvertFormatCompressed)
     {
-        //source image
-        AZStd::string inputFile;
-        inputFile = "../AutomatedTesting/Objects/ParticleAssets/ShowRoom/showroom_pipe_blue_001_ddna.tif";
-
-        IImageObjectPtr srcImage(LoadImageFromFile(inputFile));
-        ImageToProcess imageToProcess(srcImage);
-
-        for (EPixelFormat pixelFormat = ePixelFormat_PVRTC2; pixelFormat <= ePixelFormat_ETC2a;)
-        {
-            imageToProcess.Set(srcImage);
-            imageToProcess.ConvertFormat(pixelFormat);
-            SaveImageToFile(imageToProcess.Get(), "Compressor", 1);
-
-            //next format
-            pixelFormat = EPixelFormat(pixelFormat + 1);
-        }
-    }
-
-    TEST_F(ImageProcessingTest, DISABLED_TestConvertFormat)
-    {
-        EPixelFormat pixelFormat;
         IImageObjectPtr srcImage;
 
         //images to be tested
-        static const int imageCount = 5;
+        static const int imageCount = 4;
         ImageFeature images[imageCount] = {
             Image_20X16_RGBA8_Png,
-            Image_32X32_16bit_F_Tif,
-            Image_32X32_32bit_F_Tif,
-            Image_512x512_Normal_Tga,
-            Image_128x128_Transparent_Tga };
+            Image_237x177_RGB_Jpg,
+            Image_128x128_Transparent_Tga,
+            Image_defaultprobe_cm_1536x256_64bits_tif};
+
+        // collect all compressed pixel formats
+        AZStd::vector<EPixelFormat> compressedFormats;
+        for (uint32 i = 0; i < ePixelFormat_Count; i++)
+        {
+            EPixelFormat pixelFormat = (EPixelFormat)i;
+            auto formatInfo = CPixelFormats::GetInstance().GetPixelFormatInfo(pixelFormat);
+            if (formatInfo->bCompressed)
+            {
+                // skip ASTC formats which are tested in TestConvertASTCCompressor
+                if (!IsASTCFormat(pixelFormat))
+                {
+                    compressedFormats.push_back(pixelFormat);
+                }
+            }
+        }
 
         for (int imageIdx = 0; imageIdx < imageCount; imageIdx++)
         {
@@ -827,43 +770,128 @@ namespace UnitTest
             ImageToProcess imageToProcess(srcImage);
 
             //test ConvertFormat functions against all the pixel formats
-            for (pixelFormat = ePixelFormat_R8G8B8A8; pixelFormat < ePixelFormat_Unknown;)
+            for (EPixelFormat pixelFormat : compressedFormats)
             {
+                // 
+                if (!CPixelFormats::GetInstance().IsImageSizeValid(pixelFormat, srcImage->GetWidth(0), srcImage->GetHeight(0), false))
+                {
+                    continue;
+                }
+#if defined(AZ_ENABLE_TRACING)
+                auto formatInfo = CPixelFormats::GetInstance().GetPixelFormatInfo(pixelFormat);
+#endif
+                ColorSpace sourceColorSpace = srcImage->HasImageFlags(EIF_SRGBRead) ? ColorSpace::sRGB : ColorSpace::linear;
+                ICompressorPtr compressor = ICompressor::FindCompressor(pixelFormat, sourceColorSpace, true);
+
+                if (!compressor)
+                {
+                    AZ_Warning("test", false, "unsupported format: %s",  formatInfo->szName);
+                    continue;
+                }
+
                 imageToProcess.Set(srcImage);
                 imageToProcess.ConvertFormat(pixelFormat);
 
                 ASSERT_TRUE(imageToProcess.Get());
+                ASSERT_TRUE(imageToProcess.Get()->GetPixelFormat() == pixelFormat);
 
-                //if the format is compressed and there is no compressor for it, it won't be converted to the expected format
-                if (ICompressor::FindCompressor(pixelFormat, ImageProcessingAtom::ColorSpace::autoSelect, true) == nullptr
-                    && !CPixelFormats::GetInstance().IsPixelFormatUncompressed(pixelFormat))
-                {
-                    ASSERT_TRUE(imageToProcess.Get()->GetPixelFormat() != pixelFormat);
-                }
-                else
-                {
-                    //validate the size and it may not working for some uncompressed format
-                    if (!CPixelFormats::GetInstance().IsImageSizeValid(
-                        pixelFormat, srcImage->GetWidth(0), srcImage->GetHeight(0), false))
-                    {
-                        ASSERT_TRUE(imageToProcess.Get()->GetPixelFormat() != pixelFormat);
-                    }
-                    else
-                    {
-                        ASSERT_TRUE(imageToProcess.Get()->GetPixelFormat() == pixelFormat);
+                //convert back to an uncompressed format and expect it will be successful
+                imageToProcess.ConvertFormat(srcImage->GetPixelFormat());
+                ASSERT_TRUE(imageToProcess.Get()->GetPixelFormat() == srcImage->GetPixelFormat());
 
-                        //save the image to a file so we can check the visual result
-                        SaveImageToFile(imageToProcess.Get(), imageName, 1);
-
-                        //convert back to an uncompressed format and expect it will be successful
-                        imageToProcess.ConvertFormat(ePixelFormat_R8G8B8A8);
-                        ASSERT_TRUE(imageToProcess.Get()->GetPixelFormat() == ePixelFormat_R8G8B8A8);
-                    }
-                }
-
-                //next pixel format
-                pixelFormat = EPixelFormat(pixelFormat + 1);
+                // Save the image to a file so we can check the visual result
+                AZStd::string outputName = AZStd::string::format("%s_%s", imageName.c_str(), compressor->GetName());
+                SaveImageToFile(imageToProcess.Get(), outputName, 1);
             }
+        }
+    }
+        
+    TEST_F(ImageProcessingTest, Test_ConvertAllAstc_Success)
+    {
+        // Compress/Decompress to all astc formats (LDR)
+        auto imageIdx = Image_237x177_RGB_Jpg;
+        IImageObjectPtr srcImage = IImageObjectPtr(LoadImageFromFile(m_imagFileNameMap[imageIdx]));
+        QFileInfo fi(m_imagFileNameMap[imageIdx].c_str());
+        AZStd::string imageName = fi.baseName().toUtf8().constData();
+        for (uint32 i = 0; i < ePixelFormat_Count; i++)
+        {
+            EPixelFormat pixelFormat = (EPixelFormat)i;
+            if (IsASTCFormat(pixelFormat))
+            {
+                ImageToProcess imageToProcess(srcImage);
+                imageToProcess.ConvertFormat(pixelFormat);
+
+                ASSERT_TRUE(imageToProcess.Get());
+                ASSERT_TRUE(imageToProcess.Get()->GetPixelFormat() == pixelFormat);
+                ASSERT_TRUE(imageToProcess.Get()->GetWidth(0) == srcImage->GetWidth(0));
+                ASSERT_TRUE(imageToProcess.Get()->GetHeight(0) == srcImage->GetHeight(0));
+
+                // convert back to an uncompressed format and expect it will be successful
+                imageToProcess.ConvertFormat(srcImage->GetPixelFormat());
+                ASSERT_TRUE(imageToProcess.Get()->GetPixelFormat() == srcImage->GetPixelFormat());
+
+                // save the image to a file so we can check the visual result
+                AZStd::string outputName = AZStd::string::format("ASTC_%s", imageName.c_str());
+                SaveImageToFile(imageToProcess.Get(), outputName, 1);
+            }
+        }
+    }
+        
+    TEST_F(ImageProcessingTest, Test_ConvertHdrToAstc_Success)
+    {
+        // Compress/Decompress HDR
+        auto imageIdx = Image_defaultprobe_cm_1536x256_64bits_tif;
+        IImageObjectPtr srcImage = IImageObjectPtr(LoadImageFromFile(m_imagFileNameMap[imageIdx]));
+
+        EPixelFormat dstFormat = ePixelFormat_ASTC_4x4;
+        ImageToProcess imageToProcess(srcImage);
+        imageToProcess.ConvertFormat(ePixelFormat_ASTC_4x4);
+                
+        ASSERT_TRUE(imageToProcess.Get());
+        ASSERT_TRUE(imageToProcess.Get()->GetPixelFormat() == dstFormat);
+        ASSERT_TRUE(imageToProcess.Get()->GetWidth(0) == srcImage->GetWidth(0));
+        ASSERT_TRUE(imageToProcess.Get()->GetHeight(0) == srcImage->GetHeight(0));
+                                
+        //convert back to an uncompressed format and expect it will be successful
+        imageToProcess.ConvertFormat(srcImage->GetPixelFormat());
+        ASSERT_TRUE(imageToProcess.Get()->GetPixelFormat() == srcImage->GetPixelFormat());
+                                
+        //save the image to a file so we can check the visual result
+        SaveImageToFile(imageToProcess.Get(), "ASTC_HDR", 1);
+    }
+    
+    TEST_F(ImageProcessingTest, Test_AstcNormalPreset_Success)
+    {
+        // Normal.preset which uses ASTC as output format
+        // This test compress a normal texture and its mipmaps
+
+        auto outcome = BuilderSettingManager::Instance()->LoadConfigFromFolder(m_defaultSettingFolder);
+        ASSERT_TRUE(outcome.IsSuccess());
+
+        AZStd::string inputFile;
+        AZStd::vector<AssetBuilderSDK::JobProduct> outProducts;
+
+        inputFile = m_imagFileNameMap[Image_1024x1024_normal_tiff];
+        IImageObjectPtr srcImage = IImageObjectPtr(LoadImageFromFile(inputFile));
+
+        ImageConvertProcess* process = CreateImageConvertProcess(inputFile, m_outputFolder, "ios", outProducts, m_context.get());
+
+        const PresetSettings* preset = &process->GetInputDesc()->m_presetSetting;
+
+        if (process != nullptr)
+        {
+            process->ProcessAll();
+
+            //get process result
+            ASSERT_TRUE(process->IsSucceed());
+            auto outputImage = process->GetOutputImage();
+            ASSERT_TRUE(outputImage->GetPixelFormat() == preset->m_pixelFormat);
+            ASSERT_TRUE(outputImage->GetWidth(0) == srcImage->GetWidth(0));
+            ASSERT_TRUE(outputImage->GetHeight(0) == srcImage->GetHeight(0));
+            
+            SaveImageToFile(outputImage, "ASTC_Normal", 10);
+
+            delete process;
         }
     }
 
@@ -928,44 +956,8 @@ namespace UnitTest
         PlatformNameList platforms = BuilderSettingManager::Instance()->GetPlatformList();
 
     #ifndef AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS
-        ASSERT_TRUE(platforms.size() == 4);
+        EXPECT_THAT(platforms, testing::UnorderedPointwise(testing::Eq(), {"pc", "linux", "mac", "ios", "android"}));
     #endif //AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS
-    }
-
-    TEST_F(ImageProcessingTest, DISABLED_TestCubemap)
-    {
-        //load builder presets
-        auto outcome = BuilderSettingManager::Instance()->LoadConfigFromFolder(m_defaultSettingFolder);
-        ASSERT_TRUE(outcome.IsSuccess());
-
-        const AZStd::string outputFolder = m_gemFolder + AZStd::string("Code/Tests/TestAssets/temp/");
-        AZStd::string inputFile;
-        AZStd::vector<AssetBuilderSDK::JobProduct> outProducts;
-
-        inputFile = m_testFileFolder + "defaultProbe_cm.tif";
-
-        ImageConvertProcess* process = CreateImageConvertProcess(inputFile, outputFolder, "pc", outProducts);
-
-        if (process != nullptr)
-        {
-            int step = 0;
-            while (!process->IsFinished())
-            {
-                process->UpdateProcess();
-                step++;
-            }
-
-            //get process result
-            ASSERT_TRUE(process->IsSucceed());
-
-            SaveImageToFile(process->GetOutputImage(), "cubemap", 100);
-            SaveImageToFile(process->GetOutputIBLSpecularCubemap(), "iblspecularcubemap", 100);
-            SaveImageToFile(process->GetOutputIBLDiffuseCubemap(), "ibldiffusecubemap", 100);
-            SaveImageToFile(process->GetOutputAlphaImage(), "alpha", 1);
-            process->GetAppendOutputProducts(outProducts);
-
-            delete process;
-        }
     }
 
     //test image conversion for builder
@@ -975,12 +967,11 @@ namespace UnitTest
         auto outcome = BuilderSettingManager::Instance()->LoadConfigFromFolder(m_defaultSettingFolder);
         ASSERT_TRUE(outcome.IsSuccess());
 
-        const AZStd::string outputFolder = m_gemFolder + AZStd::string("Code/Tests/TestAssets/temp/");
         AZStd::string inputFile;
         AZStd::vector<AssetBuilderSDK::JobProduct> outProducts;
 
         inputFile = m_imagFileNameMap[Image_128x128_Transparent_Tga];
-        ImageConvertProcess* process = CreateImageConvertProcess(inputFile, outputFolder, "pc", outProducts, m_context.get());
+        ImageConvertProcess* process = CreateImageConvertProcess(inputFile, m_outputFolder, "pc", outProducts, m_context.get());
 
         if (process != nullptr)
         {
@@ -996,7 +987,6 @@ namespace UnitTest
             ASSERT_TRUE(process->IsSucceed());
 
             SaveImageToFile(process->GetOutputImage(), "rgb", 10);
-            SaveImageToFile(process->GetOutputAlphaImage(), "alpha", 10);
 
             process->GetAppendOutputProducts(outProducts);
 
@@ -1004,79 +994,38 @@ namespace UnitTest
         }
     }
 
-
-    //test image loading function for output dds files
-    TEST_F(ImageProcessingTest, DISABLED_TestLoadDdsImage)
+    TEST_F(ImageProcessingTest, TestIblSkyboxPreset)
     {
-        IImageObjectPtr originImage, alphaImage;
-        AZStd::string inputFolder = "../AutomatedTesting/Cache/pc/engineassets/texturemsg/";
+        //load builder presets
+        auto outcome = BuilderSettingManager::Instance()->LoadConfigFromFolder(m_defaultSettingFolder);
+        ASSERT_TRUE(outcome.IsSuccess());
+
         AZStd::string inputFile;
+        AZStd::vector<AssetBuilderSDK::JobProduct> outProducts;
 
-        inputFile = "E:/Javelin_NWLYDev/dev/Cache/Assets/pc/assets/textures/blend_maps/moss/jav_moss_ddn.dds";
+        inputFile = m_imagFileNameMap[Image_workshop_iblskyboxcm_exr];
+        ImageConvertProcess* process = CreateImageConvertProcess(inputFile, m_outputFolder, "pc", outProducts, m_context.get());
 
-        IImageObjectPtr newImage = IImageObjectPtr(DdsLoader::LoadImageFromFileLegacy(inputFile));
-        if (newImage->HasImageFlags(EIF_AttachedAlpha))
+        if (process != nullptr)
         {
-            if (newImage->HasImageFlags(EIF_Splitted))
-            {
-                alphaImage = IImageObjectPtr(DdsLoader::LoadImageFromFileLegacy(inputFile + ".a"));
-            }
-            else
-            {
-                alphaImage = IImageObjectPtr(DdsLoader::LoadAttachedImageFromDdsFileLegacy(inputFile, newImage));
-            }
+            process->ProcessAll();
+
+            //get process result
+            ASSERT_TRUE(process->IsSucceed());
+
+            auto specularImage = process->GetOutputIBLSpecularCubemap();
+            auto diffuseImage = process->GetOutputIBLDiffuseCubemap();
+            ASSERT_TRUE(process->GetOutputImage());
+            ASSERT_TRUE(specularImage);
+            ASSERT_TRUE(diffuseImage);
+
+            // output converted result if save image is enabled
+            SaveImageToFile(process->GetOutputImage(), "ibl_skybox", 10);
+            SaveImageToFile(specularImage, "ibl_specular", 10);
+            SaveImageToFile(diffuseImage, "ibl_diffuse", 10);
+
+            delete process;
         }
-
-        SaveImageToFile(newImage, "jav_moss_ddn", 10);
-    }
-
-    TEST_F(ImageProcessingTest, DISABLED_CompareOutputImage)
-    {
-        AZStd::string curretTextureFolder = "../TestAssets/TextureAssets/assets_new/textures";
-        AZStd::string oldTextureFolder = "../TestAssets/TextureAssets/assets_old/textures";
-        bool outputOnlyDifferent = false;
-        QDirIterator it(curretTextureFolder.c_str(), QStringList() << "*.dds", QDir::Files, QDirIterator::Subdirectories);
-        QFile f("../texture_comparison_output.csv");
-        f.open(QIODevice::ReadWrite | QIODevice::Truncate);
-        // Write a header for csv file
-        f.write("Texture Name, Path, Mip new/old, MipDiff, Format new/old, Flag new/old, MemSize new/old, MemDiff, Error, AlphaMip new/old, AlphaMipDiff, AlphaFormat new/old, AlphaFlag new/old, AlphaMemSize new/old, AlphaMemDiff, AlphaError\r\n");
-        int i = 0;
-        while (it.hasNext())
-        {
-            i++;
-            it.next();
-
-            QString fileName = it.fileName();
-            QString newFilePath = it.filePath();
-            QString sharedPath = QString(newFilePath).remove(curretTextureFolder.c_str());
-            QString oldFilePath = QString(oldTextureFolder.c_str()) + sharedPath;
-            QString output;
-            if (QFile::exists(oldFilePath))
-            {
-                bool isDifferent = CompareDDSImage(newFilePath, oldFilePath, output);
-                if (outputOnlyDifferent && !isDifferent)
-                {
-                    continue;
-                }
-                else
-                {
-                    f.write(fileName.toUtf8().constData());
-                    f.write(",");
-                    f.write(sharedPath.toUtf8().constData());
-                    f.write(output.toUtf8().constData());
-                }
-            }
-            else
-            {
-                f.write(fileName.toUtf8().constData());
-                f.write(",");
-                f.write(sharedPath.toUtf8().constData());
-                output += ",No old file for comparison!";
-                f.write(output.toUtf8().constData());
-            }
-            f.write("\r\n");
-        }
-        f.close();
     }
 
     TEST_F(ImageProcessingTest, TextureSettingReflect_SerializingModernDataInAndOut_WritesAndParsesFileAccurately)
@@ -1085,7 +1034,7 @@ namespace UnitTest
 
         // Fill-in structure with test data
         TextureSettings fakeTextureSettings;
-        fakeTextureSettings.m_preset = AZ::Uuid::CreateRandom();
+        fakeTextureSettings.m_preset = "testPreset";
         fakeTextureSettings.m_sizeReduceLevel = 0;
         fakeTextureSettings.m_suppressEngineReduce = true;
         fakeTextureSettings.m_enableMipmap = false;

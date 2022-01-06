@@ -7,11 +7,14 @@
  */
 #pragma once
 
+#include <AzCore/Debug/Budget.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
 
 #include <Atom/RHI.Reflect/Base.h>
+
+AZ_DECLARE_BUDGET(RPI);
 
 namespace UnitTest
 {

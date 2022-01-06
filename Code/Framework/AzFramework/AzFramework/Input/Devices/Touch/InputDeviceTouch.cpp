@@ -16,38 +16,10 @@
 namespace AzFramework
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    const InputDeviceId InputDeviceTouch::Id("touch");
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
     bool InputDeviceTouch::IsTouchDevice(const InputDeviceId& inputDeviceId)
     {
         return (inputDeviceId.GetNameCrc32() == Id.GetNameCrc32());
     }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    const InputChannelId InputDeviceTouch::Touch::Index0("touch_index_0");
-    const InputChannelId InputDeviceTouch::Touch::Index1("touch_index_1");
-    const InputChannelId InputDeviceTouch::Touch::Index2("touch_index_2");
-    const InputChannelId InputDeviceTouch::Touch::Index3("touch_index_3");
-    const InputChannelId InputDeviceTouch::Touch::Index4("touch_index_4");
-    const InputChannelId InputDeviceTouch::Touch::Index5("touch_index_5");
-    const InputChannelId InputDeviceTouch::Touch::Index6("touch_index_6");
-    const InputChannelId InputDeviceTouch::Touch::Index7("touch_index_7");
-    const InputChannelId InputDeviceTouch::Touch::Index8("touch_index_8");
-    const InputChannelId InputDeviceTouch::Touch::Index9("touch_index_9");
-    const AZStd::array<InputChannelId, 10> InputDeviceTouch::Touch::All =
-    {{
-        Index0,
-        Index1,
-        Index2,
-        Index3,
-        Index4,
-        Index5,
-        Index6,
-        Index7,
-        Index8,
-        Index9
-    }};
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void InputDeviceTouch::Reflect(AZ::ReflectContext* context)
@@ -84,8 +56,9 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceTouch::InputDeviceTouch()
-        : InputDevice(Id)
+    InputDeviceTouch::InputDeviceTouch(const InputDeviceId& inputDeviceId,
+                                       ImplementationFactory implementationFactory)
+        : InputDevice(inputDeviceId)
         , m_allChannelsById()
         , m_touchChannelsById()
         , m_pimpl(nullptr)
@@ -100,8 +73,8 @@ namespace AzFramework
             m_touchChannelsById[channelId] = channel;
         }
 
-        // Create the platform specific implementation
-        m_pimpl.reset(Implementation::Create(*this));
+        // Create the platform specific or custom implementation
+        m_pimpl.reset(implementationFactory ? implementationFactory(*this) : nullptr);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

@@ -19,7 +19,7 @@ namespace ScriptCanvas
     {
         using namespace MathNodeUtilities;
         using namespace Data;
-        static const char* k_categoryName = "Math/Vector4";
+        static constexpr const char* k_categoryName = "Math/Vector4";
 
         AZ_INLINE Vector4Type Absolute(const Vector4Type source)
         {
@@ -225,7 +225,7 @@ namespace ScriptCanvas
         {
             Vector4Type r = to - from;
             float length = r.NormalizeWithLength();
-            r.SetLength(optionalScale);
+            r.SetLength(static_cast<float>(optionalScale));
             return std::make_tuple(r, length);
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_WITH_DEFAULTS(DirectionTo, DirectionToDefaults, k_categoryName, "{463762DE-E541-4AFE-80C2-FED1C5273319}", "Returns a direction vector between two points and the distance between them, by default the direction will be normalized, but it may be optionally scaled using the Scale parameter if different from 1.0", "From", "To", "Scale");

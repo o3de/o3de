@@ -83,7 +83,7 @@ protected Q_SLOTS:
     void OnIndexDoubleClicked(const QModelIndex& index);
 
 protected:
-    virtual void OnFileMonitorChange(const SFileChangeInfo& rChange);
+    void OnFileMonitorChange(const SFileChangeInfo& rChange) override;
     void contextMenuEvent(QContextMenuEvent* e) override;
 
     void InitTree();

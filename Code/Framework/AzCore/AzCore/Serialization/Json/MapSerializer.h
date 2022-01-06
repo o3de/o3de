@@ -46,7 +46,8 @@ namespace AZ
     public:
         AZ_RTTI(JsonUnorderedMapSerializer, "{EF4478D3-1820-4FDB-A7B7-C9711EB41602}", JsonMapSerializer);
         AZ_CLASS_ALLOCATOR_DECL;
-        
+
+        using JsonMapSerializer::Store;
         JsonSerializationResult::Result Store(rapidjson::Value& outputValue, const void* inputValue, const void* defaultValue,
             const Uuid& valueTypeId, JsonSerializerContext& context) override;
     };
@@ -63,6 +64,7 @@ namespace AZ
             const SerializeContext::ClassElement* keyElement, const SerializeContext::ClassElement* valueElement,
             const rapidjson::Value& key, const rapidjson::Value& value, JsonDeserializerContext& context) override;
 
+        using JsonMapSerializer::Store;
         JsonSerializationResult::Result Store(rapidjson::Value& outputValue, const void* inputValue, const void* defaultValue,
             const Uuid& valueTypeId, JsonSerializerContext& context) override;
     };

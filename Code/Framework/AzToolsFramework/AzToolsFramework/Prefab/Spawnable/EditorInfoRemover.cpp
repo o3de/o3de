@@ -513,7 +513,7 @@ exportComponent, prefabProcessorContext);
         // convert Prefab DOM into Prefab Instance.
         AZStd::unique_ptr<Instance> instance(aznew Instance());
         if (!Prefab::PrefabDomUtils::LoadInstanceFromPrefabDom(*instance, prefab,
-            Prefab::PrefabDomUtils::LoadInstanceFlags::AssignRandomEntityId))
+            Prefab::PrefabDomUtils::LoadFlags::AssignRandomEntityId))
         {
             PrefabDomValueReference sourceReference = PrefabDomUtils::FindPrefabDomValue(prefab, PrefabDomUtils::SourceName);
 

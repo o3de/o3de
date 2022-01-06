@@ -278,7 +278,7 @@ namespace AZ
         {
             AZ::Name        m_nameId;
             uint32_t        m_sizeInBytes = 0;
-            uint32_t        m_space = -1;
+            uint32_t        m_space = std::numeric_limits<uint32_t>::max();
             uint32_t        m_registerId = RHI::UndefinedRegisterSlot;
         };
     } // ShaderBuilder

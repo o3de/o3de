@@ -7,7 +7,7 @@
         "ShaderAssetFileName": "diffuseprobegridblenddistance.azshader",
         "PlatformIdentifiers": 
         [
-            "pc"
+            "pc", "linux"
         ],
         "RootShaderVariantAssets":
         [

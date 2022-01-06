@@ -106,7 +106,7 @@ namespace UnitTest
         range.m_arraySliceMax -= 1;
         auto overlapInterval = m_property.Get(range);
         EXPECT_EQ(overlapInterval.size(), m_imageDescriptor.m_mipLevels);
-        for (uint32_t i = 0; i < overlapInterval.size(); ++i)
+        for (uint16_t i = 0; i < overlapInterval.size(); ++i)
         {
             RHI::ImageSubresourceRange mipRange = range;
             mipRange.m_mipSliceMin = i;

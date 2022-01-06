@@ -6,12 +6,10 @@
 #
 #
 
+include(AzFramework/feature_options.cmake)
 
 ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
 ly_get_list_relative_pal_filename(common_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/Common)
-
-set(LY_STATISTICAL_PROFILING_ENABLED OFF CACHE BOOL "Enables statistical profiling when using AZ_PROFILE_SCOPE. If True, it takes effect only if RAD Telemetry is disabled.")
-set(LY_TOUCHBENDING_LAYER_BIT 63 CACHE STRING "Use TouchBending as the collision layer. The TouchBending layer can be a number from 1 to 63 (Default=63).")
 
 ly_add_target(
     NAME AzFramework STATIC
@@ -32,27 +30,17 @@ ly_add_target(
             AZ::AzCore
         PUBLIC
             AZ::GridMate
-            3rdParty::md5
-            3rdParty::zlib
             3rdParty::zstd
             3rdParty::lz4
 )
 
-if(LY_STATISTICAL_PROFILING_ENABLED)
-    ly_add_source_properties(
-        SOURCES AzFramework/Debug/StatisticalProfilerProxy.h
-        PROPERTY COMPILE_DEFINITIONS 
-        VALUES AZ_STATISTICAL_PROFILING_ENABLED
-    )
-endif()
+set(LY_SEARCH_MODE_DEFINE $<$<BOOL:"${LY_ARCHIVE_FILE_SEARCH_MODE}">:LY_ARCHIVE_FILE_SEARCH_MODE=${LY_ARCHIVE_FILE_SEARCH_MODE}>)
 
 ly_add_source_properties(
-    SOURCES 
-        AzFramework/Physics/Collision/CollisionGroups.cpp
-        AzFramework/Physics/Collision/CollisionLayers.cpp
+    SOURCES
+        AzFramework/Archive/ArchiveVars.cpp
     PROPERTY COMPILE_DEFINITIONS
-    VALUES TOUCHBENDING_LAYER_BIT=${LY_TOUCHBENDING_LAYER_BIT}
-)
+    VALUES ${LY_SEARCH_MODE_DEFINE})
 
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
@@ -63,6 +51,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         NAMESPACE AZ
         FILES_CMAKE
             Tests/framework_shared_tests_files.cmake
+            AzFramework/Physics/physics_mock_files.cmake
+            Tests/terrain_mock_files.cmake
         INCLUDE_DIRECTORIES
             PUBLIC
                 Tests
@@ -70,8 +60,11 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 AZ::AzCore
                 AZ::AzFramework
+            PUBLIC
+                AZ::AzTest
+                AZ::AzTestShared
     )
-
+    
     if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
         ly_add_target(
@@ -93,6 +86,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             NAMESPACE AZ
             FILES_CMAKE
                 Tests/frameworktests_files.cmake
+                ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
             INCLUDE_DIRECTORIES
                 PRIVATE
                     Tests
@@ -109,6 +103,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         ly_add_googletest(
             NAME AZ::AzFramework.Tests
         )
+
+        include(${pal_dir}/platform_specific_test_targets.cmake)
 
     endif()
 

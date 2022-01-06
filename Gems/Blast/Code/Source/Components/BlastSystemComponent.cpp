@@ -15,6 +15,7 @@
 #include <AzCore/Jobs/JobCompletion.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Memory/Memory.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Blast/BlastActorData.h>
@@ -32,6 +33,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 #endif
+#include <CryCommon/ISystem.h>
 
 namespace Blast
 {
@@ -111,7 +113,7 @@ namespace Blast
 
     void BlastSystemComponent::Activate()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::System);
+        AZ_PROFILE_FUNCTION(Physics);
         auto blastAssetHandler = aznew BlastAssetHandler();
         blastAssetHandler->Register();
         m_assetHandlers.emplace_back(blastAssetHandler);
@@ -140,13 +142,16 @@ namespace Blast
 
     void BlastSystemComponent::Deactivate()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::System);
+        AZ_PROFILE_FUNCTION(Physics);
+        AZ::Data::AssetBus::MultiHandler::BusDisconnect();
         CrySystemEventBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
         BlastSystemRequestBus::Handler::BusDisconnect();
 
         SaveConfiguration();
         DeactivatePhysics();
+
+        m_configuration.m_materialLibrary.Release();
 
         m_assetHandlers.clear();
     };
@@ -184,7 +189,7 @@ namespace Blast
 
     void BlastSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_FUNCTION(Physics);
 
         AZ::JobCompletion jobCompletion;
 
@@ -225,18 +230,18 @@ namespace Blast
 
         for (auto& group : m_groups)
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Physics, "ExtGroupTaskManager::process");
+            AZ_PROFILE_SCOPE(Physics, "ExtGroupTaskManager::process");
             group.m_extGroupTaskManager->process();
         }
         for (auto& group : m_groups)
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Physics, "ExtGroupTaskManager::wait");
+            AZ_PROFILE_SCOPE(Physics, "ExtGroupTaskManager::wait");
             group.m_extGroupTaskManager->wait();
         }
 
         // Clean up damage descriptions and program params now that groups have run.
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Physics, "BlastSystemComponent::OnTick::Cleanup");
+            AZ_PROFILE_SCOPE(Physics, "BlastSystemComponent::OnTick::Cleanup");
             m_radialDamageDescs.clear();
             m_capsuleDamageDescs.clear();
             m_shearDamageDescs.clear();
@@ -247,24 +252,27 @@ namespace Blast
 
         if (gEnv && m_debugRenderMode)
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Physics, "BlastSystemComponent::OnTick::DebugRender");
+            AZ_PROFILE_SCOPE(Physics, "BlastSystemComponent::OnTick::DebugRender");
             DebugRenderBuffer buffer;
             BlastFamilyComponentRequestBus::Broadcast(
                 &BlastFamilyComponentRequests::FillDebugRenderBuffer, buffer, m_debugRenderMode);
 
-            // This is a system component, and thus is not associated with a specific scene, so use the default scene
+            // This is a system component, and thus is not associated with a specific scene, so use the bootstrap scene
             // for the debug drawing
-            const auto defaultScene = AZ::RPI::RPISystemInterface::Get()->GetDefaultScene();
-            auto drawQueue = AZ::RPI::AuxGeomFeatureProcessorInterface::GetDrawQueueForScene(defaultScene);
-
-            for (DebugLine& line : buffer.m_lines)
+            const auto mainScene = AZ::RPI::RPISystemInterface::Get()->GetSceneByName(AZ::Name("Main"));
+            if (mainScene)
             {
-                AZ::RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments drawArguments;
-                drawArguments.m_verts = &line.m_p0;
-                drawArguments.m_vertCount = 2;
-                drawArguments.m_colors = &line.m_color;
-                drawArguments.m_colorCount = 1;
-                drawQueue->DrawLines(drawArguments);
+                auto drawQueue = AZ::RPI::AuxGeomFeatureProcessorInterface::GetDrawQueueForScene(mainScene);
+
+                for (DebugLine& line : buffer.m_lines)
+                {
+                    AZ::RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments drawArguments;
+                    drawArguments.m_verts = &line.m_p0;
+                    drawArguments.m_vertCount = 2;
+                    drawArguments.m_colors = &line.m_color;
+                    drawArguments.m_colorCount = 1;
+                    drawQueue->DrawLines(drawArguments);
+                }
             }
         }
     }
@@ -284,13 +292,16 @@ namespace Blast
             DefaultConfigurationPath, globalConfiguration);
         AZ_Warning("Blast", loaded, "Failed to load Blast configuration, initializing with default configs.");
 
-        SetGlobalConfiguration(globalConfiguration);
-        SaveConfiguration();
+        ApplyGlobalConfiguration(globalConfiguration);
+        if (!loaded)
+        {
+            SaveConfiguration();
+        }
     }
 
     void BlastSystemComponent::SaveConfiguration()
     {
-        auto assetRoot = AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@");
+        auto assetRoot = AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectroot@");
 
         if (!assetRoot)
         {
@@ -307,7 +318,7 @@ namespace Blast
 
     void BlastSystemComponent::CheckoutConfiguration()
     {
-        const auto assetRoot = AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@");
+        const auto assetRoot = AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectroot@");
 
         AZStd::string fullPath;
         AzFramework::StringFunc::Path::Join(assetRoot, DefaultConfigurationPath, fullPath);
@@ -392,8 +403,13 @@ namespace Blast
 
     void BlastSystemComponent::SetGlobalConfiguration(const BlastGlobalConfiguration& globalConfiguration)
     {
-        m_configuration = globalConfiguration;
+        ApplyGlobalConfiguration(globalConfiguration);
         SaveConfiguration();
+    }
+
+    void BlastSystemComponent::ApplyGlobalConfiguration(const BlastGlobalConfiguration& globalConfiguration)
+    {
+        m_configuration = globalConfiguration;
 
         {
             AZ::Data::Asset<Blast::BlastMaterialLibraryAsset>& materialLibrary = m_configuration.m_materialLibrary;
@@ -427,18 +443,16 @@ namespace Blast
 
     void BlastSystemComponent::AZBlastProfilerCallback::zoneStart(const char* eventName)
     {
-        AZ_PROFILE_EVENT_BEGIN(AZ::Debug::ProfileCategory::Physics, eventName);
+        AZ_PROFILE_BEGIN(Physics, eventName);
     }
 
     void BlastSystemComponent::AZBlastProfilerCallback::zoneEnd()
     {
-        AZ_PROFILE_EVENT_END(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_END(Physics);
     }
 
     static void CmdToggleBlastDebugVisualization(IConsoleCmdArgs* args)
     {
-        using namespace CryStringUtils;
-
         const int argumentCount = args->GetArgCount();
 
         if (argumentCount == 2)

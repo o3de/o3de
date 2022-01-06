@@ -20,7 +20,7 @@ namespace ScriptCanvas
     {
         using namespace Data;
         using namespace MathNodeUtilities;
-        static const char* k_categoryName = "Math/Transform";
+        static constexpr const char* k_categoryName = "Math/Transform";
 
         AZ_INLINE std::tuple<NumberType, TransformType> ExtractUniformScale(TransformType source)
         {
@@ -55,7 +55,7 @@ namespace ScriptCanvas
 
         AZ_INLINE TransformType FromScale(NumberType scale)
         {
-            return TransformType::CreateUniformScale(scale);
+            return TransformType::CreateUniformScale(static_cast<float>(scale));
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(FromScale, k_categoryName, "{4B6454BC-015C-41BB-9C78-34ADBCF70187}", "returns a transform which applies the specified uniform Scale, but no rotation or translation", "Scale");
 
@@ -74,7 +74,7 @@ namespace ScriptCanvas
             vector.SetLength(aznumeric_cast<float>(scale));
             return vector;
         }
-        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_WITH_DEFAULTS(GetRight, DefaultScale<1>, k_categoryName, "{65811752-711F-4566-869E-5AEF53206342}", "returns the right direction vector from the specified transform scaled by a given value (Lumberyard uses Z up, right handed)", "Source", "Scale");
+        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_WITH_DEFAULTS(GetRight, DefaultScale<1>, k_categoryName, "{65811752-711F-4566-869E-5AEF53206342}", "returns the right direction vector from the specified transform scaled by a given value (O3DE uses Z up, right handed)", "Source", "Scale");
 
         AZ_INLINE Vector3Type GetForward(const TransformType& source, NumberType scale)
         {
@@ -82,7 +82,7 @@ namespace ScriptCanvas
             vector.SetLength(aznumeric_cast<float>(scale));
             return vector;
         }
-        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_WITH_DEFAULTS(GetForward, DefaultScale<1>, k_categoryName, "{3602a047-9f12-46d4-9648-8f53770c8130}", "returns the forward direction vector from the specified transform scaled by a given value (Lumberyard uses Z up, right handed)", "Source", "Scale");
+        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_WITH_DEFAULTS(GetForward, DefaultScale<1>, k_categoryName, "{3602a047-9f12-46d4-9648-8f53770c8130}", "returns the forward direction vector from the specified transform scaled by a given value (O3DE uses Z up, right handed)", "Source", "Scale");
 
         AZ_INLINE Vector3Type GetUp(const TransformType& source, NumberType scale)
         {
@@ -90,7 +90,7 @@ namespace ScriptCanvas
             vector.SetLength(aznumeric_cast<float>(scale));
             return vector;
         }
-        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_WITH_DEFAULTS(GetUp, DefaultScale<1>, k_categoryName, "{F10F52D2-E6F2-4E39-84D5-B4A561F186D3}", "returns the up direction vector from the specified transform scaled by a given value (Lumberyard uses Z up, right handed)", "Source", "Scale");
+        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_WITH_DEFAULTS(GetUp, DefaultScale<1>, k_categoryName, "{F10F52D2-E6F2-4E39-84D5-B4A561F186D3}", "returns the up direction vector from the specified transform scaled by a given value (O3DE uses Z up, right handed)", "Source", "Scale");
 
         AZ_INLINE Vector3Type GetTranslation(const TransformType& source)
         {
@@ -143,7 +143,7 @@ namespace ScriptCanvas
 
         AZ_INLINE TransformType MultiplyByUniformScale(TransformType source, NumberType scale)
         {
-            source.MultiplyByUniformScale(scale);
+            source.MultiplyByUniformScale(static_cast<float>(scale));
             return source;
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(MultiplyByUniformScale, k_categoryName, "{90472D62-65A8-40C1-AB08-FA66D793F689}", "returns Source multiplied uniformly by Scale", "Source", "Scale");

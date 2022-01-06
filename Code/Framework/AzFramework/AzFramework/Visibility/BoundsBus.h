@@ -45,6 +45,7 @@ namespace AzFramework
     protected:
         ~BoundsRequests() = default;
     };
+
     using BoundsRequestBus = AZ::EBus<BoundsRequests>;
 
     //! Returns a union of all local Aabbs provided by components implementing the BoundsRequestBus.

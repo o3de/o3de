@@ -67,7 +67,6 @@ namespace UnitTest
             AZStd::vector<Allocation> retiredAllocationsCurrent;
             AZStd::vector<Allocation> retiredAllocationsPrevious;
 
-            const size_t AllocationCount = 100;
             const size_t AllocationSizeRange = descriptor.m_allocationSizeMax - descriptor.m_allocationSizeMin;
 
             AZStd::string outputString;

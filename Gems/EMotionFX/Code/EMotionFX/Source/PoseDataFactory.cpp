@@ -8,13 +8,20 @@
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <EMotionFX/Source/Allocators.h>
 #include <EMotionFX/Source/EMotionFXConfig.h>
 #include <EMotionFX/Source/PoseDataFactory.h>
 #include <EMotionFX/Source/PoseDataRagdoll.h>
 
-
 namespace EMotionFX
 {
+    AZ_CLASS_ALLOCATOR_IMPL(PoseDataFactory, PoseAllocator, 0)
+
+    PoseDataFactory::PoseDataFactory()
+    {
+        AddPoseDataType(azrtti_typeid<PoseDataRagdoll>());
+    }
+
     PoseData* PoseDataFactory::Create(Pose* pose, const AZ::TypeId& type)
     {
         AZ::SerializeContext* context = nullptr;
@@ -34,13 +41,13 @@ namespace EMotionFX
         return result;
     }
 
-    const AZStd::unordered_set<AZ::TypeId>& PoseDataFactory::GetTypeIds()
+    void PoseDataFactory::AddPoseDataType(const AZ::TypeId& poseDataType)
     {
-        static AZStd::unordered_set<AZ::TypeId> typeIds =
-        {
-            azrtti_typeid<PoseDataRagdoll>()
-        };
+        m_poseDataTypeIds.emplace(poseDataType);
+    }
 
-        return typeIds;
+    const AZStd::unordered_set<AZ::TypeId>& PoseDataFactory::GetTypeIds() const
+    {
+        return m_poseDataTypeIds;
     }
 } // namespace EMotionFX

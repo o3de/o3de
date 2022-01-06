@@ -9,7 +9,6 @@
 #include "TranslationUtilities.h"
 
 #include <AzCore/IO/FileIO.h>
-#include <AzCore/IO/FileIOEventBus.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Core/Slot.h>
@@ -30,7 +29,7 @@ namespace TranslationUtilitiesCPP
 
     AZ_INLINE const char* GetTabs(size_t tabs)
     {
-        AZ_Assert(tabs >= 0 && tabs <= k_maxTabs, "invalid argument to GetTabs");
+        AZ_Assert(tabs <= k_maxTabs, "invalid argument to GetTabs");
         
         static const char* const k_tabs[] =
         {
@@ -71,34 +70,6 @@ namespace TranslationUtilitiesCPP
         return AZStd::string::format("%s%s_VM.%s", TranslationUtilitiesCPP::k_fileDirectoryPathLua, source.m_name.data(), extension.data());
     }
 
-    class FileEventHandler
-        : public AZ::IO::FileIOEventBus::Handler
-    {
-    public:
-        int m_errorCode = 0;
-        AZStd::string m_fileName;
-
-        FileEventHandler()
-        {
-            BusConnect();
-        }
-
-        ~FileEventHandler()
-        {
-            BusDisconnect();
-        }
-
-        void OnError(const AZ::IO::SystemFile* /*file*/, const char* fileName, int errorCode) override
-        {
-            m_errorCode = errorCode;
-            
-            if (fileName) 
-            {
-                m_fileName = fileName;
-            }
-        }
-    };
-
     AZ::Outcome<void, AZStd::string> SaveFile(const Grammar::Source& source, AZStd::string_view text, AZStd::string_view extension)
     {
         AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
@@ -111,25 +82,23 @@ namespace TranslationUtilitiesCPP
         // \todo get a (debug) file path based on the extension
         const AZStd::string filePath = TranslationUtilitiesCPP::GetDebugLuaFilePath(source, extension);
 
-        FileEventHandler eventHandler;
-
         AZ::IO::HandleType fileHandle = AZ::IO::InvalidHandle;
         const AZ::IO::Result fileOpenResult = fileIO->Open(filePath.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeText, fileHandle);
         if (fileOpenResult != AZ::IO::ResultCode::Success)
         {
-            return AZ::Failure(AZStd::string::format("Failed to open file: %s, error code: %d", filePath.c_str(), eventHandler.m_errorCode));
+            return AZ::Failure(AZStd::string::format("Failed to open file: %sd", filePath.c_str()));
         }
 
         const AZ::IO::Result fileWriteResult = fileIO->Write(fileHandle, text.begin(), text.size());
         if (fileWriteResult != AZ::IO::ResultCode::Success)
         {
-            return AZ::Failure(AZStd::string::format("Failed to write file: %s, error code: %d", filePath.c_str(), eventHandler.m_errorCode));
+            return AZ::Failure(AZStd::string::format("Failed to write file: %s", filePath.c_str()));
         }
 
         const AZ::IO::Result fileCloseResult = fileIO->Close(fileHandle);
         if (fileCloseResult != AZ::IO::ResultCode::Success)
         {
-            return AZ::Failure(AZStd::string::format("Failed to close file: %s, error code: %d", filePath.c_str(), eventHandler.m_errorCode));
+            return AZ::Failure(AZStd::string::format("Failed to close file: %s", filePath.c_str()));
         }
 
         return AZ::Success();

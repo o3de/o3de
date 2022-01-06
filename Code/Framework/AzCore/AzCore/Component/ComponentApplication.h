@@ -5,14 +5,15 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TickBus.h>
-#include <AzCore/Debug/ProfileModuleInit.h>
 #include <AzCore/Memory/AllocationRecords.h>
+#include <AzCore/Debug/BudgetTracker.h>
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/Module/ModuleManager.h>
@@ -29,16 +30,17 @@
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/osstring.h>
 
+
 namespace AZ
 {
     class BehaviorContext;
     class IConsole;
     class Module;
     class ModuleManager;
+    class TimeSystem;
 }
 namespace AZ::Debug
 {
-    class DrillerManager;
     class LocalFileEventLogger;
 }
 
@@ -140,7 +142,6 @@ namespace AZ
             AZ::u64         m_reservedDebug;            //!< Reserved memory for Debugging (allocation,etc.). Used only when m_grabAllMemory is set to true. (default: 0)
             Debug::AllocationRecords::Mode m_recordingMode; //!< When to record stack traces (default: AZ::Debug::AllocationRecords::RECORD_STACK_IF_NO_FILE_LINE)
             AZ::u64         m_stackRecordLevels;        //!< If stack recording is enabled, how many stack levels to record. (default: 5)
-            bool            m_enableDrilling;           //!< True to enabled drilling support for the application. RegisterDrillers will be called. Ignored in release. (default: true)
             bool            m_useOverrunDetection;      //!< True to use the overrun detection memory management scheme. Only available on some platforms; greatly increases memory consumption.
             bool            m_useMalloc;                //!< True to use malloc instead of the internal memory manager. Intended for debugging purposes only.
 
@@ -174,6 +175,8 @@ namespace AZ
             bool m_loadDynamicModules = true;
             //! Used by test fixtures to ensure reflection occurs to edit context.
             bool m_createEditContext = false;
+            //! Indicates whether the AssetCatalog.xml should be loaded by default in Application::StartCommon
+            bool m_loadAssetCatalog = true;
         };
 
         ComponentApplication();
@@ -196,14 +199,14 @@ namespace AZ
 
         //////////////////////////////////////////////////////////////////////////
         // ComponentApplicationRequests
-        void RegisterComponentDescriptor(const ComponentDescriptor* descriptor) override final;
-        void UnregisterComponentDescriptor(const ComponentDescriptor* descriptor) override final;
-        void RegisterEntityAddedEventHandler(EntityAddedEvent::Handler& handler) override final;
-        void RegisterEntityRemovedEventHandler(EntityRemovedEvent::Handler& handler) override final;
-        void RegisterEntityActivatedEventHandler(EntityActivatedEvent::Handler& handler) override final;
-        void RegisterEntityDeactivatedEventHandler(EntityDeactivatedEvent::Handler& handler) override final;
-        void SignalEntityActivated(Entity* entity) override final;
-        void SignalEntityDeactivated(Entity* entity) override final;
+        void RegisterComponentDescriptor(const ComponentDescriptor* descriptor) final;
+        void UnregisterComponentDescriptor(const ComponentDescriptor* descriptor) final;
+        void RegisterEntityAddedEventHandler(EntityAddedEvent::Handler& handler) final;
+        void RegisterEntityRemovedEventHandler(EntityRemovedEvent::Handler& handler) final;
+        void RegisterEntityActivatedEventHandler(EntityActivatedEvent::Handler& handler) final;
+        void RegisterEntityDeactivatedEventHandler(EntityDeactivatedEvent::Handler& handler) final;
+        void SignalEntityActivated(Entity* entity) final;
+        void SignalEntityDeactivated(Entity* entity) final;
         bool AddEntity(Entity* entity) override;
         bool RemoveEntity(Entity* entity) override;
         bool DeleteEntity(const EntityId& id) override;
@@ -218,18 +221,10 @@ namespace AZ
         BehaviorContext* GetBehaviorContext() override;
         /// Returns the json registration context that has been registered with the app, if there is one.
         JsonRegistrationContext* GetJsonRegistrationContext() override;
-        /// Returns the working root folder that has been registered with the app, if there is one.
-        /// It's expected that derived applications will implement an application root.
-        const char* GetAppRoot() const override { return m_appRoot.c_str(); }
         /// Returns the path to the engine.
-        const char* GetEngineRoot() const override { return m_engineRoot.c_str(); }
+        const char* GetEngineRoot() const override;
         /// Returns the path to the folder the executable is in.
-        const char* GetExecutableFolder() const override { return m_exeDirectory.c_str(); }
-
-
-        /// Returns pointer to the driller manager if it's enabled, otherwise NULL.
-        Debug::DrillerManager* GetDrillerManager() override { return m_drillerManager; }
-        //////////////////////////////////////////////////////////////////////////
+        const char* GetExecutableFolder() const override;
 
         //////////////////////////////////////////////////////////////////////////
         /// TickRequestBus
@@ -242,7 +237,7 @@ namespace AZ
         /**
          * Ticks all components using the \ref AZ::TickBus during simulation time. May not tick if the application is not active (i.e. not in focus)
          */
-        virtual void Tick(float deltaOverride = -1.f);
+        virtual void Tick();
 
         /**
         * Ticks all using the \ref AZ::SystemTickBus at all times. Should always tick even if the application is not active.
@@ -325,9 +320,6 @@ namespace AZ
         /// Create the system allocator using the data in the m_descriptor
         void        CreateSystemAllocator();
 
-        /// Create the drillers
-        void        CreateDrillers();
-
         virtual void MergeSettingsToRegistry(SettingsRegistryInterface& registry);
 
         //! Sets the specializations that will be used when loading the Settings Registry. Extend this in derived
@@ -357,15 +349,6 @@ namespace AZ
         /// Adds system components requested by modules and the application to the system entity.
         void AddRequiredSystemComponents(AZ::Entity* systemEntity);
 
-        /// Calculates the directory the application executable comes from.
-        void CalculateExecutablePath();
-
-        /// Calculates the root directory of the engine.
-        void CalculateEngineRoot();
-
-        /// Calculates the directory where the bootstrap.cfg file resides.
-        void CalculateAppRoot();
-
         template<typename Iterator>
         static void NormalizePath(Iterator begin, Iterator end, bool doLowercase = true)
         {
@@ -376,8 +359,6 @@ namespace AZ
             }
         }
 
-        AZStd::chrono::system_clock::time_point     m_currentTime{ AZStd::chrono::system_clock::time_point::max() };
-        float                                       m_deltaTime{ 0.0f };
         AZStd::unique_ptr<ModuleManager>            m_moduleManager;
         AZStd::unique_ptr<SettingsRegistryInterface> m_settingsRegistry;
         EntityAddedEvent                            m_entityAddedEvent;
@@ -393,15 +374,20 @@ namespace AZ
         void*                                       m_fixedMemoryBlock{ nullptr }; //!< Pointer to the memory block allocator, so we can free it OnDestroy.
         IAllocatorAllocate*                         m_osAllocator{ nullptr };
         EntitySetType                               m_entities;
-        AZ::IO::FixedMaxPath                        m_exeDirectory;
-        AZ::IO::FixedMaxPath                        m_engineRoot;
-        AZ::IO::FixedMaxPath                        m_appRoot;
 
-        AZ::SettingsRegistryInterface::NotifyEventHandler m_projectChangedHandler;
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_projectPathChangedHandler;
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_projectNameChangedHandler;
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_commandLineUpdatedHandler;
+
+        AZStd::unique_ptr<AZ::TimeSystem> m_timeSystem;
 
         // ConsoleFunctorHandle is responsible for unregistering the Settings Registry Console
         // from the m_console member when it goes out of scope
         AZ::SettingsRegistryConsoleUtils::ConsoleFunctorHandle m_settingsRegistryConsoleFunctors;
+
+#if !defined(_RELEASE)
+        Debug::BudgetTracker m_budgetTracker;
+#endif
 
         // this is used when no argV/ArgC is supplied.
         // in order to have the same memory semantics (writable, non-const)
@@ -409,8 +395,6 @@ namespace AZ
         // pack it with a single param.
         char                                        m_commandLineBuffer[AZ_MAX_PATH_LEN];
         char*                                       m_commandLineBufferAddress{ m_commandLineBuffer };
-
-        Debug::DrillerManager*                      m_drillerManager{ nullptr };
 
         StartupParameters                           m_startupParameters;
 

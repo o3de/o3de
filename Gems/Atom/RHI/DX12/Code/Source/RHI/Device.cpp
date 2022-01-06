@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <RHI/Device.h>
 #include <RHI/PhysicalDevice.h>
@@ -13,7 +14,6 @@
 #include <RHI/Fence.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 #include <Atom/RHI.Reflect/DX12/PlatformLimitsDescriptor.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
@@ -27,6 +27,13 @@ namespace AZ
         {
             void DeviceShutdownInternal(ID3D12DeviceX* device);
             void DeviceCompileMemoryStatisticsInternal(RHI::MemoryStatisticsBuilder& builder, IDXGIAdapterX* dxgiAdapter);
+        }
+
+        Device::Device()
+        {
+            RHI::Ptr<PlatformLimitsDescriptor> platformLimitsDescriptor = aznew PlatformLimitsDescriptor();
+            platformLimitsDescriptor->LoadPlatformLimitsDescriptor(RHI::Factory::Get().GetName().GetCStr());
+            m_descriptor.m_platformLimitsDescriptor = RHI::Ptr<RHI::PlatformLimitsDescriptor>(platformLimitsDescriptor);
         }
 
         RHI::Ptr<Device> Device::Create()
@@ -43,35 +50,31 @@ namespace AZ
             }
 
             InitFeatures();
+
             return RHI::ResultCode::Success;
         }
 
-        RHI::ResultCode Device::PostInitInternal(const RHI::DeviceDescriptor& descriptor)
+        RHI::ResultCode Device::InitializeLimits()
         {
             m_allocationInfoCache.SetInitFunction([](auto& cache) { cache.set_capacity(64); });
 
             {
                 ReleaseQueue::Descriptor releaseQueueDescriptor;
-                releaseQueueDescriptor.m_collectLatency = descriptor.m_frameCountMax - 1;
+                releaseQueueDescriptor.m_collectLatency = m_descriptor.m_frameCountMax - 1;
                 m_releaseQueue.Init(releaseQueueDescriptor);
             }
 
             m_descriptorContext = AZStd::make_shared<DescriptorContext>();
 
-            RHI::ConstPtr<RHI::PlatformLimitsDescriptor> rhiDescriptor = descriptor.m_platformLimitsDescriptor;
-            if (RHI::ConstPtr<PlatformLimitsDescriptor> platLimitsDesc = azrtti_cast<const PlatformLimitsDescriptor*>(rhiDescriptor))
-            {
-                m_descriptorContext->Init(m_dx12Device.get(), platLimitsDesc);
-            }
-            else
-            {
-                AZ_Assert(false, "Missing PlatformLimits config file for DX12 backend");
-            }
+            RHI::ConstPtr<RHI::PlatformLimitsDescriptor> rhiDescriptor = m_descriptor.m_platformLimitsDescriptor;
+            RHI::ConstPtr<PlatformLimitsDescriptor> platLimitsDesc = azrtti_cast<const PlatformLimitsDescriptor*>(rhiDescriptor);
+            AZ_Assert(platLimitsDesc != nullptr, "Missing PlatformLimits config file for DX12 backend");
+            m_descriptorContext->Init(m_dx12Device.get(), platLimitsDesc);
 
             {
                 CommandListAllocator::Descriptor commandListAllocatorDescriptor;
                 commandListAllocatorDescriptor.m_device = this;
-                commandListAllocatorDescriptor.m_frameCountMax = descriptor.m_frameCountMax;
+                commandListAllocatorDescriptor.m_frameCountMax = m_descriptor.m_frameCountMax;
                 commandListAllocatorDescriptor.m_descriptorContext = m_descriptorContext;
                 m_commandListAllocator.Init(commandListAllocatorDescriptor);
             }
@@ -80,9 +83,9 @@ namespace AZ
                 StagingMemoryAllocator::Descriptor allocatorDesc;
                 allocatorDesc.m_device = this;
 
-                allocatorDesc.m_mediumPageSizeInBytes = RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_mediumStagingBufferPageSizeInBytes;
-                allocatorDesc.m_largePageSizeInBytes = RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_largestStagingBufferPageSizeInBytes;
-                allocatorDesc.m_collectLatency = descriptor.m_frameCountMax;
+                allocatorDesc.m_mediumPageSizeInBytes = static_cast<uint32_t>(platLimitsDesc->m_platformDefaultValues.m_mediumStagingBufferPageSizeInBytes);
+                allocatorDesc.m_largePageSizeInBytes = static_cast<uint32_t>(platLimitsDesc->m_platformDefaultValues.m_largestStagingBufferPageSizeInBytes);
+                allocatorDesc.m_collectLatency = m_descriptor.m_frameCountMax;
                 m_stagingMemoryAllocator.Init(allocatorDesc);
             }
 
@@ -90,7 +93,7 @@ namespace AZ
 
             m_commandQueueContext.Init(*this);
 
-            m_asyncUploadQueue.Init(*this, AsyncUploadQueue::Descriptor(RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_asyncQueueStagingBufferSizeInBytes));
+            m_asyncUploadQueue.Init(*this, AsyncUploadQueue::Descriptor(platLimitsDesc->m_platformDefaultValues.m_asyncQueueStagingBufferSizeInBytes));
 
             m_samplerCache.SetCapacity(SamplerCacheCapacity);
 
@@ -180,19 +183,14 @@ namespace AZ
             m_stagingMemoryAllocator.ReportMemoryUsage(builder);
         }
 
-        void Device::UpdateCpuTimingStatisticsInternal(RHI::CpuTimingStatistics& cpuTimingStatistics) const
+        void Device::UpdateCpuTimingStatisticsInternal() const
         {
-            m_commandQueueContext.UpdateCpuTimingStatistics(cpuTimingStatistics);
-        }
-
-        void Device::BeginFrameInternal()
-        {
-            m_commandQueueContext.Begin();
+            m_commandQueueContext.UpdateCpuTimingStatistics();
         }
 
         void Device::EndFrameInternal()
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             m_commandQueueContext.End();
 
             m_commandListAllocator.Collect();
@@ -292,6 +290,11 @@ namespace AZ
             return memoryRequirements;
         }
 
+        void Device::ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction)
+        {
+            m_releaseQueue.Notify(notifyFunction);
+        }
+
         //AZStd::vector<RHI::Format> Device::GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle) const
         //{
         //    AZStd::vector<RHI::Format> formatsList;
@@ -355,7 +358,7 @@ namespace AZ
             D3D12_RESOURCE_STATES initialState,
             D3D12_HEAP_TYPE heapType)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             D3D12_RESOURCE_DESC resourceDesc;
             ConvertImageDescriptor(imageDescriptor, resourceDesc);
@@ -620,6 +623,21 @@ namespace AZ
         bool Device::IsAftermathInitialized() const
         {
             return m_isAftermathInitialized;
+        }
+
+        RHI::ResultCode Device::CompactSRGMemory()
+        {
+            if (m_isDescriptorHeapCompactionNeeded)
+            {
+                m_isDescriptorHeapCompactionNeeded = false;
+                return m_descriptorContext->CompactDescriptorHeap();
+            }
+            return RHI::ResultCode::Success;
+        }
+
+        void Device::DescriptorHeapCompactionNeeded()
+        {
+            m_isDescriptorHeapCompactionNeeded = true;
         }
     }
 }

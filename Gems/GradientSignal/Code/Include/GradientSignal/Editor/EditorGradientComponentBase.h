@@ -92,7 +92,7 @@ namespace GradientSignal
         using BaseClassType::m_component;
         using BaseClassType::m_configuration;
 
-        virtual AZ::u32 ConfigurationChanged();
+        AZ::u32 ConfigurationChanged() override;
 
         // This is used by the preview so we can pass an invalid entity Id if our component is disabled
         AZ::EntityId GetGradientEntityId() const;

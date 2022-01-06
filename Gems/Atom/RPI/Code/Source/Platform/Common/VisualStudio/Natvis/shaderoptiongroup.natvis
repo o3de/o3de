@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+	
+  <Type Name="AZ::RPI::ShaderOptionGroup">
+	  <DisplayString>shader option group</DisplayString>
+	  <Expand>
+		  <Item Name="id">m_id.m_key</Item>
+		  <CustomListItems>
+            <Variable Name="iOption" InitialValue="-1" /><Loop>
+                <Break Condition="iOption &gt;= m_layout.px-&gt;m_options.m_last - m_layout.px-&gt;m_options.m_start - 1" />
+                <Exec>iOption++</Exec>
+				
+				<!-- Thanks to the fact that options don't cross 32-bit boundaries, the following equation works -->
+				<!-- <     "{           shader option name for option iOption              }">((                       the word in the bitset that corresponds to this option                        >>     (                         bit offset, adjusted by the corresponding word                                           )))   &   ((                            bit mask                             )) + (                 this option's min value             )</Item>-->
+				<!-- <     "{m_layout.px ->  m_options[iOption].m_name.m_data.px  -> m_name}">((m_id.m_key.m_bits[(int) (m_layout.px  -> m_options[iOption].m_bitOffset / m_id.m_key.BitsPerWord)]   >>     (m_layout.px ->  m_options[iOption].m_bitOffset - ((int) (m_layout.px ->  m_options[iOption].m_bitOffset / 32) * 32)))   &   ((1u    <<    (m_layout.px ->  m_options[iOption].m_bitCount)) - 1u)) + (m_layout.px-&gt;m_options[iOption].m_minValue.m_index)</Item>-->
+				<Item Name="{m_layout.px-&gt;m_options[iOption].m_name.m_data.px-&gt;m_name}">((m_id.m_key.m_bits[(int) (m_layout.px-&gt;m_options[iOption].m_bitOffset / m_id.m_key.BitsPerWord)] &gt;&gt; (m_layout.px-&gt;m_options[iOption].m_bitOffset - ((int) (m_layout.px-&gt;m_options[iOption].m_bitOffset / 32) * 32))) &amp; ((1u &lt;&lt; (m_layout.px-&gt;m_options[iOption].m_bitCount)) - 1u)) + (m_layout.px-&gt;m_options[iOption].m_minValue.m_index)</Item>
+			</Loop>
+	      </CustomListItems> 
+      </Expand>
+  </Type>
+	
+</AutoVisualizer>

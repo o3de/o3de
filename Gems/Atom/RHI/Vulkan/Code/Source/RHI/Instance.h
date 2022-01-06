@@ -34,6 +34,7 @@ namespace AZ
             };
 
             static Instance& GetInstance();
+            static void Reset();
             ~Instance();
             bool Init(const Descriptor& descriptor);
             void Shutdown();

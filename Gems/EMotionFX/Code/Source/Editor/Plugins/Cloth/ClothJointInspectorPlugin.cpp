@@ -18,6 +18,7 @@
 #include <Editor/SkeletonModel.h>
 #include <Editor/Plugins/Cloth/ClothJointInspectorPlugin.h>
 #include <Editor/Plugins/Cloth/ClothJointWidget.h>
+#include <Integration/Rendering/RenderActorSettings.h>
 #include <QScrollArea>
 
 
@@ -71,7 +72,7 @@ namespace EMotionFX
         }
         else
         {
-            m_dock->setWidget(CreateErrorContentWidget("Cloth collider editor depends on the NVIDIA Cloth gem. Please enable it in the project configurator."));
+            m_dock->setWidget(CreateErrorContentWidget("Cloth collider editor depends on the NVIDIA Cloth gem. Please enable it in the Project Manager."));
         }
 
         return true;
@@ -172,7 +173,7 @@ namespace EMotionFX
         ColliderHelpers::ClearColliders(selectedRowIndices, PhysicsSetup::Cloth);
     }
 
-    void ClothJointInspectorPlugin::Render(EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo)
+    void ClothJointInspectorPlugin::LegacyRender(EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo)
     {
         EMStudio::RenderViewWidget* activeViewWidget = renderPlugin->GetActiveViewWidget();
         if (!activeViewWidget)
@@ -188,10 +189,22 @@ namespace EMotionFX
 
         const EMStudio::RenderOptions* renderOptions = renderPlugin->GetRenderOptions();
 
-        ColliderContainerWidget::RenderColliders(PhysicsSetup::Cloth,
+        ColliderContainerWidget::LegacyRenderColliders(PhysicsSetup::Cloth,
             renderOptions->GetClothColliderColor(),
             renderOptions->GetSelectedClothColliderColor(),
             renderPlugin,
             renderInfo);
+    }
+
+    void ClothJointInspectorPlugin::Render(EMotionFX::ActorRenderFlagBitset renderFlags)
+    {
+        const bool renderColliders = renderFlags[RENDER_CLOTH_COLLIDERS];
+        if (!renderColliders)
+        {
+            return;
+        }
+
+        const AZ::Render::RenderActorSettings& settings = EMotionFX::GetRenderActorSettings();
+        ColliderContainerWidget::RenderColliders(PhysicsSetup::Cloth, settings.m_clothColliderColor, settings.m_selectedClothColliderColor);
     }
 } // namespace EMotionFX

@@ -211,7 +211,7 @@ namespace Vegetation
         {
             return AZ::Failure(
                 AZStd::string::format("The combination of View Area Grid Size and Sector Point Density will create %" PRId64 " instances.  Only a max of %" PRId64 " instances is allowed.",
-                static_cast<AZ::u64>(totalInstances), static_cast<AZ::u64>(s_maxVegetationInstances)));
+                totalInstances, s_maxVegetationInstances));
         }
 
         return AZ::Success();
@@ -235,7 +235,7 @@ namespace Vegetation
         {
             return AZ::Failure(
                 AZStd::string::format("The combination of View Area Grid Size and Sector Point Density will create %" PRId64 " instances.  Only a max of %" PRId64 " instances is allowed.",
-                static_cast<AZ::u64>(totalInstances), static_cast<AZ::u64>(s_maxVegetationInstances)));
+                totalInstances, s_maxVegetationInstances));
         }
 
         const float instancesPerMeter = static_cast<float>(sectorDensity) / static_cast<float>(m_sectorSizeInMeters);
@@ -356,7 +356,6 @@ namespace Vegetation
         AreaSystemRequestBus::Handler::BusConnect();
         GradientSignal::SectorDataRequestBus::Handler::BusConnect();
         SystemConfigurationRequestBus::Handler::BusConnect();
-        InstanceStatObjEventBus::Handler::BusConnect();
         CrySystemEventBus::Handler::BusConnect();
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
         SurfaceData::SurfaceDataSystemNotificationBus::Handler::BusConnect();
@@ -378,7 +377,6 @@ namespace Vegetation
         AreaSystemRequestBus::Handler::BusDisconnect();
         GradientSignal::SectorDataRequestBus::Handler::BusDisconnect();
         SystemConfigurationRequestBus::Handler::BusDisconnect();
-        InstanceStatObjEventBus::Handler::BusDisconnect();
         CrySystemEventBus::Handler::BusDisconnect();
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
         SurfaceData::SurfaceDataSystemNotificationBus::Handler::BusDisconnect();
@@ -617,7 +615,7 @@ namespace Vegetation
 
     void AreaSystemComponent::EnumerateInstancesInOverlappingSectors(const AZ::Aabb& bounds, AreaSystemEnumerateCallback callback) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         if (!bounds.IsValid())
         {
@@ -644,7 +642,7 @@ namespace Vegetation
 
     void AreaSystemComponent::EnumerateInstancesInAabb(const AZ::Aabb& bounds, AreaSystemEnumerateCallback callback) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         if (!bounds.IsValid())
         {
@@ -723,7 +721,7 @@ namespace Vegetation
 
     void AreaSystemComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         if (m_configuration.m_sectorSizeInMeters < 0)
         {
@@ -792,7 +790,7 @@ namespace Vegetation
                     m_threadData.m_vegetationThreadState = PersistentThreadData::VegetationThreadState::Running;
                     auto job = AZ::CreateJobFunction([this]()
                     {
-                        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Entity, "Vegetation::AreaSystemComponent::VegetationThread");
+                        AZ_PROFILE_SCOPE(Entity, "Vegetation::AreaSystemComponent::VegetationThread");
 
                         UpdateContext context;
                         context.Run(&m_threadData, &m_vegTasks, &m_cachedMainThreadData);
@@ -830,7 +828,7 @@ namespace Vegetation
 
     bool AreaSystemComponent::CalculateViewRect()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         //Get the active camera.
         bool cameraPositionIsValid = false;
@@ -983,7 +981,7 @@ namespace Vegetation
 
     void AreaSystemComponent::OnSystemEvent(ESystemEvent event, [[maybe_unused]] UINT_PTR wparam, [[maybe_unused]] UINT_PTR lparam)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         switch (event)
         {
@@ -1016,7 +1014,7 @@ namespace Vegetation
 
     void AreaSystemComponent::VegetationThreadTasks::ProcessVegetationThreadTasks(UpdateContext* context, PersistentThreadData* threadData)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         VegetationThreadTasks::VegetationThreadTaskList tasks;
         {
@@ -1056,7 +1054,7 @@ namespace Vegetation
 
     const AreaSystemComponent::SectorInfo* AreaSystemComponent::VegetationThreadTasks::GetSector(const SectorId& sectorId) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         AZStd::lock_guard<decltype(m_sectorRollingWindowMutex)> lock(m_sectorRollingWindowMutex);
         auto itSector = m_sectorRollingWindow.find(sectorId);
@@ -1065,7 +1063,7 @@ namespace Vegetation
 
     AreaSystemComponent::SectorInfo* AreaSystemComponent::VegetationThreadTasks::GetSector(const SectorId& sectorId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         AZStd::lock_guard<decltype(m_sectorRollingWindowMutex)> lock(m_sectorRollingWindowMutex);
         auto itSector = m_sectorRollingWindow.find(sectorId);
@@ -1074,7 +1072,7 @@ namespace Vegetation
 
     AreaSystemComponent::SectorInfo* AreaSystemComponent::VegetationThreadTasks::CreateSector(const SectorId& sectorId, int sectorDensity, int sectorSizeInMeters, SnapMode sectorPointSnapMode)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         SectorInfo sectorInfo;
         sectorInfo.m_id = sectorId;
@@ -1089,7 +1087,7 @@ namespace Vegetation
 
     void AreaSystemComponent::VegetationThreadTasks::UpdateSectorPoints(SectorInfo& sectorInfo, int sectorDensity, int sectorSizeInMeters, SnapMode sectorPointSnapMode)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
         const float vegStep = sectorSizeInMeters / static_cast<float>(sectorDensity);
 
         //build a free list of all points in the sector for areas to consume
@@ -1190,7 +1188,7 @@ namespace Vegetation
 
     void AreaSystemComponent::VegetationThreadTasks::DeleteSector(const SectorId& sectorId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         AZStd::lock_guard<decltype(m_sectorRollingWindowMutex)> lock(m_sectorRollingWindowMutex);
         auto itSector = m_sectorRollingWindow.find(sectorId);
@@ -1249,7 +1247,7 @@ namespace Vegetation
 
     void AreaSystemComponent::VegetationThreadTasks::ReleaseUnregisteredClaims(SectorInfo& sectorInfo)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         if (!m_unregisteredVegetationAreaSet.empty())
         {
@@ -1275,7 +1273,7 @@ namespace Vegetation
 
     void AreaSystemComponent::VegetationThreadTasks::ReleaseUnusedClaims(SectorInfo& sectorInfo)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         AZStd::unordered_map<AZ::EntityId, AZStd::unordered_set<ClaimHandle>> claimsToRelease;
 
@@ -1310,7 +1308,7 @@ namespace Vegetation
 
     void AreaSystemComponent::VegetationThreadTasks::FillSector(SectorInfo& sectorInfo, const VegetationAreaVector& activeAreas)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
         VEG_PROFILE_METHOD(DebugNotificationBus::TryQueueBroadcast(&DebugNotificationBus::Events::FillSectorStart, sectorInfo.GetSectorX(), sectorInfo.GetSectorY(), AZStd::chrono::system_clock::now()));
 
         ReleaseUnregisteredClaims(sectorInfo);
@@ -1352,7 +1350,7 @@ namespace Vegetation
 
     void AreaSystemComponent::VegetationThreadTasks::EmptySector(SectorInfo& sectorInfo)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         AZStd::unordered_map<AZ::EntityId, AZStd::unordered_set<ClaimHandle>> claimsToRelease;
 
@@ -1384,7 +1382,7 @@ namespace Vegetation
 
     void AreaSystemComponent::VegetationThreadTasks::ClearSectors()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         AZStd::lock_guard<decltype(m_sectorRollingWindowMutex)> lock(m_sectorRollingWindowMutex);
         for (auto& sectorPair : m_sectorRollingWindow)
@@ -1399,13 +1397,13 @@ namespace Vegetation
 
     void AreaSystemComponent::VegetationThreadTasks::CreateClaim(SectorInfo& sectorInfo, const ClaimHandle handle, const InstanceData& instanceData)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
         sectorInfo.m_claimedWorldPoints[handle] = instanceData;
     }
 
     ClaimHandle AreaSystemComponent::VegetationThreadTasks::CreateClaimHandle(const SectorInfo& sectorInfo, uint32_t index) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         ClaimHandle handle = 0;
         AreaSystemUtil::hash_combine_64(handle, sectorInfo.m_id.first);
@@ -1456,7 +1454,7 @@ namespace Vegetation
 
     void AreaSystemComponent::UpdateContext::Run(PersistentThreadData* threadData, VegetationThreadTasks* vegTasks, CachedMainThreadData* cachedMainThreadData)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         // Ensure that the main thread doesn't activate or deactivate the component until after this thread finishes.
         // Note that this does *not* prevent the main thread from running OnTick, which can communicate data changes
@@ -1466,7 +1464,7 @@ namespace Vegetation
         bool keepProcessing = true;
         while (keepProcessing && (threadData->m_vegetationThreadState != PersistentThreadData::VegetationThreadState::InterruptRequested))
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Entity, "Vegetation::AreaSystemComponent::UpdateContext::Run-InnerLoop");
+            AZ_PROFILE_SCOPE(Entity, "Vegetation::AreaSystemComponent::UpdateContext::Run-InnerLoop");
             // Update thread state if its dirty
             PersistentThreadData::VegetationDataSyncState expected = PersistentThreadData::VegetationDataSyncState::Dirty;
             if (threadData->m_vegetationDataSyncState.compare_exchange_strong(expected, PersistentThreadData::VegetationDataSyncState::Updating))
@@ -1501,7 +1499,7 @@ namespace Vegetation
 
     void AreaSystemComponent::UpdateContext::UpdateActiveVegetationAreas(PersistentThreadData* threadData, const ViewRect& viewRect)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         //build a priority sorted list of all active areas
         if (threadData->m_activeAreasDirty)
@@ -1553,7 +1551,7 @@ namespace Vegetation
 
     bool AreaSystemComponent::UpdateContext::UpdateSectorWorkLists(PersistentThreadData* threadData, VegetationThreadTasks* vegTasks)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         auto& worldToSector = m_cachedMainThreadData.m_worldToSector;
         auto& currViewRect = m_cachedMainThreadData.m_currViewRect;
@@ -1761,7 +1759,7 @@ namespace Vegetation
 
     bool AreaSystemComponent::UpdateContext::UpdateOneSector(PersistentThreadData* threadData, VegetationThreadTasks* vegTasks)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         // This chooses work in the following order:
         // 1) Delete if we have more sectors than the total that should be in the view rectangle

@@ -5,8 +5,9 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <AzCore/Debug/EventTrace.h>
+#include <Atom/RHI.Reflect/Metal/PlatformLimitsDescriptor.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
@@ -27,6 +28,13 @@ namespace AZ
 {
     namespace Metal
     {
+        Device::Device()
+        {
+            RHI::Ptr<PlatformLimitsDescriptor> platformLimitsDescriptor = aznew PlatformLimitsDescriptor();
+            platformLimitsDescriptor->LoadPlatformLimitsDescriptor(RHI::Factory::Get().GetName().GetCStr());
+            m_descriptor.m_platformLimitsDescriptor = RHI::Ptr<RHI::PlatformLimitsDescriptor>(platformLimitsDescriptor);
+        }
+
         RHI::Ptr<Device> Device::Create()
         {
             return aznew Device();
@@ -42,24 +50,24 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        RHI::ResultCode Device::PostInitInternal(const RHI::DeviceDescriptor& descriptor)
+        RHI::ResultCode Device::InitializeLimits()
         {
             {
                 ReleaseQueue::Descriptor releaseQueueDescriptor;
-                releaseQueueDescriptor.m_collectLatency = descriptor.m_frameCountMax;
+                releaseQueueDescriptor.m_collectLatency = m_descriptor.m_frameCountMax;
                 m_releaseQueue.Init(releaseQueueDescriptor);
             }
              
             {
                 CommandListAllocator::Descriptor commandListAllocatorDescriptor;
-                commandListAllocatorDescriptor.m_frameCountMax = descriptor.m_frameCountMax;
+                commandListAllocatorDescriptor.m_frameCountMax = m_descriptor.m_frameCountMax;
                 m_commandListAllocator.Init(commandListAllocatorDescriptor, this);
             }
 
             m_pipelineLayoutCache.Init(*this);
             m_commandQueueContext.Init(*this);
 
-            m_asyncUploadQueue.Init(*this, AsyncUploadQueue::Descriptor(RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_asyncQueueStagingBufferSizeInBytes));
+            m_asyncUploadQueue.Init(*this, AsyncUploadQueue::Descriptor(m_descriptor.m_platformLimitsDescriptor->m_platformDefaultValues.m_asyncQueueStagingBufferSizeInBytes));
 
             BufferMemoryAllocator::Descriptor allocatorDescriptor;
             allocatorDescriptor.m_device = this;
@@ -77,7 +85,7 @@ namespace AZ
             
             m_samplerCache = [[NSCache alloc]init];
             [m_samplerCache setName:@"SamplerCache"];
-            
+
             return RHI::ResultCode::Success;
         }
     
@@ -236,9 +244,9 @@ namespace AZ
         {
         }
         
-        void Device::UpdateCpuTimingStatisticsInternal(RHI::CpuTimingStatistics& cpuTimingStatistics) const
+        void Device::UpdateCpuTimingStatisticsInternal() const
         {
-            m_commandQueueContext.UpdateCpuTimingStatistics(cpuTimingStatistics);
+            m_commandQueueContext.UpdateCpuTimingStatistics();
         }
 
         void Device::FillFormatsCapabilitiesInternal(FormatCapabilitiesList& formatsCapabilities)
@@ -315,7 +323,12 @@ namespace AZ
             memoryRequirements.m_sizeInBytes = bufferSizeAndAlign.size;
             return memoryRequirements;
         }
-      
+
+        void Device::ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction)
+        {
+            m_releaseQueue.Notify(notifyFunction);
+        }
+
         void Device::InitFeatures()
         {
             

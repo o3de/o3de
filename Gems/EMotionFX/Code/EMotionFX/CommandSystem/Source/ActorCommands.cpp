@@ -22,6 +22,7 @@
 #include "CommandManager.h"
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <AzFramework/API/ApplicationAPI.h>
+#include <Source/Integration/Assets/ActorAsset.h>
 
 
 namespace CommandSystem
@@ -145,7 +146,6 @@ namespace CommandSystem
 
             AZStd::vector<AZStd::string> nodeNames;
             AzFramework::StringFunc::Tokenize(attachmentNodes.c_str(), nodeNames, ";", false, true);
-            const size_t numNodeNames = nodeNames.size();
 
             // Remove the given nodes from the attachment node list by unsetting the flag.
             if (AzFramework::StringFunc::Equal(nodeAction.c_str(), "remove"))
@@ -224,7 +224,6 @@ namespace CommandSystem
 
             AZStd::vector<AZStd::string> nodeNames;
             AzFramework::StringFunc::Tokenize(nodesExcludedFromBounds.c_str(), nodeNames, ";", false, true);
-            const size_t numNodeNames = nodeNames.size();
 
             // Remove the selected nodes from the bounding volume calculations.
             if (AzFramework::StringFunc::Equal(nodeAction.c_str(), "remove"))
@@ -731,7 +730,8 @@ namespace CommandSystem
         m_oldWorkspaceDirtyFlag = GetCommandManager()->GetWorkspaceDirtyFlag();
 
         // get rid of the actor
-        EMotionFX::GetActorManager().UnregisterActor(EMotionFX::GetActorManager().FindSharedActorByID(actor->GetID()));
+        const AZ::Data::AssetId actorAssetId = EMotionFX::GetActorManager().FindAssetIdByActorId(actor->GetID());
+        EMotionFX::GetActorManager().UnregisterActor(actorAssetId);
 
         // mark the workspace as dirty
         GetCommandManager()->SetWorkspaceDirtyFlag(true);
@@ -820,9 +820,13 @@ namespace CommandSystem
                 {
                     continue;
                 }
-
                 // ignore visualization actor instances
                 if (actorInstance->GetIsUsedForVisualization())
+                {
+                    continue;
+                }
+                // Ignore actor instances owned by entity
+                if (actorInstance->GetEntity())
                 {
                     continue;
                 }
@@ -850,12 +854,6 @@ namespace CommandSystem
             {
                 // get the current actor
                 EMotionFX::Actor* actor = EMotionFX::GetActorManager().GetActor(i);
-
-                // ignore runtime-owned actors
-                if (actor->GetIsOwnedByRuntime())
-                {
-                    continue;
-                }
 
                 // ignore visualization actors
                 if (actor->GetIsUsedForVisualization())

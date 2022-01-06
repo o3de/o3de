@@ -10,9 +10,9 @@
 
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <EMotionFX/Source/PoseData.h>
 #include <EMotionFX/Source/Transform.h>
-
 
 namespace EMotionFX
 {
@@ -25,10 +25,6 @@ namespace EMotionFX
     class Skeleton;
     class MotionLinkData;
 
-    /**
-     *
-     *
-     */
     class EMFX_API Pose
     {
         MCORE_MEMORYOBJECTCATEGORY(Pose, EMFX_DEFAULT_ALIGNMENT, EMFX_MEMCATEGORY_POSE);
@@ -191,6 +187,14 @@ namespace EMotionFX
         PoseData* GetAndPreparePoseData(const AZ::TypeId& typeId, ActorInstance* linkToActorInstance);
         template <class T>
         T* GetAndPreparePoseData(ActorInstance* linkToActorInstance) { return azdynamic_cast<T*>(GetAndPreparePoseData(azrtti_typeid<T>(), linkToActorInstance)); }
+
+        /**
+         * Draw debug visualization for the given pose.
+         * @param[in] debugDisplay Debug display request bus to spawn the render commands.
+         * @param[in] color The color the skeletal pose should be in.
+         * @param[in] drawPoseDatas Draw the pose data debug visualizations (e.g. joint velocities) along with the actual skeletal pose. [Default = false]
+         */
+        void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay, const AZ::Color& color, bool drawPoseDatas = false) const;
 
     private:
         mutable AZStd::vector<Transform>  m_localSpaceTransforms;

@@ -656,26 +656,25 @@ namespace AZ
         using ElementType = typename AZStd::Utils::if_c<AZStd::is_enum<typename ElementTypeInfo::Type>::value, typename ElementTypeInfo::Type, typename ElementTypeInfo::ElementType>::type;
         AZ_Assert(m_classData->m_typeId == AzTypeInfo<typename ElementTypeInfo::ClassType>::Uuid(), "Data element (%s) belongs to a different class!", AzTypeInfo<typename ElementTypeInfo::ValueType>::Name());
 
-#if defined(AZ_COMPILER_MSVC)
-#   pragma warning(push)
-#   pragma warning(disable: 4127) // conditional expression is constant
-#endif
         const SerializeContext::ClassData* classData = m_context->m_serializeContext.FindClassData(AzTypeInfo<typename ElementTypeInfo::ValueType>::Uuid());
         if (classData && classData->m_editData)
         {
             return DataElement<T>(uiId, memberVariable, classData->m_editData->m_name, classData->m_editData->m_description);
         }
-        else if (AZStd::is_enum<ElementType>::value && AzTypeInfo<ElementType>::Name() != nullptr)
+        else
         {
-            auto enumIter = m_context->m_enumData.find(AzTypeInfo<ElementType>::Uuid());
-            if (enumIter != m_context->m_enumData.end())
+            if constexpr (AZStd::is_enum<ElementType>::value)
             {
-                return DataElement<T>(uiId, memberVariable, enumIter->second.m_name, enumIter->second.m_description);
+                if (AzTypeInfo<ElementType>::Name() != nullptr)
+                {
+                    auto enumIter = m_context->m_enumData.find(AzTypeInfo<ElementType>::Uuid());
+                    if (enumIter != m_context->m_enumData.end())
+                    {
+                        return DataElement<T>(uiId, memberVariable, enumIter->second.m_name, enumIter->second.m_description);
+                    }
+                }
             }
         }
-#if defined(AZ_COMPILER_MSVC)
-#   pragma warning(pop)
-#endif
         
         const char* typeName = AzTypeInfo<typename ElementTypeInfo::ValueType>::Name();
         return DataElement<T>(uiId, memberVariable, typeName, typeName);

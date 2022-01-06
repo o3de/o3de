@@ -14,32 +14,41 @@
 #include "UiAnimSerialize.h"
 
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/std/allocator_stateless.h>
+#include <AzCore/std/containers/map.h>
+#include <AzCore/std/containers/unordered_map.h>
 #include <StlUtils.h>
 
 #include <ISystem.h>
 #include <ILog.h>
 #include <IConsole.h>
-#include <ITimer.h>
-#include <IRenderer.h>
-#include <IViewSystem.h>
 
 //////////////////////////////////////////////////////////////////////////
-// Serialization for anim nodes & param types
-#define REGISTER_NODE_TYPE(name) assert(g_animNodeEnumToStringMap.find(eUiAnimNodeType_ ## name) == g_animNodeEnumToStringMap.end()); \
-    g_animNodeEnumToStringMap[eUiAnimNodeType_ ## name] = STRINGIFY(name);                                                            \
-    g_animNodeStringToEnumMap[string(STRINGIFY(name))] = eUiAnimNodeType_ ## name;
+namespace
+{
+    using UiAnimParamSystemString = AZStd::basic_string<char, AZStd::char_traits<char>, AZStd::stateless_allocator>;
 
-#define REGISTER_PARAM_TYPE(name) assert(g_animParamEnumToStringMap.find(eUiAnimParamType_ ## name) == g_animParamEnumToStringMap.end()); \
-    g_animParamEnumToStringMap[eUiAnimParamType_ ## name] = STRINGIFY(name);                                                              \
-    g_animParamStringToEnumMap[string(STRINGIFY(name))] = eUiAnimParamType_ ## name;
+    template <typename KeyType, typename MappedType, typename Compare = AZStd::less<KeyType>>
+    using UiAnimSystemOrderedMap = AZStd::map<KeyType, MappedType, Compare, AZStd::stateless_allocator>;
+    template <typename KeyType, typename MappedType, typename Hasher = AZStd::hash<KeyType>, typename EqualKey = AZStd::equal_to<KeyType>>
+    using UiAnimSystemUnorderedMap = AZStd::unordered_map<KeyType, MappedType, Hasher, EqualKey, AZStd::stateless_allocator>;
+}
+// Serialization for anim nodes & param types
+#define REGISTER_NODE_TYPE(name) assert(!g_animNodeEnumToStringMap.contains(eUiAnimNodeType_ ## name)); \
+    g_animNodeEnumToStringMap[eUiAnimNodeType_ ## name] = AZ_STRINGIZE(name);                                                            \
+    g_animNodeStringToEnumMap[UiAnimParamSystemString(AZ_STRINGIZE(name))] = eUiAnimNodeType_ ## name;
+
+#define REGISTER_PARAM_TYPE(name) assert(!g_animParamEnumToStringMap.contains(eUiAnimParamType_ ## name)); \
+    g_animParamEnumToStringMap[eUiAnimParamType_ ## name] = AZ_STRINGIZE(name);                                                              \
+    g_animParamStringToEnumMap[UiAnimParamSystemString(AZ_STRINGIZE(name))] = eUiAnimParamType_ ## name;
 
 namespace
 {
-    AZStd::unordered_map<int, string> g_animNodeEnumToStringMap;
-    StaticInstance<std::map<string, EUiAnimNodeType, stl::less_stricmp<string> >> g_animNodeStringToEnumMap;
+    UiAnimSystemUnorderedMap<int, UiAnimParamSystemString> g_animNodeEnumToStringMap;
+    UiAnimSystemOrderedMap<UiAnimParamSystemString, EUiAnimNodeType, stl::less_stricmp<UiAnimParamSystemString>> g_animNodeStringToEnumMap;
 
-    AZStd::unordered_map<int, string> g_animParamEnumToStringMap;
-    StaticInstance<std::map<string, EUiAnimParamType, stl::less_stricmp<string> >> g_animParamStringToEnumMap;
+    UiAnimSystemUnorderedMap<int, UiAnimParamSystemString> g_animParamEnumToStringMap;
+    UiAnimSystemOrderedMap<UiAnimParamSystemString, EUiAnimParamType, stl::less_stricmp<UiAnimParamSystemString>> g_animParamStringToEnumMap;
 
     // If you get an assert in this function, it means two node types have the same enum value.
     void RegisterNodeTypes()
@@ -86,7 +95,7 @@ UiAnimationSystem::UiAnimationSystem()
     m_pCallback = NULL;
     m_bPaused = false;
     m_sequenceStopBehavior = eSSB_GotoEndTime;
-    m_lastUpdateTime.SetValue(0);
+    m_lastUpdateTime = AZ::Time::ZeroTimeUs;
 
     m_nextSequenceId = 1;
 }
@@ -106,7 +115,6 @@ void UiAnimationSystem::DoNodeStaticInitialisation()
 bool UiAnimationSystem::Load(const char* pszFile, const char* pszMission)
 {
     INDENT_LOG_DURING_SCOPE (true, "UI Animation system is loading the file '%s' (mission='%s')", pszFile, pszMission);
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
 
     XmlNodeRef rootNode = m_pSystem->LoadXmlFromFile(pszFile);
     if (!rootNode)
@@ -604,20 +612,6 @@ bool UiAnimationSystem::InternalStopSequence(IUiAnimSequence* pSequence, bool bA
 //////////////////////////////////////////////////////////////////////////
 bool UiAnimationSystem::AbortSequence(IUiAnimSequence* pSequence, bool bLeaveTime)
 {
-    assert(pSequence);
-
-    // to avoid any camera blending after aborting a cut scene
-    IViewSystem* pViewSystem = gEnv->pSystem->GetIViewSystem();
-    if (pViewSystem)
-    {
-        pViewSystem->SetBlendParams(0, 0, 0);
-        IView* pView = pViewSystem->GetActiveView();
-        if (pView)
-        {
-            pView->ResetBlending();
-        }
-    }
-
     return InternalStopSequence(pSequence, true, !bLeaveTime);
 }
 
@@ -731,23 +725,27 @@ void UiAnimationSystem::StillUpdate()
 //////////////////////////////////////////////////////////////////////////
 void UiAnimationSystem::ShowPlayedSequencesDebug()
 {
-    f32 green[4] = {0, 1, 0, 1};
-    f32 purple[4] = {1, 0, 1, 1};
-    f32 white[4] = {1, 1, 1, 1};
+    constexpr f32 green[4] = {0, 1, 0, 1};
+    constexpr f32 purple[4] = {1, 0, 1, 1};
+    constexpr f32 white[4] = {1, 1, 1, 1};
     float y = 10.0f;
-    std::vector<const char*> names;
+    AZStd::vector<AZStd::string> names;
+
+    //TODO: needs an implementation
+    auto Draw2dLabel = [](float /*x*/,float /*y*/,float /*depth*/,const f32* /*color*/,bool /*center*/, const char* /*fmt*/, ...) {};
 
     for (PlayingSequences::iterator it = m_playingSequences.begin(); it != m_playingSequences.end(); ++it)
     {
         PlayingUIAnimSequence& playingSequence = *it;
 
-        if (playingSequence.sequence == NULL)
+        if (playingSequence.sequence == nullptr)
         {
             continue;
         }
 
-        const char* fullname = playingSequence.sequence->GetName();
-        gEnv->pRenderer->Draw2dLabel(1.0f, y, 1.3f, green, false, "Sequence %s : %f (x %f)", fullname, playingSequence.currentTime, playingSequence.currentSpeed);
+        AZ_Assert(false,"gEnv->pRenderer is always null so it can't be used here");
+const char* fullname = playingSequence.sequence->GetName();
+Draw2dLabel(1.0f, y, 1.3f, green, false, "Sequence %s : %f (x %f)", fullname, playingSequence.currentTime, playingSequence.currentSpeed);
 
         y += 16.0f;
 
@@ -755,23 +753,18 @@ void UiAnimationSystem::ShowPlayedSequencesDebug()
         {
             // Checks nodes which happen to be in several sequences.
             // Those can be a bug, since several sequences may try to control the same entity.
-            const char* name = playingSequence.sequence->GetNode(i)->GetName();
+            AZStd::string name = playingSequence.sequence->GetNode(i)->GetName();
             bool alreadyThere = false;
-            for (size_t k = 0; k < names.size(); ++k)
+            if (AZStd::find(names.begin(), names.end(), name) != names.end())
             {
-                if (strcmp(names[k], name) == 0)
-                {
-                    alreadyThere = true;
-                    break;
-                }
+                alreadyThere = true;
             }
-
-            if (alreadyThere == false)
+            else
             {
                 names.push_back(name);
             }
 
-            gEnv->pRenderer->Draw2dLabel((21.0f + 100.0f * i), ((i % 2) ? (y + 8.0f) : y), 1.0f, alreadyThere ? white : purple, false, "%s", name);
+Draw2dLabel((21.0f + 100.0f * i), ((i % 2) ? (y + 8.0f) : y), 1.0f, alreadyThere ? white : purple, false, "%s", name.c_str());
         }
 
         y += 32.0f;
@@ -801,7 +794,7 @@ void UiAnimationSystem::UpdateInternal(const float deltaTime, const bool bPreUpd
     }
 
     // don't update more than once if dt==0.0
-    CTimeValue curTime = gEnv->pTimer->GetFrameStartTime();
+    const AZ::TimeUs curTime = AZ::GetElapsedTimeUs();
     if (deltaTime == 0.0f && curTime == m_lastUpdateTime && !gEnv->IsEditor())
     {
         return;
@@ -1189,7 +1182,7 @@ void UiAnimationSystem::SerializeNodeType(EUiAnimNodeType& animNodeType, XmlNode
     {
         const char* pTypeString = "Invalid";
         assert(g_animNodeEnumToStringMap.find(animNodeType) != g_animNodeEnumToStringMap.end());
-        pTypeString = g_animNodeEnumToStringMap[animNodeType];
+        pTypeString = g_animNodeEnumToStringMap[animNodeType].c_str();
         xmlNode->setAttr(kType, pTypeString);
     }
 }
@@ -1273,7 +1266,7 @@ void UiAnimationSystem::SerializeParamType(CUiAnimParamType& animParamType, XmlN
         else
         {
             assert(g_animParamEnumToStringMap.find(animParamType.m_type) != g_animParamEnumToStringMap.end());
-            pTypeString = g_animParamEnumToStringMap[animParamType.m_type];
+            pTypeString = g_animParamEnumToStringMap[animParamType.m_type].c_str();
         }
 
         xmlNode->setAttr(kParamType, pTypeString);
@@ -1341,7 +1334,7 @@ const char* UiAnimationSystem::GetParamTypeName(const CUiAnimParamType& animPara
     {
         if (g_animParamEnumToStringMap.find(animParamType.m_type) != g_animParamEnumToStringMap.end())
         {
-            return g_animParamEnumToStringMap[animParamType.m_type];
+            return g_animParamEnumToStringMap[animParamType.m_type].c_str();
         }
     }
 

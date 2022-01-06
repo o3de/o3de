@@ -15,6 +15,7 @@
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
+#include <Prefab/PrefabDomUtils.h>
 
 namespace AzToolsFramework
 {
@@ -79,6 +80,15 @@ namespace AzToolsFramework
                         instances, defaultInstances, azrtti_typeid<Instance::AliasToInstanceMap>(), context);
 
                 result.Combine(resultInstances);
+            }
+
+            PrefabDomUtils::LinkIdMetadata* subPathLinkId = context.GetMetadata().Find<PrefabDomUtils::LinkIdMetadata>();
+            if (subPathLinkId)
+            {
+                AZ::ScopedContextPath subPathSource(context, "m_linkId");
+
+                result = ContinueStoringToJsonObjectField(
+                    outputValue, "LinkId", &(instance->m_linkId), &InvalidLinkId, azrtti_typeid<decltype(instance->m_linkId)>(), context);
             }
 
             return context.Report(result,

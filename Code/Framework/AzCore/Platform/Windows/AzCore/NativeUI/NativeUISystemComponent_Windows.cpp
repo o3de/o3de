@@ -10,6 +10,7 @@
 
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/PlatformIncl.h>
+#include <AzCore/std/string/conversions.h>
 
 namespace
 {
@@ -105,11 +106,17 @@ namespace
         {
             // Set the text for window title, message, buttons.
             info = (DlgInfo*)lParam;
-            SetWindowText(hDlg, info->m_title.c_str());
-            SetWindowText(GetDlgItem(hDlg, 0), info->m_message.c_str());
+            AZStd::wstring titleW;
+            AZStd::to_wstring(titleW, info->m_title.c_str());
+            SetWindowTextW(hDlg, titleW.c_str());
+            AZStd::wstring messageW;
+            AZStd::to_wstring(messageW, info->m_message.c_str());
+            SetWindowTextW(GetDlgItem(hDlg, 0), messageW.c_str());
             for (int i = 0; i < info->m_options.size(); i++)
             {
-                SetWindowText(GetDlgItem(hDlg, i + 1), info->m_options[i].c_str());
+                AZStd::wstring optionW;
+                AZStd::to_wstring(optionW, info->m_options[i].c_str());
+                SetWindowTextW(GetDlgItem(hDlg, i + 1), optionW.c_str());
             }
         }
             break;

@@ -7,10 +7,8 @@
  */
 
 #include <Atom/Document/MaterialDocumentModule.h>
-#include <Document/MaterialDocumentSystemComponent.h>
-
-#include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
 #include <AzToolsFramework/Asset/AssetSystemComponent.h>
+#include <Document/MaterialDocumentSystemComponent.h>
 
 namespace MaterialEditor
 {

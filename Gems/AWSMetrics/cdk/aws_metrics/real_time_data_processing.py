@@ -113,7 +113,7 @@ class RealTimeDataProcessing:
             ),
         )
 
-        analytics_application_output = core.CfnOutput(
+        core.CfnOutput(
             self._stack,
             id='AnalyticsApplicationName',
             description='Kinesis Data Analytics application to process the real-time metrics data',
@@ -182,7 +182,7 @@ class RealTimeDataProcessing:
         Generate the analytics processing lambda to send processed data to CloudWatch for visualization.
         """
         analytics_processing_function_name = resource_name_sanitizer.sanitize_resource_name(
-            f'{self._stack.stack_name}-AnalyticsProcessingLambdaName', 'lambda_function')
+            f'{self._stack.stack_name}-AnalyticsProcessingLambda', 'lambda_function')
         self._analytics_processing_lambda_role = self._create_analytics_processing_lambda_role(
             analytics_processing_function_name
         )
@@ -199,6 +199,12 @@ class RealTimeDataProcessing:
                 os.path.join(os.path.dirname(__file__), 'lambdas', 'analytics_processing_lambda')),
             role=self._analytics_processing_lambda_role
         )
+        core.CfnOutput(
+            self._stack,
+            id='AnalyticsProcessingLambdaName',
+            description='Lambda function for sending processed data to CloudWatch.',
+            export_name=f"{self._application_name}:AnalyticsProcessingLambda",
+            value=self._analytics_processing_lambda.function_name)
 
     def _create_analytics_processing_lambda_role(self, function_name: str) -> iam.Role:
         """

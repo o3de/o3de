@@ -14,12 +14,12 @@ struct GridMateTestEnvironment
     : public AZ::Test::ITestEnvironment
     , public AZ::Debug::TraceMessageBus::Handler
 {
-    void SetupEnvironment() override final
+    void SetupEnvironment() final
     {
         AZ::AllocatorInstance<AZ::OSAllocator>::Create();
         BusConnect();
     }
-    void TeardownEnvironment() override final
+    void TeardownEnvironment() final
     {
         BusDisconnect();
         AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();

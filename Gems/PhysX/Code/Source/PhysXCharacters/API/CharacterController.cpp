@@ -42,16 +42,16 @@ namespace PhysX
                     "PhysX Character Controller Configuration", "PhysX Character Controller Configuration")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &CharacterControllerConfiguration::m_slopeBehaviour,
-                        "Slope Behaviour", "Behaviour of the controller on surfaces above the maximum slope")
+                        "Slope Behavior", "Behavior of the controller on surfaces that exceed the Maximum Slope Angle.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                     ->EnumAttribute(SlopeBehaviour::PreventClimbing, "Prevent Climbing")
                     ->EnumAttribute(SlopeBehaviour::ForceSliding, "Force Sliding")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CharacterControllerConfiguration::m_contactOffset,
-                        "Contact Offset", "Extra distance outside the controller used for smoother contact resolution")
+                        "Contact Offset", "Distance from the controller boundary where contact with surfaces can be resolved.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
                     ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CharacterControllerConfiguration::m_scaleCoefficient,
-                        "Scale", "Scalar coefficient used to scale the controller, usually slightly smaller than 1")
+                        "Scale", "Scales the controller. Usually less than 1.0 to ensure visual contact between the character and surface.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
                     ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
                     ;

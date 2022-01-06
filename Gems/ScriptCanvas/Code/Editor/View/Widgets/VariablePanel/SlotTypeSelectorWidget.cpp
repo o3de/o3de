@@ -37,7 +37,6 @@
 
 #include <Data/Data.h>
 
-#include <Editor/Assets/ScriptCanvasAssetTrackerBus.h>
 #include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
 #include <Editor/QtMetaTypes.h>
 #include <Editor/Settings.h>

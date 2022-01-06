@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Module/DynamicModuleHandle.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <Source/SceneProcessingModule.h>
 
@@ -34,7 +35,7 @@ namespace AZ
             ActivateSceneModule(SceneProcessing::s_sceneDataModule);
             ActivateSceneModule(SceneProcessing::s_sceneBuilderModule);
             
-            // Defaults in case there's no config setup in the Project Configurator.
+            // Defaults in case there's no config setup
             m_softNames.push_back(aznew NodeSoftNameSetting("^.*_[Ll][Oo][Dd]1(_optimized)?$", PatternMatcher::MatchApproach::Regex, "LODMesh1", true));
             m_softNames.push_back(aznew NodeSoftNameSetting("^.*_[Ll][Oo][Dd]2(_optimized)?$", PatternMatcher::MatchApproach::Regex, "LODMesh2", true));
             m_softNames.push_back(aznew NodeSoftNameSetting("^.*_[Ll][Oo][Dd]3(_optimized)?$", PatternMatcher::MatchApproach::Regex, "LODMesh3", true));

@@ -11,6 +11,7 @@ import mars_utils
 import sys
 import pathlib
 import traceback
+import re
 from tiaf import TestImpact
 from tiaf_logger import get_logger
 
@@ -66,10 +67,17 @@ def parse_args():
         required=True
     )
 
-    # S3 bucket
+    # S3 bucket name
     parser.add_argument(
         '--s3-bucket', 
         help="Location of S3 bucket to use for persistent storage, otherwise local disk storage will be used", 
+        required=False
+    )
+
+    # S3 bucket top level directory
+    parser.add_argument(
+        '--s3-top-level-dir', 
+        help="The top level directory to use in the S3 bucket", 
         required=False
     )
 
@@ -78,6 +86,13 @@ def parse_args():
         '--mars-index-prefix', 
         help="Index prefix to use for MARS, otherwise no data will be tramsmitted to MARS", 
         required=False
+    )
+
+    # Build number
+    parser.add_argument(
+        '--build-number', 
+        help="The build number this run of TIAF corresponds to", 
+        required=True
     )
 
     # Test suite
@@ -127,12 +142,19 @@ if __name__ == "__main__":
     
     try:
         args = parse_args()
+
+        s3_top_level_dir = None
+        if args.s3_top_level_dir:
+            s3_top_level_dir = args.s3_top_level_dir
+        else:
+            s3_top_level_dir = "tiaf"
+
         tiaf = TestImpact(args.config)
-        tiaf_result = tiaf.run(args.commit, args.src_branch, args.dst_branch, args.s3_bucket, args.suite, args.test_failure_policy, args.safe_mode, args.test_timeout, args.global_timeout)
+        tiaf_result = tiaf.run(args.commit, args.src_branch, args.dst_branch, args.s3_bucket, s3_top_level_dir, args.suite, args.test_failure_policy, args.safe_mode, args.test_timeout, args.global_timeout)
         
         if args.mars_index_prefix:
             logger.info("Transmitting report to MARS...")
-            mars_utils.transmit_report_to_mars(args.mars_index_prefix, tiaf_result, sys.argv)
+            mars_utils.transmit_report_to_mars(args.mars_index_prefix, tiaf_result, sys.argv, args.build_number)
 
         logger.info("Complete!")
         # Non-gating will be removed from this script and handled at the job level in SPEC-7413

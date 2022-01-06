@@ -39,25 +39,6 @@
 // Copied from ModelAssetBuilderComponent.cpp
 namespace
 {
-    const AZ::u32 IndicesPerFace = 3;
-    const AZ::RHI::Format IndicesFormat = AZ::RHI::Format::R32_UINT;
-
-    const AZ::u32 PositionFloatsPerVert = 3;
-    const AZ::u32 NormalFloatsPerVert = 3;
-    const AZ::u32 UVFloatsPerVert = 2;
-    const AZ::u32 ColorFloatsPerVert = 4;
-    const AZ::u32 TangentFloatsPerVert = 4;
-    const AZ::u32 BitangentFloatsPerVert = 3;
-
-    const AZ::RHI::Format PositionFormat = AZ::RHI::Format::R32G32B32_FLOAT;
-    const AZ::RHI::Format NormalFormat = AZ::RHI::Format::R32G32B32_FLOAT;
-    const AZ::RHI::Format UVFormat = AZ::RHI::Format::R32G32_FLOAT;
-    const AZ::RHI::Format ColorFormat = AZ::RHI::Format::R32G32B32A32_FLOAT;
-    const AZ::RHI::Format TangentFormat = AZ::RHI::Format::R32G32B32A32_FLOAT;
-    const AZ::RHI::Format BitangentFormat = AZ::RHI::Format::R32G32B32_FLOAT;
-    const AZ::RHI::Format BoneIndexFormat = AZ::RHI::Format::R32G32B32A32_UINT;
-    const AZ::RHI::Format BoneWeightFormat = AZ::RHI::Format::R32G32B32A32_FLOAT;
-
     const uint32_t LinearSkinningFloatsPerBone = 12;
     const uint32_t DualQuaternionSkinningFloatsPerBone = 8;
     const uint32_t MaxSupportedSkinInfluences = 4;
@@ -213,7 +194,6 @@ namespace AZ
                     const uint32_t originalVertex = sourceOriginalVertex[vertexIndex + vertexStart];
                     const uint32_t influenceCount = AZStd::GetMin<uint32_t>(MaxSupportedSkinInfluences, static_cast<uint32_t>(sourceSkinningInfo->GetNumInfluences(originalVertex)));
                     uint32_t influenceIndex = 0;
-                    float weightError = 1.0f;
 
                     AZStd::vector<uint32_t> localIndices;
                     for (; influenceIndex < influenceCount; ++influenceIndex)
@@ -221,7 +201,6 @@ namespace AZ
                         EMotionFX::SkinInfluence* influence = sourceSkinningInfo->GetInfluence(originalVertex, influenceIndex);
                         localIndices.push_back(static_cast<uint32_t>(influence->GetNodeNr()));
                         blendWeightBufferData[atomVertexBufferOffset + vertexIndex][influenceIndex] = influence->GetWeight();
-                        weightError -= blendWeightBufferData[atomVertexBufferOffset + vertexIndex][influenceIndex];
                     }
 
                     // Zero out any unused ids/weights

@@ -128,7 +128,7 @@ void CScreenFaderKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle&
 
     for (size_t keyIndex = 0, num = selectedKeys.GetKeyCount(); keyIndex < num; ++keyIndex)
     {
-        CTrackViewKeyHandle selectedKey = selectedKeys.GetKey(keyIndex);
+        CTrackViewKeyHandle selectedKey = selectedKeys.GetKey(static_cast<unsigned int>(keyIndex));
 
         CAnimParamType paramType = selectedKey.GetTrack()->GetParameterType();
         if (paramType == AnimParamType::ScreenFader)

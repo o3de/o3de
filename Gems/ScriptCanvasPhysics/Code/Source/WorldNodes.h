@@ -60,7 +60,7 @@ namespace ScriptCanvasPhysics
             AZStd::vector<AZ::EntityId> /*list of entityIds*/
         >;
 
-        static const char* k_categoryName = "PhysX/World";
+        static constexpr const char* k_categoryName = "PhysX/World";
 
         AZ_INLINE Result RayCastWorldSpaceWithGroup(const AZ::Vector3& start,
             const AZ::Vector3& direction,

@@ -35,15 +35,16 @@ namespace HttpRequestor
         desc.m_name = s_loggingName;
         desc.m_cpuId = AFFINITY_MASK_USERTHREADS;
         m_runThread = true;
-        // Shutdown will be handled by the InitializationManager - no need to call in the destructor
         AWSNativeSDKInit::InitializationManager::InitAwsApi();
-        auto function = AZStd::bind(&Manager::ThreadFunction, this);
-        m_thread = AZStd::thread(function, &desc);
+        auto function = [this]
+        {
+            ThreadFunction();
+        };
+        m_thread = AZStd::thread(desc, function);
     }
 
     Manager::~Manager()
     {
-        // NativeSDK Shutdown does not need to be called here - will be taken care of by the InitializationManager
         m_runThread = false;
         m_requestConditionVar.notify_all();
         if (m_thread.joinable())
@@ -51,9 +52,11 @@ namespace HttpRequestor
             m_thread.join();
         }
 
+        // Shutdown after background thread has closed.
+        AWSNativeSDKInit::InitializationManager::Shutdown();
     }
 
-    void Manager::AddRequest(Parameters && httpRequestParameters)
+    void Manager::AddRequest(Parameters&& httpRequestParameters)
     {
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_requestMutex);
@@ -62,7 +65,7 @@ namespace HttpRequestor
         m_requestConditionVar.notify_all();
     }
 
-    void Manager::AddTextRequest(TextParameters && httpTextRequestParameters)
+    void Manager::AddTextRequest(TextParameters&& httpTextRequestParameters)
     {
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_requestMutex);
@@ -82,9 +85,14 @@ namespace HttpRequestor
 
     void Manager::HandleRequestBatch()
     {
-        // Lock mutex and wait for work to be signalled via the condition variable
+        // Lock mutex and wait for work to be signaled via the condition variable
         AZStd::unique_lock<AZStd::mutex> lock(m_requestMutex);
-        m_requestConditionVar.wait(lock, [&] { return !m_runThread || !m_requestsToHandle.empty() || !m_textRequestsToHandle.empty(); });
+        m_requestConditionVar.wait(
+            lock,
+            [&]
+            {
+                return !m_runThread || !m_requestsToHandle.empty() || !m_textRequestsToHandle.empty();
+            });
 
         // Swap queues
         AZStd::queue<Parameters> requestsToHandle;
@@ -116,21 +124,22 @@ namespace HttpRequestor
         config.enableTcpKeepAlive = AZ_TRAIT_AZFRAMEWORK_AWS_ENABLE_TCP_KEEP_ALIVE_SUPPORTED;
         std::shared_ptr<Aws::Http::HttpClient> httpClient = Aws::Http::CreateHttpClient(config);
 
-        auto httpRequest = Aws::Http::CreateHttpRequest(httpRequestParameters.GetURI(), httpRequestParameters.GetMethod(), Aws::Utils::Stream::DefaultResponseStreamFactoryMethod);
+        auto httpRequest = Aws::Http::CreateHttpRequest(
+            httpRequestParameters.GetURI(), httpRequestParameters.GetMethod(), Aws::Utils::Stream::DefaultResponseStreamFactoryMethod);
 
         AZ_Assert(httpRequest, "HttpRequest not created!");
 
-        for (const auto & it : httpRequestParameters.GetHeaders())
+        for (const auto& it : httpRequestParameters.GetHeaders())
         {
             httpRequest->SetHeaderValue(it.first.c_str(), it.second.c_str());
         }
 
-        if( httpRequestParameters.GetBodyStream() != nullptr)
+        if (httpRequestParameters.GetBodyStream() != nullptr)
         {
             httpRequest->AddContentBody(httpRequestParameters.GetBodyStream());
             httpRequest->SetContentLength(AZStd::to_string(httpRequestParameters.GetBodyStream()->str().length()).c_str());
         }
-        
+
         auto httpResponse = httpClient->MakeRequest(httpRequest);
 
         if (!httpResponse)
@@ -156,15 +165,16 @@ namespace HttpRequestor
         }
     }
 
-    void Manager::HandleTextRequest(const TextParameters & httpRequestParameters)
+    void Manager::HandleTextRequest(const TextParameters& httpRequestParameters)
     {
         Aws::Client::ClientConfiguration config;
         config.enableTcpKeepAlive = AZ_TRAIT_AZFRAMEWORK_AWS_ENABLE_TCP_KEEP_ALIVE_SUPPORTED;
         std::shared_ptr<Aws::Http::HttpClient> httpClient = Aws::Http::CreateHttpClient(config);
 
-        auto httpRequest = Aws::Http::CreateHttpRequest(httpRequestParameters.GetURI(), httpRequestParameters.GetMethod(), Aws::Utils::Stream::DefaultResponseStreamFactoryMethod);
-        
-        for (const auto & it : httpRequestParameters.GetHeaders())
+        auto httpRequest = Aws::Http::CreateHttpRequest(
+            httpRequestParameters.GetURI(), httpRequestParameters.GetMethod(), Aws::Utils::Stream::DefaultResponseStreamFactoryMethod);
+
+        for (const auto& it : httpRequestParameters.GetHeaders())
         {
             httpRequest->SetHeaderValue(it.first.c_str(), it.second.c_str());
         }
@@ -174,7 +184,7 @@ namespace HttpRequestor
             httpRequest->AddContentBody(httpRequestParameters.GetBodyStream());
         }
 
-        auto httpResponse = httpClient->MakeRequest(httpRequest);
+        const auto httpResponse = httpClient->MakeRequest(httpRequest);
 
         if (!httpResponse)
         {
@@ -194,4 +204,4 @@ namespace HttpRequestor
         AZStd::string data(std::istreambuf_iterator<char>(httpResponse->GetResponseBody()), eos);
         httpRequestParameters.GetCallback()(AZStd::move(data), httpResponse->GetResponseCode());
     }
-}
+} // namespace HttpRequestor

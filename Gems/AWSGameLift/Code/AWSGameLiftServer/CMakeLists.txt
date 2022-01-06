@@ -16,6 +16,9 @@ ly_add_target(
     FILES_CMAKE
         awsgamelift_server_files.cmake
     INCLUDE_DIRECTORIES
+        PUBLIC
+            ../AWSGameLiftCommon/Include
+            Include
         PRIVATE
             ../AWSGameLiftCommon/Source
             Source
@@ -52,6 +55,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             awsgamelift_server_tests_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
+                ../AWSGameLiftCommon/Include
+                ../AWSGameLiftCommon/Source
                 Tests
                 Source
         BUILD_DEPENDENCIES

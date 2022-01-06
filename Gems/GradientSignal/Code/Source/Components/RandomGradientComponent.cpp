@@ -6,7 +6,7 @@
  *
  */
 
-#include "RandomGradientComponent.h"
+#include <GradientSignal/Components/RandomGradientComponent.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -105,6 +105,9 @@ namespace GradientSignal
 
     void RandomGradientComponent::Activate()
     {
+        // This will immediately call OnGradientTransformChanged and initialize m_gradientTransform.
+        GradientTransformNotificationBus::Handler::BusConnect(GetEntityId());
+
         GradientRequestBus::Handler::BusConnect(GetEntityId());
         RandomGradientRequestBus::Handler::BusConnect(GetEntityId());
     }
@@ -113,6 +116,7 @@ namespace GradientSignal
     {
         GradientRequestBus::Handler::BusDisconnect();
         RandomGradientRequestBus::Handler::BusDisconnect();
+        GradientTransformNotificationBus::Handler::BusDisconnect();
     }
 
     bool RandomGradientComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
@@ -135,16 +139,22 @@ namespace GradientSignal
         return false;
     }
 
+    void RandomGradientComponent::OnGradientTransformChanged(const GradientTransform& newTransform)
+    {
+        AZStd::unique_lock<decltype(m_transformMutex)> lock(m_transformMutex);
+        m_gradientTransform = newTransform;
+    }
+
     float RandomGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
 
         AZ::Vector3 uvw = sampleParams.m_position;
-
         bool wasPointRejected = false;
-        const bool shouldNormalizeOutput = false;
-        GradientTransformRequestBus::Event(
-            GetEntityId(), &GradientTransformRequestBus::Events::TransformPositionToUVW, sampleParams.m_position, uvw, shouldNormalizeOutput, wasPointRejected);
+
+        {
+            AZStd::shared_lock<decltype(m_transformMutex)> lock(m_transformMutex);
+            m_gradientTransform.TransformPositionToUVW(sampleParams.m_position, uvw, wasPointRejected);
+        }
 
         if (!wasPointRejected)
         {

@@ -10,18 +10,18 @@
 #include "CrySystem_precompiled.h"
 #include "SerializeXMLReader.h"
 #include <ISystem.h>
+#include <AzCore/Time/ITime.h>
 
 #define TAG_SCRIPT_VALUE "v"
 #define TAG_SCRIPT_TYPE "t"
 #define TAG_SCRIPT_NAME "n"
 
-//#define LOG_SERIALIZE_STACK(tag,szName) CryLogAlways( "<%s> %s/%s",tag,GetStackInfo(),szName );
+//#define LOG_SERIALIZE_STACK(tag,szName) CryLogAlways( "<%s> %s/%s",tag,GetStackInfo().c_str(), szName);
 #define LOG_SERIALIZE_STACK(tag, szName)
 
 CSerializeXMLReaderImpl::CSerializeXMLReaderImpl(const XmlNodeRef& nodeRef)
     : m_nErrors(0)
 {
-    //m_curTime = gEnv->pTimer->GetFrameStartTime();
     assert(!!nodeRef);
     m_nodeStack.push_back(CParseState());
     m_nodeStack.back().Init(nodeRef);
@@ -44,12 +44,12 @@ bool CSerializeXMLReaderImpl::Value(const char* name, int8& value)
     }
     else
     {
-        value = temp;
+        value = static_cast<int8>(temp);
     }
     return bResult;
 }
 
-bool CSerializeXMLReaderImpl::Value(const char* name, string& value)
+bool CSerializeXMLReaderImpl::Value(const char* name, AZStd::string& value)
 {
     DefaultValue(value); // Set input value to default.
     if (m_nErrors)
@@ -87,37 +87,23 @@ bool CSerializeXMLReaderImpl::Value(const char* name, CTimeValue& value)
     }
     else
     {
+        const AZ::TimeMs elaspsedTimeMs = AZ::GetRealElapsedTimeMs();
+        const double elaspedTimeSec = AZ::TimeMsToSecondsDouble(elaspsedTimeMs);
+        const CTimeValue elaspedTime(elaspedTimeSec);
         float delta;
         if (!GetAttr(nodeRef, name, delta))
         {
             //CryWarning( VALIDATOR_MODULE_SYSTEM,VALIDATOR_WARNING,"Failed to read time value %s", name);
             //Failed();
-            value = gEnv->pTimer->GetFrameStartTime(); // in case we don't find the node, it was assumed to be the default value (0.0)
+            value = elaspedTime; // in case we don't find the node, it was assumed to be the default value (0.0)
             // 0.0 means current time, whereas "zero" really means CTimeValue(0.0), see above
             return false;
         }
         else
         {
-            value = CTimeValue(gEnv->pTimer->GetFrameStartTime() + delta);
+            value = CTimeValue(elaspedTime + delta);
         }
     }
-    return true;
-}
-
-bool CSerializeXMLReaderImpl::Value(const char* name, XmlNodeRef& value)
-{
-    DefaultValue(value); // Set input value to default.
-    if (m_nErrors)
-    {
-        return false;
-    }
-
-    if (BeginOptionalGroup(name, true))
-    {
-        value = CurNode()->getChild(0);
-        EndGroup();
-    }
-
     return true;
 }
 
@@ -172,34 +158,4 @@ void CSerializeXMLReaderImpl::EndGroup()
         m_nodeStack.pop_back();
     }
     assert(!m_nodeStack.empty());
-}
-
-//////////////////////////////////////////////////////////////////////////
-const char* CSerializeXMLReaderImpl::GetStackInfo() const
-{
-    static string str;
-    str.assign("");
-    for (int i = 0; i < (int)m_nodeStack.size(); i++)
-    {
-        const char* name = m_nodeStack[i].m_node->getAttr(TAG_SCRIPT_NAME);
-        if (name && name[0])
-        {
-            str += name;
-        }
-        else
-        {
-            str += m_nodeStack[i].m_node->getTag();
-        }
-        if (i != m_nodeStack.size() - 1)
-        {
-            str += "/";
-        }
-    }
-    return str.c_str();
-}
-
-void CSerializeXMLReaderImpl::GetMemoryUsage(ICrySizer* pSizer) const
-{
-    pSizer->Add(*this);
-    pSizer->AddContainer(m_nodeStack);
 }

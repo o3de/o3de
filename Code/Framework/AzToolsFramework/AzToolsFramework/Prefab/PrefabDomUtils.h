@@ -28,6 +28,9 @@ namespace AzToolsFramework
             inline static const char* EntityIdName = "Id";
             inline static const char* EntitiesName = "Entities";
             inline static const char* ContainerEntityName = "ContainerEntity";
+            inline static const char* ComponentsName = "Components";
+            inline static const char* EntityOrderName = "Child Entity Order";
+            inline static const char* TypeName = "$type";
 
             /**
             * Find Prefab value from given parent value and target value's name.
@@ -38,16 +41,20 @@ namespace AzToolsFramework
             PrefabDomValueReference FindPrefabDomValue(PrefabDomValue& parentValue, const char* valueName);
             PrefabDomValueConstReference FindPrefabDomValue(const PrefabDomValue& parentValue, const char* valueName);
 
-            enum class StoreInstanceFlags : uint8_t
+            enum class StoreFlags : uint8_t
             {
                 //! No flags used during the call to LoadInstanceFromPrefabDom.
                 None = 0,
 
                 //! By default an instance will be stored with default values. In cases where we want to store less json without defaults
                 //! such as saving to disk, this flag will control that behavior.
-                StripDefaultValues = 1 << 0
+                StripDefaultValues = 1 << 0,
+
+                //! We do not save linkIds to file. However when loading a level we want to temporarily save
+                //! linkIds to instance dom so any nested prefabs will have linkIds correctly set.
+                StoreLinkIds = 1 << 1
             };
-            AZ_DEFINE_ENUM_BITWISE_OPERATORS(StoreInstanceFlags);
+            AZ_DEFINE_ENUM_BITWISE_OPERATORS(StoreFlags);
 
             /**
             * Stores a valid Prefab Instance within a Prefab Dom. Useful for generating Templates
@@ -56,9 +63,21 @@ namespace AzToolsFramework
             * @param flags Controls behavior such as whether to store default values
             * @return bool on whether the operation succeeded
             */
-            bool StoreInstanceInPrefabDom(const Instance& instance, PrefabDom& prefabDom, StoreInstanceFlags flags = StoreInstanceFlags::None);
+            bool StoreInstanceInPrefabDom(const Instance& instance, PrefabDom& prefabDom, StoreFlags flags = StoreFlags::None);
 
-            enum class LoadInstanceFlags : uint8_t
+            /**
+            * Stores a valid entity in Prefab Dom format.
+            * @param entity The entity to store
+            * @param owningInstance The instance owning the passed in entity.
+            *                       Used for contextualizing the entity's place in a Prefab hierarchy.
+            * @param prefabDom The prefabDom that will be used to store the entity data
+            * @param flags controls behavior such as whether to store default values
+            * @return bool on whether the operation succeeded
+            */
+            bool StoreEntityInPrefabDomFormat(const AZ::Entity& entity, Instance& owningInstance, PrefabDom& prefabDom,
+                StoreFlags flags = StoreFlags::None);
+
+            enum class LoadFlags : uint8_t
             {
                 //! No flags used during the call to LoadInstanceFromPrefabDom.
                 None = 0,
@@ -66,7 +85,7 @@ namespace AzToolsFramework
                 //! unique, e.g. when they are duplicates of live entities, this flag will assign them a random new id.
                 AssignRandomEntityId = 1 << 0
             };
-            AZ_DEFINE_ENUM_BITWISE_OPERATORS(LoadInstanceFlags);
+            AZ_DEFINE_ENUM_BITWISE_OPERATORS(LoadFlags);
 
             /**
             * Loads a valid Prefab Instance from a Prefab Dom. Useful for generating Instances.
@@ -76,7 +95,7 @@ namespace AzToolsFramework
             * @return bool on whether the operation succeeded.
             */
             bool LoadInstanceFromPrefabDom(
-                Instance& instance, const PrefabDom& prefabDom, LoadInstanceFlags flags = LoadInstanceFlags::None);
+                Instance& instance, const PrefabDom& prefabDom, LoadFlags flags = LoadFlags::None);
 
             /**
             * Loads a valid Prefab Instance from a Prefab Dom. Useful for generating Instances.
@@ -88,7 +107,7 @@ namespace AzToolsFramework
             */
             bool LoadInstanceFromPrefabDom(
                 Instance& instance, const PrefabDom& prefabDom, AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& referencedAssets,
-                LoadInstanceFlags flags = LoadInstanceFlags::None);
+                LoadFlags flags = LoadFlags::None);
 
             /**
             * Loads a valid Prefab Instance from a Prefab Dom. Useful for generating Instances.
@@ -101,7 +120,7 @@ namespace AzToolsFramework
             */
             bool LoadInstanceFromPrefabDom(
                 Instance& instance, Instance::EntityList& newlyAddedEntities, const PrefabDom& prefabDom,
-                LoadInstanceFlags flags = LoadInstanceFlags::None);
+                LoadFlags flags = LoadFlags::None);
 
             inline PrefabDomPath GetPrefabDomInstancePath(const char* instanceName)
             {
@@ -138,6 +157,14 @@ namespace AzToolsFramework
                 [[maybe_unused]] const AZStd::string_view printMessage,
                 [[maybe_unused]] const AzToolsFramework::Prefab::PrefabDomValue& prefabDomValue);
 
+            //! An empty struct for passing to JsonSerializerSettings.m_metadata that is consumed by InstanceSerializer::Store.
+            //! If present in metadata, linkIds will be stored to instance dom.
+            struct LinkIdMetadata
+            {
+                AZ_RTTI(LinkIdMetadata, "{8FF7D299-14E3-41D4-90C5-393A240FAE7C}");
+
+                virtual ~LinkIdMetadata() {}
+            };
         } // namespace PrefabDomUtils
     } // namespace Prefab
 } // namespace AzToolsFramework

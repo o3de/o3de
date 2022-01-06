@@ -9,6 +9,7 @@
 #include "FileIOBaseTestTypes.h"
 
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
@@ -58,6 +59,7 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/IO/Path/PathReflect.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 
 #include <AzCore/RTTI/AttributeReader.h>
@@ -1239,10 +1241,8 @@ namespace UnitTest
         SerializeContext* GetSerializeContext() override { return m_serializeContext.get(); }
         BehaviorContext*  GetBehaviorContext() override { return nullptr; }
         JsonRegistrationContext* GetJsonRegistrationContext() override { return nullptr; }
-        const char* GetAppRoot() const override { return nullptr; }
         const char* GetEngineRoot() const override { return nullptr; }
         const char* GetExecutableFolder() const override { return nullptr; }
-        Debug::DrillerManager* GetDrillerManager() override { return nullptr; }
         void EnumerateEntities(const EntityCallback& /*callback*/) override {}
         void QueryApplicationType(AZ::ApplicationTypeQuery& /*appType*/) const override {}
         //////////////////////////////////////////////////////////////////////////
@@ -2232,7 +2232,7 @@ TEST_F(SerializeBasicTest, BasicTypeTest_Succeed)
                 (void)classId;
                 DeprecationTestClass* obj = reinterpret_cast<DeprecationTestClass*>(classPtr);
                 EXPECT_EQ( 0, obj->m_deprecated.m_data );
-                EXPECT_EQ( NULL, obj->m_deprecatedPtr );
+                EXPECT_EQ( nullptr, obj->m_deprecatedPtr );
                 EXPECT_EQ( 0, obj->m_oldClassData );
                 EXPECT_EQ( 0.f, obj->m_newClassData );
                 EXPECT_EQ( 0, obj->m_missingMember );
@@ -4058,7 +4058,7 @@ namespace UnitTest
 
                 if (strcmp(classData->m_name, "MyEditStruct") == 0)
                 {
-                    EXPECT_TRUE(classData->m_editData != NULL);
+                    EXPECT_TRUE(classData->m_editData != nullptr);
                     EXPECT_EQ( 0, strcmp(classData->m_editData->m_name, "MyEditStruct") );
                     EXPECT_EQ( 0, strcmp(classData->m_editData->m_description, "My edit struct class used for ...") );
                     EXPECT_EQ( 2, classData->m_editData->m_elements.size() );
@@ -4072,12 +4072,12 @@ namespace UnitTest
                     // Number of options attribute
                     EXPECT_EQ(classElement->m_editData->m_attributes[0].first, AZ_CRC("NumOptions", 0x90274abc));
                     Edit::AttributeData<int>* intData = azrtti_cast<Edit::AttributeData<int>*>(classElement->m_editData->m_attributes[0].second);
-                    EXPECT_TRUE(intData != NULL);
+                    EXPECT_TRUE(intData != nullptr);
                     EXPECT_EQ( 3, intData->Get(instance) );
                     // Get options attribute
                     EXPECT_EQ( classElement->m_editData->m_attributes[1].first, AZ_CRC("Options", 0xd035fa87));
                     Edit::AttributeFunction<int(int)>* funcData = azrtti_cast<Edit::AttributeFunction<int(int)>*>(classElement->m_editData->m_attributes[1].second);
-                    EXPECT_TRUE(funcData != NULL);
+                    EXPECT_TRUE(funcData != nullptr);
                     EXPECT_EQ( 20, funcData->Invoke(instance, 10) );
                 }
                 return true;
@@ -8152,5 +8152,98 @@ namespace UnitTest
         m_serializeContext->Class<TestClassWithEnumFieldThatSpecializesTypeInfo>();
         m_serializeContext->DisableRemoveReflection();
     }
+
+    template <typename ParamType>
+    class PathSerializationParamFixture
+        : public ScopedAllocatorSetupFixture
+        , public ::testing::WithParamInterface<ParamType>
+    {
+    public:
+        PathSerializationParamFixture()
+            : ScopedAllocatorSetupFixture(
+                []() { AZ::SystemAllocator::Descriptor desc; desc.m_stackRecordLevels = 30; return desc; }()
+            )
+        {}
+
+        // We must expose the class for serialization first.
+        void SetUp() override
+        {
+            m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
+            AZ::IO::PathReflect(m_serializeContext.get());
+
+        }
+
+        void TearDown() override
+        {
+            m_serializeContext->EnableRemoveReflection();
+            AZ::IO::PathReflect(m_serializeContext.get());
+            m_serializeContext->DisableRemoveReflection();
+
+            m_serializeContext.reset();
+        }
+
+    protected:
+        AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
+    };
+
+    struct PathSerializationParams
+    {
+        const char m_preferredSeparator{};
+        const char* m_testPath{};
+    };
+    using PathSerializationFixture = PathSerializationParamFixture<PathSerializationParams>;
+
+    TEST_P(PathSerializationFixture, PathSerializer_SerializesStringBackedPath_Succeeds)
+    {
+        const auto& testParams = GetParam();
+        {
+            // Path serialization
+            AZ::IO::Path testPath{ testParams.m_testPath, testParams.m_preferredSeparator };
+
+            AZStd::vector<char> byteBuffer;
+            AZ::IO::ByteContainerStream byteStream(&byteBuffer);
+            auto objStream = AZ::ObjectStream::Create(&byteStream, *m_serializeContext, AZ::ObjectStream::ST_XML);
+            objStream->WriteClass(&testPath);
+            objStream->Finalize();
+
+            byteStream.Seek(0, AZ::IO::GenericStream::ST_SEEK_BEGIN);
+
+            AZ::IO::Path loadPath{ testParams.m_preferredSeparator };
+            EXPECT_TRUE(AZ::Utils::LoadObjectFromStreamInPlace(byteStream, loadPath, m_serializeContext.get()));
+            EXPECT_EQ(testPath.LexicallyNormal(), loadPath);
+        }
+
+        {
+            // FixedMaxPath serialization
+            AZ::IO::FixedMaxPath testFixedMaxPath{ testParams.m_testPath, testParams.m_preferredSeparator };
+
+            AZStd::vector<char> byteBuffer;
+            AZ::IO::ByteContainerStream byteStream(&byteBuffer);
+            auto objStream = AZ::ObjectStream::Create(&byteStream, *m_serializeContext, AZ::ObjectStream::ST_XML);
+            objStream->WriteClass(&testFixedMaxPath);
+            objStream->Finalize();
+
+            byteStream.Seek(0, AZ::IO::GenericStream::ST_SEEK_BEGIN);
+
+            AZ::IO::FixedMaxPath loadPath{ testParams.m_preferredSeparator };
+            EXPECT_TRUE(AZ::Utils::LoadObjectFromStreamInPlace(byteStream, loadPath, m_serializeContext.get()));
+            EXPECT_EQ(testFixedMaxPath.LexicallyNormal(), loadPath);
+        }
+    }
+
+    INSTANTIATE_TEST_CASE_P(
+        PathSerialization,
+        PathSerializationFixture,
+        ::testing::Values(
+            PathSerializationParams{ AZ::IO::PosixPathSeparator, "" },
+            PathSerializationParams{ AZ::IO::PosixPathSeparator, "test" },
+            PathSerializationParams{ AZ::IO::PosixPathSeparator, "/test" },
+            PathSerializationParams{ AZ::IO::WindowsPathSeparator, "test" },
+            PathSerializationParams{ AZ::IO::WindowsPathSeparator, "/test" },
+            PathSerializationParams{ AZ::IO::WindowsPathSeparator, "D:test" },
+            PathSerializationParams{ AZ::IO::WindowsPathSeparator, "D:/test" },
+            PathSerializationParams{ AZ::IO::WindowsPathSeparator, "test/foo/../bar" }
+        )
+    );
 }
 

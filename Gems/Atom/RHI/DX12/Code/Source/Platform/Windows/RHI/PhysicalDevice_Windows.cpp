@@ -78,7 +78,7 @@ namespace AZ
             }
 
             constexpr uint32_t SubKeyLength = 256;
-            char subKeyName[SubKeyLength];
+            wchar_t subKeyName[SubKeyLength];
 
             uint32_t driverVersion = 0;
 

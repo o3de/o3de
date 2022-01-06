@@ -172,20 +172,23 @@ namespace GuideHelpers
 
         // the line is drawn as the inverse of the background color
         AZ::Color guideColor(1.0f, 1.0f, 1.0f, 1.0f);
-        int blendMode = GS_BLSRC_ONEMINUSDSTCOL|GS_BLDST_ZERO;
+
+        CDraw2d::RenderState renderState;
+        renderState.m_blendState.m_blendSource = AZ::RHI::BlendFactor::ColorDestInverse;
+        renderState.m_blendState.m_blendDest = AZ::RHI::BlendFactor::Zero;
 
         // Draw the guide line
         if (guideIsVertical)
         {
             AZ::Vector2 start(viewportPoint.GetX(), 0);
             AZ::Vector2 end(viewportPoint.GetX(), viewportSize.GetY());
-            draw2d.DrawLine(start, end, guideColor, blendMode);
+            draw2d.DrawLine(start, end, guideColor, IDraw2d::Rounding::Nearest, renderState);
         }
         else
         {
             AZ::Vector2 start(0, viewportPoint.GetY());
             AZ::Vector2 end(viewportSize.GetX(), viewportPoint.GetY());
-            draw2d.DrawLine(start, end, guideColor, blendMode);
+            draw2d.DrawLine(start, end, guideColor, IDraw2d::Rounding::Nearest, renderState);
         }
     }
 

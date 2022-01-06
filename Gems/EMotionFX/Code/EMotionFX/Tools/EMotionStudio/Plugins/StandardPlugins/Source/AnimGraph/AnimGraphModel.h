@@ -313,7 +313,7 @@ namespace EMStudio
         bool Execute(MCore::Command * command, const MCore::CommandLine& commandLine) override;                 \
         bool Undo(MCore::Command* command, const MCore::CommandLine& commandLine) override;                     \
     private:                                                                                                    \
-        AnimGraphModel& m_animGraphModel;                                                                       \
+        [[maybe_unused]] AnimGraphModel& m_animGraphModel;                                                      \
     };                                                                                                          \
     friend class CLASSNAME;
 

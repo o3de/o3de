@@ -247,7 +247,6 @@ namespace PhysX
         for (int i = 0; i < 50; i++)
         {
             basis.Update(desiredVelocity);
-            AZ::Vector3 velocity = basis.m_controller->GetVelocity();
             EXPECT_TRUE(basis.m_controller->GetVelocity().IsClose(AZ::Vector3::CreateZero()));
         }
 
@@ -260,7 +259,6 @@ namespace PhysX
         for (int i = 0; i < 50; i++)
         {
             basis.Update(desiredVelocity);
-            AZ::Vector3 velocity = basis.m_controller->GetVelocity();
             EXPECT_TRUE(basis.m_controller->GetVelocity().IsClose(desiredVelocity));
         }
     }

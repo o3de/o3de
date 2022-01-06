@@ -23,7 +23,7 @@ namespace ScriptCanvas
                 if (sourceType == SourceType::SourceInput)
                 {
                     ContractDescriptor supportsMethodContract;
-                    supportsMethodContract.m_createFunc = [this]() -> SupportsMethodContract* { return aznew SupportsMethodContract("At"); };
+                    supportsMethodContract.m_createFunc = []() -> SupportsMethodContract* { return aznew SupportsMethodContract("At"); };
                     contractDescs.push_back(AZStd::move(supportsMethodContract));
                 }
             }

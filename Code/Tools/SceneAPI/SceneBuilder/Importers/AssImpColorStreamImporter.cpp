@@ -57,7 +57,7 @@ namespace AZ
 
                 // This node has at least one mesh, verify that the color channel counts are the same for all meshes.
                 const unsigned int expectedColorChannels = scene->mMeshes[currentNode->mMeshes[0]]->GetNumColorChannels();
-                const bool allMeshesHaveSameNumberOfColorChannels =
+                [[maybe_unused]] const bool allMeshesHaveSameNumberOfColorChannels =
                     AZStd::all_of(currentNode->mMeshes + 1, currentNode->mMeshes + currentNode->mNumMeshes, [scene, expectedColorChannels](const unsigned int meshIndex)
                         {
                             return scene->mMeshes[meshIndex]->GetNumColorChannels() == expectedColorChannels;

@@ -2384,9 +2384,8 @@ namespace ScriptCanvas
                         AZ_TracePrintf("ScriptCanvas", "%s", pretty.data());
                         AZ_TracePrintf("ScriptCanvas", "SubgraphInterface:");
                         AZ_TracePrintf("ScriptCanvas", ToString(m_subgraphInterface).data());
+                        AZ_TracePrintf("Script Canvas", "Parse Duration: %8.4f ms\n", m_parseDuration / 1000.0);
                     }
-
-                    AZ_TracePrintf("Script Canvas", "Parse Duration: %8.4f ms\n", m_parseDuration / 1000.0);
                 }
             }
         }
@@ -4319,6 +4318,12 @@ namespace ScriptCanvas
         void AbstractCodeModel::ParseInputDatum(ExecutionTreePtr execution, const Slot& input)
         {
             AZ_Assert(execution->GetSymbol() != Symbol::FunctionDefinition, "Function definition input is not handled in AbstractCodeModel::ParseInputDatum");
+
+            if (!input.GetDataType().IsValid())
+            {
+                AddError(nullptr, aznew Internal::ParseError(execution->GetNodeId(), ParseErrors::InvalidDataTypeInInput));
+                return;
+            }
 
             auto nodes = execution->GetId().m_node->GetConnectedNodes(input);
             if (nodes.empty())

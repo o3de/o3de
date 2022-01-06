@@ -8,7 +8,11 @@
 
 #include <ProjectButtonWidget.h>
 #include <ProjectManagerDefs.h>
+#include <ProjectUtils.h>
+#include <ProjectManager_Traits_Platform.h>
 #include <AzQtComponents/Utilities/DesktopUtilities.h>
+#include <AzCore/IO/SystemFile.h>
+#include <AzCore/IO/Path/Path.h>
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -23,6 +27,8 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QDesktopServices>
+#include <QMessageBox>
+#include <QMouseEvent>
 
 namespace O3DE::ProjectManager
 {
@@ -88,6 +94,7 @@ namespace O3DE::ProjectManager
         QHBoxLayout* horizontalButtonLayout = new QHBoxLayout();
         horizontalButtonLayout->addSpacing(34);
         m_actionButton = new QPushButton(tr("Project Action"), this);
+        m_actionButton->setObjectName("projectActionButton");
         m_actionButton->setVisible(false);
         horizontalButtonLayout->addWidget(m_actionButton);
         horizontalButtonLayout->addSpacing(34);
@@ -103,11 +110,11 @@ namespace O3DE::ProjectManager
         vLayout->addWidget(m_progressBar);
     }
 
-    void LabelButton::mousePressEvent([[maybe_unused]] QMouseEvent* event)
+    void LabelButton::mousePressEvent(QMouseEvent* event)
     {
         if(m_enabled)
         {
-            emit triggered();
+            emit triggered(event);
         }
     }
 
@@ -162,22 +169,9 @@ namespace O3DE::ProjectManager
         QDesktopServices::openUrl(m_logUrl);
     }
 
-    ProjectButton::ProjectButton(const ProjectInfo& projectInfo, QWidget* parent, bool processing)
+    ProjectButton::ProjectButton(const ProjectInfo& projectInfo, QWidget* parent)
         : QFrame(parent)
         , m_projectInfo(projectInfo)
-    {
-        BaseSetup();
-        if (processing)
-        {
-            ProcessingSetup();
-        }
-        else
-        {
-            ReadySetup();
-        }
-    }
-
-    void ProjectButton::BaseSetup()
     {
         setObjectName("projectButton");
 
@@ -199,50 +193,99 @@ namespace O3DE::ProjectManager
         }
         m_projectImageLabel->setPixmap(QPixmap(projectPreviewPath).scaled(m_projectImageLabel->size(), Qt::KeepAspectRatioByExpanding));
 
-        m_projectFooter = new QFrame(this);
+        QFrame* projectFooter = new QFrame(this);
         QHBoxLayout* hLayout = new QHBoxLayout();
         hLayout->setContentsMargins(0, 0, 0, 0);
-        m_projectFooter->setLayout(hLayout);
+        projectFooter->setLayout(hLayout);
         {
             QLabel* projectNameLabel = new QLabel(m_projectInfo.GetProjectDisplayName(), this);
+            projectNameLabel->setToolTip(m_projectInfo.m_path);
             hLayout->addWidget(projectNameLabel);
+
+            m_projectMenuButton = new QPushButton(this);
+            m_projectMenuButton->setObjectName("projectMenuButton");
+            m_projectMenuButton->setMenu(CreateProjectMenu());
+            hLayout->addWidget(m_projectMenuButton);
         }
 
-        vLayout->addWidget(m_projectFooter);
-    }
+        vLayout->addWidget(projectFooter);
 
-    void ProjectButton::ProcessingSetup()
-    {
-        m_projectImageLabel->SetEnabled(false);
-        m_projectImageLabel->SetOverlayText(tr("Processing...\n\n"));
-
-        QProgressBar* progressBar = m_projectImageLabel->GetProgressBar();
-        progressBar->setVisible(true);
-        progressBar->setValue(0);
-    }
-
-    void ProjectButton::ReadySetup()
-    {
         connect(m_projectImageLabel->GetOpenEditorButton(), &QPushButton::clicked, [this](){ emit OpenProject(m_projectInfo.m_path); });
+        connect(m_projectImageLabel, &LabelButton::triggered, [this](QMouseEvent* event) {
+            if (event->button() == Qt::RightButton)
+            {
+                m_projectMenuButton->menu()->move(event->globalPos());
+                m_projectMenuButton->menu()->show();
+            }
+        });
+    }
 
+    QMenu* ProjectButton::CreateProjectMenu()
+    {
         QMenu* menu = new QMenu(this);
         menu->addAction(tr("Edit Project Settings..."), this, [this]() { emit EditProject(m_projectInfo.m_path); });
+        menu->addAction(tr("Configure Gems..."), this, [this]() { emit EditProjectGems(m_projectInfo.m_path); });
         menu->addAction(tr("Build"), this, [this]() { emit BuildProject(m_projectInfo); });
+        menu->addAction(tr("Open CMake GUI..."), this, [this]() { emit OpenCMakeGUI(m_projectInfo); });
         menu->addSeparator();
         menu->addAction(tr("Open Project folder..."), this, [this]()
         { 
             AzQtComponents::ShowFileOnDesktop(m_projectInfo.m_path);
         });
+
+#if AZ_TRAIT_PROJECT_MANAGER_CREATE_DESKTOP_SHORTCUT
+        menu->addAction(tr("Create Editor desktop shortcut..."), this, [this]()
+        {
+            AZ::IO::FixedMaxPath editorExecutablePath = ProjectUtils::GetEditorExecutablePath(m_projectInfo.m_path.toUtf8().constData());
+
+            const QString shortcutName = QString("%1 Editor").arg(m_projectInfo.m_displayName); 
+            const QString arg = QString("--regset=\"/Amazon/AzCore/Bootstrap/project_path=%1\"").arg(m_projectInfo.m_path);
+
+            auto result = ProjectUtils::CreateDesktopShortcut(shortcutName, editorExecutablePath.c_str(), { arg });
+            if(result.IsSuccess())
+            {
+                QMessageBox::information(this, tr("Desktop Shortcut Created"), result.GetValue());
+            }
+            else
+            {
+                QMessageBox::critical(this, tr("Failed to create shortcut"), result.GetError());
+            }
+        });
+#endif // AZ_TRAIT_PROJECT_MANAGER_CREATE_DESKTOP_SHORTCUT
+
         menu->addSeparator();
         menu->addAction(tr("Duplicate"), this, [this]() { emit CopyProject(m_projectInfo); });
         menu->addSeparator();
         menu->addAction(tr("Remove from O3DE"), this, [this]() { emit RemoveProject(m_projectInfo.m_path); });
         menu->addAction(tr("Delete this Project"), this, [this]() { emit DeleteProject(m_projectInfo.m_path); });
 
-        QPushButton* projectMenuButton = new QPushButton(this);
-        projectMenuButton->setObjectName("projectMenuButton");
-        projectMenuButton->setMenu(menu);
-        m_projectFooter->layout()->addWidget(projectMenuButton);
+        return menu;
+    }
+
+    const ProjectInfo& ProjectButton::GetProjectInfo() const
+    {
+        return m_projectInfo;
+    }
+
+    void ProjectButton::RestoreDefaultState()
+    {
+        m_projectImageLabel->SetEnabled(true);
+        m_projectImageLabel->SetOverlayText("");
+        m_projectMenuButton->setVisible(true);
+
+        QProgressBar* progressBar = m_projectImageLabel->GetProgressBar();
+        progressBar->setVisible(false);
+        progressBar->setValue(0);
+
+        QPushButton* projectActionButton = m_projectImageLabel->GetActionButton();
+        projectActionButton->setVisible(false);
+        if (m_actionButtonConnection)
+        {
+            disconnect(m_actionButtonConnection);
+        }
+
+        m_projectImageLabel->GetWarningIcon()->setVisible(false);
+        m_projectImageLabel->GetWarningLabel()->setVisible(false);
     }
 
     void ProjectButton::SetProjectButtonAction(const QString& text, AZStd::function<void()> lambda)
@@ -258,15 +301,39 @@ namespace O3DE::ProjectManager
         }
 
         projectActionButton->setText(text);
+        projectActionButton->setMenu(nullptr);
         m_actionButtonConnection = connect(projectActionButton, &QPushButton::clicked, lambda);
     }
 
-    void ProjectButton::SetProjectBuildButtonAction()
+    void ProjectButton::ShowDefaultBuildButton()
     {
-        m_projectImageLabel->GetWarningLabel()->setText(tr("Building project required."));
-        m_projectImageLabel->GetWarningIcon()->setVisible(true);
-        m_projectImageLabel->GetWarningLabel()->setVisible(true);
-        SetProjectButtonAction(tr("Build Project"), [this]() { emit BuildProject(m_projectInfo); });
+        QPushButton* projectActionButton = m_projectImageLabel->GetActionButton();
+        projectActionButton->setVisible(true);
+        projectActionButton->setText(tr("Build Project"));
+        disconnect(m_actionButtonConnection);
+
+        QMenu* menu = new QMenu(this);
+        QAction* autoBuildAction = menu->addAction(tr("Build Now"));
+        connect( autoBuildAction, &QAction::triggered, this, [this](){ emit BuildProject(m_projectInfo); });
+
+        QAction* openCMakeAction = menu->addAction(tr("Open CMake GUI..."));
+        connect( openCMakeAction, &QAction::triggered, this, [this](){ emit OpenCMakeGUI(m_projectInfo); });
+
+        projectActionButton->setMenu(menu);
+    }
+
+    void ProjectButton::ShowBuildRequired()
+    {
+        ShowWarning(true, tr("Building project required"));
+        ShowDefaultBuildButton();
+    }
+
+    void ProjectButton::ShowWarning(bool show, const QString& warning)
+    {
+        m_projectImageLabel->GetWarningLabel()->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
+        m_projectImageLabel->GetWarningLabel()->setText(warning);
+        m_projectImageLabel->GetWarningLabel()->setVisible(show);
+        m_projectImageLabel->GetWarningIcon()->setVisible(show);
     }
 
     void ProjectButton::SetBuildLogsLink(const QUrl& logUrl)
@@ -278,23 +345,26 @@ namespace O3DE::ProjectManager
     {
         if (!logUrl.isEmpty())
         {
-            m_projectImageLabel->GetWarningLabel()->setText(tr("Failed to build. Click to <a href=\"logs\">view logs</a>."));
+            ShowWarning(show, tr("Failed to build. Click to <a href=\"logs\">view logs</a>."));
         }
         else
         {
-            m_projectImageLabel->GetWarningLabel()->setText(tr("Project failed to build."));
+            ShowWarning(show, tr("Project failed to build."));
         }
 
-        m_projectImageLabel->GetWarningLabel()->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
-        m_projectImageLabel->GetWarningIcon()->setVisible(show);
-        m_projectImageLabel->GetWarningLabel()->setVisible(show);
-        m_projectImageLabel->SetLogUrl(logUrl);
-        SetProjectButtonAction(tr("Build Project"), [this]() { emit BuildProject(m_projectInfo); });
+        SetBuildLogsLink(logUrl);
+        ShowDefaultBuildButton();
     }
 
-    void ProjectButton::BuildThisProject()
+    void ProjectButton::SetProjectBuilding()
     {
-        emit BuildProject(m_projectInfo);
+        m_projectImageLabel->SetEnabled(false);
+        m_projectImageLabel->SetOverlayText(tr("Building...\n\n"));
+        m_projectMenuButton->setVisible(false);
+
+        QProgressBar* progressBar = m_projectImageLabel->GetProgressBar();
+        progressBar->setVisible(true);
+        progressBar->setValue(0);
     }
 
     void ProjectButton::SetLaunchButtonEnabled(bool enabled)

@@ -904,7 +904,6 @@ namespace
 
         AZ::EntityId testElemId = CreateElementWithTransform2dComponent(canvas, "UiTransfrom2DTestElement:Offsets");
 
-        AZ::Vector2 parentSize(canvas->GetCanvasSize());
         UiTransform2dInterface::Offsets expectedOffsets(-50, -50, 50, 50);
         UiTransform2dInterface::Offsets actualOffsets;
 
@@ -971,7 +970,6 @@ namespace
 
         AZ::EntityId testElemId = CreateElementWithTransform2dComponent(canvas, "UiTransfrom2DTestElement:LocalSize");
 
-        AZ::Vector2 parentSize(canvas->GetCanvasSize());
         float expectedWidth = 100;
         float actualWidth = 1;
         float expectedHeight = 100;

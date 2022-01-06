@@ -42,7 +42,7 @@ namespace Achievements
         ////////////////////////////////////////////////////////////////////////////////////////
         // AchievementsRequestBus interface implementation
         void UnlockAchievement(const UnlockAchievementParams& params) override;
-        void QueryAchievementDetails(const QueryAchievementParams& params);
+        void QueryAchievementDetails(const QueryAchievementParams& params) override;
     
     public:
         ////////////////////////////////////////////////////////////////////////////////////////

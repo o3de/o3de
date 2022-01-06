@@ -63,7 +63,7 @@ namespace AudioControls
         QString GetWindowTitle(EACEControlType type) const;
 
         // ------------------ QWidget ----------------------------
-        bool eventFilter(QObject* pObject, QEvent* pEvent);
+        bool eventFilter(QObject* pObject, QEvent* pEvent) override;
         // -------------------------------------------------------
 
         // Filtering

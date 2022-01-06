@@ -433,9 +433,7 @@ namespace AZ
                 m_classData.m_attributes.set_allocator(AZStd::move(dllAllocator));
 
                 // Create the ObjectStreamWriteOverrideCB in the current module
-                using ContainerType = AttributeData<AZStd::function<void(SerializeContext::EnumerateInstanceCallContext&,
-                    const void*, const SerializeContext::ClassData&, const SerializeContext::ClassElement*)>>;
-                m_classData.m_attributes.emplace_back(AZ_CRC("ObjectStreamWriteElementOverride", 0x35eb659f), CreateModuleAttribute<ContainerType>(&ObjectStreamWriter));
+                m_classData.m_attributes.emplace_back(AZ_CRC("ObjectStreamWriteElementOverride", 0x35eb659f), CreateModuleAttribute(&ObjectStreamWriter));
             }
 
             SerializeContext::ClassData* GetClassData() override
@@ -483,9 +481,9 @@ namespace AZ
             }
         private:
             static void ObjectStreamWriter(SerializeContext::EnumerateInstanceCallContext& callContext, const void* variantPtr,
-                const SerializeContext::ClassData& variantClassData, const SerializeContext::ClassElement* variantClassElement)
+                [[maybe_unused]] const SerializeContext::ClassData& variantClassData, const SerializeContext::ClassElement* variantClassElement)
             {
-                auto alternativeVisitor = [&callContext, &variantClassData, variantClassElement](auto&& elementAlt)
+                auto alternativeVisitor = [&callContext, variantClassElement](auto&& elementAlt)
                 {
                     using AltType = AZStd::remove_cvref_t<decltype(elementAlt)>;
                     const SerializeContext& context = *callContext.m_context;

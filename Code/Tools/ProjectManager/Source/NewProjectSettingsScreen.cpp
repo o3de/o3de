@@ -16,6 +16,8 @@
 #include <EngineInfo.h>
 #include <CreateProjectCtrl.h>
 #include <TagWidget.h>
+
+#include <AzCore/Math/Uuid.h>
 #include <AzQtComponents/Components/FlowLayout.h>
 
 #include <QVBoxLayout>
@@ -39,7 +41,7 @@ namespace O3DE::ProjectManager
     NewProjectSettingsScreen::NewProjectSettingsScreen(QWidget* parent)
         : ProjectSettingsScreen(parent)
     {
-        const QString defaultName{ "NewProject" };
+        const QString defaultName = GetDefaultProjectName();
         const QString defaultPath = QDir::toNativeSeparators(GetDefaultProjectPath() + "/" + defaultName);
 
         m_projectName->lineEdit()->setText(defaultName);
@@ -162,6 +164,17 @@ namespace O3DE::ProjectManager
         return defaultPath;
     }
 
+    QString NewProjectSettingsScreen::GetDefaultProjectName()
+    {
+        return "NewProject";
+    }
+
+    QString NewProjectSettingsScreen::GetProjectAutoPath()
+    {
+        const QString projectName = m_projectName->lineEdit()->text();
+        return QDir::toNativeSeparators(GetDefaultProjectPath() + "/" + projectName);
+    }
+
     ProjectManagerScreen NewProjectSettingsScreen::GetScreenEnum()
     {
         return ProjectManagerScreen::NewProjectSettings;
@@ -214,7 +227,7 @@ namespace O3DE::ProjectManager
             moreGemsLabel->setObjectName("moreGems");
             templateDetailsLayout->addWidget(moreGemsLabel);
 
-            QLabel* browseCatalogLabel = new QLabel(tr("Browse the  Gems Catalog to further customize your project."), this);
+            QLabel* browseCatalogLabel = new QLabel(tr("Browse the Gems Catalog to further customize your project."), this);
             browseCatalogLabel->setObjectName("browseCatalog");
             browseCatalogLabel->setWordWrap(true);
             templateDetailsLayout->addWidget(browseCatalogLabel);
@@ -260,4 +273,22 @@ namespace O3DE::ProjectManager
             m_projectTemplateButtonGroup->blockSignals(false);
         }
     }
+    void NewProjectSettingsScreen::OnProjectNameUpdated()
+    {
+        if (ValidateProjectName() && !m_userChangedProjectPath)
+        {
+            m_projectPath->setText(GetProjectAutoPath());
+        }
+    }
+
+    void NewProjectSettingsScreen::OnProjectPathUpdated()
+    {
+        const QString defaultPath = QDir::toNativeSeparators(GetDefaultProjectPath() + "/" + GetDefaultProjectName());
+        const QString autoPath = GetProjectAutoPath();
+        const QString path = m_projectPath->lineEdit()->text();
+        m_userChangedProjectPath = path != defaultPath && path != autoPath;
+
+        ValidateProjectPath();
+    }
+
 } // namespace O3DE::ProjectManager

@@ -122,12 +122,12 @@ namespace AzToolsFramework
                 !m_instanceName.empty();
         }
 
-        const TemplateId& Link::GetSourceTemplateId() const
+        TemplateId Link::GetSourceTemplateId() const
         {
             return m_sourceTemplateId;
         }
 
-        const TemplateId& Link::GetTargetTemplateId() const
+        TemplateId Link::GetTargetTemplateId() const
         {
             return m_targetTemplateId;
         }
@@ -181,10 +181,10 @@ namespace AzToolsFramework
                     PrefabDomUtils::ApplyPatches(sourceTemplateDomCopy, targetTemplatePrefabDom.GetAllocator(), patchesReference->get());
                 linkedInstanceDom.CopyFrom(sourceTemplateDomCopy, targetTemplatePrefabDom.GetAllocator());
 
-                PrefabDomValueReference sourceTemplateName =
+                [[maybe_unused]] PrefabDomValueReference sourceTemplateName =
                     PrefabDomUtils::FindPrefabDomValue(sourceTemplateDomCopy, PrefabDomUtils::SourceName);
                 AZ_Assert(sourceTemplateName && sourceTemplateName->get().IsString(), "A valid source template name couldn't be found");
-                PrefabDomValueReference targetTemplateName =
+                [[maybe_unused]] PrefabDomValueReference targetTemplateName =
                     PrefabDomUtils::FindPrefabDomValue(targetTemplatePrefabDom, PrefabDomUtils::SourceName);
                 AZ_Assert(targetTemplateName && targetTemplateName->get().IsString(), "A valid target template name couldn't be found");
 
@@ -196,7 +196,8 @@ namespace AzToolsFramework
                         m_sourceTemplateId, m_targetTemplateId);
                     return false;
                 }
-                if (applyPatchResult.GetOutcome() == AZ::JsonSerializationResult::Outcomes::PartialSkip)
+                if (applyPatchResult.GetOutcome() == AZ::JsonSerializationResult::Outcomes::PartialSkip ||
+                    applyPatchResult.GetOutcome() == AZ::JsonSerializationResult::Outcomes::Skipped)
                 {
                     AZ_Error(
                         "Prefab", false,

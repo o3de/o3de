@@ -54,7 +54,7 @@ namespace ScriptCanvas
 
         const RuntimeDataOverrides& GetRuntimeDataOverrides() const;
 
-        void SetRuntimeDataOverrides(const RuntimeDataOverrides& overrideData);
+        void TakeRuntimeDataOverrides(RuntimeDataOverrides&& overrideData);
 
     protected:
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)

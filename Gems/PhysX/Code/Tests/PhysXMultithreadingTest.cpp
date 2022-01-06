@@ -119,7 +119,7 @@ namespace PhysX
         void Start(int waitTimeMilliseconds)
         {
             m_waitTimeMilliseconds = waitTimeMilliseconds;
-            m_thread = AZStd::thread(AZStd::bind(&SceneQueryBase::Tick, this), &m_threadDesc);
+            m_thread = AZStd::thread(m_threadDesc, AZStd::bind(&SceneQueryBase::Tick, this));
         }
 
         void Join()
@@ -140,11 +140,9 @@ namespace PhysX
             Log_Help(m_threadDesc.m_name, "Thread %d - sleeping for %dms\n", AZStd::this_thread::get_id(), m_waitTimeMilliseconds);
             AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(m_waitTimeMilliseconds));
             Log_Help(m_threadDesc.m_name, "Thread %d - running cast\n", AZStd::this_thread::get_id());
-            AZStd::chrono::system_clock::time_point startTime = AZStd::chrono::system_clock::now();
 
             RunRequest();
 
-            AZStd::chrono::microseconds exeTimeUS = AZStd::chrono::system_clock::now() - startTime;
             Log_Help(m_threadDesc.m_name, "Thread %d - complete - time %dus\n", AZStd::this_thread::get_id(), exeTimeUS.count());
         }
 

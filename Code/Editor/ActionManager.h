@@ -151,7 +151,6 @@ public:
         }
 
         ActionWrapper& SetMenu(DynamicMenu* menu);
-        ActionWrapper& SetApplyHoverEffect();
 
         operator QAction*() const {
             return m_action;
@@ -353,7 +352,7 @@ public:
         m_actionHandlers[id] = std::bind(method, object, id);
     }
 
-    bool eventFilter(QObject* watched, QEvent* event);
+    bool eventFilter(QObject* watched, QEvent* event) override;
 
     // returns false if the action was already inserted, indicating that the action should not be processed again
     bool InsertActionExecuting(int id);

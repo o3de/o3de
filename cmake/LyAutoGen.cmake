@@ -34,8 +34,8 @@ function(ly_add_autogen)
         add_custom_command(
             OUTPUT ${AUTOGEN_OUTPUTS}
             DEPENDS ${AZCG_DEPENDENCIES}
-            COMMAND ${CMAKE_COMMAND} -E echo "Running AutoGen for ${ly_add_autogen_NAME}"
             COMMAND ${LY_PYTHON_CMD} "${LY_ROOT_FOLDER}/cmake/AzAutoGen.py" "${CMAKE_BINARY_DIR}/Azcg/TemplateCache/" "${CMAKE_CURRENT_BINARY_DIR}/Azcg/Generated/" "${CMAKE_CURRENT_SOURCE_DIR}" "${AZCG_INPUTFILES}" "${ly_add_autogen_AUTOGEN_RULES}"
+            COMMENT "Running AutoGen for ${ly_add_autogen_NAME}"
             VERBATIM
         )
         set_target_properties(${ly_add_autogen_NAME} PROPERTIES AUTOGEN_INPUT_FILES "${AZCG_INPUTFILES}")

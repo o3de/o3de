@@ -23,8 +23,6 @@
 #include <LyShine/Bus/UiCanvasBus.h>
 #include <LyShine/IRenderGraph.h>
 
-#include <ITimer.h>
-
 #include "UiSerialize.h"
 #include "RenderToTextureBus.h"
 
@@ -457,13 +455,13 @@ void UiFaderComponent::CreateOrResizeRenderTarget(const AZ::Vector2& pixelAligne
     m_viewportTopLeft = pixelAlignedTopLeft;
     m_viewportSize = renderTargetSize;
 
-    // LYSHINE_ATOM_TODO: optimize by reusing/resizing targets
+    // [LYSHINE_ATOM_TODO][GHI #6271] Optimize by reusing existing render targets
     DestroyRenderTarget();
 
     // Create a render target that this element and its children will be rendered to
     AZ::EntityId canvasEntityId;
     EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-    AZ::RHI::Size imageSize(renderTargetSize.GetX(), renderTargetSize.GetY(), 1);
+    AZ::RHI::Size imageSize(static_cast<uint32_t>(renderTargetSize.GetX()), static_cast<uint32_t>(renderTargetSize.GetY()), 1);
     EBUS_EVENT_ID_RESULT(m_attachmentImageId, canvasEntityId, LyShine::RenderToTextureRequestBus, UseRenderTarget, AZ::Name(m_renderTargetName.c_str()), imageSize);
     if (m_attachmentImageId.IsEmpty())
     {
@@ -505,7 +503,7 @@ void UiFaderComponent::UpdateCachedPrimitive(const AZ::Vector2& pixelAlignedTopL
     {
         // verts not yet allocated, allocate them now
         const int numIndices = 6;
-        m_cachedPrimitive.m_vertices = new SVF_P2F_C4B_T2F_F4B[numVertices];
+        m_cachedPrimitive.m_vertices = new LyShine::UiPrimitiveVertex[numVertices];
         m_cachedPrimitive.m_numVertices = numVertices;
 
         static uint16 indices[numIndices] = { 0, 1, 2, 2, 3, 0 };
@@ -575,8 +573,7 @@ void UiFaderComponent::RenderRttFader(LyShine::IRenderGraph* renderGraph, UiElem
         AZ::Color clearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
         // Start building the render to texture node in the render graph
-        LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph);
-        lyRenderGraph->BeginRenderToTexture(attachmentImage, m_viewportTopLeft, m_viewportSize, clearColor);
+        renderGraph->BeginRenderToTexture(attachmentImage, m_viewportTopLeft, m_viewportSize, clearColor);
 
         // We don't want this fader or parent faders to affect what is rendered to the render target since we will
         // apply those fades when we render from the render target.
@@ -604,7 +601,7 @@ void UiFaderComponent::RenderRttFader(LyShine::IRenderGraph* renderGraph, UiElem
             if (m_cachedPrimitive.m_vertices[0].color.a != desiredPackedAlpha)
             {
                 // go through all the cached vertices and update the alpha values
-                UCol desiredPackedColor = m_cachedPrimitive.m_vertices[0].color;
+                LyShine::UCol desiredPackedColor = m_cachedPrimitive.m_vertices[0].color;
                 desiredPackedColor.a = desiredPackedAlpha;
                 for (int i = 0; i < m_cachedPrimitive.m_numVertices; ++i)
                 {
@@ -615,17 +612,13 @@ void UiFaderComponent::RenderRttFader(LyShine::IRenderGraph* renderGraph, UiElem
 
         // Add a primitive to render a quad using the render target we have created
         {
-            LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph);
-            if (lyRenderGraph)
-            {
-                // Set the texture and other render state required
-                AZ::Data::Instance<AZ::RPI::Image> image = attachmentImage;
-                bool isClampTextureMode = true;
-                bool isTextureSRGB = true;
-                bool isTexturePremultipliedAlpha = true;
-                LyShine::BlendMode blendMode = LyShine::BlendMode::Normal;
-                lyRenderGraph->AddPrimitiveAtom(&m_cachedPrimitive, image, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
-            }
+            // Set the texture and other render state required
+            AZ::Data::Instance<AZ::RPI::Image> image = attachmentImage;
+            bool isClampTextureMode = true;
+            bool isTextureSRGB = true;
+            bool isTexturePremultipliedAlpha = true;
+            LyShine::BlendMode blendMode = LyShine::BlendMode::Normal;
+            renderGraph->AddPrimitive(&m_cachedPrimitive, image, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
         }
     }
 }

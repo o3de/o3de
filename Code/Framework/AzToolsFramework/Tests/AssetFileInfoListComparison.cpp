@@ -57,15 +57,14 @@ namespace UnitTest
             ArgumentContainer argContainer{ {} };
 
             // Append Command Line override for the Project Cache Path
-            auto projectCachePathOverride = FixedValueString::format(R"(--project-cache-path="%s")", m_tempDir.GetDirectory());
-            auto projectPathOverride = FixedValueString{ R"(--project-path=AutomatedTesting)" };
-            argContainer.push_back(projectCachePathOverride.data());
+            auto projectPathOverride = FixedValueString::format(R"(--project-path="%s")", m_tempDir.GetDirectory());
             argContainer.push_back(projectPathOverride.data());
             m_application = new ToolsTestApplication("AssetFileInfoListComparisonTest", aznumeric_caster(argContainer.size()), argContainer.data());
             AzToolsFramework::AssetSeedManager assetSeedManager;
             AzFramework::AssetRegistry assetRegistry;
 
-            const AZStd::string assetRoot = AzToolsFramework::PlatformAddressedAssetCatalog::GetAssetRootForPlatform(AzFramework::PlatformId::PC);
+            const AZ::PlatformId thisPlatform = AZ::PlatformHelper::GetPlatformIdFromName(AZ::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME));
+            const AZStd::string assetRoot = AzToolsFramework::PlatformAddressedAssetCatalog::GetAssetRootForPlatform(thisPlatform);
 
             for (int idx = 0; idx < TotalAssets; idx++)
             {
@@ -99,7 +98,7 @@ namespace UnitTest
             m_application->Start(AzFramework::Application::Descriptor());
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
+            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
             // in the unit tests.
             AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
@@ -113,17 +112,18 @@ namespace UnitTest
             // Currently I am serializing the asset registry to disk
             // and invoking the LoadCatalog API to populate the asset catalog created by the azframework app.
 
-            AZStd::string pcCatalogFile = AzToolsFramework::PlatformAddressedAssetCatalog::GetCatalogRegistryPathForPlatform(AzFramework::PlatformId::PC);
+            const AZStd::string catalogFile = AzToolsFramework::PlatformAddressedAssetCatalog::GetCatalogRegistryPathForPlatform(thisPlatform);
 
-            bool catalogSaved = AzFramework::AssetCatalog::SaveCatalog(pcCatalogFile.c_str(), &assetRegistry);
+            bool catalogSaved = AzFramework::AssetCatalog::SaveCatalog(catalogFile.c_str(), &assetRegistry);
             EXPECT_TRUE(catalogSaved) << "Unable to save the asset catalog file.\n";
 
-            m_pcCatalog = new AzToolsFramework::PlatformAddressedAssetCatalog(AzFramework::PlatformId::PC);
+            m_catalog = new AzToolsFramework::PlatformAddressedAssetCatalog(thisPlatform);
 
-            assetSeedManager.AddSeedAsset(m_assets[0], AzFramework::PlatformFlags::Platform_PC);
-            assetSeedManager.AddSeedAsset(m_assets[1], AzFramework::PlatformFlags::Platform_PC);
+            const auto thisPlatformFlags = AZ::PlatformHelper::GetPlatformFlag(AZ::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME));
+            assetSeedManager.AddSeedAsset(m_assets[0], thisPlatformFlags);
+            assetSeedManager.AddSeedAsset(m_assets[1], thisPlatformFlags);
 
-            bool firstAssetFileInfoListSaved = assetSeedManager.SaveAssetFileInfo(TempFiles[FileIndex::FirstAssetFileInfoList], AzFramework::PlatformFlags::Platform_PC, {});
+            bool firstAssetFileInfoListSaved = assetSeedManager.SaveAssetFileInfo(TempFiles[FileIndex::FirstAssetFileInfoList], thisPlatformFlags, {});
             EXPECT_TRUE(firstAssetFileInfoListSaved);
 
             // Modify contents of asset2
@@ -156,10 +156,10 @@ namespace UnitTest
                 GTEST_FATAL_FAILURE_(AZStd::string::format("Unable to open asset file.\n").c_str());
             }
 
-            assetSeedManager.RemoveSeedAsset(m_assets[0], AzFramework::PlatformFlags::Platform_PC);
-            assetSeedManager.AddSeedAsset(m_assets[5], AzFramework::PlatformFlags::Platform_PC);
+            assetSeedManager.RemoveSeedAsset(m_assets[0], thisPlatformFlags);
+            assetSeedManager.AddSeedAsset(m_assets[5], thisPlatformFlags);
 
-            bool secondAssetFileInfoListSaved = assetSeedManager.SaveAssetFileInfo(TempFiles[FileIndex::SecondAssetFileInfoList], AzFramework::PlatformFlags::Platform_PC, {});
+            bool secondAssetFileInfoListSaved = assetSeedManager.SaveAssetFileInfo(TempFiles[FileIndex::SecondAssetFileInfoList], thisPlatformFlags, {});
             EXPECT_TRUE(secondAssetFileInfoListSaved);
         }
 
@@ -202,7 +202,7 @@ namespace UnitTest
                 AZ_TEST_STOP_TRACE_SUPPRESSION(1); // deleting from asset cache folder
             }
 
-            delete m_pcCatalog;
+            delete m_catalog;
             m_application->Stop();
             delete m_application;
 
@@ -221,7 +221,7 @@ namespace UnitTest
 
             // AssetFileInfo should contain {2*, 4*, 5}
             AzToolsFramework::AssetFileInfoList assetFileInfoList;
-           
+
             ASSERT_TRUE(AZ::Utils::LoadObjectFromFileInPlace(TempFiles[FileIndex::ResultAssetFileInfoList], assetFileInfoList)) << "Unable to read the asset file info list.\n";
 
             EXPECT_EQ(assetFileInfoList.m_fileInfoList.size(), 3);
@@ -254,7 +254,7 @@ namespace UnitTest
                 }
             }
 
-            // Verifying that correct assetId are present in the assetFileInfo list 
+            // Verifying that correct assetId are present in the assetFileInfo list
             AZStd::unordered_set<AZ::Data::AssetId> expectedAssetIds{ m_assets[2], m_assets[4], m_assets[5] };
 
             for (const AzToolsFramework::AssetFileInfo& assetFileInfo : assetFileInfoList.m_fileInfoList)
@@ -296,7 +296,7 @@ namespace UnitTest
             {
                 firstAssetIdToAssetFileInfoMap[assetFileInfo.m_assetId] = AZStd::move(assetFileInfo);
             }
-            
+
             AzToolsFramework::AssetFileInfoList secondAssetFileInfoList;
             ASSERT_TRUE(AZ::Utils::LoadObjectFromFileInPlace(TempFiles[FileIndex::SecondAssetFileInfoList], secondAssetFileInfoList)) << "Unable to read the asset file info list.\n";
 
@@ -313,7 +313,7 @@ namespace UnitTest
                 auto foundSecond = secondAssetIdToAssetFileInfoMap.find(assetFileInfo.m_assetId);
                 if (foundSecond != secondAssetIdToAssetFileInfoMap.end())
                 {
-                    // Even if the asset Id is present in both the AssetFileInfo List, it should match the file hash from the second AssetFileInfo list 
+                    // Even if the asset Id is present in both the AssetFileInfo List, it should match the file hash from the second AssetFileInfo list
                     for (int idx = 0; idx < AzToolsFramework::AssetFileInfo::s_arraySize; idx++)
                     {
                         if (foundSecond->second.m_hash[idx] != assetFileInfo.m_hash[idx])
@@ -341,7 +341,7 @@ namespace UnitTest
                 }
             }
 
-            // Verifying that correct assetId are present in the assetFileInfo list 
+            // Verifying that correct assetId are present in the assetFileInfo list
             AZStd::unordered_set<AZ::Data::AssetId> expectedAssetIds{ m_assets[0], m_assets[1], m_assets[2], m_assets[3], m_assets[4], m_assets[5] };
 
             for (const AzToolsFramework::AssetFileInfo& assetFileInfo : assetFileInfoList.m_fileInfoList)
@@ -401,7 +401,7 @@ namespace UnitTest
                 }
             }
 
-            // Verifying that correct assetId are present in the assetFileInfo list 
+            // Verifying that correct assetId are present in the assetFileInfo list
             AZStd::unordered_set<AZ::Data::AssetId> expectedAssetIds{ m_assets[1], m_assets[2], m_assets[3], m_assets[4] };
 
             for (const AzToolsFramework::AssetFileInfo& assetFileInfo : assetFileInfoList.m_fileInfoList)
@@ -460,7 +460,7 @@ namespace UnitTest
                 }
             }
 
-            // Verifying that correct assetId are present in the assetFileInfo list 
+            // Verifying that correct assetId are present in the assetFileInfo list
             AZStd::unordered_set<AZ::Data::AssetId> expectedAssetIds{ m_assets[5] };
 
             for (const AzToolsFramework::AssetFileInfo& assetFileInfo : assetFileInfoList.m_fileInfoList)
@@ -491,7 +491,7 @@ namespace UnitTest
 
             EXPECT_EQ(assetFileInfoList.m_fileInfoList.size(), 5);
 
-            // Verifying that correct assetId are present in the assetFileInfo list 
+            // Verifying that correct assetId are present in the assetFileInfo list
             AZStd::unordered_set<AZ::Data::AssetId> expectedAssetIds{ m_assets[0], m_assets[1], m_assets[2], m_assets[3], m_assets[4] };
 
             for (const AzToolsFramework::AssetFileInfo& assetFileInfo : assetFileInfoList.m_fileInfoList)
@@ -599,7 +599,7 @@ namespace UnitTest
                 }
             }
 
-            // Verifying that correct assetId are present in the assetFileInfo list 
+            // Verifying that correct assetId are present in the assetFileInfo list
             AZStd::unordered_set<AZ::Data::AssetId> expectedAssetIds{ m_assets[2] };
 
             for (const AzToolsFramework::AssetFileInfo& assetFileInfo : assetFileInfoList.m_fileInfoList)
@@ -623,12 +623,12 @@ namespace UnitTest
             AssetFileInfoListComparison::ComparisonData filePatternComparisonData(AssetFileInfoListComparison::ComparisonType::FilePattern,"$1", "Asset[0-3].txt", AssetFileInfoListComparison::FilePatternType::Regex);
             filePatternComparisonData.m_firstInput = TempFiles[FileIndex::FirstAssetFileInfoList];
             assetFileInfoListComparison.AddComparisonStep(filePatternComparisonData);
-            
+
             AzToolsFramework::AssetFileInfoListComparison::ComparisonData deltaComparisonData(AzToolsFramework::AssetFileInfoListComparison::ComparisonType::Delta, TempFiles[FileIndex::ResultAssetFileInfoList]);
             deltaComparisonData.m_firstInput = "$1";
             deltaComparisonData.m_secondInput = TempFiles[FileIndex::SecondAssetFileInfoList];
             assetFileInfoListComparison.AddComparisonStep(deltaComparisonData);
-            
+
             ASSERT_TRUE(assetFileInfoListComparison.CompareAndSaveResults().IsSuccess()) << "Multiple Comparison Operation( FilePattern + Delta ) failed.\n";
             // Output of the FilePattern Operation should be {0,1,2,3}
             // Output of the Delta Operation should be {2*,4*,5}
@@ -664,7 +664,7 @@ namespace UnitTest
                 }
             }
 
-            // Verifying that correct assetId are present in the assetFileInfo list 
+            // Verifying that correct assetId are present in the assetFileInfo list
             AZStd::unordered_set<AZ::Data::AssetId> expectedAssetIds{ m_assets[2], m_assets[4], m_assets[5] };
 
             for (const AzToolsFramework::AssetFileInfo& assetFileInfo : assetFileInfoList.m_fileInfoList)
@@ -736,7 +736,7 @@ namespace UnitTest
                 }
             }
 
-            // Verifying that correct assetId are present in the assetFileInfo list 
+            // Verifying that correct assetId are present in the assetFileInfo list
             AZStd::unordered_set<AZ::Data::AssetId> expectedAssetIds{ m_assets[4], m_assets[5] };
 
             for (const AzToolsFramework::AssetFileInfo& assetFileInfo : assetFileInfoList.m_fileInfoList)
@@ -754,7 +754,7 @@ namespace UnitTest
 
         ToolsTestApplication* m_application = nullptr;
         UnitTest::ScopedTemporaryDirectory m_tempDir;
-        AzToolsFramework::PlatformAddressedAssetCatalog* m_pcCatalog = nullptr;
+        AzToolsFramework::PlatformAddressedAssetCatalog* m_catalog = nullptr;
         AZ::IO::FileIOStream m_fileStreams[TotalAssets];
         AZ::Data::AssetId m_assets[TotalAssets];
         AZStd::string m_assetsPath[TotalAssets];

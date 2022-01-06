@@ -38,7 +38,7 @@ bool BatchApplicationServer::startListening(unsigned short port)
 
         // Since we're starting up builders ourselves and informing them of the port chosen, we can scan for a free port
 
-        while (!listen(QHostAddress::Any, m_serverListeningPort))
+        while (!listen(QHostAddress::Any, static_cast<quint16>(m_serverListeningPort)))
         {
             auto error = serverError();
             

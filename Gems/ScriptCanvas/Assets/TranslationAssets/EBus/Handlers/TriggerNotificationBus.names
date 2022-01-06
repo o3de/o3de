@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "base": "TriggerNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "Trigger",
+                "category": "PhysX"
+            },
+            "methods": [
+                {
+                    "base": "OnTriggerEnter",
+                    "details": {
+                        "name": "On Trigger Enter",
+                        "tooltip": "Triggered when another collider enters this trigger"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnTriggerExit",
+                    "details": {
+                        "name": "On Trigger Exit",
+                        "tooltip": "Triggered when another collider exits this trigger"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

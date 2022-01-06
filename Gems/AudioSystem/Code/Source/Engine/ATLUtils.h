@@ -16,6 +16,7 @@
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/std/typetraits/is_integral.h>
 #include <AzCore/std/typetraits/is_unsigned.h>
+#include <AzCore/std/time.h>
 
 #define ATL_FLOAT_EPSILON (1.0e-6)
 

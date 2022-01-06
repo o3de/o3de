@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __EMSTUDIO_ATTACHMENTSPLUGIN_H
-#define __EMSTUDIO_ATTACHMENTSPLUGIN_H
+#pragma once
 
 // include MCore
 #if !defined(Q_MOC_RUN)
@@ -85,13 +84,9 @@ namespace EMStudio
         CommandAdjustActorCallback*                 m_adjustActorCallback;
         CommandRemoveActorInstanceCallback*         m_removeActorInstanceCallback;
 
-        QWidget*                                    m_noSelectionWidget;
         MysticQt::DialogStack*                      m_dialogStack;
         AttachmentsWindow*                          m_attachmentsWindow;
         AttachmentsHierarchyWindow*                 m_attachmentsHierarchyWindow;
         AttachmentNodesWindow*                      m_attachmentNodesWindow;
     };
 } // namespace EMStudio
-
-
-#endif

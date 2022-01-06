@@ -88,12 +88,12 @@ namespace ScriptCanvasEditor
         ////
 
         // GeneralEditorNotifications
-        void OnUndoRedoBegin()
+        void OnUndoRedoBegin() override
         {
             ScriptCanvas::GraphVariableManagerNotificationBus::Handler::BusDisconnect();
         }
 
-        void OnUndoRedoEnd()
+        void OnUndoRedoEnd() override
         {
             FinalizeActivation();
         }
@@ -250,7 +250,7 @@ namespace ScriptCanvasEditor
         }
 
         // SystemTickBus
-        void OnSystemTick()
+        void OnSystemTick() override
         {
             AZ::SystemTickBus::Handler::BusDisconnect();
             AssignIndex(m_variableTypeModel.GetDefaultIndex());
@@ -440,7 +440,7 @@ namespace ScriptCanvasEditor
         }
 
         // SystemTickBus
-        void OnSystemTick()
+        void OnSystemTick() override
         {
             AZ::SystemTickBus::Handler::BusDisconnect();
             AssignIndex(m_variableTypeModel.GetDefaultIndex());
@@ -449,7 +449,7 @@ namespace ScriptCanvasEditor
         ////
 
         // NodeNotificationBus
-        void OnSlotDisplayTypeChanged(const ScriptCanvas::SlotId& slotId, [[maybe_unused]] const ScriptCanvas::Data::Type& slotType)
+        void OnSlotDisplayTypeChanged(const ScriptCanvas::SlotId& slotId, [[maybe_unused]] const ScriptCanvas::Data::Type& slotType) override
         {
             if (slotId == GetSlotId())
             {
@@ -482,7 +482,7 @@ namespace ScriptCanvasEditor
         ////
 
         // EndpointNotificationBus
-        void OnEndpointReferenceChanged(const ScriptCanvas::VariableId& variableId)
+        void OnEndpointReferenceChanged(const ScriptCanvas::VariableId& variableId) override
         {
             ScriptCanvas::VariableNotificationBus::Handler::BusDisconnect();
             ScriptCanvas::VariableNotificationBus::Handler::BusConnect(ScriptCanvas::GraphScopedVariableId(GetScriptCanvasId(), variableId));
@@ -490,7 +490,7 @@ namespace ScriptCanvasEditor
             SignalValueChanged();
         }
 
-        void OnSlotRecreated()
+        void OnSlotRecreated() override
         {
             ScriptCanvas::Slot* slot = GetSlot();
 

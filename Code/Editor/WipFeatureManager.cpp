@@ -189,7 +189,7 @@ bool CWipFeatureManager::Load(const char* pFilename, bool bClearExisting)
     for (size_t i = 0, iCount = root->getChildCount(); i < iCount; ++i)
     {
         SWipFeatureInfo wf;
-        XmlNodeRef node = root->getChild(i);
+        XmlNodeRef node = root->getChild(static_cast<int>(i));
         XmlString str;
 
         node->getAttr("id", wf.m_id);

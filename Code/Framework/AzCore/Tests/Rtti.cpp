@@ -17,6 +17,7 @@
 #include <AzCore/std/containers/fixed_unordered_map.h>
 #include <AzCore/std/containers/fixed_unordered_set.h>
 #include <AzCore/std/containers/fixed_vector.h>
+#include <AzCore/std/containers/forward_list.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/unordered_map.h>
@@ -171,7 +172,6 @@ namespace UnitTest
             AZ_TEST_ASSERT(AzGenericTypeInfo::Uuid<MyClassTemplateType>() == templateUuid);
 
             // Check all combinations return a valid id.
-            Uuid nullId = Uuid::CreateNull();
             AZ_TEST_ASSERT(AzGenericTypeInfo::Uuid<AZStd::array>() == AZ::Uuid("{911B2EA8-CCB1-4F0C-A535-540AD00173AE}"));
             AZ_TEST_ASSERT(AzGenericTypeInfo::Uuid<AZStd::bitset>() == AZ::Uuid("{6BAE9836-EC49-466A-85F2-F4B1B70839FB}"));
             AZ_TEST_ASSERT(AzGenericTypeInfo::Uuid<AZStd::function>() == AZ::Uuid("{C9F9C644-CCC3-4F77-A792-F5B5DBCA746E}"));
@@ -460,8 +460,8 @@ namespace UnitTest
     TEST_F(Rtti, IsAbstract)
     {
         // compile time proof that the two non-abstract classes are not abstract at compile time:
-        ExampleFullImplementationClass one;
-        ExampleCombined two;
+        [[maybe_unused]] ExampleFullImplementationClass one;
+        [[maybe_unused]] ExampleCombined two;
 
         ASSERT_NE(GetRttiHelper<ExampleAbstractClass>(), nullptr);
         ASSERT_NE(GetRttiHelper<ExampleFullImplementationClass>(), nullptr);

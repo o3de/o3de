@@ -8,9 +8,10 @@
 #include "AssetRequestHandler.h"
 
 
+#include <AzCore/Asset/AssetSerializer.h>
+#include <AzToolsFramework/ToolsComponents/ToolsAssetCatalogBus.h>
 #include <QDir>
 #include <QTimer>
-#include <AzToolsFramework/ToolsComponents/ToolsAssetCatalogBus.h>
 
 using namespace AssetProcessor;
 

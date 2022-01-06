@@ -23,7 +23,7 @@ namespace ScriptCanvas
         {
             auto nodeCallWrapper = [callable = AZStd::forward<Callable>(callable)](AZ::BehaviorValueParameter* result, AZ::BehaviorValueParameter* arguments, int numArguments) mutable
             {
-                constexpr size_t numFunctorArguments = sizeof...(Args);
+                [[maybe_unused]] constexpr size_t numFunctorArguments = sizeof...(Args);
                 (void)numArguments;
                 AZ_Assert(numArguments == numFunctorArguments, "number of arguments doesn't match number of parameters");
                 AZ_Assert(result, "no null result allowed");
@@ -39,7 +39,7 @@ namespace ScriptCanvas
         {
             auto nodeCallWrapper = [callable = AZStd::forward<Callable>(callable)](AZ::BehaviorValueParameter*, AZ::BehaviorValueParameter* arguments, int numArguments) mutable
             {
-                constexpr size_t numFunctorArguments = sizeof...(Args);
+                [[maybe_unused]] constexpr size_t numFunctorArguments = sizeof...(Args);
                 (void)numArguments;
                 AZ_Assert(numArguments == numFunctorArguments, "number of arguments doesn't match number of parameters");
                 AZStd::invoke(callable, *arguments[IndexSequence].GetAsUnsafe<Args>()...);

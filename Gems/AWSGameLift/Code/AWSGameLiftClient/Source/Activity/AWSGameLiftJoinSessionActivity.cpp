@@ -7,10 +7,11 @@
  */
 
 #include <AzCore/Interface/Interface.h>
-#include <AzFramework/Session/ISessionHandlingRequests.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 
 #include <Activity/AWSGameLiftJoinSessionActivity.h>
 #include <AWSGameLiftSessionConstants.h>
+#include <Request/IAWSGameLiftInternalRequests.h>
 
 namespace AWSGameLift
 {
@@ -47,7 +48,7 @@ namespace AWSGameLift
             //sessionConnectionConfig.m_dnsName = createPlayerSessionResult.GetPlayerSession().GetDnsName().c_str();
             sessionConnectionConfig.m_ipAddress = createPlayerSessionResult.GetPlayerSession().GetIpAddress().c_str();
             sessionConnectionConfig.m_playerSessionId = createPlayerSessionResult.GetPlayerSession().GetPlayerSessionId().c_str();
-            sessionConnectionConfig.m_port = createPlayerSessionResult.GetPlayerSession().GetPort();
+            sessionConnectionConfig.m_port = static_cast<uint16_t>(createPlayerSessionResult.GetPlayerSession().GetPort());
 
             AZ_TracePrintf(AWSGameLiftJoinSessionActivityName,
                 "Built SessionConnectionConfig with IpAddress=%s, PlayerSessionId=%s and Port=%d",
@@ -59,16 +60,24 @@ namespace AWSGameLift
         }
 
         Aws::GameLift::Model::CreatePlayerSessionOutcome CreatePlayerSession(
-            const Aws::GameLift::GameLiftClient& gameliftClient,
             const AWSGameLiftJoinSessionRequest& joinSessionRequest)
         {
+            Aws::GameLift::Model::CreatePlayerSessionOutcome createPlayerSessionOutcome;
+
+            auto gameliftClient = AZ::Interface<IAWSGameLiftInternalRequests>::Get()->GetGameLiftClient();
+            if (!gameliftClient)
+            {
+                AZ_Error(AWSGameLiftJoinSessionActivityName, false, AWSGameLiftClientMissingErrorMessage);
+                return createPlayerSessionOutcome;
+            }
+
             AZ_TracePrintf(AWSGameLiftJoinSessionActivityName,
                 "Requesting CreatePlayerSession for player %s against Amazon GameLift service ...",
                 joinSessionRequest.m_playerId.c_str());
 
             Aws::GameLift::Model::CreatePlayerSessionRequest request =
                 BuildAWSGameLiftCreatePlayerSessionRequest(joinSessionRequest);
-            auto createPlayerSessionOutcome = gameliftClient.CreatePlayerSession(request);
+            createPlayerSessionOutcome = gameliftClient->CreatePlayerSession(request);
             AZ_TracePrintf(AWSGameLiftJoinSessionActivityName,
                 "CreatePlayerSession request for player %s against Amazon GameLift service is complete", joinSessionRequest.m_playerId.c_str());
 

@@ -126,7 +126,7 @@ namespace AZ
                 return;
             }
 
-            SetCascadesCount(m_arraySize);
+            SetCascadesCount(static_cast<uint16_t>(m_arraySize));
             const RHI::Size imageSize
             {
                 aznumeric_cast<uint32_t>(m_shadowmapSize),

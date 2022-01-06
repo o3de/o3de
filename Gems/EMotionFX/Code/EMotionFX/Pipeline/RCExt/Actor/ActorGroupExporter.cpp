@@ -8,10 +8,11 @@
 
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <EMotionFX/Source/Actor.h>
-#include <EMotionFX/Source/AutoRegisteredActor.h>
+#include <EMotionFX/Source/ActorManager.h>
 #include <EMotionFX/Source/Importer/Importer.h>
 #include <EMotionFX/CommandSystem/Source/MetaData.h>
 #include <EMotionFX/Exporters/ExporterLib/Exporter/Exporter.h>
+#include <Source/Integration/Assets/ActorAsset.h>
 #include <SceneAPIExt/Rules/ActorPhysicsSetupRule.h>
 #include <SceneAPIExt/Rules/SimulatedObjectSetupRule.h>
 
@@ -49,7 +50,7 @@ namespace EMotionFX
             if (serializeContext)
             {
                 // Increasing the version number of the actor group exporter will make sure all actor products will be force re-generated.
-                serializeContext->Class<ActorGroupExporter, AZ::SceneAPI::SceneCore::ExportingComponent>()->Version(3);
+                serializeContext->Class<ActorGroupExporter, AZ::SceneAPI::SceneCore::ExportingComponent>()->Version(4);
             }
         }
 
@@ -83,10 +84,19 @@ namespace EMotionFX
             AZStd::string metaDataString;
             if (Rule::MetaDataRule::LoadMetaData(actorGroup, metaDataString))
             {
+                // Create a temporary actor asset as the commands use the actor manager to find the corresponding actor object
+                // and our actor can only be found as part of a registered actor asset.
+                const AZ::Data::AssetId actorAssetId = AZ::Data::AssetId(AZ::Uuid::CreateRandom());
+                AZ::Data::Asset<Integration::ActorAsset> actorAsset = AZ::Data::AssetManager::Instance().CreateAsset<Integration::ActorAsset>(actorAssetId);
+                actorAsset.GetAs<Integration::ActorAsset>()->SetData(m_actor);
+                GetEMotionFX().GetActorManager()->RegisterActor(actorAsset);
+
                 if (!CommandSystem::MetaData::ApplyMetaDataOnActor(m_actor.get(), metaDataString))
                 {
                     AZ_Error("EMotionFX", false, "Applying meta data to actor '%s' failed.", m_actor->GetName());
                 }
+
+                GetEMotionFX().GetActorManager()->UnregisterActor(actorAsset->GetId());
             }
 
             AZStd::shared_ptr<EMotionFX::PhysicsSetup> physicsSetup;
@@ -163,7 +173,6 @@ namespace EMotionFX
             }
 
             // Default to the first mesh group until we get a way to choose it via the scene settings (ATOM-13590).
-            AZStd::optional<AZ::Data::AssetId> meshAssetId = AZStd::nullopt;
             AZ_Error("EMotionFX", atomModelAssets.size() <= 1, "Ambigious mesh for actor asset. More than one mesh group found. Defaulting to the first one.");
             if (!atomModelAssets.empty())
             {

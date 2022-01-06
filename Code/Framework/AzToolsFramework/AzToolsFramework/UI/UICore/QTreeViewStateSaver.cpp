@@ -41,7 +41,7 @@ namespace AzToolsFramework
         {
         }
 
-        virtual ~QTreeViewStateSaverData()
+        ~QTreeViewStateSaverData() override
         {
         }
 
@@ -213,7 +213,7 @@ namespace AzToolsFramework
             }
         }
 
-        void ApplySnapshot(QTreeView* treeView)
+        void ApplySnapshot(QTreeView* treeView) override
         {
             Q_ASSERT(treeView && treeView->model());
 

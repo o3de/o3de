@@ -11,6 +11,7 @@
 #include <SceneAPI/SceneCore/Containers/SceneManifest.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/IScriptProcessorRule.h>
+#include <SceneAPI/SceneCore/Containers/Utilities/Filters.h>
 #include <SceneAPI/SceneData/ReflectionRegistrar.h>
 #include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
 #include <SceneAPI/SceneData/Behaviors/ScriptProcessorRuleBehavior.h>
@@ -20,12 +21,12 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/RTTI/ReflectionManager.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/UnitTest/Mocks/MockSettingsRegistry.h>
 #include <AzCore/UnitTest/TestTypes.h>
-#include <AzFramework/FileFunc/FileFunc.h>
 
 namespace AZ
 {
@@ -154,7 +155,7 @@ namespace AZ
             ASSERT_TRUE(writeToJsonResult.IsSuccess());
 
             AZStd::string jsonText;
-            auto writeToStringResult = AzFramework::FileFunc::WriteJsonToString(writeToJsonResult.GetValue(), jsonText);
+            auto writeToStringResult = AZ::JsonSerializationUtils::WriteJsonString(writeToJsonResult.GetValue(), jsonText);
             ASSERT_TRUE(writeToStringResult.IsSuccess());
             EXPECT_THAT(jsonText.c_str(), ::testing::HasSubstr(R"("$type": "MockRotationRule")"));
             EXPECT_THAT(jsonText.c_str(), ::testing::HasSubstr(R"("rotation": [)"));
@@ -191,7 +192,7 @@ namespace AZ
             ASSERT_TRUE(writeToJsonResult.IsSuccess());
 
             AZStd::string jsonText;
-            auto writeToStringResult = AzFramework::FileFunc::WriteJsonToString(writeToJsonResult.GetValue(), jsonText);
+            auto writeToStringResult = AZ::JsonSerializationUtils::WriteJsonString(writeToJsonResult.GetValue(), jsonText);
             ASSERT_TRUE(writeToStringResult.IsSuccess());
             EXPECT_THAT(jsonText.c_str(), ::testing::HasSubstr(R"("$type": "MockRotationRule")"));
             EXPECT_THAT(jsonText.c_str(), ::testing::HasSubstr(R"("rotation": [)"));
@@ -230,7 +231,7 @@ namespace AZ
             ASSERT_TRUE(writeToJsonResult.IsSuccess());
 
             AZStd::string jsonText;
-            auto writeToStringResult = AzFramework::FileFunc::WriteJsonToString(writeToJsonResult.GetValue(), jsonText);
+            auto writeToStringResult = AZ::JsonSerializationUtils::WriteJsonString(writeToJsonResult.GetValue(), jsonText);
             ASSERT_TRUE(writeToStringResult.IsSuccess());
             EXPECT_THAT(jsonText.c_str(), ::testing::HasSubstr(R"("$type": "CoordinateSystemRule")"));
             EXPECT_THAT(jsonText.c_str(), ::testing::HasSubstr(R"("useAdvancedData": true,)"));
@@ -270,6 +271,80 @@ namespace AZ
             auto scriptProcessorRuleBehavior =  AZ::SceneAPI::Behaviors::ScriptProcessorRuleBehavior();
             auto update = scriptProcessorRuleBehavior.UpdateManifest(scene, AssetImportRequest::Update, AssetImportRequest::Generic);
             EXPECT_EQ(update, ProcessingResult::Ignored);
+        }
+
+        TEST_F(SceneManifest_JSON, ScriptProcessorRule_DefaultFallbackLogic_Works)
+        {
+            using namespace AZ::SceneAPI;
+
+            constexpr const char* defaultJson = { R"JSON(
+            {
+                "values": [
+                    {
+                        "$type": "ScriptProcessorRule",
+                        "scriptFilename": "foo.py"
+                    }
+                ]
+            })JSON" };
+
+            auto scene = Containers::Scene("mock");
+            auto result = scene.GetManifest().LoadFromString(defaultJson, m_serializeContext.get(), m_jsonRegistrationContext.get());
+            EXPECT_TRUE(result.IsSuccess());
+            EXPECT_FALSE(scene.GetManifest().IsEmpty());
+            ASSERT_EQ(scene.GetManifest().GetEntryCount(), 1);
+
+            auto view = Containers::MakeDerivedFilterView<DataTypes::IScriptProcessorRule>(scene.GetManifest().GetValueStorage());
+            EXPECT_EQ(view.begin()->GetScriptProcessorFallbackLogic(), DataTypes::ScriptProcessorFallbackLogic::FailBuild);
+        }
+
+        TEST_F(SceneManifest_JSON, ScriptProcessorRule_ExplicitFallbackLogic_Works)
+        {
+            using namespace AZ::SceneAPI;
+
+            constexpr const char* fallbackLogicJson = { R"JSON(
+            {
+                "values": [
+                    {
+                        "$type": "ScriptProcessorRule",
+                        "scriptFilename": "foo.py",
+                        "fallbackLogic": "FailBuild"
+                    }
+                ]
+            })JSON" };
+
+            auto scene = Containers::Scene("mock");
+            auto result = scene.GetManifest().LoadFromString(fallbackLogicJson, m_serializeContext.get(), m_jsonRegistrationContext.get());
+            EXPECT_TRUE(result.IsSuccess());
+            EXPECT_FALSE(scene.GetManifest().IsEmpty());
+            ASSERT_EQ(scene.GetManifest().GetEntryCount(), 1);
+
+            auto view = Containers::MakeDerivedFilterView<DataTypes::IScriptProcessorRule>(scene.GetManifest().GetValueStorage());
+            EXPECT_EQ(view.begin()->GetScriptProcessorFallbackLogic(), DataTypes::ScriptProcessorFallbackLogic::FailBuild);
+        }
+
+        TEST_F(SceneManifest_JSON, ScriptProcessorRule_ContinueBuildFallbackLogic_Works)
+        {
+            using namespace AZ::SceneAPI;
+
+            constexpr const char* fallbackLogicJson = { R"JSON(
+            {
+                "values": [
+                    {
+                        "$type": "ScriptProcessorRule",
+                        "scriptFilename": "foo.py",
+                        "fallbackLogic": "ContinueBuild"
+                    }
+                ]
+            })JSON" };
+
+            auto scene = Containers::Scene("mock");
+            auto result = scene.GetManifest().LoadFromString(fallbackLogicJson, m_serializeContext.get(), m_jsonRegistrationContext.get());
+            EXPECT_TRUE(result.IsSuccess());
+            EXPECT_FALSE(scene.GetManifest().IsEmpty());
+            ASSERT_EQ(scene.GetManifest().GetEntryCount(), 1);
+
+            auto view = Containers::MakeDerivedFilterView<DataTypes::IScriptProcessorRule>(scene.GetManifest().GetValueStorage());
+            EXPECT_EQ(view.begin()->GetScriptProcessorFallbackLogic(), DataTypes::ScriptProcessorFallbackLogic::ContinueBuild);
         }
     }
 }

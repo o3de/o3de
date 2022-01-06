@@ -1,0 +1,125 @@
+#! C:/Program Files/Nuke13.0v3/nuke-13.0.3.dll -nx
+version 13.0 v3
+define_window_layout_xml {<?xml version="1.0" encoding="UTF-8"?>
+<layout version="1.0">
+    <window x="107" y="-8" w="3732" h="2136" maximized="1" screen="0">
+        <splitter orientation="1">
+            <split size="40"/>
+            <dock id="" hideTitles="1" activePageId="Toolbar.1">
+                <page id="Toolbar.1"/>
+            </dock>
+            <split size="3069" stretch="1"/>
+            <splitter orientation="2">
+                <split size="1229"/>
+                <dock id="" activePageId="Viewer.2">
+                    <page id="Viewer.2"/>
+                    <page id="Viewer.3"/>
+                    <page id="Viewer.1"/>
+                </dock>
+                <split size="865"/>
+                <dock id="" activePageId="DAG.1">
+                    <page id="DAG.1"/>
+                    <page id="Curve Editor.1"/>
+                    <page id="DopeSheet.1"/>
+                </dock>
+            </splitter>
+            <split size="615"/>
+            <dock id="" activePageId="Properties.1" focus="true">
+                <page id="Properties.1"/>
+                <page id="uk.co.thefoundry.backgroundrenderview.1"/>
+            </dock>
+        </splitter>
+    </window>
+</layout>
+}
+Root {
+ inputs 0
+ name C:/Depot/o3de-engine/Gems/AtomLyIntegration/CommonFeatures/Tools/ColorGrading/TestData/Nuke/O3DE_HDR_Nuke_Color_Grading
+ project_directory C:/Depot/o3de-engine/Gems/AtomLyIntegration/CommonFeatures/Tools/ColorGrading/TestData/Nuke
+ label "This is a Nuke project template used to validate HDR / ACES color grading workflow in Nuke to generate 'Look Modification' (LMT) Luts for Oopen 3D Engine."
+ frame 16
+ first_frame 16
+ last_frame 32
+ lock_range true
+ format "2048 1556 0 0 2048 1556 1 2K_Super_35(full-ap)"
+ proxy_type scale
+ proxy_format "1024 778 0 0 1024 778 1 1K_Super_35(full-ap)"
+ colorManagement OCIO
+ OCIOGPUSupport true
+ OCIO_config aces_1.0.3
+ defaultViewerLUT "OCIO LUTs"
+ workingSpaceLUT scene_linear
+ monitorLut ACES/sRGB
+ monitorOutLUT "sRGB (ACES)"
+ int8Lut matte_paint
+ int16Lut texture_paint
+ logLut compositing_log
+ floatLut scene_linear
+}
+Read {
+ inputs 0
+ file_type exr
+ file C:/Depot/o3de-engine/Gems/AtomLyIntegration/CommonFeatures/Tools/ColorGrading/LUTs/linear_lut_32.exr
+ format "1024 32 0 0 1024 32 1 "
+ origset true
+ colorspace scene_linear
+ name Read3
+ xpos -1727
+ ypos -81
+}
+OCIOFileTransform {
+ file C:/Depot/o3de-engine/Tools/ColorGrading/OpenColorIO-Configs/aces_1.0.3/luts/Log2_48_nits_Shaper_to_linear.spi1d
+ working_space scene_linear
+ name OCIOFileTransform1
+ xpos -1587
+ ypos -45
+}
+Viewer {
+ frame_range 16-32
+ viewerProcess "sRGB (ACES)"
+ name Viewer3
+ xpos -1586
+ ypos 10
+}
+Read {
+ inputs 0
+ file_type exr
+ file C:/Depot/o3de-engine/Gems/AtomLyIntegration/CommonFeatures/Tools/ColorGrading/TestData/Nuke/HDR/displaymapperpassthrough.exr
+ format "1167 1618 0 0 1167 1618 1 "
+ origset true
+ colorspace scene_linear
+ name Read1
+ xpos -1719
+ ypos -421
+}
+Read {
+ inputs 0
+ file_type exr
+ file C:/Depot/o3de-engine/Gems/AtomLyIntegration/CommonFeatures/Tools/ColorGrading/LUTs/linear_lut_32.exr
+ format "1024 32 0 0 1024 32 1 "
+ origset true
+ colorspace "Utility - Log2 48 nits Shaper - AP1"
+ name Read2
+ xpos -1720
+ ypos -311
+}
+Merge2 {
+ inputs 2
+ Achannels {rgba.red rgba.green rgba.blue -rgba.alpha}
+ Bchannels {rgba.red rgba.green rgba.blue -rgba.alpha}
+ output {rgba.red rgba.green rgba.blue -rgba.alpha}
+ also_merge all
+ mix 0
+ name Merge1
+ selected true
+ xpos -1495
+ ypos -340
+}
+Viewer {
+ frame 16
+ frame_range 16-32
+ viewerProcess "sRGB (ACES)"
+ name Viewer2
+ xpos -1495
+ ypos -272
+}

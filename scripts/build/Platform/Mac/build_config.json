@@ -37,7 +37,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "debug",
       "OUTPUT_DIRECTORY": "build/mac",
-      "CMAKE_OPTIONS": "-G Xcode -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_OPTIONS": "-G Xcode",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "ALL_BUILD"
     }
@@ -51,7 +51,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/mac",
-      "CMAKE_OPTIONS": "-G Xcode -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_OPTIONS": "-G Xcode",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "ALL_BUILD"
     }
@@ -81,7 +81,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/mac",
-      "CMAKE_OPTIONS": "-G Xcode -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_OPTIONS": "-G Xcode",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "AssetProcessorBatch",
       "ASSET_PROCESSOR_BINARY": "bin/profile/AssetProcessorBatch",
@@ -99,10 +99,11 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/mac",
-      "CMAKE_OPTIONS": "-G Xcode -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_OPTIONS": "-G Xcode",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_periodic",
-      "CTEST_OPTIONS": "-L \"(SUITE_periodic)\""
+      "CTEST_OPTIONS": "-L \"(SUITE_periodic)\"",
+      "TEST_RESULTS": "False"
     }
   },
   "benchmark_test_profile": {
@@ -115,10 +116,11 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/mac",
-      "CMAKE_OPTIONS": "-G Xcode -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_OPTIONS": "-G Xcode",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_benchmark",
-      "CTEST_OPTIONS": "-L \"(SUITE_benchmark)\""
+      "CTEST_OPTIONS": "-L \"(SUITE_benchmark)\"",
+      "TEST_RESULTS": "False"
     }
   },
   "release": {
@@ -131,7 +133,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "release",
       "OUTPUT_DIRECTORY": "build/mac",
-      "CMAKE_OPTIONS": "-G Xcode -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_OPTIONS": "-G Xcode",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "ALL_BUILD"
     }
@@ -146,7 +148,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "release",
       "OUTPUT_DIRECTORY": "build/mono_mac",
-      "CMAKE_OPTIONS": "-G Xcode -DLY_MONOLITHIC_GAME=TRUE -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_OPTIONS": "-G Xcode -DLY_MONOLITHIC_GAME=TRUE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "ALL_BUILD"
     }
@@ -159,6 +161,51 @@
     "PARAMETERS": {
       "SCRIPT_PATH": "scripts/build/package/package.py",
       "SCRIPT_PARAMETERS": "--platform Mac --type all"
+    }
+  },
+  "install_profile": {
+    "TAGS": [],
+    "COMMAND": "build_mac.sh",
+    "PARAMETERS": {
+        "CONFIGURATION": "profile",
+        "OUTPUT_DIRECTORY": "build/mac",
+        "CMAKE_OPTIONS": "-G Xcode -DLY_DISABLE_TEST_MODULES=TRUE",
+        "CMAKE_LY_PROJECTS": "",
+        "CMAKE_TARGET": "install"
+    }
+  },
+  "install_profile_pipe": {
+    "TAGS": [
+      "nightly-incremental",
+      "nightly-clean"
+    ],
+    "PIPELINE_ENV": {
+      "PROJECT_REPOSITORY_NAME": "TestProject"
+    },
+    "steps": [
+      "install_profile",
+      "project_generate",
+      "project_engineinstall_profile"
+    ]
+  },
+  "project_generate": {
+    "TAGS": [],
+    "COMMAND": "python_mac.sh",
+    "PARAMETERS": {
+      "SCRIPT_PATH": "install/O3DE_SDK.app/Contents/Engine/scripts/o3de.py",
+      "SCRIPT_PARAMETERS": "create-project -pp ${WORKSPACE}/${PROJECT_REPOSITORY_NAME} --force"
+    }
+  },
+  "project_engineinstall_profile": {
+    "TAGS": [],
+    "COMMAND": "build_mac.sh",
+    "PARAMETERS": {
+      "COMMAND_CWD": "${WORKSPACE}/${PROJECT_REPOSITORY_NAME}",
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build/mac",
+      "CMAKE_OPTIONS": "-G Xcode -DCMAKE_MODULE_PATH=${WORKSPACE}/o3de/install/O3DE_SDK.app/Contents/Engine/cmake",
+      "CMAKE_LY_PROJECTS": "",
+      "CMAKE_TARGET": "ALL_BUILD"
     }
   }
 }

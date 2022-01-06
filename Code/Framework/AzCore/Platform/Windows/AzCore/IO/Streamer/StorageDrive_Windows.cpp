@@ -16,6 +16,7 @@
 #include <AzCore/std/typetraits/decay.h>
 #include <AzCore/std/typetraits/is_unsigned.h>
 #include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/std/string/conversions.h>
 
 namespace AZ::IO
 {
@@ -72,7 +73,7 @@ namespace AZ::IO
         , m_constructionOptions(options)
     {
         AZ_Assert(!drivePaths.empty(), "StorageDrive_win requires at least one drive path to work.");
-        
+
         // Get drive paths
         m_drivePaths.reserve(drivePaths.size());
         for (AZStd::string_view drivePath : drivePaths)
@@ -168,7 +169,7 @@ namespace AZ::IO
 
     void StorageDriveWin::PrepareRequest(FileRequest* request)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
         AZ_Assert(request, "PrepareRequest was provided a null request.");
 
         if (AZStd::holds_alternative<FileRequest::ReadRequestData>(request->GetCommand()))
@@ -188,7 +189,7 @@ namespace AZ::IO
 
     void StorageDriveWin::QueueRequest(FileRequest* request)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
         AZ_Assert(request, "QueueRequest was provided a null request.");
 
         AZStd::visit([this, request](auto&& args)
@@ -458,7 +459,7 @@ namespace AZ::IO
 
             // Adding explicit scope here for profiling file Open & Close
             {
-                AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, "StorageDriveWin::ReadRequest OpenFile %s", m_name.c_str());
+                AZ_PROFILE_SCOPE(AzCore, "StorageDriveWin::ReadRequest OpenFile %s", m_name.c_str());
                 TIMED_AVERAGE_WINDOW_SCOPE(m_fileOpenCloseTimeAverage);
 
                 // All reads are overlapped (asynchronous).
@@ -467,8 +468,10 @@ namespace AZ::IO
                 DWORD createFlags = m_constructionOptions.m_enableUnbufferedReads ? (FILE_FLAG_OVERLAPPED | FILE_FLAG_NO_BUFFERING) : FILE_FLAG_OVERLAPPED;
                 DWORD shareMode = (m_constructionOptions.m_enableSharing || data.m_sharedRead) ? FILE_SHARE_READ: 0;
 
-                file = ::CreateFile(
-                    data.m_path.GetAbsolutePath(),  // file name
+                AZStd::wstring filenameW;
+                AZStd::to_wstring(filenameW, data.m_path.GetAbsolutePath());
+                file = ::CreateFileW(
+                    filenameW.c_str(),              // file name
                     FILE_GENERIC_READ,              // desired access
                     shareMode,                      // share mode
                     nullptr,                        // security attributes
@@ -513,7 +516,7 @@ namespace AZ::IO
 
     bool StorageDriveWin::ReadRequest(FileRequest* request)
     {
-        AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, "StorageDriveWin::ReadRequest %s", m_name.c_str());
+        AZ_PROFILE_SCOPE(AzCore, "StorageDriveWin::ReadRequest %s", m_name.c_str());
 
         if (!m_cachesInitialized)
         {
@@ -542,7 +545,7 @@ namespace AZ::IO
 
     bool StorageDriveWin::ReadRequest(FileRequest* request, size_t readSlot)
     {
-        AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, "StorageDriveWin::ReadRequest %s", m_name.c_str());
+        AZ_PROFILE_SCOPE(AzCore, "StorageDriveWin::ReadRequest %s", m_name.c_str());
 
         if (!m_context->GetStreamerThreadSynchronizer().AreEventHandlesAvailable())
         {
@@ -580,7 +583,7 @@ namespace AZ::IO
             // If any are unaligned to the sector sizes, make adjustments and allocate an aligned buffer.
             const bool alignedAddr = IStreamerTypes::IsAlignedTo(data->m_output, aznumeric_caster(m_physicalSectorSize));
             const bool alignedOffs = IStreamerTypes::IsAlignedTo(data->m_offset, aznumeric_caster(m_logicalSectorSize));
-            
+
             // Adjust the offset if it's misaligned.
             // Align the offset down to next lowest sector.
             // Change the size to compensate.
@@ -653,7 +656,7 @@ namespace AZ::IO
             Statistic::PlotImmediate(m_name, DirectReadsName, m_directReadsPercentageStat.GetMostRecentSample());
 #endif // AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
         }
-        
+
         FileReadStatus& readStatus = m_readSlots_statusInfo[readSlot];
         LPOVERLAPPED overlapped = &readStatus.m_overlapped;
         overlapped->Offset = aznumeric_caster(readOffs);
@@ -663,7 +666,7 @@ namespace AZ::IO
 
         bool result = false;
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzCore, "StorageDriveWin::ReadRequest ::ReadFile");
+            AZ_PROFILE_SCOPE(AzCore, "StorageDriveWin::ReadRequest ::ReadFile");
             result = ::ReadFile(file, output, readSize, nullptr, overlapped);
         }
 
@@ -713,7 +716,7 @@ namespace AZ::IO
         Statistic::PlotImmediate(m_name, FileSwitchesName, m_fileSwitchPercentageStat.GetMostRecentSample());
         Statistic::PlotImmediate(m_name, SeeksName, m_seekPercentageStat.GetMostRecentSample());
 #endif // AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
-        
+
         m_fileCache_activeReads[fileCacheSlot]++;
         m_activeCacheSlot = fileCacheSlot;
         m_activeOffset = readOffs + readSize;
@@ -779,7 +782,7 @@ namespace AZ::IO
     {
         auto& fileExists = AZStd::get<FileRequest::FileExistsCheckData>(request->GetCommand());
 
-        AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, "StorageDriveWin::FileExistsRequest %s : %s",
+        AZ_PROFILE_SCOPE(AzCore, "StorageDriveWin::FileExistsRequest %s : %s",
             m_name.c_str(), fileExists.m_path.GetRelativePath());
         TIMED_AVERAGE_WINDOW_SCOPE(m_getFileExistsTimeAverage);
 
@@ -806,7 +809,9 @@ namespace AZ::IO
         }
 
         WIN32_FILE_ATTRIBUTE_DATA attributes;
-        if (::GetFileAttributesEx(fileExists.m_path.GetAbsolutePath(), GetFileExInfoStandard, &attributes))
+        AZStd::wstring filenameW;
+        AZStd::to_wstring(filenameW, fileExists.m_path.GetAbsolutePath());
+        if (::GetFileAttributesExW(filenameW.c_str(), GetFileExInfoStandard, &attributes))
         {
             if ((attributes.dwFileAttributes != INVALID_FILE_ATTRIBUTES) &&
                 ((attributes.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0))
@@ -833,7 +838,7 @@ namespace AZ::IO
     {
         auto& command = AZStd::get<FileRequest::FileMetaDataRetrievalData>(request->GetCommand());
 
-        AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, "StorageDriveWin::FileMetaDataRetrievalRequest %s : %s",
+        AZ_PROFILE_SCOPE(AzCore, "StorageDriveWin::FileMetaDataRetrievalRequest %s : %s",
             m_name.c_str(), command.m_path.GetRelativePath());
         TIMED_AVERAGE_WINDOW_SCOPE(m_getFileMetaDataRetrievalTimeAverage);
 
@@ -863,7 +868,9 @@ namespace AZ::IO
         else
         {
             WIN32_FILE_ATTRIBUTE_DATA attributes;
-            if (::GetFileAttributesEx(command.m_path.GetAbsolutePath(), GetFileExInfoStandard, &attributes) &&
+            AZStd::wstring filenameW;
+            AZStd::to_wstring(filenameW, command.m_path.GetAbsolutePath());
+            if (::GetFileAttributesExW(filenameW.c_str(), GetFileExInfoStandard, &attributes) &&
                 (attributes.dwFileAttributes != INVALID_FILE_ATTRIBUTES) && ((attributes.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0))
             {
                 fileSize.LowPart = attributes.nFileSizeLow;
@@ -947,7 +954,7 @@ namespace AZ::IO
 
     bool StorageDriveWin::FinalizeReads()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         bool hasWorked = false;
         for (size_t readSlot = 0; readSlot < m_readSlots_active.size(); ++readSlot)
@@ -1000,7 +1007,7 @@ namespace AZ::IO
 
         auto readCommand = AZStd::get_if<FileRequest::ReadData>(&fileReadInfo.m_request->GetCommand());
         AZ_Assert(readCommand != nullptr, "Request stored with the overlapped I/O call did not contain a read request.");
-        
+
         if (fileReadInfo.m_sectorAlignedOutput && !encounteredError)
         {
             auto offsetAddress = reinterpret_cast<u8*>(fileReadInfo.m_sectorAlignedOutput) + fileReadInfo.m_copyBackOffset;

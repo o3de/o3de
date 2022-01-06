@@ -9,14 +9,11 @@
 #define GM_CARRIER_H
 
 #include <GridMate/Types.h>
-#include <GridMate/String/string.h>
 #include <GridMate/EBus.h>
 #include <GridMate/Carrier/Compressor.h>
 #include <GridMate/Carrier/Driver.h>
 #include <GridMate/Carrier/TrafficControl.h>
 
-#include <AzCore/Driller/DrillerBus.h>
-#include <AzCore/Driller/Driller.h>
 #include "AzCore/std/smart_ptr/weak_ptr.h"
 
 namespace GridMate
@@ -88,7 +85,7 @@ namespace GridMate
         /// Connect with host and port. This is ASync operation, the connection is active after OnConnectionEstablished is called.
         virtual ConnectionID    Connect(const char* hostAddress, unsigned int port) = 0;
         /// Connect with internal address format. This is ASync operation, the connection is active after OnConnectionEstablished is called.
-        virtual ConnectionID    Connect(const string& address) = 0;
+        virtual ConnectionID    Connect(const AZStd::string& address) = 0;
         /// Request a disconnect procedure. This is ASync operation, the connection is closed after OnDisconnect is called.
         virtual void            Disconnect(ConnectionID id) = 0;
 
@@ -100,7 +97,7 @@ namespace GridMate
         /// Returns maximum message size (with splitting or without). Splitting will make your message reliable, which might not be optimal for Unreliable messages. It's better to send two unreliable.
         //virtual unsigned int  GetMaxMessageSize(bool withSplitting = true) = 0;
 
-        virtual string          ConnectionToAddress(ConnectionID id) = 0;
+        virtual AZStd::string   ConnectionToAddress(ConnectionID id) = 0;
 
         /**
         * Sends buffer with an ACK callback. When the transport layer recieves an ACK it will run the callback.
@@ -401,7 +398,7 @@ namespace GridMate
     public:
         virtual ~CarrierEventsBase() {}
 
-        string ReasonToString(CarrierDisconnectReason reason);
+        AZStd::string ReasonToString(CarrierDisconnectReason reason);
     };
 
     class CarrierEvents
@@ -486,60 +483,6 @@ namespace GridMate
     };
 
     typedef AZ::EBus<CarrierEvents> CarrierEventBus;
-
-    namespace Debug
-    {
-        class CarrierDrillerEvents
-            : public CarrierEventsBase
-            , public AZ::Debug::DrillerEBusTraits
-        {
-        public:
-            virtual void OnIncomingConnection(Carrier* carrier, ConnectionID id) = 0;
-
-            virtual void OnFailedToConnect(Carrier* carrier, ConnectionID id, CarrierDisconnectReason reason) = 0;
-
-            virtual void OnConnectionEstablished(Carrier* carrier, ConnectionID id) = 0;
-
-            virtual void OnDisconnect(Carrier* carrier, ConnectionID id, CarrierDisconnectReason reason) = 0;
-
-            /// Report all carrier and driver errors! id == InvalidConnectionID if the error is not connection related!
-            virtual void OnDriverError(Carrier* carrier, ConnectionID id, const DriverError& error) = 0;
-            virtual void OnSecurityError(Carrier* carrier, ConnectionID id, const SecurityError& error) = 0;
-
-            //////////////////////////////////////////////////////////////////////////
-            // Executed from NETWORK thread
-
-            // Driver
-            /// SendTo
-            /// ReceiveFrom
-            /// Errors
-
-            // Traffic control
-
-            /// Called every second when you update last second statistics
-            virtual void OnUpdateStatistics(const GridMate::string& address, const TrafficControl::Statistics& lastSecond, const TrafficControl::Statistics& lifeTime, const TrafficControl::Statistics& effectiveLastSecond, const TrafficControl::Statistics& effectiveLifeTime) = 0;
-
-            // Simulator
-            /// Enable/Disable
-            /// Change Simulator parameters
-
-            // Carrier
-            virtual void OnConnectionStateChanged(Carrier* carrier, ConnectionID id, Carrier::ConnectionStates newState) = 0;
-
-            //////////////////////////////////////////////////////////////////////////
-
-            //////////////////////////////////////////////////////////////////////////
-            // Executed from GAME/MAIN thread
-
-            // Handshake low level (we drill the handshake on session level too)
-
-            // Carrier - in addition to carrier events
-
-            //////////////////////////////////////////////////////////////////////////
-        };
-
-        typedef AZ::EBus<CarrierDrillerEvents> CarrierDrillerBus;
-    }
 }
 
 #endif // GM_CARRIER_H

@@ -8,6 +8,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import azlmbr.bus as bus
 import azlmbr.editor as editor
 import azlmbr.entity as entity
+import azlmbr.legacy.general as general
 import azlmbr.object
 
 from typing import List
@@ -45,6 +46,18 @@ def get_component_type_id(component_name):
     return component_type_id
 
 
+def get_level_component_type_id(component_name):
+    """
+    Gets the component_type_id from a given component name
+    :param component_name: String of component name to search for
+    :return component type ID
+    """
+    type_ids_list = editor.EditorComponentAPIBus(bus.Broadcast, 'FindComponentTypeIdsByEntityType', [component_name],
+                                                 entity.EntityType().Level)
+    component_type_id = type_ids_list[0]
+    return component_type_id
+
+
 def add_level_component(component_name):
     """
     Adds the specified component to the Level Inspector
@@ -56,6 +69,10 @@ def add_level_component(component_name):
                                                                  level_component_list, entity.EntityType().Level)
     level_component_outcome = editor.EditorLevelComponentAPIBus(bus.Broadcast, 'AddComponentsOfType',
                                                                 [level_component_type_ids_list[0]])
+    if not level_component_outcome.IsSuccess():
+        print('Failed to add {} level component'.format(component_name))
+        return None
+
     level_component = level_component_outcome.GetValue()[0]
     return level_component
 
@@ -139,6 +156,20 @@ def get_component_property_value(component, component_propertyPath):
     else:
         print(f'FAILURE: Could not get value from {component_propertyPath}')
         return None
+
+def set_component_property_value(component, component_propertyPath, value):
+    """
+    Given a component name and component property path, set component property value
+    :param component: Component object to act on.
+    :param componentPropertyPath: String of component property. (e.g. 'Settings|Visible')
+    :param value: new value for the variable being changed in the component
+    """
+    componentPropertyObj = editor.EditorComponentAPIBus(bus.Broadcast, 'SetComponentProperty', component,
+                                                        component_propertyPath, value)
+    if componentPropertyObj.IsSuccess():
+        print(f'{component_propertyPath} set to {value}')
+    else:
+        print(f'FAILURE: Could not set value in {component_propertyPath}')
 
 
 def get_property_tree(component):
@@ -428,3 +459,32 @@ def get_component_type_id_map(component_name_list):
         type_ids_by_component[component_names[i]] = typeId
 
     return type_ids_by_component
+
+
+def attach_component_to_entity(entity_id, component_name):
+    # type: (azlmbr.entity.EntityId, str) -> azlmbr.entity.EntityComponentIdPair
+    """
+    Adds the component if not added already.
+    :param entity_id: EntityId of the entity to attach the component to
+    :param component_name: name of the component
+    :return: If successful, returns the EntityComponentIdPair, otherwise returns None.
+    """
+    type_ids_list = editor.EditorComponentAPIBus(
+        bus.Broadcast, 'FindComponentTypeIdsByEntityType', [component_name], 0)
+    general.log(f"Components found = {len(type_ids_list)}")
+    if len(type_ids_list) < 1:
+        general.log(f"ERROR: A component class with name {component_name} doesn't exist")
+        return None
+    elif len(type_ids_list) > 1:
+        general.log(f"ERROR: Found more than one component classes with same name: {component_name}")
+        return None
+    # Before adding the component let's check if it is already attached to the entity.
+    component_outcome = editor.EditorComponentAPIBus(bus.Broadcast, 'GetComponentOfType', entity_id, type_ids_list[0])
+    if component_outcome.IsSuccess():
+        return component_outcome.GetValue()  # In this case the value is not a list.
+    component_outcome = editor.EditorComponentAPIBus(bus.Broadcast, 'AddComponentsOfType', entity_id, type_ids_list)
+    if component_outcome.IsSuccess():
+        general.log(f"{component_name} Component added to entity.")
+        return component_outcome.GetValue()[0]
+    general.log(f"ERROR: Failed to add component [{component_name}] to entity")
+    return None

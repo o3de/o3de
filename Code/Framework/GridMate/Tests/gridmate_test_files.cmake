@@ -8,15 +8,14 @@
 
 set(FILES
     test_Main.cpp
-    TestProfiler.cpp
     Tests.h
     Session.cpp
     Serialize.cpp
     Certificates.cpp
+    Replica.cpp
     ReplicaSmall.cpp
     ReplicaMedium.cpp
     ReplicaBehavior.cpp
-    Replica.cpp
     StreamSecureSocketDriverTests.cpp
     StreamSocketDriverTests.cpp
     CarrierStreamSocketDriverTests.cpp

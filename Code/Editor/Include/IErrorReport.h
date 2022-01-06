@@ -9,23 +9,18 @@
 
 
 // Description : Class that collects error reports to present them later.
-
-#ifndef CRYINCLUDE_EDITOR_INTERFACE_ERRORREPORT_H
-#define CRYINCLUDE_EDITOR_INTERFACE_ERRORREPORT_H
 #pragma once
-
-#include <IValidator.h>
 
 // forward declarations.
 class CParticleItem;
 class CBaseObject;
 class CBaseLibraryItem;
 class CErrorRecord;
+class QString;
 
 /*! Error report manages collection of errors occurred during map analyzes or level load.
  */
 struct IErrorReport
-    : public IValidator
 {
     virtual ~IErrorReport(){}
 
@@ -62,12 +57,4 @@ struct IErrorReport
 
     //! Assign current filename.
     virtual void SetCurrentFile(const QString& file) = 0;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Implement IValidator interface.
-    //////////////////////////////////////////////////////////////////////////
-    virtual void Report(SValidatorRecord& record) = 0;
 };
-
-
-#endif // CRYINCLUDE_EDITOR_ERRORREPORT_H

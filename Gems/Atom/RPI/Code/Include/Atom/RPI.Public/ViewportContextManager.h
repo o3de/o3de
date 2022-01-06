@@ -41,6 +41,7 @@ namespace AZ
             bool PopView(const Name& contextName, ViewPtr view) override;
             ViewPtr GetCurrentView(const Name& contextName) const override;
             ViewportContextPtr GetDefaultViewportContext() const override;
+            ViewportContextPtr GetViewportContextByScene(const Scene* scene) const override;
 
         private:
             void RegisterViewportContext(const Name& contextName, ViewportContextPtr viewportContext);

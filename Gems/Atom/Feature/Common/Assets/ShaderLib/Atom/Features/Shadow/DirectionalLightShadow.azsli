@@ -10,10 +10,12 @@
 
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
-#include "JitterTablePcf.azsli"
+#include <Atom/RPI/Math.azsli>
 #include "Shadow.azsli"
 #include "ShadowmapAtlasLib.azsli"
 #include "BicubicPcfFilters.azsli"
+#include "ReceiverPlaneDepthBias.azsli"
+#include "NormalOffsetShadows.azsli"
 
 // Before including this azsli file, a PassSrg must be defined with the following members:
 // Texture2DArray<float> m_directionalLightShadowmap;
@@ -23,6 +25,11 @@
 // This matchs ShadowFilterMethod in ShadowConstants.h
 enum class ShadowFilterMethod {None, Pcf, Esm, EsmPcf};
 option ShadowFilterMethod o_directional_shadow_filtering_method = ShadowFilterMethod::None;
+option bool o_directional_shadow_receiver_plane_bias_enable = true;
+option bool o_blend_between_cascades_enable = false;
+
+static const float CascadeBlendArea = 0.015f; // might be worth exposing this as a slider.
+
 
 // DirectionalLightShadow calculates lit ratio for a directional light.
 class DirectionalLightShadow
@@ -44,6 +51,7 @@ class DirectionalLightShadow
     static void GetShadowCoords(
         uint lightIndex,
         float3 worldPosition,
+        float3 worldNormal,
         out float3 shadowCoords[ViewSrg::MaxCascadeCount]);
 
     //! This calculates visibility ratio of the surface from the light origin.
@@ -80,12 +88,6 @@ class DirectionalLightShadow
     // result.y == true if the given coordinate is in shadow.
     bool2 IsShadowed(float3 shadowCoord, uint indexOfCascade);
 
-    // This checks if the point is shadowed or not for the given center coordinate and jitter.
-    bool IsShadowedWithJitter(
-        float3 jitterUnit,
-        float jitterDepthDiffBase,
-        uint jitterIndex);
-
     // This outputs visibility ratio (from 0.0 to 1.0) of the given coordinate
     // from the light origin without filtering.
     float GetVisibilityFromLightNoFilter();
@@ -99,32 +101,41 @@ class DirectionalLightShadow
     // This outputs visibility ratio (from 0.0 to 1.0) for ESM+PCF.
     float GetVisibilityFromLightEsmPcf();
 
-    float SamplePcfBicubic();
     float SamplePcfBicubic(float3 shadowCoord, uint indexOfCascade);
+
+    float CalculateCascadeBlendAmount(const float3 texCoord);
 
     uint m_lightIndex;
     float3 m_shadowCoords[ViewSrg::MaxCascadeCount];
     float m_slopeBias[ViewSrg::MaxCascadeCount];
     float3 m_normalVector;
     DebugInfo m_debugInfo;
+    float3 m_shadowPosDX[ViewSrg::MaxCascadeCount];
+    float3 m_shadowPosDY[ViewSrg::MaxCascadeCount];
 };
 
 // This outputs the coordinate in shadowmap Texture space of the given point.
 void DirectionalLightShadow::GetShadowCoords(
     uint lightIndex,
     float3 worldPosition,
+    float3 worldNormal,
     out float3 shadowCoords[ViewSrg::MaxCascadeCount])
 {
-    const float4x4 depthBiasMatrices[ViewSrg::MaxCascadeCount] = 
-        ViewSrg::m_directionalLightShadows[lightIndex].m_depthBiasMatrices;
+    const float shadowBias = ViewSrg::m_directionalLightShadows[lightIndex].m_shadowBias;
+
+    const float4x4 lightViewToShadowmapMatrices[ViewSrg::MaxCascadeCount] = ViewSrg::m_directionalLightShadows[lightIndex].m_lightViewToShadowmapMatrices;
+    const float4x4 worldToLightViewMatrices[ViewSrg::MaxCascadeCount] = ViewSrg::m_directionalLightShadows[lightIndex].m_worldToLightViewMatrices;
+
     const uint cascadeCount = ViewSrg::m_directionalLightShadows[lightIndex].m_cascadeCount;
+    const float3 shadowOffset = ComputeNormalShadowOffset(ViewSrg::m_directionalLightShadows[lightIndex].m_normalShadowBias, worldNormal, ViewSrg::m_directionalLightShadows[lightIndex].m_shadowmapSize);
 
     for (uint index = 0; index < cascadeCount; ++index)
-    {
-        const float4x4 depthBiasMatrix = depthBiasMatrices[index];
-        const float4 shadowCoordHomogeneous = mul(depthBiasMatrix, 
-            float4(worldPosition, 1.));
-        shadowCoords[index] = shadowCoordHomogeneous.xyz / shadowCoordHomogeneous.w;
+    {        
+        float4 lightSpacePos = mul(worldToLightViewMatrices[index], float4(worldPosition + shadowOffset, 1.));
+        lightSpacePos.z += shadowBias;
+        
+        const float4 clipSpacePos = mul(lightViewToShadowmapMatrices[index], lightSpacePos);                
+        shadowCoords[index] = clipSpacePos.xyz / clipSpacePos.w;
     }
 }
 
@@ -162,7 +173,7 @@ float DirectionalLightShadow::GetThickness(uint lightIndex, float3 shadowCoords[
 bool2 DirectionalLightShadow::IsShadowed(float3 shadowCoord, uint indexOfCascade)
 {
     static const float PixelMargin = 1.5; // avoiding artifact between cascade levels.
-    static const float DepthMargin = 0.01; // avoiding artifact when near depth bounds.
+    static const float DepthMargin = 1e-8; // avoiding artifact when near depth bounds.
 
     // size is the shadowap's width and height.
     const uint size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
@@ -170,6 +181,7 @@ bool2 DirectionalLightShadow::IsShadowed(float3 shadowCoord, uint indexOfCascade
     const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
     Texture2DArray<float> shadowmap = PassSrg::m_directionalLightShadowmap;
 
+    [branch]
     if (shadowCoord.x >= 0. && shadowCoord.x * size < size - PixelMargin &&
         shadowCoord.y >= 0. && shadowCoord.y * size < size - PixelMargin)
     {
@@ -184,75 +196,6 @@ bool2 DirectionalLightShadow::IsShadowed(float3 shadowCoord, uint indexOfCascade
         }
     }
     return bool2(false, false);
-}
-
-bool DirectionalLightShadow::IsShadowedWithJitter(
-    float3 jitterUnit,
-    float jitterDepthDiffBase,
-    uint jitterIndex)
-{
-    const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
-    const float4x4 worldToLightViewMatrices[ViewSrg::MaxCascadeCount] =
-        ViewSrg::m_directionalLightShadows[m_lightIndex].m_worldToLightViewMatrices;
-    const float4x4 lightViewToShadowmapMatrices[ViewSrg::MaxCascadeCount] =
-        ViewSrg::m_directionalLightShadows[m_lightIndex].m_lightViewToShadowmapMatrices;
-    const float boundaryScale = 
-        ViewSrg::m_directionalLightShadows[m_lightIndex].m_boundaryScale;
-
-    const float2 jitterXY = g_jitterTablePcf[jitterIndex];
-
-    // jitterLightView is the jittering diff vector from the lighted point on the surface
-    // in the light view space.  It is remarked as "v_J" in the comment
-    // named "Calculate depth adjusting diff for jittered samples"
-    // just before the function GetJitterUnitVectorDepthDiffBase.
-    const float4 jitterLightView = float4(jitterXY, 0., 0.) * boundaryScale;
-
-    // It checks the jittered point is lit or shadowed from the detailed cascade
-    // to the less detailed one.
-    for (uint indexOfCascade = 0; indexOfCascade < cascadeCount; ++indexOfCascade)
-    {
-        // jitterShadowmap is the jittering diff vector in the shadowmap space.
-        const float4 jitterShadowmap = mul(lightViewToShadowmapMatrices[indexOfCascade], jitterLightView);
-
-        // Calculation of the jittering for Z-coordinate (light direction) is required
-        // to check lit/shadowed for the jittered point.
-        // jitterDepthDiff is the Z-coordinate of the jittering diff vector 
-        // in the shadowmap space.
-        float jitterDepthDiff = 0.;
-
-        // jitterDepthDiffBase is "1/tan(theta)" in the comment.
-        if (jitterDepthDiffBase != 0.)
-        {
-            // jitterUnitLightView is the unit vector in the light view space
-            // noted as "v_M" in the comment.
-            const float3 jitterUnitLightView = 
-                normalize(mul(worldToLightViewMatrices[indexOfCascade], float4(jitterUnit, 0.)).xyz);
-            const float lightViewToShadowmapZScale = -lightViewToShadowmapMatrices[indexOfCascade]._m22;
-            // jitterDepthDiff is the "d" in the note, and it is calculated by
-            //   d = (v_J . v_M) / tan(theta)
-            // in the light view space.  Furthermore it have to be converted 
-            // to the light clip space, which can be done by lightViewToShadowmapZScale.
-            jitterDepthDiff = 
-                dot(jitterLightView.xyz, jitterUnitLightView) * jitterDepthDiffBase *
-                lightViewToShadowmapZScale;
-        }
-        // jitteredCoord is the coordinate of the jittered point in the shadowmap space.
-        const float3 jitteredCoord = 
-            m_shadowCoords[indexOfCascade] + float3(jitterShadowmap.xy,  jitterDepthDiff);
-        // Check for the jittered point is lit or shadowed.
-        const bool2 checkedShadowed = IsShadowed(
-            jitteredCoord,
-            indexOfCascade);
-        // If check is done, return the lit/shadowed flag.
-        // Otherwise make it pend to the next cascade.
-        if (checkedShadowed.x)
-        {
-            m_debugInfo.m_cascadeIndex = indexOfCascade;
-            return checkedShadowed.y;
-        }
-    }
-    m_debugInfo.m_cascadeIndex = cascadeCount;
-    return false;
 }
 
 float DirectionalLightShadow::GetVisibilityFromLightNoFilter()
@@ -274,70 +217,52 @@ float DirectionalLightShadow::GetVisibilityFromLightNoFilter()
 }
 
 float DirectionalLightShadow::GetVisibilityFromLightPcf()
-{
-    const uint predictionCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_predictionSampleCount;
+{   
+    static const float PixelMargin = 1.5; // avoiding artifact between cascade levels.
+    static const float DepthMargin = 1e-8; // avoiding artifact when near depth bounds.
 
-    if (predictionCount <= 1)
+    bool cascadeFound = false;
+    int currentCascadeIndex = 0;
+
+    const uint size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
+    const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
+    for (uint indexOfCascade = 0; indexOfCascade < cascadeCount; ++indexOfCascade)
     {
-        return GetVisibilityFromLightNoFilter();
-    }
-    
-    if (ViewSrg::m_directionalLightShadows[m_lightIndex].m_pcfFilterMethod == PcfFilterMethod_Bicubic)
-    {
-        return SamplePcfBicubic();
-    }    
-
-    const float3 lightDirection = 
-        normalize(SceneSrg::m_directionalLights[m_lightIndex].m_direction);
-    const float4 jitterUnitVectorDepthDiffBase = 
-        Shadow::GetJitterUnitVectorDepthDiffBase(m_normalVector, lightDirection);
-    const float3 jitterUnit = jitterUnitVectorDepthDiffBase.xyz;
-    const float jitterDepthDiffBase = jitterUnitVectorDepthDiffBase.w;
-
-    uint shadowedCount = 0;
-    uint jitterIndex = 0;
-
-    // Predicting
-    for (; jitterIndex < predictionCount; ++jitterIndex)
-    {
-        if (IsShadowedWithJitter(
-            jitterUnit,
-            jitterDepthDiffBase,
-            jitterIndex))
+        const float3 shadowCoord = m_shadowCoords[indexOfCascade];
+        
+        if (shadowCoord.x >= 0. && shadowCoord.x * size < size - PixelMargin &&
+            shadowCoord.y >= 0. && shadowCoord.y * size < size - PixelMargin && 
+            shadowCoord.z < 1. - DepthMargin)
         {
-            ++shadowedCount;
-        }
-    }
-    if (shadowedCount == 0)
-    {
-        return 1.;
-    }
-    else if (shadowedCount == predictionCount)
-    {
-        return 0.;
-    }
-
-    // Filtering
-
-    // When the prediction detects the point on the boundary of shadow,
-    // i.e., both of a lit point and a a shadowed one exists in the jittering area,
-    // we calculate the more precious lit ratio in the area.
-    const uint filteringCount = max(
-        predictionCount,
-        ViewSrg::m_directionalLightShadows[m_lightIndex].m_filteringSampleCount);
-
-    for (; jitterIndex < filteringCount; ++jitterIndex)
-    {
-        if (IsShadowedWithJitter(
-            jitterUnit,
-            jitterDepthDiffBase,
-            jitterIndex))
-        {
-            ++shadowedCount;
+            currentCascadeIndex = m_debugInfo.m_cascadeIndex = indexOfCascade;
+            cascadeFound = true;
+            break;
         }
     }
 
-    return (filteringCount - shadowedCount) * 1. / filteringCount;
+    [branch]
+    if (cascadeFound)
+    {
+        float lit = SamplePcfBicubic(m_shadowCoords[currentCascadeIndex], currentCascadeIndex);
+        
+        if(o_blend_between_cascades_enable) 
+        {  
+            const float blendBetweenCascadesAmount = CalculateCascadeBlendAmount(m_shadowCoords[currentCascadeIndex].xyz);
+
+            const int nextCascadeIndex = currentCascadeIndex + 1;
+            [branch]
+            if (blendBetweenCascadesAmount < 1.0f && nextCascadeIndex < cascadeCount)
+            {
+                const float nextLit = SamplePcfBicubic(m_shadowCoords[nextCascadeIndex], nextCascadeIndex);
+                lit = lerp(nextLit, lit, blendBetweenCascadesAmount);             
+            }
+        } 
+
+        return lit;
+    }
+
+    m_debugInfo.m_cascadeIndex = cascadeCount;
+    return 1.;
 }
 
 float DirectionalLightShadow::GetVisibilityFromLightEsm()
@@ -353,6 +278,8 @@ float DirectionalLightShadow::GetVisibilityFromLightEsm()
         const float distanceMin = ViewSrg::m_esmsDirectional[indexOfCascade].m_lightDistanceOfCameraViewFrustum;
         bool2 checkedShadowed = IsShadowed(shadowCoord, indexOfCascade);
         const float depthDiff = shadowCoord.z - distanceMin;
+    
+        [branch]
         if (checkedShadowed.x && depthDiff >= 0)
         {
             const float distanceWithinCameraView = depthDiff / (1. - distanceMin);
@@ -383,6 +310,8 @@ float DirectionalLightShadow::GetVisibilityFromLightEsmPcf()
         const float distanceMin = ViewSrg::m_esmsDirectional[indexOfCascade].m_lightDistanceOfCameraViewFrustum;
         bool2 checkedShadowed = IsShadowed(shadowCoord, indexOfCascade);
         const float depthDiff = shadowCoord.z - distanceMin;
+    
+        [branch]
         if (checkedShadowed.x && depthDiff >= 0)
         {
             const float distanceWithinCameraView = depthDiff / (1. - distanceMin);
@@ -411,33 +340,11 @@ float DirectionalLightShadow::GetVisibilityFromLightEsmPcf()
     return 1.;
 }
 
-float DirectionalLightShadow::SamplePcfBicubic()
-{
-    static const float DepthMargin = 0.01; // avoiding artifact when near depth bounds.
-    static const float PixelMargin = 1.5; // avoiding artifact between cascade levels.
-
-    const uint size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
-    const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
-    for (uint indexOfCascade = 0; indexOfCascade < cascadeCount; ++indexOfCascade)
-    {
-        const float3 shadowCoord = m_shadowCoords[indexOfCascade];
-    
-        if (shadowCoord.x >= 0. && shadowCoord.x * size < size - PixelMargin &&
-            shadowCoord.y >= 0. && shadowCoord.y * size < size - PixelMargin && 
-            shadowCoord.z < 1. - DepthMargin)
-        {
-            m_debugInfo.m_cascadeIndex = indexOfCascade;
-            return SamplePcfBicubic(shadowCoord, indexOfCascade);
-        }
-    }
-    m_debugInfo.m_cascadeIndex = cascadeCount;
-    return 1.;
-}
-
 float DirectionalLightShadow::SamplePcfBicubic(float3 shadowCoord, uint indexOfCascade)
 {
     const uint filteringSampleCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_filteringSampleCount;
     const uint size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
+    
     const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
     Texture2DArray<float> shadowmap = PassSrg::m_directionalLightShadowmap;
 
@@ -448,7 +355,9 @@ float DirectionalLightShadow::SamplePcfBicubic(float3 shadowCoord, uint indexOfC
     param.invShadowMapSize = rcp(size); 
     param.comparisonValue = shadowCoord.z;
     param.samplerState = SceneSrg::m_hwPcfSampler;
-
+    param.receiverPlaneDepthBias = o_directional_shadow_receiver_plane_bias_enable ? ComputeReceiverPlaneDepthBias(m_shadowPosDX[indexOfCascade], m_shadowPosDY[indexOfCascade]) : 0;
+    
+    [branch]     
     if (filteringSampleCount <= 4)       
     {
         return SampleShadowMapBicubic_4Tap(param);
@@ -475,6 +384,16 @@ float DirectionalLightShadow::GetVisibility(
     shadow.m_normalVector = normalVector;
     shadow.m_debugInfo.m_cascadeIndex = 0;
     shadow.m_debugInfo.m_usePcfFallback = false;
+
+    if (o_directional_shadow_receiver_plane_bias_enable)
+    {
+        [unroll]
+        for(int i = 0 ; i < ViewSrg::MaxCascadeCount ; ++i)
+        {
+            shadow.m_shadowPosDX[i] = ddx_fine(shadowCoords[i]);
+            shadow.m_shadowPosDY[i] = ddy_fine(shadowCoords[i]);        
+        }    
+    }
 
     // Calculate slope bias
     const float3 lightDirection = 
@@ -539,4 +458,11 @@ float3 DirectionalLightShadow::AddDebugColoring(
         color = color * 0.75 + debuggingColors[cascadeIndex] * 0.25;
     }
     return color;
+}
+
+float DirectionalLightShadow::CalculateCascadeBlendAmount(const float3 texCoord)
+{
+    const float distanceToOneMin = min3(1.0f - texCoord);
+    const float currentPixelsBlendBandLocation = min(min(texCoord.x, texCoord.y), distanceToOneMin);
+    return currentPixelsBlendBandLocation / CascadeBlendArea;
 }

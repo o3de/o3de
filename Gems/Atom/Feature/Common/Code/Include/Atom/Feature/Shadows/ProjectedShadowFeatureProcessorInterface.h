@@ -48,18 +48,14 @@ namespace AZ::Render
         virtual void SetAspectRatio(ShadowId id, float aspectRatio) = 0;
         //! Sets the field of view for the shadow in radians in the Y direction.
         virtual void SetFieldOfViewY(ShadowId id, float fieldOfView) = 0;
-        //! Sets the maximum resolution of the shadow map
+        //! Sets the maximum resolution of the shadow map.
         virtual void SetShadowmapMaxResolution(ShadowId id, ShadowmapSize size) = 0;
-        //! Sets the shadow bias
+        //! Sets the shadow bias.
         virtual void SetShadowBias(ShadowId id, float bias) = 0;
-        //! Sets the shadowmap Pcf method.
-        virtual void SetPcfMethod(ShadowId id, PcfMethod method) = 0;
-        //! Sets the shadow filter method
+        //! Sets the normal shadow bias.
+        virtual void SetNormalShadowBias(ShadowId id, float normalShadowBias) = 0;
+        //! Sets the shadow filter method.
         virtual void SetShadowFilterMethod(ShadowId id, ShadowFilterMethod method) = 0;
-        //! Sets the width of boundary between shadowed area and lit area.
-        virtual void SetSofteningBoundaryWidthAngle(ShadowId id, float boundaryWidthRadians) = 0;
-        //! Sets the sample count to predict the boundary of the shadow. Max 16, should be less than filtering sample count.
-        virtual void SetPredictionSampleCount(ShadowId id, uint16_t count) = 0;
         //! Sets the sample count for filtering of the shadow boundary, max 64.
         virtual void SetFilteringSampleCount(ShadowId id, uint16_t count) = 0;
         //! Sets all of the shadow properites in one call

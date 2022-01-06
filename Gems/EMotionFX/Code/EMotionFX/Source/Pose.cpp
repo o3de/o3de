@@ -728,7 +728,7 @@ namespace EMotionFX
                 m_localSpaceTransforms[nodeNr].Zero();
             }
 
-            const size_t numMorphs = m_morphWeights.size();
+            [[maybe_unused]] const size_t numMorphs = m_morphWeights.size();
             MCORE_ASSERT(m_actorInstance->GetMorphSetupInstance()->GetNumMorphTargets() == numMorphs);
             for (float& morphWeight : m_morphWeights)
             {
@@ -743,7 +743,7 @@ namespace EMotionFX
                 m_localSpaceTransforms[i].Zero();
             }
 
-            const size_t numMorphs = m_morphWeights.size();
+            [[maybe_unused]] const size_t numMorphs = m_morphWeights.size();
             MCORE_ASSERT(m_actor->GetMorphSetup(0)->GetNumMorphTargets() == numMorphs);
             for (float& morphWeight : m_morphWeights)
             {
@@ -1428,4 +1428,38 @@ namespace EMotionFX
 
         GetEMotionFX().GetThreadData(m_actorInstance->GetThreadIndex())->GetPosePool().FreePose(tempPose);
     }
-}   // namespace EMotionFX
+
+    void Pose::DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay, const AZ::Color& color, bool drawPoseDatas) const
+    {
+        debugDisplay.SetColor(color);
+        debugDisplay.DepthTestOff();
+
+        const Skeleton* skeleton = m_actorInstance->GetActor()->GetSkeleton();
+        const size_t numEnabledJoints = m_actorInstance->GetNumEnabledNodes();
+        for (size_t i = 0; i < numEnabledJoints; ++i)
+        {
+            const size_t jointIndex = m_actorInstance->GetEnabledNode(i);
+            const size_t parentIndex = skeleton->GetNode(jointIndex)->GetParentIndex();
+            if (parentIndex != InvalidIndex)
+            {
+                const AZ::Vector3 startPos = GetWorldSpaceTransform(jointIndex).m_position;
+                const AZ::Vector3 endPos = GetWorldSpaceTransform(parentIndex).m_position;
+
+                debugDisplay.DrawSolidCylinder(/*center=*/(startPos + endPos) * 0.5f,
+                    /*direction=*/(endPos - startPos).GetNormalizedSafe(),
+                    /*radius=*/0.005f,
+                    /*height=*/(endPos - startPos).GetLength(),
+                    /*drawShaded=*/false);
+            }
+        }
+
+        if (drawPoseDatas)
+        {
+            for (const auto& poseDataItem : m_poseDatas)
+            {
+                PoseData* poseData = poseDataItem.second.get();
+                poseData->DebugDraw(debugDisplay, color);
+            }
+        }
+    }
+} // namespace EMotionFX

@@ -60,51 +60,51 @@ namespace GridMate
 
             typedef vector<NewConnection> NewConnectionsType;
             typedef vector<AZ::u8> UserDataBufferType;
-            typedef unordered_set<string> AddressSetType;
+            typedef unordered_set<AZStd::string> AddressSetType;
 
             GridSessionHandshake(unsigned int handshakeTimeoutMS, const VersionType& version);
-            virtual ~GridSessionHandshake() {}
+            ~GridSessionHandshake() override {}
 
             //////////////////////////////////////////////////////////////////////////
             // Handshake
 
             /// Called from the system to write initial handshake data.
-            virtual void            OnInitiate(ConnectionID id, WriteBuffer& wb);
+            void            OnInitiate(ConnectionID id, WriteBuffer& wb) override;
             /**
             * Called when a system receives a handshake initiation from another system.
             * You can write a reply in the WriteBuffer.
             * return true if you accept this connection and false if you reject it.
             */
-            virtual HandshakeErrorCode OnReceiveRequest(ConnectionID id, ReadBuffer& rb, WriteBuffer& wb);
+            HandshakeErrorCode OnReceiveRequest(ConnectionID id, ReadBuffer& rb, WriteBuffer& wb) override;
             /**
             * If we already have a valid connection and we receive another connection request, the system will
             * call this function to verify the state of the connection.
             */
-            virtual bool            OnConfirmRequest(ConnectionID id, ReadBuffer& rb);
+            bool            OnConfirmRequest(ConnectionID id, ReadBuffer& rb) override;
             /**
             * Called when we receive Ack from the other system on our initial data \ref OnInitiate.
             * return true to accept the ack or false to reject the handshake.
             */
-            virtual bool            OnReceiveAck(ConnectionID id, ReadBuffer& rb)   { (void)id; (void)rb; return true; }  // we don't do any further filtering
+            bool            OnReceiveAck(ConnectionID id, ReadBuffer& rb) override   { (void)id; (void)rb; return true; }  // we don't do any further filtering
             /**
             * Called when we receive Ack from the other system while we were connected. This callback is called
             * so we can just confirm that our connection is valid!
             */
-            virtual bool            OnConfirmAck(ConnectionID id, ReadBuffer& rb)   { (void)id; (void)rb; return true; } // we don't do any further filtering
+            bool            OnConfirmAck(ConnectionID id, ReadBuffer& rb) override   { (void)id; (void)rb; return true; } // we don't do any further filtering
             /// Return true if you want to reject early reject a connection.
-            virtual bool            OnNewConnection(const string& address);
+            bool            OnNewConnection(const AZStd::string& address) override;
             /// Called when we close a connection.
-            virtual void            OnDisconnect(ConnectionID id);
+            void            OnDisconnect(ConnectionID id) override;
             /// Return timeout in milliseconds of the handshake procedure.
-            virtual unsigned int    GetHandshakeTimeOutMS() const                   { return m_handshakeTimeOutMS; }
+            unsigned int    GetHandshakeTimeOutMS() const override                   { return m_handshakeTimeOutMS; }
             //////////////////////////////////////////////////////////////////////////
 
-            void                    BanAddress(string address);
+            void                    BanAddress(AZStd::string address);
             void                    SetHost(bool isHost);
             void                    SetInvited(bool isInvited);
             void                    SetHostMigration(bool isMigrating);
             void                    SetUserData(const void* data, size_t dataSize);
-            void                    SetSessionId(string sessionId);
+            void                    SetSessionId(AZStd::string sessionId);
             bool                    IsNewConnections()                              { return !m_newConnections.empty(); }
             NewConnectionsType&     AcquireNewConnections();
             void                    ReleaseNewConnections();
@@ -117,7 +117,7 @@ namespace GridMate
             NewConnectionsType      m_newConnections;
             AddressSetType          m_banList;
             UserDataBufferType      m_userData;
-            string                  m_sessionId;
+            AZStd::string           m_sessionId;
             RemotePeerMode          m_peerMode;
             VersionType             m_version;
 
@@ -165,7 +165,7 @@ void GridSessionParam::SetValue(AZ::s32* values, size_t numElements)
     if (numElements > 0)
     {
         AZ_Assert(values != nullptr, "Invalid values pointer!");
-        string temp;
+        AZStd::string temp;
         for (size_t i = 0; i < numElements; ++i)
         {
             AZStd::to_string(temp, values[i]);
@@ -183,7 +183,7 @@ void GridSessionParam::SetValue(AZ::s64* values, size_t numElements)
     if (numElements > 0)
     {
         AZ_Assert(values != nullptr, "Invalid values pointer!");
-        string temp;
+        AZStd::string temp;
         for (size_t i = 0; i < numElements; ++i)
         {
             AZStd::to_string(temp, values[i]);
@@ -201,7 +201,7 @@ void GridSessionParam::SetValue(float* values, size_t numElements)
     if (numElements > 0)
     {
         AZ_Assert(values != nullptr, "Invalid values pointer!");
-        string temp;
+        AZStd::string temp;
         for (size_t i = 0; i < numElements; ++i)
         {
             AZStd::to_string(temp, values[i]);
@@ -219,7 +219,7 @@ void GridSessionParam::SetValue(double* values, size_t numElements)
     if (numElements > 0)
     {
         AZ_Assert(values != nullptr, "Invalid values pointer!");
-        string temp;
+        AZStd::string temp;
         for (size_t i = 0; i < numElements; ++i)
         {
             AZStd::to_string(temp, values[i]);
@@ -316,7 +316,6 @@ GridSession::Shutdown()
             m_carrier->Shutdown();
         }
 
-        EBUS_DBG_EVENT(Debug::SessionDrillerBus, OnSessionDelete, this);
         EBUS_EVENT_ID(m_gridMate, SessionEventBus, OnSessionDelete, this);
 
         m_state = nullptr;
@@ -438,7 +437,6 @@ GridSession::Update()
             memberStateIter = m_unboundMemberStates.erase(memberStateIter);
 
             // Both member and client state are valid! send member joined message
-            EBUS_DBG_EVENT(Debug::SessionDrillerBus, OnMemberJoined, this, member);
             EBUS_EVENT_ID(GetGridMate(), SessionEventBus, OnMemberJoined, this, member);
         }
         else
@@ -684,7 +682,7 @@ GridSession::SetParam(const GridSessionParam& param)
 // RemoveParam
 //=========================================================================
 bool
-GridSession::RemoveParam(const string& paramId)
+GridSession::RemoveParam(const AZStd::string& paramId)
 {
     AZ_Assert(m_state, "Invalid session state replica. Session is not initialized.");
 
@@ -726,7 +724,7 @@ GridSession::RemoveParam(unsigned int index)
         {
             const GridSessionReplica::ParamContainer& curParams = m_state->m_params.Get();
             const GridSessionParam& foundParam = curParams.at(index);
-            string paramId = foundParam.m_id;
+            AZStd::string paramId = foundParam.m_id;
             m_state->m_params.Modify([=](Internal::GridSessionReplica::ParamContainer& params)
                 {
                     params.erase(&params.at(index));
@@ -970,7 +968,7 @@ GridSession::AddMember(GridMember* member)
 // IsAddressInMemberList
 //=========================================================================
 bool
-GridSession::IsAddressInMemberList(const string& address)
+GridSession::IsAddressInMemberList(const AZStd::string& address)
 {
     for (AZStd::size_t i = 0; i < m_members.size(); ++i)
     {
@@ -1220,8 +1218,7 @@ GridSession::OnDriverError(Carrier* carrier, ConnectionID id, const DriverError&
         return; // not for us
     }
     uintptr_t idInt = reinterpret_cast<uintptr_t>(static_cast<void*>(id));
-    string errorMsg = string::format("Carrier driver error ConnectionID: %" PRIuPTR "ErrorCode: 0x%08x", idInt, error.m_errorCode);
-    EBUS_DBG_EVENT(Debug::SessionDrillerBus, OnSessionError, this, errorMsg);
+    AZStd::string errorMsg = AZStd::string::format("Carrier driver error ConnectionID: %" PRIuPTR "ErrorCode: 0x%08x", idInt, error.m_errorCode);
     EBUS_EVENT_ID(m_gridMate, SessionEventBus, OnSessionError, this, errorMsg);
 
     if (id != InvalidConnectionID)
@@ -1248,8 +1245,7 @@ GridSession::OnSecurityError(Carrier* carrier, ConnectionID id, const SecurityEr
         return; // not for us
     }
     uintptr_t idInt = reinterpret_cast<uintptr_t>(static_cast<void*>(id));
-    string errorMsg = string::format("Carrier security error ConnectionID: %" PRIuPTR " ErrorCode: 0x%08x", idInt, error.m_errorCode);
-    EBUS_DBG_EVENT(Debug::SessionDrillerBus, OnSessionError, this, errorMsg);
+    AZStd::string errorMsg = AZStd::string::format("Carrier security error ConnectionID: %" PRIuPTR " ErrorCode: 0x%08x", idInt, error.m_errorCode);
 }
 
 //=========================================================================
@@ -1276,7 +1272,6 @@ GridSession::ElectNewHost()
     //  AZ_Assert(m_sm.IsInState(SS_HOST_MIGRATE_ELECTION),"We should be in host migrate election state to call this function!");
     GridMember* newHost = nullptr; // Allow the user to choose
 
-    EBUS_DBG_EVENT(Debug::SessionDrillerBus, OnMigrationElectHost, this, newHost);
     EBUS_EVENT_ID(m_gridMate, SessionEventBus, OnMigrationElectHost, this, newHost);
 
     if (newHost == nullptr || newHost->GetConnectionId() == InvalidConnectionID || newHost->IsHost())
@@ -1497,7 +1492,6 @@ GridSession::OnStateJoin(HSM& sm, const HSM::Event& e)
     {
     case SE_JOINED:
     {
-        EBUS_DBG_EVENT(Debug::SessionDrillerBus, OnSessionJoined, this);
         EBUS_EVENT_ID(m_gridMate, SessionEventBus, OnSessionJoined, this);
         sm.Transition(SS_IDLE);
     } return true;
@@ -1583,7 +1577,7 @@ GridSession::OnStateCreate(HSM& sm, const HSM::Event& e)
 
             // Bind member replica
             bool isAdded = AddMember(m_myMember);
-            AZ_Error("GridMate", isAdded, "Failed to add my replica, check the number of open slots!")
+            AZ_Error("GridMate", isAdded, "Failed to add my replica, check the number of open slots!");
             if (!isAdded)
             {
                 sm.Transition(SS_DELETE);
@@ -1591,7 +1585,6 @@ GridSession::OnStateCreate(HSM& sm, const HSM::Event& e)
             }
 
             sm.Transition(SS_IDLE);
-            EBUS_DBG_EVENT(Debug::SessionDrillerBus, OnSessionCreated, this);
             EBUS_EVENT_ID(m_gridMate, SessionEventBus, OnSessionCreated, this);
             EBUS_EVENT_ID(m_gridMate, SessionEventBus, OnSessionHosted, this);
         }
@@ -1616,7 +1609,6 @@ GridSession::OnStateCreate(HSM& sm, const HSM::Event& e)
 
             m_carrier->Connect(m_hostAddress);
 
-            EBUS_DBG_EVENT(Debug::SessionDrillerBus, OnSessionCreated, this);
             EBUS_EVENT_ID(m_gridMate, SessionEventBus, OnSessionCreated, this);
         }
 
@@ -1639,7 +1631,6 @@ GridSession::OnStateStart(HSM& sm, const HSM::Event& e)
     {
     case HSM::EnterEventId:
     {
-        EBUS_DBG_EVENT(Debug::SessionDrillerBus, OnSessionStart, this);
         EBUS_EVENT_ID(m_gridMate, SessionEventBus, OnSessionStart, this);
     } return true;
     }
@@ -1660,7 +1651,6 @@ GridSession::OnStateEnd(HSM& sm, const HSM::Event& e)
     {
     case HSM::EnterEventId:
     {
-        EBUS_DBG_EVENT(Debug::SessionDrillerBus, OnSessionEnd, this);
         EBUS_EVENT_ID(m_gridMate, SessionEventBus, OnSessionEnd, this);
     } return true;
     }
@@ -1710,7 +1700,6 @@ GridSession::OnStateHostMigrateElection(AZ::HSM& sm, const AZ::HSM::Event& e)
             m_hostMigrationInProcess = true;
             m_handshake->SetHostMigration(true);
 
-            EBUS_DBG_EVENT(Debug::SessionDrillerBus, OnMigrationStart, this);
             EBUS_EVENT_ID(m_gridMate, SessionEventBus, OnMigrationStart, this);
 
             m_hostMigrationTimeOut = m_state ? m_state->m_hostMigrationTimeout.Get() : 0;
@@ -1890,7 +1879,6 @@ GridSession::OnStateHostMigrateSession(AZ::HSM& sm, const AZ::HSM::Event& e)
 
             GridMember* host = GetHost();
 
-            EBUS_DBG_EVENT(Debug::SessionDrillerBus, OnMigrationEnd, this, host);
             EBUS_EVENT_ID(m_gridMate, SessionEventBus, OnMigrationEnd, this, host);
 
             m_myMember->m_clientState->m_newHostVote.Set(0);
@@ -1976,7 +1964,7 @@ GridMember::GetNatType() const
 //=========================================================================
 // GetName
 //=========================================================================
-string
+AZStd::string
 GridMember::GetName() const
 {
     return m_clientState ? m_clientState->m_name.Get().c_str() : "Unknown";
@@ -2004,7 +1992,6 @@ GridMember::OnReplicaActivate(const ReplicaContext& rc)
         rc.m_rm->AddPrimary(m_clientState->GetReplica());
 
         // Both member and client state are valid! send member joined message
-        EBUS_DBG_EVENT(Debug::SessionDrillerBus, OnMemberJoined, m_session, this);
         EBUS_EVENT_ID(m_session->GetGridMate(), SessionEventBus, OnMemberJoined, m_session, this);
     }
 }
@@ -2021,7 +2008,6 @@ GridMember::OnReplicaDeactivate(const ReplicaContext& rc)
     if (m_clientState)
     {
         // We are deleting the member so send leave message (we are always keeping member <-> state together).
-        EBUS_DBG_EVENT(Debug::SessionDrillerBus, OnMemberLeaving, m_session, this);
         EBUS_EVENT_ID(m_session->GetGridMate(), SessionEventBus, OnMemberLeaving, m_session, this);
 
         m_clientState->m_member = nullptr;
@@ -2072,7 +2058,6 @@ GridMember::OnKick(AZ::u8 reason, const RpcContext& rc)
     //  2 Kick messages in quick succession can cause this to crash otherwise.
     if (m_session && m_session->GetHost() && rc.m_sourcePeer == m_session->GetHost()->GetIdCompact())    //Only the host can kick
     {
-        EBUS_DBG_EVENT(Debug::SessionDrillerBus, OnMemberKicked, m_session, this);
         EBUS_EVENT_ID(m_session->GetGridMate(), SessionEventBus, OnMemberKicked, m_session, this, reason);
 
         if (IsLocal())
@@ -2244,7 +2229,7 @@ GridMember::GetProcessId() const
 //=========================================================================
 // GetMachineName
 //=========================================================================
-string
+AZStd::string
 GridMember::GetMachineName() const
 {
     if (m_clientState)
@@ -2253,7 +2238,7 @@ GridMember::GetMachineName() const
     }
     else
     {
-        return string();
+        return AZStd::string();
     }
 }
 
@@ -2325,7 +2310,6 @@ GridMemberStateReplica::OnReplicaDeactivate(const ReplicaContext& rc)
     if (m_member)
     {
         // client state is gone send leave message
-        EBUS_DBG_EVENT(Debug::SessionDrillerBus, OnMemberLeaving, m_member->m_session, m_member);
         EBUS_EVENT_ID(m_member->GetSession()->GetGridMate(), SessionEventBus, OnMemberLeaving, m_member->m_session, m_member);
 
         m_member->m_clientState = nullptr;
@@ -2519,7 +2503,6 @@ SessionService::Update()
             it = m_activeSearches.erase(it);
             m_completedSearches.push_back(search);
 
-            EBUS_DBG_EVENT(Debug::SessionDrillerBus, OnGridSearchComplete, search);
             EBUS_EVENT_ID(m_gridMate, SessionEventBus, OnGridSearchComplete, search);
         }
         else
@@ -2688,7 +2671,7 @@ HandshakeErrorCode GridSessionHandshake::OnReceiveRequest(ConnectionID id, ReadB
 {
     (void)id;
     AZStd::lock_guard<AZStd::mutex> l(m_dataLock);
-    string sessionId;
+    AZStd::string sessionId;
     bool isInvited = false;
     RemotePeerMode peerMode;
     VersionType version;
@@ -2761,7 +2744,7 @@ bool GridSessionHandshake::OnConfirmRequest(ConnectionID id, ReadBuffer& rb)
     (void)id;
     AZStd::lock_guard<AZStd::mutex> l(m_dataLock);
 
-    string sessionId;
+    AZStd::string sessionId;
     if (!rb.Read(sessionId))
     {
         return false;
@@ -2783,7 +2766,7 @@ bool GridSessionHandshake::OnConfirmRequest(ConnectionID id, ReadBuffer& rb)
 //=========================================================================
 // OnNewConnection
 //=========================================================================
-bool GridSessionHandshake::OnNewConnection(const string& address)
+bool GridSessionHandshake::OnNewConnection(const AZStd::string& address)
 {
     AZStd::lock_guard<AZStd::mutex> l(m_dataLock);
 
@@ -2818,7 +2801,7 @@ void GridSessionHandshake::OnDisconnect(ConnectionID id)
 //=========================================================================
 // BanAddress
 //=========================================================================
-void GridSessionHandshake::BanAddress(string address)
+void GridSessionHandshake::BanAddress(AZStd::string address)
 {
     AZStd::lock_guard<AZStd::mutex> l(m_dataLock);
     m_banList.insert(address);
@@ -2864,7 +2847,7 @@ void GridSessionHandshake::SetUserData(const void* data, size_t dataSize)
 //=========================================================================
 // SetSessionId
 //=========================================================================
-void GridSessionHandshake::SetSessionId(string sessionId)
+void GridSessionHandshake::SetSessionId(AZStd::string sessionId)
 {
     AZStd::lock_guard<AZStd::mutex> l(m_dataLock);
     m_sessionId = sessionId;

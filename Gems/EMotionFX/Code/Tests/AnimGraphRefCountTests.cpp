@@ -32,12 +32,10 @@ namespace EMotionFX
                     this->m_animGraphInstance->SetAutoReleaseRefDatas(false);
                     this->m_animGraphInstance->SetAutoReleasePoses(false);
                 },
-                /*postCallback*/[this](AnimGraphInstance*){},
-                /*preUpdateCallback*/[this](AnimGraphInstance*, float, float, int){},
+                /*postCallback*/[](AnimGraphInstance*){},
+                /*preUpdateCallback*/[](AnimGraphInstance*, float, float, int){},
                 /*postUpdateCallback*/[this](AnimGraphInstance*, float, float, int)
                 {
-                    const uint32 threadIndex = this->m_actorInstance->GetThreadIndex();
-
                     // Check if data and pose ref counts are back to 0 for all nodes.
                     const size_t numNodes = this->m_animGraph->GetNumNodes();
                     for (size_t i = 0; i < numNodes; ++i)

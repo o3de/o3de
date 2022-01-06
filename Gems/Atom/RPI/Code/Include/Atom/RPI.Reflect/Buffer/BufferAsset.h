@@ -60,6 +60,12 @@ namespace AZ
             const AZStd::string& GetName() const;
 
         private:
+            // AssetData overrides...
+            bool HandleAutoReload() override
+            {
+                return false;
+            }
+
             // Called by asset creators to assign the asset to a ready state.
             void SetReady();
 

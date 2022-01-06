@@ -11,14 +11,14 @@
 
 #include "CrySystem_precompiled.h"
 #include "LevelSystem.h"
-#include <IAudioSystem.h>
 #include "IMovieSystem.h"
 #include <ILocalizationManager.h>
 #include "CryPath.h"
 
 #include <LoadScreenBus.h>
+#include <CryCommon/StaticInstance.h>
 
-#include <AzCore/Debug/AssetTracking.h>
+#include <AzCore/Time/ITime.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/IO/FileOperations.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
@@ -26,32 +26,19 @@
 #include <AzFramework/Spawnable/RootSpawnableInterface.h>
 
 #include "MainThreadRenderRequestBus.h"
-#include <LyShine/ILyShine.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
 #include <AzCore/Script/ScriptSystemBus.h>
 
-#ifdef WIN32
-#include <CryWindows.h>
-#endif
-
 namespace LegacyLevelSystem
 {
 static constexpr const char* ArchiveExtension = ".pak";
 
-void CLevelInfo::GetMemoryUsage(ICrySizer* pSizer) const
-{
-    pSizer->AddObject(m_levelName);
-    pSizer->AddObject(m_levelPath);
-}
-
 //////////////////////////////////////////////////////////////////////////
 bool CLevelInfo::OpenLevelPak()
 {
-    LOADING_TIME_PROFILE_SECTION;
-
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
         usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
@@ -62,20 +49,17 @@ bool CLevelInfo::OpenLevelPak()
         return false;
     }
 
-    AZStd::string levelpak(m_levelPath);
-    levelpak += "/level.pak";
-    AZStd::fixed_string<AZ::IO::IArchive::MaxPath> fullLevelPakPath;
-    bool bOk = gEnv->pCryPak->OpenPack(
-        levelpak.c_str(), m_isPak ? AZ::IO::IArchive::FLAGS_LEVEL_PAK_INSIDE_PAK : (unsigned)0, NULL, &fullLevelPakPath, false);
-    m_levelPakFullPath.assign(fullLevelPakPath.c_str());
+    AZ::IO::Path levelPak(m_levelPath);
+    levelPak /= "level.pak";
+    AZ::IO::FixedMaxPathString fullLevelPakPath;
+    bool bOk = gEnv->pCryPak->OpenPack(levelPak.Native(), nullptr, &fullLevelPakPath, false);
+    m_levelPakFullPath.assign(fullLevelPakPath.c_str(), fullLevelPakPath.size());
     return bOk;
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CLevelInfo::CloseLevelPak()
 {
-    LOADING_TIME_PROFILE_SECTION;
-
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
         usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
@@ -88,7 +72,7 @@ void CLevelInfo::CloseLevelPak()
 
     if (!m_levelPakFullPath.empty())
     {
-        gEnv->pCryPak->ClosePack(m_levelPakFullPath.c_str(), AZ::IO::IArchive::FLAGS_PATH_REAL);
+        gEnv->pCryPak->ClosePack(m_levelPakFullPath.c_str());
         m_levelPakFullPath.clear();
     }
 }
@@ -101,7 +85,7 @@ bool CLevelInfo::ReadInfo()
         usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
 
     // Set up a default game type for legacy code.
-    m_defaultGameTypeName = "Mission0";
+    m_defaultGameTypeName = "mission0";
 
     if (usePrefabSystemForLevels)
     {
@@ -111,17 +95,17 @@ bool CLevelInfo::ReadInfo()
 
     AZStd::string levelPath(m_levelPath);
     AZStd::string xmlFile(levelPath);
-    xmlFile += "/LevelInfo.xml";
+    xmlFile += "/levelinfo.xml";
     XmlNodeRef rootNode = GetISystem()->LoadXmlFromFile(xmlFile.c_str());
 
     if (rootNode)
     {
         AZStd::string dataFile(levelPath);
-        dataFile += "/LevelDataAction.xml";
+        dataFile += "/leveldataaction.xml";
         XmlNodeRef dataNode = GetISystem()->LoadXmlFromFile(dataFile.c_str());
         if (!dataNode)
         {
-            dataFile = levelPath + "/LevelData.xml";
+            dataFile = levelPath + "/leveldata.xml";
             dataNode = GetISystem()->LoadXmlFromFile(dataFile.c_str());
         }
 
@@ -195,7 +179,6 @@ CLevelSystem::CLevelSystem(ISystem* pSystem, const char* levelsFolder)
     , m_pCurrentLevel(0)
     , m_pLoadingLevelInfo(0)
 {
-    LOADING_TIME_PROFILE_SECTION;
     CRY_ASSERT(pSystem);
 
     //if (!gEnv->IsEditor())
@@ -218,24 +201,22 @@ CLevelSystem::CLevelSystem(ISystem* pSystem, const char* levelsFolder)
     {
         return;
     }
-    auto pPak = gEnv->pCryPak;
+    auto archive = AZ::Interface<AZ::IO::IArchive>::Get();
 
-    if (AZ::IO::IArchive::LevelPackOpenEvent* levelPakOpenEvent = pPak->GetLevelPackOpenEvent())
+    if (AZ::IO::IArchive::LevelPackOpenEvent* levelPakOpenEvent = archive->GetLevelPackOpenEvent())
     {
-        m_levelPackOpenHandler = AZ::IO::IArchive::LevelPackOpenEvent::Handler([this](const AZStd::vector<AZStd::string>& levelDirs)
+        m_levelPackOpenHandler = AZ::IO::IArchive::LevelPackOpenEvent::Handler([this](const AZStd::vector<AZ::IO::Path>& levelDirs)
         {
-            for (AZStd::string dir : levelDirs)
+            for (AZ::IO::Path levelDir : levelDirs)
             {
-                AZ::StringFunc::Path::StripComponent(dir, true);
-                AZStd::string searchPattern = dir + AZ_FILESYSTEM_SEPARATOR_WILDCARD;
                 bool modFolder = false;
-                PopulateLevels(searchPattern, dir, gEnv->pCryPak, modFolder, false);
+                PopulateLevels((levelDir / "*").Native(), levelDir.Native(), AZ::Interface<AZ::IO::IArchive>::Get(), modFolder, false);
             }
         });
         m_levelPackOpenHandler.Connect(*levelPakOpenEvent);
     }
 
-    if (AZ::IO::IArchive::LevelPackCloseEvent* levelPakCloseEvent = pPak->GetLevelPackCloseEvent())
+    if (AZ::IO::IArchive::LevelPackCloseEvent* levelPakCloseEvent = archive->GetLevelPackCloseEvent())
     {
         m_levelPackCloseHandler = AZ::IO::IArchive::LevelPackCloseEvent::Handler([this](AZStd::string_view)
         {
@@ -248,6 +229,7 @@ CLevelSystem::CLevelSystem(ISystem* pSystem, const char* levelsFolder)
 //------------------------------------------------------------------------
 CLevelSystem::~CLevelSystem()
 {
+    UnloadLevel();
 }
 
 //------------------------------------------------------------------------
@@ -302,9 +284,7 @@ void CLevelSystem::ScanFolder(const char* subfolder, bool modFolder)
 
     AZStd::unordered_set<AZStd::string> pakList;
 
-    const bool allowFileSystem = true;
-    const uint32_t skipPakFiles = 1;
-    AZ::IO::ArchiveFileIterator handle = pPak->FindFirst(search.c_str(), AZ::IO::IArchive::eFileSearchType_AllowOnDiskOnly);
+    AZ::IO::ArchiveFileIterator handle = pPak->FindFirst(search.c_str(), AZ::IO::FileSearchLocation::OnDisk);
 
     if (handle)
     {
@@ -323,7 +303,7 @@ void CLevelSystem::ScanFolder(const char* subfolder, bool modFolder)
                 }
 
                 AZStd::string levelContainerPakPath;
-                AZ::StringFunc::Path::Join("@assets@", m_levelsFolder.c_str(), levelContainerPakPath);
+                AZ::StringFunc::Path::Join("@products@", m_levelsFolder.c_str(), levelContainerPakPath);
                 if (subfolder && subfolder[0])
                 {
                     AZ::StringFunc::Path::Join(levelContainerPakPath.c_str(), subfolder, levelContainerPakPath);
@@ -340,8 +320,7 @@ void CLevelSystem::ScanFolder(const char* subfolder, bool modFolder)
     // Open all the available paks found in the levels folder
     for (auto iter = pakList.begin(); iter != pakList.end(); iter++)
     {
-        AZStd::fixed_string<AZ::IO::IArchive::MaxPath> fullLevelPakPath;
-        gEnv->pCryPak->OpenPack(iter->c_str(), (unsigned)0, nullptr, &fullLevelPakPath, false);
+        gEnv->pCryPak->OpenPack(iter->c_str(), nullptr, nullptr, false);
     }
 
     // Levels in bundles now take priority over levels outside of bundles.
@@ -352,86 +331,85 @@ void CLevelSystem::ScanFolder(const char* subfolder, bool modFolder)
 }
 
 void CLevelSystem::PopulateLevels(
-    AZStd::string searchPattern, AZStd::string& folder, AZ::IO::IArchive* pPak, bool& modFolder, bool fromFileSystemOnly)
+    AZStd::string searchPattern, const AZStd::string& folder, AZ::IO::IArchive* pPak, bool& modFolder, bool fromFileSystemOnly)
 {
+    // allow this find first to actually touch the file system
+    // (causes small overhead but with minimal amount of levels this should only be around 150ms on actual DVD Emu)
+    AZ::IO::ArchiveFileIterator handle = pPak->FindFirst(searchPattern.c_str(),
+        fromFileSystemOnly ? AZ::IO::FileSearchLocation::OnDisk : AZ::IO::FileSearchLocation::InPak);
+
+    if (handle)
     {
-        // allow this find first to actually touch the file system
-        // (causes small overhead but with minimal amount of levels this should only be around 150ms on actual DVD Emu)
-        AZ::IO::ArchiveFileIterator handle = pPak->FindFirst(searchPattern.c_str(), AZ::IO::IArchive::eFileSearchType_AllowOnDiskOnly);
-
-        if (handle)
+        do
         {
-            do
+            if ((handle.m_fileDesc.nAttrib & AZ::IO::FileDesc::Attribute::Subdirectory) != AZ::IO::FileDesc::Attribute::Subdirectory ||
+                handle.m_filename == "." || handle.m_filename == "..")
             {
-                if ((handle.m_fileDesc.nAttrib & AZ::IO::FileDesc::Attribute::Subdirectory) != AZ::IO::FileDesc::Attribute::Subdirectory ||
-                    handle.m_filename == "." || handle.m_filename == "..")
-                {
-                    continue;
-                }
+                continue;
+            }
 
-                AZStd::string levelFolder;
-                if (fromFileSystemOnly)
-                {
-                    levelFolder =
-                        (folder.empty() ? "" : (folder + "/")) + AZStd::string(handle.m_filename.data(), handle.m_filename.size());
-                }
-                else
-                {
-                    AZStd::string levelName(AZ::IO::PathView(handle.m_filename).Filename().Native());
-                    levelFolder = (folder.empty() ? "" : (folder + "/")) + levelName;
-                }
+            AZStd::string levelFolder;
+            if (fromFileSystemOnly)
+            {
+                levelFolder =
+                    (folder.empty() ? "" : (folder + "/")) + AZStd::string(handle.m_filename.data(), handle.m_filename.size());
+            }
+            else
+            {
+                AZStd::string levelName(AZ::IO::PathView(handle.m_filename).Filename().Native());
+                levelFolder = (folder.empty() ? "" : (folder + "/")) + levelName;
+            }
 
-                AZStd::string levelPath;
-                if (AZ::StringFunc::StartsWith(levelFolder.c_str(), m_levelsFolder.c_str()))
+            AZStd::string levelPath;
+            if (AZ::StringFunc::StartsWith(levelFolder.c_str(), m_levelsFolder.c_str()))
+            {
+                levelPath = levelFolder;
+            }
+            else
+            {
+                levelPath = m_levelsFolder + "/" + levelFolder;
+            }
+
+            const AZStd::string levelPakName = levelPath + "/" + LevelPakName;
+            const AZStd::string levelInfoName = levelPath + "/levelinfo.xml";
+
+            if (!pPak->IsFileExist(
+                levelPakName.c_str(),
+                fromFileSystemOnly ? AZ::IO::FileSearchLocation::OnDisk : AZ::IO::FileSearchLocation::InPak) &&
+                !pPak->IsFileExist(
+                    levelInfoName.c_str(),
+                    fromFileSystemOnly ? AZ::IO::FileSearchLocation::OnDisk : AZ::IO::FileSearchLocation::InPak))
+            {
+                ScanFolder(levelFolder.c_str(), modFolder);
+                continue;
+            }
+
+            // With the level.pak workflow, levelPath and levelName will point to a directory.
+            // levelPath: levels/mylevel
+            // levelName: mylevel
+            CLevelInfo levelInfo;
+            levelInfo.m_levelPath = levelPath;
+            levelInfo.m_levelName = levelFolder;
+            levelInfo.m_isPak = !fromFileSystemOnly;
+
+            CLevelInfo* pExistingInfo = GetLevelInfoInternal(levelInfo.m_levelName);
+
+            // Don't add the level if it is already in the list
+            if (pExistingInfo == NULL)
+            {
+                m_levelInfos.push_back(levelInfo);
+            }
+            else
+            {
+                // Levels in bundles take priority over levels outside bundles.
+                if (!pExistingInfo->m_isPak && levelInfo.m_isPak)
                 {
-                    levelPath = levelFolder;
+                    *pExistingInfo = levelInfo;
                 }
-                else
-                {
-                    levelPath = m_levelsFolder + "/" + levelFolder;
-                }
+            }
+        } while (handle = pPak->FindNext(handle));
 
-                const AZStd::string levelPakName = levelPath + "/" + LevelPakName;
-                const AZStd::string levelInfoName = levelPath + "/levelinfo.xml";
-
-                if (!pPak->IsFileExist(
-                        levelPakName.c_str(),
-                        fromFileSystemOnly ? AZ::IO::IArchive::eFileLocation_OnDisk : AZ::IO::IArchive::eFileLocation_InPak) &&
-                    !pPak->IsFileExist(
-                        levelInfoName.c_str(),
-                        fromFileSystemOnly ? AZ::IO::IArchive::eFileLocation_OnDisk : AZ::IO::IArchive::eFileLocation_InPak))
-                {
-                    ScanFolder(levelFolder.c_str(), modFolder);
-                    continue;
-                }
-
-                // With the level.pak workflow, levelPath and levelName will point to a directory.
-                // levelPath: levels/mylevel
-                // levelName: mylevel
-                CLevelInfo levelInfo;
-                levelInfo.m_levelPath = levelPath;
-                levelInfo.m_levelName = levelFolder;
-                levelInfo.m_isPak = !fromFileSystemOnly;
-
-                CLevelInfo* pExistingInfo = GetLevelInfoInternal(levelInfo.m_levelName);
-
-                // Don't add the level if it is already in the list
-                if (pExistingInfo == NULL)
-                {
-                    m_levelInfos.push_back(levelInfo);
-                }
-                else
-                {
-                    // Levels in bundles take priority over levels outside bundles.
-                    if (!pExistingInfo->m_isPak && levelInfo.m_isPak)
-                    {
-                        *pExistingInfo = levelInfo;
-                    }
-                }
-            } while (handle = pPak->FindNext(handle));
-
-            pPak->FindClose(handle);
-        }
+        pPak->FindClose(handle);
     }
 }
 
@@ -480,7 +458,7 @@ CLevelInfo* CLevelSystem::GetLevelInfoInternal(const AZStd::string& levelName)
     for (AZStd::vector<CLevelInfo>::iterator it = m_levelInfos.begin(); it != m_levelInfos.end(); ++it)
     {
         {
-            if (!azstricmp(PathUtil::GetFileName(it->GetName()), levelName.c_str()))
+            if (!azstricmp(PathUtil::GetFileName(it->GetName()).c_str(), levelName.c_str()))
             {
                 return &(*it);
             }
@@ -561,20 +539,15 @@ bool CLevelSystem::LoadLevel(const char* _levelName)
 ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
 {
     gEnv->pSystem->SetSystemGlobalState(ESYSTEM_GLOBAL_STATE_LEVEL_LOAD_START);
-    AZ_ASSET_NAMED_SCOPE("Level: %s", _levelName);
 
     CryLog ("Level system is loading \"%s\"", _levelName);
     INDENT_LOG_DURING_SCOPE();
 
     char levelName[256];
-    cry_strcpy(levelName, _levelName);
+    azstrcpy(levelName, AZ_ARRAY_SIZE(levelName), _levelName);
 
     // Not remove a scope!!!
     {
-        LOADING_TIME_PROFILE_SECTION;
-
-        //m_levelLoadStartTime = gEnv->pTimer->GetAsyncTime();
-
         CLevelInfo* pLevelInfo = GetLevelInfoInternal(levelName);
 
         if (!pLevelInfo)
@@ -587,7 +560,6 @@ ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
 
         m_bLevelLoaded = false;
 
-        const bool bLoadingSameLevel = azstricmp(m_lastLevelName.c_str(), levelName) == 0;
         m_lastLevelName = levelName;
 
         delete m_pCurrentLevel;
@@ -634,43 +606,8 @@ ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
             pSpamDelay->Set(0.0f);
         }
 
-        // Parse level specific config data.
-        AZStd::string const sLevelNameOnly(PathUtil::GetFileName(levelName));
-
-        if (!sLevelNameOnly.empty())
         {
-            const char* controlsPath = nullptr;
-            Audio::AudioSystemRequestBus::BroadcastResult(controlsPath, &Audio::AudioSystemRequestBus::Events::GetControlsPath);
-            if (controlsPath)
-            {
-                AZStd::string sAudioLevelPath(controlsPath);
-                sAudioLevelPath.append("levels/");
-                sAudioLevelPath += sLevelNameOnly;
-
-                Audio::SAudioManagerRequestData<Audio::eAMRT_PARSE_CONTROLS_DATA> oAMData(sAudioLevelPath.c_str(), Audio::eADS_LEVEL_SPECIFIC);
-                Audio::SAudioRequest oAudioRequestData;
-                oAudioRequestData.nFlags = (Audio::eARF_PRIORITY_HIGH | Audio::eARF_EXECUTE_BLOCKING); // Needs to be blocking so data is available for next preloading request!
-                oAudioRequestData.pData = &oAMData;
-                Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-
-                Audio::SAudioManagerRequestData<Audio::eAMRT_PARSE_PRELOADS_DATA> oAMData2(sAudioLevelPath.c_str(), Audio::eADS_LEVEL_SPECIFIC);
-                oAudioRequestData.pData = &oAMData2;
-                Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-
-                Audio::TAudioPreloadRequestID nPreloadRequestID = INVALID_AUDIO_PRELOAD_REQUEST_ID;
-
-                Audio::AudioSystemRequestBus::BroadcastResult(nPreloadRequestID, &Audio::AudioSystemRequestBus::Events::GetAudioPreloadRequestID, sLevelNameOnly.c_str());
-                if (nPreloadRequestID != INVALID_AUDIO_PRELOAD_REQUEST_ID)
-                {
-                    Audio::SAudioManagerRequestData<Audio::eAMRT_PRELOAD_SINGLE_REQUEST> requestData(nPreloadRequestID, true);
-                    oAudioRequestData.pData = &requestData;
-                    Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-                }
-            }
-        }
-
-        {
-            AZStd::string missionXml("Mission_");
+            AZStd::string missionXml("mission_");
             missionXml += pLevelInfo->m_defaultGameTypeName;
             missionXml += ".xml";
             AZStd::string xmlFile(pLevelInfo->GetPath());
@@ -749,7 +686,9 @@ void CLevelSystem::PrepareNextLevel(const char* levelName)
     // This work not required in-editor.
     if (!gEnv || !gEnv->IsEditor())
     {
-        m_levelLoadStartTime = gEnv->pTimer->GetAsyncTime();
+        const AZ::TimeMs timeMs = AZ::GetRealElapsedTimeMs();
+        const double timeSec = AZ::TimeMsToSecondsDouble(timeMs);
+        m_levelLoadStartTime = CTimeValue(timeSec);
 
         // Open pak file for a new level.
         pLevelInfo->OpenLevelPak();
@@ -782,11 +721,10 @@ void CLevelSystem::OnLoadingStart(const char* levelName)
         gEnv->pCryPak->RecordFileOpen(AZ::IO::IArchive::RFOM_Level);
     }
 
-    m_fLastTime = gEnv->pTimer->GetAsyncCurTime();
+    const AZ::TimeMs timeMs = AZ::GetRealElapsedTimeMs();
+    m_fLastTime = AZ::TimeMsToSeconds(timeMs);
 
     GetISystem()->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_LOAD_START, 0, 0);
-
-    LOADING_TIME_PROFILE_SECTION(gEnv->pSystem);
 
     for (AZStd::vector<ILevelSystemListener*>::const_iterator it = m_listeners.begin(); it != m_listeners.end(); ++it)
     {
@@ -815,7 +753,9 @@ void CLevelSystem::OnLoadingError(const char* levelName, const char* error)
 //------------------------------------------------------------------------
 void CLevelSystem::OnLoadingComplete(const char* levelName)
 {
-    CTimeValue t = gEnv->pTimer->GetAsyncTime();
+    const AZ::TimeMs timeMs = AZ::GetRealElapsedTimeMs();
+    const double timeSec = AZ::TimeMsToSecondsDouble(timeMs);
+    const CTimeValue t(timeSec);
     m_fLastLevelLoadTime = (t - m_levelLoadStartTime).GetSeconds();
 
     LogLoadingTime();
@@ -875,17 +815,7 @@ void CLevelSystem::LogLoadingTime()
         sChain = " (Chained)";
     }
 
-    AZStd::string text;
-    text.format("Game Level Load Time: [%s] Level %s loaded in %.2f seconds%s", vers, m_lastLevelName.c_str(), m_fLastLevelLoadTime, sChain);
-    gEnv->pLog->Log(text.c_str());
-}
-
-void CLevelSystem::GetMemoryUsage(ICrySizer* pSizer) const
-{
-    pSizer->AddObject(this, sizeof(*this));
-    pSizer->AddObject(m_levelInfos);
-    pSizer->AddObject(m_levelsFolder);
-    pSizer->AddObject(m_listeners);
+    gEnv->pLog->Log("Game Level Load Time: [%s] Level %s loaded in %.2f seconds%s", vers, m_lastLevelName.c_str(), m_fLastLevelLoadTime, sChain);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -919,7 +849,7 @@ void CLevelSystem::UnloadLevel()
         gEnv->pCryPak->DisableRuntimeFileAccess(false);
     }
 
-    CTimeValue tBegin = gEnv->pTimer->GetAsyncTime();
+    const AZ::TimeMs beginTimeMs = AZ::GetRealElapsedTimeMs();
 
     // Clear level entities and prefab instances.
     EBUS_EVENT(AzFramework::GameEntityContextRequestBus, ResetGameContext);
@@ -929,22 +859,6 @@ void CLevelSystem::UnloadLevel()
         gEnv->pMovieSystem->Reset(false, false);
         gEnv->pMovieSystem->RemoveAllSequences();
     }
-
-    // Unload level specific audio binary data.
-    Audio::SAudioManagerRequestData<Audio::eAMRT_UNLOAD_AFCM_DATA_BY_SCOPE> oAMData(Audio::eADS_LEVEL_SPECIFIC);
-    Audio::SAudioRequest oAudioRequestData;
-    oAudioRequestData.nFlags = (Audio::eARF_PRIORITY_HIGH | Audio::eARF_EXECUTE_BLOCKING);
-    oAudioRequestData.pData = &oAMData;
-    Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-
-    // Now unload level specific audio config data.
-    Audio::SAudioManagerRequestData<Audio::eAMRT_CLEAR_CONTROLS_DATA> oAMData2(Audio::eADS_LEVEL_SPECIFIC);
-    oAudioRequestData.pData = &oAMData2;
-    Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-
-    Audio::SAudioManagerRequestData<Audio::eAMRT_CLEAR_PRELOADS_DATA> oAMData3(Audio::eADS_LEVEL_SPECIFIC);
-    oAudioRequestData.pData = &oAMData3;
-    Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
 
     OnUnloadComplete(m_lastLevelName.c_str());
 
@@ -965,16 +879,10 @@ void CLevelSystem::UnloadLevel()
     // Normally the GC step is triggered at the end of this method (by the ESYSTEM_EVENT_LEVEL_POST_UNLOAD event).
     EBUS_EVENT(AZ::ScriptSystemRequestBus, GarbageCollect);
 
-    // Perform level unload procedures for the LyShine UI system
-    if (gEnv && gEnv->pLyShine)
-    {
-        gEnv->pLyShine->OnLevelUnload();
-    }
-
     m_bLevelLoaded = false;
 
-    CTimeValue tUnloadTime = gEnv->pTimer->GetAsyncTime() - tBegin;
-    CryLog("UnloadLevel End: %.1f sec", tUnloadTime.GetSeconds());
+    [[maybe_unused]] const AZ::TimeMs unloadTimeMs = AZ::GetRealElapsedTimeMs() - beginTimeMs;
+    CryLog("UnloadLevel End: %.1f sec", AZ::TimeMsToSeconds(unloadTimeMs));
 
     // Must be sent last.
     // Cleanup all containers

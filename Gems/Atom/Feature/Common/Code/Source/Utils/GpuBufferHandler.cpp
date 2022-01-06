@@ -17,21 +17,21 @@ namespace AZ
 {
     namespace Render
     {
-        static const char* ClassName = "GpuBufferHandler";
+        [[maybe_unused]] static const char* ClassName = "GpuBufferHandler";
         static const uint32_t BufferMinSize = 1 << 16; // Min 64Kb.
 
         GpuBufferHandler::GpuBufferHandler(const Descriptor& descriptor)
         {
             m_elementSize = descriptor.m_elementSize;
             m_elementCount = 0;
-
+            
             m_bufferIndex = descriptor.m_srgLayout->FindShaderInputBufferIndex(Name(descriptor.m_bufferSrgName));
-            AZ_Error(ClassName, m_bufferIndex.IsValid(), "Unable to find %s in view shader resource group.", descriptor.m_bufferSrgName.c_str());
+            AZ_Error(ClassName, m_bufferIndex.IsValid(), "Unable to find %s in %s shader resource group.", descriptor.m_bufferSrgName.c_str(), descriptor.m_srgLayout->GetName().GetCStr());
 
             if (!descriptor.m_elementCountSrgName.empty())
             {
                 m_elementCountIndex = descriptor.m_srgLayout->FindShaderInputConstantIndex(Name(descriptor.m_elementCountSrgName));
-                AZ_Error(ClassName, m_elementCountIndex.IsValid(), "Unable to find %s in view shader resource group.", descriptor.m_elementCountSrgName.c_str());
+                AZ_Error(ClassName, m_elementCountIndex.IsValid(), "Unable to find %s in %s shader resource group.", descriptor.m_elementCountSrgName.c_str(), descriptor.m_srgLayout->GetName().GetCStr());
             }
 
             if (m_bufferIndex.IsValid())

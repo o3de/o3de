@@ -53,7 +53,7 @@ PropertyDirectoryCtrl::PropertyDirectoryCtrl(QWidget* parent)
 
         QObject::connect(refreshButton,
             &QPushButton::clicked,
-            [this]([[maybe_unused]] bool checked)
+            []([[maybe_unused]] bool checked)
         {
             UiEditorRefreshDirectoryNotificationBus::Broadcast(&UiEditorRefreshDirectoryNotificationInterface::OnRefreshDirectory);
         });
@@ -93,7 +93,7 @@ AzToolsFramework::AssetBrowser::AssetSelectionModel PropertyAssetDirectorySelect
 
 void PropertyAssetDirectorySelectionCtrl::SetFolderSelection(const AZStd::string& folderPath)
 {
-    string strFolderPath = folderPath.c_str();
+    AZStd::string strFolderPath = folderPath.c_str();
     if (strFolderPath.empty())
     {
         m_folderPath.clear();
@@ -106,12 +106,14 @@ void PropertyAssetDirectorySelectionCtrl::SetFolderSelection(const AZStd::string
         // the project folder, which we need to omit since file IO routines
         // seem to assume this anyways.
         strFolderPath = strFolderPath.substr(strFolderPath.find('/') + 1);
-        m_folderPath = PathUtil::MakeGamePath(strFolderPath).MakeLower();
+        m_folderPath = PathUtil::MakeGamePath(strFolderPath);
+        AZStd::to_lower(m_folderPath.begin(), m_folderPath.end());
     }
     // For paths in gems, absolute paths are returned
     else
     {
-        m_folderPath = Path::FullPathToGamePath(strFolderPath.c_str()).MakeLower();
+        m_folderPath = Path::FullPathToGamePath(strFolderPath.c_str());
+        AZStd::to_lower(m_folderPath.begin(), m_folderPath.end());
     }
 }
 

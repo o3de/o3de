@@ -16,12 +16,16 @@
 
 #include <d3d12.h>
 #include <dxgi1_6.h>
+
+AZ_PUSH_DISABLE_WARNING(4265, "-Wunknown-warning-option") // class has virtual functions, but its non-trivial destructor is not virtual; 
 #include <wrl.h>
+AZ_POP_DISABLE_WARNING
 
 #include <d3dx12.h>
+#include <d3dcommon.h>
 
-// This define is enabled if winpixeventruntime SDK is downloaded and it's path is hooked up to Environment var ATOM_PIX_PATH.
-// Enabling this define will allow the runtime code to add PIX markers which will hel pwith pix and renderdoc gpu captures
+// This define is enabled if LY_PIX_ENABLED is enabled during configure. You can use LY_PIX_PATH to point where pix is downloaded.
+// Enabling this define will allow the runtime code to add PIX markers which will help with pix and renderdoc gpu captures
 #ifdef USE_PIX
     #include <WinPixEventRuntime/pix3.h>
 #else
@@ -51,6 +55,9 @@
 
 // This define controls whether DXR ray tracing support is available on the platform.
 #define AZ_DX12_DXR_SUPPORT
+
+// This define is used to initialize the D3D12_ROOT_SIGNATURE_DESC::Flags property.
+#define AZ_DX12_ROOT_SIGNATURE_FLAGS D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT
 
 using ID3D12CommandAllocatorX = ID3D12CommandAllocator;
 using ID3D12CommandQueueX = ID3D12CommandQueue;

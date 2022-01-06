@@ -8,7 +8,6 @@
 
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 #include <AzCore/Casting/lossy_cast.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <RHI/CommandList.h>
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
@@ -36,7 +35,7 @@ namespace AZ
         
         RHI::ResultCode StreamingImagePool::InitInternal(RHI::Device& deviceBase, const RHI::StreamingImagePoolDescriptor& descriptor)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             
             Device& device = static_cast<Device&>(deviceBase);
             SetResolver(AZStd::make_unique<StreamingImagePoolResolver>(device, this));
@@ -50,7 +49,6 @@ namespace AZ
         RHI::ResultCode StreamingImagePool::InitImageInternal(const RHI::StreamingImageInitRequest& request)
         {
             Image& image = static_cast<Image&>(*request.m_image);
-            auto& device = static_cast<Device&>(GetDevice());
 
             MemoryView memoryView = GetDevice().CreateImageCommitted(image.GetDescriptor());
             if (!memoryView.IsValid())
@@ -90,7 +88,7 @@ namespace AZ
         
         RHI::ResultCode StreamingImagePool::ExpandImageInternal(const RHI::StreamingImageExpandRequest& request)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             auto& image = static_cast<Image&>(*request.m_image);
             auto& device = static_cast<Device&>(GetDevice());
 

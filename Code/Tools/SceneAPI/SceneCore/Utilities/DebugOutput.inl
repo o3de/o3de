@@ -13,7 +13,11 @@ namespace AZ::SceneAPI::Utilities
     template <typename T>
     void DebugOutput::Write(const char* name, const AZStd::vector<T>& data)
     {
-        m_output += AZStd::string::format("\t%s: Count %zu. Hash: %zu\n", name, data.size(), AZStd::hash_range(data.begin(), data.end()));
+        size_t hash = AZStd::hash_range(data.begin(), data.end());
+        m_output += AZStd::string::format("\t%s: Count %zu. Hash: %zu\n", name, data.size(), hash);
+
+        AddToNode(AZStd::string::format("%s - Count", name).c_str(), data.size());
+        AddToNode(AZStd::string::format("%s - Hash", name).c_str(), hash);
     }
 
     template <typename T>
@@ -27,5 +31,9 @@ namespace AZ::SceneAPI::Utilities
         }
 
         m_output += AZStd::string::format("\t%s: Count %zu. Hash: %zu\n", name, data.size(), hash);
+
+        AddToNode(AZStd::string::format("%s - Count", name).c_str(), data.size());
+        AddToNode(AZStd::string::format("%s - Hash", name).c_str(), hash);
     }
+    
 }

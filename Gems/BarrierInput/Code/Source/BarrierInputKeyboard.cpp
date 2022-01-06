@@ -147,7 +147,7 @@ namespace BarrierInput
         {
             inputChannelId = InputChannelIdByScanCodeTable[scanCode];
         }
-        else if (0 <= (scanCode - 0x100) && scanCode < InputChannelIdByScanCodeWithExtendedPrefixTable.size())
+        else if (0x100 <= scanCode && scanCode < InputChannelIdByScanCodeWithExtendedPrefixTable.size())
         {
             inputChannelId = InputChannelIdByScanCodeWithExtendedPrefixTable[scanCode - 0x100];
         }

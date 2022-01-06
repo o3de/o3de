@@ -27,6 +27,9 @@
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/WindBus.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
+#include <Atom/RPI.Reflect/Buffer/BufferAssetView.h>
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
+#include <Atom/RPI.Reflect/Model/ModelLodAsset.h>
 
 namespace NvCloth
 {
@@ -250,7 +253,7 @@ namespace NvCloth
         [[maybe_unused]] ClothId clothId,
         float deltaTime)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+        AZ_PROFILE_FUNCTION(Cloth);
 
         UpdateSimulationCollisions();
 
@@ -267,7 +270,7 @@ namespace NvCloth
         [[maybe_unused]] float deltaTime,
         const AZStd::vector<SimParticleFormat>& updatedParticles)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+        AZ_PROFILE_FUNCTION(Cloth);
 
         // Next buffer index of the render data
         m_renderDataBufferIndex = (m_renderDataBufferIndex + 1) % RenderDataBufferSize;
@@ -326,7 +329,7 @@ namespace NvCloth
     {
         if (m_actorClothColliders)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+            AZ_PROFILE_FUNCTION(Cloth);
 
             m_actorClothColliders->Update();
 
@@ -342,7 +345,7 @@ namespace NvCloth
     {
         if (m_actorClothSkinning)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+            AZ_PROFILE_FUNCTION(Cloth);
 
             m_actorClothSkinning->UpdateSkinning();
 
@@ -376,7 +379,7 @@ namespace NvCloth
 
     void ClothComponentMesh::UpdateSimulationConstraints()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+        AZ_PROFILE_FUNCTION(Cloth);
 
         m_motionConstraints = m_clothConstraints->GetMotionConstraints();
         m_separationConstraints = m_clothConstraints->GetSeparationConstraints();
@@ -396,7 +399,7 @@ namespace NvCloth
 
     void ClothComponentMesh::UpdateRenderData(const AZStd::vector<SimParticleFormat>& particles)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+        AZ_PROFILE_FUNCTION(Cloth);
 
         if (!m_cloth)
         {
@@ -449,7 +452,7 @@ namespace NvCloth
 
     void ClothComponentMesh::CopyRenderDataToModel()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+        AZ_PROFILE_FUNCTION(Cloth);
 
         // Previous buffer index of the render data
         const AZ::u32 previousBufferIndex = (m_renderDataBufferIndex + RenderDataBufferSize - 1) % RenderDataBufferSize;
@@ -525,7 +528,7 @@ namespace NvCloth
 
             const int numVertices = subMeshInfo.m_numVertices;
             const int firstVertex = subMeshInfo.m_verticesFirstIndex;
-            if (subMesh.GetVertexCount() != numVertices)
+            if (subMesh.GetVertexCount() != static_cast<uint32_t>(numVertices))
             {
                 AZ_Error("ClothComponentMesh", false,
                     "Render mesh to be modified doesn't have the same number of vertices (%d) as the cloth's submesh (%d).",

@@ -49,7 +49,7 @@ namespace AZ::Platform
         AZ_Assert(m_events[0], "There is no synchronization event created for the main streamer thread to use to suspend.");
 
         DWORD result = ::WaitForMultipleObjects(m_handleCount, m_events, false, INFINITE);
-        if (result >= WAIT_OBJECT_0 && result < WAIT_OBJECT_0 + m_handleCount)
+        if (result < WAIT_OBJECT_0 + m_handleCount)
         {
             DWORD index = result - WAIT_OBJECT_0;
             ::ResetEvent(m_events[index]);

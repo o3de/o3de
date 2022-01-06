@@ -8,17 +8,14 @@
 
 #pragma once
 
-#include <AzCore/Component/TickBus.h>
-#include <AzCore/Component/TransformBus.h>
-#include <AtomCore/Instance/Instance.h>
-
-#include <Atom/RPI.Public/Base.h>
-#include <Atom/Document/MaterialDocumentNotificationBus.h>
 #include <Atom/Feature/CoreLights/DirectionalLightFeatureProcessorInterface.h>
 #include <Atom/Feature/SkyBox/SkyBoxFeatureProcessorInterface.h>
+#include <Atom/RPI.Public/Base.h>
 #include <Atom/Viewport/MaterialViewportNotificationBus.h>
-
-#include <AzFramework/Windowing/WindowBus.h>
+#include <AtomCore/Instance/Instance.h>
+#include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
+#include <AzCore/Component/TickBus.h>
+#include <AzCore/Component/TransformBus.h>
 #include <Viewport/InputController/MaterialEditorViewportInputController.h>
 
 namespace AZ
@@ -45,10 +42,9 @@ namespace MaterialEditor
     class MaterialViewportRenderer
         : public AZ::Data::AssetBus::Handler
         , public AZ::TickBus::Handler
-        , public MaterialDocumentNotificationBus::Handler
+        , public AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler
         , public MaterialViewportNotificationBus::Handler
         , public AZ::TransformNotificationBus::MultiHandler
-        , public AzFramework::WindowSystemRequestBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR(MaterialViewportRenderer, AZ::SystemAllocator, 0);
@@ -60,7 +56,7 @@ namespace MaterialEditor
 
     private:
 
-        // MaterialDocumentNotificationBus::Handler interface overrides...
+        // AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler interface overrides...
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
 
         // MaterialViewportNotificationBus::Handler interface overrides...
@@ -82,9 +78,6 @@ namespace MaterialEditor
 
         // AZ::TransformNotificationBus::MultiHandler overrides...
         void OnTransformChanged(const AZ::Transform&, const AZ::Transform&) override;
-
-        // AzFramework::WindowSystemRequestBus::Handler overrides ...
-        AzFramework::NativeWindowHandle GetDefaultWindowHandle() override;
 
         using DirectionalLightHandle = AZ::Render::DirectionalLightFeatureProcessorInterface::LightHandle;
 
@@ -115,8 +108,6 @@ namespace MaterialEditor
 
         AZ::Entity* m_iblEntity = nullptr;
         AZ::Render::SkyBoxFeatureProcessorInterface* m_skyboxFeatureProcessor = nullptr;
-
-        float m_simulateTime = 0;
 
         AZStd::shared_ptr<MaterialEditorViewportInputController> m_viewportController;
     };

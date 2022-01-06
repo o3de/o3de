@@ -12,55 +12,52 @@
 #include "StatisticalProfilerProxySystemComponent.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-namespace AZ
+namespace AZ::Statistics
 {
-    namespace Statistics
+    StatisticalProfilerProxy* StatisticalProfilerProxy::TimedScope::m_profilerProxy = nullptr;
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void StatisticalProfilerProxySystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        StatisticalProfilerProxy* StatisticalProfilerProxy::TimedScope::m_profilerProxy = nullptr;
-
-        ////////////////////////////////////////////////////////////////////////////////////////////////
-        void StatisticalProfilerProxySystemComponent::Reflect(AZ::ReflectContext* context)
+        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-            {
-                serializeContext->Class<StatisticalProfilerProxySystemComponent, AZ::Component>()
-                    ->Version(1);
-            }
+            serializeContext->Class<StatisticalProfilerProxySystemComponent, AZ::Component>()
+                ->Version(1);
         }
+    }
 
-        ////////////////////////////////////////////////////////////////////////////////////////////////
-        void StatisticalProfilerProxySystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
-        {
-            provided.push_back(AZ_CRC("StatisticalProfilerService", 0x20066f73));
-        }
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void StatisticalProfilerProxySystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    {
+        provided.push_back(AZ_CRC("StatisticalProfilerService", 0x20066f73));
+    }
 
-        ////////////////////////////////////////////////////////////////////////////////////////////////
-        void StatisticalProfilerProxySystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
-        {
-            incompatible.push_back(AZ_CRC("StatisticalProfilerService", 0x20066f73));
-        }
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void StatisticalProfilerProxySystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    {
+        incompatible.push_back(AZ_CRC("StatisticalProfilerService", 0x20066f73));
+    }
 
-        ////////////////////////////////////////////////////////////////////////////////////////////////
-        StatisticalProfilerProxySystemComponent::StatisticalProfilerProxySystemComponent()
-            : m_StatisticalProfilerProxy(nullptr)
-        {
-        }
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    StatisticalProfilerProxySystemComponent::StatisticalProfilerProxySystemComponent()
+        : m_StatisticalProfilerProxy(nullptr)
+    {
+    }
 
-        ////////////////////////////////////////////////////////////////////////////////////////////////
-        StatisticalProfilerProxySystemComponent::~StatisticalProfilerProxySystemComponent()
-        {
-        }
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    StatisticalProfilerProxySystemComponent::~StatisticalProfilerProxySystemComponent()
+    {
+    }
 
-        ////////////////////////////////////////////////////////////////////////////////////////////////
-        void StatisticalProfilerProxySystemComponent::Activate()
-        {
-            m_StatisticalProfilerProxy = new StatisticalProfilerProxy;
-        }
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void StatisticalProfilerProxySystemComponent::Activate()
+    {
+        m_StatisticalProfilerProxy = new StatisticalProfilerProxy;
+    }
 
-        ////////////////////////////////////////////////////////////////////////////////////////////////
-        void StatisticalProfilerProxySystemComponent::Deactivate()
-        {
-            delete m_StatisticalProfilerProxy;
-        }
-    } //namespace Statistics
-} // namespace AZ
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void StatisticalProfilerProxySystemComponent::Deactivate()
+    {
+        delete m_StatisticalProfilerProxy;
+    }
+} // namespace AZ::Statistics

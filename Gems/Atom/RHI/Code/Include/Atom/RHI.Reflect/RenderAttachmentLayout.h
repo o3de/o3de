@@ -23,7 +23,6 @@ namespace AZ
     {
         static const uint32_t InvalidRenderAttachmentIndex = Limits::Pipeline::RenderAttachmentCountMax;
 
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_BEGIN
         //! Describes one render attachment that is part of a layout.
         struct RenderAttachmentDescriptor
         {
@@ -91,7 +90,6 @@ namespace AZ
             //! List with the layout of each subpass.
             AZStd::array<SubpassRenderAttachmentLayout, Limits::Pipeline::SubpassCountMax> m_subpassLayouts;
         };
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_END
 
         //! Describes the layout of a collection of subpasses and it defines which of the subpasses this
         //! configuration will be using.

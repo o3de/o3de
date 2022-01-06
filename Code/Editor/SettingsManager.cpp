@@ -607,7 +607,7 @@ void CSettingsManager::SerializeCVars(XmlNodeRef& node, bool bLoad)
     int nCurrentVariable(0);
     IConsole* piConsole(nullptr);
     ICVar* piVariable(nullptr);
-    std::vector<char*>  cszVariableNames;
+    AZStd::vector<AZStd::string_view>  cszVariableNames;
 
     char* szKey(nullptr);
     char* szValue(nullptr);
@@ -660,9 +660,9 @@ void CSettingsManager::SerializeCVars(XmlNodeRef& node, bool bLoad)
         XmlNodeRef cvarsNode = XmlHelpers::CreateXmlNode(CVARS_NODE);
 
         nNumberOfVariables = piConsole->GetNumVisibleVars();
-        cszVariableNames.resize(nNumberOfVariables, nullptr);
+        cszVariableNames.resize(nNumberOfVariables);
 
-        if (piConsole->GetSortedVars((const char**)&cszVariableNames.front(), nNumberOfVariables, nullptr) != nNumberOfVariables)
+        if (piConsole->GetSortedVars(cszVariableNames) != nNumberOfVariables)
         {
             assert(false);
             return;
@@ -670,12 +670,12 @@ void CSettingsManager::SerializeCVars(XmlNodeRef& node, bool bLoad)
 
         for (nCurrentVariable = 0; nCurrentVariable < cszVariableNames.size(); ++nCurrentVariable)
         {
-            if (_stricmp(cszVariableNames[nCurrentVariable], "_TestFormatMessage") == 0)
+            if (_stricmp(cszVariableNames[nCurrentVariable].data(), "_TestFormatMessage") == 0)
             {
                 continue;
             }
 
-            piVariable = piConsole->GetCVar(cszVariableNames[nCurrentVariable]);
+            piVariable = piConsole->GetCVar(cszVariableNames[nCurrentVariable].data());
             if (!piVariable)
             {
                 assert(false);
@@ -683,7 +683,7 @@ void CSettingsManager::SerializeCVars(XmlNodeRef& node, bool bLoad)
             }
 
             newCVarNode = XmlHelpers::CreateXmlNode(CVAR_NODE);
-            newCVarNode->setAttr(cszVariableNames[nCurrentVariable], piVariable->GetString());
+            newCVarNode->setAttr(cszVariableNames[nCurrentVariable].data(), piVariable->GetString());
             cvarsNode->addChild(newCVarNode);
         }
 
@@ -987,7 +987,7 @@ QString CSettingsManager::GenerateContentHash(XmlNodeRef& node, QString sourceNa
         return sourceName;
     }
 
-    uint32 hash = CCrc32::ComputeLowercase(node->getXML(0));
+    uint32 hash = AZ::Crc32(node->getXML(0));
     hashStr = QString::number(hash);
 
     return hashStr;

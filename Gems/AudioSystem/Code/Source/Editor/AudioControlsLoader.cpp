@@ -31,7 +31,6 @@ namespace AudioControls
     namespace LoaderStrings
     {
         static constexpr const char* LevelsSubFolder = "levels";
-        static constexpr const char* PathAttribute = "path";
 
     } // namespace LoaderStrings
 

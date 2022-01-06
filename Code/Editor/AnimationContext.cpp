@@ -21,6 +21,8 @@
 #include "Include/IObjectManager.h"
 #include "Objects/EntityObject.h"
 
+#include <AzCore/Time/ITime.h>
+
 //////////////////////////////////////////////////////////////////////////
 // Movie Callback.
 //////////////////////////////////////////////////////////////////////////
@@ -499,25 +501,24 @@ void CAnimationContext::Update()
         return;
     }
 
-    ITimer* pTimer = GetIEditor()->GetSystem()->GetITimer();
+    const AZ::TimeUs frameDeltaTimeUs = AZ::GetSimulationTickDeltaTimeUs();
+    const float frameDeltaTime = AZ::TimeUsToSeconds(frameDeltaTimeUs);
 
     if (!m_bAutoRecording)
     {
         AnimateActiveSequence();
 
-        float dt = pTimer->GetFrameTime();
-        m_currTime += dt * m_fTimeScale;
+        m_currTime += frameDeltaTime * m_fTimeScale;
 
         if (!m_recording)
         {
-            GetIEditor()->GetMovieSystem()->PreUpdate(dt);
-            GetIEditor()->GetMovieSystem()->PostUpdate(dt);
+            GetIEditor()->GetMovieSystem()->PreUpdate(frameDeltaTime);
+            GetIEditor()->GetMovieSystem()->PostUpdate(frameDeltaTime);
         }
     }
     else
     {
-        float dt = pTimer->GetFrameTime();
-        m_fRecordingCurrTime += dt * m_fTimeScale;
+        m_fRecordingCurrTime += frameDeltaTime * m_fTimeScale;
         if (fabs(m_fRecordingCurrTime - m_currTime) > m_fRecordingTimeStep)
         {
             m_currTime += m_fRecordingTimeStep;
@@ -628,7 +629,7 @@ void CAnimationContext::GoToFrameCmd(IConsoleCmdArgs* pArgs)
     float targetFrame = (float)atof(pArgs->GetArg(1));
     if (pSeq->GetTimeRange().start > targetFrame || targetFrame > pSeq->GetTimeRange().end)
     {
-        gEnv->pLog->LogError("GoToFrame: requested time %f is outside the range of sequence %s (%f, %f)", targetFrame, pSeq->GetName(), pSeq->GetTimeRange().start, pSeq->GetTimeRange().end);
+        gEnv->pLog->LogError("GoToFrame: requested time %f is outside the range of sequence %s (%f, %f)", targetFrame, pSeq->GetName().c_str(), pSeq->GetTimeRange().start, pSeq->GetTimeRange().end);
         return;
     }
     GetIEditor()->GetAnimation()->m_currTime = targetFrame;
@@ -644,7 +645,9 @@ void CAnimationContext::OnPostRender()
     {
         SAnimContext ac;
         ac.dt = 0;
-        ac.fps = GetIEditor()->GetSystem()->GetITimer()->GetFrameRate();
+        const AZ::TimeUs frameDeltaTimeUs = AZ::GetSimulationTickDeltaTimeUs();
+        const float frameDeltaTime = AZ::TimeUsToSeconds(frameDeltaTimeUs);
+        ac.fps = 1.0f / frameDeltaTime;
         ac.time = m_currTime;
         ac.singleFrame = true;
         ac.forcePlay = true;
@@ -797,7 +800,9 @@ void CAnimationContext::AnimateActiveSequence()
 
     SAnimContext ac;
     ac.dt = 0;
-    ac.fps = GetIEditor()->GetSystem()->GetITimer()->GetFrameRate();
+    const AZ::TimeUs frameDeltaTimeUs = AZ::GetSimulationTickDeltaTimeUs();
+    const float frameDeltaTime = AZ::TimeUsToSeconds(frameDeltaTimeUs);
+    ac.fps = 1.0f / frameDeltaTime;
     ac.time = m_currTime;
     ac.singleFrame = true;
     ac.forcePlay = true;

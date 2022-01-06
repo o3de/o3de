@@ -7,10 +7,6 @@
  */
 
 #include <AzTest/AzTest.h>
-#include <Mocks/ITimerMock.h>
-#include <Mocks/ICryPakMock.h>
-#include <Mocks/IConsoleMock.h>
-#include <Mocks/ISystemMock.h>
 
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/Entity.h>
@@ -50,9 +46,10 @@ public:
 
     ////////////////////////////////////////////////////////////////////////////
     //// GradientTransformRequestBus
-    void TransformPositionToUVW([[maybe_unused]] const AZ::Vector3& inPosition, [[maybe_unused]] AZ::Vector3& outUVW, [[maybe_unused]] const bool shouldNormalizeOutput, [[maybe_unused]] bool& wasPointRejected) const override {}
-    void GetGradientLocalBounds([[maybe_unused]] AZ::Aabb& bounds) const override {}
-    void GetGradientEncompassingBounds([[maybe_unused]] AZ::Aabb& bounds) const override {}
+    const GradientSignal::GradientTransform& GetGradientTransform() const override
+    {
+        return m_gradientTransform;
+    }
 
     //////////////////////////////////////////////////////////////////////////
     // GradientTransformModifierRequestBus
@@ -100,30 +97,8 @@ public:
 
     bool GetAdvancedMode() const override { return false; }
     void SetAdvancedMode([[maybe_unused]] bool value) override {}
-};
 
-struct MockGlobalEnvironment
-{
-    MockGlobalEnvironment()
-    {
-        m_stubEnv.pTimer = &m_stubTimer;
-        m_stubEnv.pCryPak = &m_stubPak;
-        m_stubEnv.pConsole = &m_stubConsole;
-        m_stubEnv.pSystem = &m_stubSystem;
-        gEnv = &m_stubEnv;
-    }
-
-    ~MockGlobalEnvironment()
-    {
-        gEnv = nullptr;
-    }
-
-private:
-    SSystemGlobalEnvironment m_stubEnv;
-    testing::NiceMock<TimerMock> m_stubTimer;
-    testing::NiceMock<CryPakMock> m_stubPak;
-    testing::NiceMock<ConsoleMock> m_stubConsole;
-    testing::NiceMock<SystemMock> m_stubSystem;
+    GradientSignal::GradientTransform m_gradientTransform;
 };
 
 TEST(FastNoiseTest, ComponentsWithComponentApplication)
@@ -132,8 +107,6 @@ TEST(FastNoiseTest, ComponentsWithComponentApplication)
     appDesc.m_memoryBlocksByteSize = 10 * 1024 * 1024;
     appDesc.m_recordingMode = AZ::Debug::AllocationRecords::RECORD_FULL;
     appDesc.m_stackRecordLevels = 20;
-
-    MockGlobalEnvironment mocks;
 
     AZ::ComponentApplication app;
     AZ::Entity* systemEntity = app.Create(appDesc);
@@ -189,7 +162,6 @@ public:
 
     AZ::ComponentApplication m_application;
     AZ::Entity* m_systemEntity;
-    MockGlobalEnvironment m_mocks;
 };
 
 //////////////////////////////////////////////////////////////////////////

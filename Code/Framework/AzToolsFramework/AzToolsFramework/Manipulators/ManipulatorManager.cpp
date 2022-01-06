@@ -74,7 +74,7 @@ namespace AzToolsFramework
     Picking::RegisteredBoundId ManipulatorManager::UpdateBound(
         const ManipulatorId manipulatorId, const Picking::RegisteredBoundId boundId, const Picking::BoundRequestShapeBase& boundShapeData)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (manipulatorId == InvalidManipulatorId)
         {
@@ -124,7 +124,7 @@ namespace AzToolsFramework
 
     void ManipulatorManager::RefreshMouseOverState(const ViewportInteraction::MousePick& mousePick)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (!Interacting())
         {
@@ -142,11 +142,11 @@ namespace AzToolsFramework
         const AzFramework::CameraState& cameraState,
         const ViewportInteraction::MouseInteraction& mouseInteraction)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         for (const auto& pair : m_manipulatorIdToPtrMap)
         {
-            pair.second->Draw({ Interacting() }, debugDisplay, cameraState, mouseInteraction);
+            pair.second->Draw(ManipulatorManagerState{ Interacting() }, debugDisplay, cameraState, mouseInteraction);
         }
 
         RefreshMouseOverState(mouseInteraction.m_mousePick);
@@ -155,7 +155,7 @@ namespace AzToolsFramework
     AZStd::shared_ptr<BaseManipulator> ManipulatorManager::PerformRaycast(
         const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         Picking::RaySelectInfo raySelection;
         raySelection.m_origin = rayOrigin;
@@ -255,7 +255,7 @@ namespace AzToolsFramework
     ManipulatorManager::ConsumeMouseMoveResult ManipulatorManager::ConsumeViewportMouseMove(
         const ViewportInteraction::MouseInteraction& interaction)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (m_activeManipulator)
         {
@@ -279,7 +279,7 @@ namespace AzToolsFramework
 
     void ManipulatorManager::OnEntityInfoUpdatedVisibility(const AZ::EntityId entityId, const bool visible)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         for (auto& pair : m_manipulatorIdToPtrMap)
         {

@@ -12,8 +12,6 @@
 #include <RHI/Image.h>
 #include <RHI/ResourcePoolResolver.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
-#include <AzCore/Debug/EventTrace.h>
-
 // NOTE: Tiled resources are currently disabled, because RenderDoc does not support them.
 // #define AZ_RHI_USE_TILED_RESOURCES
 
@@ -121,7 +119,7 @@ namespace AZ
 
         D3D12_RESOURCE_ALLOCATION_INFO StreamingImagePool::GetAllocationInfo(const RHI::ImageDescriptor& imageDescriptor, uint32_t residentMipLevel)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             uint32_t alignment = GetFormatDimensionAlignment(imageDescriptor.m_format);
 
@@ -129,7 +127,7 @@ namespace AZ
             residentImageDescriptor.m_size = imageDescriptor.m_size.GetReducedMip(residentMipLevel);
             residentImageDescriptor.m_size.m_width = RHI::AlignUp(residentImageDescriptor.m_size.m_width, alignment);
             residentImageDescriptor.m_size.m_height = RHI::AlignUp(residentImageDescriptor.m_size.m_height, alignment);
-            residentImageDescriptor.m_mipLevels = imageDescriptor.m_mipLevels - residentMipLevel;
+            residentImageDescriptor.m_mipLevels = static_cast<uint16_t>(imageDescriptor.m_mipLevels - residentMipLevel);
 
             D3D12_RESOURCE_ALLOCATION_INFO allocationInfo;
             GetDevice().GetImageAllocationInfo(residentImageDescriptor, allocationInfo);
@@ -138,13 +136,11 @@ namespace AZ
 
         RHI::ResultCode StreamingImagePool::InitInternal([[maybe_unused]] RHI::Device& deviceBase, [[maybe_unused]] const RHI::StreamingImagePoolDescriptor& descriptor)
         {
-            AZ_TRACE_METHOD();
-
-
+            AZ_PROFILE_FUNCTION(RHI);
 
 #ifdef AZ_RHI_USE_TILED_RESOURCES
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "StreamImagePool::CreateHeap");
+                AZ_PROFILE_SCOPE(RHI, "StreamImagePool::CreateHeap");
 
                 CD3DX12_HEAP_DESC heapDesc(descriptor.m_budgetInBytes, D3D12_HEAP_TYPE_DEFAULT, 0, D3D12_HEAP_FLAG_DENY_BUFFERS | D3D12_HEAP_FLAG_DENY_RT_DS_TEXTURES);
 
@@ -232,7 +228,7 @@ namespace AZ
 
         void StreamingImagePool::AllocatePackedImageTiles(Image& image)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             AZ_Assert(image.IsTiled(), "This method is only valid for tiled resources.");
             AZ_Assert(image.GetDescriptor().m_arraySize == 1, "Not implemented for image arrays.");
@@ -305,7 +301,7 @@ namespace AZ
 
         RHI::ResultCode StreamingImagePool::InitImageInternal(const RHI::StreamingImageInitRequest& request)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             Image& image = static_cast<Image&>(*request.m_image);
 

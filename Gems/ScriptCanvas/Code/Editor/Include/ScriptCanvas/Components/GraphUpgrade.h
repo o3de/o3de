@@ -82,19 +82,19 @@ namespace ScriptCanvasEditor
 
         StateMachine* GetStateMachine() override { return m_stateMachine; }
 
-        virtual int GetStateId() const { return Traits::StateID(); }
+        int GetStateId() const override { return Traits::StateID(); }
 
         static int StateID() { return Traits::StateID(); }
 
         void Enter() override
         {
-            //Log("ENTER >> %s", GetName());
+            Log("ENTER >> %s", GetName());
             OnEnter();
         }
 
         ExitStatus Exit() override
         {
-            //Log("EXIT  << %s", GetName());
+            Log("EXIT  << %s", GetName());
             return OnExit();
         }
 
@@ -102,9 +102,6 @@ namespace ScriptCanvasEditor
         void Log(const char* format, ...);
 
     private:
-
-        bool m_verbose = true;
-
         StateMachine* m_stateMachine;
     };
 
@@ -131,8 +128,25 @@ namespace ScriptCanvasEditor
 
         void OnSystemTick() override;
 
+        bool GetVerbose() const;
+
+        const AZStd::string GetError() const { return m_error; }
+
+        void SetVerbose(bool isVerbose);
+
+        const AZStd::string& GetDebugPrefix() const;
+
+        void SetDebugPrefix(AZStd::string_view);
+
+        void MarkError(AZStd::string_view error) { m_error = error; }
+
         AZStd::shared_ptr<IState> m_currentState = nullptr;
         AZStd::vector<AZStd::shared_ptr<IState>> m_states;
+
+    private:
+        bool m_isVerbose = true;
+        AZStd::string m_debugPrefix;
+        AZStd::string m_error;
     };
 
     //! This state machine will collect and share a variety of data from the EditorGraph
@@ -167,9 +181,9 @@ namespace ScriptCanvasEditor
         bool m_graphNeedsDirtying = false;
 
         Graph* m_graph = nullptr;
-        AZ::Data::Asset<AZ::Data::AssetData> m_asset;
+        SourceHandle m_asset;
 
-        void SetAsset(const AZ::Data::Asset<AZ::Data::AssetData>& asset);
+        void SetAsset(SourceHandle& assetasset);
 
         void OnComplete(IState::ExitStatus exitStatus) override;
 
@@ -342,19 +356,22 @@ namespace ScriptCanvasEditor
         int EvaluateTransition() override;
     };
 
+
     template <typename Traits>
     void ScriptCanvasEditor::State<Traits>::Log(const char* format, ...)
     {
-        if (m_verbose)
+        if (m_stateMachine->GetVerbose())
         {
-            char sBuffer[1024];
+            char sBuffer[2048];
             va_list ArgList;
             va_start(ArgList, format);
             azvsnprintf(sBuffer, sizeof(sBuffer), format, ArgList);
             sBuffer[sizeof(sBuffer) - 1] = '\0';
             va_end(ArgList);
-
-            AZ_TracePrintf("Script Canvas", "%s\n", sBuffer);
+            AZ_TracePrintf(ScriptCanvas::k_VersionExplorerWindow.data()
+                , "%s-%s\n"
+                , m_stateMachine->GetDebugPrefix().c_str()
+                , sBuffer);
         }
     }
 }

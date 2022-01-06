@@ -6,10 +6,16 @@
  *
  */
 
+#include <AzCore/Interface/Interface.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzFramework/Session/SessionConfig.h>
 
 #include <Activity/AWSGameLiftSearchSessionsActivity.h>
 #include <AWSGameLiftSessionConstants.h>
+#include <Request/IAWSGameLiftInternalRequests.h>
+
+#include <aws/core/utils/Outcome.h>
+#include <aws/gamelift/model/SearchGameSessionsRequest.h>
 
 namespace AWSGameLift
 {
@@ -62,14 +68,21 @@ namespace AWSGameLift
         }
 
         AzFramework::SearchSessionsResponse SearchSessions(
-            const Aws::GameLift::GameLiftClient& gameliftClient,
             const AWSGameLiftSearchSessionsRequest& searchSessionsRequest)
         {
+            AzFramework::SearchSessionsResponse response;
+
+            auto gameliftClient = AZ::Interface<IAWSGameLiftInternalRequests>::Get()->GetGameLiftClient();
+            if (!gameliftClient)
+            {
+                AZ_Error(AWSGameLiftSearchSessionsActivityName, false, AWSGameLiftClientMissingErrorMessage);
+                return response;
+            }
+
             AZ_TracePrintf(AWSGameLiftSearchSessionsActivityName, "Requesting SearchGameSessions against Amazon GameLift service ...");
 
-            AzFramework::SearchSessionsResponse response;
             Aws::GameLift::Model::SearchGameSessionsRequest request = BuildAWSGameLiftSearchGameSessionsRequest(searchSessionsRequest);
-            Aws::GameLift::Model::SearchGameSessionsOutcome outcome = gameliftClient.SearchGameSessions(request);
+            Aws::GameLift::Model::SearchGameSessionsOutcome outcome = gameliftClient->SearchGameSessions(request);
             AZ_TracePrintf(AWSGameLiftSearchSessionsActivityName, "SearchGameSessions request against Amazon GameLift service is complete");
 
             if (outcome.IsSuccess())
@@ -99,12 +112,13 @@ namespace AWSGameLift
                 session.m_currentPlayer = gameSession.GetCurrentPlayerSessionCount();
                 session.m_ipAddress = gameSession.GetIpAddress().c_str();
                 session.m_maxPlayer = gameSession.GetMaximumPlayerSessionCount();
-                session.m_port = gameSession.GetPort();
+                session.m_port = static_cast<uint16_t>(gameSession.GetPort());
                 session.m_sessionId = gameSession.GetGameSessionId().c_str();
                 session.m_sessionName = gameSession.GetName().c_str();
                 session.m_status = AWSGameLiftSessionStatusNames[(int)gameSession.GetStatus()];
                 session.m_statusReason = AWSGameLiftSessionStatusReasons[(int)gameSession.GetStatusReason()];
                 session.m_terminationTime = gameSession.GetTerminationTime().Millis();
+                session.m_matchmakingData = gameSession.GetMatchmakerData().c_str();
                 // TODO: Update the AWS Native SDK to get the new game session attributes.
                 //session.m_dnsName = gameSession.GetDnsName();
 

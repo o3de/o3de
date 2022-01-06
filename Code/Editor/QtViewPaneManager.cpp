@@ -37,6 +37,7 @@
 #include <AzAssetBrowser/AzAssetBrowserWindow.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 #include <AzQtComponents/Utilities/AutoSettingsGroup.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/UI/Docking/DockWidgetUtils.h>
 #include <AzToolsFramework/UI/PropertyEditor/ComponentEditor.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/EntityPropertyEditor.hxx>
@@ -44,10 +45,53 @@
 #include <AzQtComponents/Buses/ShortcutDispatch.h>
 #include <AzQtComponents/Utilities/QtViewPaneEffects.h>
 #include <AzQtComponents/Components/StyleManager.h>
-
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 
 #include "ShortcutDispatcher.h"
+
+// Helper for EditorComponentModeNotifications to be used
+// as a member instead of inheriting from EBus directly.
+class ViewportEditorModeNotificationsBusImpl
+    : public AzToolsFramework::ViewportEditorModeNotificationsBus::Handler
+{
+ public:
+    // Set the function to be called when entering ComponentMode.
+    void SetEnteredComponentModeFunc(
+        const AZStd::function<void(const AzToolsFramework::ViewportEditorModesInterface&)>& enteredComponentModeFunc)
+    {
+        m_enteredComponentModeFunc = enteredComponentModeFunc;
+    }
+
+    // Set the function to be called when leaving ComponentMode.
+    void SetLeftComponentModeFunc(
+        const AZStd::function<void(const AzToolsFramework::ViewportEditorModesInterface&)>& leftComponentModeFunc)
+    {
+        m_leftComponentModeFunc = leftComponentModeFunc;
+    }
+
+ private:
+    // ViewportEditorModeNotificationsBus overrides ...
+    void OnEditorModeActivated(
+         const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override
+    {
+        if (mode == AzToolsFramework::ViewportEditorMode::Component)
+        {
+            m_enteredComponentModeFunc(editorModeState);
+        }
+    }
+
+    void OnEditorModeDeactivated(
+        const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override
+    {
+        if (mode == AzToolsFramework::ViewportEditorMode::Component)
+        {
+            m_leftComponentModeFunc(editorModeState);
+        }
+    }
+
+    AZStd::function<void(const AzToolsFramework::ViewportEditorModesInterface&)> m_enteredComponentModeFunc; ///< Function to call when entering ComponentMode.
+    AZStd::function<void(const AzToolsFramework::ViewportEditorModesInterface&)> m_leftComponentModeFunc; ///< Function to call when leaving ComponentMode.
+};
 
 struct ViewLayoutState
 {
@@ -184,7 +228,7 @@ bool QtViewPane::CloseInstance(QDockWidget* dockWidget, CloseModes closeModes)
         const int numTopLevel = topLevelWidgets.size();
         for (size_t i = 0; i < numTopLevel; ++i)
         {
-            QWidget* widget = topLevelWidgets[i];
+            QWidget* widget = topLevelWidgets[static_cast<int>(i)];
             if (widget->isModal() && widget->isVisible())
             {
                 widget->activateWindow();
@@ -240,14 +284,13 @@ static bool SkipTitleBarOverdraw(QtViewPane* pane)
     return !pane->m_options.isDockable;
 }
 
-DockWidget::DockWidget(QWidget* widget, QtViewPane* pane, QSettings* settings, QMainWindow* parent, AzQtComponents::FancyDocking* advancedDockManager)
+DockWidget::DockWidget(QWidget* widget, QtViewPane* pane, [[maybe_unused]] QSettings* settings, QMainWindow* parent, AzQtComponents::FancyDocking* advancedDockManager)
     : AzQtComponents::StyledDockWidget(pane->m_name, SkipTitleBarOverdraw(pane),
 #if AZ_TRAIT_OS_PLATFORM_APPLE
           pane->m_options.detachedWindow ? nullptr : parent)
 #else
           parent)
 #endif
-    , m_settings(settings)
     , m_mainWindow(parent)
     , m_pane(pane)
     , m_advancedDockManager(advancedDockManager)
@@ -520,16 +563,17 @@ QtViewPaneManager::QtViewPaneManager(QObject* parent)
     , m_settings(nullptr)
     , m_restoreInProgress(false)
     , m_advancedDockManager(nullptr)
+    , m_componentModeNotifications(AZStd::make_unique<ViewportEditorModeNotificationsBusImpl>())
 {
     qRegisterMetaTypeStreamOperators<ViewLayoutState>("ViewLayoutState");
     qRegisterMetaTypeStreamOperators<QVector<QString> >("QVector<QString>");
 
     // view pane manager is interested when we enter/exit ComponentMode
-    m_componentModeNotifications.BusConnect(AzToolsFramework::GetEntityContextId());
+    m_componentModeNotifications->BusConnect(AzToolsFramework::GetEntityContextId());
     m_windowRequest.BusConnect();
 
-    m_componentModeNotifications.SetEnteredComponentModeFunc(
-        [this](const AZStd::vector<AZ::Uuid>& /*componentModeTypes*/)
+    m_componentModeNotifications->SetEnteredComponentModeFunc(
+        [this](const AzToolsFramework::ViewportEditorModesInterface&)
     {
         // gray out panels when entering ComponentMode
         SetDefaultActionsEnabled(false, m_registeredPanes, [](QWidget* widget, bool on)
@@ -538,8 +582,8 @@ QtViewPaneManager::QtViewPaneManager(QObject* parent)
         });
     });
 
-    m_componentModeNotifications.SetLeftComponentModeFunc(
-        [this](const AZStd::vector<AZ::Uuid>& /*componentModeTypes*/)
+    m_componentModeNotifications->SetLeftComponentModeFunc(
+        [this](const AzToolsFramework::ViewportEditorModesInterface&)
     {
         // enable panels again when leaving ComponentMode
         SetDefaultActionsEnabled(true, m_registeredPanes, [](QWidget* widget, bool on)
@@ -564,7 +608,7 @@ QtViewPaneManager::QtViewPaneManager(QObject* parent)
 QtViewPaneManager::~QtViewPaneManager()
 {
     m_windowRequest.BusDisconnect();
-    m_componentModeNotifications.BusDisconnect();
+    m_componentModeNotifications->BusDisconnect();
 }
 
 static bool lessThan(const QtViewPane& v1, const QtViewPane& v2)
@@ -1102,7 +1146,7 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
             entityInspectorViewPane->m_dockWidget->setFloating(false);
 
             static const float tabWidgetWidthPercentage = 0.2f;
-            int newWidth = (float)screenWidth * tabWidgetWidthPercentage;
+            int newWidth = static_cast<int>((float)screenWidth * tabWidgetWidthPercentage);
 
             if (levelInspectorPane)
             {
@@ -1139,7 +1183,7 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
             // so that they get an appropriate default width since the minimum sizes have
             // been removed from these widgets
             static const float entityOutlinerWidthPercentage = 0.15f;
-            int newWidth = (float)screenWidth * entityOutlinerWidthPercentage;
+            int newWidth = static_cast<int>((float)screenWidth * entityOutlinerWidthPercentage);
             m_mainWindow->resizeDocks({ entityOutlinerViewPane->m_dockWidget }, { newWidth }, Qt::Horizontal);
         }
 

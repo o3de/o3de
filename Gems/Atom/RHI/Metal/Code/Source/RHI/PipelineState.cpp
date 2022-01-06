@@ -10,7 +10,6 @@
 #include <Atom/RHI.Reflect/Metal/PipelineLayoutDescriptor.h>
 #include <Atom/RHI.Reflect/Metal/ShaderStageFunction.h>
 #include <Atom/RHI.Reflect/ShaderStageFunction.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
 #include <RHI/PipelineState.h>
@@ -61,10 +60,19 @@ namespace AZ
             
             NSError* error = nil;
             id<MTLLibrary> lib = nil;
-
+            
+            bool loadFromByteCode = false;
+            
+            // MacOS Big Sur (11.16.x) has issue loading some shader's byte code when GPUCapture(Metal) is on.
+            // Only enable it for Monterey (12.x)
+            if(@available(iOS 14.0, macOS 12.0, *))
+            {
+                loadFromByteCode = true;
+            }
+            
             const uint8_t* shaderByteCode = reinterpret_cast<const uint8_t*>(shaderFunction->GetByteCode().data());
             const int byteCodeLength = shaderFunction->GetByteCode().size();
-            if(byteCodeLength > 0 )
+            if(byteCodeLength > 0 && loadFromByteCode)
             {
                 dispatch_data_t dispatchByteCodeData = dispatch_data_create(shaderByteCode, byteCodeLength, NULL, DISPATCH_DATA_DESTRUCTOR_DEFAULT);
                 lib = [mtlDevice newLibraryWithData:dispatchByteCodeData error:&error];
@@ -74,7 +82,7 @@ namespace AZ
                 //In case byte code was not generated try to create the lib with source code
                 MTLCompileOptions* compileOptions = [MTLCompileOptions alloc];
                 compileOptions.fastMathEnabled = YES;
-                compileOptions.languageVersion = MTLLanguageVersion2_0;
+                compileOptions.languageVersion = MTLLanguageVersion2_2;
                 lib = [mtlDevice newLibraryWithSource:source
                                                options:compileOptions
                                                  error:&error];
@@ -188,7 +196,7 @@ namespace AZ
             }
             else
             {
-                const char * errorStr = [ error.localizedDescription UTF8String ];
+                [[maybe_unused]] const char * errorStr = [ error.localizedDescription UTF8String ];
                 AZ_Error("PipelineState", false, "Failed to compile compute pipeline state with error: %s.", errorStr);
                 return RHI::ResultCode::Fail;
             }
@@ -221,7 +229,7 @@ namespace AZ
             }
             else
             {
-                const char * errorStr = [ error.localizedDescription UTF8String ];
+                [[maybe_unused]] const char * errorStr = [ error.localizedDescription UTF8String ];
                 AZ_Error("PipelineState", false, "Failed to compile compute pipeline state with error: %s.", errorStr);
                 return RHI::ResultCode::Fail;
             }

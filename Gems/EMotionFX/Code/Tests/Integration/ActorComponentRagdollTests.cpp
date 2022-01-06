@@ -61,7 +61,6 @@ namespace EMotionFX
     TEST_F(EntityComponentFixture, ActorComponent_ActivateRagdoll)
     {
         AZ::EntityId entityId(740216387);
-        AZ::Crc32 worldId(174592);
 
         AzPhysics::SceneEvents::OnSceneSimulationFinishEvent sceneFinishSimEvent;
 

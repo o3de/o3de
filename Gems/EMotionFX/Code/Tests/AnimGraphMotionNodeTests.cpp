@@ -161,6 +161,8 @@ namespace EMotionFX
             // Make sure all nodes exist.
             ASSERT_TRUE(rootNode && pelvisNode && lHandNode && lLoArmNode && lLoLegNode && lAnkleNode &&
                 rHandNode && rLoArmNode && rLoLegNode && rAnkleNode) << "All nodes used should exist.";
+
+            m_actor->SetMotionExtractionNodeIndex(m_jackRootIndex);
         }
 
         void SetupMirrorNodes()
@@ -303,7 +305,7 @@ namespace EMotionFX
 
     TEST_F(AnimGraphMotionNodeFixture, InPlaceInputAndNoEffectOutputsCorrectMotionAndPose)
     {
-        m_motionNode->AddConnection(m_paramNode, m_paramNode->FindOutputPortByName("InPlace")->m_portId, AnimGraphMotionNode::INPUTPORT_INPLACE);
+        m_motionNode->AddConnection(m_paramNode, static_cast<uint16>(m_paramNode->FindOutputPortByName("InPlace")->m_portId), AnimGraphMotionNode::INPUTPORT_INPLACE);
         ParamSetValue<MCore::AttributeBool, bool>("InPlace", true);
         m_animGraphInstance->FindOrCreateUniqueNodeData(m_motionNode);
         

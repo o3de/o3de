@@ -15,7 +15,6 @@
 
 #include <Atom/RHI/FrameScheduler.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/Component/TickBus.h>
 
@@ -35,8 +34,6 @@ namespace AZ
             {
                 m_viewPtr = view;
                 m_viewSrg = view->GetShaderResourceGroup();
-
-                m_exposureControlBufferInputIndex = m_viewSrg->FindShaderInputBufferIndex(Name("m_exposureControl"));
 
                 m_eyeAdaptationBuffer.Init(m_viewSrg, idNumber);
             }
@@ -109,14 +106,10 @@ namespace AZ
 
             m_eyeAdaptationBuffer.UpdateSrg();
 
-            if (m_exposureControlBufferInputIndex.IsValid())
+            m_viewSrg->SetBufferView(m_exposureControlBufferInputIndex, m_buffer->GetBufferView());
+            if (m_viewPtr)
             {
-                m_viewSrg->SetBufferView(m_exposureControlBufferInputIndex, m_buffer->GetBufferView());
-
-                if (m_viewPtr)
-                {
-                    m_viewPtr->InvalidateSrg();
-                }
+                m_viewPtr->InvalidateSrg();
             }
         }
 

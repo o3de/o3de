@@ -47,19 +47,24 @@ namespace Vegetation
 
     void VegetationSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationSystemService", 0xa2322728));
+        services.push_back(AZ_CRC_CE("VegetationSystemService"));
     }
 
     void VegetationSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationSystemService", 0xa2322728));
+        services.push_back(AZ_CRC_CE("VegetationSystemService"));
     }
 
     void VegetationSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationAreaSystemService", 0x36da2b62));
-        services.push_back(AZ_CRC("VegetationInstanceSystemService", 0x823a6007));
-        services.push_back(AZ_CRC("SurfaceDataProviderService", 0xfe9fb95e));
+        services.push_back(AZ_CRC_CE("VegetationAreaSystemService"));
+        services.push_back(AZ_CRC_CE("VegetationInstanceSystemService"));
+        services.push_back(AZ_CRC_CE("SurfaceDataSystemService"));
+    }
+
+    void VegetationSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+    {
+        services.push_back(AZ_CRC_CE("SurfaceDataProviderService"));
     }
 
     void VegetationSystemComponent::Reflect(AZ::ReflectContext* context)

@@ -366,7 +366,7 @@ bool SpinBoxWatcher::filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* even
             {
                 // To prevent the event being turned into a focus event, be sure to install an
                 // AzQtComponents::GlobalEventFilter on your QApplication instance.
-                event->ignore();
+                event->accept();
                 return true;
             }
 
@@ -657,13 +657,18 @@ bool SpinBoxWatcher::handleMouseDragStepping(QAbstractSpinBox* spinBox, QEvent* 
                     QPoint screenPos = mouseEvent->screenPos().toPoint();
                     const int xPos = screenPos.x();
                     int newXPos = xPos;
+                    // cursor bounces on the left and right side of the screen
+                    // looks like buggy behaviour so mouse cursor is wrapped
+                    // around to the other side of the screen.
                     if (xPos >= screenRect.right())
                     {
-                        newXPos = screenRect.right() - 1;
+                        // wraps mouse cursor around to the left side of the screen
+                        newXPos = screenRect.left() + 1;
                     }
                     else if (xPos <= screenRect.left())
                     {
-                        newXPos = screenRect.left() + 1;
+                        // wraps mouse cursor around to the right side of the screen
+                        newXPos = screenRect.right() - 1;
                     }
 
                     if (newXPos != xPos)

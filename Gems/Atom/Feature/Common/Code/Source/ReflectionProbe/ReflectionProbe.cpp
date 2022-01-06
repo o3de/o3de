@@ -7,7 +7,6 @@
  */
 
 #include <ReflectionProbe/ReflectionProbe.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessor.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
@@ -22,8 +21,6 @@ namespace AZ
 {
     namespace Render
     {
-        static const char* ReflectionProbeDrawListTag("reflectionprobevisualization");
-
         ReflectionProbe::~ReflectionProbe()
         {
             Data::AssetBus::MultiHandler::BusDisconnect();
@@ -122,15 +119,17 @@ namespace AZ
                     m_scene->RemoveRenderPipeline(m_environmentCubeMapPipelineId);
                     m_environmentCubeMapPass = nullptr;
 
-                    // restore exposure
-                    sceneSrg->SetConstant(m_iblExposureConstantIndex, m_previousExposure);
+                    // restore exposures
+                    sceneSrg->SetConstant(m_globalIblExposureConstantIndex, m_previousGlobalIblExposure);
+                    sceneSrg->SetConstant(m_skyBoxExposureConstantIndex, m_previousSkyBoxExposure);
 
                     m_buildingCubeMap = false;
                 }
                 else
                 {
-                    // set exposure to 0.0 while baking the cubemap
-                    sceneSrg->SetConstant(m_iblExposureConstantIndex, 0.0f);
+                    // set exposures to the user specified value while baking the cubemap
+                    sceneSrg->SetConstant(m_globalIblExposureConstantIndex, m_bakeExposure);
+                    sceneSrg->SetConstant(m_skyBoxExposureConstantIndex, m_bakeExposure);
                 }
             }
 
@@ -140,44 +139,42 @@ namespace AZ
             if (m_updateSrg)
             {
                 // stencil Srg
-                // Note: the stencil pass uses a slightly reduced inner AABB to avoid seams
+                // Note: the stencil pass uses a slightly reduced inner OBB to avoid seams
                 Vector3 innerExtentsReduced = m_innerExtents - Vector3(0.1f, 0.1f, 0.1f);
-                Matrix3x4 modelToWorldStencil = Matrix3x4::CreateFromMatrix3x3AndTranslation(Matrix3x3::CreateIdentity(), m_transform.GetTranslation()) * Matrix3x4::CreateScale(innerExtentsReduced);
+                Matrix3x4 modelToWorldStencil = Matrix3x4::CreateFromQuaternionAndTranslation(m_transform.GetRotation(), m_transform.GetTranslation()) * Matrix3x4::CreateScale(innerExtentsReduced);
                 m_stencilSrg->SetConstant(m_reflectionRenderData->m_modelToWorldStencilConstantIndex, modelToWorldStencil);
                 m_stencilSrg->Compile();
 
+                Matrix3x4 modelToWorldInverse = Matrix3x4::CreateFromTransform(m_transform).GetInverseFull();
+
                 // blend weight Srg
-                Matrix3x4 modelToWorldOuter = Matrix3x4::CreateFromMatrix3x3AndTranslation(Matrix3x3::CreateIdentity(), m_transform.GetTranslation()) * Matrix3x4::CreateScale(m_outerExtents);
+                Matrix3x4 modelToWorldOuter = Matrix3x4::CreateFromQuaternionAndTranslation(m_transform.GetRotation(), m_transform.GetTranslation()) * Matrix3x4::CreateScale(m_outerExtents);
                 m_blendWeightSrg->SetConstant(m_reflectionRenderData->m_modelToWorldRenderConstantIndex, modelToWorldOuter);
-                m_blendWeightSrg->SetConstant(m_reflectionRenderData->m_aabbPosRenderConstantIndex, m_outerAabbWs.GetCenter());
-                m_blendWeightSrg->SetConstant(m_reflectionRenderData->m_outerAabbMinRenderConstantIndex, m_outerAabbWs.GetMin());
-                m_blendWeightSrg->SetConstant(m_reflectionRenderData->m_outerAabbMaxRenderConstantIndex, m_outerAabbWs.GetMax());
-                m_blendWeightSrg->SetConstant(m_reflectionRenderData->m_innerAabbMinRenderConstantIndex, m_innerAabbWs.GetMin());
-                m_blendWeightSrg->SetConstant(m_reflectionRenderData->m_innerAabbMaxRenderConstantIndex, m_innerAabbWs.GetMax());
+                m_blendWeightSrg->SetConstant(m_reflectionRenderData->m_modelToWorldInverseRenderConstantIndex, modelToWorldInverse);
+                m_blendWeightSrg->SetConstant(m_reflectionRenderData->m_outerObbHalfLengthsRenderConstantIndex, m_outerObbWs.GetHalfLengths());
+                m_blendWeightSrg->SetConstant(m_reflectionRenderData->m_innerObbHalfLengthsRenderConstantIndex, m_innerObbWs.GetHalfLengths());
                 m_blendWeightSrg->SetConstant(m_reflectionRenderData->m_useParallaxCorrectionRenderConstantIndex, m_useParallaxCorrection);
                 m_blendWeightSrg->SetImage(m_reflectionRenderData->m_reflectionCubeMapRenderImageIndex, m_cubeMapImage);
                 m_blendWeightSrg->Compile();
 
                 // render outer Srg
                 m_renderOuterSrg->SetConstant(m_reflectionRenderData->m_modelToWorldRenderConstantIndex, modelToWorldOuter);
-                m_renderOuterSrg->SetConstant(m_reflectionRenderData->m_aabbPosRenderConstantIndex, m_outerAabbWs.GetCenter());
-                m_renderOuterSrg->SetConstant(m_reflectionRenderData->m_outerAabbMinRenderConstantIndex, m_outerAabbWs.GetMin());
-                m_renderOuterSrg->SetConstant(m_reflectionRenderData->m_outerAabbMaxRenderConstantIndex, m_outerAabbWs.GetMax());
-                m_renderOuterSrg->SetConstant(m_reflectionRenderData->m_innerAabbMinRenderConstantIndex, m_innerAabbWs.GetMin());
-                m_renderOuterSrg->SetConstant(m_reflectionRenderData->m_innerAabbMaxRenderConstantIndex, m_innerAabbWs.GetMax());
+                m_renderOuterSrg->SetConstant(m_reflectionRenderData->m_modelToWorldInverseRenderConstantIndex, modelToWorldInverse);
+                m_renderOuterSrg->SetConstant(m_reflectionRenderData->m_outerObbHalfLengthsRenderConstantIndex, m_outerObbWs.GetHalfLengths());
+                m_renderOuterSrg->SetConstant(m_reflectionRenderData->m_innerObbHalfLengthsRenderConstantIndex, m_innerObbWs.GetHalfLengths());
                 m_renderOuterSrg->SetConstant(m_reflectionRenderData->m_useParallaxCorrectionRenderConstantIndex, m_useParallaxCorrection);
+                m_renderOuterSrg->SetConstant(m_reflectionRenderData->m_exposureConstantIndex, m_renderExposure);
                 m_renderOuterSrg->SetImage(m_reflectionRenderData->m_reflectionCubeMapRenderImageIndex, m_cubeMapImage);
                 m_renderOuterSrg->Compile();
 
                 // render inner Srg
-                Matrix3x4 modelToWorldInner = Matrix3x4::CreateFromMatrix3x3AndTranslation(Matrix3x3::CreateIdentity(), m_transform.GetTranslation()) * Matrix3x4::CreateScale(m_innerExtents);
+                Matrix3x4 modelToWorldInner = Matrix3x4::CreateFromQuaternionAndTranslation(m_transform.GetRotation(), m_transform.GetTranslation()) * Matrix3x4::CreateScale(m_innerExtents);
                 m_renderInnerSrg->SetConstant(m_reflectionRenderData->m_modelToWorldRenderConstantIndex, modelToWorldInner);
-                m_renderInnerSrg->SetConstant(m_reflectionRenderData->m_aabbPosRenderConstantIndex, m_outerAabbWs.GetCenter());
-                m_renderInnerSrg->SetConstant(m_reflectionRenderData->m_outerAabbMinRenderConstantIndex, m_outerAabbWs.GetMin());
-                m_renderInnerSrg->SetConstant(m_reflectionRenderData->m_outerAabbMaxRenderConstantIndex, m_outerAabbWs.GetMax());
-                m_renderInnerSrg->SetConstant(m_reflectionRenderData->m_innerAabbMinRenderConstantIndex, m_innerAabbWs.GetMin());
-                m_renderInnerSrg->SetConstant(m_reflectionRenderData->m_innerAabbMaxRenderConstantIndex, m_innerAabbWs.GetMax());
+                m_renderInnerSrg->SetConstant(m_reflectionRenderData->m_modelToWorldInverseRenderConstantIndex, modelToWorldInverse);
+                m_renderInnerSrg->SetConstant(m_reflectionRenderData->m_outerObbHalfLengthsRenderConstantIndex, m_outerObbWs.GetHalfLengths());
+                m_renderInnerSrg->SetConstant(m_reflectionRenderData->m_innerObbHalfLengthsRenderConstantIndex, m_innerObbWs.GetHalfLengths());
                 m_renderInnerSrg->SetConstant(m_reflectionRenderData->m_useParallaxCorrectionRenderConstantIndex, m_useParallaxCorrection);
+                m_renderInnerSrg->SetConstant(m_reflectionRenderData->m_exposureConstantIndex, m_renderExposure);
                 m_renderInnerSrg->SetImage(m_reflectionRenderData->m_reflectionCubeMapRenderImageIndex, m_cubeMapImage);
                 m_renderInnerSrg->Compile();
 
@@ -246,22 +243,22 @@ namespace AZ
             m_outerExtents *= m_transform.GetUniformScale();
             m_innerExtents *= m_transform.GetUniformScale();
 
-            m_outerAabbWs = Aabb::CreateCenterHalfExtents(m_transform.GetTranslation(), m_outerExtents / 2.0f);
-            m_innerAabbWs = Aabb::CreateCenterHalfExtents(m_transform.GetTranslation(), m_innerExtents / 2.0f);
+            m_outerObbWs = Obb::CreateFromPositionRotationAndHalfLengths(m_transform.GetTranslation(), m_transform.GetRotation(), m_outerExtents / 2.0f);
+            m_innerObbWs = Obb::CreateFromPositionRotationAndHalfLengths(m_transform.GetTranslation(), m_transform.GetRotation(), m_innerExtents / 2.0f);
             m_updateSrg = true;
         }
 
         void ReflectionProbe::SetOuterExtents(const AZ::Vector3& outerExtents)
         {
             m_outerExtents = outerExtents * m_transform.GetUniformScale();
-            m_outerAabbWs = Aabb::CreateCenterHalfExtents(m_transform.GetTranslation(), m_outerExtents / 2.0f);
+            m_outerObbWs = Obb::CreateFromPositionRotationAndHalfLengths(m_transform.GetTranslation(), m_transform.GetRotation(), m_outerExtents / 2.0f);
             m_updateSrg = true;
         }
 
         void ReflectionProbe::SetInnerExtents(const AZ::Vector3& innerExtents)
         {
             m_innerExtents = innerExtents * m_transform.GetUniformScale();
-            m_innerAabbWs = Aabb::CreateCenterHalfExtents(m_transform.GetTranslation(), m_innerExtents / 2.0f);
+            m_innerObbWs = Obb::CreateFromPositionRotationAndHalfLengths(m_transform.GetTranslation(), m_transform.GetRotation(), m_innerExtents / 2.0f);
             m_updateSrg = true;
         }
 
@@ -309,9 +306,10 @@ namespace AZ
             const RPI::Ptr<RPI::ParentPass>& rootPass = environmentCubeMapPipeline->GetRootPass();
             rootPass->AddChild(m_environmentCubeMapPass);
 
-            // store the current IBL exposure value
+            // store the current IBL exposure values
             Data::Instance<RPI::ShaderResourceGroup> sceneSrg = m_scene->GetShaderResourceGroup();
-            m_previousExposure = sceneSrg->GetConstant<float>(m_iblExposureConstantIndex);
+            m_previousGlobalIblExposure = sceneSrg->GetConstant<float>(m_globalIblExposureConstantIndex);
+            m_previousSkyBoxExposure = sceneSrg->GetConstant<float>(m_skyBoxExposureConstantIndex);
 
             m_scene->AddRenderPipeline(environmentCubeMapPipeline);
         }
@@ -330,6 +328,17 @@ namespace AZ
         void ReflectionProbe::ShowVisualization(bool showVisualization)
         {
             m_meshFeatureProcessor->SetVisible(m_visualizationMeshHandle, showVisualization);
+        }
+
+        void ReflectionProbe::SetRenderExposure(float renderExposure)
+        {
+            m_renderExposure = renderExposure;
+            m_updateSrg = true;
+        }
+
+        void ReflectionProbe::SetBakeExposure(float bakeExposure)
+        {
+            m_bakeExposure = bakeExposure;
         }
 
         const RHI::DrawPacket* ReflectionProbe::BuildDrawPacket(
@@ -361,7 +370,7 @@ namespace AZ
             drawRequest.m_listTag = drawListTag;
             drawRequest.m_pipelineState = pipelineState->GetRHIPipelineState();
             drawRequest.m_streamBufferViews = m_reflectionRenderData->m_boxPositionBufferView;
-            drawRequest.m_stencilRef = stencilRef;
+            drawRequest.m_stencilRef = static_cast<uint8_t>(stencilRef);
             drawRequest.m_sortKey = m_sortKey;
             drawPacketBuilder.AddDrawItem(drawRequest);
 
@@ -372,11 +381,27 @@ namespace AZ
         {
             // set draw list mask
             m_cullable.m_cullData.m_drawListMask.reset();
-            m_cullable.m_cullData.m_drawListMask =
-                m_stencilDrawPacket->GetDrawListMask() |
-                m_blendWeightDrawPacket->GetDrawListMask() |
-                m_renderOuterDrawPacket->GetDrawListMask() |
-                m_renderInnerDrawPacket->GetDrawListMask();
+
+            // check for draw packets due certain render pipelines such as lowend render pipeline that might not have this feature enabled 
+            if (m_stencilDrawPacket)
+            {
+                m_cullable.m_cullData.m_drawListMask |= m_stencilDrawPacket->GetDrawListMask();
+            } 
+            
+            if (m_blendWeightDrawPacket)
+            {
+                m_cullable.m_cullData.m_drawListMask |= m_blendWeightDrawPacket->GetDrawListMask();
+            } 
+            
+            if (m_renderOuterDrawPacket)
+            {
+                m_cullable.m_cullData.m_drawListMask |= m_renderOuterDrawPacket->GetDrawListMask();
+            } 
+            
+            if (m_renderInnerDrawPacket)
+            {
+                m_cullable.m_cullData.m_drawListMask |= m_renderInnerDrawPacket->GetDrawListMask();
+            }
 
             // setup the Lod entry, using one entry for all four draw packets
             m_cullable.m_lodData.m_lods.clear();
@@ -396,13 +421,14 @@ namespace AZ
             lod.m_screenCoverageMax = 1.0f;
 
             // update cullable bounds
+            Aabb outerAabb = Aabb::CreateFromObb(m_outerObbWs);
             Vector3 center;
             float radius;
-            m_outerAabbWs.GetAsSphere(center, radius);
+            outerAabb.GetAsSphere(center, radius);
 
             m_cullable.m_cullData.m_boundingSphere = Sphere(center, radius);
-            m_cullable.m_cullData.m_boundingObb = m_outerAabbWs.GetTransformedObb(AZ::Transform::CreateIdentity());
-            m_cullable.m_cullData.m_visibilityEntry.m_boundingVolume = m_outerAabbWs;
+            m_cullable.m_cullData.m_boundingObb = m_outerObbWs;
+            m_cullable.m_cullData.m_visibilityEntry.m_boundingVolume = outerAabb;
             m_cullable.m_cullData.m_visibilityEntry.m_userData = &m_cullable;
             m_cullable.m_cullData.m_visibilityEntry.m_typeFlags = AzFramework::VisibilityEntry::TYPE_RPI_Cullable;
 

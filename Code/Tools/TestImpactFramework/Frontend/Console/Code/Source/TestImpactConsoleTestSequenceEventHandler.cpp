@@ -26,8 +26,8 @@ namespace TestImpact
 
             void ImpactAnalysisTestSelection(size_t numSelectedTests, size_t numDiscardedTests, size_t numExcludedTests, size_t numDraftedTests)
             {
-                const float totalTests = numSelectedTests + numDiscardedTests;
-                const float saving = (1.0 - (numSelectedTests / totalTests)) * 100.0f;
+                const float totalTests = static_cast<float>(numSelectedTests + numDiscardedTests);
+                const float saving = (1.0f - (numSelectedTests / totalTests)) * 100.0f;
 
                 std::cout << numSelectedTests << " tests selected, " << numDiscardedTests << " tests discarded (" << saving << "% test saving)\n";
                 std::cout << "Of which " << numExcludedTests << " tests have been excluded and " << numDraftedTests << " tests have been drafted.\n";

@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/Asset/AssetCommon.h>
 #include <Atom/RHI/Buffer.h>
 #include <Atom/RHI/BufferPool.h>
 

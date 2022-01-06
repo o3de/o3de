@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Module/Environment.h>
+#include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/std/parallel/shared_mutex.h>
 #include <AzCore/std/typetraits/is_constructible.h>
 #include <AzCore/std/typetraits/is_assignable.h>
@@ -108,6 +109,7 @@ namespace AZ
          */
         static EnvironmentVariable<T*> s_instance;
         static AZStd::shared_mutex s_mutex;
+        static bool s_instanceAssigned;
     };
 
     template <typename T>
@@ -115,6 +117,9 @@ namespace AZ
 
     template <typename T>
     AZStd::shared_mutex Interface<T>::s_mutex;
+
+    template <typename T>
+    bool Interface<T>::s_instanceAssigned;
 
     template <typename T>
     void Interface<T>::Register(T* type)
@@ -134,18 +139,19 @@ namespace AZ
         AZStd::unique_lock<AZStd::shared_mutex> lock(s_mutex);
         s_instance = Environment::CreateVariable<T*>(GetVariableName());
         s_instance.Get() = type;
+        s_instanceAssigned = true;
     }
 
     template <typename T>
     void Interface<T>::Unregister(T* type)
     {
-        if (!s_instance || !s_instance.Get())
+        if (!s_instanceAssigned)
         {
             AZ_Assert(false, "Interface '%s' not registered on this module!", AzTypeInfo<T>::Name());
             return;
         }
 
-        if (s_instance.Get() != type)
+        if (s_instance && s_instance.Get() != type)
         {
             AZ_Assert(false, "Interface '%s' is not the same instance that was registered! [Expected '%p', Found '%p']", AzTypeInfo<T>::Name(), type, s_instance.Get());
             return;
@@ -155,6 +161,7 @@ namespace AZ
         AZStd::unique_lock<AZStd::shared_mutex> lock(s_mutex);
         *s_instance = nullptr;
         s_instance.Reset();
+        s_instanceAssigned = false;
     }
 
     template <typename T>
@@ -164,9 +171,9 @@ namespace AZ
         // This is the fast path which won't block.
         {
             AZStd::shared_lock<AZStd::shared_mutex> lock(s_mutex);
-            if (s_instance)
+            if (s_instanceAssigned)
             {
-                return s_instance.Get();
+                return s_instance ? s_instance.Get() : nullptr;
             }
         }
 
@@ -174,6 +181,7 @@ namespace AZ
         // take the full lock and request it.
         AZStd::unique_lock<AZStd::shared_mutex> lock(s_mutex);
         s_instance = Environment::FindVariable<T*>(GetVariableName());
+        s_instanceAssigned = true;
         return s_instance ? s_instance.Get() : nullptr;
     }
 

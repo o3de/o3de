@@ -23,7 +23,6 @@ namespace AzToolsFramework
 
         LoadingThumbnail::LoadingThumbnail()
             : Thumbnail(MAKE_TKEY(ThumbnailKey))
-            , m_angle(0)
         {
             auto absoluteIconPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / LoadingIconPath;
             m_loadingMovie.setFileName(absoluteIconPath.c_str());

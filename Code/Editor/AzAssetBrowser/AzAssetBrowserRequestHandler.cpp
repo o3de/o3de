@@ -199,41 +199,6 @@ namespace AzAssetBrowserRequestHandlerPrivate
             }
         }
     }
-
-    // Helper utility - determines if the thing being dragged is a FBX from the scene import pipeline
-    // This is important to differentiate.
-    // when someone drags a MTL file directly into the viewport, even from a FBX, we want to spawn it as a decal
-    // but when someone drags a FBX that contains MTL files, we want only to spawn the meshes.
-    // so we have to specifically differentiate here between the mimeData type that contains the source as the root
-    // (dragging the fbx file itself)
-    // and one which contains the actual product at its root.
-
-    bool IsDragOfFBX(const QMimeData* mimeData)
-    {
-        AZStd::vector<AssetBrowserEntry*> entries;
-        if (!AssetBrowserEntry::FromMimeData(mimeData, entries))
-        {
-            // if mimedata does not even contain entries, no point in proceeding.
-            return false;
-        }
-
-        for (auto entry : entries)
-        {
-            if (entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Source)
-            {
-                continue;
-            }
-            // this is a source file.  Is it the filetype we're looking for?
-            if (SourceAssetBrowserEntry* source = azrtti_cast<SourceAssetBrowserEntry*>(entry))
-            {
-                if (AzFramework::StringFunc::Equal(source->GetExtension().c_str(), ".fbx", false))
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
 }
 
 AzAssetBrowserRequestHandler::AzAssetBrowserRequestHandler()
@@ -327,7 +292,7 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
         if (!vetoOpenerFound)
         {
             // if we found no valid openers and no veto openers then just allow it to be opened with the operating system itself.
-            menu->addAction(QObject::tr("Open with associated application..."), [this, fullFilePath]()
+            menu->addAction(QObject::tr("Open with associated application..."), [fullFilePath]()
             {
                 OpenWithOS(fullFilePath);
             });
@@ -675,14 +640,14 @@ void AzAssetBrowserRequestHandler::OpenAssetInAssociatedEditor(const AZ::Data::A
                     firstValidOpener = &openerDetails;
                 }
                 // bind a callback such that when the menu item is clicked, it sets that as the opener to use.
-                menu.addAction(openerDetails.m_iconToUse, QObject::tr(openerDetails.m_displayText.c_str()), mainWindow, AZStd::bind(switchToOpener, &openerDetails));
+                menu.addAction(openerDetails.m_iconToUse, QObject::tr(openerDetails.m_displayText.c_str()), mainWindow, [switchToOpener, details = &openerDetails] { return switchToOpener(details); });
             }
         }
 
         if (numValidOpeners > 1) // more than one option was added
         {
             menu.addSeparator();
-            menu.addAction(QObject::tr("Cancel"), AZStd::bind(switchToOpener, nullptr)); // just something to click on to avoid doing anything.
+            menu.addAction(QObject::tr("Cancel"), [switchToOpener] { return switchToOpener(nullptr); }); // just something to click on to avoid doing anything.
             menu.exec(QCursor::pos());
         }
         else if (numValidOpeners == 1)

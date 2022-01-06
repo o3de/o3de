@@ -94,7 +94,6 @@ namespace AZ
         void BufferPoolResolver::Resolve(CommandList& commandList)
         {
             auto& device = static_cast<Device&>(commandList.GetDevice());
-            VkBufferCopy bufCopy{};
             for (const BufferUploadPacket& packet : m_uploadPackets)
             {
                 Buffer* stagingBuffer = packet.m_stagingBuffer.get();

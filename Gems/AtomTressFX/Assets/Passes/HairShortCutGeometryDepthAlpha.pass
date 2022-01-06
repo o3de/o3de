@@ -1,0 +1,101 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "HairShortCutGeometryDepthAlphaPassTemplate",
+            "PassClass": "HairShortCutGeometryDepthAlphaPass",
+            "Slots": [
+                {
+                    "Name": "SkinnedHairSharedBuffer",
+                    "ShaderInputName": "m_skinnedHairSharedBuffer",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {   // DepthStencil for early disqualifying the pixel based on depth.  No write.
+                    "Name": "Depth",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "DepthStencil"
+                },
+                {
+                    // the regular render target is blended using inverse alpha to reduce the 
+                    // incoming color contribution based on the hair thickness and alpha.
+                    "Name": "InverseAlphaRTOutput",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "Clear",
+                        "ClearValue": {
+                            "Value": [ 1.0, 1.0, 1.0, 1.0 ]
+                        },
+                        "StoreAction": "Store"
+                    }
+                },
+                {
+                    "Name": "HairDepthsTextureArray",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_RWFragmentDepthsTexture",
+                    "LoadStoreAction": {
+                        "LoadAction": "Clear",
+                        "ClearValue": { // reverse depth order: closer --> 1.0
+                            "Value": [ 0.0, 0.0, 0.0, 0.0 ]
+                        },
+                        "StoreAction": "Store"
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    // This buffer is used as the render target and should be at non-MSAA screen resolution
+                    // to make sure no overwork is done.
+                    "Name": "InverseAlphaRTOutput",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "DepthLinear"
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R32_FLOAT",
+                        "SharedQueueMask": "Graphics",
+                        "BindFlags": [
+                            "Color",
+                            "ShaderRead"
+                        ]
+                    }
+                },
+                {
+                    "Name": "HairDepthsTextureArray",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "DepthLinear"
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R32_UINT",
+                        "ArraySize": "3",
+                        "SharedQueueMask": "Graphics",
+                        "BindFlags": [
+                            "ShaderReadWrite",
+                            "ShaderWrite",
+                            "ShaderRead"
+                        ]
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "RasterPassData",
+                "DrawListTag": "HairGeometryDepthAlphaDrawList",
+                "PipelineViewTag": "MainCamera",
+                "PassSrgShaderAsset": {
+                    // Looking for it in the Shaders directory relative to the Assets directory
+                    "FilePath": "Shaders/HairShortCutGeometryDepthAlpha.shader"
+                }
+            }
+        }
+    }
+}
+

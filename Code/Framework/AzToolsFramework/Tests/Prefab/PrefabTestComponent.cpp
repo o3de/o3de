@@ -28,4 +28,18 @@ namespace UnitTest
         : m_boolProperty(boolProperty)
     {
     }
+
+    void PrefabTestComponentWithUnReflectedTypeMember::Reflect(AZ::ReflectContext* reflection)
+    {
+        AZ::SerializeContext* serializeContext = AZ::RttiCast<AZ::SerializeContext*>(reflection);
+
+        // We reflect our member but not its type this will result in missing reflection data
+        // when we try to store or load this field
+        if (serializeContext)
+        {
+            serializeContext->Class<PrefabTestComponentWithUnReflectedTypeMember, AzToolsFramework::Components::EditorComponentBase>()
+                ->Field("UnReflectedType", &PrefabTestComponentWithUnReflectedTypeMember::m_unReflectedType)
+                ->Field("ReflectedType", &PrefabTestComponentWithUnReflectedTypeMember::m_reflectedType);
+        }
+    }
 }

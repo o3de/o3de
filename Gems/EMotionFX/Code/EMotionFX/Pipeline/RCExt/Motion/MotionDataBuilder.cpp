@@ -406,7 +406,7 @@ namespace EMotionFX
             for (; iterator != sceneGraphDownardsIteratorView.end(); ++iterator)
             {
                 SceneContainers::SceneGraph::HierarchyStorageConstIterator hierarchy = iterator.GetHierarchyIterator();
-                SceneContainers::SceneGraph::NodeIndex currentIndex = graph.ConvertToNodeIndex(hierarchy);
+                [[maybe_unused]] SceneContainers::SceneGraph::NodeIndex currentIndex = graph.ConvertToNodeIndex(hierarchy);
                 AZ_Assert(currentIndex.IsValid(), "While iterating through the Scene Graph an unexpected invalid entry was found.");
                 AZStd::shared_ptr<const SceneDataTypes::IGraphObject> currentItem = iterator->second;
                 if (hierarchy->IsEndPoint())

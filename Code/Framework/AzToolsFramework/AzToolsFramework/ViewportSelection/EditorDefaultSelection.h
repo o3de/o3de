@@ -15,6 +15,8 @@
 
 namespace AzToolsFramework
 {
+    class ViewportEditorModeTrackerInterface;
+
     //! The default selection/input handler for the editor (includes handling ComponentMode).
     class EditorDefaultSelection
         : public ViewportInteraction::InternalViewportSelectionRequests
@@ -25,7 +27,7 @@ namespace AzToolsFramework
         AZ_CLASS_ALLOCATOR_DECL
 
         //! @cond
-        explicit EditorDefaultSelection(const EditorVisibleEntityDataCache* entityDataCache);
+        EditorDefaultSelection(const EditorVisibleEntityDataCache* entityDataCache, ViewportEditorModeTrackerInterface* viewportEditorModeTracker);
         EditorDefaultSelection(const EditorDefaultSelection&) = delete;
         EditorDefaultSelection& operator=(const EditorDefaultSelection&) = delete;
         virtual ~EditorDefaultSelection();
@@ -110,5 +112,7 @@ namespace AzToolsFramework
 
         AZStd::shared_ptr<AzToolsFramework::ManipulatorManager> m_manipulatorManager; //!< The default manipulator manager.
         ViewportInteraction::MouseInteraction m_currentInteraction; //!< Current mouse interaction to be used for drawing manipulators.
+        ViewportEditorModeTrackerInterface* m_viewportEditorModeTracker = nullptr; //!< Tracker for activating/deactivating viewport editor modes.
+
     };
 } // namespace AzToolsFramework

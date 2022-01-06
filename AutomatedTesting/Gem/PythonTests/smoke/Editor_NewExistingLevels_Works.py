@@ -53,7 +53,7 @@ def Editor_NewExistingLevels_Works():
     10) Save, Load and Export an existing level and close editor
 
     Note:
-    - This test file must be called from the Lumberyard Editor command terminal
+    - This test file must be called from the O3DE Editor command terminal
     - Any passed and failed tests are written to the Editor.log file.
             Parsing the file or running a log_monitor are required to observe the test results.
 

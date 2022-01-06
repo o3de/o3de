@@ -8,6 +8,8 @@
 
 #include <PostProcess/ShapeWeightModifier/ShapeWeightModifierComponent.h>
 
+#include <AzCore/RTTI/BehaviorContext.h>
+
 namespace AZ
 {
     namespace Render

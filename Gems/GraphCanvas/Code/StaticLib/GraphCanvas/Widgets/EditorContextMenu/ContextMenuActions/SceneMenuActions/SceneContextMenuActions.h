@@ -25,6 +25,7 @@ namespace GraphCanvas
         bool IsInSubMenu() const override;
         AZStd::string GetSubMenuPath() const override;
 
+        using SceneContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
     };
 
@@ -40,6 +41,7 @@ namespace GraphCanvas
         bool IsInSubMenu() const override;
         AZStd::string GetSubMenuPath() const override;
 
+        using SceneContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
     };
 }

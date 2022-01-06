@@ -8,32 +8,42 @@
 
 #pragma once
 
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/optional.h>
 #include <AzFramework/Input/Channels/InputChannel.h>
 #include <AzFramework/Viewport/ClickDetector.h>
+#include <AzFramework/Viewport/CursorState.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
 #include <AzFramework/Viewport/ViewportId.h>
 
 namespace AzFramework
 {
+    AZ_CVAR_EXTERNED(bool, ed_cameraSystemUseCursor);
+
+    struct WindowSize;
+
+    //! Tolerance to use when limiting pitch to avoid reaching +/-Pi/2 exactly.
+    constexpr float CameraPitchTolerance = 1.0e-4f;
+
     //! Returns Euler angles (pitch, roll, yaw) for the incoming orientation.
     //! @note Order of rotation is Z, Y, X.
     AZ::Vector3 EulerAngles(const AZ::Matrix3x3& orientation);
 
-    //! A simple camera representation using spherical coordinates as input (pitch, yaw and look distance).
-    //! The cameras transform and view can be obtained through accessor functions that use the internal
+    //! A simple camera representation using spherical coordinates as input (pitch, yaw, pivot and offset).
+    //! The camera's transform and view can be obtained through accessor functions that use the internal
     //! spherical coordinates to calculate the position and orientation.
+    //! @note Modifying m_pivot directly and leaving m_offset as zero will produce a free look camera effect, giving
+    //! m_offset a value (e.g. in negative Y only) will produce an orbit camera effect, modifying X and Z of m_offset
+    //! will further alter the camera translation in relation to m_pivot so it appears off center.
     struct Camera
     {
-        AZ::Vector3 m_lookAt = AZ::Vector3::CreateZero(); //!< Position of camera when m_lookDist is zero,
-                                                          //!< or position of m_lookAt when m_lookDist is greater
-                                                          //!< than zero.
-        float m_yaw{ 0.0 }; //!< Yaw rotation of camera (stored in radians) usually clamped to 0-360 degrees (0-2Pi radians).
-        float m_pitch{ 0.0 }; //!< Pitch rotation of the camera (stored in radians) usually clamped to +/-90 degrees (-Pi/2 - Pi/2 radians).
-        float m_lookDist{ 0.0 }; //!< Zero gives first person free look, otherwise orbit about m_lookAt
+        AZ::Vector3 m_pivot = AZ::Vector3::CreateZero(); //!< Pivot point to rotate about (modified in world space).
+        AZ::Vector3 m_offset = AZ::Vector3::CreateZero(); //!< Offset relative to pivot (modified in camera space).
+        float m_yaw = 0.0f; //!< Yaw rotation of camera (stored in radians) usually clamped to 0-360 degrees (0-2Pi radians).
+        float m_pitch = 0.0f; //!< Pitch rotation of the camera (stored in radians) usually clamped to +/-90 degrees (-Pi/2 - Pi/2 radians).
 
         //! View camera transform (V in model-view-projection matrix (MVP)).
         AZ::Transform View() const;
@@ -45,6 +55,15 @@ namespace AzFramework
         AZ::Vector3 Translation() const;
     };
 
+    //! Helper to allow the pivot to be positioned without altering the camera's position.
+    inline void MovePivotDetached(Camera& camera, const AZ::Vector3& pivot)
+    {
+        const auto& view = camera.View();
+        const auto delta = view.TransformPoint(pivot) - view.TransformPoint(camera.m_pivot);
+        camera.m_offset -= delta;
+        camera.m_pivot = pivot;
+    }
+
     inline AZ::Transform Camera::View() const
     {
         return Transform().GetInverse();
@@ -52,8 +71,8 @@ namespace AzFramework
 
     inline AZ::Transform Camera::Transform() const
     {
-        return AZ::Transform::CreateTranslation(m_lookAt) * AZ::Transform::CreateRotationZ(m_yaw) *
-            AZ::Transform::CreateRotationX(m_pitch) * AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisY(m_lookDist));
+        return AZ::Transform::CreateTranslation(m_pivot) * AZ::Transform::CreateRotationZ(m_yaw) * AZ::Transform::CreateRotationX(m_pitch) *
+            AZ::Transform::CreateTranslation(m_offset);
     }
 
     inline AZ::Matrix3x3 Camera::Rotation() const
@@ -69,6 +88,19 @@ namespace AzFramework
     //! Extracts Euler angles (orientation) and translation from the transform and writes the values to the camera.
     void UpdateCameraFromTransform(Camera& camera, const AZ::Transform& transform);
 
+    //! Writes the translation value and Euler angles to the camera.
+    void UpdateCameraFromTranslationAndRotation(Camera& camera, const AZ::Vector3& translation, const AZ::Vector3& eulerAngles);
+
+    //! Returns the time ('t') input value to use with SmoothValue.
+    //! Useful if it is to be reused for multiple calls to SmoothValue.
+    float SmoothValueTime(float smoothness, float deltaTime);
+
+    // Smoothly interpolate a value from current to target according to a smoothing parameter.
+    float SmoothValue(float target, float current, float smoothness, float deltaTime);
+
+    // Overload of SmoothValue that takes time ('t') value directly.
+    float SmoothValue(float target, float current, float time);
+
     //! Generic motion type.
     template<typename MotionTag>
     struct MotionEvent
@@ -78,6 +110,12 @@ namespace AzFramework
 
     using HorizontalMotionEvent = MotionEvent<struct HorizontalMotionTag>;
     using VerticalMotionEvent = MotionEvent<struct VerticalMotionTag>;
+
+    struct CursorEvent
+    {
+        ScreenPoint m_position;
+        bool m_captured = false;
+    };
 
     struct ScrollEvent
     {
@@ -93,7 +131,8 @@ namespace AzFramework
     };
 
     //! Represents a type-safe union of input events that are handled by the camera system.
-    using InputEvent = AZStd::variant<AZStd::monostate, HorizontalMotionEvent, VerticalMotionEvent, ScrollEvent, DiscreteInputEvent>;
+    using InputEvent =
+        AZStd::variant<AZStd::monostate, HorizontalMotionEvent, VerticalMotionEvent, CursorEvent, ScrollEvent, DiscreteInputEvent>;
 
     //! Base class for all camera behaviors.
     //! The core interface consists of:
@@ -144,6 +183,11 @@ namespace AzFramework
         void EndActivation()
         {
             m_activation = Activation::Ending;
+        }
+
+        void CancelActivation()
+        {
+            m_activation = Activation::Idle;
         }
 
         void ContinueActivation()
@@ -219,10 +263,14 @@ namespace AzFramework
     //! Properties to use to configure behavior across all types of camera.
     struct CameraProps
     {
-        AZStd::function<float()>
-            m_rotateSmoothnessFn; //!< Rotate smoothing value (useful approx range 3-6, higher values give sharper feel).
-        AZStd::function<float()>
-            m_translateSmoothnessFn; //!< Translate smoothing value (useful approx range 3-6, higher values give sharper feel).
+        //! Rotate smoothing value (useful approx range 3-6, higher values give sharper feel).
+        AZStd::function<float()> m_rotateSmoothnessFn;
+        //! Translate smoothing value (useful approx range 3-6, higher values give sharper feel).
+        AZStd::function<float()> m_translateSmoothnessFn;
+        //! Enable/disable rotation smoothing.
+        AZStd::function<bool()> m_rotateSmoothingEnabledFn;
+        //! Enable/disable translation smoothing.
+        AZStd::function<bool()> m_translateSmoothingEnabledFn;
     };
 
     //! An interpolation function to smoothly interpolate all camera properties from currentCamera to targetCamera.
@@ -262,17 +310,52 @@ namespace AzFramework
     public:
         bool HandleEvents(const InputEvent& event);
         Camera StepCamera(const Camera& targetCamera, float deltaTime);
-        bool HandlingEvents() const { return m_handlingEvents; }
+        bool HandlingEvents() const;
 
         Cameras m_cameras; //!< Represents a collection of camera inputs that together provide a camera controller.
 
     private:
         ScreenVector m_motionDelta; //!< The delta used for look/orbit/pan (rotation + translation) - two dimensional.
+        CursorState m_cursorState; //!< The current and previous position of the cursor (used to calculate movement delta).
         float m_scrollDelta = 0.0f; //!< The delta used for dolly/movement (translation) - one dimensional.
         bool m_handlingEvents = false; //!< Is the camera system currently handling events (events are consumed and not propagated).
     };
 
-    //! A camera input to handle motion deltas that can rotate or orbit the camera.
+    inline bool CameraSystem::HandlingEvents() const
+    {
+        return m_handlingEvents;
+    }
+
+    //! Returns min/max values for camera pitch (in radians).
+    inline AZStd::tuple<float, float> CameraPitchMinMaxRadians()
+    {
+        return { -AZ::Constants::HalfPi, AZ::Constants::HalfPi };
+    }
+
+    //! Returns min/max values for camera pitch (in radians) including a small tolerance at each
+    //! extreme (looking directly up or down) to avoid floating point accuracy issues.
+    inline AZStd::tuple<float, float> CameraPitchMinMaxRadiansWithTolerance()
+    {
+        const auto [pitchMinRadians, pitchMaxRadians] = CameraPitchMinMaxRadians();
+        return { pitchMinRadians + CameraPitchTolerance, pitchMaxRadians - CameraPitchTolerance };
+    }
+
+    //! Clamps pitch to be +/-90 degrees (-Pi/2, Pi/2) with a minor tolerance at each extreme.
+    //! @param pitch Pitch angle in radians.
+    inline float ClampPitchRotation(const float pitch)
+    {
+        const auto [pitchMin, pitchMax] = CameraPitchMinMaxRadiansWithTolerance();
+        return AZ::GetClamp(pitch, pitchMin, pitchMax);
+    }
+
+    //! Ensures yaw wraps between 0 and 360 degrees (0, 2Pi).
+    //! @param yaw Yaw angle in radians.
+    inline float WrapYawRotation(const float yaw)
+    {
+        return AZStd::fmod(yaw + AZ::Constants::TwoPi, AZ::Constants::TwoPi);
+    }
+
+    //! A camera input to handle motion deltas that can change the orientation of the camera (update pitch and yaw).
     class RotateCameraInput : public CameraInput
     {
     public:
@@ -282,9 +365,12 @@ namespace AzFramework
         bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
 
+        void SetRotateInputChannelId(const InputChannelId& rotateChannelId);
+
         AZStd::function<float()> m_rotateSpeedFn;
         AZStd::function<bool()> m_invertPitchFn;
         AZStd::function<bool()> m_invertYawFn;
+        AZStd::function<bool()> m_constrainPitch;
 
     private:
         InputChannelId m_rotateChannelId; //!< Input channel to begin the rotate camera input.
@@ -302,14 +388,15 @@ namespace AzFramework
     //! PanAxes build function that will return a pair of pan axes depending on the camera orientation.
     using PanAxesFn = AZStd::function<PanAxes(const Camera& camera)>;
 
-    //! PanAxes to use while in 'look' camera behavior (free look).
+    //! PanAxes to use while in 'look' or 'orbit' camera behavior.
     inline PanAxes LookPan(const Camera& camera)
     {
         const AZ::Matrix3x3 orientation = camera.Rotation();
         return { orientation.GetBasisX(), orientation.GetBasisZ() };
     }
 
-    //! PanAxes to use while in 'orbit' camera behavior.
+    //! Optional PanAxes to use while in 'orbit' camera behavior.
+    //! @note This will move the camera in the local X/Y plane instead of usual X/Z plane.
     inline PanAxes OrbitPan(const Camera& camera)
     {
         const AZ::Matrix3x3 orientation = camera.Rotation();
@@ -324,15 +411,38 @@ namespace AzFramework
         return { basisX, basisY };
     }
 
+    //! TranslationDeltaFn is used by PanCameraInput and TranslateCameraInput
+    //! @note Choose the appropriate function if the behavior should be operating as a free look camera (TranslatePivotLook)
+    //! or an orbit camera (TranslateOffsetOrbit).
+    using TranslationDeltaFn = AZStd::function<void(Camera& camera, const AZ::Vector3& delta)>;
+
+    //! Update the pivot camera position.
+    //! @note delta will need to have been transformed to world space, e.g. To move the camera right, (1, 0, 0) must
+    //! first be transformed by the orientation of the camera before being applied to m_pivot.
+    inline void TranslatePivotLook(Camera& camera, const AZ::Vector3& delta)
+    {
+        camera.m_pivot += delta;
+    }
+
+    //! Update the offset camera position.
+    //! @note delta still needs to be transformed to world space (as with TranslatePivotLook) but internally this is undone
+    //! to be performed in local space when being applied to m_offset.
+    inline void TranslateOffsetOrbit(Camera& camera, const AZ::Vector3& delta)
+    {
+        camera.m_offset += camera.View().TransformVector(delta);
+    }
+
     //! A camera input to handle motion deltas that can pan the camera (translate in two axes).
     class PanCameraInput : public CameraInput
     {
     public:
-        PanCameraInput(const InputChannelId& panChannelId, PanAxesFn panAxesFn);
+        PanCameraInput(const InputChannelId& panChannelId, PanAxesFn panAxesFn, TranslationDeltaFn translationDeltaFn);
 
         // CameraInput overrides ...
         bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
+
+        void SetPanInputChannelId(const InputChannelId& panChannelId);
 
         AZStd::function<float()> m_panSpeedFn;
         AZStd::function<bool()> m_invertPanXFn;
@@ -340,6 +450,7 @@ namespace AzFramework
 
     private:
         PanAxesFn m_panAxesFn; //!< Builder for the particular pan axes (provided in the constructor).
+        TranslationDeltaFn m_translationDeltaFn; //!< How to apply the translation delta to the camera offset or pivot.
         InputChannelId m_panChannelId; //!< Input channel to begin the pan camera input.
         ClickDetector m_clickDetector; //!< Used to determine when a sufficient motion delta has occurred after an initial discrete input
                                        //!< event has started (press and move event).
@@ -348,7 +459,7 @@ namespace AzFramework
     //! Axes to use while translating the camera.
     using TranslationAxesFn = AZStd::function<AZ::Matrix3x3(const Camera& camera)>;
 
-    //! TranslationAxes to use while in 'look' camera behavior (free look).
+    //! TranslationAxes to use while in 'look' or 'orbit' camera behavior.
     inline AZ::Matrix3x3 LookTranslation(const Camera& camera)
     {
         const AZ::Matrix3x3 orientation = camera.Rotation();
@@ -360,7 +471,7 @@ namespace AzFramework
         return AZ::Matrix3x3::CreateFromColumns(basisX, basisY, basisZ);
     }
 
-    //! TranslationAxes to use while in 'orbit' camera behavior.
+    //! Optional TranslationAxes to use while in 'orbit' camera behavior.
     inline AZ::Matrix3x3 OrbitTranslation(const Camera& camera)
     {
         const AZ::Matrix3x3 orientation = camera.Rotation();
@@ -377,7 +488,7 @@ namespace AzFramework
     }
 
     //! Groups all camera translation inputs.
-    struct TranslateCameraInputChannels
+    struct TranslateCameraInputChannelIds
     {
         InputChannelId m_forwardChannelId;
         InputChannelId m_backwardChannelId;
@@ -392,13 +503,17 @@ namespace AzFramework
     class TranslateCameraInput : public CameraInput
     {
     public:
-        explicit TranslateCameraInput(
-            TranslationAxesFn translationAxesFn, const TranslateCameraInputChannels& translateCameraInputChannels);
+        TranslateCameraInput(
+            const TranslateCameraInputChannelIds& translateCameraInputChannelIds,
+            TranslationAxesFn translationAxesFn,
+            TranslationDeltaFn translateDeltaFn);
 
         // CameraInput overrides ...
         bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
         void ResetImpl() override;
+
+        void SetTranslateCameraInputChannelIds(const TranslateCameraInputChannelIds& translateCameraInputChannelIds);
 
         AZStd::function<float()> m_translateSpeedFn;
         AZStd::function<float()> m_boostMultiplierFn;
@@ -461,15 +576,16 @@ namespace AzFramework
 
         //! Converts from a generic input channel id to a concrete translation type (based on the user's key mappings).
         TranslationType TranslationFromKey(
-            const InputChannelId& channelId, const TranslateCameraInputChannels& translateCameraInputChannels);
+            const InputChannelId& channelId, const TranslateCameraInputChannelIds& translateCameraInputChannelIds);
 
         TranslationType m_translation = TranslationType::Nil; //!< Types of translation the camera input is under.
         TranslationAxesFn m_translationAxesFn; //!< Builder for translation axes.
-        TranslateCameraInputChannels m_translateCameraInputChannels; //!< Input channel ids that map to internal translation types.
+        TranslationDeltaFn m_translateDeltaFn; //!< How to apply the translation delta to the camera offset or pivot.
+        TranslateCameraInputChannelIds m_translateCameraInputChannelIds; //!< Input channel ids that map to internal translation types.
         bool m_boost = false; //!< Is the translation speed currently being multiplied/scaled upwards.
     };
 
-    //! A camera input to handle discrete scroll events that can modify the camera look distance.
+    //! A camera input to handle discrete scroll events that can modify the camera offset.
     class OrbitDollyScrollCameraInput : public CameraInput
     {
     public:
@@ -482,17 +598,19 @@ namespace AzFramework
         AZStd::function<float()> m_scrollSpeedFn;
     };
 
-    //! A camera input to handle motion deltas that can modify the camera look distance.
-    class OrbitDollyCursorMoveCameraInput : public CameraInput
+    //! A camera input to handle motion deltas that can modify the camera offset.
+    class OrbitDollyMotionCameraInput : public CameraInput
     {
     public:
-        explicit OrbitDollyCursorMoveCameraInput(const InputChannelId& dollyChannelId);
+        explicit OrbitDollyMotionCameraInput(const InputChannelId& dollyChannelId);
 
         // CameraInput overrides ...
         bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
 
-        AZStd::function<float()> m_cursorSpeedFn;
+        void SetDollyInputChannelId(const InputChannelId& dollyChannelId);
+
+        AZStd::function<float()> m_motionSpeedFn;
 
     private:
         InputChannelId m_dollyChannelId; //!< Input channel to begin the dolly cursor camera input.
@@ -501,10 +619,10 @@ namespace AzFramework
     };
 
     //! A camera input to handle discrete scroll events that can scroll (translate) the camera along its forward axis.
-    class ScrollTranslationCameraInput : public CameraInput
+    class LookScrollTranslationCameraInput : public CameraInput
     {
     public:
-        ScrollTranslationCameraInput();
+        LookScrollTranslationCameraInput();
 
         // CameraInput overrides ...
         bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
@@ -518,7 +636,7 @@ namespace AzFramework
     class OrbitCameraInput : public CameraInput
     {
     public:
-        using LookAtFn = AZStd::function<AZStd::optional<AZ::Vector3>(const AZ::Vector3& position, const AZ::Vector3& direction)>;
+        using PivotFn = AZStd::function<AZ::Vector3(const AZ::Vector3& position, const AZ::Vector3& direction)>;
 
         explicit OrbitCameraInput(const InputChannelId& orbitChannelId);
 
@@ -527,19 +645,21 @@ namespace AzFramework
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
         bool Exclusive() const override;
 
+        void SetOrbitInputChannelId(const InputChannelId& orbitChanneId);
+
         Cameras m_orbitCameras; //!< The camera inputs to run when this camera input is active (only these will run as it is exclusive).
 
-        //! Override the default behavior for how a look-at point is calculated.
-        void SetLookAtFn(const LookAtFn& lookAtFn);
+        //! Override the default behavior for how a pivot point is calculated.
+        void SetPivotFn(PivotFn pivotFn);
 
     private:
         InputChannelId m_orbitChannelId; //!< Input channel to begin the orbit camera input.
-        LookAtFn m_lookAtFn; //!< The look-at behavior to use for this orbit camera (how is the look-at point calculated/retrieved).
+        PivotFn m_pivotFn; //!< The pivot position to use for this orbit camera (how is the pivot point calculated/retrieved).
     };
 
-    inline void OrbitCameraInput::SetLookAtFn(const LookAtFn& lookAtFn)
+    inline void OrbitCameraInput::SetPivotFn(PivotFn pivotFn)
     {
-        m_lookAtFn = lookAtFn;
+        m_pivotFn = AZStd::move(pivotFn);
     }
 
     inline bool OrbitCameraInput::Exclusive() const
@@ -547,6 +667,62 @@ namespace AzFramework
         return true;
     }
 
+    //! Callback to use for FocusCameraInput when a free look camera is being used.
+    //! @note This is when offset is zero.
+    inline AZ::Vector3 FocusLook(float)
+    {
+        return AZ::Vector3::CreateZero();
+    }
+
+    //! Callback to use for FocusCameraInput when a orbit camera is being used.
+    //! @note This is when offset is non zero.
+    inline AZ::Vector3 FocusOrbit(const float length)
+    {
+        return AZ::Vector3::CreateAxisY(-length);
+    }
+
+    using FocusOffsetFn = AZStd::function<AZ::Vector3(float)>;
+
+    //! A focus behavior to align the camera view to the position returned by the pivot function.
+    //! @note This only alters the camera orientation, the translation is unaffected.
+    class FocusCameraInput : public CameraInput
+    {
+    public:
+        using PivotFn = AZStd::function<AZStd::optional<AZ::Vector3>()>;
+
+        FocusCameraInput(const InputChannelId& focusChannelId, FocusOffsetFn offsetFn);
+
+        // CameraInput overrides ...
+        bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
+        Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
+
+        //! Override the default behavior for how a pivot point is calculated.
+        void SetPivotFn(PivotFn pivotFn);
+
+        void SetFocusInputChannelId(const InputChannelId& focusChannelId);
+
+    private:
+        InputChannelId m_focusChannelId; //!< Input channel to begin the focus camera input.
+        Camera m_nextCamera;
+        PivotFn m_pivotFn;
+        FocusOffsetFn m_offsetFn;
+    };
+
+    //! Provides a CameraInput type that can be implemented without needing to create a new type deriving from CameraInput.
+    //! This can be very useful for specific use cases that are less generally applicable.
+    class CustomCameraInput : public CameraInput
+    {
+    public:
+        // CameraInput overrides ...
+        bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
+        Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
+
+        //! HandleEvents delegates directly to m_handleEventsFn.
+        AZStd::function<bool(CameraInput&, const InputEvent&, const ScreenVector&, float)> m_handleEventsFn;
+        //! StepCamera delegates directly to m_stepCameraFn.
+        AZStd::function<Camera(CameraInput&, const Camera&, const ScreenVector&, float, float)> m_stepCameraFn;
+    };
+
     //! Map from a generic InputChannel event to a camera specific InputEvent.
-    InputEvent BuildInputEvent(const InputChannel& inputChannel);
+    InputEvent BuildInputEvent(const InputChannel& inputChannel, const WindowSize& windowSize);
 } // namespace AzFramework

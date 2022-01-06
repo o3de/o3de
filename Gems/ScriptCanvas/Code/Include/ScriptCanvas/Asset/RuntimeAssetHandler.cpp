@@ -81,7 +81,6 @@ namespace ScriptCanvas
     {
         (void)type;
         AZ_Assert(type == AZ::AzTypeInfo<RuntimeAsset>::Uuid(), "This handler deals only with the Script Canvas Runtime Asset type!");
-
         return aznew RuntimeAsset(id);
     }
 
@@ -93,8 +92,7 @@ namespace ScriptCanvas
         {
             RuntimeAsset* runtimeAsset = asset.GetAs<RuntimeAsset>();
             AZ_Assert(runtimeAsset, "RuntimeAssetHandler::InitAsset This should be a Script Canvas runtime asset, as this is the only type this handler processes!");
-            Execution::Context::InitializeActivationData(runtimeAsset->GetData());
-            Execution::InitializeInterpretedStatics(runtimeAsset->GetData());
+            Execution::Context::InitializeActivationData(runtimeAsset->m_runtimeData);
         }
     }
 
@@ -117,7 +115,10 @@ namespace ScriptCanvas
         AZ_Assert(runtimeAsset, "This should be a Script Canvas runtime asset, as this is the only type we process!");
         if (runtimeAsset && m_serializeContext)
         {
-            AZ::ObjectStream* binaryObjStream = AZ::ObjectStream::Create(stream, *m_serializeContext, AZ::ObjectStream::ST_XML);
+            AZ::ObjectStream* binaryObjStream = AZ::ObjectStream::Create(stream, *m_serializeContext
+                , g_saveRuntimeAssetsAsPlainTextForDebug
+                    ? AZ::ObjectStream::ST_XML
+                    : AZ::ObjectStream::ST_BINARY);
             bool graphSaved = binaryObjStream->WriteClass(&runtimeAsset->m_runtimeData);
             binaryObjStream->Finalize();
             return graphSaved;
@@ -129,7 +130,7 @@ namespace ScriptCanvas
     void RuntimeAssetHandler::DestroyAsset(AZ::Data::AssetPtr ptr)
     {
         RuntimeAsset* runtimeAsset = azrtti_cast<RuntimeAsset*>(ptr);
-        Execution::Context::UnloadData(runtimeAsset->GetData());
+        Execution::Context::UnloadData(runtimeAsset->m_runtimeData);
         delete ptr;
     }
 
@@ -157,4 +158,5 @@ namespace ScriptCanvas
             }
         }
     }
+
 }

@@ -14,66 +14,6 @@
 #include "Include/IBaseLibraryManager.h"
 #include <Util/PathUtil.h>
 #include <IFileUtil.h>
-#include "Undo/IUndoObject.h"
-
-//////////////////////////////////////////////////////////////////////////
-// Undo functionality for libraries.
-//////////////////////////////////////////////////////////////////////////
-
-class CUndoBaseLibrary
-    : public IUndoObject
-{
-public:
-    CUndoBaseLibrary(CBaseLibrary* pLib, const QString& description, const QString& selectedItem = QString())
-        : m_pLib(pLib)
-        , m_description(description)
-        , m_redo(nullptr)
-        , m_selectedItem(selectedItem)
-    {
-        assert(m_pLib);
-
-        m_undo = GetIEditor()->GetSystem()->CreateXmlNode("Undo");
-        m_pLib->Serialize(m_undo, false);
-    }
-
-    QString GetEditorObjectName() override
-    {
-        return m_selectedItem;
-    }
-
-protected:
-    int GetSize() override { return sizeof(CUndoBaseLibrary); }
-    QString GetDescription() override { return m_description; };
-
-    void Undo(bool bUndo) override
-    {
-        if (bUndo)
-        {
-            m_redo = GetIEditor()->GetSystem()->CreateXmlNode("Redo");
-            m_pLib->Serialize(m_redo, false);
-        }
-        m_pLib->Serialize(m_undo, true);
-        m_pLib->SetModified();
-        GetIEditor()->Notify(eNotify_OnDataBaseUpdate);
-    }
-
-    void Redo() override
-    {
-        m_pLib->Serialize(m_redo, true);
-        m_pLib->SetModified();
-        GetIEditor()->Notify(eNotify_OnDataBaseUpdate);
-    }
-
-private:
-    QString m_description;
-    QString m_selectedItem;
-    _smart_ptr<CBaseLibrary> m_pLib;
-    XmlNodeRef m_undo;
-    XmlNodeRef m_redo;
-};
-
-
-
 
 //////////////////////////////////////////////////////////////////////////
 // CBaseLibrary implementation.
@@ -258,9 +198,8 @@ bool CBaseLibrary::SaveLibrary(const char* name, bool saveEmptyLibrary)
     }
     if (!bRes)
     {
-        string strMessage;
         QByteArray filenameUtf8 = fileName.toUtf8();
-        strMessage.Format("The file %s is read-only and the save of the library couldn't be performed. Try to remove the \"read-only\" flag or check-out the file and then try again.", filenameUtf8.data());
+        AZStd::string strMessage = AZStd::string::format("The file %s is read-only and the save of the library couldn't be performed. Try to remove the \"read-only\" flag or check-out the file and then try again.", filenameUtf8.data());
         CryMessageBox(strMessage.c_str(), "Saving Error", MB_OK | MB_ICONWARNING);
     }
     return bRes;

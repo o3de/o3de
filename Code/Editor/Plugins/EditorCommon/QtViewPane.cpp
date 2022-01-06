@@ -9,8 +9,6 @@
 
 #include "platform.h"
 
-#pragma warning(disable: 4266) // disabled warning from afk overrides
-
 #define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS
 #include <afxwin.h>
 #include <vector>
@@ -30,13 +28,10 @@
 #include "QtUtil.h"
 
 // ugly dependencies:
-#pragma warning(push)
-#pragma warning(disable: 4244) // warning C4244: 'argument' : conversion from 'A' to 'B', possible loss of data
 #include "Functor.h"
 class CXmlArchive;
 #include <IRenderer.h>
 #include "Util/PathUtil.h"
-#pragma warning(pop)
 // ^^^
 
 // ---------------------------------------------------------------------------

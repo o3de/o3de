@@ -29,7 +29,7 @@ namespace ScriptCanvas
 
                 IsNull();
 
-                AZ::Outcome<DependencyReport, void> GetDependencies() const;
+                AZ::Outcome<DependencyReport, void> GetDependencies() const override;
 
                 bool IsIfBranch() const override;
 

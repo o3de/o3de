@@ -499,7 +499,7 @@ namespace AZ
             //   outSH -> output SH coefficient array
             void EvalSHRotationFast(const float R[9], const uint32_t maxBand, const float* inSH, float* outSH)
             {
-                if (maxBand >= 0 && maxBand <= 2)
+                if (maxBand <= 2)
                 {
                     ZHF3(R, maxBand, inSH, outSH);
                 }
@@ -514,10 +514,7 @@ namespace AZ
             //   outSH -> output SH coefficient array
             void EvalSHRotation(const float R[9], const uint32_t maxBand, const double* inSH, double* outSH)
             {
-                if (maxBand >= 0)
-                {
-                    WignerD(R, maxBand, inSH, outSH);
-                }
+                WignerD(R, maxBand, inSH, outSH);
             }
 
             // Fast evaluation for first 3 bands

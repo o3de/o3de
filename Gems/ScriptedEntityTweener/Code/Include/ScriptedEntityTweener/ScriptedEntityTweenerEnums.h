@@ -79,7 +79,7 @@ namespace ScriptedEntityTweener
     struct AnimationProperties
     {
         static const float UninitializedParamFloat;
-        static const unsigned int InvalidCallbackId;
+        static const int InvalidCallbackId;
         static const unsigned int InvalidTimelineId;
 
         EasingMethod m_easeMethod;

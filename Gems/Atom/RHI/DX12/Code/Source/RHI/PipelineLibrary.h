@@ -35,6 +35,7 @@ namespace AZ
             void ShutdownInternal() override;
             RHI::ResultCode MergeIntoInternal(AZStd::array_view<const RHI::PipelineLibrary*> libraries) override;
             RHI::ConstPtr<RHI::PipelineLibraryData> GetSerializedDataInternal() const override;
+            bool IsMergeRequired() const;
             //////////////////////////////////////////////////////////////////////////
 
             ID3D12DeviceX* m_dx12Device = nullptr;

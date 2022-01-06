@@ -37,7 +37,6 @@ namespace GradientSignal
         float output = 0.0f;
 
         const float value = AZ::GetClamp(inputValue, 0.0f, 1.0f);
-        const float valueFalloffRange = AZ::GetClamp(m_falloffRange, 0.0f, 1.0f);
         const float valueFalloffStrength = AZ::GetClamp(m_falloffStrength, 0.0f, 1.0f);
 
         float min = m_falloffMidpoint - m_falloffRange / 2.0f;

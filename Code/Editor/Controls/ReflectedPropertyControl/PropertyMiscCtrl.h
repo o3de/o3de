@@ -6,8 +6,6 @@
  *
  */
 
-#ifndef CRYINCLUDE_EDITOR_UTILS_PROPERTYMISCCTRL_H
-#define CRYINCLUDE_EDITOR_UTILS_PROPERTYMISCCTRL_H
 #pragma once
 
 #if !defined(Q_MOC_RUN)
@@ -16,7 +14,6 @@
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include "ReflectedVar.h"
 #include "Util/VariablePropertyType.h"
-#include "Controls/ColorGradientCtrl.h"
 #include "Controls/SplineCtrl.h"
 #include <QWidget>
 #endif
@@ -54,6 +51,7 @@ private:
 
 class UserPopupWidgetHandler : public QObject, public AzToolsFramework::PropertyHandler < CReflectedVarUser, UserPropertyEditor>
 {
+    Q_OBJECT
 public:
     AZ_CLASS_ALLOCATOR(UserPopupWidgetHandler, AZ::SystemAllocator, 0);
     bool IsDefaultHandler() const override { return false; }
@@ -68,6 +66,7 @@ public:
 
 class FloatCurveHandler : public QObject, public AzToolsFramework::PropertyHandler < CReflectedVarSpline, CSplineCtrl>
 {
+    Q_OBJECT
 public:
     AZ_CLASS_ALLOCATOR(FloatCurveHandler, AZ::SystemAllocator, 0);
     bool IsDefaultHandler() const override { return false; }
@@ -81,18 +80,3 @@ public:
 
     void OnSplineChange(CSplineCtrl*);
 };
-
-class ColorCurveHandler : public QObject, public AzToolsFramework::PropertyHandler < CReflectedVarSpline, CColorGradientCtrl>
-{
-public:
-    AZ_CLASS_ALLOCATOR(ColorCurveHandler, AZ::SystemAllocator, 0);
-    bool IsDefaultHandler() const override { return false; }
-    QWidget* CreateGUI(QWidget *pParent) override;
-
-    AZ::u32 GetHandlerName(void) const override { return AZ_CRC("ePropertyColorCurve", 0xa30da4ec); }
-
-    void ConsumeAttribute(CColorGradientCtrl* GUI, AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue, const char* debugName) override;
-    void WriteGUIValuesIntoProperty(size_t index, CColorGradientCtrl* GUI, property_t& instance, AzToolsFramework::InstanceDataNode* node) override;
-    bool ReadValuesIntoGUI(size_t index, CColorGradientCtrl* GUI, const property_t& instance, AzToolsFramework::InstanceDataNode* node)  override;
-};
-#endif // CRYINCLUDE_EDITOR_UTILS_PROPERTYMISCCTRL_H

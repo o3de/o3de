@@ -10,8 +10,6 @@
 
 #include <ctime>
 
-#pragma warning(disable : 4996)
-
 namespace AWSGameLift
 {
     Aws::GameLift::GenericOutcome GameLiftServerSDKWrapper::AcceptPlayerSession(const std::string& playerSessionId)
@@ -22,6 +20,12 @@ namespace AWSGameLift
     Aws::GameLift::GenericOutcome GameLiftServerSDKWrapper::ActivateGameSession()
     {
         return Aws::GameLift::Server::ActivateGameSession();
+    }
+
+    Aws::GameLift::DescribePlayerSessionsOutcome GameLiftServerSDKWrapper::DescribePlayerSessions(
+        const Aws::GameLift::Server::Model::DescribePlayerSessionsRequest& describePlayerSessionsRequest)
+    {
+        return Aws::GameLift::Server::DescribePlayerSessions(describePlayerSessionsRequest);
     }
 
     Aws::GameLift::Server::InitSDKOutcome GameLiftServerSDKWrapper::InitSDK()
@@ -56,7 +60,13 @@ namespace AWSGameLift
         }
 
         char buffer[50];
-        strftime(buffer, sizeof(buffer), "%FT%TZ", gmtime(&terminationTime));
+        tm time;
+#if AZ_TRAIT_USE_SECURE_CRT_FUNCTIONS
+        gmtime_s(&time, &terminationTime);
+#else
+        time = *gmtime(&terminationTime);
+#endif
+        strftime(buffer, sizeof(buffer), "%FT%TZ", &time);
 
         return AZStd::string(buffer);
     }
@@ -65,4 +75,17 @@ namespace AWSGameLift
     {
         return Aws::GameLift::Server::RemovePlayerSession(playerSessionId.c_str());
     }
+
+    Aws::GameLift::StartMatchBackfillOutcome GameLiftServerSDKWrapper::StartMatchBackfill(
+        const Aws::GameLift::Server::Model::StartMatchBackfillRequest& startMatchBackfillRequest)
+    {
+        return Aws::GameLift::Server::StartMatchBackfill(startMatchBackfillRequest);
+    }
+
+    Aws::GameLift::GenericOutcome GameLiftServerSDKWrapper::StopMatchBackfill(
+        const Aws::GameLift::Server::Model::StopMatchBackfillRequest& stopMatchBackfillRequest)
+    {
+        return Aws::GameLift::Server::StopMatchBackfill(stopMatchBackfillRequest);
+    }
+
 } // namespace AWSGameLift

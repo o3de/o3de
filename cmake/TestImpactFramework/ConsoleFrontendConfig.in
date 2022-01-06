@@ -15,19 +15,14 @@
     "temp": {
       "root": "${temp_dir}",
       "relative_paths": {
-        "artifact_dir": "RuntimeArtifact"
+        "artifact_dir": "RuntimeArtifact",
+        "enumeration_cache_dir": "EnumerationCache"
       }
     },
     "active": {
       "root": "${active_dir}",
       "relative_paths": {
-        "test_impact_data_files": {
-          "main": "TestImpactData.main.spartia",
-          "periodic": "TestImpactData.periodic.spartia",
-          "sandbox": "TestImpactData.sandbox.spartia"
-        },
-        "enumeration_cache_dir": "EnumerationCache",
-        "last_build_target_list_file": "LastRunBuildTargets.json"
+        "test_impact_data_file": "TestImpactData.spartia"
       }
     },
     "historic": {

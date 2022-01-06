@@ -30,6 +30,8 @@ namespace AudioControls
         : QDialog(pParent)
         , m_eType(eType)
     {
+        AZ_Assert(CAudioControlsEditorPlugin::GetATLModel() != nullptr, "ATLControlsDialog - ATL Model is null!");
+
         setWindowTitle(GetWindowTitle(m_eType));
         setWindowModality(Qt::ApplicationModal);
 
@@ -167,11 +169,9 @@ namespace AudioControls
         if (parent.isValid())
         {
             bool bChildValid = false;
-            bool bHasChildren = false;
             QModelIndex child = parent.model()->index(0, 0, parent);
             for (int i = 1; child.isValid(); ++i)
             {
-                bHasChildren = true;
                 if (ApplyFilter(child))
                 {
                     bChildValid = true;

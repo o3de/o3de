@@ -130,18 +130,18 @@ namespace AzNetworking
         //! @param listener   a connection listener to receive connection related events
         //! @param header     the packet header received to process
         //! @param serializer the output serializer containing the transmitted packet data
-        //! @return boolean true on successful handling of the received header
-        bool HandleCorePacket(IConnectionListener& listener, UdpPacketHeader& header, ISerializer& serializer);
+        //! @return PacketDispatchResult result of processing the core packet
+        PacketDispatchResult HandleCorePacket(IConnectionListener& listener, UdpPacketHeader& header, ISerializer& serializer);
 
         AZ_DISABLE_COPY_MOVE(UdpConnection);
 
         UdpNetworkInterface& m_networkInterface;
-        UdpPacketTracker  m_packetTracker;
-        UdpReliableQueue  m_reliableQueue;
-        UdpFragmentQueue  m_fragmentQueue;
-        ConnectionState   m_state = ConnectionState::Disconnected;
-        ConnectionRole    m_connectionRole = ConnectionRole::Connector;
-        DtlsEndpoint      m_dtlsEndpoint;
+        UdpPacketTracker m_packetTracker;
+        UdpReliableQueue m_reliableQueue;
+        UdpFragmentQueue m_fragmentQueue;
+        ConnectionState  m_state = ConnectionState::Disconnected;
+        ConnectionRole   m_connectionRole = ConnectionRole::Connector;
+        DtlsEndpoint     m_dtlsEndpoint;
 
         AZ::TimeMs m_lastSentPacketMs;
         uint32_t   m_unackedPacketCount = 0;

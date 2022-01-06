@@ -14,16 +14,14 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Component/Component.h>
 
-#include <IAudioSystem.h>
-
 #include <functional>
 #include <QSharedPointer>
 #include <QWidgetAction>
 #include <QComboBox>
 
+#include <AzToolsFramework/UI/Prefab/PrefabViewportFocusPathHandler.h>
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
 
-#include <HMDBus.h>
 #endif
 
 // CViewportTitleDlg dialog
@@ -45,7 +43,6 @@ class CViewportTitleDlg
     : public QWidget
     , public IEditorNotifyListener
     , public ISystemEventListener
-    , public AZ::VR::VREventBus::Handler
 {
     Q_OBJECT
 public:
@@ -79,19 +76,11 @@ Q_SIGNALS:
 protected:
     virtual void OnInitDialog();
 
-    virtual void OnEditorNotifyEvent(EEditorNotifyEvent event);
+    void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
     void OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam) override;
 
     void OnMaximize();
-    void OnToggleHelpers();
     void UpdateDisplayInfo();
-
-    //////////////////////////////////////////////////////////////////////////
-    /// VR Event Bus Implementation
-    //////////////////////////////////////////////////////////////////////////
-    void OnHMDInitialized() override;
-    void OnHMDShutdown() override;
-    //////////////////////////////////////////////////////////////////////////
 
     void SetupCameraDropdownMenu();
     void SetupResolutionDropdownMenu();
@@ -141,7 +130,6 @@ protected:
 
     void OnBnClickedGotoPosition();
     void OnBnClickedMuteAudio();
-    void OnBnClickedEnableVR();
 
     void UpdateMuteActionText();
 
@@ -152,8 +140,8 @@ protected:
 
     void CheckForCameraSpeedUpdate();
 
-    void OnGridSnappingToggled();
-    void OnAngleSnappingToggled();
+    void OnGridSnappingToggled(int state);
+    void OnAngleSnappingToggled(int state);
 
     void OnGridSpinBoxChanged(double value);
     void OnAngleSpinBoxChanged(double value);
@@ -164,32 +152,31 @@ protected:
     QMenu* m_aspectMenu = nullptr;
     QMenu* m_resolutionMenu = nullptr;
     QMenu* m_viewportInformationMenu = nullptr;
+    QMenu* m_helpersMenu = nullptr;
+    QAction* m_helpersAction = nullptr;
+    QAction* m_iconsAction = nullptr;
     QAction* m_noInformationAction = nullptr;
     QAction* m_normalInformationAction = nullptr;
     QAction* m_fullInformationAction = nullptr;
     QAction* m_compactInformationAction = nullptr;
     QAction* m_audioMuteAction = nullptr;
-    QAction* m_enableVRAction = nullptr;
-    QAction* m_enableGridSnappingAction = nullptr;
-    QAction* m_enableAngleSnappingAction = nullptr;
+    QCheckBox* m_enableGridSnappingCheckBox = nullptr;
+    QCheckBox* m_enableGridVisualizationCheckBox = nullptr;
+    QCheckBox* m_enableAngleSnappingCheckBox = nullptr;
     QComboBox* m_cameraSpeed = nullptr;
     AzQtComponents::DoubleSpinBox* m_gridSpinBox = nullptr;
     AzQtComponents::DoubleSpinBox* m_angleSpinBox = nullptr;
     QWidgetAction* m_gridSizeActionWidget = nullptr;
     QWidgetAction* m_angleSizeActionWidget = nullptr;
 
-    Audio::SAudioRequest m_oMuteAudioRequest;
-    Audio::SAudioManagerRequestData<Audio::eAMRT_MUTE_ALL> m_oMuteAudioRequestData;
-    Audio::SAudioRequest m_oUnmuteAudioRequest;
-    Audio::SAudioManagerRequestData<Audio::eAMRT_UNMUTE_ALL> m_oUnmuteAudioRequestData;
-
+    AzToolsFramework::Prefab::PrefabViewportFocusPathHandler* m_prefabViewportFocusPathHandler = nullptr;
 
     QScopedPointer<Ui::ViewportTitleDlg> m_ui;
 };
 
 namespace AzToolsFramework
 {
-    //! A component to reflect scriptable commands for the Editor
+    //! A component to reflect scriptable commands for the Editor.
     class ViewportTitleDlgPythonFuncsHandler
         : public AZ::Component
     {

@@ -70,9 +70,9 @@ static void OnMenuGrid()
 inline Vec3 SnapToSize(Vec3 v, double size)
 {
     Vec3 snapped;
-    snapped.x = floor((v.x / size) + 0.5) * size;
-    snapped.y = floor((v.y / size) + 0.5) * size;
-    snapped.z = floor((v.z / size) + 0.5) * size;
+    snapped.x = static_cast<f32>(floor((v.x / size) + 0.5) * size);
+    snapped.y = static_cast<f32>(floor((v.y / size) + 0.5) * size);
+    snapped.z = static_cast<f32>(floor((v.z / size) + 0.5) * size);
     return snapped;
 }
 
@@ -234,7 +234,7 @@ void Q2DViewport::UpdateContent(int flags)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void Q2DViewport::OnRButtonDown(Qt::KeyboardModifiers modifiers, const QPoint& point)
+void Q2DViewport::OnRButtonDown([[maybe_unused]] Qt::KeyboardModifiers modifiers, const QPoint& point)
 {
     if (GetIEditor()->IsInGameMode())
     {
@@ -245,9 +245,6 @@ void Q2DViewport::OnRButtonDown(Qt::KeyboardModifiers modifiers, const QPoint& p
     {
         setFocus();
     }
-
-    // Check Edit Tool.
-    MouseCallback(eMouseRDown, point, modifiers);
 
     SetCurrentCursor(STD_CURSOR_MOVE, QString());
 
@@ -273,17 +270,8 @@ void Q2DViewport::OnRButtonUp([[maybe_unused]] Qt::KeyboardModifiers modifiers, 
 }
 
 //////////////////////////////////////////////////////////////////////////
-void Q2DViewport::OnMButtonDown(Qt::KeyboardModifiers modifiers, const QPoint& point)
+void Q2DViewport::OnMButtonDown([[maybe_unused]] Qt::KeyboardModifiers modifiers, const QPoint& point)
 {
-    ////////////////////////////////////////////////////////////////////////
-    // User pressed the middle mouse button
-    ////////////////////////////////////////////////////////////////////////
-    // Check Edit Tool.
-    if (MouseCallback(eMouseMDown, point, modifiers))
-    {
-        return;
-    }
-
     // Save the mouse down position
     m_RMouseDownPos = point;
 
@@ -300,14 +288,8 @@ void Q2DViewport::OnMButtonDown(Qt::KeyboardModifiers modifiers, const QPoint& p
 }
 
 //////////////////////////////////////////////////////////////////////////
-void Q2DViewport::OnMButtonUp(Qt::KeyboardModifiers modifiers, const QPoint& point)
+void Q2DViewport::OnMButtonUp([[maybe_unused]] Qt::KeyboardModifiers modifiers, [[maybe_unused]] const QPoint& point)
 {
-    // Check Edit Tool.
-    if (MouseCallback(eMouseMUp, point, modifiers))
-    {
-        return;
-    }
-
     SetViewMode(NothingMode);
 
     ReleaseMouse();
@@ -479,8 +461,8 @@ void Q2DViewport::SetZoom(float fZoomFactor, const QPoint& center)
     SetZoomFactor(fZoomFactor);
 
     // Calculate new offset to center zoom on mouse.
-    float x2 = center.x();
-    float y2 = m_rcClient.height() - center.y();
+    float x2 = static_cast<float>(center.x());
+    float y2 = static_cast<float>(m_rcClient.height() - center.y());
     ofsx = -(x2 / s2 - x2 / s1 - ofsx);
     ofsy = -(y2 / s2 - y2 / s1 - ofsy);
     SetScrollOffset(ofsx, ofsy, true);
@@ -544,21 +526,14 @@ void Q2DViewport::Update()
 QPoint Q2DViewport::WorldToView(const Vec3& wp) const
 {
     Vec3 sp = m_screenTM.TransformPoint(wp);
-    QPoint p = QPoint(sp.x, sp.y);
-    return p;
-}
-//////////////////////////////////////////////////////////////////////////
-QPoint Q2DViewport::WorldToViewParticleEditor(const Vec3& wp, [[maybe_unused]] int width, [[maybe_unused]] int height) const //Eric@conffx implement for the children class of IDisplayViewport
-{
-    Vec3 sp = m_screenTM.TransformPoint(wp);
-    QPoint p = QPoint(sp.x, sp.y);
+    QPoint p = QPoint(static_cast<int>(sp.x), static_cast<int>(sp.y));
     return p;
 }
 
 //////////////////////////////////////////////////////////////////////////
 Vec3    Q2DViewport::ViewToWorld(const QPoint& vp, [[maybe_unused]] bool* collideWithTerrain, [[maybe_unused]] bool onlyTerrain, [[maybe_unused]] bool bSkipVegetation, [[maybe_unused]] bool bTestRenderMesh, [[maybe_unused]] bool* collideWithObject) const
 {
-    Vec3 wp = m_screenTM_Inverted.TransformPoint(Vec3(vp.x(), vp.y(), 0));
+    Vec3 wp = m_screenTM_Inverted.TransformPoint(Vec3(static_cast<f32>(vp.x()), static_cast<f32>(vp.y()), 0.0f));
     switch (m_axis)
     {
     case VPA_XY:
@@ -694,10 +669,10 @@ void Q2DViewport::DrawGrid(DisplayContext& dc, bool bNoXNumbers)
     Matrix34 viewTM = GetViewTM().GetInverted() * m_screenTM_Inverted;
     Matrix34 viewTM_Inv = m_screenTM * GetViewTM();
 
-    Vec3 viewP0 = viewTM.TransformPoint(Vec3(0, 0, 0));
-    Vec3 viewP1 = viewTM.TransformPoint(Vec3(m_rcClient.width(), m_rcClient.height(), 0));
+    Vec3 viewP0 = viewTM.TransformPoint(Vec3(0.0f, 0.0f, 0.0f));
+    Vec3 viewP1 = viewTM.TransformPoint(Vec3(static_cast<f32>(m_rcClient.width()), static_cast<f32>(m_rcClient.height()), 0.0f));
 
-    Vec3 viewP_Text = viewTM.TransformPoint(Vec3(0, m_rcClient.height(), 0));
+    Vec3 viewP_Text = viewTM.TransformPoint(Vec3(0.0f, static_cast<f32>(m_rcClient.height()), 0.0f));
 
     if (m_bShowMinorGridLines && (!m_bAutoAdjustGrids || pixelsPerGrid > 5))
     {
@@ -806,8 +781,8 @@ void Q2DViewport::DrawGrid(DisplayContext& dc, bool bNoXNumbers)
     {
         Vec3 org = m_screenTM.TransformPoint(Vec3(0, 0, 0));
         dc.SetColor(AXIS_GRID_COLOR);
-        dc.DrawLine(Vec3(org.x, 0, fZ), Vec3(org.x, height, fZ));
-        dc.DrawLine(Vec3(0, org.y, fZ), Vec3(width, org.y, fZ));
+        dc.DrawLine(Vec3(org.x, 0.0f, fZ), Vec3(org.x, static_cast<f32>(height), fZ));
+        dc.DrawLine(Vec3(0.0f, org.y, fZ), Vec3(static_cast<f32>(width), org.y, fZ));
     }
     //////////////////////////////////////////////////////////////////////////
 }
@@ -860,18 +835,18 @@ void Q2DViewport::DrawAxis(DisplayContext& dc)
     int height = m_rcClient.height();
 
     int size = 25;
-    Vec3 pos(30, height - 15, 1);
+    Vec3 pos(30.0f, static_cast<f32>(height - 15), 1.0f);
 
     dc.SetColor(colx.x, colx.y, colx.z, 1);
-    dc.DrawLine(pos, pos + Vec3(size, 0, 0));
+    dc.DrawLine(pos, pos + Vec3(static_cast<f32>(size), 0.0f, 0.0f));
 
-    dc.SetColor(coly.x, coly.y, coly.z, 1);
-    dc.DrawLine(pos, pos - Vec3(0, size, 0));
+    dc.SetColor(coly.x, coly.y, coly.z, 1.0f);
+    dc.DrawLine(pos, pos - Vec3(0.0f, static_cast<f32>(size), 0.0f));
 
     dc.SetColor(m_colorAxisText);
-    pos.x -= 3;
-    pos.y -= 4;
-    pos.z = 2;
+    pos.x -= 3.0f;
+    pos.y -= 4.0f;
+    pos.z = 2.0f;
     dc.Draw2dTextLabel(pos.x + size + 4, pos.y - 2, 1, xstr);
     dc.Draw2dTextLabel(pos.x + 3, pos.y - size, 1, ystr);
     dc.Draw2dTextLabel(pos.x - 5, pos.y + 5, 1, zstr);
@@ -910,10 +885,14 @@ void Q2DViewport::DrawSelection(DisplayContext& dc)
         dc.SetColor(SELECTION_RECT_COLOR.x, SELECTION_RECT_COLOR.y, SELECTION_RECT_COLOR.z, 1);
         QPoint p1(m_selectedRect.left(), m_selectedRect.top());
         QPoint p2(m_selectedRect.right() + 1, m_selectedRect.bottom() +1);
-        dc.DrawLine(Vec3(p1.x(), p1.y(), 0), Vec3(p2.x(), p1.y(), 0));
-        dc.DrawLine(Vec3(p1.x(), p2.y(), 0), Vec3(p2.x(), p2.y(), 0));
-        dc.DrawLine(Vec3(p1.x(), p1.y(), 0), Vec3(p1.x(), p2.y(), 0));
-        dc.DrawLine(Vec3(p2.x(), p1.y(), 0), Vec3(p2.x(), p2.y(), 0));
+        dc.DrawLine(
+            Vec3(static_cast<f32>(p1.x()), static_cast<f32>(p1.y()), 0.0f), Vec3(static_cast<f32>(p2.x()), static_cast<f32>(p1.y()), 0.0f));
+        dc.DrawLine(
+            Vec3(static_cast<f32>(p1.x()), static_cast<f32>(p2.y()), 0.0f), Vec3(static_cast<f32>(p2.x()), static_cast<f32>(p2.y()), 0.0f));
+        dc.DrawLine(
+            Vec3(static_cast<f32>(p1.x()), static_cast<f32>(p1.y()), 0.0f), Vec3(static_cast<f32>(p1.x()), static_cast<f32>(p2.y()), 0.0f));
+        dc.DrawLine(
+            Vec3(static_cast<f32>(p2.x()), static_cast<f32>(p1.y()), 0.0f), Vec3(static_cast<f32>(p2.x()), static_cast<f32>(p2.y()), 0.0f));
     }
 }
 
@@ -1038,16 +1017,16 @@ AABB Q2DViewport::GetWorldBounds(const QPoint& pnt1, const QPoint& pnt2)
     {
     case VPA_XY:
     case VPA_YX:
-        box.min.z = -maxSize;
-        box.max.z = maxSize;
+        box.min.z = static_cast<f32>(-maxSize);
+        box.max.z = static_cast<f32>(maxSize);
         break;
     case VPA_XZ:
-        box.min.y = -maxSize;
-        box.max.y = maxSize;
+        box.min.y = static_cast<f32>(-maxSize);
+        box.max.y = static_cast<f32>(maxSize);
         break;
     case VPA_YZ:
-        box.min.x = -maxSize;
-        box.max.x = maxSize;
+        box.min.x = static_cast<f32>(-maxSize);
+        box.max.x = static_cast<f32>(maxSize);
         break;
     }
     return box;
@@ -1076,32 +1055,32 @@ void Q2DViewport::OnDragSelectRectangle(const QRect &rect, [[maybe_unused]] bool
     switch (m_axis)
     {
     case VPA_XY:
-        box.min.z = -maxSize;
-        box.max.z = maxSize;
+        box.min.z = static_cast<f32>(-maxSize);
+        box.max.z = static_cast<f32>(maxSize);
 
         w = box.max.x - box.min.x;
         h = box.max.y - box.min.y;
         sprintf_s(szNewStatusText, "X:%g Y:%g W:%g H:%g", org.x, org.y, w, h);
         break;
     case VPA_YX:
-        box.min.z = -maxSize;
-        box.max.z = maxSize;
+        box.min.z = static_cast<f32>(-maxSize);
+        box.max.z = static_cast<f32>(maxSize);
 
         w = box.max.y - box.min.y;
         h = box.max.x - box.min.x;
         sprintf_s(szNewStatusText, "X:%g Y:%g W:%g H:%g", org.x, org.y, w, h);
         break;
     case VPA_XZ:
-        box.min.y = -maxSize;
-        box.max.y = maxSize;
+        box.min.y = static_cast<f32>(-maxSize);
+        box.max.y = static_cast<f32>(maxSize);
 
         w = box.max.x - box.min.x;
         h = box.max.z - box.min.z;
         sprintf_s(szNewStatusText, "X:%g Z:%g  W:%g H:%g", org.x, org.z, w, h);
         break;
     case VPA_YZ:
-        box.min.x = -maxSize;
-        box.max.x = maxSize;
+        box.min.x = static_cast<f32>(-maxSize);
+        box.max.x = static_cast<f32>(maxSize);
 
         w = box.max.y - box.min.y;
         h = box.max.z - box.min.z;

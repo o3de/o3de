@@ -14,6 +14,7 @@
 
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetSerializer.h>
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -32,6 +33,8 @@ extern "C" {
 #   include <Lua/lualib.h>
 #   include <Lua/lauxlib.h>
 }
+
+AZ_DEFINE_BUDGET(Script);
 
 namespace ScriptComponentCpp
 {
@@ -139,7 +142,7 @@ namespace AzFramework
     AZ::Outcome<void, AZStd::string> CompileScript(ScriptCompileRequest& request, AZ::ScriptContext& scriptContext)
     {
         AZ_TracePrintf(request.m_errorWindow.data(), "Starting script compile.\n");
-                
+
         AZStd::string debugName = "@";
         debugName += request.m_sourceFile;
         AZStd::to_lower(debugName.begin(), debugName.end());
@@ -177,14 +180,14 @@ namespace AzFramework
     {
         using namespace AZ::IO;
         FileIOStream outputStream;
-        
+
         if (!outputStream.Open(request.m_destPath.c_str(), OpenMode::ModeWrite | OpenMode::ModeBinary))
         {
             return AZ::Failure(AZStd::string("Failed to open output file %s", request.m_destPath.data()));
         }
 
         request.m_output = &outputStream;
-        
+
         if (writeAssetInfo)
         {
             if (request.m_prewriteCallback)
@@ -289,8 +292,8 @@ namespace AzFramework
 
     namespace Internal
     {
-        
-        static AZStd::string PrintLuaValue(lua_State* lua, int stackIdx, int depth = 0)
+
+        AZStd::string PrintLuaValue(lua_State* lua, int stackIdx, int depth = 0)
         {
             constexpr int MaxDepth = 4;
             if (depth > MaxDepth)
@@ -299,7 +302,7 @@ namespace AzFramework
             }
 
             const int elementType = lua_type(lua, stackIdx);
-            
+
             switch (elementType)
             {
             case LUA_TSTRING:
@@ -344,7 +347,7 @@ namespace AzFramework
                         {
                             keyValuePairs += " ";
                         }
-                    }   
+                    }
                 }
 
                 tableStr += keyValuePairs.length() < 1024 ? keyValuePairs : AZStd::string::format("too many keys (%i)!", keyCount);
@@ -357,26 +360,23 @@ namespace AzFramework
             }
         }
 
-        #pragma warning( push )
-        #pragma warning( disable : 4505 )  // StackDump is useful to debug the lua stack. Disable warning about this method being unused. 
         //=========================================================================
         // DebugPrintStack
         // Prints the Lua stack starting from the bottom.
         //=========================================================================
-        static void DebugPrintStack(lua_State* lua, const AZStd::string& prefix = "")
-        {
-            AZStd::string dump = prefix;
-            const int stackSize = lua_gettop(lua);
-            for (int stackIdx = 1; stackIdx <= stackSize; ++stackIdx)
-            {
-                dump += PrintLuaValue(lua, stackIdx);
-                dump += " "; // add separator
-            }
-
-            AZ_Warning("ScriptComponent", false, "Stack Dump: '%s'", dump.c_str());
-        }
-        #pragma warning( pop )
-
+        // DO NOT DELETE StackDump is useful to debug the lua stack.
+        //static void DebugPrintStack(lua_State* lua, const AZStd::string& prefix = "")
+        //{
+        //    AZStd::string dump = prefix;
+        //    const int stackSize = lua_gettop(lua);
+        //    for (int stackIdx = 1; stackIdx <= stackSize; ++stackIdx)
+        //    {
+        //        dump += PrintLuaValue(lua, stackIdx);
+        //        dump += " "; // add separator
+        //    }
+        //
+        //    AZ_Warning("ScriptComponent", false, "Stack Dump: '%s'", dump.c_str());
+        //}
 
         //=========================================================================
         // Properties__IndexFindSubtable
@@ -619,7 +619,7 @@ namespace AzFramework
     //=========================================================================
     void ScriptComponent::LoadScript()
     {
-        AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::Script, "Load: %s", m_script.GetHint().c_str());
+        AZ_PROFILE_SCOPE(Script, "Load: %s", m_script.GetHint().c_str());
 
         // Load the script, find the base table, create the entity table
         // find the Activate/Deactivate functions in the script and call them
@@ -634,7 +634,7 @@ namespace AzFramework
     //=========================================================================
     void ScriptComponent::UnloadScript()
     {
-        AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::Script, "Unload: %s", m_script.GetHint().c_str());
+        AZ_PROFILE_SCOPE(Script, "Unload: %s", m_script.GetHint().c_str());
 
         DestroyEntityTable();
     }
@@ -822,7 +822,7 @@ namespace AzFramework
         lua_rawget(lua, baseStackIndex); // ScriptTable[OnActivate]
         if (lua_isfunction(lua, -1))
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Script, "OnActivate");
+            AZ_PROFILE_SCOPE(Script, "OnActivate");
             lua_rawgeti(lua, LUA_REGISTRYINDEX, m_table); // push the entity table as the only argument
             AZ::Internal::LuaSafeCall(lua, 1, 0); // Call OnActivate
         }
@@ -856,7 +856,7 @@ namespace AzFramework
             lua_rawget(lua, -2); // ScriptTable[OnDeactivte]
             if (lua_isfunction(lua, -1))
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Script, "OnDeactivate");
+                AZ_PROFILE_SCOPE(Script, "OnDeactivate");
 
                 lua_pushvalue(lua, -3); // push the entity table as the only argument
                 AZ::Internal::LuaSafeCall(lua, 1, 0); // Call OnDeactivate
@@ -891,18 +891,18 @@ namespace AzFramework
             // This is the root table (properties) it will be used as properties for all sub tables
             // ScriptComponents can share the same lua script asset, but each instance's Properties table needs to be unique.
             // This way the script can change a property at runtime and not affect the other ScriptComponents which are using the same script.
-            // For normal properties we will create new variable instances, but NetSynched variables aren't stored in Lua, and instead 
+            // For normal properties we will create new variable instances, but NetSynched variables aren't stored in Lua, and instead
             // are retrieved using the __index and __newIndex metamethods.
             // Ensure that this instance of Properties table has the proper __index and __newIndex metamethods.
-            lua_newtable(lua);  // This new table will become the Properties instance metatable.  Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {} 
+            lua_newtable(lua);  // This new table will become the Properties instance metatable.  Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {}
             lua_pushliteral(lua, "__index");  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {} __index
             lua_pushcclosure(lua, &Internal::Properties__Index, 0);  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {} __index function
-            lua_rawset(lua, -3);  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {__index=Internal::Properties__Index} 
+            lua_rawset(lua, -3);  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {__index=Internal::Properties__Index}
 
             lua_pushliteral(lua, "__newindex");
             lua_pushcclosure(lua, &Internal::Properties__NewIndex, 0);
-            lua_rawset(lua, -3);  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {__index=Internal::Properties__Index __newindex=Internal::Properties__NewIndex} 
-            lua_setmetatable(lua, -2);  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {Meta{__index=Internal::Properties__Index __newindex=Internal::Properties__NewIndex} } 
+            lua_rawset(lua, -3);  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {__index=Internal::Properties__Index __newindex=Internal::Properties__NewIndex}
+            lua_setmetatable(lua, -2);  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {Meta{__index=Internal::Properties__Index __newindex=Internal::Properties__NewIndex} }
 
             metatableIndex = lua_gettop(lua);  // This will be the metatable for all subtables
         }

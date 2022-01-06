@@ -17,6 +17,7 @@
 #include <EMotionFX/Exporters/ExporterLib/Exporter/Exporter.h>
 #include "CommandManager.h"
 #include <AzFramework/API/ApplicationAPI.h>
+#include <Source/Integration/Assets/ActorAsset.h>
 
 
 namespace CommandSystem
@@ -65,35 +66,29 @@ namespace CommandSystem
             filename = EMotionFX::EMotionFXManager::ResolvePath(filename.c_str());
         }
 
-        // check if we have already loaded the actor
-        EMotionFX::Actor* actorFromManager = EMotionFX::GetActorManager().FindActorByFileName(filename.c_str());
-        if (actorFromManager)
+        AZ::Data::AssetId actorAssetId;
+        EBUS_EVENT_RESULT(
+            actorAssetId, AZ::Data::AssetCatalogRequestBus, GetAssetIdByPath, filename.c_str(), AZ::Data::s_invalidAssetType, false);
+        if (!actorAssetId.IsValid())
         {
-            AZStd::to_string(outResult, actorFromManager->GetID());
-            return true;
-        }
-
-        // init the settings
-        EMotionFX::Importer::ActorSettings settings;
-
-        // extract default values from the command syntax automatically, if they aren't specified explicitly
-        settings.m_loadLimits                    = parameters.GetValueAsBool("loadLimits",           this);
-        settings.m_loadMorphTargets              = parameters.GetValueAsBool("loadMorphTargets",     this);
-        settings.m_loadSkeletalLoDs              = parameters.GetValueAsBool("loadSkeletalLODs",     this);
-        settings.m_dualQuatSkinning              = parameters.GetValueAsBool("dualQuatSkinning",     this);
-
-        // try to load the actor
-        AZStd::shared_ptr<EMotionFX::Actor> actor {EMotionFX::GetImporter().LoadActor(filename.c_str(), &settings)};
-        if (!actor)
-        {
-            outResult = AZStd::string::format("Failed to load actor from '%s'. File may not exist at this path or may have incorrect permissions", filename.c_str());
+            outResult = AZStd::string::format("Cannot import actor. Cannot find asset at path %s.", filename.c_str());
             return false;
         }
 
-        // Because the actor is directly loaded from disk (without going through an actor asset), we need to ask for a blocking
-        // load for the asset that actor is depend on.
-        actor->Finalize(EMotionFX::Actor::LoadRequirement::RequireBlockingLoad);
+        // check if we have already loaded the actor
+        const size_t actorIndex = EMotionFX::GetActorManager().FindActorIndex(actorAssetId);
+        if (actorIndex != InvalidIndex)
+        {
+            return true;
+        }
 
+        // Do a blocking load of the asset.
+        AZ::Data::Asset<EMotionFX::Integration::ActorAsset> actorAsset =
+            AZ::Data::AssetManager::Instance().GetAsset<EMotionFX::Integration::ActorAsset>(
+                actorAssetId, AZ::Data::AssetLoadBehavior::Default);
+        actorAsset.BlockUntilLoadComplete();
+
+        EMotionFX::Actor* actor = actorAsset->GetActor();
         // set the actor id in case we have specified it as parameter
         if (actorID != MCORE_INVALIDINDEX32)
         {
@@ -113,7 +108,6 @@ namespace CommandSystem
             GetCommandManager()->ExecuteCommandInsideCommand(AZStd::string::format("Select -actorID %i", actor->GetID()).c_str(), outResult);
         }
 
-
         // mark the workspace as dirty
         m_oldWorkspaceDirtyFlag = GetCommandManager()->GetWorkspaceDirtyFlag();
         GetCommandManager()->SetWorkspaceDirtyFlag(true);
@@ -121,7 +115,8 @@ namespace CommandSystem
         // return the id of the newly created actor
         AZStd::to_string(outResult, actor->GetID());
 
-        EMotionFX::GetActorManager().RegisterActor(AZStd::move(actor));
+        // Register actor asset.
+        EMotionFX::GetActorManager().RegisterActor(AZStd::move(actorAsset));
 
         return true;
     }
@@ -145,14 +140,14 @@ namespace CommandSystem
         }
 
         // find the actor based on the given id
-        AZStd::shared_ptr<EMotionFX::Actor> actor = EMotionFX::GetActorManager().FindSharedActorByID(actorID);
-        if (actor == nullptr)
+        AZ::Data::AssetId actorAssetId = EMotionFX::GetActorManager().FindAssetIdByActorId(actorID);
+        if (!actorAssetId.IsValid())
         {
             outResult = AZStd::string::format("Cannot remove actor. Actor ID %i is not valid.", actorID);
             return false;
         }
 
-        EMotionFX::GetActorManager().UnregisterActor(actor);
+        EMotionFX::GetActorManager().UnregisterActor(actorAssetId);
 
         // update our render actors
         AZStd::string updateRenderActorsResult;

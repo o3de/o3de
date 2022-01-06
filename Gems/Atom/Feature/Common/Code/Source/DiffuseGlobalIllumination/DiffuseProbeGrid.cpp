@@ -42,8 +42,7 @@ namespace AZ
             m_rayTraceImageAttachmentId = AZStd::string::format("ProbeRayTraceImageAttachmentId_%s", uuidString.c_str());
             m_irradianceImageAttachmentId = AZStd::string::format("ProbeIrradianceImageAttachmentId_%s", uuidString.c_str());
             m_distanceImageAttachmentId = AZStd::string::format("ProbeDistanceImageAttachmentId_%s", uuidString.c_str());
-            m_relocationImageAttachmentId = AZStd::string::format("ProbeRelocationImageAttachmentId_%s", uuidString.c_str());
-            m_classificationImageAttachmentId = AZStd::string::format("ProbeClassificationImageAttachmentId_%s", uuidString.c_str());
+            m_probeDataImageAttachmentId = AZStd::string::format("ProbeDataImageAttachmentId_%s", uuidString.c_str());
 
             // setup culling
             m_cullable.m_cullData.m_scene = m_scene;
@@ -93,7 +92,7 @@ namespace AZ
                 }
             }
 
-            m_probeRayRotationTransform = AZ::Matrix4x4::CreateIdentity();
+            m_probeRayRotation = AZ::Quaternion::CreateIdentity();
         }
 
         bool DiffuseProbeGrid::ValidateProbeSpacing(const AZ::Vector3& newSpacing)
@@ -128,8 +127,8 @@ namespace AZ
 
         void DiffuseProbeGrid::SetTransform(const AZ::Transform& transform)
         {
-            m_position = transform.GetTranslation();
-            m_aabbWs = Aabb::CreateCenterHalfExtents(m_position, m_extents / 2.0f);
+            m_transform = transform;
+            m_obbWs = Obb::CreateFromPositionRotationAndHalfLengths(m_transform.GetTranslation(), m_transform.GetRotation(), m_extents / 2.0f);
 
             // probes need to be relocated since the grid position changed
             m_remainingRelocationIterations = DefaultNumRelocationIterations;
@@ -145,7 +144,7 @@ namespace AZ
         void DiffuseProbeGrid::SetExtents(const AZ::Vector3& extents)
         {
             m_extents = extents;
-            m_aabbWs = Aabb::CreateCenterHalfExtents(m_position, m_extents / 2.0f);
+            m_obbWs = Obb::CreateFromPositionRotationAndHalfLengths(m_transform.GetTranslation(), m_transform.GetRotation(), m_extents / 2.0f);
 
             // recompute the number of probes since the extents changed
             UpdateProbeCount();
@@ -182,58 +181,24 @@ namespace AZ
             }
 
             m_updateTextures = true;
+
+            // probes need to be relocated since the mode has changed
+            m_remainingRelocationIterations = DefaultNumRelocationIterations;
         }
 
         void DiffuseProbeGrid::SetBakedTextures(const DiffuseProbeGridBakedTextures& bakedTextures)
         {
             AZ_Assert(bakedTextures.m_irradianceImage.get(), "Invalid Irradiance image passed to SetBakedTextures");
             AZ_Assert(bakedTextures.m_distanceImage.get(), "Invalid Distance image passed to SetBakedTextures");
-            AZ_Assert(bakedTextures.m_relocationImageData.size() > 0, "Invalid Relocation image data passed to SetBakedTextures");
-            AZ_Assert(bakedTextures.m_classificationImageData.size() > 0, "Invalid Classification image data passed to SetBakedTextures");
+            AZ_Assert(bakedTextures.m_probeDataImage.get(), "Invalid ProbeData image passed to SetBakedTextures");
 
             m_bakedIrradianceImage = bakedTextures.m_irradianceImage;
             m_bakedDistanceImage = bakedTextures.m_distanceImage;
+            m_bakedProbeDataImage = bakedTextures.m_probeDataImage;
 
             m_bakedIrradianceRelativePath = bakedTextures.m_irradianceImageRelativePath;
             m_bakedDistanceRelativePath = bakedTextures.m_distanceImageRelativePath;
-            m_bakedRelocationRelativePath = bakedTextures.m_relocationImageRelativePath;
-            m_bakedClassificationRelativePath = bakedTextures.m_classificationImageRelativePath;
-
-            m_bakedRelocationImageData.resize(bakedTextures.m_relocationImageData.size());
-            memcpy(m_bakedRelocationImageData.data(), bakedTextures.m_relocationImageData.data(), bakedTextures.m_relocationImageData.size());
-
-            m_bakedClassificationImageData.resize(bakedTextures.m_classificationImageData.size());
-            memcpy(m_bakedClassificationImageData.data(), bakedTextures.m_classificationImageData.data(), bakedTextures.m_classificationImageData.size());
-
-            // create the relocation and distance RW textures now, these are needed for shader compatibility
-            // (image data is copied in UpdateTextures)
-            {
-                m_bakedRelocationImage = RHI::Factory::Get().CreateImage();
-                RHI::ImageInitRequest initRequest;
-                initRequest.m_image = m_bakedRelocationImage.get();
-                initRequest.m_descriptor = RHI::ImageDescriptor::Create2D(
-                    RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyRead,
-                    bakedTextures.m_relocationImageDescriptor.m_size.m_width,
-                    bakedTextures.m_relocationImageDescriptor.m_size.m_height,
-                    bakedTextures.m_relocationImageDescriptor.m_format);
-
-                [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(initRequest);
-                AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize Relocation image");
-            }
-            
-            {
-                m_bakedClassificationImage = RHI::Factory::Get().CreateImage();
-                RHI::ImageInitRequest initRequest;
-                initRequest.m_image = m_bakedClassificationImage.get();
-                initRequest.m_descriptor = RHI::ImageDescriptor::Create2D(
-                    RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyRead,
-                    bakedTextures.m_classificationImageDescriptor.m_size.m_width,
-                    bakedTextures.m_classificationImageDescriptor.m_size.m_height,
-                    bakedTextures.m_classificationImageDescriptor.m_format);
-
-                [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(initRequest);
-                AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize Classification image");
-            }
+            m_bakedProbeDataRelativePath = bakedTextures.m_probeDataImageRelativePath;
 
             m_updateTextures = true;
         }
@@ -242,8 +207,7 @@ namespace AZ
         {
             return m_bakedIrradianceImage.get() &&
                 m_bakedDistanceImage.get() &&
-                m_bakedRelocationImage.get() &&
-                m_bakedClassificationImage.get();
+                m_bakedProbeDataImage.get();
         }
 
         void DiffuseProbeGrid::ResetCullingVisibility()
@@ -344,63 +308,18 @@ namespace AZ
                     AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize m_probeDistanceImage image");
                 }
 
-                // probe relocation
+                // probe data
                 {
                     uint32_t width = probeCountX;
                     uint32_t height = probeCountY;
 
-                    m_relocationImage[m_currentImageIndex] = RHI::Factory::Get().CreateImage();
+                    m_probeDataImage[m_currentImageIndex] = RHI::Factory::Get().CreateImage();
 
                     RHI::ImageInitRequest request;
-                    request.m_image = m_relocationImage[m_currentImageIndex].get();
-                    request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyRead, width, height, DiffuseProbeGridRenderData::RelocationImageFormat);
+                    request.m_image = m_probeDataImage[m_currentImageIndex].get();
+                    request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyRead, width, height, DiffuseProbeGridRenderData::ProbeDataImageFormat);
                     [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
-                    AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize m_probeRelocationImage image");
-                }
-
-                // probe classification
-                {
-                    uint32_t width = probeCountX;
-                    uint32_t height = probeCountY;
-
-                    m_classificationImage[m_currentImageIndex] = RHI::Factory::Get().CreateImage();
-
-                    RHI::ImageInitRequest request;
-                    request.m_image = m_classificationImage[m_currentImageIndex].get();
-                    request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyRead, width, height, DiffuseProbeGridRenderData::ClassificationImageFormat);
-                    [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
-                    AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize m_probeClassificationImage image");
-                }
-            }
-            else if (m_mode == DiffuseProbeGridMode::Baked && HasValidBakedTextures())
-            {
-                // copy the baked relocation and classification texture data to the RW textures
-                // (these need to be RW for shader compatibility)
-                RHI::ImageSubresourceRange range{ 0, 0, 0 ,0 };
-                RHI::ImageSubresourceLayoutPlaced layout;
-
-                // relocation
-                {
-                    m_bakedRelocationImage->GetSubresourceLayouts(range, &layout, nullptr);
-
-                    RHI::ImageUpdateRequest updateRequest;
-                    updateRequest.m_image = m_bakedRelocationImage.get();
-                    updateRequest.m_sourceSubresourceLayout = layout;
-                    updateRequest.m_sourceData = m_bakedRelocationImageData.data();
-                    updateRequest.m_imageSubresourcePixelOffset = RHI::Origin(0, 0, 0);
-                    m_renderData->m_imagePool->UpdateImageContents(updateRequest);
-                }
-
-                // classification
-                {
-                    m_bakedClassificationImage->GetSubresourceLayouts(range, &layout, nullptr);
-
-                    RHI::ImageUpdateRequest updateRequest;
-                    updateRequest.m_image = m_bakedClassificationImage.get();
-                    updateRequest.m_sourceSubresourceLayout = layout;
-                    updateRequest.m_sourceData = m_bakedClassificationImageData.data();
-                    updateRequest.m_imageSubresourcePixelOffset = RHI::Origin(0, 0, 0);
-                    m_renderData->m_imagePool->UpdateImageContents(updateRequest);
+                    AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize m_probeDataImage image");
                 }
             }
 
@@ -467,41 +386,29 @@ namespace AZ
             RHI::ShaderInputConstantIndex constantIndex;
 
             constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.origin"));
-            srg->SetConstant(constantIndex, m_position);
+            srg->SetConstant(constantIndex, m_transform.GetTranslation());
 
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.numRaysPerProbe"));
-            srg->SetConstant(constantIndex, m_numRaysPerProbe);
+            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.rotation"));
+            srg->SetConstant(constantIndex, m_transform.GetRotation());
 
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeGridSpacing"));
+            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeRayRotation"));
+            srg->SetConstant(constantIndex, m_probeRayRotation);
+
+            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.movementType"));
+            srg->SetConstant(constantIndex, 0);
+
+            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeSpacing"));
             srg->SetConstant(constantIndex, m_probeSpacing);
 
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeMaxRayDistance"));
-            srg->SetConstant(constantIndex, m_probeMaxRayDistance);
-
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeGridCounts"));
+            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeCounts"));
             uint32_t probeGridCounts[3];
             probeGridCounts[0] = m_probeCountX;
             probeGridCounts[1] = m_probeCountY;
             probeGridCounts[2] = m_probeCountZ;
             srg->SetConstantRaw(constantIndex, &probeGridCounts[0], sizeof(probeGridCounts));
 
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeDistanceExponent"));
-            srg->SetConstant(constantIndex, m_probeDistanceExponent);
-
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeHysteresis"));
-            srg->SetConstant(constantIndex, m_probeHysteresis);
-
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeChangeThreshold"));
-            srg->SetConstant(constantIndex, m_probeChangeThreshold);
-
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeBrightnessThreshold"));
-            srg->SetConstant(constantIndex, m_probeBrightnessThreshold);
-
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeIrradianceEncodingGamma"));
-            srg->SetConstant(constantIndex, m_probeIrradianceEncodingGamma);
-
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeInverseIrradianceEncodingGamma"));
-            srg->SetConstant(constantIndex, m_probeInverseIrradianceEncodingGamma);
+            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeNumRays"));
+            srg->SetConstant(constantIndex, m_numRaysPerProbe);
 
             constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeNumIrradianceTexels"));
             srg->SetConstant(constantIndex, DefaultNumIrradianceTexels);
@@ -509,20 +416,57 @@ namespace AZ
             constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeNumDistanceTexels"));
             srg->SetConstant(constantIndex, DefaultNumDistanceTexels);
 
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.normalBias"));
+            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeHysteresis"));
+            srg->SetConstant(constantIndex, m_probeHysteresis);
+
+            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeMaxRayDistance"));
+            srg->SetConstant(constantIndex, m_probeMaxRayDistance);
+
+            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeNormalBias"));
             srg->SetConstant(constantIndex, m_normalBias);
 
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.viewBias"));
+            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeViewBias"));
             srg->SetConstant(constantIndex, m_viewBias);
 
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeMinFrontfaceDistance"));
-            srg->SetConstant(constantIndex, m_probeMinFrontfaceDistance);
+            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeDistanceExponent"));
+            srg->SetConstant(constantIndex, m_probeDistanceExponent);
+
+            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeIrradianceThreshold"));
+            srg->SetConstant(constantIndex, m_probeIrradianceThreshold);
+
+            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeBrightnessThreshold"));
+            srg->SetConstant(constantIndex, m_probeBrightnessThreshold);
+
+            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeIrradianceEncodingGamma"));
+            srg->SetConstant(constantIndex, m_probeIrradianceEncodingGamma);
 
             constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeBackfaceThreshold"));
             srg->SetConstant(constantIndex, m_probeBackfaceThreshold);
 
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeRayRotationTransform"));
-            srg->SetConstant(constantIndex, m_probeRayRotationTransform);
+            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeMinFrontfaceDistance"));
+            srg->SetConstant(constantIndex, m_probeMinFrontfaceDistance);
+
+            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeScrollOffsets"));
+            srg->SetConstant(constantIndex, Vector3::CreateZero());
+
+            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeRayDataFormat"));
+            srg->SetConstant(constantIndex, 1);
+
+            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeIrradianceFormat"));
+            srg->SetConstant(constantIndex, 1);
+
+            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeRelocationEnabled"));
+            srg->SetConstant(constantIndex, true);
+
+            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeClassificationEnabled"));
+            srg->SetConstant(constantIndex, true);
+
+            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeScrollClear[0]"));
+            srg->SetConstant(constantIndex, false);
+            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeScrollClear[1]"));
+            srg->SetConstant(constantIndex, false);
+            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeScrollClear[2]"));
+            srg->SetConstant(constantIndex, false);
         }
 
         void DiffuseProbeGrid::UpdateRayTraceSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& layout)
@@ -549,13 +493,9 @@ namespace AZ
             imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeDistance"));
             m_rayTraceSrg->SetImageView(imageIndex, m_distanceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
 
-            // probe relocation
-            imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeOffsets"));
-            m_rayTraceSrg->SetImageView(imageIndex, m_relocationImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeRelocationImageViewDescriptor).get());
-
-            // probe classification
-            imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeStates"));
-            m_rayTraceSrg->SetImageView(imageIndex, m_classificationImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeClassificationImageViewDescriptor).get());
+            // probe data
+            imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeData"));
+            m_rayTraceSrg->SetImageView(imageIndex, m_probeDataImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
 
             // grid settings
             constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_ambientMultiplier"));
@@ -587,8 +527,8 @@ namespace AZ
             imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeIrradiance"));
             m_blendIrradianceSrg->SetImageView(imageIndex, m_irradianceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
 
-            imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeStates"));
-            m_blendIrradianceSrg->SetImageView(imageIndex, m_classificationImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeClassificationImageViewDescriptor).get());
+            imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeData"));
+            m_blendIrradianceSrg->SetImageView(imageIndex, m_probeDataImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
 
             SetGridConstants(m_blendIrradianceSrg);
         }
@@ -610,8 +550,8 @@ namespace AZ
             imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeDistance"));
             m_blendDistanceSrg->SetImageView(imageIndex, m_distanceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
 
-            imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeStates"));
-            m_blendDistanceSrg->SetImageView(imageIndex, m_classificationImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeClassificationImageViewDescriptor).get());
+            imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeData"));
+            m_blendDistanceSrg->SetImageView(imageIndex, m_probeDataImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
 
             SetGridConstants(m_blendDistanceSrg);
         }
@@ -712,8 +652,8 @@ namespace AZ
             imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeRayTrace"));
             m_relocationSrg->SetImageView(imageIndex, m_rayTraceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeRayTraceImageViewDescriptor).get());
 
-            imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeRelocation"));
-            m_relocationSrg->SetImageView(imageIndex, m_relocationImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeRelocationImageViewDescriptor).get());
+            imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeData"));
+            m_relocationSrg->SetImageView(imageIndex, m_probeDataImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
 
             float probeDistanceScale = (aznumeric_cast<float>(m_remainingRelocationIterations) / DefaultNumRelocationIterations);
             constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeDistanceScale"));
@@ -731,14 +671,13 @@ namespace AZ
             }
 
             const RHI::ShaderResourceGroupLayout* srgLayout = m_classificationSrg->GetLayout();
-            RHI::ShaderInputConstantIndex constantIndex;
             RHI::ShaderInputImageIndex imageIndex;
 
             imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeRayTrace"));
             m_classificationSrg->SetImageView(imageIndex, m_rayTraceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeRayTraceImageViewDescriptor).get());
 
-            imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeStates"));
-            m_classificationSrg->SetImageView(imageIndex, m_classificationImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeClassificationImageViewDescriptor).get());
+            imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeData"));
+            m_classificationSrg->SetImageView(imageIndex, m_probeDataImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
 
             SetGridConstants(m_classificationSrg);
         }
@@ -761,14 +700,15 @@ namespace AZ
             RHI::ShaderInputImageIndex imageIndex;
 
             constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_modelToWorld"));
-            AZ::Matrix3x4 modelToWorld = AZ::Matrix3x4::CreateFromMatrix3x3AndTranslation(Matrix3x3::CreateIdentity(), m_position) * AZ::Matrix3x4::CreateScale(m_extents);
+            AZ::Matrix3x4 modelToWorld = AZ::Matrix3x4::CreateFromTransform(m_transform) * AZ::Matrix3x4::CreateScale(m_extents);
             m_renderObjectSrg->SetConstant(constantIndex, modelToWorld);
 
-            constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_aabbMin"));
-            m_renderObjectSrg->SetConstant(constantIndex, m_aabbWs.GetMin());
+            constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_modelToWorldInverse"));
+            AZ::Matrix3x4 modelToWorldInverse = AZ::Matrix3x4::CreateFromTransform(m_transform).GetInverseFull();
+            m_renderObjectSrg->SetConstant(constantIndex, modelToWorldInverse);
 
-            constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_aabbMax"));
-            m_renderObjectSrg->SetConstant(constantIndex, m_aabbWs.GetMax());
+            constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_obbHalfLengths"));
+            m_renderObjectSrg->SetConstant(constantIndex, m_obbWs.GetHalfLengths());
 
             constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_enableDiffuseGI"));
             m_renderObjectSrg->SetConstant(constantIndex, m_enabled);
@@ -782,11 +722,8 @@ namespace AZ
             imageIndex = srgLayout->FindShaderInputImageIndex(Name("m_probeDistance"));
             m_renderObjectSrg->SetImageView(imageIndex, GetDistanceImage()->GetImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
 
-            imageIndex = srgLayout->FindShaderInputImageIndex(Name("m_probeOffsets"));
-            m_renderObjectSrg->SetImageView(imageIndex, GetRelocationImage()->GetImageView(m_renderData->m_probeRelocationImageViewDescriptor).get());
-
-            imageIndex = srgLayout->FindShaderInputImageIndex(Name("m_probeStates"));
-            m_renderObjectSrg->SetImageView(imageIndex, GetClassificationImage()->GetImageView(m_renderData->m_probeClassificationImageViewDescriptor).get());
+            imageIndex = srgLayout->FindShaderInputImageIndex(Name("m_probeData"));
+            m_renderObjectSrg->SetImageView(imageIndex, GetProbeDataImage()->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
 
             SetGridConstants(m_renderObjectSrg);
 
@@ -822,13 +759,14 @@ namespace AZ
             lod.m_screenCoverageMax = 1.0f;
 
             // update cullable bounds
+            Aabb aabbWs = Aabb::CreateFromObb(m_obbWs);
             Vector3 center;
             float radius;
-            m_aabbWs.GetAsSphere(center, radius);
+            aabbWs.GetAsSphere(center, radius);
 
             m_cullable.m_cullData.m_boundingSphere = Sphere(center, radius);
-            m_cullable.m_cullData.m_boundingObb = m_aabbWs.GetTransformedObb(AZ::Transform::CreateIdentity());
-            m_cullable.m_cullData.m_visibilityEntry.m_boundingVolume = m_aabbWs;
+            m_cullable.m_cullData.m_boundingObb = m_obbWs;
+            m_cullable.m_cullData.m_visibilityEntry.m_boundingVolume = aabbWs;
             m_cullable.m_cullData.m_visibilityEntry.m_userData = &m_cullable;
             m_cullable.m_cullData.m_visibilityEntry.m_typeFlags = AzFramework::VisibilityEntry::TYPE_RPI_Cullable;
 

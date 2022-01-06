@@ -93,6 +93,7 @@ namespace Blast
         void InitPhysics();
         void DeactivatePhysics();
 
+        void ApplyGlobalConfiguration(const BlastGlobalConfiguration& materialLibrary);
         void RegisterCommands();
 
         // Internal helper functions & classes

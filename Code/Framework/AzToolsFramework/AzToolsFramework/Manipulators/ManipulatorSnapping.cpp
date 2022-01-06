@@ -110,35 +110,11 @@ namespace AzToolsFramework
         return unsnappedPosition + CalculateSnappedOffset(unsnappedPosition, snapAxes, snapAxesCount, size);
     }
 
-    AZ::Vector3 CalculateSnappedTerrainPosition(
-        const AZ::Vector3& worldSurfacePosition, const AZ::Transform& worldFromLocal, const int viewportId, const float size)
-    {
-        const AZ::Transform localFromWorld = worldFromLocal.GetInverse();
-        const AZ::Vector3 localSurfacePosition = localFromWorld.TransformPoint(worldSurfacePosition);
-
-        // snap in xy plane
-        AZ::Vector3 localSnappedSurfacePosition = localSurfacePosition +
-            CalculateSnappedOffset(localSurfacePosition, AZ::Vector3::CreateAxisX(), size) +
-            CalculateSnappedOffset(localSurfacePosition, AZ::Vector3::CreateAxisY(), size);
-
-        // find terrain height at xy snapped location
-        float terrainHeight = 0.0f;
-        ViewportInteraction::MainEditorViewportInteractionRequestBus::EventResult(
-            terrainHeight, viewportId, &ViewportInteraction::MainEditorViewportInteractionRequestBus::Events::TerrainHeight,
-            Vector3ToVector2(worldFromLocal.TransformPoint(localSnappedSurfacePosition)));
-
-        // set snapped z value to terrain height
-        AZ::Vector3 localTerrainHeight = localFromWorld.TransformPoint(AZ::Vector3(0.0f, 0.0f, terrainHeight));
-        localSnappedSurfacePosition.SetZ(localTerrainHeight.GetZ());
-
-        return localSnappedSurfacePosition;
-    }
-
     bool GridSnapping(const int viewportId)
     {
         bool snapping = false;
-        ViewportInteraction::ViewportInteractionRequestBus::EventResult(
-            snapping, viewportId, &ViewportInteraction::ViewportInteractionRequestBus::Events::GridSnappingEnabled);
+        ViewportInteraction::ViewportSettingsRequestBus::EventResult(
+            snapping, viewportId, &ViewportInteraction::ViewportSettingsRequestBus::Events::GridSnappingEnabled);
 
         return snapping;
     }
@@ -146,8 +122,8 @@ namespace AzToolsFramework
     float GridSize(const int viewportId)
     {
         float gridSize = 0.0f;
-        ViewportInteraction::ViewportInteractionRequestBus::EventResult(
-            gridSize, viewportId, &ViewportInteraction::ViewportInteractionRequestBus::Events::GridSize);
+        ViewportInteraction::ViewportSettingsRequestBus::EventResult(
+            gridSize, viewportId, &ViewportInteraction::ViewportSettingsRequestBus::Events::GridSize);
 
         return gridSize;
     }
@@ -168,8 +144,8 @@ namespace AzToolsFramework
     bool AngleSnapping(const int viewportId)
     {
         bool snapping = false;
-        ViewportInteraction::ViewportInteractionRequestBus::EventResult(
-            snapping, viewportId, &ViewportInteraction::ViewportInteractionRequestBus::Events::AngleSnappingEnabled);
+        ViewportInteraction::ViewportSettingsRequestBus::EventResult(
+            snapping, viewportId, &ViewportInteraction::ViewportSettingsRequestBus::Events::AngleSnappingEnabled);
 
         return snapping;
     }
@@ -177,8 +153,8 @@ namespace AzToolsFramework
     float AngleStep(const int viewportId)
     {
         float angle = 0.0f;
-        ViewportInteraction::ViewportInteractionRequestBus::EventResult(
-            angle, viewportId, &ViewportInteraction::ViewportInteractionRequestBus::Events::AngleStep);
+        ViewportInteraction::ViewportSettingsRequestBus::EventResult(
+            angle, viewportId, &ViewportInteraction::ViewportSettingsRequestBus::Events::AngleStep);
 
         return angle;
     }
@@ -186,8 +162,8 @@ namespace AzToolsFramework
     bool ShowingGrid(const int viewportId)
     {
         bool show = false;
-        ViewportInteraction::ViewportInteractionRequestBus::EventResult(
-            show, viewportId, &ViewportInteraction::ViewportInteractionRequestBus::Events::ShowGrid);
+        ViewportInteraction::ViewportSettingsRequestBus::EventResult(
+            show, viewportId, &ViewportInteraction::ViewportSettingsRequestBus::Events::ShowGrid);
 
         return show;
     }

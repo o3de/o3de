@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_IEDITOR_H
-#define CRYINCLUDE_EDITOR_IEDITOR_H
 #pragma once
 
 #ifdef PLUGIN_EXPORTS
@@ -25,6 +22,7 @@
 #include <WinWidgetId.h>
 
 #include <AzCore/Component/EntityId.h>
+#include <AzCore/Debug/Budget.h>
 
 class QMenu;
 
@@ -68,11 +66,9 @@ class CDisplaySettings;
 struct SGizmoParameters;
 class CLevelIndependentFileMan;
 class CSelectionTreeManager;
-struct IResourceSelectorHost;
 struct SEditorSettings;
 class CGameExporter;
 class IAWSResourceManager;
-struct IEditorPanelUtils;
 
 namespace WinWidget
 {
@@ -170,8 +166,6 @@ enum EEditorNotifyEvent
     eNotify_OnEndTerrainRebuild,       // Sent when terrain end rebuilt (resized,...)
     eNotify_OnVegetationObjectSelection, // When vegetation objects selection change.
     eNotify_OnVegetationPanelUpdate,   // When vegetation objects selection change.
-
-    eNotify_OnDisplayRenderUpdate,     // Sent when editor finish terrain texture generation.
 
     eNotify_OnDataBaseUpdate,          // DataBase Library was modified.
 
@@ -511,8 +505,6 @@ struct IEditor
     virtual CBaseObject* NewObject(const char* typeName, const char* fileName = "", const char* name = "", float x = 0.0f, float y = 0.0f, float z = 0.0f, bool modifyDoc = true) = 0;
     //! Delete object
     virtual void DeleteObject(CBaseObject* obj) = 0;
-    //! Clone object
-    virtual CBaseObject* CloneObject(CBaseObject* obj) = 0;
     //! Get current selection group
     virtual CSelectionGroup* GetSelection() = 0;
     virtual CBaseObject* GetSelectedObject() = 0;
@@ -533,8 +525,6 @@ struct IEditor
     virtual IEditorMaterialManager* GetIEditorMaterialManager() = 0; // Vladimir@Conffx
     //! Returns IconManager.
     virtual IIconManager* GetIconManager() = 0;
-    //! Get Panel Editor Utilities
-    virtual IEditorPanelUtils* GetEditorPanelUtils() = 0;
     //! Get Music Manager.
     virtual CMusicManager* GetMusicManager() = 0;
     virtual float GetTerrainElevation(float x, float y) = 0;
@@ -704,7 +694,6 @@ struct IEditor
 
     virtual CUIEnumsDatabase* GetUIEnumsDatabase() = 0;
     virtual void AddUIEnums() = 0;
-    virtual void GetMemoryUsage(ICrySizer* pSizer) = 0;
     virtual void ReduceMemory() = 0;
 
     //! Export manager for exporting objects and a terrain from the game to DCC tools
@@ -714,7 +703,6 @@ struct IEditor
     virtual ESystemConfigSpec GetEditorConfigSpec() const = 0;
     virtual ESystemConfigPlatform GetEditorConfigPlatform() const = 0;
     virtual void ReloadTemplates() = 0;
-    virtual IResourceSelectorHost* GetResourceSelectorHost() = 0;
     virtual void ShowStatusText(bool bEnable) = 0;
 
     // Provides a way to extend the context menu of an object. The function gets called every time the menu is opened.
@@ -740,4 +728,5 @@ struct IInitializeUIInfo
     virtual void SetInfoText(const char* text) = 0;
 };
 
-#endif // CRYINCLUDE_EDITOR_IEDITOR_H
+AZ_DECLARE_BUDGET(Editor);
+

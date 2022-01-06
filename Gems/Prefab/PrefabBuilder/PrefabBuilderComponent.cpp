@@ -132,7 +132,7 @@ namespace AZ::Prefab
         AZ::StringFunc::Path::ConstructFull(request.m_watchFolder.c_str(), request.m_sourceFile.c_str(), fullPath);
         
         // Load the JSON Dom
-        AZ::Outcome<PrefabDom, AZStd::string> readPrefabFileResult = AzFramework::FileFunc::ReadJsonFile(AZ::IO::Path(fullPath));
+        AZ::Outcome<PrefabDom, AZStd::string> readPrefabFileResult = AZ::JsonSerializationUtils::ReadJsonFile(fullPath);
         if (!readPrefabFileResult.IsSuccess())
         {
             AZ_Error(
@@ -175,6 +175,8 @@ namespace AZ::Prefab
         const AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext::ProductAssetDependencyContainer& registeredDependencies,
         AZStd::vector<AssetBuilderSDK::JobProduct>& outputProducts) const
     {
+        using namespace AzToolsFramework::Prefab::PrefabConversionUtils;
+
         outputProducts.reserve(store.size());
 
         AZStd::vector<uint8_t> data;
@@ -211,17 +213,14 @@ namespace AZ::Prefab
             if (AssetBuilderSDK::OutputObject(&object.GetAsset(), object.GetAssetType(), productPath.String(), object.GetAssetType(),
                 object.GetAsset().GetId().m_subId, product))
             {
-                auto findRegisteredDependencies = registeredDependencies.find(object.GetAsset().GetId());
-                if (findRegisteredDependencies != registeredDependencies.end())
-                {
-                    AZStd::transform(findRegisteredDependencies->second.begin(), findRegisteredDependencies->second.end(),
-                        AZStd::back_inserter(product.m_dependencies),
-                        [](const AZ::Data::AssetId& productId) -> AssetBuilderSDK::ProductDependency
-                        {
-                            return AssetBuilderSDK::ProductDependency(productId,
-                                AZ::Data::ProductDependencyInfo::CreateFlags(AZ::Data::AssetLoadBehavior::NoLoad));
-                        });
-                }
+                auto range = registeredDependencies.equal_range(object.GetAsset().GetId());
+                AZStd::transform(range.first, range.second,
+                    AZStd::back_inserter(product.m_dependencies),
+                    [](const auto& dependency) -> AssetBuilderSDK::ProductDependency
+                    {
+                        return AssetBuilderSDK::ProductDependency(
+                            dependency.second.m_assetId, AZ::Data::ProductDependencyInfo::CreateFlags(dependency.second.m_loadBehavior));
+                    });
 
                 outputProducts.push_back(AZStd::move(product));
             }

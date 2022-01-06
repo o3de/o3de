@@ -7,6 +7,7 @@
  */
 
 #include <AtomCore/std/containers/vector_set.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <Atom/RPI.Reflect/Material/ShaderCollection.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/DrawListTagRegistry.h>
@@ -22,7 +23,7 @@ namespace AZ
             : public SerializeContext::IEventHandler
         {
             //! Called right before we start reading from the instance pointed by classPtr.
-            virtual void OnReadBegin(void* classPtr)
+            void OnReadBegin(void* classPtr) override
             {
                 ShaderCollection::Item* shaderVariantReference = reinterpret_cast<ShaderCollection::Item*>(classPtr);
                 shaderVariantReference->m_shaderVariantId = shaderVariantReference->m_shaderOptionGroup.GetShaderVariantId();
@@ -125,8 +126,8 @@ namespace AZ
         }
 
         ShaderCollection::Item::Item()
+            : m_renderStatesOverlay(RHI::GetInvalidRenderStates())
         {
-            m_renderStatesOverlay = RHI::GetInvalidRenderStates();
         }
 
         ShaderCollection::Item& ShaderCollection::operator[](size_t i)
@@ -155,7 +156,8 @@ namespace AZ
         }
 
         ShaderCollection::Item::Item(const Data::Asset<ShaderAsset>& shaderAsset, const AZ::Name& shaderTag, ShaderVariantId variantId)
-            : m_shaderAsset(shaderAsset)
+            : m_renderStatesOverlay(RHI::GetInvalidRenderStates())
+            , m_shaderAsset(shaderAsset)
             , m_shaderVariantId(variantId)
             , m_shaderTag(shaderTag)
             , m_shaderOptionGroup(shaderAsset->GetShaderOptionGroupLayout(), variantId)
@@ -163,7 +165,8 @@ namespace AZ
         }
 
         ShaderCollection::Item::Item(Data::Asset<ShaderAsset>&& shaderAsset, const AZ::Name& shaderTag, ShaderVariantId variantId)
-            : m_shaderAsset(AZStd::move(shaderAsset))
+            : m_renderStatesOverlay(RHI::GetInvalidRenderStates())
+            , m_shaderAsset(AZStd::move(shaderAsset))
             , m_shaderVariantId(variantId)
             , m_shaderTag(shaderTag)
             , m_shaderOptionGroup(shaderAsset->GetShaderOptionGroupLayout(), variantId)

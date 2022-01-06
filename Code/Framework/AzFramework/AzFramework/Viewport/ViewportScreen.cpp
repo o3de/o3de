@@ -10,6 +10,7 @@
 
 #include <AzCore/Math/Frustum.h>
 #include <AzCore/Math/Matrix4x4.h>
+#include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Math/Vector4.h>
 #include <AzCore/Math/VectorConversions.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
@@ -23,48 +24,44 @@ namespace AzFramework
     // y-up, z into the screen, x-left
     //
     // x -> -x
-    // y ->  z 
+    // y ->  z
     // z ->  y
     //
     // the same transform can be used to go to/from z-up - the only difference is the order of
     // multiplication which must be used (see CameraTransformFromCameraView and CameraViewFromCameraTransform)
     // note: coordinate system convention is right handed
     //       see Matrix4x4::CreateProjection for more details
-    static AZ::Matrix4x4 ZYCoordinateSystemConversion()
+    static AZ::Matrix3x4 ZYCoordinateSystemConversion()
     {
         // note: the below matrix is the result of these combined transformations
         //      pitch = AZ::Matrix4x4::CreateRotationX(AZ::DegToRad(-90.0f));
         //      yaw = AZ::Matrix4x4::CreateRotationZ(AZ::DegToRad(180.0f));
         //      conversion = pitch * yaw
-        return AZ::Matrix4x4::CreateFromColumns(
-            AZ::Vector4(-1.0f, 0.0f, 0.0f, 0.0f), AZ::Vector4(0.0f, 0.0f, 1.0f, .0f),
-            AZ::Vector4(0.0f, 1.0f, 0.0f, 0.0f), AZ::Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+        return AZ::Matrix3x4::CreateFromColumns(
+            AZ::Vector3(-1.0f, 0.0f, 0.0f), AZ::Vector3(0.0f, 0.0f, 1.0f), AZ::Vector3(0.0f, 1.0f, 0.0f), AZ::Vector3(0.0f, 0.0f, 0.0f));
     }
 
-    AZ::Matrix4x4 CameraTransform(const CameraState& cameraState)
+    AZ::Matrix3x4 CameraTransform(const CameraState& cameraState)
     {
-        return AZ::Matrix4x4::CreateFromColumns(
-            AZ::Vector3ToVector4(cameraState.m_side), AZ::Vector3ToVector4(cameraState.m_forward),
-            AZ::Vector3ToVector4(cameraState.m_up), AZ::Vector3ToVector4(cameraState.m_position, 1.0f));
+        return AZ::Matrix3x4::CreateFromColumns(cameraState.m_side, cameraState.m_forward, cameraState.m_up, cameraState.m_position);
     }
 
-    AZ::Matrix4x4 CameraView(const CameraState& cameraState)
+    AZ::Matrix3x4 CameraView(const CameraState& cameraState)
     {
         // ensure the camera is looking down positive z with the x axis pointing left
-        return ZYCoordinateSystemConversion() * CameraTransform(cameraState).GetInverseTransform();
+        return ZYCoordinateSystemConversion() * CameraTransform(cameraState).GetInverseFast();
     }
 
-    AZ::Matrix4x4 InverseCameraView(const CameraState& cameraState)
+    AZ::Matrix3x4 InverseCameraView(const CameraState& cameraState)
     {
         // ensure the camera is looking down positive z with the x axis pointing left
-        return CameraView(cameraState).GetInverseTransform();
+        return CameraView(cameraState).GetInverseFast();
     }
 
     AZ::Matrix4x4 CameraProjection(const CameraState& cameraState)
     {
         return AZ::Matrix4x4::CreateProjection(
-            cameraState.VerticalFovRadian(), AspectRatio(cameraState.m_viewportSize), cameraState.m_nearClip,
-            cameraState.m_farClip);
+            cameraState.VerticalFovRadian(), AspectRatio(cameraState.m_viewportSize), cameraState.m_nearClip, cameraState.m_farClip);
     }
 
     AZ::Matrix4x4 InverseCameraProjection(const CameraState& cameraState)
@@ -72,14 +69,14 @@ namespace AzFramework
         return CameraProjection(cameraState).GetInverseFull();
     }
 
-    AZ::Matrix4x4 CameraTransformFromCameraView(const AZ::Matrix4x4& cameraView)
+    AZ::Matrix3x4 CameraTransformFromCameraView(const AZ::Matrix3x4& cameraView)
     {
-        return (ZYCoordinateSystemConversion() * cameraView).GetInverseTransform();
+        return (ZYCoordinateSystemConversion() * cameraView).GetInverseFast();
     }
 
-    AZ::Matrix4x4 CameraViewFromCameraTransform(const AZ::Matrix4x4& cameraTransform)
+    AZ::Matrix3x4 CameraViewFromCameraTransform(const AZ::Matrix3x4& cameraTransform)
     {
-        return ZYCoordinateSystemConversion() * cameraTransform.GetInverseTransform();
+        return ZYCoordinateSystemConversion() * cameraTransform.GetInverseFast();
     }
 
     AZ::Frustum FrustumFromCameraState(const CameraState& cameraState)
@@ -91,42 +88,40 @@ namespace AzFramework
     {
         const auto worldFromView = AzFramework::CameraTransform(cameraState);
         const auto cameraWorldTransform = AZ::Transform::CreateFromMatrix3x3AndTranslation(
-            AZ::Matrix3x3::CreateFromMatrix4x4(worldFromView), worldFromView.GetTranslation());
+            AZ::Matrix3x3::CreateFromMatrix3x4(worldFromView), worldFromView.GetTranslation());
         return AZ::ViewFrustumAttributes(
-            cameraWorldTransform, AspectRatio(cameraState.m_viewportSize), cameraState.m_fovOrZoom,
-            cameraState.m_nearClip, cameraState.m_farClip);
+            cameraWorldTransform, AspectRatio(cameraState.m_viewportSize), cameraState.m_fovOrZoom, cameraState.m_nearClip,
+            cameraState.m_farClip);
     }
 
-    AZ::Vector3 WorldToScreenNDC(
-        const AZ::Vector3& worldPosition, const AZ::Matrix4x4& cameraView, const AZ::Matrix4x4& cameraProjection)
+    AZ::Vector3 WorldToScreenNdc(const AZ::Vector3& worldPosition, const AZ::Matrix3x4& cameraView, const AZ::Matrix4x4& cameraProjection)
     {
         // transform the world space position to clip space
-        const auto clipSpacePosition = cameraProjection * cameraView * AZ::Vector3ToVector4(worldPosition, 1.0f);
+        const auto clipSpacePosition =
+            cameraProjection * AZ::Vector3ToVector4(cameraView.TransformPoint(worldPosition), 1.0f);
         // transform the clip space position to ndc space (perspective divide)
         const auto ndcPosition = clipSpacePosition / clipSpacePosition.GetW();
         // transform ndc space from <-1,1> to <0, 1> range
         return (AZ::Vector4ToVector3(ndcPosition) + AZ::Vector3::CreateOne()) * 0.5f;
     }
 
-
     ScreenPoint WorldToScreen(
-        const AZ::Vector3& worldPosition, const AZ::Matrix4x4& cameraView, const AZ::Matrix4x4& cameraProjection,
+        const AZ::Vector3& worldPosition,
+        const AZ::Matrix3x4& cameraView,
+        const AZ::Matrix4x4& cameraProjection,
         const AZ::Vector2& viewportSize)
     {
-        const auto ndcNormalizedPosition = WorldToScreenNDC(worldPosition, cameraView, cameraProjection);
         // scale ndc position by screen dimensions to return screen position
-        return ScreenPointFromNDC(ndcNormalizedPosition, viewportSize);
+        return ScreenPointFromNdc(AZ::Vector3ToVector2(WorldToScreenNdc(worldPosition, cameraView, cameraProjection)), viewportSize);
     }
 
     ScreenPoint WorldToScreen(const AZ::Vector3& worldPosition, const CameraState& cameraState)
     {
-        return WorldToScreen(
-            worldPosition, CameraView(cameraState), CameraProjection(cameraState), cameraState.m_viewportSize);
+        return WorldToScreen(worldPosition, CameraView(cameraState), CameraProjection(cameraState), cameraState.m_viewportSize);
     }
 
-    AZ::Vector3 ScreenNDCToWorld(
-        const AZ::Vector2& normalizedScreenPosition, const AZ::Matrix4x4& inverseCameraView,
-        const AZ::Matrix4x4& inverseCameraProjection)
+    AZ::Vector3 ScreenNdcToWorld(
+        const AZ::Vector2& normalizedScreenPosition, const AZ::Matrix3x4& inverseCameraView, const AZ::Matrix4x4& inverseCameraProjection)
     {
         // convert screen space coordinates from <0, 1> to <-1,1> range
         const auto ndcPosition = normalizedScreenPosition * 2.0f - AZ::Vector2::CreateOne();
@@ -142,18 +137,17 @@ namespace AzFramework
     }
 
     AZ::Vector3 ScreenToWorld(
-        const ScreenPoint& screenPosition, const AZ::Matrix4x4& inverseCameraView,
-        const AZ::Matrix4x4& inverseCameraProjection, const AZ::Vector2& viewportSize)
+        const ScreenPoint& screenPosition,
+        const AZ::Matrix3x4& inverseCameraView,
+        const AZ::Matrix4x4& inverseCameraProjection,
+        const AZ::Vector2& viewportSize)
     {
-        const auto normalizedScreenPosition = NDCFromScreenPoint(screenPosition, viewportSize);
-
-        return ScreenNDCToWorld(normalizedScreenPosition, inverseCameraView, inverseCameraProjection);
+        return ScreenNdcToWorld(NdcFromScreenPoint(screenPosition, viewportSize), inverseCameraView, inverseCameraProjection);
     }
 
     AZ::Vector3 ScreenToWorld(const ScreenPoint& screenPosition, const CameraState& cameraState)
     {
         return ScreenToWorld(
-            screenPosition, InverseCameraView(cameraState), InverseCameraProjection(cameraState),
-            cameraState.m_viewportSize);
+            screenPosition, InverseCameraView(cameraState), InverseCameraProjection(cameraState), cameraState.m_viewportSize);
     }
 } // namespace AzFramework

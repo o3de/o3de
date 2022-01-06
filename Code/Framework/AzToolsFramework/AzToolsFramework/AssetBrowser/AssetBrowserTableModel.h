@@ -23,6 +23,7 @@ namespace AzToolsFramework
 
         class AssetBrowserTableModel
             : public QSortFilterProxyModel
+            , public AssetBrowserComponentNotificationBus::Handler
         {
             Q_OBJECT
 
@@ -30,31 +31,35 @@ namespace AzToolsFramework
             AZ_CLASS_ALLOCATOR(AssetBrowserTableModel, AZ::SystemAllocator, 0);
             explicit AssetBrowserTableModel(QObject* parent = nullptr);
 
-            void UpdateTableModelMaps();
-
             ////////////////////////////////////////////////////////////////////
             // QSortFilterProxyModel
             void setSourceModel(QAbstractItemModel* sourceModel) override;
             QModelIndex mapToSource(const QModelIndex& proxyIndex) const override;
+            QModelIndex mapFromSource(const QModelIndex &sourceIndex) const override;
             QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
             QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
             QModelIndex parent(const QModelIndex& child) const override;
             QModelIndex sibling(int row, int column, const QModelIndex& idx) const override;
+            int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
         protected:
-            int rowCount(const QModelIndex& parent = QModelIndex()) const override;
             QVariant headerData(int section, Qt::Orientation orientation, int role /* = Qt::DisplayRole */) const override;
             ////////////////////////////////////////////////////////////////////
 
-        private:
             AssetBrowserEntry* GetAssetEntry(QModelIndex index) const;
             int BuildTableModelMap(const QAbstractItemModel* model, const QModelIndex& parent = QModelIndex(), int row = 0);
 
+        public slots:
+            void UpdateTableModelMaps();
+
+        private slots:
+            void SourceDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight);
         private:
-            int m_numberOfItemsDisplayed = 50;
+            AZ::u64 m_numberOfItemsDisplayed = 50;
             int m_displayedItemsCounter = 0;
             QPointer<AssetBrowserFilterModel> m_filterModel;
             QMap<int, QModelIndex> m_indexMap;
+            QMap<QModelIndex, int> m_rowMap;
         };
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

@@ -13,7 +13,7 @@
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <Atom/RPI.Edit/Common/ConvertibleSource.h>
 #include <Atom/RPI.Reflect/System/AnyAsset.h>

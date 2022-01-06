@@ -35,29 +35,8 @@
 #include "Resource.h"
 #include "Plugins/ComponentEntityEditorPlugin/Objects/ComponentEntityObject.h"
 
-#include <IEntityRenderState.h>
-#include <IStatObj.h>
-
 namespace
 {
-    void SetTexture(Export::TPath& outName, IRenderShaderResources* pRes, int nSlot)
-    {
-        SEfResTexture* pTex = pRes->GetTextureResource(nSlot);
-        if (pTex)
-        {
-            cry_strcat(outName, Path::GamePathToFullPath(pTex->m_Name.c_str()).toUtf8().data());
-        }
-    }
-
-    inline Export::Vector3D Vec3ToVector3D(const Vec3& vec)
-    {
-        Export::Vector3D ret;
-        ret.x = vec.x;
-        ret.y = vec.y;
-        ret.z = vec.z;
-        return ret;
-    }
-
     const float kTangentDelta = 0.01f;
     const float kAspectRatio = 1.777778f;
     const int kReserveCount = 7; // x,y,z,rot_x,rot_y,rot_z,fov
@@ -87,7 +66,7 @@ Export::CObject::CObject(const char* pName)
 
     nParent = -1;
 
-    cry_strcpy(name, pName);
+    azstrcpy(name, AZ_ARRAY_SIZE(name), pName);
 
     materialName[0] = '\0';
 
@@ -101,7 +80,7 @@ Export::CObject::CObject(const char* pName)
 
 void Export::CObject::SetMaterialName(const char* pName)
 {
-    cry_strcpy(materialName, pName);
+    azstrcpy(materialName, AZ_ARRAY_SIZE(materialName), pName);
 }
 
 
@@ -115,22 +94,22 @@ void Export::CData::Clear()
 // CExportManager
 CExportManager::CExportManager()
     : m_isPrecaching(false)
-    , m_pBaseObj(nullptr)
-    , m_FBXBakedExportFPS(0.0f)
     , m_fScale(100.0f)
+    , m_bAnimationExport(false)
+    , m_pBaseObj(nullptr)
     ,                 // this scale is used by CryEngine RC
-    m_bAnimationExport(false)
+    m_FBXBakedExportFPS(0.0f)
     , m_bExportLocalCoords(false)
+    , m_bExportOnlyPrimaryCamera(false)
     , m_numberOfExportFrames(0)
     , m_pivotEntityObject(nullptr)
     , m_bBakedKeysSequenceExport(true)
     , m_animTimeExportPrimarySequenceCurrentTime(0.0f)
     , m_animKeyTimeExport(true)
     , m_soundKeyTimeExport(true)
-    , m_bExportOnlyPrimaryCamera(false)
 {
-    RegisterExporter(new COBJExporter());
-    RegisterExporter(new COCMExporter());
+    CExportManager::RegisterExporter(new COBJExporter());
+    CExportManager::RegisterExporter(new COCMExporter());
 }
 
 
@@ -302,7 +281,7 @@ void CExportManager::ProcessEntityAnimationTrack(
         return;
     }
 
-    for (int trackNumber = 0; trackNumber < pEntityTrack->GetChildCount(); ++trackNumber)
+    for (unsigned int trackNumber = 0; trackNumber < pEntityTrack->GetChildCount(); ++trackNumber)
     {
         CTrackViewTrack* pSubTrack = static_cast<CTrackViewTrack*>(pEntityTrack->GetChild(trackNumber));
 
@@ -321,204 +300,6 @@ void CExportManager::AddEntityAnimationData(AZ::EntityId entityId)
     ProcessEntityAnimationTrack(entityId, pObj, AnimParamType::Position);
     ProcessEntityAnimationTrack(entityId, pObj, AnimParamType::Rotation);
 }
-
-
-void CExportManager::AddMesh(Export::CObject* pObj, const IIndexedMesh* pIndMesh, Matrix34A* pTm)
-{
-    if (m_isPrecaching || !pObj)
-    {
-        return;
-    }
-
-    pObj->m_MeshHash    =   reinterpret_cast<size_t>(pIndMesh);
-    IIndexedMesh::SMeshDescription meshDesc;
-    pIndMesh->GetMeshDescription(meshDesc);
-
-    // if we have subset of meshes we need to duplicate vertices,
-    // keep transformation of submesh,
-    // and store new offset for indices
-    int newOffsetIndex = pObj->GetVertexCount();
-
-    if (meshDesc.m_nVertCount)
-    {
-        pObj->m_vertices.reserve(meshDesc.m_nVertCount + newOffsetIndex);
-        pObj->m_normals.reserve(meshDesc.m_nVertCount + newOffsetIndex);
-    }
-
-    for (int v = 0; v < meshDesc.m_nVertCount; ++v)
-    {
-        Vec3 n = meshDesc.m_pNorms[v].GetN();
-        Vec3 tmp = (meshDesc.m_pVerts ? meshDesc.m_pVerts[v] : meshDesc.m_pVertsF16[v].ToVec3());
-        if (pTm)
-        {
-            tmp = pTm->TransformPoint(tmp);
-        }
-
-        pObj->m_vertices.push_back(Vec3ToVector3D(tmp * m_fScale));
-        pObj->m_normals.push_back(Vec3ToVector3D(n));
-    }
-
-    if (meshDesc.m_nCoorCount)
-    {
-        pObj->m_texCoords.reserve(meshDesc.m_nCoorCount + newOffsetIndex);
-    }
-
-    for (int v = 0; v < meshDesc.m_nCoorCount; ++v)
-    {
-        Export::UV tc;
-        meshDesc.m_pTexCoord[v].ExportTo(tc.u, tc.v);
-        tc.v = 1.0f - tc.v;
-        pObj->m_texCoords.push_back(tc);
-    }
-
-    if (pIndMesh->GetSubSetCount() && !(pIndMesh->GetSubSetCount() == 1 && pIndMesh->GetSubSet(0).nNumIndices == 0))
-    {
-        for (int i = 0; i < pIndMesh->GetSubSetCount(); ++i)
-        {
-            Export::CMesh* pMesh = new Export::CMesh();
-
-            const SMeshSubset& sms = pIndMesh->GetSubSet(i);
-            const vtx_idx* pIndices = &meshDesc.m_pIndices[sms.nFirstIndexId];
-            int nTris = sms.nNumIndices / 3;
-            pMesh->m_faces.reserve(nTris);
-            for (int f = 0; f < nTris; ++f)
-            {
-                Export::Face face;
-                face.idx[0] = *(pIndices++) + newOffsetIndex;
-                face.idx[1] = *(pIndices++) + newOffsetIndex;
-                face.idx[2] = *(pIndices++) + newOffsetIndex;
-                pMesh->m_faces.push_back(face);
-            }
-
-            pObj->m_meshes.push_back(pMesh);
-        }
-    }
-    else
-    {
-        Export::CMesh* pMesh = new Export::CMesh();
-        if (meshDesc.m_nFaceCount == 0 && meshDesc.m_nIndexCount != 0 && meshDesc.m_pIndices != nullptr)
-        {
-            const vtx_idx* pIndices = &meshDesc.m_pIndices[0];
-            int nTris = meshDesc.m_nIndexCount / 3;
-            pMesh->m_faces.reserve(nTris);
-            for (int f = 0; f < nTris; ++f)
-            {
-                Export::Face face;
-                face.idx[0] = *(pIndices++) + newOffsetIndex;
-                face.idx[1] = *(pIndices++) + newOffsetIndex;
-                face.idx[2] = *(pIndices++) + newOffsetIndex;
-                pMesh->m_faces.push_back(face);
-            }
-        }
-        else
-        {
-            pMesh->m_faces.reserve(meshDesc.m_nFaceCount);
-            for (int f = 0; f < meshDesc.m_nFaceCount; ++f)
-            {
-                Export::Face face;
-                face.idx[0] = meshDesc.m_pFaces[f].v[0];
-                face.idx[1] = meshDesc.m_pFaces[f].v[1];
-                face.idx[2] = meshDesc.m_pFaces[f].v[2];
-                pMesh->m_faces.push_back(face);
-            }
-        }
-
-        pObj->m_meshes.push_back(pMesh);
-    }
-}
-
-
-bool CExportManager::AddStatObj(Export::CObject* pObj, IStatObj* pStatObj, Matrix34A* pTm)
-{
-    IIndexedMesh* pIndMesh = nullptr;
-
-    if (pStatObj->GetSubObjectCount())
-    {
-        for (int i = 0; i < pStatObj->GetSubObjectCount(); i++)
-        {
-            IStatObj::SSubObject* pSubObj = pStatObj->GetSubObject(i);
-            if (pSubObj && pSubObj->nType == STATIC_SUB_OBJECT_MESH && pSubObj->pStatObj)
-            {
-                pIndMesh = nullptr;
-                if (m_isOccluder)
-                {
-                    if (pSubObj->pStatObj->GetLodObject(2))
-                    {
-                        pIndMesh = pSubObj->pStatObj->GetLodObject(2)->GetIndexedMesh(true);
-                    }
-                    if (!pIndMesh && pSubObj->pStatObj->GetLodObject(1))
-                    {
-                        pIndMesh = pSubObj->pStatObj->GetLodObject(1)->GetIndexedMesh(true);
-                    }
-                }
-                if (!pIndMesh)
-                {
-                    pIndMesh = pSubObj->pStatObj->GetIndexedMesh(true);
-                }
-                if (pIndMesh)
-                {
-                    AddMesh(pObj, pIndMesh, pTm);
-                }
-            }
-        }
-    }
-
-    if (!pIndMesh)
-    {
-        if (m_isOccluder)
-        {
-            if (pStatObj->GetLodObject(2))
-            {
-                pIndMesh = pStatObj->GetLodObject(2)->GetIndexedMesh(true);
-            }
-            if (!pIndMesh && pStatObj->GetLodObject(1))
-            {
-                pIndMesh = pStatObj->GetLodObject(1)->GetIndexedMesh(true);
-            }
-        }
-        if (!pIndMesh)
-        {
-            pIndMesh = pStatObj->GetIndexedMesh(true);
-        }
-        if (pIndMesh)
-        {
-            AddMesh(pObj, pIndMesh, pTm);
-        }
-    }
-
-    return true;
-}
-
-bool CExportManager::AddMeshes(Export::CObject* pObj)
-{
-    if (m_pBaseObj->GetType() == OBJTYPE_AZENTITY)
-    {
-        CEntityObject* pEntityObject = (CEntityObject*)m_pBaseObj;
-        IRenderNode* pEngineNode = pEntityObject->GetEngineNode();
-
-        if (pEngineNode)
-        {
-            if (!m_isPrecaching)
-            {
-                for (int i = 0; i < pEngineNode->GetSlotCount(); ++i)
-                {
-                    Matrix34A tm;
-                    IStatObj* pStatObj = pEngineNode->GetEntityStatObj(i, 0, &tm);
-                    if (pStatObj)
-                    {
-                        Matrix34A objTM = m_pBaseObj->GetWorldTM();
-                        objTM.Invert();
-                        tm = objTM * tm;
-                        AddStatObj(pObj, pStatObj, &tm);
-                    }
-                }
-            }
-        }
-    }
-
-    return true;
-}
-
 
 bool CExportManager::AddObject(CBaseObject* pBaseObj)
 {
@@ -541,7 +322,6 @@ bool CExportManager::AddObject(CBaseObject* pBaseObj)
 
     if (m_isPrecaching)
     {
-        AddMeshes(nullptr);
         return true;
     }
 
@@ -552,7 +332,6 @@ bool CExportManager::AddObject(CBaseObject* pBaseObj)
 
     m_objectMap[pBaseObj] = int(m_data.m_objects.size() - 1);
 
-    AddMeshes(pObj);
     m_pBaseObj = nullptr;
 
     return true;
@@ -631,7 +410,7 @@ bool CExportManager::ShowFBXExportDialog()
 
     if (pivotObjectNode && !pivotObjectNode->IsGroupNode())
     {
-        m_pivotEntityObject = static_cast<CEntityObject*>(GetIEditor()->GetObjectManager()->FindObject(pivotObjectNode->GetName()));
+        m_pivotEntityObject = static_cast<CEntityObject*>(GetIEditor()->GetObjectManager()->FindObject(pivotObjectNode->GetName().c_str()));
 
         if (m_pivotEntityObject)
         {
@@ -816,7 +595,7 @@ void CExportManager::FillAnimTimeNode(XmlNodeRef writeNode, CTrackViewAnimNode* 
 
     if (numAllTracks > 0)
     {
-        XmlNodeRef objNode = writeNode->createNode(CleanXMLText(pObjectNode->GetName()).toUtf8().data());
+        XmlNodeRef objNode = writeNode->createNode(CleanXMLText(pObjectNode->GetName().c_str()).toUtf8().data());
         writeNode->setAttr("time", m_animTimeExportPrimarySequenceCurrentTime);
 
         for (unsigned int trackID = 0; trackID < numAllTracks; ++trackID)
@@ -827,7 +606,7 @@ void CExportManager::FillAnimTimeNode(XmlNodeRef writeNode, CTrackViewAnimNode* 
 
             if (trackType == AnimParamType::Animation || trackType == AnimParamType::Sound)
             {
-                QString childName = CleanXMLText(childTrack->GetName());
+                QString childName = CleanXMLText(childTrack->GetName().c_str());
 
                 if (childName.isEmpty())
                 {
@@ -964,7 +743,7 @@ bool CExportManager::AddObjectsFromSequence(CTrackViewSequence* pSequence, XmlNo
         }
 
         const uint numKeys = pSequenceTrack->GetKeyCount();
-        for (int keyIndex = 0; keyIndex < numKeys; ++keyIndex)
+        for (uint keyIndex = 0; keyIndex < numKeys; ++keyIndex)
         {
             const CTrackViewKeyHandle& keyHandle = pSequenceTrack->GetKey(keyIndex);
             ISequenceKey sequenceKey;
@@ -985,7 +764,7 @@ bool CExportManager::AddObjectsFromSequence(CTrackViewSequence* pSequence, XmlNo
                     else
                     {
                         // In case of exporting animation/sound times data
-                        const QString sequenceName = pSubSequence->GetName();
+                        const QString sequenceName = QString::fromUtf8(pSubSequence->GetName().c_str());
                         XmlNodeRef subSeqNode2 = seqNode->createNode(sequenceName.toUtf8().data());
 
                         if (sequenceName == m_animTimeExportPrimarySequenceName)
@@ -1043,7 +822,7 @@ bool CExportManager::AddSelectedRegionObjects()
     std::vector<CBaseObject*> objects;
     GetIEditor()->GetObjectManager()->FindObjectsInAABB(box, objects);
 
-    int numObjects = objects.size();
+    const size_t numObjects = objects.size();
     if (numObjects > m_data.m_objects.size())
     {
         m_data.m_objects.reserve(numObjects + 1); // +1 for terrain
@@ -1164,7 +943,7 @@ bool CExportManager::Export(const char* defaultName, const char* defaultExt, con
                     // Export the whole sequence with baked keys
                     if (ShowFBXExportDialog())
                     {
-                        m_numberOfExportFrames = pSequence->GetTimeRange().end * m_FBXBakedExportFPS;
+                        m_numberOfExportFrames = static_cast<int>(pSequence->GetTimeRange().end * m_FBXBakedExportFPS);
 
                         if (!m_bExportOnlyPrimaryCamera)
                         {
@@ -1237,15 +1016,6 @@ bool CExportManager::ImportFromFile(const char* filename)
     return bRet;
 }
 
-bool CExportManager::ExportSingleStatObj(IStatObj* pStatObj, const char* filename)
-{
-    Export::CObject* pObj = new Export::CObject(Path::GetFileName(filename).toUtf8().data());
-    AddStatObj(pObj, pStatObj);
-    m_data.m_objects.push_back(pObj);
-    ExportToFile(filename, true);
-    return true;
-}
-
 void CExportManager::SaveNodeKeysTimeToXML()
 {
     CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -1262,14 +1032,14 @@ void CExportManager::SaveNodeKeysTimeToXML()
         m_soundKeyTimeExport = exportDialog.IsSoundExportChecked();
 
         QString filters = "All files (*.xml)";
-        QString defaultName = QString(pSequence->GetName()) + ".xml";
+        QString defaultName = QString::fromUtf8(pSequence->GetName().c_str()) + ".xml";
 
         QtUtil::QtMFCScopedHWNDCapture cap;
         CAutoDirectoryRestoreFileDialog dlg(QFileDialog::AcceptSave, QFileDialog::AnyFile, "xml", defaultName, filters, {}, {}, cap);
         if (dlg.exec())
         {
-            m_animTimeNode = XmlHelpers::CreateXmlNode(pSequence->GetName());
-            m_animTimeExportPrimarySequenceName = pSequence->GetName();
+            m_animTimeNode = XmlHelpers::CreateXmlNode(pSequence->GetName().c_str());
+            m_animTimeExportPrimarySequenceName = QString::fromUtf8(pSequence->GetName().c_str());
 
             m_data.Clear();
             m_animTimeExportPrimarySequenceCurrentTime = 0.0;

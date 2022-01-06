@@ -275,7 +275,6 @@ namespace ScriptCanvasDeveloper
             }
 
             QRegion region = m_graphPalette->visibleRegion();
-            QRect boundingRegion = region.boundingRect();
             m_indexIsVisible = region.contains(m_graphPalette->visualRect(m_displayIndex).center());
         }
 

@@ -9,6 +9,7 @@
 #include "EditorSelectionUtil.h"
 
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/IntersectSegment.h>
@@ -16,10 +17,20 @@
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
+AZ_CVAR(
+    float,
+    ed_defaultEntityPlacementDistance,
+    10.0f,
+    nullptr,
+    AZ::ConsoleFunctorFlags::Null,
+    "The default distance to place an entity from the camera if no intersection is found");
+
 namespace AzToolsFramework
 {
-    // default ray length for picking in the viewport
-    static const float s_pickRayLength = 1000.0f;
+    float GetDefaultEntityPlacementDistance()
+    {
+        return ed_defaultEntityPlacementDistance;
+    }
 
     AZ::Vector3 CalculateCenterOffset(const AZ::EntityId entityId, const EditorTransformComponentSelectionRequests::Pivot pivot)
     {
@@ -48,28 +59,27 @@ namespace AzToolsFramework
         return AZ::GetMax(projectedCameraDistance, cameraState.m_nearClip) / apparentDistance;
     }
 
-    AzFramework::ScreenPoint GetScreenPosition(const int viewportId, const AZ::Vector3& worldTranslation)
+    bool AabbIntersectRay(const AZ::Vector3& origin, const AZ::Vector3& direction, const AZ::Aabb& aabb, float& distance)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-        auto screenPosition = AzFramework::ScreenPoint(0, 0);
-        ViewportInteraction::ViewportInteractionRequestBus::EventResult(
-            screenPosition, viewportId, &ViewportInteraction::ViewportInteractionRequestBus::Events::ViewportWorldToScreen,
-            worldTranslation);
+        const AZ::Vector3 rayScaledDir = direction * EditorPickRayLength;
 
-        return screenPosition;
+        float t, end;
+        AZ::Vector3 startNormal;
+        if (AZ::Intersect::IntersectRayAABB(origin, rayScaledDir, rayScaledDir.GetReciprocal(), aabb, t, end, startNormal) > 0)
+        {
+            distance = t * EditorPickRayLength;
+            return true;
+        }
+
+        return false;
     }
 
     bool AabbIntersectMouseRay(const ViewportInteraction::MouseInteraction& mouseInteraction, const AZ::Aabb& aabb)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
-
-        const AZ::Vector3 rayScaledDir = mouseInteraction.m_mousePick.m_rayDirection * s_pickRayLength;
-
-        AZ::Vector3 startNormal;
-        float t, end;
-        return AZ::Intersect::IntersectRayAABB(
-                   mouseInteraction.m_mousePick.m_rayOrigin, rayScaledDir, rayScaledDir.GetReciprocal(), aabb, t, end, startNormal) > 0;
+        float unused;
+        return AabbIntersectRay(mouseInteraction.m_mousePick.m_rayOrigin, mouseInteraction.m_mousePick.m_rayDirection, aabb, unused);
     }
 
     bool PickEntity(
@@ -78,7 +88,7 @@ namespace AzToolsFramework
         float& closestDistance,
         const int viewportId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         bool entityPicked = false;
         EditorComponentSelectionRequestsBus::EnumerateHandlersId(
@@ -117,8 +127,7 @@ namespace AzToolsFramework
     {
         float scaling = 1.0f;
         ViewportInteraction::ViewportInteractionRequestBus::EventResult(
-            scaling, viewportId,
-            &ViewportInteraction::ViewportInteractionRequestBus::Events::DeviceScalingFactor);
+            scaling, viewportId, &ViewportInteraction::ViewportInteractionRequestBus::Events::DeviceScalingFactor);
 
         return scaling;
     }

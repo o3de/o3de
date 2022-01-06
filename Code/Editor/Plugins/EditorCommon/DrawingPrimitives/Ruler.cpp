@@ -12,6 +12,7 @@
 #include <QPainter>
 #include <QPalette>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/std/algorithm.h>
 
 namespace DrawingPrimitives
 {

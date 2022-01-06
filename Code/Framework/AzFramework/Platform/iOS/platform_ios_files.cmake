@@ -14,7 +14,6 @@ set(FILES
     AzFramework/Application/Application_iOS.mm
     ../Common/Unimplemented/AzFramework/Asset/AssetSystemComponentHelper_Unimplemented.cpp
     ../Common/UnixLike/AzFramework/IO/LocalFileIO_UnixLike.cpp
-    ../Common/Default/AzFramework/Network/AssetProcessorConnection_Default.cpp
     ../Common/Unimplemented/AzFramework/StreamingInstall/StreamingInstall_Unimplemented.cpp
     ../Common/Default/AzFramework/TargetManagement/TargetManagementComponent_Default.cpp
     AzFramework/Windowing/NativeWindow_ios.mm
@@ -28,8 +27,6 @@ set(FILES
     AzFramework/Input/User/LocalUserId_Platform.h
     ../Common/Default/AzFramework/Input/User/LocalUserId_Default.h
     ../Common/Apple/AzFramework/Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard_Apple.mm
-    AzFramework/Archive/ArchiveVars_Platform.h
-    AzFramework/Archive/ArchiveVars_iOS.h
     AzFramework/Process/ProcessCommon.h
     AzFramework/Process/ProcessWatcher_iOS.cpp
     AzFramework/Process/ProcessCommunicator_iOS.cpp

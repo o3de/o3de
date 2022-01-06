@@ -90,7 +90,6 @@ namespace AzToolsFramework
 
         void SetComponentOverridden(const bool overridden);
 
-        // Calls match EditorComponentModeNotificationBus - called from EntityPropertyEditor
         void EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes);
         void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes);
         void ActiveComponentModeChanged(const AZ::Uuid& componentType);
@@ -135,7 +134,6 @@ namespace AzToolsFramework
         QIcon m_warningIcon;
 
         ReflectedPropertyEditor* m_propertyEditor = nullptr;
-        QVBoxLayout* m_mainLayout = nullptr;
 
         AZ::SerializeContext* m_serializeContext;
 

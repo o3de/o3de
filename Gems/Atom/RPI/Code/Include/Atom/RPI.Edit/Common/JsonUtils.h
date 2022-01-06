@@ -10,7 +10,7 @@
 
 #include <AzCore/JSON/document.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <Atom/RPI.Edit/Common/JsonFileLoadContext.h>
 #include <Atom/RPI.Edit/Common/JsonReportingHelper.h>
 
@@ -20,6 +20,10 @@ namespace AZ
     {
         namespace JsonUtils
         {
+            //! Protects from allocating too much memory. The choice of a 1MB threshold is arbitrary.
+            //! If you need to work with larger files, please use AZ::IO directly instead of these utility functions.
+            inline constexpr size_t DefaultMaxFileSize = 1024 * 1024;
+
             // Declarations...
 
             //! Loads serialized object data from a json file at the specified path
@@ -39,7 +43,7 @@ namespace AZ
             {
                 objectData = ObjectType();
 
-                auto loadOutcome = AZ::JsonSerializationUtils::ReadJsonFile(path);
+                auto loadOutcome = AZ::JsonSerializationUtils::ReadJsonFile(path, DefaultMaxFileSize);
                 if (!loadOutcome.IsSuccess())
                 {
                     AZ_Error("AZ::RPI::JsonUtils", false, "%s", loadOutcome.GetError().c_str());

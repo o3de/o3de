@@ -103,7 +103,6 @@ it hasn't been integrated into this code drop yet.
 ** CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
-#pragma warning(disable:4996)
 
 class TVec
 {

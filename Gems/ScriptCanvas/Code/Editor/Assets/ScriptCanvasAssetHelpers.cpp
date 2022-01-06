@@ -8,7 +8,7 @@
 
 #include <Editor/Assets/ScriptCanvasAssetHelpers.h>
 
-#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
+
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 
 namespace ScriptCanvasEditor
@@ -41,7 +41,6 @@ namespace ScriptCanvasEditor
             bool sourceInfoFound{};
 
             AzToolsFramework::AssetSystemRequestBus::BroadcastResult(sourceInfoFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, fullPath.data(), catalogAssetInfo, watchFolder);
-            auto saveAssetId = sourceInfoFound ? catalogAssetInfo.m_assetId : AZ::Data::AssetId(AZ::Uuid::CreateRandom());
             if (sourceInfoFound)
             {
                 outAssetInfo = catalogAssetInfo;
@@ -151,11 +150,7 @@ namespace ScriptCanvasEditor
 
         bool IsValidSourceFile(const AZStd::string& filePath, [[maybe_unused]] ScriptCanvas::ScriptCanvasId scriptCanvasId)
         {
-            ScriptCanvasAssetDescription assetDescription;
-            return AZ::StringFunc::EndsWith(filePath, assetDescription.GetExtensionImpl(), false);
-            {
-                return true;
-            }
+            return AZ::StringFunc::EndsWith(filePath, ScriptCanvasEditor::SourceDescription::GetFileExtension(), false);
         }
     }
 }

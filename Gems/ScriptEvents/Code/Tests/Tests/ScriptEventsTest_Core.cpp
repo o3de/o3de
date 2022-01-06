@@ -406,26 +406,6 @@ namespace ScriptEventsTests
 
         EXPECT_TRUE(behaviorEbus->m_destroyHandler->Invoke(handler));
 
-        auto onReady = [&assetData, &scriptEventName]() {
-            const char* renamedMethod = "__METHOD__1__";
-
-            ScriptEvents::ScriptEventsAsset* loadedScriptAsset = assetData.GetAs<ScriptEvents::ScriptEventsAsset>();
-            EXPECT_TRUE(loadedScriptAsset);
-
-            const ScriptEvents::ScriptEvent& loadedDefinition = loadedScriptAsset->m_definition;
-
-            EXPECT_EQ(loadedDefinition.GetVersion(), 0);
-            EXPECT_STREQ(loadedDefinition.GetName().data(), scriptEventName.c_str());
-
-
-            ScriptEvents::Method method;
-            bool foundMethod = loadedDefinition.FindMethod(renamedMethod, method);
-            EXPECT_TRUE(foundMethod);
-            EXPECT_EQ(method.GetNameProperty().GetVersion(), 1);
-
-            assetData = {};
-        };
-
         AssetEventHandler assetHandler2(assetId, []() {}, []() {});
         assetHandler2.BusConnect(assetId);
 

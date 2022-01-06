@@ -34,7 +34,5 @@ private:
     void ForEachActiveSequence(const SAnimContext& ac, CTrackViewTrack* pSequenceTrack,
         const bool bHandleOtherKeys, std::function<void(CTrackViewSequence*, const SAnimContext&)> animateFunction,
         std::function<void(CTrackViewSequence*, const SAnimContext&)> resetFunction);
-
-    CTrackViewAnimNode* m_pDirectorNode;
 };
 #endif // CRYINCLUDE_EDITOR_TRACKVIEW_DIRECTORNODEANIMATOR_H

@@ -26,8 +26,8 @@ namespace PhysX
         : public AzPhysics::StaticRigidBody
     {
     public:
-        AZ_CLASS_ALLOCATOR(StaticRigidBody, AZ::SystemAllocator, 0);
-        AZ_RTTI(StaticRigidBody, "{06E960EF-E1F3-466F-B34F-800E32775092}", AzPhysics::StaticRigidBody);
+        AZ_CLASS_ALLOCATOR_DECL;
+        AZ_RTTI(PhysX::StaticRigidBody, "{06E960EF-E1F3-466F-B34F-800E32775092}", AzPhysics::StaticRigidBody);
 
         StaticRigidBody() = default;
         StaticRigidBody(const AzPhysics::StaticRigidBodyConfiguration& configuration);

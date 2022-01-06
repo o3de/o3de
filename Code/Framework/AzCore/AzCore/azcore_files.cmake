@@ -25,6 +25,7 @@ set(FILES
     Asset/AssetJsonSerializer.h
     Asset/AssetManager.cpp
     Asset/AssetManager.h
+    Asset/AssetManager_private.h
     Asset/AssetManagerBus.h
     Asset/AssetManagerComponent.cpp
     Asset/AssetManagerComponent.h
@@ -34,11 +35,14 @@ set(FILES
     Asset/AssetInternal/WeakAsset.h
     Casting/lossy_cast.h
     Casting/numeric_cast.h
+    Casting/numeric_cast_internal.h
     Component/Component.cpp
     Component/Component.h
     Component/ComponentApplication.cpp
     Component/ComponentApplication.h
     Component/ComponentApplicationBus.h
+    Component/ComponentApplicationLifecycle.cpp
+    Component/ComponentApplicationLifecycle.h
     Component/ComponentBus.cpp
     Component/ComponentBus.h
     Component/ComponentExport.h
@@ -88,48 +92,36 @@ set(FILES
     Compression/Compression.h
     Compression/zstd_compression.cpp
     Compression/zstd_compression.h
-    Debug/AssetTracking.cpp
-    Debug/AssetTracking.h
-    Debug/AssetTrackingTypesImpl.h
-    Debug/AssetTrackingTypes.h
+    Debug/Budget.h
+    Debug/Budget.cpp
+    Debug/BudgetTracker.h
+    Debug/BudgetTracker.cpp
     Debug/LocalFileEventLogger.h
     Debug/LocalFileEventLogger.cpp
-    Debug/FrameProfiler.h
-    Debug/FrameProfilerBus.h
-    Debug/FrameProfilerComponent.cpp
-    Debug/FrameProfilerComponent.h
     Debug/IEventLogger.h
-    Debug/ProfileModuleInit.cpp
-    Debug/ProfileModuleInit.h
+    Debug/MemoryProfiler.h
     Debug/Profiler.cpp
+    Debug/Profiler.inl
     Debug/Profiler.h
     Debug/ProfilerBus.h
-    Debug/ProfilerDriller.cpp
-    Debug/ProfilerDriller.h
-    Debug/ProfilerDrillerBus.h
+    Debug/ProfilerReflection.cpp
+    Debug/ProfilerReflection.h
     Debug/StackTracer.h
-    Debug/EventTrace.h
-    Debug/EventTrace.cpp
-    Debug/EventTraceDriller.h
-    Debug/EventTraceDriller.cpp
-    Debug/EventTraceDrillerBus.h
     Debug/Timer.h
     Debug/Trace.cpp
     Debug/Trace.h
     Debug/TraceMessageBus.h
-    Debug/TraceMessagesDriller.cpp
-    Debug/TraceMessagesDriller.h
-    Debug/TraceMessagesDrillerBus.h
     Debug/TraceReflection.cpp
     Debug/TraceReflection.h
-    Driller/DefaultStringPool.h
-    Driller/Driller.cpp
-    Driller/Driller.h
-    Driller/DrillerBus.cpp
-    Driller/DrillerBus.h
-    Driller/DrillerRootHandler.h
-    Driller/Stream.cpp
-    Driller/Stream.h
+    DOM/DomBackend.cpp
+    DOM/DomBackend.h
+    DOM/DomUtils.cpp
+    DOM/DomUtils.h
+    DOM/DomVisitor.cpp
+    DOM/DomVisitor.h
+    DOM/Backends/JSON/JsonBackend.h
+    DOM/Backends/JSON/JsonSerializationUtils.cpp
+    DOM/Backends/JSON/JsonSerializationUtils.h
     EBus/BusImpl.h
     EBus/EBus.h
     EBus/EBusEnvironment.cpp
@@ -166,7 +158,8 @@ set(FILES
     IO/CompressorZStd.h
     IO/FileIO.cpp
     IO/FileIO.h
-    IO/FileIOEventBus.h
+    IO/FileReader.cpp
+    IO/FileReader.h
     IO/IOUtils.h
     IO/IOUtils.cpp
     IO/IStreamer.h
@@ -178,6 +171,10 @@ set(FILES
     IO/Path/Path.cpp
     IO/Path/Path.h
     IO/Path/Path.inl
+    IO/Path/PathIterable.inl
+    IO/Path/PathParser.inl
+    IO/Path/PathReflect.cpp
+    IO/Path/PathReflect.h
     IO/Path/Path_fwd.h
     IO/SystemFile.cpp
     IO/SystemFile.h
@@ -279,6 +276,7 @@ set(FILES
     Math/Internal/VertexContainer.inl
     Math/InterpolationSample.h
     Math/IntersectPoint.h
+    Math/IntersectSegment.inl
     Math/IntersectSegment.cpp
     Math/IntersectSegment.h
     Math/MathIntrinsics.h
@@ -385,16 +383,12 @@ set(FILES
     Memory/Memory.h
     Memory/MemoryComponent.cpp
     Memory/MemoryComponent.h
-    Memory/MemoryDriller.cpp
-    Memory/MemoryDriller.h
-    Memory/MemoryDrillerBus.h
     Memory/nedmalloc.inl
     Memory/NewAndDelete.inl
     Memory/OSAllocator.cpp
     Memory/OSAllocator.h
     Memory/OverrunDetectionAllocator.cpp
     Memory/OverrunDetectionAllocator.h
-    Memory/PlatformMemoryInstrumentation.h
     Memory/PoolAllocator.h
     Memory/PoolSchema.cpp
     Memory/PoolSchema.h
@@ -434,6 +428,7 @@ set(FILES
     Preprocessor/Sequences.h
     RTTI/RTTI.h
     RTTI/TypeInfo.h
+    RTTI/TypeInfoSimple.h
     RTTI/ReflectContext.h
     RTTI/ReflectContext.cpp
     RTTI/ReflectionManager.h
@@ -441,11 +436,13 @@ set(FILES
     RTTI/AttributeReader.h
     RTTI/AzStdOnDemandPrettyName.inl
     RTTI/AzStdOnDemandReflection.inl
+    RTTI/AzStdOnDemandReflectionSpecializations.cpp
     RTTI/AzStdOnDemandReflectionLuaFunctions.inl
     RTTI/BehaviorContext.cpp
     RTTI/BehaviorContext.h
     RTTI/BehaviorContextUtilities.h
     RTTI/BehaviorContextUtilities.cpp
+    RTTI/BehaviorInterfaceProxy.h
     RTTI/BehaviorObjectSignals.h
     RTTI/TypeSafeIntegral.h
     Script/ScriptAsset.cpp
@@ -516,6 +513,8 @@ set(FILES
     Serialization/Json/IntSerializer.cpp
     Serialization/Json/JsonDeserializer.h
     Serialization/Json/JsonDeserializer.cpp
+    Serialization/Json/JsonImporter.cpp
+    Serialization/Json/JsonImporter.h
     Serialization/Json/JsonMerger.h
     Serialization/Json/JsonMerger.cpp
     Serialization/Json/JsonSerialization.h
@@ -530,8 +529,12 @@ set(FILES
     Serialization/Json/JsonStringConversionUtils.h
     Serialization/Json/JsonSystemComponent.h
     Serialization/Json/JsonSystemComponent.cpp
+    Serialization/Json/JsonUtils.h
+    Serialization/Json/JsonUtils.cpp
     Serialization/Json/MapSerializer.h
     Serialization/Json/MapSerializer.cpp
+    Serialization/Json/PathSerializer.h
+    Serialization/Json/PathSerializer.cpp
     Serialization/Json/RegistrationContext.h
     Serialization/Json/RegistrationContext.cpp
     Serialization/Json/SmartPointerSerializer.h
@@ -559,6 +562,8 @@ set(FILES
     Settings/SettingsRegistryMergeUtils.h
     Settings/SettingsRegistryScriptUtils.cpp
     Settings/SettingsRegistryScriptUtils.h
+    Settings/SettingsRegistryVisitorUtils.cpp
+    Settings/SettingsRegistryVisitorUtils.h
     State/HSM.cpp
     State/HSM.h
     Statistics/NamedRunningStatistic.h
@@ -569,8 +574,6 @@ set(FILES
     Statistics/StatisticalProfilerProxySystemComponent.cpp
     Statistics/StatisticalProfilerProxySystemComponent.h
     Statistics/StatisticsManager.h
-    Statistics/TimeDataStatisticsManager.cpp
-    Statistics/TimeDataStatisticsManager.h
     StringFunc/StringFunc.cpp
     StringFunc/StringFunc.h
     UserSettings/UserSettings.cpp
@@ -628,13 +631,17 @@ set(FILES
     Task/TaskGraph.cpp
     Task/TaskGraph.h
     Task/TaskGraph.inl
+    Task/TaskGraphSystemComponent.h
+    Task/TaskGraphSystemComponent.cpp
     Threading/ThreadSafeDeque.h
     Threading/ThreadSafeDeque.inl
     Threading/ThreadSafeObject.h
     Threading/ThreadSafeObject.inl
+    Threading/ThreadUtils.h
+    Threading/ThreadUtils.cpp
     Time/ITime.h
-    Time/TimeSystemComponent.cpp
-    Time/TimeSystemComponent.h
+    Time/TimeSystem.cpp
+    Time/TimeSystem.h
 )
 
 # Prevent the following files from being grouped in UNITY builds

@@ -86,7 +86,7 @@ public:
     // EditorSequenceAgentComponentNotificationBus::Handler Interface
     void OnSequenceAgentConnected() override;
 
-    void Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks);
+    void Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks) override;
 
     const AZ::Uuid& GetComponentTypeId() const { return m_componentTypeId; }
 
@@ -144,7 +144,7 @@ private:
     {
     public:
         BehaviorPropertyInfo() {}
-        BehaviorPropertyInfo(const string& name)
+        BehaviorPropertyInfo(const AZStd::string& name)
         {
             *this = name;
         }
@@ -152,18 +152,18 @@ private:
         {
             m_displayName = other.m_displayName;
             m_animNodeParamInfo.paramType = other.m_displayName;
-            m_animNodeParamInfo.name = &m_displayName[0];
+            m_animNodeParamInfo.name = m_displayName;
         }
-        BehaviorPropertyInfo& operator=(const string& str)
+        BehaviorPropertyInfo& operator=(const AZStd::string& str)
         {
             // TODO: clean this up - this weird memory sharing was copied from legacy Cry - could be better.
             m_displayName = str;
             m_animNodeParamInfo.paramType = str;   // set type to AnimParamType::ByString by assigning a string
-            m_animNodeParamInfo.name = &m_displayName[0];
+            m_animNodeParamInfo.name = m_displayName;
             return *this;
         }
 
-        string     m_displayName;
+        AZStd::string m_displayName;
         SParamInfo m_animNodeParamInfo;
     };
     

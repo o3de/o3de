@@ -7,7 +7,7 @@
  */
 
 
-#include "Tests/GradientSignalTestMocks.h"
+#include <Tests/GradientSignalTestFixtures.h>
 
 #include <AzTest/AzTest.h>
 #include <AzCore/Asset/AssetManager.h>
@@ -15,77 +15,14 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
 
-#include <Source/Components/ImageGradientComponent.h>
-#include <Source/Components/GradientTransformComponent.h>
+#include <GradientSignal/Components/ImageGradientComponent.h>
+#include <GradientSignal/Components/GradientTransformComponent.h>
 
 namespace UnitTest
 {
     struct GradientSignalImageTestsFixture
         : public GradientSignalTest
     {
-        struct MockAssetHandler
-            : public AZ::Data::AssetHandler
-        {
-            AZ::Data::AssetPtr CreateAsset([[maybe_unused]] const AZ::Data::AssetId& id, [[maybe_unused]] const AZ::Data::AssetType& type) override
-            {
-                return AZ::Data::AssetPtr();
-            }
-
-            void DestroyAsset(AZ::Data::AssetPtr ptr) override
-            {
-                if (ptr)
-                {
-                    delete ptr;
-                }
-            }
-
-            void GetHandledAssetTypes([[maybe_unused]] AZStd::vector<AZ::Data::AssetType>& assetTypes) override
-            {
-            }
-
-            AZ::Data::AssetHandler::LoadResult LoadAssetData(
-                [[maybe_unused]] const AZ::Data::Asset<AZ::Data::AssetData>& asset,
-                [[maybe_unused]] AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
-                [[maybe_unused]] const AZ::Data::AssetFilterCB& assetLoadFilterCB) override
-            {
-                return AZ::Data::AssetHandler::LoadResult::LoadComplete;
-            }
-
-        };
-
-        MockAssetHandler* m_mockHandler = nullptr;
-        GradientSignal::ImageAsset* m_imageData = nullptr;
-
-        void SetUp() override
-        {
-            GradientSignalTest::SetUp();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-            AZ::Data::AssetManager::Descriptor desc;
-            AZ::Data::AssetManager::Create(desc);
-            m_mockHandler = new MockAssetHandler();
-            AZ::Data::AssetManager::Instance().RegisterHandler(m_mockHandler, azrtti_typeid<GradientSignal::ImageAsset>());
-        }
-
-        void TearDown() override
-        {
-            AZ::Data::AssetManager::Instance().UnregisterHandler(m_mockHandler);
-            delete m_mockHandler; // delete after removing from the asset manager
-            AzFramework::LegacyAssetEventBus::ClearQueuedEvents();
-            AZ::Data::AssetManager::Destroy();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            GradientSignalTest::TearDown();
-        }
-
-        struct AssignIdToAsset
-            : public AZ::Data::AssetData
-        {
-            void MakeReady()
-            {
-                m_assetId = AZ::Data::AssetId(AZ::Uuid::CreateRandom());
-                m_status.store(AZ::Data::AssetData::AssetStatus::Ready);
-            }
-        };
-
         struct PixelTestSetup
         {
             // How to create the source image
@@ -104,61 +41,6 @@ namespace UnitTest
 
             static const AZ::Vector2 EndOfList;
         };
-
-        AZ::Data::Asset<GradientSignal::ImageAsset> CreateImageAsset(AZ::u32 width, AZ::u32 height, AZ::s32 seed)
-        {
-            m_imageData = aznew GradientSignal::ImageAsset();
-            m_imageData->m_imageWidth = width;
-            m_imageData->m_imageHeight = height;
-            m_imageData->m_bytesPerPixel = 1;
-            m_imageData->m_imageFormat = ImageProcessingAtom::EPixelFormat::ePixelFormat_R8;
-
-            size_t value = 0;
-            AZStd::hash_combine(value, seed);
-
-            for (AZ::u32 x = 0; x < width; ++x)
-            {
-                for (AZ::u32 y = 0; y < height; ++y)
-                {
-                    AZStd::hash_combine(value, x);
-                    AZStd::hash_combine(value, y);
-                    m_imageData->m_imageData.push_back(static_cast<AZ::u8>(value));
-                }
-            }
-
-            reinterpret_cast<AssignIdToAsset*>(m_imageData)->MakeReady();
-            return AZ::Data::Asset<GradientSignal::ImageAsset>(m_imageData, AZ::Data::AssetLoadBehavior::Default);
-        }
-
-        AZ::Data::Asset<GradientSignal::ImageAsset> CreateSpecificPixelImageAsset(AZ::u32 width, AZ::u32 height, AZ::u32 pixelX, AZ::u32 pixelY)
-        {
-            m_imageData = aznew GradientSignal::ImageAsset();
-            m_imageData->m_imageWidth = width;
-            m_imageData->m_imageHeight = height;
-            m_imageData->m_bytesPerPixel = 1;
-            m_imageData->m_imageFormat = ImageProcessingAtom::EPixelFormat::ePixelFormat_R8;
-
-            const AZ::u8 pixelValue = 255;
-
-            // Image data should be stored inverted on the y axis relative to our engine, so loop backwards through y.
-            for (int y = static_cast<int>(height) - 1; y >= 0; --y)
-            {
-                for (AZ::u32 x = 0; x < width; ++x)
-                {
-                    if ((x == pixelX) && (y == pixelY))
-                    {
-                        m_imageData->m_imageData.push_back(pixelValue);
-                    }
-                    else
-                    {
-                        m_imageData->m_imageData.push_back(0);
-                    }
-                }
-            }
-
-            reinterpret_cast<AssignIdToAsset*>(m_imageData)->MakeReady();
-            return AZ::Data::Asset<GradientSignal::ImageAsset>(m_imageData, AZ::Data::AssetLoadBehavior::Default);
-        }
 
         void TestPixels(GradientSignal::GradientSampler& sampler, AZ::u32 width, AZ::u32 height, float stepSize, const AZStd::vector<AZ::Vector3>& expectedPoints)
         {
@@ -203,7 +85,8 @@ namespace UnitTest
 
             // Create the Image Gradient Component.
             GradientSignal::ImageGradientConfig config;
-            config.m_imageAsset = CreateSpecificPixelImageAsset(test.m_imageSize, test.m_imageSize, static_cast<AZ::u32>(test.m_pixel.GetX()), static_cast<AZ::u32>(test.m_pixel.GetY()));
+            config.m_imageAsset = ImageAssetMockAssetHandler::CreateSpecificPixelImageAsset(
+                test.m_imageSize, test.m_imageSize, static_cast<AZ::u32>(test.m_pixel.GetX()), static_cast<AZ::u32>(test.m_pixel.GetY()));
             config.m_tilingX = test.m_tiling;
             config.m_tilingY = test.m_tiling;
             CreateComponent<GradientSignal::ImageGradientComponent>(entity.get(), config);
@@ -495,7 +378,7 @@ namespace UnitTest
 
             // Create an ImageGradient with a 3x3 asset with the center pixel set.
             GradientSignal::ImageGradientConfig gradientConfig;
-            gradientConfig.m_imageAsset = CreateSpecificPixelImageAsset(3, 3, 1, 1);
+            gradientConfig.m_imageAsset = ImageAssetMockAssetHandler::CreateSpecificPixelImageAsset(3, 3, 1, 1);
             CreateComponent<GradientSignal::ImageGradientComponent>(entity.get(), gradientConfig);
 
             // Create the test GradientTransform

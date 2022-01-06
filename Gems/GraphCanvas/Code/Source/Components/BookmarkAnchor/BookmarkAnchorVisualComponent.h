@@ -57,7 +57,7 @@ namespace GraphCanvas
         ////
 
         // StyleNotificationBus
-        void OnStyleChanged();
+        void OnStyleChanged() override;
         ////
 
         // GeometryNotificationBus

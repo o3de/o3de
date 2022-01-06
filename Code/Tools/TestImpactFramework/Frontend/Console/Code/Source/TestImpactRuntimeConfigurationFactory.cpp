@@ -27,7 +27,7 @@ namespace TestImpact
             "relative_paths",
             "artifact_dir",
             "enumeration_cache_dir",
-            "test_impact_data_files",
+            "test_impact_data_file",
             "temp",
             "active",
             "target_sources",
@@ -72,7 +72,7 @@ namespace TestImpact
             RelativePaths,
             ArtifactDir,
             EnumerationCacheDir,
-            TestImpactDataFiles,
+            TestImpactDataFile,
             TempWorkspace,
             ActiveWorkspace,
             TargetSources,
@@ -138,20 +138,10 @@ namespace TestImpact
         tempWorkspaceConfig.m_artifactDirectory =
             GetAbsPathFromRelPath(
                 tempWorkspaceConfig.m_root, tempWorkspace[Config::Keys[Config::RelativePaths]][Config::Keys[Config::ArtifactDir]].GetString());
+        tempWorkspaceConfig.m_enumerationCacheDirectory = GetAbsPathFromRelPath(
+            tempWorkspaceConfig.m_root,
+            tempWorkspace[Config::Keys[Config::RelativePaths]][Config::Keys[Config::EnumerationCacheDir]].GetString());
         return tempWorkspaceConfig;
-    }
-
-    AZStd::array<RepoPath, 3> ParseTestImpactAnalysisDataFiles(const RepoPath& root, const rapidjson::Value& sparTiaFile)
-    {
-        AZStd::array<RepoPath, 3> sparTiaFiles;
-        sparTiaFiles[static_cast<size_t>(SuiteType::Main)] =
-            GetAbsPathFromRelPath(root, sparTiaFile[SuiteTypeAsString(SuiteType::Main).c_str()].GetString());
-        sparTiaFiles[static_cast<size_t>(SuiteType::Periodic)] =
-            GetAbsPathFromRelPath(root, sparTiaFile[SuiteTypeAsString(SuiteType::Periodic).c_str()].GetString());
-        sparTiaFiles[static_cast<size_t>(SuiteType::Sandbox)] =
-            GetAbsPathFromRelPath(root, sparTiaFile[SuiteTypeAsString(SuiteType::Sandbox).c_str()].GetString());
-
-        return sparTiaFiles;
     }
 
     WorkspaceConfig::Active ParseActiveWorkspaceConfig(const rapidjson::Value& activeWorkspace)
@@ -159,10 +149,7 @@ namespace TestImpact
         WorkspaceConfig::Active activeWorkspaceConfig;
         const auto& relativePaths = activeWorkspace[Config::Keys[Config::RelativePaths]];
         activeWorkspaceConfig.m_root = activeWorkspace[Config::Keys[Config::Root]].GetString();
-        activeWorkspaceConfig.m_enumerationCacheDirectory
-            = GetAbsPathFromRelPath(activeWorkspaceConfig.m_root, relativePaths[Config::Keys[Config::EnumerationCacheDir]].GetString());
-        activeWorkspaceConfig.m_sparTiaFiles =
-            ParseTestImpactAnalysisDataFiles(activeWorkspaceConfig.m_root, relativePaths[Config::Keys[Config::TestImpactDataFiles]]);
+        activeWorkspaceConfig.m_sparTiaFile = relativePaths[Config::Keys[Config::TestImpactDataFile]].GetString();
         return activeWorkspaceConfig;
     }
 

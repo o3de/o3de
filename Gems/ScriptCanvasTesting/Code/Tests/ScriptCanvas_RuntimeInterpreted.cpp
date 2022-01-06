@@ -367,11 +367,6 @@ TEST_F(ScriptCanvasTestFixture, InterpretedMultipleOutDataFlowParseError)
     ExpectParseError("LY_SC_UnitTest_MultipleOutDataFlowParseError");
 }
 
-TEST_F(ScriptCanvasTestFixture, InterpretedSimultaneousDataInputError)
-{
-    ExpectParseError("LY_SC_UnitTest_SimultaneousDataInputError");
-}
-
 TEST_F(ScriptCanvasTestFixture, InterpretedAnyAsTailNoOp)
 {
     RunUnitTestGraph("LY_SC_UnitTest_AnyAsTailNoOp");
@@ -784,7 +779,7 @@ TEST_F(ScriptCanvasTestFixture, InterpretedPrintConnectedInput)
 
 TEST_F(ScriptCanvasTestFixture, InterpretedPrintFormatEmptyValue)
 {
-    RunUnitTestGraph("LY_SC_UnitTest_PrintFormatEmptyValue", ExecutionMode::Interpreted);
+    ExpectParseError("LY_SC_UnitTest_PrintFormatEmptyValue");
 }
 
 TEST_F(ScriptCanvasTestFixture, InterpretedProperties)
@@ -824,7 +819,7 @@ TEST_F(ScriptCanvasTestFixture, InterpretedStringFormat)
 
 TEST_F(ScriptCanvasTestFixture, InterpretedStringFormatEmptyValue)
 {
-    RunUnitTestGraph("LY_SC_UnitTest_StringFormatEmptyValue", ExecutionMode::Interpreted);
+    ExpectParseError("LY_SC_UnitTest_StringFormatEmptyValue");
 }
 
 TEST_F(ScriptCanvasTestFixture, InterpretedStringFormatWithRepeatedValueName)

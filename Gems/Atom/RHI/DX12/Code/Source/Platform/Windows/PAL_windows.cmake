@@ -18,20 +18,7 @@ if(d3d12_dll)
     set(PAL_TRAIT_ATOM_RHI_DX12_SUPPORTED TRUE)
 endif()
 
-set(PAL_TRAIT_PIX_AVAILABLE FALSE)
 unset(pix3_header CACHE)
-
-file(TO_CMAKE_PATH "$ENV{ATOM_PIX_PATH}" ATOM_PIX_PATH_CMAKE_FORMATTED)
-find_file(pix3_header
-    pix3.h
-    PATHS
-        "${ATOM_PIX_PATH_CMAKE_FORMATTED}/Include/WinPixEventRuntime"
-)
-
-mark_as_advanced(pix3_header)
-if(pix3_header)
-    set(PAL_TRAIT_PIX_AVAILABLE TRUE)
-endif()
 
 set(PAL_TRAIT_AFTERMATH_AVAILABLE FALSE)
 unset(aftermath_header CACHE)
@@ -45,6 +32,13 @@ mark_as_advanced(CLEAR, aftermath_header)
 if(aftermath_header)
     set(PAL_TRAIT_AFTERMATH_AVAILABLE TRUE)
 endif()
+
+ly_add_source_properties(
+    SOURCES
+        Source/RHI.Builders/ShaderPlatformInterfaceSystemComponent.cpp
+    PROPERTY COMPILE_DEFINITIONS 
+    VALUES ${LY_PAL_TOOLS_DEFINES}
+)
 
 # Disable windows OS version check until infra can upgrade all our jenkins nodes
 # if(NOT CMAKE_SYSTEM_VERSION VERSION_GREATER_EQUAL "10.0.17763")

@@ -76,6 +76,7 @@ namespace AzToolsFramework
 {
     class EditorEntityAPI;
     class EditorEntityUiInterface;
+    class ReadOnlyEntityPublicInterface;
 
     namespace AssetBrowser
     {
@@ -93,7 +94,6 @@ namespace AzToolsFramework
 class SandboxIntegrationManager
     : private AzToolsFramework::ToolsApplicationEvents::Bus::Handler
     , private AzToolsFramework::EditorRequests::Bus::Handler
-    , private AzToolsFramework::EditorPickModeNotificationBus::Handler
     , private AzToolsFramework::EditorContextMenuBus::Handler
     , private AzToolsFramework::EditorWindowRequests::Bus::Handler
     , private AzFramework::AssetCatalogEventBus::Handler
@@ -140,8 +140,6 @@ private:
     QDockWidget* InstanceViewPane(const char* paneName) override;
     void CloseViewPane(const char* paneName) override;
     void BrowseForAssets(AzToolsFramework::AssetBrowser::AssetSelectionModel& selection) override;
-    void HandleObjectModeSelection(const AZ::Vector2& point, int flags, bool& handled) override;
-    void UpdateObjectModeCursor(AZ::u32& cursorId, AZStd::string& cursorStr) override;
     void CreateEditorRepresentation(AZ::Entity* entity) override;
     bool DestroyEditorRepresentation(AZ::EntityId entityId, bool deleteAZEntity) override;
     void CloneSelection(bool& handled) override;
@@ -158,7 +156,6 @@ private:
     void LaunchLuaEditor(const char* files) override;
     bool IsLevelDocumentOpen() override;
     AZStd::string GetLevelName() override;
-    AZStd::string SelectResource(const AZStd::string& resourceType, const AZStd::string& previousValue) override;
     void OpenPinnedInspector(const AzToolsFramework::EntityIdSet& entities) override;
     void ClosePinnedInspector(AzToolsFramework::EntityPropertyEditor* editor) override;
     void GoToSelectedOrHighlightedEntitiesInViewports() override;
@@ -168,7 +165,6 @@ private:
     void InstantiateSliceFromAssetId(const AZ::Data::AssetId& assetId) override;
     void ClearRedoStack() override;
     int GetIconTextureIdFromEntityIconPath(const AZStd::string& entityIconPath) override;
-    bool DisplayHelpersVisible() override;
     //////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////
@@ -176,14 +172,10 @@ private:
     QWidget* GetAppMainWindow() override;
     //////////////////////////////////////////////////////////////////////////
 
-    // EditorPickModeNotificationBus
-    void OnEntityPickModeStarted() override;
-    void OnEntityPickModeStopped() override;
-
     //////////////////////////////////////////////////////////////////////////
     // AzToolsFramework::EditorContextMenu::Bus::Handler overrides
     void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags) override;
-    int GetMenuPosition() const;
+    int GetMenuPosition() const override;
     //////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////
@@ -241,6 +233,7 @@ private:
     }
 
     AZStd::string GetComponentEditorIcon(const AZ::Uuid& componentType, AZ::Component* component) override;
+    AZStd::string GetComponentTypeEditorIcon(const AZ::Uuid& componentType) override;
     AZStd::string GetComponentIconPath(const AZ::Uuid& componentType, AZ::Crc32 componentIconAttrib, AZ::Component* component) override;
 
     //////////////////////////////////////////////////////////////////////////
@@ -281,9 +274,7 @@ private:
 
 private:
     AZ::Vector2 m_contextMenuViewPoint;
-    AZ::Vector3 m_sliceWorldPos;
 
-    int m_inObjectPickMode;
     short m_startedUndoRecordingNestingLevel;   // used in OnBegin/EndUndo to ensure we only accept undo's we started recording
 
     AzToolsFramework::SliceOverridesNotificationWindowManager* m_notificationWindowManager;
@@ -299,13 +290,12 @@ private:
     const AZStd::string m_defaultComponentViewportIconLocation = "Icons/Components/Viewport/Component_Placeholder.svg";
     const AZStd::string m_defaultEntityIconLocation = "Icons/Components/Viewport/Transform.svg";
 
-    bool m_debugDisplayBusImplementationActive = false;
-
     AzToolsFramework::Prefab::PrefabIntegrationManager* m_prefabIntegrationManager = nullptr;
 
     AzToolsFramework::EditorEntityUiInterface* m_editorEntityUiInterface = nullptr;
     AzToolsFramework::Prefab::PrefabIntegrationInterface* m_prefabIntegrationInterface = nullptr;
     AzToolsFramework::EditorEntityAPI* m_editorEntityAPI = nullptr;
+    AzToolsFramework::ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
 
     // Overrides UI styling and behavior for Layer Entities
     AzToolsFramework::LayerUiHandler m_layerUiOverrideHandler;
@@ -317,19 +307,13 @@ class CToolsApplicationUndoLink
 {
 public:
 
-    CToolsApplicationUndoLink(const char* description)
-        : m_description(description)
+    CToolsApplicationUndoLink()
     {
     }
 
     int GetSize() override
     {
         return 0;
-    }
-
-    QString GetDescription() override
-    {
-        return m_description.c_str();
     }
 
     void Undo(bool bUndo = true) override
@@ -365,8 +349,6 @@ public:
             w->setFocus(Qt::OtherFocusReason);
         }
     }
-
-    AZStd::string m_description;
 };
 
 #endif // CRYINCLUDE_COMPONENTENTITYEDITORPLUGIN_SANDBOXINTEGRATION_H

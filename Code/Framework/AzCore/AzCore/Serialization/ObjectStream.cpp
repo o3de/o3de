@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/RTTI/AttributeReader.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzCore/Serialization/DataOverlayInstanceMsgs.h>
 #include <AzCore/Serialization/DataOverlayProviderMsgs.h>
@@ -786,7 +787,7 @@ namespace AZ
                 // Serializable leaf element.
                 else if (classData->m_serializer)
                 {
-                    AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzCore, "ObjectStreamImpl::LoadClass Load");
+                    AZ_PROFILE_SCOPE(AzCore, "ObjectStreamImpl::LoadClass Load");
 
                     // Wrap the stream
                     IO::GenericStream* currentStream = &m_inStream;
@@ -1049,7 +1050,7 @@ namespace AZ
                 }
                 m_xmlNode = next;
 
-                Uuid specializedId;
+                Uuid specializedId = Uuid::CreateNull();
                 // now parse the node
                 rapidxml::xml_attribute<char>* attr = m_xmlNode->first_attribute();
                 while (attr)
@@ -1520,6 +1521,7 @@ namespace AZ
             {
                 if (m_writeElementResultStack.empty())
                 {
+                    AZ_UNUSED(classData); // Prevent unused warning in release builds
                     AZ_Error("Serialize", false, "CloseElement is attempted to be called without a corresponding WriteElement when writing class %s", classData->m_name);
                     return true;
                 }
@@ -1581,6 +1583,7 @@ namespace AZ
                     {
                         if (m_writeElementResultStack.empty())
                         {
+                            AZ_UNUSED(classData); // Prevent unused warning in release builds
                             AZ_Error("Serialize", false, "CloseElement is attempted to be called without a corresponding WriteElement when writing class %s", classData->m_name);
                             return true;
                         }
@@ -1640,11 +1643,15 @@ namespace AZ
                     m_writeElementResultStack.push_back(WriteElement(ptr, classData, classElement));
                     return m_writeElementResultStack.back();
                 };
-                auto closeElementCB = [this, classData]()
+                auto closeElementCB = [this, classTypeId = classData->m_typeId]()
                 {
                     if (m_writeElementResultStack.empty())
                     {
-                        AZ_Error("Serialize", false, "CloseElement is attempted to be called without a corresponding WriteElement when writing class %s", classData->m_name);
+                        // ClassData could be dangling pointer if it was unreflected by the ObjectStreamWriteOverrideCB
+                        // So use the classTypeId instead
+                        AZ_UNUSED(classTypeId);
+                        AZ_Error("Serialize", false, "CloseElement is attempted to be called without a corresponding WriteElement when writing class %s",
+                            classTypeId.ToString<AZStd::fixed_string<AZ::TypeId::MaxStringBuffer>>().c_str());
                         return true;
                     }
                     if (m_writeElementResultStack.back())
@@ -1661,16 +1668,14 @@ namespace AZ
                     SerializeContext::ENUM_ACCESS_FOR_READ,
                     &m_errorLogger
                 );
-                ObjectStreamWriteOverrideCB writeCB;
-                if (objectStreamWriteOverrideCB.Read<ObjectStreamWriteOverrideCB>(writeCB))
+                if (objectStreamWriteOverrideCB.Invoke<void>(callContext, objectPtr, *classData, classElement))
                 {
-                    writeCB(callContext, objectPtr, *classData, classElement);
                     return false;
                 }
                 else
                 {
                     auto objectStreamError = AZStd::string::format("Unable to invoke ObjectStream Write Element Override for class element %s of class data %s",
-                        classElement->m_name ? classElement->m_name : "", classData->m_name);
+                        classElement && classElement->m_name ? classElement->m_name : "", classData->m_name);
                     m_errorLogger.ReportError(objectStreamError.c_str());
                 }
             }
@@ -1929,7 +1934,7 @@ namespace AZ
         //=========================================================================
         bool ObjectStreamImpl::Start()
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+            AZ_PROFILE_FUNCTION(AzCore);
 
             ++m_pending;
 

@@ -51,8 +51,8 @@ namespace EMotionFX
             m_blendTree->AddChildNode(finalNode);
             finalNode->AddConnection(m_blendNNode, BlendTreeBlendNNode::PORTID_OUTPUT_POSE, BlendTreeFinalNode::PORTID_INPUT_POSE);
 
-            const int motionNodeCount = 3;
-            for (int i = 0; i < motionNodeCount; ++i)
+            const uint16 motionNodeCount = 3;
+            for (uint16 i = 0; i < motionNodeCount; ++i)
             {
                 AnimGraphMotionNode* motionNode = aznew AnimGraphMotionNode();
                 m_blendTree->AddChildNode(motionNode);
@@ -213,7 +213,7 @@ namespace EMotionFX
             finalNode->AddConnection(m_blendNNode, BlendTreeBlendNNode::PORTID_OUTPUT_POSE, BlendTreeFinalNode::PORTID_INPUT_POSE);
 
             ASSERT_TRUE(param.m_motionNodeCount <= 10) << "The blend N node only has 10 pose inputs.";
-            for (AZ::u32 i = 0; i < param.m_motionNodeCount; ++i)
+            for (uint16 i = 0; i < param.m_motionNodeCount; ++i)
             {
                 AnimGraphMotionNode* motionNode = aznew AnimGraphMotionNode();
                 m_blendTree->AddChildNode(motionNode);
@@ -332,9 +332,7 @@ namespace EMotionFX
                 EXPECT_NEAR(durationA, durationN, epsilon);
 
                 // Node B gets synced to the blend N node which got synced to node A.
-                const float timeRatio = durationA / durationB;
                 const float timeRatio2 = durationB / durationA;
-                const float factorA = AZ::Lerp(1.0f, timeRatio, blendWeight);
                 const float factorB = AZ::Lerp(timeRatio2, 1.0f, blendWeight);
                 const float primaryMotionPlaySpeed = m_motionNodes[motionIndexA]->GetDefaultPlaySpeed();
                 const float interpolatedSpeed = AZ::Lerp(playSpeedA, primaryMotionPlaySpeed, blendWeight);

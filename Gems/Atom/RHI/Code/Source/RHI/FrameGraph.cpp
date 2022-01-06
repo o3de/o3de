@@ -8,7 +8,6 @@
 #include <Atom/RHI/BufferFrameAttachment.h>
 #include <Atom/RHI/BufferPoolBase.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/FrameGraph.h>
 #include <Atom/RHI/ImageFrameAttachment.h>
 #include <Atom/RHI/ImagePoolBase.h>
@@ -18,8 +17,6 @@
 #include <Atom/RHI/Scope.h>
 #include <Atom/RHI/SwapChain.h>
 #include <Atom/RHI/SwapChainFrameAttachment.h>
-#include <AzCore/Debug/EventTrace.h>
-#include <AzCore/std/sort.h>
 
 namespace AZ
 {
@@ -62,7 +59,7 @@ namespace AZ
 
         void FrameGraph::Begin()
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             AZ_Assert(m_isBuilding == false, "FrameGraph::Begin called, but End was never called on the previous build cycle!");
             AZ_Assert(m_isCompiled == false, "FrameGraph::Clear must be called before reuse.");
@@ -73,7 +70,7 @@ namespace AZ
 
         void FrameGraph::Clear()
         {
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameGraph: Clear");
+            AZ_PROFILE_SCOPE(RHI, "FrameGraph: Clear");
             for (Scope* scope : m_scopes)
             {
                 scope->Deactivate();
@@ -110,13 +107,11 @@ namespace AZ
                 {
                     if (attachment->GetFirstScopeAttachment() == nullptr)
                     {
+                        //We allow the rendering to continue even if an attachment is not used.
                         AZ_Error(
                             "FrameGraph", false,
                             "Invalid State: attachment '%s' was added but never used!",
                             attachment->GetId().GetCStr());
-
-                        Clear();
-                        return ResultCode::InvalidOperation;
                     }
                 }
             }
@@ -126,7 +121,7 @@ namespace AZ
 
         ResultCode FrameGraph::End()
         {
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameGraph: End");
+            AZ_PROFILE_SCOPE(RHI, "FrameGraph: End");
             ResultCode resultCode = ValidateEnd();
             if (resultCode != ResultCode::Success)
             {
@@ -497,7 +492,7 @@ namespace AZ
                 for (const uint32_t edgeIndex : graphEdges[producerIndex])
                 {
                     const GraphEdge& graphEdge = m_graphEdges[edgeIndex];
-                    const uint16_t consumerIndex = graphEdge.m_consumerIndex;
+                    const uint16_t consumerIndex = static_cast<uint16_t>(graphEdge.m_consumerIndex);
                     if (--m_graphNodes[consumerIndex].m_unsortedProducerCount == 0)
                     {
                         NodeId newNode;

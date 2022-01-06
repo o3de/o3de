@@ -101,7 +101,7 @@ namespace PhysX
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
-                editContext->Class<SystemComponent>("PhysX", "Global PhysX physics configuration")
+                editContext->Class<SystemComponent>("PhysX", "Global PhysX physics configuration.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
@@ -252,6 +252,22 @@ namespace PhysX
         return convex;
     }
 
+    physx::PxHeightField* SystemComponent::CreateHeightField(const physx::PxHeightFieldSample* samples, AZ::u32 numRows, AZ::u32 numColumns)
+    {
+        physx::PxHeightFieldDesc desc;
+        desc.format = physx::PxHeightFieldFormat::eS16_TM;
+        desc.nbColumns = numColumns;
+        desc.nbRows = numRows;
+        desc.samples.data = samples;
+        desc.samples.stride = sizeof(physx::PxHeightFieldSample);
+
+        physx::PxHeightField* heightfield =
+            m_physXSystem->GetPxCooking()->createHeightField(desc, m_physXSystem->GetPxPhysics()->getPhysicsInsertionCallback());
+        AZ_Error("PhysX", heightfield, "Error. Unable to create heightfield");
+
+        return heightfield;
+    }
+
     bool SystemComponent::CookConvexMeshToFile(const AZStd::string& filePath, const AZ::Vector3* vertices, AZ::u32 vertexCount)
     {
         AZStd::vector<AZ::u8> physxData;
@@ -342,6 +358,14 @@ namespace PhysX
         return AZStd::make_shared<PhysX::Material>(materialConfiguration);
     }
 
+    void SystemComponent::ReleaseNativeHeightfieldObject(void* nativeHeightfieldObject)
+    {
+        if (nativeHeightfieldObject)
+        {
+            static_cast<physx::PxBase*>(nativeHeightfieldObject)->release();
+        }
+    }
+
     void SystemComponent::ReleaseNativeMeshObject(void* nativeMeshObject)
     {
         if (nativeMeshObject)
@@ -396,7 +420,7 @@ namespace PhysX
 
     void SystemComponent::SetCollisionLayerName(int index, const AZStd::string& layerName)
     {
-        m_physXSystem->SetCollisionLayerName(aznumeric_cast<AZ::u64>(index), layerName);
+        m_physXSystem->SetCollisionLayerName(aznumeric_cast<int>(index), layerName);
     }
 
     void SystemComponent::CreateCollisionGroup(const AZStd::string& groupName, const AzPhysics::CollisionGroup& group)
@@ -458,7 +482,13 @@ namespace PhysX
             {
                 const PhysXSystemConfiguration defaultConfig = PhysXSystemConfiguration::CreateDefault();
                 m_physXSystem->Initialize(&defaultConfig);
-                registryManager.SaveSystemConfiguration(defaultConfig, {});
+
+                auto saveCallback = []([[maybe_unused]] const PhysXSystemConfiguration& config, [[maybe_unused]] PhysXSettingsRegistryManager::Result result)
+                {
+                    AZ_Warning("PhysX", result == PhysXSettingsRegistryManager::Result::Success,
+                        "Unable to save the default PhysX configuration.");
+                };
+                registryManager.SaveSystemConfiguration(defaultConfig, saveCallback);
             }
 
             //Load the DefaultSceneConfig
@@ -471,7 +501,13 @@ namespace PhysX
             {
                 const AzPhysics::SceneConfiguration defaultConfig = AzPhysics::SceneConfiguration::CreateDefault();
                 m_physXSystem->UpdateDefaultSceneConfiguration(defaultConfig);
-                registryManager.SaveDefaultSceneConfiguration(defaultConfig, {});
+
+                auto saveCallback = []([[maybe_unused]] const AzPhysics::SceneConfiguration& config, [[maybe_unused]] PhysXSettingsRegistryManager::Result result)
+                {
+                    AZ_Warning("PhysX", result == PhysXSettingsRegistryManager::Result::Success,
+                        "Unable to save the default Scene configuration.");
+                };
+                registryManager.SaveDefaultSceneConfiguration(defaultConfig, saveCallback);
             }
 
             //load the debug configuration and initialize the PhysX debug interface
@@ -486,7 +522,13 @@ namespace PhysX
                 {
                     const Debug::DebugConfiguration defaultConfig = Debug::DebugConfiguration::CreateDefault();
                     debug->Initialize(defaultConfig);
-                    registryManager.SaveDebugConfiguration(defaultConfig, {});
+
+                    auto saveCallback = []([[maybe_unused]] const Debug::DebugConfiguration& config, [[maybe_unused]] PhysXSettingsRegistryManager::Result result)
+                    {
+                        AZ_Warning("PhysX", result == PhysXSettingsRegistryManager::Result::Success,
+                            "Unable to save the default PhysX Debug configuration.");
+                    };
+                    registryManager.SaveDebugConfiguration(defaultConfig, saveCallback);
                 }
             }
         }

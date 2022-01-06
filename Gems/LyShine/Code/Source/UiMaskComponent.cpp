@@ -13,7 +13,6 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 
-#include "IRenderer.h"
 #include "RenderToTextureBus.h"
 #include "RenderGraph.h"
 #include <LyShine/Bus/UiTransformBus.h>
@@ -558,13 +557,13 @@ void UiMaskComponent::CreateOrResizeRenderTarget(const AZ::Vector2& pixelAligned
     m_viewportTopLeft = pixelAlignedTopLeft;
     m_viewportSize = renderTargetSize;
 
-    // LYSHINE_ATOM_TODO: optimize by reusing/resizing targets
+    // [LYSHINE_ATOM_TODO][GHI #6271] Optimize by reusing existing render targets
     DestroyRenderTarget();
 
     // Create a render target that this element and its children will be rendered to
     AZ::EntityId canvasEntityId;
     EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-    AZ::RHI::Size imageSize(renderTargetSize.GetX(), renderTargetSize.GetY(), 1);
+    AZ::RHI::Size imageSize(static_cast<uint32_t>(renderTargetSize.GetX()), static_cast<uint32_t>(renderTargetSize.GetY()), 1);
     EBUS_EVENT_ID_RESULT(m_contentAttachmentImageId, canvasEntityId, LyShine::RenderToTextureRequestBus, UseRenderTarget, AZ::Name(m_renderTargetName.c_str()), imageSize);
     if (m_contentAttachmentImageId.IsEmpty())
     {
@@ -624,7 +623,7 @@ void UiMaskComponent::UpdateCachedPrimitive(const AZ::Vector2& pixelAlignedTopLe
     {
         // verts not yet allocated, allocate them now
         const int numIndices = 6;
-        m_cachedPrimitive.m_vertices = new SVF_P2F_C4B_T2F_F4B[numVertices];
+        m_cachedPrimitive.m_vertices = new LyShine::UiPrimitiveVertex[numVertices];
         m_cachedPrimitive.m_numVertices = numVertices;
 
         static uint16 indices[numIndices] = { 0, 1, 2, 2, 3, 0 };
@@ -722,8 +721,7 @@ void UiMaskComponent::RenderUsingGradientMask(LyShine::IRenderGraph* renderGraph
     // mask render target
     {
         // Start building the render to texture node in the render graph
-        LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph);
-        lyRenderGraph->BeginRenderToTexture(maskAttachmentImage, m_viewportTopLeft, m_viewportSize, clearColor);
+        renderGraph->BeginRenderToTexture(maskAttachmentImage, m_viewportTopLeft, m_viewportSize, clearColor);
 
         // Render the visual component for this element (if there is one) plus the child mask element (if there is one)
         RenderMaskPrimitives(renderGraph, renderInterface, childMaskElementInterface, isInGame);
@@ -735,8 +733,7 @@ void UiMaskComponent::RenderUsingGradientMask(LyShine::IRenderGraph* renderGraph
     // content render target
     {
         // Start building the render to texture node for the content render target in the render graph
-        LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph);
-        lyRenderGraph->BeginRenderToTexture(contentAttachmentImage, m_viewportTopLeft, m_viewportSize, clearColor);
+        renderGraph->BeginRenderToTexture(contentAttachmentImage, m_viewportTopLeft, m_viewportSize, clearColor);
 
         // Render the "content" - the child elements excluding the child mask element (if any)
         RenderContentPrimitives(renderGraph, elementInterface, childMaskElementInterface, numChildren, isInGame);
@@ -761,8 +758,8 @@ void UiMaskComponent::RenderUsingGradientMask(LyShine::IRenderGraph* renderGraph
             if (m_cachedPrimitive.m_vertices[0].color.a != desiredPackedAlpha)
             {
                 // go through all the cached vertices and update the alpha values
-                UCol desiredPackedColor = m_cachedPrimitive.m_vertices[0].color;
-                desiredPackedColor.a = desiredPackedAlpha;
+                LyShine::UCol desiredPackedColor = m_cachedPrimitive.m_vertices[0].color;
+                desiredPackedColor.a = static_cast<uint8>(desiredPackedAlpha);
                 for (int i = 0; i < m_cachedPrimitive.m_numVertices; ++i)
                 {
                     m_cachedPrimitive.m_vertices[i].color = desiredPackedColor;
@@ -772,26 +769,22 @@ void UiMaskComponent::RenderUsingGradientMask(LyShine::IRenderGraph* renderGraph
 
         // Add a primitive to do the alpha mask
         {
-            LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph);
-            if (lyRenderGraph)
-            {
-                // Set the texture and other render state required
-                AZ::Data::Instance<AZ::RPI::Image> contentImage = contentAttachmentImage;
-                AZ::Data::Instance<AZ::RPI::Image> maskImage = maskAttachmentImage;
-                bool isClampTextureMode = true;
-                bool isTextureSRGB = true;
-                bool isTexturePremultipliedAlpha = false;
-                LyShine::BlendMode blendMode = LyShine::BlendMode::Normal;
+            // Set the texture and other render state required
+            AZ::Data::Instance<AZ::RPI::Image> contentImage = contentAttachmentImage;
+            AZ::Data::Instance<AZ::RPI::Image> maskImage = maskAttachmentImage;
+            bool isClampTextureMode = true;
+            bool isTextureSRGB = true;
+            bool isTexturePremultipliedAlpha = false;
+            LyShine::BlendMode blendMode = LyShine::BlendMode::Normal;
 
-                // add a render node to render using the two render targets, one as an alpha mask of the other
-                lyRenderGraph->AddAlphaMaskPrimitiveAtom(&m_cachedPrimitive,
-                    contentAttachmentImage,
-                    maskAttachmentImage,
-                    isClampTextureMode,
-                    isTextureSRGB,
-                    isTexturePremultipliedAlpha,
-                    blendMode);
-            }
+            // add a render node to render using the two render targets, one as an alpha mask of the other
+            renderGraph->AddAlphaMaskPrimitive(&m_cachedPrimitive,
+                contentAttachmentImage,
+                maskAttachmentImage,
+                isClampTextureMode,
+                isTextureSRGB,
+                isTexturePremultipliedAlpha,
+                blendMode);
         }
     }
 }

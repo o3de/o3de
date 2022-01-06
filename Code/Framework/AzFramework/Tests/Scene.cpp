@@ -113,7 +113,6 @@ namespace SceneUnitTest
             m_app.RegisterComponentDescriptor(AZ::StreamerComponent::CreateDescriptor());
 
             AZ::ComponentApplication::Descriptor desc;
-            desc.m_enableDrilling = false; // the unit test framework already adds a driller
             m_systemEntity = m_app.Create(desc);
             m_systemEntity->Init();
 
@@ -230,7 +229,7 @@ namespace SceneUnitTest
 
         // Check to make sure there are no more active scenes.
         size_t index = 0;
-        m_sceneSystem->IterateActiveScenes([&index, &scenes](const AZStd::shared_ptr<Scene>&)
+        m_sceneSystem->IterateActiveScenes([&index](const AZStd::shared_ptr<Scene>&)
             {
                 index++;
                 return true;
@@ -251,7 +250,7 @@ namespace SceneUnitTest
             scenes[i].reset();
         }
         index = 0;
-        m_sceneSystem->IterateZombieScenes([&index, &scenes](Scene&) {
+        m_sceneSystem->IterateZombieScenes([&index](Scene&) {
             index++;
             return true;
         });

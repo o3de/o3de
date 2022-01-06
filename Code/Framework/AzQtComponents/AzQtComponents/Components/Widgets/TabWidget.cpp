@@ -632,7 +632,7 @@ namespace AzQtComponents
             return;
         }
 
-        ButtonPosition closeSide = (ButtonPosition)style()->styleHint(QStyle::SH_TabBar_CloseButtonPosition, 0, this);
+        ButtonPosition closeSide = (ButtonPosition)style()->styleHint(QStyle::SH_TabBar_CloseButtonPosition, nullptr, this);
         for (int i = 0; i < count(); i++)
         {
             QWidget* tabBtn = tabButton(i, closeSide);

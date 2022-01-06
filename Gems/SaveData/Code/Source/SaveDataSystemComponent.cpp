@@ -172,14 +172,15 @@ namespace SaveData
 
         // This is safe access outside the lock guard because we only remove elements from the list
         // after the thread completion flag has been set to true (see also JoinAllCompletedThreads).
-        threadCompletionPair->m_thread = AZStd::make_unique<AZStd::thread>([&threadCompleteFlag = threadCompletionPair->m_threadComplete,
-                                                                            dataBuffer = AZStd::move(saveDataBufferParams.dataBuffer),
-                                                                            dataBufferSize = saveDataBufferParams.dataBufferSize,
-                                                                            dataBufferName = saveDataBufferParams.dataBufferName,
-                                                                            onSavedCallback = saveDataBufferParams.callback,
-                                                                            localUserId = saveDataBufferParams.localUserId,
-                                                                            absoluteFilePath,
-                                                                            useTemporaryFile]()
+        threadCompletionPair->m_thread = AZStd::make_unique<AZStd::thread>(saveThreadDesc,
+                                                                           [&threadCompleteFlag = threadCompletionPair->m_threadComplete,
+                                                                           dataBuffer = AZStd::move(saveDataBufferParams.dataBuffer),
+                                                                           dataBufferSize = saveDataBufferParams.dataBufferSize,
+                                                                           dataBufferName = saveDataBufferParams.dataBufferName,
+                                                                           onSavedCallback = saveDataBufferParams.callback,
+                                                                           localUserId = saveDataBufferParams.localUserId,
+                                                                           absoluteFilePath,
+                                                                           useTemporaryFile]()
         {
             SaveDataNotifications::Result result = SaveDataNotifications::Result::ErrorUnspecified;
 
@@ -234,7 +235,7 @@ namespace SaveData
 
             // Set the thread completion flag so it will be joined in JoinAllCompletedThreads.
             threadCompleteFlag = true;
-        }, &saveThreadDesc);
+        });
 
         if (waitForCompletion)
         {
@@ -301,9 +302,10 @@ namespace SaveData
 
         // This is safe access outside the lock guard because we only remove elements from the list
         // after the thread completion flag has been set to true (see also JoinAllCompletedThreads).
-        threadCompletionPair->m_thread = AZStd::make_unique<AZStd::thread>([&threadCompleteFlag = threadCompletionPair->m_threadComplete,
-                                                                            loadDataBufferParams,
-                                                                            absoluteFilePath]()
+        threadCompletionPair->m_thread = AZStd::make_unique<AZStd::thread>(loadThreadDesc,
+                                                                           [&threadCompleteFlag = threadCompletionPair->m_threadComplete,
+                                                                           loadDataBufferParams,
+                                                                           absoluteFilePath]()
         {
             SaveDataNotifications::DataBuffer dataBuffer = nullptr;
             AZ::u64 dataBufferSize = 0;
@@ -352,7 +354,7 @@ namespace SaveData
 
             // Set the thread completion flag so it will be joined in JoinAllCompletedThreads.
             threadCompleteFlag = true;
-        }, &loadThreadDesc);
+        });
 
         if (waitForCompletion)
         {

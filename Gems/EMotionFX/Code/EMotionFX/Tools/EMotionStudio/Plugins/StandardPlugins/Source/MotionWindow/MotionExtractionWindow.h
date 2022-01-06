@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __EMSTUDIO_MOTIONEXTRACTIONWINDOW_H
-#define __EMSTUDIO_MOTIONEXTRACTIONWINDOW_H
+#pragma once
 
 // include MCore
 #if !defined(Q_MOC_RUN)
@@ -68,7 +67,6 @@ namespace EMStudio
 
         // general
         MotionWindowPlugin*             m_motionWindowPlugin;
-        QCheckBox*                      m_autoMode;
 
         // flags widget
         QWidget*                        m_flagsWidget;
@@ -89,6 +87,3 @@ namespace EMStudio
         void CreateWarningWidget();
     };
 } // namespace EMStudio
-
-
-#endif

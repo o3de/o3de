@@ -103,8 +103,11 @@ namespace AZ
             AZ::TypeId GetStorageDataTypeId() const;
 
             //! Returns the value of the enum from its name. If this property is not an enum or the name is undefined, InvalidEnumValue is returned.
-            static constexpr uint32_t InvalidEnumValue = -1;
+            static constexpr uint32_t InvalidEnumValue = std::numeric_limits<uint32_t>::max();
             uint32_t GetEnumValue(const AZ::Name& enumName) const;
+
+            //! Returns the name of the enum from its index. An empty name is returned for an invalid id.
+            const AZ::Name& GetEnumName(uint32_t enumValue) const;
 
             //! Returns the unique name ID of this property
             const Name& GetName() const;

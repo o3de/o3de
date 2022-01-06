@@ -73,6 +73,13 @@ namespace SceneBuilder
         required.emplace_back(AZ_CRC_CE("AssetImportRequestHandler"));
     }
 
+    void BuilderPluginComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+    {
+        // Any components that can modify the analysis fingerprint via SceneBuilderDependencyRequests::AddFingerprintInfo must be activated first,
+        // so they contribute to the fingerprint calculated in BuilderPluginComponent::Activate().
+        services.emplace_back(AZ_CRC_CE("FingerprintModification"));
+    }
+
     void BuilderPluginComponent::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);

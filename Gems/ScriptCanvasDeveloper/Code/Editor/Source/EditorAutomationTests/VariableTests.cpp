@@ -669,7 +669,6 @@ namespace ScriptCanvasDeveloper
 
     VariableLifeCycleTest::VariableLifeCycleTest(AZStd::string name, AZStd::vector<ScriptCanvas::Data::Type> dataTypes, CreateVariableAction::CreationType creationType)
         : EditorAutomationTest(name.c_str())
-        , m_creationType(creationType)
         , m_typesToMake(dataTypes)
     {
         m_variableTypeId = "ActiveVariableTypeId";

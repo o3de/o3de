@@ -20,6 +20,9 @@
 #include <EMotionFX/Source/EventInfo.h>
 #include <EMotionFX/Source/MotionInstancePool.h>
 
+#if defined GetCurrentTime
+#undef GetCurrentTime
+#endif
 
 namespace EMotionFX
 {

@@ -101,7 +101,7 @@ namespace AzFramework
         if (m_logFile)
         {
             delete m_logFile;
-            m_logFile = NULL;
+            m_logFile = nullptr;
         }
     }
 

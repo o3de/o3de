@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AtomCore/std/containers/vector_set_base.h>
+#include <AzCore/std/containers/fixed_vector.h>
 
 namespace AZStd
 {

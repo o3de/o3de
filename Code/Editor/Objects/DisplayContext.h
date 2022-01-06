@@ -18,6 +18,7 @@
 #include "SandboxAPI.h"
 #include <Cry_Color.h>
 #include <Cry_Geo.h>
+#include <AzCore/std/containers/vector.h>
 
 #include <QColor>
 
@@ -30,7 +31,6 @@ struct IRenderer;
 struct IRenderAuxGeom;
 struct IIconManager;
 class CDisplaySettings;
-class CCamera;
 class QPoint;
 
 enum DisplayFlags
@@ -63,10 +63,8 @@ struct SANDBOX_API DisplayContext
 
     CDisplaySettings* settings;
     IDisplayViewport* view;
-    IRenderer* renderer;
     IRenderAuxGeom* pRenderAuxGeom;
     IIconManager* pIconManager;
-    CCamera*    camera;
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     AABB    box;    // Bounding box of volume that need to be repainted.
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
@@ -83,12 +81,39 @@ struct SANDBOX_API DisplayContext
     // Draw functions
     //////////////////////////////////////////////////////////////////////////
     //! Set current materialc color.
-    void SetColor(float r, float g, float b, float a = 1) { m_color4b = ColorB(int(r * 255.0f), int(g * 255.0f), int(b * 255.0f), int(a * 255.0f)); };
-    void SetColor(const Vec3& color, float a = 1) { m_color4b = ColorB(int(color.x * 255.0f), int(color.y * 255.0f), int(color.z * 255.0f), int(a * 255.0f)); };
-    void SetColor(const QColor& rgb, float a) { m_color4b = ColorB(rgb.red(), rgb.green(), rgb.blue(), int(a * 255.0f)); };
-    void SetColor(const QColor& color) { m_color4b = ColorB(color.red(), color.green(), color.blue(), color.alpha()); };
-    void SetColor(const ColorB& color) { m_color4b = color; };
-    void SetAlpha(float a = 1) { m_color4b.a = int(a * 255.0f); };
+    void SetColor(float r, float g, float b, float a = 1)
+    {
+        m_color4b = ColorB(
+            static_cast<uint8>(r * 255.0f), static_cast<uint8>(g * 255.0f), static_cast<uint8>(b * 255.0f), static_cast<uint8>(a * 255.0f));
+    };
+    void SetColor(const Vec3& color, float a = 1)
+    {
+        m_color4b = ColorB(
+            static_cast<uint8>(color.x * 255.0f), static_cast<uint8>(color.y * 255.0f), static_cast<uint8>(color.z * 255.0f),
+            static_cast<uint8>(a * 255.0f));
+    };
+    void SetColor(const AZ::Vector3& color, float a = 1)
+    {
+        m_color4b = ColorB(
+            static_cast<uint8>(color.GetX() * 255.0f), static_cast<uint8>(color.GetY() * 255.0f), static_cast<uint8>(color.GetZ() * 255.0f),
+            static_cast<uint8>(a * 255.0f));
+    };
+    void SetColor(const QColor& rgb, float a)
+    {
+        m_color4b = ColorB(
+            static_cast<uint8>(rgb.red()), static_cast<uint8>(rgb.green()), static_cast<uint8>(rgb.blue()), static_cast<uint8>(a * 255.0f));
+    };
+    void SetColor(const QColor& color)
+    {
+        m_color4b = ColorB(
+            static_cast<uint8>(color.red()), static_cast<uint8>(color.green()), static_cast<uint8>(color.blue()),
+            static_cast<uint8>(color.alpha()));
+    };
+    void SetColor(const ColorB& color)
+    {
+        m_color4b = color;
+    };
+    void SetAlpha(float a = 1) { m_color4b.a = static_cast<uint8>(a * 255.0f); };
     ColorB GetColor() const { return m_color4b; }
 
     void SetSelectedColor(float fAlpha = 1);
@@ -110,6 +135,7 @@ struct SANDBOX_API DisplayContext
     void DrawTrianglesIndexed(const AZStd::vector<Vec3>& vertices, const AZStd::vector<vtx_idx>& indices, const ColorB& color);
     // Draw wireframe box.
     void DrawWireBox(const Vec3& min, const Vec3& max);
+    void DrawWireBox(const AZ::Vector3& min, const AZ::Vector3& max);
     // Draw filled box
     void DrawSolidBox(const Vec3& min, const Vec3& max);
     void DrawSolidOBB(const Vec3& center, const Vec3& axisX, const Vec3& axisY, const Vec3& axisZ, const Vec3& halfExtents);

@@ -49,7 +49,7 @@ namespace AZ
         {
             auto& device = static_cast<Device&>(deviceBase);
 
-            VkDeviceSize bufferPageSizeInBytes = RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_bufferPoolPageSizeInBytes;
+            VkDeviceSize bufferPageSizeInBytes = device.GetDescriptor().m_platformLimitsDescriptor->m_platformDefaultValues.m_bufferPoolPageSizeInBytes;
             VkMemoryPropertyFlags additionalMemoryPropertyFlags = 0;
             if (const auto* descriptor = azrtti_cast<const BufferPoolDescriptor*>(&descriptorBase))
             {

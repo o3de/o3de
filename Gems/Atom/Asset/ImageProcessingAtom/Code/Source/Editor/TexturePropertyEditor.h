@@ -52,7 +52,7 @@ namespace ImageProcessingAtomEditor
 
         ////////////////////////////////////////////////////////////////////////
         //EditorInternalNotificationBus
-        void OnEditorSettingsChanged(bool needRefresh, const AZStd::string& platform);
+        void OnEditorSettingsChanged(bool needRefresh, const AZStd::string& platform) override;
         ////////////////////////////////////////////////////////////////////////
 
         bool event(QEvent* event) override;

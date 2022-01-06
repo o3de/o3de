@@ -34,6 +34,7 @@ namespace AZ
 
             //! FeatureProcessor overrides...
             void Activate() override;
+            void Deactivate() override;
             void Simulate(const FeatureProcessor::SimulatePacket& packet) override;
 
             //! PostProcessFeatureProcessorInterface...
@@ -42,6 +43,9 @@ namespace AZ
             void RemoveSettingsInterface(EntityId entityId) override;
             void OnPostProcessSettingsChanged() override;
             PostProcessSettings* GetLevelSettingsFromView(AZ::RPI::ViewPtr view);
+
+            void SetViewAlias(const AZ::RPI::ViewPtr sourceView, const AZ::RPI::ViewPtr targetView);
+            void RemoveViewAlias(const AZ::RPI::ViewPtr sourceView);
 
         private:
             PostProcessFeatureProcessor(const PostProcessFeatureProcessor&) = delete;
@@ -83,6 +87,8 @@ namespace AZ
 
             // Each camera/view will have its own PostProcessSettings
             AZStd::unordered_map<AZ::RPI::View*, PostProcessSettings> m_blendedPerViewSettings;
+            // This is used for mimicking a postfx setting of a different view
+            AZStd::unordered_map<AZ::RPI::View*, AZ::RPI::View*> m_viewAliasMap;
         };
     } // namespace Render
 } // namespace AZ

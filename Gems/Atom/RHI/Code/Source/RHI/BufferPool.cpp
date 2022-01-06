@@ -7,10 +7,7 @@
  */
 
 #include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace RHI
@@ -120,7 +117,7 @@ namespace AZ
 
         ResultCode BufferPool::InitBuffer(const BufferInitRequest& initRequest)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             if (!ValidateInitRequest(initRequest))
             {
@@ -143,7 +140,7 @@ namespace AZ
                 resultCode = MapBufferInternal(mapRequest, mapResponse);
                 if (resultCode == ResultCode::Success)
                 {
-                    memcpy(mapResponse.m_data, initRequest.m_initialData, initRequest.m_descriptor.m_byteCount);
+                    BufferCopy(mapResponse.m_data, initRequest.m_initialData, initRequest.m_descriptor.m_byteCount);
                     UnmapBufferInternal(*initRequest.m_buffer);
                 }
             }
@@ -163,13 +160,13 @@ namespace AZ
                 return ResultCode::InvalidArgument;
             }
             
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "BufferPool::OrphanBuffer");
+            AZ_PROFILE_SCOPE(RHI, "BufferPool::OrphanBuffer");
             return OrphanBufferInternal(buffer);
         }
 
         ResultCode BufferPool::MapBuffer(const BufferMapRequest& request, BufferMapResponse& response)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             if (!ValidateIsInitialized() || !ValidateNotProcessingFrame())
             {
@@ -217,6 +214,11 @@ namespace AZ
         const BufferPoolDescriptor& BufferPool::GetDescriptor() const
         {
             return m_descriptor;
+        }
+
+        void BufferPool::BufferCopy(void* destination, const void* source, size_t num)
+        {
+            memcpy(destination, source, num);
         }
 
         ResultCode BufferPool::StreamBufferInternal([[maybe_unused]] const BufferStreamRequest& request)

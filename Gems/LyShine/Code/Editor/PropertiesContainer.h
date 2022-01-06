@@ -119,7 +119,6 @@ private:
     PropertiesWidget* m_propertiesWidget;
     EditorWindow* m_editorWindow;
 
-    QWidget* m_containerWidget;
     QWidget* m_componentListContents;
     QVBoxLayout* m_rowLayout;
     QLineEdit* m_selectedEntityDisplayNameWidget;

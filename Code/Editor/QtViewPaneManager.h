@@ -17,7 +17,6 @@
 #include <AzQtComponents/Components/DockTabWidget.h>
 #include <AzQtComponents/Components/StyledDockWidget.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
-#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 
 #include <QObject>
@@ -34,6 +33,7 @@
 #endif
 
 class QMainWindow;
+class ViewportEditorModeNotificationsBusImpl;
 struct ViewLayoutState;
 
 namespace AzQtComponents
@@ -67,7 +67,6 @@ private:
     void reparentToMainWindowFix();
     QRect ProperGeometry() const;
     QString settingsKey() const;
-    QSettings* const m_settings;
     QMainWindow* const m_mainWindow;
     QtViewPane* const m_pane;
     AzQtComponents::FancyDocking* m_advancedDockManager;
@@ -246,9 +245,9 @@ private:
 
     QPointer<AzQtComponents::FancyDocking> m_advancedDockManager;
 
-    using EditorComponentModeNotificationBusImpl = AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBusImpl;
-    EditorComponentModeNotificationBusImpl m_componentModeNotifications; //!< Helper for EditorComponentModeNotificationBus so
-                                                                         //!< QtViewPaneManager does not need to inherit directly from it. */
+    AZStd::unique_ptr<ViewportEditorModeNotificationsBusImpl>
+        m_componentModeNotifications; //!< Helper for EditorComponentModeNotificationBus so
+                                      //!< QtViewPaneManager does not need to inherit directly from it. */
 
     using EditorWindowRequestBusImpl = AzToolsFramework::EditorWindowRequestBusImpl;
     EditorWindowRequestBusImpl m_windowRequest;                         //!< Helper for EditorWindowRequestBus so

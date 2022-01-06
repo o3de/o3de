@@ -26,6 +26,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/JSON/document.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Utils/Utils.h>
 
 // AzFramework
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
@@ -66,7 +67,6 @@ AZ_POP_DISABLE_WARNING
 #include "EditorFileMonitor.h"
 #include "MainStatusBar.h"
 
-#include "ResourceSelectorHost.h"
 #include "Util/FileUtil_impl.h"
 #include "Util/ImageUtil_impl.h"
 #include "LogFileImpl.h"
@@ -81,15 +81,6 @@ AZ_POP_DISABLE_WARNING
 // AWSNativeSDK
 #include <AWSNativeSDKInit/AWSNativeSDKInit.h>
 
-#include "IEditorPanelUtils.h"
-#include "EditorPanelUtils.h"
-
-
-// even in Release mode, the editor will return its heap, because there's no Profile build configuration for the editor
-#ifdef _RELEASE
-#undef _RELEASE
-#endif
-
 #include "Core/QtEditorApplication.h"                               // for Editor::EditorQtApplication
 
 static CCryEditDoc * theDocument;
@@ -103,8 +94,6 @@ static CCryEditDoc * theDocument;
 #ifndef VERIFY
 #define VERIFY(EXPRESSION) { auto e = EXPRESSION; assert(e); }
 #endif
-
-#undef GetCommandLine
 
 const char* CEditorImpl::m_crashLogFileName = "SessionStatus/editor_statuses.json";
 
@@ -151,7 +140,6 @@ CEditorImpl::CEditorImpl()
     , m_QtApplication(static_cast<Editor::EditorQtApplication*>(qApp))
     , m_pImageUtil(nullptr)
     , m_pLogFile(nullptr)
-    , m_panelEditorUtils(nullptr)
 {
     // note that this is a call into EditorCore.dll, which stores the g_pEditorPointer for all shared modules that share EditorCore.dll
     // this means that they don't need to do SetIEditor(...) themselves and its available immediately
@@ -175,8 +163,6 @@ CEditorImpl::CEditorImpl()
     m_pDisplaySettings->LoadRegistry();
     m_pPluginManager = new CPluginManager;
 
-    m_panelEditorUtils = CreateEditorPanelUtils();
-
     m_pObjectManager = new CObjectManager;
     m_pViewManager = new CViewManager;
     m_pIconManager = new CIconManager;
@@ -186,7 +172,6 @@ CEditorImpl::CEditorImpl()
     m_pAnimationContext = new CAnimationContext;
 
     m_pImageUtil = new CImageUtil_impl();
-    m_pResourceSelectorHost.reset(CreateResourceSelectorHost());
     m_selectedRegion.min = Vec3(0, 0, 0);
     m_selectedRegion.max = Vec3(0, 0, 0);
     DetectVersion();
@@ -251,7 +236,7 @@ void CEditorImpl::Uninitialize()
 
 void CEditorImpl::UnloadPlugins()
 {
-    CryAutoLock<CryMutex> lock(m_pluginMutex);
+    AZStd::scoped_lock lock(m_pluginMutex);
 
     // Flush core buses. We're about to unload DLLs and need to ensure we don't have module-owned functions left behind.
     AZ::Data::AssetBus::ExecuteQueuedEvents();
@@ -272,7 +257,7 @@ void CEditorImpl::UnloadPlugins()
 
 void CEditorImpl::LoadPlugins()
 {
-    CryAutoLock<CryMutex> lock(m_pluginMutex);
+    AZStd::scoped_lock lock(m_pluginMutex);
 
     static const QString editor_plugins_folder("EditorPlugins");
 
@@ -309,8 +294,6 @@ CEditorImpl::~CEditorImpl()
     SAFE_DELETE(m_pIconManager)
     SAFE_DELETE(m_pViewManager)
     SAFE_DELETE(m_pObjectManager) // relies on prefab manager
-
-    SAFE_DELETE(m_panelEditorUtils);
 
     // some plugins may be exporter - this must be above plugin manager delete.
     SAFE_DELETE(m_pExportManager);
@@ -406,13 +389,6 @@ void CEditorImpl::Update()
     // Make sure this is not called recursively
     m_bUpdates = false;
 
-    FUNCTION_PROFILER(GetSystem(), PROFILE_EDITOR);
-
-    //@FIXME: Restore this latter.
-    //if (GetGameEngine() && GetGameEngine()->IsLevelLoaded())
-    {
-        m_pObjectManager->Update();
-    }
     if (IsInPreviewMode())
     {
         SetModifiedFlag(false);
@@ -643,14 +619,7 @@ void CEditorImpl::SetReferenceCoordSys(RefCoordSys refCoords)
     CViewport* pViewport = GetActiveView();
     if (pViewport)
     {
-        //Pre and Post widget rendering calls are made here to make sure that the proper camera state is set.
-        //MakeConstructionPlane will make a call to ViewToWorldRay which needs the correct camera state
-        //in the CRenderViewport to be set.
-        pViewport->PreWidgetRendering();
-
         pViewport->MakeConstructionPlane(GetIEditor()->GetAxisConstrains());
-
-        pViewport->PostWidgetRendering();
     }
 
     Notify(eNotify_OnRefCoordSysChange);
@@ -691,8 +660,8 @@ const SGizmoParameters& CEditorImpl::GetGlobalGizmoParameters()
 
     m_pGizmoParameters->axisConstraint = m_selectedAxis;
     m_pGizmoParameters->referenceCoordSys = m_refCoordsSys;
-    m_pGizmoParameters->axisGizmoScale = gSettings.gizmo.axisGizmoSize;
-    m_pGizmoParameters->axisGizmoText = gSettings.gizmo.axisGizmoText;
+    m_pGizmoParameters->axisGizmoScale = 1.0f;
+    m_pGizmoParameters->axisGizmoText = false;
 
     return *m_pGizmoParameters;
 }
@@ -703,13 +672,6 @@ void CEditorImpl::DeleteObject(CBaseObject* obj)
     SetModifiedFlag();
     GetIEditor()->SetModifiedModule(eModifiedBrushes);
     GetObjectManager()->DeleteObject(obj);
-}
-
-CBaseObject* CEditorImpl::CloneObject(CBaseObject* obj)
-{
-    SetModifiedFlag();
-    GetIEditor()->SetModifiedModule(eModifiedBrushes);
-    return GetObjectManager()->CloneObject(obj);
 }
 
 CBaseObject* CEditorImpl::GetSelectedObject()
@@ -1107,16 +1069,18 @@ void CEditorImpl::DetectVersion()
     DWORD dwHandle;
     UINT len;
 
-    char ver[1024 * 8];
+    wchar_t ver[1024 * 8];
 
-    GetModuleFileName(nullptr, exe, _MAX_PATH);
+    AZ::Utils::GetExecutablePath(exe, _MAX_PATH);
+    AZStd::wstring exeW;
+    AZStd::to_wstring(exeW, exe);
 
-    int verSize = GetFileVersionInfoSize(exe, &dwHandle);
+    int verSize = GetFileVersionInfoSizeW(exeW.c_str(), &dwHandle);
     if (verSize > 0)
     {
-        GetFileVersionInfo(exe, dwHandle, 1024 * 8, ver);
+        GetFileVersionInfoW(exeW.c_str(), dwHandle, 1024 * 8, ver);
         VS_FIXEDFILEINFO* vinfo;
-        VerQueryValue(ver, "\\", (void**)&vinfo, &len);
+        VerQueryValueW(ver, L"\\", (void**)&vinfo, &len);
 
         m_fileVersion.v[0] = vinfo->dwFileVersionLS & 0xFFFF;
         m_fileVersion.v[1] = vinfo->dwFileVersionLS >> 16;
@@ -1457,7 +1421,7 @@ void CEditorImpl::UnregisterNotifyListener(IEditorNotifyListener* listener)
 
 ISourceControl* CEditorImpl::GetSourceControl()
 {
-    CryAutoLock<CryMutex> lock(m_pluginMutex);
+    AZStd::scoped_lock lock(m_pluginMutex);
 
     if (m_pSourceControl)
     {
@@ -1473,7 +1437,7 @@ ISourceControl* CEditorImpl::GetSourceControl()
         {
             IClassDesc* pClass = classes[i];
             ISourceControl* pSCM = nullptr;
-            HRESULT hRes = pClass->QueryInterface(__uuidof(ISourceControl), (void**)&pSCM);
+            HRESULT hRes = pClass->QueryInterface(__az_uuidof(ISourceControl), (void**)&pSCM);
             if (!FAILED(hRes) && pSCM)
             {
                 m_pSourceControl = pSCM;
@@ -1515,18 +1479,6 @@ void CEditorImpl::ShowStatusText(bool bEnable)
     m_bShowStatusText = bEnable;
 }
 
-void CEditorImpl::GetMemoryUsage(ICrySizer* pSizer)
-{
-    SIZER_COMPONENT_NAME(pSizer, "Editor");
-
-    if (GetDocument())
-    {
-        SIZER_COMPONENT_NAME(pSizer, "Document");
-
-        GetDocument()->GetMemoryUsage(pSizer);
-    }
-}
-
 void CEditorImpl::ReduceMemory()
 {
     GetIEditor()->GetUndoManager()->ClearRedoStack();
@@ -1557,31 +1509,31 @@ IExportManager* CEditorImpl::GetExportManager()
 void CEditorImpl::AddUIEnums()
 {
     // Spec settings for shadow casting lights
-    string SpecString[4];
+    AZStd::string SpecString[4];
     QStringList types;
     types.push_back("Never=0");
-    SpecString[0].Format("VeryHigh Spec=%d", CONFIG_VERYHIGH_SPEC);
+    SpecString[0] = AZStd::string::format("VeryHigh Spec=%d", CONFIG_VERYHIGH_SPEC);
     types.push_back(SpecString[0].c_str());
-    SpecString[1].Format("High Spec=%d", CONFIG_HIGH_SPEC);
+    SpecString[1] = AZStd::string::format("High Spec=%d", CONFIG_HIGH_SPEC);
     types.push_back(SpecString[1].c_str());
-    SpecString[2].Format("Medium Spec=%d", CONFIG_MEDIUM_SPEC);
+    SpecString[2] = AZStd::string::format("Medium Spec=%d", CONFIG_MEDIUM_SPEC);
     types.push_back(SpecString[2].c_str());
-    SpecString[3].Format("Low Spec=%d", CONFIG_LOW_SPEC);
+    SpecString[3] = AZStd::string::format("Low Spec=%d", CONFIG_LOW_SPEC);
     types.push_back(SpecString[3].c_str());
     m_pUIEnumsDatabase->SetEnumStrings("CastShadows", types);
 
     // Power-of-two percentages
-    string percentStringPOT[5];
+    AZStd::string percentStringPOT[5];
     types.clear();
-    percentStringPOT[0].Format("Default=%d", 0);
+    percentStringPOT[0] = AZStd::string::format("Default=%d", 0);
     types.push_back(percentStringPOT[0].c_str());
-    percentStringPOT[1].Format("12.5=%d", 1);
+    percentStringPOT[1] = AZStd::string::format("12.5=%d", 1);
     types.push_back(percentStringPOT[1].c_str());
-    percentStringPOT[2].Format("25=%d", 2);
+    percentStringPOT[2] = AZStd::string::format("25=%d", 2);
     types.push_back(percentStringPOT[2].c_str());
-    percentStringPOT[3].Format("50=%d", 3);
+    percentStringPOT[3] = AZStd::string::format("50=%d", 3);
     types.push_back(percentStringPOT[3].c_str());
-    percentStringPOT[4].Format("100=%d", 4);
+    percentStringPOT[4] = AZStd::string::format("100=%d", 4);
     types.push_back(percentStringPOT[4].c_str());
     m_pUIEnumsDatabase->SetEnumStrings("ShadowMinResPercent", types);
 }
@@ -1697,9 +1649,4 @@ QMimeData* CEditorImpl::CreateQMimeData() const
 void CEditorImpl::DestroyQMimeData(QMimeData* data) const
 {
     delete data;
-}
-
-IEditorPanelUtils* CEditorImpl::GetEditorPanelUtils()
-{
-    return m_panelEditorUtils;
 }

@@ -40,7 +40,7 @@ namespace MCore
             CommandHistoryEntry()
                 : m_commandGroup(nullptr)
                 , m_executedCommand(nullptr)
-                , m_parameters(nullptr) {}
+            {}
 
             /**
              * Extended Constructor.

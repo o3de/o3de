@@ -116,7 +116,8 @@ namespace EMotionFX
 
     void RagdollNodeWidget::InternalReinit()
     {
-        if (m_selectedModelIndices.size() == 1)
+        const QModelIndexList& selectedModelIndices = GetSelectedModelIndices();
+        if (selectedModelIndices.size() == 1)
         {
             m_ragdollNodeEditor->ClearInstances(false);
 
@@ -142,7 +143,7 @@ namespace EMotionFX
                     m_collidersWidget->Reset();
                 }
 
-                m_jointLimitWidget->Update(m_selectedModelIndices[0]);
+                m_jointLimitWidget->Update(selectedModelIndices[0]);
                 m_ragdollNodeCard->setExpanded(true);
                 m_ragdollNodeCard->show();
                 m_jointLimitWidget->show();
@@ -169,31 +170,32 @@ namespace EMotionFX
 
     void RagdollNodeWidget::OnAddRemoveRagdollNode()
     {
+        const QModelIndexList& selectedModelIndices = GetSelectedModelIndices();
         if (GetRagdollNodeConfig())
         {
             // The node is present in the ragdoll, remove it.
-            RagdollNodeInspectorPlugin::RemoveFromRagdoll(m_selectedModelIndices);
+            RagdollNodeInspectorPlugin::RemoveFromRagdoll(selectedModelIndices);
         }
         else
         {
             // The node is not part of the ragdoll, add it.
-            RagdollNodeInspectorPlugin::AddToRagdoll(m_selectedModelIndices);
+            RagdollNodeInspectorPlugin::AddToRagdoll(selectedModelIndices);
         }
     }
 
     void RagdollNodeWidget::OnAddCollider(const AZ::TypeId& colliderType)
     {
-        ColliderHelpers::AddCollider(m_selectedModelIndices, PhysicsSetup::Ragdoll, colliderType);
+        ColliderHelpers::AddCollider(GetSelectedModelIndices(), PhysicsSetup::Ragdoll, colliderType);
     }
 
     void RagdollNodeWidget::OnCopyCollider(size_t colliderIndex)
     {
-        ColliderHelpers::CopyColliderToClipboard(m_selectedModelIndices.first(), colliderIndex, PhysicsSetup::Ragdoll);
+        ColliderHelpers::CopyColliderToClipboard(GetSelectedModelIndices().first(), colliderIndex, PhysicsSetup::Ragdoll);
     }
 
     void RagdollNodeWidget::OnPasteCollider(size_t colliderIndex, bool replace)
     {
-        ColliderHelpers::PasteColliderFromClipboard(m_selectedModelIndices.first(), colliderIndex, PhysicsSetup::Ragdoll, replace);
+        ColliderHelpers::PasteColliderFromClipboard(GetSelectedModelIndices().first(), colliderIndex, PhysicsSetup::Ragdoll, replace);
     }
 
     void RagdollNodeWidget::OnRemoveCollider(size_t colliderIndex)

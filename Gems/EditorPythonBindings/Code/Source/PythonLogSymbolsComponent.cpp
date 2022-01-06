@@ -90,6 +90,11 @@ namespace EditorPythonBindings
         PythonSymbolEventBus::Handler::BusConnect();
         EditorPythonBindingsNotificationBus::Handler::BusConnect();
         AZ::Interface<AzToolsFramework::EditorPythonConsoleInterface>::Register(this);
+
+        if (PythonSymbolEventBus::GetTotalNumOfEventHandlers() > 1)
+        {
+            OnPostInitialize();
+        }
     }
 
     void PythonLogSymbolsComponent::Deactivate()
@@ -111,6 +116,7 @@ namespace EditorPythonBindings
             m_basePath = pythonSymbolsPath;
         }
         EditorPythonBindingsNotificationBus::Handler::BusDisconnect();
+        PythonSymbolEventBus::ExecuteQueuedEvents();
     }
 
     void PythonLogSymbolsComponent::WriteMethod(AZ::IO::HandleType handle, AZStd::string_view methodName, const AZ::BehaviorMethod& behaviorMethod, const AZ::BehaviorClass* behaviorClass)
@@ -206,12 +212,12 @@ namespace EditorPythonBindings
         AZ::IO::FileIOBase::GetInstance()->Write(handle, buffer.c_str(), buffer.size());
     }
 
-    void PythonLogSymbolsComponent::LogClass(AZStd::string_view moduleName, AZ::BehaviorClass* behaviorClass)
+    void PythonLogSymbolsComponent::LogClass(const AZStd::string moduleName, const AZ::BehaviorClass* behaviorClass)
     {
         LogClassWithName(moduleName, behaviorClass, behaviorClass->m_name.c_str());
     }
 
-    void PythonLogSymbolsComponent::LogClassWithName(AZStd::string_view moduleName, AZ::BehaviorClass* behaviorClass, AZStd::string_view className)
+    void PythonLogSymbolsComponent::LogClassWithName(const AZStd::string moduleName, const AZ::BehaviorClass* behaviorClass, const AZStd::string className)
     {
         Internal::FileHandle fileHandle(OpenModuleAt(moduleName));
         if (fileHandle.IsValid())
@@ -255,7 +261,11 @@ namespace EditorPythonBindings
         }
     }
 
-    void PythonLogSymbolsComponent::LogClassMethod(AZStd::string_view moduleName, AZStd::string_view globalMethodName, AZ::BehaviorClass* behaviorClass, AZ::BehaviorMethod* behaviorMethod)
+    void PythonLogSymbolsComponent::LogClassMethod(
+        const AZStd::string moduleName,
+        const AZStd::string globalMethodName,
+        const AZ::BehaviorClass* behaviorClass,
+        const AZ::BehaviorMethod* behaviorMethod)
     {
         AZ_UNUSED(behaviorClass);
         Internal::FileHandle fileHandle(OpenModuleAt(moduleName));
@@ -265,7 +275,7 @@ namespace EditorPythonBindings
         }
     }
 
-    void PythonLogSymbolsComponent::LogBus(AZStd::string_view moduleName, AZStd::string_view busName, AZ::BehaviorEBus* behaviorEBus)
+    void PythonLogSymbolsComponent::LogBus(const AZStd::string moduleName, const AZStd::string busName, const AZ::BehaviorEBus* behaviorEBus)
     {
         if (behaviorEBus->m_events.empty())
         {
@@ -404,7 +414,7 @@ namespace EditorPythonBindings
         }
     }
 
-    void PythonLogSymbolsComponent::LogGlobalMethod(AZStd::string_view moduleName, AZStd::string_view methodName, AZ::BehaviorMethod* behaviorMethod)
+    void PythonLogSymbolsComponent::LogGlobalMethod(const AZStd::string moduleName, const AZStd::string methodName, const AZ::BehaviorMethod* behaviorMethod)
     {
         Internal::FileHandle fileHandle(OpenModuleAt(moduleName));
         if (fileHandle.IsValid())
@@ -428,7 +438,10 @@ namespace EditorPythonBindings
         }
     }
 
-    void PythonLogSymbolsComponent::LogGlobalProperty(AZStd::string_view moduleName, AZStd::string_view propertyName, AZ::BehaviorProperty* behaviorProperty)
+    void PythonLogSymbolsComponent::LogGlobalProperty(
+        const AZStd::string moduleName,
+        const AZStd::string propertyName,
+        const AZ::BehaviorProperty* behaviorProperty)
     {
         if (!behaviorProperty->m_getter || !behaviorProperty->m_getter->GetResult())
         {
@@ -725,6 +738,11 @@ namespace EditorPythonBindings
         AZStd::string targetModule = moduleParts.back();
         moduleParts.pop_back();
         AzFramework::StringFunc::Append(targetModule, ".pyi");
+
+        // create an __init__.py file as the base module path
+        AZStd::string initModule;
+        AzFramework::StringFunc::Join(initModule, moduleParts.begin(), moduleParts.end(), '.');
+        OpenInitFileAt(initModule);
 
         AZStd::string modulePath;
         AzFramework::StringFunc::Append(modulePath, m_basePath.c_str());

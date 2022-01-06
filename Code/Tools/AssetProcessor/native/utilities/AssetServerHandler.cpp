@@ -74,8 +74,11 @@ namespace AssetProcessor
         AZ_TracePrintf(AssetProcessor::DebugChannel, "Extracting archive for job (%s, %s, %s) with fingerprint (%u).\n",
             builderParams.m_rcJob->GetJobEntry().m_pathRelativeToWatchFolder.toUtf8().data(), builderParams.m_rcJob->GetJobKey().toUtf8().data(),
             builderParams.m_rcJob->GetPlatformInfo().m_identifier.c_str(), builderParams.m_rcJob->GetOriginalFingerprint());
-        bool success = false;
-        AzToolsFramework::ArchiveCommands::Bus::BroadcastResult(success, &AzToolsFramework::ArchiveCommands::ExtractArchiveBlocking, archiveAbsFilePath.toUtf8().data(), builderParams.GetTempJobDirectory(), false);
+        std::future<bool> extractResult;
+        AzToolsFramework::ArchiveCommandsBus::BroadcastResult(extractResult,
+            &AzToolsFramework::ArchiveCommandsBus::Events::ExtractArchive,
+            archiveAbsFilePath.toUtf8().data(), builderParams.GetTempJobDirectory());
+        bool success = extractResult.get();
         AZ_Error(AssetProcessor::DebugChannel, success, "Extracting archive operation failed.\n");
         return success;
     }
@@ -106,12 +109,15 @@ namespace AssetProcessor
             return false;
         }
 
-        bool success = false;
-
         AZ_TracePrintf(AssetProcessor::DebugChannel, "Creating archive for job (%s, %s, %s) with fingerprint (%u).\n",
             builderParams.m_rcJob->GetJobEntry().m_pathRelativeToWatchFolder.toUtf8().data(), builderParams.m_rcJob->GetJobKey().toUtf8().data(),
             builderParams.m_rcJob->GetPlatformInfo().m_identifier.c_str(), builderParams.m_rcJob->GetOriginalFingerprint());
-        AzToolsFramework::ArchiveCommands::Bus::BroadcastResult(success, &AzToolsFramework::ArchiveCommands::CreateArchiveBlocking, archiveAbsFilePath.toUtf8().data(), builderParams.GetTempJobDirectory());
+
+        std::future<bool> createResult;
+        AzToolsFramework::ArchiveCommandsBus::BroadcastResult(createResult,
+            &AzToolsFramework::ArchiveCommandsBus::Events::CreateArchive,
+            archiveAbsFilePath.toUtf8().data(), builderParams.GetTempJobDirectory());
+        bool success = createResult.get();
         AZ_Error(AssetProcessor::DebugChannel, success, "Creating archive operation failed. \n");
 
         if (success && sourceFileList.size())
@@ -137,14 +143,16 @@ namespace AssetProcessor
                 allSuccess = false;
                 continue;
             }
-            bool success{ false };
-            AzToolsFramework::ArchiveCommands::Bus::BroadcastResult(success, &AzToolsFramework::ArchiveCommands::AddFileToArchiveBlocking, archivePath.toUtf8().data(), sourceDir.path().toUtf8().data(), thisProduct.c_str());
+            std::future<bool> addResult;
+            AzToolsFramework::ArchiveCommandsBus::BroadcastResult(addResult,
+                &AzToolsFramework::ArchiveCommandsBus::Events::AddFileToArchive,
+                archivePath.toUtf8().data(), sourceDir.path().toUtf8().data(), thisProduct.c_str());
+            bool success = addResult.get();
             if (!success)
             {
                 AZ_Warning(AssetProcessor::DebugChannel, false, "Failed to add %s to %s", thisProduct.c_str(), archivePath.toUtf8().data());
                 allSuccess = false;
             }
-
         }
         return allSuccess;
     }

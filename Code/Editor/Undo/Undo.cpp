@@ -49,7 +49,7 @@ public:
     }
     void Undo(bool bUndo) override
     {
-        for (int i = m_undoSteps.size() - 1; i >= 0; i--)
+        for (int i = static_cast<int>(m_undoSteps.size()) - 1; i >= 0; i--)
         {
             m_undoSteps[i]->Undo(bUndo);
         }
@@ -60,17 +60,6 @@ public:
         {
             m_undoSteps[i]->Redo();
         }
-    }
-
-    // to get memory statistics
-    void GetMemoryUsage(ICrySizer* pSizer)
-    {
-        for (int i = 0; i < m_undoSteps.size(); i++)
-        {
-            m_undoSteps[i]->GetMemoryUsage(pSizer);
-        }
-
-        pSizer->Add(*this);
     }
 
 private:
@@ -624,13 +613,13 @@ void CUndoManager::SuperCancel()
 //////////////////////////////////////////////////////////////////////////
 int CUndoManager::GetUndoStackLen() const
 {
-    return m_undoStack.size();
+    return static_cast<int>(m_undoStack.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
 int CUndoManager::GetRedoStackLen() const
 {
-    return m_redoStack.size();
+    return static_cast<int>(m_redoStack.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -746,31 +735,6 @@ int CUndoManager::GetMaxUndoStep() const
     return GetIEditor()->GetEditorSettings()->undoLevels;
 }
 
-void CUndoManager::GetMemoryUsage(ICrySizer* pSizer)
-{
-    if (m_currentUndo)
-    {
-        m_currentUndo->GetMemoryUsage(pSizer);
-    }
-
-    if (m_superUndo)
-    {
-        m_superUndo->GetMemoryUsage(pSizer);
-    }
-
-    for (std::list<CUndoStep*>::const_iterator it = m_undoStack.begin(); it != m_undoStack.end(); it++)
-    {
-        (*it)->GetMemoryUsage(pSizer);
-    }
-
-    for (std::list<CUndoStep*>::const_iterator it = m_redoStack.begin(); it != m_redoStack.end(); it++)
-    {
-        (*it)->GetMemoryUsage(pSizer);
-    }
-
-    pSizer->Add(*this);
-}
-
 void CUndoManager::AddListener(IUndoManagerListener* pListener)
 {
     stl::push_back_unique(m_listeners, pListener);
@@ -817,7 +781,7 @@ void CUndoManager::SignalNumUndoRedoToListeners()
 {
     for (IUndoManagerListener* listener : m_listeners)
     {
-        listener->SignalNumUndoRedo(m_undoStack.size(), m_redoStack.size());
+        listener->SignalNumUndoRedo(static_cast<unsigned int>(m_undoStack.size()), static_cast<unsigned int>(m_redoStack.size()));
     }
 }
 

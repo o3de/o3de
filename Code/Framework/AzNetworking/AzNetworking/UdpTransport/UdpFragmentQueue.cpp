@@ -20,7 +20,13 @@ namespace AzNetworking
 
     void UdpFragmentQueue::Update()
     {
-        m_timeoutQueue.UpdateTimeouts(*this);
+        m_timeoutQueue.UpdateTimeouts([this](TimeoutQueue::TimeoutItem& item)
+        {
+            const SequenceId fragmentSequence = static_cast<SequenceId>(item.m_userData & 0xFF);
+            AZLOG(NET_FragmentQueue, "Timing out unreliable fragmented packet %u", static_cast<uint32_t>(fragmentSequence));
+            m_packetFragments.erase(fragmentSequence);
+            return TimeoutResult::Delete;
+        });
     }
 
     void UdpFragmentQueue::Reset()
@@ -37,14 +43,14 @@ namespace AzNetworking
         return m_sequenceGenerator.GetNextSequenceId();
     }
 
-    bool UdpFragmentQueue::ProcessReceivedChunk(UdpConnection* connection, IConnectionListener& connectionListener, UdpPacketHeader& header, ISerializer& serializer)
+    PacketDispatchResult UdpFragmentQueue::ProcessReceivedChunk(UdpConnection* connection, IConnectionListener& connectionListener, UdpPacketHeader& header, ISerializer& serializer)
     {
         AZStd::unique_ptr<CorePackets::FragmentedPacket> packet = AZStd::make_unique<CorePackets::FragmentedPacket>();
 
         if (!serializer.Serialize(*packet, "Packet"))
         {
             AZLOG(NET_FragmentQueue, "Fragment failed serialization");
-            return false;
+            return PacketDispatchResult::Failure;
         }
 
         const bool isReliable = header.GetIsReliable();
@@ -63,14 +69,14 @@ namespace AzNetworking
         {
             // Too old to process
             AZLOG(NET_FragmentQueue, "Fragment sequence ID is outside our tracked window");
-            return false;
+            return PacketDispatchResult::Failure;
         }
 
         if (m_deliveredFragments.GetBit(static_cast<uint32_t>(sequenceDelta)))
         {
             // Received packet is a duplicate of one already forwarded to gameplay
             AZLOG(NET_FragmentQueue, "Received duplicate of fragmented packet %u, discarding", static_cast<uint32_t>(fragmentSequence));
-            return true;
+            return PacketDispatchResult::Success;
         }
 
         const uint32_t chunkCount = packet->GetChunkCount();
@@ -89,7 +95,7 @@ namespace AzNetworking
         {
             // Either we disagree on the number of chunks, or chunkIndex is bigger than the expected size, bail and disconnect
             AZLOG(NET_FragmentQueue, "Malformed chunk metadata in fragmented packet, chunkIndex %u, chunkCount %u, reservedSize %u", chunkIndex, chunkCount, static_cast<uint32_t>(packetFragments.size()));
-            return false;
+            return PacketDispatchResult::Failure;
         }
 
         packetFragments[chunkIndex] = AZStd::move(packet);
@@ -105,7 +111,7 @@ namespace AzNetworking
                 }
 
                 // We haven't received all chunks required to complete this packet yet
-                return true;
+                return PacketDispatchResult::Success;
             }
 
             totalPacketSize += static_cast<uint32_t>(packetFragments[index]->GetChunkBuffer().GetSize());
@@ -119,7 +125,7 @@ namespace AzNetworking
         if (!buffer.Resize(totalPacketSize))
         {
             AZLOG_ERROR("Fragmented packet is too large to fit in UdpPacketEncodingBuffer");
-            return false;
+            return PacketDispatchResult::Failure;
         }
 
         uint8_t* bufferPointer = buffer.GetBuffer();
@@ -141,17 +147,17 @@ namespace AzNetworking
             if (!header.SerializePacketFlags(networkSerializer))
             {
                 AZLOG(NET_FragmentQueue, "Reconstructed fragmented packet failed packet flags serialization");
-                return false;
+                return PacketDispatchResult::Failure;
             }
 
             if (!networkISerializer.Serialize(header, "Header"))
             {
                 AZLOG(NET_FragmentQueue, "Reconstructed fragmented packet failed header serialization");
-                return false;
+                return PacketDispatchResult::Failure;
             }
         }
         connection->GetPacketTracker().ProcessReceived(connection, header);
-        bool handledPacket = false;
+        PacketDispatchResult handledPacket;
         if (header.GetPacketType() < aznumeric_cast<PacketType>(CorePackets::PacketType::MAX))
         {
             handledPacket = connection->HandleCorePacket(connectionListener, header, networkSerializer);
@@ -162,13 +168,5 @@ namespace AzNetworking
         }
 
         return handledPacket;
-    }
-
-    TimeoutResult UdpFragmentQueue::HandleTimeout(TimeoutQueue::TimeoutItem& item)
-    {
-        const SequenceId fragmentSequence = static_cast<SequenceId>(item.m_userData & 0xFF);
-        AZLOG(NET_FragmentQueue, "Timing out unreliable fragmented packet %u", static_cast<uint32_t>(fragmentSequence));
-        m_packetFragments.erase(fragmentSequence);
-        return TimeoutResult::Delete;
     }
 }

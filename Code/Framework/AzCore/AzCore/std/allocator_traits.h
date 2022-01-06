@@ -11,6 +11,7 @@
 #include <AzCore/std/typetraits/integral_constant.h>
 #include <AzCore/std/typetraits/void_t.h>
 #include <AzCore/std/createdestroy.h>
+#include <AzCore/std/limits.h>
 
 namespace AZStd
 {

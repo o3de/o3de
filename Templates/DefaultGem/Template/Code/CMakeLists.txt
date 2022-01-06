@@ -85,7 +85,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         NAME ${Name}.Editor GEM_MODULE
         NAMESPACE Gem
         AUTOMOC
-        OUTPUT_NAME Gem.${Name}.Editor
         FILES_CMAKE
             ${NameLower}_editor_shared_files.cmake
         INCLUDE_DIRECTORIES

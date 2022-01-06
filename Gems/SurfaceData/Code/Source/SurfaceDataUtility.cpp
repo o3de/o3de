@@ -17,7 +17,7 @@ namespace SurfaceData
         const AZ::Vector3& rayStart, const AZ::Vector3& rayEnd, 
         AZ::Vector3& outPosition, AZ::Vector3& outNormal)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         const AZ::Vector3 clampedScale = nonUniformScale.GetMax(AZ::Vector3(AZ::MinTransformScale));
 

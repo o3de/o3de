@@ -26,6 +26,30 @@ namespace AzToolsFramework
     {
         namespace PrefabDomUtils
         {
+            namespace Internal
+            {
+                AZ::JsonSerializationResult::ResultCode JsonIssueReporter(AZStd::string& scratchBuffer,
+                    AZStd::string_view message, AZ::JsonSerializationResult::ResultCode result, AZStd::string_view path)
+                {
+                    namespace JSR = AZ::JsonSerializationResult;
+
+                    if (result.GetProcessing() == JSR::Processing::Halted)
+                    {
+                        scratchBuffer.append(message.begin(), message.end());
+                        scratchBuffer.append("\n    Reason: ");
+                        result.AppendToString(scratchBuffer, path);
+                        scratchBuffer.append(".");
+                        AZ_Warning("Prefab Serialization", false, "%s", scratchBuffer.c_str());
+
+                        scratchBuffer.clear();
+
+                        return JSR::ResultCode(result.GetTask(), JSR::Outcomes::Skipped);
+                    }
+
+                    return result;
+                }
+            }
+
             PrefabDomValueReference FindPrefabDomValue(PrefabDomValue& parentValue, const char* valueName)
             {
                 PrefabDomValue::MemberIterator valueIterator = parentValue.FindMember(valueName);
@@ -48,7 +72,7 @@ namespace AzToolsFramework
                 return valueIterator->value;
             }
 
-            bool StoreInstanceInPrefabDom(const Instance& instance, PrefabDom& prefabDom, StoreInstanceFlags flags)
+            bool StoreInstanceInPrefabDom(const Instance& instance, PrefabDom& prefabDom, StoreFlags flags)
             {
                 InstanceEntityIdMapper entityIdMapper;
                 entityIdMapper.SetStoringInstance(instance);
@@ -59,10 +83,25 @@ namespace AzToolsFramework
                 settings.m_metadata.Add(static_cast<AZ::JsonEntityIdSerializer::JsonEntityIdMapper*>(&entityIdMapper));
                 settings.m_metadata.Add(&entityIdMapper);
 
-                if ((flags & StoreInstanceFlags::StripDefaultValues) != StoreInstanceFlags::StripDefaultValues)
+                if ((flags & StoreFlags::StripDefaultValues) != StoreFlags::StripDefaultValues)
                 {
                     settings.m_keepDefaults = true;
                 }
+
+                if ((flags & StoreFlags::StoreLinkIds) != StoreFlags::None)
+                {
+                    settings.m_metadata.Create<LinkIdMetadata>();
+                }
+
+                AZStd::string scratchBuffer;
+                auto issueReportingCallback = [&scratchBuffer]
+                (AZStd::string_view message, AZ::JsonSerializationResult::ResultCode result,
+                 AZStd::string_view path) -> AZ::JsonSerializationResult::ResultCode
+                {
+                    return Internal::JsonIssueReporter(scratchBuffer, message, result, path);
+                };
+
+                settings.m_reporting = AZStd::move(issueReportingCallback);
 
                 AZ::JsonSerializationResult::ResultCode result =
                     AZ::JsonSerialization::Store(prefabDom, prefabDom.GetAllocator(), instance, settings);
@@ -80,7 +119,56 @@ namespace AzToolsFramework
                 return true;
             }
 
-            bool LoadInstanceFromPrefabDom(Instance& instance, const PrefabDom& prefabDom, LoadInstanceFlags flags)
+            bool StoreEntityInPrefabDomFormat(const AZ::Entity& entity, Instance& owningInstance, PrefabDom& prefabDom, StoreFlags flags)
+            {
+                InstanceEntityIdMapper entityIdMapper;
+                entityIdMapper.SetStoringInstance(owningInstance);
+
+                //create settings so that the serialized entity dom undergoes mapping from entity id to entity alias
+                AZ::JsonSerializerSettings settings;
+                settings.m_metadata.Add(static_cast<AZ::JsonEntityIdSerializer::JsonEntityIdMapper*>(&entityIdMapper));
+
+                if ((flags & StoreFlags::StripDefaultValues) != StoreFlags::StripDefaultValues)
+                {
+                    settings.m_keepDefaults = true;
+                }
+
+                AZStd::string scratchBuffer;
+                auto issueReportingCallback = [&scratchBuffer]
+                (AZStd::string_view message, AZ::JsonSerializationResult::ResultCode result,
+                    AZStd::string_view path) -> AZ::JsonSerializationResult::ResultCode
+                {
+                    return Internal::JsonIssueReporter(scratchBuffer, message, result, path);
+                };
+
+                settings.m_reporting = AZStd::move(issueReportingCallback);
+
+                //generate PrefabDom using Json serialization system
+                AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::Store(
+                    prefabDom, prefabDom.GetAllocator(), entity, settings);
+
+                return result.GetOutcome() == AZ::JsonSerializationResult::Outcomes::Success;
+            }
+
+            // some assets may come in from the JSON serializer with no AssetID, but have an asset hint
+            // this attempts to fix up the assets using the assetHint field
+            void FixUpInvalidAssets(AZ::Data::Asset<AZ::Data::AssetData>& asset)
+            {
+                if (!asset.GetId().IsValid() && !asset.GetHint().empty())
+                {
+                    AZ::Data::AssetId assetId;
+                    AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                        assetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, asset.GetHint().c_str(),
+                        AZ::Data::s_invalidAssetType, false);
+
+                    if (assetId.IsValid())
+                    {
+                        asset.Create(assetId, false);
+                    }
+                }
+            }
+
+            bool LoadInstanceFromPrefabDom(Instance& instance, const PrefabDom& prefabDom, LoadFlags flags)
             {
                 // When entities are rebuilt they are first destroyed. As a result any assets they were exclusively holding on to will
                 // be released and reloaded once the entities are built up again. By suspending asset release temporarily the asset reload
@@ -89,10 +177,13 @@ namespace AzToolsFramework
 
                 InstanceEntityIdMapper entityIdMapper;
                 entityIdMapper.SetLoadingInstance(instance);
-                if ((flags & LoadInstanceFlags::AssignRandomEntityId) == LoadInstanceFlags::AssignRandomEntityId)
+                if ((flags & LoadFlags::AssignRandomEntityId) == LoadFlags::AssignRandomEntityId)
                 {
                     entityIdMapper.SetEntityIdGenerationApproach(InstanceEntityIdMapper::EntityIdGenerationApproach::Random);
                 }
+
+                auto tracker = AZ::Data::SerializedAssetTracker{};
+                tracker.SetAssetFixUp(&FixUpInvalidAssets);
 
                 AZ::JsonDeserializerSettings settings;
                 // The InstanceEntityIdMapper is registered twice because it's used in several places during deserialization where one is
@@ -100,7 +191,8 @@ namespace AzToolsFramework
                 // data has strict typing and doesn't look for inheritance both have to be explicitly added so they're found both locations.
                 settings.m_metadata.Add(static_cast<AZ::JsonEntityIdSerializer::JsonEntityIdMapper*>(&entityIdMapper));
                 settings.m_metadata.Add(&entityIdMapper);
-                
+                settings.m_metadata.Add(tracker);
+
                 AZ::JsonSerializationResult::ResultCode result =
                     AZ::JsonSerialization::Load(instance, prefabDom, settings);
 
@@ -119,7 +211,7 @@ namespace AzToolsFramework
             }
 
             bool LoadInstanceFromPrefabDom(
-                Instance& instance, const PrefabDom& prefabDom, AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& referencedAssets, LoadInstanceFlags flags)
+                Instance& instance, const PrefabDom& prefabDom, AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& referencedAssets, LoadFlags flags)
             {
                 // When entities are rebuilt they are first destroyed. As a result any assets they were exclusively holding on to will
                 // be released and reloaded once the entities are built up again. By suspending asset release temporarily the asset reload
@@ -128,10 +220,13 @@ namespace AzToolsFramework
 
                 InstanceEntityIdMapper entityIdMapper;
                 entityIdMapper.SetLoadingInstance(instance);
-                if ((flags & LoadInstanceFlags::AssignRandomEntityId) == LoadInstanceFlags::AssignRandomEntityId)
+                if ((flags & LoadFlags::AssignRandomEntityId) == LoadFlags::AssignRandomEntityId)
                 {
                     entityIdMapper.SetEntityIdGenerationApproach(InstanceEntityIdMapper::EntityIdGenerationApproach::Random);
                 }
+
+                auto tracker = AZ::Data::SerializedAssetTracker{};
+                tracker.SetAssetFixUp(&FixUpInvalidAssets);
 
                 AZ::JsonDeserializerSettings settings;
                 // The InstanceEntityIdMapper is registered twice because it's used in several places during deserialization where one is
@@ -139,7 +234,7 @@ namespace AzToolsFramework
                 // data has strict typing and doesn't look for inheritance both have to be explicitly added so they're found both locations.
                 settings.m_metadata.Add(static_cast<AZ::JsonEntityIdSerializer::JsonEntityIdMapper*>(&entityIdMapper));
                 settings.m_metadata.Add(&entityIdMapper);
-                settings.m_metadata.Create<AZ::Data::SerializedAssetTracker>();
+                settings.m_metadata.Add(tracker);
 
                 AZ::JsonSerializationResult::ResultCode result =
                     AZ::JsonSerialization::Load(instance, prefabDom, settings);
@@ -154,6 +249,7 @@ namespace AzToolsFramework
 
                     return false;
                 }
+
                 AZ::Data::SerializedAssetTracker* assetTracker = settings.m_metadata.Find<AZ::Data::SerializedAssetTracker>();
 
                 referencedAssets = AZStd::move(assetTracker->GetTrackedAssets());
@@ -161,7 +257,7 @@ namespace AzToolsFramework
             }
 
             bool LoadInstanceFromPrefabDom(
-                Instance& instance, Instance::EntityList& newlyAddedEntities, const PrefabDom& prefabDom, LoadInstanceFlags flags)
+                Instance& instance, Instance::EntityList& newlyAddedEntities, const PrefabDom& prefabDom, LoadFlags flags)
             {
                 // When entities are rebuilt they are first destroyed. As a result any assets they were exclusively holding on to will
                 // be released and reloaded once the entities are built up again. By suspending asset release temporarily the asset reload
@@ -170,10 +266,13 @@ namespace AzToolsFramework
 
                 InstanceEntityIdMapper entityIdMapper;
                 entityIdMapper.SetLoadingInstance(instance);
-                if ((flags & LoadInstanceFlags::AssignRandomEntityId) == LoadInstanceFlags::AssignRandomEntityId)
+                if ((flags & LoadFlags::AssignRandomEntityId) == LoadFlags::AssignRandomEntityId)
                 {
                     entityIdMapper.SetEntityIdGenerationApproach(InstanceEntityIdMapper::EntityIdGenerationApproach::Random);
                 }
+
+                auto tracker = AZ::Data::SerializedAssetTracker{};
+                tracker.SetAssetFixUp(&FixUpInvalidAssets);
 
                 AZ::JsonDeserializerSettings settings;
                 // The InstanceEntityIdMapper is registered twice because it's used in several places during deserialization where one is
@@ -182,6 +281,16 @@ namespace AzToolsFramework
                 settings.m_metadata.Add(static_cast<AZ::JsonEntityIdSerializer::JsonEntityIdMapper*>(&entityIdMapper));
                 settings.m_metadata.Add(&entityIdMapper);
                 settings.m_metadata.Create<InstanceEntityScrubber>(newlyAddedEntities);
+                settings.m_metadata.Add(tracker);
+
+                AZStd::string scratchBuffer;
+                auto issueReportingCallback = [&scratchBuffer](
+                    AZStd::string_view message, AZ::JsonSerializationResult::ResultCode result,
+                    AZStd::string_view path) -> AZ::JsonSerializationResult::ResultCode
+                {
+                    return Internal::JsonIssueReporter(scratchBuffer, message, result, path);
+                };
+                settings.m_reporting = AZStd::move(issueReportingCallback);
 
                 AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::Load(instance, prefabDom, settings);
 
@@ -240,15 +349,12 @@ namespace AzToolsFramework
             AZ::JsonSerializationResult::ResultCode ApplyPatches(
                 PrefabDomValue& prefabDomToApplyPatchesOn, PrefabDom::AllocatorType& allocator, const PrefabDomValue& patches)
             {
-                auto issueReportingCallback = [](AZStd::string_view, AZ::JsonSerializationResult::ResultCode result,
-                                                 AZStd::string_view) -> AZ::JsonSerializationResult::ResultCode
+                AZStd::string scratchBuffer;
+                auto issueReportingCallback = [&scratchBuffer]
+                (AZStd::string_view message, AZ::JsonSerializationResult::ResultCode result,
+                    AZStd::string_view path) -> AZ::JsonSerializationResult::ResultCode
                 {
-                    using namespace AZ::JsonSerializationResult;
-                    if (result.GetProcessing() == Processing::Halted)
-                    {
-                        return ResultCode(result.GetTask(), Outcomes::PartialSkip);
-                    }
-                    return result;
+                    return Internal::JsonIssueReporter(scratchBuffer, message, result, path);
                 };
 
                 AZ::JsonApplyPatchSettings applyPatchSettings;

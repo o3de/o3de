@@ -20,6 +20,8 @@
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzToolsFramework/SourceControl/PerforceConnection.h>
 
+#include <QProcess>
+
 namespace AzToolsFramework
 {
     namespace
@@ -74,6 +76,7 @@ namespace AzToolsFramework
         m_trustedKey = false;
         m_resolveKey = true;
         m_testTrust = false;
+
 
         // set up signals before we start thread.
         m_shutdownThreadSignal = false;
@@ -1315,7 +1318,7 @@ namespace AzToolsFramework
     void PerforceComponent::ThreadWorker()
     {
         m_ProcessThreadID = AZStd::this_thread::get_id();
-        while (1)
+        while (true)
         {
             // block until signaled:
             m_WorkerSemaphore.acquire();

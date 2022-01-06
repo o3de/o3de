@@ -26,17 +26,13 @@
 #include "Util/Image.h"
 #include "ObjectManagerLegacyUndo.h"
 #include "Include/HitContext.h"
-#include "EditMode/DeepSelection.h"
 #include "Plugins/ComponentEntityEditorPlugin/Objects/ComponentEntityObject.h"
 
 #include <AzCore/Console/Console.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 
 AZ_CVAR_EXTERNED(bool, ed_visibility_logTiming);
-
-AZ_CVAR(
-    bool, ed_visibility_use, true, nullptr, AZ::ConsoleFunctorFlags::Null,
-    "Enable/disable using the new IVisibilitySystem for Entity visibility determination");
-
 
 /*!
  *  Class Description used for object templates.
@@ -53,6 +49,7 @@ public:
     GUID guid;
 
 public:
+    virtual ~CXMLObjectClassDesc() = default;
     REFGUID ClassID() override
     {
         return guid;
@@ -76,17 +73,6 @@ public:
     int GameCreationOrder() override { return superType->GameCreationOrder(); };
 };
 
-void CBaseObjectsCache::AddObject(CBaseObject* object)
-{
-    m_objects.push_back(object);
-    if (object->GetType() == OBJTYPE_AZENTITY)
-    {
-        auto componentEntityObject = static_cast<CComponentEntityObject*>(object);
-        m_entityIds.push_back(componentEntityObject->GetAssociatedEntityId());
-    }
-}
-
-
 //////////////////////////////////////////////////////////////////////////
 // CObjectManager implementation.
 //////////////////////////////////////////////////////////////////////////
@@ -94,63 +80,25 @@ CObjectManager* g_pObjectManager = nullptr;
 
 //////////////////////////////////////////////////////////////////////////
 CObjectManager::CObjectManager()
-    : m_lastHideMask(0)
-    , m_maxObjectViewDistRatio(0.00001f)
-    , m_currSelection(&m_defaultSelection)
-    , m_nLastSelCount(0)
+    : m_currSelection(&m_defaultSelection)
     , m_bSelectionChanged(false)
-    , m_selectCallback(nullptr)
-    , m_currEditObject(nullptr)
-    , m_bSingleSelection(false)
-    , m_createGameObjects(true)
-    , m_bGenUniqObjectNames(true)
     , m_gizmoManager(new CGizmoManager())
-    , m_pLoadProgress(nullptr)
-    , m_loadedObjects(0)
-    , m_totalObjectsToLoad(0)
     , m_bExiting(false)
     , m_isUpdateVisibilityList(false)
     , m_currentHideCount(CBaseObject::s_invalidHiddenID)
-    , m_bInReloading(false)
-    , m_bSkipObjectUpdate(false)
-    , m_bLevelExporting(false)
 {
     g_pObjectManager = this;
 
-    RegisterObjectClasses();
-
     m_objectsByName.reserve(1024);
-    LoadRegistry();
-
-    AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusConnect(
-        AzToolsFramework::GetEntityContextId());
 }
 
 //////////////////////////////////////////////////////////////////////////
 CObjectManager::~CObjectManager()
 {
-    AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusDisconnect();
-
     m_bExiting = true;
-    SaveRegistry();
     DeleteAllObjects();
 
     delete m_gizmoManager;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::RegisterObjectClasses()
-{
-    LoadRegistry();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void    CObjectManager::SaveRegistry()
-{
-}
-
-void    CObjectManager::LoadRegistry()
-{
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -204,17 +152,6 @@ CBaseObject* CObjectManager::NewObject(CObjectClassDesc* cls, CBaseObject* prev,
         if (obj->GetType() != OBJTYPE_AZENTITY)
         {
             GetIEditor()->RecordUndo(new CUndoBaseObjectNew(obj));
-
-            // check for script entities
-            const char* scriptClassName = "";
-            CEntityObject* entityObj = qobject_cast<CEntityObject*>(obj);
-            QByteArray entityClass; // Leave it outside of the if. Otherwise buffer is deleted.
-            if (entityObj)
-            {
-                entityClass = entityObj->GetEntityClass().toUtf8();
-                scriptClassName = entityClass.data();
-            }
-
         }
     }
 
@@ -336,12 +273,6 @@ CBaseObject* CObjectManager::NewObject(CObjectArchive& ar, CBaseObject* pUndoObj
         }
     }
 
-    m_loadedObjects++;
-    if (m_pLoadProgress && m_totalObjectsToLoad > 0)
-    {
-        m_pLoadProgress->Step((m_loadedObjects * 100) / m_totalObjectsToLoad);
-    }
-
     return pObject;
 }
 
@@ -368,11 +299,7 @@ CBaseObject* CObjectManager::NewObject(const QString& typeName, CBaseObject* pre
 //////////////////////////////////////////////////////////////////////////
 void    CObjectManager::DeleteObject(CBaseObject* obj)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
-    if (m_currEditObject == obj)
-    {
-        EndEditParams();
-    }
+    AZ_PROFILE_FUNCTION(Editor);
 
     if (!obj)
     {
@@ -385,7 +312,6 @@ void    CObjectManager::DeleteObject(CBaseObject* obj)
         return;
     }
 
-    NotifyObjectListeners(obj, CBaseObject::ON_PREDELETE);
     obj->NotifyListeners(CBaseObject::ON_PREDELETE);
 
     // Must be after object DetachAll to support restoring Parent/Child relations.
@@ -395,7 +321,7 @@ void    CObjectManager::DeleteObject(CBaseObject* obj)
         // Store undo for all child objects.
         for (int i = 0; i < obj->GetChildCount(); i++)
         {
-            obj->GetChild(i)->StoreUndo("DeleteParent");
+            obj->GetChild(i)->StoreUndo();
         }
         CUndo::Record(new CUndoBaseObjectDelete(obj));
     }
@@ -406,15 +332,13 @@ void    CObjectManager::DeleteObject(CBaseObject* obj)
 
     obj->Done();
 
-    NotifyObjectListeners(obj, CBaseObject::ON_DELETE);
-
     RemoveObject(obj);
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CObjectManager::DeleteSelection(CSelectionGroup* pSelection)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
     if (pSelection == nullptr)
     {
         return;
@@ -478,23 +402,11 @@ void CObjectManager::DeleteSelection(CSelectionGroup* pSelection)
 //////////////////////////////////////////////////////////////////////////
 void CObjectManager::DeleteAllObjects()
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
-
-    EndEditParams();
+    AZ_PROFILE_FUNCTION(Editor);
 
     ClearSelection();
-    int i;
 
     InvalidateVisibleList();
-
-    // Delete all selection groups.
-    std::vector<CSelectionGroup*> sel;
-    stl::map_to_vector(m_selections, sel);
-    for (i = 0; i < sel.size(); i++)
-    {
-        delete sel[i];
-    }
-    m_selections.clear();
 
     TBaseObjects objectsHolder;
     GetAllObjects(objectsHolder);
@@ -503,7 +415,7 @@ void CObjectManager::DeleteAllObjects()
     m_objects.clear();
     m_objectsByName.clear();
 
-    for (i = 0; i < objectsHolder.size(); i++)
+    for (int i = 0; i < objectsHolder.size(); i++)
     {
         objectsHolder[i]->Done();
     }
@@ -515,17 +427,6 @@ void CObjectManager::DeleteAllObjects()
     m_nameNumbersMap.clear();
 
     m_animatedAttachedEntities.clear();
-}
-
-CBaseObject* CObjectManager::CloneObject(CBaseObject* obj)
-{
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
-    assert(obj);
-    //CRuntimeClass *cls = obj->GetRuntimeClass();
-    //CBaseObject *clone = (CBaseObject*)cls->CreateObject();
-    //clone->CloneCopy( obj );
-    CBaseObject* clone = NewObject(obj->GetClassDesc(), obj);
-    return clone;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -626,7 +527,7 @@ bool CObjectManager::AddObject(CBaseObject* obj)
         if (CEntityObject* entityObj = qobject_cast<CEntityObject*>(obj))
         {
             CEntityObject::EAttachmentType attachType = entityObj->GetAttachType();
-            if (attachType == CEntityObject::EAttachmentType::eAT_GeomCacheNode || attachType == CEntityObject::EAttachmentType::eAT_CharacterBone)
+            if (attachType == CEntityObject::EAttachmentType::eAT_CharacterBone)
             {
                 m_animatedAttachedEntities.insert(entityObj);
             }
@@ -638,7 +539,6 @@ bool CObjectManager::AddObject(CBaseObject* obj)
 
     RegisterObjectName(obj->GetName());
     InvalidateVisibleList();
-    NotifyObjectListeners(obj, CBaseObject::ON_ADD);
     return true;
 }
 
@@ -659,12 +559,6 @@ void CObjectManager::RemoveObject(CBaseObject* obj)
 
     // Remove this object from selection groups.
     m_currSelection->RemoveObject(obj);
-    std::vector<CSelectionGroup*> sel;
-    stl::map_to_vector(m_selections, sel);
-    for (int i = 0; i < sel.size(); i++)
-    {
-        sel[i]->RemoveObject(obj);
-    }
 
     m_objectsByName.erase(AZ::Crc32(obj->GetName().toUtf8().data(), obj->GetName().toUtf8().count(), true));
 
@@ -692,61 +586,14 @@ void CObjectManager::ChangeObjectId(REFGUID oldGuid, REFGUID newGuid)
         CBaseObjectPtr pRemappedObject = (*it).second;
         pRemappedObject->SetId(newGuid);
         m_objects.erase(it);
-        m_objects.insert(std::make_pair(newGuid, pRemappedObject));
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::ShowDuplicationMsgWarning(CBaseObject* obj, const QString& newName, bool bShowMsgBox) const
-{
-    CBaseObject* pExisting = FindObject(newName);
-    if (pExisting)
-    {
-        QString sRenameWarning = QObject::tr("%1 \"%2\" was NOT renamed to \"%3\" because %4 with the same name already exists.")
-            .arg(obj->GetClassDesc()->ClassName())
-            .arg(obj->GetName())
-            .arg(newName)
-            .arg(pExisting->GetClassDesc()->ClassName()
-        );
-
-        // If id is taken.
-        CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_WARNING, sRenameWarning.toUtf8().data());
-
-        if (bShowMsgBox)
-        {
-            QMessageBox::critical(QApplication::activeWindow(), QString(), sRenameWarning);
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::ChangeObjectName(CBaseObject* obj, const QString& newName)
-{
-    assert(obj);
-
-    if (newName != obj->GetName())
-    {
-        if (IsDuplicateObjectName(newName))
-        {
-            return;
-        }
-
-        // Remove previous name from map
-        const AZ::Crc32 oldNameCrc(obj->GetName().toUtf8().data(), obj->GetName().count(), true);
-        m_objectsByName.erase(oldNameCrc);
-
-        obj->SetName(newName);
-
-        // Add new name to map
-        const AZ::Crc32 nameCrc(newName.toUtf8().data(), newName.count(), true);
-        m_objectsByName[nameCrc] = obj;
+        m_objects.insert(AZStd::make_pair(newGuid, pRemappedObject));
     }
 }
 
 //////////////////////////////////////////////////////////////////////////
 int CObjectManager::GetObjectCount() const
 {
-    return m_objects.size();
+    return static_cast<int>(m_objects.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -760,39 +607,9 @@ void CObjectManager::GetObjects(CBaseObjectsArray& objects) const
     }
 }
 
-void CObjectManager::GetObjects(DynArray<CBaseObject*>& objects) const
-{
-    CBaseObjectsArray objectArray;
-    GetObjects(objectArray);
-    objects.clear();
-    for (int i = 0, iCount(objectArray.size()); i < iCount; ++i)
-    {
-        objects.push_back(objectArray[i]);
-    }
-}
-
-void CObjectManager::GetObjects(CBaseObjectsArray& objects, BaseObjectFilterFunctor const& filter) const
-{
-    objects.clear();
-    objects.reserve(m_objects.size());
-    for (Objects::const_iterator it = m_objects.begin(); it != m_objects.end(); ++it)
-    {
-        assert(it->second);
-        if (filter.first(*it->second, filter.second))
-        {
-            objects.push_back(it->second);
-        }
-    }
-}
-
 //////////////////////////////////////////////////////////////////////////
 void CObjectManager::SendEvent(ObjectEvent event)
 {
-    if (event == EVENT_RELOAD_ENTITY)
-    {
-        m_bInReloading = true;
-    }
-
     for (Objects::iterator it = m_objects.begin(); it != m_objects.end(); ++it)
     {
         CBaseObject* obj = it->second;
@@ -801,7 +618,6 @@ void CObjectManager::SendEvent(ObjectEvent event)
 
     if (event == EVENT_RELOAD_ENTITY)
     {
-        m_bInReloading = false;
         GetIEditor()->Notify(eNotify_OnReloadTrackView);
     }
 }
@@ -822,93 +638,6 @@ void CObjectManager::SendEvent(ObjectEvent event, const AABB& bounds)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CObjectManager::Update()
-{
-    if (m_bSkipObjectUpdate)
-    {
-        return;
-    }
-
-    QWidget* prevActiveWindow = QApplication::activeWindow();
-
-    // Restore focus if it changed.
-    if (prevActiveWindow && QApplication::activeWindow() != prevActiveWindow)
-    {
-        prevActiveWindow->setFocus();
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::HideObject(CBaseObject* obj, bool hide)
-{
-    assert(obj != 0);
-    if (hide)
-    {
-        obj->SetHidden(hide, ++m_currentHideCount);
-    }
-    else
-    {
-        obj->SetHidden(false);
-    }
-    InvalidateVisibleList();
-}
-
-void CObjectManager::ShowLastHiddenObject()
-{
-    uint64 mostRecentID = CBaseObject::s_invalidHiddenID;
-    CBaseObject* mostRecentObject = nullptr;
-    for (auto it : m_objects)
-    {
-        CBaseObject* obj = it.second;
-
-        uint64 hiddenID = obj->GetHideOrder();
-
-        if (hiddenID > mostRecentID)
-        {
-            mostRecentID = hiddenID;
-            mostRecentObject = obj;
-        }
-    }
-
-    if (mostRecentObject != nullptr)
-    {
-        mostRecentObject->SetHidden(false);
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::UnhideAll()
-{
-    for (Objects::iterator it = m_objects.begin(); it != m_objects.end(); ++it)
-    {
-        CBaseObject* obj = it->second;
-        obj->SetHidden(false);
-    }
-
-    InvalidateVisibleList();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::FreezeObject(CBaseObject* obj, bool freeze)
-{
-    assert(obj != 0);
-    // Remove object from main object set and put it to hidden set.
-    obj->SetFrozen(freeze);
-    InvalidateVisibleList();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::UnfreezeAll()
-{
-    for (Objects::iterator it = m_objects.begin(); it != m_objects.end(); ++it)
-    {
-        CBaseObject* obj = it->second;
-        obj->SetFrozen(false);
-    }
-    InvalidateVisibleList();
-}
-
-//////////////////////////////////////////////////////////////////////////
 bool CObjectManager::SelectObject(CBaseObject* obj, bool bUseMask)
 {
     assert(obj);
@@ -921,14 +650,6 @@ bool CObjectManager::SelectObject(CBaseObject* obj, bool bUseMask)
     if (bUseMask && (!(obj->GetType() & gSettings.objectSelectMask)))
     {
         return false;
-    }
-
-    if (m_selectCallback)
-    {
-        if (!m_selectCallback->OnSelectObject(obj))
-        {
-            return true;
-        }
     }
 
     m_currSelection->AddObject(obj);
@@ -950,14 +671,6 @@ bool CObjectManager::SelectObject(CBaseObject* obj, bool bUseMask)
     return true;
 }
 
-void CObjectManager::SelectEntities(std::set<CEntityObject*>& s)
-{
-    for (std::set<CEntityObject*>::iterator it = s.begin(), end = s.end(); it != end; ++it)
-    {
-        SelectObject(*it);
-    }
-}
-
 void CObjectManager::UnselectObject(CBaseObject* obj)
 {
     // while in ComponentMode we never explicitly change selection (the entity will always be selected).
@@ -976,143 +689,10 @@ void CObjectManager::UnselectObject(CBaseObject* obj)
     m_currSelection->RemoveObject(obj);
 }
 
-CSelectionGroup* CObjectManager::GetSelection(const QString& name) const
-{
-    CSelectionGroup* selection = stl::find_in_map(m_selections, name, (CSelectionGroup*)nullptr);
-    return selection;
-}
-
-void CObjectManager::GetNameSelectionStrings(QStringList& names)
-{
-    for (TNameSelectionMap::iterator it = m_selections.begin(); it != m_selections.end(); ++it)
-    {
-        names.push_back(it->first);
-    }
-}
-
-void CObjectManager::NameSelection(const QString& name)
-{
-    if (m_currSelection->IsEmpty())
-    {
-        return;
-    }
-
-    CSelectionGroup* selection = stl::find_in_map(m_selections, name, (CSelectionGroup*)nullptr);
-    if (selection)
-    {
-        assert(selection != 0);
-        // Check if trying to rename itself to the same name.
-        if (selection == m_currSelection)
-        {
-            return;
-        }
-        m_selections.erase(name);
-        delete selection;
-    }
-    selection = new CSelectionGroup;
-    selection->Copy(*m_currSelection);
-    selection->SetName(name);
-    m_selections[name] = selection;
-    m_currSelection = selection;
-    m_defaultSelection.RemoveAll();
-}
-
-void CObjectManager::SerializeNameSelection(XmlNodeRef& rootNode, bool bLoading)
-{
-    if (!rootNode)
-    {
-        return;
-    }
-
-    _smart_ptr<CSelectionGroup> tmpGroup(nullptr);
-
-    QString selRootStr("NameSelection");
-    QString selNodeStr("NameSelectionNode");
-    QString selNodeNameStr("name");
-    QString idStr("id");
-    QString objAttrStr("obj");
-
-    XmlNodeRef startNode = rootNode->findChild(selRootStr.toUtf8().data());
-
-    if (bLoading)
-    {
-        m_selections.erase(m_selections.begin(), m_selections.end());
-
-        if (startNode)
-        {
-            for (int selNodeNo = 0; selNodeNo < startNode->getChildCount(); ++selNodeNo)
-            {
-                XmlNodeRef selNode = startNode->getChild(selNodeNo);
-                tmpGroup = new CSelectionGroup;
-
-                for (int objIDNodeNo = 0; objIDNodeNo < selNode->getChildCount(); ++objIDNodeNo)
-                {
-                    GUID curID = GUID_NULL;
-                    XmlNodeRef idNode = selNode->getChild(objIDNodeNo);
-                    if (!idNode->getAttr(idStr.toUtf8().data(), curID))
-                    {
-                        continue;
-                    }
-
-                    if (curID != GUID_NULL)
-                    {
-                        if (GetIEditor()->GetObjectManager()->FindObject(curID))
-                        {
-                            tmpGroup->AddObject(GetIEditor()->GetObjectManager()->FindObject(curID));
-                        }
-                    }
-                }
-
-                if (tmpGroup->GetCount() > 0)
-                {
-                    QString nameStr;
-                    if (!selNode->getAttr(selNodeNameStr.toUtf8().data(), nameStr))
-                    {
-                        continue;
-                    }
-                    tmpGroup->SetName(nameStr);
-                    m_selections[nameStr] = tmpGroup;
-                }
-            }
-        }
-    }
-    else
-    {
-        startNode = rootNode->newChild(selRootStr.toUtf8().data());
-        CSelectionGroup* objSelection = nullptr;
-
-        for (TNameSelectionMap::iterator it = m_selections.begin(); it != m_selections.end(); ++it)
-        {
-            XmlNodeRef selectionNameNode = startNode->newChild(selNodeStr.toUtf8().data());
-            selectionNameNode->setAttr(selNodeNameStr.toUtf8().data(), it->first.toUtf8().data());
-            objSelection = it->second;
-
-            if (!objSelection)
-            {
-                continue;
-            }
-
-            if (objSelection->GetCount() == 0)
-            {
-                continue;
-            }
-
-            for (int i = 0; i < objSelection->GetCount(); ++i)
-            {
-                if (objSelection->GetObject(i))
-                {
-                    XmlNodeRef objNode = selectionNameNode->newChild(objAttrStr.toUtf8().data());
-                    objNode->setAttr(idStr.toUtf8().data(), GuidUtil::ToString(objSelection->GetObject(i)->GetId()));
-                }
-            }
-        }
-    }
-}
-
 //////////////////////////////////////////////////////////////////////////
 int CObjectManager::ClearSelection()
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
     // Make sure to unlock selection.
     GetIEditor()->LockSelection(false);
@@ -1162,66 +742,9 @@ int CObjectManager::ClearSelection()
     return numSel;
 }
 
-//////////////////////////////////////////////////////////////////////////
-int CObjectManager::InvertSelection()
-{
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
-
-    int selCount = 0;
-    // iterate all objects.
-    for (Objects::const_iterator it = m_objects.begin(); it != m_objects.end(); ++it)
-    {
-        CBaseObject* pObj = it->second;
-        if (pObj->IsSelected())
-        {
-            UnselectObject(pObj);
-        }
-        else
-        {
-            if (SelectObject(pObj))
-            {
-                selCount++;
-            }
-        }
-    }
-    return selCount;
-}
-
-void CObjectManager::SetSelection(const QString& name)
-{
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
-    CSelectionGroup* selection = stl::find_in_map(m_selections, name, (CSelectionGroup*)nullptr);
-    if (selection)
-    {
-        UnselectCurrent();
-        assert(selection != 0);
-        m_currSelection = selection;
-        SelectCurrent();
-    }
-}
-
-void CObjectManager::RemoveSelection(const QString& name)
-{
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
-
-    QString selName = name;
-    CSelectionGroup* selection = stl::find_in_map(m_selections, name, (CSelectionGroup*)nullptr);
-    if (selection)
-    {
-        if (selection == m_currSelection)
-        {
-            UnselectCurrent();
-            m_currSelection = &m_defaultSelection;
-            m_defaultSelection.RemoveAll();
-        }
-        delete selection;
-        m_selections.erase(selName);
-    }
-}
-
 void CObjectManager::SelectCurrent()
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
     for (int i = 0; i < m_currSelection->GetCount(); i++)
     {
         CBaseObject* obj = m_currSelection->GetObject(i);
@@ -1236,7 +759,7 @@ void CObjectManager::SelectCurrent()
 
 void CObjectManager::UnselectCurrent()
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
     // Make sure to unlock selection.
     GetIEditor()->LockSelection(false);
@@ -1260,7 +783,7 @@ void CObjectManager::UnselectCurrent()
 //////////////////////////////////////////////////////////////////////////
 void CObjectManager::Display(DisplayContext& dc)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
     int currentHideMask = GetIEditor()->GetDisplaySettings()->GetObjectHideMask();
     if (m_lastHideMask != currentHideMask)
@@ -1278,25 +801,8 @@ void CObjectManager::Display(DisplayContext& dc)
         UpdateVisibilityList();
     }
 
-    bool viewIsDirty = dc.settings->IsDisplayHelpers(); // displaying helpers require computing all the bound boxes and things anyway.
-
-    if (!viewIsDirty)
+    if (dc.settings->IsDisplayHelpers())
     {
-        if (CBaseObjectsCache* cache = dc.view->GetVisibleObjectsCache())
-        {
-            // if the current rendering viewport has an out-of-date cache serial number, it needs to be refreshed too.
-            // views set their cache empty when they indicate they need to force a refresh.
-            if ((cache->GetObjectCount() == 0) || (cache->GetSerialNumber() != m_visibilitySerialNumber))
-            {
-                viewIsDirty = true;
-            }
-        }
-    }
-
-    if (viewIsDirty)
-    {
-        FindDisplayableObjects(dc, true);  // this also actually draws the helpers.
-
         // Also broadcast for anyone else that needs to draw global debug to do so now
         AzFramework::DebugDisplayEventBus::Broadcast(&AzFramework::DebugDisplayEvents::DrawGlobalDebugInfo);
     }
@@ -1307,237 +813,7 @@ void CObjectManager::Display(DisplayContext& dc)
     }
 }
 
-void CObjectManager::ForceUpdateVisibleObjectCache(DisplayContext& dc)
-{
-    FindDisplayableObjects(dc, false);
-}
-
-void CObjectManager::FindDisplayableObjects(DisplayContext& dc, [[maybe_unused]] bool bDisplay)
-{
-    // if the new IVisibilitySystem is being used, do not run this logic
-    if (ed_visibility_use)
-    {
-        return;
-    }
-
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
-
-    auto start = std::chrono::steady_clock::now();
-    CBaseObjectsCache* pDispayedViewObjects = dc.view->GetVisibleObjectsCache();
-    if (!pDispayedViewObjects)
-    {
-        return;
-    }
-
-    pDispayedViewObjects->SetSerialNumber(m_visibilitySerialNumber); // update viewport to be latest serial number
-
-    AABB bbox;
-    bbox.min.zero();
-    bbox.max.zero();
-
-    pDispayedViewObjects->ClearObjects();
-    pDispayedViewObjects->Reserve(m_visibleObjects.size());
-
-    if (dc.flags & DISPLAY_2D)
-    {
-        int numVis = m_visibleObjects.size();
-        for (int i = 0; i < numVis; i++)
-        {
-            CBaseObject* obj = m_visibleObjects[i];
-
-            obj->GetBoundBox(bbox);
-            if (dc.box.IsIntersectBox(bbox))
-            {
-                pDispayedViewObjects->AddObject(obj);
-            }
-        }
-    }
-    else
-    {
-        CSelectionGroup* pSelection = GetSelection();
-        if (pSelection && pSelection->GetCount() > 1)
-        {
-            AABB mergedAABB;
-            mergedAABB.Reset();
-            for (int i = 0, iCount(pSelection->GetCount()); i < iCount; ++i)
-            {
-                CBaseObject* pObj(pSelection->GetObject(i));
-                if (pObj == nullptr)
-                {
-                    continue;
-                }
-                AABB aabb;
-                pObj->GetBoundBox(aabb);
-                mergedAABB.Add(aabb);
-            }
-
-            pSelection->GetObject(0)->CBaseObject::DrawDimensions(dc, &mergedAABB);
-        }
-
-        int numVis = m_visibleObjects.size();
-        for (int i = 0; i < numVis; i++)
-        {
-            CBaseObject* obj = m_visibleObjects[i];
-
-            if (obj)
-            {
-                if ((dc.flags & DISPLAY_SELECTION_HELPERS) || obj->IsSelected())
-                {
-                    pDispayedViewObjects->AddObject(obj);
-                }
-            }
-        }
-    }
-
-    if (ed_visibility_logTiming && !ed_visibility_use)
-    {
-        auto stop = std::chrono::steady_clock::now();
-        std::chrono::duration<double> diff = stop - start;
-        AZ_Printf("Visibility", "FindDisplayableObjects (old) - Duration: %f", diff);
-    }
-}
-
-void CObjectManager::BeginEditParams(CBaseObject* obj, int flags)
-{
-    assert(obj != 0);
-    if (obj == m_currEditObject)
-    {
-        return;
-    }
-
-    if (GetSelection()->GetCount() > 1)
-    {
-        return;
-    }
-
-    QWidget* prevActiveWindow = QApplication::activeWindow();
-
-    if (m_currEditObject)
-    {
-        //if (obj->GetClassDesc() != m_currEditObject->GetClassDesc())
-        if (!obj->IsSameClass(m_currEditObject))
-        {
-            EndEditParams(flags);
-        }
-    }
-
-    m_currEditObject = obj;
-
-    if (flags & OBJECT_CREATE)
-    {
-        // Unselect all other objects.
-        ClearSelection();
-        // Select this object.
-        SelectObject(obj, false);
-    }
-
-    m_bSingleSelection = true;
-
-    // Restore focus if it changed.
-    //  OBJECT_EDIT is used by the EntityOutliner when items are selected. Using it here to prevent shifting focus to the EntityInspector on select.
-    if (!(flags & OBJECT_EDIT) && prevActiveWindow && QApplication::activeWindow() != prevActiveWindow)
-    {
-        prevActiveWindow->setFocus();
-    }
-}
-
-void CObjectManager::EndEditParams([[maybe_unused]] int flags)
-{
-    m_bSingleSelection = false;
-    m_currEditObject = nullptr;
-    //m_bSelectionChanged = false; // don't need to clear for ungroup
-}
-
-//! Select objects within specified distance from given position.
-int CObjectManager::SelectObjects(const AABB& box, bool bUnselect)
-{
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
-    int numSel = 0;
-
-    AABB objBounds;
-    for (Objects::iterator it = m_objects.begin(); it != m_objects.end(); ++it)
-    {
-        CBaseObject* obj = it->second;
-
-        if (obj->IsHidden())
-        {
-            continue;
-        }
-
-        obj->GetBoundBox(objBounds);
-        if (box.IsIntersectBox(objBounds))
-        {
-            numSel++;
-            if (!bUnselect)
-            {
-                SelectObject(obj);
-            }
-            else
-            {
-                UnselectObject(obj);
-            }
-        }
-    }
-    return numSel;
-}
-
 //////////////////////////////////////////////////////////////////////////
-int CObjectManager::MoveObjects(const AABB& box, const Vec3& offset, ImageRotationDegrees rotation, [[maybe_unused]] bool bIsCopy)
-{
-    AABB objBounds;
-
-    Vec3 src = (box.min + box.max) / 2;
-    Vec3 dst = src + offset;
-    float alpha = 0.0f;
-    switch (rotation)
-    {
-        case ImageRotationDegrees::Rotate90:
-            alpha = gf_halfPI;
-            break;
-        case ImageRotationDegrees::Rotate180:
-            alpha = gf_PI;
-            break;
-        case ImageRotationDegrees::Rotate270:
-            alpha = gf_PI + gf_halfPI;
-            break;
-        default:
-            break;
-    }
-
-    float cosa = cos(alpha);
-    float sina = sin(alpha);
-
-    for (Objects::iterator it = m_objects.begin(); it != m_objects.end(); ++it)
-    {
-        CBaseObject* obj = it->second;
-
-        if (obj->GetParent())
-        {
-            continue;
-        }
-
-        obj->GetBoundBox(objBounds);
-        if (box.IsIntersectBox(objBounds))
-        {
-            if (rotation == ImageRotationDegrees::Rotate0)
-            {
-                obj->SetPos(obj->GetPos() - src + dst);
-            }
-            else
-            {
-                Vec3 pos = obj->GetPos() - src;
-                Vec3 newPos(pos);
-                newPos.x = cosa * pos.x - sina * pos.y;
-                newPos.y = sina * pos.x + cosa * pos.y;
-                obj->SetPos(newPos + dst);
-                Quat q;
-                obj->SetRotation(q.CreateRotationZ(alpha) * obj->GetRotation());
-            }
-        }
-    }
-    return 0;
-}
-
 bool CObjectManager::IsObjectDeletionAllowed(CBaseObject* pObject)
 {
     if (!pObject)
@@ -1551,16 +827,13 @@ bool CObjectManager::IsObjectDeletionAllowed(CBaseObject* pObject)
 //////////////////////////////////////////////////////////////////////////
 void CObjectManager::DeleteSelection()
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
     // Make sure to unlock selection.
     GetIEditor()->LockSelection(false);
 
-    GUID bID = GUID_NULL;
-
-    int i;
     CSelectionGroup objects;
-    for (i = 0; i < m_currSelection->GetCount(); i++)
+    for (int i = 0; i < m_currSelection->GetCount(); i++)
     {
         // Check condition(s) if object could be deleted
         if (!IsObjectDeletionAllowed(m_currSelection->GetObject(i)))
@@ -1571,287 +844,10 @@ void CObjectManager::DeleteSelection()
         objects.AddObject(m_currSelection->GetObject(i));
     }
 
-    RemoveSelection(m_currSelection->GetName());
     m_currSelection = &m_defaultSelection;
     m_defaultSelection.RemoveAll();
 
     DeleteSelection(&objects);
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CObjectManager::HitTestObject(CBaseObject* obj, HitContext& hc)
-{
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
-
-    if (obj->IsFrozen())
-    {
-        return false;
-    }
-
-    if (obj->IsHidden())
-    {
-        return false;
-    }
-
-    // This object is rejected by deep selection.
-    if (obj->CheckFlags(OBJFLAG_NO_HITTEST))
-    {
-        return false;
-    }
-
-    ObjectType objType = obj->GetType();
-
-    // Check if this object type is masked for selection.
-    if (!(objType & gSettings.objectSelectMask))
-    {
-        return false;
-    }
-
-    const bool bSelectionHelperHit = obj->HitHelperTest(hc);
-
-    if (hc.bUseSelectionHelpers && !bSelectionHelperHit)
-    {
-        return false;
-    }
-
-    if (!bSelectionHelperHit)
-    {
-        // Fast checking.
-        if (hc.camera && !obj->IsInCameraView(*hc.camera))
-        {
-            return false;
-        }
-        else if (hc.bounds && !obj->IntersectRectBounds(*hc.bounds))
-        {
-            return false;
-        }
-
-        // Do 2D space testing.
-        if (hc.nSubObjFlags == 0)
-        {
-            Ray ray(hc.raySrc, hc.rayDir);
-            if (!obj->IntersectRayBounds(ray))
-            {
-                return false;
-            }
-        }
-        else if (!obj->HitTestRect(hc))
-        {
-            return false;
-        }
-    }
-
-    return (bSelectionHelperHit || obj->HitTest(hc));
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-bool CObjectManager::HitTest(HitContext& hitInfo)
-{
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
-
-    hitInfo.object = nullptr;
-    hitInfo.dist = FLT_MAX;
-    hitInfo.axis = 0;
-    hitInfo.manipulatorMode = 0;
-
-    HitContext hcOrg = hitInfo;
-    if (hcOrg.view)
-    {
-        hcOrg.view->GetPerpendicularAxis(nullptr, &hcOrg.b2DViewport);
-    }
-    hcOrg.rayDir = hcOrg.rayDir.GetNormalized();
-
-    HitContext hc = hcOrg;
-
-    float mindist = FLT_MAX;
-
-    if (!hitInfo.bIgnoreAxis && !hc.bUseSelectionHelpers)
-    {
-        // Test gizmos.
-        if (m_gizmoManager->HitTest(hc))
-        {
-            if (hc.axis != 0)
-            {
-                hitInfo.object = hc.object;
-                hitInfo.gizmo = hc.gizmo;
-                hitInfo.axis = hc.axis;
-                hitInfo.manipulatorMode = hc.manipulatorMode;
-                hitInfo.dist = hc.dist;
-                return true;
-            }
-        }
-    }
-
-    if (hitInfo.bOnlyGizmo)
-    {
-        return false;
-    }
-
-    // Only HitTest objects, that where previously Displayed.
-    CBaseObjectsCache* pDispayedViewObjects = hitInfo.view->GetVisibleObjectsCache();
-
-    const bool iconsPrioritized = true; // Force icons to always be prioritized over other things you hit. Can change to be a configurable option in the future.
-
-    CBaseObject* selected = nullptr;
-    const char* name = nullptr;
-    bool iconHit = false;
-    int numVis = pDispayedViewObjects->GetObjectCount();
-    for (int i = 0; i < numVis; i++)
-    {
-        CBaseObject* obj = pDispayedViewObjects->GetObject(i);
-
-        if (obj == hitInfo.pExcludedObject)
-        {
-            continue;
-        }
-
-        if (HitTestObject(obj, hc))
-        {
-            if (m_selectCallback && !m_selectCallback->CanSelectObject(obj))
-            {
-                continue;
-            }
-
-            // Check if this object is nearest.
-            if (hc.axis != 0)
-            {
-                hitInfo.object = obj;
-                hitInfo.axis = hc.axis;
-                hitInfo.dist = hc.dist;
-                return true;
-            }
-
-            // When prioritizing icons, we don't allow non-icon hits to beat icon hits
-            if (iconsPrioritized && iconHit && !hc.iconHit)
-            {
-                continue;
-            }
-
-            if (hc.dist < mindist || (!iconHit && hc.iconHit))
-            {
-                if (hc.iconHit)
-                {
-                    iconHit = true;
-                }
-
-                mindist = hc.dist;
-                name = hc.name;
-                selected = obj;
-            }
-
-            // Clear the object pointer if an object was hit, not just if the collision
-            // was closer than any previous. Not all paths from HitTestObject set the object pointer and so you could get
-            // an object from a previous (rejected) result but with collision information about a closer hit.
-            hc.object = nullptr;
-            hc.iconHit = false;
-
-            // If use deep selection
-            if (hitInfo.pDeepSelection)
-            {
-                hitInfo.pDeepSelection->AddObject(hc.dist, obj);
-            }
-        }
-    }
-
-    if (selected)
-    {
-        hitInfo.object = selected;
-        hitInfo.dist = mindist;
-        hitInfo.name = name;
-        hitInfo.iconHit = iconHit;
-        return true;
-    }
-    return false;
-}
-void CObjectManager::FindObjectsInRect(CViewport* view, const QRect& rect, std::vector<GUID>& guids)
-{
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
-
-    if (rect.width() < 1 || rect.height() < 1)
-    {
-        return;
-    }
-
-    HitContext hc;
-    hc.view = view;
-    hc.b2DViewport = view->GetType() != ET_ViewportCamera;
-    hc.rect = rect;
-    hc.bUseSelectionHelpers = view->GetAdvancedSelectModeFlag();
-
-    guids.clear();
-
-    CBaseObjectsCache* pDispayedViewObjects = view->GetVisibleObjectsCache();
-
-    int numVis = pDispayedViewObjects->GetObjectCount();
-    for (int i = 0; i < numVis; ++i)
-    {
-        CBaseObject* pObj = pDispayedViewObjects->GetObject(i);
-
-        HitTestObjectAgainstRect(pObj, view, hc, guids);
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::SelectObjectsInRect(CViewport* view, const QRect& rect, bool bSelect)
-{
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
-
-    // Ignore too small rectangles.
-    if (rect.width() < 1 || rect.height() < 1)
-    {
-        return;
-    }
-
-    CUndo undo("Select Object(s)");
-
-    HitContext hc;
-    hc.view = view;
-    hc.b2DViewport = view->GetType() != ET_ViewportCamera;
-    hc.rect = rect;
-    hc.bUseSelectionHelpers = view->GetAdvancedSelectModeFlag();
-
-    bool isUndoRecording = GetIEditor()->IsUndoRecording();
-    if (isUndoRecording)
-    {
-        m_processingBulkSelect = true;
-    }
-
-    CBaseObjectsCache* displayedViewObjects = view->GetVisibleObjectsCache();
-    int numVis = displayedViewObjects->GetObjectCount();
-
-    // Tracking the previous selection allows proper undo/redo functionality of additional
-    // selections (CTRL + drag select)
-    AZStd::unordered_set<const CBaseObject*> previousSelection;
-
-    for (int i = 0; i < numVis; ++i)
-    {
-        CBaseObject* object = displayedViewObjects->GetObject(i);
-
-        if (object->IsSelected())
-        {
-            previousSelection.insert(object);
-        }
-        else
-        {
-            // This will update m_currSelection
-            SelectObjectInRect(object, view, hc, bSelect);
-
-            // Legacy undo/redo does not go through the Ebus system and must be done individually
-            if (isUndoRecording && object->GetType() != OBJTYPE_AZENTITY)
-            {
-                GetIEditor()->RecordUndo(new CUndoBaseObjectSelect(object, true));
-            }
-        }
-    }
-
-    if (isUndoRecording && m_currSelection)
-    {
-        // Component Entities can handle undo/redo in bulk due to Ebuses
-        GetIEditor()->RecordUndo(new CUndoBaseObjectBulkSelect(previousSelection, *m_currSelection));
-    }
-
-    m_processingBulkSelect = false;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1905,49 +901,8 @@ void CObjectManager::RegisterObjectName(const QString& name)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CObjectManager::UpdateRegisterObjectName(const QString& name)
-{
-    // Remove all numbers from the end of typename.
-    QString typeName = name;
-    int nameLen = typeName.length();
-    int len = nameLen;
-
-    while (len > 0 && typeName[len - 1].isDigit())
-    {
-        len--;
-    }
-
-    typeName = typeName.left(len);
-
-    uint16 num = 1;
-    if (len < nameLen)
-    {
-        num = (uint16)atoi((const char*)name.toUtf8().data() + len) + 0;
-    }
-
-    NameNumbersMap::iterator it = m_nameNumbersMap.find(typeName);
-
-    if (it != m_nameNumbersMap.end())
-    {
-        if (it->second.end() != it->second.find(num))
-        {
-            it->second.erase(num);
-            if (it->second.empty())
-            {
-                m_nameNumbersMap.erase(it);
-            }
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 QString CObjectManager::GenerateUniqueObjectName(const QString& theTypeName)
 {
-    if (!m_bGenUniqObjectNames)
-    {
-        return theTypeName;
-    }
-
     QString typeName = theTypeName;
     const int subIndex = theTypeName.indexOf("::");
     if (subIndex != -1 && subIndex > typeName.length() - 2)
@@ -1983,14 +938,6 @@ QString CObjectManager::GenerateUniqueObjectName(const QString& theTypeName)
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CObjectManager::EnableUniqObjectNames(bool bEnable)
-{
-    bool bPrev = m_bGenUniqObjectNames;
-    m_bGenUniqObjectNames = bEnable;
-    return bPrev;
-}
-
-//////////////////////////////////////////////////////////////////////////
 CObjectClassDesc* CObjectManager::FindClass(const QString& className)
 {
     IClassDesc* cls = CClassFactory::Instance()->FindClass(className.toUtf8().data());
@@ -1999,64 +946,6 @@ CObjectClassDesc* CObjectManager::FindClass(const QString& className)
         return (CObjectClassDesc*)cls;
     }
     return nullptr;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::GetClassCategories(QStringList& categories)
-{
-    std::vector<IClassDesc*> classes;
-    CClassFactory::Instance()->GetClassesBySystemID(ESYSTEM_CLASS_OBJECT, classes);
-    std::set<QString> cset;
-    for (int i = 0; i < classes.size(); i++)
-    {
-        QString category = classes[i]->Category();
-        if (!category.isEmpty())
-        {
-            cset.insert(category);
-        }
-    }
-    categories.clear();
-    categories.reserve(cset.size());
-    for (std::set<QString>::iterator cit = cset.begin(); cit != cset.end(); ++cit)
-    {
-        categories.push_back(*cit);
-    }
-}
-
-void CObjectManager::GetClassCategoryToolClassNamePairs(std::vector< std::pair<QString, QString> >& categoryToolClassNamePairs)
-{
-    std::vector<IClassDesc*> classes;
-    CClassFactory::Instance()->GetClassesBySystemID(ESYSTEM_CLASS_OBJECT, classes);
-    std::set< std::pair<QString, QString> > cset;
-    for (int i = 0; i < classes.size(); i++)
-    {
-        QString category = classes[i]->Category();
-        QString toolClassName = ((CObjectClassDesc*)classes[i])->GetToolClassName();
-        if (!category.isEmpty())
-        {
-            cset.insert(std::pair<QString, QString>(category, toolClassName));
-        }
-    }
-    categoryToolClassNamePairs.clear();
-    categoryToolClassNamePairs.reserve(cset.size());
-    for (std::set< std::pair<QString, QString> >::iterator cit = cset.begin(); cit != cset.end(); ++cit)
-    {
-        categoryToolClassNamePairs.push_back(*cit);
-    }
-}
-
-void CObjectManager::GetClassTypes(const QString& category, QStringList& types)
-{
-    std::vector<IClassDesc*> classes;
-    CClassFactory::Instance()->GetClassesBySystemID(ESYSTEM_CLASS_OBJECT, classes);
-    for (int i = 0; i < classes.size(); i++)
-    {
-        QString cat = classes[i]->Category();
-        if (QString::compare(cat, category, Qt::CaseInsensitive) == 0 && classes[i]->IsEnabled())
-        {
-            types.push_back(classes[i]->ClassName());
-        }
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2124,181 +1013,6 @@ void CObjectManager::RegisterCVars()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CObjectManager::Serialize(XmlNodeRef& xmlNode, bool bLoading, int flags)
-{
-    if (!xmlNode)
-    {
-        return;
-    }
-
-    if (bLoading)
-    {
-        m_loadedObjects = 0;
-
-        if (flags == SERIALIZE_ONLY_NOTSHARED)
-        {
-            DeleteNotSharedObjects();
-        }
-        else if (flags == SERIALIZE_ONLY_SHARED)
-        {
-            DeleteSharedObjects();
-        }
-        else
-        {
-            DeleteAllObjects();
-        }
-
-
-        XmlNodeRef root = xmlNode->findChild("Objects");
-
-        int totalObjects = 0;
-
-        if (root)
-        {
-            root->getAttr("NumObjects", totalObjects);
-        }
-
-
-        StartObjectsLoading(totalObjects);
-
-        CObjectArchive ar(this, xmlNode, true);
-
-        // Loading.
-        if (root)
-        {
-            ar.node = root;
-            LoadObjects(ar, false);
-        }
-        EndObjectsLoading();
-    }
-    else
-    {
-        // Saving.
-        XmlNodeRef root = xmlNode->newChild("Objects");
-
-        CObjectArchive ar(this, root, false);
-
-        // Save all objects to XML.
-        for (Objects::iterator it = m_objects.begin(); it != m_objects.end(); ++it)
-        {
-            CBaseObject* obj = it->second;
-
-            if (obj->CheckFlags(OBJFLAG_DONT_SAVE))
-            {
-                continue;
-            }
-
-            if ((flags == SERIALIZE_ONLY_SHARED) && !obj->CheckFlags(OBJFLAG_SHARED))
-            {
-                continue;
-            }
-            else if ((flags == SERIALIZE_ONLY_NOTSHARED) && obj->CheckFlags(OBJFLAG_SHARED))
-            {
-                continue;
-            }
-
-            XmlNodeRef objNode = root->newChild("Object");
-            ar.node = objNode;
-            obj->Serialize(ar);
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::LoadObjects(CObjectArchive& objectArchive, bool bSelect)
-{
-    m_bLoadingObjects = true;
-
-    XmlNodeRef objectsNode = objectArchive.node;
-    int numObjects = objectsNode->getChildCount();
-    for (int i = 0; i < numObjects; i++)
-    {
-        objectArchive.node = objectsNode->getChild(i);
-        CBaseObject* obj = objectArchive.LoadObject(objectsNode->getChild(i));
-        if (obj && bSelect)
-        {
-            SelectObject(obj);
-        }
-    }
-    EndObjectsLoading(); // End progress bar, here, Resolve objects have his own.
-    objectArchive.ResolveObjects();
-
-    InvalidateVisibleList();
-
-    m_bLoadingObjects = false;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::Export(const QString& levelPath, XmlNodeRef& rootNode, bool onlyShared)
-{
-    // Clear export files.
-    QFile::remove(QStringLiteral("%1TagPoints.ini").arg(levelPath));
-    QFile::remove(QStringLiteral("%1Volumes.ini").arg(levelPath));
-
-    // Save all objects to XML.
-    for (Objects::iterator it = m_objects.begin(); it != m_objects.end(); ++it)
-    {
-        CBaseObject* obj = it->second;
-        // Export Only shared objects.
-        if ((obj->CheckFlags(OBJFLAG_SHARED) && onlyShared) ||
-            (!obj->CheckFlags(OBJFLAG_SHARED) && !onlyShared))
-        {
-            obj->Export(levelPath, rootNode);
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::ExportEntities(XmlNodeRef& rootNode)
-{
-    // Save all objects to XML.
-    for (Objects::iterator it = m_objects.begin(); it != m_objects.end(); ++it)
-    {
-        CBaseObject* obj = it->second;
-        if (qobject_cast<CEntityObject*>(obj))
-        {
-            obj->Export("", rootNode);
-        }
-    }
-}
-
-void CObjectManager::DeleteNotSharedObjects()
-{
-    TBaseObjects objects;
-    GetAllObjects(objects);
-    for (int i = 0; i < objects.size(); i++)
-    {
-        CBaseObject* obj = objects[i];
-        if (!obj->CheckFlags(OBJFLAG_SHARED))
-        {
-            DeleteObject(obj);
-        }
-    }
-}
-
-void CObjectManager::DeleteSharedObjects()
-{
-    TBaseObjects objects;
-    GetAllObjects(objects);
-    for (int i = 0; i < objects.size(); i++)
-    {
-        CBaseObject* obj = objects[i];
-        if (obj->CheckFlags(OBJFLAG_SHARED))
-        {
-            DeleteObject(obj);
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-IObjectSelectCallback* CObjectManager::SetSelectCallback(IObjectSelectCallback* callback)
-{
-    IObjectSelectCallback* prev = m_selectCallback;
-    m_selectCallback = callback;
-    return prev;
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CObjectManager::InvalidateVisibleList()
 {
     if (m_isUpdateVisibilityList)
@@ -2340,30 +1054,9 @@ void CObjectManager::UpdateVisibilityList()
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CObjectManager::ConvertToType(CBaseObject* pObject, const QString& typeName)
-{
-    QString message = QString("Convert ") + pObject->GetName() + " to " + typeName;
-    CUndo undo(message.toUtf8().data());
-
-    CBaseObjectPtr pNewObject = GetIEditor()->NewObject(typeName.toUtf8().data());
-    if (pNewObject)
-    {
-        if (pNewObject->ConvertFromObject(pObject))
-        {
-            DeleteObject(pObject);
-            return true;
-        }
-        DeleteObject(pNewObject);
-    }
-
-    Log((message + " is failed.").toUtf8().data());
-    return false;
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CObjectManager::SetObjectSelected(CBaseObject* pObject, bool bSelect)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
     // Only select/unselect once.
     if ((pObject->IsSelected() && bSelect) || (!pObject->IsSelected() && !bSelect))
     {
@@ -2382,75 +1075,12 @@ void CObjectManager::SetObjectSelected(CBaseObject* pObject, bool bSelect)
 
     if (bSelect && !GetIEditor()->GetTransformManipulator())
     {
-        if (CAxisGizmo::GetGlobalAxisGizmoCount() < gSettings.gizmo.axisGizmoMaxCount)
+        if (CAxisGizmo::GetGlobalAxisGizmoCount() < 1 /*legacy axisGizmoMaxCount*/)
         {
             // Create axis gizmo for this object.
             m_gizmoManager->AddGizmo(new CAxisGizmo(pObject));
         }
     }
-
-    if (bSelect)
-    {
-        NotifyObjectListeners(pObject, CBaseObject::ON_SELECT);
-    }
-    else
-    {
-        NotifyObjectListeners(pObject, CBaseObject::ON_UNSELECT);
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::HideTransformManipulators()
-{
-    m_gizmoManager->DeleteAllTransformManipulators();
-}
-
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::AddObjectEventListener(EventListener* listener)
-{
-    stl::push_back_unique(m_objectEventListeners, listener);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::RemoveObjectEventListener(EventListener* listener)
-{
-    stl::find_and_erase(m_objectEventListeners, listener);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::NotifyObjectListeners(CBaseObject* pObject, CBaseObject::EObjectListenerEvent event)
-{
-    std::list<EventListener*>::iterator next;
-    for (std::list<EventListener*>::iterator it = m_objectEventListeners.begin(); it != m_objectEventListeners.end(); it = next)
-    {
-        next = it;
-        ++next;
-        // Call listener callback.
-        (*it)->OnObjectEvent(pObject, event);
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::StartObjectsLoading(int numObjects)
-{
-    if (m_pLoadProgress)
-    {
-        return;
-    }
-    m_pLoadProgress = new CWaitProgress("Loading Objects");
-    m_totalObjectsToLoad = numObjects;
-    m_loadedObjects = 0;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::EndObjectsLoading()
-{
-    if (m_pLoadProgress)
-    {
-        delete m_pLoadProgress;
-    }
-    m_pLoadProgress = nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2496,153 +1126,6 @@ bool CObjectManager::IsLightClass(CBaseObject* pObject)
     }
 
     return false;
-}
-
-void CObjectManager::FindAndRenameProperty2(const char* property2Name, const QString& oldValue, const QString& newValue)
-{
-    CBaseObjectsArray objects;
-    GetObjects(objects);
-
-    for (size_t i = 0, n = objects.size(); i < n; ++i)
-    {
-        CBaseObject* pObject = objects[i];
-        if (qobject_cast<CEntityObject*>(pObject))
-        {
-            CEntityObject* pEntity = static_cast<CEntityObject*>(pObject);
-            CVarBlock* pProperties2 = pEntity->GetProperties2();
-            if (pProperties2)
-            {
-                IVariable* pVariable = pProperties2->FindVariable(property2Name);
-                if (pVariable)
-                {
-                    QString sValue;
-                    pVariable->Get(sValue);
-                    if (sValue == oldValue)
-                    {
-                        pEntity->StoreUndo("Rename Property2");
-
-                        pVariable->Set(newValue);
-                    }
-                }
-            }
-        }
-    }
-}
-
-void CObjectManager::FindAndRenameProperty2If(const char* property2Name, const QString& oldValue, const QString& newValue, const char* otherProperty2Name, const QString& otherValue)
-{
-    CBaseObjectsArray objects;
-    GetObjects(objects);
-
-    for (size_t i = 0, n = objects.size(); i < n; ++i)
-    {
-        CBaseObject* pObject = objects[i];
-        if (qobject_cast<CEntityObject*>(pObject))
-        {
-            CEntityObject* pEntity = static_cast<CEntityObject*>(pObject);
-            CVarBlock* pProperties2 = pEntity->GetProperties2();
-            if (pProperties2)
-            {
-                IVariable* pVariable      = pProperties2->FindVariable(property2Name);
-                IVariable* pOtherVariable = pProperties2->FindVariable(otherProperty2Name);
-                if (pVariable && pOtherVariable)
-                {
-                    QString sValue;
-                    pVariable->Get(sValue);
-
-                    QString sOtherValue;
-                    pOtherVariable->Get(sOtherValue);
-
-                    if ((sValue == oldValue) && (sOtherValue == otherValue))
-                    {
-                        pEntity->StoreUndo("Rename Property2 If");
-
-                        pVariable->Set(newValue);
-                    }
-                }
-            }
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::HitTestObjectAgainstRect(CBaseObject* pObj, CViewport* view, HitContext hc, std::vector<GUID>& guids)
-{
-    if (!pObj->IsSelectable())
-    {
-        return;
-    }
-
-    AABB box;
-
-    // Retrieve world space bound box.
-    pObj->GetBoundBox(box);
-
-    // Check if object visible in viewport.
-    if (!view->IsBoundsVisible(box))
-    {
-        return;
-    }
-
-    if (pObj->HitTestRect(hc))
-    {
-        stl::push_back_unique(guids, pObj->GetId());
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::SelectObjectInRect(CBaseObject* pObj, CViewport* view, HitContext hc, bool bSelect)
-{
-    if (!pObj->IsSelectable())
-    {
-        return;
-    }
-
-    AABB box;
-
-    // Retrieve world space bound box.
-    pObj->GetBoundBox(box);
-
-    // Check if object visible in viewport.
-    if (!view->IsBoundsVisible(box))
-    {
-        return;
-    }
-
-    if (pObj->HitTestRect(hc))
-    {
-        if (bSelect)
-        {
-            SelectObject(pObj);
-        }
-        else
-        {
-            UnselectObject(pObj);
-        }
-    }
-}
-
-void CObjectManager::EnteredComponentMode(const AZStd::vector<AZ::Uuid>& /*componentModeTypes*/)
-{
-    // hide current gizmo for entity (translate/rotate/scale)
-    IGizmoManager* gizmoManager = GetGizmoManager();
-    const size_t gizmoCount = static_cast<size_t>(gizmoManager->GetGizmoCount());
-    for (size_t i = 0; i < gizmoCount; ++i)
-    {
-        gizmoManager->RemoveGizmo(gizmoManager->GetGizmoByIndex(i));
-    }
-}
-
-void CObjectManager::LeftComponentMode(const AZStd::vector<AZ::Uuid>& /*componentModeTypes*/)
-{
-    // show translate/rotate/scale gizmo again
-    if (IGizmoManager* gizmoManager = GetGizmoManager())
-    {
-        if (CBaseObject* selectedObject = GetIEditor()->GetSelectedObject())
-        {
-            gizmoManager->AddGizmo(new CAxisGizmo(selectedObject));
-        }
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2722,93 +1205,6 @@ namespace
             }
             GetIEditor()->GetObjectManager()->SelectObject(pObject);
         }
-    }
-
-    bool PyIsObjectHidden(const char* objName)
-    {
-        CBaseObject* pObject =  GetIEditor()->GetObjectManager()->FindObject(objName);
-        if (!pObject)
-        {
-            throw std::logic_error((QString("\"") + objName + "\" is an invalid object name.").toUtf8().data());
-        }
-        return pObject->IsHidden();
-    }
-
-    void PyHideAllObjects()
-    {
-        CBaseObjectsArray baseObjects;
-        GetIEditor()->GetObjectManager()->GetObjects(baseObjects);
-
-        if (baseObjects.size() <= 0)
-        {
-            throw std::logic_error("Objects not found.");
-        }
-
-        CUndo undo("Hide All Objects");
-        for (int i = 0; i < baseObjects.size(); i++)
-        {
-            GetIEditor()->GetObjectManager()->HideObject(baseObjects[i], true);
-        }
-    }
-
-    void PyUnHideAllObjects()
-    {
-        CUndo undo("Unhide All Objects");
-        GetIEditor()->GetObjectManager()->UnhideAll();
-    }
-
-    void PyHideObject(const char* objName)
-    {
-        CUndo undo("Hide Object");
-
-        CBaseObject* pObject = GetIEditor()->GetObjectManager()->FindObject(objName);
-        if (pObject)
-        {
-            GetIEditor()->GetObjectManager()->HideObject(pObject, true);
-        }
-    }
-
-    void PyUnhideObject(const char* objName)
-    {
-        CUndo undo("Unhide Object");
-
-        CBaseObject* pObject = GetIEditor()->GetObjectManager()->FindObject(objName);
-        if (pObject)
-        {
-            GetIEditor()->GetObjectManager()->HideObject(pObject, false);
-        }
-    }
-
-    void PyFreezeObject(const char* objName)
-    {
-        CUndo undo("Freeze Object");
-
-        CBaseObject* pObject = GetIEditor()->GetObjectManager()->FindObject(objName);
-        if (pObject)
-        {
-            GetIEditor()->GetObjectManager()->FreezeObject(pObject, true);
-        }
-    }
-
-    void PyUnfreezeObject(const char* objName)
-    {
-        CUndo undo("Unfreeze Object");
-
-        CBaseObject* pObject = GetIEditor()->GetObjectManager()->FindObject(objName);
-        if (pObject)
-        {
-            GetIEditor()->GetObjectManager()->FreezeObject(pObject, false);
-        }
-    }
-
-    bool PyIsObjectFrozen(const char* objName)
-    {
-        CBaseObject* pObject = GetIEditor()->GetObjectManager()->FindObject(objName);
-        if (!pObject)
-        {
-            throw std::logic_error((QString("\"") + objName + "\" is an invalid object name.").toUtf8().data());
-        }
-        return pObject->IsFrozen();
     }
 
     void PyDeleteObject(const char* objName)
@@ -2897,17 +1293,6 @@ namespace
             throw std::logic_error((QString("\"") + pName + "\" is an invalid object.").toUtf8().data());
         }
         Vec3 position = pObject->GetPos();
-        return AZ::Vector3(position.x, position.y, position.z);
-    }
-
-    AZ::Vector3 PyGetWorldObjectPosition(const char* pName)
-    {
-        CBaseObject* pObject = GetIEditor()->GetObjectManager()->FindObject(pName);
-        if (!pObject)
-        {
-            throw std::logic_error((QString("\"") + pName + "\" is an invalid object.").toUtf8().data());
-        }
-        Vec3 position = pObject->GetWorldPos();
         return AZ::Vector3(position.x, position.y, position.z);
     }
 
@@ -3009,16 +1394,6 @@ namespace AzToolsFramework
             addLegacyGeneral(behaviorContext->Method("get_selection_center", PyGetSelectionCenter, nullptr, "Returns the center point of the selection group."));
             addLegacyGeneral(behaviorContext->Method("get_selection_aabb", PyGetSelectionAABB, nullptr, "Returns the aabb of the selection group."));
 
-            addLegacyGeneral(behaviorContext->Method("hide_object", PyHideObject, nullptr, "Hides a specified object."));
-            addLegacyGeneral(behaviorContext->Method("is_object_hidden", PyIsObjectHidden, nullptr, "Checks if object is hidden and returns a bool value."));
-            addLegacyGeneral(behaviorContext->Method("unhide_object", PyUnhideObject, nullptr, "Unhides a specified object."));
-            addLegacyGeneral(behaviorContext->Method("hide_all_objects", PyHideAllObjects, nullptr, "Hides all objects."));
-            addLegacyGeneral(behaviorContext->Method("unhide_all_objects", PyUnHideAllObjects, nullptr, "Unhides all objects."));
-
-            addLegacyGeneral(behaviorContext->Method("freeze_object", PyFreezeObject, nullptr, "Freezes a specified object."));
-            addLegacyGeneral(behaviorContext->Method("is_object_frozen", PyIsObjectFrozen, nullptr, "Checks if object is frozen and returns a bool value."));
-            addLegacyGeneral(behaviorContext->Method("unfreeze_object", PyUnfreezeObject, nullptr, "Unfreezes a specified object."));
-
             addLegacyGeneral(behaviorContext->Method("delete_object", PyDeleteObject, nullptr, "Deletes a specified object."));
             addLegacyGeneral(behaviorContext->Method("delete_selected", PyDeleteSelected, nullptr, "Deletes selected object(s)."));
 
@@ -3036,6 +1411,4 @@ namespace AzToolsFramework
 
         }
     }
-}
-
-
+} // namespace AzToolsFramework

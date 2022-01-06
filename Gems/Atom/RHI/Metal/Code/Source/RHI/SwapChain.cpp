@@ -6,9 +6,10 @@
  *
  */
 
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/string.h>
-#include <Atom/RHI/CpuProfiler.h>
+#include <AzFramework/Windowing/WindowBus.h>
 #include <RHI/Device.h>
 #include <RHI/Image.h>
 #include <RHI/SwapChain.h>
@@ -74,21 +75,16 @@ namespace AZ
                 AddSubView();
             }
 
-            m_refreshRate = Platform::GetRefreshRate();
-            
-            //Assume 60hz if 0 is returned.
-            //Internal OSX displays have 'flexible' refresh rates, with a max of 60Hz - but report 0hz
-            if (m_refreshRate < 0.1f)
-            {
-                m_refreshRate = 60.0f;
-            }
-            
             m_drawables.resize(descriptor.m_dimensions.m_imageCount);
 
             if (nativeDimensions)
             {
                 *nativeDimensions = descriptor.m_dimensions;
             }
+
+            AzFramework::WindowRequestBus::EventResult(
+                m_refreshRate, m_nativeWindow, &AzFramework::WindowRequestBus::Events::GetDisplayRefreshRate);
+
             return RHI::ResultCode::Success;
         }
 
@@ -127,9 +123,6 @@ namespace AZ
 
         RHI::ResultCode SwapChain::InitImageInternal(const InitImageRequest& request)
         {
-            const RHI::SwapChainDescriptor& descriptor = GetDescriptor();
-            Device& device = GetDevice();
-            
             Name name(AZStd::string::format("SwapChainImage_%d", request.m_imageIndex));
             Image& image = static_cast<Image&>(*request.m_image);
             
@@ -160,7 +153,10 @@ namespace AZ
             const uint32_t currentImageIndex = GetCurrentImageIndex();
             
             //Preset the drawable
-            Platform::PresentInternal(m_mtlCommandBuffer, m_drawables[currentImageIndex], GetDescriptor().m_verticalSyncInterval, m_refreshRate);
+            Platform::PresentInternal(
+                m_mtlCommandBuffer,
+                m_drawables[currentImageIndex], GetDescriptor().m_verticalSyncInterval,
+                m_refreshRate);
             
             [m_drawables[currentImageIndex] release];
             m_drawables[currentImageIndex] = nil;
@@ -196,7 +192,7 @@ namespace AZ
     
         id<MTLTexture> SwapChain::RequestDrawable(bool isFrameCaptureEnabled)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "SwapChain::RequestDrawable");
+            AZ_PROFILE_SCOPE(RHI, "SwapChain::RequestDrawable");
             m_metalView.metalLayer.framebufferOnly = !isFrameCaptureEnabled;
             const uint32_t currentImageIndex = GetCurrentImageIndex();
             if(m_drawables[currentImageIndex])

@@ -86,6 +86,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         FILES_CMAKE
             atomlyintegration_commonfeatures_editor_files.cmake
             ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+        PLATFORM_INCLUDE_FILES
+            ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
                 .
@@ -109,12 +111,15 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         RUNTIME_DEPENDENCIES
             Gem::Atom_RPI.Editor
             Gem::Atom_Feature_Common.Editor
+            Gem::AtomToolsFramework.Editor
+            Legacy::EditorCommon
     )
 
     # The AtomLyIntegration_CommonFeatures.Editor module is used for Builders and Tools
     ly_create_alias(NAME AtomLyIntegration_CommonFeatures.Builders NAMESPACE Gem
         TARGETS
             Gem::AtomLyIntegration_CommonFeatures.Editor
+            Gem::Atom_Feature_Common.Builders
             Gem::Atom_RPI.Builders
             Gem::GradientSignal.Builders
     )
@@ -123,27 +128,10 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::AtomLyIntegration_CommonFeatures.Editor
             Gem::GradientSignal.Tools
     )
-
-    # AtomLyIntergration_CommonFeatures gem targets are required as part of the Editor and AssetProcessor
-    # due to the AZ::Render::EditorDirectionalLightComponent, AZ::Render::EditorMeshComponent,
-    # AZ::Render::EditorGridComponent, AZ::Render::EditorHDRiSkyboxComponent,
-    # AZ::Render::EditorImageBasedLightComponent being saved as part of the DefaultLevel.prefab
-    ly_enable_gems(GEMS AtomLyIntegration_CommonFeatures VARIANTS Tools
-        TARGETS Editor)
-    ly_enable_gems(GEMS AtomLyIntegration_CommonFeatures VARIANTS Builders
-        TARGETS AssetBuilder AssetProcessor AssetProcessorBatch)
 endif()
 
-
-# Added dependencies to the Client and Server Launchers
-get_property(LY_PROJECTS_TARGET_NAME GLOBAL PROPERTY LY_PROJECTS_TARGET_NAME)
-foreach(project_name IN LISTS LY_PROJECTS_TARGET_NAME)
-    # Add gem as a dependency of the Clients Launcher
-    ly_enable_gems(PROJECT_NAME ${project_name} GEMS AtomLyIntegration_CommonFeatures VARIANTS Clients
-        TARGETS ${project_name}.GameLauncher)
-    # Add gem as a dependency of the Servers Launcher
-    if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
-        ly_enable_gems(PROJECT_NAME ${project_name} GEMS AtomLyIntegration_CommonFeatures VARIANTS Servers
-            TARGETS ${project_name}.ServerLauncher)
-    endif()
-endforeach()
+# AtomLyIntegration_CommonFeatures gem targets are required as part of the Editor and AssetProcessor
+# due to the AZ::Render::EditorDirectionalLightComponent, AZ::Render::EditorMeshComponent,
+# AZ::Render::EditorGridComponent, AZ::Render::EditorHDRiSkyboxComponent,
+# AZ::Render::EditorImageBasedLightComponent being saved as part of the DefaultLevel.prefab
+ly_enable_gems(GEMS AtomLyIntegration_CommonFeatures)

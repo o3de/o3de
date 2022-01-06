@@ -73,15 +73,13 @@ namespace AZ
                 return false;
             }
 
-            AZ_Assert(m_pipeline->GetScene(), "EyeAdaptationPass's Pipeline does not have a valid scene pointer");
-
             AZ::RPI::Scene* scene = GetScene();
             bool enabled = false;
 
             if (scene)
             {
                 PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<PostProcessFeatureProcessor>();
-                AZ::RPI::ViewPtr view = GetView();
+                AZ::RPI::ViewPtr view = GetRenderPipeline()->GetDefaultView();
                 if (fp)
                 {
                     PostProcessSettings* postProcessSettings = fp->GetLevelSettingsFromView(view);
@@ -110,7 +108,7 @@ namespace AZ
                 PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<PostProcessFeatureProcessor>();
                 if (fp)
                 {
-                    AZ::RPI::ViewPtr view = GetView();
+                    AZ::RPI::ViewPtr view = GetRenderPipeline()->GetDefaultView();
                     PostProcessSettings* postProcessSettings = fp->GetLevelSettingsFromView(view);
                     if (postProcessSettings)
                     {

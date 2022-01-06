@@ -26,7 +26,7 @@ namespace
 {
     //! Set the values for an image vertex
     //! This helper function is used so that we only have to initialize textIndex and texHasColorChannel in one place
-    void SetVertex(SVF_P2F_C4B_T2F_F4B& vert, const Vec2& pos, uint32 color, const Vec2& uv)
+    void SetVertex(LyShine::UiPrimitiveVertex& vert, const Vec2& pos, uint32 color, const Vec2& uv)
     {
         vert.xy = pos;
         vert.color.dcolor = color;
@@ -39,7 +39,7 @@ namespace
 
     //! Set the values for an image vertex
     //! This version of the helper function takes AZ vectors
-    void SetVertex(SVF_P2F_C4B_T2F_F4B& vert, const AZ::Vector2& pos, uint32 color, const AZ::Vector2& uv)
+    void SetVertex(LyShine::UiPrimitiveVertex& vert, const AZ::Vector2& pos, uint32 color, const AZ::Vector2& uv)
     {
         SetVertex(vert, Vec2(pos.GetX(), pos.GetY()), color, Vec2(uv.GetX(), uv.GetY()));
     }
@@ -97,7 +97,7 @@ void UiImageSequenceComponent::Render(LyShine::IRenderGraph* renderGraph)
         return;
     }
 
-    CSprite* sprite = dynamic_cast<CSprite*>(m_spriteList[m_sequenceIndex]);
+    ISprite* sprite = m_spriteList[m_sequenceIndex];
 
     // get fade value (tracked by UiRenderer) and compute the desired alpha for the image
     float fade = renderGraph->GetAlphaFade();
@@ -105,7 +105,6 @@ void UiImageSequenceComponent::Render(LyShine::IRenderGraph* renderGraph)
 
     if (m_isRenderCacheDirty)
     {
-        const int defaultIndex = 0;
         uint32 packedColor = 0xffffffff;
         switch (m_imageType)
         {
@@ -147,7 +146,7 @@ void UiImageSequenceComponent::Render(LyShine::IRenderGraph* renderGraph)
         if (m_cachedPrimitive.m_vertices[0].color.a != desiredPackedAlpha)
         {
             // go through all the cached vertices and update the alpha values
-            UCol desiredPackedColor = m_cachedPrimitive.m_vertices[0].color;
+            LyShine::UCol desiredPackedColor = m_cachedPrimitive.m_vertices[0].color;
             desiredPackedColor.a = desiredPackedAlpha;
             for (int i = 0; i < m_cachedPrimitive.m_numVertices; ++i)
             {
@@ -166,12 +165,8 @@ void UiImageSequenceComponent::Render(LyShine::IRenderGraph* renderGraph)
         LyShine::BlendMode blendMode = LyShine::BlendMode::Normal;
 
         // Add the quad to the render graph
-        LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph);
-        if (lyRenderGraph)
-        {
-            lyRenderGraph->AddPrimitiveAtom(&m_cachedPrimitive, image,
-                isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
-        }
+        renderGraph->AddPrimitive(&m_cachedPrimitive, image,
+            isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
     }
 }
 
@@ -541,8 +536,7 @@ void UiImageSequenceComponent::RenderSingleQuad(const AZ::Vector2* positions, co
     // points are a clockwise quad
     IDraw2d::Rounding pixelRounding = IsPixelAligned() ? IDraw2d::Rounding::Nearest : IDraw2d::Rounding::None;
     const uint32 numVertices = 4;
-    SVF_P2F_C4B_T2F_F4B vertices[numVertices];
-    const float z = 1.0f;   // depth test disabled, if writing Z this will write at far plane
+    LyShine::UiPrimitiveVertex vertices[numVertices];
     for (int i = 0; i < numVertices; ++i)
     {
         AZ::Vector2 roundedPoint = Draw2dHelper::RoundXY(positions[i], pixelRounding);
@@ -556,12 +550,12 @@ void UiImageSequenceComponent::RenderSingleQuad(const AZ::Vector2* positions, co
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiImageSequenceComponent::RenderTriangleList(const SVF_P2F_C4B_T2F_F4B* vertices, const uint16* indices, int numVertices, int numIndices)
+void UiImageSequenceComponent::RenderTriangleList(const LyShine::UiPrimitiveVertex* vertices, const uint16* indices, int numVertices, int numIndices)
 {
     if (numVertices != m_cachedPrimitive.m_numVertices)
     {
         ClearCachedVertices();
-        m_cachedPrimitive.m_vertices = new SVF_P2F_C4B_T2F_F4B[numVertices];
+        m_cachedPrimitive.m_vertices = new LyShine::UiPrimitiveVertex[numVertices];
         m_cachedPrimitive.m_numVertices = numVertices;
     }
 
@@ -572,7 +566,7 @@ void UiImageSequenceComponent::RenderTriangleList(const SVF_P2F_C4B_T2F_F4B* ver
         m_cachedPrimitive.m_numIndices = numIndices;
     }
 
-    memcpy(m_cachedPrimitive.m_vertices, vertices, sizeof(SVF_P2F_C4B_T2F_F4B) * numVertices);
+    memcpy(m_cachedPrimitive.m_vertices, vertices, sizeof(LyShine::UiPrimitiveVertex) * numVertices);
     memcpy(m_cachedPrimitive.m_indices, indices, sizeof(uint16) * numIndices);
 
     m_isRenderCacheDirty = false;

@@ -19,7 +19,7 @@ namespace ScriptCanvas
     {
         using namespace Data;
         using namespace MathNodeUtilities;
-        static const char* k_categoryName = "Math/OBB";
+        static constexpr const char* k_categoryName = "Math/OBB";
 
         AZ_INLINE OBBType FromAabb(const AABBType& source)
         {

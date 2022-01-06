@@ -36,12 +36,23 @@ using namespace UnitTestInternal;
 /**
  * Validate a vector for certain number of elements.
  */
-#define AZ_TEST_VALIDATE_VECTOR(_Vector, _NumElements)                                                        \
-    EXPECT_TRUE(_Vector.validate());                                                                       \
-    EXPECT_EQ(_NumElements, _Vector.size());                                                           \
-    EXPECT_TRUE((_NumElements > 0) ? !_Vector.empty() : _Vector.empty());                                  \
-    EXPECT_TRUE((_NumElements > 0) ? _Vector.capacity() >= _NumElements : true);                           \
-    EXPECT_TRUE((_NumElements > 0) ? _Vector.begin() != _Vector.end() : _Vector.begin() == _Vector.end()); \
+#define AZ_TEST_VALIDATE_VECTOR(_Vector, _NumElements)  \
+    EXPECT_NE(_NumElements, 0);                         \
+    EXPECT_TRUE(_Vector.validate());                    \
+    EXPECT_EQ(_NumElements, _Vector.size());            \
+    EXPECT_TRUE(!_Vector.empty());                      \
+    EXPECT_TRUE(_Vector.capacity() >= _NumElements);    \
+    EXPECT_TRUE(_Vector.begin() != _Vector.end());      \
+    EXPECT_NE(nullptr, _Vector.data())
+
+ /**
+  * Validate a vector for 0 number of elements. The above macro creates expressions that are always true for size == 0
+  */
+#define AZ_TEST_VALIDATE_VECTOR_0(_Vector)          \
+    EXPECT_TRUE(_Vector.validate());                \
+    EXPECT_EQ(0, _Vector.size());        \
+    EXPECT_TRUE(_Vector.empty());                   \
+    EXPECT_TRUE(_Vector.begin() == _Vector.end());  \
     EXPECT_NE(nullptr, _Vector.data())
 
 namespace UnitTest
@@ -312,7 +323,7 @@ namespace UnitTest
 
         // erase
         int_vector1.erase(int_vector1.begin(), int_vector1.end());
-        AZ_TEST_VALIDATE_VECTOR(int_vector1, 0); // Zero elements but valid capacity.
+        AZ_TEST_VALIDATE_VECTOR_0(int_vector1); // Zero elements but valid capacity.
 
         int_vector1.push_back(10);
         int_vector1.push_back(20);
@@ -324,11 +335,11 @@ namespace UnitTest
 
         // clear
         int_vector1.clear();
-        AZ_TEST_VALIDATE_VECTOR(int_vector1, 0); // Zero elements but valid capacity.
+        AZ_TEST_VALIDATE_VECTOR_0(int_vector1); // Zero elements but valid capacity.
 
         // swap
         int_vector1.swap(int_vector);
-        AZ_TEST_VALIDATE_VECTOR(int_vector, 0);
+        AZ_TEST_VALIDATE_VECTOR_0(int_vector);
         AZ_TEST_VALIDATE_VECTOR(int_vector1, 33);
         AZ_TEST_ASSERT(int_vector1.front() == 55);
 
@@ -524,11 +535,11 @@ namespace UnitTest
 
         // Default vector (integral type).
         fixed_vector<int, 50> int_vector_default;
-        AZ_TEST_VALIDATE_VECTOR(int_vector_default, 0);
+        AZ_TEST_VALIDATE_VECTOR_0(int_vector_default);
 
         // Default vector (non-integral type).
         fixed_vector<MyClass, 10> myclass_vector_default;
-        AZ_TEST_VALIDATE_VECTOR(myclass_vector_default, 0);
+        AZ_TEST_VALIDATE_VECTOR_0(myclass_vector_default);
 
         // Create a vector (using fill ctor, with memset optimization to set the values)
         typedef fixed_vector<char, 10> char_10_type;
@@ -633,7 +644,7 @@ namespace UnitTest
 
         // erase
         int_vector1.erase(int_vector1.begin(), int_vector1.end());
-        AZ_TEST_VALIDATE_VECTOR(int_vector1, 0);
+        AZ_TEST_VALIDATE_VECTOR_0(int_vector1);
 
         int_vector1.push_back(10);
         int_vector1.push_back(20);
@@ -645,11 +656,11 @@ namespace UnitTest
 
         // clear
         int_vector1.clear();
-        AZ_TEST_VALIDATE_VECTOR(int_vector1, 0);
+        AZ_TEST_VALIDATE_VECTOR_0(int_vector1);
 
         // swap
         int_vector1.swap(int_vector);
-        AZ_TEST_VALIDATE_VECTOR(int_vector, 0);
+        AZ_TEST_VALIDATE_VECTOR_0(int_vector);
         AZ_TEST_VALIDATE_VECTOR(int_vector1, 33);
         AZ_TEST_ASSERT(int_vector1.front() == 55);
 
@@ -742,7 +753,7 @@ namespace UnitTest
 
     TEST_F(Arrays, FixedVectorCanCopyAndMoveWithDifferentCapacity)
     {
-        constexpr AZStd::fixed_vector<int, 32> sourceVector{ 1,2,3,4,5 };
+        AZStd::fixed_vector<int, 32> sourceVector{ 1,2,3,4,5 };
 
         AZStd::fixed_vector<int, 8> copyConstructVector{ sourceVector };
         EXPECT_EQ(sourceVector, copyConstructVector);
@@ -757,32 +768,63 @@ namespace UnitTest
 
         AZStd::fixed_vector<int, 16> moveAssignVector = AZStd::move(moveConstructVector);
 
-        constexpr AZStd::fixed_vector expectedVector{ 1,2,3,4,5,6 };
+        AZStd::fixed_vector expectedVector{ 1,2,3,4,5,6 };
         EXPECT_EQ(expectedVector, moveAssignVector);
     }
 
     TEST_F(Arrays, FixedVectorComparisonOperatorsSucceedAsExpected)
     {
-        constexpr AZStd::fixed_vector<int, 32> testVector{ 1,2,3,4,5 };
-        constexpr AZStd::fixed_vector<int, 32> equalVector{ 1,2,3,4,5 };
-        constexpr AZStd::fixed_vector<int, 32> notEqualVectorDifferentSize{ 1,2,3,4,5,6 };
-        constexpr AZStd::fixed_vector<int, 32> lessVector{ 1,2,3,4,4 };
-        constexpr AZStd::fixed_vector<int, 32> greaterVectorDifferentSize{ 1,2,3,4,5, 1 };
+        AZStd::fixed_vector<int, 32> testVector{ 1,2,3,4,5 };
+        AZStd::fixed_vector<int, 32> equalVector{ 1,2,3,4,5 };
+        AZStd::fixed_vector<int, 32> notEqualVectorDifferentSize{ 1,2,3,4,5,6 };
+        AZStd::fixed_vector<int, 32> lessVector{ 1,2,3,4,4 };
+        AZStd::fixed_vector<int, 32> greaterVectorDifferentSize{ 1,2,3,4,5, 1 };
 
-        static_assert(testVector == equalVector);
-        static_assert(testVector != notEqualVectorDifferentSize);
-        static_assert(testVector != lessVector);
-        static_assert(lessVector < testVector);
-        static_assert(lessVector < greaterVectorDifferentSize);
-        static_assert(lessVector <= lessVector);
-        static_assert(lessVector <= testVector);
-        static_assert(lessVector <= greaterVectorDifferentSize);
-        static_assert(testVector > lessVector);
-        static_assert(testVector > lessVector);
-        static_assert(notEqualVectorDifferentSize > testVector);
-        static_assert(testVector >= testVector);
-        static_assert(testVector >= lessVector);
-        static_assert(greaterVectorDifferentSize > lessVector);
+        EXPECT_EQ(testVector, equalVector);
+        EXPECT_NE(testVector, notEqualVectorDifferentSize);
+        EXPECT_NE(testVector, lessVector);
+        EXPECT_LT(lessVector, testVector);
+        EXPECT_LT(lessVector, greaterVectorDifferentSize);
+        EXPECT_LE(lessVector, lessVector);
+        EXPECT_LE(lessVector, testVector);
+        EXPECT_LE(lessVector, greaterVectorDifferentSize);
+        EXPECT_GT(testVector, lessVector);
+        EXPECT_GT(testVector, lessVector);
+        EXPECT_GT(notEqualVectorDifferentSize, testVector);
+        EXPECT_GE(testVector, testVector);
+        EXPECT_GE(testVector, lessVector);
+        EXPECT_GT(greaterVectorDifferentSize, lessVector);
+    }
+
+    TEST_F(Arrays, FixedVectorCXX20Erase_Succeeds)
+    {
+        // Erase 'l' from the phrase "Hello" World"
+        auto eraseTest = [](AZStd::initializer_list<char> testInit)
+        {
+            AZStd::fixed_vector<char, 16> testResult{ testInit };
+            AZStd::erase(testResult, 'l');
+            return testResult;
+        }({ 'H', 'e', 'l', 'l', 'o', 'W', 'o', 'r', 'l', 'd' });
+
+        constexpr AZStd::string_view expectedEraseString = "HeoWord";
+        AZStd::string_view testEraseString{ eraseTest.begin(), eraseTest.end() };
+        EXPECT_EQ(expectedEraseString, testEraseString);
+
+        // Use erase_if to erase both 'H' and 'e' from the remaining eraseTest string
+        auto eraseIfTest = [](const AZStd::fixed_vector<char, 16>& testVector)
+        {
+            AZStd::fixed_vector<char, 16> testResult{ testVector };
+            auto erasePredicate = [](char ch)
+            {
+                return ch == 'H' || ch == 'e';
+            };
+            AZStd::erase_if(testResult, erasePredicate);
+            return testResult;
+        }(testEraseString);
+
+        constexpr AZStd::string_view expectedEraseIfString = "oWord";
+        AZStd::string_view testEraseIfString{ eraseIfTest.begin(), eraseIfTest.end() };
+        EXPECT_EQ(expectedEraseIfString, testEraseIfString);
     }
 
     TEST_F(Arrays, VectorSwap)
@@ -813,7 +855,7 @@ namespace UnitTest
             {1, 2, 3, 4}
         };
         AZ_TEST_ASSERT(myArr.empty() == false);
-        AZ_TEST_ASSERT(myArr.data() != 0);
+        AZ_TEST_ASSERT(myArr.data() != nullptr);
         AZ_TEST_ASSERT(myArr.size() == 10);
         AZ_TEST_ASSERT(myArr.front() == 1);
         AZ_TEST_ASSERT(myArr.back() == 0);
@@ -963,7 +1005,7 @@ namespace UnitTest
         AZ_TEST_VALIDATE_VECTOR(deep_vec_2, 12);
 
         deep_vec_2.clear();
-        AZ_TEST_VALIDATE_VECTOR(deep_vec_2, 0);
+        AZ_TEST_VALIDATE_VECTOR_0(deep_vec_2);
     }
 #endif // AZ_UNIT_TEST_SKIP_STD_VECTOR_AND_ARRAY_TESTS
 

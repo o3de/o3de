@@ -15,7 +15,6 @@
 
 #include <AtomCore/Instance/InstanceDatabase.h>
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/CommandList.h>
 
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
@@ -28,9 +27,8 @@
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Scene.h>
 
+#include <Atom_Feature_Traits_Platform.h>
 #include <Atom/Feature/ImGui/SystemBus.h>
-
-#include <AzCore/Debug/EventTrace.h>
 
 namespace AZ
 {
@@ -38,7 +36,7 @@ namespace AZ
     {
         namespace
         {
-            static const char* PassName = "ImGuiPass";
+            [[maybe_unused]] static const char* PassName = "ImGuiPass";
             static const char* ImguiShaderFilePath = "Shaders/imgui/imgui.azshader";
         }
 
@@ -67,8 +65,10 @@ namespace AZ
 
         ImGuiPass::ImGuiPass(const RPI::PassDescriptor& descriptor)
             : Base(descriptor)
-            , AzFramework::InputChannelEventListener(AzFramework::InputChannelEventListener::GetPriorityUI())
-            , AzFramework::InputTextEventListener(AzFramework::InputTextEventListener::GetPriorityUI())
+            , AzFramework::InputChannelEventListener(AzFramework::InputChannelEventListener::GetPriorityDebugUI() - 1) // Give ImGui manager priority over the pass
+            , AzFramework::InputTextEventListener(AzFramework::InputTextEventListener::GetPriorityDebugUI() - 1) // Give ImGui manager priority over the pass
+            , m_tickHandlerFrameStart(*this)
+            , m_tickHandlerFrameEnd(*this)
         {
 
             const ImGuiPassData* imguiPassData = RPI::PassUtils::GetPassData<ImGuiPassData>(descriptor);
@@ -103,7 +103,6 @@ namespace AZ
             Init();
             ImGui::NewFrame();
 
-            TickBus::Handler::BusConnect();
             AzFramework::InputChannelEventListener::Connect();
             AzFramework::InputTextEventListener::Connect();
         }
@@ -128,7 +127,6 @@ namespace AZ
 
             AzFramework::InputTextEventListener::BusDisconnect();
             AzFramework::InputChannelEventListener::BusDisconnect();
-            TickBus::Handler::BusDisconnect();
         }
 
         ImGuiContext* ImGuiPass::GetContext()
@@ -141,12 +139,59 @@ namespace AZ
             m_drawData.push_back(drawData);
         }
 
-        void ImGuiPass::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint timePoint)
+        ImGuiPass::TickHandlerFrameStart::TickHandlerFrameStart(ImGuiPass& imGuiPass)
+            : m_imGuiPass(imGuiPass)
         {
-            auto imguiContextScope = ImguiContextScope(m_imguiContext);
+            TickBus::Handler::BusConnect();
+        }
+
+        int ImGuiPass::TickHandlerFrameStart::GetTickOrder()
+        {
+            return AZ::ComponentTickBus::TICK_PRE_RENDER;
+        }
+
+        void ImGuiPass::TickHandlerFrameStart::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint timePoint)
+        {
+            auto imguiContextScope = ImguiContextScope(m_imGuiPass.m_imguiContext);
+            ImGui::NewFrame();
 
             auto& io = ImGui::GetIO();
             io.DeltaTime = deltaTime;
+        }
+
+        ImGuiPass::TickHandlerFrameEnd::TickHandlerFrameEnd(ImGuiPass& imGuiPass)
+            : m_imGuiPass(imGuiPass)
+        {
+            TickBus::Handler::BusConnect();
+        }
+
+        int ImGuiPass::TickHandlerFrameEnd::GetTickOrder()
+        {
+            // ImGui::NewFrame() must be called (see ImGuiPass::TickHandlerFrameStart::OnTick) after populating
+            // ImGui::GetIO().NavInputs (see ImGuiPass::OnInputChannelEventFiltered), and paired with a call to
+            // ImGui::EndFrame() (see ImGuiPass::TickHandlerFrameEnd::OnTick); if this is not called explicitly
+            // then it will be called from inside ImGui::Render() (see ImGuiPass::SetupFrameGraphDependencies).
+            //
+            // ImGui::Render() gets called (indirectly) from OnSystemTick, so we cannot rely on it being paired
+            // with a matching call to ImGui::NewFrame() that gets called from OnTick, because OnSystemTick and
+            // OnTick can be called at different frequencies under some circumstances (namely from the editor).
+            //
+            // To account for this we must explicitly call ImGui::EndFrame() once a frame from OnTick to ensure
+            // that every call to ImGui::NewFrame() has been matched with a call to ImGui::EndFrame(), but only
+            // after ImGui::Render() has had the chance first (if so calling ImGui::EndFrame() again is benign).
+            //
+            // Because ImGui::Render() gets called (indirectly) from OnSystemTick, which usually happens at the
+            // start of every frame, we give TickHandlerFrameEnd::OnTick() the order of TICK_FIRST such that it
+            // will be called first on the regular tick bus, which is invoked immediately after the system tick.
+            //
+            // So while returning TICK_FIRST is incredibly counter-intuitive, hopefully that all explains why.
+            return AZ::ComponentTickBus::TICK_FIRST;
+        }
+
+        void ImGuiPass::TickHandlerFrameEnd::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint timePoint)
+        {
+            auto imguiContextScope = ImguiContextScope(m_imGuiPass.m_imguiContext);
+            ImGui::EndFrame();
         }
 
         bool ImGuiPass::OnInputTextEventFiltered(const AZStd::string& textUTF8)
@@ -155,11 +200,6 @@ namespace AZ
             auto& io = ImGui::GetIO();
             io.AddInputCharactersUTF8(textUTF8.c_str());
             return io.WantTextInput;
-        }
-
-        AZ::s32 ImGuiPass::GetPriority() const
-        {
-            return AzFramework::InputChannelEventListener::GetPriorityUI();
         }
 
         bool ImGuiPass::OnInputChannelEventFiltered(const AzFramework::InputChannel& inputChannel)
@@ -396,12 +436,12 @@ namespace AZ
         {
             auto imguiContextScope = ImguiContextScope(m_imguiContext);
 
-            m_viewportWidth = params.m_viewportState.m_maxX - params.m_viewportState.m_minX;
-            m_viewportHeight = params.m_viewportState.m_maxY - params.m_viewportState.m_minY;
+            m_viewportWidth = static_cast<uint32_t>(params.m_viewportState.m_maxX - params.m_viewportState.m_minX);
+            m_viewportHeight = static_cast<uint32_t>(params.m_viewportState.m_maxY - params.m_viewportState.m_minY);
 
             auto& io = ImGui::GetIO();
-            io.DisplaySize.x = AZStd::max<float>(1.0f, m_viewportWidth);
-            io.DisplaySize.y = AZStd::max<float>(1.0f, m_viewportHeight);
+            io.DisplaySize.x = AZStd::max<float>(1.0f, static_cast<float>(m_viewportWidth));
+            io.DisplaySize.y = AZStd::max<float>(1.0f, static_cast<float>(m_viewportHeight));
 
             Matrix4x4 projectionMatrix =
                 Matrix4x4::CreateFromRows(
@@ -419,7 +459,11 @@ namespace AZ
 
         void ImGuiPass::Init()
         {
+            auto imguiContextScope = ImguiContextScope(m_imguiContext);
             auto& io = ImGui::GetIO();
+        #if defined(AZ_TRAIT_IMGUI_INI_FILENAME)
+            io.IniFilename = AZ_TRAIT_IMGUI_INI_FILENAME;
+        #endif
 
             // ImGui IO Setup
             {
@@ -427,7 +471,6 @@ namespace AZ
                 {
                     io.KeyMap[static_cast<ImGuiKey_>(i)] = static_cast<int>(i);
                 }
-                io.NavActive = true;
 
                 // Touch input
                 const AzFramework::InputDevice* inputDevice = nullptr;
@@ -440,13 +483,24 @@ namespace AZ
                     io.ConfigFlags |= ImGuiConfigFlags_IsTouchScreen;
                 }
 
+                // Gamepad input
+                inputDevice = nullptr;
+                AzFramework::InputDeviceRequestBus::EventResult(inputDevice,
+                    AzFramework::InputDeviceGamepad::IdForIndex0,
+                    &AzFramework::InputDeviceRequests::GetInputDevice);
+                if (inputDevice && inputDevice->IsSupported())
+                {
+                    io.BackendFlags |= ImGuiBackendFlags_HasGamepad;
+                    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+                }
+
                 // Set initial display size to something reasonable (this will be updated in FramePrepare)
                 io.DisplaySize.x = 1920;
                 io.DisplaySize.y = 1080;
             }
 
             {
-                m_shader = RPI::LoadShader(ImguiShaderFilePath);
+                m_shader = RPI::LoadCriticalShader(ImguiShaderFilePath);
 
                 m_pipelineState = aznew RPI::PipelineStateForDraw;
                 m_pipelineState->Init(m_shader);
@@ -547,8 +601,8 @@ namespace AZ
                     for (const ImDrawCmd& drawCmd : drawList->CmdBuffer)
                     {
                         AZ_Assert(drawCmd.UserCallback == nullptr, "ImGui UserCallbacks are not supported by the ImGui Pass");
-                        uint32_t scissorMaxX = drawCmd.ClipRect.z;
-                        uint32_t scissorMaxY = drawCmd.ClipRect.w;
+                        uint32_t scissorMaxX = static_cast<uint32_t>(drawCmd.ClipRect.z);
+                        uint32_t scissorMaxY = static_cast<uint32_t>(drawCmd.ClipRect.w);
                         
                         //scissorMaxX/scissorMaxY can be a frame stale from imgui (ImGui::NewFrame runs after this) hence we clamp it to viewport bounds
                         //otherwise it is possible to have a frame where scissor bounds can be bigger than window's bounds if we resize the window
@@ -559,8 +613,8 @@ namespace AZ
                             {
                                 RHI::DrawIndexed(1, 0, vertexOffset, drawCmd.ElemCount, indexOffset),
                                 RHI::Scissor(
-                                    (drawCmd.ClipRect.x),
-                                    (drawCmd.ClipRect.y),
+                                    static_cast<int32_t>(drawCmd.ClipRect.x),
+                                    static_cast<int32_t>(drawCmd.ClipRect.y),
                                              scissorMaxX,
                                              scissorMaxY
                                 )
@@ -577,13 +631,11 @@ namespace AZ
             auto imguiContextScope = ImguiContextScope(m_imguiContext);
             ImGui::GetIO().MouseWheel = m_lastFrameMouseWheel;
             m_lastFrameMouseWheel = 0.0;
-            ImGui::NewFrame();
         }
 
         void ImGuiPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
-            AZ_ATOM_PROFILE_FUNCTION("Pass", "ImGuiPass: Execute");
+            AZ_PROFILE_SCOPE(AzRender, "ImGuiPass: BuildCommandListInternal");
 
             context.GetCommandList()->SetViewport(m_viewportState);
 
@@ -612,8 +664,7 @@ namespace AZ
 
         uint32_t ImGuiPass::UpdateImGuiResources()
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
-            AZ_ATOM_PROFILE_FUNCTION("Pass", "ImGuiPass: UpdateImGuiResources");
+            AZ_PROFILE_SCOPE(AzRender, "ImGuiPass: UpdateImGuiResources");
 
             auto imguiContextScope = ImguiContextScope(m_imguiContext);
 

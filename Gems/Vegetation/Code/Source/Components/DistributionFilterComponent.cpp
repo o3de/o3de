@@ -188,7 +188,7 @@ namespace Vegetation
 
     bool DistributionFilterComponent::Evaluate(const InstanceData& instanceData) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         const GradientSignal::GradientSampleParams sampleParams(instanceData.m_position);
         const float noise = m_configuration.m_gradientSampler.GetValue(sampleParams);

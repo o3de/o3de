@@ -25,7 +25,7 @@ namespace ScriptCanvasEditor
         CreateCommentNodeMimeEvent() = default;
         ~CreateCommentNodeMimeEvent() = default;
 
-        NodeIdPair ConstructNode(const AZ::EntityId& sceneId, const AZ::Vector2& scenePosition);
+        NodeIdPair ConstructNode(const AZ::EntityId& sceneId, const AZ::Vector2& scenePosition) override;
         bool ExecuteEvent(const AZ::Vector2& mousePosition, AZ::Vector2& sceneDropPosition, const AZ::EntityId& sceneId) override;
     };
 
@@ -54,7 +54,7 @@ namespace ScriptCanvasEditor
         CreateNodeGroupMimeEvent() = default;
         ~CreateNodeGroupMimeEvent() = default;
 
-        NodeIdPair ConstructNode(const GraphCanvas::GraphId& sceneId, const AZ::Vector2& scenePosition);
+        NodeIdPair ConstructNode(const GraphCanvas::GraphId& sceneId, const AZ::Vector2& scenePosition) override;
         bool ExecuteEvent(const AZ::Vector2& mousePosition, AZ::Vector2& sceneDropPosition, const GraphCanvas::GraphId& sceneId) override;
     };
 

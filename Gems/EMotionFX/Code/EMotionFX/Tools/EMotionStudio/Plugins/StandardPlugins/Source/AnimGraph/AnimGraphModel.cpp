@@ -562,9 +562,9 @@ namespace EMStudio
 
         ModelItemData modelItemData(graphInstance, animGraphObject);
         AZStd::pair<ModelItemDataSet::const_iterator, ModelItemDataSet::const_iterator> itModelItemData = m_modelItemDataSet.equal_range(&modelItemData);
-        for (ModelItemDataSet::const_iterator it = itModelItemData.first; it != itModelItemData.second; ++it)
+        if (itModelItemData.first != itModelItemData.second)
         {
-            ModelItemData* modelItemData2 = *it;
+            ModelItemData* modelItemData2 = *itModelItemData.first;
             return createIndex(modelItemData2->m_row, 0, modelItemData2);
         }
         return QModelIndex();
@@ -590,9 +590,9 @@ namespace EMStudio
                 // Find the model index
                 ModelItemData modelItemData(animGraphInstance, animGraphObject);
                 AZStd::pair<ModelItemDataSet::const_iterator, ModelItemDataSet::const_iterator> itModelItemData = m_modelItemDataSet.equal_range(&modelItemData);
-                for (ModelItemDataSet::const_iterator it = itModelItemData.first; it != itModelItemData.second; ++it)
+                if (itModelItemData.first != itModelItemData.second)
                 {
-                    ModelItemData* modelItemData2 = *it;
+                    ModelItemData* modelItemData2 = *itModelItemData.first;
                     return createIndex(modelItemData2->m_row, 0, modelItemData2);
                 }
             }
@@ -603,9 +603,9 @@ namespace EMStudio
             // Find the model index
             ModelItemData modelItemData(nullptr, animGraphObject);
             AZStd::pair<ModelItemDataSet::const_iterator, ModelItemDataSet::const_iterator> itModelItemData = m_modelItemDataSet.equal_range(&modelItemData);
-            for (ModelItemDataSet::const_iterator it = itModelItemData.first; it != itModelItemData.second; ++it)
+            if (itModelItemData.first != itModelItemData.second)
             {
-                ModelItemData* modelItemData2 = *it;
+                ModelItemData* modelItemData2 = *itModelItemData.first;
                 return createIndex(modelItemData2->m_row, 0, modelItemData2);
             }
         }

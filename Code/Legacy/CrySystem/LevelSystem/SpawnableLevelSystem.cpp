@@ -8,36 +8,44 @@
 
 #include "CrySystem_precompiled.h"
 #include "SpawnableLevelSystem.h"
-#include <IAudioSystem.h>
 #include "IMovieSystem.h"
 
 #include <LoadScreenBus.h>
 
-#include <AzCore/Debug/AssetTracking.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/IO/FileOperations.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Input/Buses/Requests/InputChannelRequestBus.h>
 
 #include "MainThreadRenderRequestBus.h"
-#include <LyShine/ILyShine.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
-
 #include <AzCore/Script/ScriptSystemBus.h>
+#include <AzCore/Time/ITime.h>
 
 namespace LegacyLevelSystem
 {
+    constexpr AZStd::string_view DeferredLoadLevelKey = "/O3DE/Runtime/SpawnableLevelSystem/DeferredLoadLevel";
     //------------------------------------------------------------------------
     static void LoadLevel(const AZ::ConsoleCommandContainer& arguments)
     {
         AZ_Error("SpawnableLevelSystem", !arguments.empty(), "LoadLevel requires a level file name to be provided.");
         AZ_Error("SpawnableLevelSystem", arguments.size() == 1, "LoadLevel requires a single level file name to be provided.");
 
-        if (!arguments.empty() && gEnv->pSystem && gEnv->pSystem->GetILevelSystem() && !gEnv->IsEditor())
+        if (!arguments.empty() && gEnv && gEnv->pSystem && gEnv->pSystem->GetILevelSystem() && !gEnv->IsEditor())
         {
             gEnv->pSystem->GetILevelSystem()->LoadLevel(arguments[0].data());
+        }
+        else if (!arguments.empty())
+        {
+            // The SpawnableLevelSystem isn't available yet.
+            // Defer the level load until later by storing it in the SettingsRegistry
+            if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+            {
+                settingsRegistry->Set(DeferredLoadLevelKey, arguments.front());
+            }
         }
     }
 
@@ -46,7 +54,7 @@ namespace LegacyLevelSystem
     {
         AZ_Warning("SpawnableLevelSystem", !arguments.empty(), "UnloadLevel doesn't use any arguments.");
 
-        if (gEnv->pSystem && gEnv->pSystem->GetILevelSystem() && !gEnv->IsEditor())
+        if (gEnv && gEnv->pSystem && gEnv->pSystem->GetILevelSystem() && !gEnv->IsEditor())
         {
             gEnv->pSystem->GetILevelSystem()->UnloadLevel();
         }
@@ -56,10 +64,8 @@ namespace LegacyLevelSystem
     AZ_CONSOLEFREEFUNC(UnloadLevel, AZ::ConsoleFunctorFlags::Null, "Unloads the current level");
 
     //------------------------------------------------------------------------
-    SpawnableLevelSystem::SpawnableLevelSystem(ISystem* pSystem)
-        : m_pSystem(pSystem)
+    SpawnableLevelSystem::SpawnableLevelSystem([[maybe_unused]] ISystem* pSystem)
     {
-        LOADING_TIME_PROFILE_SECTION;
         CRY_ASSERT(pSystem);
 
         m_fLastLevelLoadTime = 0;
@@ -76,6 +82,24 @@ namespace LegacyLevelSystem
         }
 
         AzFramework::RootSpawnableNotificationBus::Handler::BusConnect();
+
+        // If there were LoadLevel command invocations before the creation of the level system
+        // then those invocations were queued.
+        // load the last level in the queue, since only one level can be loaded at a time
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            if (AZ::SettingsRegistryInterface::FixedValueString deferredLevelName;
+                settingsRegistry->Get(deferredLevelName, DeferredLoadLevelKey) && !deferredLevelName.empty())
+            {
+                // since this is the constructor any derived classes vtables aren't setup yet
+                // call this class LoadLevel function
+                AZ_TracePrintf("SpawnableLevelSystem", "The Level System is now available."
+                    " Loading level %s which could not be loaded earlier\n", deferredLevelName.c_str());
+                SpawnableLevelSystem::LoadLevel(deferredLevelName.c_str());
+                // Delete the key with the deferred level name
+                settingsRegistry->Remove(DeferredLoadLevelKey);
+            }
+        }
     }
 
     //------------------------------------------------------------------------
@@ -176,7 +200,7 @@ namespace LegacyLevelSystem
         }
 
         // Make sure a spawnable level exists that matches levelname
-        AZStd::string validLevelName = "";
+        AZStd::string validLevelName;
         AZ::Data::AssetId rootSpawnableAssetId;
         AZ::Data::AssetCatalogRequestBus::BroadcastResult(
             rootSpawnableAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, levelName, nullptr, false);
@@ -233,7 +257,6 @@ namespace LegacyLevelSystem
     bool SpawnableLevelSystem::LoadLevelInternal(const char* levelName)
     {
         gEnv->pSystem->SetSystemGlobalState(ESYSTEM_GLOBAL_STATE_LEVEL_LOAD_START);
-        AZ_ASSET_NAMED_SCOPE("Level: %s", levelName);
 
         INDENT_LOG_DURING_SCOPE();
 
@@ -249,8 +272,6 @@ namespace LegacyLevelSystem
 
         // This scope is specifically used for marking a loading time profile section
         {
-            LOADING_TIME_PROFILE_SECTION;
-
             m_bLevelLoaded = false;
             m_lastLevelName = levelName;
             gEnv->pConsole->SetScrollMax(600);
@@ -279,47 +300,6 @@ namespace LegacyLevelSystem
                 spamDelay = pSpamDelay->GetFVal();
                 pSpamDelay->Set(0.0f);
             }
-
-            // Parse level specific config data.
-            AZStd::string const sLevelNameOnly(PathUtil::GetFileName(levelName));
-
-            if (!sLevelNameOnly.empty())
-            {
-                const char* controlsPath = nullptr;
-                Audio::AudioSystemRequestBus::BroadcastResult(controlsPath, &Audio::AudioSystemRequestBus::Events::GetControlsPath);
-                if (controlsPath)
-                {
-                    AZStd::string sAudioLevelPath(controlsPath);
-                    sAudioLevelPath.append("levels/");
-                    sAudioLevelPath += sLevelNameOnly;
-
-                    Audio::SAudioManagerRequestData<Audio::eAMRT_PARSE_CONTROLS_DATA> oAMData(
-                        sAudioLevelPath.c_str(), Audio::eADS_LEVEL_SPECIFIC);
-                    Audio::SAudioRequest oAudioRequestData;
-                    oAudioRequestData.nFlags =
-                        (Audio::eARF_PRIORITY_HIGH |
-                         Audio::eARF_EXECUTE_BLOCKING); // Needs to be blocking so data is available for next preloading request!
-                    oAudioRequestData.pData = &oAMData;
-                    Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-
-                    Audio::SAudioManagerRequestData<Audio::eAMRT_PARSE_PRELOADS_DATA> oAMData2(
-                        sAudioLevelPath.c_str(), Audio::eADS_LEVEL_SPECIFIC);
-                    oAudioRequestData.pData = &oAMData2;
-                    Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-
-                    Audio::TAudioPreloadRequestID nPreloadRequestID = INVALID_AUDIO_PRELOAD_REQUEST_ID;
-
-                    Audio::AudioSystemRequestBus::BroadcastResult(
-                        nPreloadRequestID, &Audio::AudioSystemRequestBus::Events::GetAudioPreloadRequestID, sLevelNameOnly.c_str());
-                    if (nPreloadRequestID != INVALID_AUDIO_PRELOAD_REQUEST_ID)
-                    {
-                        Audio::SAudioManagerRequestData<Audio::eAMRT_PRELOAD_SINGLE_REQUEST> requestData(nPreloadRequestID, true);
-                        oAudioRequestData.pData = &requestData;
-                        Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-                    }
-                }
-            }
-
 
             AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable(
                 rootSpawnableAssetId, azrtti_typeid<AzFramework::Spawnable>(), levelName);
@@ -385,7 +365,9 @@ namespace LegacyLevelSystem
         // This work not required in-editor.
         if (!gEnv || !gEnv->IsEditor())
         {
-            m_levelLoadStartTime = gEnv->pTimer->GetAsyncTime();
+            const AZ::TimeMs timeMs = AZ::GetRealElapsedTimeMs();
+            const double timeSec = AZ::TimeMsToSecondsDouble(timeMs);
+            m_levelLoadStartTime = CTimeValue(timeSec);
 
             // switched to level heap, so now imm start the loading screen (renderer will be reinitialized in the levelheap)
             gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_LOAD_START_LOADINGSCREEN, 0, 0);
@@ -426,11 +408,10 @@ namespace LegacyLevelSystem
             gEnv->pCryPak->RecordFileOpen(AZ::IO::IArchive::RFOM_Level);
         }
 
-        m_fLastTime = gEnv->pTimer->GetAsyncCurTime();
+        const AZ::TimeMs timeMs = AZ::GetRealElapsedTimeMs();
+        m_fLastTime = AZ::TimeMsToSeconds(timeMs);
 
         GetISystem()->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_LOAD_START, 0, 0);
-
-        LOADING_TIME_PROFILE_SECTION(gEnv->pSystem);
 
         for (auto& listener : m_listeners)
         {
@@ -452,7 +433,9 @@ namespace LegacyLevelSystem
     //------------------------------------------------------------------------
     void SpawnableLevelSystem::OnLoadingComplete(const char* levelName)
     {
-        CTimeValue t = gEnv->pTimer->GetAsyncTime();
+        const AZ::TimeMs timeMs = AZ::GetRealElapsedTimeMs();
+        const double timeSec = AZ::TimeMsToSecondsDouble(timeMs);
+        const CTimeValue t(timeSec);
         m_fLastLevelLoadTime = (t - m_levelLoadStartTime).GetSeconds();
 
         LogLoadingTime();
@@ -516,10 +499,7 @@ namespace LegacyLevelSystem
             sChain = " (Chained)";
         }
 
-        AZStd::string text;
-        text.format(
-            "Game Level Load Time: [%s] Level %s loaded in %.2f seconds%s", vers, m_lastLevelName.c_str(), m_fLastLevelLoadTime, sChain);
-        gEnv->pLog->Log(text.c_str());
+        gEnv->pLog->Log("Game Level Load Time: [%s] Level %s loaded in %.2f seconds%s", vers, m_lastLevelName.c_str(), m_fLastLevelLoadTime, sChain);
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -554,7 +534,7 @@ namespace LegacyLevelSystem
             gEnv->pCryPak->DisableRuntimeFileAccess(false);
         }
 
-        CTimeValue tBegin = gEnv->pTimer->GetAsyncTime();
+        const AZ::TimeMs beginTimeMs = AZ::GetRealElapsedTimeMs();
 
         // Clear level entities and prefab instances.
         EBUS_EVENT(AzFramework::GameEntityContextRequestBus, ResetGameContext);
@@ -564,22 +544,6 @@ namespace LegacyLevelSystem
             gEnv->pMovieSystem->Reset(false, false);
             gEnv->pMovieSystem->RemoveAllSequences();
         }
-
-        // Unload level specific audio binary data.
-        Audio::SAudioManagerRequestData<Audio::eAMRT_UNLOAD_AFCM_DATA_BY_SCOPE> oAMData(Audio::eADS_LEVEL_SPECIFIC);
-        Audio::SAudioRequest oAudioRequestData;
-        oAudioRequestData.nFlags = (Audio::eARF_PRIORITY_HIGH | Audio::eARF_EXECUTE_BLOCKING);
-        oAudioRequestData.pData = &oAMData;
-        Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-
-        // Now unload level specific audio config data.
-        Audio::SAudioManagerRequestData<Audio::eAMRT_CLEAR_CONTROLS_DATA> oAMData2(Audio::eADS_LEVEL_SPECIFIC);
-        oAudioRequestData.pData = &oAMData2;
-        Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-
-        Audio::SAudioManagerRequestData<Audio::eAMRT_CLEAR_PRELOADS_DATA> oAMData3(Audio::eADS_LEVEL_SPECIFIC);
-        oAudioRequestData.pData = &oAMData3;
-        Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
 
         OnUnloadComplete(m_lastLevelName.c_str());
 
@@ -591,16 +555,10 @@ namespace LegacyLevelSystem
         // Normally the GC step is triggered at the end of this method (by the ESYSTEM_EVENT_LEVEL_POST_UNLOAD event).
         EBUS_EVENT(AZ::ScriptSystemRequestBus, GarbageCollect);
 
-        // Perform level unload procedures for the LyShine UI system
-        if (gEnv && gEnv->pLyShine)
-        {
-            gEnv->pLyShine->OnLevelUnload();
-        }
-
         m_bLevelLoaded = false;
 
-        CTimeValue tUnloadTime = gEnv->pTimer->GetAsyncTime() - tBegin;
-        AZ_TracePrintf("LevelSystem", "UnloadLevel End: %.1f sec\n", tUnloadTime.GetSeconds());
+        [[maybe_unused]] const AZ::TimeMs unloadTimeMs = AZ::GetRealElapsedTimeMs() - beginTimeMs;
+        AZ_TracePrintf("LevelSystem", "UnloadLevel End: %.1f sec\n", AZ::TimeMsToSeconds(unloadTimeMs));
 
         // Must be sent last.
         // Cleanup all containers

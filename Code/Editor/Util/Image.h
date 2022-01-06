@@ -178,7 +178,6 @@ public:
     //////////////////////////////////////////////////////////////////////////
     void GetSubImage(int x1, int y1, int width, int height, TImage<T>& img) const
     {
-        int size = width * height;
         img.Allocate(width, height);
         for (int y = 0; y < height; y++)
         {

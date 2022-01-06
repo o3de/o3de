@@ -116,6 +116,28 @@ namespace AzToolsFramework
         };
 
         //////////////////////////////////////////////////////////////////////////
+        // RegExpFilter
+        //////////////////////////////////////////////////////////////////////////
+        //! RegExpFilter filters assets based on a regular expression pattern
+        class RegExpFilter
+            : public AssetBrowserEntryFilter
+        {
+            Q_OBJECT
+        public:
+            RegExpFilter();
+            ~RegExpFilter() override = default;
+
+            void SetFilterPattern(const QString& filterPattern);
+
+        protected:
+            QString GetNameInternal() const override;
+            bool MatchInternal(const AssetBrowserEntry* entry) const override;
+
+        private:
+            QString m_filterPattern;
+        };
+
+        //////////////////////////////////////////////////////////////////////////
         // AssetTypeFilter
         //////////////////////////////////////////////////////////////////////////
         //! AssetTypeFilter filters products based on their asset id

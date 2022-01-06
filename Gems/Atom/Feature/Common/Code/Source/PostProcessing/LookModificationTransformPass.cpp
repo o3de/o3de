@@ -47,29 +47,32 @@ namespace AZ
                 swapChainFormat = m_swapChainAttachmentBinding->m_attachment->GetTransientImageDescriptor().m_imageDescriptor.m_format;
             }
 
-            if (m_displayBufferFormat != swapChainFormat)
+            // Update the children passes
+            RPI::Ptr<BlendColorGradingLutsPass> blendPass = FindChildPass<BlendColorGradingLutsPass>();
+            if (blendPass)
             {
-                m_displayBufferFormat = swapChainFormat;
-                m_outputDeviceTransformType = AcesDisplayMapperFeatureProcessor::GetOutputDeviceTransformType(m_displayBufferFormat);
-                m_shaperParams = GetAcesShaperParameters(m_outputDeviceTransformType);
-
-                // Update the children passes
-                for (const AZ::RPI::Ptr<Pass>& child : m_children)
+                auto commonShaperParams = blendPass->GetCommonShaperParams();
+                if (commonShaperParams)
                 {
-                    BlendColorGradingLutsPass* blendPass = azrtti_cast<BlendColorGradingLutsPass*>(child.get());
-                    if (blendPass)
-                    {
-                        blendPass->SetShaperParameters(m_shaperParams);
-                        continue;
-                    }
-                    LookModificationCompositePass* compositePass = azrtti_cast<LookModificationCompositePass*>(child.get());
-                    if (compositePass)
-                    {
-                        compositePass->SetShaperParameters(m_shaperParams);
-                        continue;
-                    }
+                    m_shaperParams = *commonShaperParams;
+                }
+                else
+                {
+                    // Mix of shapers used, so shape them based on the output transform type.
+                    m_displayBufferFormat = swapChainFormat;
+                    m_outputDeviceTransformType = AcesDisplayMapperFeatureProcessor::GetOutputDeviceTransformType(m_displayBufferFormat);
+                    m_shaperParams = GetAcesShaperParameters(m_outputDeviceTransformType);
+                }
+
+                blendPass->SetShaperParameters(m_shaperParams);
+                    
+                RPI::Ptr<LookModificationCompositePass> compositePass = FindChildPass<LookModificationCompositePass>();
+                if (compositePass)
+                {
+                    compositePass->SetShaperParameters(m_shaperParams);
                 }
             }
+
             ParentPass::FrameBeginInternal(params);
         }
     }   // namespace Render

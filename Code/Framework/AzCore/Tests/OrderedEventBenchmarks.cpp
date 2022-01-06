@@ -74,7 +74,7 @@ namespace Benchmark
     {
     public:
         EBusPerfBaselineImplEmpty() { EBusPerfBaselineBus::Handler::BusConnect(); }
-        ~EBusPerfBaselineImplEmpty() { EBusPerfBaselineBus::Handler::BusDisconnect(); }
+        ~EBusPerfBaselineImplEmpty() override { EBusPerfBaselineBus::Handler::BusDisconnect(); }
         void OnSignal(int32_t) override {}
     };
 
@@ -94,7 +94,7 @@ namespace Benchmark
     {
     public:
         EBusPerfBaselineImplIncrement() { EBusPerfBaselineBus::Handler::BusConnect(); }
-        ~EBusPerfBaselineImplIncrement() { EBusPerfBaselineBus::Handler::BusDisconnect(); }
+        ~EBusPerfBaselineImplIncrement() override { EBusPerfBaselineBus::Handler::BusDisconnect(); }
         void SetIncrementCounter(int32_t* incrementCounter) { m_incrementCounter = incrementCounter; }
         void OnSignal(int32_t) override { ++(*m_incrementCounter); }
         int32_t* m_incrementCounter;

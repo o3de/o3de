@@ -18,7 +18,6 @@ set(FILES
     AzFramework/Process/ProcessCommunicator_Win.cpp
     ../Common/WinAPI/AzFramework/IO/LocalFileIO_WinAPI.cpp
     AzFramework/IO/LocalFileIO_Windows.cpp
-    ../Common/WinAPI/AzFramework/Network/AssetProcessorConnection_WinAPI.cpp
     ../Common/Unimplemented/AzFramework/StreamingInstall/StreamingInstall_Unimplemented.cpp
     AzFramework/TargetManagement/TargetManagementComponent_Windows.cpp
     AzFramework/Windowing/NativeWindow_Windows.cpp
@@ -33,6 +32,4 @@ set(FILES
     AzFramework/Input/User/LocalUserId_Platform.h
     ../Common/Default/AzFramework/Input/User/LocalUserId_Default.h
     ../Common/Unimplemented/AzFramework/Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard_Unimplemented.cpp
-    AzFramework/Archive/ArchiveVars_Platform.h
-    AzFramework/Archive/ArchiveVars_Windows.h
 )

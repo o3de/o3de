@@ -14,7 +14,7 @@
 
 #include <Psapi.h>
 
-AZ_CVAR(bool, ap_tether_lifetime, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+AZ_CVAR(bool, ap_tether_lifetime, true, nullptr, AZ::ConsoleFunctorFlags::Null,
     "If enabled, a parent process that launches the AP will terminate the AP on exit");
 
 namespace AzFramework::AssetSystem::Platform
@@ -48,10 +48,10 @@ namespace AzFramework::AssetSystem::Platform
                     // Get the first module, because that will be the executable
                     if (EnumProcessModules(processHandle, &moduleHandle, sizeof(moduleHandle), &bytesNeededForAllProcessModules))
                     {
-                        char processName[4096] = TEXT("<unknown>");
-                        if (GetModuleBaseNameA(processHandle, moduleHandle, processName, AZ_ARRAY_SIZE(processName)) > 0)
+                        wchar_t processName[4096] = L"<unknown>";
+                        if (GetModuleBaseName(processHandle, moduleHandle, processName, AZ_ARRAY_SIZE(processName)) > 0)
                         {
-                            if (azstricmp(processName, "AssetProcessor") == 0)
+                            if (azwcsicmp(processName, L"AssetProcessor") == 0)
                             {
                                 AllowSetForegroundWindow(processId);
                             }
@@ -126,7 +126,11 @@ namespace AzFramework::AssetSystem::Platform
         si.wShowWindow = SW_MINIMIZE;
         PROCESS_INFORMATION pi;
 
-        bool createResult = ::CreateProcessA(nullptr, fullLaunchCommand.data(), nullptr, nullptr, FALSE, 0, nullptr, AZ::IO::FixedMaxPathString{ executableDirectory }.c_str(), &si, &pi) != 0;
+        AZStd::wstring fullLaunchCommandW;
+        AZStd::to_wstring(fullLaunchCommandW, fullLaunchCommand.c_str());
+        AZStd::wstring execututableDirectoryW;
+        AZStd::to_wstring(execututableDirectoryW, executableDirectory.data());
+        bool createResult = ::CreateProcessW(nullptr, fullLaunchCommandW.data(), nullptr, nullptr, FALSE, 0, nullptr, execututableDirectoryW.c_str(), &si, &pi) != 0;
 
         if (ap_tether_lifetime && apJob && createResult)
         {

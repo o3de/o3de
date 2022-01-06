@@ -11,9 +11,8 @@
 #include <AzCore/base.h>
 #include <AzCore/UnitTest/UnitTest.h>
 
+#include <AzCore/Debug/BudgetTracker.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/Driller/Driller.h>
-#include <AzCore/Memory/MemoryDriller.h>
 #include <AzCore/Memory/AllocationRecords.h>
 
 #if defined(HAVE_BENCHMARK)
@@ -38,22 +37,20 @@ namespace UnitTest
     */
     class AllocatorsBase
     {
-        AZ::Debug::DrillerManager* m_drillerManager;
         bool m_ownsAllocator{};
     public:
 
         virtual ~AllocatorsBase() = default;
 
-        void SetupAllocator()
+        void SetupAllocator(const AZ::SystemAllocator::Descriptor& allocatorDesc = {})
         {
-            m_drillerManager = AZ::Debug::DrillerManager::Create();
-            m_drillerManager->Register(aznew AZ::Debug::MemoryDriller);
+            AZ::AllocatorManager::Instance().EnterProfilingMode();
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
 
             // Only create the SystemAllocator if it s not ready
             if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
             {
-                AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
+                AZ::AllocatorInstance<AZ::SystemAllocator>::Create(allocatorDesc);
                 m_ownsAllocator = true;
             }
         }
@@ -67,9 +64,9 @@ namespace UnitTest
                 AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
             }
             m_ownsAllocator = false;
-            AZ::Debug::DrillerManager::Destroy(m_drillerManager);
 
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
+            AZ::AllocatorManager::Instance().ExitProfilingMode();
         }
     };
 
@@ -84,6 +81,7 @@ namespace UnitTest
     {
     public:
         ScopedAllocatorSetupFixture() { SetupAllocator(); }
+        explicit ScopedAllocatorSetupFixture(const AZ::SystemAllocator::Descriptor& allocatorDesc) { SetupAllocator(allocatorDesc); }
         ~ScopedAllocatorSetupFixture() { TeardownAllocator(); }
     };
 
@@ -91,8 +89,7 @@ namespace UnitTest
     * Helper class to handle the boiler plate of setting up a test fixture that uses the system allocators
     * If you wish to do additional setup and tear down be sure to call the base class SetUp first and TearDown
     * last.
-    * By default memory tracking through driller is enabled.
-    * Defaults to a heap size of 15 MB
+    * By default memory tracking is enabled.
     */
 
     class AllocatorsTestFixture
@@ -121,25 +118,30 @@ namespace UnitTest
     * Helper class to handle the boiler plate of setting up a benchmark fixture that uses the system allocators
     * If you wish to do additional setup and tear down be sure to call the base class SetUp first and TearDown
     * last.
-    * By default memory tracking through driller is disabled.
-    * Defaults to a heap size of 15 MB
+    * By default memory tracking is enabled.
     */
     class AllocatorsBenchmarkFixture
         : public ::benchmark::Fixture
         , public AllocatorsBase
     {
     public:
-        // Bring in both const and non-const SetUp and TearDown function into scope to resolve warning 4266
-        // no override available for virtual member function from base 'benchmark::Fixture'; function is hidden
-        using ::benchmark::Fixture::SetUp, ::benchmark::Fixture::TearDown;
-
         //Benchmark interface
+        void SetUp(const ::benchmark::State& st) override
+        {
+            AZ_UNUSED(st);
+            SetupAllocator();
+        }
         void SetUp(::benchmark::State& st) override
         {
             AZ_UNUSED(st);
             SetupAllocator();
         }
 
+        void TearDown(const ::benchmark::State& st) override
+        {
+            AZ_UNUSED(st);
+            TeardownAllocator();
+        }
         void TearDown(::benchmark::State& st) override
         {
             AZ_UNUSED(st);
@@ -162,7 +164,7 @@ namespace UnitTest
     struct CreationCounter
     {
         AZ_TYPE_INFO(CreationCounter, "{E9E35486-4366-4066-86E5-1A8CEB44198B}");
-        AZ_ALIGN(int test[size / sizeof(int)], alignment);
+        alignas(alignment) int test[size / sizeof(int)];
 
         static int s_count;
         static int s_copied;

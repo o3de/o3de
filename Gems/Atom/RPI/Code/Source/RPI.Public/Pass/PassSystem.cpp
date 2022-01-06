@@ -9,7 +9,6 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/Entity.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Serialization/Utils.h>
@@ -17,9 +16,8 @@
 #include <AzCore/std/sort.h>
 #include <AzCore/Interface/Interface.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/FrameGraphBuilder.h>
 
 #include <Atom/RPI.Public/Pass/FullscreenTrianglePass.h>
@@ -41,6 +39,7 @@
 #include <Atom/RPI.Reflect/Pass/PassTemplate.h>
 #include <Atom/RPI.Reflect/Pass/RasterPassData.h>
 #include <Atom/RPI.Reflect/Pass/RenderPassData.h>
+#include <Atom/RPI.Reflect/Pass/SlowClearPassData.h>
 
 namespace AZ
 {
@@ -69,6 +68,7 @@ namespace AZ
             PassSlot::Reflect(context);
 
             PassData::Reflect(context);
+            SlowClearPassData::Reflect(context);
             CopyPassData::Reflect(context);
             RenderPassData::Reflect(context);
             ComputePassData::Reflect(context);
@@ -169,7 +169,7 @@ namespace AZ
         void PassSystem::RemovePasses()
         {
             m_state = PassSystemState::RemovingPasses;
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "PassSystem: RemovePasses");
+            AZ_PROFILE_SCOPE(RPI, "PassSystem: RemovePasses");
 
             if (!m_removePassList.empty())
             {
@@ -189,8 +189,7 @@ namespace AZ
         void PassSystem::BuildPasses()
         {
             m_state = PassSystemState::BuildingPasses;
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "PassSystem: BuildPassAttachments");
+            AZ_PROFILE_SCOPE(RPI, "PassSystem: BuildPasses");
 
             m_passHierarchyChanged = m_passHierarchyChanged || !m_buildPassList.empty();
 
@@ -239,8 +238,7 @@ namespace AZ
         void PassSystem::InitializePasses()
         {
             m_state = PassSystemState::InitializingPasses;
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "PassSystem: BuildPassAttachments");
+            AZ_PROFILE_SCOPE(RPI, "PassSystem: InitializePasses");
 
             m_passHierarchyChanged = m_passHierarchyChanged || !m_initializePassList.empty();
 
@@ -277,7 +275,6 @@ namespace AZ
         void PassSystem::Validate()
         {
             m_state = PassSystemState::ValidatingPasses;
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "PassSystem: Validate");
 
             if (PassValidation::IsEnabled())
             {
@@ -286,7 +283,7 @@ namespace AZ
                     return;
                 }
 
-                AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+                AZ_PROFILE_SCOPE(RPI, "PassSystem: Validate");
 
                 PassValidationResults validationResults;
                 m_rootPass->Validate(validationResults);
@@ -298,7 +295,7 @@ namespace AZ
 
         void PassSystem::ProcessQueuedChanges()
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "PassSystem: ProcessQueuedChanges");
+            AZ_PROFILE_SCOPE(RPI, "PassSystem: ProcessQueuedChanges");
             RemovePasses();
             BuildPasses();
             InitializePasses();
@@ -307,23 +304,22 @@ namespace AZ
 
         void PassSystem::FrameUpdate(RHI::FrameGraphBuilder& frameGraphBuilder)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "PassSystem: FrameUpdate");
+            AZ_PROFILE_SCOPE(RPI, "PassSystem: FrameUpdate");
 
+            ResetFrameStatistics();
             ProcessQueuedChanges();
 
             m_state = PassSystemState::Rendering;
             Pass::FramePrepareParams params{ &frameGraphBuilder };
 
             {
-                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "Pass: FrameBegin");
                 m_rootPass->FrameBegin(params);
             }
         }
 
         void PassSystem::FrameEnd()
         {
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "PassSystem: FrameEnd");
+            AZ_PROFILE_SCOPE(RHI, "PassSystem: FrameEnd");
 
             m_state = PassSystemState::FrameEnd;
 
@@ -398,6 +394,29 @@ namespace AZ
             handler.Connect(m_loadTemplatesEvent);
         }
 
+        void PassSystem::ResetFrameStatistics()
+        {
+            m_frameStatistics.m_numRenderPassesExecuted = 0;
+            m_frameStatistics.m_totalDrawItemsRendered = 0;
+            m_frameStatistics.m_maxDrawItemsRenderedInAPass = 0;
+        }
+
+        PassSystemFrameStatistics PassSystem::GetFrameStatistics()
+        {
+            return m_frameStatistics;
+        }
+
+        void PassSystem::IncrementFrameDrawItemCount(u32 numDrawItems)
+        {
+            m_frameStatistics.m_totalDrawItemsRendered += numDrawItems;
+            m_frameStatistics.m_maxDrawItemsRenderedInAPass = AZStd::max(m_frameStatistics.m_maxDrawItemsRenderedInAPass, numDrawItems);
+        }
+
+        void PassSystem::IncrementFrameRenderPassCount()
+        {
+            ++m_frameStatistics.m_numRenderPassesExecuted;
+        }
+
         // --- Pass Factory Functions --- 
 
         void PassSystem::AddPassCreator(Name className, PassCreator createFunction)
@@ -437,11 +456,6 @@ namespace AZ
             return m_passLibrary.HasPassesForTemplate(templateName);
         }
 
-        const AZStd::vector<Pass*>& PassSystem::GetPassesForTemplateName(const Name& templateName) const
-        {
-            return m_passLibrary.GetPassesForTemplate(templateName);
-        }
-
         bool PassSystem::AddPassTemplate(const Name& name, const AZStd::shared_ptr<PassTemplate>& passTemplate)
         {
             return m_passLibrary.AddPassTemplate(name, passTemplate);
@@ -450,6 +464,11 @@ namespace AZ
         const AZStd::shared_ptr<PassTemplate> PassSystem::GetPassTemplate(const Name& name) const
         {
             return m_passLibrary.GetPassTemplate(name);
+        }
+
+        void PassSystem::RemovePassTemplate(const Name& name)
+        {
+            m_passLibrary.RemovePassTemplate(name);
         }
 
         void PassSystem::RemovePassFromLibrary(Pass* pass)
@@ -468,10 +487,21 @@ namespace AZ
             RemovePassFromLibrary(pass);
             --m_passCounter;
         }
-
-        AZStd::vector<Pass*> PassSystem::FindPasses(const PassFilter& passFilter) const
+                
+        void PassSystem::ForEachPass(const PassFilter& filter, AZStd::function<PassFilterExecutionFlow(Pass*)> passFunction)
         {
-            return m_passLibrary.FindPasses(passFilter);
+            return m_passLibrary.ForEachPass(filter, passFunction);
+        }
+
+        Pass* PassSystem::FindFirstPass(const PassFilter& filter)
+        {
+            Pass* foundPass = nullptr;
+            m_passLibrary.ForEachPass(filter, [&foundPass](RPI::Pass* pass) ->PassFilterExecutionFlow
+                {
+                    foundPass = pass;
+                    return PassFilterExecutionFlow::StopVisitingPasses;
+                });
+            return foundPass;
         }
 
         SwapChainPass* PassSystem::FindSwapChainPass(AzFramework::NativeWindowHandle windowHandle) const

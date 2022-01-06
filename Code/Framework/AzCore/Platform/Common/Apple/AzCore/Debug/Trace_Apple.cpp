@@ -56,6 +56,13 @@ namespace AZ
                 return ((info.kp_proc.p_flag & P_TRACED) != 0);
             }
 
+            bool AttachDebugger()
+            {
+                // Not supported yet
+                AZ_Assert(false, "AttachDebugger() is not supported for Mac platform yet");
+                return false;
+            }
+
             void HandleExceptions(bool)
             {}
 
@@ -72,6 +79,7 @@ namespace AZ
 
             void OutputToDebugger(const char*, const char*)
             {
+                // std::cout << title << ": " << message;
             }
         }
     }

@@ -10,6 +10,7 @@
 #include <AzCore/Math/MathIntrinsics.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/typetraits/aligned_storage.h>
 #include <AzCore/base.h>
 #include <stdint.h>
 
@@ -129,7 +130,7 @@ namespace AZ
     template<typename T, size_t ElementsPerPage, class Allocator>
     struct StableDynamicArray<T, ElementsPerPage, Allocator>::Page
     {
-        static constexpr size_t InvalidPage = -1;
+        static constexpr size_t InvalidPage = std::numeric_limits<size_t>::max();
         static constexpr uint64_t FullBits = 0xFFFFFFFFFFFFFFFFull;
         static constexpr size_t NumUint64_t = ElementsPerPage / 64;
 

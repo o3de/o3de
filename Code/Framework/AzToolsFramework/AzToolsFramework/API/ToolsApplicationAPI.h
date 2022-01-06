@@ -5,14 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#ifndef AZTOOLSFRAMEWORK_TOOLSAPPLICATIONAPI_H
-#define AZTOOLSFRAMEWORK_TOOLSAPPLICATIONAPI_H
-
-#include <AzCore/base.h>
-
 #pragma once
 
+#include <AzCore/base.h>
+#include <AzCore/Debug/Budget.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Uuid.h>
@@ -418,6 +414,9 @@ namespace AzToolsFramework
         //! Gets an existing entity id from a known id.
         virtual AZ::EntityId GetExistingEntity(AZ::u64 id) = 0;
 
+        //! Returns if an entity with the given id exists
+        virtual bool EntityExists(AZ::EntityId id) = 0;
+
         /*!
          * Delete all currently-selected entities.
          */
@@ -600,8 +599,8 @@ namespace AzToolsFramework
          * Open 3D Engine Internal use only.
          *
          * Run a specific redo command separate from the undo/redo system.
-         * In many cases before a modifcation on an entity takes place, it is first packaged into 
-         * undo/redo commands. Running the modification's redo command separete from the undo/redo 
+         * In many cases before a modification on an entity takes place, it is first packaged into 
+         * undo/redo commands. Running the modification's redo command separate from the undo/redo 
          * system simulates its execution, and avoids some code duplication.
          */
         virtual void RunRedoSeparately(UndoSystem::URSequencePoint* redoCommand) = 0;
@@ -765,12 +764,6 @@ namespace AzToolsFramework
         //! Spawn asset browser for the appropriate asset types.
         virtual void BrowseForAssets(AssetBrowser::AssetSelectionModel& /*selection*/) = 0;
 
-        /// Allow interception of selection / left-mouse clicks in ObjectMode, for customizing selection behavior.
-        virtual void HandleObjectModeSelection(const AZ::Vector2& /*point*/, int /*flags*/, bool& /*handled*/) {}
-
-        /// Allow interception of cursor, for customizing selection behavior.
-        virtual void UpdateObjectModeCursor(AZ::u32& /*cursorId*/, AZStd::string& /*cursorStr*/) {}
-
         /// Creates editor-side representation of an underlying entity.
         virtual void CreateEditorRepresentation(AZ::Entity* /*entity*/) { }
 
@@ -833,6 +826,10 @@ namespace AzToolsFramework
         /// Path will be empty if component should have no icon.
         virtual AZStd::string GetComponentEditorIcon(const AZ::Uuid& /*componentType*/, AZ::Component* /*component*/) { return AZStd::string(); }
 
+        //! Return path to icon for component type.
+        //! Path will be empty if component type should have no icon.
+        virtual AZStd::string GetComponentTypeEditorIcon(const AZ::Uuid& /*componentType*/) { return AZStd::string(); }
+
         /**
          * Return the icon image path based on the component type and where it is used.
          * \param componentType         component type
@@ -840,9 +837,6 @@ namespace AzToolsFramework
          * \return the path of the icon image
          */
         virtual AZStd::string GetComponentIconPath(const AZ::Uuid& /*componentType*/, AZ::Crc32 /*componentIconAttrib*/, AZ::Component* /*component*/) { return AZStd::string(); }
-
-        /// Resource Selector hook, returns a path for a resource.
-        virtual AZStd::string SelectResource(const AZStd::string& /*resourceType*/, const AZStd::string& /*previousValue*/) { return AZStd::string(); }
 
         /**
          * Calculate the navigation 2D radius in units of an agent given its Navigation Type Name
@@ -884,9 +878,6 @@ namespace AzToolsFramework
         /// Return the icon texture id (from internal IconManager) for a given entity icon path.
         /// This can be passed to DrawTextureLabel to draw an entity icon.
         virtual int GetIconTextureIdFromEntityIconPath(const AZStd::string& entityIconPath) = 0;
-
-        /// Returns if the Display Helpers option is toggled on in the Editor.
-        virtual bool DisplayHelpersVisible() = 0;
     };
 
     using EditorRequestBus = AZ::EBus<EditorRequests>;
@@ -932,6 +923,9 @@ namespace AzToolsFramework
 
         /// Notify that the MainWindow has been fully initialized
         virtual void NotifyMainWindowInitialized(QMainWindow* /*mainWindow*/) {}
+
+        /// Notify that the Editor has been fully initialized
+        virtual void NotifyEditorInitialized() {}
 
         /// Signal that an asset should be highlighted / selected
         virtual void SelectAsset(const QString& /* assetPath */) {}
@@ -1092,4 +1086,5 @@ namespace AzToolsFramework
     }
 } // namespace AzToolsFramework
 
-#endif // AZTOOLSFRAMEWORK_TOOLSAPPLICATIONAPI_H
+AZ_DECLARE_BUDGET(AzToolsFramework);
+

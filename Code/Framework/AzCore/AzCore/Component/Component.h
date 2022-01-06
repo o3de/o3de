@@ -22,6 +22,7 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/SystemAllocator.h> // Used as the allocator for most components.
 #include <AzCore/Outcome/Outcome.h>
+#include <AzCore/std/containers/unordered_set.h>
 
 namespace AZ
 {
@@ -266,7 +267,7 @@ namespace AZ
                         _ComponentClass::RTTI_Type().ToString<AZStd::string>().c_str(), descriptor->GetName(), _ComponentClass::RTTI_TypeName());          \
                     return nullptr;                                                                                                     \
                 }                                                                                                                       \
-                else if (descriptor->GetName() != _ComponentClass::RTTI_TypeName())                                                     \
+                if (descriptor->GetName() != _ComponentClass::RTTI_TypeName())                                                     \
                 {                                                                                                                       \
                     AZ_Error("Component", false, "The same component UUID (%s) / name (%s) was registered twice.  This isn't allowed, " \
                              "it can cause lifetime management issues / crashes.\nThis situation can happen by declaring a component "  \

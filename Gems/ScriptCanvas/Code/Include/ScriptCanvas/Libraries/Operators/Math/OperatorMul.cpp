@@ -58,7 +58,7 @@ namespace ScriptCanvas
 
             void OperatorMul::Operator(Data::eType type, const ArithmeticOperands& operands, Datum& result)
             {
-                AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::ScriptCanvas);
+                AZ_PROFILE_FUNCTION(ScriptCanvas);
 
                 switch (type)
                 {

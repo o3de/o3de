@@ -9,6 +9,9 @@
 
 #include "EditorPreferencesTreeWidgetItem.h"
 
+// AzCore
+#include <AzCore/Component/ComponentApplicationBus.h>
+
 // AzToolsFramework
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 

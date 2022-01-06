@@ -220,7 +220,7 @@ namespace Vegetation
 
     bool AreaBlenderComponent::PrepareToClaim(EntityIdStack& stackIds)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         bool result = true;
 
@@ -257,7 +257,7 @@ namespace Vegetation
 
     void AreaBlenderComponent::ClaimPositions(EntityIdStack& stackIds, ClaimContext& context)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         if (context.m_availablePoints.empty())
         {
@@ -293,7 +293,7 @@ namespace Vegetation
 
     void AreaBlenderComponent::UnclaimPosition(const ClaimHandle handle)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         AZ_WarningOnce("Vegetation", !m_isRequestInProgress, "Detected cyclic dependences with vegetation entity references");
         if (!m_isRequestInProgress)
@@ -311,7 +311,7 @@ namespace Vegetation
 
     AZ::Aabb AreaBlenderComponent::GetEncompassingAabb() const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         AZ::Aabb bounds = AZ::Aabb::CreateNull();
 
@@ -340,7 +340,7 @@ namespace Vegetation
 
     AZ::u32 AreaBlenderComponent::GetProductCount() const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         AZ::u32 count = 0;
 

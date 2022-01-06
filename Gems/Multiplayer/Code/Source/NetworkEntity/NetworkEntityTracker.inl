@@ -10,6 +10,16 @@
 
 namespace Multiplayer
 {
+    inline NetBindComponent* NetworkEntityTracker::GetNetBindComponent(AZ::Entity* rawEntity) const
+    {
+        auto found = m_netBindingMap.find(rawEntity);
+        if (found != m_netBindingMap.end())
+        {
+            return found->second;
+        }
+        return nullptr;
+    }
+
     inline NetworkEntityTracker::iterator NetworkEntityTracker::begin()
     {
         return m_entityMap.begin();
@@ -48,6 +58,7 @@ namespace Multiplayer
     inline void NetworkEntityTracker::clear()
     {
         m_entityMap.clear();
+        m_netEntityIdMap.clear();
     }
 
     inline uint32_t NetworkEntityTracker::GetChangeDirty(const AZ::Entity* entity) const

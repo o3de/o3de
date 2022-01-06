@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/PipelineLayoutDescriptor.h>
+#include <AzCore/Math/Color.h>
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Matrix4x4.h>
@@ -85,6 +86,14 @@ namespace AZ
             //! Returns the constants layout.
             const ConstantsLayout* GetLayout() const;
 
+            //! Returns whether other constant data and this have the same value at the specified shader input index
+            bool ConstantIsEqual(const ConstantsData& other, ShaderInputConstantIndex inputIndex) const;
+
+            //! Performs a diff between this and input constant data and returns a list of all the shader input indices
+            //! for which the constants are not the same between the two. If one of the two has more constants than the
+            //! other, these additional constants will be added to the end of the returned list.
+            AZStd::vector<ShaderInputConstantIndex> GetIndicesOfDifferingConstants(const ConstantsData& other) const;
+
         private:
             enum class ValidateConstantAccessExpect : uint32_t
             {
@@ -140,6 +149,9 @@ namespace AZ
         bool ConstantsData::SetConstant<Vector4>(ShaderInputConstantIndex inputIndex, const Vector4& value);
 
         template <>
+        bool ConstantsData::SetConstant<Color>(ShaderInputConstantIndex inputIndex, const Color& value);
+
+        template <>
         bool ConstantsData::SetConstantArray<bool>(ShaderInputConstantIndex inputIndex, AZStd::array_view<bool> values);
 
         template <>
@@ -162,6 +174,9 @@ namespace AZ
 
         template <>
         Vector4 ConstantsData::GetConstant<Vector4>(ShaderInputConstantIndex inputIndex) const;
+
+        template <>
+        Color ConstantsData::GetConstant<Color>(ShaderInputConstantIndex inputIndex) const;
 
         template <typename T, uint32_t matrixSize>
         bool ConstantsData::SetConstantMatrixRows(ShaderInputConstantIndex inputIndex, const T& value, uint32_t rowCount)
@@ -240,7 +255,6 @@ namespace AZ
             AZStd::array_view<uint8_t> constantBytes = GetConstantRaw(inputIndex);
             const size_t elementSize = sizeof(T);
             const size_t elementOffset = arrayIndex * elementSize;
-            const size_t elementCount = DivideByMultiple(constantBytes.size(), elementSize);
             if (ValidateConstantAccess(inputIndex, ValidateConstantAccessExpect::ArrayElement, elementOffset, elementSize))
             {
                 return *reinterpret_cast<const T*>(&constantBytes[elementOffset]);

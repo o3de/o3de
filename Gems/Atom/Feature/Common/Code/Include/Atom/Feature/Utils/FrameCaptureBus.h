@@ -31,6 +31,11 @@ namespace AZ
         {
         public:
             virtual ~FrameCaptureRequests() = default;
+
+            //! Return true if frame capture is available.
+            //! It may return false if null renderer is used.
+            //! If the frame capture is not available, all capture functions in this interface would return false
+            virtual bool CanCapture() const = 0;
             
             //! Capture final screen output for the specified window and save it to given file path.
             //! The image format is determinate by file extension
@@ -45,7 +50,7 @@ namespace AZ
             virtual bool CaptureScreenshotWithPreview(const AZStd::string& outputFilePath) = 0;
             
             //! Save a buffer attachment or a image attachment binded to a pass's slot to a data file.
-            //! @param passHierarchy For finding the pass by using PassHierarchyFilter
+            //! @param passHierarchy For finding the pass by using a pass hierarchy filter. Check PassFilter::CreateWithPassHierarchy() function for detail
             //! @param slotName Name of the pass's slot. The attachment bound to this slot will be captured.
             //! @param option Only valid for an InputOutput attachment. Use PassAttachmentReadbackOption::Input to capture the input state
             //!               and use PassAttachmentReadbackOption::Output to capture the output state

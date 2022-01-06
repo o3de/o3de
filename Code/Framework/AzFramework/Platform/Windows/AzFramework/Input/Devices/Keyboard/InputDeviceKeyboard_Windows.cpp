@@ -117,9 +117,11 @@ namespace AzFramework
         , m_hasFocus(false)
         , m_hasTextEntryStarted(false)
     {
+        static const char* s_keyboardCountEnvironmentVarName = "InputDeviceKeyboardInstanceCount";
+        s_instanceCount = AZ::Environment::FindVariable<int>(s_keyboardCountEnvironmentVarName);
         if (!s_instanceCount)
         {
-            s_instanceCount = AZ::Environment::CreateVariable<int>("InputDeviceKeyboardInstanceCount", 1);
+            s_instanceCount = AZ::Environment::CreateVariable<int>(s_keyboardCountEnvironmentVarName, 1);
 
             // Register for raw keyboard input
             RAWINPUTDEVICE rawInputDevice;
@@ -253,7 +255,7 @@ namespace AzFramework
         if (stringLength != 0)
         {
             // Convert UTF-16 to UTF-8
-            AZStd::to_string(o_keyOrButtonText, buffer, stringLength);
+            AZStd::to_string(o_keyOrButtonText, { buffer, aznumeric_cast<size_t>(stringLength) });
         }
     }
 

@@ -9,6 +9,7 @@
 #include <Atom/RPI.Reflect/Material/LuaMaterialFunctor.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Script/ScriptContext.h>
 #include <AzCore/Script/ScriptSystemBus.h>
 #include <AzCore/Script/ScriptAsset.h>
@@ -17,8 +18,6 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
 #include <AzCore/Math/Color.h>
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace RPI
@@ -122,13 +121,13 @@ namespace AZ
 
         void LuaMaterialFunctor::Process(RuntimeContext& context)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RPI);
 
             InitScriptContext();
 
             if (m_scriptStatus == ScriptStatus::Ready)
             {
-                LuaMaterialFunctorRuntimeContext luaContext{&context, m_propertyNamePrefix, m_srgNamePrefix, m_optionsNamePrefix};
+                LuaMaterialFunctorRuntimeContext luaContext{&context, &GetMaterialPropertyDependencies(), m_propertyNamePrefix, m_srgNamePrefix, m_optionsNamePrefix};
                 AZ::ScriptDataContext call;
                 if (m_scriptContext->Call("Process", call))
                 {
@@ -140,13 +139,13 @@ namespace AZ
 
         void LuaMaterialFunctor::Process(EditorContext& context)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RPI);
 
             InitScriptContext();
 
             if (m_scriptStatus == ScriptStatus::Ready)
             {
-                LuaMaterialFunctorEditorContext luaContext{&context, m_propertyNamePrefix, m_srgNamePrefix, m_optionsNamePrefix};
+                LuaMaterialFunctorEditorContext luaContext{&context, &GetMaterialPropertyDependencies(), m_propertyNamePrefix, m_srgNamePrefix, m_optionsNamePrefix};
                 AZ::ScriptDataContext call;
                 if (m_scriptContext->Call("ProcessEditor", call))
                 {
@@ -157,10 +156,12 @@ namespace AZ
         }
 
         LuaMaterialFunctorCommonContext::LuaMaterialFunctorCommonContext(MaterialFunctor::RuntimeContext* runtimeContextImpl,
+            const MaterialPropertyFlags* materialPropertyDependencies,
             const AZStd::string& propertyNamePrefix,
             const AZStd::string& srgNamePrefix,
             const AZStd::string& optionsNamePrefix)
             : m_runtimeContextImpl(runtimeContextImpl)
+            , m_materialPropertyDependencies(materialPropertyDependencies)
             , m_propertyNamePrefix(propertyNamePrefix)
             , m_srgNamePrefix(srgNamePrefix)
             , m_optionsNamePrefix(optionsNamePrefix)
@@ -168,14 +169,87 @@ namespace AZ
         }
 
         LuaMaterialFunctorCommonContext::LuaMaterialFunctorCommonContext(MaterialFunctor::EditorContext* editorContextImpl,
+            const MaterialPropertyFlags* materialPropertyDependencies,
             const AZStd::string& propertyNamePrefix,
             const AZStd::string& srgNamePrefix,
             const AZStd::string& optionsNamePrefix)
             : m_editorContextImpl(editorContextImpl)
+            , m_materialPropertyDependencies(materialPropertyDependencies)
             , m_propertyNamePrefix(propertyNamePrefix)
             , m_srgNamePrefix(srgNamePrefix)
             , m_optionsNamePrefix(optionsNamePrefix)
         {
+        }
+        
+        MaterialPropertyPsoHandling LuaMaterialFunctorCommonContext::GetMaterialPropertyPsoHandling() const
+        {
+            if (m_runtimeContextImpl)
+            {
+                return m_runtimeContextImpl->GetMaterialPropertyPsoHandling();
+            }
+            else
+            {
+                return m_editorContextImpl->GetMaterialPropertyPsoHandling();
+            }
+        }
+
+        RHI::ConstPtr<MaterialPropertiesLayout> LuaMaterialFunctorCommonContext::GetMaterialPropertiesLayout() const
+        {
+            if (m_runtimeContextImpl)
+            {
+                return m_runtimeContextImpl->GetMaterialPropertiesLayout();
+            }
+            else
+            {
+                return m_editorContextImpl->GetMaterialPropertiesLayout();
+            }
+        }
+
+        AZStd::string LuaMaterialFunctorCommonContext::GetMaterialPropertyDependenciesString() const
+        {
+            AZStd::vector<AZStd::string> propertyList;
+            for (size_t i = 0; i < m_materialPropertyDependencies->size(); ++i)
+            {
+                if ((*m_materialPropertyDependencies)[i])
+                {
+                    propertyList.push_back(GetMaterialPropertiesLayout()->GetPropertyDescriptor(MaterialPropertyIndex{i})->GetName().GetStringView());
+                }
+            }
+
+            AZStd::string propertyListString;
+            AzFramework::StringFunc::Join(propertyListString, propertyList.begin(), propertyList.end(), ", ");
+
+            return propertyListString;
+        }
+        
+        bool LuaMaterialFunctorCommonContext::CheckPsoChangesAllowed()
+        {
+            if (GetMaterialPropertyPsoHandling() == MaterialPropertyPsoHandling::Error)
+            {
+                if (!m_psoChangesReported)
+                {
+                    LuaMaterialFunctorUtilities::Script_Error(
+                        AZStd::string::format(
+                            "The following material properties must not be changed at runtime because they impact Pipeline State Objects: %s", GetMaterialPropertyDependenciesString().c_str()));
+                    
+                    m_psoChangesReported = true;
+                }
+
+                return false;
+            }
+            else if (GetMaterialPropertyPsoHandling() == MaterialPropertyPsoHandling::Warning)
+            {
+                if (!m_psoChangesReported)
+                {
+                    LuaMaterialFunctorUtilities::Script_Warning(
+                        AZStd::string::format(
+                            "The following material properties should not be changed at runtime because they impact Pipeline State Objects: %s", GetMaterialPropertyDependenciesString().c_str()));
+                    
+                    m_psoChangesReported = true;
+                }
+            }
+
+            return true;
         }
 
         MaterialPropertyIndex LuaMaterialFunctorCommonContext::GetMaterialPropertyIndex(const char* name, const char* functionName) const
@@ -183,19 +257,8 @@ namespace AZ
             MaterialPropertyIndex propertyIndex;
 
             Name propertyFullName{m_propertyNamePrefix + name};
-
-            if (m_runtimeContextImpl)
-            {
-                propertyIndex = m_runtimeContextImpl->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyFullName);
-            }
-            else if (m_editorContextImpl)
-            {
-                propertyIndex = m_editorContextImpl->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyFullName);
-            }
-            else
-            {
-                AZ_Assert(false, "Context not initialized properly");
-            }
+            
+            propertyIndex = GetMaterialPropertiesLayout()->FindPropertyIndex(propertyFullName);
 
             if (!propertyIndex.IsValid())
             {
@@ -297,10 +360,11 @@ namespace AZ
         }
 
         LuaMaterialFunctorRuntimeContext::LuaMaterialFunctorRuntimeContext(MaterialFunctor::RuntimeContext* runtimeContextImpl,
+            const MaterialPropertyFlags* materialPropertyDependencies,
             const AZStd::string& propertyNamePrefix,
             const AZStd::string& srgNamePrefix,
             const AZStd::string& optionsNamePrefix)
-            : LuaMaterialFunctorCommonContext(runtimeContextImpl, propertyNamePrefix, srgNamePrefix, optionsNamePrefix)
+            : LuaMaterialFunctorCommonContext(runtimeContextImpl, materialPropertyDependencies, propertyNamePrefix, srgNamePrefix, optionsNamePrefix)
             , m_runtimeContextImpl(runtimeContextImpl)
         {
         }
@@ -331,7 +395,7 @@ namespace AZ
 
                 if (!shaderItem.MaterialOwnsShaderOption(optionIndex))
                 {
-                    LuaMaterialFunctorUtilities::Script_Error(AZStd::string::format("Shader option '%s' is not owned by this material.", fullOptionName.GetCStr()).c_str());
+                    LuaMaterialFunctorUtilities::Script_Error(AZStd::string::format("Shader option '%s' is not owned by this material.", fullOptionName.GetCStr()));
                     break;
                 }
 
@@ -398,12 +462,12 @@ namespace AZ
         {
             if (index < GetShaderCount())
             {
-                return LuaMaterialFunctorShaderItem{&(*m_runtimeContextImpl->m_shaderCollection)[index]};
+                return LuaMaterialFunctorShaderItem{this, &(*m_runtimeContextImpl->m_shaderCollection)[index]};
             }
             else
             {
                 LuaMaterialFunctorUtilities::Script_Error(AZStd::string::format("GetShader(%zu) is invalid.", index));
-                return LuaMaterialFunctorShaderItem{nullptr};
+                return {};
             }
         }
 
@@ -412,13 +476,13 @@ namespace AZ
             const AZ::Name tag{shaderTag};
             if (m_runtimeContextImpl->m_shaderCollection->HasShaderTag(tag))
             {
-                return LuaMaterialFunctorShaderItem{&(*m_runtimeContextImpl->m_shaderCollection)[tag]};
+                return LuaMaterialFunctorShaderItem{this, &(*m_runtimeContextImpl->m_shaderCollection)[tag]};
             }
             else
             {
                 LuaMaterialFunctorUtilities::Script_Error(AZStd::string::format(
                     "GetShaderByTag('%s') is invalid: Could not find a shader with the tag '%s'.", tag.GetCStr(), tag.GetCStr()));
-                return LuaMaterialFunctorShaderItem{nullptr};
+                return {};
             }
         }
         
@@ -459,10 +523,11 @@ namespace AZ
         }
 
         LuaMaterialFunctorEditorContext::LuaMaterialFunctorEditorContext(MaterialFunctor::EditorContext* editorContextImpl,
+            const MaterialPropertyFlags* materialPropertyDependencies,
             const AZStd::string& propertyNamePrefix,
             const AZStd::string& srgNamePrefix,
             const AZStd::string& optionsNamePrefix)
-            : LuaMaterialFunctorCommonContext(editorContextImpl, propertyNamePrefix, srgNamePrefix, optionsNamePrefix)
+            : LuaMaterialFunctorCommonContext(editorContextImpl, materialPropertyDependencies, propertyNamePrefix, srgNamePrefix, optionsNamePrefix)
             , m_editorContextImpl(editorContextImpl)
         {
         }
@@ -595,7 +660,7 @@ namespace AZ
 
         LuaMaterialFunctorRenderStates LuaMaterialFunctorShaderItem::GetRenderStatesOverride()
         {
-            if (m_shaderItem)
+            if (m_context->CheckPsoChangesAllowed() && m_shaderItem)
             {
                 return LuaMaterialFunctorRenderStates{m_shaderItem->GetRenderStatesOverlay()};
             }
@@ -638,8 +703,7 @@ namespace AZ
             {
                 LuaMaterialFunctorUtilities::Script_Error(
                     AZStd::string::format(
-                        "Shader option '%s' is not owned by the shader '%s'.", name.GetCStr(), m_shaderItem->GetShaderTag().GetCStr())
-                        .c_str());
+                        "Shader option '%s' is not owned by the shader '%s'.", name.GetCStr(), m_shaderItem->GetShaderTag().GetCStr()));
                 return;
             }
 

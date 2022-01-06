@@ -480,7 +480,9 @@ namespace UnitTest
         TEST_F(AnyTest, Any_CopyAssignSelfEmpty_IsEmpty)
         {
             any a;
+            AZ_PUSH_DISABLE_WARNING(, "-Wself-assign-overloaded")
             a = a;
+            AZ_POP_DISABLE_WARNING
             EXPECT_TRUE(a.empty());
         }
 
@@ -491,7 +493,9 @@ namespace UnitTest
                 any a((TypeParam(1)));
                 EXPECT_EQ(TypeParam::s_count, 1);
 
+                AZ_PUSH_DISABLE_WARNING(, "-Wself-assign-overloaded")
                 a = a;
+                AZ_POP_DISABLE_WARNING
 
                 EXPECT_EQ(TypeParam::s_count, 1);
                 EXPECT_EQ(any_cast<const TypeParam&>(a).val(), 1);

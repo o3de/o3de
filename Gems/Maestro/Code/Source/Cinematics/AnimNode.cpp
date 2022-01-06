@@ -77,7 +77,7 @@ int CAnimNode::GetTrackCount() const
     return static_cast<int>(m_tracks.size());
 }
 
-const char* CAnimNode::GetParamName(const CAnimParamType& paramType) const
+AZStd::string CAnimNode::GetParamName(const CAnimParamType& paramType) const
 {
     SParamInfo info;
     if (GetParamInfoFromType(paramType, info))

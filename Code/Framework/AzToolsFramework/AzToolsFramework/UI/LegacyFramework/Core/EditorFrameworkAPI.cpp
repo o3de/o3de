@@ -17,21 +17,21 @@ namespace LegacyFramework
 {
     const char* appName()
     {
-        const char* result = NULL;
+        const char* result = nullptr;
         EBUS_EVENT_RESULT(result, FrameworkApplicationMessages::Bus, GetApplicationName);
         return result;
     }
 
     const char* appModule()
     {
-        const char* result = NULL;
+        const char* result = nullptr;
         EBUS_EVENT_RESULT(result, FrameworkApplicationMessages::Bus, GetApplicationModule);
         return result;
     }
 
     const char* appDir()
     {
-        const char* result = NULL;
+        const char* result = nullptr;
         EBUS_EVENT_RESULT(result, FrameworkApplicationMessages::Bus, GetApplicationDirectory);
         return result;
     }
@@ -74,7 +74,7 @@ namespace LegacyFramework
     // helper function which retrieves the serialize context and asserts if its not found.
     AZ::SerializeContext* GetSerializeContext()
     {
-        AZ::SerializeContext* serializeContext = NULL;
+        AZ::SerializeContext* serializeContext = nullptr;
         EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
         AZ_Assert(serializeContext, "No serialize context");
         return serializeContext;

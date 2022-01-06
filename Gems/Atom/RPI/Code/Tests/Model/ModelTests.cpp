@@ -38,7 +38,8 @@ namespace UnitTest
         bufferData.resize(bufferSize);
 
         //The actual data doesn't matter
-        for (uint32_t i = 0; i < bufferData.size(); ++i)
+        const uint8_t bufferDataSize = aznumeric_cast<uint8_t>(bufferData.size());
+        for (uint8_t i = 0; i < bufferDataSize; ++i)
         {
             bufferData[i] = i;
         }
@@ -247,7 +248,8 @@ namespace UnitTest
             return asset;
         }
 
-        AZ::Data::Asset<AZ::RPI::ModelAsset> BuildTestModel(const uint32_t lodCount, const uint32_t sharedMeshCount, const uint32_t separateMeshCount, ExpectedModel& expectedModel)
+        AZ::Data::Asset<AZ::RPI::ModelAsset> BuildTestModel(
+            const uint32_t lodCount, const uint32_t sharedMeshCount, const uint32_t separateMeshCount, ExpectedModel& expectedModel)
         {
             using namespace AZ;
 
@@ -782,7 +784,6 @@ namespace UnitTest
 
         const uint32_t vertexCount = 36;
         const uint32_t vertexSize = sizeof(float) * 3;
-        const uint32_t vertexBufferSize = vertexCount * vertexSize;
 
         RHI::BufferViewDescriptor validStreamBufferViewDescriptor =
             RHI::BufferViewDescriptor::CreateStructured(0, vertexCount, vertexSize);
@@ -989,6 +990,9 @@ namespace UnitTest
         uint32_t{ 0 }, 2, 1, 1, 2, 3, 4, 5, 6, 5, 7, 6, 0, 4, 2, 4, 6, 2, 1, 3, 5, 5, 3, 7, 0, 1, 4, 4, 1, 5, 2, 6, 3, 6, 7, 3,
     };
 
+    static constexpr AZStd::array QuadPositions = { -1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f };
+    static constexpr AZStd::array QuadIndices = { uint32_t{ 0 }, 2, 1, 1, 2, 3 };
+
     // This class creates a Model with one LOD, whose mesh contains 2 planes. Plane 1 is in the XY plane at Z=-0.5, and
     // plane 2 is in the XY plane at Z=0.5. The two planes each have 9 quads which have been triangulated. It only has
     // a position and index buffer.
@@ -1031,42 +1035,80 @@ namespace UnitTest
     static constexpr inline auto minmaxElement = AZStd::minmax_element(begin(TwoSeparatedPlanesIndices), end(TwoSeparatedPlanesIndices));
     static_assert(*minmaxElement.second == (TwoSeparatedPlanesPositions.size() / 3) - 1);
 
-    template<class x> class TD;
     class TestMesh
     {
     public:
+        TestMesh() = default;
+
         TestMesh(const float* positions, size_t positionCount, const uint32_t* indices, size_t indicesCount)
         {
             AZ::RPI::ModelLodAssetCreator lodCreator;
-            lodCreator.Begin(AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
+            Begin(lodCreator);
+            Add(lodCreator, positions, positionCount, /*positionOffset=*/0, indices, indicesCount, /*indexOffset=*/0);
+            End(lodCreator);
+        }
 
+        // initiate the asset lod creation process (note: End must be called after meshes have been added).
+        void Begin(AZ::RPI::ModelLodAssetCreator& lodCreator)
+        {
+            lodCreator.Begin(AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
+        }
+
+        // add a sub mesh and reuse existing position/index buffer (be very careful with the offsets used)
+        void Add(
+            AZ::RPI::ModelLodAssetCreator& lodCreator,
+            const float* positions,
+            size_t positionCount,
+            size_t positionOffset,
+            AZ::Data::Asset<AZ::RPI::BufferAsset> positionBuffer,
+            const uint32_t* indices,
+            size_t indexCount,
+            size_t indexOffset,
+            AZ::Data::Asset<AZ::RPI::BufferAsset> indexBuffer)
+        {
             lodCreator.BeginMesh();
-            lodCreator.SetMeshAabb(AZ::Aabb::CreateFromMinMax({-1.0f, -1.0f, -0.5f}, {1.0f, 1.0f, 0.5f}));
+            lodCreator.SetMeshAabb(AZ::Aabb::CreateFromMinMax({ -1.0f, -1.0f, -0.5f }, { 1.0f, 1.0f, 0.5f }));
             lodCreator.SetMeshMaterialSlot(AZ::Sfmt::GetInstance().Rand32());
 
-            {
-                AZ::Data::Asset<AZ::RPI::BufferAsset> indexBuffer = BuildTestBuffer(static_cast<uint32_t>(indicesCount), sizeof(uint32_t));
-                AZStd::copy(indices, indices + indicesCount, reinterpret_cast<uint32_t*>(const_cast<uint8_t*>(indexBuffer->GetBuffer().data())));
-                lodCreator.SetMeshIndexBuffer({
-                    indexBuffer,
-                    AZ::RHI::BufferViewDescriptor::CreateStructured(0, static_cast<uint32_t>(indicesCount), sizeof(uint32_t))
-                });
-            }
+            AZStd::copy(
+                indices, indices + indexCount,
+                reinterpret_cast<uint32_t*>(const_cast<uint8_t*>(indexBuffer->GetBuffer().data())) + indexOffset);
+            lodCreator.SetMeshIndexBuffer(
+                { indexBuffer,
+                  AZ::RHI::BufferViewDescriptor::CreateStructured(
+                      aznumeric_cast<uint32_t>(indexOffset), aznumeric_cast<uint32_t>(indexCount), sizeof(uint32_t)) });
+            AZStd::copy(
+                positions, positions + positionCount,
+                reinterpret_cast<float*>(const_cast<uint8_t*>(positionBuffer->GetBuffer().data())) + positionOffset);
+            lodCreator.AddMeshStreamBuffer(
+                AZ::RHI::ShaderSemantic(AZ::Name("POSITION")), AZ::Name(),
+                { positionBuffer,
+                  AZ::RHI::BufferViewDescriptor::CreateStructured(
+                      aznumeric_cast<uint32_t>(positionOffset / 3), aznumeric_cast<uint32_t>(positionCount / 3), sizeof(float) * 3) });
 
-            {
-                AZ::Data::Asset<AZ::RPI::BufferAsset> positionBuffer = BuildTestBuffer(static_cast<uint32_t>(positionCount / 3), sizeof(float) * 3);
-                AZStd::copy(positions, positions + positionCount, reinterpret_cast<float*>(const_cast<uint8_t*>(positionBuffer->GetBuffer().data())));
-                lodCreator.AddMeshStreamBuffer(
-                    AZ::RHI::ShaderSemantic(AZ::Name("POSITION")),
-                    AZ::Name(),
-                    {
-                        positionBuffer,
-                        AZ::RHI::BufferViewDescriptor::CreateStructured(0, static_cast<uint32_t>(positionCount / 3), sizeof(float) * 3)
-                    }
-                );
-            }
             lodCreator.EndMesh();
+        }
 
+        // overload of Add - here a new index/position buffer is created for the new data instead of potentially reusing an existing buffer
+        void Add(
+            AZ::RPI::ModelLodAssetCreator& lodCreator,
+            const float* positions,
+            size_t positionCount,
+            size_t positionOffset,
+            const uint32_t* indices,
+            size_t indexCount,
+            size_t indexOffset)
+        {
+            AZ::Data::Asset<AZ::RPI::BufferAsset> indexBuffer = BuildTestBuffer(aznumeric_cast<uint32_t>(indexCount), sizeof(uint32_t));
+            AZ::Data::Asset<AZ::RPI::BufferAsset> positionBuffer =
+                BuildTestBuffer(aznumeric_cast<uint32_t>(positionCount / 3), sizeof(float) * 3);
+
+            Add(lodCreator, positions, positionCount, positionOffset, positionBuffer, indices, indexCount, indexOffset, indexBuffer);
+        }
+
+        // complete the asset lod creation process
+        void End(AZ::RPI::ModelLodAssetCreator& lodCreator)
+        {
             AZ::Data::Asset<AZ::RPI::ModelLodAsset> lodAsset;
             lodCreator.End(lodAsset);
 
@@ -1199,7 +1241,7 @@ namespace UnitTest
         constexpr float rayLength = 100.0f;
         EXPECT_THAT(
             m_kdTree->RayIntersection(
-                AZ::Vector3::CreateZero(), AZ::Vector3::CreateAxisZ(-rayLength), t, normal), testing::Eq(true));
+                AZ::Vector3::CreateZero(), AZ::Vector3::CreateAxisZ(-rayLength), t, normal), testing::IsTrue());
         EXPECT_THAT(t, testing::FloatEq(0.005f));
     }
 
@@ -1210,7 +1252,7 @@ namespace UnitTest
 
         constexpr float rayLength = 10.0f;
         EXPECT_THAT(
-            m_kdTree->RayIntersection(AZ::Vector3::CreateAxisZ(0.75f), AZ::Vector3::CreateAxisZ(-rayLength), t, normal), testing::Eq(true));
+            m_kdTree->RayIntersection(AZ::Vector3::CreateAxisZ(0.75f), AZ::Vector3::CreateAxisZ(-rayLength), t, normal), testing::IsTrue());
         EXPECT_THAT(t, testing::FloatEq(0.025f));
     }
 
@@ -1288,7 +1330,7 @@ namespace UnitTest
         EXPECT_THAT(
             m_mesh->GetModel()->LocalRayIntersectionAgainstModel(
                 AZ::Vector3::CreateAxisZ(5.0f), -AZ::Vector3::CreateAxisZ(10.0f), AllowBruteForce, t, normal),
-            testing::Eq(true));
+            testing::IsTrue());
         EXPECT_THAT(t, testing::FloatEq(0.4f));
     }
 
@@ -1302,8 +1344,87 @@ namespace UnitTest
         EXPECT_THAT(
             m_mesh->GetModel()->LocalRayIntersectionAgainstModel(
                 AZ::Vector3::CreateAxisY(10.0f), -AZ::Vector3::CreateAxisY(9.0f), AllowBruteForce, t, normal),
-            testing::Eq(true));
+            testing::IsTrue());
         EXPECT_THAT(t, testing::FloatEq(1.0f));
         EXPECT_THAT(normal, IsClose(AZ::Vector3::CreateAxisY()));
+    }
+
+    // test to verify that each secondary sub meshes are still intersected with correctly when using brute-force
+    // ray intersection
+    class BruteForceMultiModelIntersectsFixture : public ModelTests
+    {
+    public:
+        inline static const float QuadOffsetX = 15.0f;
+
+        void SetUp() override
+        {
+            ModelTests::SetUp();
+            m_mesh = AZStd::make_unique<TestMesh>();
+
+            AZ::RPI::ModelLodAssetCreator lodCreator;
+            m_mesh->Begin(lodCreator);
+
+            // take default quad positions and offset in X by set amount
+            AZStd::vector<float> offsetQuadPositions;
+            offsetQuadPositions.resize(QuadPositions.size());
+            AZStd::copy(QuadPositions.begin(), QuadPositions.end(), offsetQuadPositions.begin());
+            for (size_t xVertIndex = 0; xVertIndex < offsetQuadPositions.size(); xVertIndex += 3)
+            {
+                offsetQuadPositions[xVertIndex] += QuadOffsetX;
+            }
+
+            // create shared buffer to store cube and quad mesh in the same buffer
+            const size_t indicesCount = QuadIndices.size() + CubeIndices.size();
+            const size_t positionCount = QuadPositions.size() + CubePositions.size();
+            AZ::Data::Asset<AZ::RPI::BufferAsset> indexBuffer = BuildTestBuffer(aznumeric_cast<uint32_t>(indicesCount), sizeof(uint32_t));
+            AZ::Data::Asset<AZ::RPI::BufferAsset> positionBuffer =
+                BuildTestBuffer(aznumeric_cast<uint32_t>(positionCount / 3), sizeof(float) * 3);
+
+            // add the cube mesh
+            m_mesh->Add(
+                lodCreator, CubePositions.data(), CubePositions.size(), 0, positionBuffer, CubeIndices.data(), CubeIndices.size(), 0,
+                indexBuffer);
+            // add the quad mesh (offset by the cube position and index data into the same buffer)
+            m_mesh->Add(
+                lodCreator, offsetQuadPositions.data(), offsetQuadPositions.size(), /*offset=*/CubePositions.size(), positionBuffer,
+                QuadIndices.data(), QuadIndices.size(), /*offset=*/CubeIndices.size(), indexBuffer);
+
+            m_mesh->End(lodCreator);
+        }
+
+        void TearDown() override
+        {
+            m_mesh.reset();
+            ModelTests::TearDown();
+        }
+
+        AZStd::unique_ptr<TestMesh> m_mesh;
+        inline static constexpr bool AllowBruteForce = false;
+    };
+
+    TEST_F(BruteForceMultiModelIntersectsFixture, RayIntersectsWithFirstSubMesh)
+    {
+        float t = 0.0f;
+        AZ::Vector3 normal = AZ::Vector3::CreateOne(); // invalid starting normal
+        // fire a ray at the first sub mesh and ensure a successful hit is returned
+        EXPECT_THAT(
+            m_mesh->GetModel()->LocalRayIntersectionAgainstModel(
+                AZ::Vector3(0.0f, 0.0f, 5.0f), -AZ::Vector3::CreateAxisZ(10.0f), AllowBruteForce, t, normal),
+            testing::IsTrue());
+        EXPECT_THAT(t, testing::FloatEq(0.4f));
+        EXPECT_THAT(normal, IsClose(AZ::Vector3::CreateAxisZ()));
+    }
+
+    TEST_F(BruteForceMultiModelIntersectsFixture, RayIntersectsWithSecondSubMesh)
+    {
+        float t = 0.0f;
+        AZ::Vector3 normal = AZ::Vector3::CreateOne(); // invalid starting normal
+        // fire a ray at the second sub mesh and ensure a successful hit is returned
+        EXPECT_THAT(
+            m_mesh->GetModel()->LocalRayIntersectionAgainstModel(
+                AZ::Vector3(QuadOffsetX, 0.0f, 5.0f), -AZ::Vector3::CreateAxisZ(10.0f), AllowBruteForce, t, normal),
+            testing::IsTrue());
+        EXPECT_THAT(t, testing::FloatEq(0.5f));
+        EXPECT_THAT(normal, IsClose(AZ::Vector3::CreateAxisZ()));
     }
 } // namespace UnitTest

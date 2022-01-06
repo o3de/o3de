@@ -51,7 +51,13 @@
                 },
                 "Make Fullscreen Pass": true,
                 "PipelineViewTag": "MainCamera"
-            }
+            },
+            "FallbackConnections": [
+                {
+                    "Input": "LinearDepth", 
+                    "Output": "Output" 
+                }
+            ]
         }
     }
 }

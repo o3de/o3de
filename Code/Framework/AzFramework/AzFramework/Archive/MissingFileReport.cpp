@@ -94,7 +94,7 @@ namespace AZ::IO::Internal
         }
 
         AZStd::smatch matches;
-        const AZStd::regex lodRegex("@assets@\\\\(.*)_lod[0-9]+(\\.cgfm?)");
+        const AZStd::regex lodRegex("@products@\\\\(.*)_lod[0-9]+(\\.cgfm?)");
         if (!AZStd::regex_match(szPath, matches, lodRegex) || matches.size() != 3)
         {
             // The current file is not a valid LOD file

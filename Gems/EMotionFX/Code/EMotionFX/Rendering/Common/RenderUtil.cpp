@@ -519,7 +519,6 @@ namespace MCommon
                 EMotionFX::SubMesh* subMesh = mesh->GetSubMesh(subMeshIndex);
                 const uint32 numVertices = subMesh->GetNumVertices();
                 const uint32 startVertex = subMesh->GetStartVertex();
-                const uint32 startIndex = subMesh->GetStartIndex();
 
                 for (uint32 j = 0; j < numVertices; ++j)
                 {
@@ -689,7 +688,7 @@ namespace MCommon
                 const AZ::Vector3       nodeWorldPos        = pose->GetWorldSpaceTransform(jointIndex).m_position;
                 const AZ::Vector3       parentWorldPos      = pose->GetWorldSpaceTransform(parentIndex).m_position;
                 const AZ::Vector3       bone                = parentWorldPos - nodeWorldPos;
-                const AZ::Vector3       boneDirection       = MCore::SafeNormalize(bone);
+                const AZ::Vector3       boneDirection       = bone.GetNormalizedSafe();
                 const float             boneLength          = MCore::SafeLength(bone);
                 const float             boneScale           = GetBoneScale(actorInstance, joint);
                 const float             parentBoneScale     = GetBoneScale(actorInstance, skeleton->GetNode(parentIndex));
@@ -1332,7 +1331,6 @@ namespace MCommon
     // render mesh based axis
     void RenderUtil::RenderAxis(float size, const AZ::Vector3& position, const AZ::Vector3& right, const AZ::Vector3& up, const AZ::Vector3& forward)
     {
-        const float zeroSphereRadius = size * 0.075f;
         static const MCore::RGBAColor xAxisColor(1.0f, 0.0f, 0.0f);
         static const MCore::RGBAColor yAxisColor(0.0f, 1.0f, 0.0f);
         static const MCore::RGBAColor zAxisColor(0.0f, 0.0f, 1.0f);

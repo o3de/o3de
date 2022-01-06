@@ -97,7 +97,6 @@ namespace AZ
             {
                 const auto iter = AZStd::find(vec.begin(), vec.end(), elementToErase);
                 AZ_Assert(iter != vec.end(), "EraseFromVector failed to find the given object");
-                const auto indexToRemove = AZStd::distance(vec.begin(), iter);
                 AZStd::swap(*iter, vec.back());
                 vec.pop_back();
             }

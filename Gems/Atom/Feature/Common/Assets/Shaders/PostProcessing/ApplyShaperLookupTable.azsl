@@ -11,9 +11,7 @@
 #include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
 #include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
-
-static const int SHAPER_LINEAR = 0;
-static const int SHAPER_LOG2 = 1;
+#include <Atom/Features/PostProcessing/Shapers.azsli>
 
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
@@ -41,36 +39,22 @@ PSOutput MainPS(VSOutput IN)
     float2 uvCoord = float2(IN.m_texCoord.x, IN.m_texCoord.y);
     float3 color = PassSrg::m_colorTexture.Sample(PassSrg::LinearSampler, uvCoord).rgb;
 
+    ShaperType shaperType = (ShaperType)PassSrg::m_shaperType;
+
     // Convert from working color space to lut coordinates by applying the shaper function
-    float3 lutCoordinate = color;
-    if (PassSrg::m_shaperType == SHAPER_LINEAR)
-    {
-        lutCoordinate = color * PassSrg::m_shaperScale + PassSrg::m_shaperBias;
-    }
-    else if (PassSrg::m_shaperType == SHAPER_LOG2)
-    {
-        lutCoordinate = log2(color) * PassSrg::m_shaperScale + PassSrg::m_shaperBias;
-    }
+    float3 lutCoordinate = LinearToShaper(color, shaperType, PassSrg::m_shaperBias, PassSrg::m_shaperScale);
 
     // Adjust coordinate to the domain excluding the outer half texel in all directions
     uint3 outputDimensions;
     PassSrg::m_lut.GetDimensions(outputDimensions.x, outputDimensions.y, outputDimensions.z);
-    float3 coordBias = 1.0/(2.0 * outputDimensions);
-    float3 coordScale = (outputDimensions-1.0)/outputDimensions;
+    float3 coordBias = 1.0 / (2.0 * outputDimensions);
+    float3 coordScale = (outputDimensions - 1.0) / outputDimensions;
     lutCoordinate = (lutCoordinate * coordScale) + coordBias;
 
     float3 lutColor = PassSrg::m_lut.Sample(PassSrg::LinearSampler, lutCoordinate).rgb;
 
     // Apply the inverse of the shaper function to give the color in the working color space
-    float3 finalColor = lutColor;
-    if (PassSrg::m_shaperType == SHAPER_LINEAR)
-    {
-        finalColor = (lutColor - PassSrg::m_shaperBias)/PassSrg::m_shaperScale;
-    }
-    else if (PassSrg::m_shaperType == SHAPER_LOG2)
-    {
-        finalColor = pow(2.0, (lutColor - PassSrg::m_shaperBias)/PassSrg::m_shaperScale);
-    }
+    float3 finalColor = ShaperToLinear(lutColor, shaperType, PassSrg::m_shaperBias, PassSrg::m_shaperScale);
 
     OUT.m_color.rgb = finalColor;
     OUT.m_color.a = 1.0;

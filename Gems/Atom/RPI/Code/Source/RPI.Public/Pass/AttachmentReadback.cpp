@@ -21,9 +21,10 @@
 #include <Atom/RHI/FrameGraphExecuteContext.h>
 #include <Atom/RHI/FrameScheduler.h>
 #include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI/ScopeProducerFunction.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <AzCore/std/smart_ptr/make_shared.h>
 
@@ -120,8 +121,8 @@ namespace AZ
             m_fence->Init(*device, RHI::FenceState::Reset);
 
             // Load shader and srg
-            const char* ShaderPath = "shader/decomposemsimage.azshader";
-            m_decomposeShader = LoadShader(ShaderPath);
+            const char* ShaderPath = "shaders/decomposemsimage.azshader";
+            m_decomposeShader = LoadCriticalShader(ShaderPath);
 
             if (m_decomposeShader == nullptr)
             {
@@ -175,6 +176,11 @@ namespace AZ
 
         bool AttachmentReadback::ReadPassAttachment(const PassAttachment* attachment, const AZ::Name& readbackName)
         {
+            if (AZ::RHI::IsNullRenderer())
+            {
+                return false;
+            }
+
             if (!IsReady())
             {
                 AZ_Assert(false, "AttachmentReadback is not ready to readback an attachment");
@@ -302,10 +308,10 @@ namespace AZ
             // The fix is to clear the buffer outside of the callback.
             for (int32_t i = 0; i < RHI::Limits::Device::FrameCountMax; i++)
             {
-                if (m_isReadbackComplete[m_readbackBufferCurrentIndex])
+                if (m_isReadbackComplete[i])
                 {
-                    m_isReadbackComplete[m_readbackBufferCurrentIndex] = false;
-                    m_readbackBufferArray[m_readbackBufferCurrentIndex] = nullptr;
+                    m_isReadbackComplete[i] = false;
+                    m_readbackBufferArray[i] = nullptr;
                 }
             }
             // Loop the triple buffer index and cache the current index to the callback.

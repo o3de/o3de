@@ -71,10 +71,10 @@ def SearchPaths(filename, paths=[]):
     return None
 
 def ComputeOutputPath(inputFiles, projectDir, outputDir):
-    commonInputPath = os.path.commonprefix(inputFiles) # If we've globbed many source files, this finds the common prefix
+    commonInputPath = os.path.commonpath(inputFiles) # If we've globbed many source files, this finds the common path
     if os.path.isfile(commonInputPath): # If the commonInputPath resolves to an actual file, slice off the filename
         commonInputPath = os.path.dirname(commonInputPath)
-    commonPath = os.path.commonprefix([commonInputPath, projectDir]) # Finds the common path between the data source files and our project directory (//depot/dev/Code/Framework/AzCore/)
+    commonPath = os.path.commonpath([commonInputPath, projectDir]) # Finds the common path between the data source files and our project directory (//depot/dev/Code/Framework/AzCore/)
     inputRelativePath = os.path.relpath(commonInputPath, commonPath) # Computes the relative path for the project source directory (Code/Framework/AzCore/AutoGen/)
     return os.path.join(outputDir, inputRelativePath) # Returns a suitable output directory (//depot/dev/Generated/Code/Framework/AzCore/AutoGen/)
 
@@ -287,8 +287,7 @@ def ProcessExpansionRule(sourceFiles, templateFiles, templateCache, outputDir, p
             else:
                 # Process all matches in one batch
                 # Due to the lack of wildcards in the output file, we've determined we'll glob all matching input files into the template conversion 
-                for filename in fnmatch.filter(sourceFiles, inputFiles):
-                    dataInputFiles = [os.path.abspath(file) for file in fnmatch.filter(sourceFiles, inputFiles)]
+                dataInputFiles = [os.path.abspath(file) for file in fnmatch.filter(sourceFiles, inputFiles)]
                 outputFileAbsolute = outputFile.replace("$path", ComputeOutputPath(dataInputFiles, projectDir, outputDir))
                 outputFileAbsolute = SanitizePath(outputFileAbsolute)
                 ProcessTemplateConversion(dataInputSet, dataInputFiles, templateFile, outputFileAbsolute, templateCache, dryrun, verbose)

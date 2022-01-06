@@ -15,6 +15,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/sort.h>
+#include <AzCore/Time/ITime.h>
 
 #include <LyShine/ISprite.h>
 
@@ -73,7 +74,7 @@ void UiParticleEmitterComponent::SetIsEmitting(bool emitParticles)
     {
         m_nextEmitTime = (m_isHitParticleCountOnActivate ? -m_particleLifetime : 0.0f);
         m_emitterAge = 0.0f;
-        m_random.SetSeed(m_isRandomSeedFixed ? m_randomSeed : gEnv->pTimer->GetAsyncTime().GetMilliSecondsAsInt64());
+        m_random.SetSeed(m_isRandomSeedFixed ? m_randomSeed : aznumeric_cast<int64_t>(AZ::GetElapsedTimeMs()));
     }
     m_isEmitting = emitParticles;
 }
@@ -785,11 +786,7 @@ void UiParticleEmitterComponent::Render(LyShine::IRenderGraph* renderGraph)
     AZ::Data::Instance<AZ::RPI::Image> image;
     if (m_sprite)
     {
-        CSprite* sprite = dynamic_cast<CSprite*>(m_sprite);
-        if (sprite)
-        {
-            image = sprite->GetImage();
-        }
+        image = m_sprite->GetImage();
     }
 
     bool isClampTextureMode = true;
@@ -832,7 +829,7 @@ void UiParticleEmitterComponent::Render(LyShine::IRenderGraph* renderGraph)
     // particlesToRender is the max particles we will render, we could render less if some have zero alpha
     for (AZ::u32 i = 0; i < particlesToRender; ++i)
     {
-        SVF_P2F_C4B_T2F_F4B* firstVertexOfParticle = &m_cachedPrimitive.m_vertices[totalVerticesInserted];
+        LyShine::UiPrimitiveVertex* firstVertexOfParticle = &m_cachedPrimitive.m_vertices[totalVerticesInserted];
 
         if (m_particleContainer[i].FillVertices(firstVertexOfParticle, renderParameters, transform))
         {
@@ -843,11 +840,7 @@ void UiParticleEmitterComponent::Render(LyShine::IRenderGraph* renderGraph)
 
     m_cachedPrimitive.m_numVertices = totalVerticesInserted;
     m_cachedPrimitive.m_numIndices = totalParticlesInserted * indicesPerParticle;
-    LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph);
-    if (lyRenderGraph)
-    {
-        lyRenderGraph->AddPrimitiveAtom(&m_cachedPrimitive, image, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, m_blendMode);
-    }
+    renderGraph->AddPrimitive(&m_cachedPrimitive, image, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, m_blendMode);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1825,8 +1818,8 @@ void UiParticleEmitterComponent::ResetParticleBuffers()
     }
     m_cachedPrimitive.m_indices = new uint16[numIndices];
 
-    const int verticesPerParticle = 4;
-    int baseIndex = 0;
+    const uint16 verticesPerParticle = 4;
+    uint16 baseIndex = 0;
     for (AZ::u32 i = 0; i < numIndices; i += indicesPerParticle)
     {
         m_cachedPrimitive.m_indices[i + 0] = 0 + baseIndex;
@@ -1844,7 +1837,7 @@ void UiParticleEmitterComponent::ResetParticleBuffers()
     {
         delete [] m_cachedPrimitive.m_vertices;
     }
-    m_cachedPrimitive.m_vertices = new SVF_P2F_C4B_T2F_F4B[numVertices];
+    m_cachedPrimitive.m_vertices = new LyShine::UiPrimitiveVertex[numVertices];
 
     m_particleContainer.clear();
     m_particleContainer.reserve(m_particleBufferSize);

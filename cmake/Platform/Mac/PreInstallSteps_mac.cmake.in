@@ -1,0 +1,39 @@
+#
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+#
+
+cmake_minimum_required(VERSION 3.20)
+
+# The O3DE SDK will be shipped as an app bundle. So we create an O3DE_SDK.app directory
+# and install SDK into the app's Contents/Engine directory.
+set(LY_INSTALL_PATH_ORIGINAL ${CMAKE_INSTALL_PREFIX})
+
+file(INSTALL @LY_ROOT_FOLDER@/Code/Tools/BundleLauncher/info.plist
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/O3DE_SDK.app/Contents
+)
+
+# This SDK launcher will install python site-packages and then launch the ProjectManager
+# when a user double clicks on the SDK from Finder. We're only going to need one version
+# of the SDK launcher regardless of what configs of the engine are installed.
+if (EXISTS @CMAKE_BINARY_DIR@/bin/profile/O3DE_SDK)
+    set(sdk_launcher_config profile)
+elseif (EXISTS @CMAKE_BINARY_DIR@/bin/debug/O3DE_SDK)
+    set(sdk_launcher_config debug)
+elseif (EXISTS @CMAKE_BINARY_DIR@/bin/release/O3DE_SDK)
+    set(sdk_launcher_config release)
+endif()
+file(INSTALL @CMAKE_BINARY_DIR@/bin/${sdk_launcher_config}/O3DE_SDK
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/O3DE_SDK.app/Contents/MacOS
+    USE_SOURCE_PERMISSIONS
+)
+file(INSTALL @CMAKE_BINARY_DIR@/runtime_install/${sdk_launcher_config}/BinariesInstallPath.setreg
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/O3DE_SDK.app/Contents/MacOS/Registry
+)
+
+# We need to update the CMAKE_INSTALL_PREFIX so that the engine is installed inside the app bundle.
+file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/O3DE_SDK.app/Contents/Engine)
+set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/O3DE_SDK.app/Contents/Engine)

@@ -1,6 +1,6 @@
 {
  
-    "Source" : "ImGuiAtom",
+    "Source" : "ImGuiAtom.azsl",
 
     
     "RasterState" : { "CullMode" : "None" },

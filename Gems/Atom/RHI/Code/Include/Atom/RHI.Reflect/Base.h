@@ -8,12 +8,15 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Bits.h>
+#include <AzCore/Debug/Budget.h>
 #include <AzCore/Math/Crc.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
 
+AZ_DECLARE_BUDGET(RHI);
+inline static constexpr AZ::Crc32 rhiMetricsId = AZ_CRC_CE("RHI");
 
 namespace UnitTest
 {

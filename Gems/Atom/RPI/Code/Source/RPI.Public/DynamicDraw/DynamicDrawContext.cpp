@@ -25,8 +25,7 @@ namespace AZ
         namespace
         {
             constexpr const char* PerContextSrgName = "PerContextSrg";
-            constexpr const char* PerDrawSrgName = "PerDrawSrg";
-        };
+        }
                
         void DynamicDrawContext::MultiStates::UpdateHash(const DrawStateOptions& drawStateOptions)
         {
@@ -474,10 +473,10 @@ namespace AZ
             // Get dynamic buffers for vertex and index buffer. Skip draw if failed to allocate buffers
             uint32_t vertexDataSize = vertexCount * m_perVertexDataSize;
             RHI::Ptr<DynamicBuffer> vertexBuffer;
-            vertexBuffer = DynamicDrawInterface::Get()->GetDynamicBuffer(vertexDataSize);
+            vertexBuffer = DynamicDrawInterface::Get()->GetDynamicBuffer(vertexDataSize, RHI::Alignment::InputAssembly);
 
             uint32_t indexDataSize = indexCount * RHI::GetIndexFormatSize(indexFormat);
-            RHI::Ptr<DynamicBuffer> indexBuffer = DynamicDrawInterface::Get()->GetDynamicBuffer(indexDataSize);
+            RHI::Ptr<DynamicBuffer> indexBuffer = DynamicDrawInterface::Get()->GetDynamicBuffer(indexDataSize, RHI::Alignment::InputAssembly);
 
             if (indexBuffer == nullptr || vertexBuffer == nullptr)
             {
@@ -519,7 +518,6 @@ namespace AZ
             if (drawSrg)
             {
                 drawItem.m_uniqueShaderResourceGroup = drawSrg->GetRHIShaderResourceGroup();
-                m_cachedDrawSrg.push_back(drawSrg);
             }
 
             // Set scissor per draw if scissor is enabled.
@@ -572,7 +570,7 @@ namespace AZ
             // Get dynamic buffers for vertex and index buffer. Skip draw if failed to allocate buffers
             uint32_t vertexDataSize = vertexCount * m_perVertexDataSize;
             RHI::Ptr<DynamicBuffer> vertexBuffer;
-            vertexBuffer = DynamicDrawInterface::Get()->GetDynamicBuffer(vertexDataSize);
+            vertexBuffer = DynamicDrawInterface::Get()->GetDynamicBuffer(vertexDataSize, RHI::Alignment::InputAssembly);
 
             if (vertexBuffer == nullptr)
             {
@@ -609,7 +607,6 @@ namespace AZ
             if (drawSrg)
             {
                 drawItem.m_uniqueShaderResourceGroup = drawSrg->GetRHIShaderResourceGroup();
-                m_cachedDrawSrg.push_back(drawSrg);
             }
 
             // Set scissor per draw if scissor is enabled.
@@ -636,7 +633,22 @@ namespace AZ
             {
                 return nullptr;
             }
-            auto drawSrg = AZ::RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(), m_drawSrgLayout->GetName());
+
+            Data::Instance<ShaderResourceGroup> drawSrg;
+            if (m_nextDrawSrgIdx == m_cachedDrawSrg.size())
+            {
+                drawSrg = AZ::RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(), m_drawSrgLayout->GetName());
+                m_cachedDrawSrg.push_back(drawSrg);
+            }
+            else if (m_nextDrawSrgIdx < m_cachedDrawSrg.size())
+            {
+                drawSrg = m_cachedDrawSrg[m_nextDrawSrgIdx];
+            }
+            else
+            {
+                AZ_Assert(false, "Unexpected next draw srg index");
+            }
+            m_nextDrawSrgIdx++;
 
             // Set fallback value for shader variant if draw srg contains constant for shader variant fallback 
             if (m_hasShaderVariantKeyFallbackEntry)
@@ -728,7 +740,7 @@ namespace AZ
             }
 
             for (auto& drawItemProperties : m_cachedDrawList)
-            {                
+            {
                 view->AddDrawItem(m_drawListTag, drawItemProperties);
             }
         }
@@ -744,9 +756,14 @@ namespace AZ
             m_cachedDrawItems.clear();
             m_cachedStreamBufferViews.clear();
             m_cachedIndexBufferViews.clear();
-            m_cachedDrawSrg.clear();
             m_cachedDrawList.clear();
+            m_nextDrawSrgIdx = 0;
             m_drawFinalized = false;
+
+            for (auto srg:m_cachedDrawSrg)
+            {
+                srg->ResetViews();
+            }
         }
 
         const RHI::PipelineState* DynamicDrawContext::GetCurrentPipelineState()

@@ -7,7 +7,6 @@
  */
 
 #include <Atom/RHI.Reflect/Bits.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/std/algorithm.h>
 #include <RHI/ArgumentBuffer.h>
 #include <RHI/Buffer.h>
@@ -177,7 +176,7 @@ namespace AZ
         
         void CommandList::Submit(const RHI::DispatchItem& dispatchItem)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             
             CreateEncoder(CommandEncoderType::Compute);
             bool bindResourceSuccessfull = CommitShaderResources<RHI::PipelineStateType::Dispatch>(dispatchItem);
@@ -245,6 +244,8 @@ namespace AZ
  
         bool CommandList::SetArgumentBuffers(const PipelineState* pipelineState, RHI::PipelineStateType stateType)
         {
+            bool bindNullDescriptorHeap = false;
+            MTLRenderStages mtlRenderStagesForNullDescHeap = 0;
             ShaderResourceBindings& bindings = GetShaderResourceBindingsByPipelineType(stateType);
             const PipelineLayout& pipelineLayout = pipelineState->GetPipelineLayout();
             
@@ -280,7 +281,8 @@ namespace AZ
 
                 uint32_t srgVisIndex = pipelineLayout.GetIndexBySlot(shaderResourceGroup->GetBindingSlot());
                 const RHI::ShaderStageMask& srgVisInfo = pipelineLayout.GetSrgVisibility(srgVisIndex);
-
+                const ShaderResourceGroupVisibility& srgResourcesVisInfo = pipelineLayout.GetSrgResourcesVisibility(srgVisIndex);
+                
                 bool isSrgUpdatd = bindings.m_srgsByIndex[slot] != shaderResourceGroup;
                 if(isSrgUpdatd)
                 {
@@ -291,6 +293,9 @@ namespace AZ
                                                             
                     if(srgVisInfo != RHI::ShaderStageMask::None)
                     {
+                        bool isNullDescHeapNeeded = compiledArgBuffer.IsNullDescHeapNeeded();
+                        bindNullDescriptorHeap |= isNullDescHeapNeeded;
+                        
                         //For graphics and compute shader stages, cache all the argument buffers, offsets and track the min/max indices
                         if(m_commandEncoderType == CommandEncoderType::Render)
                         {
@@ -300,7 +305,9 @@ namespace AZ
                                 mtlVertexArgBuffers[slotIndex] = argBuffer;
                                 mtlVertexArgBufferOffsets[slotIndex] = argBufferOffset;
                                 bufferVertexRegisterIdMin = AZStd::min(slotIndex, bufferVertexRegisterIdMin);
-                                bufferVertexRegisterIdMax = AZStd::max(slotIndex, bufferVertexRegisterIdMax);
+                                bufferVertexRegisterIdMax = AZStd::max(slotIndex, bufferVertexRegisterIdMax);                                
+                                mtlRenderStagesForNullDescHeap = shaderResourceGroup->IsNullHeapNeededForVertexStage(srgResourcesVisInfo) ?
+                                                    mtlRenderStagesForNullDescHeap | MTLRenderStageVertex : mtlRenderStagesForNullDescHeap;
                             }
                             
                             if( numBitsSet > 1 || srgVisInfo == RHI::ShaderStageMask::Fragment)
@@ -309,6 +316,7 @@ namespace AZ
                                 mtlFragmentOrComputeArgBufferOffsets[slotIndex] = argBufferOffset;
                                 bufferFragmentOrComputeRegisterIdMin = AZStd::min(slotIndex, bufferFragmentOrComputeRegisterIdMin);
                                 bufferFragmentOrComputeRegisterIdMax = AZStd::max(slotIndex, bufferFragmentOrComputeRegisterIdMax);
+                                mtlRenderStagesForNullDescHeap = isNullDescHeapNeeded ? mtlRenderStagesForNullDescHeap | MTLRenderStageFragment : mtlRenderStagesForNullDescHeap;
                             }
                         }
                         else if(m_commandEncoderType == CommandEncoderType::Compute)
@@ -329,7 +337,7 @@ namespace AZ
                     bindings.m_srgVisHashByIndex[slot] = srgResourcesVisHash;
                     if(srgVisInfo != RHI::ShaderStageMask::None)
                     {
-                        const ShaderResourceGroupVisibility& srgResourcesVisInfo = pipelineLayout.GetSrgResourcesVisibility(srgVisIndex);
+                        
                         
                         //For graphics and compute encoder make the resource resident (call UseResource) for the duration
                         //of the work associated with the current scope and ensure that it's in a
@@ -396,6 +404,10 @@ namespace AZ
                                      stages: key.first.second];
             }
             
+            if(bindNullDescriptorHeap)
+            {
+                MakeHeapsResident(mtlRenderStagesForNullDescHeap);
+            }
             return true;
         }
     
@@ -466,7 +478,7 @@ namespace AZ
         
         void CommandList::Submit(const RHI::DrawItem& drawItem)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             
             CreateEncoder(CommandEncoderType::Render);
             
@@ -569,7 +581,7 @@ namespace AZ
         {
             if (m_state.m_pipelineState != pipelineState)
             {
-                AZ_TRACE_METHOD();
+                AZ_PROFILE_FUNCTION(RHI);
                 m_state.m_pipelineState = pipelineState;
 
                 switch (pipelineState->GetType())
@@ -719,7 +731,7 @@ namespace AZ
                 return;
             }
             
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             const auto& viewports = m_state.m_viewportState.m_states;
             MTLViewport metalViewports[viewports.size()];
 

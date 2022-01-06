@@ -82,8 +82,6 @@ namespace AZ
 
         void ReflectRenderStateEnums(ReflectContext* context);
 
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_BEGIN
-
         struct RasterState
         {
             AZ_TYPE_INFO(RasterState, "{57D4BE50-EBE2-4ABE-90A4-C99BF2EA43FB}");
@@ -215,8 +213,6 @@ namespace AZ
         static constexpr uint32_t RenderStates_InvalidUInt = std::numeric_limits<uint32_t>::max();
         static constexpr int32_t RenderStates_InvalidInt = std::numeric_limits<int32_t>::max();
         static constexpr float RenderStates_InvalidFloat = std::numeric_limits<float>::max();
-
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_END
 
         //! Merges any render states in stateToMerge into the result state object. 
         //! The values in stateToMerge are only copied over into the result if they are

@@ -8,8 +8,8 @@
 
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/IO/FileIO.h>
-#include <AzCore/IO/FileIOEventBus.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Debug/Profiler.h>
 
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/Utils/Utils.h>
@@ -129,7 +129,6 @@ namespace Platform
         int result = remove(fileName);
         if (result != 0)
         {
-            EBUS_EVENT(FileIOEventBus, OnError, nullptr, fileName, result);
             return false;
         }
 
@@ -141,7 +140,6 @@ namespace Platform
         int result = rename(sourceFileName, targetFileName);
         if (result)
         {
-            EBUS_EVENT(FileIOEventBus, OnError, nullptr, sourceFileName, result);
             return false;
         }
 
@@ -197,10 +195,6 @@ namespace Platform
             }
             azstrcpy(dirPath, AZ_MAX_PATH_LEN, dirName);
             bool success = CreateDirRecursive(dirPath);
-            if (!success)
-            {
-                EBUS_EVENT(FileIOEventBus, OnError, nullptr, dirName, errno);
-            }
             return success;
         }
         return false;
@@ -208,7 +202,7 @@ namespace Platform
 
     bool DeleteDir(const char* dirName)
     {
-        AZ_PROFILE_SCOPE_STALL_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, "SystemFile::DeleteDir(util) - %s", dirName);
+        AZ_PROFILE_SCOPE(AzCore, "SystemFile::DeleteDir(util) - %s", dirName);
 
         if (dirName)
         {

@@ -147,7 +147,7 @@ namespace SettingsRegistryConsoleUtilsTests
         struct SettingsRegistryDumpCommandHandler
             : public AZ::Debug::TraceMessageBus::Handler
         {
-            bool OnOutput(const char* window, const char* message)
+            bool OnOutput(const char* window, const char* message) override
             {
                 if (window == AZStd::string_view("SettingsRegistry"))
                 {
@@ -218,7 +218,7 @@ namespace SettingsRegistryConsoleUtilsTests
                 , m_expectedValue2{ expectedValue2 }
             {
             }
-            bool OnOutput(const char* window, const char* message)
+            bool OnOutput(const char* window, const char* message) override
             {
                 if (window == AZStd::string_view("SettingsRegistry"))
                 {

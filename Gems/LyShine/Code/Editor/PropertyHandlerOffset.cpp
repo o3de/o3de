@@ -106,10 +106,8 @@ void PropertyHandlerOffset::WriteGUIValuesIntoProperty(size_t index, AzQtCompone
     EBUS_EVENT_ID(id, UiTransform2dBus, SetOffsets, newInternalOffset);
 }
 
-bool PropertyHandlerOffset::ReadValuesIntoGUI(size_t index, AzQtComponents::VectorInput* GUI, const UiTransform2dInterface::Offsets& instance, AzToolsFramework::InstanceDataNode* node)
+bool PropertyHandlerOffset::ReadValuesIntoGUI([[maybe_unused]] size_t index, AzQtComponents::VectorInput* GUI, const UiTransform2dInterface::Offsets& instance, AzToolsFramework::InstanceDataNode* node)
 {
-    (int)index;
-
     // IMPORTANT: We DON'T need to do validation of data here because that's
     // done for us BEFORE we get here. We DO need to set the labels here.
 

@@ -106,10 +106,9 @@ namespace GraphCanvas
 
         // NodeRequestBus
         void SetTooltip(const AZStd::string& tooltip) override;
-        void SetTranslationKeyedTooltip(const TranslationKeyedString& tooltip) override;
         const AZStd::string GetTooltip() const override { return m_configuration.GetTooltip(); }
 
-        void SetShowInOutliner(bool showInOutliner) { m_configuration.SetShowInOutliner(showInOutliner); }
+        void SetShowInOutliner(bool showInOutliner) override { m_configuration.SetShowInOutliner(showInOutliner); }
         bool ShowInOutliner() const override { return m_configuration.GetShowInOutliner(); }
 
         void AddSlot(const AZ::EntityId& slotId) override;

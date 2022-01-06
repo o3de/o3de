@@ -45,8 +45,8 @@ class QRubberBand;
 class ISplineSet
 {
 public:
-    virtual ISplineInterpolator* GetSplineFromID(const string& id) = 0;
-    virtual string GetIDFromSpline(ISplineInterpolator* pSpline) = 0;
+    virtual ISplineInterpolator* GetSplineFromID(const AZStd::string& id) = 0;
+    virtual AZStd::string GetIDFromSpline(ISplineInterpolator* pSpline) = 0;
     virtual int GetSplineCount() const = 0;
     virtual int GetKeyCountAtTime(float time, float threshold) const = 0;
 };
@@ -345,8 +345,8 @@ public:
     SplineWidget(QWidget* parent);
     virtual ~SplineWidget();
 
-    void update() { QWidget::update(); }
-    void update(const QRect& rect) { QWidget::update(rect); }
+    void update() override { QWidget::update(); }
+    void update(const QRect& rect) override { QWidget::update(rect); }
 
     QPoint mapFromGlobal(const QPoint& point) const override { return QWidget::mapFromGlobal(point); }
 

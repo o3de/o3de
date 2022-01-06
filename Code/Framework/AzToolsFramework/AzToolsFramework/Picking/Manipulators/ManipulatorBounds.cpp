@@ -16,6 +16,79 @@ namespace AzToolsFramework
 {
     namespace Picking
     {
+        // this intersection algorithm is adapted from 'Capped Cone' by Inigo Quilez
+        // ref: https://www.iquilezles.org/www/articles/intersectors/intersectors.htm and https://www.shadertoy.com/view/llcfRf
+        // all algorithms/code snippets are kindly made available under the MIT License - https://www.iquilezles.org/www/index.htm
+        bool IntersectRayCone(
+            const AZ::Vector3& rayOrigin,
+            const AZ::Vector3& rayDirection,
+            const AZ::Vector3& coneApex,
+            const AZ::Vector3& coneAxis,
+            float coneHeight,
+            float coneBaseRadius,
+            float& t)
+        {
+            const AZ::Vector3& pa = coneApex;
+            const AZ::Vector3& pb = coneApex + coneHeight * coneAxis;
+            const AZ::Vector3& ro = rayOrigin;
+            const AZ::Vector3& rd = rayDirection;
+            float rb = coneBaseRadius;
+
+            AZ::Vector3 ba = pb - pa;
+            AZ::Vector3 oa = ro - pa;
+            AZ::Vector3 ob = ro - pb;
+
+            float m0 = ba.Dot(ba);
+            float m1 = oa.Dot(ba);
+            float m2 = ob.Dot(ba);
+            float m3 = rd.Dot(ba);
+
+            auto dot2 = [](const AZ::Vector3& v)
+            {
+                return v.Dot(v);
+            };
+
+            // cap
+            if (m2 > 0.0f)
+            {
+                if (dot2(ob * m3 - rd * m2) < (rb * rb * m3 * m3))
+                {
+                    t = -m2 / m3;
+                    return true;
+                }
+            }
+
+            // body
+            float m4 = rd.Dot(oa);
+            float m5 = oa.Dot(oa);
+            float hy = m0 + rb * rb;
+
+            float k2 = m0 * m0 - m3 * m3 * hy;
+            float k1 = m0 * m0 * m4 - m1 * m3 * hy;
+            float k0 = m0 * m0 * m5 - m1 * m1 * hy;
+
+            // note: solving for simultaneously being on the sloping surface of the cone and being on the ray boils down
+            // to a quadratic equation - the discriminant of the quadratic determines if there are 1, 2 or no solutions
+            //
+            // if the discriminant is less than 0 the ray is not intersecting the cone, if it is equal to 0 then the ray
+            // is intersecting the cone once and if it is greater than 0 the ray is intersecting the cone twice
+            float discriminant = k1 * k1 - k2 * k0;
+            if (discriminant < 0.0f)
+            {
+                return false;
+            }
+
+            float tt = (-k1 - AZ::Sqrt(discriminant)) / k2;
+            float y = m1 + tt * m3;
+            if (y >= 0.0f && y < m0)
+            {
+                t = tt;
+                return true;
+            }
+
+            return false;
+        }
+
         bool ManipulatorBoundSphere::IntersectRay(
             const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance)
         {
@@ -43,7 +116,7 @@ namespace AzToolsFramework
         {
             return AZ::Intersect::IntersectRayBox(
                        rayOrigin, rayDirection, m_center, m_axis1, m_axis2, m_axis3, m_halfExtents.GetX(), m_halfExtents.GetY(),
-                       m_halfExtents.GetZ(), rayIntersectionDistance) > 0;
+                       m_halfExtents.GetZ(), rayIntersectionDistance);
         }
 
         void ManipulatorBoundBox::SetShapeData(const BoundRequestShapeBase& shapeData)
@@ -86,11 +159,10 @@ namespace AzToolsFramework
         bool ManipulatorBoundCone::IntersectRay(
             const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance)
         {
-            float t1 = std::numeric_limits<float>::max();
-            float t2 = std::numeric_limits<float>::max();
-            if (AZ::Intersect::IntersectRayCone(rayOrigin, rayDirection, m_apexPosition, m_dir, m_height, m_radius, t1, t2) > 0)
+            float t = std::numeric_limits<float>::max();
+            if (IntersectRayCone(rayOrigin, rayDirection, m_apexPosition, m_dir, m_height, m_radius, t))
             {
-                rayIntersectionDistance = AZStd::GetMin(t1, t2);
+                rayIntersectionDistance = t;
                 return true;
             }
 

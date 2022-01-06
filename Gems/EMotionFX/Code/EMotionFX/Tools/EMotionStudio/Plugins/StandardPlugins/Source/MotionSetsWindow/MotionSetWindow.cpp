@@ -819,7 +819,6 @@ namespace EMStudio
         }
 
         const QList<QTableWidgetItem*> selectedItems = m_tableWidget->selectedItems();
-        const size_t numSelectedItems = selectedItems.count();
 
         // Get the row indices from the selected items.
         AZStd::vector<int> rowIndices;
@@ -1079,7 +1078,6 @@ namespace EMStudio
         // Get the row indices from the selected items.
         AZStd::vector<int> rowIndices;
         GetRowIndices(selectedItems, rowIndices);
-        const size_t numRowIndices = rowIndices.size();
 
         // remove motion from motion window, too?
         bool removeMotion = false;
@@ -1140,6 +1138,12 @@ namespace EMStudio
             for (size_t motionSetId = 0; motionSetId < numMotionSets; motionSetId++)
             {
                 EMotionFX::MotionSet* motionSet2 = EMotionFX::GetMotionManager().GetMotionSet(motionSetId);
+
+                if (motionSet2->GetIsOwnedByRuntime())
+                {
+                    continue;
+                }
+
                 if (motionSet2->FindMotionEntryById(motionEntry->GetId()))
                 {
                     numMotionSetContainsMotion++;
@@ -1148,12 +1152,6 @@ namespace EMStudio
                         break;
                     }
                 }
-            }
-
-            // If motion exists in multiple motion sets, then it should not be removed from motions window.
-            if (removeMotion && numMotionSetContainsMotion > 1)
-            {
-                continue;
             }
 
             // check the reference counter if only one reference registered
@@ -1171,6 +1169,12 @@ namespace EMStudio
                 motionIdsToRemoveString += ';';
             }
             motionIdsToRemoveString += motionEntry->GetId();
+
+            // If motion exists in multiple motion sets, then it should not be removed from motions window.
+            if (removeMotion && numMotionSetContainsMotion > 1)
+            {
+                continue;
+            }
 
             // Check if the motion is not valid, that means the motion is not loaded.
             if (removeMotion && motionEntry->GetMotion())

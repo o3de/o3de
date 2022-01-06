@@ -71,8 +71,6 @@ namespace MysticQt
         setWidget(m_rootSplitter);
     }
 
-
-    // destructor
     DialogStack::~DialogStack()
     {
     }
@@ -81,6 +79,14 @@ namespace MysticQt
     // get rid of all dialogs and their allocated memory
     void DialogStack::Clear()
     {
+        for (Dialog& dialog : m_dialogs)
+        {
+            if (dialog.m_dialogWidget)
+            {
+                dialog.m_dialogWidget->deleteLater();
+            }
+        }
+
         // destroy the dialogs
         m_dialogs.clear();
 
@@ -498,7 +504,7 @@ namespace MysticQt
         }
         if (findPreviousMaximizedDialogNeeded)
         {
-            for (auto curDialog = AZStd::make_reverse_iterator(dialog) + 1; curDialog != m_dialogs.rend(); ++curDialog)
+            for (auto curDialog = AZStd::make_reverse_iterator(dialog); curDialog != m_dialogs.rend(); ++curDialog)
             {
                 if (curDialog->m_maximizeSize && curDialog->m_frame->isHidden() == false)
                 {
@@ -679,6 +685,4 @@ namespace MysticQt
             return;
         }
     }
-}   // namespace MysticQt
-
-#include <MysticQt/Source/moc_DialogStack.cpp>
+} // namespace MysticQt

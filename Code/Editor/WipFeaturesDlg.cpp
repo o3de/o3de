@@ -35,7 +35,7 @@ public:
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override
     {
-        return parent.isValid() ? 0 : CWipFeatureManager::Instance()->GetFeatures().size();
+        return parent.isValid() ? 0 : static_cast<int>(CWipFeatureManager::Instance()->GetFeatures().size());
     }
 
     int columnCount(const QModelIndex& parent = QModelIndex()) const override

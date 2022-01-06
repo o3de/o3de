@@ -53,7 +53,6 @@ ly_add_target(
             ${pal_source_dir}
     COMPILE_DEFINITIONS
         PRIVATE
-            NOT_USE_CRY_MEMORY_MANAGER
             _SCL_SECURE_NO_WARNINGS
     BUILD_DEPENDENCIES
         PUBLIC
@@ -65,6 +64,7 @@ ly_add_target(
             AZ::AzFramework
             AZ::AzToolsFramework
             Gem::Atom_RHI.Edit
+            Gem::Atom_RPI.Edit
             Gem::Atom_RPI.Public
 )
 
@@ -101,8 +101,7 @@ ly_add_target(
 
 # The Atom_Asset_Shader is a required gem for Builders in order to process the assets that come WITHOUT
 # the Atom_Feature_Common required gem
-ly_enable_gems(GEMS Atom_Asset_Shader VARIANTS Builders
-    TARGETS AssetBuilder AssetProcessor AssetProcessorBatch)
+ly_enable_gems(GEMS Atom_Asset_Shader)
 
 ################################################################################
 # Tests

@@ -669,6 +669,7 @@ namespace GraphCanvas
     {
         GeometryNotificationBus::Handler::BusDisconnect();
         SceneNotificationBus::Handler::BusDisconnect();
+        AZ::SystemTickBus::Handler::BusDisconnect();
     }
 
     void GestureSceneHelper::TrackElement(const AZ::EntityId& elementId)
@@ -1069,8 +1070,6 @@ namespace GraphCanvas
     ///////////////////
     // SceneComponent
     ///////////////////
-
-    static const char* k_copyPasteKey = "GraphCanvasScene";
 
     void SceneComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -3262,8 +3261,6 @@ namespace GraphCanvas
         {
             for (const auto& sceneMember : sceneMemberList)
             {
-                QRectF boundingArea;
-
                 QGraphicsItem* sceneItem = nullptr;
                 VisualRequestBus::EventResult(sceneItem, sceneMember->GetId(), &VisualRequests::AsGraphicsItem);
 
@@ -3292,8 +3289,6 @@ namespace GraphCanvas
         {
             for (const auto& sceneMember : sceneMemberList)
             {
-                QRectF boundingArea;
-
                 QGraphicsItem* sceneItem = nullptr;
                 VisualRequestBus::EventResult(sceneItem, sceneMember->GetId(), &VisualRequests::AsGraphicsItem);
 

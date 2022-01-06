@@ -110,7 +110,7 @@ void CTrackViewKeyPropertiesDlg::PopulateVariables()
     m_wndProps->RemoveAllItems();
     m_wndProps->AddVarBlock(m_pVarBlock);
 
-    m_wndProps->SetUpdateCallback(AZStd::bind(&CTrackViewKeyPropertiesDlg::OnVarChange, this, AZStd::placeholders::_1));
+    m_wndProps->SetUpdateCallback([this](IVariable* var) { OnVarChange(var); });
     //m_wndProps->m_props.ExpandAll();
 
 
@@ -198,7 +198,6 @@ void CTrackViewKeyPropertiesDlg::OnKeySelectionChanged(CTrackViewSequence* seque
 
     m_wndProps->setEnabled(false);
     m_wndTrackProps->setEnabled(false);
-    bool bAssigned = false;
     if (selectedKeys.GetKeyCount() > 0 && selectedKeys.AreAllKeysOfSameType())
     {
         CTrackViewTrack* pTrack = selectedKeys.GetKey(0).GetTrack();
@@ -215,12 +214,6 @@ void CTrackViewKeyPropertiesDlg::OnKeySelectionChanged(CTrackViewSequence* seque
                 {
                     AddVars(m_keyControls[i]);
                 }
-
-                if (m_keyControls[i]->OnKeySelectionChange(selectedKeys))
-                {
-                    bAssigned = true;
-                }
-
                 break;
             }
         }

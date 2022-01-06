@@ -92,28 +92,28 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
             AZ::AssetProcessor
     )
 
-    # Issue #3017
-    #ly_add_pytest(
-    #    NAME AssetPipelineTests.AssetBundler
-    #    PATH ${CMAKE_CURRENT_LIST_DIR}/asset_bundler_batch_tests.py
-    #    EXCLUDE_TEST_RUN_TARGET_FROM_IDE
-    #    TEST_SERIAL 
-    #    TEST_SUITE periodic
-    #    RUNTIME_DEPENDENCIES
-    #        AZ::AssetProcessor
-    #        AZ::AssetBundlerBatch
-    #)
-
     ly_add_pytest(
-        NAME AssetPipelineTests.AssetBundler_SandBox
-        TEST_SUITE sandbox
+        NAME AssetPipelineTests.AssetBundler
         PATH ${CMAKE_CURRENT_LIST_DIR}/asset_bundler_batch_tests.py
-        PYTEST_MARKS "SUITE_sandbox" # run only sandbox tests in this file
         EXCLUDE_TEST_RUN_TARGET_FROM_IDE
         TEST_SERIAL 
+        TEST_SUITE periodic
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             AZ::AssetBundlerBatch
+    )
+
+    ly_add_pytest(
+        NAME AssetPipelineTests.BundleMode
+        PATH ${CMAKE_CURRENT_LIST_DIR}/bundle_mode_tests.py
+        EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+        TEST_SERIAL
+        TEST_SUITE periodic
+        RUNTIME_DEPENDENCIES
+            AZ::AssetProcessor
+            AZ::AssetBundlerBatch
+            Legacy::Editor
+            AutomatedTesting.Assets
     )
 
     ly_add_pytest(

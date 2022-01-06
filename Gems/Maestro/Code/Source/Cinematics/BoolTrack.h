@@ -28,14 +28,14 @@ public:
 
     CBoolTrack();
 
-    virtual AnimValueType GetValueType();
+    AnimValueType GetValueType() override;
 
 
-    virtual void GetValue(float time, bool& value);
-    virtual void SetValue(float time, const bool& value, bool bDefault = false);
+    void GetValue(float time, bool& value) override;
+    void SetValue(float time, const bool& value, bool bDefault = false) override;
 
-    void SerializeKey([[maybe_unused]] IBoolKey& key, [[maybe_unused]] XmlNodeRef& keyNode, [[maybe_unused]] bool bLoading) {};
-    void GetKeyInfo(int key, const char*& description, float& duration);
+    void SerializeKey([[maybe_unused]] IBoolKey& key, [[maybe_unused]] XmlNodeRef& keyNode, [[maybe_unused]] bool bLoading) override {};
+    void GetKeyInfo(int key, const char*& description, float& duration) override;
 
     void SetDefaultValue(const bool bDefaultValue);
 

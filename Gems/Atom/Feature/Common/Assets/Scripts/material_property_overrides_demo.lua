@@ -64,20 +64,20 @@ function PropertyOverrideTest:OnActivate()
 end
 
 function PropertyOverrideTest:UpdateFactor(assignmentId)
-    local propertyName = Name("baseColor.factor")
+    local propertyName = "baseColor.factor"
     local propertyValue = math.random()
     MaterialComponentRequestBus.Event.SetPropertyOverride(self.entityId, assignmentId, propertyName, propertyValue);
 end
 
 function PropertyOverrideTest:UpdateColor(assignmentId, color)
-    local propertyName = Name("baseColor.color")
+    local propertyName = "baseColor.color"
     local propertyValue = color
     MaterialComponentRequestBus.Event.SetPropertyOverride(self.entityId, assignmentId, propertyName, propertyValue);
 end
 
 function PropertyOverrideTest:UpdateTexture(assignmentId)
     if (#self.Properties.Textures > 0) then
-        local propertyName = Name("baseColor.textureMap")
+        local propertyName = "baseColor.textureMap"
         local textureName = self.Properties.Textures[ math.random( #self.Properties.Textures ) ]
         Debug.Log(textureName)
         local textureAssetId = AssetCatalogRequestBus.Broadcast.GetAssetIdByPath(textureName, Uuid(), false)

@@ -36,10 +36,9 @@
 #include <AzToolsFramework/ToolsComponents/EditorSelectionAccentSystemComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorEntityIconComponentBus.h>
 #include <AzToolsFramework/Undo/UndoCacheInterface.h>
-#include <LmbrCentral/Rendering/RenderNodeBus.h>
-#include <LmbrCentral/Rendering/MaterialOwnerBus.h>
 
 #include <IDisplayViewport.h>
+#include <CryCommon/Cry_GeoIntersect.h>
 #include <MathConversion.h>
 #include <TrackView/TrackViewAnimNode.h>
 #include <ViewManager.h>
@@ -48,19 +47,12 @@
 /**
  * Scalars for icon drawing behavior.
  */
-static const int s_kIconSize              = 36;       /// Icon display size (in pixels)
-static const float s_kIconMaxWorldDist    = 200.f;    /// Icons are culled past this range
-static const float s_kIconMinScale        = 0.1f;     /// Minimum scale for icons in the distance
-static const float s_kIconMaxScale        = 1.0f;     /// Maximum scale for icons near the camera
-static const float s_kIconCloseDist       = 3.f;      /// Distance at which icons are at maximum scale
-static const float s_kIconFarDist         = 40.f;     /// Distance at which icons are at minimum scale
-
 CComponentEntityObject::CComponentEntityObject()
-    : m_hasIcon(false)
+    : m_accentType(AzToolsFramework::EntityAccentType::None)
+    , m_hasIcon(false)
     , m_entityIconVisible(false)
     , m_iconOnlyHitTest(false)
     , m_drawAccents(true)
-    , m_accentType(AzToolsFramework::EntityAccentType::None)
     , m_isIsolated(false)
     , m_iconTexture(nullptr)
 {
@@ -248,7 +240,7 @@ void CComponentEntityObject::SetSelected(bool bSelect)
     }
 
     bool anySelected = false;
-    
+
     AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(anySelected, &AzToolsFramework::ToolsApplicationRequests::AreAnyEntitiesSelected);
 
     if (!anySelected)
@@ -269,18 +261,6 @@ void CComponentEntityObject::SetHighlight(bool bHighlight)
     {
         EBUS_EVENT(AzToolsFramework::ToolsApplicationRequests::Bus, SetEntityHighlighted, m_entityId, bHighlight);
     }
-}
-
-IRenderNode* CComponentEntityObject::GetEngineNode() const
-{
-    // It's possible for AZ::Entities to have multiple IRenderNodes.
-    // However, the editor currently expects a single IRenderNode per "editor object".
-    // Therefore, return the highest priority handler.
-    if (auto* renderNodeHandler = LmbrCentral::RenderNodeRequestBus::FindFirstHandler(m_entityId))
-    {
-        return renderNodeHandler->GetRenderNode();
-    }
-    return nullptr;
 }
 
 void CComponentEntityObject::OnEntityNameChanged(const AZStd::string& name)
@@ -336,14 +316,6 @@ void CComponentEntityObject::DetachThis(bool /*bKeepPos*/)
     }
 }
 
-CBaseObject* CComponentEntityObject::GetLinkParent() const
-{
-    AZ::EntityId parentId;
-    EBUS_EVENT_ID_RESULT(parentId, m_entityId, AZ::TransformBus, GetParentId);
-
-    return CComponentEntityObject::FindObjectForEntity(parentId);
-}
-
 bool CComponentEntityObject::IsFrozen() const
 {
     return CheckFlags(OBJFLAG_FROZEN);
@@ -361,16 +333,6 @@ void CComponentEntityObject::SetFrozen(bool frozen)
 void CComponentEntityObject::OnEntityLockChanged(bool locked)
 {
     CEntityObject::SetFrozen(locked);
-}
-
-void CComponentEntityObject::SetHidden(
-    bool bHidden, [[maybe_unused]] uint64 hiddenId /*=CBaseObject::s_invalidHiddenID*/, [[maybe_unused]] bool bAnimated /*=false*/)
-{
-    if (m_visibilityFlagReentryGuard)
-    {
-        EditorActionScope flagChange(m_visibilityFlagReentryGuard);
-        AzToolsFramework::SetEntityVisibility(m_entityId, !bHidden);
-    }
 }
 
 void CComponentEntityObject::OnEntityVisibilityChanged(bool visible)
@@ -617,69 +579,9 @@ void CComponentEntityObject::OnTransformChanged([[maybe_unused]] const AZ::Trans
     }
 }
 
-int CComponentEntityObject::MouseCreateCallback(CViewport* view, EMouseEvent event, QPoint& point, int flags)
-{
-    if (event == eMouseMove || event == eMouseLDown)
-    {
-        Vec3 pos;
-        if (GetIEditor()->GetAxisConstrains() != AXIS_TERRAIN)
-        {
-            pos = view->MapViewToCP(point);
-        }
-        else
-        {
-            // Snap to terrain.
-            bool hitTerrain;
-            pos = view->ViewToWorld(point, &hitTerrain);
-            if (hitTerrain)
-            {
-                pos.z = GetIEditor()->GetTerrainElevation(pos.x, pos.y);
-            }
-            pos = view->SnapToGrid(pos);
-        }
-
-        pos = view->SnapToGrid(pos);
-        SetPos(pos);
-
-        if (event == eMouseLDown)
-        {
-            return MOUSECREATE_OK;
-        }
-
-        return MOUSECREATE_CONTINUE;
-    }
-
-    return CBaseObject::MouseCreateCallback(view, event, point, flags);
-}
-
-bool CComponentEntityObject::HitHelperTest(HitContext& hc)
-{
-    bool hit = CEntityObject::HitHelperTest(hc);
-    if (!hit && m_entityId.IsValid())
-    {
-        // Pick against icon in screen space.
-        if (IsEntityIconVisible())
-        {
-            const QPoint entityScreenPos = hc.view->WorldToView(GetWorldPos());
-            const float screenPosX = entityScreenPos.x();
-            const float screenPosY = entityScreenPos.y();
-            const float iconRange = static_cast<float>(s_kIconSize / 2);
-
-            if ((hc.point2d.x() >= screenPosX - iconRange && hc.point2d.x() <= screenPosX + iconRange)
-                && (hc.point2d.y() >= screenPosY - iconRange && hc.point2d.y() <= screenPosY + iconRange))
-            {
-                hc.dist = hc.raySrc.GetDistance(GetWorldPos());
-                hc.iconHit = true;
-                return true;
-            }
-        }
-    }
-    return hit;
-}
-
 bool CComponentEntityObject::HitTest(HitContext& hc)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+    AZ_PROFILE_FUNCTION(Entity);
 
     if (m_iconOnlyHitTest)
     {
@@ -705,7 +607,7 @@ bool CComponentEntityObject::HitTest(HitContext& hc)
                     [&hc, &closestDistance, &rayIntersection, &preciseSelectionRequired, viewportId](
                         AzToolsFramework::EditorComponentSelectionRequests* handler) -> bool
                 {
-                    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+                    AZ_PROFILE_FUNCTION(Entity);
 
                     if (handler->SupportsEditorRayIntersect())
                     {
@@ -768,7 +670,7 @@ bool CComponentEntityObject::HitTest(HitContext& hc)
 
 void CComponentEntityObject::GetBoundBox(AABB& box)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+    AZ_PROFILE_FUNCTION(Entity);
 
     box.Reset();
 
@@ -912,11 +814,6 @@ void CComponentEntityObject::DrawDefault(DisplayContext& dc, const QColor& label
     DrawAccent(dc);
 }
 
-IStatObj* CComponentEntityObject::GetIStatObj()
-{
-    return nullptr;
-}
-
 bool CComponentEntityObject::IsIsolated() const
 {
     return m_isIsolated;
@@ -955,11 +852,6 @@ void CComponentEntityObject::SetWorldPos(const Vec3& pos, int flags)
         return;
     }
     CEntityObject::SetWorldPos(pos, flags);
-}
-
-void CComponentEntityObject::OnContextMenu(QMenu* /*pMenu*/)
-{
-    // Deliberately bypass the base class implementation (CEntityObject::OnContextMenu()).
 }
 
 void CComponentEntityObject::SetupEntityIcon()

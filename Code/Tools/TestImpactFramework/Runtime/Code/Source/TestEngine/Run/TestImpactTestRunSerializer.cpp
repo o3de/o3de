@@ -52,7 +52,7 @@ namespace TestImpact
 
         // Run duration
         writer.Key(TestRunFields::Keys[TestRunFields::DurationKey]);
-        writer.Uint(testRun.GetDuration().count());
+        writer.Uint(static_cast<unsigned int>(testRun.GetDuration().count()));
 
         // Suites
         writer.Key(TestRunFields::Keys[TestRunFields::SuitesKey]);
@@ -69,7 +69,7 @@ namespace TestImpact
 
             // Suite duration
             writer.Key(TestRunFields::Keys[TestRunFields::DurationKey]);
-            writer.Uint(suite.m_duration.count());
+            writer.Uint(static_cast<unsigned int>(suite.m_duration.count()));
 
             // Suite enabled
             writer.Key(TestRunFields::Keys[TestRunFields::EnabledKey]);
@@ -93,7 +93,7 @@ namespace TestImpact
 
                 // Test duration
                 writer.Key(TestRunFields::Keys[TestRunFields::DurationKey]);
-                writer.Uint(test.m_duration.count());
+                writer.Uint(static_cast<unsigned int>(test.m_duration.count()));
 
                 // Test status
                 writer.Key(TestRunFields::Keys[TestRunFields::StatusKey]);
@@ -154,8 +154,6 @@ namespace TestImpact
             const AZStd::chrono::milliseconds suiteDuration = AZStd::chrono::milliseconds{suite[TestRunFields::Keys[TestRunFields::DurationKey]].GetUint()};
 
             // Suite enabled
-            const bool enabled = suite[TestRunFields::Keys[TestRunFields::EnabledKey]].GetBool();
-
             testSuites.emplace_back(TestRunSuite{
                 suite[TestRunFields::Keys[TestRunFields::NameKey]].GetString(),
                 suite[TestRunFields::Keys[TestRunFields::EnabledKey]].GetBool(),

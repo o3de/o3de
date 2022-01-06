@@ -17,9 +17,8 @@
 // Editor
 #include "Include/IPlugin.h"
 
-
-using TPfnCreatePluginInstance = IPlugin *(*)(PLUGIN_INIT_PARAM *pInitParam);
-using TPfnQueryPluginSettings = void (*)(SPluginSettings &);
+using TPfnCreatePluginInstance = IPlugin* (*)(PLUGIN_INIT_PARAM* pInitParam);
+using TPfnQueryPluginSettings = void (*)(SPluginSettings&);
 
 CPluginManager::CPluginManager()
 {
@@ -126,8 +125,8 @@ namespace
 
 bool CPluginManager::LoadPlugins(const char* pPathWithMask)
 {
-    QString strPath = QtUtil::ToQString(PathUtil::GetPath(pPathWithMask));
-    QString strMask = QString::fromUtf8(PathUtil::GetFile(pPathWithMask));
+    QString strPath = PathUtil::GetPath(pPathWithMask).c_str();
+    QString strMask = PathUtil::GetFile(pPathWithMask);
 
     CLogFile::WriteLine("[Plugin Manager] Loading plugins...");
 
@@ -155,7 +154,7 @@ bool CPluginManager::LoadPlugins(const char* pPathWithMask)
         }
 #endif
     }
-    if (plugins.size() == 0)
+    if (plugins.empty())
     {
         CLogFile::FormatLine("[Plugin Manager] Cannot find any plugins in plugin directory '%s'", strPath.toUtf8().data());
         return false;
@@ -263,19 +262,19 @@ void CPluginManager::RegisterPlugin(QLibrary* dllHandle, IPlugin* pPlugin)
     entry.hLibrary = dllHandle;
     entry.pPlugin = pPlugin;
     m_plugins.push_back(entry);
-    m_uuidPluginMap[m_currentUUID] = pPlugin;
+    m_uuidPluginMap[static_cast<unsigned char>(m_currentUUID)] = pPlugin;
     ++m_currentUUID;
 }
 
 IPlugin* CPluginManager::GetPluginByGUID(const char* pGUID)
 {
-    for (auto it = m_plugins.begin(); it != m_plugins.end(); ++it)
+    for (const SPluginEntry& pluginEntry : m_plugins)
     {
-        const char* pPluginGuid = it->pPlugin->GetPluginGUID();
+        const char* pPluginGuid = pluginEntry.pPlugin->GetPluginGUID();
 
         if (pPluginGuid && !strcmp(pPluginGuid, pGUID))
         {
-            return it->pPlugin;
+            return pluginEntry.pPlugin;
         }
     }
 
@@ -332,14 +331,11 @@ IUIEvent* CPluginManager::GetEventByIDAndPluginID(uint8 aPluginID, uint8 aEventI
 
 bool CPluginManager::CanAllPluginsExitNow()
 {
-    for (auto it = m_plugins.begin(); it != m_plugins.end(); ++it)
+    for (const SPluginEntry& pluginEntry : m_plugins)
     {
-        if (it->pPlugin)
+        if (pluginEntry.pPlugin && !pluginEntry.pPlugin->CanExitNow())
         {
-            if (!it->pPlugin->CanExitNow())
-            {
-                return false;
-            }
+            return false;
         }
     }
 

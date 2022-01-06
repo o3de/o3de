@@ -25,13 +25,18 @@
                                                         "Position": [
                                                             -0.03709467500448227,
                                                             -3.725290298461914e-9,
-                                                            0.013427333906292916
+                                                            0.013427333906292915
                                                         ],
+                                                        "MaterialSelection": {
+                                                            "MaterialIds": [
+                                                                {}
+                                                            ]
+                                                        },
                                                         "propertyVisibilityFlags": 248
                                                     },
                                                     {
                                                         "$type": "SphereShapeConfiguration",
-                                                        "Radius": 0.12945009768009187
+                                                        "Radius": 0.12945009768009186
                                                     }
                                                 ]
                                             ]
@@ -50,15 +55,20 @@
                                                         "Rotation": [
                                                             0.0,
                                                             0.662880003452301,
-                                                            0.7487256526947022,
+                                                            0.7487256526947021,
                                                             0.0
                                                         ],
+                                                        "MaterialSelection": {
+                                                            "MaterialIds": [
+                                                                {}
+                                                            ]
+                                                        },
                                                         "propertyVisibilityFlags": 248
                                                     },
                                                     {
                                                         "$type": "CapsuleShapeConfiguration",
                                                         "Height": 0.8597599267959595,
-                                                        "Radius": 0.27968019247055056
+                                                        "Radius": 0.27968019247055054
                                                     }
                                                 ]
                                             ]
@@ -79,95 +89,51 @@
                     "RootNode",
                     "RootNode.chicken_skeleton",
                     "RootNode.chicken_feet_skin",
+                    "RootNode.chicken_feet_skin.chicken_feet_skin_1",
+                    "RootNode.chicken_feet_skin.chicken_feet_skin_2",
                     "RootNode.chicken_eyes_skin",
+                    "RootNode.chicken_eyes_skin.chicken_eyes_skin_1",
+                    "RootNode.chicken_eyes_skin.chicken_eyes_skin_2",
                     "RootNode.chicken_body_skin",
+                    "RootNode.chicken_body_skin.chicken_body_skin_1",
+                    "RootNode.chicken_body_skin.chicken_body_skin_2",
                     "RootNode.chicken_mohawk",
-                    "RootNode.chicken_skeleton.transform",
+                    "RootNode.chicken_mohawk.chicken_mohawk_1",
+                    "RootNode.chicken_mohawk.chicken_mohawk_2",
                     "RootNode.chicken_skeleton.def_c_chickenRoot_joint",
-                    "RootNode.chicken_feet_skin.SkinWeight_0",
-                    "RootNode.chicken_feet_skin.transform",
-                    "RootNode.chicken_feet_skin.map1",
-                    "RootNode.chicken_feet_skin.chicken_body_mat",
-                    "RootNode.chicken_eyes_skin.SkinWeight_0",
-                    "RootNode.chicken_eyes_skin.transform",
-                    "RootNode.chicken_eyes_skin.uvSet1",
-                    "RootNode.chicken_eyes_skin.chicken_eye_mat",
-                    "RootNode.chicken_body_skin.SkinWeight_0",
-                    "RootNode.chicken_body_skin.transform",
-                    "RootNode.chicken_body_skin.map1",
-                    "RootNode.chicken_body_skin.chicken_body_mat",
-                    "RootNode.chicken_mohawk.Col0",
-                    "RootNode.chicken_mohawk.SkinWeight_0",
-                    "RootNode.chicken_mohawk.transform",
-                    "RootNode.chicken_mohawk.map1",
-                    "RootNode.chicken_mohawk.mohawkMat",
-                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.transform",
                     "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint",
-                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.transform",
                     "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint",
                     "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_l_uprLeg_joint",
                     "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_r_uprLeg_joint",
-                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.transform",
                     "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint",
-                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_l_uprLeg_joint.transform",
                     "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_l_uprLeg_joint.def_l_lwrLeg_joint",
-                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_r_uprLeg_joint.transform",
                     "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_r_uprLeg_joint.def_r_lwrLeg_joint",
-                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.transform",
                     "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end",
                     "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_l_wing1_joint",
                     "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_r_wing1_joint",
-                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_l_uprLeg_joint.def_l_lwrLeg_joint.transform",
                     "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_l_uprLeg_joint.def_l_lwrLeg_joint.def_l_foot_joint",
-                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_r_uprLeg_joint.def_r_lwrLeg_joint.transform",
                     "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_r_uprLeg_joint.def_r_lwrLeg_joint.def_r_foot_joint",
-                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.transform",
                     "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_tail1_joint",
                     "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint",
-                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_l_wing1_joint.transform",
                     "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_l_wing1_joint.def_l_wing2_joint",
-                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_r_wing1_joint.transform",
                     "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_r_wing1_joint.def_r_wing2_joint",
-                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_l_uprLeg_joint.def_l_lwrLeg_joint.def_l_foot_joint.transform",
                     "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_l_uprLeg_joint.def_l_lwrLeg_joint.def_l_foot_joint.def_l_ball_joint",
-                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_r_uprLeg_joint.def_r_lwrLeg_joint.def_r_foot_joint.transform",
                     "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_r_uprLeg_joint.def_r_lwrLeg_joint.def_r_foot_joint.def_r_ball_joint",
-                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_tail1_joint.transform",
                     "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_tail1_joint.def_c_tail2_joint",
-                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.transform",
                     "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint",
-                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_l_wing1_joint.def_l_wing2_joint.transform",
                     "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_l_wing1_joint.def_l_wing2_joint.def_l_wing_end",
-                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_r_wing1_joint.def_r_wing2_joint.transform",
                     "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_r_wing1_joint.def_r_wing2_joint.def_r_wing_end",
-                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_l_uprLeg_joint.def_l_lwrLeg_joint.def_l_foot_joint.def_l_ball_joint.transform",
-                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_r_uprLeg_joint.def_r_lwrLeg_joint.def_r_foot_joint.def_r_ball_joint.transform",
-                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_tail1_joint.def_c_tail2_joint.transform",
-                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.transform",
                     "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_feather1_joint",
                     "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_mouth_joint",
                     "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_waddle1_joint",
-                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_l_wing1_joint.def_l_wing2_joint.def_l_wing_end.transform",
-                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_r_wing1_joint.def_r_wing2_joint.def_r_wing_end.transform",
-                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_feather1_joint.transform",
                     "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_feather1_joint.def_c_feather2_joint",
-                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_mouth_joint.transform",
                     "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_mouth_joint.def_c_mouth_end",
-                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_waddle1_joint.transform",
                     "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_waddle1_joint.def_c_waddle2_joint",
-                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_feather1_joint.def_c_feather2_joint.transform",
                     "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_feather1_joint.def_c_feather2_joint.def_c_feather3_joint",
-                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_mouth_joint.def_c_mouth_end.transform",
-                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_waddle1_joint.def_c_waddle2_joint.transform",
                     "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_waddle1_joint.def_c_waddle2_joint.def_c_waddle3_joint",
-                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_feather1_joint.def_c_feather2_joint.def_c_feather3_joint.transform",
                     "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_feather1_joint.def_c_feather2_joint.def_c_feather3_joint.def_c_feather4_joint",
-                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_waddle1_joint.def_c_waddle2_joint.def_c_waddle3_joint.transform",
                     "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_waddle1_joint.def_c_waddle2_joint.def_c_waddle3_joint.def_c_waddle_end",
-                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_feather1_joint.def_c_feather2_joint.def_c_feather3_joint.def_c_feather4_joint.transform",
-                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_feather1_joint.def_c_feather2_joint.def_c_feather3_joint.def_c_feather4_joint.def_c_feather_end",
-                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_waddle1_joint.def_c_waddle2_joint.def_c_waddle3_joint.def_c_waddle_end.transform",
-                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_feather1_joint.def_c_feather2_joint.def_c_feather3_joint.def_c_feather4_joint.def_c_feather_end.transform"
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_feather1_joint.def_c_feather2_joint.def_c_feather3_joint.def_c_feather4_joint.def_c_feather_end"
                 ]
             },
             "rules": {
@@ -184,7 +150,7 @@
                     },
                     {
                         "$type": "ClothRule",
-                        "meshNodeName": "RootNode.chicken_mohawk",
+                        "meshNodeName": "RootNode.chicken_mohawk.chicken_mohawk_1",
                         "inverseMassesStreamName": "Col0",
                         "motionConstraintsStreamName": "Default: 1.0",
                         "backstopStreamName": "None"

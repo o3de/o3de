@@ -34,6 +34,7 @@ namespace AZ
             void Deactivate() override;
 
             // FrameCaptureRequestBus overrides ...
+            bool CanCapture() const override;
             bool CaptureScreenshot(const AZStd::string& filePath) override;
             bool CaptureScreenshotForWindow(const AZStd::string& filePath, AzFramework::NativeWindowHandle windowHandle) override;
             bool CaptureScreenshotWithPreview(const AZStd::string& outputFilePath) override;

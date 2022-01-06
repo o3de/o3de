@@ -26,11 +26,11 @@ namespace TestImpact
         constexpr RepoPath() = default;
         constexpr RepoPath(const RepoPath&) = default;
         constexpr RepoPath(RepoPath&&) noexcept = default;
-        constexpr RepoPath::RepoPath(const string_type& path) noexcept;
-        constexpr RepoPath::RepoPath(const string_view_type& path) noexcept;
-        constexpr RepoPath::RepoPath(const value_type* path) noexcept;
-        constexpr RepoPath::RepoPath(const AZ::IO::PathView& path);
-        constexpr RepoPath::RepoPath(const AZ::IO::Path& path);
+        constexpr RepoPath(const string_type& path) noexcept;
+        constexpr RepoPath(const string_view_type& path) noexcept;
+        constexpr RepoPath(const value_type* path) noexcept;
+        constexpr RepoPath(const AZ::IO::PathView& path);
+        constexpr RepoPath(const AZ::IO::Path& path);
 
         RepoPath& operator=(const RepoPath&) noexcept = default;
         RepoPath& operator=(const string_type&) noexcept;

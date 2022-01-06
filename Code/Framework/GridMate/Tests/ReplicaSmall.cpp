@@ -254,7 +254,7 @@ public:
             s_nInstances++;
         }
 
-        ~OfflineChunk()
+        ~OfflineChunk() override
         {
             s_nInstances--;
         }
@@ -273,7 +273,7 @@ public:
             return true;
         }
 
-        bool IsReplicaMigratable() { return true; }
+        bool IsReplicaMigratable() override { return true; }
 
         DataSet<int> m_data1;
         DataSet<int>::BindInterface<OfflineChunk, & OfflineChunk::DataSetChangeCB> m_data2;
@@ -388,7 +388,7 @@ public:
         // If data set was not changed it should remain as non-dirty even after several PrepareData calls
         for (auto i = 0; i < 10; ++i)
         {
-            auto pdr = chunk->Data1.PrepareData(EndianType::BigEndian, 0);
+            [[maybe_unused]] auto pdr = chunk->Data1.PrepareData(EndianType::BigEndian, 0);
 
             AZ_TEST_ASSERT(chunk->Data1.IsDefaultValue() == true);
         }
@@ -453,7 +453,6 @@ public:
 //        replicaHeader += 16;
 //#endif
 //        const int marshalDataSize = 48; //Data plus length
-        //Only for Driller
         ReplicaManager rm;
         ReplicaPeer peer(&rm);
 

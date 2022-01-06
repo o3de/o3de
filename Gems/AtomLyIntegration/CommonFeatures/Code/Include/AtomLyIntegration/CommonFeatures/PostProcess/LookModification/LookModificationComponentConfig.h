@@ -39,6 +39,11 @@ namespace AZ
             void CopySettingsTo(LookModificationSettingsInterface* settings);
 
             bool ArePropertiesReadOnly() const { return !m_enabled; }
+
+            bool IsUsingCustomShaper() const {
+                return m_shaperPresetType == ShaperPresetType::LinearCustomRange
+                    || m_shaperPresetType == ShaperPresetType::Log2CustomRange;
+            }
         };
     }
 }

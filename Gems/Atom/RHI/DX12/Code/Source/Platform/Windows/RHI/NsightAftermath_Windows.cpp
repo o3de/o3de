@@ -53,14 +53,14 @@ namespace Aftermath
 #endif
     }
 
-    void SetAftermathEventMarker( [[maybe_unused]] void* cntxHandle, [[maybe_unused]] const AZStd::string& markerData, [[maybe_unused]] bool isAftermathInitialized)
+    void SetAftermathEventMarker( [[maybe_unused]] void* cntxHandle, [[maybe_unused]] const char* markerData, [[maybe_unused]] bool isAftermathInitialized)
     {
 #if defined(USE_NSIGHT_AFTERMATH)
         if (isAftermathInitialized)
         {
             GFSDK_Aftermath_Result result = GFSDK_Aftermath_SetEventMarker(
-                static_cast<GFSDK_Aftermath_ContextHandle>(cntxHandle), static_cast<const void*>(markerData.c_str()),
-                static_cast<unsigned int>(markerData.size()) + 1);
+                static_cast<GFSDK_Aftermath_ContextHandle>(cntxHandle), static_cast<const void*>(markerData),
+                static_cast<unsigned int>(strlen(markerData) + 1);
             AssertOnError(result);
         }
 #endif
@@ -85,7 +85,7 @@ namespace Aftermath
 #if defined(USE_NSIGHT_AFTERMATH)
         AZStd::vector<GFSDK_Aftermath_ContextHandle> cntxtHandles = static_cast<GpuCrashTracker*>(crashTracker)->GetContextHandles();
         GFSDK_Aftermath_ContextData* outContextData = new GFSDK_Aftermath_ContextData[cntxtHandles.size()];
-        GFSDK_Aftermath_Result result = GFSDK_Aftermath_GetData(cntxtHandles.size(), cntxtHandles.data(), outContextData);
+        GFSDK_Aftermath_Result result = GFSDK_Aftermath_GetData(static_cast<uint32_t>(cntxtHandles.size()), cntxtHandles.data(), outContextData);
         AssertOnError(result);
         for (int i = 0; i < cntxtHandles.size(); i++)
         {

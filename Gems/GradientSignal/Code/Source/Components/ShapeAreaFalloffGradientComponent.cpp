@@ -6,7 +6,7 @@
  *
  */
 
-#include "ShapeAreaFalloffGradientComponent.h"
+#include <GradientSignal/Components/ShapeAreaFalloffGradientComponent.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -157,7 +157,7 @@ namespace GradientSignal
 
     float ShapeAreaFalloffGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         float distance = 0.0f;
         LmbrCentral::ShapeComponentRequestsBus::EventResult(distance, m_configuration.m_shapeEntityId, &LmbrCentral::ShapeComponentRequestsBus::Events::DistanceFromPoint, sampleParams.m_position);

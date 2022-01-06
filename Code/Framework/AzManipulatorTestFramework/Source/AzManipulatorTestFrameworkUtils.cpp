@@ -82,49 +82,6 @@ namespace AzManipulatorTestFramework
         return manipulator;
     }
 
-    AzToolsFramework::ViewportInteraction::MousePick CreateMousePick(
-        const AZ::Vector3& origin, const AZ::Vector3& direction, const AzFramework::ScreenPoint& screenPoint)
-    {
-        return { origin, direction, screenPoint };
-    }
-
-    AzToolsFramework::ViewportInteraction::MousePick BuildMousePick(
-        const AzFramework::ScreenPoint& screenPoint, const AzFramework::CameraState& cameraState)
-    {
-        const auto screenToWorld = AzFramework::ScreenToWorld(screenPoint, cameraState);
-
-        AzToolsFramework::ViewportInteraction::MousePick mousePick;
-        mousePick.m_screenCoordinates = screenPoint;
-        mousePick.m_rayOrigin = screenToWorld;
-        mousePick.m_rayDirection = (screenToWorld - cameraState.m_position).GetNormalized();
-
-        return mousePick;
-    }
-
-    MouseInteraction CreateMouseInteraction(
-        const MousePick& mousePick, MouseButtons buttons, InteractionId interactionId, KeyboardModifiers modifiers)
-    {
-        AzToolsFramework::ViewportInteraction::MouseInteraction interaction;
-        interaction.m_mousePick = mousePick;
-        interaction.m_mouseButtons = buttons;
-        interaction.m_interactionId = interactionId;
-        interaction.m_keyboardModifiers = modifiers;
-
-        return interaction;
-    }
-
-    MouseButtons CreateMouseButtons(MouseButton button)
-    {
-        MouseButtons buttons;
-        buttons.m_mouseButtons = static_cast<AZ::u32>(button);
-        return buttons;
-    }
-
-    MouseInteractionEvent CreateMouseInteractionEvent(const MouseInteraction& mouseInteraction, MouseEvent event)
-    {
-        return MouseInteractionEvent(mouseInteraction, event);
-    }
-
     void DispatchMouseInteractionEvent(const MouseInteractionEvent& event)
     {
         AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus::Event(

@@ -1,0 +1,6 @@
+<download name="RigidBody_SetGravityWorks" type="Map">
+ <index src="filelist.xml" dest="filelist.xml"/>
+ <files>
+  <file src="level.pak" dest="level.pak" size="39318" md5="ca982c39db2d05a29cbed961586dc3af"/>
+ </files>
+</download>

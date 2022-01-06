@@ -123,7 +123,7 @@ namespace PhysX
 
         const AZ::Vector3 followerEndPosition = RunJointTest(m_defaultScene, followerEntity->GetId());
 
-        EXPECT_TRUE(followerEndPosition.GetX() > followerPosition.GetX());
+        EXPECT_GT(followerEndPosition.GetX(), followerPosition.GetX());
     }
 
     TEST_F(PhysXJointsTest, Joint_HingeJoint_FollowerSwingsAroundLead)
@@ -164,8 +164,8 @@ namespace PhysX
 
         const AZ::Vector3 followerEndPosition = RunJointTest(m_defaultScene, followerEntity->GetId());
 
-        EXPECT_TRUE(followerEndPosition.GetX() > followerPosition.GetX());
-        EXPECT_TRUE(abs(followerEndPosition.GetZ()) > FLT_EPSILON);
+        EXPECT_GT(followerEndPosition.GetX(), followerPosition.GetX());
+        EXPECT_GT(abs(followerEndPosition.GetZ()), FLT_EPSILON);
     }
 
     TEST_F(PhysXJointsTest, Joint_BallJoint_FollowerSwingsUpAboutLead)
@@ -206,11 +206,67 @@ namespace PhysX
 
         const AZ::Vector3 followerEndPosition = RunJointTest(m_defaultScene, followerEntity->GetId());
 
-        EXPECT_TRUE(followerEndPosition.GetZ() > followerPosition.GetZ());
+        EXPECT_GT(followerEndPosition.GetZ(), followerPosition.GetZ());
     }
 
-// for some reason TYPED_TEST_CASE with the fixture is not working on Android + Linux
-#ifdef ENABLE_JOINTS_TYPED_TEST_CASE
+    TEST_F(PhysXJointsTest, Joint_BallJoint_GlobalConstraint)
+    {
+        // Place an entity in the world with a rigid body, physx collider, and a ball joint components.
+        // Do not set a lead entity on the ball joint component.
+        // Set entity's initial velocity to 10 in the X and Y directions on the rigid body component.
+        // The entity should swing up on the global constraint.
+
+        const AZ::Vector3 followerPosition(0.0f, 0.0f, -1.0f);
+        const AZ::Vector3 followerInitialLinearVelocity(10.0f, 10.0f, 0.0f);
+
+        const AZ::Vector3 jointLocalPosition(0.0f, 0.0f, 2.0f);
+        const AZ::Quaternion jointLocalRotation = AZ::Quaternion::CreateRotationY(90.0f);
+        const AZ::Transform jointLocalTransform = AZ::Transform::CreateFromQuaternionAndTranslation(jointLocalRotation, jointLocalPosition);
+
+        //we want a global constraint, so leave the lead entity unset.
+        auto jointConfig = AZStd::make_shared<JointComponentConfiguration>();
+        jointConfig->m_localTransformFromFollower = jointLocalTransform;
+
+        auto jointLimits = AZStd::make_shared<JointLimitProperties>();
+        jointLimits->m_isLimited = false;
+
+        auto followerEntity = AddBodyColliderEntity<BallJointComponent>(
+            m_testSceneHandle, followerPosition, followerInitialLinearVelocity, jointConfig, nullptr, jointLimits);
+
+        const AZ::Vector3 followerEndPosition = RunJointTest(m_defaultScene, followerEntity->GetId());
+
+        EXPECT_GT(followerEndPosition.GetZ(), followerPosition.GetZ());
+    }
+
+    TEST_F(PhysXJointsTest, Joint_HingeJoint_GlobalConstraint)
+    {
+        // Place an entity in the world with a rigid body, physx collider, and a hinge joint components.
+        // Do not set a lead entity on the hinge joint component.
+        // Set entity's initial velocity to 10 in the X and Y directions on the rigid body component.
+        // The entity should swing up on the global constraint.
+
+        const AZ::Vector3 followerPosition(0.0f, 0.0f, -1.0f);
+        const AZ::Vector3 followerInitialLinearVelocity(10.0f, 10.0f, 0.0f);
+
+        const AZ::Vector3 jointLocalPosition(0.0f, 0.0f, 2.0f);
+        const AZ::Quaternion jointLocalRotation = AZ::Quaternion::CreateFromEulerAnglesDegrees(AZ::Vector3(0.0f, 180.0f, 90.0f));
+        const AZ::Transform jointLocalTransform = AZ::Transform::CreateFromQuaternionAndTranslation(jointLocalRotation, jointLocalPosition);
+
+        // do not set the lead entity as that makes this a global constraint
+        auto jointConfig = AZStd::make_shared<JointComponentConfiguration>();
+        jointConfig->m_localTransformFromFollower = jointLocalTransform;
+
+        auto jointLimits = AZStd::make_shared<JointLimitProperties>();
+        jointLimits->m_isLimited = false;
+
+        auto followerEntity = AddBodyColliderEntity<HingeJointComponent>(
+            m_testSceneHandle, followerPosition, followerInitialLinearVelocity, jointConfig, nullptr, jointLimits);
+
+        const AZ::Vector3 followerEndPosition = RunJointTest(m_defaultScene, followerEntity->GetId());
+
+        EXPECT_GT(followerEndPosition.GetZ(), followerPosition.GetZ());
+    }
+
     template<class JointConfigurationType>
     class PhysXJointsApiTest : public PhysX::GenericPhysicsInterfaceTest
     {
@@ -271,23 +327,22 @@ namespace PhysX
 
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
-            jointHandle = sceneInterface->AddJoint(m_testSceneHandle, &jointConfiguration, m_parentBodyHandle, m_childBodyHandle);    
+            jointHandle = sceneInterface->AddJoint(this->m_testSceneHandle, &jointConfiguration, this->m_parentBodyHandle, this->m_childBodyHandle);
         }
 
         EXPECT_NE(jointHandle, AzPhysics::InvalidJointHandle);
 
         // run physics to trigger the the move of parent body
-        TestUtils::UpdateScene(m_testSceneHandle, AzPhysics::SystemConfiguration::DefaultFixedTimestep, 1);
+        TestUtils::UpdateScene(this->m_testSceneHandle, AzPhysics::SystemConfiguration::DefaultFixedTimestep, 1);
 
         AZ::Vector3 childCurrentPos;
 
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
-            auto* childBody = sceneInterface->GetSimulatedBodyFromHandle(m_testSceneHandle, m_childBodyHandle);
+            auto* childBody = sceneInterface->GetSimulatedBodyFromHandle(this->m_testSceneHandle, this->m_childBodyHandle);
             childCurrentPos = childBody->GetPosition();
         }
 
-        EXPECT_GT(childCurrentPos.GetX(), m_childInitialPos.GetX());
+        EXPECT_GT(childCurrentPos.GetX(), this->m_childInitialPos.GetX());
     }
-#endif // ENABLE_JOINTS_TYPED_TEST_CASE
 }

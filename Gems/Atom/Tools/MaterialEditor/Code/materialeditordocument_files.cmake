@@ -8,8 +8,6 @@
 
 set(FILES
     Include/Atom/Document/MaterialDocumentModule.h
-    Include/Atom/Document/MaterialDocumentSystemRequestBus.h
-    Include/Atom/Document/MaterialDocumentNotificationBus.h
     Include/Atom/Document/MaterialDocumentRequestBus.h
     Include/Atom/Document/MaterialDocumentSettings.h
     Source/Document/MaterialDocumentModule.cpp

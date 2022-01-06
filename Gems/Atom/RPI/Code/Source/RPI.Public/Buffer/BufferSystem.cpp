@@ -16,7 +16,6 @@
 #include <Atom/RPI.Reflect/Buffer/BufferAssetCreator.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAssetView.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
 #include <AzCore/Interface/Interface.h>
 
@@ -136,6 +135,7 @@ namespace AZ
                 return false;
             }
 
+            bufferPool->SetName(Name(AZStd::string::format("RPI::CommonBufferPool_%i", static_cast<uint32_t>(poolType))));
             RHI::ResultCode resultCode = bufferPool->Init(*device, bufferPoolDesc);
             if (resultCode != RHI::ResultCode::Success)
             {

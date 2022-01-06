@@ -5,10 +5,9 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Atom/RHI/CpuProfiler.h>
+
 #include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/ResolveScopeAttachment.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <RHI/CommandList.h>
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
@@ -115,12 +114,10 @@ namespace AZ
                 const RHI::ImageScopeAttachmentDescriptor& bindingDescriptor = scopeAttachment->GetDescriptor();
                 id<MTLTexture> imageViewMtlTexture = imageView->GetMemoryView().GetGpuAddress<id<MTLTexture>>();
                 
-                const bool isFullView           = imageView->IsFullView();
                 const bool isClearAction        = bindingDescriptor.m_loadStoreAction.m_loadAction == RHI::AttachmentLoadAction::Clear;
                 const bool isClearActionStencil = bindingDescriptor.m_loadStoreAction.m_loadActionStencil == RHI::AttachmentLoadAction::Clear;
                 
                 const bool isLoadAction         = bindingDescriptor.m_loadStoreAction.m_loadAction == RHI::AttachmentLoadAction::Load;
-                const bool isLoadActionStencil  = bindingDescriptor.m_loadStoreAction.m_loadActionStencil == RHI::AttachmentLoadAction::Load;
                 
                 const bool isStoreAction         = bindingDescriptor.m_loadStoreAction.m_storeAction == RHI::AttachmentStoreAction::Store;
                 const bool isStoreActionStencil  = bindingDescriptor.m_loadStoreAction.m_storeActionStencil == RHI::AttachmentStoreAction::Store;
@@ -158,7 +155,6 @@ namespace AZ
                 {
                     mtlStoreActionStencil = MTLStoreActionStore;
                 }
-                const RHI::ImageViewDescriptor& imgViewDescriptor = imageView->GetDescriptor();
                 const AZStd::vector<RHI::ScopeAttachmentUsageAndAccess>& usagesAndAccesses = scopeAttachment->GetUsageAndAccess();
                 for (const RHI::ScopeAttachmentUsageAndAccess& usageAndAccess : usagesAndAccesses)
                 {
@@ -276,7 +272,7 @@ namespace AZ
             AZ::u32 commandListIndex,
             AZ::u32 commandListCount) const
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             if(m_isWritingToSwapChainScope)
             {
@@ -334,7 +330,7 @@ namespace AZ
             AZ::u32 commandListIndex,
             AZ::u32 commandListCount) const
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             const bool isEpilogue = (commandListIndex + 1) == commandListCount;
             
             commandList.FlushEncoder();

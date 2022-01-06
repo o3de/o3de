@@ -44,7 +44,7 @@ public slots:
     QVector<int> Groups() const;
 
 protected:
-    void paintEvent(QPaintEvent* event)
+    void paintEvent(QPaintEvent* event) override
     {
         if (model() && model()->rowCount() > 0)
         {
@@ -71,7 +71,6 @@ private:
     ColumnGroupHeaderView* m_header;
     ColumnGroupProxyModel* m_groupModel;
     QSet<QString> m_openNodes;
-    bool m_showGroups;
 };
 
 #endif // COLUMNGROUPTREEVIEW_H

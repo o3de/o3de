@@ -30,8 +30,8 @@ public:
     //-----------------------------------------------------------------------------
     //! IAnimTrack Method Overriding.
     //-----------------------------------------------------------------------------
-    virtual void GetKeyInfo(int key, const char*& description, float& duration);
-    virtual void SerializeKey(IScreenFaderKey& key, XmlNodeRef& keyNode, bool bLoading);
+    void GetKeyInfo(int key, const char*& description, float& duration) override;
+    void SerializeKey(IScreenFaderKey& key, XmlNodeRef& keyNode, bool bLoading) override;
     void SetFlags(int flags) override;
 
     void PreloadTextures();

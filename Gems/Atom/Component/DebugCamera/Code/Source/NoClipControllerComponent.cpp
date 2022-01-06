@@ -388,9 +388,9 @@ namespace AZ
             m_properties = properties;
         }
 
-        void NoClipControllerComponent::SetTouchSensitivity([[maybe_unused]] float touchSensitivity)
+        void NoClipControllerComponent::SetTouchSensitivity(float touchSensitivity)
         {
-            m_properties.m_touchSensitivity;
+            m_properties.m_touchSensitivity = touchSensitivity;
         }
 
         void NoClipControllerComponent::SetPosition(AZ::Vector3 position)

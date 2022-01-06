@@ -11,7 +11,6 @@
 #include <Atom/RHI/BufferPool.h>
 #include <Atom/RHI/CommandQueue.h>
 #include <AzCore/Component/TickBus.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <RHI/AsyncUploadQueue.h>
 #include <RHI/Buffer.h>
 #include <RHI/Device.h>
@@ -33,6 +32,7 @@ namespace AZ
             
             // Use separate work submission queue from the hw copy queue to avoid the per frame sync.
             m_copyQueue = CommandQueue::Create();
+            m_copyQueue->SetName(AZ::Name("AsyncUpload Queue"));
 
             RHI::CommandQueueDescriptor commandQueueDescriptor;
             commandQueueDescriptor.m_hardwareQueueClass = RHI::HardwareQueueClass::Copy;
@@ -105,7 +105,6 @@ namespace AZ
             }
             
             Fence* fenceToSignal = nullptr;
-            uint64_t fenceToSignalValue = 0;
             size_t byteCount = uploadRequest.m_byteCount;
             size_t byteOffset = destMemoryView.GetOffset() + uploadRequest.m_byteOffset;            
             uint64_t queueValue = m_uploadFence.Increment();
@@ -120,21 +119,21 @@ namespace AZ
 
             m_copyQueue->QueueCommand([=](void* queue)
             {
-                AZ_TRACE_METHOD_NAME("Upload Buffer");
+                AZ_PROFILE_SCOPE(RHI, "Upload Buffer");
                 size_t pendingByteOffset = 0;
                 size_t pendingByteCount = byteCount;
                 CommandQueue* commandQueue = static_cast<CommandQueue*>(queue);
                 
                 while (pendingByteCount > 0)
                 {
-                    AZ_TRACE_METHOD_NAME("Upload Buffer Chunk");
+                    AZ_PROFILE_SCOPE(RHI, "Upload Buffer Chunk");
 
                     FramePacket* framePacket = BeginFramePacket(commandQueue);
 
                     const size_t bytesToCopy = AZStd::min(pendingByteCount, m_descriptor.m_stagingSizeInBytes);
 
                     {
-                        AZ_TRACE_METHOD_NAME("Copy CPU buffer");
+                        AZ_PROFILE_SCOPE(RHI, "Copy CPU buffer");
                         memcpy(framePacket->m_stagingResourceData, sourceData + pendingByteOffset, bytesToCopy);
                         Platform::SynchronizeBufferOnCPU(framePacket->m_stagingResource, 0, bytesToCopy);
                     }
@@ -183,8 +182,6 @@ namespace AZ
             {
                 CommandQueue* commandQueue = static_cast<CommandQueue*>(queue);
                 FramePacket* framePacket = BeginFramePacket(commandQueue);
-                const uint16_t arraySize = image->GetDescriptor().m_arraySize;
-                const uint16_t imageMipLevels = image->GetDescriptor().m_mipLevels;
                 
                 //[GFX TODO][ATOM-5605] - Cache alignments for all formats at Init
                 const static uint32_t bufferOffsetAlign = [mtlDevice minimumTextureBufferAlignmentForPixelFormat: ConvertPixelFormat(image->GetDescriptor().m_format)];
@@ -212,7 +209,6 @@ namespace AZ
                     if (subresourceLayout.m_size.m_height < subresourceLayout.m_rowCount)
                     {
                         AZ_Error("Metal", false, "AsyncUploadQueue::QueueUpload expects ImageHeight '%d' to be bigger than or equal to the image's RowCount '%d'.", subresourceLayout.m_size.m_height, subresourceLayout.m_rowCount);
-                        RHI::AsyncWorkHandle::Null;
                     }
 
                     // The final staging size for each CopyTextureRegion command
@@ -280,8 +276,6 @@ namespace AZ
                             for (uint32_t depth = 0u; depth < subresourceLayout.m_size.m_depth; depth++)
                             {
                                 const uint8_t* subresourceDataStart = reinterpret_cast<const uint8_t*>(subresourceData.m_data) + depth * subresourceSlicePitch;
-
-                                MTLTextureDescriptor* mtlTextureDesc = ConvertImageDescriptor(image->GetDescriptor());
 
                                 uint32_t startRow = 0;
                                 uint32_t destHeight = 0;
@@ -384,7 +378,7 @@ namespace AZ
         {
             AZ_Assert(!m_recordingFrame, "The previous frame packet isn't ended");
 
-            AZ_TRACE_METHOD_NAME("AsyncUploadQueue: Wait copy frame");
+            AZ_PROFILE_SCOPE(RHI, "AsyncUploadQueue: Wait copy frame");
             FramePacket& framePacket = m_framePackets[m_frameIndex];
             framePacket.m_fence.WaitOnCpu(); // ensure any previous uploads using this frame have completed
                         
@@ -405,7 +399,7 @@ namespace AZ
             {
                 AZ_Assert(m_recordingFrame, "The frame packet wasn't started. You need to call StartFramePacket first.");
 
-                AZ_TRACE_METHOD_NAME("AsyncUploadQueue: Execute command");
+                AZ_PROFILE_SCOPE(RHI, "AsyncUploadQueue: Execute command");
                 FramePacket& framePacket = m_framePackets[m_frameIndex];
                 framePacket.m_fence.SignalFromGpu(framePacket.m_mtlCommandBuffer); // signal fence when this upload haas completed
 
@@ -468,7 +462,6 @@ namespace AZ
             
             MTLBlitOption mtlBlitOption = GetBlitOption(destImage->GetDescriptor().m_format);
 
-            id<MTLTexture> tempTex = destImage->GetMemoryView().GetGpuAddress<id<MTLTexture>>();
             [blitEncoder copyFromBuffer:framePacket->m_stagingResource
                            sourceOffset:framePacket->m_dataOffset
                       sourceBytesPerRow:stagingRowPitch

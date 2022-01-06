@@ -28,25 +28,19 @@ namespace AZ
             size_t m_accumulatedInBytes = 0;
         };
 
-        /**
-         * Tracks memory usage for a specific heap in the system. The data is expected to adhere to the following constraints:
-         *
-         *  1) Reserved <= Budget (unless the budget is 0).
-         *  2) Resident <= Reserved.
-         */
+        //! Tracks memory usage for a specific heap in the system. The data is expected to adhere to the following constraints:
+        //!  1) Reserved <= Budget (unless the budget is 0).
+        //!  2) Resident <= Reserved.
         struct HeapMemoryUsage
         {
             HeapMemoryUsage() = default;
             HeapMemoryUsage(const HeapMemoryUsage&);
             HeapMemoryUsage& operator=(const HeapMemoryUsage&);
 
-            /**
-             * This helper reserves memory in a thread-safe fashion. If the result exceeds the budget, the reservation is safely
-             * reverted and false is returned. otherwise, true is returned. Only m_reservedInBytes is affected.
-             *
-             *  @param sizeInBytes The amount of bytes to reserve.
-             *  @return Whether the reservation was successful.
-             */
+            //! This helper reserves memory in a thread-safe fashion. If the result exceeds the budget, the reservation is safely
+            //! reverted and false is returned. otherwise, true is returned. Only m_reservedInBytes is affected.
+            //!  @param sizeInBytes The amount of bytes to reserve.
+            //! @return Whether the reservation was successful.
             bool TryReserveMemory(size_t sizeInBytes)
             {
                 const size_t reservationInBytes = (m_reservedInBytes += sizeInBytes);
@@ -60,45 +54,41 @@ namespace AZ
                 return true;
             }
 
-            /**
-             * Helper function to validate sizes
-             */
+            //! Helper function to validate sizes
             void Validate()
             {
                 if (Validation::IsEnabled())
                 {
-                    AZ_Assert(m_budgetInBytes >= m_reservedInBytes, "Reserved memory is larger than memory budget");
-                    AZ_Assert(m_reservedInBytes >= m_residentInBytes, "Resident memory is larger than reserved memory");
+                    AZ_Assert(
+                        m_budgetInBytes >= m_reservedInBytes,
+                        "Reserved memory is larger than memory budget. Memory budget %zu Reserved %zu", m_budgetInBytes, m_reservedInBytes.load());
+                    AZ_Assert(
+                        m_reservedInBytes >= m_residentInBytes,
+                        "Resident memory is larger than reserved memory. Reserved Memory %zu Resident memory %zu", m_reservedInBytes.load(),
+                        m_residentInBytes.load());
                 }
             }
 
-            /**
-             * The budget for the heap in bytes. A non-zero budget means the pool will reject reservation requests
-             * once the budget is exceeded. A zero budget effectively disables this check. On certain platforms,
-             * it may be unnecessary to budget certain heaps. Other platforms may require a non-zero budget for certain
-             * heaps.
-             */
+            // The budget for the heap in bytes. A non-zero budget means the pool will reject reservation requests
+            // once the budget is exceeded. A zero budget effectively disables this check. On certain platforms,
+            // it may be unnecessary to budget certain heaps. Other platforms may require a non-zero budget for certain
+            // heaps.
             size_t m_budgetInBytes = 0;
 
-            /**
-             * Number of bytes reserved on the heap for allocations. This value represents the allocation capacity for
-             * the platform. It is validated against the budget and may not exceed it.
-             */
+            // Number of bytes reserved on the heap for allocations. This value represents the allocation capacity for
+            // the platform. It is validated against the budget and may not exceed it.
             AZStd::atomic_size_t m_reservedInBytes{ 0 };
 
-            /**
-             * Number of bytes physically allocated on the heap. This may not exceed the reservation. Certain platforms
-             * may choose to transfer memory down the heap level hierarchy in response to memory trim events from the driver.
-             */
+            // Number of bytes physically allocated on the heap. This may not exceed the reservation. Certain platforms
+            // may choose to transfer memory down the heap level hierarchy in response to memory trim events from the driver.
             AZStd::atomic_size_t m_residentInBytes{ 0 };
         };
 
-        /**
-         * Describes memory usage metrics of a resource pool. Resource pools *can* associate with a single
-         * device memory heap (i.e. a single GPU) and the host memory heap. Certain pools on specific platforms
-         * may not require one or the other. In this case, the memory usage / budget will report empty values for
-         * that heap type.
-         */
+        //!
+        //! Describes memory usage metrics of a resource pool. Resource pools *can* associate with a single
+        //! device memory heap (i.e. a single GPU) and the host memory heap. Certain pools on specific platforms
+        //! may not require one or the other. In this case, the memory usage / budget will report empty values for
+        //! that heap type.
         struct PoolMemoryUsage
         {
             PoolMemoryUsage() = default;

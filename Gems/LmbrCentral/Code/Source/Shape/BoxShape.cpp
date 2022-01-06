@@ -166,7 +166,7 @@ namespace LmbrCentral
             return intersection;
         }
 
-        const bool intersection = AZ::Intersect::IntersectRayObb(src, dir, m_intersectionDataCache.m_obb, distance) > 0;
+        const bool intersection = AZ::Intersect::IntersectRayObb(src, dir, m_intersectionDataCache.m_obb, distance);
         return intersection;
     }
 

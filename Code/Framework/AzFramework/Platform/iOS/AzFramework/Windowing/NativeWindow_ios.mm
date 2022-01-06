@@ -27,9 +27,11 @@ namespace AzFramework
                         const WindowGeometry& geometry,
                         const WindowStyleMasks& styleMasks) override;
         NativeWindowHandle GetWindowHandle() const override;
-
+        uint32_t GetDisplayRefreshRate() const override;
+        
     private:
         UIWindow* m_nativeWindow;
+        uint32_t m_mainDisplayRefreshRate = 0;
     };
     
     NativeWindow::Implementation* NativeWindow::Implementation::Create()
@@ -56,6 +58,7 @@ namespace AzFramework
 
         m_width = geometry.m_width;
         m_height = geometry.m_height;
+        m_mainDisplayRefreshRate = [[UIScreen mainScreen] maximumFramesPerSecond];
     }
     
     NativeWindowHandle NativeWindowImpl_Ios::GetWindowHandle() const
@@ -63,5 +66,9 @@ namespace AzFramework
         return m_nativeWindow;
     }
    
+    uint32_t NativeWindowImpl_Ios::GetDisplayRefreshRate() const
+    {
+        return m_mainDisplayRefreshRate;
+    }
 } // namespace AzFramework
 

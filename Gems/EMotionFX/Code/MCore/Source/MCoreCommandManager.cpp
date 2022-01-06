@@ -547,7 +547,12 @@ namespace MCore
                     }
 
                     tmpStr = commandString.substr(lastResultIndex, rightPercentagePos - lastResultIndex + 1);
-                    AzFramework::StringFunc::Replace(commandString, tmpStr.c_str(), intermediateCommandResults[i - relativeIndex].c_str());
+                    AZStd::string replaceStr = intermediateCommandResults[i - relativeIndex];
+                    if (replaceStr.empty())
+                    {
+                        replaceStr = "-1";
+                    }
+                    AzFramework::StringFunc::Replace(commandString, tmpStr.c_str(), replaceStr.c_str());
                     replaceHappen = true;
 
                     // Search again in case the command group is referring to other results
@@ -1123,7 +1128,7 @@ namespace MCore
         for (size_t i = 0; i < numHistoryEntries; ++i)
         {
             AZStd::string text = AZStd::string::format("%.3zu: name='%s', num parameters=%zu", i, m_commandHistory[i].m_executedCommand->GetName(), m_commandHistory[i].m_parameters.GetNumParameters());
-            if (i == m_historyIndex)
+            if (i == static_cast<size_t>(m_historyIndex))
             {
                 LogDetailedInfo("-> %s", text.c_str());
             }

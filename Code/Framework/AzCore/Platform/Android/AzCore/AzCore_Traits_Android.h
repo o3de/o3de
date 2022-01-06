@@ -53,10 +53,8 @@
 // Compiler traits ...
 #define AZ_TRAIT_COMPILER_DEFINE_AZSWNPRINTF_AS_SWPRINTF 1
 #define AZ_TRAIT_COMPILER_DEFINE_FS_ERRNO_TYPE 1
-#define AZ_TRAIT_COMPILER_DEFINE_FS_STAT_TYPE 0
 #define AZ_TRAIT_COMPILER_DEFINE_GETCURRENTPROCESSID 1
 #define AZ_TRAIT_COMPILER_DEFINE_REFGUID 0
-#define AZ_TRAIT_COMPILER_DEFINE_SASSERTDATA_TYPE 1
 #define AZ_TRAIT_COMPILER_DEFINE_WCSICMP 1
 #define AZ_TRAIT_COMPILER_INT64_T_IS_LONG 1
 #define AZ_TRAIT_COMPILER_OPTIMIZE_MISSING_DEFAULT_SWITCH_CASE 0
@@ -75,7 +73,6 @@
 #define AZ_TRAIT_HEAPSCHEMA_COMPILE_MALLINFO 0
 #define AZ_TRAIT_IS_ABS_PATH_IF_COLON_FOUND_ANYWHERE 0
 #define AZ_TRAIT_JSON_CLANG_IGNORE_UNKNOWN_WARNING 0
-#define AZ_TRAIT_MAX_JOB_MANAGER_WORKER_THREADS 0
 #define AZ_TRAIT_PERF_MEMORYBENCHMARK_IS_AVAILABLE 0
 #define AZ_TRAIT_PUMP_SYSTEM_EVENTS_WHILE_LOADING 0
 #define AZ_TRAIT_PUMP_SYSTEM_EVENTS_WHILE_LOADING_INTERVAL_MS 0
@@ -109,6 +106,19 @@
 #define AZ_TRAIT_USE_ERRNO_T_TYPEDEF 1
 #define AZ_TRAIT_USE_POSIX_TEMP_FOLDER 0
 
+// wchar_t/char formatting
+// Reason: https://docs.microsoft.com/en-us/cpp/c-runtime-library/format-specification-syntax-printf-and-wprintf-functions?view=msvc-160
+// The Z type character, and the behavior of the c, C, s, and S type characters when they're used with the printf and wprintf functions, 
+// are Microsoft extensions. The ISO C standard uses c and s consistently for narrow characters and strings, and C and S for wide characters
+// and strings, in all formatting functions.
+#define AZ_TRAIT_FORMAT_STRING_PRINTF_CHAR "%c"
+#define AZ_TRAIT_FORMAT_STRING_PRINTF_WCHAR "%C"
+#define AZ_TRAIT_FORMAT_STRING_WPRINTF_CHAR "%c"
+#define AZ_TRAIT_FORMAT_STRING_WPRINTF_WCHAR "%C"
+#define AZ_TRAIT_FORMAT_STRING_PRINTF_STRING "%s"
+#define AZ_TRAIT_FORMAT_STRING_PRINTF_WSTRING "%S"
+#define AZ_TRAIT_FORMAT_STRING_WPRINTF_STRING "%s"
+#define AZ_TRAIT_FORMAT_STRING_WPRINTF_WSTRING "%S"
 // Legacy traits ...
 #define AZ_TRAIT_LEGACY_CRYCOMMON_USE_WINDOWS_STUBS 1
 #define AZ_TRAIT_LEGACY_CRYPAK_UNIX_LIKE_FILE_SYSTEM 1

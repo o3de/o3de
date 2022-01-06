@@ -20,6 +20,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -190,6 +191,25 @@ namespace AzFramework
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void InputSystemComponent::Activate()
     {
+        const auto* settingsRegistry = AZ::SettingsRegistry::Get();
+        if (settingsRegistry)
+        {
+            AZ::u64 value = 0;
+            if (settingsRegistry->Get(value, "/O3DE/InputSystem/MouseMovementSampleRateHertz"))
+            {
+                m_mouseMovementSampleRateHertz = aznumeric_caster(value);
+            }
+            if (settingsRegistry->Get(value, "/O3DE/InputSystem/GamepadsEnabled"))
+            {
+                m_gamepadsEnabled = aznumeric_caster(value);
+            }
+            settingsRegistry->Get(m_keyboardEnabled, "/O3DE/InputSystem/KeyboardEnabled");
+            settingsRegistry->Get(m_motionEnabled, "/O3DE/InputSystem/MotionEnabled");
+            settingsRegistry->Get(m_mouseEnabled, "/O3DE/InputSystem/MouseEnabled");
+            settingsRegistry->Get(m_touchEnabled, "/O3DE/InputSystem/TouchEnabled");
+            settingsRegistry->Get(m_virtualKeyboardEnabled, "/O3DE/InputSystem/VirtualKeyboardEnabled");
+        }
+
         // Create all enabled input devices
         CreateEnabledInputDevices();
 

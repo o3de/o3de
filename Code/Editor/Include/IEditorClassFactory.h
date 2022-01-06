@@ -14,8 +14,10 @@
 #define CRYINCLUDE_EDITOR_INCLUDE_IEDITORCLASSFACTORY_H
 #pragma once
 
+#include <CryCommon/platform.h>
 #include <vector>
 #include <QtCore/QString>
+#include <AzCore/Math/Guid.h>
 
 #define DEFINE_UUID(l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
 static const GUID uuid() { return { l, w1, w2, { b1, b2,  b3,  b4,  b5,  b6,  b7,  b8 } }; }
@@ -29,12 +31,9 @@ struct IUnknown
 };
 #endif
 
-#ifdef __uuidof
-#undef __uuidof
-#endif
-#define __uuidof(T) T::uuid()
+#define __az_uuidof(T) T::uuid()
 
-#if defined(AZ_PLATFORM_LINUX)
+#if defined(AZ_PLATFORM_LINUX) || defined(AZ_PLATFORM_MAC)
 
 # ifndef _REFGUID_DEFINED
 # define _REFGUID_DEFINED
@@ -65,7 +64,7 @@ enum
 };
 #endif
 
-#endif  // defined(AZ_PLATFORM_LINUX)
+#endif  // defined(AZ_PLATFORM_LINUX) || defined(AZ_PLATFORM_MAC)
 
 #include "SandboxAPI.h"
 
@@ -105,7 +104,7 @@ struct IClassDesc
     template<class Q>
     HRESULT STDMETHODCALLTYPE QueryInterface(Q** pp)
     {
-        return QueryInterface(__uuidof(Q), (void**)pp);
+        return QueryInterface(__az_uuidof(Q), (void**)pp);
     }
 
     //////////////////////////////////////////////////////////////////////////

@@ -30,7 +30,7 @@ namespace AZ::IO
         {
             using ::testing::_;
             using ::testing::AnyNumber;
-            
+
             UnitTest::AllocatorsFixture::SetUp();
 
             m_mock = AZStd::make_shared<StreamStackEntryMock>();
@@ -78,7 +78,7 @@ namespace AZ::IO
         {
             using ::testing::_;
             using ::testing::AtLeast;
-            
+
             EXPECT_CALL(*m_mock, UpdateStatus(_)).Times(AtLeast(1));
             EXPECT_CALL(*m_mock, UpdateCompletionEstimates(_, _, _, _)).Times(AtLeast(1));
             EXPECT_CALL(*m_mock, PrepareRequest(_))
@@ -115,7 +115,7 @@ namespace AZ::IO
         void MockAllocatorForUnclaimedMemory(IStreamerTypes::RequestMemoryAllocatorMock& mock, AZStd::binary_semaphore& sync)
         {
             using ::testing::_;
-            
+
             EXPECT_CALL(mock, LockAllocator()).Times(1);
             EXPECT_CALL(mock, UnlockAllocator())
                 .Times(1)
@@ -256,13 +256,13 @@ namespace AZ::IO
         using ::testing::_;
         using ::testing::AtLeast;
         using ::testing::Return;
-        
+
         EXPECT_CALL(*m_mock, UpdateStatus(_)).Times(AtLeast(1));
         EXPECT_CALL(*m_mock, UpdateCompletionEstimates(_, _, _, _)).Times(AtLeast(1));
         EXPECT_CALL(*m_mock, PrepareRequest(_)).Times(AtLeast(1));
         EXPECT_CALL(*m_mock, ExecuteRequests()).Times(AtLeast(1));
         EXPECT_CALL(*m_mock, QueueRequest(_)).Times(1);
-        
+
         AZStd::atomic_int counter = 2;
         AZStd::binary_semaphore sync;
         auto wait = [&sync, &counter](FileRequestHandle)
@@ -350,7 +350,7 @@ namespace AZ::IO
 
         EXPECT_CALL(*m_mock, UpdateStatus(_)).Times(AnyNumber());
         EXPECT_CALL(*m_mock, UpdateCompletionEstimates(_, _, _, _)).Times(AnyNumber());
-        
+
         // Pretend to be busy [Iterations] times, then set the status to idle so the Scheduler thread can exit.
         EXPECT_CALL(*m_mock, ExecuteRequests())
             .Times(Iterations + 1)

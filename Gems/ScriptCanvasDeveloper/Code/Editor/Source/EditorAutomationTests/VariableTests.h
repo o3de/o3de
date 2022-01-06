@@ -256,14 +256,11 @@ namespace ScriptCanvasDeveloper
 
         int SetupNextVariable();
 
-        CreateVariableAction::CreationType m_creationType = CreateVariableAction::CreationType::AutoComplete;
-
         ScriptCanvas::VariableId             m_activeVariableId;
         AZStd::vector<CreateVariableAction*> m_createVariables;
         AZStd::vector<ScriptCanvas::Data::Type> m_typesToMake;
         
         bool m_createVariablesNodesViaContextMenu = true;
-        bool m_closedGraph = false;
         int m_activeIndex = 0;
 
         GraphCanvas::ViewId             m_viewId;

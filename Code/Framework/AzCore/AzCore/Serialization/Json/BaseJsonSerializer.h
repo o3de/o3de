@@ -159,12 +159,13 @@ namespace AZ
         
         enum class ContinuationFlags
         {
-            None = 0,                   //! No extra flags.
-            ResolvePointer = 1 << 0,    //! The pointer passed in contains a pointer. The (de)serializer will attempt to resolve to an instance.
-            ReplaceDefault = 1 << 1,    //! The default value provided for storing will be replaced with a newly created one.
-            LoadAsNewInstance = 1 << 2  //! Treats the value as if it's a newly created instance. This may trigger serializers marked with
-                                        //! OperationFlags::InitializeNewInstance. Used for instance by pointers or new instances added to
-                                        //! an array.
+            None = 0,                       //! No extra flags.
+            ResolvePointer = 1 << 0,        //! The pointer passed in contains a pointer. The (de)serializer will attempt to resolve to an instance.
+            ReplaceDefault = 1 << 1,        //! The default value provided for storing will be replaced with a newly created one.
+            LoadAsNewInstance = 1 << 2,     //! Treats the value as if it's a newly created instance. This may trigger serializers marked with
+                                            //! OperationFlags::InitializeNewInstance. Used for instance by pointers or new instances added to
+                                            //! an array.
+            IgnoreTypeSerializer =  1 << 3, //! Ignore the custom/specific serializer for the TypeId
         };
 
         enum class OperationFlags
@@ -179,13 +180,16 @@ namespace AZ
 
         //! Transforms the data from the rapidjson Value to outputValue, if the conversion is possible and supported.
         //! The serializer is responsible for casting to the proper type and safely writing to the outputValue memory.
+        //! \note The default implementation is to load the object ignoring a custom serializers for the type, which allows for custom serializers
+        //! to modify the object after all default loading has occurred.
         virtual JsonSerializationResult::Result Load(void* outputValue, const Uuid& outputValueTypeId, const rapidjson::Value& inputValue,
-            JsonDeserializerContext& context) = 0;
+            JsonDeserializerContext& context);
         
         //! Write the input value to a rapidjson value if the default value is not null and doesn't match the input value, otherwise
         //! an error is returned and sets the rapidjson value to a null value.
+        //! \note The default implementation is to store the object ignoring custom serializers.
         virtual JsonSerializationResult::Result Store(rapidjson::Value& outputValue, const void* inputValue, const void* defaultValue,
-            const Uuid& valueTypeId, JsonSerializerContext& context) = 0;
+            const Uuid& valueTypeId, JsonSerializerContext& context);
 
         //! Returns the operation flags which tells the Json Serialization how this custom json serializer can be used.
         virtual OperationFlags GetOperationsFlags() const;

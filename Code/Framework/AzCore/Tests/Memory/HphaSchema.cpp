@@ -10,10 +10,6 @@
 #include <AzCore/Memory/HphaSchema.h>
 #include <AzCore/std/containers/vector.h>
 
-#if defined(HAVE_BENCHMARK)
-#include <benchmark/benchmark.h>
-#endif // HAVE_BENCHMARK
-
 class HphaSchema_TestAllocator
     : public AZ::SimpleSchemaAllocator<AZ::HphaSchema>
 {
@@ -112,72 +108,3 @@ namespace UnitTest
         HphaSchemaTestFixture,
         ::testing::ValuesIn(s_mixedInstancesParameters));
 }
-
-
-#if defined(HAVE_BENCHMARK)
-namespace Benchmark
-{
-    class HphaSchemaBenchmarkFixture 
-        : public ::benchmark::Fixture
-    {
-    public:
-        void SetUp(const ::benchmark::State& state)
-        {
-            AZ_UNUSED(state);
-            AZ::AllocatorInstance<HphaSchema_TestAllocator>::Create();
-        }
-
-        void TearDown(const ::benchmark::State& state)
-        {
-            AZ_UNUSED(state);
-            AZ::AllocatorInstance<HphaSchema_TestAllocator>::Destroy();
-        }
-
-        static void BM_Allocations(benchmark::State& state, const AllocationSizeArray& allocationArray)
-        {
-            AZStd::vector<void*> allocations;
-            while (state.KeepRunning())
-            {
-                state.PauseTiming();
-                const size_t allocationIndex = allocations.size();
-                const size_t allocationSize = allocationArray[allocationIndex % allocationArray.size()];
-
-                state.ResumeTiming();
-                void* allocation = AZ::AllocatorInstance<HphaSchema_TestAllocator>::Get().Allocate(allocationSize, 0);
-
-                state.PauseTiming();
-                allocations.emplace_back(allocation);
-           
-                state.ResumeTiming();
-            }
-
-            const size_t numberOfAllocations = allocations.size();
-            state.SetItemsProcessed(numberOfAllocations);
-
-            for (size_t allocationIndex = 0; allocationIndex < numberOfAllocations; ++allocationIndex)
-            {
-                AZ::AllocatorInstance<HphaSchema_TestAllocator>::Get().DeAllocate(allocations[allocationIndex], allocationArray[allocationIndex % allocationArray.size()]);
-            }
-            AZ::AllocatorInstance<HphaSchema_TestAllocator>::Get().GarbageCollect();
-        }
-    };
-
-    // Small allocations, these are allocations that are going to end up in buckets in the HphaSchema
-    BENCHMARK_F(HphaSchemaBenchmarkFixture, SmallAllocations)(benchmark::State& state)
-    {
-        BM_Allocations(state, s_smallAllocationSizes);
-    }
-
-    BENCHMARK_F(HphaSchemaBenchmarkFixture, BigAllocations)(benchmark::State& state)
-    {
-        BM_Allocations(state, s_bigAllocationSizes);
-    }
-
-    BENCHMARK_F(HphaSchemaBenchmarkFixture, MixedAllocations)(benchmark::State& state)
-    {
-        BM_Allocations(state, s_mixedAllocationSizes);
-    }
-
-
-} // Benchmark
-#endif // HAVE_BENCHMARK

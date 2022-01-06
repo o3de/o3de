@@ -18,14 +18,7 @@ namespace Benchmark
     class BM_MathPlane
         : public benchmark::Fixture
     {
-    public:
-        BM_MathPlane()
-        {
-            const unsigned int seed = 1;
-            rng = std::mt19937_64(seed);
-        }
-
-        void SetUp([[maybe_unused]] const ::benchmark::State& state) override
+        void internalSetUp()
         {
             for (int i = 0; i < m_numIters; ++i)
             {
@@ -39,13 +32,28 @@ namespace Benchmark
                 m_distance = unif(rng);
                 m_dists.push_back(m_distance);
 
-                //set these differently so they don't overlap with same values as other vectors
+                // set these differently so they don't overlap with same values as other vectors
                 m_normal = AZ::Vector3(unif(rng), unif(rng), unif(rng));
                 m_normal.Normalize();
                 m_distance = unif(rng);
                 m_plane = AZ::Plane::CreateFromNormalAndDistance(m_normal, m_distance);
                 m_planes.push_back(m_plane);
             }
+        }
+    public:
+        BM_MathPlane()
+        {
+            const unsigned int seed = 1;
+            rng = std::mt19937_64(seed);
+        }
+
+        void SetUp(const benchmark::State&) override
+        {
+            internalSetUp();
+        }
+        void SetUp(benchmark::State&) override
+        {
+            internalSetUp();
         }
 
         AZ::Plane m_plane;

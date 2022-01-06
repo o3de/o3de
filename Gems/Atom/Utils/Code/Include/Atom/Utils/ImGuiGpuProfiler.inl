@@ -279,13 +279,13 @@ namespace AZ
                         const AZStd::string totalPassCountLabel = AZStd::string::format("%s: %u",
                             "Total Pass Count",
                             static_cast<uint32_t>(passEntryDatabase.size()));
-                        ImGui::Text(totalPassCountLabel.c_str());
+                        ImGui::Text("%s", totalPassCountLabel.c_str());
 
                         // Display listed pass count.
                         const AZStd::string listedPassCountLabel = AZStd::string::format("%s: %u",
                             "Listed Pass Count",
                             static_cast<uint32_t>(m_passEntryReferences.size()));
-                        ImGui::Text(listedPassCountLabel.c_str());
+                        ImGui::Text("%s", listedPassCountLabel.c_str());
                     }
                 }
 
@@ -390,7 +390,7 @@ namespace AZ
 
         inline void ImGuiPipelineStatisticsView::CreateAttributeRow(const PassEntry* passEntry, const PassEntry* rootEntry)
         {
-            const uint32_t columnCount = static_cast<uint32_t>(ImGui::GetColumnsCount());
+            [[maybe_unused]] const uint32_t columnCount = static_cast<uint32_t>(ImGui::GetColumnsCount());
             AZ_Assert(columnCount == ImGuiPipelineStatisticsView::HeaderAttributeCount, "The column count needs to match HeaderAttributeCount.");
 
             ImGui::Separator();
@@ -404,7 +404,7 @@ namespace AZ
                     passName = AZStd::string::format("%s (%s)", passName.c_str(), passTreeState);
                 }
 
-                ImGui::Text(passName.c_str());
+                ImGui::Text("%s", passName.c_str());
 
                 // Show a HoverMarker if the text is bigger than the column.
                 const ImVec2 textSize = ImGui::CalcTextSize(passName.c_str());
@@ -480,7 +480,7 @@ namespace AZ
                     }
                     else
                     {
-                        ImGui::Text(label.c_str());
+                        ImGui::Text("%s", label.c_str());
                     }
 
                     if (textColorChanged)
@@ -651,7 +651,7 @@ namespace AZ
                 if (m_refreshType == RefreshType::OncePerSecond)
                 {
                     auto now = AZStd::GetTimeNowMicroSecond();
-                    if (m_lastUpdateTimeMicroSecond == 0 || now - m_lastUpdateTimeMicroSecond > 1000000)
+                    if (now - m_lastUpdateTimeMicroSecond > 1000000)
                     {
                         needEnable = true;
                         m_lastUpdateTimeMicroSecond = now;
@@ -683,7 +683,7 @@ namespace AZ
                     // Draw the frame time (GPU).
                     const AZStd::string formattedTimestamp = FormatTimestampLabel(gpuTimestamp.GetDurationInNanoseconds());
                     const AZStd::string headerFrameTime = AZStd::string::format("Total frame duration (GPU): %s", formattedTimestamp.c_str());
-                    ImGui::Text(headerFrameTime.c_str());
+                    ImGui::Text("%s", headerFrameTime.c_str());
 
                     // Draw the viewing option.
                     ImGui::RadioButton("Hierarchical", reinterpret_cast<int32_t*>(&m_viewType), static_cast<int32_t>(ProfilerViewType::Hierarchical));
@@ -810,7 +810,7 @@ namespace AZ
                                 {
                                     const int32_t timestampMetricUnitNumeric = static_cast<int32_t>(m_timestampMetricUnit);
                                     const AZStd::string metricUnitText = AZStd::string::format("Time in %s", MetricUnitText[timestampMetricUnitNumeric]);
-                                    ImGui::Text(metricUnitText.c_str());
+                                    ImGui::Text("%s", metricUnitText.c_str());
                                     ImGui::NextColumn();
                                 }
 
@@ -818,7 +818,7 @@ namespace AZ
                                 {
                                     const int32_t frameWorkloadViewNumeric = static_cast<int32_t>(m_frameWorkloadView);
                                     const AZStd::string frameWorkloadViewText = AZStd::string::format("Frame workload in %s FPS", FrameWorkloadUnit[frameWorkloadViewNumeric]);
-                                    ImGui::Text(frameWorkloadViewText.c_str());
+                                    ImGui::Text("%s", frameWorkloadViewText.c_str());
                                     ImGui::NextColumn();
                                 }
 
@@ -834,8 +834,10 @@ namespace AZ
                             {
                                 // Check whether it should be sorted by name.
                                 const uint32_t sortType = static_cast<uint32_t>(m_sortType);
+                                AZ_PUSH_DISABLE_WARNING(4296, "-Wunknown-warning-option")
                                 bool sortByName = (sortType >= static_cast<uint32_t>(ProfilerSortType::Alphabetical) &&
                                     (sortType < static_cast<uint32_t>(ProfilerSortType::AlphabeticalCount)));
+                                AZ_POP_DISABLE_WARNING
 
                                 if (ImGui::Selectable("Pass Names", sortByName))
                                 {
@@ -851,7 +853,7 @@ namespace AZ
 
                                 const int32_t frameWorkloadViewNumeric = static_cast<int32_t>(m_frameWorkloadView);
                                 const AZStd::string frameWorkloadViewText = AZStd::string::format("Frame workload in %s FPS", FrameWorkloadUnit[frameWorkloadViewNumeric]);
-                                ImGui::Text(frameWorkloadViewText.c_str());
+                                ImGui::Text("%s", frameWorkloadViewText.c_str());
                                 ImGui::NextColumn();
                             }
 
@@ -905,7 +907,7 @@ namespace AZ
                 }
                 else
                 {
-                    ImGui::Text(entryTime.c_str());
+                    ImGui::Text("%s", entryTime.c_str());
                     ImGui::NextColumn();
                     DrawFrameWorkloadBar(NormalizeFrameWorkload(entry->m_interpolatedTimestampInNanoseconds));
                     ImGui::NextColumn();
@@ -925,7 +927,7 @@ namespace AZ
             if (entry->m_children.empty())
             {
                 // Draw the workload bar when it doesn't have children.
-                ImGui::Text(entry->m_name.GetCStr());
+                ImGui::Text("%s", entry->m_name.GetCStr());
                 // Show a HoverMarker if the text is bigger than the column.
                 createHoverMarker(entry->m_name.GetCStr());
 
@@ -989,9 +991,9 @@ namespace AZ
                 }
                 const AZStd::string entryTime = FormatTimestampLabel(entry->m_interpolatedTimestampInNanoseconds);
 
-                ImGui::Text(entry->m_name.GetCStr());
+                ImGui::Text("%s", entry->m_name.GetCStr());
                 ImGui::NextColumn();
-                ImGui::Text(entryTime.c_str());
+                ImGui::Text("%s", entryTime.c_str());
                 ImGui::NextColumn();
                 DrawFrameWorkloadBar(NormalizeFrameWorkload(entry->m_interpolatedTimestampInNanoseconds));
                 ImGui::NextColumn();
@@ -1011,7 +1013,7 @@ namespace AZ
             const uint32_t countNumerical = static_cast<uint32_t>(count);
             const uint32_t offset = static_cast<uint32_t>(m_sortType) - startNumerical;
 
-            if (offset < countNumerical && offset >= 0u)
+            if (offset < countNumerical)
             {
                 // Change the sorting order.
                 m_sortType = static_cast<ProfilerSortType>(((offset + 1u) % countNumerical) + startNumerical);
@@ -1092,8 +1094,8 @@ namespace AZ
                 AZStd::sort(m_tableRows.begin(), m_tableRows.end(),
                     [ascending](const TableRow& lhs, const TableRow& rhs)
                     {
-                        const float lhsSize = lhs.m_sizeInBytes;
-                        const float rhsSize = rhs.m_sizeInBytes;
+                        const float lhsSize = static_cast<float>(lhs.m_sizeInBytes);
+                        const float rhsSize = static_cast<float>(rhs.m_sizeInBytes);
                         return ascending ? lhsSize < rhsSize : lhsSize > rhsSize;
                     });
                 break;
@@ -1107,7 +1109,7 @@ namespace AZ
             {
                 ImGui::TableSetupColumn("Parent pool");
                 ImGui::TableSetupColumn("Name");
-                ImGui::TableSetupColumn("Size (MB)", 0, 100.0f);
+                ImGui::TableSetupColumn("Size (MB)");
                 ImGui::TableSetupColumn("BindFlags", ImGuiTableColumnFlags_NoSort);
                 ImGui::TableHeadersRow();
                 ImGui::TableNextColumn();
@@ -1129,13 +1131,13 @@ namespace AZ
                         continue;
                     }
 
-                    ImGui::Text(tableRow.m_parentPoolName.GetCStr());
+                    ImGui::Text("%s", tableRow.m_parentPoolName.GetCStr());
                     ImGui::TableNextColumn();
-                    ImGui::Text(tableRow.m_bufImgName.GetCStr());
+                    ImGui::Text("%s", tableRow.m_bufImgName.GetCStr());
                     ImGui::TableNextColumn();
-                    ImGui::Text("%.2f", 1.0f * tableRow.m_sizeInBytes / GpuProfilerImGuiHelper::MB);
+                    ImGui::Text("%.4f", 1.0f * tableRow.m_sizeInBytes / GpuProfilerImGuiHelper::MB);
                     ImGui::TableNextColumn();
-                    ImGui::Text(tableRow.m_bindFlags.c_str());
+                    ImGui::Text("%s", tableRow.m_bindFlags.c_str());
                     ImGui::TableNextColumn();
                 }
             }
@@ -1242,20 +1244,20 @@ namespace AZ
                 {
                     if (ImGui::BeginChild(savedHeap.m_name.GetCStr(), { ImGui::GetWindowWidth() / m_savedHeaps.size(), 250 }), ImGuiWindowFlags_NoScrollbar)
                     {
-                        ImGui::Text(savedHeap.m_name.GetCStr());
+                        ImGui::Text("%s", savedHeap.m_name.GetCStr());
                         ImGui::Columns(2, "HeapData", true);
 
-                        ImGui::Text("Resident (MB): ");
+                        ImGui::Text("%s", "Resident (MB): ");
                         ImGui::NextColumn();
                         ImGui::Text("%.2f", 1.0 * savedHeap.m_memoryUsage.m_residentInBytes.load() / GpuProfilerImGuiHelper::MB);
                         ImGui::NextColumn();
 
-                        ImGui::Text("Reserved (MB): ");
+                        ImGui::Text("%s", "Reserved (MB): ");
                         ImGui::NextColumn();
                         ImGui::Text("%.2f", 1.0 * savedHeap.m_memoryUsage.m_reservedInBytes.load() / GpuProfilerImGuiHelper::MB);
                         ImGui::NextColumn();
 
-                        ImGui::Text("Budget (MB): ");
+                        ImGui::Text("%s", "Budget (MB): ");
                         ImGui::NextColumn();
                         ImGui::Text("%.2f", 1.0 * savedHeap.m_memoryUsage.m_budgetInBytes / GpuProfilerImGuiHelper::MB);
 
@@ -1271,6 +1273,7 @@ namespace AZ
                 m_nameFilter.Draw("Search");
                 DrawTable();
             }
+            ImGui::End();
         }
 
         // --- ImGuiGpuProfiler ---
@@ -1333,7 +1336,7 @@ namespace AZ
         inline PassEntry* ImGuiGpuProfiler::CreatePassEntries(RHI::Ptr<RPI::ParentPass> rootPass)
         {
             AZStd::unordered_map<Name, PassEntry> passEntryDatabase;
-            const auto addPassEntry = [&passEntryDatabase, this](const RPI::Pass* pass, PassEntry* parent) -> PassEntry*
+            const auto addPassEntry = [&passEntryDatabase](const RPI::Pass* pass, PassEntry* parent) -> PassEntry*
             {
                 // If parent a nullptr, it's assumed to be the rootpass.
                 if (parent == nullptr)
@@ -1345,7 +1348,7 @@ namespace AZ
                     PassEntry entry(pass, parent);
 
                     // Set the time stamp in the database.
-                    const auto passEntry = passEntryDatabase.find(entry.m_path);
+                    [[maybe_unused]] const auto passEntry = passEntryDatabase.find(entry.m_path);
                     AZ_Assert(passEntry == passEntryDatabase.end(), "There already is an entry with the name \"%s\".", entry.m_path.GetCStr());
 
                     // Set the entry in the map.

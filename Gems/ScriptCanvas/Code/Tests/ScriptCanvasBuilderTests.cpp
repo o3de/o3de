@@ -9,6 +9,7 @@
 
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -88,10 +89,8 @@ protected:
     AZ::SerializeContext* GetSerializeContext() override { return m_serializeContext; }
     AZ::BehaviorContext*  GetBehaviorContext() override { return nullptr; }
     AZ::JsonRegistrationContext* GetJsonRegistrationContext() override { return nullptr; }
-    const char* GetAppRoot() const override { return nullptr; }
     const char* GetEngineRoot() const override { return nullptr; }
     const char* GetExecutableFolder() const override { return nullptr; }
-    AZ::Debug::DrillerManager* GetDrillerManager() override { return nullptr; }
     void EnumerateEntities(const AZ::ComponentApplicationRequests::EntityCallback& /*callback*/) override {}
     void QueryApplicationType(AZ::ApplicationTypeQuery& /*appType*/) const override {}
     //////////////////////////////////////////////////////////////////////////
@@ -154,11 +153,10 @@ TEST_F(ScriptCanvasBuilderTests, ScriptCanvasWithAssetReference_GatherProductDep
     graphEntity->AddComponent(assetComponent);
 
     ScriptCanvas::RuntimeData runtimeData;
-    //runtimeData.m_graphData.m_nodes.emplace(graphEntity);
-
+    
     AZ::Data::Asset<ScriptCanvas::RuntimeAsset> runtimeAsset;
     runtimeAsset.Create(AZ::Uuid::CreateRandom());
-    runtimeAsset.Get()->SetData(runtimeData);
+    runtimeAsset.Get()->m_runtimeData = runtimeData;
 
     AZStd::vector<AssetBuilderSDK::ProductDependency> productDependencies;
     AssetBuilderSDK::ProductPathDependencySet productPathDependencySet;

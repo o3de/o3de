@@ -33,6 +33,30 @@
 
 namespace TextureAtlasBuilder
 {
+    //! Used for sorting ImageDimensions
+    bool operator<(ImageDimension a, ImageDimension b);
+
+    //! Used to expose the ImageDimension in a pair to AZStd::Sort
+    bool operator<(IndexImageDimension a, IndexImageDimension b);
+
+    //! Returns true if two coordinate sets overlap
+    bool Collides(AtlasCoordinates a, AtlasCoordinates b);
+
+    //! Returns true if item collides with any object in list
+    bool Collides(AtlasCoordinates item, AZStd::vector<AtlasCoordinates> list);
+
+    //! Returns the portion of the second item that overlaps with the first
+    AtlasCoordinates GetOverlap(AtlasCoordinates a, AtlasCoordinates b);
+
+    //! Performs an operation that copies a pixel to the output
+    void SetPixels(AZ::u8* dest, const AZ::u8* source, int destBytes);
+
+    //! Checks if we can insert an image into a slot
+    bool CanInsert(AtlasCoordinates slot, ImageDimension image, int padding, int farRight, int farBot);
+
+    //! Adds the necessary padding to an Atlas Coordinate 
+    void AddPadding(AtlasCoordinates& slot, int padding, int farRight, int farBot);
+
     //! Counts leading zeros
     uint32_t CountLeadingZeros32(uint32_t x)
     {
@@ -733,9 +757,7 @@ namespace TextureAtlasBuilder
 
         if (input.m_presetName.empty())
         {
-            // Default to the TextureAtlas preset which is currently set to use compression for all platforms except for iOS.
-            // Currently the only fully supported compression for iOS is PVRTC which requires the texture to be square and a power of 2.
-            // Due to this limitation, we default to using no compression for iOS until ASTC is fully supported
+            // Default to the TextureAtlas preset which is currently set to use compression
             const AZStd::string defaultPresetName = "UserInterface_Compressed";
             input.m_presetName = defaultPresetName;
         }
@@ -1411,7 +1433,7 @@ namespace TextureAtlasBuilder
 
     // Defines priority so that sorting can be meaningful. It may seem odd that larger items are "less than" smaller
     // ones, but as this is a deduction of priority, not value, it is correct.
-    static bool operator<(ImageDimension a, ImageDimension b)
+    bool operator<(ImageDimension a, ImageDimension b)
     {
         // Prioritize first by longest size
         if ((a.m_width > a.m_height ? a.m_width : a.m_height) != (b.m_width > b.m_height ? b.m_width : b.m_height))
@@ -1431,7 +1453,7 @@ namespace TextureAtlasBuilder
     }
 
     // Exposes priority logic to the sorting algorithm
-    static bool operator<(IndexImageDimension a, IndexImageDimension b) { return a.second < b.second; }
+    bool operator<(IndexImageDimension a, IndexImageDimension b) { return a.second < b.second; }
 
     // Tests if two coordinate sets intersect
     bool Collides(AtlasCoordinates a, AtlasCoordinates b)

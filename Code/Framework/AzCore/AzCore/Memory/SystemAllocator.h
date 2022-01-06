@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_SYS_ALLOCATOR_H
-#define AZCORE_SYS_ALLOCATOR_H
+#pragma once
 
 #include <AzCore/Memory/Memory.h>
 
@@ -103,6 +102,7 @@ namespace AZ
         size_type       Capacity() const override                { return m_allocator->Capacity(); }
         /// Keep in mind this operation will execute GarbageCollect to make sure it returns, max allocation. This function WILL be slow.
         size_type       GetMaxAllocationSize() const override    { return m_allocator->GetMaxAllocationSize(); }
+        size_type       GetMaxContiguousAllocationSize() const override { return m_allocator->GetMaxContiguousAllocationSize(); }
         size_type       GetUnAllocatedMemory(bool isPrint = false) const override    { return m_allocator->GetUnAllocatedMemory(isPrint); }
         IAllocatorAllocate*  GetSubAllocator() override          { return m_isCustom ? m_allocator : m_allocator->GetSubAllocator(); }
 
@@ -119,7 +119,5 @@ namespace AZ
     };
 }
 
-#endif // AZCORE_SYS_ALLOCATOR_H
-#pragma once
 
 

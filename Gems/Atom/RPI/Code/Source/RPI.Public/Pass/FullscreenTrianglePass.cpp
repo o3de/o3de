@@ -9,6 +9,7 @@
 #include <Atom/RPI.Public/Pass/FullscreenTrianglePass.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/RPIUtils.h>
+#include <Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h>
 
 #include <Atom/RPI.Reflect/Pass/FullscreenTrianglePassData.h>
 #include <Atom/RPI.Reflect/Pass/PassTemplate.h>
@@ -46,16 +47,19 @@ namespace AZ
 
         void FullscreenTrianglePass::OnShaderReinitialized(const Shader&)
         {
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->FullscreenTrianglePass::OnShaderReinitialized", this);
             LoadShader();
         }
 
         void FullscreenTrianglePass::OnShaderAssetReinitialized(const Data::Asset<ShaderAsset>&)
         {
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->FullscreenTrianglePass::OnShaderAssetReinitialized", this);
             LoadShader();
         }
 
         void FullscreenTrianglePass::OnShaderVariantReinitialized(const ShaderVariant&)
         {
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->FullscreenTrianglePass::OnShaderVariantReinitialized", this);
             LoadShader();
         }
 
@@ -129,12 +133,20 @@ namespace AZ
         void FullscreenTrianglePass::InitializeInternal()
         {
             RenderPass::InitializeInternal();
+            
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->FullscreenTrianglePass::InitializeInternal", this);
 
             // This draw item purposefully does not reference any geometry buffers.
             // Instead it's expected that the extended class uses a vertex shader 
             // that generates a full-screen triangle completely from vertex ids.
             RHI::DrawLinear draw = RHI::DrawLinear();
             draw.m_vertexCount = 3;
+
+            if (m_shader == nullptr)
+            {
+                AZ_Error("PassSystem", false, "[FullscreenTrianglePass]: Shader not loaded!");
+                return;
+            }
 
             RHI::PipelineStateDescriptorForDraw pipelineStateDescriptor;
 
@@ -155,7 +167,7 @@ namespace AZ
 
             m_item.m_arguments = RHI::DrawArguments(draw);
             m_item.m_pipelineState = m_shader->AcquirePipelineState(pipelineStateDescriptor);
-            m_item.m_stencilRef = m_stencilRef;
+            m_item.m_stencilRef = static_cast<uint8_t>(m_stencilRef);
         }
 
         void FullscreenTrianglePass::FrameBeginInternal(FramePrepareParams params)
@@ -179,10 +191,10 @@ namespace AZ
             RHI::Size targetImageSize = outputAttachment->m_descriptor.m_image.m_size;
 
             
-            m_viewportState.m_maxX = AZStd::min(static_cast<uint32_t>(params.m_viewportState.m_maxX), targetImageSize.m_width);
-            m_viewportState.m_maxY = AZStd::min(static_cast<uint32_t>(params.m_viewportState.m_maxY), targetImageSize.m_height);
-            m_viewportState.m_minX = AZStd::min(params.m_viewportState.m_minX, m_viewportState.m_maxX);
-            m_viewportState.m_minY = AZStd::min(params.m_viewportState.m_minY, m_viewportState.m_maxY);
+            m_viewportState.m_maxX = static_cast<float>(AZStd::min(static_cast<uint32_t>(params.m_viewportState.m_maxX), targetImageSize.m_width));
+            m_viewportState.m_maxY = static_cast<float>(AZStd::min(static_cast<uint32_t>(params.m_viewportState.m_maxY), targetImageSize.m_height));
+            m_viewportState.m_minX = static_cast<float>(AZStd::min(params.m_viewportState.m_minX, m_viewportState.m_maxX));
+            m_viewportState.m_minY = static_cast<float>(AZStd::min(params.m_viewportState.m_minY, m_viewportState.m_maxY));
 
             m_scissorState.m_maxX = AZStd::min(static_cast<uint32_t>(params.m_scissorState.m_maxX), targetImageSize.m_width);
             m_scissorState.m_maxY = AZStd::min(static_cast<uint32_t>(params.m_scissorState.m_maxY), targetImageSize.m_height);

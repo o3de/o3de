@@ -176,7 +176,7 @@ namespace ScriptCanvasDeveloper
                 ProcessCreationSet();
             }
         }
-        else if (stateId == stateId == m_duplicateCheckpoint->GetStateId())
+        else if (stateId == m_duplicateCheckpoint->GetStateId())
         {
             if (m_createdSet.empty())
             {

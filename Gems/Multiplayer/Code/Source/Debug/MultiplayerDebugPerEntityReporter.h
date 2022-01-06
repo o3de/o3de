@@ -53,8 +53,8 @@ namespace Multiplayer
         AZStd::map<AZ::EntityId, MultiplayerDebugEntityReporter> m_receivingEntityReports{};
         MultiplayerDebugEntityReporter m_currentReceivingEntityReport;
 
-        float m_replicatedStateKbpsWarn = 10.f;
-        float m_replicatedStateMaxSizeWarn = 30.f;
+        [[maybe_unused]] float m_replicatedStateKbpsWarn = 10.f;
+        [[maybe_unused]] float m_replicatedStateMaxSizeWarn = 30.f;
 
         char m_statusBuffer[100] = {};
 

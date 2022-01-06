@@ -23,16 +23,16 @@
 #include <Atom/RHI.Reflect/ImagePoolDescriptor.h>
 #include <Atom/RHI/ImagePool.h>
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/RHISystemInterface.h>
 
 #include <AtomCore/Instance/InstanceDatabase.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Math/Color.h>
+
+AZ_DECLARE_BUDGET(RPI);
 
 namespace AZ
 {
@@ -171,7 +171,7 @@ namespace AZ
 
         void ImageSystem::Update()
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "ImageSystem: Update");
+            AZ_PROFILE_SCOPE(RPI, "ImageSystem: Update");
 
             AZStd::lock_guard<AZStd::mutex> lock(m_activeStreamingPoolMutex);
             for (StreamingImagePool* imagePool : m_activeStreamingPools)
@@ -254,7 +254,7 @@ namespace AZ
                 poolAssetCreator.SetPoolDescriptor(AZStd::move(imagePoolDescriptor));
                 poolAssetCreator.SetControllerAsset(m_defaultStreamingImageControllerAsset);
                 poolAssetCreator.SetPoolName(systemStreamingPoolDescriptor.m_name);
-                const bool created = poolAssetCreator.End(poolAsset);
+                [[maybe_unused]] const bool created = poolAssetCreator.End(poolAsset);
                 AZ_Assert(created, "Failed to build streaming image pool");
 
                 m_systemStreamingPool = StreamingImagePool::FindOrCreate(poolAsset);
@@ -272,7 +272,7 @@ namespace AZ
                 poolAssetCreator.SetPoolDescriptor(AZStd::move(imagePoolDescriptor));
                 poolAssetCreator.SetControllerAsset(m_defaultStreamingImageControllerAsset);
                 poolAssetCreator.SetPoolName(assetStreamingPoolDescriptor.m_name);
-                const bool created = poolAssetCreator.End(poolAsset);
+                [[maybe_unused]] const bool created = poolAssetCreator.End(poolAsset);
                 AZ_Assert(created, "Failed to build streaming image pool for assets");
 
                 m_assetStreamingPool = StreamingImagePool::FindOrCreate(poolAsset);
@@ -292,7 +292,7 @@ namespace AZ
                 poolAssetCreator.Begin(systemAttachmentPoolDescriptor.m_assetId);
                 poolAssetCreator.SetPoolDescriptor(AZStd::move(imagePoolDescriptor));
                 poolAssetCreator.SetPoolName(systemAttachmentPoolDescriptor.m_name);
-                const bool created = poolAssetCreator.End(poolAsset);
+                [[maybe_unused]] const bool created = poolAssetCreator.End(poolAsset);
                 AZ_Assert(created, "Failed to build attachment image pool");
 
                 m_systemAttachmentPool = AttachmentImagePool::FindOrCreate(poolAsset);

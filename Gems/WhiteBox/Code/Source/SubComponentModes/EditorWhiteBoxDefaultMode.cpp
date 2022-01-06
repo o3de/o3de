@@ -33,8 +33,8 @@ namespace WhiteBox
         AZ::Color, cl_whiteBoxVertexIndicatorColor, AZ::Color::CreateFromRgba(0, 0, 0, 102), nullptr,
         AZ::ConsoleFunctorFlags::Null, "The color of the vertex indicator");
 
-    static const AZ::Crc32 HideEdge = AZ_CRC("com.o3de.action.whitebox.hide_edge", 0x6a60ae23);
-    static const AZ::Crc32 HideVertex = AZ_CRC("com.o3de.action.whitebox.hide_vertex", 0x4a4bd092);
+    static const AZ::Crc32 HideEdge = AZ_CRC("com.o3de.action.whitebox.hide_edge", 0x84f6a9b9);
+    static const AZ::Crc32 HideVertex = AZ_CRC("com.o3de.action.whitebox.hide_vertex", 0x5f81c937);
 
     static const char* const HideEdgeTitle = "Hide Edge";
     static const char* const HideEdgeDesc = "Hide the selected edge to merge the two connected polygons";
@@ -212,7 +212,7 @@ namespace WhiteBox
         AzFramework::DebugDisplayRequests& debugDisplay, const AZ::Transform& worldFromLocal,
         const AzFramework::CameraState& cameraState, const IntersectionAndRenderData& renderData)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         const float vertexIndicatorLength = cl_whiteBoxVertexIndicatorLength;
         const float vertexIndicatorWidth = cl_whiteBoxVertexIndicatorWidth;
@@ -252,7 +252,7 @@ namespace WhiteBox
         const IntersectionAndRenderData& renderData, [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo,
         AzFramework::DebugDisplayRequests& debugDisplay)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         TryDestroyModifier(m_polygonTranslationModifier);
         TryDestroyModifier(m_edgeTranslationModifier);
@@ -276,7 +276,7 @@ namespace WhiteBox
 
     Api::EdgeHandles DefaultMode::FindInteractiveEdgeHandles(const WhiteBoxMesh& whiteBox)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         // get all edge handles for hovered polygon
         const Api::EdgeHandles polygonHoveredEdgeHandles = m_polygonTranslationModifier
@@ -322,7 +322,7 @@ namespace WhiteBox
         const WhiteBoxMesh& whiteBox, const PolygonScaleModifier* polygonScaleModifier,
         const EdgeScaleModifier* edgeScaleModifier, const Api::VertexHandle vertexHandle)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (Api::VertexIsHidden(whiteBox, vertexHandle))
         {
@@ -371,7 +371,7 @@ namespace WhiteBox
         const AZStd::optional<PolygonIntersection>& polygonIntersection,
         const AZStd::optional<VertexIntersection>& vertexIntersection)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         WhiteBoxMesh* whiteBox = nullptr;
         EditorWhiteBoxComponentRequestBus::EventResult(

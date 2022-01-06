@@ -163,9 +163,23 @@ class AndroidLauncher(Launcher):
 
         return True
 
-    def setup(self):
+    def setup(self, backupFiles=True, launch_ap=True, configure_settings=True):
+        """
+        Perform setup of this launcher, must be called before launching.
+        Subclasses should call its parent's setup() before calling its own code, unless it changes configuration files
+
+        :param backupFiles: Bool to backup setup files
+        :param launch_ap: Bool to launch the asset processor
+        :param configure_settings: Bool to update settings caches
+        :return: None
+        """
         # Backup
-        self.backup_settings()
+        if backupFiles:
+            self.backup_settings()
+
+        # None reverts to function default
+        if launch_ap is None:
+            launch_ap = True
 
         # Enable Android capabilities and verify environment is setup before continuing.
         self._is_valid_android_environment()
@@ -174,7 +188,7 @@ class AndroidLauncher(Launcher):
         # Modify and re-configure
         self.configure_settings()
         self.workspace.shader_compiler.start()
-        super(AndroidLauncher, self).setup()
+        super(AndroidLauncher, self).setup(backupFiles, launch_ap, configure_settings)
 
     def teardown(self):
         ly_test_tools.mobile.android.undo_tcp_port_changes(self._device_id)
@@ -208,13 +222,6 @@ class AndroidLauncher(Launcher):
         with self.android_vfs_setreg_path.open('w') as android_vfs_setreg:
             json.dump(vfs_settings, android_vfs_setreg, indent=4)
 
-        self.workspace.settings.modify_platform_setting('r_AssetProcessorShaderCompiler', 1)
-        self.workspace.settings.modify_platform_setting('r_ShadersAsyncCompiling', 0)
-        self.workspace.settings.modify_platform_setting('r_ShadersRemoteCompiler', 1)
-        self.workspace.settings.modify_platform_setting('r_ShadersAllowCompilation', 1)
-        self.workspace.settings.modify_platform_setting('r_ShadersAsyncActivation', 0)
-        self.workspace.settings.modify_platform_setting('r_ShaderCompilerServer', '127.0.0.1')
-        self.workspace.settings.modify_platform_setting('r_ShaderCompilerPort', '61453')
         self.workspace.settings.modify_platform_setting("log_RemoteConsoleAllowedAddresses", '127.0.0.1')
 
     def launch(self):

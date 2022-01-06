@@ -17,7 +17,7 @@ namespace ImageProcessingAtom
 {
     float round(float x)
     {
-        return ((x) >= 0) ? floor((x) + 0.5) : ceil((x)-0.5);
+        return ((x) >= 0.f) ? floor((x) + 0.5f) : ceil((x) - 0.5f);
     }
 
     void calculateFilterRange(unsigned int srcFactor, int& srcFirst, int& srcLast,
@@ -220,7 +220,7 @@ namespace ImageProcessingAtom
 
                 /* normalize against the peak sumWeights, because the sums are not allowed to leave -32768/32767 */
                 fWeight = fWeight * nrmWeights;
-                iWeight = int(round(fWeight));
+                iWeight = int(round(static_cast<float>(fWeight)));
 
                 /* find first nonzero */
                 if (stillzero && (iWeight == 0))
@@ -246,7 +246,7 @@ namespace ImageProcessingAtom
                         /* add weight to table, interleaved sign */
                         for (n = 0; n < -numRepetitions; n++)
                         {
-                            *weightsPtr++ = sgnextend(n, -iWeight);
+                            *weightsPtr++ = static_cast<signed short int>(sgnextend(n, -iWeight));
                         }
                     }
                     else
@@ -254,7 +254,7 @@ namespace ImageProcessingAtom
                         /* add weight to table */
                         for (n = 0; n < numRepetitions; n++)
                         {
-                            *weightsPtr++ = -iWeight;
+                            *weightsPtr++ = static_cast<signed short int>(-iWeight);
                         }
                     }
 
@@ -296,9 +296,8 @@ namespace ImageProcessingAtom
                 /* skip leading and trailing zeros */
                 if (trimZeros)
                 {
-                    /* set i0 and i1 to the nonzero support of the filter */
-                    i0 = i0;
-                    i1 = i1 = lastnonzero + 1;
+                    /* set i1 to the nonzero support of the filter */
+                    i1 = lastnonzero + 1;
                 }
 
                 if (sumiWeights != WEIGHTONE)
@@ -311,7 +310,7 @@ namespace ImageProcessingAtom
 
                     for (n = 0, weightsPtr = weightsMem + (i - i0) * numRepetitions; n < numRepetitions; n++)
                     {
-                        *weightsPtr++ -= iWeight;
+                        *weightsPtr++ -= static_cast<signed short int>(iWeight);
                     }
                 }
             }

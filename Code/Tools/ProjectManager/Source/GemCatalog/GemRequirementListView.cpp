@@ -8,7 +8,6 @@
 
 #include <GemCatalog/GemRequirementListView.h>
 #include <GemCatalog/GemRequirementDelegate.h>
-#include <QStandardItemModel>
 
 namespace O3DE::ProjectManager
 {

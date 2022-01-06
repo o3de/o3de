@@ -38,7 +38,7 @@ namespace
     bool HasDifferences(T* sourceElem, T* compareElem, bool isRoot,
         AZ::SerializeContext* serializeContext)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (!sourceElem || !compareElem)
         {
@@ -146,7 +146,7 @@ namespace AzToolsFramework
     void EditorEntityModel::Reset()
     {
         m_preparingForContextReset = false;
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         //disconnect all entity ids
         EditorEntitySortNotificationBus::MultiHandler::BusDisconnect();
 
@@ -209,7 +209,7 @@ namespace AzToolsFramework
         sortedEntitiesToAdd.reserve(unsortedEntitiesToAdd.size());
 
         { // Sort pending entities
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "EditorEntityModel::AddEntityBatch:Sort");
+            AZ_PROFILE_SCOPE(AzToolsFramework, "EditorEntityModel::AddEntityBatch:Sort");
 
             // Gather basic sorting data for each pending entity and
             // create map from parent ID to child entries.
@@ -307,7 +307,7 @@ namespace AzToolsFramework
         }
 
         { // Add sorted entities
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "EditorEntityModel::AddEntityBatch:Add");
+            AZ_PROFILE_SCOPE(AzToolsFramework, "EditorEntityModel::AddEntityBatch:Add");
             for (AZ::EntityId entityId : sortedEntitiesToAdd)
             {
                 AddEntity(entityId);
@@ -325,7 +325,7 @@ namespace AzToolsFramework
 
     void EditorEntityModel::AddEntity(AZ::EntityId entityId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         auto& entityInfo = GetInfo(entityId);
 
         //initialize and connect this entry to the entity id
@@ -374,14 +374,15 @@ namespace AzToolsFramework
             // Skip doing slow, unecessary work for this bulk operations.
             return;
         }
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         auto& entityInfo = GetInfo(entityId);
         if (!entityInfo.IsConnected())
         {
             return;
         }
 
-        //orphan any children that remain attached to the entity
+        // Even though these child entities will immediately be destroyed, their entity info may be recycled
+        // Ensure they don't have any lingering inaccurate parent data
         auto children = entityInfo.GetChildren();
         for (auto childId : children)
         {
@@ -404,7 +405,7 @@ namespace AzToolsFramework
 
     void EditorEntityModel::AddChildToParent(AZ::EntityId parentId, AZ::EntityId childId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         AZ_Assert(childId != parentId, "AddChildToParent called with same child and parent");
         if (childId == parentId || !childId.IsValid())
         {
@@ -448,16 +449,23 @@ namespace AzToolsFramework
         AZStd::unordered_map<AZ::EntityId, AZStd::pair<AZ::EntityId, AZ::u64>>::const_iterator orderItr = m_savedOrderInfo.find(childId);
         if (orderItr != m_savedOrderInfo.end() && orderItr->second.first == parentId)
         {
-            bool sortOrderUpdated = AzToolsFramework::RecoverEntitySortInfo(parentId, childId, orderItr->second.second);
-            m_savedOrderInfo.erase(childId);
-
-            // force notify the child sort order changed on the parent entity info, but only if the restore didn't actually modify
-            // the order internally (and sent ChildEntityOrderArrayUpdated).  that may seem heavy handed, and it is, but necessary
-            // to combat scenarios when the initial override detection returns a false positive (see comment about IDH comparisons
-            // in OnChildSortOrderChanged) and the slice instance source-to-live mapping hasn't been fully reconstructed yet.
-            if (!sortOrderUpdated)
+            bool isPrefabEnabled = false;
+            AzFramework::ApplicationRequests::Bus::BroadcastResult(
+                isPrefabEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+            // If prefabs are enabled, rely on the component to do a sanity check instead of restoring the order from the model
+            if (!isPrefabEnabled)
             {
-                parentInfo.OnChildSortOrderChanged();
+                bool sortOrderUpdated = AzToolsFramework::RecoverEntitySortInfo(parentId, childId, orderItr->second.second);
+                m_savedOrderInfo.erase(childId);
+
+                // force notify the child sort order changed on the parent entity info, but only if the restore didn't actually modify
+                // the order internally (and sent ChildEntityOrderArrayUpdated).  that may seem heavy handed, and it is, but necessary
+                // to combat scenarios when the initial override detection returns a false positive (see comment about IDH comparisons
+                // in OnChildSortOrderChanged) and the slice instance source-to-live mapping hasn't been fully reconstructed yet.
+                if (!sortOrderUpdated)
+                {
+                    parentInfo.OnChildSortOrderChanged();
+                }
             }
         }
         else
@@ -479,7 +487,7 @@ namespace AzToolsFramework
 
     void EditorEntityModel::RemoveChildFromParent(AZ::EntityId parentId, AZ::EntityId childId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         AZ_Assert(childId != parentId, "RemoveChildFromparent called with same child and parent");
         AZ_Assert(childId.IsValid(), "RemoveChildFromparent called with an invalid child entity id");
         if (childId == parentId || !childId.IsValid())
@@ -544,7 +552,7 @@ namespace AzToolsFramework
 
     void EditorEntityModel::ReparentChild(AZ::EntityId entityId, AZ::EntityId newParentId, AZ::EntityId oldParentId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         AZ_Assert(oldParentId != entityId, "ReparentChild gave us an oldParentId that is the same as the entityId. An entity cannot be a parent of itself, ignoring old parent");
         AZ_Assert(newParentId != entityId, "ReparentChild gave us an newParentId that is the same as the entityId. An entity cannot be a parent of itself, ignoring old parent");
         if (oldParentId != entityId && newParentId != entityId)
@@ -573,7 +581,7 @@ namespace AzToolsFramework
 
     void EditorEntityModel::EntityRegistered(AZ::EntityId entityId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         //when an editor entity is created and registered, add it to a pending list.
         //once all entities in the pending list are activated, add them to model.
         bool isEditorEntity = false;
@@ -591,7 +599,7 @@ namespace AzToolsFramework
 
     void EditorEntityModel::EntityDeregistered(AZ::EntityId entityId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         //when an editor entity is de-registered, stop tracking it
         if (m_entityInfoTable.find(entityId) != m_entityInfoTable.end())
         {
@@ -628,7 +636,7 @@ namespace AzToolsFramework
 
     void EditorEntityModel::EntityParentChanged(AZ::EntityId entityId, AZ::EntityId newParentId, AZ::EntityId oldParentId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         if (GetInfo(entityId).IsConnected())
         {
             ReparentChild(entityId, newParentId, oldParentId);
@@ -647,7 +655,7 @@ namespace AzToolsFramework
 
     void EditorEntityModel::ChildEntityOrderArrayUpdated()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         //when notified that a parent has reordered its children, they must be updated
         if (m_enableChildReorderHandler)
         {
@@ -671,14 +679,14 @@ namespace AzToolsFramework
 
     void EditorEntityModel::OnEditorEntitiesPromotedToSlicedEntities(const AzToolsFramework::EntityIdList& promotedEntities)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         OnEditorEntitiesSliceOwnershipChanged(promotedEntities);
     }
 
     void EditorEntityModel::OnEditorEntitiesSliceOwnershipChanged(const AzToolsFramework::EntityIdList& entityIdList)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         // Need to update slice info from top of hierarchy down
         // as parent entity slice status will be querried and needs to be correct
@@ -712,7 +720,7 @@ namespace AzToolsFramework
 
     void EditorEntityModel::OnEntityStreamLoadSuccess()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         //block internal reorder event handling to avoid recursion since we're manually updating everything
         m_enableChildReorderHandler = false;
@@ -722,7 +730,7 @@ namespace AzToolsFramework
 
         //refresh all order info while blocking related events (keeps UI observers from updating until refresh is complete)
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "EditorEntityModel::OnEntityStreamLoadSuccess:UpdateChildOrderInfo");
+            AZ_PROFILE_SCOPE(AzToolsFramework, "EditorEntityModel::OnEntityStreamLoadSuccess:UpdateChildOrderInfo");
             for (auto& entityInfoPair : m_entityInfoTable)
             {
                 if (entityInfoPair.second.IsConnected())
@@ -733,7 +741,7 @@ namespace AzToolsFramework
             }
         }
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "EditorEntityModel::OnEntityStreamLoadSuccess:UpdateOrderInfo");
+            AZ_PROFILE_SCOPE(AzToolsFramework, "EditorEntityModel::OnEntityStreamLoadSuccess:UpdateOrderInfo");
             for (auto& entityInfoPair : m_entityInfoTable)
             {
                 if (entityInfoPair.second.IsConnected())
@@ -778,7 +786,7 @@ namespace AzToolsFramework
 
     void EditorEntityModel::OnEntityTransformChanged(const AzToolsFramework::EntityIdList& entityIds)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         for (const AZ::EntityId& entityId : entityIds)
         {
@@ -846,7 +854,7 @@ namespace AzToolsFramework
 
     void EditorEntityModel::UpdateSliceInfoHierarchy(AZ::EntityId entityId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         auto& entityInfo = GetInfo(entityId);
         entityInfo.UpdateOrderInfo(false);
         entityInfo.UpdateSliceInfo();
@@ -896,7 +904,7 @@ namespace AzToolsFramework
 
     void EditorEntityModel::EditorEntityModelEntry::Connect()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         Disconnect();
 
         EntityInfoRequestConnect();
@@ -946,7 +954,7 @@ namespace AzToolsFramework
 
     void EditorEntityModel::EditorEntityModelEntry::UpdateSliceInfo()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         //reset slice info
         m_sliceFlags = (m_sliceFlags & SliceFlag_OverridesMask); // only hold on to the override flags
@@ -1037,7 +1045,7 @@ namespace AzToolsFramework
 
     void EditorEntityModel::EditorEntityModelEntry::UpdateOrderInfo(bool notify)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         AZ::u64 oldIndex = m_indexForSorting;
         AZ::u64 newIndex = 0;
 
@@ -1061,7 +1069,7 @@ namespace AzToolsFramework
 
     void EditorEntityModel::EditorEntityModelEntry::UpdateChildOrderInfo(bool forceAddToBack)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         //add order info if missing
         for (auto childId : m_children)
         {
@@ -1190,26 +1198,41 @@ namespace AzToolsFramework
         auto childItr = m_childIndexCache.find(childId);
         if (childItr == m_childIndexCache.end())
         {
-            //cache indices for faster lookup
-            m_childIndexCache[childId] = static_cast<AZ::u64>(m_children.size());
-            m_children.push_back(childId);
+            // m_children is guaranteed to be ordered by EntityId, do a sorted insertion
+            auto insertedChildIndex = AZStd::upper_bound(m_children.begin(), m_children.end(), childId);
+            insertedChildIndex = m_children.insert(insertedChildIndex, childId);
+
+            // Cache all affected child indices for fast lookup
+            for (auto it = insertedChildIndex; it != m_children.end(); ++it)
+            {
+                const AZ::u64 newChildIndex = static_cast<AZ::u64>(it - m_children.begin());
+                m_childIndexCache[*it] = newChildIndex;
+            }
         }
     }
 
     void EditorEntityModel::EditorEntityModelEntry::RemoveChild(AZ::EntityId childId)
     {
-        auto childItr = m_childIndexCache.find(childId);
-        if (childItr != m_childIndexCache.end())
+        // Retrieve our child index from the cache
+        auto cachedIndexItr = m_childIndexCache.find(childId);
+        if (cachedIndexItr == m_childIndexCache.end())
         {
-            // Take the last entry and move it into the removed spot instead of deleting the entry and having to move all
-            // following entries one step down.
-            AZ::EntityId backEntity = m_children.back();
-            m_children[childItr->second] = backEntity;
-            // Update cached index for the moved id to the new index.
-            m_childIndexCache[backEntity] = childItr->second;
-            // Now remove the deleted id from the children and cache.
-            m_childIndexCache.erase(childId);
-            m_children.erase(m_children.end() - 1);
+            AZ_Assert(false, "Attempted to remove an unknown child");
+            return;
+        }
+
+        // Build an iterator for m_children based on our cached index
+        auto childItr = m_children.begin() + cachedIndexItr->second;
+
+        // Remove our child from the cache
+        m_childIndexCache.erase(cachedIndexItr);
+
+        // Remove our child, fix up the cache entries for any subsequent children
+        auto elementsToFixItr = m_children.erase(childItr);
+        for (auto it = elementsToFixItr; it != m_children.end(); ++it)
+        {
+            const AZ::u64 newChildIndex = static_cast<AZ::u64>(it - m_children.begin());
+            m_childIndexCache[*it] = newChildIndex;
         }
     }
 
@@ -1246,8 +1269,17 @@ namespace AzToolsFramework
 
     AZ::u64 EditorEntityModel::EditorEntityModelEntry::GetChildIndex(AZ::EntityId childId) const
     {
+        // Return the cached index, if available.
         auto childItr = m_childIndexCache.find(childId);
-        return childItr != m_childIndexCache.end() ? childItr->second : static_cast<AZ::u64>(m_children.size());
+        if (childItr != m_childIndexCache.end())
+        {
+            return childItr->second;
+        }
+
+        // On initialization, GetChildIndex may be queried for a childId that is not yet in the child list.
+        // Return the position it would be inserted at in EditorEntityModelEntry::AddChild
+        auto targetChildPositionItr = AZStd::upper_bound(m_children.begin(), m_children.end(), childId);
+        return static_cast<AZ::u64>(targetChildPositionItr - m_children.begin());
     }
 
     AZStd::string EditorEntityModel::EditorEntityModelEntry::GetName() const
@@ -1475,7 +1507,7 @@ namespace AzToolsFramework
 
     void EditorEntityModel::EditorEntityModelEntry::OnEntityLockFlagChanged(bool locked)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (m_locked != locked)
         {
@@ -1493,7 +1525,7 @@ namespace AzToolsFramework
 
     void EditorEntityModel::EditorEntityModelEntry::OnEntityVisibilityFlagChanged(bool visibility)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (m_visible != visibility)
         {
@@ -1511,7 +1543,7 @@ namespace AzToolsFramework
 
     void EditorEntityModel::EditorEntityModelEntry::OnSelected()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         if (!m_selected)
         {
             m_selected = true;
@@ -1522,7 +1554,7 @@ namespace AzToolsFramework
 
     void EditorEntityModel::EditorEntityModelEntry::OnDeselected()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         if (m_selected)
         {
             m_selected = false;
@@ -1533,7 +1565,7 @@ namespace AzToolsFramework
 
     void EditorEntityModel::EditorEntityModelEntry::OnEntityNameChanged(const AZStd::string& name)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         if (m_name != name)
         {
             m_name = name;
@@ -1554,7 +1586,7 @@ namespace AzToolsFramework
     {
         if (CanProcessOverrides())
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             using TransformComponent = AzToolsFramework::Components::TransformComponent;
 
@@ -1569,7 +1601,7 @@ namespace AzToolsFramework
     {
         if (CanProcessOverrides())
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             using EditorInspectorComponent = AzToolsFramework::Components::EditorInspectorComponent;
 
@@ -1584,7 +1616,7 @@ namespace AzToolsFramework
     {
         if (CanProcessOverrides())
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             AZ::Component* liveComponent = m_entity->FindComponent(componentId);
             AZ::Component* sourceComponent = m_sourceClone->FindComponent(componentId);
@@ -1804,7 +1836,7 @@ namespace AzToolsFramework
             return;
         }
 
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         AZ::u8 lastFlags = m_sliceFlags;
 
@@ -1884,7 +1916,7 @@ namespace AzToolsFramework
 
     void EditorEntityModel::EditorEntityModelEntry::ModifyParentsOverriddenChildren(AZ::EntityId childEntityId, AZ::u8 lastFlags, bool childHasOverrides)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (((lastFlags & SliceFlag_EntityHasOverrides) == 0) != ((m_sliceFlags & SliceFlag_EntityHasOverrides) == 0))
         {
@@ -1916,7 +1948,7 @@ namespace AzToolsFramework
 
     void EditorEntityModel::EditorEntityModelEntry::UpdateCyclicDependencyInfo()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         // Only check cyclic dependency if the current entity is a slice root
         if (!IsSliceRoot())

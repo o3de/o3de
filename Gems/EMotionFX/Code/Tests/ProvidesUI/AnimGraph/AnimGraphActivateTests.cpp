@@ -19,11 +19,13 @@
 #include <EMotionFX/Source/AnimGraphEntryNode.h>
 #include <EMotionFX/Source/AnimGraphHubNode.h>
 #include <EMotionFX/Source/AnimGraphManager.h>
+#include <EMotionFX/Source/ActorManager.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphViewWidget.h>
 #include <Tests/TestAssetCode/ActorFactory.h>
 #include <Tests/TestAssetCode/SimpleActors.h>
+#include <Tests/TestAssetCode/TestActorAssets.h>
 #include <EMotionFX/Source/MotionManager.h>
 
 namespace EMotionFX
@@ -78,7 +80,8 @@ namespace EMotionFX
             EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommandGroup(group, commandResult)) << commandResult.c_str();
 
             // Create temp Actor
-            m_actor = ActorFactory::CreateAndInit<SimpleJointChainActor>(1, "tempActor");
+            AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
+            m_actorAsset = TestActorAssets::CreateActorAssetAndRegister<SimpleJointChainActor>(actorAssetId, 1, "tempActor");
 
             // Cache some local poitners.
             m_animGraphPlugin = static_cast<EMStudio::AnimGraphPlugin*>(EMStudio::GetPluginManager()->FindActivePlugin(EMStudio::AnimGraphPlugin::CLASS_ID));
@@ -90,6 +93,7 @@ namespace EMotionFX
 
         void TearDown() override
         {
+            GetEMotionFX().GetActorManager()->UnregisterAllActors();
             QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
             delete m_animGraph;
             UIFixture::TearDown();
@@ -104,7 +108,7 @@ namespace EMotionFX
         AZStd::string m_entryNodeName = "testEntry";
         AnimGraph* m_animGraph = nullptr;
         EMStudio::AnimGraphPlugin* m_animGraphPlugin = nullptr;
-        AutoRegisteredActor m_actor;
+        AZ::Data::Asset<Integration::ActorAsset> m_actorAsset;
     };
     
     TEST_F(PopulatedAnimGraphFixture, CanActivateValidGraph)

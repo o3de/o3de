@@ -1,11 +1,11 @@
 {
     "description": "Base material for the reflection probe visualization model.",
+    "version": 1,
     "propertyLayout": {
-        "version": 1,
         "properties": {
             "settings": [
                 {
-                    "id": "opacity",
+                    "name": "opacity",
                     "displayName": "Opacity",
                     "description": "Opacity of the shadow effect.",
                     "type": "Float",
@@ -14,17 +14,17 @@
                     "max": 1.0,
                     "connection": {
                         "type": "ShaderInput",
-                        "id": "m_opacity"
+                        "name": "m_opacity"
                     }
                 },
                 {
-                    "id": "shadeAll",
+                    "name": "shadeAll",
                     "displayName": "Shade All",
                     "description": "Shades the entire geometry with the shadow color, not just what's in shadow. For debugging.",
                     "type": "Bool",
                     "connection": {
                         "type": "ShaderOption",
-                        "id": "o_shadeAll"
+                        "name": "o_shadeAll"
                     }
                 }
             ]

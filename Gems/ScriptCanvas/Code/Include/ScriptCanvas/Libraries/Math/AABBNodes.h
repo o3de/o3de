@@ -19,7 +19,7 @@ namespace ScriptCanvas
     {
         using namespace Data;
         using namespace MathNodeUtilities;
-        static const char* k_categoryName = "Math/AABB";
+        static constexpr const char* k_categoryName = "Math/AABB";
 
         AZ_INLINE AABBType AddAABB(AABBType a, const AABBType& b)
         {
@@ -92,7 +92,7 @@ namespace ScriptCanvas
 
         AZ_INLINE AABBType FromCenterRadius(const Vector3Type center, const NumberType radius)
         {
-            return AABBType::CreateCenterRadius(center, radius);
+            return AABBType::CreateCenterRadius(center, static_cast<float>(radius));
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(FromCenterRadius, k_categoryName, "{5FEFD1BF-DC5B-4AFA-892F-082D92492548}", "returns the AABB with Min = Center - Vector3(radius, radius, radius), Max = Center + Vector3(radius, radius, radius)", "Center", "Radius");
 

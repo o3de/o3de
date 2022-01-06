@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_SMART_PTR_INTRUSIVE_PTR_H
-#define AZSTD_SMART_PTR_INTRUSIVE_PTR_H
+#pragma once
 
 //
 //  intrusive_ptr.hpp
@@ -19,10 +18,10 @@
 //
 //  See http://www.boost.org/libs/smart_ptr/intrusive_ptr.html for documentation.
 //
-
-#include <AzCore/std/smart_ptr/sp_convertible.h>
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/std/smart_ptr/sp_convertible.h>
 #include <AzCore/std/typetraits/is_abstract.h>
+#include <AzCore/std/typetraits/typetraits.h>
 
 namespace AZStd
 {
@@ -112,7 +111,7 @@ namespace AZStd
                 CountPolicy::add_ref(px);
             }
         }
-        
+
         ~intrusive_ptr()
         {
             if (px != 0)
@@ -120,7 +119,7 @@ namespace AZStd
                 CountPolicy::release(px);
             }
         }
-        
+
         template<class U>
         enable_if_t<is_convertible<U*, T*>::value, intrusive_ptr&> operator=(intrusive_ptr<U> const& rhs)
         {
@@ -157,28 +156,28 @@ namespace AZStd
             this_type(rhs).swap(*this);
             return *this;
         }
-        
+
         intrusive_ptr& operator=(T* rhs)
         {
             this_type(rhs).swap(*this);
             return *this;
         }
-        
+
         void reset()
         {
             this_type().swap(*this);
         }
-        
+
         void reset(T* rhs)
         {
             this_type(rhs).swap(*this);
         }
-        
+
         T* get() const
         {
             return px;
         }
-        
+
         T& operator*() const
         {
             AZ_Assert(px != 0, "You can't dereference a null pointer");
@@ -298,6 +297,3 @@ namespace AZStd
 
     // operator<< - not supported
 } // namespace AZStd
-
-#endif  // #ifndef AZSTD_SMART_PTR_INTRUSIVE_PTR_H
-#pragma once

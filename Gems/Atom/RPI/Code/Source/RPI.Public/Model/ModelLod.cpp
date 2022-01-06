@@ -12,7 +12,6 @@
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
 
 namespace AZ
@@ -52,7 +51,7 @@ namespace AZ
 
         RHI::ResultCode ModelLod::Init(const Data::Asset<ModelLodAsset>& lodAsset, const Data::Asset<ModelAsset>& modelAsset)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RPI);
 
             for (const ModelLodAsset::Mesh& mesh : lodAsset->GetMeshes())
             {
@@ -264,8 +263,6 @@ namespace AZ
             const MaterialModelUvOverrideMap& materialModelUvMap,
             const MaterialUvNameMap& materialUvNameMap) const
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
-
             streamBufferViewsOut.clear();
 
             RHI::InputStreamLayoutBuilder layoutBuilder;
@@ -366,8 +363,6 @@ namespace AZ
             const MaterialModelUvOverrideMap& materialModelUvMap,
             const MaterialUvNameMap& materialUvNameMap) const
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
-
             const Mesh& mesh = m_meshes[meshIndex];
 
             auto defaultUv = FindDefaultUvStream(meshIndex, materialUvNameMap);
@@ -393,7 +388,7 @@ namespace AZ
             const ModelLodAsset::Mesh::StreamBufferInfo& streamBufferInfo,
             Mesh& meshInstance)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RPI);
 
             const Data::Asset<BufferAsset>& streamBufferAsset = streamBufferInfo.m_bufferAssetView.GetBufferAsset();
             const Data::Instance<Buffer>& streamBuffer = Buffer::FindOrCreate(streamBufferAsset);

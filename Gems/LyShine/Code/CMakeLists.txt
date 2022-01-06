@@ -29,7 +29,7 @@ ly_add_target(
             Gem::Atom_Utils.Static
             Gem::Atom_Bootstrap.Headers
             Gem::AtomFont
-            Gem::TextureAtlas       
+            Gem::TextureAtlas
 )
 
 ly_add_target(
@@ -52,8 +52,9 @@ ly_add_target(
         Gem::TextureAtlas
 )
 
-# by default, load the above "Gem::LyShine" module in Client applications:
+# by default, load the above "Gem::LyShine" module in Client and Server applications:
 ly_create_alias(NAME LyShine.Clients NAMESPACE Gem TARGETS Gem::LyShine)
+ly_create_alias(NAME LyShine.Servers NAMESPACE Gem TARGETS Gem::LyShine)
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
@@ -151,12 +152,11 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::Atom_RPI.Public
                 Gem::Atom_Utils.Static
                 Gem::Atom_Bootstrap.Headers
-    )    
+    )
 
     ly_add_target(
         NAME LyShine.Builders GEM_MODULE
         NAMESPACE Gem
-        OUTPUT_NAME Gem.LyShine.Builders
         FILES_CMAKE
             lyshine_common_module_files.cmake
         COMPILE_DEFINITIONS

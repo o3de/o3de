@@ -86,7 +86,7 @@ namespace UnitTest
 
     struct Aligned16
     {
-        AZ_ALIGN(char m_data, 16);
+        alignas(16) char m_data;
     };
 
     //! Class that changes a value when it's created and destroyed.

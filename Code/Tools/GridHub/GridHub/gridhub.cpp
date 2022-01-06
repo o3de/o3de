@@ -358,17 +358,11 @@ GridHubComponent::GridHubComponent()
     m_isLogToFile = false;
     
 #ifdef AZ_PLATFORM_WINDOWS
-    TCHAR name[MAX_COMPUTERNAME_LENGTH + 1];
+    wchar_t name[MAX_COMPUTERNAME_LENGTH + 1];
     DWORD dwCompNameLen = AZ_ARRAY_SIZE(name);
-    if ( GetComputerName(name, &dwCompNameLen) != 0 ) 
+    if (GetComputerName(name, &dwCompNameLen) != 0) 
     {
-#ifdef _UNICODE
-        char c[MAX_COMPUTERNAME_LENGTH + 1];
-        wcstombs(c, name, AZ_ARRAY_SIZE(c));
-        m_hubName = c;
-#else
-        m_hubName = name;
-#endif
+        AZStd::to_string(m_hubName, name);
     }
     else
 #endif
@@ -549,7 +543,7 @@ GridHubComponent::OnMemberJoined([[maybe_unused]] GridMate::GridSession* session
     case AZ::PlatformID::PLATFORM_WINDOWS_64:
     case AZ::PlatformID::PLATFORM_APPLE_MAC:
         {
-            GridMate::string localMachineName = GridMate::Utils::GetMachineAddress();
+            AZStd::string localMachineName = GridMate::Utils::GetMachineAddress();
             if( member->GetMachineName() == localMachineName )
             {
                 ExternalProcessMonitor mi;
@@ -635,7 +629,7 @@ bool GridHubComponent::StartSession(bool isRestarting)
     AZ_Assert(GridMate::HasGridMateService<GridMate::LANSessionService>(m_gridMate), "Failed to start multiplayer service for LAN!");
 
     // if we get an address 169.X.X.X (AZCP is NOT ready) or 127.0.0.1 when network is not ready
-    GridMate::string machineIP = GridMate::Utils::GetMachineAddress();
+    AZStd::string machineIP = GridMate::Utils::GetMachineAddress();
     if( machineIP == "127.0.0.1" || machineIP.compare(0,4,"169.") == 0 )
     {
         AZ_Warning("GridHub", false, "\nCurrent IP %s might be invalid.\n",machineIP.c_str());

@@ -15,103 +15,10 @@
 namespace AzFramework
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    const char* InputDeviceGamepad::Name("gamepad");
-    const InputDeviceId InputDeviceGamepad::IdForIndex0(Name, 0);
-    const InputDeviceId InputDeviceGamepad::IdForIndex1(Name, 1);
-    const InputDeviceId InputDeviceGamepad::IdForIndex2(Name, 2);
-    const InputDeviceId InputDeviceGamepad::IdForIndex3(Name, 3);
-    const InputDeviceId InputDeviceGamepad::IdForIndexN(AZ::u32 n) { return InputDeviceId(Name, n); }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
     bool InputDeviceGamepad::IsGamepadDevice(const InputDeviceId& inputDeviceId)
     {
         return (inputDeviceId.GetNameCrc32() == IdForIndex0.GetNameCrc32());
     }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    const InputChannelId InputDeviceGamepad::Button::A("gamepad_button_a");
-    const InputChannelId InputDeviceGamepad::Button::B("gamepad_button_b");
-    const InputChannelId InputDeviceGamepad::Button::X("gamepad_button_x");
-    const InputChannelId InputDeviceGamepad::Button::Y("gamepad_button_y");
-    const InputChannelId InputDeviceGamepad::Button::L1("gamepad_button_l1");
-    const InputChannelId InputDeviceGamepad::Button::R1("gamepad_button_r1");
-    const InputChannelId InputDeviceGamepad::Button::L3("gamepad_button_l3");
-    const InputChannelId InputDeviceGamepad::Button::R3("gamepad_button_r3");
-    const InputChannelId InputDeviceGamepad::Button::DU("gamepad_button_d_up");
-    const InputChannelId InputDeviceGamepad::Button::DD("gamepad_button_d_down");
-    const InputChannelId InputDeviceGamepad::Button::DL("gamepad_button_d_left");
-    const InputChannelId InputDeviceGamepad::Button::DR("gamepad_button_d_right");
-    const InputChannelId InputDeviceGamepad::Button::Start("gamepad_button_start");
-    const InputChannelId InputDeviceGamepad::Button::Select("gamepad_button_select");
-    const AZStd::array<InputChannelId, 14> InputDeviceGamepad::Button::All =
-    {{
-        A,
-        B,
-        X,
-        Y,
-        L1,
-        R1,
-        L3,
-        R3,
-        DU,
-        DD,
-        DL,
-        DR,
-        Start,
-        Select
-    }};
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    const InputChannelId InputDeviceGamepad::Trigger::L2("gamepad_trigger_l2");
-    const InputChannelId InputDeviceGamepad::Trigger::R2("gamepad_trigger_r2");
-    const AZStd::array<InputChannelId, 2> InputDeviceGamepad::Trigger::All =
-    {{
-        L2,
-        R2
-    }};
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    const InputChannelId InputDeviceGamepad::ThumbStickAxis2D::L("gamepad_thumbstick_l");
-    const InputChannelId InputDeviceGamepad::ThumbStickAxis2D::R("gamepad_thumbstick_r");
-    const AZStd::array<InputChannelId, 2> InputDeviceGamepad::ThumbStickAxis2D::All =
-    {{
-        L,
-        R
-    }};
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    const InputChannelId InputDeviceGamepad::ThumbStickAxis1D::LX("gamepad_thumbstick_l_x");
-    const InputChannelId InputDeviceGamepad::ThumbStickAxis1D::LY("gamepad_thumbstick_l_y");
-    const InputChannelId InputDeviceGamepad::ThumbStickAxis1D::RX("gamepad_thumbstick_r_x");
-    const InputChannelId InputDeviceGamepad::ThumbStickAxis1D::RY("gamepad_thumbstick_r_y");
-    const AZStd::array<InputChannelId, 4> InputDeviceGamepad::ThumbStickAxis1D::All =
-    {{
-        LX,
-        LY,
-        RX,
-        RY
-    }};
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    const InputChannelId InputDeviceGamepad::ThumbStickDirection::LU("gamepad_thumbstick_l_up");
-    const InputChannelId InputDeviceGamepad::ThumbStickDirection::LD("gamepad_thumbstick_l_down");
-    const InputChannelId InputDeviceGamepad::ThumbStickDirection::LL("gamepad_thumbstick_l_left");
-    const InputChannelId InputDeviceGamepad::ThumbStickDirection::LR("gamepad_thumbstick_l_right");
-    const InputChannelId InputDeviceGamepad::ThumbStickDirection::RU("gamepad_thumbstick_r_up");
-    const InputChannelId InputDeviceGamepad::ThumbStickDirection::RD("gamepad_thumbstick_r_down");
-    const InputChannelId InputDeviceGamepad::ThumbStickDirection::RL("gamepad_thumbstick_r_left");
-    const InputChannelId InputDeviceGamepad::ThumbStickDirection::RR("gamepad_thumbstick_r_right");
-    const AZStd::array<InputChannelId, 8> InputDeviceGamepad::ThumbStickDirection::All =
-    {{
-        LU,
-        LD,
-        LL,
-        LR,
-        RU,
-        RD,
-        RL,
-        RR
-    }};
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void InputDeviceGamepad::Reflect(AZ::ReflectContext* context)
@@ -179,7 +86,14 @@ namespace AzFramework
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     InputDeviceGamepad::InputDeviceGamepad(AZ::u32 index)
-        : InputDevice(InputDeviceId(Name, index))
+        : InputDeviceGamepad(InputDeviceId(Name, index)) // Delegated constructor
+    {
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    InputDeviceGamepad::InputDeviceGamepad(const InputDeviceId& inputDeviceId,
+                                           ImplementationFactory implementationFactory)
+        : InputDevice(inputDeviceId)
         , m_allChannelsById()
         , m_buttonChannelsById()
         , m_triggerChannelsById()
@@ -229,8 +143,8 @@ namespace AzFramework
             m_thumbStickDirectionChannelsById[channelId] = channel;
         }
 
-        // Create the platform specific implementation
-        m_pimpl.reset(Implementation::Create(*this));
+        // Create the platform specific or custom implementation
+        m_pimpl.reset(implementationFactory ? implementationFactory(*this) : nullptr);
 
         // Connect to the haptic feedback request bus
         InputHapticFeedbackRequestBus::Handler::BusConnect(GetInputDeviceId());

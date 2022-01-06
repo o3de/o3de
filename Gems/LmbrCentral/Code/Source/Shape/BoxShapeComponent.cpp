@@ -101,23 +101,15 @@ namespace LmbrCentral
         }
     }
 
-    namespace ClassConverters
-    {
-        static bool DeprecateBoxColliderConfiguration(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);
-        static bool DeprecateBoxColliderComponent(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);
-    }
-
     void BoxShapeConfig::Reflect(AZ::ReflectContext* context)
     {
+        // Don't reflect again if we're already reflected to the passed in context
+        if (context->IsTypeReflected(BoxShapeConfigTypeId))
+        {
+            return;
+        }
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            // Deprecate: BoxColliderConfiguration -> BoxShapeConfig
-            serializeContext->ClassDeprecate(
-                "BoxColliderConfiguration",
-                "{282E47CB-9F6D-47AE-A210-4CE879527EFD}",
-                &ClassConverters::DeprecateBoxColliderConfiguration)
-                ;
-
             serializeContext->Class<BoxShapeConfig, ShapeComponentConfig>()
                 ->Version(2)
                 ->Field("Dimensions", &BoxShapeConfig::m_dimensions)
@@ -151,13 +143,6 @@ namespace LmbrCentral
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            // Deprecate: BoxColliderComponent -> BoxShapeComponent
-            serializeContext->ClassDeprecate(
-                "BoxColliderComponent",
-                "{C215EB2A-1803-4EDC-B032-F7C92C142337}",
-                &ClassConverters::DeprecateBoxColliderComponent)
-                ;
-
             serializeContext->Class<BoxShapeComponent, Component>()
                 ->Version(2, &ClassConverters::UpgradeBoxShapeComponent)
                 ->Field("BoxShape", &BoxShapeComponent::m_boxShape)
@@ -205,85 +190,4 @@ namespace LmbrCentral
         }
         return false;
     }
-
-    namespace ClassConverters
-    {
-        static bool DeprecateBoxColliderConfiguration(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
-        {
-            /*
-            Old:
-            <Class name="BoxColliderConfiguration" field="Configuration" version="1" type="{282E47CB-9F6D-47AE-A210-4CE879527EFD}">
-            <Class name="Vector3" field="Size" value="1.0000000 1.0000000 1.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
-            </Class>
-
-            New:
-            <Class name="BoxShapeConfig" field="Configuration" version="1" type="{F034FBA2-AC2F-4E66-8152-14DFB90D6283}">
-            <Class name="Vector3" field="Dimensions" value="1.0000000 1.0000000 1.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
-            </Class>
-            */
-
-            // Cache the Dimensions
-            AZ::Vector3 oldDimensions;
-            const int oldIndex = classElement.FindElement(AZ_CRC("Size", 0xf7c0246a));
-            if (oldIndex != -1)
-            {
-                classElement.GetSubElement(oldIndex).GetData<AZ::Vector3>(oldDimensions);
-            }
-
-            // Convert to BoxShapeConfig
-            const bool result = classElement.Convert(context, "{F034FBA2-AC2F-4E66-8152-14DFB90D6283}");
-            if (result)
-            {
-                const int newIndex = classElement.AddElement<AZ::Vector3>(context, "Dimensions");
-                if (newIndex != -1)
-                {
-                    classElement.GetSubElement(newIndex).SetData<AZ::Vector3>(context, oldDimensions);
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        static bool DeprecateBoxColliderComponent(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
-        {
-            /*
-            Old:
-            <Class name="BoxColliderComponent" version="1" type="{C215EB2A-1803-4EDC-B032-F7C92C142337}">
-             <Class name="BoxColliderConfiguration" field="Configuration" version="1" type="{282E47CB-9F6D-47AE-A210-4CE879527EFD}">
-              <Class name="Vector3" field="Size" value="1.0000000 1.0000000 1.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
-             </Class>
-            </Class>
-
-            New:
-            <Class name="BoxShapeComponent" version="1" type="{5EDF4B9E-0D3D-40B8-8C91-5142BCFC30A6}">
-             <Class name="BoxShapeConfig" field="Configuration" version="1" type="{F034FBA2-AC2F-4E66-8152-14DFB90D6283}">
-              <Class name="Vector3" field="Dimensions" value="1.0000000 2.0000000 3.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
-             </Class>
-            </Class>
-            */
-
-            // Cache the Configuration
-            BoxShapeConfig configuration;
-            int configIndex = classElement.FindElement(AZ_CRC("Configuration", 0xa5e2a5d7));
-            if (configIndex != -1)
-            {
-                classElement.GetSubElement(configIndex).GetData<BoxShapeConfig>(configuration);
-            }
-
-            // Convert to BoxShapeComponent
-            const bool result = classElement.Convert(context, BoxShapeComponentTypeId);
-            if (result)
-            {
-                configIndex = classElement.AddElement<BoxShapeConfig>(context, "Configuration");
-                if (configIndex != -1)
-                {
-                    classElement.GetSubElement(configIndex).SetData<BoxShapeConfig>(context, configuration);
-                }
-                return true;
-            }
-            return false;
-        }
-
-    } // namespace ClassConverters
-
 } // namespace LmbrCentral

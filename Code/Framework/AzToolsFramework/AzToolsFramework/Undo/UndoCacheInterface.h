@@ -9,7 +9,10 @@
 #pragma once
 
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Debug/Budget.h>
 #include <AzCore/Interface/Interface.h>
+
+AZ_DECLARE_BUDGET(AzToolsFramework);
 
 namespace AzToolsFramework
 {

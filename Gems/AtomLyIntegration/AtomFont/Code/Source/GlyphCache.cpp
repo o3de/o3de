@@ -124,7 +124,7 @@ int AZ::GlyphCache::Release()
 }
 
 //-------------------------------------------------------------------------------------------------
-int AZ::GlyphCache::LoadFontFromFile(const string& fileName)
+int AZ::GlyphCache::LoadFontFromFile(const AZStd::string & fileName)
 {
     return m_fontRenderer.LoadFromFile(fileName);
 }

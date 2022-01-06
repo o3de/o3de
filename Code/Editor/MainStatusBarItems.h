@@ -71,3 +71,17 @@ public:
 private:
     void updateStatus();
 };
+
+class GameInfoItem
+    : public StatusBarItem
+{
+    Q_OBJECT
+public:
+    GameInfoItem(QString name, MainStatusBar* parent);
+
+private Q_SLOTS:
+    void OnShowContextMenu(const QPoint& pos);
+
+private:
+    QString m_projectPath;
+};

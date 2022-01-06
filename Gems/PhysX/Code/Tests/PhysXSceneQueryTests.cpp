@@ -737,11 +737,11 @@ namespace PhysX
         auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
 
         //setup bodies
-        AzPhysics::SimulatedBodyHandle sphereHandle = TestUtils::AddSphereToScene(m_testSceneHandle,
+        TestUtils::AddSphereToScene(m_testSceneHandle,
             AZ::Vector3(10.0f, 0.0f, 0.0f), 3.0f);
         AzPhysics::SimulatedBodyHandle boxHandle = TestUtils::AddBoxToScene(m_testSceneHandle,
             AZ::Vector3(7.0f, 4.0f, 0.0f), AZ::Vector3(1.0f));
-        AzPhysics::SimulatedBodyHandle capsuleHandle = TestUtils::AddCapsuleToScene(m_testSceneHandle,
+        TestUtils::AddCapsuleToScene(m_testSceneHandle,
             AZ::Vector3(15.0f, 0.0f, 0.0f), 3.0f, 1.0f);
 
         //Create request
@@ -769,11 +769,11 @@ namespace PhysX
         auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
 
         //setup bodies
-        AzPhysics::SimulatedBodyHandle sphereHandle = TestUtils::AddSphereToScene(m_testSceneHandle,
+        TestUtils::AddSphereToScene(m_testSceneHandle,
             AZ::Vector3(10.0f, 0.0f, 0.0f), 3.0f);
         AzPhysics::SimulatedBodyHandle boxHandle = TestUtils::AddBoxToScene(m_testSceneHandle,
             AZ::Vector3(7.0f, 4.0f, 0.0f), AZ::Vector3(1.0f));
-        AzPhysics::SimulatedBodyHandle capsuleHandle = TestUtils::AddCapsuleToScene(m_testSceneHandle,
+        TestUtils::AddCapsuleToScene(m_testSceneHandle,
             AZ::Vector3(15.0f, 0.0f, 0.0f), 3.0f, 1.0f);
 
         //Box Overlap Request
@@ -824,9 +824,9 @@ namespace PhysX
         auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
 
         //setup bodies
-        AzPhysics::SimulatedBodyHandle sphereHandle = TestUtils::AddSphereToScene(m_testSceneHandle,
+        TestUtils::AddSphereToScene(m_testSceneHandle,
             AZ::Vector3(10.0f, 0.0f, 0.0f), 3.0f);
-        AzPhysics::SimulatedBodyHandle boxHandle = TestUtils::AddBoxToScene(m_testSceneHandle,
+        TestUtils::AddBoxToScene(m_testSceneHandle,
             AZ::Vector3(7.0f, 4.0f, 0.0f), AZ::Vector3(1.0f));
         AzPhysics::SimulatedBodyHandle capsuleHandle = TestUtils::AddCapsuleToScene(m_testSceneHandle,
             AZ::Vector3(15.0f, 0.0f, 0.0f), 3.0f, 1.0f);
@@ -863,9 +863,9 @@ namespace PhysX
         //setup bodies
         AzPhysics::SimulatedBodyHandle sphereHandle = TestUtils::AddSphereToScene(m_testSceneHandle,
             AZ::Vector3(10.0f, 0.0f, 0.0f), 3.0f, AzPhysics::CollisionLayer(0));
-        AzPhysics::SimulatedBodyHandle boxHandle = TestUtils::AddBoxToScene(m_testSceneHandle,
+        TestUtils::AddBoxToScene(m_testSceneHandle,
             AZ::Vector3(12.0f, 0.0f, 0.0f), AZ::Vector3(1.0f), AzPhysics::CollisionLayer(1));
-        AzPhysics::SimulatedBodyHandle capsuleHandle = TestUtils::AddCapsuleToScene(m_testSceneHandle,
+        TestUtils::AddCapsuleToScene(m_testSceneHandle,
             AZ::Vector3(14.0f, 0.0f, 0.0f), 3.0f, 1.0f, AzPhysics::CollisionLayer(2));
 
         //Create Request

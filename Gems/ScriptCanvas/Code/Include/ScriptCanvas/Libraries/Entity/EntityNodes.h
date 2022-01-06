@@ -21,7 +21,7 @@ namespace ScriptCanvas
     namespace EntityNodes
     {
         using namespace Data;
-        static const char* k_categoryName = "Entity/Entity";
+        static constexpr const char* k_categoryName = "Entity/Entity";
 
         template<int t_Index>
         AZ_INLINE void DefaultScale(Node& node) { SetDefaultValuesByIndex<t_Index>::_(node, Data::One()); }
@@ -35,7 +35,7 @@ namespace ScriptCanvas
             vector.SetLength(aznumeric_cast<float>(scale));
             return vector;
         }
-        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_WITH_DEFAULTS(GetEntityRight, DefaultScale<1>, k_categoryName, "{C12282BE-29D2-497D-8C22-75B940E254E2}", "returns the right direction vector from the specified entity's world transform, scaled by a given value (Lumberyard uses Z up, right handed)", "EntityId", "Scale");
+        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_WITH_DEFAULTS(GetEntityRight, DefaultScale<1>, k_categoryName, "{C12282BE-29D2-497D-8C22-75B940E254E2}", "returns the right direction vector from the specified entity's world transform, scaled by a given value (O3DE uses Z up, right handed)", "EntityId", "Scale");
 
         AZ_INLINE Vector3Type GetEntityForward(AZ::EntityId entityId, NumberType scale)
         {
@@ -46,7 +46,7 @@ namespace ScriptCanvas
             vector.SetLength(aznumeric_cast<float>(scale));
             return vector;
         }
-        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_WITH_DEFAULTS(GetEntityForward, DefaultScale<1>, k_categoryName, "{719D9F76-84D4-4B0F-BCEB-26D5D097C7D6}", "returns the forward direction vector from the specified entity' world transform, scaled by a given value (Lumberyard uses Z up, right handed)", "EntityId", "Scale");
+        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_WITH_DEFAULTS(GetEntityForward, DefaultScale<1>, k_categoryName, "{719D9F76-84D4-4B0F-BCEB-26D5D097C7D6}", "returns the forward direction vector from the specified entity' world transform, scaled by a given value (O3DE uses Z up, right handed)", "EntityId", "Scale");
 
         AZ_INLINE Vector3Type GetEntityUp(AZ::EntityId entityId, NumberType scale)
         {
@@ -57,7 +57,7 @@ namespace ScriptCanvas
             vector.SetLength(aznumeric_cast<float>(scale));
             return vector;
         }
-        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_WITH_DEFAULTS(GetEntityUp, DefaultScale<1>, k_categoryName, "{96B86F3F-F022-4611-9AEA-175EA952C562}", "returns the up direction vector from the specified entity's world transform, scaled by a given value (Lumberyard uses Z up, right handed)", "EntityId", "Scale");
+        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_WITH_DEFAULTS(GetEntityUp, DefaultScale<1>, k_categoryName, "{96B86F3F-F022-4611-9AEA-175EA952C562}", "returns the up direction vector from the specified entity's world transform, scaled by a given value (O3DE uses Z up, right handed)", "EntityId", "Scale");
 
         AZ_INLINE BooleanType IsActive(const EntityIDType& entityId)
         {

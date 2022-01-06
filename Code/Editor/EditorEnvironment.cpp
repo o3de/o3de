@@ -17,7 +17,7 @@ void SetEditorEnvironment(SSystemGlobalEnvironment* pEnv)
 
 void AttachEditorAZEnvironment(AZ::EnvironmentInstance azEnv)
 {
-    AZ::Environment::Attach(azEnv, true);
+    AZ::Environment::Attach(azEnv);
 }
 
 void DetachEditorAZEnvironment()

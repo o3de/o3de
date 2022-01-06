@@ -152,15 +152,6 @@ ActionManager::ActionWrapper& ActionManager::ActionWrapper::SetMenu(DynamicMenu*
     return *this;
 }
 
-ActionManager::ActionWrapper& ActionManager::ActionWrapper::SetApplyHoverEffect()
-{
-    // Our standard toolbar icons, when hovered on, get a white color effect.
-    // But for this to work we need .pngs that look good with this effect, so this only works with the standard toolbars
-    // and looks very ugly for other toolbars, including toolbars loaded from XML (which just show a white rectangle)
-    m_action->setProperty("IconHasHoverEffect", true);
-    return *this;
-}
-
 ActionManager::ActionWrapper& ActionManager::ActionWrapper::SetReserved()
 {
     m_action->setProperty("Reserved", true);
@@ -326,6 +317,7 @@ ActionManager::MenuWrapper ActionManager::FindMenu(const QString& menuId)
             return *menuIt;
         }
 
+        AZ_UNUSED(menuId); // Prevent unused warning in release builds
         AZ_Warning("ActionManager", false, "Did not find menu with menuId %s", menuId.toUtf8().data());
         return nullptr;
     }();

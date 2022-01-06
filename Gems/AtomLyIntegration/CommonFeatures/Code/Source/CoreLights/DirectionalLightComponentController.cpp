@@ -80,14 +80,16 @@ namespace AZ
                     ->Event("SetDebugColoringEnabled", &DirectionalLightRequestBus::Events::SetDebugColoringEnabled)
                     ->Event("GetShadowFilterMethod", &DirectionalLightRequestBus::Events::GetShadowFilterMethod)
                     ->Event("SetShadowFilterMethod", &DirectionalLightRequestBus::Events::SetShadowFilterMethod)
-                    ->Event("GetSofteningBoundaryWidth", &DirectionalLightRequestBus::Events::GetSofteningBoundaryWidth)
-                    ->Event("SetSofteningBoundaryWidth", &DirectionalLightRequestBus::Events::SetSofteningBoundaryWidth)
-                    ->Event("GetPredictionSampleCount", &DirectionalLightRequestBus::Events::GetPredictionSampleCount)
-                    ->Event("SetPredictionSampleCount", &DirectionalLightRequestBus::Events::SetPredictionSampleCount)
                     ->Event("GetFilteringSampleCount", &DirectionalLightRequestBus::Events::GetFilteringSampleCount)
                     ->Event("SetFilteringSampleCount", &DirectionalLightRequestBus::Events::SetFilteringSampleCount)
-                    ->Event("GetPcfMethod", &DirectionalLightRequestBus::Events::GetPcfMethod)
-                    ->Event("SetPcfMethod", &DirectionalLightRequestBus::Events::SetPcfMethod)
+                    ->Event("GetShadowReceiverPlaneBiasEnabled", &DirectionalLightRequestBus::Events::GetShadowReceiverPlaneBiasEnabled)
+                    ->Event("SetShadowReceiverPlaneBiasEnabled", &DirectionalLightRequestBus::Events::SetShadowReceiverPlaneBiasEnabled)
+                    ->Event("GetShadowBias", &DirectionalLightRequestBus::Events::GetShadowBias)
+                    ->Event("SetShadowBias", &DirectionalLightRequestBus::Events::SetShadowBias)
+                    ->Event("GetNormalShadowBias", &DirectionalLightRequestBus::Events::GetNormalShadowBias)
+                    ->Event("SetNormalShadowBias", &DirectionalLightRequestBus::Events::SetNormalShadowBias)
+                    ->Event("GetCascadeBlendingEnabled", &DirectionalLightRequestBus::Events::GetCascadeBlendingEnabled)
+                    ->Event("SetCascadeBlendingEnabled", &DirectionalLightRequestBus::Events::SetCascadeBlendingEnabled)
                     ->VirtualProperty("Color", "GetColor", "SetColor")
                     ->VirtualProperty("Intensity", "GetIntensity", "SetIntensity")
                     ->VirtualProperty("AngularDiameter", "GetAngularDiameter", "SetAngularDiameter")
@@ -101,10 +103,11 @@ namespace AZ
                     ->VirtualProperty("ViewFrustumCorrectionEnabled", "GetViewFrustumCorrectionEnabled", "SetViewFrustumCorrectionEnabled")
                     ->VirtualProperty("DebugColoringEnabled", "GetDebugColoringEnabled", "SetDebugColoringEnabled")
                     ->VirtualProperty("ShadowFilterMethod", "GetShadowFilterMethod", "SetShadowFilterMethod")
-                    ->VirtualProperty("SofteningBoundaryWidth", "GetSofteningBoundaryWidth", "SetSofteningBoundaryWidth")
-                    ->VirtualProperty("PredictionSampleCount", "GetPredictionSampleCount", "SetPredictionSampleCount")
                     ->VirtualProperty("FilteringSampleCount", "GetFilteringSampleCount", "SetFilteringSampleCount")
-                    ->VirtualProperty("PcfMethod", "GetPcfMethod", "SetPcfMethod");
+                    ->VirtualProperty("ShadowReceiverPlaneBiasEnabled", "GetShadowReceiverPlaneBiasEnabled", "SetShadowReceiverPlaneBiasEnabled")
+                    ->VirtualProperty("ShadowBias", "GetShadowBias", "SetShadowBias")
+                    ->VirtualProperty("NormalShadowBias", "GetNormalShadowBias", "SetNormalShadowBias")
+                    ->VirtualProperty("BlendBetweenCascadesEnabled", "GetCascadeBlendingEnabled", "SetCascadeBlendingEnabled");
                 ;
             }
         }
@@ -259,7 +262,8 @@ namespace AZ
 
         void DirectionalLightComponentController::SetCascadeCount(uint32_t cascadeCount)
         {
-            const uint16_t cascadeCount16 = cascadeCount = GetMin(Shadow::MaxNumberOfCascades, GetMax<uint16_t>(1, aznumeric_cast<uint16_t>(cascadeCount)));
+            const uint16_t cascadeCount16 = GetMin(static_cast<uint16_t>(Shadow::MaxNumberOfCascades), GetMax<uint16_t>(1, aznumeric_cast<uint16_t>(cascadeCount)));
+            cascadeCount = cascadeCount16;
             m_configuration.m_cascadeCount = cascadeCount16;
             if (m_featureProcessor)
             {
@@ -406,39 +410,37 @@ namespace AZ
             }
         }
 
-        float DirectionalLightComponentController::GetSofteningBoundaryWidth() const
-        {
-            return m_configuration.m_boundaryWidth;
-        }
-
-        void DirectionalLightComponentController::SetSofteningBoundaryWidth(float width)
-        {
-            width = GetMin(Shadow::MaxSofteningBoundaryWidth, GetMax(0.f, width));
-            m_configuration.m_boundaryWidth = width;
-            if (m_featureProcessor)
-            {
-                m_featureProcessor->SetShadowBoundaryWidth(m_lightHandle, width);
-            }
-        }
-
-        uint32_t DirectionalLightComponentController::GetPredictionSampleCount() const
-        {
-            return aznumeric_cast<uint32_t>(m_configuration.m_predictionSampleCount);
-        }
-
-        void DirectionalLightComponentController::SetPredictionSampleCount(uint32_t count)
-        {
-            const uint16_t count16 = GetMin(Shadow::MaxPcfSamplingCount, aznumeric_cast<uint16_t>(count));
-            m_configuration.m_predictionSampleCount = count16;
-            if (m_featureProcessor)
-            {
-                m_featureProcessor->SetPredictionSampleCount(m_lightHandle, count16);
-            }
-        }
-
         uint32_t DirectionalLightComponentController::GetFilteringSampleCount() const
         {
             return aznumeric_cast<uint32_t>(m_configuration.m_filteringSampleCount);
+        }
+
+        void DirectionalLightComponentController::SetShadowBias(float bias) 
+        {
+            m_configuration.m_shadowBias = bias;
+            if (m_featureProcessor) 
+            {
+                m_featureProcessor->SetShadowBias(m_lightHandle, bias);
+            }            
+        }
+
+        float DirectionalLightComponentController::GetShadowBias() const 
+        {
+            return m_configuration.m_shadowBias;
+        }
+
+        void DirectionalLightComponentController::SetNormalShadowBias(float bias)
+        {
+            m_configuration.m_normalShadowBias = bias;
+            if (m_featureProcessor)
+            {
+                m_featureProcessor->SetNormalShadowBias(m_lightHandle, bias);
+            }
+        }
+
+        float DirectionalLightComponentController::GetNormalShadowBias() const
+        {
+            return m_configuration.m_normalShadowBias;
         }
 
         void DirectionalLightComponentController::SetFilteringSampleCount(uint32_t count)
@@ -534,10 +536,11 @@ namespace AZ
             SetViewFrustumCorrectionEnabled(m_configuration.m_isCascadeCorrectionEnabled);
             SetDebugColoringEnabled(m_configuration.m_isDebugColoringEnabled);
             SetShadowFilterMethod(m_configuration.m_shadowFilterMethod);
-            SetSofteningBoundaryWidth(m_configuration.m_boundaryWidth);
-            SetPredictionSampleCount(m_configuration.m_predictionSampleCount);
+            SetShadowBias(m_configuration.m_shadowBias);
+            SetNormalShadowBias(m_configuration.m_normalShadowBias);
             SetFilteringSampleCount(m_configuration.m_filteringSampleCount);
-            SetPcfMethod(m_configuration.m_pcfMethod);
+            SetShadowReceiverPlaneBiasEnabled(m_configuration.m_receiverPlaneBiasEnabled);
+            SetCascadeBlendingEnabled(m_configuration.m_cascadeBlendingEnabled);
 
             // [GFX TODO][ATOM-1726] share config for multiple light (e.g., light ID).
             // [GFX TODO][ATOM-2416] adapt to multiple viewports.
@@ -626,16 +629,27 @@ namespace AZ
             }
         }
 
-        PcfMethod DirectionalLightComponentController::GetPcfMethod() const
+        bool DirectionalLightComponentController::GetShadowReceiverPlaneBiasEnabled() const
         {
-            return m_configuration.m_pcfMethod;
+            return m_configuration.m_receiverPlaneBiasEnabled;
         }
 
-        void DirectionalLightComponentController::SetPcfMethod(PcfMethod method)
+        void DirectionalLightComponentController::SetShadowReceiverPlaneBiasEnabled(bool enable)
         {
-            m_configuration.m_pcfMethod = method;
-            m_featureProcessor->SetPcfMethod(m_lightHandle, method);
+            m_configuration.m_receiverPlaneBiasEnabled = enable;
+            m_featureProcessor->SetShadowReceiverPlaneBiasEnabled(m_lightHandle, enable);
         }
-  
+
+        bool DirectionalLightComponentController::GetCascadeBlendingEnabled() const
+        {
+            return m_configuration.m_cascadeBlendingEnabled;
+        }
+
+        void DirectionalLightComponentController::SetCascadeBlendingEnabled(bool enable)
+        {
+            m_configuration.m_cascadeBlendingEnabled = enable;
+            m_featureProcessor->SetCascadeBlendingEnabled(m_lightHandle, enable);
+        }
+
     } // namespace Render
 } // namespace AZ

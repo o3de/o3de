@@ -8,8 +8,6 @@
 #include <Atom/RHI/ShaderResourceGroupPool.h>
 #include <Atom/RHI/BufferView.h>
 #include <Atom/RHI/ImageView.h>
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace RHI
@@ -111,13 +109,19 @@ namespace AZ
         {
             AZStd::lock_guard<AZStd::shared_mutex> lock(m_groupsToCompileMutex);
 
-            AZ_Assert(!shaderResourceGroup.IsQueuedForCompile(), "Attempting to compile an SRG that's already been queued for compile. Only compile an SRG once per frame.");            
+            bool isQueuedForCompile = shaderResourceGroup.IsQueuedForCompile();
+            AZ_Warning(
+                "ShaderResourceGroupPool", !isQueuedForCompile,
+                "Attempting to compile an SRG that's already been queued for compile. Only compile an SRG once per frame.");            
 
-            CalculateGroupDataDiff(shaderResourceGroup, groupData);
+            if (!isQueuedForCompile)
+            {
+                CalculateGroupDataDiff(shaderResourceGroup, groupData);
 
-            shaderResourceGroup.SetData(groupData);
+                shaderResourceGroup.SetData(groupData);
 
-            QueueForCompileNoLock(shaderResourceGroup);
+                QueueForCompileNoLock(shaderResourceGroup);
+            }
         }
 
         void ShaderResourceGroupPool::QueueForCompile(ShaderResourceGroup& group)
@@ -244,8 +248,6 @@ namespace AZ
 
         void ShaderResourceGroupPool::CompileGroupsForInterval(Interval interval)
         {
-            AZ_TRACE_METHOD_NAME("CompileGroupsForInterval");
-
             AZ_Assert(m_isCompiling, "You must call CompileGroupsBegin() first!");
             AZ_Assert(
                 interval.m_max >= interval.m_min &&
@@ -255,6 +257,8 @@ namespace AZ
             for (uint32_t i = interval.m_min; i < interval.m_max; ++i)
             {
                 ShaderResourceGroup* group = m_groupsToCompile[i];
+                AZ_PROFILE_SCOPE(RHI, "CompileGroupsForInterval %s", group->GetName().GetCStr());
+
                 CompileGroupInternal(*group, group->GetData());
                 group->m_isQueuedForCompile = false;
             }

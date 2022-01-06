@@ -41,9 +41,6 @@ namespace AZ
         HANDLE m_mapHandle;
         HANDLE m_globalMutex;
         int m_lastLockResult;
-
-    private:
-        void ComposeMutexName(char* dest, size_t length, const char* name);
     };
 
     using SharedMemory_Platform = SharedMemory_Windows;

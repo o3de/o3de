@@ -8,6 +8,8 @@
 
 #include <PostProcess/RadiusWeightModifier/RadiusWeightModifierComponent.h>
 
+#include <AzCore/RTTI/BehaviorContext.h>
+
 namespace AZ
 {
     namespace Render

@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/AssetEditor/AssetEditorBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 

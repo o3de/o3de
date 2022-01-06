@@ -60,7 +60,6 @@
 
 namespace
 {
-    const uint32_t IndicesPerFace = 3;
     const AZ::RHI::Format IndicesFormat = AZ::RHI::Format::R32_UINT;
 
     const uint32_t PositionFloatsPerVert = 3;
@@ -84,11 +83,6 @@ namespace
 
     // Morph targets
     const char* ShaderSemanticName_MorphTargetDeltas = "MORPHTARGET_VERTEXDELTAS";
-    const AZ::RHI::Format MorphTargetVertexIndexFormat = AZ::RHI::Format::R32_UINT; // Single-component, 32-bit integer as vertex index
-    const char* ShaderSemanticName_MorphTargetPositionDeltas = "MORPHTARGET_POSITIONDELTAS";
-    const AZ::RHI::Format MorphTargetPositionDeltaFormat = AZ::RHI::Format::R16_UINT; // 16-bit integer per compressed position delta component
-    const char* ShaderSemanticName_MorphTargetNormalDeltas = "MORPHTARGET_NORMALDELTAS";
-    const AZ::RHI::Format MorphTargetNormalDeltaFormat = AZ::RHI::Format::R8_UINT; // 8-bit integer per compressed normal delta component
 
     // Cloth data
     const char* const ShaderSemanticName_ClothData = "CLOTH_DATA";
@@ -954,20 +948,17 @@ namespace AZ
         {
             AZStd::vector<uint16_t>& skinJointIndices = productMesh.m_skinJointIndices;
             AZStd::vector<float>& skinWeights = productMesh.m_skinWeights;
-            const auto& sourceMeshData = sourceMesh.m_meshData;
 
             size_t numInfluencesAdded = 0;
             for (const auto& skinData : sourceMesh.m_skinData)
             {
-                const size_t numJoints = skinData->GetBoneCount();
-                const AZ::u32 controlPointIndex = sourceMeshData->GetControlPointIndex(static_cast<int>(vertexIndex));
-                const size_t numSkinInfluences = skinData->GetLinkCount(controlPointIndex);
+                const size_t numSkinInfluences = skinData->GetLinkCount(vertexIndex);
 
                 size_t numInfluencesExcess = 0;
 
                 for (size_t influenceIndex = 0; influenceIndex < numSkinInfluences; ++influenceIndex)
                 {
-                    const AZ::SceneAPI::DataTypes::ISkinWeightData::Link& link = skinData->GetLink(controlPointIndex, influenceIndex);
+                    const AZ::SceneAPI::DataTypes::ISkinWeightData::Link& link = skinData->GetLink(vertexIndex, influenceIndex);
 
                     const float weight = link.weight;
                     const AZStd::string& boneName = skinData->GetBoneName(link.boneId);
@@ -1235,7 +1226,8 @@ namespace AZ
             // ProductMesh. That large buffer gets set on the LOD directly
             // rather than a Mesh in the LOD.
             ProductMeshContentAllocInfo lodBufferInfo;
-            
+
+            bool isFirstMesh = true;
             for (const ProductMeshContent& mesh : lodMeshList)
             {
                 if (lodBufferInfo.m_uvSetFloatCounts.size() < mesh.m_uvSets.size())
@@ -1347,6 +1339,14 @@ namespace AZ
 
                 if (!mesh.m_skinJointIndices.empty() && !mesh.m_skinWeights.empty())
                 {
+                    if (!isFirstMesh && lodBufferInfo.m_skinInfluencesCount == 0)
+                    {
+                        AZ_Error(
+                            s_builderName, false,
+                            "Attempting to merge a mix of static and skinned meshes, this will fail on buffer generation later. Mesh with "
+                            "name %s is skinned, but previous meshes were not skinned.",
+                            mesh.m_name.GetCStr());
+                    }
                     AZ_Assert(mesh.m_skinJointIndices.size() == mesh.m_skinWeights.size(),
                         "Number of skin influence joint indices (%d) should match the number of weights (%d).",
                         mesh.m_skinJointIndices.size(), mesh.m_skinWeights.size());
@@ -1363,6 +1363,11 @@ namespace AZ
 
                     lodBufferInfo.m_skinInfluencesCount += numNewSkinInfluences;
                 }
+                else if (lodBufferInfo.m_skinInfluencesCount > 0)
+                {
+                    AZ_Error(s_builderName, false, "Attempting to merge a mix of static and skinned meshes, this will fail on buffer generation later. Mesh with name %s is not skinned, but previous meshes were skinned.",
+                        mesh.m_name.GetCStr());
+                }
 
                 if (!mesh.m_morphTargetVertexData.empty())
                 {
@@ -1375,6 +1380,7 @@ namespace AZ
                 }
 
                 meshViews.emplace_back(AZStd::move(meshView));
+                isFirstMesh = false;
             }
 
             // Now that we have the views settled, we can just merge the mesh
@@ -1807,7 +1813,7 @@ namespace AZ
                 if (iter != materialAssetsByUid.end())
                 {
                     ModelMaterialSlot materialSlot;
-                    materialSlot.m_stableId = meshView.m_materialUid;
+                    materialSlot.m_stableId = static_cast<AZ::RPI::ModelMaterialSlot::StableId>(meshView.m_materialUid);
                     materialSlot.m_displayName = iter->second.m_name;
                     materialSlot.m_defaultMaterialAsset = iter->second.m_asset;
 
@@ -2080,7 +2086,7 @@ namespace AZ
                 AZ::Vector3 vpos;    //note: it seems to be fastest to reuse a local Vector3 rather than constructing new ones each loop iteration
                 for (uint32_t i = 0; i < elementCount; ++i)
                 {
-                    vpos.Set(const_cast<float*>(reinterpret_cast<const float*>(&buffer[i])));
+                    vpos.Set(reinterpret_cast<const float*>(&buffer[i]));
                     aabb.AddPoint(vpos);
                 }
             }

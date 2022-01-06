@@ -132,7 +132,7 @@ namespace ScriptCanvas
 
         void BooleanExpression::InitializeBooleanExpression()
         {
-            AZ_Assert(false, "InitializeBooleanExpression must be overridden");
+            AZ_Error("Script Canvas", false, "InitializeBooleanExpression implementation should be provided");
         }
 
         void BooleanExpression::OnInit()

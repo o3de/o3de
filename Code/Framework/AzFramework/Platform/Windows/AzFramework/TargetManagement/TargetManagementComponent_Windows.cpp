@@ -10,6 +10,7 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzCore/std/string/conversions.h>
 
 namespace AzFramework
 {
@@ -35,12 +36,12 @@ namespace AzFramework
         AZStd::string GetNeighborhoodName()
         {
             AZStd::string neighborhoodName;
-            
-            char localhost[MAX_COMPUTERNAME_LENGTH + 1];
+
+            wchar_t localhost[MAX_COMPUTERNAME_LENGTH + 1];
             DWORD len = AZ_ARRAY_SIZE(localhost);
-            if (GetComputerName(localhost, &len))
+            if (GetComputerNameW(localhost, &len))
             {
-                neighborhoodName = localhost;
+                AZStd::to_string(neighborhoodName, localhost);
             }
 
             return neighborhoodName;

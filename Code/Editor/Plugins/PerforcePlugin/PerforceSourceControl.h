@@ -49,7 +49,7 @@ public:
     // from IUnknown
     HRESULT STDMETHODCALLTYPE QueryInterface(const IID& riid, void** ppvObj)
     {
-        if (riid == __uuidof(ISourceControl) /* && m_pIntegrator*/)
+        if (riid == __az_uuidof(ISourceControl) /* && m_pIntegrator*/)
         {
             *ppvObj = this;
             return S_OK;

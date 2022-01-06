@@ -92,7 +92,7 @@ namespace AssetValidation
 
         ////////////////////////////////////////////////////////////////////////
         // ArchiveNotificationBus interface implementation
-        void FileAccess(const char* filePath) /*override*/;
+        void FileAccess(const char* filePath) override /*override*/;
         ////////////////////////////////////////////////////////////////////////
 
         bool AddSeedList(const char* seedPath) override;

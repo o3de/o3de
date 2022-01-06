@@ -34,7 +34,7 @@ namespace UnitTest
             AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
             AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
 
-            m_executor = aznew TaskExecutor(4);
+            m_executor = aznew TaskExecutor();
         }
 
         void TearDown() override
@@ -225,6 +225,7 @@ namespace UnitTest
                 defaultTD,
                 [td = AZStd::move(td)]
                 {
+                    AZ_UNUSED(td);
                 });
             task.Invoke();
             // Destructor should not have run yet (except on moved-from instances)
@@ -233,6 +234,82 @@ namespace UnitTest
 
         // Destructor should have run now
         EXPECT_EQ(x, 1);
+    }
+
+    TEST_F(TaskGraphTestFixture, SingleTask)
+    {
+        AZStd::atomic_int32_t x = 0;
+
+        TaskGraph graph;
+        graph.AddTask(
+            defaultTD,
+            [&x]
+            {
+                x = 1;
+            });
+
+        TaskGraphEvent ev;
+        graph.SubmitOnExecutor(*m_executor, &ev);
+        ev.Wait();
+
+        EXPECT_EQ(1, x);
+    }
+
+
+    TEST_F(TaskGraphTestFixture, SingleTaskChain)
+    {
+        AZStd::atomic_int32_t x = 0;
+
+        TaskGraph graph;
+        auto a = graph.AddTask(
+            defaultTD,
+            [&x]
+            {
+                x += 1;
+            });
+        auto b = graph.AddTask(
+            defaultTD,
+            [&x]
+            {
+                x += 1;
+            });
+        b.Precedes(a);
+
+        TaskGraphEvent ev;
+        graph.SubmitOnExecutor(*m_executor, &ev);
+        ev.Wait();
+
+        EXPECT_EQ(2, x);
+    }
+
+    TEST_F(TaskGraphTestFixture, MultipleIndependentTaskChains)
+    {
+        AZStd::atomic_int32_t x = 0;
+        constexpr int numChains = 5;
+
+        TaskGraph graph;
+        for( int i = 0; i < numChains; ++i)
+        {
+            auto a = graph.AddTask(
+                defaultTD,
+                [&x]
+                {
+                    x += 1;
+                });
+            auto b = graph.AddTask(
+                defaultTD,
+                [&x]
+                {
+                    x += 1;
+                });
+            b.Precedes(a);
+        }
+
+        TaskGraphEvent ev;
+        graph.SubmitOnExecutor(*m_executor, &ev);
+        ev.Wait();
+
+        EXPECT_EQ(2*numChains, x);
     }
 
     TEST_F(TaskGraphTestFixture, VariadicInterface)
@@ -387,6 +464,7 @@ namespace UnitTest
         EXPECT_EQ(3, x);
     }
 
+    // Waiting inside a task is disallowed , test that it fails correctly
     TEST_F(TaskGraphTestFixture, SpawnSubgraph)
     {
         AZStd::atomic<int> x = 0;
@@ -433,7 +511,10 @@ namespace UnitTest
                 f.Precedes(g);
                 TaskGraphEvent ev;
                 subgraph.SubmitOnExecutor(*m_executor, &ev);
+                // TaskGraphEvent::Wait asserts if called on a worker thread, suppress & validate assert
+                AZ_TEST_START_TRACE_SUPPRESSION;
                 ev.Wait();
+                AZ_TEST_STOP_TRACE_SUPPRESSION(1);
             });
         auto d = graph.AddTask(
             defaultTD,
@@ -463,8 +544,6 @@ namespace UnitTest
         TaskGraphEvent ev;
         graph.SubmitOnExecutor(*m_executor, &ev);
         ev.Wait();
-
-        EXPECT_EQ(3 | 0b100000, x);
     }
 
     TEST_F(TaskGraphTestFixture, RetainedGraph)
@@ -531,15 +610,16 @@ namespace UnitTest
         g.Follows(e, f);
         g.Precedes(d);
 
-        TaskGraphEvent ev;
-        graph.SubmitOnExecutor(*m_executor, &ev);
-        ev.Wait();
+        TaskGraphEvent ev1;
+        graph.SubmitOnExecutor(*m_executor, &ev1);
+        ev1.Wait();
 
         EXPECT_EQ(3 | 0b100000, x);
         x = 0;
 
-        graph.SubmitOnExecutor(*m_executor, &ev);
-        ev.Wait();
+        TaskGraphEvent ev2;
+        graph.SubmitOnExecutor(*m_executor, &ev2);
+        ev2.Wait();
 
         EXPECT_EQ(3 | 0b100000, x);
     }
@@ -550,17 +630,35 @@ namespace Benchmark
 {
     class TaskGraphBenchmarkFixture : public ::benchmark::Fixture
     {
-    public:
-        void SetUp(benchmark::State&) override
+        void internalSetUp()
         {
             executor = new TaskExecutor;
             graph = new TaskGraph;
         }
 
-        void TearDown(benchmark::State&) override
+        void internalTearDown()
         {
             delete graph;
             delete executor;
+        }
+
+    public:
+        void SetUp(const benchmark::State&) override
+        {
+            internalSetUp();
+        }
+        void SetUp(benchmark::State&) override
+        {
+            internalSetUp();
+        }
+
+        void TearDown(const benchmark::State&) override
+        {
+            internalTearDown();
+        }
+        void TearDown(benchmark::State&) override
+        {
+            internalTearDown();
         }
 
         TaskDescriptor descriptors[4] = { { "critical", "benchmark", TaskPriority::CRITICAL },

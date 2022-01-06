@@ -372,6 +372,8 @@ namespace EMotionFX
     // updates the skinning matrices of all nodes
     void ActorInstance::UpdateSkinningMatrices()
     {
+        AZ_PROFILE_SCOPE(Animation, "ActorInstance::UpdateSkinningMatrices");
+
         AZ::Matrix3x4* skinningMatrices = m_transformData->GetSkinningMatrices();
         const Pose* pose = m_transformData->GetCurrentPose();
 
@@ -596,6 +598,8 @@ namespace EMotionFX
     // update the bounding volume
     void ActorInstance::UpdateBounds(size_t geomLODLevel, EBoundsType boundsType, uint32 itemFrequency)
     {
+        AZ_PROFILE_SCOPE(Animation, "ActorInstance::UpdateBounds");
+
         // depending on the bounding volume update type
         switch (boundsType)
         {
@@ -621,7 +625,7 @@ namespace EMotionFX
         }
 
         // Expand the bounding volume by a tolerance area in case set.
-        if (!AZ::IsClose(m_boundsExpandBy, 0.0f))
+        if (!AZ::IsClose(m_boundsExpandBy, 0.0f) && m_aabb.IsValid())
         {
             const AZ::Vector3 center = m_aabb.GetCenter();
             const AZ::Vector3 halfExtents = m_aabb.GetExtents() * 0.5f;
@@ -1028,7 +1032,7 @@ namespace EMotionFX
                     AZ::Vector3* normals = (AZ::Vector3*)mesh->FindVertexData(Mesh::ATTRIB_NORMALS);
                     AZ::Vector3  norm = MCore::BarycentricInterpolate<AZ::Vector3>(
                             closestBaryU, closestBaryV,
-                            normals[closestIndices[0]], normals[closestIndices[1]], normals[closestIndices[2]]);                   
+                            normals[closestIndices[0]], normals[closestIndices[1]], normals[closestIndices[2]]);
                     norm = closestTransform.TransformVector(norm);
                     norm.Normalize();
                     *outNormal = norm;
@@ -1115,7 +1119,7 @@ namespace EMotionFX
     void ActorInstance::EnableAllNodes()
     {
         m_enabledNodes.resize(m_actor->GetNumNodes());
-        std::iota(m_enabledNodes.begin(), m_enabledNodes.end(), 0);
+        std::iota(m_enabledNodes.begin(), m_enabledNodes.end(), uint16(0));
     }
 
     // disable all nodes
@@ -1416,8 +1420,12 @@ namespace EMotionFX
 
         *outResult = m_staticAabb;
         EMFX_SCALECODE(
-            outResult->SetMin(m_staticAabb.GetMin() * m_worldTransform.m_scale);
-            outResult->SetMax(m_staticAabb.GetMax() * m_worldTransform.m_scale);)
+            if (m_staticAabb.IsValid())
+            {
+                outResult->SetMin(m_staticAabb.GetMin() * m_worldTransform.m_scale);
+                outResult->SetMax(m_staticAabb.GetMax() * m_worldTransform.m_scale);
+            }
+        )
         outResult->Translate(m_worldTransform.m_position);
     }
 

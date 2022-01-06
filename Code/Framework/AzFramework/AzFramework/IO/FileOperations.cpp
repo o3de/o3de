@@ -114,7 +114,7 @@ namespace AZ
                         AZ_Warning("AZ::IO::SmartMove", false, "Unable to move/copy the source file (%s)", sourceFilePath);
                         if (destFileMoved)
                         {
-                            // if we were unable to move/copy the source file to the dest file, 
+                            // if we were unable to move/copy the source file to the dest file,
                             // we will try to revert back the destination file from the temp file.
                             if (!fileIO->Rename(tmpDestFile.c_str(), destinationFilePath))
                             {
@@ -124,7 +124,7 @@ namespace AZ
 
                         return ResultCode::Error;
                     }
-                    // removing the source file if copy succeeds 
+                    // removing the source file if copy succeeds
                     if (!fileIO->Remove(sourceFilePath))
                     {
                         AZ_Warning("AZ::IO::SmartMove", false, "Unable to delete the source file (%s)", sourceFilePath);
@@ -140,7 +140,7 @@ namespace AZ
                         return ResultCode::Error;
                     }
                 }
-                
+
                 return ResultCode::Success;
 
             }
@@ -158,7 +158,7 @@ namespace AZ
             const int s_MaxCreateTempFileTries = 16;
             AZStd::string fullPath, fileName;
             tempFile.clear();
-            
+
             if (!AzFramework::StringFunc::Path::GetFullPath(file, fullPath))
             {
                 AZ_Warning("AZ::IO::CreateTempFileName", false, " Filepath needs to be an absolute path: '%s'", file);
@@ -170,7 +170,7 @@ namespace AZ
                 AZ_Warning("AZ::IO::CreateTempFileName", false, " Filepath needs to be an absolute path: '%s'", file);
                 return false;
             }
-           
+
             for (int idx = 0; idx < s_MaxCreateTempFileTries; idx++)
             {
                 AzFramework::StringFunc::Path::ConstructFull(fullPath.c_str(), AZStd::string::format("$tmp%d_%s", rand(), fileName.c_str()).c_str(), tempFile, true);
@@ -235,7 +235,7 @@ namespace AZ
             fileIO->Read(fileHandle, buffer, bufferSize - 1, false, &bytesRead);
             if (!bytesRead)
             {
-                return 0;
+                return nullptr;
             }
 
             char* currentPosition = buffer;

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/PlatformIncl.h>
 #if defined(PLATFORM_SUPPORTS_AWS_NATIVE_SDK)
 #include <aws/core/utils/memory/MemorySystemInterface.h>
 #else

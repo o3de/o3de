@@ -19,11 +19,7 @@
 #define _CPU_SSE
 #define ILINE __forceinline
 
-#define DEBUG_BREAK CryDebugBreak()
-#define RC_EXECUTABLE "rc.exe"
 #define DEPRECATED __declspec(deprecated)
-#define TYPENAME(x) typeid(x).name()
-#define SIZEOF_PTR 8
 
 #ifndef _WIN32_WINNT
 # define _WIN32_WINNT 0x501
@@ -52,7 +48,6 @@
 //////////////////////////////////////////////////////////////////////////
 #include "BaseTypes.h"
 
-#define THREADID_NULL -1
 typedef long LONG;
 typedef unsigned char BYTE;
 typedef unsigned long threadID;
@@ -88,16 +83,6 @@ int64 CryGetTicksPerSec();
 #define SAFE_RELEASE(p) { if (p) { (p)->Release(); (p) = NULL; } \
 }
 #endif
-
-#define _MS_ALIGN(num) \
-    AZ_PUSH_DISABLE_WARNING(4324, "-Wunknown-warning-option") \
-    __declspec(align(num))
-
-#define DEFINE_ALIGNED_DATA(type, name, alignment) _declspec(align(alignment)) type name;
-#define DEFINE_ALIGNED_DATA_STATIC(type, name, alignment) static _declspec(align(alignment)) type name;
-#define DEFINE_ALIGNED_DATA_CONST(type, name, alignment) const _declspec(align(alignment)) type name;
-
-#define SIZEOF_PTR 8
 
 #ifndef FILE_ATTRIBUTE_NORMAL
     #define FILE_ATTRIBUTE_NORMAL 0x00000080

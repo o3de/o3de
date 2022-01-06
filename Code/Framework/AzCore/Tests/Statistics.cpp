@@ -40,7 +40,7 @@ namespace UnitTest
             }
         }
 
-        ~StatisticsTest()
+        ~StatisticsTest() override
         {
         }
 

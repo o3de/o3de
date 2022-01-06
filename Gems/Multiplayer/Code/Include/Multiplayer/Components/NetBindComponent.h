@@ -32,10 +32,9 @@ namespace Multiplayer
     using EntityStopEvent = AZ::Event<const ConstNetworkEntityHandle&>;
     using EntityDirtiedEvent = AZ::Event<>;
     using EntitySyncRewindEvent = AZ::Event<>;
-    using EntityMigrationStartEvent = AZ::Event<ClientInputId>;
-    using EntityMigrationEndEvent = AZ::Event<>;
-    using EntityServerMigrationEvent = AZ::Event<const ConstNetworkEntityHandle&, HostId, AzNetworking::ConnectionId>;
-    using EntityPreRenderEvent = AZ::Event<float, float>;
+    using EntityServerMigrationEvent = AZ::Event<const ConstNetworkEntityHandle&, const HostId&>;
+    using EntityPreRenderEvent = AZ::Event<float>;
+    using EntityCorrectionEvent = AZ::Event<>;
 
     //! @class NetBindComponent
     //! @brief Component that provides net-binding to a networked entity.
@@ -87,9 +86,19 @@ namespace Multiplayer
         AzNetworking::ConnectionId GetOwningConnectionId() const;
         void SetAllowAutonomy(bool value);
         MultiplayerComponentInputVector AllocateComponentInputs();
+
+        //! Return true if we're currently processing inputs.
+        //! @return true if we're within ProcessInput scope and writing to predictive state
         bool IsProcessingInput() const;
+
+        //! Return true if we're currently replaying inputs after a correction.
+        //! If this value returns true, effects, audio, and other cosmetic triggers should be suppressed
+        //! @return true if we're within correction scope and replaying inputs
+        bool IsReprocessingInput() const;
+
         void CreateInput(NetworkInput& networkInput, float deltaTime);
         void ProcessInput(NetworkInput& networkInput, float deltaTime);
+        void ReprocessInput(NetworkInput& networkInput, float deltaTime);
 
         bool HandleRpcMessage(AzNetworking::IConnection* invokingConnection, NetEntityRole remoteRole, NetworkEntityRpcMessage& message);
         bool HandlePropertyChangeMessage(AzNetworking::ISerializer& serializer, bool notifyChanges = true);
@@ -104,18 +113,16 @@ namespace Multiplayer
         void MarkDirty();
         void NotifyLocalChanges();
         void NotifySyncRewindState();
-        void NotifyMigrationStart(ClientInputId migratedInputId);
-        void NotifyMigrationEnd();
-        void NotifyServerMigration(HostId hostId, AzNetworking::ConnectionId connectionId);
-        void NotifyPreRender(float deltaTime, float blendFactor);
+        void NotifyServerMigration(const HostId& remoteHostId);
+        void NotifyPreRender(float deltaTime);
+        void NotifyCorrection();
 
         void AddEntityStopEventHandler(EntityStopEvent::Handler& eventHandler);
         void AddEntityDirtiedEventHandler(EntityDirtiedEvent::Handler& eventHandler);
         void AddEntitySyncRewindEventHandler(EntitySyncRewindEvent::Handler& eventHandler);
-        void AddEntityMigrationStartEventHandler(EntityMigrationStartEvent::Handler& eventHandler);
-        void AddEntityMigrationEndEventHandler(EntityMigrationEndEvent::Handler& eventHandler);
         void AddEntityServerMigrationEventHandler(EntityServerMigrationEvent::Handler& eventHandler);
         void AddEntityPreRenderEventHandler(EntityPreRenderEvent::Handler& eventHandler);
+        void AddEntityCorrectionEventHandler(EntityCorrectionEvent::Handler& handler);
 
         bool SerializeEntityCorrection(AzNetworking::ISerializer& serializer);
 
@@ -161,10 +168,9 @@ namespace Multiplayer
         EntityStopEvent       m_entityStopEvent;
         EntityDirtiedEvent    m_dirtiedEvent;
         EntitySyncRewindEvent m_syncRewindEvent;
-        EntityMigrationStartEvent  m_entityMigrationStartEvent;
-        EntityMigrationEndEvent    m_entityMigrationEndEvent;
         EntityServerMigrationEvent m_entityServerMigrationEvent;
         EntityPreRenderEvent  m_entityPreRenderEvent;
+        EntityCorrectionEvent m_entityCorrectionEvent;
         AZ::Event<>           m_onRemove;
         RpcSendEvent::Handler m_handleLocalServerRpcMessageEventHandle;
         AZ::Event<>::Handler  m_handleMarkedDirty;
@@ -177,13 +183,17 @@ namespace Multiplayer
 
         AzNetworking::ConnectionId m_owningConnectionId = AzNetworking::InvalidConnectionId;
 
-        bool                  m_isProcessingInput    = false;
-        bool                  m_isMigrationDataValid = false;
-        bool                  m_needsToBeStopped     = false;
-        bool                  m_allowAutonomy        = false; // Set to true for the hosts controlled entity
+        bool m_isProcessingInput    = false; // Set to true when we are processing input
+        bool m_isReprocessingInput  = false; // Set to true when we are reprocessing input (during a correction)
+        bool m_isMigrationDataValid = false;
+        bool m_needsToBeStopped     = false;
+        bool m_allowAutonomy        = false; // Set to true for the hosts controlled entity
 
         friend class NetworkEntityManager;
         friend class EntityReplicationManager;
+
+        friend class HierarchyTests;
+        friend class HierarchyBenchmarkBase;
     };
 
     bool NetworkRoleHasController(NetEntityRole networkRole);

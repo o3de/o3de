@@ -14,15 +14,25 @@ ly_add_target(
     FILES_CMAKE
         automatedtesting_files.cmake
         ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+        automatedtesting_autogen_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
         PUBLIC
             Include
     BUILD_DEPENDENCIES
+        PUBLIC
+            AZ::AzNetworking
+            Gem::Multiplayer
         PRIVATE
             AZ::AzCore
             Gem::Atom_AtomBridge.Static
+            Gem::Multiplayer.Static
+    AUTOGEN_RULES
+        *.AutoComponent.xml,AutoComponent_Header.jinja,$path/$fileprefix.AutoComponent.h
+        *.AutoComponent.xml,AutoComponent_Source.jinja,$path/$fileprefix.AutoComponent.cpp
+        *.AutoComponent.xml,AutoComponentTypes_Header.jinja,$path/AutoComponentTypes.h
+        *.AutoComponent.xml,AutoComponentTypes_Source.jinja,$path/AutoComponentTypes.cpp
 )
 
 # if enabled, AutomatedTesting is used by all kinds of applications
@@ -35,37 +45,11 @@ ly_create_alias(NAME AutomatedTesting.Servers  NAMESPACE Gem TARGETS Gem::Automa
 # Gem dependencies
 ################################################################################
 
-# The GameLauncher uses "Clients" gem variants:
-ly_enable_gems(PROJECT_NAME AutomatedTesting GEM_FILE enabled_gems.cmake
-    TARGETS AutomatedTesting.GameLauncher
-    VARIANTS Clients)
+# Enable the enabled_gems for the Project:
+ly_enable_gems(PROJECT_NAME AutomatedTesting GEM_FILE enabled_gems.cmake)
 
-# If we build a server, then apply the gems to the server
+# Add project to the list server projects to create the AutomatedTesting.ServerLauncher
 if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
-    # if we're making a server, then add the "Server" gem variants to it:
-    ly_enable_gems(PROJECT_NAME AutomatedTesting GEM_FILE enabled_gems.cmake
-        TARGETS AutomatedTesting.ServerLauncher
-        VARIANTS Servers)
-    
     set_property(GLOBAL APPEND PROPERTY LY_LAUNCHER_SERVER_PROJECTS AutomatedTesting)
 endif()
 
-if (PAL_TRAIT_BUILD_HOST_TOOLS)
-    # The Editor uses "Tools" gem variants:
-    ly_enable_gems(
-        PROJECT_NAME AutomatedTesting GEM_FILE enabled_gems.cmake
-        TARGETS Editor
-        VARIANTS Tools)
-
-    # The Material Editor needs the Lyshine "Tools" gem variant for the custom LyShine pass
-    ly_enable_gems(
-        PROJECT_NAME AutomatedTesting GEMS LyShine
-        TARGETS MaterialEditor
-        VARIANTS Tools)
-
-    # The pipeline tools use "Builders" gem variants:
-    ly_enable_gems(
-        PROJECT_NAME AutomatedTesting GEM_FILE enabled_gems.cmake
-        TARGETS AssetBuilder AssetProcessor AssetProcessorBatch
-        VARIANTS Builders)
-endif()

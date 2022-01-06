@@ -11,6 +11,7 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/IO/IOUtils.h>
 #include <AzCore/std/algorithm.h>
+#include <AzCore/Casting/numeric_cast.h>
 
 namespace AZ::IO
 {

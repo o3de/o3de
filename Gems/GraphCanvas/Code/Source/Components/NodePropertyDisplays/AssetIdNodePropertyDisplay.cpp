@@ -156,6 +156,4 @@ namespace GraphCanvas
             m_proxyWidget = nullptr;
         }
     }
-
-#include <Source/Components/NodePropertyDisplays/moc_AssetIdNodePropertyDisplay.cpp>
 }

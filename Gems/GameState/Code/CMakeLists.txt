@@ -17,8 +17,8 @@ ly_add_target(
         PUBLIC
             Include
     BUILD_DEPENDENCIES
-        PRIVATE
-            Legacy::CryCommon
+        PUBLIC
+            AZ::AzCore
 )
 
 ly_add_target(
@@ -33,7 +33,6 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Legacy::CryCommon
             Gem::GameState.Static
 )
 
@@ -58,7 +57,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzTest
-                Legacy::CryCommon
                 Gem::GameState.Static
     )
     ly_add_googletest(

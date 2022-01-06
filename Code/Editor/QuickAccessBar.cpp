@@ -68,12 +68,12 @@ void CQuickAccessBar::OnInitDialog()
 
     // Add console variables & commands.
     IConsole* console = GetIEditor()->GetSystem()->GetIConsole();
-    std::vector<const char*> cmds;
+    AZStd::vector<AZStd::string_view> cmds;
     cmds.resize(console->GetNumVars());
-    size_t cmdCount = console->GetSortedVars(&cmds[0], cmds.size());
+    size_t cmdCount = console->GetSortedVars(cmds);
     for (int i = 0; i < cmdCount; ++i)
     {
-        m_model->setStringList(m_model->stringList() += cmds[i]);
+        m_model->setStringList(m_model->stringList() += cmds[i].data());
     }
 }
 

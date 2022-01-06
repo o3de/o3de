@@ -19,6 +19,7 @@
 #include <AzToolsFramework/Debug/TraceContext.h>
 #include <SceneAPI/SceneCore/Events/AssetImportRequest.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
+#include <SceneAPI/SceneCore/Components/LoadingComponent.h>
 
 namespace SceneBuilder
 {
@@ -79,8 +80,9 @@ namespace SceneBuilder
             return nullptr;
         }
 
-        AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene> scene =
-            AssetImportRequest::LoadSceneFromVerifiedPath(filePath, sceneSourceGuid, AssetImportRequest::RequestingApplication::AssetProcessor);
+        AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene> scene = AssetImportRequest::LoadSceneFromVerifiedPath(
+            filePath, sceneSourceGuid, AssetImportRequest::RequestingApplication::AssetProcessor,
+            AZ::SceneAPI::SceneCore::LoadingComponent::TYPEINFO_Uuid());
 
         if (!scene)
         {

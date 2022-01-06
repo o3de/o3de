@@ -22,6 +22,7 @@ namespace AZ
         //! to provide material overrides on a per-entity basis.
         class MaterialComponentController final
             : MaterialComponentRequestBus::Handler
+            , MaterialReceiverNotificationBus::Handler
             , Data::AssetBus::MultiHandler
             , TickBus::Handler
         {
@@ -47,32 +48,47 @@ namespace AZ
             //! MaterialComponentRequestBus overrides...
             MaterialAssignmentMap GetOriginalMaterialAssignments() const override;
             MaterialAssignmentId FindMaterialAssignmentId(const MaterialAssignmentLodIndex lod, const AZStd::string& label) const override;
+            AZ::Data::AssetId GetDefaultMaterialAssetId(const MaterialAssignmentId& materialAssignmentId) const override;
+            AZStd::string GetMaterialSlotLabel(const MaterialAssignmentId& materialAssignmentId) const override;
             void SetMaterialOverrides(const MaterialAssignmentMap& materials) override;
             const MaterialAssignmentMap& GetMaterialOverrides() const override;
             void ClearAllMaterialOverrides() override;
+            void ClearModelMaterialOverrides() override;
+            void ClearLodMaterialOverrides() override;
+            void ClearIncompatibleMaterialOverrides() override;
+            void ClearInvalidMaterialOverrides() override;
+            void RepairInvalidMaterialOverrides() override;
+            uint32_t ApplyAutomaticPropertyUpdates() override;
             void SetDefaultMaterialOverride(const AZ::Data::AssetId& materialAssetId) override;
             const AZ::Data::AssetId GetDefaultMaterialOverride() const override;
             void ClearDefaultMaterialOverride() override;
             void SetMaterialOverride(const MaterialAssignmentId& materialAssignmentId, const AZ::Data::AssetId& materialAssetId) override;
-            const AZ::Data::AssetId GetMaterialOverride(const MaterialAssignmentId& materialAssignmentId) const override;
+            AZ::Data::AssetId GetMaterialOverride(const MaterialAssignmentId& materialAssignmentId) const override;
             void ClearMaterialOverride(const MaterialAssignmentId& materialAssignmentId) override;
-
-            void SetPropertyOverride(const MaterialAssignmentId& materialAssignmentId, const Name& propertyName, const AZStd::any& propertyValue) override;
-            AZStd::any GetPropertyOverride(const MaterialAssignmentId& materialAssignmentId, const Name& propertyName) const override;
-            void ClearPropertyOverride(const MaterialAssignmentId& materialAssignmentId, const Name& propertyName) override;
+            void SetPropertyOverride(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName, const AZStd::any& value) override;
+            AZStd::any GetPropertyOverride(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) const override;
+            void ClearPropertyOverride(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) override;
             void ClearPropertyOverrides(const MaterialAssignmentId& materialAssignmentId) override;
             void ClearAllPropertyOverrides() override;
+            void SetPropertyOverrides(
+                const MaterialAssignmentId& materialAssignmentId, const MaterialPropertyOverrideMap& propertyOverrides) override;
             MaterialPropertyOverrideMap GetPropertyOverrides(const MaterialAssignmentId& materialAssignmentId) const override;
+            void SetModelUvOverrides(
+                const MaterialAssignmentId& materialAssignmentId, const AZ::RPI::MaterialModelUvOverrideMap& modelUvOverrides) override;
+            AZ::RPI::MaterialModelUvOverrideMap GetModelUvOverrides(const MaterialAssignmentId& materialAssignmentId) const override;
+
+            //! MaterialReceiverNotificationBus::Handler overrides...
+            void OnMaterialAssignmentsChanged() override;
 
         private:
 
             AZ_DISABLE_COPY(MaterialComponentController);
 
-            //! Data::AssetBus interface
+            //! Data::AssetBus overrides...
             void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
             void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
 
-            //! AZ::TickBus interface implementation
+            // AZ::TickBus overrides...
             void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
             void LoadMaterials();
@@ -85,7 +101,7 @@ namespace AZ
 
             EntityId m_entityId;
             MaterialComponentConfig m_configuration;
-            AZStd::unordered_set<MaterialAssignmentId> m_queuedPropertyOverrides;
+            AZStd::unordered_set<MaterialAssignmentId> m_materialsWithDirtyProperties;
             bool m_queuedMaterialUpdateNotification = false;
         };
     } // namespace Render

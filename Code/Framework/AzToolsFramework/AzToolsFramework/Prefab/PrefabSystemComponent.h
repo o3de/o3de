@@ -24,8 +24,10 @@
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 #include <AzToolsFramework/Prefab/PrefabLoader.h>
 #include <AzToolsFramework/Prefab/PrefabPublicHandler.h>
+#include <AzToolsFramework/Prefab/PrefabPublicRequestHandler.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Template/Template.h>
+#include <Prefab/PrefabSystemScriptingHandler.h>
 
 namespace AZ
 {
@@ -54,7 +56,7 @@ namespace AzToolsFramework
         public:
 
             using TargetTemplateIdToLinkIdMap = AZStd::unordered_map<TemplateId, AZStd::pair<AZStd::unordered_set<LinkId>, bool>>;
-            
+
             AZ_COMPONENT(PrefabSystemComponent, "{27203AE6-A398-4614-881B-4EEB5E9B34E9}");
 
             PrefabSystemComponent() = default;
@@ -83,7 +85,7 @@ namespace AzToolsFramework
              * @param id A unique id of a Template.
              * @return Reference of Template if the Template exists.
              */
-            TemplateReference FindTemplate(const TemplateId& id) override;
+            TemplateReference FindTemplate(TemplateId id) override;
 
             /**
              * Find Link with given Link id from Prefab System Component.
@@ -101,10 +103,17 @@ namespace AzToolsFramework
             TemplateId AddTemplate(const AZ::IO::Path& filePath, PrefabDom prefabDom) override;
 
             /**
+             * Updates relative filepath location of a prefab (in case of SaveAs operation).
+             * @param templateId An id of a Template to change filepath of.
+             * @param filePath new relative path of the Template.
+             */
+            void UpdateTemplateFilePath(TemplateId templateId, const AZ::IO::PathView& filePath) override;
+
+            /**
             * Remove the Template associated with the given id from Prefab System Component.
             * @param templateId A unique id of a Template.
             */
-            void RemoveTemplate(const TemplateId& templateId) override;
+            void RemoveTemplate(TemplateId templateId) override;
 
             /**
              * Remove all Templates from the Prefab System Component.
@@ -113,17 +122,21 @@ namespace AzToolsFramework
 
             /**
             * Generates a new Prefab Instance based on the Template whose source is stored in filepath.
-            * @param filePath the path to the prefab source file containing the template being instantiated.
+            * @param filePath The path to the prefab source file containing the template being instantiated.
+            * @param parent Reference of the target instance the instantiated instance will be placed under.
             * @return A unique_ptr to the newly instantiated instance. Null if operation failed.
             */
-            AZStd::unique_ptr<Instance> InstantiatePrefab(AZ::IO::PathView filePath) override;
+            AZStd::unique_ptr<Instance> InstantiatePrefab(
+                AZ::IO::PathView filePath, InstanceOptionalReference parent = AZStd::nullopt) override;
 
             /**
-            * Generates a new Prefab Instance based on the Template referenced by templateId
-            * @param templateId the id of the template being instantiated.
+            * Generates a new Prefab Instance based on the Template referenced by templateId.
+            * @param templateId The id of the template being instantiated.
+            * @param parent Reference of the target instance the instantiated instance will be placed under.
             * @return A unique_ptr to the newly instantiated instance. Null if operation failed.
             */
-            AZStd::unique_ptr<Instance> InstantiatePrefab(const TemplateId& templateId) override;
+            AZStd::unique_ptr<Instance> InstantiatePrefab(
+                TemplateId templateId, InstanceOptionalReference parent = AZStd::nullopt) override;
 
             /**
             * Add a new Link into Prefab System Component and create a unique id for it.
@@ -134,8 +147,8 @@ namespace AzToolsFramework
             * @return A unique id for the new Link.
             */
             LinkId AddLink(
-                const TemplateId& sourceTemplateId,
-                const TemplateId& targetTemplateId,
+                TemplateId sourceTemplateId,
+                TemplateId targetTemplateId,
                 PrefabDomValue::MemberIterator& instanceIterator,
                 InstanceOptionalReference instance) override;
 
@@ -149,8 +162,8 @@ namespace AzToolsFramework
             * @return A unique id for the new Link.
             */
             LinkId CreateLink(
-                const TemplateId& linkTargetId,
-                const TemplateId& linkSourceId,
+                TemplateId linkTargetId,
+                TemplateId linkSourceId,
                 const InstanceAlias& instanceAlias,
                 const PrefabDomConstReference linkPatches,
                 const LinkId& linkId = InvalidLinkId) override;
@@ -173,33 +186,40 @@ namespace AzToolsFramework
              * @param templateId The id of the template to query.
              * @return The value of the dirty flag on the template.
              */
-            bool IsTemplateDirty(const TemplateId& templateId) override;
+            bool IsTemplateDirty(TemplateId templateId) override;
 
             /**
              * Sets the dirty flag of the template to the value provided.
              * @param templateId The id of the template to flag.
              * @param dirty The new value of the dirty flag.
              */
-            void SetTemplateDirtyFlag(const TemplateId& templateId, bool dirty) override;
+            void SetTemplateDirtyFlag(TemplateId templateId, bool dirty) override;
+
+            bool AreDirtyTemplatesPresent(TemplateId rootTemplateId) override;
+
+            void SaveAllDirtyTemplates(TemplateId rootTemplateId) override;
+
+            AZStd::set<AZ::IO::PathView> GetDirtyTemplatePaths(TemplateId rootTemplateId) override;
 
             //////////////////////////////////////////////////////////////////////////
 
             /**
             * Builds a new Prefab Template out of entities and instances and returns the first instance comprised of
-            * these entities and instances
-            * @param entities A vector of entities that will be used in the new instance. May be empty
+            * these entities and instances.
+            * @param entities A vector of entities that will be used in the new instance. May be empty.
             * @param instances A vector of Prefab Instances that will be nested in the new instance, will be consumed and moved.
-            *                  May be empty
-            * @param filePath the path to associate the template of the new instance to.
+            *                  May be empty.
+            * @param filePath The path to associate the template of the new instance to.
             * @param containerEntity The container entity for the prefab to be created. It will be created if a nullptr is provided.
+            * @param parent Reference of an instance the created instance will be placed under, if given.
             * @param shouldCreateLinks The flag indicating if links should be created between the templates of the instance
             *        and its nested instances.
-            * @return A pointer to the newly created instance. nullptr on failure
+            * @return A pointer to the newly created instance. nullptr on failure.
             */
             AZStd::unique_ptr<Instance> CreatePrefab(
                 const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume,
                 AZ::IO::PathView filePath, AZStd::unique_ptr<AZ::Entity> containerEntity = nullptr,
-                bool ShouldCreateLinks = true) override;
+                InstanceOptionalReference parent = AZStd::nullopt, bool shouldCreateLinks = true) override;
 
             PrefabDom& FindTemplateDom(TemplateId templateId) override;
 
@@ -211,29 +231,46 @@ namespace AzToolsFramework
              */
             void UpdatePrefabTemplate(TemplateId templateId, const PrefabDom& updatedDom) override;
 
-            void PropagateTemplateChanges(TemplateId templateId, InstanceOptionalReference instanceToExclude = AZStd::nullopt) override;
+            void PropagateTemplateChanges(TemplateId templateId, InstanceOptionalConstReference instanceToExclude = AZStd::nullopt) override;
 
             /**
              * Updates all Instances owned by a Template.
              *
              * @param templateId The id of the Template owning Instances to update.
+             * @param instanceToExclude An optional reference to an instance of the template being updated that should not be refreshed
+             *        as part of propagation.Defaults to nullopt, which means that all instances will be refreshed.
              */
-            void UpdatePrefabInstances(const TemplateId& templateId, InstanceOptionalReference instanceToExclude = AZStd::nullopt);
+            void UpdatePrefabInstances(TemplateId templateId, InstanceOptionalConstReference instanceToExclude = AZStd::nullopt);
 
         private:
             AZ_DISABLE_COPY_MOVE(PrefabSystemComponent);
 
             /**
+            * Builds a new Prefab Template out of entities and instances and returns the first instance comprised of
+            * these entities and instances.
+            * @param entities A vector of entities that will be used in the new instance. May be empty.
+            * @param instances A vector of Prefab Instances that will be nested in the new instance, will be consumed and moved.
+            *                  May be empty.
+            * @param filePath The path to associate the template of the new instance to.
+            * @param instance Reference of a pointer to the newly created instance which needs initiation.
+            * @param shouldCreateLinks The flag indicating if links should be created between the templates of the instance
+            *        and its nested instances.
+            */
+            void CreatePrefab(const AZStd::vector<AZ::Entity*>& entities,
+                AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume, AZ::IO::PathView filePath,
+                AZStd::unique_ptr<Instance>& instance, bool shouldCreateLinks);
+
+            /**
              * Updates all the linked Instances corresponding to the linkIds in the provided queue.
              * Queue gets populated with more linkId lists as linked instances are updated. Updating stops when the queue is empty.
-             * 
+             *
              * @param linkIdsQueue A queue of vector of link-Ids to update.
              */
             void UpdateLinkedInstances(AZStd::queue<LinkIds>& linkIdsQueue);
 
             /**
              * Given a vector of link ids to update, splits them into smaller lists based on the target template id of the links.
-             * 
+             *
              * @param linkIdsToUpdate The list of link ids to update.
              * @param targetTemplateIdToLinkIdMap The map of target templateIds to a pair of lists of linkIds and a bool flag indicating
              *                                    whether any of the instances of the target template were updated.
@@ -242,9 +279,9 @@ namespace AzToolsFramework
                 TargetTemplateIdToLinkIdMap& targetTemplateIdToLinkIdMap);
 
             /**
-             * Updates a single linked instance corresponding to the given link Id and adds more linkIds to the 
+             * Updates a single linked instance corresponding to the given link Id and adds more linkIds to the
              * template change propagation queue(linkIdsQueue) when necessary.
-             * 
+             *
              * @param linkIdToUpdate The id of the linked instance to update
              * @param targetTemplateIdToLinkIdMap The map of target templateIds to a pair of lists of linkIds and a bool flag indicating
              *                                    whether any of the instances of the target template were updated.
@@ -256,7 +293,7 @@ namespace AzToolsFramework
             /**
              * If all linked instances of a target template are updated and if the content of any of the linked instances changed,
              * this method fetches all the linked instances sourced by it and adds their corresponding ids to the LinkIdsQueue.
-             * 
+             *
              * @param targetTemplateIdToLinkIdMap The map of target templateIds to a pair of lists of linkIds and a bool flag indicating
              *                                    whether any of the instances of the target template were updated.
              * @param targetTemplateId The id of the template, whose linked instances we need to find if the template was updated.
@@ -296,7 +333,7 @@ namespace AzToolsFramework
             * @param instance The instance that the template was created from. This needs to be editable for inserting linkId into it.
             * @return bool on whether the operation succeeded
             */
-            bool GenerateLinksForNewTemplate(const TemplateId& newTemplateId, Instance& instance);
+            bool GenerateLinksForNewTemplate(TemplateId newTemplateId, Instance& instance);
 
             /**
              * Create a unique Template id for newly created Template.
@@ -334,6 +371,9 @@ namespace AzToolsFramework
              */
             bool RemoveLinkFromTargetTemplate(const LinkId& linkId, const Link& link);
 
+            // Helper function for GetDirtyTemplatePaths(). It uses vector to speed up iteration times.
+            void GetDirtyTemplatePathsHelper(TemplateId rootTemplateId, AZStd::vector<AZ::IO::PathView>& dirtyTemplatePaths);
+
             // A container for mapping Templates to the Links they may propagate changes to.
             AZStd::unordered_map<TemplateId, AZStd::unordered_set<LinkId>> m_templateToLinkIdsMap;
 
@@ -352,7 +392,7 @@ namespace AzToolsFramework
             // A counter for generating unique Link Ids.
             AZStd::atomic<LinkId> m_linkIdCounter = 0u;
 
-            // Used for finding the owning instance of an arbitrary entity
+            // Used for finding the owning instance of an arbitrary entity.
             InstanceEntityMapper m_instanceEntityMapper;
 
             // Used for finding the Instances owned by an arbitrary Template.
@@ -361,14 +401,22 @@ namespace AzToolsFramework
             // Used for loading/saving Prefab Template files.
             PrefabLoader m_prefabLoader;
 
-            // Handler the public Prefab API used by UI and scripting
+            // Handles the public Prefab API used by UI and scripting.
             PrefabPublicHandler m_prefabPublicHandler;
 
             // Used for updating Instances of Prefab Template.
             InstanceUpdateExecutor m_instanceUpdateExecutor;
 
-            // Used for updating Templates when Instances are modified
+            // Used for updating Templates when Instances are modified.
             InstanceToTemplatePropagator m_instanceToTemplatePropagator;
+
+            // Handler of the public Prefab requests.
+            PrefabPublicRequestHandler m_prefabPublicRequestHandler;
+
+            PrefabSystemScriptingHandler m_prefabSystemScriptingHandler;
+
+            // If true, individual template-remove messages will be suppressed
+            bool m_removingAllTemplates = false;
         };
     } // namespace Prefab
 } // namespace AzToolsFramework

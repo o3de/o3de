@@ -1,0 +1,40 @@
+{
+    "entries": [
+        {
+            "base": "{30BE564D-B68D-5D23-BDA1-625A7A8F9504}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Is Valid",
+                "category": "Math/AABB",
+                "tooltip": "returns ture if Source is valid, that is if Source.min <= Source.max, else false"
+            },
+            "slots": [
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Source_0",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result_0",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

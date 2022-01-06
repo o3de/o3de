@@ -1,16 +1,9 @@
 <EngineDependencies versionnumber="1.0.0">
-    <Dependency path="*.ent" optional="false" />
-    <Dependency path="game.cfg" optional="true" />
-    <Dependency path="config/singleplayer.cfg" optional="true" />
-    <Dependency path="singleplayer.cfg" optional="true" />
-    <Dependency path="autoexec.cfg" optional="true" />
-    <Dependency path="default-ui" optional="true" />
-    <Dependency path="fonts/default-ui.fontfamily" optional="true" />
-    <Dependency path="fonts/default-ui/default-ui.fontfamily" optional="true" />
-    <Dependency path="libs/smartobjects.xml" optional="true" />
-    <Dependency path="modes/menucommon_sp.pak" optional="true" />
-    <Dependency path="modes/menucommon_mp.pak" optional="true" />
-    <Dependency path="libs/materialeffects/surfacetypes.xml" optional="true" />
-    <Dependency path="libs/localization/localization.xml" optional="true" />
-    <Dependency path="localization/*xml" optional="true" />
+  <Dependency path="game.cfg" optional="true" />
+  <Dependency path="autoexec.cfg" optional="true" />
+  <Dependency path="default-ui" optional="true" />
+  <Dependency path="fonts/default-ui.fontfamily" optional="true" />
+  <Dependency path="fonts/default-ui/default-ui.fontfamily" optional="true" />
+  <Dependency path="libs/localization/localization.xml" optional="true" />
+  <Dependency path="localization/*xml" optional="true" />
 </EngineDependencies>

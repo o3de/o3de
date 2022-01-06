@@ -107,31 +107,6 @@ namespace UnitTest
         EXPECT_THAT(m_doubleSpinBoxWithLineEdit, Ne(nullptr));
     }
 
-    // Note: There are a series of bugs in Qt that appear to be preventing mouseMove events
-    // firing when sent through the QTest framework. This is a work around for our version
-    // of Qt. In future this can hopefully be simplified. See ^1 for workaround.
-    // More info: Issues with mouse move in Qt
-    // - https://bugreports.qt.io/browse/QTBUG-5232
-    // - https://bugreports.qt.io/browse/QTBUG-69414
-    // - https://lists.qt-project.org/pipermail/development/2019-July/036873.html
-    void MousePressAndMove(
-        QWidget* widget, const QPoint& widgetScreenPosition, const QPoint& mouseDelta)
-    {
-        QPoint position = widget->mapToGlobal(widgetScreenPosition);
-        QPoint nextPosition = widget->mapToGlobal(widgetScreenPosition + mouseDelta);
-
-        QTest::mousePress(widget, Qt::LeftButton, Qt::NoModifier, position);
-
-        // ^1 To ensure a mouse move event is fired we must call the test mouse move function
-        // and also send a mouse move event that matches. Each on their own do not appear to
-        // work - please see the links above for more context.
-        QTest::mouseMove(widget, nextPosition);
-        QMouseEvent mouseMoveEvent(
-            QEvent::MouseMove, QPointF(nextPosition), QPointF(nextPosition),
-            Qt::NoButton, Qt::LeftButton, Qt::NoModifier);
-        QApplication::sendEvent(widget, &mouseMoveEvent);
-    }
-
     TEST_F(SpinBoxFixture, SpinBoxMousePressAndMoveRightScrollsValue)
     {
         m_doubleSpinBox->setValue(10.0);

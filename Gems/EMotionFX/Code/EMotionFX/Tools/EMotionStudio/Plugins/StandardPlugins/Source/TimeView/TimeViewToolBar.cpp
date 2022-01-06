@@ -441,7 +441,7 @@ namespace EMStudio
 
         const bool playbackOptionsVisible = m_playbackOptions->UpdateInterface(mode, /*showRightSeparator=*/false);
         const bool playbackControlsVisible = m_playbackControls->UpdateInterface(mode, /*showRightSeparator=*/playbackOptionsVisible);
-        const bool recorderGroupVisible =  m_recorderGroup->UpdateInterface(mode, /*showRightSeparator=*/playbackControlsVisible);
+        m_recorderGroup->UpdateInterface(mode, /*showRightSeparator=*/playbackControlsVisible);
     }
 
     void TimeViewToolBar::OnDetailedNodes()

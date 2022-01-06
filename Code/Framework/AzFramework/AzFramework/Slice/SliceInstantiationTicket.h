@@ -10,7 +10,7 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Math/Uuid.h>
-#include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/std/hash.h>
 #include <AzCore/std/string/string.h>
 

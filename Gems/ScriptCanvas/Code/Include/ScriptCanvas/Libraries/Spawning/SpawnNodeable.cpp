@@ -101,7 +101,7 @@ namespace ScriptCanvas::Nodeables::Spawning
             return;
         }
 
-        auto preSpawnCB = [this, translation, rotation, scale]([[maybe_unused]] AzFramework::EntitySpawnTicket::Id ticketId,
+        auto preSpawnCB = [translation, rotation, scale]([[maybe_unused]] AzFramework::EntitySpawnTicket::Id ticketId,
             AzFramework::SpawnableEntityContainerView view)
         {
             AZ::Entity* rootEntity = *view.begin();
@@ -114,7 +114,7 @@ namespace ScriptCanvas::Nodeables::Spawning
                 AZ::Vector3 rotationCopy = rotation;
                 AZ::Quaternion rotationQuat = AZ::Quaternion::CreateFromEulerAnglesDegrees(rotationCopy);
 
-                entityTransform->SetWorldTM(AZ::Transform(translation, rotationQuat, scale));
+                entityTransform->SetWorldTM(AZ::Transform(translation, rotationQuat, static_cast<float>(scale)));
             }
         };
 

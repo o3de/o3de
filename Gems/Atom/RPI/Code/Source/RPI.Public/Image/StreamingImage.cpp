@@ -16,11 +16,12 @@
 
 #include <Atom/RHI/Factory.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
 
 // Enable this define to debug output streaming image initialization and expanding process.
 //#define AZ_RPI_STREAMING_IMAGE_DEBUG_LOG
+
+AZ_DECLARE_BUDGET(RPI);
 
 namespace AZ
 {
@@ -111,7 +112,7 @@ namespace AZ
 
         RHI::ResultCode StreamingImage::Init(StreamingImageAsset& imageAsset)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RPI);
 
             Data::Instance<StreamingImagePool> pool;
             if (imageAsset.GetPoolAssetId().IsValid())
@@ -247,7 +248,7 @@ namespace AZ
         
         uint16_t StreamingImage::GetResidentMipLevel()
         {
-            return m_image->GetResidentMipLevel();
+            return static_cast<uint16_t>(m_image->GetResidentMipLevel());
         }
 
         RHI::ResultCode StreamingImage::TrimToMipChainLevel(size_t mipChainIndex)
