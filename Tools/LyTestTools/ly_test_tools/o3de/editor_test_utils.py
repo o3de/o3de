@@ -10,6 +10,7 @@ from __future__ import annotations
 import os
 import time
 import logging
+import re
 
 import ly_test_tools.environment.process_utils as process_utils
 import ly_test_tools.environment.waiter as waiter
@@ -71,7 +72,15 @@ def retrieve_crash_output(run_id: int, workspace: AbstractWorkspaceManager, time
     :return str: The contents of the editor crash file (error.log)
     """
     crash_info = "-- No crash log available --"
-    crash_log = os.path.join(retrieve_log_path(run_id, workspace), 'error.log')
+    error_log_regex = ""
+    log_path = retrieve_log_path(run_id, workspace)
+    # Gather all of the files in the log directory
+    dir_files = [f for f in os.listdir(log_path) if os.path.isfile(os.path.join(log_path, f))]
+    for file_name in dir_files:
+        # Search for all .log files with either "crash" or "error" because they could be renamed
+        if ("error" in file_name.lower() or "crash" in file_name.lower()) and (file_name.endswith(".log")):
+            crash_log = os.path.join(log_path, file_name)
+            break
     try:
         waiter.wait_for(lambda: os.path.exists(crash_log), timeout=timeout)
     except AssertionError:                    
