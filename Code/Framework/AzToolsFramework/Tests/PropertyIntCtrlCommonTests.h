@@ -113,19 +113,17 @@ namespace UnitTest
             auto& widget = m_widget;
             auto& handler = m_handler;
             QString tooltip;
-            std::stringstream expected;
 
             // Retrieve the tooltip string for this widget
             auto success = handler->ModifyTooltip(widget, tooltip);
 
             const QString minString = QLocale().toString(widget->minimum());
             const QString maxString = QLocale().toString(widget->maximum());
-
-            expected << "[" << minString.toStdString() << ", " << maxString.toStdString() << "]";
+            const AZStd::string expected = AZStd::string::format("[%d, %d]", minString.toStdString().c_str(), maxString.toStdString().c_str());
 
             // Expect the operation to be successful and a valid limit tooltip string generated
             EXPECT_TRUE(success);
-            EXPECT_STREQ(tooltip.toStdString().c_str(), expected.str().c_str());
+            EXPECT_STREQ(tooltip.toStdString().c_str(), expected.c_str());
         }
 
         void HandlerMinMaxLessLimit_ModifyHandler_ExpectSuccessAndValidLessLimitToolTipString()
@@ -134,7 +132,6 @@ namespace UnitTest
             auto& widget = m_widget;
             auto& handler = m_handler;
             QString tooltip;
-            std::stringstream expected;
 
             // That is not at the extremeties of the type range limit
             SetWidgetRangeToNonExtremeties(widget);
@@ -145,11 +142,11 @@ namespace UnitTest
             const QString minString = QLocale().toString(widget->minimum());
             const QString maxString = QLocale().toString(widget->maximum());
 
-            expected << "[" << minString.toStdString() << ", " << maxString.toStdString() << "]";
+            const AZStd::string expected = AZStd::string::format("[%d, %d]", minString.toStdString().c_str(), maxString.toStdString().c_str());
 
             // Expect the operation to be successful and a valid less than limit tooltip string generated
             EXPECT_TRUE(success);
-            EXPECT_STREQ(tooltip.toStdString().c_str(), expected.str().c_str());
+            EXPECT_STREQ(tooltip.toStdString().c_str(), expected.c_str());
         }
 
         void EmitWidgetValueChanged()
