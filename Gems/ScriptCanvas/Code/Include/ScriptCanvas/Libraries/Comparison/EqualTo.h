@@ -8,9 +8,7 @@
 
 #pragma once
 
-#include "ComparisonFunctions.h"
 #include <Libraries/Core/BinaryOperator.h>
-
 
 namespace ScriptCanvas
 {

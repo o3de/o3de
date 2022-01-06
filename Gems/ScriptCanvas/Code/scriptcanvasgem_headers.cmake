@@ -230,7 +230,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/Math/Vector3Nodes.h
     Include/ScriptCanvas/Libraries/Math/Vector4Nodes.h
     Include/ScriptCanvas/Libraries/Comparison/Comparison.h
-    Include/ScriptCanvas/Libraries/Comparison/ComparisonFunctions.h
     Include/ScriptCanvas/Libraries/Comparison/EqualTo.h
     Include/ScriptCanvas/Libraries/Comparison/NotEqualTo.h
     Include/ScriptCanvas/Libraries/Comparison/Less.h
