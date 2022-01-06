@@ -182,7 +182,6 @@ set(FILES
     Editor/View/Widgets/NodePalette/VariableNodePaletteTreeItemTypes.h
     Editor/View/Widgets/LoggingPanel/LoggingDataAggregator.cpp
     Editor/View/Widgets/LoggingPanel/LoggingDataAggregator.h
-    Editor/View/Widgets/LoggingPanel/LoggingTypes.cpp
     Editor/View/Widgets/LoggingPanel/LoggingTypes.h
     Editor/View/Widgets/LoggingPanel/LoggingWindow.cpp
     Editor/View/Widgets/LoggingPanel/LoggingWindow.h
