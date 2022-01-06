@@ -146,7 +146,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/Core/EventHandlerTranslationUtility.h
     Include/ScriptCanvas/Libraries/Core/ForEach.h
     Include/ScriptCanvas/Libraries/Core/ForEach.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Core/FunctionBus.h
     Include/ScriptCanvas/Libraries/Core/FunctionCallNode.h
     Include/ScriptCanvas/Libraries/Core/FunctionCallNode.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Core/FunctionCallNodeIsOutOfDate.h
