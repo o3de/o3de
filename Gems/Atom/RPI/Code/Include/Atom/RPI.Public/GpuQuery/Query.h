@@ -123,7 +123,7 @@ namespace AZ
             QueryResultCode GetLatestResultAndWait(T& queryResult)
             {
                 void* resultData = static_cast<void*>(&queryResult);
-                GetLatestResultAndWait(resultData, sizeof(T));
+                return GetLatestResultAndWait(resultData, sizeof(T));
             }
 
             //! Removes the reference of this instance in the RPI QueryPool where it was created.
