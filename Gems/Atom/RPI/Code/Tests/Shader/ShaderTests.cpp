@@ -1662,20 +1662,21 @@ namespace UnitTest
         EXPECT_FALSE(result7.IsFullyBaked());
         EXPECT_EQ(result7.GetStableId().GetIndex(), stableId7);
 
-        // All searches so far found exactly the node we were looking for
-        // The next couple of searches will not find the requested node
-        //  and will instead default to its parent, up the tree to the root
-        //
-        // []                       [Root]
-        //                          /    \
-        // [Color]              [Teal]  [Fuchsia]
-        //                        /        \
-        // [Quality]          [Sublime]   [Auto]
-        //                                  /
-        // [NumberSamples]                [50]
-        //                                /  \
-        // [Raytracing]                [On]  [Off]
-
+        /*
+         All searches so far found exactly the node we were looking for
+         The next couple of searches will not find the requested node
+          and will instead default to its parent, up the tree to the root
+        
+         []                       [Root]
+                                  /    \
+         [Color]              [Teal]  [Fuchsia]
+                                /        \
+         [Quality]          [Sublime]   [Auto]
+                                          /
+         [NumberSamples]                [50]
+                                        /  \
+         [Raytracing]                [On]  [Off]
+        */
 
         // ----------------------------------------
         // [Quality::Poor]

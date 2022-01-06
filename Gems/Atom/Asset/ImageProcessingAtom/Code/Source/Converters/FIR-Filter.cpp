@@ -999,79 +999,81 @@ namespace ImageProcessingAtom
     }
 
     // TODO: not working yet, debug and enable
-    //static void SplitAlgorithm(const void* i, void* o, struct prcparm* templ, int threads = 8)
-    //{
-    //    struct prcparm fraction[32];
-    //    int t, istart = 0, sstart = 0, ostart = 0;
-    //    const bool scaler = true;
+    /*
+    static void SplitAlgorithm(const void* i, void* o, struct prcparm* templ, int threads = 8)
+    {
+        struct prcparm fraction[32];
+        int t, istart = 0, sstart = 0, ostart = 0;
+        const bool scaler = true;
 
-    //    int theight = 0;
+        int theight = 0;
 
-    //    /* prepare data to be emitted to the threads */
-    //    for (t = 0; t < threads; t++)
-    //    {
-    //        fraction[t] = *templ;
+        // prepare data to be emitted to the threads
+        for (t = 0; t < threads; t++)
+        {
+            fraction[t] = *templ;
 
-    //        /* adjust the processing-region according to the available threads */
-    //        {
-    //#undef  split       /* only prefix-threads need aligned transpose (for not trashing suffix-thread data) */
-    //#define split(rows) !scaler                                         \
-    //    ? ((rows * (t + 1)) / threads) & (~(t != threads - 1 ? 15 : 0)) \
-    //    : ((rows * (t + 1)) / threads) & (~0)
+            // adjust the processing-region according to the available threads
+            {
+    #undef  split       // only prefix-threads need aligned transpose (for not trashing suffix-thread data)
+    #define split(rows) !scaler                                         \
+        ? ((rows * (t + 1)) / threads) & (~(t != threads - 1 ? 15 : 0)) \
+        : ((rows * (t + 1)) / threads) & (~0)
 
-    //            /* area covered */
-    //            const int  inrows = (fraction[t].regional ? fraction[t].region.inrows  : fraction[t].inrows);
-    //            const int  incols = (fraction[t].regional ? fraction[t].region.incols  : fraction[t].incols);
-    //            const int subrows = (fraction[t].regional ? fraction[t].region.subrows : fraction[t].subrows);
-    //            const int subcols = (fraction[t].regional ? fraction[t].region.subcols : fraction[t].subcols);
-    //            const int outrows = (fraction[t].regional ? fraction[t].region.outrows : fraction[t].outrows);
-    //            const int outcols = (fraction[t].regional ? fraction[t].region.outcols : fraction[t].outcols);
+                // area covered
+                const int  inrows = (fraction[t].regional ? fraction[t].region.inrows  : fraction[t].inrows);
+                const int  incols = (fraction[t].regional ? fraction[t].region.incols  : fraction[t].incols);
+                const int subrows = (fraction[t].regional ? fraction[t].region.subrows : fraction[t].subrows);
+                const int subcols = (fraction[t].regional ? fraction[t].region.subcols : fraction[t].subcols);
+                const int outrows = (fraction[t].regional ? fraction[t].region.outrows : fraction[t].outrows);
+                const int outcols = (fraction[t].regional ? fraction[t].region.outcols : fraction[t].outcols);
 
-    //            /* splitting blocks */
-    //            const int istop = split(inrows), sstop = split(subrows), ostop = split(outrows);
-    //            const int irows = istop - istart, srows = sstop - sstart, orows = ostop - ostart;
-    //            const int icols = incols, scols = subcols, ocols = outcols;
+                // splitting blocks
+                const int istop = split(inrows), sstop = split(subrows), ostop = split(outrows);
+                const int irows = istop - istart, srows = sstop - sstart, orows = ostop - ostart;
+                const int icols = incols, scols = subcols, ocols = outcols;
 
-    //            AZ_Assert(irows > 0, "%s: Expect row count to be above zero!", __FUNCTION__);
-    //            AZ_Assert(orows > 0, "%s: Expect row count to be above zero!", __FUNCTION__);
-    //            AZ_Assert(icols > 0, "%s: Expect column count to be above zero!", __FUNCTION__);
-    //            AZ_Assert(ocols > 0, "%s: Expect column count to be above zero!", __FUNCTION__);
+                AZ_Assert(irows > 0, "%s: Expect row count to be above zero!", __FUNCTION__);
+                AZ_Assert(orows > 0, "%s: Expect row count to be above zero!", __FUNCTION__);
+                AZ_Assert(icols > 0, "%s: Expect column count to be above zero!", __FUNCTION__);
+                AZ_Assert(ocols > 0, "%s: Expect column count to be above zero!", __FUNCTION__);
 
-    //            /* now we are regional */
-    //            fraction[t].regional       = true;
+                // now we are regional
+                fraction[t].regional       = true;
 
-    //            /* take previous regionality into account */
-    //            fraction[t].region.intop += istart;
-    //            fraction[t].region.subtop += sstart;
-    //            fraction[t].region.outtop += ostart;
-    //            fraction[t].region.inrows = irows;
-    //            fraction[t].region.subrows = srows;
-    //            fraction[t].region.outrows = orows;
+                // take previous regionality into account
+                fraction[t].region.intop += istart;
+                fraction[t].region.subtop += sstart;
+                fraction[t].region.outtop += ostart;
+                fraction[t].region.inrows = irows;
+                fraction[t].region.subrows = srows;
+                fraction[t].region.outrows = orows;
 
-    //            /* take previous regionality into account */
-    //            fraction[t].region.inleft += 0;
-    //            fraction[t].region.subleft += 0;
-    //            fraction[t].region.outleft += 0;
-    //            fraction[t].region.incols  = icols;
-    //            fraction[t].region.subcols  = scols;
-    //            fraction[t].region.outcols  = ocols;
+                // take previous regionality into account
+                fraction[t].region.inleft += 0;
+                fraction[t].region.subleft += 0;
+                fraction[t].region.outleft += 0;
+                fraction[t].region.incols  = icols;
+                fraction[t].region.subcols  = scols;
+                fraction[t].region.outcols  = ocols;
 
-    //            /* advance block */
-    //            istart = istop;
-    //            sstart = sstop;
-    //            ostart = ostop;
+                // advance block
+                istart = istop;
+                sstart = sstop;
+                ostart = ostop;
 
-    //            /* check */
-    //            theight += irows;
-    //        }
+                // check
+                theight += irows;
+            }
 
-    //        // the algorithm supports "i" and "o" pointing to the same memory
-    //        CheckBoundaries((float*)i, (float*)o, &fraction[t]);
-    //        RunAlgorithm((float*)i, (float*)o, &fraction[t]);
-    //    }
+            // the algorithm supports "i" and "o" pointing to the same memory
+            CheckBoundaries((float*)i, (float*)o, &fraction[t]);
+            RunAlgorithm((float*)i, (float*)o, &fraction[t]);
+        }
 
-    //    AZ_Assert(theight >= (templ->regional ? templ->region.inrows : templ->inrows), "%s: Invalid height!", __FUNCTION__);
-    //}
+        AZ_Assert(theight >= (templ->regional ? templ->region.inrows : templ->inrows), "%s: Invalid height!", __FUNCTION__);
+    }
+    */
 
     /* #################################################################################################################### \
      */
