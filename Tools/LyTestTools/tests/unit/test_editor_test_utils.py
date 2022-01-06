@@ -59,22 +59,28 @@ class TestEditorTestUtils(unittest.TestCase):
 
         assert expected == editor_test_utils.retrieve_log_path(0, mock_workspace)
 
+    @mock.patch('os.listdir')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
+    @mock.patch('os.path.isfile', mock.MagicMock())
     @mock.patch('ly_test_tools.environment.waiter.wait_for', mock.MagicMock())
-    def test_RetrieveCrashOutput_CrashLogExists_ReturnsLogInfo(self, mock_retrieve_log_path):
-        mock_retrieve_log_path.return_value = 'mock_log_path'
+    def test_RetrieveCrashOutput_CrashLogExists_ReturnsLogInfo(self, mock_retrieve_log_path, mock_listdir):
+        mock_retrieve_log_path.return_value = 'mock_path'
         mock_workspace = mock.MagicMock()
         mock_log = 'mock crash info'
+        mock_listdir.return_value = ['mock_error_log.log']
 
         with mock.patch('builtins.open', mock.mock_open(read_data=mock_log)) as mock_file:
             assert mock_log == editor_test_utils.retrieve_crash_output(0, mock_workspace, 0)
 
+    @mock.patch('os.listdir')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
+    @mock.patch('os.path.isfile', mock.MagicMock())
     @mock.patch('ly_test_tools.environment.waiter.wait_for', mock.MagicMock())
-    def test_RetrieveCrashOutput_CrashLogNotExists_ReturnsError(self, mock_retrieve_log_path):
+    def test_RetrieveCrashOutput_CrashLogNotExists_ReturnsError(self, mock_retrieve_log_path, mock_listdir):
         mock_retrieve_log_path.return_value = 'mock_log_path'
         mock_workspace = mock.MagicMock()
         error_message = "No crash log available"
+        mock_listdir.return_value = ['mock_file.log']
 
         assert error_message in editor_test_utils.retrieve_crash_output(0, mock_workspace, 0)
 
