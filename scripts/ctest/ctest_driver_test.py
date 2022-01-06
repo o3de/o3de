@@ -39,8 +39,6 @@ def main(build_path, ctest_executable, config):
                     args_to_send.append("--no-gpu")
             result = subprocess.check_output(args_to_send, shell=False, cwd=build_path, stderr=sys.stderr)
             output = result.decode('utf-8')
-            print(f"Executed: {args_to_send}")
-            print(output)
 
             # ensure that the appropriate suites are filtered in and out
             for suite_name in SUITES_AND_DESCRIPTIONS.keys():
