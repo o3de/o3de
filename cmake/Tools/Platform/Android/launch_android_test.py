@@ -89,14 +89,14 @@ def launch_test_on_device(adb_tool, test_module, timeout_secs, test_filter):
     """
 
     # Clear user data before each test
-    adb_tool.exec(['shell', 'pm', 'clear', 'com.lumberyard.tests'])
+    adb_tool.exec(['shell', 'pm', 'clear', 'com.o3de.tests'])
 
     # Increase the log buffer to prevent 'end of file' error from logcat
     adb_tool.exec(['shell', 'logcat', '-G', f'{LOGCAT_BUFFER_SIZE_MB}M'])
 
     # Start the test activity
     exec_args = ['shell', 'am', 'start',
-                 '-n', f'com.lumberyard.tests/.{TEST_ACTIVITY}',
+                 '-n', f'com.o3de.tests/.{TEST_ACTIVITY}',
                  '--es', test_module, 'AzRunUnitTests',
                  '--es', 'startdelay', str(TEST_RUNNER_STARTUP_DELAY)]
     if test_filter:
@@ -117,7 +117,7 @@ def launch_test_on_device(adb_tool, test_module, timeout_secs, test_filter):
         # Make multiple attempts to get the PID of the test process
         max_pid_retries = 5
         while max_pid_retries > 0:
-            ret, result_pid, _ = adb_tool.exec(['shell', 'pidof', '-s', 'com.lumberyard.tests'], capture_stdout=True)
+            ret, result_pid, _ = adb_tool.exec(['shell', 'pidof', '-s', 'com.o3de.tests'], capture_stdout=True)
             if ret == 0:
                 break
             time.sleep(1)
@@ -139,7 +139,7 @@ def launch_test_on_device(adb_tool, test_module, timeout_secs, test_filter):
                 break
 
             # Break out of the loop in case the process dies unexpectly
-            ret, _, _ = adb_tool.exec(['shell', 'pidof', '-s', 'com.lumberyard.tests'], capture_stdout=True)
+            ret, _, _ = adb_tool.exec(['shell', 'pidof', '-s', 'com.o3de.tests'], capture_stdout=True)
             if ret != 0:
                 break
 
@@ -161,7 +161,7 @@ def launch_test_on_device(adb_tool, test_module, timeout_secs, test_filter):
         if result_pid:
             adb_tool.exec(['shell', 'logcat', f'--pid={result_pid}', '-c'])
         # Kill the test launcher process
-        adb_tool.exec(['shell', 'am', 'force-stop', 'com.lumberyard.tests'])
+        adb_tool.exec(['shell', 'am', 'force-stop', 'com.o3de.tests'])
         time.sleep(2)
 
     return tests_passed

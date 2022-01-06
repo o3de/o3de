@@ -64,7 +64,7 @@ public class LumberyardActivity extends NativeActivity
 
     ////////////////////////////////////////////////////////////////
     // called from the native to get the application package name
-    // e.g. com.lumberyard.samples for SamplesProject
+    // e.g. com.o3de.samples for SamplesProject
     public String GetPackageName()
     {
         return getApplicationContext().getPackageName();

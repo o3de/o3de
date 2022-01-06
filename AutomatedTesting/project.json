@@ -5,7 +5,7 @@
     "modules": [],
     "project_id": "{D816AFAE-4BB7-4FEF-88F4-E2B786DCF29D}",
     "android_settings": {
-        "package_name": "com.lumberyard.yourgame",
+        "package_name": "com.o3de.yourgame",
         "version_number": 1,
         "version_name": "1.0.0",
         "orientation": "landscape"

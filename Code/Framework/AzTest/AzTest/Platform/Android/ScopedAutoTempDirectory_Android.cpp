@@ -15,7 +15,7 @@ namespace AZ
     {
         ScopedAutoTempDirectory::ScopedAutoTempDirectory()
         {
-            char tempDirectoryTemplate[] = "/sdcard/Android/data/com.lumberyard.tests/files/UnitTest-XXXXXX";
+            char tempDirectoryTemplate[] = "/sdcard/Android/data/com.o3de.tests/files/UnitTest-XXXXXX";
             const char* tempDir = mkdtemp(tempDirectoryTemplate);
             AZ_Error("AzTest", tempDir, "Unable to create temp directory %s", tempDirectoryTemplate);
             memset(m_tempDirectory, '\0', sizeof(m_tempDirectory));

@@ -415,7 +415,7 @@ class AndroidDeployment(object):
             android_package_name = android_support.TEST_RUNNER_PACKAGE_NAME
         else:
             android_package_name = self.get_android_project_settings(key_name='package_name',
-                                                                     default_value='com.lumberyard.sdk')
+                                                                     default_value='com.o3de.sdk')
 
         if self.clean_deploy and self.check_package_installed(android_package_name, target_device):
             logging.info(f"Device '{target_device}': Uninstalling pre-existing APK for {self.game_name} ...")
@@ -436,7 +436,7 @@ class AndroidDeployment(object):
         assert not self.is_test_project
 
         android_package_name = self.get_android_project_settings(key_name='package_name',
-                                                                 default_value='com.lumberyard.sdk')
+                                                                 default_value='com.o3de.sdk')
         relative_assets_path = f'Android/data/{android_package_name}/files'
         output_target = f'{detected_storage}/{relative_assets_path}'
         device_timestamp_file = f'{output_target}/{ANDROID_TARGET_TIMESTAMP_FILENAME}'
@@ -539,7 +539,7 @@ class AndroidDeployment(object):
                         if self.deployment_type == AndroidDeployment.DEPLOY_ASSETS_ONLY:
                             # If we are deploying assets only without an APK, make sure the APK is even installed first
                             android_package_name = self.get_android_project_settings(key_name='package_name',
-                                                                                     default_value='com.lumberyard.sdk')
+                                                                                     default_value='com.o3de.sdk')
                             if not self.check_package_installed(package_name=android_package_name,
                                                                 target_device=target_device):
                                 raise common.LmbrCmdError(f"Unable to locate APK for {self.game_name} on device '{target_device}'. Make sure it is installed "
