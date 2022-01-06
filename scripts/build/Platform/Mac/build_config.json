@@ -102,7 +102,7 @@
       "CMAKE_OPTIONS": "-G Xcode",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "ALL_BUILD",
-      "CTEST_OPTIONS": "-L \"(SUITE_smoke|SUITE_main)\" -LE \"(REQUIRES_gpu)\" --no-tests=error",
+      "CTEST_OPTIONS": "-L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error",
       "TEST_RESULTS": "False"
     }
   },
@@ -119,7 +119,7 @@
       "CMAKE_OPTIONS": "-G Xcode",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_periodic",
-      "CTEST_OPTIONS": "-L \"(SUITE_periodic)\"",
+      "CTEST_OPTIONS": "-L (SUITE_periodic)",
       "TEST_RESULTS": "False"
     }
   },
@@ -136,7 +136,7 @@
       "CMAKE_OPTIONS": "-G Xcode",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_benchmark",
-      "CTEST_OPTIONS": "-L \"(SUITE_benchmark)\"",
+      "CTEST_OPTIONS": "-L (SUITE_benchmark)",
       "TEST_RESULTS": "False"
     }
   },
