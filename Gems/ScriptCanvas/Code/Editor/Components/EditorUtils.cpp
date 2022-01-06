@@ -33,7 +33,8 @@ namespace ScriptCanvasEditor
 {
     AZStd::optional<SourceHandle> CompleteDescription(const SourceHandle& source)
     {
-        if (source.IsDescriptionValid())
+        // If the source handle already contains valid data, then there is no need to resolve id and path.
+        if (source.IsGraphValid())
         {
             return source;
         }
