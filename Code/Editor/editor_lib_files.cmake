@@ -271,9 +271,6 @@ set(FILES
     Include/HitContext.h
     Include/ICommandManager.h
     Include/IConsoleConnectivity.h
-    Include/IDataBaseItem.h
-    Include/IDataBaseLibrary.h
-    Include/IDataBaseManager.h
     Include/IDisplayViewport.h
     Include/IEditorClassFactory.h
     Include/IEventLoopHook.h
@@ -369,9 +366,6 @@ set(FILES
     ActionManager.h
     ShortcutDispatcher.cpp
     ShortcutDispatcher.h
-    BaseLibraryManager.cpp
-    BaseLibraryItem.h
-    BaseLibraryManager.h
     CheckOutDialog.cpp
     CheckOutDialog.h
     CheckOutDialog.ui
