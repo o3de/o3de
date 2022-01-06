@@ -31,23 +31,25 @@ namespace EMotionFX
     class AutoSkeletonLODActor
         : public SimpleJointChainActor
     {
-        // This creates an Actor with following hierarchy.
-        // The numbers are the joint indices.
-        //
-        //                            5
-        //                           /
-        //                          /
-        // 0-----1-----2-----3-----4
-        //                          \
-        //                           \
-        //                            6
-        //
-        // 7 (a node with skinned mesh)
-        //
-        // The mesh is on node 7, which is also a root node, just like joint number 0.
-        // We (fake) skin the first six joints to the mesh of node 7.
-        // Our test will actually skin to only a selection of these first seven joints.
-        // We then test which joints get disabled and which not.
+        /*
+         This creates an Actor with following hierarchy.
+         The numbers are the joint indices.
+        
+                                    5
+                                   /
+                                  /
+         0-----1-----2-----3-----4
+                                  \
+                                   \
+                                    6
+        
+         7 (a node with skinned mesh)
+        
+         The mesh is on node 7, which is also a root node, just like joint number 0.
+         We (fake) skin the first six joints to the mesh of node 7.
+         Our test will actually skin to only a selection of these first seven joints.
+         We then test which joints get disabled and which not.
+        */
     public:
         explicit AutoSkeletonLODActor(AZ::u32 numSubMeshJoints)
             : SimpleJointChainActor(5)

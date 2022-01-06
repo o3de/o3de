@@ -329,17 +329,19 @@ namespace LmbrCentral
         }
     }
 
-    /// Generates vertices and indices for a tube shape
-    /// Split into two stages:
-    /// - Generate vertex positions
-    /// - Generate indices (faces)
-    /// Heres a rough diagram of how it is built:
-    ///   ____________
-    ///  /_|__|__|__|_\
-    ///  \_|__|__|__|_/
-    ///  - A single vertex at each end of the tube
-    ///  - Angled end cap segments
-    ///  - Middle segments
+    /**
+     Generates vertices and indices for a tube shape
+     Split into two stages:
+     - Generate vertex positions
+     - Generate indices (faces)
+     Heres a rough diagram of how it is built:
+       ____________
+      /_|__|__|__|_\
+      \_|__|__|__|_/
+      - A single vertex at each end of the tube
+      - Angled end cap segments
+      - Middle segments
+    */
     void GenerateSolidTubeMesh(
         const AZ::SplinePtr& spline, const SplineAttribute<float>& variableRadius,
         const float radius, const AZ::u32 capSegments, const AZ::u32 sides,

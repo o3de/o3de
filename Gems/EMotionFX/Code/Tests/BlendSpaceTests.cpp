@@ -254,19 +254,21 @@ namespace EMotionFX
         EXPECT_EQ(motions.size(), 4);
         EXPECT_EQ(uniqueData->m_triangles.size(), 2);
 
-        // run      2 *
-        //            |\
-        //            | \
-        //            |  \
-        //            |   \
-        //            |    \
-        // forward  1 *     * 3 Strafe
-        //            |    /
-        //            |   /
-        //            |  /
-        //            | /
-        //            |/
-        // idle     0 *
+        /*
+         run      2 *
+                    |\
+                    | \
+                    |  \
+                    |   \
+                    |    \
+         forward  1 *     * 3 Strafe
+                    |    /
+                    |   /
+                    |  /
+                    | /
+                    |/
+         idle     0 *
+        */
         EXPECT_EQ(uniqueData->m_triangles[0], BlendSpace2DNode::Triangle(1, 0, 3));
         EXPECT_EQ(uniqueData->m_triangles[1], BlendSpace2DNode::Triangle(2, 1, 3));
     }

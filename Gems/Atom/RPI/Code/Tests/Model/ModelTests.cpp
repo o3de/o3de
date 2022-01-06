@@ -976,14 +976,14 @@ namespace UnitTest
         EXPECT_EQ(uvStreamTangentBitmask.GetFullTangentBitmask(), 0x70000F51);
     }
 
-    //
-    //   +----+
-    //  /    /|
-    // +----+ |
-    // |    | +
-    // |    |/
-    // +----+
-    //
+    /*
+         +----+
+        /    /|
+       +----+ |
+       |    | +
+       |    |/
+       +----+
+    */
     static constexpr AZStd::array CubePositions = { -1.0f, 1.0f, 1.0f,  1.0f, 1.0f, 1.0f,  -1.0f, -1.0f, 1.0f,  1.0f, -1.0f, 1.0f,
                                                     -1.0f, 1.0f, -1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f };
     static constexpr AZStd::array CubeIndices = {
@@ -993,23 +993,25 @@ namespace UnitTest
     static constexpr AZStd::array QuadPositions = { -1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f };
     static constexpr AZStd::array QuadIndices = { uint32_t{ 0 }, 2, 1, 1, 2, 3 };
 
-    // This class creates a Model with one LOD, whose mesh contains 2 planes. Plane 1 is in the XY plane at Z=-0.5, and
-    // plane 2 is in the XY plane at Z=0.5. The two planes each have 9 quads which have been triangulated. It only has
-    // a position and index buffer.
-    //
-    //      -0.33
-    //    -1     0.33  1
-    // 0.5 *---*---*---*
-    //      \ / \ / \ / \
-    //       *---*---*---*
-    //        \ / \ / \ / \
-    // -0.5 *- *---*---*---*
-    //       \  \ / \ / \ / \
-    //        *- *---*---*---*
-    //         \   \   \   \
-    //          *---*---*---*
-    //           \ / \ / \ / \
-    //            *---*---*---*
+    /*
+       This class creates a Model with one LOD, whose mesh contains 2 planes. Plane 1 is in the XY plane at Z=-0.5, and
+       plane 2 is in the XY plane at Z=0.5. The two planes each have 9 quads which have been triangulated. It only has
+       a position and index buffer.
+    
+          -0.33
+        -1     0.33  1
+     0.5 *---*---*---*
+          \ / \ / \ / \
+           *---*---*---*
+            \ / \ / \ / \
+     -0.5 *- *---*---*---*
+           \  \ / \ / \ / \
+            *- *---*---*---*
+             \   \   \   \
+              *---*---*---*
+               \ / \ / \ / \
+                *---*---*---*
+    */
     static constexpr AZStd::array TwoSeparatedPlanesPositions{
         -1.0f,   -0.333f, -0.5f, -0.333f, -1.0f,   -0.5f, -0.333f, -0.333f, -0.5f, 0.333f, -0.333f, -0.5f, 1.0f,    -1.0f,   -0.5f,
         1.0f,    -0.333f, -0.5f, 0.333f,  -1.0f,   -0.5f, 0.333f,  1.0f,    -0.5f, 1.0f,   0.333f,  -0.5f, 1.0f,    1.0f,    -0.5f,
