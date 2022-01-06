@@ -87,13 +87,10 @@ set(FILES
     Include/ScriptCanvas/Grammar/Primitives.cpp
     Include/ScriptCanvas/Grammar/PrimitivesDeclarations.cpp
     Include/ScriptCanvas/Grammar/PrimitivesExecution.cpp
-    Include/ScriptCanvas/Execution/ExecutionContext.cpp
-    Include/ScriptCanvas/Execution/RuntimeComponent.cpp
     Include/ScriptCanvas/Internal/Nodeables/BaseTimer.cpp
     Include/ScriptCanvas/Internal/Nodes/BaseTimerNode.cpp
     Include/ScriptCanvas/Internal/Nodes/ExpressionNodeBase.cpp
     Include/ScriptCanvas/Internal/Nodes/StringFormatted.cpp
-    Include/ScriptCanvas/Grammar/AbstractCodeModel.cpp
     Include/ScriptCanvas/Libraries/Libraries.cpp
     Include/ScriptCanvas/Libraries/Core/AzEventHandler.cpp
     Include/ScriptCanvas/Libraries/Core/BinaryOperator.cpp
@@ -199,7 +196,6 @@ set(FILES
     Include/ScriptCanvas/Utils/DataUtils.cpp
     Include/ScriptCanvas/Utils/NodeUtils.cpp
     Include/ScriptCanvas/Utils/VersionConverters.cpp
-    Include/ScriptCanvas/Utils/VersioningUtils.cpp
     Include/ScriptCanvas/Utils/VersioningUtils.cpp
     Include/ScriptCanvas/Utils/BehaviorContextUtils.cpp
 )
