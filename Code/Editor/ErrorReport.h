@@ -18,6 +18,7 @@
 class CParticleItem;
 
 #include "Objects/BaseObject.h"
+#include "Include/EditorCoreAPI.h"
 #include "Include/IErrorReport.h"
 #include "ErrorRecorder.h"
 
