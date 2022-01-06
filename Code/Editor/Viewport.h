@@ -46,7 +46,6 @@ struct HitContext;
 struct IRenderListener;
 class CImageEx;
 class QMenu;
-struct IDataBaseItem;
 
 /** Type of viewport.
 */
@@ -230,8 +229,6 @@ public:
     // Drag and drop support on viewports.
     // To be overrided in derived classes.
     //////////////////////////////////////////////////////////////////////////
-    virtual bool CanDrop([[maybe_unused]] const QPoint& point, [[maybe_unused]] IDataBaseItem* pItem) { return false; };
-    virtual void Drop([[maybe_unused]] const QPoint& point, [[maybe_unused]] IDataBaseItem* pItem) {};
     virtual void SetGlobalDropCallback(DropCallback dropCallback, void* dropCallbackCustom)
     {
         m_dropCallback = dropCallback;
