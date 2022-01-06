@@ -47,10 +47,18 @@ class TestAutomation(TestAutomationBase):
         from .EditorScripts import ComponentCRUD_Add_Delete_Components as test_module
         self._run_test(request, workspace, editor, test_module, batch_mode=False)
 
+    def test_Docking_BasicDockedTools(self, request, workspace, editor, launcher_platform):
+        from .EditorScripts import Docking_BasicDockedTools as test_module
+        self._run_test(request, workspace, editor, test_module, batch_mode=False)
+
     def test_InputBindings_Add_Remove_Input_Events(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import InputBindings_Add_Remove_Input_Events as test_module
         self._run_test(request, workspace, editor, test_module, batch_mode=False, autotest_mode=False)
 
+    def test_Menus_EditMenuOptions_Work(self, request, workspace, editor, launcher_platform):
+        from .EditorScripts import Menus_EditMenuOptions as test_module
+        self._run_test(request, workspace, editor, test_module, batch_mode=False)
+        
     def test_Menus_FileMenuOptions_Work(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import Menus_FileMenuOptions as test_module
         self._run_test(request, workspace, editor, test_module, batch_mode=False)
