@@ -153,16 +153,6 @@
       "CMAKE_TARGET": "ALL_BUILD"
     }
   },
-  "mac_packaging_all": {
-    "TAGS": [
-      "packaging"
-    ],
-    "COMMAND": "python_mac.sh",
-    "PARAMETERS": {
-      "SCRIPT_PATH": "scripts/build/package/package.py",
-      "SCRIPT_PARAMETERS": "--platform Mac --type all"
-    }
-  },
   "install_profile": {
     "TAGS": [],
     "COMMAND": "build_mac.sh",
