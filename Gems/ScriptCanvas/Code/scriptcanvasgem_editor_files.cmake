@@ -125,9 +125,6 @@ set(FILES
     Editor/Utilities/RecentFiles.cpp
     Editor/Utilities/RecentAssetPath.h
     Editor/Utilities/RecentAssetPath.cpp
-    Editor/View/Dialogs/NewGraphDialog.h
-    Editor/View/Dialogs/NewGraphDialog.cpp
-    Editor/View/Dialogs/NewGraphDialog.ui
     Editor/View/Dialogs/SettingsDialog.h
     Editor/View/Dialogs/SettingsDialog.cpp
     Editor/View/Dialogs/SettingsDialog.ui
