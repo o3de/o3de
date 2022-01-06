@@ -151,8 +151,8 @@ protected:
 
     void CheckForCameraSpeedUpdate();
 
-    void OnGridSnappingToggled();
-    void OnAngleSnappingToggled();
+    void OnGridSnappingToggled(int state);
+    void OnAngleSnappingToggled(int state);
 
     void OnGridSpinBoxChanged(double value);
     void OnAngleSpinBoxChanged(double value);
@@ -169,8 +169,9 @@ protected:
     QAction* m_compactInformationAction = nullptr;
     QAction* m_audioMuteAction = nullptr;
     QAction* m_enableVRAction = nullptr;
-    QAction* m_enableGridSnappingAction = nullptr;
-    QAction* m_enableAngleSnappingAction = nullptr;
+    QCheckBox* m_enableGridSnappingCheckBox = nullptr;
+    QCheckBox* m_enableGridVisualizationCheckBox = nullptr;
+    QCheckBox* m_enableAngleSnappingCheckBox = nullptr;
     QComboBox* m_cameraSpeed = nullptr;
     AzQtComponents::DoubleSpinBox* m_gridSpinBox = nullptr;
     AzQtComponents::DoubleSpinBox* m_angleSpinBox = nullptr;
@@ -184,7 +185,7 @@ protected:
 
 namespace AzToolsFramework
 {
-    //! A component to reflect scriptable commands for the Editor
+    //! A component to reflect scriptable commands for the Editor.
     class ViewportTitleDlgPythonFuncsHandler
         : public AZ::Component
     {
