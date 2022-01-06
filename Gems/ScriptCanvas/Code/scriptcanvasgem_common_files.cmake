@@ -144,7 +144,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/Spawning/Spawning.cpp
     Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.cpp
     Include/ScriptCanvas/Libraries/String/Contains.cpp
-    Include/ScriptCanvas/Libraries/String/Format.cpp
     Include/ScriptCanvas/Libraries/String/Replace.cpp
     Include/ScriptCanvas/Libraries/String/String.cpp
     Include/ScriptCanvas/Libraries/String/StringMethods.cpp
