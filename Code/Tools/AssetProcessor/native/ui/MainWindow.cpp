@@ -165,7 +165,7 @@ void MainWindow::Activate()
     ui->connectionTreeView->header()->resizeSection(ConnectionManager::PortColumn, 60);
     ui->connectionTreeView->header()->resizeSection(ConnectionManager::PlatformColumn, 60);
     ui->connectionTreeView->header()->resizeSection(ConnectionManager::AutoConnectColumn, 60);
-    
+
     ui->connectionTreeView->header()->setStretchLastSection(false);
     connect(ui->connectionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &MainWindow::OnConnectionSelectionChanged);
 
@@ -189,12 +189,12 @@ void MainWindow::Activate()
     ui->allowListAllowedListConnectionsListView->setModel(&m_allowedListAddresses);
     connect(ui->allowedListRejectedConnectionsListView, &QListView::clicked, this, &MainWindow::OnRejectedConnectionsListViewClicked);
     ui->allowedListRejectedConnectionsListView->setModel(&m_rejectedAddresses);
-    
+
     connect(ui->allowedListEnableCheckBox, &QCheckBox::toggled, this, &MainWindow::OnAllowedListCheckBoxToggled);
-    
+
     connect(ui->allowedListAddHostNameToolButton, &QToolButton::clicked, this, &MainWindow::OnAddHostNameAllowedListButtonClicked);
     connect(ui->allowedListAddIPToolButton, &QPushButton::clicked, this, &MainWindow::OnAddIPAllowedListButtonClicked);
-    
+
     connect(ui->allowedListToAllowedListToolButton, &QPushButton::clicked, this, &MainWindow::OnToAllowedListButtonClicked);
     connect(ui->allowedListToRejectedListToolButton, &QToolButton::clicked, this, &MainWindow::OnToRejectedListButtonClicked);
 
@@ -204,7 +204,7 @@ void MainWindow::Activate()
 
     QRegExpValidator* hostNameValidator = new QRegExpValidator(validHostName, this);
     ui->allowedListAddHostNameLineEdit->setValidator(hostNameValidator);
-    
+
     QRegExpValidator* ipValidator = new QRegExpValidator(validIP, this);
     ui->allowedListAddIPLineEdit->setValidator(ipValidator);
 
@@ -235,7 +235,7 @@ void MainWindow::Activate()
     m_logSortFilterProxy->setSourceModel(m_logsModel);
     m_logSortFilterProxy->setFilterKeyColumn(AzToolsFramework::Logging::LogTableModel::ColumnMessage);
     m_logSortFilterProxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
-    
+
     ui->jobLogTableView->setModel(m_logSortFilterProxy);
     ui->jobLogTableView->setItemDelegate(new AzToolsFramework::Logging::LogTableItemDelegate(ui->jobLogTableView));
     ui->jobLogTableView->setExpandOnSelection();
@@ -400,7 +400,7 @@ void MainWindow::Activate()
     bool zeroAnalysisModeFromSettings = settings.value("EnableZeroAnalysis", QVariant(true)).toBool();
     settings.endGroup();
 
-    QObject::connect(ui->modtimeSkippingCheckBox, &QCheckBox::stateChanged, this, 
+    QObject::connect(ui->modtimeSkippingCheckBox, &QCheckBox::stateChanged, this,
         [this](int newCheckState)
     {
         bool newOption = newCheckState == Qt::Checked ? true : false;
@@ -543,7 +543,7 @@ void MainWindow::OnAddConnection(bool /*checked*/)
     m_guiApplicationManager->GetConnectionManager()->addUserConnection();
 }
 
-void MainWindow::OnAllowedListConnectionsListViewClicked() 
+void MainWindow::OnAllowedListConnectionsListViewClicked()
 {
     ui->allowedListRejectedConnectionsListView->clearSelection();
 }
@@ -553,7 +553,7 @@ void MainWindow::OnRejectedConnectionsListViewClicked()
     ui->allowListAllowedListConnectionsListView->clearSelection();
 }
 
-void MainWindow::OnAllowedListCheckBoxToggled() 
+void MainWindow::OnAllowedListCheckBoxToggled()
 {
     if (!ui->allowedListEnableCheckBox->isChecked())
     {
@@ -588,7 +588,7 @@ void MainWindow::OnAllowedListCheckBoxToggled()
         ui->allowedListToAllowedListToolButton->setEnabled(true);
         ui->allowedListToRejectedListToolButton->setEnabled(true);
     }
-    
+
     m_guiApplicationManager->GetConnectionManager()->AllowedListingEnabled(ui->allowedListEnableCheckBox->isChecked());
 }
 
@@ -858,7 +858,7 @@ void MainWindow::OnAssetProcessorStatusChanged(const AssetProcessor::AssetProces
             text = tr("Working, analyzing jobs remaining %1, processing jobs remaining %2...").arg(m_createJobCount).arg(m_processJobsCount);
             ui->timerContainerWidget->setVisible(false);
             ui->productAssetDetailsPanel->SetScanQueueEnabled(false);
-            
+
             IntervalAssetTabFilterRefresh();
         }
         else
@@ -877,7 +877,7 @@ void MainWindow::OnAssetProcessorStatusChanged(const AssetProcessor::AssetProces
         break;
     case AssetProcessorStatus::Processing_Jobs:
         CheckStartProcessTimers();
-        m_processJobsCount = entry.m_count;  
+        m_processJobsCount = entry.m_count;
 
         if (m_processJobsCount + m_createJobCount > 0)
         {
@@ -983,7 +983,7 @@ void MainWindow::ApplyConfig()
     ui->jobLogTableView->header()->resizeSection(AzToolsFramework::Logging::LogTableModel::ColumnType, m_config.logTypeColumnWidth);
 }
 
-MainWindow::LogSortFilterProxy::LogSortFilterProxy(QObject* parentOjbect) : QSortFilterProxyModel(parentOjbect) 
+MainWindow::LogSortFilterProxy::LogSortFilterProxy(QObject* parentOjbect) : QSortFilterProxyModel(parentOjbect)
 {
 }
 
@@ -1302,7 +1302,7 @@ void MainWindow::ShowJobViewContextMenu(const QPoint& pos)
         ui->sourceAssetDetailsPanel->GoToSource(item->m_elementId.GetInputAssetName().toUtf8().constData());
     });
 
-    QString productMenuTitle(tr("View product asset..."));        
+    QString productMenuTitle(tr("View product asset..."));
     if (item->m_jobState != AzToolsFramework::AssetSystem::JobStatus::Completed)
     {
         QString disabledActionTooltip(tr("Only completed jobs are available in the Assets tab."));
@@ -1610,7 +1610,7 @@ void MainWindow::ShowProductAssetContextMenu(const QPoint& pos)
         {
             AzQtComponents::ShowFileOnDesktop(pathToProduct.GetValue());
         }
-        
+
     });
 
     QString fileOrFolder(cachedAsset->getChildCount() > 0 ? tr("folder") : tr("file"));

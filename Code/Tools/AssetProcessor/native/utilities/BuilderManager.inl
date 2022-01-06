@@ -50,7 +50,7 @@ namespace AssetProcessor
 
         if (!netResponse.m_response.Succeeded() || s_createRequestFileForSuccessfulJob)
         {
-            // we write the request out to disk for failure or debugging 
+            // we write the request out to disk for failure or debugging
             if (!DebugWriteRequestFile(tempFolderPath.c_str(), request, task, modulePath))
             {
                 return BuilderRunJobOutcome::FailedToWriteDebugRequest;
@@ -83,7 +83,7 @@ namespace AssetProcessor
             return false;
         }
 
-        auto params = BuildParams(task.c_str(), modulePath.c_str(), "", jobRequestFile, jobResponseFile);
+        auto params = BuildParams(task.c_str(), modulePath.c_str(), "", jobRequestFile, jobResponseFile, false);
         AZStd::string paramString;
         AZ::StringFunc::Join(paramString, params.begin(), params.end(), " ");
 

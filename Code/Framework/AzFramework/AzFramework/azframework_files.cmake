@@ -270,8 +270,6 @@ set(FILES
     Physics/WindBus.h
     Process/ProcessCommunicator.cpp
     Process/ProcessCommunicator.h
-    Process/ProcessWatcher.cpp
-    Process/ProcessWatcher.h
     Process/ProcessCommon_fwd.h
     Process/ProcessCommunicator.h
     Process/ProcessWatcher.cpp

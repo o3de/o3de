@@ -7,17 +7,17 @@
  */
 
 
-#include "Tests/GradientSignalTestMocks.h"
+#include <Tests/GradientSignalTestFixtures.h>
 
 #include <GradientSignal/PerlinImprovedNoise.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
-#include <Source/Components/PerlinGradientComponent.h>
-#include <Source/Components/RandomGradientComponent.h>
-#include <Source/Components/LevelsGradientComponent.h>
-#include <Source/Components/PosterizeGradientComponent.h>
-#include <Source/Components/SmoothStepGradientComponent.h>
-#include <Source/Components/ThresholdGradientComponent.h>
-#include <Source/Components/GradientTransformComponent.h>
+#include <GradientSignal/Components/PerlinGradientComponent.h>
+#include <GradientSignal/Components/RandomGradientComponent.h>
+#include <GradientSignal/Components/LevelsGradientComponent.h>
+#include <GradientSignal/Components/PosterizeGradientComponent.h>
+#include <GradientSignal/Components/SmoothStepGradientComponent.h>
+#include <GradientSignal/Components/ThresholdGradientComponent.h>
+#include <GradientSignal/Components/GradientTransformComponent.h>
 
 namespace UnitTest
 {

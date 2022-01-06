@@ -9,7 +9,7 @@
 #pragma once
 
 #include <GradientSignal/Editor/EditorGradientComponentBase.h>
-#include <Components/ShapeAreaFalloffGradientComponent.h>
+#include <GradientSignal/Components/ShapeAreaFalloffGradientComponent.h>
 
 namespace GradientSignal
 {
