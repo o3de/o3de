@@ -16,11 +16,14 @@
 
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
+#include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
 
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include "ViewportCameraSelectorWindow.h"
@@ -99,19 +102,40 @@ namespace Camera
 
         AzToolsFramework::ScopedUndoBatch undoBatch("Create Camera Entity");
 
-        // Create new entity
+        bool prefabSystemEnabled = false;
+        AzFramework::ApplicationRequests::Bus::BroadcastResult(
+            prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
         AZ::EntityId newEntityId;
+
         AZ::EBusAggregateResults<AZ::EntityId> cameras;
         Camera::CameraBus::BroadcastResult(cameras, &CameraBus::Events::GetCameras);
         AZStd::string newCameraName = AZStd::string::format("Camera%zu", cameras.values.size() + 1);
-        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
-            newEntityId, &AzToolsFramework::EditorEntityContextRequests::CreateNewEditorEntity, newCameraName.c_str());
+
+        const auto worldFromView = AzFramework::CameraTransform(cameraState);
+        // Create new entity
+        if (!prefabSystemEnabled)
+        {
+            AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+                newEntityId, &AzToolsFramework::EditorEntityContextRequests::CreateNewEditorEntity, newCameraName.c_str());
+        }
+        else
+        {
+            AzToolsFramework::Prefab::PrefabIntegrationInterface* prefabIntegrationInterface =
+                AZ::Interface<AzToolsFramework::Prefab::PrefabIntegrationInterface>::Get();
+            AZ_Assert(
+                (prefabIntegrationInterface != nullptr),
+                "CameraEditorSystemComponent requires a PrefabIntegrationInterface instance to be present on Setup().");
+            newEntityId = prefabIntegrationInterface->CreateNewEntityAtPosition(worldFromView.GetTranslation(), AZ::EntityId());
+
+            AZ::Entity* entity = AzToolsFramework::GetEntityById(newEntityId);
+            entity->SetName(newCameraName.c_str());
+        }
 
         // Add CameraComponent
         AzToolsFramework::AddComponents<EditorCameraComponent>::ToEntities(newEntityId);
 
         // Set transform to that of the viewport, otherwise default to Identity matrix and 60 degree FOV
-        const auto worldFromView = AzFramework::CameraTransform(cameraState);
         const auto cameraTransform = AZ::Transform::CreateFromMatrix3x3AndTranslation(
             AZ::Matrix3x3::CreateFromMatrix3x4(worldFromView), worldFromView.GetTranslation());
         AZ::TransformBus::Event(newEntityId, &AZ::TransformInterface::SetWorldTM, cameraTransform);
