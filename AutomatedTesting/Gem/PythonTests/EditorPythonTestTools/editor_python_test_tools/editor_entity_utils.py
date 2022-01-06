@@ -22,7 +22,7 @@ import azlmbr.legacy.general as general
 from editor_python_test_tools.utils import Report
 
 
-class Entity_Type(Enum):
+class EditorEntityType(Enum):
     GAME = azlmbr.entity.EntityType().Game
     LEVEL = azlmbr.entity.EntityType().Level
 
@@ -39,7 +39,7 @@ class EditorComponent:
     def __init__(self, type_id: uuid):
         self.type_id = type_id
         self.id = None
-        self.property_tree = None
+        self.property_tree_editor = None
 
     def get_component_name(self) -> str:
         """
@@ -52,7 +52,7 @@ class EditorComponent:
 
     def get_property_tree(self, force_get: bool = False):
         """
-        Used to get the property tree object of component that has following functions associated with it:
+        Used to get and cache the property tree editor of component that has following functions associated with it:
             1. prop_tree.is_container(path)
             2. prop_tree.get_container_count(path)
             3. prop_tree.reset_container(path)
@@ -60,32 +60,36 @@ class EditorComponent:
             5. prop_tree.remove_container_item(path, key)
             6. prop_tree.update_container_item(path, key, value)
             7. prop_tree.get_container_item(path, key)
-        :param force_get: Force a fresh property tree to be returned rather than using an existing self.property_tree
-        :return: Property tree object of a component
+        :param force_get: Force a fresh property tree editor rather than the cached self.property_tree_editor
+        :return: Property tree editor of the component
         """
-        if (not force_get) and (self.property_tree is not None):
-            return self.property_tree
+        if (not force_get) and (self.property_tree_editor is not None):
+            return self.property_tree_editor
 
         build_prop_tree_outcome = editor.EditorComponentAPIBus(
             bus.Broadcast, "BuildComponentPropertyTreeEditor", self.id
         )
         assert (
             build_prop_tree_outcome.IsSuccess()
-        ), f"Failure: Could not build property tree of component: '{self.get_component_name()}'"
+        ), f"Failure: Could not build property tree editor of component: '{self.get_component_name()}'"
         prop_tree = build_prop_tree_outcome.GetValue()
         Report.info(prop_tree.build_paths_list())
-        self.property_tree = prop_tree
-        return self.property_tree
+        self.property_tree_editor = prop_tree
+        return self.property_tree_editor
 
     def is_property_container(self, component_property_path: str) -> bool:
         """
-        Used to determine if a component property is a container. Containers are similar to a dictionary with int keys.
+        Used to determine if a component property is a container.
+        Containers are a collection of same typed values that can expand/shrink to contain more or less.
+        There are two types of containers; indexed and associative.
+        Indexed containers use integer key and are something like a linked list
+        Associative containers utilize keys of the same type which could be any supported type.
         :param component_property_path: String of component property. (e.g. 'Settings|Visible')
         :return: Boolean True if the property is a container False if it is not.
         """
-        if self.property_tree is None:
+        if self.property_tree_editor is None:
             self.get_property_tree()
-        result = self.property_tree.is_container(component_property_path)
+        result = self.property_tree_editor.is_container(component_property_path)
         if not result:
             Report.info(f"{self.get_component_name()}: '{component_property_path}' is not a container")
         return result
@@ -99,7 +103,7 @@ class EditorComponent:
         assert (
             self.is_property_container(component_property_path)
         ), f"Failure: '{component_property_path}' is not a property container"
-        container_count_outcome = self.property_tree.get_container_count(component_property_path)
+        container_count_outcome = self.property_tree_editor.get_container_count(component_property_path)
         assert (
             container_count_outcome.IsSuccess()
         ), f"Failure: get_container_count did not return success for '{component_property_path}'"
@@ -107,21 +111,22 @@ class EditorComponent:
 
     def reset_container(self, component_property_path: str):
         """
-        Used to rest a container to empty
+        Used to reset a container to empty
         :param component_property_path: String of component property. (e.g. 'Settings|Visible')
         :return: None
         """
         assert (
             self.is_property_container(component_property_path)
         ), f"Failure: '{component_property_path}' is not a property container"
-        reset_outcome = self.property_tree.reset_container(component_property_path)
+        reset_outcome = self.property_tree_editor.reset_container(component_property_path)
         assert (
             reset_outcome.IsSuccess()
         ), f"Failure: could not reset_container on '{component_property_path}'"
 
     def append_container_item(self, component_property_path: str, value: any):
         """
-        Used to append a container item without providing an index key.
+        Used to append a value to an indexed container item without providing an index key.
+        Append will fail on an associative container
         :param component_property_path: String of component property. (e.g. 'Settings|Visible')
         :param value: Value to be set
         :return: None
@@ -129,38 +134,44 @@ class EditorComponent:
         assert (
             self.is_property_container(component_property_path)
         ), f"Failure: '{component_property_path}' is not a property container"
-        append_outcome = self.property_tree.append_container_item(component_property_path, value)
+        append_outcome = self.property_tree_editor.append_container_item(component_property_path, value)
         assert (
             append_outcome.IsSuccess()
         ), f"Failure: could not append_container_item to '{component_property_path}'"
 
     def add_container_item(self, component_property_path: str, key: any, value: any):
         """
-        Used to add a container item at a specified key. In practice key should be an integer index.
+        Used to add a container item at a specified key.
+        There are two types of containers; indexed and associative.
+        Indexed containers use integer key.
+        Associative containers utilize keys of the same type which could be any supported type.
         :param component_property_path: String of component property. (e.g. 'Settings|Visible')
-        :param key: Zero index integer key, although this could be any unique unused key value
+        :param key: Zero index integer key or any supported type for associative container
         :param value: Value to be set
         :return: None
         """
         assert (
             self.is_property_container(component_property_path)
         ), f"Failure: '{component_property_path}' is not a property container"
-        add_outcome = self.property_tree.add_container_item(component_property_path, key, value)
+        add_outcome = self.property_tree_editor.add_container_item(component_property_path, key, value)
         assert (
             add_outcome.IsSuccess()
         ), f"Failure: could not add_container_item '{key}' to '{component_property_path}'"
 
     def get_container_item(self, component_property_path: str, key: any) -> any:
         """
-        Used to retrieve a container item value at the specified key. In practice key should be an integer index.
+        Used to retrieve a container item value at the specified key.
+        There are two types of containers; indexed and associative.
+        Indexed containers use integer key.
+        Associative containers utilize keys of the same type which could be any supported type.
         :param component_property_path: String of component property. (e.g. 'Settings|Visible')
-        :param key: Zero index integer key
+        :param key: Zero index integer key or any supported type for associative container
         :return: Value stored at the key specified
         """
         assert (
             self.is_property_container(component_property_path)
         ), f"Failure: '{component_property_path}' is not a property container"
-        get_outcome = self.property_tree.get_container_item(component_property_path, key)
+        get_outcome = self.property_tree_editor.get_container_item(component_property_path, key)
         assert (
             get_outcome.IsSuccess()
         ), f"Failure: could not get a value for {self.get_component_name()}: '{component_property_path}' [{key}]"
@@ -168,31 +179,37 @@ class EditorComponent:
 
     def remove_container_item(self, component_property_path: str, key: any):
         """
-        Used to remove a container item value at the specified key. In practice key should be an integer index.
+        Used to remove a container item value at the specified key.
+        There are two types of containers; indexed and associative.
+        Indexed containers use integer key.
+        Associative containers utilize keys of the same type which could be any supported type.
         :param component_property_path: String of component property. (e.g. 'Settings|Visible')
-        :param key: Zero index integer key
+        :param key: Zero index integer key or any supported type for associative container
         :return: None
         """
         assert (
             self.is_property_container(component_property_path)
         ), f"Failure: '{component_property_path}' is not a property container"
-        remove_outcome = self.property_tree.remove_container_item(component_property_path, key)
+        remove_outcome = self.property_tree_editor.remove_container_item(component_property_path, key)
         assert (
             remove_outcome.IsSuccess()
         ), f"Failure: could not remove_container_item '{key}' from '{component_property_path}'"
 
     def update_container_item(self, component_property_path: str, key: any, value: any):
         """
-        Used to update a container item at a specified key. In practice key should be an integer index.
+        Used to update a container item at a specified key.
+        There are two types of containers; indexed and associative.
+        Indexed containers use integer key.
+        Associative containers utilize keys of the same type which could be any supported type.
         :param component_property_path: String of component property. (e.g. 'Settings|Visible')
-        :param key: Zero index integer key
+        :param key: Zero index integer key or any supported type for associative container
         :param value: Value to be set
         :return: None
         """
         assert (
             self.is_property_container(component_property_path)
         ), f"Failure: '{component_property_path}' is not a property container"
-        update_outcome = self.property_tree.update_container_item(component_property_path, key, value)
+        update_outcome = self.property_tree_editor.update_container_item(component_property_path, key, value)
         assert (
             update_outcome.IsSuccess()
         ), f"Failure: could not update '{key}' in '{component_property_path}'"
@@ -252,7 +269,7 @@ class EditorComponent:
         editor.EditorComponentAPIBus(bus.Broadcast, "DisableComponents", [self.id])
 
     @staticmethod
-    def get_type_ids(component_names: list, entity_type: Entity_Type = Entity_Type.GAME) -> list:
+    def get_type_ids(component_names: list, entity_type: EditorEntityType = EditorEntityType.GAME) -> list:
         """
         Used to get type ids of given components list
         :param component_names: List of components to get type ids
@@ -426,7 +443,7 @@ class EditorEntity:
         :return: List of newly added components to the entity
         """
         components = []
-        type_ids = EditorComponent.get_type_ids(component_names, Entity_Type.GAME)
+        type_ids = EditorComponent.get_type_ids(component_names, EditorEntityType.GAME)
         for type_id in type_ids:
             new_comp = EditorComponent(type_id)
             add_component_outcome = editor.EditorComponentAPIBus(
@@ -454,7 +471,7 @@ class EditorEntity:
         :param component_names: List of component names to remove
         :return: None
         """
-        type_ids = EditorComponent.get_type_ids(component_names, Entity_Type.GAME)
+        type_ids = EditorComponent.get_type_ids(component_names, EditorEntityType.GAME)
         for type_id in type_ids:
             remove_outcome = editor.EditorComponentAPIBus(bus.Broadcast, "RemoveComponents", self.id, [type_id])
             assert (
@@ -468,7 +485,7 @@ class EditorEntity:
         :return: List of Entity Component objects of given component name
         """
         component_list = []
-        type_ids = EditorComponent.get_type_ids(component_names, Entity_Type.GAME)
+        type_ids = EditorComponent.get_type_ids(component_names, EditorEntityType.GAME)
         for type_id in type_ids:
             component = EditorComponent(type_id)
             get_component_of_type_outcome = editor.EditorComponentAPIBus(
@@ -488,7 +505,7 @@ class EditorEntity:
         :param component_name: Name of component to check for
         :return: True, if entity has specified component. Else, False
         """
-        type_ids = EditorComponent.get_type_ids([component_name], Entity_Type.GAME)
+        type_ids = EditorComponent.get_type_ids([component_name], EditorEntityType.GAME)
         return editor.EditorComponentAPIBus(bus.Broadcast, "HasComponentOfType", self.id, type_ids[0])
 
     def get_start_status(self) -> int:
@@ -690,7 +707,7 @@ class EditorLevelEntity:
         :return: List of newly added components to the level
         """
         components = []
-        type_ids = EditorComponent.get_type_ids(component_names, Entity_Type.LEVEL)
+        type_ids = EditorComponent.get_type_ids(component_names, EditorEntityType.LEVEL)
         for type_id in type_ids:
             new_comp = EditorComponent(type_id)
             add_component_outcome = editor.EditorLevelComponentAPIBus(
@@ -711,7 +728,7 @@ class EditorLevelEntity:
         :return: List of Level Component objects of given component name
         """
         component_list = []
-        type_ids = EditorComponent.get_type_ids(component_names, Entity_Type.LEVEL)
+        type_ids = EditorComponent.get_type_ids(component_names, EditorEntityType.LEVEL)
         for type_id in type_ids:
             component = EditorComponent(type_id)
             get_component_of_type_outcome = editor.EditorLevelComponentAPIBus(
@@ -732,7 +749,7 @@ class EditorLevelEntity:
         :param component_name: Name of component to check for
         :return: True, if level has specified component. Else, False
         """
-        type_ids = EditorComponent.get_type_ids([component_name], Entity_Type.LEVEL)
+        type_ids = EditorComponent.get_type_ids([component_name], EditorEntityType.LEVEL)
         return editor.EditorLevelComponentAPIBus(bus.Broadcast, "HasComponentOfType", type_ids[0])
 
     @staticmethod
@@ -742,5 +759,5 @@ class EditorLevelEntity:
         :param component_name: Name of component to check for
         :return: integer count of occurences of level component attached to level or zero if none are present
         """
-        type_ids = EditorComponent.get_type_ids([component_name], Entity_Type.LEVEL)
+        type_ids = EditorComponent.get_type_ids([component_name], EditorEntityType.LEVEL)
         return editor.EditorLevelComponentAPIBus(bus.Broadcast, "CountComponentsOfType", type_ids[0])
