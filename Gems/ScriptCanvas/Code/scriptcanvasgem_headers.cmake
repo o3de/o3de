@@ -300,7 +300,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/UnitTesting/Auxiliary/Auxiliary.h
     Include/ScriptCanvas/Libraries/UnitTesting/Auxiliary/AuxiliaryGenerics.h
     Include/ScriptCanvas/Libraries/UnitTesting/UnitTestBusSender.h
-    Include/ScriptCanvas/Libraries/UnitTesting/UnitTestBusSenderMacros.h
     Include/ScriptCanvas/Libraries/Operators/Operators.h
     Include/ScriptCanvas/Libraries/Operators/Operator.h
     Include/ScriptCanvas/Libraries/Operators/Operator.ScriptCanvasGrammar.xml
