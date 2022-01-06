@@ -39,7 +39,6 @@ set(FILES
     Include/ScriptCanvas/Core/SlotMetadata.cpp
     Include/ScriptCanvas/Core/SubgraphInterface.cpp
     Include/ScriptCanvas/Core/SubgraphInterfaceUtility.cpp
-    Include/ScriptCanvas/Translation/GraphToCPlusPlus.cpp
     Include/ScriptCanvas/Translation/GraphToLua.cpp
     Include/ScriptCanvas/Translation/GraphToLuaUtility.cpp
     Include/ScriptCanvas/Translation/GraphToX.cpp
