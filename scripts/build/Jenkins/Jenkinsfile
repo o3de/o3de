@@ -46,7 +46,7 @@ def palSh(cmd, lbl = '', winSlashReplacement = true) {
         if (winSlashReplacement) {
             cmd = cmd.replace('/','\\')
         }
-        cmd = cmd.replace('%', '%%')
+       // cmd = cmd.replace('%', '%%')
         bat label: lbl,
             script: cmd
     }
