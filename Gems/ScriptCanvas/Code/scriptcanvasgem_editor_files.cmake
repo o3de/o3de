@@ -119,8 +119,6 @@ set(FILES
     Editor/Undo/ScriptCanvasGraphCommand.h
     Editor/Undo/ScriptCanvasUndoManager.cpp
     Editor/Undo/ScriptCanvasUndoManager.h
-    Editor/Utilities/Command.h
-    Editor/Utilities/Command.cpp
     Editor/Utilities/CommonSettingsConfigurations.h
     Editor/Utilities/CommonSettingsConfigurations.cpp
     Editor/Utilities/RecentFiles.h
