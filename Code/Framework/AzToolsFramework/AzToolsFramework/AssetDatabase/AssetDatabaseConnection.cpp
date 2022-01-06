@@ -822,11 +822,11 @@ namespace AzToolsFramework
             static const char* QUERY_ALL_PRODUCTDEPENDENCIES = "AzToolsFramework::AssetDatabase::QueryAllProductDependencies";
             static const char* QUERY_ALL_PRODUCTDEPENDENCIES_STATEMENT =
                 "WITH RECURSIVE "
-                "  allProductDeps(ProductID, JobPK, ProductName, SubID, AssetType, LegacyGuid) AS (  "
+                "  allProductDeps AS (  "
                 "    SELECT * FROM Products "
                 "    WHERE ProductID = :productid "
                 "    UNION "
-                "    SELECT P.ProductID, P.JobPK, P.ProductName, P.SubID, P.AssetType, P.LegacyGuid FROM Products P, allProductDeps"
+                "    SELECT P.* FROM Products P, allProductDeps"
                 "    LEFT OUTER JOIN Jobs ON Jobs.JobID = P.JobPK "
                 "    LEFT OUTER JOIN Sources ON Sources.SourceID = Jobs.SourcePK "
                 "    LEFT OUTER JOIN ProductDependencies"
