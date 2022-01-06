@@ -42,10 +42,11 @@ def palSh(cmd, lbl = '', winSlashReplacement = true) {
     if (env.IS_UNIX) {
         sh label: lbl,
            script: cmd
-    } else if (winSlashReplacement) {
-        bat label: lbl,
-            script: cmd.replace('/','\\')
     } else {
+        if (winSlashReplacement) {
+            cmd = cmd.replace('/','\\')
+        }
+        cmd = cmd.replace('%', '%%')
         bat label: lbl,
             script: cmd
     }
@@ -610,7 +611,7 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                             CreateUploadAPLogsStage(platform.key, build_job_name, envVars['WORKSPACE'], platform.value.build_types[build_job_name].PARAMETERS).call()
                         }
                         // Upload test artifacts only on builds that failed and ran test suites
-                        if (env.IS_UPLOAD_TEST_ARTIFACTS?.toBoolean() && params.containsKey('CMAKE_TARGET') && params.CMAKE_TARGET.contains("TEST_SUITE")) {
+                        if (env.IS_UPLOAD_TEST_ARTIFACTS?.toBoolean() && params.containsKey('CTEST_OPTIONS')) {
                             CreateUploadTestArtifactStage(build_job_name, envVars['WORKSPACE'], params.OUTPUT_DIRECTORY).call()
                         }
                         // All other errors will be raised outside the retry block

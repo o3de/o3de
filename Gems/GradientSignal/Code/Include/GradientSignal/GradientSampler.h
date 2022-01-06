@@ -88,8 +88,6 @@ namespace GradientSignal
 
     inline float GradientSampler::GetValue(const GradientSampleParams& sampleParams) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
-
         if (m_opacity <= 0.0f || !m_gradientId.IsValid())
         {
             return 0.0f;

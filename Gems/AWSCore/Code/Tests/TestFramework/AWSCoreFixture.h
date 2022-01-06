@@ -17,6 +17,8 @@
 #include <Framework/JsonObjectHandler.h>
 #include <Framework/JsonWriter.h>
 
+#include <AWSNativeSDKInit/AWSNativeSDKInit.h>
+
 namespace AWSCoreTestingUtils
 {
     static const AZStd::string STRING_VALUE{"s"};
@@ -135,6 +137,8 @@ public:
         {
             m_app = AZStd::make_unique<AZ::ComponentApplication>();
         }
+
+        AWSNativeSDKInit::InitializationManager::InitAwsApi();
     }
 
     void TearDown() override
@@ -144,6 +148,8 @@ public:
 
     void TearDownFixture(bool mockSettingsRegistry = true) 
     {
+        AWSNativeSDKInit::InitializationManager::Shutdown();
+
         if (mockSettingsRegistry)
         {
             AZ::SettingsRegistry::Unregister(m_settingsRegistry.get());
@@ -171,7 +177,7 @@ public:
     bool CreateFile(const AZStd::string& filePath, const AZStd::string& content)
     {
         AZ::IO::HandleType fileHandle;
-        if (!m_localFileIO->Open(filePath.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeText, fileHandle))
+        if (!m_localFileIO->Open(filePath.c_str(), AZ::IO::OpenMode::ModeCreatePath | AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeText, fileHandle))
         {
             return false;
         }
@@ -197,6 +203,13 @@ private:
     AZ::IO::FileIOBase* m_otherFileIO = nullptr;
 
 protected:
+    AZ::IO::Path GetTestTempDirectoryPath()
+    {
+        AZ::IO::Path testTempDirPath{ m_testTempDirectory.GetDirectory() };
+        return testTempDirPath;
+    }
+
+    AZ::Test::ScopedAutoTempDirectory m_testTempDirectory;
     AZStd::unique_ptr<AZ::SettingsRegistryImpl> m_settingsRegistry;
     AZStd::unique_ptr<AZ::ComponentApplication> m_app;
 };
