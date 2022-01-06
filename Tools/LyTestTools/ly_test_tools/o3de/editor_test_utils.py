@@ -10,7 +10,6 @@ from __future__ import annotations
 import os
 import time
 import logging
-import re
 
 import ly_test_tools.environment.process_utils as process_utils
 import ly_test_tools.environment.waiter as waiter
