@@ -126,8 +126,13 @@ namespace Audio
             const IATLEnvironmentImplData* const pEnvironmentImplData,
             const float fAmount);
 
+        EAudioRequestStatus RefreshAudioSystem(
+            const char* const controlsPath, const char* const levelName, TAudioPreloadRequestID levelPreloadId);
+
         EAudioRequestStatus MuteAll();
         EAudioRequestStatus UnmuteAll();
+        EAudioRequestStatus LoseFocus();
+        EAudioRequestStatus GetFocus();
         void UpdateSharedData();
         void SetImplLanguage();
 
@@ -175,7 +180,6 @@ namespace Audio
 
 #if !defined(AUDIO_RELEASE)
     public:
-        EAudioRequestStatus RefreshAudioSystem(const char* const controlsPath, const char* const levelName, TAudioPreloadRequestID levelPreloadId);
         bool ReserveAudioObjectID(TAudioObjectID& rAudioObjectID, const char* const sAudioObjectName);
         void DrawAudioSystemDebugInfo();
         const CATLDebugNameStore& GetDebugStore() const { return m_oDebugNameStore; }

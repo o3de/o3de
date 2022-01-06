@@ -99,11 +99,6 @@ namespace AudioSystemGem
 
     void AudioSystemGemSystemComponent::Init()
     {
-        //m_loseFocusRequest.nFlags = Audio::eARF_PRIORITY_HIGH;
-        //m_loseFocusRequest.pData = &m_loseFocusData;
-
-        //m_getFocusRequest.nFlags = Audio::eARF_PRIORITY_HIGH;
-        //m_getFocusRequest.pData = &m_getFocusData;
     }
 
     void AudioSystemGemSystemComponent::Activate()
@@ -217,7 +212,8 @@ namespace AudioSystemGem
     {
         if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
         {
-            //audioSystem->PushRequest(m_loseFocusRequest);
+            Audio::SystemRequest::LoseFocus loseFocus;
+            audioSystem->PushRequestNew(AZStd::move(loseFocus));
         }
     }
 
@@ -225,7 +221,8 @@ namespace AudioSystemGem
     {
         if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
         {
-            //audioSystem->PushRequest(m_getFocusRequest);
+            Audio::SystemRequest::GetFocus getFocus;
+            audioSystem->PushRequestNew(AZStd::move(getFocus));
         }
     }
 
@@ -277,25 +274,17 @@ namespace AudioSystemGem
             // This is called when a new audio implementation has been set,
             // so update the controls path before we start loading data...
             audioSystem->UpdateControlsPath();
+            const char* controlsPath = audioSystem->GetControlsPath();
 
-            // Must be blocking requests.
-            // TODO:
-            //SAudioRequest oAudioRequestData;
-            //oAudioRequestData.nFlags = eARF_PRIORITY_HIGH | eARF_EXECUTE_BLOCKING;
+            Audio::SystemRequest::LoadControls loadControls;
+            loadControls.m_controlsPath = (controlsPath ? controlsPath : "");
+            loadControls.m_scope = eADS_GLOBAL;
+            audioSystem->PushRequestBlockingNew(AZStd::move(loadControls));
 
-            //const char* controlsPath = audioSystem->GetControlsPath();
-
-            //SAudioManagerRequestData<eAMRT_PARSE_CONTROLS_DATA> oAMData(controlsPath, eADS_GLOBAL);
-            //oAudioRequestData.pData = &oAMData;
-            //audioSystem->PushRequestBlocking(oAudioRequestData);
-
-            //SAudioManagerRequestData<eAMRT_PARSE_PRELOADS_DATA> oAMData2(controlsPath, eADS_GLOBAL);
-            //oAudioRequestData.pData = &oAMData2;
-            //audioSystem->PushRequestBlocking(oAudioRequestData);
-
-            //SAudioManagerRequestData<eAMRT_PRELOAD_SINGLE_REQUEST> oAMData3(ATLInternalControlIDs::GlobalPreloadRequestID);
-            //oAudioRequestData.pData = &oAMData3;
-            //audioSystem->PushRequestBlocking(oAudioRequestData);
+            Audio::SystemRequest::LoadBank loadBank;
+            loadBank.m_asyncLoad = false;
+            loadBank.m_preloadRequestId = ATLInternalControlIDs::GlobalPreloadRequestID;
+            audioSystem->PushRequestBlockingNew(AZStd::move(loadBank));
         }
     }
 

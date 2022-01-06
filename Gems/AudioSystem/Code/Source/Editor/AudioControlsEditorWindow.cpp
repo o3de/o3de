@@ -283,14 +283,10 @@ namespace AudioControls
             return;
         }
 
-        // TODO:
-        //Audio::SAudioRequest oConfigDataRequest;
-        //oConfigDataRequest.nFlags = Audio::eARF_PRIORITY_HIGH;
-
-        ////clear the AudioSystem control config data
-        //Audio::SAudioManagerRequestData<Audio::eAMRT_CLEAR_CONTROLS_DATA> oClearRequestData(Audio::eADS_ALL);
-        //oConfigDataRequest.pData = &oClearRequestData;
-        //audioSystem->PushRequest(oConfigDataRequest);
+        // clear the AudioSystem controls data
+        Audio::SystemRequest::UnloadControls unloadControls;
+        unloadControls.m_scope = Audio::eADS_ALL;
+        audioSystem->PushRequestNew(AZStd::move(unloadControls));
 
         // parse the AudioSystem global config data
         // this is technically incorrect, we should just use GetControlsPath() unmodified when loading controls.
@@ -300,10 +296,10 @@ namespace AudioControls
 
         AZ::IO::FixedMaxPath controlsFolder{ controlsPath };
 
-        // TODO:
-        //Audio::SAudioManagerRequestData<Audio::eAMRT_PARSE_CONTROLS_DATA> oParseGlobalRequestData(controlsFolder.c_str(), Audio::eADS_GLOBAL);
-        //oConfigDataRequest.pData = &oParseGlobalRequestData;
-        //audioSystem->PushRequest(oConfigDataRequest);
+        // load the controls again
+        Audio::SystemRequest::LoadControls loadGlobalControls;
+        loadGlobalControls.m_scope = Audio::eADS_GLOBAL;
+        audioSystem->PushRequestNew(AZStd::move(loadGlobalControls));
 
         // parse the AudioSystem level-specific config data
         AZStd::string levelName;
@@ -313,10 +309,9 @@ namespace AudioControls
             controlsFolder /= "levels";
             controlsFolder /= levelName;
 
-            // TODO:
-            //Audio::SAudioManagerRequestData<Audio::eAMRT_PARSE_CONTROLS_DATA> oParseLevelRequestData(controlsFolder.c_str(), Audio::eADS_LEVEL_SPECIFIC);
-            //oConfigDataRequest.pData = &oParseLevelRequestData;
-            //audioSystem->PushRequest(oConfigDataRequest);
+            Audio::SystemRequest::LoadControls loadLevelControls;
+            loadLevelControls.m_scope = Audio::eADS_LEVEL_SPECIFIC;
+            audioSystem->PushRequestNew(AZStd::move(loadLevelControls));
         }
 
         // inform the middleware specific plugin that the data has been saved

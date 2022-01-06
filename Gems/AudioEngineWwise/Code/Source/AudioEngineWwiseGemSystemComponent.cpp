@@ -149,7 +149,7 @@ namespace AudioEngineWwiseGem
         {
             Audio::g_audioImplLogger_wwise.Log(Audio::LogType::Always, "AudioEngineWwise created!");
 
-            Audio::System::Initialize initRequest;
+            Audio::SystemRequest::Initialize initRequest;
             AZ::Interface<Audio::IAudioSystem>::Get()->PushRequestBlockingNew(AZStd::move(initRequest));
 
             success = true;

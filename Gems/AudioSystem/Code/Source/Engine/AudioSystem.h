@@ -70,12 +70,6 @@ namespace Audio
         bool Initialize() override;
         void Release() override;
 
-        // OLD REQUESTS API
-        //void PushRequest(const SAudioRequest& audioRequestData) override;
-        //void PushRequestBlocking(const SAudioRequest& audioRequestData) override;
-        //void PushRequestThreadSafe(const SAudioRequest& audioRequestData) override;
-        //void ProcessRequestByPriority(CAudioRequestInternal audioRequestInternalData) override;
-
         //! NEW AUDIO REQUESTS
         void PushRequestNew(AudioRequestType&& request) override;
         void PushRequestBlockingNew(AudioRequestType&& request) override;

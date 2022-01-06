@@ -160,13 +160,13 @@ namespace Audio
         TAudioObjectID m_audioObjectId{ INVALID_AUDIO_OBJECT_ID };
     };
 
-    namespace System
+    namespace SystemRequest
     {
         class Initialize
             : public AudioRequestBase
         {
         public:
-            AUDIO_REQUEST_TYPE(System, Initialize, "{8C777214-109E-4C44-A0F5-FCECF601C1E6}");
+            AUDIO_REQUEST_TYPE(SystemRequest, Initialize, "{8C777214-109E-4C44-A0F5-FCECF601C1E6}");
             //size_t m_memorySize{ 0 };     // test!
         };
 
@@ -174,7 +174,7 @@ namespace Audio
             : public AudioRequestBase
         {
         public:
-            AUDIO_REQUEST_TYPE(System, Shutdown, "{33F13AAE-3E08-4C9A-939B-2D111403DD76}");
+            AUDIO_REQUEST_TYPE(SystemRequest, Shutdown, "{33F13AAE-3E08-4C9A-939B-2D111403DD76}");
             //bool m_shutdownFlag_DEMO{ false };    // test!
         };
 
@@ -182,7 +182,7 @@ namespace Audio
             : public AudioRequestBase
         {
         public:
-            AUDIO_REQUEST_TYPE(System, ReserveObject, "{A0FA000F-EBE1-4DCB-ADA8-9C05B27D71E9}");
+            AUDIO_REQUEST_TYPE(SystemRequest, ReserveObject, "{A0FA000F-EBE1-4DCB-ADA8-9C05B27D71E9}");
 
             TAudioObjectID* m_objectId;
             AZStd::string m_objectName;
@@ -192,7 +192,7 @@ namespace Audio
             : public AudioRequestBase
         {
         public:
-            AUDIO_REQUEST_TYPE(System, CreateSource, "{0EE11CCC-9343-4C2B-BB17-191AA673C674}");
+            AUDIO_REQUEST_TYPE(SystemRequest, CreateSource, "{0EE11CCC-9343-4C2B-BB17-191AA673C674}");
 
             CreateSource(const SAudioInputConfig& config)
                 : m_sourceConfig{ config }
@@ -206,7 +206,7 @@ namespace Audio
             : public AudioRequestBase
         {
         public:
-            AUDIO_REQUEST_TYPE(System, DestroySource, "{14537418-E888-4078-921D-BD7D24A65269}");
+            AUDIO_REQUEST_TYPE(SystemRequest, DestroySource, "{14537418-E888-4078-921D-BD7D24A65269}");
 
             DestroySource(TAudioSourceId sourceId)
                 : m_sourceId{ sourceId }
@@ -220,7 +220,7 @@ namespace Audio
             : public AudioRequestBase
         {
         public:
-            AUDIO_REQUEST_TYPE(System, LoadControls, "{C47AC196-176B-42F2-9ECE-5D5FFF06BAAB}");
+            AUDIO_REQUEST_TYPE(SystemRequest, LoadControls, "{C47AC196-176B-42F2-9ECE-5D5FFF06BAAB}");
 
             AZStd::string m_controlsPath;
             EATLDataScope m_scope{ eADS_NONE };
@@ -230,7 +230,7 @@ namespace Audio
             : public AudioRequestBase
         {
         public:
-            AUDIO_REQUEST_TYPE(System, UnloadControls, "{1AAAFBF5-B5A1-4BF0-94A4-58CA2726F9BF}");
+            AUDIO_REQUEST_TYPE(SystemRequest, UnloadControls, "{1AAAFBF5-B5A1-4BF0-94A4-58CA2726F9BF}");
 
             EATLDataScope m_scope{ eADS_NONE };
         };
@@ -241,7 +241,7 @@ namespace Audio
             : public AudioRequestBase
         {
         public:
-            AUDIO_REQUEST_TYPE(System, LoadBank, "{12A333E0-1BFC-4A96-8FF9-51A677150268}");
+            AUDIO_REQUEST_TYPE(SystemRequest, LoadBank, "{12A333E0-1BFC-4A96-8FF9-51A677150268}");
 
             TAudioPreloadRequestID m_preloadRequestId{ INVALID_AUDIO_PRELOAD_REQUEST_ID };
             bool m_asyncLoad{ true };
@@ -252,7 +252,7 @@ namespace Audio
             : public AudioRequestBase
         {
         public:
-            AUDIO_REQUEST_TYPE(System, UnloadBank, "{974C6644-000C-4710-8EB5-35FC1CD2A7CE}");
+            AUDIO_REQUEST_TYPE(SystemRequest, UnloadBank, "{974C6644-000C-4710-8EB5-35FC1CD2A7CE}");
 
             TAudioPreloadRequestID m_preloadRequestId{ INVALID_AUDIO_PRELOAD_REQUEST_ID };
         };
@@ -261,7 +261,7 @@ namespace Audio
             : public AudioRequestBase
         {
         public:
-            AUDIO_REQUEST_TYPE(System, UnloadBanksByScope, "{15F9FF1D-3444-4317-AA9A-F27C369C5BBD}");
+            AUDIO_REQUEST_TYPE(SystemRequest, UnloadBanksByScope, "{15F9FF1D-3444-4317-AA9A-F27C369C5BBD}");
 
             EATLDataScope m_scope{ eADS_NONE };
         };
@@ -270,25 +270,67 @@ namespace Audio
             : public AudioRequestBase
         {
         public:
-            AUDIO_REQUEST_TYPE(System, ReloadAll, "{318F4F8E-6733-43C3-BC2B-D6BA588854D5}");
+            AUDIO_REQUEST_TYPE(SystemRequest, ReloadAll, "{318F4F8E-6733-43C3-BC2B-D6BA588854D5}");
 
             AZStd::string m_controlsPath;
             AZStd::string m_levelName;
             TAudioPreloadRequestID m_levelPreloadId{ INVALID_AUDIO_PRELOAD_REQUEST_ID };
         };
 
+        class LoseFocus
+            : public AudioRequestBase
+        {
+        public:
+            AUDIO_REQUEST_TYPE(SystemRequest, LoseFocus, "{8F316485-BDC4-43F2-9333-E85B107C1321}");
+        };
+
+        class GetFocus
+            : public AudioRequestBase
+        {
+        public:
+            AUDIO_REQUEST_TYPE(SystemRequest, GetFocus, "{ABBB7450-767B-4B46-825C-19970C1A15DE}");
+        };
+
+        class MuteAll
+            : public AudioRequestBase
+        {
+        public:
+            AUDIO_REQUEST_TYPE(SystemRequest, MuteAll, "{9D3888DC-789D-4570-AB2E-85EB21509AA5}");
+        };
+
+        class UnmuteAll
+            : public AudioRequestBase
+        {
+        public:
+            AUDIO_REQUEST_TYPE(SystemRequest, UnmuteAll, "{7A3AEF49-3152-44F5-AF51-A5D050611161}");
+        };
+
+        class StopAllAudio
+            : public AudioRequestBase
+        {
+        public:
+            AUDIO_REQUEST_TYPE(SystemRequest, StopAllAudio, "{5D07B532-E4F5-4D37-826F-AAA26A53DFE7}");
+        };
+
+        class DrawDebug
+            : public AudioRequestBase
+        {
+        public:
+            AUDIO_REQUEST_TYPE(SystemRequest, DrawDebug, "{D85EDE10-382C-4748-B888-C442008D6401}");
+        };
+
         class ChangeLanguage
             : public AudioRequestBase
         {
         public:
-            AUDIO_REQUEST_TYPE(System, ChangeLanguage, "{7AEEEF69-9685-4473-9EDB-ADC5D467998C}");
+            AUDIO_REQUEST_TYPE(SystemRequest, ChangeLanguage, "{7AEEEF69-9685-4473-9EDB-ADC5D467998C}");
         };
 
         class SetPanningMode
             : public AudioRequestBase
         {
         public:
-            AUDIO_REQUEST_TYPE(System, SetPanningMode, "{FEB8075C-4DE1-4117-AE61-E196800BA222}");
+            AUDIO_REQUEST_TYPE(SystemRequest, SetPanningMode, "{FEB8075C-4DE1-4117-AE61-E196800BA222}");
 
             PanningMode m_panningMode{ PanningMode::Speakers };
         };
@@ -297,13 +339,13 @@ namespace Audio
 
     } // namespace System
 
-    namespace Object
+    namespace ObjectRequest
     {
         class ExecuteTrigger
             : public AudioRequestBase
         {
         public:
-            AUDIO_REQUEST_TYPE(Object, ExecuteTrigger, "{E801D6A2-EB87-4733-AC8C-AEEE91E47847}");
+            AUDIO_REQUEST_TYPE(ObjectRequest, ExecuteTrigger, "{E801D6A2-EB87-4733-AC8C-AEEE91E47847}");
 
             TAudioControlID m_triggerId{ INVALID_AUDIO_CONTROL_ID };
         };
@@ -312,7 +354,7 @@ namespace Audio
             : public AudioRequestBase
         {
         public:
-            AUDIO_REQUEST_TYPE(Object, PrepareTrigger, "{33B13ED8-A2DC-407D-8C5B-CEC2444822F5}");
+            AUDIO_REQUEST_TYPE(ObjectRequest, PrepareTrigger, "{33B13ED8-A2DC-407D-8C5B-CEC2444822F5}");
 
             TAudioControlID m_triggerId{ INVALID_AUDIO_CONTROL_ID };
         };
@@ -321,7 +363,7 @@ namespace Audio
             : public AudioRequestBase
         {
         public:
-            AUDIO_REQUEST_TYPE(Object, UnprepareTrigger, "{358F485D-25F2-4EBF-AA50-AE6972221535}");
+            AUDIO_REQUEST_TYPE(ObjectRequest, UnprepareTrigger, "{358F485D-25F2-4EBF-AA50-AE6972221535}");
 
             TAudioControlID m_triggerId{ INVALID_AUDIO_CONTROL_ID };
         };
@@ -330,7 +372,7 @@ namespace Audio
             : public AudioRequestBase
         {
         public:
-            AUDIO_REQUEST_TYPE(Object, StopTrigger, "{91CCADDD-03E0-47F6-BB17-33576D793175}");
+            AUDIO_REQUEST_TYPE(ObjectRequest, StopTrigger, "{91CCADDD-03E0-47F6-BB17-33576D793175}");
 
             TAudioControlID m_triggerId{ INVALID_AUDIO_CONTROL_ID };
         };
@@ -339,7 +381,7 @@ namespace Audio
             : public AudioRequestBase
         {
         public:
-            AUDIO_REQUEST_TYPE(Object, StopAllTriggers, "{7A222303-A170-4805-9A15-B82B26EFFBF8}");
+            AUDIO_REQUEST_TYPE(ObjectRequest, StopAllTriggers, "{7A222303-A170-4805-9A15-B82B26EFFBF8}");
 
             bool m_filterByOwner{ false };
         };
@@ -348,7 +390,7 @@ namespace Audio
             : public AudioRequestBase
         {
         public:
-            AUDIO_REQUEST_TYPE(Object, SetPosition, "{A7AAA8D1-75A7-4F94-A3ED-3D5A80429569}");
+            AUDIO_REQUEST_TYPE(ObjectRequest, SetPosition, "{A7AAA8D1-75A7-4F94-A3ED-3D5A80429569}");
 
             SATLWorldPosition m_position{};
         };
@@ -357,7 +399,7 @@ namespace Audio
             : public AudioRequestBase
         {
         public:
-            AUDIO_REQUEST_TYPE(Object, SetParameterValue, "{10D950F1-2860-4A22-B34A-CBE9586D4555}");
+            AUDIO_REQUEST_TYPE(ObjectRequest, SetParameterValue, "{10D950F1-2860-4A22-B34A-CBE9586D4555}");
 
             TAudioControlID m_parameterId{ INVALID_AUDIO_CONTROL_ID };
             float m_value{ 0.f };
@@ -367,7 +409,7 @@ namespace Audio
             : public AudioRequestBase
         {
         public:
-            AUDIO_REQUEST_TYPE(Object, SetSwitchValue, "{86A43DD6-8BC9-4446-970C-4078BDB46E0B}");
+            AUDIO_REQUEST_TYPE(ObjectRequest, SetSwitchValue, "{86A43DD6-8BC9-4446-970C-4078BDB46E0B}");
 
             TAudioControlID m_switchId{ INVALID_AUDIO_CONTROL_ID };
             TAudioSwitchStateID m_stateId{ INVALID_AUDIO_SWITCH_STATE_ID };
@@ -377,7 +419,7 @@ namespace Audio
             : public AudioRequestBase
         {
         public:
-            AUDIO_REQUEST_TYPE(Object, SetEnvironmentValue, "{E9BAA202-5CBF-4313-930B-7CAB81CB7FFF}");
+            AUDIO_REQUEST_TYPE(ObjectRequest, SetEnvironmentValue, "{E9BAA202-5CBF-4313-930B-7CAB81CB7FFF}");
 
             TAudioEnvironmentID m_environmentId{ INVALID_AUDIO_ENVIRONMENT_ID };
             float m_value{ 0.f };
@@ -387,28 +429,28 @@ namespace Audio
             : public AudioRequestBase
         {
         public:
-            AUDIO_REQUEST_TYPE(Object, ResetEnvironments, "{5B92F5C5-DD55-46D9-9666-57F30D0E8CA3}");
+            AUDIO_REQUEST_TYPE(ObjectRequest, ResetEnvironments, "{5B92F5C5-DD55-46D9-9666-57F30D0E8CA3}");
         };
 
         class ResetParameters
             : public AudioRequestBase
         {
         public:
-            AUDIO_REQUEST_TYPE(Object, ResetParameters, "{C94D1F26-9331-47B4-8A81-61C3A3526664}");
+            AUDIO_REQUEST_TYPE(ObjectRequest, ResetParameters, "{C94D1F26-9331-47B4-8A81-61C3A3526664}");
         };
 
         class Release
             : public AudioRequestBase
         {
         public:
-            AUDIO_REQUEST_TYPE(Object, Release, "{8C7995B6-AD5C-45AB-AEEE-2AA823843FBC}");
+            AUDIO_REQUEST_TYPE(ObjectRequest, Release, "{8C7995B6-AD5C-45AB-AEEE-2AA823843FBC}");
         };
 
         class ExecuteSourceTrigger
             : public AudioRequestBase
         {
         public:
-            AUDIO_REQUEST_TYPE(Object, ExecuteSourceTrigger, "{FDA0D264-F66C-40A4-BD07-28986D2B8882}");
+            AUDIO_REQUEST_TYPE(ObjectRequest, ExecuteSourceTrigger, "{FDA0D264-F66C-40A4-BD07-28986D2B8882}");
 
             TAudioControlID m_triggerId{ INVALID_AUDIO_CONTROL_ID };
             SAudioSourceInfo m_sourceInfo{};
@@ -418,14 +460,14 @@ namespace Audio
             : public AudioRequestBase
         {
         public:
-            AUDIO_REQUEST_TYPE(Object, SetMultiplePositions, "{228E557D-C8FE-457F-8983-7E88870AF89C}");
+            AUDIO_REQUEST_TYPE(ObjectRequest, SetMultiplePositions, "{228E557D-C8FE-457F-8983-7E88870AF89C}");
 
             MultiPositionParams m_params{};
         };
 
     } // namespace Object
 
-    namespace Callback
+    namespace CallbackRequest
     {
         // TODO:
         // Report Started Event
@@ -433,13 +475,13 @@ namespace Audio
         // Report Finished Trigger Instance
     } // namespace Callback
 
-    namespace Listener
+    namespace ListenerRequest
     {
         class SetWorldTransform
             : public AudioRequestBase
         {
         public:
-            AUDIO_REQUEST_TYPE(Listener, SetWorldTransform, "{30B70579-127A-476F-9651-0BD3408DA888}");
+            AUDIO_REQUEST_TYPE(ListenerRequest, SetWorldTransform, "{30B70579-127A-476F-9651-0BD3408DA888}");
 
             SATLWorldPosition m_transform{};
         };
@@ -447,36 +489,42 @@ namespace Audio
     } // namespace Listener
 
     using AudioRequestType = AZStd::variant<
-        Audio::System::Initialize,
-        Audio::System::Shutdown,
-        Audio::System::ReserveObject,
-        Audio::System::CreateSource,
-        Audio::System::DestroySource,
-        Audio::System::LoadControls,
-        Audio::System::UnloadControls,
-        Audio::System::LoadBank,
-        Audio::System::UnloadBank,
-        Audio::System::UnloadBanksByScope,
-        Audio::System::ReloadAll,
-        Audio::System::ChangeLanguage,
-        Audio::System::SetPanningMode,
+        Audio::SystemRequest::Initialize,
+        Audio::SystemRequest::Shutdown,
+        Audio::SystemRequest::ReserveObject,
+        Audio::SystemRequest::CreateSource,
+        Audio::SystemRequest::DestroySource,
+        Audio::SystemRequest::LoadControls,
+        Audio::SystemRequest::UnloadControls,
+        Audio::SystemRequest::LoadBank,
+        Audio::SystemRequest::UnloadBank,
+        Audio::SystemRequest::UnloadBanksByScope,
+        Audio::SystemRequest::ReloadAll,
+        Audio::SystemRequest::LoseFocus,
+        Audio::SystemRequest::GetFocus,
+        Audio::SystemRequest::MuteAll,
+        Audio::SystemRequest::UnmuteAll,
+        Audio::SystemRequest::StopAllAudio,
+        Audio::SystemRequest::DrawDebug,
+        Audio::SystemRequest::ChangeLanguage,
+        Audio::SystemRequest::SetPanningMode,
 
-        Audio::Object::ExecuteTrigger,
-        Audio::Object::PrepareTrigger,
-        Audio::Object::UnprepareTrigger,
-        Audio::Object::StopTrigger,
-        Audio::Object::StopAllTriggers,
-        Audio::Object::SetPosition,
-        Audio::Object::SetParameterValue,
-        Audio::Object::SetSwitchValue,
-        Audio::Object::SetEnvironmentValue,
-        Audio::Object::ResetParameters,
-        Audio::Object::ResetEnvironments,
-        Audio::Object::Release,
-        Audio::Object::ExecuteSourceTrigger,
-        Audio::Object::SetMultiplePositions,
+        Audio::ObjectRequest::ExecuteTrigger,
+        Audio::ObjectRequest::PrepareTrigger,
+        Audio::ObjectRequest::UnprepareTrigger,
+        Audio::ObjectRequest::StopTrigger,
+        Audio::ObjectRequest::StopAllTriggers,
+        Audio::ObjectRequest::SetPosition,
+        Audio::ObjectRequest::SetParameterValue,
+        Audio::ObjectRequest::SetSwitchValue,
+        Audio::ObjectRequest::SetEnvironmentValue,
+        Audio::ObjectRequest::ResetParameters,
+        Audio::ObjectRequest::ResetEnvironments,
+        Audio::ObjectRequest::Release,
+        Audio::ObjectRequest::ExecuteSourceTrigger,
+        Audio::ObjectRequest::SetMultiplePositions,
 
-        Audio::Listener::SetWorldTransform>;
+        Audio::ListenerRequest::SetWorldTransform>;
 
     //~ NEW AUDIO REQUESTS
 
@@ -542,10 +590,6 @@ namespace Audio
         virtual bool Initialize() = 0;
         virtual void Release() = 0;
         virtual void ExternalUpdate() = 0;
-
-        // OLD REQUESTS API
-        //virtual void PushRequest(const SAudioRequest& rAudioRequestData) = 0;
-        //virtual void PushRequestBlocking(const SAudioRequest& audioRequestData) = 0;
 
         //! NEW AUDIO REQUESTS
         virtual void PushRequestNew(AudioRequestType&& request) = 0;

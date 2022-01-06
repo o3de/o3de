@@ -82,12 +82,6 @@ namespace AudioSystemGem
         bool CreateNullAudioSystem();
         void PrepareAudioSystem();
 
-        // TODO:
-        //Audio::SAudioRequest m_loseFocusRequest;
-        //Audio::SAudioRequest m_getFocusRequest;
-        //Audio::SAudioManagerRequestData<Audio::eAMRT_LOSE_FOCUS> m_loseFocusData;
-        //Audio::SAudioManagerRequestData<Audio::eAMRT_GET_FOCUS> m_getFocusData;
-
         /// This is here to express ownership
         AZStd::unique_ptr<Audio::IAudioSystem> m_audioSystem;
 

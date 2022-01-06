@@ -134,31 +134,22 @@ namespace LmbrCentral
     ////////////////////////////////////////////////////////////////////////
     void AudioSystemComponent::GlobalStopAllSounds()
     {
-        // TODO:
-        //SAudioRequest request;
-        //SAudioManagerRequestData<eAMRT_STOP_ALL_SOUNDS> requestData;
-        //request.pData = &requestData;
-        //AZ::Interface<Audio::IAudioSystem>::Get()->PushRequest(request);
+        Audio::SystemRequest::StopAllAudio stopAll;
+        AZ::Interface<Audio::IAudioSystem>::Get()->PushRequestNew(AZStd::move(stopAll));
     }
 
     ////////////////////////////////////////////////////////////////////////
     void AudioSystemComponent::GlobalMuteAudio()
     {
-        // TODO:
-        //SAudioRequest request;
-        //SAudioManagerRequestData<eAMRT_MUTE_ALL> requestData;
-        //request.pData = &requestData;
-        //AZ::Interface<Audio::IAudioSystem>::Get()->PushRequest(request);
+        Audio::SystemRequest::MuteAll muteAll;
+        AZ::Interface<Audio::IAudioSystem>::Get()->PushRequestNew(AZStd::move(muteAll));
     }
 
     ////////////////////////////////////////////////////////////////////////
     void AudioSystemComponent::GlobalUnmuteAudio()
     {
-        // TODO:
-        //SAudioRequest request;
-        //SAudioManagerRequestData<eAMRT_UNMUTE_ALL> requestData;
-        //request.pData = &requestData;
-        //AZ::Interface<Audio::IAudioSystem>::Get()->PushRequest(request);
+        Audio::SystemRequest::UnmuteAll unmuteAll;
+        AZ::Interface<Audio::IAudioSystem>::Get()->PushRequestNew(AZStd::move(unmuteAll));
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -175,12 +166,10 @@ namespace LmbrCentral
             TAudioControlID triggerId = AZ::Interface<Audio::IAudioSystem>::Get()->GetAudioTriggerID(triggerName);
             if (triggerId != INVALID_AUDIO_CONTROL_ID)
             {
-                // TODO:
-                //SAudioRequest request;
-                //SAudioObjectRequestData<eAORT_EXECUTE_TRIGGER> requestData;
-                //requestData.nTriggerID = triggerId;
-                //request.pData = &requestData;
+                Audio::ObjectRequest::ExecuteTrigger execTrigger;
+                execTrigger.m_triggerId = triggerId;
 
+                // TODO:
                 //if (callbackOwnerEntityId.IsValid())
                 //{
                 //    request.nFlags = (eARF_PRIORITY_NORMAL | eARF_SYNC_FINISHED_CALLBACK);
@@ -189,7 +178,7 @@ namespace LmbrCentral
                 //    request.pUserDataOwner = nullptr;
                 //}
 
-                //AZ::Interface<Audio::IAudioSystem>::Get()->PushRequest(request);
+                AZ::Interface<Audio::IAudioSystem>::Get()->PushRequestNew(AZStd::move(execTrigger));
             }
         }
     }
@@ -202,12 +191,10 @@ namespace LmbrCentral
             TAudioControlID triggerId = AZ::Interface<Audio::IAudioSystem>::Get()->GetAudioTriggerID(triggerName);
             if (triggerId != INVALID_AUDIO_CONTROL_ID)
             {
-                // TODO:
-                //SAudioRequest request;
-                //SAudioObjectRequestData<eAORT_STOP_TRIGGER> requestData;
-                //requestData.nTriggerID = triggerId;
-                //request.pData = &requestData;
+                Audio::ObjectRequest::StopTrigger stopTrigger;
+                stopTrigger.m_triggerId = triggerId;
 
+                // TODO:
                 //if (callbackOwnerEntityId.IsValid())
                 //{
                 //    request.nFlags = (eARF_PRIORITY_NORMAL | eARF_SYNC_FINISHED_CALLBACK);
@@ -216,7 +203,7 @@ namespace LmbrCentral
                 //    request.pUserDataOwner = nullptr;
                 //}
 
-                //AZ::Interface<Audio::IAudioSystem>::Get()->PushRequest(request);
+                AZ::Interface<Audio::IAudioSystem>::Get()->PushRequestNew(AZStd::move(stopTrigger));
             }
         }
     }
@@ -229,12 +216,10 @@ namespace LmbrCentral
             TAudioControlID rtpcId = AZ::Interface<Audio::IAudioSystem>::Get()->GetAudioRtpcID(rtpcName);
             if (rtpcId != INVALID_AUDIO_CONTROL_ID)
             {
-                // TODO:
-                //SAudioRequest request;
-                //SAudioObjectRequestData<eAORT_SET_RTPC_VALUE> requestData(rtpcId, value);
-                //request.pData = &requestData;
-
-                //AZ::Interface<Audio::IAudioSystem>::Get()->PushRequest(request);
+                Audio::ObjectRequest::SetParameterValue setParameter;
+                setParameter.m_parameterId = rtpcId;
+                setParameter.m_value = value;
+                AZ::Interface<Audio::IAudioSystem>::Get()->PushRequestNew(AZStd::move(setParameter));
             }
         }
     }
@@ -242,12 +227,8 @@ namespace LmbrCentral
     ////////////////////////////////////////////////////////////////////////
     void AudioSystemComponent::GlobalResetAudioRtpcs()
     {
-        // TODO:
-        //SAudioRequest request;
-        //SAudioObjectRequestData<eAORT_RESET_RTPCS> requestData;
-        //request.pData = &requestData;
-
-        //AZ::Interface<Audio::IAudioSystem>::Get()->PushRequest(request);
+        Audio::ObjectRequest::ResetParameters resetParameters;
+        AZ::Interface<Audio::IAudioSystem>::Get()->PushRequestNew(AZStd::move(resetParameters));
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -264,12 +245,10 @@ namespace LmbrCentral
 
             if (stateId != INVALID_AUDIO_SWITCH_STATE_ID)
             {
-                // TODO:
-                //SAudioRequest request;
-                //SAudioObjectRequestData<eAORT_SET_SWITCH_STATE> requestData(switchId, stateId);
-                //request.pData = &requestData;
-
-                //AZ::Interface<Audio::IAudioSystem>::Get()->PushRequest(request);
+                Audio::ObjectRequest::SetSwitchValue setSwitch;
+                setSwitch.m_switchId = switchId;
+                setSwitch.m_stateId = stateId;
+                AZ::Interface<Audio::IAudioSystem>::Get()->PushRequestNew(AZStd::move(setSwitch));
             }
         }
     }
@@ -288,48 +267,41 @@ namespace LmbrCentral
         levelControlsPath /= "levels";
         levelControlsPath /= levelName;
 
+        Audio::SystemRequest::LoadControls loadControls;
+        loadControls.m_controlsPath = levelControlsPath.c_str();
+        loadControls.m_scope = eADS_LEVEL_SPECIFIC;
         // TODO:
-        //SAudioRequest request;
-        //SAudioManagerRequestData<eAMRT_PARSE_CONTROLS_DATA> requestData(levelControlsPath.Native().data(), eADS_LEVEL_SPECIFIC);
         //request.nFlags = (eARF_PRIORITY_HIGH | eARF_EXECUTE_BLOCKING);
-        //request.pData = &requestData;
-        //audioSystem->PushRequestBlocking(request);
+        audioSystem->PushRequestBlockingNew(AZStd::move(loadControls));
 
-        //SAudioManagerRequestData<eAMRT_PARSE_PRELOADS_DATA> requestData2(levelControlsPath.Native().data(), eADS_LEVEL_SPECIFIC);
-        //request.pData = &requestData2;
-        //audioSystem->PushRequestBlocking(request);
-
-        //TAudioPreloadRequestID preloadRequestId = INVALID_AUDIO_PRELOAD_REQUEST_ID;
-        //audioSystem->GetAudioPreloadRequestID(levelName.data());
-        //if (preloadRequestId != INVALID_AUDIO_PRELOAD_REQUEST_ID)
-        //{
-        //    SAudioManagerRequestData<eAMRT_PRELOAD_SINGLE_REQUEST> requestData3(preloadRequestId);
-        //    request.pData = &requestData3;
-        //    audioSystem->PushRequestBlocking(request);
-        //}
+        TAudioPreloadRequestID preloadRequestId = INVALID_AUDIO_PRELOAD_REQUEST_ID;
+        audioSystem->GetAudioPreloadRequestID(levelName.data());
+        if (preloadRequestId != INVALID_AUDIO_PRELOAD_REQUEST_ID)
+        {
+            Audio::SystemRequest::LoadBank loadBank;
+            loadBank.m_preloadRequestId = preloadRequestId;
+            loadBank.m_asyncLoad = false;
+            audioSystem->PushRequestBlockingNew(AZStd::move(loadBank));
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////
     void AudioSystemComponent::LevelUnloadAudio()
     {
+        auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get();
+
+        // Unload level-specific banks...
+        Audio::SystemRequest::UnloadBanksByScope unloadBanks;
+        unloadBanks.m_scope = eADS_LEVEL_SPECIFIC;
         // TODO:
-        //auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get();
-        //SAudioRequest request;
-
-        //// Unload level-specific banks...
-        //SAudioManagerRequestData<eAMRT_UNLOAD_AFCM_DATA_BY_SCOPE> requestData(eADS_LEVEL_SPECIFIC);
         //request.nFlags = (eARF_PRIORITY_HIGH | eARF_EXECUTE_BLOCKING);
-        //request.pData = &requestData;
-        //audioSystem->PushRequestBlocking(request);
+        audioSystem->PushRequestBlockingNew(AZStd::move(unloadBanks));
 
-        //// Now unload level-specific audio config data (controls then preloads)...
-        //SAudioManagerRequestData<eAMRT_CLEAR_CONTROLS_DATA> requestData2(eADS_LEVEL_SPECIFIC);
-        //request.pData = &requestData2;
-        //audioSystem->PushRequestBlocking(request);
-
-        //SAudioManagerRequestData<eAMRT_CLEAR_PRELOADS_DATA> requestData3(eADS_LEVEL_SPECIFIC);
-        //request.pData = &requestData3;
-        //audioSystem->PushRequestBlocking(request);
+        // Now unload level-specific audio config data (controls then preloads)...
+        Audio::SystemRequest::UnloadControls unloadControls;
+        unloadControls.m_scope = eADS_LEVEL_SPECIFIC;
+        // same flags as above
+        audioSystem->PushRequestBlockingNew(AZStd::move(unloadControls));
     }
 
     ////////////////////////////////////////////////////////////////////////

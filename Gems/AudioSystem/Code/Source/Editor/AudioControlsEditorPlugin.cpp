@@ -158,16 +158,11 @@ void CAudioControlsEditorPlugin::ExecuteTrigger(const AZStd::string_view sTrigge
             );
             const AZ::Matrix3x4 cameraMatrix = AZ::Matrix3x4::CreateFromTransform(activeCameraTm);
 
-            // TODO:
-            //Audio::SAudioRequest request;
-            //request.nFlags = Audio::eARF_PRIORITY_NORMAL;
-
-
-            //Audio::SAudioListenerRequestData<Audio::eALRT_SET_POSITION> requestData(cameraMatrix);
-            //requestData.oNewPosition.NormalizeForwardVec();
-            //requestData.oNewPosition.NormalizeUpVec();
-            //request.pData = &requestData;
-            //audioSystem->PushRequest(request);
+            Audio::ListenerRequest::SetWorldTransform setListenerTransform;
+            setListenerTransform.m_transform = cameraMatrix;
+            setListenerTransform.m_transform.NormalizeForwardVec();
+            setListenerTransform.m_transform.NormalizeUpVec();
+            audioSystem->PushRequestNew(AZStd::move(setListenerTransform));
 
             ms_pIAudioProxy->SetPosition(cameraMatrix);
             ms_pIAudioProxy->ExecuteTrigger(ms_nAudioTriggerID);

@@ -183,29 +183,24 @@ namespace LmbrCentral
     {
         Audio::AudioPreloadNotificationBus::MultiHandler::BusConnect(preloadId);
 
-        // TODO:
-        //if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
-        //{
-        //    Audio::SAudioRequest request;
-        //    Audio::SAudioManagerRequestData<Audio::eAMRT_PRELOAD_SINGLE_REQUEST> requestData(preloadId);
-        //    request.nFlags = (Audio::eARF_PRIORITY_NORMAL);
-        //    request.pData = &requestData;
-        //    audioSystem->PushRequest(request);
-        //}
+        if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+        {
+            Audio::SystemRequest::LoadBank loadBank;
+            loadBank.m_preloadRequestId = preloadId;
+            loadBank.m_asyncLoad = true;
+            audioSystem->PushRequestNew(AZStd::move(loadBank));
+        }
     }
 
     //=========================================================================
     void AudioPreloadComponent::UnloadPreloadById([[maybe_unused]] Audio::TAudioPreloadRequestID preloadId)
     {
-        // TODO:
-        //if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
-        //{
-        //    Audio::SAudioRequest request;
-        //    Audio::SAudioManagerRequestData<Audio::eAMRT_UNLOAD_SINGLE_REQUEST> requestData(preloadId);
-        //    request.nFlags = (Audio::eARF_PRIORITY_NORMAL);
-        //    request.pData = &requestData;
-        //    audioSystem->PushRequest(request);
-        //}
+        if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+        {
+            Audio::SystemRequest::UnloadBank unloadBank;
+            unloadBank.m_preloadRequestId = preloadId;
+            audioSystem->PushRequestNew(AZStd::move(unloadBank));
+        }
     }
 
 } // namespace LmbrCentral

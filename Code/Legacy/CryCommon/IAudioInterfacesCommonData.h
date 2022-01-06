@@ -380,26 +380,16 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     struct SAudioSourceInfo
     {
-        TAudioSourceId m_sourceId;
-        TAudioFileId m_fileId;
-        TAudioFileCollectionId m_languageId;
-        TAudioFileLanguageId m_collectionId;
-        EAudioCodecType m_codecType;
+        TAudioSourceId m_sourceId{ INVALID_AUDIO_SOURCE_ID };
+        TAudioFileId m_fileId{ INVALID_AUDIO_FILE_ID };
+        TAudioFileCollectionId m_languageId{ INVALID_AUDIO_FILE_LANGUAGE_ID };
+        TAudioFileLanguageId m_collectionId{ INVALID_AUDIO_FILE_COLLECTION_ID };
+        EAudioCodecType m_codecType{ eACT_STREAM_PCM };
 
-        SAudioSourceInfo()
-            : m_sourceId(INVALID_AUDIO_SOURCE_ID)
-            , m_fileId(INVALID_AUDIO_FILE_ID)
-            , m_languageId(INVALID_AUDIO_FILE_LANGUAGE_ID)
-            , m_collectionId(INVALID_AUDIO_FILE_COLLECTION_ID)
-            , m_codecType(eACT_STREAM_PCM)
-        {}
+        SAudioSourceInfo() = default;
 
         SAudioSourceInfo(TAudioSourceId sourceId)
             : m_sourceId(sourceId)
-            , m_fileId(INVALID_AUDIO_FILE_ID)
-            , m_languageId(INVALID_AUDIO_FILE_LANGUAGE_ID)
-            , m_collectionId(INVALID_AUDIO_FILE_COLLECTION_ID)
-            , m_codecType(eACT_STREAM_PCM)
         {}
 
         SAudioSourceInfo(
@@ -452,21 +442,21 @@ namespace Audio
     };
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    struct SAudioRequest
-    {
-        SAudioRequest() = default;
-        ~SAudioRequest() = default;
+    //struct SAudioRequest
+    //{
+    //    SAudioRequest() = default;
+    //    ~SAudioRequest() = default;
 
-        SAudioRequest(const SAudioRequest& other) = delete;
-        SAudioRequest& operator=(const SAudioRequest& other) = delete;
+    //    SAudioRequest(const SAudioRequest& other) = delete;
+    //    SAudioRequest& operator=(const SAudioRequest& other) = delete;
 
-        TATLEnumFlagsType nFlags{ eARF_NONE };
-        TAudioObjectID nAudioObjectID{ INVALID_AUDIO_OBJECT_ID };
-        void* pOwner{ nullptr };
-        void* pUserData{ nullptr };
-        void* pUserDataOwner{ nullptr };
-        SAudioRequestDataBase* pData{ nullptr };
-    };
+    //    TATLEnumFlagsType nFlags{ eARF_NONE };
+    //    TAudioObjectID nAudioObjectID{ INVALID_AUDIO_OBJECT_ID };
+    //    void* pOwner{ nullptr };
+    //    void* pUserData{ nullptr };
+    //    void* pUserDataOwner{ nullptr };
+    //    SAudioRequestDataBase* pData{ nullptr };
+    //};
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     struct SAudioRequestInfo

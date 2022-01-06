@@ -282,7 +282,7 @@ namespace Audio
         m_apAudioProxiesToBeFreed.clear();
 
         // Release the audio implementation...
-        Audio::System::Shutdown shutdownRequest;
+        Audio::SystemRequest::Shutdown shutdownRequest;
         AZ::Interface<IAudioSystem>::Get()->PushRequestBlockingNew(AZStd::move(shutdownRequest));
 
         m_audioSystemThread.Deactivate();
@@ -391,7 +391,7 @@ namespace Audio
             levelPreloadId = GetAudioPreloadRequestID(levelName);
         }
 
-        Audio::System::ReloadAll reloadRequest;
+        Audio::SystemRequest::ReloadAll reloadRequest;
         reloadRequest.m_controlsPath = audioControlsPath;
         reloadRequest.m_levelName = levelName;
         reloadRequest.m_levelPreloadId = levelPreloadId;
@@ -541,15 +541,10 @@ namespace Audio
 
         if (CVars::s_debugDrawOptions.GetRawFlags() != 0)
         {
+            Audio::SystemRequest::DrawDebug drawDebug;
             // TODO:
-            //SAudioRequest oRequest;
-            //oRequest.nFlags = (eARF_PRIORITY_HIGH | eARF_EXECUTE_BLOCKING);
-            //SAudioManagerRequestData<eAMRT_DRAW_DEBUG_INFO> oRequestData;
-            //oRequest.pData = &oRequestData;
-            //PushRequestBlocking(oRequest);
-
-            //Audio::System::DrawDebug drawDebugRequest;
-            //AZ::Interface<IAudioSystem>::Get()->PushRequestBlockingNew(AZStd::move(drawDebugRequest));
+            // request.nFlags = (eARF_PRIORITY_HIGH | eARF_EXECUTE_BLOCKING);
+            AZ::Interface<IAudioSystem>::Get()->PushRequestBlockingNew(AZStd::move(drawDebug));
         }
     }
 #endif // !AUDIO_RELEASE

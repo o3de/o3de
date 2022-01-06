@@ -132,110 +132,37 @@ namespace Audio
     void CAudioTranslationLayer::ProcessRequestNew(AudioRequestType&& request)
     {
         // Version A - AZStd::visit w/ a processor object
-        // Pros: No wonky syntax, can move the processor elsewhere
-        // Cons: Where's the connection to ATL here?
+        // Pros: No wonky syntax, the processor class can be implemented elsewhere
+        // Cons: No easy way to connect to the ATL
         //
         // Version B - AZStd::visit w/ a lambda and if constexpr on type
-        // Pros: Syntax is a little more messy, but can pass the ATL as lambda capture
-        // Cons: Seems like it can only be an inline lambda because of the 'auto&' parameter
-        //
+        // Pros: Syntax is a little more messy and it looks like a big switch statement, but
+        //   we can pass the ATL in the lambda capture
+        // Cons: Seems like it can only be an inline lambda because of the 'auto&&' parameter
+
         // Version A...
         //struct RequestProcessor
         //{
-        //    void operator()([[maybe_unused]] Audio::System::Initialize& request)
+        //    void operator()([[maybe_unused]] Audio::SystemRequest::Initialize& request)
         //    {
         //        AZ_Printf("ATL Request Processor", "Initialize Audio System\n");
         //        request.SetStatus(EAudioRequestStatus::Pending);
         //        // do stuff ...
         //    }
-
-        //    void operator()([[maybe_unused]] Audio::System::Shutdown& request)
+        //    void operator()([[maybe_unused]] Audio::SystemRequest::Shutdown& request)
         //    {
         //        AZ_Printf("ATL Request Processor", "Shutdown Audio System\n");
         //    }
-
-        //    void operator()([[maybe_unused]] Audio::System::ReserveObject& request)
+        //
+        // ... ...
+        //
+        //    void operator()([[maybe_unused]] Audio::ObjectRequest::SetMultiplePositions& request)
         //    {
         //    }
-        //    void operator()([[maybe_unused]] Audio::System::CreateSource& request)
-        //    {
-        //    }
-        //    void operator()([[maybe_unused]] Audio::System::DestroySource& request)
-        //    {
-        //    }
-        //    void operator()([[maybe_unused]] Audio::System::LoadControls& request)
-        //    {
-        //    }
-        //    void operator()([[maybe_unused]] Audio::System::UnloadControls& request)
-        //    {
-        //    }
-        //    void operator()([[maybe_unused]] Audio::System::LoadBank& request)
-        //    {
-        //    }
-        //    void operator()([[maybe_unused]] Audio::System::UnloadBank& request)
-        //    {
-        //    }
-        //    void operator()([[maybe_unused]] Audio::System::UnloadBanksByScope& request)
-        //    {
-        //    }
-        //    void operator()([[maybe_unused]] Audio::System::ReloadAll& request)
-        //    {
-        //    }
-        //    void operator()([[maybe_unused]] Audio::System::ChangeLanguage& request)
-        //    {
-        //    }
-        //    void operator()([[maybe_unused]] Audio::System::SetPanningMode& request)
-        //    {
-        //    }
-
-        //    void operator()([[maybe_unused]] Audio::Object::ExecuteTrigger& request)
-        //    {
-        //    }
-        //    void operator()([[maybe_unused]] Audio::Object::PrepareTrigger& request)
-        //    {
-        //    }
-        //    void operator()([[maybe_unused]] Audio::Object::UnprepareTrigger& request)
-        //    {
-        //    }
-        //    void operator()([[maybe_unused]] Audio::Object::StopTrigger& request)
-        //    {
-        //    }
-        //    void operator()([[maybe_unused]] Audio::Object::StopAllTriggers& request)
-        //    {
-        //    }
-        //    void operator()([[maybe_unused]] Audio::Object::SetPosition& request)
-        //    {
-        //    }
-        //    void operator()([[maybe_unused]] Audio::Object::SetParameterValue& request)
-        //    {
-        //    }
-        //    void operator()([[maybe_unused]] Audio::Object::SetSwitchValue& request)
-        //    {
-        //    }
-        //    void operator()([[maybe_unused]] Audio::Object::SetEnvironmentValue& request)
-        //    {
-        //    }
-        //    void operator()([[maybe_unused]] Audio::Object::ResetParameters& request)
-        //    {
-        //    }
-        //    void operator()([[maybe_unused]] Audio::Object::ResetEnvironments& request)
-        //    {
-        //    }
-        //    void operator()([[maybe_unused]] Audio::Object::Release& request)
-        //    {
-        //    }
-        //    void operator()([[maybe_unused]] Audio::Object::ExecuteSourceTrigger& request)
-        //    {
-        //    }
-        //    void operator()([[maybe_unused]] Audio::Object::SetMultiplePositions& request)
-        //    {
-        //    }
-
-        //    void operator()([[maybe_unused]] Audio::Listener::SetWorldTransform& request)
+        //    void operator()([[maybe_unused]] Audio::ListenerRequest::SetWorldTransform& request)
         //    {
         //    }
         //};
-
         //AZStd::visit(RequestProcessor{}, request);
 
 
@@ -245,7 +172,7 @@ namespace Audio
             {
                 EAudioRequestStatus result = EAudioRequestStatus::None;
 
-                // This should at least get the global audio object.
+                // This should at least get the global audio object, if not it's a failure...
                 auto audioObject = GetRequestObject(request.m_audioObjectId);
                 if (audioObject == nullptr)
                 {
@@ -257,7 +184,9 @@ namespace Audio
 
                 using T = AZStd::decay_t<decltype(request)>;
 
-                if constexpr (AZStd::is_same_v<T, Audio::System::Initialize>)
+                // ... System ...
+
+                if constexpr (AZStd::is_same_v<T, Audio::SystemRequest::Initialize>)
                 {
                     AZ_Printf("ATL Request Lambda", "Initialize Audio System\n");
 
@@ -269,14 +198,14 @@ namespace Audio
                     }
                 }
 
-                else if constexpr (AZStd::is_same_v<T, Audio::System::Shutdown>)
+                else if constexpr (AZStd::is_same_v<T, Audio::SystemRequest::Shutdown>)
                 {
                     AZ_Printf("ATL Request Lambda", "Shutdown Audio System\n");
                     ReleaseImplComponent();
                     result = EAudioRequestStatus::Success;
                 }
 
-                else if constexpr (AZStd::is_same_v<T, Audio::System::ReserveObject>)
+                else if constexpr (AZStd::is_same_v<T, Audio::SystemRequest::ReserveObject>)
                 {
                 #if !defined(AUDIO_RELEASE)
                     result = BoolToARS(ReserveAudioObjectID(*request.m_objectId, request.m_objectName.c_str()));
@@ -285,7 +214,7 @@ namespace Audio
                 #endif // !AUDIO_RELEASE
                 }
 
-                else if constexpr (AZStd::is_same_v<T, Audio::System::CreateSource>)
+                else if constexpr (AZStd::is_same_v<T, Audio::SystemRequest::CreateSource>)
                 {
                     bool created = false;
                     AudioSystemImplementationRequestBus::BroadcastResult(
@@ -293,63 +222,95 @@ namespace Audio
                     result = BoolToARS(created);
                 }
 
-                else if constexpr (AZStd::is_same_v<T, Audio::System::DestroySource>)
+                else if constexpr (AZStd::is_same_v<T, Audio::SystemRequest::DestroySource>)
                 {
                     AudioSystemImplementationRequestBus::Broadcast(
                         &AudioSystemImplementationRequestBus::Events::DestroyAudioSource, request.m_sourceId);
                     result = EAudioRequestStatus::Success;
                 }
 
-                else if constexpr (AZStd::is_same_v<T, Audio::System::LoadControls>)
+                else if constexpr (AZStd::is_same_v<T, Audio::SystemRequest::LoadControls>)
                 {
                     result = ParseControlsData(request.m_controlsPath.c_str(), request.m_scope);
-                    //!  COMBINE THESE FUNCTIONS  !//
-                    //result = ParsePreloadsData(request.m_controlsPath.c_str(), request.m_scope);
                 }
 
-                else if constexpr (AZStd::is_same_v<T, Audio::System::UnloadControls>)
+                else if constexpr (AZStd::is_same_v<T, Audio::SystemRequest::UnloadControls>)
                 {
                     result = ClearControlsData(request.m_scope);
-                    //!  COMBINE THESE FUNCTIONS  !//
-                    //result = ClearPreloadsData(request.m_scope);
                 }
 
-                else if constexpr (AZStd::is_same_v<T, Audio::System::LoadBank>)
+                else if constexpr (AZStd::is_same_v<T, Audio::SystemRequest::LoadBank>)
                 {
                     //!  NEED A BLOCKING FLAG TO INDICATE WHETHER IT SHOULD LOAD ASYNC OR NOT  !//
                     result = m_oFileCacheMgr.TryLoadRequest(request.m_preloadRequestId, true, request.m_autoLoadOnly);
                 }
 
-                else if constexpr (AZStd::is_same_v<T, Audio::System::UnloadBank>)
+                else if constexpr (AZStd::is_same_v<T, Audio::SystemRequest::UnloadBank>)
                 {
                     result = m_oFileCacheMgr.TryUnloadRequest(request.m_preloadRequestId);
                 }
 
-                else if constexpr (AZStd::is_same_v<T, Audio::System::UnloadBanksByScope>)
+                else if constexpr (AZStd::is_same_v<T, Audio::SystemRequest::UnloadBanksByScope>)
                 {
                     result = m_oFileCacheMgr.UnloadDataByScope(request.m_scope);
                 }
 
-                else if constexpr (AZStd::is_same_v<T, Audio::System::ReloadAll>)
+                else if constexpr (AZStd::is_same_v<T, Audio::SystemRequest::ReloadAll>)
                 {
                     result = RefreshAudioSystem(request.m_controlsPath.c_str(), request.m_levelName.c_str(), request.m_levelPreloadId);
                 }
 
-                else if constexpr (AZStd::is_same_v<T, Audio::System::ChangeLanguage>)
+                else if constexpr (AZStd::is_same_v<T, Audio::SystemRequest::LoseFocus>)
+                {
+                    result = LoseFocus();
+                }
+
+                else if constexpr (AZStd::is_same_v<T, Audio::SystemRequest::GetFocus>)
+                {
+                    result = GetFocus();
+                }
+
+                else if constexpr (AZStd::is_same_v<T, Audio::SystemRequest::MuteAll>)
+                {
+                    result = MuteAll();
+                }
+
+                else if constexpr (AZStd::is_same_v<T, Audio::SystemRequest::UnmuteAll>)
+                {
+                    result = UnmuteAll();
+                }
+
+                else if constexpr (AZStd::is_same_v<T, Audio::SystemRequest::StopAllAudio>)
+                {
+                    AudioSystemImplementationRequestBus::BroadcastResult(
+                        result, &AudioSystemImplementationRequestBus::Events::StopAllSounds);
+                }
+
+                else if constexpr (AZStd::is_same_v<T, Audio::SystemRequest::DrawDebug>)
+                {
+                #if !defined(AUDIO_RELEASE)
+                    DrawAudioSystemDebugInfo();
+                    result = EAudioRequestStatus::Success;
+                #endif // !AUDIO_RELEASE
+                }
+
+                else if constexpr (AZStd::is_same_v<T, Audio::SystemRequest::ChangeLanguage>)
                 {
                     SetImplLanguage();
                     m_oFileCacheMgr.UpdateLocalizedFileCacheEntries();
                     result = EAudioRequestStatus::Success;
                 }
 
-                else if constexpr (AZStd::is_same_v<T, Audio::System::SetPanningMode>)
+                else if constexpr (AZStd::is_same_v<T, Audio::SystemRequest::SetPanningMode>)
                 {
                     AudioSystemImplementationRequestBus::Broadcast(
                         &AudioSystemImplementationRequestBus::Events::SetPanningMode, request.m_panningMode);
                     result = EAudioRequestStatus::Success;
                 }
 
-                else if constexpr (AZStd::is_same_v<T, Audio::Object::ExecuteTrigger>)
+                // ... Object ...
+
+                else if constexpr (AZStd::is_same_v<T, Audio::ObjectRequest::ExecuteTrigger>)
                 {
                     if (auto it = m_cTriggers.find(request.m_triggerId);
                         it != m_cTriggers.end())
@@ -368,7 +329,7 @@ namespace Audio
                     }
                 }
 
-                else if constexpr (AZStd::is_same_v<T, Audio::Object::PrepareTrigger>)
+                else if constexpr (AZStd::is_same_v<T, Audio::ObjectRequest::PrepareTrigger>)
                 {
                     if (auto it = m_cTriggers.find(request.m_triggerId);
                         it != m_cTriggers.end())
@@ -381,7 +342,7 @@ namespace Audio
                     }
                 }
 
-                else if constexpr (AZStd::is_same_v<T, Audio::Object::UnprepareTrigger>)
+                else if constexpr (AZStd::is_same_v<T, Audio::ObjectRequest::UnprepareTrigger>)
                 {
                     if (auto it = m_cTriggers.find(request.m_triggerId);
                         it != m_cTriggers.end())
@@ -394,7 +355,7 @@ namespace Audio
                     }
                 }
 
-                else if constexpr (AZStd::is_same_v<T, Audio::Object::StopTrigger>)
+                else if constexpr (AZStd::is_same_v<T, Audio::ObjectRequest::StopTrigger>)
                 {
                     if (auto it = m_cTriggers.find(request.m_triggerId);
                         it != m_cTriggers.end())
@@ -407,15 +368,23 @@ namespace Audio
                     }
                 }
 
-                else if constexpr (AZStd::is_same_v<T, Audio::Object::StopAllTriggers>)
+                else if constexpr (AZStd::is_same_v<T, Audio::ObjectRequest::StopAllTriggers>)
                 {
-                    // TODO: Filter by Owner - there is no owner in the request
+                    // TODO: Filter by Owner - there is no owner in the request yet
+                    //if (request.m_filterByOwner)
+                    //{
+                    //    StopAllTriggers(audioObject, request.m_owner);
+                    //}
+                    //else
+                    //{
                     StopAllTriggers(audioObject);
+                    //}
+
                     // Should we return the result of StopAllTriggers call instead?
                     result = EAudioRequestStatus::Success;
                 }
 
-                else if constexpr (AZStd::is_same_v<T, Audio::Object::SetPosition>)
+                else if constexpr (AZStd::is_same_v<T, Audio::ObjectRequest::SetPosition>)
                 {
                     if (audioObject->HasPosition())
                     {
@@ -436,7 +405,7 @@ namespace Audio
                     }
                 }
 
-                else if constexpr (AZStd::is_same_v<T, Audio::Object::SetParameterValue>)
+                else if constexpr (AZStd::is_same_v<T, Audio::ObjectRequest::SetParameterValue>)
                 {
                     if (auto it = m_cRtpcs.find(request.m_parameterId);
                         it != m_cRtpcs.end())
@@ -449,7 +418,7 @@ namespace Audio
                     }
                 }
 
-                else if constexpr (AZStd::is_same_v<T, Audio::Object::SetSwitchValue>)
+                else if constexpr (AZStd::is_same_v<T, Audio::ObjectRequest::SetSwitchValue>)
                 {
                     if (auto itSwitch = m_cSwitches.find(request.m_switchId);
                         itSwitch != m_cSwitches.end())
@@ -470,7 +439,7 @@ namespace Audio
                     }
                 }
 
-                else if constexpr (AZStd::is_same_v<T, Audio::Object::SetEnvironmentValue>)
+                else if constexpr (AZStd::is_same_v<T, Audio::ObjectRequest::SetEnvironmentValue>)
                 {
                     if (audioObject->HasPosition())
                     {
@@ -491,17 +460,17 @@ namespace Audio
                     }
                 }
 
-                else if constexpr (AZStd::is_same_v<T, Audio::Object::ResetParameters>)
+                else if constexpr (AZStd::is_same_v<T, Audio::ObjectRequest::ResetParameters>)
                 {
                     result = ResetRtpcs(audioObject);
                 }
 
-                else if constexpr (AZStd::is_same_v<T, Audio::Object::ResetEnvironments>)
+                else if constexpr (AZStd::is_same_v<T, Audio::ObjectRequest::ResetEnvironments>)
                 {
                     result = ResetEnvironments(audioObject);
                 }
 
-                else if constexpr (AZStd::is_same_v<T, Audio::Object::Release>)
+                else if constexpr (AZStd::is_same_v<T, Audio::ObjectRequest::Release>)
                 {
                     if (request.m_audioObjectId != m_nGlobalAudioObjectID)
                     {
@@ -514,7 +483,7 @@ namespace Audio
                     }
                 }
 
-                else if constexpr (AZStd::is_same_v<T, Audio::Object::ExecuteSourceTrigger>)
+                else if constexpr (AZStd::is_same_v<T, Audio::ObjectRequest::ExecuteSourceTrigger>)
                 {
                     if (auto it = m_cTriggers.find(request.m_triggerId);
                         it != m_cTriggers.end())
@@ -534,7 +503,7 @@ namespace Audio
                     }
                 }
 
-                else if constexpr (AZStd::is_same_v<T, Audio::Object::SetMultiplePositions>)
+                else if constexpr (AZStd::is_same_v<T, Audio::ObjectRequest::SetMultiplePositions>)
                 {
                     if (audioObject->HasPosition())
                     {
@@ -545,7 +514,7 @@ namespace Audio
 
                         if (result == EAudioRequestStatus::Success)
                         {
-                            // This is odd, why is this being done?
+                            // This is odd, why is this being done?  Because the source of positional information is elsewhere?
                             positionalObject->SetPosition(SATLWorldPosition());
                         }
                     }
@@ -556,7 +525,9 @@ namespace Audio
                     }
                 }
 
-                else if constexpr (AZStd::is_same_v<T, Audio::Listener::SetWorldTransform>)
+                // ... Listener ...
+
+                else if constexpr (AZStd::is_same_v<T, Audio::ListenerRequest::SetWorldTransform>)
                 {
                     TAudioObjectID listenerId = INVALID_AUDIO_OBJECT_ID;
                     // Check for an audio listener override
@@ -788,7 +759,7 @@ namespace Audio
 
         TAudioSourceId sourceId = ++m_nextSourceId;
 
-        Audio::System::CreateSource createSourceRequest(sourceConfig);
+        Audio::SystemRequest::CreateSource createSourceRequest(sourceConfig);
         createSourceRequest.m_sourceConfig.m_sourceId = sourceId;
         AZ::Interface<IAudioSystem>::Get()->PushRequestBlockingNew(AZStd::move(createSourceRequest));
 
@@ -798,7 +769,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioTranslationLayer::DestroyAudioSource([[maybe_unused]] TAudioSourceId sourceId)
     {
-        Audio::System::DestroySource destroySourceRequest(sourceId);
+        Audio::SystemRequest::DestroySource destroySourceRequest(sourceId);
         AZ::Interface<IAudioSystem>::Get()->PushRequestNew(AZStd::move(destroySourceRequest));
     }
 
@@ -883,206 +854,6 @@ namespace Audio
     //}
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    //EAudioRequestStatus CAudioTranslationLayer::ProcessAudioManagerRequest(const CAudioRequestInternal& rRequest)
-    //{
-    //    EAudioRequestStatus eResult = EAudioRequestStatus::Failure; // can this be changed to None?
-
-    //    if (rRequest.pData)
-    //    {
-    //        auto const pRequestDataBase = static_cast<const SAudioManagerRequestDataInternalBase*>(rRequest.pData.get());
-
-    //        switch (pRequestDataBase->eType)
-    //        {
-    //            case eAMRT_RESERVE_AUDIO_OBJECT_ID:
-    //            {
-    //                auto const pRequestData = static_cast<const SAudioManagerRequestDataInternal<eAMRT_RESERVE_AUDIO_OBJECT_ID>*>(rRequest.pData.get());
-    //            #if !defined(AUDIO_RELEASE)
-    //                eResult = BoolToARS(ReserveAudioObjectID(*pRequestData->pObjectID, pRequestData->sObjectName.c_str()));
-    //            #else
-    //                eResult = BoolToARS(ReserveAudioObjectID(*pRequestData->pObjectID));
-    //            #endif // !AUDIO_RELEASE
-    //                break;
-    //            }
-    //            case eAMRT_CREATE_SOURCE:
-    //            {
-    //                auto const pRequestData = static_cast<const SAudioManagerRequestDataInternal<eAMRT_CREATE_SOURCE>*>(rRequest.pData.get());
-    //                bool result = false;
-    //                AudioSystemImplementationRequestBus::BroadcastResult(result, &AudioSystemImplementationRequestBus::Events::CreateAudioSource, pRequestData->m_sourceConfig);
-    //                eResult = BoolToARS(result);
-    //                break;
-    //            }
-    //            case eAMRT_DESTROY_SOURCE:
-    //            {
-    //                auto const pRequestData = static_cast<const SAudioManagerRequestDataInternal<eAMRT_DESTROY_SOURCE>*>(rRequest.pData.get());
-    //                AudioSystemImplementationRequestBus::Broadcast(&AudioSystemImplementationRequestBus::Events::DestroyAudioSource, pRequestData->m_sourceId);
-    //                eResult = EAudioRequestStatus::Success;
-    //                break;
-    //            }
-    //            case eAMRT_INIT_AUDIO_IMPL:
-    //            {
-    //                eResult = InitializeImplComponent();
-
-    //                // Initializing the implementation failed, immediately release it...
-    //                if (eResult != EAudioRequestStatus::Success)
-    //                {
-    //                    ReleaseImplComponent();
-    //                }
-    //                break;
-    //            }
-    //            case eAMRT_RELEASE_AUDIO_IMPL:
-    //            {
-    //                ReleaseImplComponent();
-    //                eResult = EAudioRequestStatus::Success;
-    //                break;
-    //            }
-    //            case eAMRT_REFRESH_AUDIO_SYSTEM:
-    //            {
-    //            #if !defined(AUDIO_RELEASE)
-    //                auto const pRequestData = static_cast<const SAudioManagerRequestDataInternal<eAMRT_REFRESH_AUDIO_SYSTEM>*>(rRequest.pData.get());
-    //                eResult = RefreshAudioSystem(pRequestData->m_controlsPath.c_str(), pRequestData->m_levelName.c_str(), pRequestData->m_levelPreloadId);
-    //            #else
-    //                eResult = eARS_FAILURE_INVALID_REQUEST;
-    //            #endif // !AUDIO_RELEASE
-    //                break;
-    //            }
-    //            case eAMRT_LOSE_FOCUS:
-    //            {
-    //            #if !defined(AUDIO_RELEASE)
-    //                if (!Audio::CVars::s_IgnoreWindowFocus && (m_nFlags & eAIS_IS_MUTED) == 0)
-    //            #endif // !AUDIO_RELEASE
-    //                {
-    //                    auto it = m_cTriggers.find(ATLInternalControlIDs::LoseFocusTriggerID);
-    //                    if (it != m_cTriggers.end())
-    //                    {
-    //                        eResult = ActivateTrigger(m_pGlobalAudioObject, it->second);
-    //                    }
-    //                    else
-    //                    {
-    //                        g_audioLogger.Log(LogType::Warning, "ATL - Trigger not found for: ATLInternalControlIDs::LoseFocusTriggerID");
-    //                    }
-
-    //                    AudioSystemImplementationNotificationBus::Broadcast(&AudioSystemImplementationNotificationBus::Events::OnAudioSystemLoseFocus);
-    //                }
-    //                break;
-    //            }
-    //            case eAMRT_GET_FOCUS:
-    //            {
-    //            #if !defined(AUDIO_RELEASE)
-    //                if (!Audio::CVars::s_IgnoreWindowFocus && (m_nFlags & eAIS_IS_MUTED) == 0)
-    //            #endif // !AUDIO_RELEASE
-    //                {
-    //                    AudioSystemImplementationNotificationBus::Broadcast(&AudioSystemImplementationNotificationBus::Events::OnAudioSystemGetFocus);
-
-    //                    auto it = m_cTriggers.find(ATLInternalControlIDs::GetFocusTriggerID);
-    //                    if (it != m_cTriggers.end())
-    //                    {
-    //                        eResult = ActivateTrigger(m_pGlobalAudioObject, it->second);
-    //                    }
-    //                    else
-    //                    {
-    //                        g_audioLogger.Log(LogType::Warning, "ATL - Trigger not found for: ATLInternalControlIDs::GetFocusTriggerID");
-    //                    }
-    //                }
-    //                break;
-    //            }
-    //            case eAMRT_MUTE_ALL:
-    //            {
-    //                eResult = MuteAll();
-    //                break;
-    //            }
-    //            case eAMRT_UNMUTE_ALL:
-    //            {
-    //                eResult = UnmuteAll();
-    //                break;
-    //            }
-    //            case eAMRT_STOP_ALL_SOUNDS:
-    //            {
-    //                AudioSystemImplementationRequestBus::BroadcastResult(eResult, &AudioSystemImplementationRequestBus::Events::StopAllSounds);
-    //                break;
-    //            }
-    //            case eAMRT_PARSE_CONTROLS_DATA:
-    //            {
-    //                auto const pRequestData = static_cast<const SAudioManagerRequestDataInternal<eAMRT_PARSE_CONTROLS_DATA>*>(rRequest.pData.get());
-    //                eResult = ParseControlsData(pRequestData->sControlsPath.c_str(), pRequestData->eDataScope);
-    //                break;
-    //            }
-    //            case eAMRT_PARSE_PRELOADS_DATA:
-    //            {
-    //                auto const pRequestData = static_cast<const SAudioManagerRequestDataInternal<eAMRT_PARSE_PRELOADS_DATA>*>(rRequest.pData.get());
-    //                eResult = ParsePreloadsData(pRequestData->sControlsPath.c_str(), pRequestData->eDataScope);
-    //                break;
-    //            }
-    //            case eAMRT_CLEAR_CONTROLS_DATA:
-    //            {
-    //                auto const pRequestData = static_cast<const SAudioManagerRequestDataInternal<eAMRT_CLEAR_CONTROLS_DATA>*>(rRequest.pData.get());
-    //                eResult = ClearControlsData(pRequestData->eDataScope);
-    //                break;
-    //            }
-    //            case eAMRT_CLEAR_PRELOADS_DATA:
-    //            {
-    //                auto const pRequestData = static_cast<const SAudioManagerRequestDataInternal<eAMRT_CLEAR_PRELOADS_DATA>*>(rRequest.pData.get());
-    //                eResult = ClearPreloadsData(pRequestData->eDataScope);
-    //                break;
-    //            }
-    //            case eAMRT_PRELOAD_SINGLE_REQUEST:
-    //            {
-    //                auto const pRequestData = static_cast<const SAudioManagerRequestDataInternal<eAMRT_PRELOAD_SINGLE_REQUEST>*>(rRequest.pData.get());
-    //                eResult = m_oFileCacheMgr.TryLoadRequest(pRequestData->nPreloadRequest, ((rRequest.nFlags & eARF_EXECUTE_BLOCKING) != 0), pRequestData->bAutoLoadOnly);
-    //                break;
-    //            }
-    //            case eAMRT_UNLOAD_SINGLE_REQUEST:
-    //            {
-    //                auto const pRequestData = static_cast<const SAudioManagerRequestDataInternal<eAMRT_UNLOAD_SINGLE_REQUEST>*>(rRequest.pData.get());
-    //                eResult = m_oFileCacheMgr.TryUnloadRequest(pRequestData->nPreloadRequest);
-    //                break;
-    //            }
-    //            case eAMRT_UNLOAD_AFCM_DATA_BY_SCOPE:
-    //            {
-    //                auto const pRequestData = static_cast<const SAudioManagerRequestDataInternal<eAMRT_UNLOAD_AFCM_DATA_BY_SCOPE>*>(rRequest.pData.get());
-    //                eResult = m_oFileCacheMgr.UnloadDataByScope(pRequestData->eDataScope);
-    //                break;
-    //            }
-    //            case eAMRT_CHANGE_LANGUAGE:
-    //            {
-    //                SetImplLanguage();
-
-    //                m_oFileCacheMgr.UpdateLocalizedFileCacheEntries();
-    //                eResult = EAudioRequestStatus::Success;
-    //                break;
-    //            }
-    //            case eAMRT_SET_AUDIO_PANNING_MODE:
-    //            {
-    //                auto const requestData = static_cast<const SAudioManagerRequestDataInternal<eAMRT_SET_AUDIO_PANNING_MODE>*>(rRequest.pData.get());
-    //                AudioSystemImplementationRequestBus::Broadcast(&AudioSystemImplementationRequestBus::Events::SetPanningMode, requestData->m_panningMode);
-    //                eResult = EAudioRequestStatus::Success;
-    //                break;
-    //            }
-    //            case eAMRT_DRAW_DEBUG_INFO:
-    //            {
-    //            #if !defined(AUDIO_RELEASE)
-    //                DrawAudioSystemDebugInfo();
-    //                eResult = EAudioRequestStatus::Success;
-    //            #endif // !AUDIO_RELEASE
-    //                break;
-    //            }
-    //            case eAMRT_NONE:
-    //            {
-    //                eResult = EAudioRequestStatus::Success;
-    //                break;
-    //            }
-    //            default:
-    //            {
-    //                g_audioLogger.Log(LogType::Warning, "ATL received an unknown AudioManager request: %u", pRequestDataBase->eType);
-    //                eResult = EAudioRequestStatus::FailureInvalidRequest;
-    //                break;
-    //            }
-    //        }
-    //    }
-
-    //    return eResult;
-    //}
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
     //EAudioRequestStatus CAudioTranslationLayer::ProcessAudioCallbackManagerRequest(const SAudioRequestDataInternal* pPassedRequestData)
     //{
     //    EAudioRequestStatus eResult = EAudioRequestStatus::Failure;     // can we switch this to None?
@@ -1151,364 +922,6 @@ namespace Audio
     //                break;
     //            }
     //        }
-    //    }
-
-    //    return eResult;
-    //}
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    //EAudioRequestStatus CAudioTranslationLayer::ProcessAudioObjectRequest(const CAudioRequestInternal& rRequest)
-    //{
-    //    EAudioRequestStatus eResult = EAudioRequestStatus::Failure;     // can this be switched to None?
-    //    CATLAudioObjectBase* pObject = static_cast<CATLAudioObjectBase*>(m_pGlobalAudioObject);
-
-    //    if (rRequest.nAudioObjectID != INVALID_AUDIO_OBJECT_ID)
-    //    {
-    //        pObject = static_cast<CATLAudioObjectBase*>(m_oAudioObjectMgr.LookupID(rRequest.nAudioObjectID));
-    //    }
-
-    //    if (pObject)
-    //    {
-    //        const SAudioRequestDataInternal* const pPassedRequestData = rRequest.pData;
-
-    //        if (pPassedRequestData)
-    //        {
-    //            auto const pBaseRequestData = static_cast<const SAudioObjectRequestDataInternalBase*>(pPassedRequestData);
-
-    //            switch (pBaseRequestData->eType)
-    //            {
-    //                case eAORT_PREPARE_TRIGGER:
-    //                {
-    //                    auto const pRequestData = static_cast<const SAudioObjectRequestDataInternal<eAORT_PREPARE_TRIGGER>*>(pPassedRequestData);
-
-    //                    auto it = m_cTriggers.find(pRequestData->nTriggerID);
-    //                    if (it != m_cTriggers.end())
-    //                    {
-    //                        eResult = PrepUnprepTriggerAsync(pObject, it->second, true);
-    //                    }
-    //                    else
-    //                    {
-    //                        eResult = EAudioRequestStatus::FailureInvalidControlId;
-    //                    }
-    //                    break;
-    //                }
-    //                case eAORT_UNPREPARE_TRIGGER:
-    //                {
-    //                    auto const pRequestData = static_cast<const SAudioObjectRequestDataInternal<eAORT_UNPREPARE_TRIGGER>*>(pPassedRequestData);
-
-    //                    auto it = m_cTriggers.find(pRequestData->nTriggerID);
-    //                    if (it != m_cTriggers.end())
-    //                    {
-    //                        eResult = PrepUnprepTriggerAsync(pObject, it->second, false);
-    //                    }
-    //                    else
-    //                    {
-    //                        eResult = EAudioRequestStatus::FailureInvalidControlId;
-    //                    }
-    //                    break;
-    //                }
-    //                case eAORT_EXECUTE_TRIGGER:
-    //                {
-    //                    auto const pRequestData = static_cast<const SAudioObjectRequestDataInternal<eAORT_EXECUTE_TRIGGER>*>(pPassedRequestData);
-
-    //                    auto it = m_cTriggers.find(pRequestData->nTriggerID);
-    //                    if (it != m_cTriggers.end())
-    //                    {
-    //                        eResult = ActivateTrigger(
-    //                            pObject,
-    //                            it->second,
-    //                            rRequest.pOwner,
-    //                            rRequest.pUserData,
-    //                            rRequest.pUserDataOwner,
-    //                            rRequest.nFlags);
-    //                    }
-    //                    else
-    //                    {
-    //                        eResult = EAudioRequestStatus::FailureInvalidControlId;
-    //                    }
-    //                    break;
-    //                }
-    //                case eAORT_STOP_TRIGGER:
-    //                {
-    //                    auto const pRequestData = static_cast<const SAudioObjectRequestDataInternal<eAORT_STOP_TRIGGER>*>(pPassedRequestData);
-
-    //                    auto it = m_cTriggers.find(pRequestData->nTriggerID);
-    //                    if (it != m_cTriggers.end())
-    //                    {
-    //                        eResult = StopTrigger(pObject, it->second);
-    //                    }
-    //                    else
-    //                    {
-    //                        eResult = EAudioRequestStatus::FailureInvalidControlId;
-    //                    }
-    //                    break;
-    //                }
-    //                case eAORT_STOP_ALL_TRIGGERS:
-    //                {
-    //                    auto const pRequestData = static_cast<const SAudioObjectRequestDataInternal<eAORT_STOP_ALL_TRIGGERS>*>(pPassedRequestData);
-
-    //                    if (pRequestData->m_filterByOwner)
-    //                    {
-    //                        StopAllTriggers(pObject, rRequest.pOwner);
-    //                    }
-    //                    else
-    //                    {
-    //                        StopAllTriggers(pObject);
-    //                    }
-
-    //                    // Why not return the result of StopAllTriggers call?
-    //                    eResult = EAudioRequestStatus::Success;
-    //                    break;
-    //                }
-    //                case eAORT_SET_POSITION:
-    //                {
-    //                    if (pObject->HasPosition())
-    //                    {
-    //                        auto const pRequestData = static_cast<const SAudioObjectRequestDataInternal<eAORT_SET_POSITION>*>(pPassedRequestData);
-
-    //                        auto const pPositionedObject = static_cast<CATLAudioObject*>(pObject);
-
-    //                        AudioSystemImplementationRequestBus::BroadcastResult(eResult, &AudioSystemImplementationRequestBus::Events::SetPosition,
-    //                            pPositionedObject->GetImplDataPtr(),
-    //                            pRequestData->oPosition);
-
-    //                        if (eResult == EAudioRequestStatus::Success)
-    //                        {
-    //                            pPositionedObject->SetPosition(pRequestData->oPosition);
-    //                        }
-    //                    }
-    //                    else
-    //                    {
-    //                        g_audioLogger.Log(LogType::Warning, "ATL received a request to set a position on a global object");
-    //                    }
-    //                    break;
-    //                }
-    //                case eAORT_SET_RTPC_VALUE:
-    //                {
-    //                    eResult = EAudioRequestStatus::FailureInvalidControlId;
-
-    //                    auto const pRequestData = static_cast<const SAudioObjectRequestDataInternal<eAORT_SET_RTPC_VALUE>*>(pPassedRequestData);
-
-    //                    auto it = m_cRtpcs.find(pRequestData->nControlID);
-    //                    if (it != m_cRtpcs.end())
-    //                    {
-    //                        eResult = SetRtpc(pObject, it->second, pRequestData->fValue);
-    //                    }
-    //                    break;
-    //                }
-    //                case eAORT_SET_SWITCH_STATE:
-    //                {
-    //                    eResult = EAudioRequestStatus::FailureInvalidControlId;
-    //                    auto const pRequestData = static_cast<const SAudioObjectRequestDataInternal<eAORT_SET_SWITCH_STATE>*>(pPassedRequestData);
-
-    //                    auto itSwitch = m_cSwitches.find(pRequestData->nSwitchID);
-    //                    if (itSwitch != m_cSwitches.end())
-    //                    {
-    //                        auto itState = itSwitch->second->cStates.find(pRequestData->nStateID);
-    //                        if (itState != itSwitch->second->cStates.end())
-    //                        {
-    //                            eResult = SetSwitchState(pObject, itState->second);
-    //                        }
-    //                    }
-    //                    break;
-    //                }
-    //                case eAORT_SET_ENVIRONMENT_AMOUNT:
-    //                {
-    //                    if (pObject->HasPosition())
-    //                    {
-    //                        eResult = EAudioRequestStatus::FailureInvalidControlId;
-    //                        auto const pRequestData = static_cast<const SAudioObjectRequestDataInternal<eAORT_SET_ENVIRONMENT_AMOUNT>*>(pPassedRequestData);
-
-    //                        auto it = m_cEnvironments.find(pRequestData->nEnvironmentID);
-    //                        if (it != m_cEnvironments.end())
-    //                        {
-    //                            eResult = SetEnvironment(pObject, it->second, pRequestData->fAmount);
-    //                        }
-    //                    }
-    //                    else
-    //                    {
-    //                        g_audioLogger.Log(LogType::Warning, "ATL received a request to set an environment on a global object");
-    //                    }
-    //                    break;
-    //                }
-    //                case eAORT_RESET_ENVIRONMENTS:
-    //                {
-    //                    eResult = ResetEnvironments(pObject);
-    //                    break;
-    //                }
-    //                case eAORT_RESET_RTPCS:
-    //                {
-    //                    eResult = ResetRtpcs(pObject);
-    //                    break;
-    //                }
-    //                case eAORT_RELEASE_OBJECT:
-    //                {
-    //                    eResult = EAudioRequestStatus::Failure;  // redundant?
-
-    //                    const TAudioObjectID nObjectID = pObject->GetID();
-
-    //                    if (nObjectID != m_nGlobalAudioObjectID)
-    //                    {
-    //                        if (ReleaseAudioObjectID(nObjectID))
-    //                        {
-    //                            eResult = EAudioRequestStatus::Success;
-    //                        }
-    //                    }
-    //                    else
-    //                    {
-    //                        g_audioLogger.Log(LogType::Warning, "ATL received a request to release the GlobalAudioObject");
-    //                    }
-    //                    break;
-    //                }
-    //                case eAORT_EXECUTE_SOURCE_TRIGGER:
-    //                {
-    //                    eResult = EAudioRequestStatus::Failure;  // redundant?
-    //                    auto const requestData = static_cast<const SAudioObjectRequestDataInternal<eAORT_EXECUTE_SOURCE_TRIGGER>*>(pPassedRequestData);
-
-    //                    auto it = m_cTriggers.find(requestData->m_triggerId);
-    //                    if (it != m_cTriggers.end())
-    //                    {
-    //                        SATLSourceData sourceData(requestData->m_sourceInfo);
-    //                        eResult = ActivateTrigger(
-    //                            pObject,
-    //                            it->second,
-    //                            rRequest.pOwner,
-    //                            rRequest.pUserData,
-    //                            rRequest.pUserDataOwner,
-    //                            rRequest.nFlags,
-    //                            &sourceData
-    //                        );
-    //                    }
-    //                    else
-    //                    {
-    //                        eResult = EAudioRequestStatus::FailureInvalidControlId;
-    //                    }
-
-    //                    break;
-    //                }
-    //                case eAORT_SET_MULTI_POSITIONS:
-    //                {
-    //                    if (pObject->HasPosition())
-    //                    {
-    //                        auto const pRequestData = static_cast<const SAudioObjectRequestDataInternal<eAORT_SET_MULTI_POSITIONS>*>(pPassedRequestData);
-
-    //                        auto const pPositionedObject = static_cast<CATLAudioObject*>(pObject);
-
-    //                        AudioSystemImplementationRequestBus::BroadcastResult(eResult, &AudioSystemImplementationRequestBus::Events::SetMultiplePositions,
-    //                            pPositionedObject->GetImplDataPtr(),
-    //                            pRequestData->m_params);
-
-    //                        if (eResult == EAudioRequestStatus::Success)
-    //                        {
-    //                            pPositionedObject->SetPosition(SATLWorldPosition());
-    //                        }
-    //                    }
-    //                    else
-    //                    {
-    //                        g_audioLogger.Log(LogType::Warning, "ATL received a request to set multiple positions on a global object");
-    //                    }
-    //                    break;
-    //                }
-    //                case eAORT_NONE:
-    //                {
-    //                    eResult = EAudioRequestStatus::Success;
-    //                    break;
-    //                }
-    //                default:
-    //                {
-    //                    eResult = EAudioRequestStatus::FailureInvalidRequest;
-    //                    g_audioLogger.Log(LogType::Warning, "ATL received an unknown AudioObject request type: %u", pBaseRequestData->eType);
-    //                    break;
-    //                }
-    //            }
-    //        }
-    //    }
-    //    else
-    //    {
-    //        g_audioLogger.Log(LogType::Warning, "ATL received a request to a non-existent AudioObject: %u", rRequest.nAudioObjectID);
-    //        eResult = EAudioRequestStatus::FailureInvalidObjectId;
-    //    }
-
-    //    return eResult;
-    //}
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    //EAudioRequestStatus CAudioTranslationLayer::ProcessAudioListenerRequest(const CAudioRequestInternal& rRequest)
-    //{
-    //    EAudioRequestStatus eResult = EAudioRequestStatus::Failure;     // can this be switched to None?
-    //    TAudioObjectID listenerID = INVALID_AUDIO_OBJECT_ID;
-
-    //    // Check for an Audio Listener Override.
-    //    TAudioObjectID overrideListenerID = m_oAudioListenerMgr.GetOverrideListenerID();
-    //    if (overrideListenerID != INVALID_AUDIO_OBJECT_ID)
-    //    {
-    //        if (rRequest.nAudioObjectID == overrideListenerID)
-    //        {
-    //            // Have an override set, and the ID in the request matches the override.
-    //            // Reroute to the default listener.
-    //            listenerID = m_oAudioListenerMgr.GetDefaultListenerID();
-    //        }
-    //        else if (rRequest.nAudioObjectID != INVALID_AUDIO_OBJECT_ID)
-    //        {
-    //            // Override is set, but the request specified a different listener ID, allow it.
-    //            listenerID = rRequest.nAudioObjectID;
-    //        }
-    //        else
-    //        {
-    //            // Override is set, but no listener ID specified.  Typically this would go
-    //            // to the default listener, but with overrides we explicitly ignore this.
-    //            return eResult;
-    //        }
-    //    }
-    //    else if (rRequest.nAudioObjectID == INVALID_AUDIO_OBJECT_ID)
-    //    {
-    //        listenerID = m_oAudioListenerMgr.GetDefaultListenerID();
-    //    }
-    //    else
-    //    {
-    //        listenerID = rRequest.nAudioObjectID;
-    //    }
-
-    //    CATLListenerObject* const pListener = m_oAudioListenerMgr.LookupID(listenerID);
-    //    if (pListener)
-    //    {
-    //        if (rRequest.pData)
-    //        {
-    //            auto const pBaseRequestData = static_cast<const SAudioListenerRequestDataInternalBase*>(rRequest.pData.get());
-
-    //            switch (pBaseRequestData->eType)
-    //            {
-    //                case eALRT_SET_POSITION:
-    //                {
-    //                    auto const pRequestData = static_cast<const SAudioListenerRequestDataInternal<eALRT_SET_POSITION>*>(rRequest.pData.get());
-
-    //                    AudioSystemImplementationRequestBus::BroadcastResult(eResult, &AudioSystemImplementationRequestBus::Events::SetListenerPosition,
-    //                        pListener->m_pImplData,
-    //                        pRequestData->oNewPosition);
-
-    //                    if (eResult == EAudioRequestStatus::Success)
-    //                    {
-    //                        pListener->oPosition = pRequestData->oNewPosition;
-    //                    }
-    //                    break;
-    //                }
-    //                case eALRT_NONE:
-    //                {
-    //                    eResult = EAudioRequestStatus::Success;
-    //                    break;
-    //                }
-    //                default:
-    //                {
-    //                    eResult = EAudioRequestStatus::FailureInvalidRequest;
-    //                    g_audioLogger.Log(LogType::Warning, "ATL received an unknown AudioListener request type: %u", pBaseRequestData->eType);
-    //                    break;
-    //                }
-    //            }
-    //        }
-    //    }
-    //    else
-    //    {
-    //        g_audioLogger.Log(LogType::Comment, "Could not find listener with ID: %u", listenerID);
     //    }
 
     //    return eResult;
@@ -2339,6 +1752,52 @@ namespace Audio
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
+    EAudioRequestStatus CAudioTranslationLayer::LoseFocus()
+    {
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
+    #if !defined(AUDIO_RELEASE)
+        if (!Audio::CVars::s_IgnoreWindowFocus && 0 == (m_nFlags & eAIS_IS_MUTED))
+    #endif // !AUDIO_RELEASE
+        {
+            if (auto it = m_cTriggers.find(ATLInternalControlIDs::LoseFocusTriggerID); it != m_cTriggers.end())
+            {
+                result = ActivateTrigger(m_pGlobalAudioObject, it->second);
+            }
+            else
+            {
+                g_audioLogger.Log(LogType::Warning, "ATL - Trigger not found for: 'lose_focus'");
+                result = EAudioRequestStatus::FailureInvalidControlId;
+            }
+
+            AudioSystemImplementationNotificationBus::Broadcast(&AudioSystemImplementationNotificationBus::Events::OnAudioSystemLoseFocus);
+        }
+        return result;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    EAudioRequestStatus CAudioTranslationLayer::GetFocus()
+    {
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
+    #if !defined(AUDIO_RELEASE)
+        if (!Audio::CVars::s_IgnoreWindowFocus && 0 == (m_nFlags & eAIS_IS_MUTED))
+    #endif // !AUDIO_RELEASE
+        {
+            AudioSystemImplementationNotificationBus::Broadcast(&AudioSystemImplementationNotificationBus::Events::OnAudioSystemGetFocus);
+
+            if (auto it = m_cTriggers.find(ATLInternalControlIDs::GetFocusTriggerID); it != m_cTriggers.end())
+            {
+                result = ActivateTrigger(m_pGlobalAudioObject, it->second);
+            }
+            else
+            {
+                g_audioLogger.Log(LogType::Warning, "ATL - Trigger not found for: 'get_focus'");
+                result = EAudioRequestStatus::FailureInvalidControlId;
+            }
+        }
+        return result;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioTranslationLayer::UpdateSharedData()
     {
         m_oAudioListenerMgr.GetDefaultListenerPosition(m_oSharedData.m_oActiveListenerPosition);
@@ -2390,8 +1849,6 @@ namespace Audio
             break;
         }
     }
-
-#if !defined(AUDIO_RELEASE)
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     EAudioRequestStatus CAudioTranslationLayer::RefreshAudioSystem(const char* const controlsPath, const char* const levelName, TAudioPreloadRequestID levelPreloadId)
@@ -2462,6 +1919,8 @@ namespace Audio
 
         return EAudioRequestStatus::Success;
     }
+
+#if !defined(AUDIO_RELEASE)
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     bool CAudioTranslationLayer::ReserveAudioObjectID(TAudioObjectID& rAudioObjectID, const char* const sAudioObjectName)

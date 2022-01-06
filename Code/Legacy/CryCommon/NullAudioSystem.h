@@ -61,18 +61,9 @@ namespace Audio
         void Release() override {}
         void ExternalUpdate() override {}
 
-        // OLD REQUESTS API
-        //void PushRequest(const SAudioRequest&) override {}
-        //void PushRequestBlocking(const SAudioRequest&) override {}
-        //void PushRequestThreadSafe(const SAudioRequest&) override {}
-
         //! NEW AUDIO REQUESTS
-        void PushRequestNew(AudioRequestType&&) override
-        {
-        }
-        void PushRequestBlockingNew(AudioRequestType&&) override
-        {
-        }
+        void PushRequestNew(AudioRequestType&&) override {}
+        void PushRequestBlockingNew(AudioRequestType&&) override {}
         //~ NEW AUDIO REQUESTS
 
         void AddRequestListener(AudioRequestCallbackType, void*, EAudioRequestType, TATLEnumFlagsType) override {}

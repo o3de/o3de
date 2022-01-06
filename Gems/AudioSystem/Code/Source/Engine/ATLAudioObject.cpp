@@ -387,19 +387,18 @@ namespace Audio
         if (AZ::GetAbs(fCurrentVelocity - m_fPreviousVelocity) > Audio::CVars::s_VelocityTrackingThreshold)
         {
             m_fPreviousVelocity = fCurrentVelocity;
-            // TODO:
-            //SAudioRequest oRequest;
-            //SAudioObjectRequestData<eAORT_SET_RTPC_VALUE> oRequestData(ATLInternalControlIDs::ObjectSpeedRtpcID, fCurrentVelocity);
 
-            //oRequest.nAudioObjectID = GetID();
-            //oRequest.nFlags = eARF_THREAD_SAFE_PUSH;
-            //oRequest.pData = &oRequestData;
-            //AudioSystemThreadSafeRequestBus::Broadcast(&AudioSystemThreadSafeRequestBus::Events::PushRequestThreadSafe, oRequest);
+            Audio::ObjectRequest::SetParameterValue setParameter;
+            setParameter.m_audioObjectId = GetID();
+            setParameter.m_parameterId = ATLInternalControlIDs::ObjectSpeedRtpcID;
+            setParameter.m_value = fCurrentVelocity;
+            AZ::Interface<IAudioSystem>::Get()->PushRequestNew(AZStd::move(setParameter));
+            // TODO:
+            // (Verify): this request used flag eARF_THREAD_SAFE_PUSH on the AudioSystemThreadSafeRequestBus !!
         }
 
         m_oPreviousPosition = m_oPosition;
     }
-
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CATLAudioObject::SetRaycastCalcType(const EAudioObjectObstructionCalcType calcType)

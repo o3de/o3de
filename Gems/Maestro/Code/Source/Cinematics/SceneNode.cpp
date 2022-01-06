@@ -668,17 +668,15 @@ void CAnimSceneNode::ReleaseSounds()
     // but we want to have it filter based on the owner (this)
     // so we don't stop sounds that didn't originate with track view.
 
-    // TODO:
-    //if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
-    //{
-    //    Audio::SAudioRequest request;
-    //    request.nFlags = Audio::eARF_PRIORITY_HIGH;
-    //    request.pOwner = this;
-
-    //    Audio::SAudioObjectRequestData<Audio::eAORT_STOP_ALL_TRIGGERS> requestData(/*filterByOwner = */ true);
-    //    request.pData = &requestData;
-    //    audioSystem->PushRequest(request);
-    //}
+    if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+    {
+        Audio::ObjectRequest::StopAllTriggers stopAll;
+        stopAll.m_filterByOwner = true;
+        // TODO:
+        // request.nFlags = Audio::eARF_PRIORITY_HIGH;
+        // request.pOwner = this;
+        audioSystem->PushRequestNew(AZStd::move(stopAll));
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -917,22 +915,21 @@ void CAnimSceneNode::ApplyAudioKey(char const* const sTriggerName, [[maybe_unuse
         if (nAudioTriggerID != INVALID_AUDIO_CONTROL_ID)
         {
             // TODO:
-            //Audio::SAudioRequest oRequest;
             //oRequest.nFlags = Audio::eARF_PRIORITY_HIGH;
             //oRequest.pOwner = this;
 
-            //if (bPlay)
-            //{
-            //    Audio::SAudioObjectRequestData<Audio::eAORT_EXECUTE_TRIGGER> oRequestData(nAudioTriggerID);
-            //    oRequest.pData = &oRequestData;
-            //    audioSystem->PushRequest(oRequest);
-            //}
-            //else
-            //{
-            //    Audio::SAudioObjectRequestData<Audio::eAORT_STOP_TRIGGER> oRequestData(nAudioTriggerID);
-            //    oRequest.pData = &oRequestData;
-            //    audioSystem->PushRequest(oRequest);
-            //}
+            if (bPlay)
+            {
+                Audio::ObjectRequest::ExecuteTrigger execTrigger;
+                execTrigger.m_triggerId = nAudioTriggerID;
+                audioSystem->PushRequestNew(AZStd::move(execTrigger));
+            }
+            else
+            {
+                Audio::ObjectRequest::StopTrigger stopTrigger;
+                stopTrigger.m_triggerId = nAudioTriggerID;
+                audioSystem->PushRequestNew(AZStd::move(stopTrigger));
+            }
         }
     }
 }
