@@ -768,7 +768,10 @@ namespace AZ
                         }
                         
                         // Add a buffer view to the output model so it knows where to read the final skinned vertex data from
-                        AddSubMeshViewToModelLodCreator(outputStreamIndex, lod.m_outputVertexCountsByStream[static_cast<uint8_t>(SkinnedMeshOutputVertexStreams::Position)], lod.m_meshes[i].m_vertexCount, skinnedMeshOutputBufferAsset, streamOffsetsFromBufferStart, currentMeshOffsetsFromStreamStartInBytes, modelLodCreator);
+                        AddSubMeshViewToModelLodCreator(
+                            outputStreamIndex, lod.m_outputVertexCountsByStream[static_cast<uint8_t>(outputStreamIndex)],
+                            lod.m_meshes[i].m_vertexCount, skinnedMeshOutputBufferAsset, streamOffsetsFromBufferStart,
+                            currentMeshOffsetsFromStreamStartInBytes, modelLodCreator);
                     }
 
                     // Set the views into the static buffers

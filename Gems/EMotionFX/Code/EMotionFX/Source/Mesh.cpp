@@ -184,11 +184,12 @@ namespace EMotionFX
         // The lod has shared buffers that combine the data from each submesh.
         // These buffers can be accessed through the first submesh in their entirety
         // by using the BufferViewDescriptor from the Buffer instead of the one from the sub-mesh's BufferAssetView
-        const AZ::RPI::ModelLodAsset::Mesh& sourceMesh = sourceModelLod->GetMeshes()[0];
+        const AZ::RPI::ModelLodAsset::Mesh& sourceMesh0 = sourceModelLod->GetMeshes()[0];
 
         // Copy the index buffer for the entire lod
-        AZStd::array_view<uint8_t> indexBuffer = sourceMesh.GetIndexBufferAssetView().GetBufferAsset()->GetBuffer();
-        const AZ::RHI::BufferViewDescriptor& indexBufferViewDescriptor = sourceMesh.GetIndexBufferAssetView().GetBufferAsset()->GetBufferViewDescriptor();
+        AZStd::array_view<uint8_t> indexBuffer = sourceMesh0.GetIndexBufferAssetView().GetBufferAsset()->GetBuffer();
+        const AZ::RHI::BufferViewDescriptor& indexBufferViewDescriptor =
+            sourceMesh0.GetIndexBufferAssetView().GetBufferAsset()->GetBufferViewDescriptor();
         AZ_ErrorOnce("EMotionFX", indexBufferViewDescriptor.m_elementSize == 4, "Index buffer must stored as 4 bytes.");
         const size_t indexBufferCountsInBytes = indexBufferViewDescriptor.m_elementCount * indexBufferViewDescriptor.m_elementSize;
         const size_t indexBufferOffsetInBytes = indexBufferViewDescriptor.m_elementOffset * indexBufferViewDescriptor.m_elementSize;
@@ -203,7 +204,7 @@ namespace EMotionFX
         const float* skinWeights = nullptr;
 
         // Copy the vertex buffers
-        for (const AZ::RPI::ModelLodAsset::Mesh::StreamBufferInfo& streamBufferInfo : sourceMesh.GetStreamBufferInfoList())
+        for (const AZ::RPI::ModelLodAsset::Mesh::StreamBufferInfo& streamBufferInfo : sourceMesh0.GetStreamBufferInfoList())
         {
             const AZ::RHI::BufferViewDescriptor& bufferAssetViewDescriptor = streamBufferInfo.m_bufferAssetView.GetBufferAsset()->GetBufferViewDescriptor();
             const size_t elementCountInBytes = bufferAssetViewDescriptor.m_elementSize * bufferAssetViewDescriptor.m_elementCount;
@@ -291,15 +292,52 @@ namespace EMotionFX
             skin2dArray.SetNumPreCachedElements(maxSkinInfluences);
             skin2dArray.Resize(modelVertexCount);
 
+            // JointId's must be padded on sub-mesh boundaries to ensure each sub-mesh view
+            // starts on a 16-byte aligned point in the buffer
+            // Pre-calculate all the boundary points so we can accommodate for the padding when adding joint id's
+            AZStd::queue<AZStd::tuple<AZ::u32, AZ::u32>> jointIdBoundaries;
+            AZ::u32 totalVertexCount = 0;
+            for (const AZ::RPI::ModelLodAsset::Mesh& sourceMesh : sourceModelLod->GetMeshes())
+            {
+                uint32 meshVertexCount = sourceMesh.GetVertexCount();
+                totalVertexCount += meshVertexCount;
+                uint32 jointIdCount = meshVertexCount * maxSkinInfluences;
+                // For a two byte unit16_t, we need to round up to a multiple of 8 elements
+                uint32_t jointIdSizeInBytes = sizeof(AZ::u16);
+                uint32_t roundUpTo = 16 / jointIdSizeInBytes;
+                // Round up
+                uint32_t paddedJointIdCount = jointIdCount;
+                paddedJointIdCount += roundUpTo - 1;
+                paddedJointIdCount = paddedJointIdCount - paddedJointIdCount % roundUpTo;
+                // Determine how many padding id's we need to add, if any
+                uint32_t extraIdCount = paddedJointIdCount - jointIdCount;
+
+                if (extraIdCount > 0)
+                {
+                    jointIdBoundaries.push(AZStd::make_tuple(totalVertexCount, extraIdCount));
+                }
+            }
+
+            uint32 totalJointIdPadding = 0;
             // Fill in skinning data from atom buffer
             for (uint32 v = 0; v < modelVertexCount; ++v)
             {
+                if (!jointIdBoundaries.empty())
+                {
+                    const auto& [boundary, extraPadding] = jointIdBoundaries.front();
+                    if (v == boundary)
+                    {
+                        totalJointIdPadding += extraPadding;
+                        jointIdBoundaries.pop();
+                    }
+                }
                 for (uint32 i = 0; i < maxSkinInfluences; ++i)
                 {
+                    
                     const float weight = skinWeights[v * maxSkinInfluences + i];
                     if (!AZ::IsClose(weight, 0.0f, FLT_EPSILON))
                     {
-                        const AZ::u16 skinJointIndex = skinJointIndices[v * maxSkinInfluences + i];
+                        const AZ::u16 skinJointIndex = skinJointIndices[v * maxSkinInfluences + i + totalJointIdPadding];
                         if (skinToSkeletonIndexMap.find(skinJointIndex) == skinToSkeletonIndexMap.end())
                         {
                             AZ_WarningOnce("EMotionFX", false, "Missing skin influences for index %d", skinJointIndex);
