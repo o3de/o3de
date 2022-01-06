@@ -1,6 +1,6 @@
 {
     "template_name": "GemRepo",
-        "origin_url": "https://github.com/o3de/o3de",
+    "origin_url": "https://github.com/o3de/o3de",
     "license": "Apache-2.0 or MIT",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "display_name": "GemRepo",

@@ -270,9 +270,6 @@ class TestPrintRegistration:
 
         # Patch the manifest.py function to locate gem.json files in external subdirectories
         # to just return a fake path to a single test gem
-        #def get_gems_from_subdirectories(external_subdirs: list) -> list:
-        #    return ["D:/TestGem"]
-
         with patch('o3de.manifest.load_o3de_manifest', side_effect=self.load_manifest_json) as load_manifest_patch, \
                 patch('o3de.manifest.get_gem_json_data', side_effect=self.get_gem_json_data) as get_json_patch, \
                 patch('o3de.manifest.get_project_json_data', side_effect=self.get_project_json_data) as get_project_json_patch, \

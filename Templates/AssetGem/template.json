@@ -8,10 +8,10 @@
     "display_name": "Asset Gem Template",
     "summary": "Use this gem template to create the minimal gem needed for adding asset(s).",
     "canonical_tags": [
-		"Template",
+        "Template",
         "Gem",
         "Asset"
-	],
+    ],
     "user_tags": [
         "AssetGem"
     ],

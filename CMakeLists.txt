@@ -49,6 +49,7 @@ include(cmake/O3DEJson.cmake)
 # Subdirectory processing
 ################################################################################
 
+# this function is building up the LY_EXTERNAL_SUBDIRS global property
 function(add_engine_gem_json_external_subdirectories gem_path)
     set(gem_json_path ${gem_path}/gem.json)
     if(EXISTS ${gem_json_path})
@@ -73,9 +74,9 @@ endfunction()
 function(add_subdirectory_on_externalsubdirs)
     get_property(external_subdirs GLOBAL PROPERTY LY_EXTERNAL_SUBDIRS)
     list(APPEND LY_EXTERNAL_SUBDIRS ${external_subdirs})
- # Loop over the additional external subdirectories and invoke add_subdirectory on them
+    # Loop over the additional external subdirectories and invoke add_subdirectory on them
     foreach(external_directory ${LY_EXTERNAL_SUBDIRS})
-        # Hash the extenal_directory name and append it to the Binary Directory section of add_subdirectory
+        # Hash the external_directory name and append it to the Binary Directory section of add_subdirectory
         # This is to deal with potential situations where multiple external directories has the same last directory name
         # For example if D:/Company1/RayTracingGem and F:/Company2/Path/RayTracingGem were both added as a subdirectory
         file(REAL_PATH ${external_directory} full_directory_path)
