@@ -36,7 +36,6 @@
 #include <ScriptCanvas/Libraries/Libraries.h>
 #include <ScriptCanvas/PerformanceStatisticsBus.h>
 #include <ScriptCanvas/Variable/VariableCore.h>
-#include <ScriptCanvas/View/EditCtrls/GenericLineEditCtrl.h>
 #include <Editor/Assets/ScriptCanvasAssetHelpers.h>
 
 

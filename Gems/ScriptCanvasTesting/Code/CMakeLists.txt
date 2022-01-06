@@ -29,7 +29,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PUBLIC
             Gem::ScriptCanvas
-            Gem::ScriptCanvasEditor
+            Gem::ScriptCanvas.Editor
             Gem::GraphCanvasWidgets
             Gem::ScriptEvents.Editor
         PRIVATE
@@ -44,7 +44,6 @@ ly_add_target(
             *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Source.jinja,$path/$fileprefix.generated.cpp
     RUNTIME_DEPENDENCIES
         Gem::ScriptCanvas.Editor
-        Gem::ScriptCanvasEditor
         Gem::GraphCanvasWidgets
         Gem::ScriptEvents
 )
