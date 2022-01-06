@@ -16,7 +16,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         : m_name(AZStd::move(name))
         , m_instance(AZStd::make_unique<AzToolsFramework::Prefab::Instance>())
     {
-        m_instance->SetTemplateSourcePath(AZ::IO::Path("InMemory") / name);
+        m_instance->SetTemplateSourcePath(AZ::IO::Path("InMemory") / m_name);
     }
 
     bool PrefabDocument::SetPrefabDom(const PrefabDom& prefab)
@@ -64,8 +64,14 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
     {
         if (m_isDirty)
         {
-            m_isDirty = !PrefabDomUtils::StoreInstanceInPrefabDom(*m_instance, m_dom);
+            [[maybe_unused]] bool storedSuccessfully = PrefabDomUtils::StoreInstanceInPrefabDom(*m_instance, m_dom);
+            AZ_Assert(storedSuccessfully, "Failed to store Instance '%s' to PrefabDom.", m_name.c_str());
+            m_isDirty = false;
         }
+        // After the PrefabDom is moved an empty PrefabDom is left behind. This should be reflected in the Instance,
+        // so reset it so it's empty as well.
+        m_instance->Reset();
+        m_instance->SetTemplateSourcePath(AZ::IO::Path("InMemory") / m_name);
         return AZStd::move(m_dom);
     }
 

@@ -245,7 +245,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
                 AZ::Data::Asset<AzFramework::Spawnable>(target->m_spawnable.GetId(), azrtti_typeid<AzFramework::Spawnable>()), alias.m_tag,
                 sourceIndex, targetIndex,
                 alias.m_aliasType, alias.m_loadBehavior == EntityAliasSpawnableLoadBehavior::QueueLoad);
-            
+
             // Register the dependency between the two spawnables.
             RegisterProductAssetDependency(source->m_spawnable.GetId(), target->m_spawnable.GetId(), loadBehavior);
 
