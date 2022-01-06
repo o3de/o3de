@@ -195,10 +195,6 @@ set(FILES
     Editor/View/Widgets/LoggingPanel/LiveWindowSession/LiveLoggingDataAggregator.h
     Editor/View/Widgets/LoggingPanel/LiveWindowSession/LiveLoggingWindowSession.cpp
     Editor/View/Widgets/LoggingPanel/LiveWindowSession/LiveLoggingWindowSession.h
-    Editor/View/Widgets/LoggingPanel/AssetWindowSession/LoggingAssetDataAggregator.cpp
-    Editor/View/Widgets/LoggingPanel/AssetWindowSession/LoggingAssetDataAggregator.h
-    Editor/View/Widgets/LoggingPanel/AssetWindowSession/LoggingAssetWindowSession.cpp
-    Editor/View/Widgets/LoggingPanel/AssetWindowSession/LoggingAssetWindowSession.h
     Editor/View/Widgets/LoggingPanel/PivotTree/PivotTreeWidget.cpp
     Editor/View/Widgets/LoggingPanel/PivotTree/PivotTreeWidget.h
     Editor/View/Widgets/LoggingPanel/PivotTree/PivotTreeWidget.ui
