@@ -100,8 +100,6 @@ set(FILES
     Include/ScriptCanvas/Execution/ExecutionPerformanceTimer.h
     Include/ScriptCanvas/Execution/ExecutionState.h
     Include/ScriptCanvas/Execution/ExecutionStateDeclarations.h
-    Include/ScriptCanvas/Execution/NativeHostDeclarations.h
-    Include/ScriptCanvas/Execution/NativeHostDefinitions.h
     Include/ScriptCanvas/Execution/RuntimeComponent.h
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedAPI.h
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedCloningAPI.h
@@ -126,8 +124,6 @@ set(FILES
     Include/ScriptCanvas/Execution/ErrorBus.h
     Include/ScriptCanvas/Execution/ExecutionContext.h
     Include/ScriptCanvas/Execution/ExecutionBus.h
-    Include/ScriptCanvas/Execution/NativeHostDeclarations.h
-    Include/ScriptCanvas/Execution/NativeHostDefinitions.h
     Include/ScriptCanvas/Execution/RuntimeComponent.h
     Include/ScriptCanvas/Internal/Nodeables/BaseTimer.h
     Include/ScriptCanvas/Internal/Nodeables/BaseTimer.ScriptCanvasNodeable.xml

@@ -68,8 +68,6 @@ set(FILES
     Include/ScriptCanvas/Execution/ExecutionObjectCloning.cpp
     Include/ScriptCanvas/Execution/ExecutionPerformanceTimer.cpp
     Include/ScriptCanvas/Execution/ExecutionState.cpp
-    Include/ScriptCanvas/Execution/NativeHostDeclarations.cpp
-    Include/ScriptCanvas/Execution/NativeHostDefinitions.cpp
     Include/ScriptCanvas/Execution/RuntimeComponent.cpp
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedAPI.cpp
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedCloningAPI.cpp
@@ -90,8 +88,6 @@ set(FILES
     Include/ScriptCanvas/Grammar/PrimitivesDeclarations.cpp
     Include/ScriptCanvas/Grammar/PrimitivesExecution.cpp
     Include/ScriptCanvas/Execution/ExecutionContext.cpp
-    Include/ScriptCanvas/Execution/NativeHostDeclarations.cpp
-    Include/ScriptCanvas/Execution/NativeHostDefinitions.cpp
     Include/ScriptCanvas/Execution/RuntimeComponent.cpp
     Include/ScriptCanvas/Internal/Nodeables/BaseTimer.cpp
     Include/ScriptCanvas/Internal/Nodes/BaseTimerNode.cpp
