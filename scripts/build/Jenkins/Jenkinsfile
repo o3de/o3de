@@ -38,15 +38,15 @@ def pipelineParameters = [
     booleanParam(defaultValue: false, description: 'Recreates the volume used for the workspace. The volume will be created out of a snapshot taken from main.', name: 'RECREATE_VOLUME')
 ]
 
-def palSh(cmd, lbl = '', winSlashReplacement = true) {
+def palSh(cmd, lbl = '', winCharReplacement = true) {
     if (env.IS_UNIX) {
         sh label: lbl,
            script: cmd
     } else {
-        if (winSlashReplacement) {
+        if (winCharReplacement) {
             cmd = cmd.replace('/','\\')
+            cmd = cmd.replace('%', '%%')
         }
-       // cmd = cmd.replace('%', '%%')
         bat label: lbl,
             script: cmd
     }
@@ -262,7 +262,7 @@ def CheckoutRepo(boolean disableSubmodules = false) {
     commitDateFmt = '%%cI'
     if (env.IS_UNIX) commitDateFmt = '%cI'
 
-    palSh("git show -s --format=${commitDateFmt} ${env.CHANGE_ID} > commitdate", 'Getting commit date')
+    palSh("git show -s --format=${commitDateFmt} ${env.CHANGE_ID} > commitdate", 'Getting commit date', winCharReplacement=false)
     env.CHANGE_DATE = readFile file: 'commitdate'
     env.CHANGE_DATE = env.CHANGE_DATE.trim()
     palRm('commitdate')
@@ -276,9 +276,9 @@ def HandleDriveMount(String snapshot, String repositoryName, String projectName,
     else pythonCmd = 'python3 -u '
 
     if(recreateVolume) {
-        palSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action delete --repository_name ${repositoryName} --project ${projectName} --pipeline ${pipeline} --branch ${branchName} --platform ${platform} --build_type ${buildType}", 'Deleting volume', winSlashReplacement=false)
+        palSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action delete --repository_name ${repositoryName} --project ${projectName} --pipeline ${pipeline} --branch ${branchName} --platform ${platform} --build_type ${buildType}", 'Deleting volume', winCharReplacement=false)
     }
-    palSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action mount --snapshot ${snapshot} --repository_name ${repositoryName} --project ${projectName} --pipeline ${pipeline} --branch ${branchName} --platform ${platform} --build_type ${buildType}", 'Mounting volume', winSlashReplacement=false)
+    palSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action mount --snapshot ${snapshot} --repository_name ${repositoryName} --project ${projectName} --pipeline ${pipeline} --branch ${branchName} --platform ${platform} --build_type ${buildType}", 'Mounting volume', winCharReplacement=false)
 
     if(env.IS_UNIX) {
         sh label: 'Setting volume\'s ownership',
