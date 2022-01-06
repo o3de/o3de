@@ -64,6 +64,7 @@ def Menus_EditMenuOptions_Work():
     for option in edit_menu_options:
         try:
             action = pyside_utils.get_action_for_menu_path(editor_window, "Edit", *option)
+            Report.info(f"Triggering {action.iconText()}")
             action.trigger()
             action_triggered = True
         except Exception as e:

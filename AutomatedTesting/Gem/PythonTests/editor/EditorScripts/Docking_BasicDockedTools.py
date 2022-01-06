@@ -85,22 +85,25 @@ def Docking_BasicDockedTools():
         # We drag/drop it over the viewport since it doesn't allow docking, so this will undock it
         render_overlay = editor_window.findChild(QtWidgets.QWidget, "renderOverlay")
         pyside_utils.drag_and_drop(entity_outliner, render_overlay)
-
+        general.idle_wait(0.5)
+        
         # We need to grab a new reference to the Entity Outliner QDockWidget because when it gets moved
-        # to the floating window, its parent changes so the wrapped intance we had becomes invalid
+        # to the floating window, its parent changes so the wrapped instance we had becomes invalid
         entity_outliner = editor_window.findChild(QtWidgets.QDockWidget, "Entity Outliner")
 
         # Dock the Entity Inspector tabbed with the floating Entity Outliner
         entity_inspector = editor_window.findChild(QtWidgets.QDockWidget, "Entity Inspector")
         pyside_utils.drag_and_drop(entity_inspector, entity_outliner)
+        general.idle_wait(0.5)
 
         # We need to grab a new reference to the Entity Inspector QDockWidget because when it gets moved
-        # to the floating window, its parent changes so the wrapped intance we had becomes invalid
+        # to the floating window, its parent changes so the wrapped instance we had becomes invalid
         entity_inspector = editor_window.findChild(QtWidgets.QDockWidget, "Entity Inspector")
 
         # Dock the Console tabbed with the floating Entity Inspector
         console = editor_window.findChild(QtWidgets.QDockWidget, "Console")
         pyside_utils.drag_and_drop(console, entity_inspector)
+        general.idle_wait(0.5)
 
         # Check to ensure all the tools are parented to the same QStackedWidget
         def check_all_panes_tabbed():

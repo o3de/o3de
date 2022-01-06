@@ -53,6 +53,7 @@ def Menus_FileMenuOptions_Work():
     for option in file_menu_options:
         try:
             action = pyside_utils.get_action_for_menu_path(editor_window, "File", *option)
+            Report.info(f"Triggering {action.iconText()}")
             action.trigger()
             action_triggered = True
         except Exception as e:
