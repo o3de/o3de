@@ -14,8 +14,6 @@
 #include <ScriptCanvas/Core/Contracts/ConnectionLimitContract.h>
 #include <ScriptCanvas/Core/Contracts/SupportsMethodContract.h>
 
-#include <ScriptCanvas/Libraries/Core/MethodUtility.h>
-
 #include <ScriptCanvas/Data/Data.h>
 
 namespace ScriptCanvas

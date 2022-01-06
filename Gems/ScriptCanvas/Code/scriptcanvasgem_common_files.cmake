@@ -105,7 +105,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/Core/GetVariable.cpp
     Include/ScriptCanvas/Libraries/Core/Method.cpp
     Include/ScriptCanvas/Libraries/Core/MethodOverloaded.cpp
-    Include/ScriptCanvas/Libraries/Core/MethodUtility.cpp
     Include/ScriptCanvas/Libraries/Core/Nodeling.cpp
     Include/ScriptCanvas/Libraries/Core/ReceiveScriptEvent.cpp
     Include/ScriptCanvas/Libraries/Core/Repeater.cpp

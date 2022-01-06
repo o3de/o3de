@@ -155,7 +155,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/Core/GetVariable.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Core/Method.h
     Include/ScriptCanvas/Libraries/Core/MethodOverloaded.h
-    Include/ScriptCanvas/Libraries/Core/MethodUtility.h
     Include/ScriptCanvas/Libraries/Core/Nodeling.h
     Include/ScriptCanvas/Libraries/Core/Nodeling.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Core/ReceiveScriptEvent.h

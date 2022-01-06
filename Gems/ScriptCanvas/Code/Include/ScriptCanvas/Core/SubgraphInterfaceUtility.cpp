@@ -9,7 +9,6 @@
 #include "SubgraphInterfaceUtility.h"
 
 #include <AzCore/RTTI/BehaviorContext.h>
-#include <ScriptCanvas/Libraries/Core/MethodUtility.h>
 
 namespace SubgraphInterfaceUtilityCpp
 {
