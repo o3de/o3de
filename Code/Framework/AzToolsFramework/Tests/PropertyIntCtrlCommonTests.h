@@ -119,7 +119,7 @@ namespace UnitTest
 
             const QString minString = QLocale().toString(widget->minimum());
             const QString maxString = QLocale().toString(widget->maximum());
-            const AZStd::string expected = AZStd::string::format("[%d, %d]", minString.toStdString().c_str(), maxString.toStdString().c_str());
+            const AZStd::string expected = AZStd::string::format("[%s, %s]", minString.toStdString().c_str(), maxString.toStdString().c_str());
 
             // Expect the operation to be successful and a valid limit tooltip string generated
             EXPECT_TRUE(success);
@@ -142,7 +142,7 @@ namespace UnitTest
             const QString minString = QLocale().toString(widget->minimum());
             const QString maxString = QLocale().toString(widget->maximum());
 
-            const AZStd::string expected = AZStd::string::format("[%d, %d]", minString.toStdString().c_str(), maxString.toStdString().c_str());
+            const AZStd::string expected = AZStd::string::format("[%s, %s]", minString.toStdString().c_str(), maxString.toStdString().c_str());
 
             // Expect the operation to be successful and a valid less than limit tooltip string generated
             EXPECT_TRUE(success);
