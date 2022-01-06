@@ -148,7 +148,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/String/String.cpp
     Include/ScriptCanvas/Libraries/String/StringMethods.cpp
     Include/ScriptCanvas/Libraries/String/Utilities.cpp
-    Include/ScriptCanvas/Libraries/UnitTesting/AddFailure.cpp
     Include/ScriptCanvas/Libraries/UnitTesting/ExpectEqual.cpp
     Include/ScriptCanvas/Libraries/UnitTesting/ExpectFalse.cpp
     Include/ScriptCanvas/Libraries/UnitTesting/ExpectGreaterThan.cpp
