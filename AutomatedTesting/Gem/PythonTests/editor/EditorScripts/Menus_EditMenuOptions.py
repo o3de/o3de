@@ -52,8 +52,9 @@ def Menus_EditMenuOptions_Work():
         ("Editor Settings", "Global Preferences"),
         ("Editor Settings", "Editor Settings Manager"),
         ("Editor Settings", "Keyboard Customization", "Customize Keyboard"),
-        ("Editor Settings", "Keyboard Customization", "Export Keyboard Settings"),
-        ("Editor Settings", "Keyboard Customization", "Import Keyboard Settings"),
+        # The following menu options are temporarily disabled due to https://github.com/o3de/o3de/issues/6746
+        #("Editor Settings", "Keyboard Customization", "Export Keyboard Settings"),
+        #("Editor Settings", "Keyboard Customization", "Import Keyboard Settings"),
     ]
 
     # 1) Open an existing simple level

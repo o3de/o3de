@@ -33,6 +33,8 @@ def Menus_ViewMenuOptions_Work():
     view_menu_options = [
         ("Center on Selection",),
         ("Show Quick Access Bar",),
+        ("Layouts", "Component Entity Layout",),
+        ("Layouts", "Save Layout",),
         ("Viewport", "Configure Layout"),
         ("Viewport", "Go to Position"),
         ("Viewport", "Center on Selection"),
