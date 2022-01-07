@@ -20,11 +20,15 @@ EXCLUSIONS = (
     'REGISTER_QT_CLASS_DESC(',
     'TEST(',
     'TEST_F(',
+    'TEST_P(',
     'INSTANTIATE_TEST_CASE_P(',
     'INSTANTIATE_TYPED_TEST_CASE_P(',
     'AZ_UNIT_TEST_HOOK(',
     'IMPLEMENT_TEST_EXECUTABLE_MAIN(',
+    'BENCHMARK_REGISTER_F(',
     'DllMain(',
+    'wWinMain(',
+    'AZ_DLL_EXPORT',
     'CreatePluginInstance('
 )
 PATH_EXCLUSIONS = (
@@ -37,7 +41,9 @@ PATH_EXCLUSIONS = (
     'python\\*',
     'build\\*',
     'install\\*',
-    'Code\\Framework\\AzCore\\AzCore\\Android\\*'
+    'Code\\Framework\\AzCore\\AzCore\\Android\\*',
+    'Gems\\ImGui\\External\\ImGui\\*',
+    '*_Traits_*.h',
 )
 
 
@@ -104,7 +110,7 @@ def cleanup_unused_compilation(path):
         with open(file, 'w') as source_file:
             source_file.write('')
         #   d. build
-        ret = ci_build.build('build_config.json', 'Windows', 'profile_vs2019')
+        ret = ci_build.build('build_config.json', 'Windows', 'profile')
         #     e.1 if build succeeds, leave the file empty (leave backup)
         #     e.2 if build fails, restore backup
         if ret != 0:
