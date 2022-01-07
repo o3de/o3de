@@ -49,9 +49,20 @@ namespace Multiplayer
         //! Draws hierarchy information over hierarchy root entities.
         void UpdateDebugOverlay();
 
+        //! Checks if the audit trail can be pumped and resets the pump flag
+        bool CanPumpAuditTrail();
+
+        //! Gets string filter for the audit trail
+        AZStd::string_view GetAuditTrialFilter();
+
+        //! Sets string filter for the audit trail
+        void SetAuditTrailFilter(AZStd::string_view filter);
     private:
         AZ::ScheduledEvent m_updateDebugOverlay;
 
+        AZStd::string_view m_filter;
         AzFramework::DebugDisplayRequests* m_debugDisplay = nullptr;
+        char m_inputBuffer[1028] = {};
+        bool m_canPumpTrail = false;
     };
 }

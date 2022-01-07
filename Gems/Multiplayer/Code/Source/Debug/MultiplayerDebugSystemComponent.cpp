@@ -94,7 +94,7 @@ namespace Multiplayer
 
         m_auditTrailElems.emplace_front(category, inputId, frameId, name, AZStd::move(entryDetails));
 
-        if (m_auditTrail == nullptr && category == MultiplayerAuditCategory::Desync)
+        if ((m_auditTrail == nullptr || m_auditTrail->CanPumpAuditTrail()) && category == MultiplayerAuditCategory::Desync)
         {
             while (m_auditTrailElems.size() > 0)
             {
@@ -106,6 +106,7 @@ namespace Multiplayer
             {
                 m_committedAuditTrail.pop_back();
             }
+            m_filteredAuditTrail.clear();
         }
     }
 
@@ -546,12 +547,22 @@ namespace Multiplayer
             {
                 if (m_auditTrail == nullptr)
                 {
+                    m_lastFilter = "";
                     m_auditTrail = AZStd::make_unique<MultiplayerDebugAuditTrail>();
                 }
 
+                FilterAuditTrail();
+
                 if (m_auditTrail)
                 {
-                    m_auditTrail->OnImGuiUpdate(m_committedAuditTrail);
+                    if (m_filteredAuditTrail.size() > 0)
+                    {
+                        m_auditTrail->OnImGuiUpdate(m_filteredAuditTrail);
+                    }
+                    else
+                    {
+                        m_auditTrail->OnImGuiUpdate(m_committedAuditTrail);
+                    }
                 }
             }
         }
@@ -564,6 +575,112 @@ namespace Multiplayer
         }
     }
 #endif
+
+    void MultiplayerDebugSystemComponent::FilterAuditTrail()
+    {
+        AZStd::string_view filter = m_auditTrail->GetAuditTrialFilter();
+        if (m_filteredAuditTrail.size() > 0 && filter == m_lastFilter)
+        {
+            return;
+        }
+        m_lastFilter = filter;
+
+        if (filter.size() == 0)
+        {
+            m_filteredAuditTrail.clear();
+            return;
+        }
+
+        constexpr char DESYNC_TITLE[] = "Desync on %s";
+        constexpr char INPUT_TITLE[] = "%s Inputs";
+        constexpr char EVENT_TITLE[] = "DevEvent on %s";
+
+        for (auto elem = m_committedAuditTrail.begin(); elem != m_committedAuditTrail.end(); ++elem)
+        {
+
+            if (elem->m_category == MultiplayerAuditCategory::Desync)
+            {
+                const char* nodeTitle = elem->m_category == MultiplayerAuditCategory::Desync
+                    ? DESYNC_TITLE
+                    : (elem->m_category == MultiplayerAuditCategory::Input ? INPUT_TITLE : EVENT_TITLE);
+
+                // Events only have one item
+                if (elem->m_category == MultiplayerAuditCategory::Event)
+                {
+                    if (elem->m_children.size() > 0 && elem->m_children.front().elements.size() > 0)
+                    {
+                        if(AZStd::string::format(nodeTitle, elem->m_name.c_str()).contains(filter))
+                        {
+                            m_filteredAuditTrail.push_back(*elem);
+                        }
+
+                        AZStd::pair<AZStd::string, AZStd::string> cliServValues =
+                            elem->m_children.front().elements.front()->GetClientServerValues();
+                       if(AZStd::string::format(
+                            "%d %d %s %s", static_cast<uint16_t>(elem->m_inputId), static_cast<uint32_t>(elem->m_hostFrameId), cliServValues.first.c_str(), cliServValues.second.c_str()).contains(filter))
+                       {
+                           m_filteredAuditTrail.push_back(*elem);
+                       }
+
+                    }
+                }
+                // Desyncs and inputs can contain multiple line items
+                else
+                {
+                    if (AZStd::string::format(nodeTitle, elem->m_name.c_str()).contains(filter))
+                    {
+                        m_filteredAuditTrail.push_back(*elem);
+                        continue;
+                    }
+
+                    if (AZStd::string::format("%d %d", static_cast<uint16_t>(elem->m_inputId), static_cast<uint32_t>(elem->m_hostFrameId))
+                            .contains(filter))
+                    {
+                        m_filteredAuditTrail.push_back(*elem);
+                        continue;
+                    }
+
+                    // Attempt to construct a filtered input
+                    Multiplayer::AuditTrailInput filteredInput(elem->m_category, elem->m_inputId, elem->m_hostFrameId, elem->m_name, {});
+
+                    for (const auto& child : elem->m_children)
+                    {
+                        if (child.name.contains(filter))
+                        {
+                            filteredInput.m_children.push_back(child);
+                        }
+                        else if (child.elements.size() > 0)
+                        {
+                            MultiplayerAuditingElement filteredChild;
+                            filteredChild.name = child.name;
+
+                            for (const auto& childElem : child.elements)
+                            {
+                                AZStd::pair<AZStd::string, AZStd::string> cliServValues = childElem->GetClientServerValues();
+                                if (AZStd::string::format(
+                                        "%s %s %s", childElem->GetName().c_str(), cliServValues.first.c_str(), cliServValues.second.c_str())
+                                        .contains(filter))
+                                {
+                                    filteredChild.elements.push_back(childElem.get()->Clone());
+                                }
+                            }
+
+                            if (filteredChild.elements.size() > 0)
+                            {
+
+                            filteredInput.m_children.push_back(filteredChild);
+                            }
+                        }
+                    }
+
+                    if (filteredInput.m_children.size() > 0)
+                    {
+                        m_filteredAuditTrail.push_back(filteredInput);
+                    }
+                }
+            }
+        }
+    }
 }
 
 void OnDebugEntities_ShowBandwidth_Changed(const bool& showBandwidth)

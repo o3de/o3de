@@ -66,6 +66,10 @@ namespace Multiplayer
         //! @}
 #endif
     private:
+
+        //! Constructs a filtered version of the audit trail based on a search string
+        void FilterAuditTrail();
+
         bool m_displayNetworkingStats = false;
         bool m_displayMultiplayerStats = false;
 
@@ -78,7 +82,9 @@ namespace Multiplayer
         bool m_displayNetAuditTrail = false;
         AZStd::unique_ptr<MultiplayerDebugAuditTrail> m_auditTrail;
 
+        AZStd::string_view m_lastFilter;
         AZStd::deque<AuditTrailInput> m_auditTrailElems;
         AZStd::deque<AuditTrailInput> m_committedAuditTrail;
+        AZStd::deque<AuditTrailInput> m_filteredAuditTrail;
     };
 }

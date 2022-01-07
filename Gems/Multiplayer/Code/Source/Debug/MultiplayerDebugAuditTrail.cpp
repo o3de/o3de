@@ -36,6 +36,16 @@ namespace Multiplayer
         ;
     }
 
+    AZStd::string_view MultiplayerDebugAuditTrail::GetAuditTrialFilter()
+    {
+        return m_filter;
+    }
+
+    void MultiplayerDebugAuditTrail::SetAuditTrailFilter(AZStd::string_view filter)
+    {
+        m_filter = filter;
+    }
+
     // --------------------------------------------------------------------------------------------
     void MultiplayerDebugAuditTrail::OnImGuiUpdate(AZStd::deque<AuditTrailInput> auditTrailElems)
     {
@@ -47,13 +57,16 @@ namespace Multiplayer
             | ImGuiTableFlags_RowBg
             | ImGuiTableFlags_NoBordersInBody;
 
+        float tableHeight = ImGui::GetStyle().ItemSpacing.y + ImGui::GetStyle().FramePadding.y + ImGui::GetFrameHeightWithSpacing();
+        ImGui::BeginChild("DesyncEntriesScrollBox", ImVec2(0, -tableHeight), false, ImGuiWindowFlags_HorizontalScrollbar);
         if (ImGui::BeginTable("", 5, flags))
         {
             ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
-            ImGui::TableSetupColumn("Client Value", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 60.0f);
-            ImGui::TableSetupColumn("Server Value", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 60.0f);
             ImGui::TableSetupColumn("Input ID", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 12.0f);
             ImGui::TableSetupColumn("HostFrame", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 12.0f);
+            ImGui::TableSetupColumn("Client Value", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 60.0f);
+            ImGui::TableSetupColumn("Server Value", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 60.0f);
+
             ImGui::TableHeadersRow();
 
             bool atRootLevel = true;
@@ -96,13 +109,14 @@ namespace Multiplayer
                                 AZStd::string::format(nodeTitle, elem->m_name.c_str()).c_str(),
                                 (ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_SpanFullWidth));
                             ImGui::TableNextColumn();
-                            ImGui::Text("%s", cliServValues.first.c_str());
-                            ImGui::TableNextColumn();
-                            ImGui::Text("%s", cliServValues.second.c_str());
-                            ImGui::TableNextColumn();
                             ImGui::Text("%d", elem->m_inputId);
                             ImGui::TableNextColumn();
                             ImGui::Text("%d", elem->m_hostFrameId);
+                            ImGui::TableNextColumn();
+                            ImGui::Text("%s", cliServValues.first.c_str());
+                            ImGui::TableNextColumn();
+                            ImGui::Text("%s", cliServValues.second.c_str());
+
                         }
                     }
                     // Draw desyncs and inputs as a collapsable node, they can contain multiple line items
@@ -112,11 +126,11 @@ namespace Multiplayer
                     {
                         atRootLevel = false;
                         ImGui::TableNextColumn();
-                        ImGui::TableNextColumn();
-                        ImGui::TableNextColumn();
                         ImGui::Text("%d", elem->m_inputId);
                         ImGui::TableNextColumn();
                         ImGui::Text("%d", elem->m_hostFrameId);
+                        ImGui::TableNextColumn();
+                        ImGui::TableNextColumn();
 
                         for (const auto& child : elem->m_children)
                         {
@@ -143,11 +157,11 @@ namespace Multiplayer
                                             (ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen |
                                              ImGuiTreeNodeFlags_SpanFullWidth));
                                         ImGui::TableNextColumn();
+                                        ImGui::TableNextColumn();
+                                        ImGui::TableNextColumn();
                                         ImGui::Text("%s", cliServValues.first.c_str());
                                         ImGui::TableNextColumn();
                                         ImGui::Text("%s", cliServValues.second.c_str());
-                                        ImGui::TableNextColumn();
-                                        ImGui::TableNextColumn();
                                     }
                                     ImGui::TreePop();
                                 }
@@ -169,11 +183,11 @@ namespace Multiplayer
                     else
                     {
                         ImGui::TableNextColumn();
-                        ImGui::TableNextColumn();
-                        ImGui::TableNextColumn();
                         ImGui::Text("%d", elem->m_inputId);
                         ImGui::TableNextColumn();
                         ImGui::Text("%d", elem->m_hostFrameId);
+                        ImGui::TableNextColumn();
+                        ImGui::TableNextColumn();
                         ImGui::TableNextRow();
                     }
                 }
@@ -182,9 +196,35 @@ namespace Multiplayer
             ImGui::EndTable();
             ImGui::NewLine();
         }
+        ImGui::EndChild();
+
+        ImGui::Separator();
+        const ImGuiInputTextFlags inputTextFlags =
+            ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackCompletion;
+        ImGui::Text("Search:");
+        ImGui::SameLine();
+        const bool textWasInput =
+            ImGui::InputText("", m_inputBuffer, IM_ARRAYSIZE(m_inputBuffer), inputTextFlags);
+        if (textWasInput)
+        {
+            SetAuditTrailFilter(m_inputBuffer);
+            ImGui::SetKeyboardFocusHere(-1);
+        }
+
+        // Focus on the text input field.
+        if (ImGui::IsWindowAppearing())
+        {
+            ImGui::SetKeyboardFocusHere(-1);
+        }
+        ImGui::SetItemDefaultFocus();
+
+        ImGui::SameLine();
+        if (ImGui::Button("Refresh"))
+        {
+            m_canPumpTrail = true;
+        }
 #endif
     }
-
 
     void MultiplayerDebugAuditTrail::UpdateDebugOverlay()
     {
@@ -199,5 +239,12 @@ namespace Multiplayer
         m_debugDisplay->SetColor(AZ::Colors::White);
 
         m_debugDisplay->SetState(stateBefore);
+    }
+
+    bool MultiplayerDebugAuditTrail::CanPumpAuditTrail()
+    {
+        bool canPump = m_canPumpTrail;
+        m_canPumpTrail = false;
+        return canPump;
     }
 }
