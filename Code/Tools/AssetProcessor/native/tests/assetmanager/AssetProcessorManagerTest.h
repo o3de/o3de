@@ -27,6 +27,8 @@
 #include <AzCore/Jobs/JobManager.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
+#include <tests/UnitTestUtilities.h>
+
 #include "resourcecompiler/rccontroller.h"
 
 class AssetProcessorManager_Test;
@@ -144,27 +146,6 @@ struct WildcardSourceDependencyTest
     void SetUp() override;
 };
 
-struct MockBuilderInfoHandler
-    : public AssetProcessor::AssetBuilderInfoBus::Handler
-{
-    ~MockBuilderInfoHandler();
-
-    //! AssetProcessor::AssetBuilderInfoBus Interface
-    void GetMatchingBuildersInfo(const AZStd::string& assetPath, AssetProcessor::BuilderInfoList& builderInfoList) override;
-    void GetAllBuildersInfo(AssetProcessor::BuilderInfoList& builderInfoList) override;
-
-    void CreateJobs(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response);
-    void ProcessJob(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response);
-
-    AssetBuilderSDK::AssetBuilderDesc CreateBuilderDesc(const QString& builderName, const QString& builderId, const AZStd::vector<AssetBuilderSDK::AssetBuilderPattern>& builderPatterns);
-
-    AssetBuilderSDK::AssetBuilderDesc m_builderDesc;
-    QString m_jobFingerprint;
-    QString m_dependencyFilePath;
-    QString m_jobDependencyFilePath;
-    int m_createJobsCount = 0;
-};
-
 struct ModtimeScanningTest
     : public AssetProcessorManagerTest
 {
@@ -186,7 +167,7 @@ struct ModtimeScanningTest
         AZStd::unordered_multimap<AZStd::string, QString> m_productPaths;
         AZStd::vector<QString> m_deletedSources;
         AZStd::shared_ptr<AssetProcessor::InternalMockBuilder> m_builderTxtBuilder;
-        MockBuilderInfoHandler m_mockBuilderInfoHandler;
+        UnitTests::MockBuilderInfoHandler m_mockBuilderInfoHandler;
     };
 
     AZStd::unique_ptr<StaticData> m_data;
@@ -208,7 +189,7 @@ struct FingerprintTest
     void RunFingerprintTest(QString builderFingerprint, QString jobFingerprint, bool expectedResult);
 
     QString m_absolutePath;
-    MockBuilderInfoHandler m_mockBuilderInfoHandler;
+    UnitTests::MockBuilderInfoHandler m_mockBuilderInfoHandler;
     AZStd::vector<AssetProcessor::JobDetails> m_jobResults;
 };
 
@@ -220,7 +201,7 @@ struct JobDependencyTest
 
     struct StaticData
     {
-        MockBuilderInfoHandler m_mockBuilderInfoHandler;
+        UnitTests::MockBuilderInfoHandler m_mockBuilderInfoHandler;
         AZ::Uuid m_builderUuid;
     };
 
