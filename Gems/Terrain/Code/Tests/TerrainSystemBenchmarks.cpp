@@ -330,7 +330,9 @@ namespace UnitTest
             []([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
                 AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
-                auto perPositionCallback = [](size_t xIndex, size_t yIndex, const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists){
+                auto perPositionCallback = []([[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex, 
+                    const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
+                {
                     benchmark::DoNotOptimize(surfacePoint.m_position.GetZ());
                 };
                 
@@ -391,7 +393,9 @@ namespace UnitTest
             []([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
                 AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
-                auto perPositionCallback = [](size_t xIndex, size_t yIndex, const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists){
+                auto perPositionCallback = []([[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex, 
+                    const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
+                {
                     benchmark::DoNotOptimize(surfacePoint.m_normal);
                 };
                 
@@ -450,7 +454,9 @@ namespace UnitTest
             []([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
                 AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
-                auto perPositionCallback = [](size_t xIndex, size_t yIndex, const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists){
+                auto perPositionCallback = []([[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex, 
+                    const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
+                {
                     benchmark::DoNotOptimize(surfacePoint.m_surfaceTags);
                 };
                 
@@ -509,7 +515,9 @@ namespace UnitTest
             []([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
                 AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
-                auto perPositionCallback = [](size_t xIndex, size_t yIndex, const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists){
+                auto perPositionCallback = []([[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex, 
+                    const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
+                {
                     benchmark::DoNotOptimize(surfacePoint);
                 };
                 
