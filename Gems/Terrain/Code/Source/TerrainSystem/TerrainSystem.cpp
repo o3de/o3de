@@ -576,10 +576,10 @@ void TerrainSystem::ProcessSurfaceWeightsFromList(
         return;
     }
 
+    AzFramework::SurfaceData::SurfaceTagWeightList surfaceWeights;
     for (const auto& position : inPositions)
     {
         bool terrainExists = false;
-        AzFramework::SurfaceData::SurfaceTagWeightList surfaceWeights;
         GetSurfaceWeights(position, surfaceWeights, sampleFilter, &terrainExists);
         perPositionCallback(position, surfaceWeights, terrainExists);
     }
@@ -595,10 +595,10 @@ void TerrainSystem::ProcessSurfacePointsFromList(
         return;
     }
 
+    AzFramework::SurfaceData::SurfacePoint surfacePoint;
     for (const auto& position : inPositions)
     {
         bool terrainExists = false;
-        AzFramework::SurfaceData::SurfacePoint surfacePoint;
         GetSurfacePoint(position, surfacePoint, sampleFilter, &terrainExists);
         perPositionCallback(position, surfacePoint, terrainExists);
     }
@@ -619,7 +619,8 @@ void TerrainSystem::ProcessHeightsFromRegion(
 
     const size_t numSamplesX = aznumeric_cast<size_t>(ceil(inRegion.GetExtents().GetX() / stepSize.GetX()));
     const size_t numSamplesY = aznumeric_cast<size_t>(ceil(inRegion.GetExtents().GetY() / stepSize.GetY()));
-
+    
+    AZ::Vector3 inPosition;
     for (size_t y = 0; y < numSamplesY; y++)
     {
         float fy = (float)(inRegion.GetMin().GetY() + (y * stepSize.GetY()));
@@ -627,7 +628,7 @@ void TerrainSystem::ProcessHeightsFromRegion(
         {
             bool terrainExists = false;
             float fx = (float)(inRegion.GetMin().GetX() + (x * stepSize.GetX()));
-            AZ::Vector3 inPosition(fx, fy, 0.0f);
+            inPosition.Set(fx, fy, 0.0f);
             float height = GetHeight(inPosition, sampleFilter, &terrainExists);
             perPositionCallback(x, y, inPosition, height, terrainExists);
         }
@@ -649,6 +650,7 @@ void TerrainSystem::ProcessNormalsFromRegion(
     const size_t numSamplesX = aznumeric_cast<size_t>(ceil(inRegion.GetExtents().GetX() / stepSize.GetX()));
     const size_t numSamplesY = aznumeric_cast<size_t>(ceil(inRegion.GetExtents().GetY() / stepSize.GetY()));
 
+    AZ::Vector3 inPosition;
     for (size_t y = 0; y < numSamplesY; y++)
     {
         float fy = (float)(inRegion.GetMin().GetY() + (y * stepSize.GetY()));
@@ -656,7 +658,7 @@ void TerrainSystem::ProcessNormalsFromRegion(
         {
             bool terrainExists = false;
             float fx = (float)(inRegion.GetMin().GetX() + (x * stepSize.GetX()));
-            AZ::Vector3 inPosition(fx, fy, 0.0f);
+            inPosition.Set(fx, fy, 0.0f);
             AZ::Vector3 normal = GetNormal(inPosition, sampleFilter, &terrainExists);
             perPositionCallback(x, y, inPosition, normal, terrainExists);
         }
@@ -678,6 +680,8 @@ void TerrainSystem::ProcessSurfaceWeightsFromRegion(
     const size_t numSamplesX = aznumeric_cast<size_t>(ceil(inRegion.GetExtents().GetX() / stepSize.GetX()));
     const size_t numSamplesY = aznumeric_cast<size_t>(ceil(inRegion.GetExtents().GetY() / stepSize.GetY()));
 
+    AZ::Vector3 inPosition;
+    AzFramework::SurfaceData::SurfaceTagWeightList surfaceWeights;
     for (size_t y = 0; y < numSamplesY; y++)
     {
         float fy = (float)(inRegion.GetMin().GetY() + (y * stepSize.GetY()));
@@ -685,8 +689,7 @@ void TerrainSystem::ProcessSurfaceWeightsFromRegion(
         {
             bool terrainExists = false;
             float fx = (float)(inRegion.GetMin().GetX() + (x * stepSize.GetX()));
-            AZ::Vector3 inPosition(fx, fy, 0.0f);
-            AzFramework::SurfaceData::SurfaceTagWeightList surfaceWeights;
+            inPosition.Set(fx, fy, 0.0f);
             GetSurfaceWeights(inPosition, surfaceWeights, sampleFilter, &terrainExists);
             perPositionCallback(x, y, inPosition, surfaceWeights, terrainExists);
         }
@@ -708,6 +711,8 @@ void TerrainSystem::ProcessSurfacePointsFromRegion(
     const size_t numSamplesX = aznumeric_cast<size_t>(ceil(inRegion.GetExtents().GetX() / stepSize.GetX()));
     const size_t numSamplesY = aznumeric_cast<size_t>(ceil(inRegion.GetExtents().GetY() / stepSize.GetY()));
 
+    AZ::Vector3 inPosition;
+    AzFramework::SurfaceData::SurfacePoint surfacePoint;
     for (size_t y = 0; y < numSamplesY; y++)
     {
         float fy = (float)(inRegion.GetMin().GetY() + (y * stepSize.GetY()));
@@ -715,8 +720,7 @@ void TerrainSystem::ProcessSurfacePointsFromRegion(
         {
             bool terrainExists = false;
             float fx = (float)(inRegion.GetMin().GetX() + (x * stepSize.GetX()));
-            AZ::Vector3 inPosition(fx, fy, 0.0f);
-            AzFramework::SurfaceData::SurfacePoint surfacePoint;
+            inPosition.Set(fx, fy, 0.0f);
             GetSurfacePoint(inPosition, surfacePoint, sampleFilter, &terrainExists);
             perPositionCallback(x, y, inPosition, surfacePoint, terrainExists);
         }
