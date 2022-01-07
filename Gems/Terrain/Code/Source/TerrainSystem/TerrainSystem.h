@@ -138,13 +138,13 @@ namespace Terrain
         //! Given a list of XY coordinates, call the provided callback function with surface data corresponding to each
         //! XY coordinate in the list.
         virtual void ProcessHeightsFromList(const AZStd::vector<AZ::Vector3>& inPositions,
-            AzFramework::Terrain::HeightListFillCallback perPositionCallback,
+            AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
         virtual void ProcessNormalsFromList(const AZStd::vector<AZ::Vector3>& inPositions,
-            AzFramework::Terrain::NormalListFillCallback perPositionCallback,
+            AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
         virtual void ProcessSurfaceWeightsFromList(const AZStd::vector<AZ::Vector3>& inPositions,
-            AzFramework::Terrain::SurfaceWeightsListFillCallback perPositionCallback,
+            AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
         virtual void ProcessSurfacePointsFromList(const AZStd::vector<AZ::Vector3>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
@@ -154,15 +154,15 @@ namespace Terrain
         //! coordinates in the region.
         virtual void ProcessHeightsFromRegion(const AZ::Aabb& inRegion,
             const AZ::Vector2& stepSize,
-            AzFramework::Terrain::HeightRegionFillCallback perPositionCallback,
+            AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
         virtual void ProcessNormalsFromRegion(const AZ::Aabb& inRegion,
             const AZ::Vector2& stepSize,
-            AzFramework::Terrain::NormalRegionFillCallback perPositionCallback,
+            AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
         virtual void ProcessSurfaceWeightsFromRegion(const AZ::Aabb& inRegion,
             const AZ::Vector2& stepSize,
-            AzFramework::Terrain::SurfaceWeightsRegionFillCallback perPositionCallback,
+            AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
         virtual void ProcessSurfacePointsFromRegion(const AZ::Aabb& inRegion,
             const AZ::Vector2& stepSize,

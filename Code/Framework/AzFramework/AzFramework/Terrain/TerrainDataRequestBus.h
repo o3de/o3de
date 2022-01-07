@@ -17,17 +17,8 @@ namespace AzFramework
 {
     namespace Terrain
     {
-        typedef AZStd::function<void(size_t xIndex, size_t yIndex, const AZ::Vector3& inPosition, float height, bool terrainExists)> HeightRegionFillCallback;
-        typedef AZStd::function<void(const AZ::Vector3& inPosition, float height, bool terrainExists)> HeightListFillCallback;
-        
-        typedef AZStd::function<void(size_t xIndex, size_t yIndex, const AZ::Vector3& inPosition, const AZ::Vector3& normal, bool terrainExists)> NormalRegionFillCallback;
-        typedef AZStd::function<void(const AZ::Vector3& inPosition, const AZ::Vector3& normal, bool terrainExists)> NormalListFillCallback;
-
-        typedef AZStd::function<void(size_t xIndex, size_t yIndex, const AZ::Vector3& inPosition, const SurfaceData::SurfaceTagWeightList& surfaceWeights, bool terrainExists)> SurfaceWeightsRegionFillCallback;
-        typedef AZStd::function<void(const AZ::Vector3& inPosition, const SurfaceData::SurfaceTagWeightList& surfaceWeights, bool terrainExists)> SurfaceWeightsListFillCallback;
-
-        typedef AZStd::function<void(size_t xIndex, size_t yIndex, const AZ::Vector3& inPosition, const SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)> SurfacePointRegionFillCallback;
-        typedef AZStd::function<void(const AZ::Vector3& inPosition, const SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)> SurfacePointListFillCallback;
+        typedef AZStd::function<void(size_t xIndex, size_t yIndex, const SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)> SurfacePointRegionFillCallback;
+        typedef AZStd::function<void(const SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)> SurfacePointListFillCallback;
 
         //! Shared interface for terrain system implementations
         class TerrainDataRequests
@@ -145,13 +136,13 @@ namespace AzFramework
             //! Given a list of XY coordinates, call the provided callback function with surface data corresponding to each
             //! XY coordinate in the list.
             virtual void ProcessHeightsFromList(const AZStd::vector<AZ::Vector3>& inPositions,
-                HeightListFillCallback perPositionCallback,
+                SurfacePointListFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT) const = 0;
             virtual void ProcessNormalsFromList(const AZStd::vector<AZ::Vector3>& inPositions,
-                NormalListFillCallback perPositionCallback,
+                SurfacePointListFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT) const = 0;
             virtual void ProcessSurfaceWeightsFromList(const AZStd::vector<AZ::Vector3>& inPositions,
-                SurfaceWeightsListFillCallback perPositionCallback,
+                SurfacePointListFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT) const = 0;
             virtual void ProcessSurfacePointsFromList(const AZStd::vector<AZ::Vector3>& inPositions,
                 SurfacePointListFillCallback perPositionCallback,
@@ -161,15 +152,15 @@ namespace AzFramework
             //! coordinates in the region.
             virtual void ProcessHeightsFromRegion(const AZ::Aabb& inRegion,
                 const AZ::Vector2& stepSize,
-                HeightRegionFillCallback perPositionCallback,
+                SurfacePointRegionFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT) const = 0;
             virtual void ProcessNormalsFromRegion(const AZ::Aabb& inRegion,
                 const AZ::Vector2& stepSize,
-                NormalRegionFillCallback perPositionCallback,
+                SurfacePointRegionFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT) const = 0;
             virtual void ProcessSurfaceWeightsFromRegion(const AZ::Aabb& inRegion,
                 const AZ::Vector2& stepSize,
-                SurfaceWeightsRegionFillCallback perPositionCallback,
+                SurfacePointRegionFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT) const = 0;
             virtual void ProcessSurfacePointsFromRegion(const AZ::Aabb& inRegion,
                 const AZ::Vector2& stepSize,
