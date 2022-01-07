@@ -66,6 +66,9 @@ namespace GradientSignal
             for (size_t index = 0; index < positions.size(); index++)
             {
                 sampleParams.m_position = positions[index];
+
+                // The const_cast is necessary for now since array_view currently only supports const entries.
+                // If/when array_view is fixed to support non-const, or AZStd::span gets created, the const_cast can get removed.
                 auto& outValue = const_cast<float&>(outValues[index]);
                 outValue = GetValue(sampleParams);
             }

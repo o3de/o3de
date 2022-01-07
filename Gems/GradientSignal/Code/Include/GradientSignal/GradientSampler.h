@@ -154,6 +154,8 @@ namespace GradientSignal
             // If we don't have a valid gradient (or it is fully transparent), clear out all the output values.
             for (size_t index = 0; index < outValues.size(); index++)
             {
+                // The const_cast is necessary for now since array_view currently only supports const entries.
+                // If/when array_view is fixed to support non-const, or AZStd::span gets created, the const_cast can get removed.
                 auto& outValue = const_cast<float&>(outValues[index]);
                 outValue = 0.0f;
             }
@@ -193,6 +195,8 @@ namespace GradientSignal
                 AZ_ErrorOnce("GradientSignal", !m_isRequestInProgress, "Detected cyclic dependences with gradient entity references");
                 for (size_t index = 0; index < outValues.size(); index++)
                 {
+                    // The const_cast is necessary for now since array_view currently only supports const entries.
+                    // If/when array_view is fixed to support non-const, or AZStd::span gets created, the const_cast can get removed.
                     auto& outValue = const_cast<float&>(outValues[index]);
                     outValue = 0.0f;
                 }
@@ -213,6 +217,8 @@ namespace GradientSignal
         // Perform any post-fetch transformations on the gradient values (invert, levels, opacity).
         for (size_t index = 0; index < outValues.size(); index++)
         {
+            // The const_cast is necessary for now since array_view currently only supports const entries.
+            // If/when array_view is fixed to support non-const, or AZStd::span gets created, the const_cast can get removed.
             auto& outValue = const_cast<float&>(outValues[index]);
 
             if (m_invertInput)
