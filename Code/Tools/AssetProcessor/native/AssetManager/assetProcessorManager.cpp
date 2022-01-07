@@ -766,7 +766,7 @@ namespace AssetProcessor
         // Asset Catalog may not realize that things are dirty by that point.
         QueueIdleCheck();
     }
-#pragma optimize("", off)
+
     void AssetProcessorManager::AssetProcessed_Impl()
     {
         m_processedQueued = false;
@@ -1401,7 +1401,7 @@ namespace AssetProcessor
         // Asset Catalog may not realize that things are dirty by that point.
         QueueIdleCheck();
     }
-#pragma optimize("", on)
+
     void AssetProcessorManager::WriteProductTableInfo(AZStd::pair<AzToolsFramework::AssetDatabase::ProductDatabaseEntry, const AssetBuilderSDK::JobProduct*>& pair, AZStd::vector<AZ::u32>& subIds, AZStd::unordered_set<AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry>& dependencyContainer, const AZStd::string& platform)
     {
         AzToolsFramework::AssetDatabase::ProductDatabaseEntry& newProduct = pair.first;
