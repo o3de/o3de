@@ -68,16 +68,6 @@ unipath==1.1 \
     --hash=sha256:09839adcc72e8a24d4f76d63656f30b5a1f721fc40c9bcd79d8c67bdd8b47dae \
     --hash=sha256:e6257e508d8abbfb6ddd8ec357e33589f1f48b1599127f23b017124d90b0fff7
     # via -r requirements.txt
-qdarkstyle==3.0.2 \
-    --hash=sha256:55d149cf5f40ee297397f1818e091118cefb855a4a9c5c38566c47acd2d8c7ae \
-    --hash=sha256:7c791535cc20b3cc1e8e1bf6b88dabe53cb0615983df702be83597e73ada2558
-    # via -r c:\temp\requirements.txt
-qtpy==1.9.0 \
-    --hash=sha256:2db72c44b55d0fe1407be8fba35c838ad0d6d3bb81f23007886dc1fc0f459c8d \
-    --hash=sha256:fa0b8363b363e89b2a6f49eddc162a04c0699ae95e109a6be3bb145a913190ea
-    # via
-    #   -r c:\temp\requirements.txt
-    #   qdarkstyle
 wincertstore==0.2 \
     --hash=sha256:22d5eebb52df88a8d4014d5cf6d1b6c3a5d469e6c3b2e2854f3a003e48872356 \
     --hash=sha256:780bd1557c9185c15d9f4221ea7f905cb20b93f7151ca8ccaed9714dce4b327a

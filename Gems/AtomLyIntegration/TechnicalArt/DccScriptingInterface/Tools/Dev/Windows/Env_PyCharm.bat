@@ -35,14 +35,14 @@ IF "%PYCHARM_VERSION_MINOR%"=="" (set PYCHARM_VERSION_MINOR=2)
 :: C:< o3de install location >\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\Tools\Dev\Windows\Env_Dev.bat"
 
 :: put project env variables/paths here
-IF "%PYCHARM_HOME%"=="" (set PYCHARM_HOME=%PROGRAMFILES%\JetBrains\PyCharm %PYCHARM_VERSION_YEAR%.%PYCHARM_VERSION_MAJOR%.%PYCHARM_VERSION_MINOR%)
+IF "%PYCHARM_HOME%"=="" (set "PYCHARM_HOME=%PROGRAMFILES%\JetBrains\PyCharm %PYCHARM_VERSION_YEAR%.%PYCHARM_VERSION_MAJOR%.%PYCHARM_VERSION_MINOR%")
 
 :: Initialize env
 CALL %~dp0\Env_Core.bat
 CALL %~dp0\Env_Python.bat
 CALL %~dp0\Env_Qt.bat
 
-IF "%PYCHARM_PROJ%"=="" (SET PYCHARM_PROJ=%PATH_DCCSIG%\Tools\Dev\Windows\Solutions)
+IF "%PYCHARM_PROJ%"=="" (SET "PYCHARM_PROJ=%PATH_DCCSIG%\Tools\Dev\Windows\Solutions")
 
 echo.
 echo _____________________________________________________________________

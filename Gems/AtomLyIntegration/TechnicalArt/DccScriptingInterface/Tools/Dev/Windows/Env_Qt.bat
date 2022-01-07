@@ -34,21 +34,21 @@ echo.
 :: set up Qt/Pyside paths
 
 :: set up PySide2/Shiboken 
-set QTFORPYTHON_PATH=%O3DE_DEV%\Gems\QtForPython\3rdParty\pyside2\windows\release
+set "QTFORPYTHON_PATH=%O3DE_DEV%\Gems\QtForPython\3rdParty\pyside2\windows\release"
 echo     QTFORPYTHON_PATH = %QTFORPYTHON_PATH%
 
 :: add to the PATH
 SET PATH=%QTFORPYTHON_PATH%;%PATH%
 SET PYTHONPATH=%QTFORPYTHON_PATH%;%PYTHONPATH%
 
-set QT_PLUGIN_PATH=%PATH_O3DE_BUILD%\bin\profile\EditorPlugins
+set "QT_PLUGIN_PATH=%PATH_O3DE_BUILD%\bin\profile\EditorPlugins"
 echo     QT_PLUGIN_PATH = %QT_PLUGIN_PATH%
 
 :: add to the PATH
 SET PATH=%QT_PLUGIN_PATH%;%PATH%
 SET PYTHONPATH=%QT_PLUGIN_PATH%;%PYTHONPATH%
 
-set PATH_O3DE_BIN=%PATH_O3DE_BUILD%\bin\profile
+set "PATH_O3DE_BIN=%PATH_O3DE_BUILD%\bin\profile"
 echo     PATH_O3DE_BIN = %PATH_O3DE_BIN%
 SET PATH=%PATH_O3DE_BIN%;%PATH%
 

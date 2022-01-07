@@ -2,6 +2,14 @@
 <project version="4">
   <component name="WebResourcesPaths">
     <contentEntries>
+      <entry url="file://$PROJECT_DIR$/../../../..">
+        <entryData>
+          <resourceRoots>
+            <path value="file://$PROJECT_DIR$/../../../../Assets" />
+            <path value="file://$PROJECT_DIR$/../../../../user" />
+          </resourceRoots>
+        </entryData>
+      </entry>
       <entry url="file://$PROJECT_DIR$/..">
         <entryData>
           <resourceRoots>

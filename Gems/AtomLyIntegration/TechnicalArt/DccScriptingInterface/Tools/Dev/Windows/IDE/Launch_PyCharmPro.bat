@@ -50,6 +50,9 @@ echo ~ Launching DCCsi Project in PyCharm %PYCHARM_VERSION_YEAR%.%PYCHARM_VERSIO
 echo _____________________________________________________________________
 echo.
 
+:: Change to root dir
+CD /D %PATH_O3DE_PROJECT%
+
 IF EXIST "%PYCHARM_HOME%\bin\pycharm64.exe" (
     start "" "%PYCHARM_HOME%\bin\pycharm64.exe" "%PYCHARM_PROJ%"
 ) ELSE (
