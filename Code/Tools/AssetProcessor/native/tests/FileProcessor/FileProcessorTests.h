@@ -20,7 +20,6 @@
 
 namespace UnitTests
 {
-    using namespace testing;
     using ::testing::NiceMock;
     using namespace AssetProcessor;
 
@@ -43,7 +42,7 @@ namespace UnitTests
         MOCK_METHOD1(GetAssetDatabaseLocation, bool(AZStd::string&));
     };
 
-    class FileProcessorTests 
+    class FileProcessorTests
         : public AssetProcessorTest,
         public ConnectionBus::Handler
     {

@@ -48,7 +48,7 @@ namespace UnitTests
     }
 
     struct PathDependencyBase
-        : UnitTest::TraceBusRedirector
+        : ::UnitTest::TraceBusRedirector
     {
         void Init();
         void Destroy();
@@ -64,7 +64,7 @@ namespace UnitTests
     };
 
     struct PathDependencyDeletionTest
-        : UnitTest::ScopedAllocatorSetupFixture
+        : ::UnitTest::ScopedAllocatorSetupFixture
         , PathDependencyBase
     {
         void SetUp() override
@@ -356,7 +356,7 @@ namespace UnitTests
     }
 
     struct PathDependencyBenchmarks
-        : UnitTest::ScopedAllocatorFixture
+        : ::UnitTest::ScopedAllocatorFixture
           , PathDependencyBase
     {
         static inline constexpr int NumTestDependencies = 4; // Must be a multiple of 4
@@ -527,7 +527,7 @@ namespace UnitTests
 
     BENCHMARK_F(PathDependencyBenchmarksWrapperClass, BM_DeferredWildcardDependencyResolution)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto unused : state)
         {
             m_benchmarks->m_stateData->SetProductDependencies(m_benchmarks->m_dependencies);
 
