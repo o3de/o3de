@@ -201,7 +201,7 @@ if(@target_file_dir@ MATCHES ".app/Contents/MacOS")
             execute_process(COMMAND "${CMAKE_COMMAND}" -E create_symlink Versions/Current/Headers Headers
                 WORKING_DIRECTORY "${bundle_path}/Contents/Frameworks/Python.framework"
             )
-            execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink Versions/Current/Resources Resources
+            execute_process(COMMAND "${CMAKE_COMMAND}" -E create_symlink Versions/Current/Resources Resources
                 WORKING_DIRECTORY "${bundle_path}/Contents/Frameworks/Python.framework"
             )
             file(CHMOD "${bundle_path}/Contents/Frameworks/Python.framework/Versions/Current/Python"
@@ -215,8 +215,8 @@ if(@target_file_dir@ MATCHES ".app/Contents/MacOS")
         file(TOUCH "${fixup_timestamp_file}")
 
         # fixup bundle ends up removing the rpath of dxc (despite we exclude it)
-        if(EXISTS ${bundle_path}/Contents/MacOS/Builders/DirectXShaderCompiler/bin/dxc-3.7)
-            execute_process(COMMAND ${LY_INSTALL_NAME_TOOL} -add_rpath @executable_path/../lib ${bundle_path}/Contents/MacOS/Builders/DirectXShaderCompiler/bin/dxc-3.7)
+        if(EXISTS "${bundle_path}/Contents/MacOS/Builders/DirectXShaderCompiler/bin/dxc-3.7")
+            execute_process(COMMAND $"{LY_INSTALL_NAME_TOOL}" -add_rpath @executable_path/../lib ${bundle_path}/Contents/MacOS/Builders/DirectXShaderCompiler/bin/dxc-3.7)
         endif()
 
         # misplaced .DS_Store files can cause signing to fail
