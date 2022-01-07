@@ -191,7 +191,7 @@ namespace UnitTests
 
             m_data->m_perforceComponent = AZStd::make_unique<MockPerforceComponent>();
             m_data->m_perforceComponent->Activate();
-            m_data->m_perforceComponent->SetConnection(new UnitTest::MockPerforceConnection(m_command));
+            m_data->m_perforceComponent->SetConnection(new ::UnitTest::MockPerforceConnection(m_command));
         }
 
         void TearDown() override
