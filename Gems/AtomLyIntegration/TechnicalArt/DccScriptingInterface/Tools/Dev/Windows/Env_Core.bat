@@ -61,7 +61,7 @@ IF "%DCCSI_LOGLEVEL%"=="" (set DCCSI_LOGLEVEL=20)
 echo     DCCSI_LOGLEVEL = %DCCSI_LOGLEVEL%
 
 :: This maps up to the \Dev folder
-IF "%O3DE_REL_PATH%"=="" (set O3DE_REL_PATH=..\..\..\..)
+IF "%O3DE_REL_PATH%"=="" (set "O3DE_REL_PATH=..\..\..\..")
 echo     O3DE_REL_PATH = %O3DE_REL_PATH%
 
 :: You can define the project name
@@ -74,7 +74,7 @@ echo     O3DE_PROJECT = %O3DE_PROJECT%
 :: if not set we also use the DCCsi path as stand-in
 CD /D ..\..\..\
 :: To Do: remove one of these 
-IF "%PATH_O3DE_PROJECT%"=="" (set PATH_O3DE_PROJECT=%CD%)
+IF "%PATH_O3DE_PROJECT%"=="" (set "PATH_O3DE_PROJECT=%CD%")
 echo     PATH_O3DE_PROJECT = %PATH_O3DE_PROJECT%
 
 IF "%ABS_PATH%"=="" (set ABS_PATH=%CD%)
@@ -85,35 +85,35 @@ pushd %ABS_PATH%
 
 :: Change to root Lumberyard dev dir
 CD /d %PATH_O3DE_PROJECT%\%O3DE_REL_PATH%
-IF "%O3DE_DEV%"=="" (set O3DE_DEV=%CD%)
+IF "%O3DE_DEV%"=="" (set "O3DE_DEV=%CD%")
 echo     O3DE_DEV = %O3DE_DEV%
 :: Restore original directory
 popd
 
 :: dcc scripting interface gem path
 :: currently know relative path to this gem
-set PATH_DCCSIG=%O3DE_DEV%\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface
+set "PATH_DCCSIG=%O3DE_DEV%\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface"
 echo     PATH_DCCSIG = %PATH_DCCSIG%
 
 :: Change to DCCsi root dir
 CD /D %PATH_DCCSIG%
 
 :: per-dcc sdk path
-set PATH_DCCSI_TOOLS=%PATH_DCCSIG%\Tools
+set "PATH_DCCSI_TOOLS=%PATH_DCCSIG%\Tools"
 echo     PATH_DCCSI_TOOLS = %PATH_DCCSI_TOOLS%
 
 :: temp log location specific to this gem
-set DCCSI_LOG_PATH=%PATH_O3DE_PROJECT%\.temp\logs
+set "DCCSI_LOG_PATH=%PATH_O3DE_PROJECT%\.temp\logs"
 echo     DCCSI_LOG_PATH = %DCCSI_LOG_PATH%
 
 :: O3DE build path
 IF "%O3DE_BUILD_FOLDER%"=="" (set O3DE_BUILD_FOLDER=build)
 echo     O3DE_BUILD_FOLDER = %O3DE_BUILD_FOLDER%
 
-IF "%PATH_O3DE_BUILD%"=="" (set PATH_O3DE_BUILD=%O3DE_DEV%\%O3DE_BUILD_FOLDER%)
+IF "%PATH_O3DE_BUILD%"=="" (set "PATH_O3DE_BUILD=%O3DE_DEV%\%O3DE_BUILD_FOLDER%")
 echo     PATH_O3DE_BUILD = %PATH_O3DE_BUILD%
 
-IF "%PATH_O3DE_BIN%"=="" (set PATH_O3DE_BIN=%PATH_O3DE_BUILD%\bin\profile)
+IF "%PATH_O3DE_BIN%"=="" (set "PATH_O3DE_BIN=%PATH_O3DE_BUILD%\bin\profile")
 echo     PATH_O3DE_BIN = %PATH_O3DE_BIN%
 
 :: add to the PATH
