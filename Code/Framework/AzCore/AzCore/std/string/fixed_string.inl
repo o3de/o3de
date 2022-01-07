@@ -636,7 +636,7 @@ namespace AZStd
         {
             // move elements down
             pointer data = m_buffer;
-            Traits::copy(data + offset, data + offset + count, m_size - offset - count);
+            Traits::move(data + offset, data + offset + count, m_size - offset - count);
             m_size = static_cast<internal_size_type>(m_size - count);
             Traits::assign(data[m_size], Element());  // terminate
         }
