@@ -45,9 +45,8 @@ namespace AZ
             }
             else
             {
-                SerializerMap::const_iterator serializerIter = m_jsonSerializers.find(typeId);
-                AZ_Assert(serializerIter != m_jsonSerializers.end(), "Attempting to unregister a serializer that has not been registered yet with typeid %s", typeId.ToString<AZStd::string>().c_str());
-                m_jsonSerializers.erase(serializerIter);
+                [[maybe_unused]] size_t erased = m_jsonSerializers.erase(typeId);
+                AZ_Assert(erased == 1, "Attempting to unregister a serializer that has not been registered yet with typeid %s", typeId.ToString<AZStd::string>().c_str());
                 return SerializerBuilder(this, m_jsonSerializers.end());
             }
         }

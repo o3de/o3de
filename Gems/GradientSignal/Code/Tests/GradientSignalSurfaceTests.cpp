@@ -11,8 +11,8 @@
 #include <AzCore/Math/MathUtils.h>
 #include <Tests/GradientSignalTestFixtures.h>
 
-#include <Source/Components/ConstantGradientComponent.h>
-#include <Source/Components/GradientSurfaceDataComponent.h>
+#include <GradientSignal/Components/ConstantGradientComponent.h>
+#include <GradientSignal/Components/GradientSurfaceDataComponent.h>
 
 namespace UnitTest
 {
