@@ -1139,7 +1139,7 @@ namespace ScriptCanvasEditor
         auto loadedGraphOutcome = LoadFromFile(fileAssetId.Path().c_str());
         if (!loadedGraphOutcome.IsSuccess())
         {
-            return AZ::Failure(AZStd::string("Failed to load graph at %s", fileAssetId.Path().c_str()));
+            return AZ::Failure(AZStd::string::format("Failed to load graph at %s", fileAssetId.Path().c_str()));
         }
 
         auto loadedGraph = loadedGraphOutcome.TakeValue();

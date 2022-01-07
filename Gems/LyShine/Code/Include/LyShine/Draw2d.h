@@ -50,6 +50,7 @@ public: // types
     {
         AZ::Vector3 color = AZ::Vector3(1.0f, 1.0f, 1.0f);
         Rounding pixelRounding = Rounding::Nearest;
+        bool m_clamp = false;
         RenderState m_renderState;
     };
 
@@ -145,6 +146,7 @@ public: // member functions
     virtual void DrawQuad(AZ::Data::Instance<AZ::RPI::Image> image,
         VertexPosColUV* verts,
         Rounding pixelRounding = Rounding::Nearest,
+        bool clamp = false,
         const RenderState& renderState = RenderState{});
 
     //! Draw a line
@@ -257,6 +259,8 @@ protected: // types and constants
     {
         AZ::RHI::ShaderInputImageIndex m_imageInputIndex;
         AZ::RHI::ShaderInputConstantIndex m_viewProjInputIndex;
+        AZ::RPI::ShaderVariantId m_shaderOptionsClamp;
+        AZ::RPI::ShaderVariantId m_shaderOptionsWrap;
     };
 
     class DeferredPrimitive
@@ -281,6 +285,7 @@ protected: // types and constants
         AZ::Vector2 m_texCoords[4];
         uint32      m_packedColors[4];
         AZ::Data::Instance<AZ::RPI::Image> m_image;
+        bool m_clamp;
         RenderState m_renderState;
     };
 
@@ -455,11 +460,12 @@ public: // member functions
     //! See IDraw2d:DrawQuad for parameter descriptions
     void DrawQuad(AZ::Data::Instance<AZ::RPI::Image> image, CDraw2d::VertexPosColUV* verts,
         IDraw2d::Rounding pixelRounding = IDraw2d::Rounding::Nearest,
+        bool clamp = false,
         const CDraw2d::RenderState& renderState = CDraw2d::RenderState{})
     {
         if (m_draw2d)
         {
-            m_draw2d->DrawQuad(image, verts, pixelRounding, renderState);
+            m_draw2d->DrawQuad(image, verts, pixelRounding, clamp, renderState);
         }
     }
 
@@ -544,6 +550,9 @@ public: // member functions
 
     //! Set the base state (that blend mode etc is combined with) used for images, default is GS_NODEPTHTEST.
     void SetImageDepthState(const AZ::RHI::DepthState& depthState) { m_imageOptions.m_renderState.m_depthState = depthState; }
+
+    //! Set image clamp mode
+    void SetImageClamp(bool clamp) { m_imageOptions.m_clamp = clamp; }
 
     //! Set the text font.
     void SetTextFont(AZStd::string_view fontName) { m_textOptions.fontName = fontName; }
