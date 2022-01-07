@@ -225,10 +225,12 @@ namespace AZ::Dom
         Value& operator=(const Value&);
         Value& operator=(Value&&) noexcept;
 
-        template <class T>
-        Value& operator=(T value)
+        //! Assignment operator to allow forwarding types constructible via Value(T) to be assigned
+        template<class T>
+        auto operator=(T&& arg)
+            -> AZStd::enable_if_t<!AZStd::is_same_v<AZStd::remove_cvref_t<T>, Value> && AZStd::is_constructible_v<Value, T>, Value&>
         {
-            return operator=(Value(value));
+            return operator=(Value(AZStd::forward<T>(arg)));
         }
 
         bool operator==(const Value& rhs) const;
