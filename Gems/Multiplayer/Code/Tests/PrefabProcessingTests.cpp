@@ -57,6 +57,7 @@ namespace UnitTest
     TEST_F(PrefabProcessingTestFixture, NetworkPrefabProcessor_ProcessPrefabTwoEntities_NetEntityGoesToNetSpawnable)
     {
         using AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext;
+        using AzToolsFramework::Prefab::PrefabConversionUtils::PrefabDocument;
 
         AZStd::vector<AZ::Entity*> entities;
 
@@ -74,7 +75,9 @@ namespace UnitTest
         // Add the prefab into the Prefab Processor Context
         const AZStd::string prefabName = "testPrefab";
         PrefabProcessorContext prefabProcessorContext{AZ::Uuid::CreateRandom()};
-        prefabProcessorContext.AddPrefab(prefabName, AZStd::move(prefabDom));
+        PrefabDocument document(prefabName);
+        ASSERT_TRUE(document.SetPrefabDom(AZStd::move(prefabDom)));
+        prefabProcessorContext.AddPrefab(AZStd::move(document));
 
         // Request NetworkPrefabProcessor to process the prefab
         Multiplayer::NetworkPrefabProcessor processor;
