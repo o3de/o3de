@@ -380,16 +380,16 @@ def get_check_global_project():
     """Gets o3de project via .o3de data in user directory"""
 
     from collections import OrderedDict
-    from box import Box
+    import box
     
     bootstrap_box = None
     json_file_path = Path(PATH_USER_O3DE_BOOTSTRAP)
     if json_file_path.exists():
         try:
-            bootstrap_box = Box.from_json(filename=str(json_file_path.resolve()),
-                                          encoding="utf-8",
-                                          errors="strict",
-                                          object_pairs_hook=OrderedDict)
+            bootstrap_box = box.Box.from_json(filename=str(json_file_path.resolve()),
+                                              encoding="utf-8",
+                                              errors="strict",
+                                              object_pairs_hook=OrderedDict)
         except IOError as e:
             # this file runs in py2.7 for Maya 2020, FileExistsError is not defined
             _LOGGER.error('Bad file interaction: {}'.format(json_file_path.resolve()))
