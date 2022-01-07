@@ -30,18 +30,26 @@ namespace UnitTest
         }
 
         template<typename Component, typename Configuration>
-        AZ::Component* CreateComponent(AZ::Entity* entity, const Configuration& config)
+        Component* CreateComponent(AZ::Entity* entity, const Configuration& config)
         {
             m_app->RegisterComponentDescriptor(Component::CreateDescriptor());
             return entity->CreateComponent<Component>(config);
         }
 
         template<typename Component>
-        AZ::Component* CreateComponent(AZ::Entity* entity)
+        Component* CreateComponent(AZ::Entity* entity)
         {
             m_app->RegisterComponentDescriptor(Component::CreateDescriptor());
             return entity->CreateComponent<Component>();
         }
+
+        AZStd::unique_ptr<AZ::Entity> CreateTestEntity(float shapeHalfBounds);
+
+        void CreateTestConstantGradient(AZ::Entity* entity);
+        void CreateTestImageGradient(AZ::Entity* entity);
+        void CreateTestPerlinGradient(AZ::Entity* entity);
+        void CreateTestRandomGradient(AZ::Entity* entity);
+
 
         AZStd::unique_ptr<AZ::ComponentApplication> m_app;
         AZ::Entity* m_systemEntity = nullptr;
@@ -66,6 +74,8 @@ namespace UnitTest
         }
 
         void TestFixedDataSampler(const AZStd::vector<float>& expectedOutput, int size, AZ::EntityId gradientEntityId);
+
+        void CompareGetValueAndGetValues(AZ::EntityId gradientEntityId, const AZ::Aabb& queryRegion, const AZ::Vector2& stepSize);
     };
 
 #ifdef HAVE_BENCHMARK
@@ -83,23 +93,16 @@ namespace UnitTest
 
             // Create a default test entity with bounds of 256 m x 256 m x 256 m.
             const float shapeHalfBounds = 128.0f;
-            CreateTestEntity(shapeHalfBounds);
+            m_testEntity = CreateTestEntity(shapeHalfBounds);
         }
 
         void internalTearDown(const benchmark::State& state)
         {
-            DestroyTestEntity();
+            m_testEntity.reset();
             TearDownCoreSystems();
             UnitTest::AllocatorsBenchmarkFixture::TearDown(state);
             AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
         }
-
-        void CreateTestEntity(float shapeHalfBounds);
-        void DestroyTestEntity();
-
-        void CreateTestImageGradient(AZ::Entity* entity);
-        void CreateTestPerlinGradient(AZ::Entity* entity);
-        void CreateTestRandomGradient(AZ::Entity* entity);
 
         void RunSamplerGetValueBenchmark(benchmark::State& state);
         void RunSamplerGetValuesBenchmark(benchmark::State& state);

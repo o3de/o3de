@@ -418,6 +418,19 @@ namespace UnitTest
         }
     }
 
+    TEST_F(GradientSignalImageTestsFixture, VerifyGetValueAndGetValuesMatch)
+    {
+        // Create our gradient entity.
+        const float shapeHalfBounds = 128.0f;
+        auto entity = CreateTestEntity(shapeHalfBounds);
+
+        CreateTestImageGradient(entity.get());
+        ActivateEntity(entity.get());
+
+        AZ::Aabb queryRegion = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-512.0f), AZ::Vector3(512.0f));
+        AZ::Vector2 stepSize(1.0f, 1.0f);
+        CompareGetValueAndGetValues(entity->GetId(), queryRegion, stepSize);
+    }
 }
 
 

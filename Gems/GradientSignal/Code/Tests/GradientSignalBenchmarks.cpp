@@ -23,6 +23,57 @@
 
 namespace UnitTest
 {
+    BENCHMARK_DEFINE_F(GradientSignalBenchmarkFixture, BM_ConstantGradientEBusGetValue)(benchmark::State& state)
+    {
+        CreateTestConstantGradient(m_testEntity.get());
+        RunEBusGetValueBenchmark(state);
+    }
+
+    BENCHMARK_REGISTER_F(GradientSignalBenchmarkFixture, BM_ConstantGradientEBusGetValue)
+        ->Args({ 1024, 1024 })
+        ->Args({ 2048, 2048 })
+        ->Args({ 4096, 4096 })
+        ->Unit(::benchmark::kMillisecond);
+
+    BENCHMARK_DEFINE_F(GradientSignalBenchmarkFixture, BM_ConstantGradientEBusGetValues)(benchmark::State& state)
+    {
+        CreateTestConstantGradient(m_testEntity.get());
+        RunEBusGetValuesBenchmark(state);
+    }
+
+    BENCHMARK_REGISTER_F(GradientSignalBenchmarkFixture, BM_ConstantGradientEBusGetValues)
+        ->Args({ 1024, 1024 })
+        ->Args({ 2048, 2048 })
+        ->Args({ 4096, 4096 })
+        ->Unit(::benchmark::kMillisecond);
+
+    BENCHMARK_DEFINE_F(GradientSignalBenchmarkFixture, BM_ConstantGradientSamplerGetValue)(benchmark::State& state)
+    {
+        CreateTestConstantGradient(m_testEntity.get());
+        RunSamplerGetValueBenchmark(state);
+    }
+
+    BENCHMARK_REGISTER_F(GradientSignalBenchmarkFixture, BM_ConstantGradientSamplerGetValue)
+        ->Args({ 1024, 1024 })
+        ->Args({ 2048, 2048 })
+        ->Args({ 4096, 4096 })
+        ->Unit(::benchmark::kMillisecond);
+
+    BENCHMARK_DEFINE_F(GradientSignalBenchmarkFixture, BM_ConstantGradientSamplerGetValues)(benchmark::State& state)
+    {
+        CreateTestConstantGradient(m_testEntity.get());
+        RunSamplerGetValuesBenchmark(state);
+    }
+
+    BENCHMARK_REGISTER_F(GradientSignalBenchmarkFixture, BM_ConstantGradientSamplerGetValues)
+        ->Args({ 1024, 1024 })
+        ->Args({ 2048, 2048 })
+        ->Args({ 4096, 4096 })
+        ->Unit(::benchmark::kMillisecond);
+
+
+
+
     BENCHMARK_DEFINE_F(GradientSignalBenchmarkFixture, BM_ImageGradientEBusGetValue)(benchmark::State& state)
     {
         CreateTestImageGradient(m_testEntity.get());
