@@ -39,15 +39,23 @@ namespace AzQtComponents
         return AZ::Color(static_cast<float>(rgb.redF()), static_cast<float>(rgb.greenF()), static_cast<float>(rgb.blueF()), static_cast<float>(rgb.alphaF()));
     }
 
-    QString toString(double value, int numDecimals, const QLocale& locale, bool showGroupSeparator, bool truncate)
+    QString toString(double value, int numDecimals, const QLocale& locale, bool showGroupSeparator, bool round)
     {
         const QChar decimalPoint = locale.decimalPoint();
         const QChar zeroDigit = locale.zeroDigit();
         const int numToStringDecimals = AZStd::max(numDecimals, 20);
+        QString retValue;
 
         // If we want to truncate, not round, we add extra decimal places to the formatting
         // so we can remove the last values otherwise we allow rounding
-        QString retValue = locale.toString(value, 'f', (numDecimals > 0) ? (truncate ? numToStringDecimals : numDecimals) : 0);
+        if (round)
+        {
+            retValue = locale.toString(value, 'f', (numDecimals > 0) ? numDecimals : 0);
+        }
+        else
+        {
+            retValue = locale.toString(value, 'f', (numDecimals > 0) ? numToStringDecimals : 0);
+        }
 
         // Handle special cases when we have decimals in our value
         if (numDecimals > 0)
