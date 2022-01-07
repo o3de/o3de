@@ -241,7 +241,6 @@ namespace UnitTest
         // All components are created, so activate the entity
         ActivateEntity(m_testEntity.get());
 
-        // Create a gradient sampler and run through a series of points to see if they match expectations.
         GradientSignal::GradientSampler gradientSampler;
         gradientSampler.m_gradientId = m_testEntity->GetId();
 

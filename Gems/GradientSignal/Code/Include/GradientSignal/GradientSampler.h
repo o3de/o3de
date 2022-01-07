@@ -149,7 +149,7 @@ namespace GradientSignal
 
     inline void GradientSampler::GetValues(AZStd::array_view<AZ::Vector3> positions, AZStd::array_view<float> outValues) const
     {
-        if (m_opacity <= 0.0f || !m_gradientId.IsValid())
+        auto ClearOutputValues = [](AZStd::array_view<float> outValues)
         {
             // If we don't have a valid gradient (or it is fully transparent), clear out all the output values.
             for (size_t index = 0; index < outValues.size(); index++)
@@ -159,6 +159,11 @@ namespace GradientSignal
                 auto& outValue = const_cast<float&>(outValues[index]);
                 outValue = 0.0f;
             }
+        };
+
+        if (m_opacity <= 0.0f || !m_gradientId.IsValid())
+        {
+            ClearOutputValues(outValues);
             return;
         }
 
@@ -193,13 +198,7 @@ namespace GradientSignal
             if (m_isRequestInProgress)
             {
                 AZ_ErrorOnce("GradientSignal", !m_isRequestInProgress, "Detected cyclic dependences with gradient entity references");
-                for (size_t index = 0; index < outValues.size(); index++)
-                {
-                    // The const_cast is necessary for now since array_view currently only supports const entries.
-                    // If/when array_view is fixed to support non-const, or AZStd::span gets created, the const_cast can get removed.
-                    auto& outValue = const_cast<float&>(outValues[index]);
-                    outValue = 0.0f;
-                }
+                ClearOutputValues(outValues);
                 return;
             }
             else
