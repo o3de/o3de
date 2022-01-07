@@ -87,8 +87,6 @@ set(FILES
     Source/Components/SurfaceMaskFilterComponent.h
     Source/Components/SurfaceSlopeFilterComponent.cpp
     Source/Components/SurfaceSlopeFilterComponent.h
-    Source/Util/ConcurrentQueue.h
-    Source/Util/ProducerConsumerQueue.h
     Source/Debugger/AreaDebugComponent.cpp
     Source/Debugger/AreaDebugComponent.h
     Source/Debugger/DebugComponent.cpp
