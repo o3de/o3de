@@ -174,7 +174,9 @@ class EditorComponent:
         get_outcome = self.property_tree_editor.get_container_item(component_property_path, key)
         assert (
             get_outcome.IsSuccess()
-        ), f"Failure: could not get a value for {self.get_component_name()}: '{component_property_path}' [{key}]"
+        ), (
+            f"Failure: could not get a value for {self.get_component_name()}: '{component_property_path}' [{key}]. "
+            f"Error returned by get_container_item: {get_outcome.GetError()}")
         return get_outcome.GetValue()
 
     def remove_container_item(self, component_property_path: str, key: any):
@@ -277,7 +279,7 @@ class EditorComponent:
         :return: List of type ids of given components. Type id is a UUID as provided by the ebus call
         """
         type_ids = editor.EditorComponentAPIBus(
-            bus.Broadcast, "FindComponentTypeIdsByEntityType", component_names, entity_type)
+            bus.Broadcast, "FindComponentTypeIdsByEntityType", component_names, entity_type.value)
         return type_ids
 
 
