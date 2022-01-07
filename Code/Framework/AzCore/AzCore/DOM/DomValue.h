@@ -198,27 +198,38 @@ namespace AZ::Dom
         Value(const Value&);
         Value(Value&&) noexcept;
         Value(AZStd::string_view stringView, bool copy);
-        Value(SharedStringType sharedString);
+        explicit Value(const ValueType&);
+        explicit Value(ValueType&&);
+        explicit Value(SharedStringType sharedString);
 
-        Value(int8_t value);
-        Value(uint8_t value);
-        Value(int16_t value);
-        Value(uint16_t value);
-        Value(int32_t value);
-        Value(uint32_t value);
-        Value(int64_t value);
-        Value(uint64_t value);
-        Value(float value);
-        Value(double value);
-        Value(bool value);
+        explicit Value(int8_t value);
+        explicit Value(uint8_t value);
+        explicit Value(int16_t value);
+        explicit Value(uint16_t value);
+        explicit Value(int32_t value);
+        explicit Value(uint32_t value);
+        explicit Value(int64_t value);
+        explicit Value(uint64_t value);
+        explicit Value(float value);
+        explicit Value(double value);
+        explicit Value(bool value);
 
         explicit Value(Type type);
+
+        template<class T>
+        explicit Value(T, AZStd::enable_if_t<AZStd::is_pointer_v<T>>* enabled = 0) = delete;
 
         static Value FromOpaqueValue(const AZStd::any& value);
 
         // Equality / comparison / swap...
         Value& operator=(const Value&);
         Value& operator=(Value&&) noexcept;
+
+        template <class T>
+        Value& operator=(T value)
+        {
+            return operator=(Value(value));
+        }
 
         bool operator==(const Value& rhs) const;
         bool operator!=(const Value& rhs) const;
@@ -330,22 +341,10 @@ namespace AZ::Dom
         // int API...
         int64_t GetInt64() const;
         void SetInt64(int64_t);
-        int32_t GetInt32() const;
-        void SetInt32(int32_t);
-        int16_t GetInt16() const;
-        void SetInt16(int16_t);
-        int8_t GetInt8() const;
-        void SetInt8(int8_t);
 
         // uint API...
         uint64_t GetUint64() const;
         void SetUint64(uint64_t);
-        uint32_t GetUint32() const;
-        void SetUint32(uint32_t);
-        uint16_t GetUint16() const;
-        void SetUint16(uint16_t);
-        uint8_t GetUint8() const;
-        void SetUint8(uint8_t);
 
         // bool API...
         bool GetBool() const;
@@ -354,8 +353,6 @@ namespace AZ::Dom
         // double API...
         double GetDouble() const;
         void SetDouble(double);
-        float GetFloat() const;
-        void SetFloat(float);
 
         // String API...
         AZStd::string_view GetString() const;

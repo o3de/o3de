@@ -969,16 +969,6 @@ namespace AZ::Dom
         m_value = value;
     }
 
-    int32_t Value::GetInt32() const
-    {
-        return aznumeric_cast<int32_t>(GetInt64());
-    }
-
-    void Value::SetInt32(int32_t value)
-    {
-        m_value = aznumeric_cast<int64_t>(value);
-    }
-
     uint64_t Value::GetUint64() const
     {
         switch (m_value.index())
@@ -997,16 +987,6 @@ namespace AZ::Dom
     void Value::SetUint64(uint64_t value)
     {
         m_value = value;
-    }
-
-    uint32_t Value::GetUint32() const
-    {
-        return aznumeric_cast<uint32_t>(GetUint64());
-    }
-
-    void Value::SetUint32(uint32_t value)
-    {
-        m_value = aznumeric_cast<uint64_t>(value);
     }
 
     bool Value::GetBool() const
@@ -1042,16 +1022,6 @@ namespace AZ::Dom
     void Value::SetDouble(double value)
     {
         m_value = value;
-    }
-
-    float Value::GetFloat() const
-    {
-        return aznumeric_cast<float>(GetDouble());
-    }
-
-    void Value::SetFloat(float value)
-    {
-        m_value = aznumeric_cast<double>(value);
     }
 
     void Value::SetString(SharedStringType sharedString)
