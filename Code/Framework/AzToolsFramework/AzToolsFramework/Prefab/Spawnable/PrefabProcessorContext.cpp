@@ -7,8 +7,10 @@
  */
 
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Component/EntityUtils.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
+#include <AzToolsFramework/Prefab/Spawnable/PrefabDocument.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabProcessorContext.h>
 #include <AzToolsFramework/Prefab/Spawnable/SpawnableUtils.h>
 
@@ -30,27 +32,42 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         : m_sourceUuid(sourceUuid)
     {}
 
-    bool PrefabProcessorContext::AddPrefab(AZStd::string prefabName, PrefabDom prefab)
+    bool PrefabProcessorContext::AddPrefab(PrefabDocument&& document)
     {
-        auto result = m_prefabs.emplace(AZStd::move(prefabName), AZStd::move(prefab));
-        return result.second;
-    }
-
-    void PrefabProcessorContext::ListPrefabs(const AZStd::function<void(AZStd::string_view, PrefabDom&)>& callback)
-    {
-        m_isIterating = true;
-        for (auto& it : m_prefabs)
+        AZStd::string name = document.GetName();
+        if (!m_prefabNames.contains(name))
         {
-            callback(it.first, it.second);
+            m_prefabNames.emplace(AZStd::move(name));
+            // If currently iterating add to pending queue to avoid invalidating the container that's being iterated over.
+            PrefabContainer& container = m_isIterating ? m_pendingPrefabAdditions : m_prefabs;
+            container.push_back(AZStd::move(document));
+            return true;
         }
-        m_isIterating = false;
+        return false;
     }
 
-    void PrefabProcessorContext::ListPrefabs(const AZStd::function<void(AZStd::string_view, const PrefabDom&)>& callback) const
+    void PrefabProcessorContext::ListPrefabs(const AZStd::function<void(PrefabDocument&)>& callback)
     {
-        for (const auto& it : m_prefabs)
+        // Enable iterating state so the prefab container doesn't get invalided. Enabling this flag will cause new prefabs
+        // to be stored in a temporary buffer that can be moved into the regular prefab container after iterating.
+        m_isIterating = true;
+        for (PrefabDocument& document : m_prefabs)
         {
-            callback(it.first, it.second);
+            callback(document);
+        }
+
+        m_isIterating = false;
+        m_prefabs.insert(
+            m_prefabs.end(), AZStd::make_move_iterator(m_pendingPrefabAdditions.begin()),
+            AZStd::make_move_iterator(m_pendingPrefabAdditions.end()));
+        m_pendingPrefabAdditions.clear();
+    }
+
+    void PrefabProcessorContext::ListPrefabs(const AZStd::function<void(const PrefabDocument&)>& callback) const
+    {
+        for (const PrefabDocument& document : m_prefabs)
+        {
+            callback(document);
         }
     }
 
@@ -132,6 +149,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
     {
         using namespace AzToolsFramework::Prefab;
 
+        // Resolve prefab links into spawnable links for the provided spawnable.
         for (EntityAliasStore& entityAlias : m_entityAliases)
         {
             auto sourcePrefab = AZStd::get_if<EntityAliasPrefabLink>(&entityAlias.m_source);
@@ -224,11 +242,35 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
                 it = aliasVisitors.emplace(source->m_spawnable.GetId(), AZStd::move(visitor)).first;
             }
             it->second.AddAlias(
-                AZ::Data::Asset<AzFramework::Spawnable>(&target->m_spawnable, loadBehavior), alias.m_tag, sourceIndex, targetIndex,
+                AZ::Data::Asset<AzFramework::Spawnable>(target->m_spawnable.GetId(), azrtti_typeid<AzFramework::Spawnable>()), alias.m_tag,
+                sourceIndex, targetIndex,
                 alias.m_aliasType, alias.m_loadBehavior == EntityAliasSpawnableLoadBehavior::QueueLoad);
 
             // Register the dependency between the two spawnables.
             RegisterProductAssetDependency(source->m_spawnable.GetId(), target->m_spawnable.GetId(), loadBehavior);
+
+            // Patch up all entity ids so the alias points to the same entity id if needed.
+            switch (alias.m_aliasType)
+            {
+            case AzFramework::Spawnable::EntityAliasType::Original:
+                continue;
+            case AzFramework::Spawnable::EntityAliasType::Disable:
+                continue;
+            case AzFramework::Spawnable::EntityAliasType::Replace:
+                break; // Requires entity id for alias in source and target spawnable matches.
+            case AzFramework::Spawnable::EntityAliasType::Additional:
+                continue;
+            case AzFramework::Spawnable::EntityAliasType::Merge:
+                break; // Requires entity id for alias in source and target spawnable matches.
+            default:
+                continue;
+            }
+
+            auto entityIdMapper = [source, target](const AZ::EntityId& originalId, bool /*isEntityId*/) -> AZ::EntityId
+            {
+                return  originalId == target->m_index ? source->m_index : originalId;
+            };
+            AZ::EntityUtils::ReplaceEntityIdsAndEntityRefs(&target->m_spawnable, entityIdMapper);
         }
     }
 

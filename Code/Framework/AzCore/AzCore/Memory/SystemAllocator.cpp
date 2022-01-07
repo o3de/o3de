@@ -18,7 +18,6 @@
 
 #define AZCORE_SYSTEM_ALLOCATOR_HPHA 1
 #define AZCORE_SYSTEM_ALLOCATOR_MALLOC 2
-#define AZCORE_SYSTEM_ALLOCATOR_HEAP 3
 
 #if !defined(AZCORE_SYSTEM_ALLOCATOR)
 // define the default
@@ -29,8 +28,6 @@
     #include <AzCore/Memory/HphaSchema.h>
 #elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC
     #include <AzCore/Memory/MallocSchema.h>
-#elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HEAP
-    #include <AzCore/Memory/HeapSchema.h>
 #else
     #error "Invalid allocator selected for SystemAllocator"
 #endif
@@ -44,8 +41,6 @@ namespace AZ
     static AZStd::aligned_storage<sizeof(HphaSchema), AZStd::alignment_of<HphaSchema>::value>::type g_systemSchema;
 #elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC
     static AZStd::aligned_storage<sizeof(MallocSchema), AZStd::alignment_of<MallocSchema>::value>::type g_systemSchema;
-#elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HEAP
-    static AZStd::aligned_storage<sizeof(HeapSchema), AZStd::alignment_of<HeapSchema>::value>::type g_systemSchema;
 #endif
 
     //////////////////////////////////////////////////////////////////////////
@@ -118,11 +113,6 @@ namespace AZ
             heapDesc.m_systemChunkSize = desc.m_heap.m_systemChunkSize;
 #elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC
             MallocSchema::Descriptor heapDesc;
-#elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HEAP
-            HeapSchema::Descriptor heapDesc;
-            memcpy(heapDesc.m_memoryBlocks, desc.m_heap.m_memoryBlocks, sizeof(heapDesc.m_memoryBlocks));
-            memcpy(heapDesc.m_memoryBlocksByteSize, desc.m_heap.m_memoryBlocksByteSize, sizeof(heapDesc.m_memoryBlocksByteSize));
-            heapDesc.m_numMemoryBlocks = desc.m_heap.m_numMemoryBlocks;
 #endif
             if (&AllocatorInstance<SystemAllocator>::Get() == this) // if we are the system allocator
             {
@@ -132,8 +122,6 @@ namespace AZ
                 m_allocator = new (&g_systemSchema) HphaSchema(heapDesc);
 #elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC
                 m_allocator = new (&g_systemSchema) MallocSchema(heapDesc);
-#elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HEAP
-                m_allocator = new (&g_systemSchema) HeapSchema(heapDesc);
 #endif
                 g_isSystemSchemaUsed = true;
                 isReady = true;
@@ -149,8 +137,6 @@ namespace AZ
                 m_allocator = azcreate(HphaSchema, (heapDesc), SystemAllocator);
 #elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC
                 m_allocator = azcreate(MallocSchema, (heapDesc), SystemAllocator);
-#elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HEAP
-                m_allocator = azcreate(HeapSchema, (heapDesc), SystemAllocator);
 #endif
                 if (m_allocator == nullptr)
                 {
@@ -186,8 +172,6 @@ namespace AZ
                 static_cast<HphaSchema*>(m_allocator)->~HphaSchema();
 #elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC
                 static_cast<MallocSchema*>(m_allocator)->~MallocSchema();
-#elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HEAP
-                static_cast<HeapSchema*>(m_allocator)->~HeapSchema();
 #endif
                 g_isSystemSchemaUsed = false;
             }

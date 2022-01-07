@@ -284,9 +284,6 @@ namespace AZStd
             if constexpr (AZStd::is_same_v<char_type, char>)
             {
                 // Use builtin_memset if available for char type
-            #if az_has_builtin_memset
-                __builtin_memset(dest, ch, count);
-            #else
                 if (az_builtin_is_constant_evaluated())
                 {
                     for (char_type* iter = dest; count; --count, ++iter)
@@ -298,7 +295,6 @@ namespace AZStd
                 {
                     ::memset(dest, ch, count);
                 }
-            #endif
             }
             else
             {
@@ -389,6 +385,9 @@ namespace AZStd
                 return dest;
             }
 
+        #if az_has_builtin_memmove
+            __builtin_memmove(dest, src, count * sizeof(char_type));
+        #else
             auto NonBuiltinMove = [](char_type* dest1, const char_type* src1, size_t count1) constexpr
                 -> char_type*
             {
@@ -432,10 +431,6 @@ namespace AZStd
 
                 return dest1;
             };
-
-        #if az_has_builtin_memmove
-            __builtin_memmove(dest, src, count * sizeof(char_type));
-        #else
             NonBuiltinMove(dest, src, count);
         #endif
 
@@ -445,6 +440,9 @@ namespace AZStd
         {
             AZ_Assert(dest != nullptr && src != nullptr, "Invalid input!");
 
+        #if az_has_builtin_memcpy
+            __builtin_memcpy(dest, src, count * sizeof(char_type));
+        #else
             auto NonBuiltinCopy = [](char_type* dest1, const char_type* src1, size_t count1) constexpr
                 -> char_type*
             {
@@ -461,10 +459,6 @@ namespace AZStd
                 }
                 return dest1;
             };
-
-        #if az_has_builtin_memcpy
-            __builtin_memcpy(dest, src, count * sizeof(char_type));
-        #else
             NonBuiltinCopy(dest, src, count);
         #endif
 
