@@ -261,8 +261,8 @@ namespace AzToolsFramework
             return AZ::EntityId();
         }
         entity = aznew AZ::Entity(entityId, name);
-        AddEntity(entity);
         AZ_Assert(entity != nullptr, "Entity with name %s couldn't be created.", name);
+        AddEntity(entity);
         if (m_isLegacySliceService)
         {
             FinalizeEditorEntity(entity);
