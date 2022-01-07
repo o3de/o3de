@@ -1460,7 +1460,7 @@ QString DoubleSpinBox::stringValue(double value, bool truncated) const
         numDecimals = 0;
     }
 
-    return toString(value, numDecimals, locale(), isGroupSeparatorShown());
+    return toString(value, numDecimals, locale(), isGroupSeparatorShown(), false);
 }
 
 void DoubleSpinBox::updateToolTip(double value)
