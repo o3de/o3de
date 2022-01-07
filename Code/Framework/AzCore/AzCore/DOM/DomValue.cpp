@@ -262,21 +262,6 @@ namespace AZ::Dom
         {
             return GetString() == rhs.GetString();
         }
-        else if (IsNumber() && rhs.IsNumber())
-        {
-            if (IsInt())
-            {
-                return GetInt64() == rhs.GetInt64();
-            }
-            else if (IsUint())
-            {
-                return GetUint64() == rhs.GetUint64();
-            }
-            else
-            {
-                return GetDouble() == rhs.GetDouble();
-            }
-        }
         else
         {
             return m_value == rhs.m_value;
