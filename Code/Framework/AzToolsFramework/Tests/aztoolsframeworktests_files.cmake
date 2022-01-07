@@ -12,7 +12,7 @@ set(FILES
     AssetFileInfoListComparison.cpp
     AssetSeedManager.cpp
     AssetSystemMocks.h
-    AzToolFrameworkTestHelperTest.cpp
+    AzToolsFrameworkTestHelpersTest.cpp
     BoundsTestComponent.cpp
     BoundsTestComponent.h
     ComponentAdapterTests.cpp
