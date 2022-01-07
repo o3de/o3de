@@ -35,6 +35,13 @@ namespace AZStd::StringInternal
     {};
 }
 
+#if defined(HAVE_BENCHMARK)
+namespace Benchmark
+{
+    class StringBenchmarkFixture;
+}
+#endif
+
 namespace AZStd
 {
     /**
@@ -105,23 +112,16 @@ namespace AZStd
             assign(count, ch);
         }
 
-        template<class InputIterator>
-        inline basic_string(InputIterator first, InputIterator last, const Allocator& alloc = Allocator())
+        template<class InputIt, typename = enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_t>>>
+        inline basic_string(InputIt first, InputIt last, const Allocator& alloc = Allocator())
             : m_storage{ skip_element_tag{}, alloc }
         {   // construct from [first, last)
-            if (first == last)
-            {
-                Traits::assign(m_storage.first().GetData()[0], Element()); // terminate
-            }
-            else
-            {
-                construct_iter(first, last, is_integral<InputIterator>());
-            }
+            assign(first, last);
         }
 
         inline basic_string(const_pointer first, const_pointer last)
         {   // construct from [first, last), const pointers
-            assign(&*first, last - first);
+            assign(first, last - first);
         }
 
         inline basic_string(const this_type& rhs)
@@ -192,21 +192,18 @@ namespace AZStd
         this_type& append(const this_type& rhs, size_type rhsOffset, size_type count)
         {   // append rhs [rhsOffset, rhsOffset + count)
             AZSTD_CONTAINER_ASSERT(rhs.size() >= rhsOffset, "Invalid offset!");
-            size_type num = rhs.m_storage.first().GetSize() - rhsOffset;
-            if (num < count)
-            {
-                count = num;    // trim count to size
-            }
-            AZSTD_CONTAINER_ASSERT(npos - m_storage.first().GetSize() > count && m_storage.first().GetSize() + count >= m_storage.first().GetSize(), "result is too long!");
-            num = m_storage.first().GetSize() + count;
-            if (count > 0  && grow(num))
+            count = AZStd::min(count, rhs.size() - rhsOffset);
+
+            size_type oldSize = size();
+            size_type newSize = oldSize + count;
+            if (count > 0  && grow(newSize))
             {
                 pointer data = m_storage.first().GetData();
                 const_pointer rhsData = rhs.data();
                 // make room and append new stuff
-                Traits::copy(data + m_storage.first().GetSize(), rhsData + rhsOffset, count);
-                m_storage.first().SetSize(num);
-                Traits::assign(data[num], Element()); // terminate
+                Traits::copy(data + oldSize, rhsData + rhsOffset, count);
+                m_storage.first().SetSize(newSize);
+                Traits::assign(data[newSize], Element()); // terminate
             }
             return *this;
         }
@@ -220,14 +217,15 @@ namespace AZStd
                 return append(*this, ptr - data, count);    // substring
             }
             AZSTD_CONTAINER_ASSERT(npos - size() > count && size() + count >= size(), "result is too long!");
-            size_type num = size() + count;
-            if (count > 0 && grow(num))
+            size_type oldSize = size();
+            size_type newSize = oldSize + count;
+            if (count > 0 && grow(newSize))
             {
                 // make room and append new stuff
                 data = m_storage.first().GetData();
-                Traits::copy(data + size() , ptr, count);
-                m_storage.first().SetSize(num);
-                Traits::assign(data[num], Element());  // terminate
+                Traits::copy(data + oldSize , ptr, count);
+                m_storage.first().SetSize(newSize);
+                Traits::assign(data[newSize], Element());  // terminate
             }
             return *this;
         }
@@ -242,24 +240,40 @@ namespace AZStd
             {
                 pointer data = m_storage.first().GetData();
                 // make room and append new stuff using assign
-                if (count == 1)
-                {
-                    Traits::assign(data[size()], ch);
-                }
-                else
-                {
-                    Traits::assign(data + size(), count, ch);
-                }
+                Traits::assign(data + size(), count, ch);
                 m_storage.first().SetSize(num);
                 Traits::assign(data[num], Element());  // terminate
             }
             return *this;
         }
 
-        template<class InputIterator>
-        inline this_type& append(InputIterator first, InputIterator last)
+        template<class InputIt>
+        inline auto append(InputIt first, InputIt last)
+            -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, this_type&>
         {   // append [first, last)
-            return append_iter(first, last, AZStd::is_integral<InputIterator>());
+            if constexpr (Internal::satisfies_contiguous_iterator_concept_v<InputIt>
+                && is_same_v<typename AZStd::iterator_traits<InputIt>::value_type, value_type>)
+            {
+                return append(AZStd::to_address(first), AZStd::distance(first, last));
+            }
+            else
+            {
+                // Input Iterator pointer type doesn't match the const_pointer type
+                // So the elements need to be appended one by one into the buffer
+                size_type oldSize = size();
+                size_type newSize = oldSize + AZStd::distance(first, last);
+                if (grow(newSize))
+                {
+                    pointer buffer = data();
+                    for (size_t updateIndex = oldSize; first != last; ++first, ++updateIndex)
+                    {
+                        Traits::assign(buffer[updateIndex], static_cast<Element>(*first));
+                    }
+                    m_storage.first().SetSize(newSize);
+                    Traits::assign(buffer[newSize], Element());  // terminate
+                }
+                return *this;
+            }
         }
 
         inline this_type& append(const_pointer first, const_pointer last)
@@ -353,28 +367,44 @@ namespace AZStd
         this_type& assign(size_type count, Element ch)
         {
             // assign count * ch
-            AZSTD_CONTAINER_ASSERT(count != npos, "result is too long!");
             if (grow(count))
             {   // make room and assign new stuff
                 pointer data = m_storage.first().GetData();
-                if (count == 1)
-                {
-                    Traits::assign(*(data), ch);
-                }
-                else
-                {
-                    Traits::assign(data, count, ch);
-                }
+                Traits::assign(data, count, ch);
                 m_storage.first().SetSize(count);
                 Traits::assign(data[count], Element());  // terminate
             }
             return *this;
         }
 
-        template<class InputIterator>
-        inline this_type& assign(InputIterator first, InputIterator last)   { return assign_iter(first, last, AZStd::is_integral<InputIterator>()); }
-        inline this_type& assign(const_pointer first, const_pointer last)                           { return replace(begin(), end(), first, last); }
-        inline this_type& insert(size_type offset, const this_type& rhs)                            { return insert(offset, rhs, 0, npos);  }
+        template<class InputIt>
+        inline auto assign(InputIt first, InputIt last)
+            -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, this_type&>
+        {
+            if constexpr (Internal::satisfies_contiguous_iterator_concept_v<InputIt>
+                && is_same_v<typename AZStd::iterator_traits<InputIt>::value_type, value_type>)
+            {
+                return assign(AZStd::to_address(first), AZStd::distance(first, last));
+            }
+            else
+            {
+                // Input Iterator pointer type doesn't match the const_pointer type
+                // So the elements need to be assigned one by one into the buffer
+                size_type newSize = AZStd::distance(first, last);
+                if (fits_in_capacity(newSize))
+                {
+                    pointer buffer = data();
+                    for (size_t updateIndex = 0; first != last; ++first, ++updateIndex)
+                    {
+                        Traits::assign(buffer[updateIndex], static_cast<Element>(*first));
+                    }
+                    m_storage.first().SetSize(newSize);
+                    Traits::assign(buffer[newSize], Element());  // terminate
+                }
+                return *this;
+            }
+        }
+        inline this_type& insert(size_type offset, const this_type& rhs) { return insert(offset, rhs, 0, npos); }
         this_type& insert(size_type offset, const this_type& rhs, size_type rhsOffset, size_type count)
         {
             // insert rhs [rhsOffset, rhsOffset + count) at offset
@@ -406,13 +436,13 @@ namespace AZStd
             return (*this);
         }
 
-        this_type&  insert(size_type offset, const_pointer ptr, size_type count)
+        this_type& insert(size_type offset, const_pointer ptr, size_type count)
         {
             // insert [ptr, ptr + count) at offset
             pointer data = m_storage.first().GetData();
             if (ptr != nullptr && ptr >= data && (data + size()) > ptr)
             {
-                return insert(offset, *this,    ptr - data, count); // substring
+                return insert(offset, *this, ptr - data, count); // substring
             }
             AZSTD_CONTAINER_ASSERT(size() >= offset, "Invalid offset");
             AZSTD_CONTAINER_ASSERT(npos - size() > count, "Result is too long");
@@ -428,7 +458,7 @@ namespace AZStd
             return *this;
         }
 
-        inline this_type& insert(size_type offset, const_pointer ptr)  { return insert(offset, ptr, Traits::length(ptr));   }
+        inline this_type& insert(size_type offset, const_pointer ptr) { return insert(offset, ptr, Traits::length(ptr)); }
 
         this_type& insert(size_type offset, size_type count, Element ch)
         {
@@ -441,21 +471,14 @@ namespace AZStd
                 pointer data = m_storage.first().GetData();
                 // make room and insert new stuff
                 Traits::move(data + offset + count, data + offset, size() - offset);   // empty out hole
-                if (count == 1)
-                {
-                    Traits::assign(*(data + offset), ch);
-                }
-                else
-                {
-                    Traits::assign(data + offset, count, ch);
-                }
+                Traits::assign(data + offset, count, ch);
                 m_storage.first().SetSize(num);
                 Traits::assign(data[num], Element());  // terminate
             }
             return *this;
         }
 
-        inline iterator insert(const_iterator insertPos)    { return insert(insertPos, Element()); }
+        inline iterator insert(const_iterator insertPos) { return insert(insertPos, Element()); }
 
         iterator insert(const_iterator insertPos, Element ch)
         {
@@ -471,7 +494,7 @@ namespace AZStd
             return iterator(AZSTD_CHECKED_ITERATOR(iterator_impl, data + offset));
         }
 
-        void insert(const_iterator insertPos, size_type count, Element ch)
+        iterator insert(const_iterator insertPos, size_type count, Element ch)
         {   // insert count * elem at insertPos
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
             const_pointer insertPosPtr = insertPos.get_iterator();
@@ -481,19 +504,40 @@ namespace AZStd
             pointer data = m_storage.first().GetData();
             size_type offset = insertPosPtr - data;
             insert(offset, count, ch);
+            return begin() + offset;
         }
 
-        template<class InputIterator>
-        inline void insert(const_iterator insertPos, InputIterator first, InputIterator last)
+        template<class InputIt>
+        auto insert(const_iterator insertPos, InputIt first, InputIt last)
+            -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, iterator>
         {   // insert [_First, _Last) at _Where
-            insert_iter(insertPos, first, last, is_integral<InputIterator>());
+            size_type insertOffset = AZStd::distance(cbegin(), insertPos);
+            if constexpr (Internal::satisfies_contiguous_iterator_concept_v<InputIt>
+                && is_same_v<typename AZStd::iterator_traits<InputIt>::value_type, value_type>)
+            {
+                insert(insertOffset, AZStd::to_address(first), AZStd::distance(first, last));
+            }
+            else
+            {
+                // Input Iterator pointer type doesn't match the const_pointer type
+                // So the elements need to be inserted one by one into the buffer
+                size_type count = AZStd::distance(first, last);
+                size_type oldSize = size();
+                size_type newSize = oldSize + count;
+                if (grow(newSize))
+                {
+                    pointer buffer = m_storage.first().GetData();
+                    Traits::copy_backward(buffer + insertOffset + count, buffer + insertOffset, oldSize - insertOffset); // empty out hole
+                    for (size_t updateIndex = insertOffset; first != last; ++first, ++updateIndex)
+                    {
+                        Traits::assign(buffer[updateIndex], static_cast<Element>(*first));
+                    }
+                    m_storage.first().SetSize(newSize);
+                    Traits::assign(buffer[newSize], Element()); // terminate
+                }
+            }
+            return begin() + insertOffset;
         }
-
-        inline void insert(const_iterator insertPos, const_pointer first, const_pointer last)
-        {   // insert [first, last) at insertPos, const pointers
-            replace(insertPos, insertPos, first, last);
-        }
-
 
         this_type& erase(size_type offset = 0, size_type count = npos)
         {   // erase elements [offset, offset + count)
@@ -512,7 +556,7 @@ namespace AZStd
                 Traits::move(data + offset, data + offset + count, size() - offset - count);
                 m_storage.first().SetSize(size() - count);
                 Traits::assign(data[size()], Element());  // terminate
-            }
+        }
             return *this;
         }
 
@@ -547,113 +591,113 @@ namespace AZStd
             return iterator(AZSTD_CHECKED_ITERATOR(iterator_impl, data + count));
         }
 
-        inline void  clear()        { erase(begin(), end()); }
-        inline this_type& replace(size_type offset, size_type count, const this_type& rhs)
+        inline void  clear() { erase(begin(), end()); }
+        this_type& replace(size_type offset, size_type count, const this_type& rhs)
         {
-            // replace [offset, offset + count) with rhs
-            return replace(offset, count, rhs, 0, npos);
+            return replace(offset, count, rhs.c_str(), rhs.size());
         }
 
         this_type& replace(size_type offset, size_type count, const this_type& rhs, size_type rhsOffset, size_type rhsCount)
         {
-            // replace [offset, offset + count) with rhs [rhsOffset, rhsOffset + rhsCount)
-            AZSTD_CONTAINER_ASSERT(size() >= offset && rhs.size() >= rhsOffset, "Invalid offsets");
-            if (size() - offset < count)
-            {
-                count = size() - offset;    // trim count to size
-            }
-            size_type num = rhs.size() - rhsOffset;
-            if (num < rhsCount)
-            {
-                rhsCount = num; // trim rhsCount to size
-            }
-            AZSTD_CONTAINER_ASSERT(npos - rhsCount > size() - count, "Result is too long");
-
-            size_type nm = size() - count - offset; // length of preserved tail
-            size_type newSize = size() + rhsCount - count;
-            if (size() < newSize)
-            {
-                grow(newSize);
-            }
-
-            pointer data = m_storage.first().GetData();
-            const_pointer rhsData = rhs.data();
-
-#ifdef AZSTD_HAS_CHECKED_ITERATORS
-            orphan_range(data + offset, data + offset + count);
-#endif
-            if (this != &rhs)
-            {   // no overlap, just move down and copy in new stuff
-                Traits::move(data + offset + rhsCount, data + offset + count, nm);   // empty hole
-                Traits::copy(data + offset,    rhsData + rhsOffset, rhsCount); // fill hole
-            }
-            else if (rhsCount <= count)
-            {   // hole doesn't get larger, just copy in substring
-                Traits::move(data + offset,    data + rhsOffset, rhsCount);    // fill hole
-                Traits::move(data + offset + rhsCount, data + offset + count, nm);   // move tail down
-            }
-            else if (rhsOffset <= offset)
-            {   // hole gets larger, substring begins before hole
-                Traits::move(data + offset + rhsCount, data + offset + count, nm);   // move tail down
-                Traits::move(data + offset, data + rhsOffset, rhsCount);   // fill hole
-            }
-            else if (offset + count <= rhsOffset)
-            {   // hole gets larger, substring begins after hole
-                Traits::move(data + offset + rhsCount, data + offset + count, nm);   // move tail down
-                Traits::move(data + offset,    data + (rhsOffset + rhsCount - count), rhsCount);   // fill hole
-            }
-            else
-            {   // hole gets larger, substring begins in hole
-                Traits::move(data + offset,    data + rhsOffset, count);   // fill old hole
-                Traits::move(data + offset + rhsCount, data + offset + count, nm);   // move tail down
-                Traits::move(data + offset + count, data + rhsOffset + rhsCount, rhsCount - count); // fill rest of new hole
-            }
-
-            m_storage.first().SetSize(newSize);
-            Traits::assign(data[newSize], Element());  // terminate
-            return (*this);
+            return replace(offset, count, rhs.c_str() + rhsOffset, AZStd::min(rhsCount, rhs.size() - rhsOffset));
         }
 
         this_type& replace(size_type offset, size_type count, const_pointer ptr, size_type ptrCount)
         {
-            pointer data = m_storage.first().GetData();
             // replace [offset, offset + count) with [ptr, ptr + ptrCount)
-            if (ptr != nullptr && ptr >= data && (data + size()) > ptr)
-            {
-                return (replace(offset, count, *this, ptr - data, ptrCount));   // substring, replace carefully
-            }
             AZSTD_CONTAINER_ASSERT(size() >= offset, "Invalid offset");
-            if (size() - offset < count)
-            {
-                count = size() - offset;    // trim _N0 to size
-            }
-            AZSTD_CONTAINER_ASSERT(npos - ptrCount > size() - count, "Result too long");
+            // Make sure count is within is no larger than the distance from the offset
+            // to the end of this string
+            count = AZStd::min(count, size() - offset);
 
-#ifdef AZSTD_HAS_CHECKED_ITERATORS
-            orphan_range(data + offset, data + offset + count);
-#endif
-            size_type nm = size() - count - offset;
-            if (ptrCount < count)
+            size_type newSize = size() + ptrCount - count;
+            size_type charsAfterCountToMove = size() - count - offset;
+            pointer inputStringCopy{};
+
+            if (pointer thisBuffer = m_storage.first().GetData();
+                (ptr >= thisBuffer && ptr < thisBuffer + size())
+                || (ptr + ptrCount > thisBuffer && ptr + ptrCount <= thisBuffer + size()))
             {
-                Traits::move(data + offset + ptrCount, data + offset + count, nm);  // smaller hole, move tail up
-            }
-            size_type num = size() + ptrCount - count;
-            if ((0 < ptrCount || 0 < count) && grow(num))
-            {
-                data = m_storage.first().GetData();
-                // make room and rearrange
-                if (count < ptrCount)
+                // Overlap checks for tring needs if the input pointer is anywhere within the string
+                // even if it is outside of the range of [offset, offset + count) as a growing
+                // the string buffer could cause a realloc to occur
+                if (!fits_in_capacity(newSize))
                 {
-                    Traits::move(data + offset + ptrCount, data + offset + count, nm);   // move tail down
+                    // If the input string is a sub-string and it would cause
+                    // this string to need to re-allocated as it doesn't fit in the capacity
+                    // Then the  input string is needs to be copied into a local buffer
+                    inputStringCopy = reinterpret_cast<pointer>(get_allocator().allocate(ptrCount * sizeof(value_type), alignof(value_type)));
+                    Traits::copy(inputStringCopy, ptr, ptrCount);
+                    // Updated the input string pointer to point to the local buffer
+                    ptr = inputStringCopy;
+                    // Now this string buffer can now be safely resized and the non-overlapping string logic below can be used
+                }
+                else
+                {
+                    // overlapping string in-place logic
+                    // Ex. this = "ABCDEFG", offset = 1, count=4
+                    // substring is "CDE"
+                    // The text from offset 1 for 4 chars "BCDE": should be replaced with "CDE"
+                    // making a whole for the bytes results in output = "ABCDFG"
+                    // Afterwards output = "ACDEFG"
+                    // The input string overlaps with this string in this case
+                    // So the string is copied piecewise
+                    if (ptrCount <= count)
+                    {   // hole doesn't get larger, just copy in substring
+                        Traits::move(thisBuffer + offset, ptr, ptrCount);    // fill hole
+                        Traits::copy(thisBuffer + offset + ptrCount, thisBuffer + offset + count, charsAfterCountToMove);   // move tail down
+                    }
+                    else
+                    {
+                        if (ptr <= thisBuffer + offset)
+                        {   // hole gets larger, substring begins before hole
+                            Traits::copy_backward(thisBuffer + offset + ptrCount, thisBuffer + offset + count, charsAfterCountToMove);   // move tail down
+                            Traits::copy(thisBuffer + offset, ptr, ptrCount);   // fill hole
+                        }
+                        else if (thisBuffer + offset + count <= ptr)
+                        {   // hole gets larger, substring begins after hole
+                            Traits::copy_backward(thisBuffer + offset + ptrCount, thisBuffer + offset + count, charsAfterCountToMove);   // move tail down
+                            Traits::copy(thisBuffer + offset, ptr + (ptrCount - count), ptrCount);   // fill hole
+                        }
+                        else
+                        {   // hole gets larger, substring begins in hole
+                            Traits::copy(thisBuffer + offset, ptr, count);   // fill old hole
+                            Traits::copy_backward(thisBuffer + offset + ptrCount, thisBuffer + offset + count, charsAfterCountToMove);   // move tail down
+                            Traits::copy(thisBuffer + offset + count, ptr + ptrCount, ptrCount - count); // fill rest of new hole
+                        }
+                    }
+                    m_storage.first().SetSize(newSize);
+                    Traits::assign(thisBuffer[newSize], Element());  // terminate
+                    return *this;
+                }
+            }
+
+            // input string doesn't overlap, so this string can be re-allocated safely
+            if (grow(newSize))
+            {
+                // Need to regrab the memory address for the storage buffer
+                // in case the grow re-allocated memory
+                pointer thisBuffer = m_storage.first().GetData();
+                if (count != ptrCount)
+                {
+                    Traits::move(thisBuffer + offset + ptrCount, thisBuffer + offset + count, charsAfterCountToMove);
                 }
                 if (ptrCount > 0)
                 {
-                    Traits::copy(data + offset, ptr, ptrCount);    // fill hole
+                    // Copy bytes up to the minimum of this string count and input string count
+                    Traits::copy(thisBuffer + offset, ptr, ptrCount);
                 }
-
-                m_storage.first().SetSize(num);
-                Traits::assign(data[num], Element());  // terminate
+                // input string doesn't overlap, so this string can be re-allocated safely
+                m_storage.first().SetSize(newSize);
+                Traits::assign(thisBuffer[newSize], Element());  // terminate
             }
+
+            // If a local string was allocated, then de-allocate its memory
+            if (inputStringCopy != nullptr)
+            {
+                get_allocator().deallocate(inputStringCopy, 0, alignof(value_type));
+            }
+
             return *this;
         }
 
@@ -684,14 +728,7 @@ namespace AZStd
                 {
                     Traits::move(data + offset + num, data + offset + count, nm); // move tail down
                 }
-                if (count == 1)
-                {
-                    Traits::assign(*(data + offset), ch);
-                }
-                else
-                {
-                    Traits::assign(data + offset, num, ch);
-                }
+                Traits::assign(data + offset, num, ch);
                 m_storage.first().SetSize(numToGrow);
                 Traits::assign(data[numToGrow], Element());  // terminate
             }
@@ -751,32 +788,38 @@ namespace AZStd
             return replace(firstPtr - data, lastPtr - firstPtr, count, ch);
         }
 
-        template<class InputIterator>
-        inline this_type& replace(const_iterator first, const_iterator last, InputIterator first2, InputIterator last2)
-        {   // replace [first, last) with [first2,last2)
-            return replace_iter(first, last, first2, last2, is_integral<InputIterator>());
-        }
-
-        this_type& replace(const_iterator first, const_iterator last, const_pointer first2, const_pointer last2)
+        template<class InputIt>
+        inline auto replace(const_iterator first, const_iterator last, InputIt replaceFirst, InputIt replaceLast)
+            -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, this_type&>
         {
-#ifdef AZSTD_HAS_CHECKED_ITERATORS
-            const_pointer first1 = first.get_iterator();
-            const_pointer last1 = last.get_iterator();
-#else
-            const_pointer first1 = first;
-            const_pointer last1 = last;
-#endif
-            // replace [first, last) with [first2, last2), const pointers
-            pointer data = m_storage.first().GetData();
-            if (first2 == last2)
+            if constexpr (Internal::satisfies_contiguous_iterator_concept_v<InputIt>
+                && is_same_v<typename AZStd::iterator_traits<InputIt>::value_type, value_type>)
             {
-                erase(first1 - data, last1 - first1);
+                return replace(first, last, AZStd::to_address(replaceFirst), AZStd::distance(replaceFirst, replaceLast));
             }
             else
             {
-                replace(first1 - data, last1 - first1, &*first2, last2 - first2);
+                // Input Iterator pointer type doesn't match the const_pointer type
+                // So the elements need to be appended one by one into the buffer
+
+                size_type insertOffset = AZStd::distance(cbegin(), first);
+                size_type postInsertOffset = AZStd::distance(cbegin(), last);
+                size_type count = AZStd::distance(replaceFirst, replaceLast);
+                size_type oldSize = size();
+                size_type newSize = oldSize + count - AZStd::distance(first, last);
+                if (grow(newSize))
+                {
+                    pointer buffer = data();
+                    Traits::move(first + count, last, oldSize - postInsertOffset); // empty out hole
+                    for (size_t updateIndex = insertOffset; replaceFirst != replaceLast; ++replaceFirst, ++updateIndex)
+                    {
+                        Traits::assign(buffer[updateIndex], static_cast<Element>(replaceFirst));
+                    }
+                    m_storage.first().SetSize(newSize);
+                    Traits::assign(buffer[newSize], Element()); // terminate
+                }
+                return *this;
             }
-            return *this;
         }
 
         inline reference at(size_type offset)
@@ -927,10 +970,7 @@ namespace AZStd
 
             if (m_storage.second() == rhs.m_storage.second())
             {
-                // same allocator, swap control information
-#ifdef AZSTD_HAS_CHECKED_ITERATORS
-                swap_all(rhs);
-#endif
+                // same allocator, swap storage
                 m_storage.first().swap(rhs.m_storage.first());
             }
             else
@@ -1215,7 +1255,7 @@ namespace AZStd
         * \note This function is added to the vector for consistency. In the vector case we have only one allocation, and if the allocator allows memory leaks
         * it can just leave deallocate function empty, which performance wise will be the same. For more complex containers this will make big difference.
         */
-        void                leak_and_reset()
+        void leak_and_reset()
         {
             m_storage.first() = {};
         }
@@ -1487,69 +1527,6 @@ namespace AZStd
                 : sizeof(Element) <= 8 ? 1 : 0
         };
 
-        template<class InputIterator>
-        inline this_type& append_iter(InputIterator count, InputIterator ch, const true_type& /* is_integral<InputIterator> */)
-        {   // append count *  ch
-            return append((size_type)count, (Element)ch);
-        }
-
-        template<class InputIterator>
-        inline void construct_iter(InputIterator count, InputIterator ch, const true_type& /* is_integral<InputIterator> */)
-        {   // initialize from count * ch
-            assign((size_type)count, (Element)ch);
-        }
-
-        template<class InputIterator>
-        inline void construct_iter(InputIterator first, InputIterator last, const false_type& /*,  const input_iterator_tag&*/)
-        {
-            // initialize from [first, last), input iterators
-            // \todo use insert ?
-            for (; first != last; ++first)
-            {
-                append((size_type)1, (Element)*first);
-            }
-        }
-
-
-        template<class InputIterator>
-        inline this_type& append_iter(InputIterator first, InputIterator last, const false_type& /* !is_integral<InputIterator> */)
-        {   // append [first, last), input iterators
-            return replace(end(), end(), first, last);
-        }
-
-
-        template<class InputIterator>
-        inline this_type& assign_iter(InputIterator count, InputIterator ch, const true_type&) { return assign((size_type)count, (Element)ch); }
-        template<class InputIterator>
-        inline this_type& assign_iter(InputIterator first, InputIterator last, const false_type&) { return replace(begin(), end(), first, last); }
-
-        template<class InputIterator>
-        inline void insert_iter(const_iterator insertPos, InputIterator count, InputIterator ch, const true_type& /* is_integral<InputIterator>() */)
-        {   // insert count * ch at insertPos
-            insert(insertPos, (size_type)count, (Element)ch);
-        }
-
-        template<class InputIterator>
-        inline void insert_iter(const_iterator insertPos, InputIterator first, InputIterator last, const false_type& /* is_integral<InputIterator>() */)
-        {   // insert [first, last) at insertPos, input iterators
-            replace(insertPos, insertPos, first, last);
-        }
-
-
-        template<class InputIterator>
-        inline this_type& replace_iter(const_iterator first, const_iterator last, InputIterator count, InputIterator ch, const true_type& /* is_intergral<InputIterator> */)
-        {   // replace [first, last) with count * ch
-            return replace(first, last, (size_type)count, (Element)ch);
-        }
-
-        template<class InputIterator>
-        inline this_type& replace_iter(const_iterator first, const_iterator last, InputIterator first2, InputIterator last2, const false_type& /* !is_intergral<InputIterator> */)
-        {   // replace [first, last) with [first2, last2), input iterators
-            this_type rhs(first2, last2);
-            replace(first, last, rhs);
-            return *this;
-        }
-
         void copy(size_type newSize, size_type oldLength)
         {
             size_type newCapacity = newSize | _ALLOC_MASK;
@@ -1608,6 +1585,11 @@ namespace AZStd
                 Traits::assign(data[0], Element());  // terminate
             }
             return (0 < newSize);   // return true only if more work to do
+        }
+
+        bool fits_in_capacity(size_type newSize)
+        {
+            return newSize <= capacity();
         }
 
         inline void deallocate_memory(pointer, size_type, const true_type& /* allocator::allow_memory_leaks */)
@@ -1700,8 +1682,16 @@ namespace AZStd
             // Total size 192 bits(24 bytes)
         };
 
-        static_assert(sizeof(AllocatedStringData) == sizeof(ShortStringData), "Short string struct must be the same size"
-            " as the regular allocated string data");
+        struct PointerAlignedData
+        {
+            uintptr_t m_alignedValues[sizeof(ShortStringData) / sizeof(uintptr_t)];
+        };
+
+        static_assert(sizeof(AllocatedStringData) == sizeof(ShortStringData) && "Short string struct must be the same size"
+            " as the regular allocated string struct");
+
+        static_assert(sizeof(PointerAlignedData) == sizeof(ShortStringData) && "Pointer aligned struct must be the same size"
+            " as the short string struct ");
 
         // The top-bit in the last byte of the AllocatedStringData and ShortStringData is used to determine if the short string optimization is being used
         union Storage
@@ -1770,18 +1760,23 @@ namespace AZStd
             }
             void swap(Storage& rhs)
             {
-                // Use memcpy to copy the entire ShortStringData buffer
-                AZStd::aligned_storage_for_t<ShortStringData> tempBuffer;
-                ::memcpy(&tempBuffer, &rhs.m_shortData, sizeof(tempBuffer));
-                ::memcpy(&rhs.m_shortData, &m_shortData, sizeof(tempBuffer));
-                ::memcpy(&m_shortData, &tempBuffer, sizeof(tempBuffer));
+                // Use pointer sized swaps to swap the string storage
+                AZStd::aligned_storage_for_t<Storage> tempStorage;
+                ::memcpy(&tempStorage, this, sizeof(Storage));
+                ::memcpy(this, &rhs, sizeof(Storage));
+                ::memcpy(&rhs, &tempStorage, sizeof(Storage));
             }
         private:
             ShortStringData m_shortData{};
             AllocatedStringData m_allocatedData;
+            PointerAlignedData m_pointerData;
         };
 
         AZStd::compressed_pair<Storage, allocator_type> m_storage;
+
+#if defined(HAVE_BENCHMARK)
+        friend class Benchmark::StringBenchmarkFixture;
+#endif
 
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
         void orphan_range(pointer first, pointer last) const
@@ -1822,18 +1817,7 @@ namespace AZStd
     };
 
     template<class Element, class Traits, class Allocator>
-    const typename basic_string<Element, Traits, Allocator>::size_type basic_string<Element, Traits, Allocator>::npos;
-
-    // basic_string implements a performant swap
-    /*template<class Element, class Traits, class Allocator>
-    class move_operation_category<basic_string1<Element, Traits, Allocator> >
-    {
-    public:
-        typedef swap_move_tag move_cat;
-    };*/
-
-    template<class Element, class Traits, class Allocator>
-    inline  void swap(basic_string<Element, Traits, Allocator>& left, basic_string<Element, Traits, Allocator>& right)
+    inline void swap(basic_string<Element, Traits, Allocator>& left, basic_string<Element, Traits, Allocator>& right)
     {
         left.swap(right);
     }
