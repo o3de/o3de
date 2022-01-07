@@ -216,8 +216,9 @@ namespace AZ::Dom
 
         explicit Value(Type type);
 
+        // Disable accidental calls to Value(bool) with pointer types
         template<class T>
-        explicit Value(T, AZStd::enable_if_t<AZStd::is_pointer_v<T>>* enabled = 0) = delete;
+        explicit Value(T*) = delete;
 
         static Value FromOpaqueValue(const AZStd::any& value);
 
