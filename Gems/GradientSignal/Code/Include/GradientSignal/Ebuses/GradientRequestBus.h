@@ -66,7 +66,7 @@ namespace GradientSignal
                 positions.size() == outValues.size(), "input and output lists are different sizes (%zu vs %zu).",
                 positions.size(), outValues.size());
 
-            if (positions.size() != outValues.size())
+            if (positions.size() == outValues.size())
             {
                 GradientSampleParams sampleParams;
                 for (size_t index = 0; index < positions.size(); index++)
