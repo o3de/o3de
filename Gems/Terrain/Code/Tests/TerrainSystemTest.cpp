@@ -669,14 +669,14 @@ namespace UnitTest
             { AZ::Vector2(-7.71f, -9.74f), -17.45f }, // Should return a height of -7.71 + -9.74
         };
 
-        auto perPositionCallback = [&testPoints](const AZ::Vector3& inPosition, float height, bool terrainExists){
+        auto perPositionCallback = [&testPoints](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists){
             bool found = false;
             for (auto& testPoint : testPoints)
             {
-                if (testPoint.m_testLocation.GetX() == inPosition.GetX() && testPoint.m_testLocation.GetY() == inPosition.GetY())
+                if (testPoint.m_testLocation.GetX() == surfacePoint.m_position.GetX() && testPoint.m_testLocation.GetY() == surfacePoint.m_position.GetY())
                 {
                     constexpr float epsilon = 0.0001f;
-                    EXPECT_NEAR(height, testPoint.m_expectedHeight, epsilon);
+                    EXPECT_NEAR(surfacePoint.m_position.GetZ(), testPoint.m_expectedHeight, epsilon);
                     found = true;
                     break;
                 }
@@ -756,16 +756,16 @@ namespace UnitTest
             { AZ::Vector2(-7.71f, -9.74f), AZ::Vector3(-0.0366f, -0.9986f, 0.0366f) },
         };
 
-        auto perPositionCallback = [&testPoints](const AZ::Vector3& inPosition, const AZ::Vector3& normal, bool terrainExists){
+        auto perPositionCallback = [&testPoints](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists){
             bool found = false;
             for (auto& testPoint : testPoints)
             {
-                if (testPoint.m_testLocation.GetX() == inPosition.GetX() && testPoint.m_testLocation.GetY() == inPosition.GetY())
+                if (testPoint.m_testLocation.GetX() == surfacePoint.m_position.GetX() && testPoint.m_testLocation.GetY() == surfacePoint.m_position.GetY())
                 {
                     constexpr float epsilon = 0.0001f;
-                    EXPECT_NEAR(normal.GetX(), testPoint.m_expectedNormal.GetX(), epsilon);
-                    EXPECT_NEAR(normal.GetY(), testPoint.m_expectedNormal.GetY(), epsilon);
-                    EXPECT_NEAR(normal.GetZ(), testPoint.m_expectedNormal.GetZ(), epsilon);
+                    EXPECT_NEAR(surfacePoint.m_normal.GetX(), testPoint.m_expectedNormal.GetX(), epsilon);
+                    EXPECT_NEAR(surfacePoint.m_normal.GetY(), testPoint.m_expectedNormal.GetY(), epsilon);
+                    EXPECT_NEAR(surfacePoint.m_normal.GetZ(), testPoint.m_expectedNormal.GetZ(), epsilon);
                     found = true;
                     break;
                 }
@@ -820,16 +820,16 @@ namespace UnitTest
             { 1, 1, 0.0f, AZ::Vector2(0.0f, 0.0f) },
         };
 
-        auto perPositionCallback = [&testPoints](size_t xIndex, size_t yIndex, const AZ::Vector3& inPosition, float height, bool terrainExists){
+        auto perPositionCallback = [&testPoints](size_t xIndex, size_t yIndex, const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists){
             bool found = false;
             for (auto& testPoint : testPoints)
             {
                 if (testPoint.m_xIndex == xIndex && testPoint.m_yIndex == yIndex
-                    && testPoint.m_testLocation.GetX() == inPosition.GetX()
-                    && testPoint.m_testLocation.GetY() == inPosition.GetY())
+                    && testPoint.m_testLocation.GetX() == surfacePoint.m_position.GetX()
+                    && testPoint.m_testLocation.GetY() == surfacePoint.m_position.GetY())
                 {
                     constexpr float epsilon = 0.0001f;
-                    EXPECT_NEAR(height, testPoint.m_expectedHeight, epsilon);
+                    EXPECT_NEAR(surfacePoint.m_position.GetZ(), testPoint.m_expectedHeight, epsilon);
                     found = true;
                     break;
                 }
@@ -877,18 +877,18 @@ namespace UnitTest
             { 1, 1, AZ::Vector3(-0.5773f, -0.5773f, 0.5773f), AZ::Vector2(0.0f, 0.0f) },
         };
 
-        auto perPositionCallback = [&testPoints](size_t xIndex, size_t yIndex, const AZ::Vector3& inPosition, const AZ::Vector3& normal, bool terrainExists){
+        auto perPositionCallback = [&testPoints](size_t xIndex, size_t yIndex, const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists){
             bool found = false;
             for (auto& testPoint : testPoints)
             {
                 if (testPoint.m_xIndex == xIndex && testPoint.m_yIndex == yIndex
-                    && testPoint.m_testLocation.GetX() == inPosition.GetX()
-                    && testPoint.m_testLocation.GetY() == inPosition.GetY())
+                    && testPoint.m_testLocation.GetX() == surfacePoint.m_position.GetX()
+                    && testPoint.m_testLocation.GetY() == surfacePoint.m_position.GetY())
                 {
                     constexpr float epsilon = 0.0001f;
-                    EXPECT_NEAR(normal.GetX(), testPoint.m_expectedNormal.GetX(), epsilon);
-                    EXPECT_NEAR(normal.GetY(), testPoint.m_expectedNormal.GetY(), epsilon);
-                    EXPECT_NEAR(normal.GetZ(), testPoint.m_expectedNormal.GetZ(), epsilon);
+                    EXPECT_NEAR(surfacePoint.m_normal.GetX(), testPoint.m_expectedNormal.GetX(), epsilon);
+                    EXPECT_NEAR(surfacePoint.m_normal.GetY(), testPoint.m_expectedNormal.GetY(), epsilon);
+                    EXPECT_NEAR(surfacePoint.m_normal.GetZ(), testPoint.m_expectedNormal.GetZ(), epsilon);
                     found = true;
                     break;
                 }
