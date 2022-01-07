@@ -40,6 +40,10 @@ namespace Multiplayer
     class MultiplayerDebugAuditTrail
     {
     public:
+        static constexpr char DESYNC_TITLE[] = "Desync on %s";
+        static constexpr char INPUT_TITLE[] = "%s Inputs";
+        static constexpr char EVENT_TITLE[] = "DevEvent on %s";
+
         MultiplayerDebugAuditTrail();
         ~MultiplayerDebugAuditTrail();
 

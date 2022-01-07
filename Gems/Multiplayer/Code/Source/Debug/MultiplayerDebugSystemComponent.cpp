@@ -591,18 +591,15 @@ namespace Multiplayer
             return;
         }
 
-        constexpr char DESYNC_TITLE[] = "Desync on %s";
-        constexpr char INPUT_TITLE[] = "%s Inputs";
-        constexpr char EVENT_TITLE[] = "DevEvent on %s";
-
         for (auto elem = m_committedAuditTrail.begin(); elem != m_committedAuditTrail.end(); ++elem)
         {
 
             if (elem->m_category == MultiplayerAuditCategory::Desync)
             {
                 const char* nodeTitle = elem->m_category == MultiplayerAuditCategory::Desync
-                    ? DESYNC_TITLE
-                    : (elem->m_category == MultiplayerAuditCategory::Input ? INPUT_TITLE : EVENT_TITLE);
+                    ? MultiplayerDebugAuditTrail::DESYNC_TITLE
+                    : (elem->m_category == MultiplayerAuditCategory::Input ? MultiplayerDebugAuditTrail::INPUT_TITLE
+                                                                           : MultiplayerDebugAuditTrail::EVENT_TITLE);
 
                 // Events only have one item
                 if (elem->m_category == MultiplayerAuditCategory::Event)

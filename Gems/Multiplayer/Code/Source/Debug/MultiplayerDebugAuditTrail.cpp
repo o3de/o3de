@@ -21,10 +21,6 @@
 
 namespace Multiplayer
 {
-    constexpr char DESYNC_TITLE[] = "Desync on %s";
-    constexpr char INPUT_TITLE[] = "%s Inputs";
-    constexpr char EVENT_TITLE[] = "DevEvent on %s";
-
     MultiplayerDebugAuditTrail::MultiplayerDebugAuditTrail()
         : m_updateDebugOverlay([this]() { UpdateDebugOverlay(); }, AZ::Name("UpdateAuditTrail"))
     {
