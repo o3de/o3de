@@ -10,6 +10,9 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
+
+#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
+
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/GradientTransformRequestBus.h>
 #include <GradientSignal/Ebuses/ImageGradientRequestBus.h>
@@ -33,6 +36,7 @@ namespace GradientSignal
         AZ_RTTI(ImageGradientConfig, "{1BDB5DA4-A4A8-452B-BE6D-6BD451D4E7CD}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         AZ::Data::Asset<ImageAsset> m_imageAsset = { AZ::Data::AssetLoadBehavior::QueueLoad };
+        AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_streamingImageAsset = { AZ::Data::AssetLoadBehavior::QueueLoad };
         float m_tilingX = 1.0f;
         float m_tilingY = 1.0f;
     };

@@ -242,6 +242,10 @@ namespace ImageProcessingAtom
             }
         }
 
+        // Should we actually put the GetSubImagePixelValue API in this Utils file instead, since it already has
+        // some conversion logic, and has the helper method for retrieving an entire image (LoadImageFromImageAsset)
+        // whereas this is a helper for retrieving a specific pixel from the image?
+
         IImageObjectPtr LoadImageFromImageAsset(const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& imageAsset)
         {
             if (!imageAsset.IsReady())

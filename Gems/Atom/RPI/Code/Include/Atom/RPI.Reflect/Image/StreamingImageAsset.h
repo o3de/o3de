@@ -85,6 +85,10 @@ namespace AZ
             //! Get image data for specified mip and slice. It may return empty array if its mipchain assets are not loaded
             AZStd::array_view<uint8_t> GetSubImageData(uint32_t mip, uint32_t slice);
 
+            //! Get image pixel value for specified mip and slice
+            template<typename T>
+            T GetSubImagePixelValue(uint32_t mip, uint32_t slice, uint32_t x, uint32_t y, uint32_t componentIndex = 0);
+
             //! Returns streaming image pool asset id of the pool that will be used to create the streaming image.
             const Data::AssetId& GetPoolAssetId() const;
 

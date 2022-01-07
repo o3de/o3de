@@ -13,6 +13,95 @@
 
 namespace AZ
 {
+    namespace Internal
+    {
+        template <AZ::RHI::Format>
+        float RetrieveFloatValue(const AZ::u8* mem, size_t index)
+        {
+            AZ_Assert(false, "Unsupported pixel format");
+        }
+
+        template <AZ::RHI::Format>
+        AZ::u32 RetrieveUintValue(const AZ::u8* mem, size_t index)
+        {
+            AZ_Assert(false, "Unsupported pixel format");
+        }
+
+        template <>
+        float RetrieveFloatValue<AZ::RHI::Format::Unknown>([[maybe_unused]] const AZ::u8* mem, [[maybe_unused]] size_t index)
+        {
+            return 0.0f;
+        }
+
+        template <>
+        AZ::u32 RetrieveUintValue<AZ::RHI::Format::Unknown>([[maybe_unused]] const AZ::u8* mem, [[maybe_unused]] size_t index)
+        {
+            return 0;
+        }
+
+        template <>
+        AZ::u32 RetrieveUintValue<AZ::RHI::Format::R8_UNORM>(const AZ::u8* mem, size_t index)
+        {
+            return mem[index] / static_cast<AZ::u32>(std::numeric_limits<AZ::u8>::max());
+        }
+
+        template <>
+        AZ::u32 RetrieveUintValue<AZ::RHI::Format::R16_UNORM>(const AZ::u8* mem, size_t index)
+        {
+            // 16 bits per channel
+            auto actualMem = reinterpret_cast<const AZ::u16*>(mem);
+            actualMem += index;
+
+            return *actualMem / static_cast<AZ::u32>(std::numeric_limits<AZ::u16>::max());
+        }
+
+        template <>
+        AZ::u32 RetrieveUintValue<AZ::RHI::Format::R32_UINT>(const AZ::u8* mem, size_t index)
+        {
+            // 32 bits per channel
+            auto actualMem = reinterpret_cast<const AZ::u32*>(mem);
+            actualMem += index;
+
+            return *actualMem / static_cast<AZ::u32>(std::numeric_limits<AZ::u32>::max());
+        }
+
+        template <>
+        float RetrieveFloatValue<AZ::RHI::Format::R32_FLOAT>(const AZ::u8* mem, size_t index)
+        {
+            // 32 bits per channel
+            auto actualMem = reinterpret_cast<const float*>(mem);
+            actualMem += index;
+
+            return *actualMem;
+        }
+
+        float RetrieveFloatValue(const AZ::u8* mem, size_t index, AZ::RHI::Format format)
+        {
+            switch (format)
+            {
+            case AZ::RHI::Format::R32_FLOAT:
+                return RetrieveFloatValue<AZ::RHI::Format::R32_FLOAT>(mem, index);
+            default:
+                return RetrieveFloatValue<AZ::RHI::Format::Unknown>(mem, index);
+            }
+        }
+
+        AZ::u32 RetrieveUintValue(const AZ::u8* mem, size_t index, AZ::RHI::Format format)
+        {
+            switch (format)
+            {
+            case AZ::RHI::Format::R8_UNORM:
+                return RetrieveUintValue<AZ::RHI::Format::R8_UNORM>(mem, index);
+            case AZ::RHI::Format::R16_UNORM:
+                return RetrieveUintValue<AZ::RHI::Format::R16_UNORM>(mem, index);
+            case AZ::RHI::Format::R32_UINT:
+                return RetrieveUintValue<AZ::RHI::Format::R32_UINT>(mem, index);
+            default:
+                return RetrieveUintValue<AZ::RHI::Format::Unknown>(mem, index);
+            }
+        }
+    }
+
     namespace RPI
     {
         const char* StreamingImageAsset::DisplayName = "StreamingImage";
@@ -123,6 +212,46 @@ namespace AZ
             }
 
             return mipChainAsset->GetSubImageData(mip - mipChain.m_mipOffset, slice);
+        }
+
+        template<>
+        float StreamingImageAsset::GetSubImagePixelValue<float>(uint32_t mip, uint32_t slice, uint32_t x, uint32_t y, uint32_t componentIndex)
+        {
+            // TODO: Use the component index
+            (void)componentIndex;
+
+            auto imageData = GetSubImageData(mip, slice);
+
+            if (!imageData.empty())
+            {
+                const AZ::RHI::ImageDescriptor imageDescriptor = GetImageDescriptor();
+                auto width = imageDescriptor.m_size.m_width;
+                size_t index = (y * width) + x;
+
+                return Internal::RetrieveFloatValue(imageData.data(), index, imageDescriptor.m_format);
+            }
+
+            return 0.0f;
+        }
+
+        template<>
+        AZ::u32 StreamingImageAsset::GetSubImagePixelValue<AZ::u32>(uint32_t mip, uint32_t slice, uint32_t x, uint32_t y, uint32_t componentIndex)
+        {
+            // TODO: Use the component index
+            (void)componentIndex;
+
+            auto imageData = GetSubImageData(mip, slice);
+
+            if (!imageData.empty())
+            {
+                const AZ::RHI::ImageDescriptor imageDescriptor = GetImageDescriptor();
+                auto width = imageDescriptor.m_size.m_width;
+                size_t index = (y * width) + x;
+
+                return Internal::RetrieveUintValue(imageData.data(), index, imageDescriptor.m_format);
+            }
+
+            return 0;
         }
     }
 }
