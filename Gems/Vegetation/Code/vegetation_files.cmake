@@ -24,7 +24,6 @@ set(FILES
     Include/Vegetation/Ebuses/DebugNotificationBus.h
     Include/Vegetation/Ebuses/DebugRequestsBus.h
     Include/Vegetation/Ebuses/DebugSystemDataBus.h
-    Include/Vegetation/Ebuses/DependencyRequestBus.h
     Include/Vegetation/Ebuses/DescriptorNotificationBus.h
     Include/Vegetation/Ebuses/DescriptorProviderRequestBus.h
     Include/Vegetation/Ebuses/DescriptorSelectorRequestBus.h

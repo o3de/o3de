@@ -10,7 +10,6 @@
 #include <Vegetation/Ebuses/AreaNotificationBus.h>
 #include <Vegetation/Ebuses/AreaRequestBus.h>
 #include <Vegetation/Ebuses/AreaSystemRequestBus.h>
-#include <Vegetation/Ebuses/DependencyRequestBus.h>
 #include <Vegetation/Ebuses/DescriptorProviderRequestBus.h>
 #include <Vegetation/Ebuses/DescriptorSelectorRequestBus.h>
 #include <Vegetation/Ebuses/FilterRequestBus.h>
