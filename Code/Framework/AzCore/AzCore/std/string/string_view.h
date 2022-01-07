@@ -466,9 +466,12 @@ namespace AZStd
         }
         // Extension for constexpr workarounds: Addresses of a string literal cannot be compared at compile time and MSVC and clang will just refuse to compile the constexpr
         // Adding a copy_backwards overload that always copies backwards.
-        static constexpr char_type* copy_backward(char_type* dest, const char_type*src, size_t count) noexcept
+        static constexpr char_type* copy_backward(char_type* dest, const char_type* src, size_t count) noexcept
         {
             char_type* result = dest;
+        #if az_has_builtin_memmove
+            __builtin_memmove(dest, src, count * sizeof(char_type));
+        #else
             if (az_builtin_is_constant_evaluated())
             {
                 dest += count;
@@ -482,6 +485,7 @@ namespace AZStd
             {
                 ::memmove(dest, src, count);
             }
+        #endif
             return result;
         }
 

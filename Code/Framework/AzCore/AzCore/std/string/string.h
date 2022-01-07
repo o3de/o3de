@@ -256,7 +256,7 @@ namespace AZStd
             {
                 return append(AZStd::to_address(first), AZStd::distance(first, last));
             }
-            else
+            else if constexpr (Internal::is_forward_iterator_v<InputIt>)
             {
                 // Input Iterator pointer type doesn't match the const_pointer type
                 // So the elements need to be appended one by one into the buffer
@@ -273,6 +273,20 @@ namespace AZStd
                     Traits::assign(buffer[newSize], Element());  // terminate
                 }
                 return *this;
+            }
+            else
+            {
+                // input iterator that aren't forward iterators can only be used in a single pass
+                // algorithm. Therefore AZStd::distance can't be used
+                // So the input is copied into a local string and then delegated
+                // to use the (const_pointer, size_type) overload
+                basic_string inputCopy;
+                for (; first != last; ++first)
+                {
+                    inputCopy.push_back(static_cast<Element>(*first));
+                }
+
+                return append(inputCopy.c_str(), inputCopy.size());
             }
         }
 
@@ -378,7 +392,7 @@ namespace AZStd
         }
 
         template<class InputIt>
-        inline auto assign(InputIt first, InputIt last)
+        auto assign(InputIt first, InputIt last)
             -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, this_type&>
         {
             if constexpr (Internal::satisfies_contiguous_iterator_concept_v<InputIt>
@@ -386,12 +400,12 @@ namespace AZStd
             {
                 return assign(AZStd::to_address(first), AZStd::distance(first, last));
             }
-            else
+            else if constexpr (Internal::is_forward_iterator_v<InputIt>)
             {
-                // Input Iterator pointer type doesn't match the const_pointer type
+                // forward iterator pointer type doesn't match the const_pointer type
                 // So the elements need to be assigned one by one into the buffer
                 size_type newSize = AZStd::distance(first, last);
-                if (fits_in_capacity(newSize))
+                if (grow(newSize))
                 {
                     pointer buffer = data();
                     for (size_t updateIndex = 0; first != last; ++first, ++updateIndex)
@@ -402,6 +416,20 @@ namespace AZStd
                     Traits::assign(buffer[newSize], Element());  // terminate
                 }
                 return *this;
+            }
+            else
+            {
+                // input iterator that aren't forward iterators can only be used in a single pass
+                // algorithm. Therefore AZStd::distance can't be used
+                // So the input is copied into a local string and then delegated
+                // to use the (const_pointer, size_type) overload
+                basic_string inputCopy;
+                for (; first != last; ++first)
+                {
+                    inputCopy.push_back(static_cast<Element>(*first));
+                }
+
+                return assign(inputCopy.c_str(), inputCopy.size());
             }
         }
         inline this_type& insert(size_type offset, const this_type& rhs) { return insert(offset, rhs, 0, npos); }
@@ -517,7 +545,7 @@ namespace AZStd
             {
                 insert(insertOffset, AZStd::to_address(first), AZStd::distance(first, last));
             }
-            else
+            else if constexpr (Internal::is_forward_iterator_v<InputIt>)
             {
                 // Input Iterator pointer type doesn't match the const_pointer type
                 // So the elements need to be inserted one by one into the buffer
@@ -535,6 +563,20 @@ namespace AZStd
                     m_storage.first().SetSize(newSize);
                     Traits::assign(buffer[newSize], Element()); // terminate
                 }
+            }
+            else
+            {
+                // input iterator that aren't forward iterators can only be used in a single pass
+                // algorithm. Therefore AZStd::distance can't be used
+                // So the input is copied into a local string and then delegated
+                // to use the (const_pointer, size_type) overload
+                basic_string inputCopy;
+                for (; first != last; ++first)
+                {
+                    inputCopy.push_back(static_cast<Element>(*first));
+                }
+
+                insert(insertOffset, inputCopy.c_str(), inputCopy.size());
             }
             return begin() + insertOffset;
         }
@@ -797,7 +839,7 @@ namespace AZStd
             {
                 return replace(first, last, AZStd::to_address(replaceFirst), AZStd::distance(replaceFirst, replaceLast));
             }
-            else
+            else if constexpr (Internal::is_forward_iterator_v<InputIt>)
             {
                 // Input Iterator pointer type doesn't match the const_pointer type
                 // So the elements need to be appended one by one into the buffer
@@ -813,12 +855,26 @@ namespace AZStd
                     Traits::move(first + count, last, oldSize - postInsertOffset); // empty out hole
                     for (size_t updateIndex = insertOffset; replaceFirst != replaceLast; ++replaceFirst, ++updateIndex)
                     {
-                        Traits::assign(buffer[updateIndex], static_cast<Element>(replaceFirst));
+                        Traits::assign(buffer[updateIndex], static_cast<Element>(*replaceFirst));
                     }
                     m_storage.first().SetSize(newSize);
                     Traits::assign(buffer[newSize], Element()); // terminate
                 }
                 return *this;
+            }
+            else
+            {
+                // input iterator that aren't forward iterators can only be used in a single pass
+                // algorithm. Therefore AZStd::distance can't be used
+                // So the input is copied into a local string and then delegated
+                // to use the (const_pointer, size_type) overload
+                basic_string inputCopy;
+                for (; replaceFirst != replaceLast; ++replaceFirst)
+                {
+                    inputCopy.push_back(static_cast<Element>(*replaceFirst));
+                }
+
+                return replace(first, last, inputCopy.c_str(), inputCopy.size());
             }
         }
 
