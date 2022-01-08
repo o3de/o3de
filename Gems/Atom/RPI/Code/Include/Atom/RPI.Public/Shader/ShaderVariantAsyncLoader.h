@@ -15,6 +15,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/parallel/mutex.h>
+#include <AzCore/std/parallel/condition_variable.h>
 
 namespace AZ
 {
