@@ -30,8 +30,8 @@ namespace ScriptCanvasEditor
     // over to the override data to simulate build step that does this when building prefabs
     AZ_INLINE void CopyAssetEntityIdsToOverrides(RuntimeDataOverrides& runtimeDataOverrides)
     {
-        runtimeDataOverrides.m_entityIds.reserve(runtimeDataOverrides.m_runtimeAsset->GetData().m_input.m_entityIds.size());
-        for (auto& varEntityPar : runtimeDataOverrides.m_runtimeAsset->GetData().m_input.m_entityIds)
+        runtimeDataOverrides.m_entityIds.reserve(runtimeDataOverrides.m_runtimeAsset->m_runtimeData.m_input.m_entityIds.size());
+        for (auto& varEntityPar : runtimeDataOverrides.m_runtimeAsset->m_runtimeData.m_input.m_entityIds)
         {
             runtimeDataOverrides.m_entityIds.push_back(varEntityPar.second);
         }
@@ -281,14 +281,14 @@ namespace ScriptCanvasEditor
 #endif //////////////////////////////////////////////////////////////////////////////////////
 
                         loadResult.m_scriptAsset = luaAssetResult.m_scriptAsset;
-                        loadResult.m_runtimeAsset.Get()->GetData().m_script = loadResult.m_scriptAsset;
-                        loadResult.m_runtimeAsset.Get()->GetData().m_input = luaAssetResult.m_runtimeInputs;
-                        loadResult.m_runtimeAsset.Get()->GetData().m_debugMap = luaAssetResult.m_debugMap;
+                        loadResult.m_runtimeAsset.Get()->m_runtimeData.m_script = loadResult.m_scriptAsset;
+                        loadResult.m_runtimeAsset.Get()->m_runtimeData.m_input = luaAssetResult.m_runtimeInputs;
+                        loadResult.m_runtimeAsset.Get()->m_runtimeData.m_debugMap = luaAssetResult.m_debugMap;
                         loadResult.m_runtimeComponent = loadResult.m_entity->CreateComponent<ScriptCanvas::RuntimeComponent>();
                         CopyAssetEntityIdsToOverrides(runtimeDataOverrides);
                         loadResult.m_runtimeComponent->TakeRuntimeDataOverrides(AZStd::move(runtimeDataOverrides));
-                        Execution::Context::InitializeActivationData(loadResult.m_runtimeAsset->GetData());
-                        Execution::InitializeInterpretedStatics(loadResult.m_runtimeAsset->GetData());
+                        Execution::Context::InitializeActivationData(loadResult.m_runtimeAsset->m_runtimeData);
+                        Execution::InitializeInterpretedStatics(loadResult.m_runtimeAsset->m_runtimeData);
                     }
                     else
                     {

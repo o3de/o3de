@@ -6,15 +6,13 @@
  *
  */
 
-#include <AzTest/AzTest.h>
-
 #include <AWSCoreBus.h>
 #include <Framework/ServiceRequestJob.h>
 #include <TestFramework/AWSCoreFixture.h>
 
 using namespace AWSCore;
 
-using ServiceRequestJobTest = UnitTest::ScopedAllocatorSetupFixture;
+using ServiceRequestJobTest = AWSCoreFixture;
 
 #define TEST_SERVICE_REQUEST(SERVICE_NAME, METHOD, PATH) \
     static const char* Path() { return PATH; } \

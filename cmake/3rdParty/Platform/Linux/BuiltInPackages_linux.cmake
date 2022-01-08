@@ -18,14 +18,13 @@ ly_associate_package(PACKAGE_NAME expat-2.1.0-multiplatform                     
 ly_associate_package(PACKAGE_NAME zstd-1.35-multiplatform                           TARGETS zstd                        PACKAGE_HASH 45d466c435f1095898578eedde85acf1fd27190e7ea99aeaa9acfd2f09e12665)
 ly_associate_package(PACKAGE_NAME SQLite-3.32.2-rev3-multiplatform                  TARGETS SQLite                      PACKAGE_HASH dd4d3de6cbb4ce3d15fc504ba0ae0587e515dc89a25228037035fc0aef4831f4)
 ly_associate_package(PACKAGE_NAME glad-2.0.0-beta-rev2-multiplatform                TARGETS glad                        PACKAGE_HASH ff97ee9664e97d0854b52a3734c2289329d9f2b4cd69478df6d0ca1f1c9392ee)
-ly_associate_package(PACKAGE_NAME lux_core-2.2-rev5-multiplatform                   TARGETS lux_core                    PACKAGE_HASH c8c13cf7bc351643e1abd294d0841b24dee60e51647dff13db7aec396ad1e0b5)
 ly_associate_package(PACKAGE_NAME xxhash-0.7.4-rev1-multiplatform                   TARGETS xxhash                      PACKAGE_HASH e81f3e6c4065975833996dd1fcffe46c3cf0f9e3a4207ec5f4a1b564ba75861e)
 
 # platform-specific:
 ly_associate_package(PACKAGE_NAME AWSGameLiftServerSDK-3.4.1-rev1-linux             TARGETS AWSGameLiftServerSDK        PACKAGE_HASH a8149a95bd100384af6ade97e2b21a56173740d921e6c3da8188cd51554d39af)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-rev3-linux                          TARGETS TIFF                        PACKAGE_HASH 2377f48b2ebc2d1628d9f65186c881544c92891312abe478a20d10b85877409a)
 ly_associate_package(PACKAGE_NAME freetype-2.10.4.16-linux                          TARGETS freetype                    PACKAGE_HASH 3f10c703d9001ecd2bb51a3bd003d3237c02d8f947ad0161c0252fdc54cbcf97)
-ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev6-linux                   TARGETS AWSNativeSDK                PACKAGE_HASH 490291e4c8057975c3ab86feb971b8a38871c58bac5e5d86abdd1aeb7141eec4)
+ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.9.50-rev1-linux                    TARGETS AWSNativeSDK                PACKAGE_HASH f30b6969c6732a7c1a23a59d205a150633a7f219dcb60d837b543888d2c63ea1)
 ly_associate_package(PACKAGE_NAME Lua-5.3.5-rev5-linux                              TARGETS Lua                         PACKAGE_HASH 1adc812abe3dd0dbb2ca9756f81d8f0e0ba45779ac85bf1d8455b25c531a38b0)
 ly_associate_package(PACKAGE_NAME PhysX-4.1.2.29882248-rev5-linux                   TARGETS PhysX                       PACKAGE_HASH fa72365df409376aef02d1763194dc91d255bdfcb4e8febcfbb64d23a3e50b96)
 ly_associate_package(PACKAGE_NAME mcpp-2.7.2_az.2-rev1-linux                        TARGETS mcpp                        PACKAGE_HASH df7a998d0bc3fedf44b5bdebaf69ddad6033355b71a590e8642445ec77bc6c41)

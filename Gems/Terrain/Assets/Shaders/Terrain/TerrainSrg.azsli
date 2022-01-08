@@ -53,12 +53,38 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
         uint2 m_padding;
     };
 
+    struct MacroMaterialData
+    {
+        // bit 1 : Is this macro material used.
+        // bit 2 : flip normal x
+        // bit 3 : flip normal y
+        uint m_flags;
+
+        uint m_colorMapId;
+        uint m_normalMapId;
+        float m_normalFactor;
+        float2 m_boundsMin;
+        float2 m_boundsMax;
+    };
+
+    struct MacroMaterialGrid
+    {
+        uint m_resolution; // How many x/y tiles in grid. x & y stored in 16 bits each. Total number of entries in m_macroMaterialData will be x * y
+        float m_tileSize; // Size of a tile in meters.
+        float2 m_offset; // x/y offset of min x/y corner of grid.
+    };
+
     Texture2D<uint4> m_detailMaterialIdImage;
     StructuredBuffer<DetailMaterialData> m_detailMaterialData;
-    Texture2D m_detailTextures[]; // bindless array of all textures for detail materials
 
+    StructuredBuffer<MacroMaterialData> m_macroMaterialData;
+    MacroMaterialGrid m_macroMaterialGrid;
+    
+    Texture2D m_textures[]; // bindless array of all textures for detail and macro materials
     float2 m_detailMaterialIdImageCenter;
     float m_detailHalfPixelUv;
     float4 m_detailAabb;
 
 }
+
+static const float MacroMaterialsPerTile = 4;

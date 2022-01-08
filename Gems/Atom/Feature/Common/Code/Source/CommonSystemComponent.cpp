@@ -74,11 +74,6 @@
 
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 
-#if AZ_TRAIT_LUXCORE_SUPPORTED
-#include <Atom/Feature/LuxCore/RenderTexturePass.h>
-#include <Atom/Feature/LuxCore/LuxCoreTexturePass.h>
-#endif
-
 #include <Checkerboard/CheckerboardPass.h>
 #include <Checkerboard/CheckerboardColorResolvePass.h>
 
@@ -221,11 +216,6 @@ namespace AZ
             passSystem->AddPassCreator(Name("DisplayMapperFullScreenPass"), &DisplayMapperFullScreenPass::Create);
             passSystem->AddPassCreator(Name("OutputTransformPass"), &OutputTransformPass::Create);
             passSystem->AddPassCreator(Name("EyeAdaptationPass"), &EyeAdaptationPass::Create);
-            // Add RenderTexture and LuxCoreTexture pass
-#if AZ_TRAIT_LUXCORE_SUPPORTED
-            passSystem->AddPassCreator(Name("RenderTexturePass"), &RenderTexturePass::Create);
-            passSystem->AddPassCreator(Name("LuxCoreTexturePass"), &LuxCoreTexturePass::Create);
-#endif
             passSystem->AddPassCreator(Name("ImGuiPass"), &ImGuiPass::Create);
             passSystem->AddPassCreator(Name("LightCullingPass"), &LightCullingPass::Create);
             passSystem->AddPassCreator(Name("LightCullingRemapPass"), &LightCullingRemap::Create);
