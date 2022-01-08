@@ -427,7 +427,7 @@ namespace UnitTest
         CreateTestImageGradient(entity.get());
         ActivateEntity(entity.get());
 
-        AZ::Aabb queryRegion = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-512.0f), AZ::Vector3(512.0f));
+        AZ::Aabb queryRegion = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-shapeHalfBounds), AZ::Vector3(shapeHalfBounds));
         AZ::Vector2 stepSize(1.0f, 1.0f);
         CompareGetValueAndGetValues(entity->GetId(), queryRegion, stepSize);
     }
