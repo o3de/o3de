@@ -354,6 +354,51 @@ namespace UnitTest
         ->Args({ 4096, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
         ->Unit(::benchmark::kMillisecond);
 
+    BENCHMARK_DEFINE_F(TerrainSystemBenchmarkFixture, BM_ProcessHeightsList)(benchmark::State& state)
+    {
+        // Run the benchmark
+        RunTerrainApiBenchmark(
+            state,
+            []([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
+                AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
+            {
+                AZStd::vector<AZ::Vector3> inPositions;
+                const size_t numSamplesX = aznumeric_cast<size_t>(ceil(worldBounds.GetExtents().GetX() / queryResolution.GetX()));
+                const size_t numSamplesY = aznumeric_cast<size_t>(ceil(worldBounds.GetExtents().GetY() / queryResolution.GetY()));
+
+                for (size_t y = 0; y < numSamplesY; y++)
+                {
+                    float fy = aznumeric_cast<float>(worldBounds.GetMin().GetY() + (y * queryResolution.GetY()));
+                    for (size_t x = 0; x < numSamplesX; x++)
+                    {
+                        float fx = aznumeric_cast<float>(worldBounds.GetMin().GetX() + (x * queryResolution.GetX()));
+                        inPositions.emplace_back(fx, fy, 0.0f);
+                    }
+                }
+
+                auto perPositionCallback = [](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
+                {
+                    benchmark::DoNotOptimize(surfacePoint.m_position.GetZ());
+                };
+                
+                AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
+                    &AzFramework::Terrain::TerrainDataRequests::ProcessHeightsFromList, inPositions, perPositionCallback, sampler);
+            }
+        );
+    }
+
+    BENCHMARK_REGISTER_F(TerrainSystemBenchmarkFixture, BM_ProcessHeightsList)
+        ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR) })
+        ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR) })
+        ->Args({ 4096, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR) })
+        ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP) })
+        ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP) })
+        ->Args({ 4096, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP) })
+        ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 4096, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Unit(::benchmark::kMillisecond);
+
     BENCHMARK_DEFINE_F(TerrainSystemBenchmarkFixture, BM_GetNormal)(benchmark::State& state)
     {
         // Run the benchmark
@@ -406,6 +451,48 @@ namespace UnitTest
     }
 
     BENCHMARK_REGISTER_F(TerrainSystemBenchmarkFixture, BM_ProcessNormalsRegion)
+        ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR) })
+        ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR) })
+        ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP) })
+        ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP) })
+        ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Unit(::benchmark::kMillisecond);
+
+    BENCHMARK_DEFINE_F(TerrainSystemBenchmarkFixture, BM_ProcessNormalsList)(benchmark::State& state)
+    {
+        // Run the benchmark
+        RunTerrainApiBenchmark(
+            state,
+            []([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
+                AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
+            {
+                AZStd::vector<AZ::Vector3> inPositions;
+                const size_t numSamplesX = aznumeric_cast<size_t>(ceil(worldBounds.GetExtents().GetX() / queryResolution.GetX()));
+                const size_t numSamplesY = aznumeric_cast<size_t>(ceil(worldBounds.GetExtents().GetY() / queryResolution.GetY()));
+
+                for (size_t y = 0; y < numSamplesY; y++)
+                {
+                    float fy = aznumeric_cast<float>(worldBounds.GetMin().GetY() + (y * queryResolution.GetY()));
+                    for (size_t x = 0; x < numSamplesX; x++)
+                    {
+                        float fx = aznumeric_cast<float>(worldBounds.GetMin().GetX() + (x * queryResolution.GetX()));
+                        inPositions.emplace_back(fx, fy, 0.0f);
+                    }
+                }
+
+                auto perPositionCallback = [](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
+                {
+                    benchmark::DoNotOptimize(surfacePoint.m_normal);
+                };
+                
+                AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
+                    &AzFramework::Terrain::TerrainDataRequests::ProcessNormalsFromList, inPositions, perPositionCallback, sampler);
+            }
+        );
+    }
+
+    BENCHMARK_REGISTER_F(TerrainSystemBenchmarkFixture, BM_ProcessNormalsList)
         ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR) })
         ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR) })
         ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP) })
@@ -475,6 +562,48 @@ namespace UnitTest
         ->Args({ 2048, 4, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
         ->Unit(::benchmark::kMillisecond);
 
+    BENCHMARK_DEFINE_F(TerrainSystemBenchmarkFixture, BM_ProcessSurfaceWeightsList)(benchmark::State& state)
+    {
+        // Run the benchmark
+        RunTerrainApiBenchmark(
+            state,
+            []([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
+                AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
+            {
+                AZStd::vector<AZ::Vector3> inPositions;
+                const size_t numSamplesX = aznumeric_cast<size_t>(ceil(worldBounds.GetExtents().GetX() / queryResolution.GetX()));
+                const size_t numSamplesY = aznumeric_cast<size_t>(ceil(worldBounds.GetExtents().GetY() / queryResolution.GetY()));
+
+                for (size_t y = 0; y < numSamplesY; y++)
+                {
+                    float fy = aznumeric_cast<float>(worldBounds.GetMin().GetY() + (y * queryResolution.GetY()));
+                    for (size_t x = 0; x < numSamplesX; x++)
+                    {
+                        float fx = aznumeric_cast<float>(worldBounds.GetMin().GetX() + (x * queryResolution.GetX()));
+                        inPositions.emplace_back(fx, fy, 0.0f);
+                    }
+                }
+
+                auto perPositionCallback = [](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
+                {
+                    benchmark::DoNotOptimize(surfacePoint.m_surfaceTags);
+                };
+                
+                AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
+                    &AzFramework::Terrain::TerrainDataRequests::ProcessSurfaceWeightsFromList, inPositions, perPositionCallback, sampler);
+            }
+        );
+    }
+
+    BENCHMARK_REGISTER_F(TerrainSystemBenchmarkFixture, BM_ProcessSurfaceWeightsList)
+        ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 1024, 2, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 2048, 2, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 1024, 4, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 2048, 4, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Unit(::benchmark::kMillisecond);
+
     BENCHMARK_DEFINE_F(TerrainSystemBenchmarkFixture, BM_GetSurfacePoints)(benchmark::State& state)
     {
         // Run the benchmark
@@ -528,6 +657,48 @@ namespace UnitTest
     }
 
     BENCHMARK_REGISTER_F(TerrainSystemBenchmarkFixture, BM_ProcessSurfacePointsRegion)
+        ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR) })
+        ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR) })
+        ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP) })
+        ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP) })
+        ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Unit(::benchmark::kMillisecond);
+
+    BENCHMARK_DEFINE_F(TerrainSystemBenchmarkFixture, BM_ProcessSurfacePointsList)(benchmark::State& state)
+    {
+        // Run the benchmark
+        RunTerrainApiBenchmark(
+            state,
+            []([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
+                AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
+            {
+                AZStd::vector<AZ::Vector3> inPositions;
+                const size_t numSamplesX = aznumeric_cast<size_t>(ceil(worldBounds.GetExtents().GetX() / queryResolution.GetX()));
+                const size_t numSamplesY = aznumeric_cast<size_t>(ceil(worldBounds.GetExtents().GetY() / queryResolution.GetY()));
+
+                for (size_t y = 0; y < numSamplesY; y++)
+                {
+                    float fy = aznumeric_cast<float>(worldBounds.GetMin().GetY() + (y * queryResolution.GetY()));
+                    for (size_t x = 0; x < numSamplesX; x++)
+                    {
+                        float fx = aznumeric_cast<float>(worldBounds.GetMin().GetX() + (x * queryResolution.GetX()));
+                        inPositions.emplace_back(fx, fy, 0.0f);
+                    }
+                }
+
+                auto perPositionCallback = [](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
+                {
+                    benchmark::DoNotOptimize(surfacePoint);
+                };
+                
+                AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
+                    &AzFramework::Terrain::TerrainDataRequests::ProcessSurfacePointsFromList, inPositions, perPositionCallback, sampler);
+            }
+        );
+    }
+
+    BENCHMARK_REGISTER_F(TerrainSystemBenchmarkFixture, BM_ProcessSurfacePointsList)
         ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR) })
         ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR) })
         ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP) })
