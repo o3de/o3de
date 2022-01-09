@@ -541,15 +541,6 @@ namespace UnitTest
 
     TEST_P(MoveMoveWrapParamQtEventToAzInputMapperFixture, MouseMove_NoAzHandlers_VerifyMouseMovementViewport)
     {
-        //TODO: mouseMove is bugged mapToGlobal is called twice
-        auto mouseMoveFix = [](QWidget* wid, QPoint globalPos, QPoint deltaPos)
-        {
-            QPoint globalPosition = globalPos + deltaPos;
-            QPoint localPosition = wid->mapFromGlobal(globalPosition);
-            QTest::mouseMove(wid, localPosition);
-            QMouseEvent mouseMoveEvent(QEvent::MouseMove, localPosition, globalPosition, Qt::NoButton, Qt::NoButton, Qt::NoModifier);
-            QApplication::sendEvent(wid, &mouseMoveEvent);
-        };
 
         // setup
         const MouseMoveParam mouseMoveParam = GetParam();
@@ -558,30 +549,29 @@ namespace UnitTest
         m_captureAzEvents = true;
 
         m_rootWidget->move(100, 100);
-        mouseMoveFix(m_rootWidget.get(), m_rootWidget->mapToGlobal(mouseMoveParam.startPos), QPoint(0, 0));
+        QScreen* screen = m_rootWidget->screen();
+        MouseMove(m_rootWidget.get(), mouseMoveParam.startPos, QPoint(0, 0));
 
         // given
         m_inputChannelMapper->SetCursorMode(mouseMoveParam.mode);
         m_azCursorPositions.clear();
-
-        mouseMoveFix(m_rootWidget.get(), m_rootWidget->mapToGlobal(mouseMoveParam.startPos), QPoint(0, 0));
         for (float i = 0; i < mouseMoveParam.iterations; i++)
         {
-            mouseMoveFix(m_rootWidget.get(), QCursor::pos(), (mouseMoveParam.deltaPos / mouseMoveParam.iterations));
+            MouseMove(m_rootWidget.get(), m_rootWidget->mapFromGlobal(QCursor::pos(screen)), (mouseMoveParam.deltaPos / mouseMoveParam.iterations));            
         }
 
-        AZ::Vector2 accumalatedPosition(0.0f,0.0f);
+        AZ::Vector2 accumulatedPosition(0.0f,0.0f);
         for(const auto& pos: m_azCursorPositions) {
-            accumalatedPosition += (pos.m_normalizedPositionDelta * AZ::Vector2(WidgetSize.width(), WidgetSize.height()));
+            accumulatedPosition += (pos.m_normalizedPositionDelta * AZ::Vector2(WidgetSize.width(), WidgetSize.height()));
         }
 
         // validate
-        QPoint endPosition = m_rootWidget->mapFromGlobal(QCursor::pos());
+        const QPoint endPosition = m_rootWidget->mapFromGlobal(QCursor::pos(screen));
         EXPECT_NEAR(endPosition.x(), mouseMoveParam.expectedPos.x(), 1.0f);
         EXPECT_NEAR(endPosition.y(), mouseMoveParam.expectedPos.y(), 1.0f);
 
-        EXPECT_NEAR(accumalatedPosition.GetX(), mouseMoveParam.deltaPos.x(), 1.0f);
-        EXPECT_NEAR(accumalatedPosition.GetY(), mouseMoveParam.deltaPos.y(), 1.0f);
+        EXPECT_NEAR(accumulatedPosition.GetX(), mouseMoveParam.deltaPos.x(), 1.0f);
+        EXPECT_NEAR(accumulatedPosition.GetY(), mouseMoveParam.deltaPos.y(), 1.0f);
 
         // cleanup
         m_rootWidget->move(0, 0);
