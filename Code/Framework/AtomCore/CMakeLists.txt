@@ -7,10 +7,21 @@
 #
 
 ly_add_target(
+    NAME AtomCore.API HEADERONLY
+    NAMESPACE AZ
+    FILES_CMAKE
+    AtomCore/atomcore_header_files.cmake
+    INCLUDE_DIRECTORIES
+        INTERFACE
+            .
+)
+
+ly_add_target(
     NAME AtomCore STATIC
     NAMESPACE AZ
     FILES_CMAKE
-        AtomCore/atomcore_files.cmake
+        AtomCore/atomcore_source_files.cmake
+        AtomCore/atomcore_header_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
             .

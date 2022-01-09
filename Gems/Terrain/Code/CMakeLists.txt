@@ -16,6 +16,8 @@ ly_add_target(
         PRIVATE
             Source
     BUILD_DEPENDENCIES
+        PRIVATE
+            AZ::AtomCore
         PUBLIC
             AZ::AzCore
             AZ::AzFramework

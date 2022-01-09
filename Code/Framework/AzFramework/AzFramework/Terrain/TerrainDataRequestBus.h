@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <AtomCore/std/containers/array_view.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
@@ -135,16 +136,16 @@ namespace AzFramework
 
             //! Given a list of XY coordinates, call the provided callback function with surface data corresponding to each
             //! XY coordinate in the list.
-            virtual void ProcessHeightsFromList(const AZStd::vector<AZ::Vector3>& inPositions,
+            virtual void ProcessHeightsFromList(const AZStd::array_view<AZ::Vector3>& inPositions,
                 SurfacePointListFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT) const = 0;
-            virtual void ProcessNormalsFromList(const AZStd::vector<AZ::Vector3>& inPositions,
+            virtual void ProcessNormalsFromList(const AZStd::array_view<AZ::Vector3>& inPositions,
                 SurfacePointListFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT) const = 0;
-            virtual void ProcessSurfaceWeightsFromList(const AZStd::vector<AZ::Vector3>& inPositions,
+            virtual void ProcessSurfaceWeightsFromList(const AZStd::array_view<AZ::Vector3>& inPositions,
                 SurfacePointListFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT) const = 0;
-            virtual void ProcessSurfacePointsFromList(const AZStd::vector<AZ::Vector3>& inPositions,
+            virtual void ProcessSurfacePointsFromList(const AZStd::array_view<AZ::Vector3>& inPositions,
                 SurfacePointListFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT) const = 0;
 

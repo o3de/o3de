@@ -531,7 +531,7 @@ const char* TerrainSystem::GetMaxSurfaceName(
 }
 
 void TerrainSystem::ProcessHeightsFromList(
-    const AZStd::vector<AZ::Vector3>& inPositions,
+    const AZStd::array_view<AZ::Vector3>& inPositions,
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampleFilter) const
 {
@@ -551,7 +551,7 @@ void TerrainSystem::ProcessHeightsFromList(
 }
 
 void TerrainSystem::ProcessNormalsFromList(
-    const AZStd::vector<AZ::Vector3>& inPositions,
+    const AZStd::array_view<AZ::Vector3>& inPositions,
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampleFilter) const
 {
@@ -571,7 +571,7 @@ void TerrainSystem::ProcessNormalsFromList(
 }
 
 void TerrainSystem::ProcessSurfaceWeightsFromList(
-    const AZStd::vector<AZ::Vector3>& inPositions,
+    const AZStd::array_view<AZ::Vector3>& inPositions,
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampleFilter) const
 {
@@ -591,7 +591,7 @@ void TerrainSystem::ProcessSurfaceWeightsFromList(
 }
 
 void TerrainSystem::ProcessSurfacePointsFromList(
-    const AZStd::vector<AZ::Vector3>& inPositions,
+    const AZStd::array_view<AZ::Vector3>& inPositions,
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampleFilter) const
 {
