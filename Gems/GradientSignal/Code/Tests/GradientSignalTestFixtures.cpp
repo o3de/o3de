@@ -11,10 +11,17 @@
 
 #include <AzFramework/Components/TransformComponent.h>
 #include <GradientSignal/Components/GradientTransformComponent.h>
+
 #include <GradientSignal/Components/ConstantGradientComponent.h>
 #include <GradientSignal/Components/ImageGradientComponent.h>
 #include <GradientSignal/Components/PerlinGradientComponent.h>
 #include <GradientSignal/Components/RandomGradientComponent.h>
+
+#include <GradientSignal/Components/DitherGradientComponent.h>
+#include <GradientSignal/Components/InvertGradientComponent.h>
+#include <GradientSignal/Components/LevelsGradientComponent.h>
+#include <GradientSignal/Components/PosterizeGradientComponent.h>
+#include <GradientSignal/Components/ReferenceGradientComponent.h>
 
 namespace UnitTest
 {
@@ -121,6 +128,58 @@ namespace UnitTest
         CreateComponent<GradientSignal::GradientTransformComponent>(entity, gradientTransformConfig);
     }
 
+    void GradientSignalBaseFixture::CreateTestDitherGradient(AZ::Entity* entity, const AZ::EntityId& inputGradientId)
+    {
+        // Create the Dither Gradient Component with some default parameters.
+        GradientSignal::DitherGradientConfig config;
+        config.m_useSystemPointsPerUnit = false;
+        config.m_pointsPerUnit = 1.0f;
+        config.m_patternOffset = AZ::Vector3::CreateZero();
+        config.m_patternType = GradientSignal::DitherGradientConfig::BayerPatternType::PATTERN_SIZE_4x4;
+        config.m_gradientSampler.m_gradientId = inputGradientId;
+        CreateComponent<GradientSignal::DitherGradientComponent>(entity, config);
+    }
+
+    void GradientSignalBaseFixture::CreateTestInvertGradient(AZ::Entity* entity, const AZ::EntityId& inputGradientId)
+    {
+        // Create the Invert Gradient Component.
+        GradientSignal::InvertGradientConfig config;
+        config.m_gradientSampler.m_gradientId = inputGradientId;
+        CreateComponent<GradientSignal::InvertGradientComponent>(entity, config);
+    }
+
+    void GradientSignalBaseFixture::CreateTestLevelsGradient(AZ::Entity* entity, const AZ::EntityId& inputGradientId)
+    {
+        // Create the Levels Gradient Component with some default parameters.
+        GradientSignal::LevelsGradientConfig config;
+        config.m_gradientSampler.m_gradientId = inputGradientId;
+        config.m_inputMin = 0.1f;
+        config.m_inputMid = 0.3f;
+        config.m_inputMax = 0.9f;
+        config.m_outputMin = 0.0f;
+        config.m_outputMax = 1.0f;
+        CreateComponent<GradientSignal::LevelsGradientComponent>(entity, config);
+    }
+
+    void GradientSignalBaseFixture::CreateTestPosterizeGradient(AZ::Entity* entity, const AZ::EntityId& inputGradientId)
+    {
+        // Create the Posterize Gradient Component with some default parameters.
+        GradientSignal::PosterizeGradientConfig config;
+        config.m_mode = GradientSignal::PosterizeGradientConfig::ModeType::Ps;
+        config.m_bands = 5;
+        config.m_gradientSampler.m_gradientId = inputGradientId;
+        CreateComponent<GradientSignal::PosterizeGradientComponent>(entity, config);
+    }
+
+    void GradientSignalBaseFixture::CreateTestReferenceGradient(AZ::Entity* entity, const AZ::EntityId& inputGradientId)
+    {
+        // Create the Reference Gradient Component.
+        GradientSignal::ReferenceGradientConfig config;
+        config.m_gradientSampler.m_ownerEntityId = entity->GetId();
+        config.m_gradientSampler.m_gradientId = inputGradientId;
+        CreateComponent<GradientSignal::ReferenceGradientComponent>(entity, config);
+    }
+
     void GradientSignalTest::TestFixedDataSampler(const AZStd::vector<float>& expectedOutput, int size, AZ::EntityId gradientEntityId)
     {
         GradientSignal::GradientSampler gradientSampler;
@@ -139,49 +198,6 @@ namespace UnitTest
 
                 EXPECT_NEAR(actualValue, expectedValue, 0.01f);
             }
-        }
-    }
-
-    void GradientSignalTest::CompareGetValueAndGetValues(
-        AZ::EntityId gradientEntityId, const AZ::Aabb& queryRegion, const AZ::Vector2& stepSize)
-    {
-        // Create a gradient sampler and run through a series of points to see if they match expectations.
-
-        GradientSignal::GradientSampler gradientSampler;
-        gradientSampler.m_gradientId = gradientEntityId;
-
-        const size_t numSamplesX = aznumeric_cast<size_t>(ceil(queryRegion.GetExtents().GetX() / stepSize.GetX()));
-        const size_t numSamplesY = aznumeric_cast<size_t>(ceil(queryRegion.GetExtents().GetY() / stepSize.GetY()));
-
-
-        // Build up the list of positions to query.
-        AZStd::vector<AZ::Vector3> positions(numSamplesX * numSamplesY);
-        size_t index = 0;
-        for (size_t yIndex = 0; yIndex < numSamplesY; yIndex++)
-        {
-            float y = queryRegion.GetMin().GetY() + (stepSize.GetY() * yIndex);
-            for (size_t xIndex = 0; xIndex < numSamplesX; xIndex++)
-            {
-                float x = queryRegion.GetMin().GetX() + (stepSize.GetX() * xIndex);
-                positions[index++] = AZ::Vector3(x, y, 0.0f);
-
-            }
-        }
-
-        // Get the results from GetValues
-        AZStd::vector<float> results(numSamplesX * numSamplesY);
-        gradientSampler.GetValues(positions, results);
-
-        // For each position, call GetValue and verify that the values match.
-        for (size_t positionIndex = 0; positionIndex < positions.size(); positionIndex++)
-        {
-            GradientSignal::GradientSampleParams params;
-            params.m_position = positions[positionIndex];
-            float value = gradientSampler.GetValue(params);
-
-            // We use ASSERT_EQ instead of EXPECT_EQ because if one value doesn't match, they probably all won't, so there's no reason
-            // to keep running and printing failures for every value.
-            ASSERT_EQ(value, results[positionIndex]);
         }
     }
 

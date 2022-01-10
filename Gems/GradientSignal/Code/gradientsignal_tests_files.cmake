@@ -8,6 +8,7 @@
 
 set(FILES
     Tests/GradientSignalBenchmarks.cpp
+    Tests/GradientSignalGetValuesTests.cpp
     Tests/GradientSignalImageTests.cpp
     Tests/GradientSignalReferencesTests.cpp
     Tests/GradientSignalServicesTests.cpp

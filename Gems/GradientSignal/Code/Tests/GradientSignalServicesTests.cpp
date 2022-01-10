@@ -47,20 +47,6 @@ namespace UnitTest
         }
     }
 
-    TEST_F(GradientSignalServicesTestsFixture, ConstantGradientComponent_VerifyGetValueAndGetValuesMatch)
-    {
-        // Create our gradient entity.
-        const float shapeHalfBounds = 128.0f;
-        auto entity = CreateTestEntity(shapeHalfBounds);
-
-        CreateTestConstantGradient(entity.get());
-        ActivateEntity(entity.get());
-
-        AZ::Aabb queryRegion = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-shapeHalfBounds), AZ::Vector3(shapeHalfBounds));
-        AZ::Vector2 stepSize(1.0f, 1.0f);
-        CompareGetValueAndGetValues(entity->GetId(), queryRegion, stepSize);
-    }
-
     TEST_F(GradientSignalServicesTestsFixture, DitherGradientComponent_4x4At50Pct)
     {
         // With a 4x4 gradient filled with 8/16 (0.5), verify that the resulting dithered output 
@@ -226,11 +212,8 @@ namespace UnitTest
         const AZ::EntityId id = entityMock->GetId();
         UnitTest::MockGradientArrayRequestsBus mockGradientRequestsBus(id, inputData, dataSize);
 
-        GradientSignal::InvertGradientConfig config;
-        config.m_gradientSampler.m_gradientId = entityMock->GetId();
-
         auto entity = CreateEntity();
-        CreateComponent<GradientSignal::InvertGradientComponent>(entity.get(), config);
+        CreateTestInvertGradient(entity.get(), entityMock->GetId());
         ActivateEntity(entity.get());
 
         TestFixedDataSampler(expectedOutput, dataSize, entity->GetId());

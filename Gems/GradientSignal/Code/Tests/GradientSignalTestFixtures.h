@@ -50,6 +50,11 @@ namespace UnitTest
         void CreateTestPerlinGradient(AZ::Entity* entity);
         void CreateTestRandomGradient(AZ::Entity* entity);
 
+        void CreateTestDitherGradient(AZ::Entity* entity, const AZ::EntityId& inputGradientId);
+        void CreateTestInvertGradient(AZ::Entity* entity, const AZ::EntityId& inputGradientId);
+        void CreateTestLevelsGradient(AZ::Entity* entity, const AZ::EntityId& inputGradientId);
+        void CreateTestPosterizeGradient(AZ::Entity* entity, const AZ::EntityId& inputGradientId);
+        void CreateTestReferenceGradient(AZ::Entity* entity, const AZ::EntityId& inputGradientId);
 
         AZStd::unique_ptr<AZ::ComponentApplication> m_app;
         AZ::Entity* m_systemEntity = nullptr;
@@ -74,8 +79,6 @@ namespace UnitTest
         }
 
         void TestFixedDataSampler(const AZStd::vector<float>& expectedOutput, int size, AZ::EntityId gradientEntityId);
-
-        void CompareGetValueAndGetValues(AZ::EntityId gradientEntityId, const AZ::Aabb& queryRegion, const AZ::Vector2& stepSize);
     };
 
 #ifdef HAVE_BENCHMARK

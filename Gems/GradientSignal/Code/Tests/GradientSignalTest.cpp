@@ -179,20 +179,6 @@ namespace UnitTest
         TestFixedDataSampler(expectedOutput, dataSize, entity->GetId());
     }
 
-    TEST_F(GradientSignalTestGeneratorFixture, PerlinGradientComponent_VerifyGetValueAndGetValuesMatch)
-    {
-        // Create our gradient entity.
-        const float shapeHalfBounds = 128.0f;
-        auto entity = CreateTestEntity(shapeHalfBounds);
-
-        CreateTestPerlinGradient(entity.get());
-        ActivateEntity(entity.get());
-
-        AZ::Aabb queryRegion = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-shapeHalfBounds), AZ::Vector3(shapeHalfBounds));
-        AZ::Vector2 stepSize(1.0f, 1.0f);
-        CompareGetValueAndGetValues(entity->GetId(), queryRegion, stepSize);
-    }
-
     TEST_F(GradientSignalTestGeneratorFixture, RandomGradientComponent_GoldenTest)
     {
         // Make sure RandomGradientComponent returns back a "golden" set
@@ -221,20 +207,6 @@ namespace UnitTest
         ActivateEntity(entity.get());
 
         TestFixedDataSampler(expectedOutput, dataSize, entity->GetId());
-    }
-
-    TEST_F(GradientSignalTestGeneratorFixture, RandomGradientComponent_VerifyGetValueAndGetValuesMatch)
-    {
-        // Create our gradient entity.
-        const float shapeHalfBounds = 128.0f;
-        auto entity = CreateTestEntity(shapeHalfBounds);
-
-        CreateTestRandomGradient(entity.get());
-        ActivateEntity(entity.get());
-
-        AZ::Aabb queryRegion = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-shapeHalfBounds), AZ::Vector3(shapeHalfBounds));
-        AZ::Vector2 stepSize(1.0f, 1.0f);
-        CompareGetValueAndGetValues(entity->GetId(), queryRegion, stepSize);
     }
 
     TEST_F(GradientSignalTestGeneratorFixture, LevelsGradientComponent_DefaultValues)
