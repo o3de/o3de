@@ -114,8 +114,8 @@ namespace Multiplayer
         AZStd::array<BASE_TYPE, REWIND_SIZE> m_history;
         AzNetworking::ConnectionId m_owningConnectionId = AzNetworking::InvalidConnectionId;
         HostFrameId m_headTime = HostFrameId{0};
+        HostFrameId m_authTime = HostFrameId{0};
         uint32_t m_headIndex = 0;
-        uint32_t m_authIndex = 0;
     };
 }
 

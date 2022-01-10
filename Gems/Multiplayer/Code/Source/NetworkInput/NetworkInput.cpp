@@ -100,7 +100,7 @@ namespace Multiplayer
         for (uint16_t i = 0; i < m_componentInputs.size(); ++i)
         {
             MultiplayerAuditingElement log = m_componentInputs[i].get()->GetInputDeltaLog();
-            if (!log.elements.empty())
+            if (!log.m_elements.empty())
             {
                 logs.push_back(AZStd::move(log));
             }

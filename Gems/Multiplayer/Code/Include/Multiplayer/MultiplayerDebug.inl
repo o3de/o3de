@@ -18,14 +18,14 @@ namespace Multiplayer
     template<class T>
     inline const AZStd::string& MultiplayerAuditingDatum<T>::GetName() const
     {
-        return name;
+        return m_name;
     }
 
     template<class T>
     inline AZStd::pair<AZStd::string, AZStd::string> MultiplayerAuditingDatum<T>::GetClientServerValues() const
     {
         return AZStd::pair<AZStd::string, AZStd::string>(
-            AZStd::to_string(clientServerValue.first), AZStd::to_string(clientServerValue.second));
+            AZStd::to_string(m_clientServerValue.first), AZStd::to_string(m_clientServerValue.second));
     }
 
     template<class T>
@@ -43,13 +43,13 @@ namespace Multiplayer
 
     inline const AZStd::string& MultiplayerAuditingDatum<bool>::GetName() const
     {
-        return name;
+        return m_name;
     }
 
     inline AZStd::pair<AZStd::string, AZStd::string> MultiplayerAuditingDatum<bool>::GetClientServerValues() const
     {
         return AZStd::pair<AZStd::string, AZStd::string>(
-            clientServerValue.first ? "true" : "false", clientServerValue.second ? "true" : "false");
+            m_clientServerValue.first ? "true" : "false", m_clientServerValue.second ? "true" : "false");
     }
 
     inline AZStd::unique_ptr<IMultiplayerAuditingDatum> MultiplayerAuditingDatum<bool>::Clone()
@@ -66,13 +66,12 @@ namespace Multiplayer
 
     inline const AZStd::string& MultiplayerAuditingDatum<AZStd::string>::GetName() const
     {
-        return name;
+        return m_name;
     }
 
     inline AZStd::pair<AZStd::string, AZStd::string> MultiplayerAuditingDatum<AZStd::string>::GetClientServerValues() const
     {
-        return AZStd::pair<AZStd::string, AZStd::string>(
-            clientServerValue.first, clientServerValue.second);
+        return AZStd::pair<AZStd::string, AZStd::string>(m_clientServerValue.first, m_clientServerValue.second);
     }
 
     inline AZStd::unique_ptr<IMultiplayerAuditingDatum> MultiplayerAuditingDatum<AZStd::string>::Clone()

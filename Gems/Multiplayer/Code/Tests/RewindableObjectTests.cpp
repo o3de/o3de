@@ -73,6 +73,7 @@ namespace UnitTest
             Multiplayer::ScopedAlterTime time(static_cast<Multiplayer::HostFrameId>(RewindableBufferFrames - 1), AZ::Time::ZeroTimeMs, 1.f, AzNetworking::InvalidConnectionId);
             EXPECT_EQ(RewindableBufferFrames - 1, test.Get());
             EXPECT_EQ(RewindableBufferFrames - 2, test.GetPrevious());
+            EXPECT_EQ(0, test.GetAuthority());
         }
 
         // Test that Get/GetPrevious return the unaltered frame on the owning conection
@@ -82,6 +83,7 @@ namespace UnitTest
             test.SetOwningConnectionId(AzNetworking::ConnectionId(0));
             EXPECT_EQ(RewindableBufferFrames - 1, test.Get());
             EXPECT_EQ(RewindableBufferFrames - 1, test.GetPrevious());
+            EXPECT_EQ(0, test.GetAuthority());
         }
         Multiplayer::GetNetworkTime()->AlterTime(static_cast<Multiplayer::HostFrameId>(RewindableBufferFrames), AZ::TimeMs(0), 1.f, AzNetworking::InvalidConnectionId);
     }

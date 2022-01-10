@@ -97,10 +97,10 @@ namespace Multiplayer
                     // Draw Events as a single line entry, they should only have one line item
                     if (elem->m_category == MultiplayerAuditCategory::Event)
                     {
-                        if (elem->m_children.size() > 0 && elem->m_children.front().elements.size() > 0)
+                        if (elem->m_children.size() > 0 && elem->m_children.front().m_elements.size() > 0)
                         {
                             AZStd::pair<AZStd::string, AZStd::string> cliServValues =
-                                elem->m_children.front().elements.front()->GetClientServerValues();
+                                elem->m_children.front().m_elements.front()->GetClientServerValues();
                             ImGui::TreeNodeEx(
                                 AZStd::string::format(nodeTitle, elem->m_name.c_str()).c_str(),
                                 (ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_SpanFullWidth));
@@ -132,18 +132,18 @@ namespace Multiplayer
                         {
                             ImGui::TableNextRow();
                             ImGui::TableNextColumn();
-                            if (child.elements.size() > 0)
+                            if (child.m_elements.size() > 0)
                             {
                                 const ImGuiTableFlags childFlags = elem->m_category == MultiplayerAuditCategory::Desync
                                     ? ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_DefaultOpen
                                     : ImGuiTreeNodeFlags_SpanFullWidth;
-                                if (ImGui::TreeNodeEx(child.name.c_str(), childFlags))
+                                if (ImGui::TreeNodeEx(child.m_name.c_str(), childFlags))
                                 {
                                     ImGui::TableNextColumn();
                                     ImGui::TableNextColumn();
                                     ImGui::TableNextColumn();
                                     ImGui::TableNextColumn();
-                                    for (const auto& childElem : child.elements)
+                                    for (const auto& childElem : child.m_elements)
                                     {
                                         AZStd::pair<AZStd::string, AZStd::string> cliServValues = childElem->GetClientServerValues();
                                         ImGui::TableNextRow();
@@ -164,7 +164,7 @@ namespace Multiplayer
                             }
                             else
                             {
-                                ImGui::Text(child.name.c_str());
+                                ImGui::Text(child.m_name.c_str());
                                 ImGui::TableNextColumn();
                                 ImGui::TableNextColumn();
                                 ImGui::TableNextColumn();

@@ -34,6 +34,9 @@ namespace Multiplayer
         AZStd::vector<MultiplayerAuditingElement> m_children;
     };
 
+    //! Buffer size for ImGui Search bar in Audit Trail UI
+    const int AUDIT_SEARCH_BUFFER_SIZE = 1024;
+
     /**
      * /brief Provides ImGui driven UX for multiplayer audit trail
      */
@@ -66,7 +69,7 @@ namespace Multiplayer
 
         AZStd::string_view m_filter;
         AzFramework::DebugDisplayRequests* m_debugDisplay = nullptr;
-        char m_inputBuffer[1028] = {};
+        char m_inputBuffer[AUDIT_SEARCH_BUFFER_SIZE] = {};
         bool m_canPumpTrail = false;
     };
 }

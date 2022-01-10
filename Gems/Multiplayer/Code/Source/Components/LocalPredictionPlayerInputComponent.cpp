@@ -53,7 +53,8 @@ namespace Multiplayer
             AZLOG_ERROR("The hash mismatched, but no differences were found.");
             if (detail)
             {
-                detail->elements.emplace_back(AZStd::make_unique<MultiplayerAuditingDatum<AZStd::string>>("The hash mismatched, but no differences were found."));
+                detail->m_elements.emplace_back(
+                    AZStd::make_unique<MultiplayerAuditingDatum<AZStd::string>>("The hash mismatched, but no differences were found."));
             }
         }
 
@@ -79,7 +80,7 @@ namespace Multiplayer
                 AZLOG_ERROR(errorMsg.c_str(), iter->first.c_str());
                 if (detail)
                 {
-                    detail->elements.emplace_back(AZStd::make_unique<MultiplayerAuditingDatum<AZStd::string>>(
+                    detail->m_elements.emplace_back(AZStd::make_unique<MultiplayerAuditingDatum<AZStd::string>>(
                         AZStd::string::format(errorMsg.c_str(), iter->first.c_str())));
                 }
                 continue;
@@ -88,7 +89,7 @@ namespace Multiplayer
             AZLOG_ERROR("    %s Server=%s Client=%s", iter->first.c_str(), serverValueIter->second.c_str(), clientValueIter->second.c_str());
             if (detail)
             {
-                detail->elements.emplace_back(AZStd::make_unique<MultiplayerAuditingDatum<AZStd::string>>(iter->first,
+                detail->m_elements.emplace_back(AZStd::make_unique<MultiplayerAuditingDatum<AZStd::string>>(iter->first,
                     clientValueIter->second, serverValueIter->second));
             }
         }
@@ -217,12 +218,11 @@ namespace Multiplayer
 
                 if (lostInput)
                 {
-                    //TODO: Maybe add to Audit Trail here (server)
                     AZLOG(NET_Prediction, "InputLost InputId=%u", aznumeric_cast<uint32_t>(input.GetClientInputId()));
                 }
                 else
                 {
-                    //TODO: Add to Audit Trail here (server)
+                    // Add to Audit Trail here (server)
                     AZStd::vector<MultiplayerAuditingElement> inputLogs = input.GetComponentInputDeltaLogs();
                     if (!inputLogs.empty())
                     {
@@ -234,7 +234,6 @@ namespace Multiplayer
             }
             else
             {
-                //TODO: Maybe add to Audit Trail here (server)
                 AZLOG(NET_Prediction, "Dropped InputId=%u", aznumeric_cast<uint32_t>(input.GetClientInputId()));
             }
         }
@@ -353,7 +352,7 @@ namespace Multiplayer
         GetNetBindComponent()->NotifyCorrection();
 
         const uint32_t inputHistorySize = static_cast<uint32_t>(m_inputHistory.Size());
-        const uint32_t historicalDelta = aznumeric_cast<uint32_t>(m_clientInputId - inputId); // Do not replay the move we just corrected, that was already processed by the server
+        const uint32_t historicalDelta = aznumeric_cast<uint32_t>(m_clientInputId - inputId); // Do not replay the move just corrected, it was already processed by the server
 
         // If this correction is for a move outside our input history window, just start replaying from the oldest move we have available
         const uint32_t startReplayIndex = (inputHistorySize > historicalDelta) ? (inputHistorySize - historicalDelta) : 0;
@@ -364,7 +363,7 @@ namespace Multiplayer
             AZLOG_WARN("** Autonomous Desync - Correcting clientInputId=%d from index=%d",
                 aznumeric_cast<int32_t>(inputId), startReplayIndex);
             startReplayInput.LogComponentInputDelta();
-            //TODO: Maybe add something to the audit trail here
+
 #ifndef AZ_RELEASE_BUILD
             auto iter = m_predictiveStateHistory.find(inputId);
             if (iter != m_predictiveStateHistory.end())
@@ -374,7 +373,7 @@ namespace Multiplayer
                 SerializeEntityCorrection(serverValues);
                 MultiplayerAuditingElement detail;
                 PrintCorrectionDifferences(*iter->second, serverValues, &detail);
-                detail.name = AZStd::string::format("Autonomous Desync - Correcting clientInputId=%d from index=%d",
+                detail.m_name = AZStd::string::format("Autonomous Desync - Correcting clientInputId=%d from index=%d",
                     aznumeric_cast<int32_t>(inputId), startReplayIndex);
                 AZ::Interface<IMultiplayerDebug>::Get()->AddAuditEntry(MultiplayerAuditCategory::Desync,
                     inputId, startReplayInput.GetHostFrameId(), GetEntity()->GetName(), { AZStd::move(detail) });
@@ -538,7 +537,7 @@ namespace Multiplayer
                 SerializeEntityCorrection(*inputHistory);
                 m_predictiveStateHistory.emplace(m_clientInputId, AZStd::move(inputHistory));
 
-                // TODO: Add to audit trail per input here (client)
+                // Add to audit trail per input here (client)
                 AZStd::vector<MultiplayerAuditingElement> inputLogs = input.GetComponentInputDeltaLogs();
                 if (!inputLogs.empty())
                 {

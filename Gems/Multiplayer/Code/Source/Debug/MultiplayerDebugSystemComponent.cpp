@@ -604,7 +604,7 @@ namespace Multiplayer
                 // Events only have one item
                 if (elem->m_category == MultiplayerAuditCategory::Event)
                 {
-                    if (elem->m_children.size() > 0 && elem->m_children.front().elements.size() > 0)
+                    if (elem->m_children.size() > 0 && elem->m_children.front().m_elements.size() > 0)
                     {
                         if(AZStd::string::format(nodeTitle, elem->m_name.c_str()).contains(filter))
                         {
@@ -612,7 +612,7 @@ namespace Multiplayer
                         }
 
                         AZStd::pair<AZStd::string, AZStd::string> cliServValues =
-                            elem->m_children.front().elements.front()->GetClientServerValues();
+                            elem->m_children.front().m_elements.front()->GetClientServerValues();
                        if(AZStd::string::format(
                             "%d %d %s %s", static_cast<uint16_t>(elem->m_inputId), static_cast<uint32_t>(elem->m_hostFrameId), cliServValues.first.c_str(), cliServValues.second.c_str()).contains(filter))
                        {
@@ -642,27 +642,27 @@ namespace Multiplayer
 
                     for (const auto& child : elem->m_children)
                     {
-                        if (child.name.contains(filter))
+                        if (child.m_name.contains(filter))
                         {
                             filteredInput.m_children.push_back(child);
                         }
-                        else if (child.elements.size() > 0)
+                        else if (child.m_elements.size() > 0)
                         {
                             MultiplayerAuditingElement filteredChild;
-                            filteredChild.name = child.name;
+                            filteredChild.m_name = child.m_name;
 
-                            for (const auto& childElem : child.elements)
+                            for (const auto& childElem : child.m_elements)
                             {
                                 AZStd::pair<AZStd::string, AZStd::string> cliServValues = childElem->GetClientServerValues();
                                 if (AZStd::string::format(
                                         "%s %s %s", childElem->GetName().c_str(), cliServValues.first.c_str(), cliServValues.second.c_str())
                                         .contains(filter))
                                 {
-                                    filteredChild.elements.push_back(childElem.get()->Clone());
+                                    filteredChild.m_elements.push_back(childElem.get()->Clone());
                                 }
                             }
 
-                            if (filteredChild.elements.size() > 0)
+                            if (filteredChild.m_elements.size() > 0)
                             {
 
                             filteredInput.m_children.push_back(filteredChild);

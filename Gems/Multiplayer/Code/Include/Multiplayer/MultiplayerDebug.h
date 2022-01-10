@@ -16,16 +16,12 @@ namespace Multiplayer
     template<class T>
     class MultiplayerAuditingDatum : public IMultiplayerAuditingDatum
     {
-    private:
-        AZStd::string name;
-        AZStd::pair<T, T> clientServerValue;
-
     public:
         MultiplayerAuditingDatum(AZStd::string datumName)
-            : name(datumName){};
+            : m_name(datumName){};
         MultiplayerAuditingDatum(AZStd::string datumName, T client, T server)
-            : name(datumName)
-            , clientServerValue(client, server){};
+            : m_name(datumName)
+            , m_clientServerValue(client, server){};
         virtual ~MultiplayerAuditingDatum() = default;
         IMultiplayerAuditingDatum& operator=(const IMultiplayerAuditingDatum& rhs) override;
 
@@ -33,21 +29,21 @@ namespace Multiplayer
         AZStd::pair<AZStd::string, AZStd::string> GetClientServerValues() const override;
 
         AZStd::unique_ptr<IMultiplayerAuditingDatum> Clone() override;
+
+    private:
+        AZStd::string m_name;
+        AZStd::pair<T, T> m_clientServerValue;
     };
 
     template<>
     class MultiplayerAuditingDatum<bool> : public IMultiplayerAuditingDatum
     {
-    private:
-        AZStd::string name;
-        AZStd::pair<bool, bool> clientServerValue;
-
     public:
         MultiplayerAuditingDatum(AZStd::string datumName)
-            : name(datumName){};
+            : m_name(datumName){};
         MultiplayerAuditingDatum(AZStd::string datumName, bool client, bool server)
-            : name(datumName)
-            , clientServerValue(client, server){};
+            : m_name(datumName)
+            , m_clientServerValue(client, server){};
         virtual ~MultiplayerAuditingDatum() = default;
         IMultiplayerAuditingDatum& operator=(const IMultiplayerAuditingDatum& rhs) override;
 
@@ -55,21 +51,21 @@ namespace Multiplayer
         AZStd::pair<AZStd::string, AZStd::string> GetClientServerValues() const override;
 
         AZStd::unique_ptr<IMultiplayerAuditingDatum> Clone() override;
+
+    private:
+        AZStd::string m_name;
+        AZStd::pair<bool, bool> m_clientServerValue;
     };
 
     template<>
     class MultiplayerAuditingDatum<AZStd::string> : public IMultiplayerAuditingDatum
     {
-    private:
-        AZStd::string name;
-        AZStd::pair<AZStd::string, AZStd::string> clientServerValue;
-
     public:
         MultiplayerAuditingDatum(AZStd::string datumName)
-            : name(datumName){};
+            : m_name(datumName){};
         MultiplayerAuditingDatum(AZStd::string datumName, AZStd::string client, AZStd::string server)
-            : name(datumName)
-            , clientServerValue(client, server){};
+            : m_name(datumName)
+            , m_clientServerValue(client, server){};
         virtual ~MultiplayerAuditingDatum() = default;
         IMultiplayerAuditingDatum& operator=(const IMultiplayerAuditingDatum& rhs) override;
 
@@ -78,7 +74,10 @@ namespace Multiplayer
         AZStd::pair<AZStd::string, AZStd::string> GetClientServerValues() const override;
 
         AZStd::unique_ptr<IMultiplayerAuditingDatum> Clone() override;
-        
+
+    private:
+        AZStd::string m_name;
+        AZStd::pair<AZStd::string, AZStd::string> m_clientServerValue;
     };
 }
 
