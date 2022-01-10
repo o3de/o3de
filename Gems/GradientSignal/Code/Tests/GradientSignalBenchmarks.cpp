@@ -16,13 +16,11 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
 
-#include <GradientSignal/Components/ImageGradientComponent.h>
-#include <GradientSignal/Components/PerlinGradientComponent.h>
-#include <GradientSignal/Components/RandomGradientComponent.h>
-#include <GradientSignal/Components/GradientTransformComponent.h>
-
 namespace UnitTest
 {
+    // --------------------------------------------------------------------------------------
+    // Constant Gradient
+
     BENCHMARK_DEFINE_F(GradientSignalBenchmarkFixture, BM_ConstantGradientEBusGetValue)(benchmark::State& state)
     {
         CreateTestConstantGradient(m_testEntity.get());
@@ -71,8 +69,8 @@ namespace UnitTest
         ->Args({ 4096, 4096 })
         ->Unit(::benchmark::kMillisecond);
 
-
-
+    // --------------------------------------------------------------------------------------
+    // Image Gradient
 
     BENCHMARK_DEFINE_F(GradientSignalBenchmarkFixture, BM_ImageGradientEBusGetValue)(benchmark::State& state)
     {
@@ -122,6 +120,9 @@ namespace UnitTest
         ->Args({ 4096, 4096 })
         ->Unit(::benchmark::kMillisecond);
 
+    // --------------------------------------------------------------------------------------
+    // Perlin Gradient
+
     BENCHMARK_DEFINE_F(GradientSignalBenchmarkFixture, BM_PerlinGradientEBusGetValue)(benchmark::State& state)
     {
         CreateTestPerlinGradient(m_testEntity.get());
@@ -169,6 +170,9 @@ namespace UnitTest
         ->Args({ 2048, 2048 })
         ->Args({ 4096, 4096 })
         ->Unit(::benchmark::kMillisecond);
+
+    // --------------------------------------------------------------------------------------
+    // Random Gradient
 
     BENCHMARK_DEFINE_F(GradientSignalBenchmarkFixture, BM_RandomGradientEBusGetValue)(benchmark::State& state)
     {
@@ -218,6 +222,56 @@ namespace UnitTest
         ->Args({ 4096, 4096 })
         ->Unit(::benchmark::kMillisecond);
 
+    // --------------------------------------------------------------------------------------
+    // Shape Area Falloff Gradient
+
+    BENCHMARK_DEFINE_F(GradientSignalBenchmarkFixture, BM_ShapeAreaFalloffGradientEBusGetValue)(benchmark::State& state)
+    {
+        CreateTestShapeAreaFalloffGradient(m_testEntity.get());
+        RunEBusGetValueBenchmark(state);
+    }
+
+    BENCHMARK_REGISTER_F(GradientSignalBenchmarkFixture, BM_ShapeAreaFalloffGradientEBusGetValue)
+        ->Args({ 1024, 1024 })
+        ->Args({ 2048, 2048 })
+        ->Args({ 4096, 4096 })
+        ->Unit(::benchmark::kMillisecond);
+
+    BENCHMARK_DEFINE_F(GradientSignalBenchmarkFixture, BM_ShapeAreaFalloffGradientEBusGetValues)(benchmark::State& state)
+    {
+        CreateTestShapeAreaFalloffGradient(m_testEntity.get());
+        RunEBusGetValuesBenchmark(state);
+    }
+
+    BENCHMARK_REGISTER_F(GradientSignalBenchmarkFixture, BM_ShapeAreaFalloffGradientEBusGetValues)
+        ->Args({ 1024, 1024 })
+        ->Args({ 2048, 2048 })
+        ->Args({ 4096, 4096 })
+        ->Unit(::benchmark::kMillisecond);
+
+    BENCHMARK_DEFINE_F(GradientSignalBenchmarkFixture, BM_ShapeAreaFalloffGradientSamplerGetValue)(benchmark::State& state)
+    {
+        CreateTestShapeAreaFalloffGradient(m_testEntity.get());
+        RunSamplerGetValueBenchmark(state);
+    }
+
+    BENCHMARK_REGISTER_F(GradientSignalBenchmarkFixture, BM_ShapeAreaFalloffGradientSamplerGetValue)
+        ->Args({ 1024, 1024 })
+        ->Args({ 2048, 2048 })
+        ->Args({ 4096, 4096 })
+        ->Unit(::benchmark::kMillisecond);
+
+    BENCHMARK_DEFINE_F(GradientSignalBenchmarkFixture, BM_ShapeAreaFalloffGradientSamplerGetValues)(benchmark::State& state)
+    {
+        CreateTestShapeAreaFalloffGradient(m_testEntity.get());
+        RunSamplerGetValuesBenchmark(state);
+    }
+
+    BENCHMARK_REGISTER_F(GradientSignalBenchmarkFixture, BM_ShapeAreaFalloffGradientSamplerGetValues)
+        ->Args({ 1024, 1024 })
+        ->Args({ 2048, 2048 })
+        ->Args({ 4096, 4096 })
+        ->Unit(::benchmark::kMillisecond);
 #endif
 
 
