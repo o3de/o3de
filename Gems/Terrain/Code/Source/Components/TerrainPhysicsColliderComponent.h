@@ -33,6 +33,7 @@ namespace Terrain
         AZ_CLASS_ALLOCATOR(TerrainPhysicsSurfaceMaterialMapping, AZ::SystemAllocator, 0);
         AZ_RTTI(TerrainPhysicsSurfaceMaterialMapping, "{A88B5289-DFCD-4564-8395-E2177DFE5B18}");
         static void Reflect(AZ::ReflectContext* context);
+        static AZ::Data::AssetId GetMaterialLibraryId();
 
         SurfaceData::SurfaceTag m_surfaceTag;
         Physics::MaterialId m_materialId;
