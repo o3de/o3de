@@ -499,12 +499,8 @@ namespace AzFramework
                 for (auto it = newEntitiesBegin; it != newEntitiesEnd; ++it)
                 {
                     AZ::Entity* clone = (*it);
-                    // The entity component framework doesn't handle entities without TransformComponent safely.
-                    if (!clone->GetComponents().empty())
-                    {
-                        clone->SetSpawnTicketId(request.m_ticketId);
-                        GameEntityContextRequestBus::Broadcast(&GameEntityContextRequestBus::Events::AddGameEntity, *it);
-                    }
+                    clone->SetSpawnTicketId(request.m_ticketId);
+                    GameEntityContextRequestBus::Broadcast(&GameEntityContextRequestBus::Events::AddGameEntity, clone);
                 }
 
                 // Let other systems know about newly spawned entities for any post-processing after adding to the scene/game context.
@@ -636,12 +632,8 @@ namespace AzFramework
                 for (auto it = ticket.m_spawnedEntities.begin() + spawnedEntitiesInitialCount; it != ticket.m_spawnedEntities.end(); ++it)
                 {
                     AZ::Entity* clone = (*it);
-                    // The entity component framework doesn't handle entities without TransformComponent safely.
-                    if (!clone->GetComponents().empty())
-                    {
-                        clone->SetSpawnTicketId(request.m_ticketId);
-                        GameEntityContextRequestBus::Broadcast(&GameEntityContextRequestBus::Events::AddGameEntity, *it);
-                    }
+                    clone->SetSpawnTicketId(request.m_ticketId);
+                    GameEntityContextRequestBus::Broadcast(&GameEntityContextRequestBus::Events::AddGameEntity, *it);
                 }
 
                 if (request.m_completionCallback)
@@ -668,7 +660,7 @@ namespace AzFramework
             {
                 if (entity != nullptr)
                 {
-                    // Setting it to 0 is needed to avoid the infite loop between GameEntityContext and SpawnableEntitiesManager.
+                    // Setting it to 0 is needed to avoid the infinite loop between GameEntityContext and SpawnableEntitiesManager.
                     entity->SetSpawnTicketId(0);
                     GameEntityContextRequestBus::Broadcast(
                         &GameEntityContextRequestBus::Events::DestroyGameEntity, entity->GetId());
@@ -702,7 +694,7 @@ namespace AzFramework
             {
                 if (*entityIterator != nullptr && (*entityIterator)->GetId() == request.m_entityId)
                 {
-                    // Setting it to 0 is needed to avoid the infite loop between GameEntityContext and SpawnableEntitiesManager.
+                    // Setting it to 0 is needed to avoid the infinite loop between GameEntityContext and SpawnableEntitiesManager.
                     (*entityIterator)->SetSpawnTicketId(0);
                     GameEntityContextRequestBus::Broadcast(
                         &GameEntityContextRequestBus::Events::DestroyGameEntity, (*entityIterator)->GetId());
@@ -948,11 +940,6 @@ namespace AzFramework
                     entity->SetSpawnTicketId(0);
                     GameEntityContextRequestBus::Broadcast(
                         &GameEntityContextRequestBus::Events::DestroyGameEntity, entity->GetId());
-                }
-                else
-                {
-                    // Entities without components wouldn't have been send to the GameEntityContext.
-                    delete entity;
                 }
             }
             delete request.m_ticket;

@@ -414,7 +414,7 @@ void UiRenderer::DebugDisplayTextureData(int recordingOption)
             return lhs.second > rhs.second;
         });
 
-        CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+        IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
         // setup to render lines of text for the debug display
 
