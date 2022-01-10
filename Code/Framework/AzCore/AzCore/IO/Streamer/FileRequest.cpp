@@ -139,7 +139,7 @@ namespace AZ::IO::Requests
     {
     }
 
-    Requests::ReportData::ReportData(ReportType reportType)
+    ReportData::ReportData(ReportType reportType)
         : m_reportType(reportType)
     {
     }
