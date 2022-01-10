@@ -325,6 +325,7 @@ PbrLightingOutput SkinPS_Common(VSOutput IN)
     surface.transmission.tint = transmissionTintThickness.rgb;
     surface.transmission.thickness = transmissionTintThickness.w;
     surface.transmission.transmissionParams = MaterialSrg::m_transmissionParams;
+    surface.transmission.scatterDistance = MaterialSrg::m_scatterDistance;
 
     // ------- Lighting Data -------
 
@@ -343,14 +344,14 @@ PbrLightingOutput SkinPS_Common(VSOutput IN)
 
     // ------- Thin Object Light Transmission -------
 
-    // Angle offset for subsurface scattering through thin objects
-    lightingData.transmissionNdLBias = MaterialSrg::m_transmissionNdLBias;
-
     // Shrink (absolute) offset towards the normal opposite direction to ensure correct shadow map projection
-    lightingData.shrinkFactor = MaterialSrg::m_shrinkFactor;
+    lightingData.shrinkFactor = surface.transmission.transmissionParams.x;
+
+    // Angle offset for subsurface scattering through thin objects
+    lightingData.transmissionNdLBias = surface.transmission.transmissionParams.y;
 
     // Attenuation applied to hide artifacts due to low-res shadow maps 
-    lightingData.distanceAttenuation = MaterialSrg::m_distanceAttenuation;
+    lightingData.distanceAttenuation = surface.transmission.transmissionParams.z;
 
     // ------- Occlusion -------
     

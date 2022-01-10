@@ -75,19 +75,19 @@ float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightI
                 // Increase angle of influence (angle(N,L) -> angle(N,L) + acos(transmissionNdLBias)) to smooth transition regions
                 float3 E = surface.albedo * saturate(lightingData.transmissionNdLBias + dot(-surface.normal, dirToLight));
 
-                // Transmission distance modulated by hardcoded constant C (could be exposed as a weight of scattering distance for transmission)
-                const float C = 100.0f;
-                float s = transmissionDistance * C;
+                // Transmission distance modulated by hardcoded constant C and the thickness exposed parameter (in this case modulating the distance traversed by the light inside the object)
+                const float C = 300.0f;
+                float s = transmissionDistance * C * surface.transmission.thickness;
                 
                 // Use scattering color to weight thin object transmission color
-                const float3 invScattering = rcp(transmissionParams.xyz);
+                const float3 invScattering = rcp(max(surface.transmission.scatterDistance, float(0.00001)));
                 
                 // Albedo at front (surface point) is used to approximate irradiance at the back of the object
                 // See observation 4 in [Jimenez J. et al, 2010] 
                 result = TransmissionKernel(s, invScattering) * lightIntensity * E * transmissionParams.w;
                 
                 // Alternative specific to skin translucency
-                // result = T(s) * lightIntensity * surface.albedo * E * transmissionParams.w;
+                // result = T(s) * lightIntensity * E * transmissionParams.w;
                 
                 // Distance attenuation applied to hide artifacts due to low-res projected areas onto shadowmaps (might need some work in the future)
                 result /= max(1.0, attenuationDistance * attenuationDistance * lightingData.distanceAttenuation);

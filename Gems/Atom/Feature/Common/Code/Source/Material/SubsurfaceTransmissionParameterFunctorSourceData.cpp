@@ -25,6 +25,9 @@ namespace AZ
                     ->Field("power", &SubsurfaceTransmissionParameterFunctorSourceData::m_power)
                     ->Field("distortion", &SubsurfaceTransmissionParameterFunctorSourceData::m_distortion)
                     ->Field("attenuation", &SubsurfaceTransmissionParameterFunctorSourceData::m_attenuation)
+                    ->Field("shrinkFactor", &SubsurfaceTransmissionParameterFunctorSourceData::m_shrinkFactor)
+                    ->Field("transmissionNdLBias", &SubsurfaceTransmissionParameterFunctorSourceData::m_transmissionNdLBias)
+                    ->Field("distanceAttenuation", &SubsurfaceTransmissionParameterFunctorSourceData::m_distanceAttenuation)
                     ->Field("tintColor", &SubsurfaceTransmissionParameterFunctorSourceData::m_tintColor)
                     ->Field("thickness", &SubsurfaceTransmissionParameterFunctorSourceData::m_thickness)
                     ->Field("enabled", &SubsurfaceTransmissionParameterFunctorSourceData::m_enabled)
@@ -48,6 +51,9 @@ namespace AZ
             functor->m_power                    = context.FindMaterialPropertyIndex(Name{ m_power });
             functor->m_distortion               = context.FindMaterialPropertyIndex(Name{ m_distortion });
             functor->m_attenuation              = context.FindMaterialPropertyIndex(Name{ m_attenuation });
+            functor->m_shrinkFactor             = context.FindMaterialPropertyIndex(Name{ m_shrinkFactor });
+            functor->m_transmissionNdLBias      = context.FindMaterialPropertyIndex(Name{ m_transmissionNdLBias });
+            functor->m_distanceAttenuation      = context.FindMaterialPropertyIndex(Name{ m_distanceAttenuation });
             functor->m_tintColor                = context.FindMaterialPropertyIndex(Name{ m_tintColor });
             functor->m_thickness                = context.FindMaterialPropertyIndex(Name{ m_thickness });
             functor->m_enabled                  = context.FindMaterialPropertyIndex(Name{ m_enabled });
@@ -56,7 +62,8 @@ namespace AZ
 
             if (functor->m_mode.IsNull() || functor->m_scale.IsNull() || functor->m_power.IsNull() || functor->m_distortion.IsNull() ||
                 functor->m_tintColor.IsNull() || functor->m_thickness.IsNull() || functor->m_enabled.IsNull() || functor->m_attenuation.IsNull() || functor->m_scatterDistanceColor.IsNull() ||
-                functor->m_scatterDistanceIntensity.IsNull())
+                functor->m_scatterDistanceIntensity.IsNull() || functor->m_shrinkFactor.IsNull() || functor->m_transmissionNdLBias.IsNull() ||
+                functor->m_distanceAttenuation.IsNull())
             {
                 return Failure();
             }
@@ -66,6 +73,9 @@ namespace AZ
             AddMaterialPropertyDependency(functor, functor->m_power);
             AddMaterialPropertyDependency(functor, functor->m_distortion);
             AddMaterialPropertyDependency(functor, functor->m_attenuation);
+            AddMaterialPropertyDependency(functor, functor->m_shrinkFactor);
+            AddMaterialPropertyDependency(functor, functor->m_transmissionNdLBias);
+            AddMaterialPropertyDependency(functor, functor->m_distanceAttenuation);
             AddMaterialPropertyDependency(functor, functor->m_tintColor);
             AddMaterialPropertyDependency(functor, functor->m_thickness);
             AddMaterialPropertyDependency(functor, functor->m_enabled);

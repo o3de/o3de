@@ -93,16 +93,13 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
     
     // Elements of m_transmissionParams:
     // Thick object mode: (attenuation coefficient, power, distortion, scale)
-    // Thin  object mode:  (float3 scatter distance, scale)
+    // Thin  object mode:  (shrinkFactor, transmissionNdLBias, distanceAttenuation, scale)
     float4 m_transmissionParams;
     
     // (float3 TintColor, thickness)
     float4 m_transmissionTintThickness;
     Texture2D m_transmissionThicknessMap;
     uint m_transmissionThicknessMapUvIndex;
-    float m_shrinkFactor;
-    float m_transmissionNdLBias;
-    float m_distanceAttenuation;
 }
 
 // Callback function for ParallaxMapping.azsli
