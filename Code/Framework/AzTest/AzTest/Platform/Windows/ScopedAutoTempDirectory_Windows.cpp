@@ -8,57 +8,41 @@
 
 #include <AzCore/PlatformIncl.h>
 
+#include <AzCore/std/string/conversions.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/IO/SystemFile.h>
-#include <AzTest/Platform.h>
+#include <AzTest/Utils.h>
 
-namespace AZ
+namespace AZ::Test
 {
-    namespace Test
+    ScopedAutoTempDirectory::ScopedAutoTempDirectory()
     {
-        ScopedAutoTempDirectory::ScopedAutoTempDirectory()
+        using UuidString = AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>;
+        constexpr DWORD bufferSize = static_cast<DWORD>(AZ::IO::MaxPathLength);
+
+        wchar_t tempDirW[AZ::IO::MaxPathLength]{};
+        GetTempPathW(bufferSize, tempDirW);
+
+        AZ::IO::FixedMaxPath tempDirectoryRoot;
+        AZStd::to_string(tempDirectoryRoot.Native(), tempDirW);
+
+        constexpr int MaxAttempts = 255;
+        for (int i = 0; i < MaxAttempts; ++i)
         {
-            constexpr const DWORD bufferSize = static_cast<DWORD>(AZ::IO::MaxPathLength);
-
-            char tempDir[bufferSize] = {0};
-            GetTempPathA(bufferSize, tempDir);
-
-            char workingTempPathBuffer[bufferSize] = {'\0'};
-
-            int maxAttempts = 2000; // Prevent an infinite loop by setting an arbitrary maximum attempts at finding an available temp folder name
-            while (maxAttempts > 0)
+            AZ::IO::FixedMaxPath testPath = tempDirectoryRoot /
+                AZ::IO::FixedMaxPathString::format("UnitTest-%s",
+                    AZ::Uuid::CreateRandom().ToString<UuidString>().c_str());
+            // Try to create the temp directory if it doesn't exist
+            if (!AZ::IO::SystemFile::Exists(testPath.c_str()) && AZ::IO::SystemFile::CreateDir(testPath.c_str()))
             {
-                // Use the system's tick count to base the folder name
-                ULONGLONG currentTick = GetTickCount64();
-                azsnprintf(workingTempPathBuffer, bufferSize, "%sUnitTest-%X", tempDir, aznumeric_cast<unsigned int>(currentTick));
-
-                // Check if the requested directory name is available and re-generate if it already exists
-                bool exists = AZ::IO::SystemFile::Exists(workingTempPathBuffer);
-                if (exists)
-                {
-                    Sleep(1);
-                    maxAttempts--;
-                    continue;
-                }
+                azstrncpy(AZStd::data(m_tempDirectory), AZStd::size(m_tempDirectory),
+                    testPath.c_str(), testPath.Native().size());
                 break;
             }
-
-            AZ_Error("AzTest", maxAttempts > 0, "Unable to determine a temp directory");
-
-            if (maxAttempts > 0)
-            {
-                // Create the temp directory and track it for deletion
-                bool tempDirectoryCreated = AZ::IO::SystemFile::CreateDir(workingTempPathBuffer);
-                if (tempDirectoryCreated)
-                {
-                    azstrncpy(m_tempDirectory, AZ::IO::MaxPathLength, workingTempPathBuffer, AZ::IO::MaxPathLength);
-                }
-                else
-                {
-                    AZ_Error("AzTest", false, "Unable to create temp directory %s", workingTempPathBuffer);
-                }
-            }
         }
-    } // Test
-} // AZ
+
+        AZ_Error("AzTest", m_tempDirectory[0] != '\0', "Unable to create temp path within directory %s after %d attempts",
+            tempDirectoryRoot.c_str(), MaxAttempts);
+    }
+} // AZ::Test
