@@ -136,16 +136,16 @@ namespace AzFramework
 
             //! Given a list of XY coordinates, call the provided callback function with surface data corresponding to each
             //! XY coordinate in the list.
-            virtual void ProcessHeightsFromList(const AZStd::array_view<AZ::Vector3>& inPositions,
+            virtual void ProcessHeightsFromList(const AZStd::array_view<AZ::Vector2>& inPositions,
                 SurfacePointListFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT) const = 0;
-            virtual void ProcessNormalsFromList(const AZStd::array_view<AZ::Vector3>& inPositions,
+            virtual void ProcessNormalsFromList(const AZStd::array_view<AZ::Vector2>& inPositions,
                 SurfacePointListFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT) const = 0;
-            virtual void ProcessSurfaceWeightsFromList(const AZStd::array_view<AZ::Vector3>& inPositions,
+            virtual void ProcessSurfaceWeightsFromList(const AZStd::array_view<AZ::Vector2>& inPositions,
                 SurfacePointListFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT) const = 0;
-            virtual void ProcessSurfacePointsFromList(const AZStd::array_view<AZ::Vector3>& inPositions,
+            virtual void ProcessSurfacePointsFromList(const AZStd::array_view<AZ::Vector2>& inPositions,
                 SurfacePointListFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT) const = 0;
 

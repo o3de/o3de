@@ -138,16 +138,16 @@ namespace Terrain
 
         //! Given a list of XY coordinates, call the provided callback function with surface data corresponding to each
         //! XY coordinate in the list.
-        virtual void ProcessHeightsFromList(const AZStd::array_view<AZ::Vector3>& inPositions,
+        virtual void ProcessHeightsFromList(const AZStd::array_view<AZ::Vector2>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
-        virtual void ProcessNormalsFromList(const AZStd::array_view<AZ::Vector3>& inPositions,
+        virtual void ProcessNormalsFromList(const AZStd::array_view<AZ::Vector2>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
-        virtual void ProcessSurfaceWeightsFromList(const AZStd::array_view<AZ::Vector3>& inPositions,
+        virtual void ProcessSurfaceWeightsFromList(const AZStd::array_view<AZ::Vector2>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
-        virtual void ProcessSurfacePointsFromList(const AZStd::array_view<AZ::Vector3>& inPositions,
+        virtual void ProcessSurfacePointsFromList(const AZStd::array_view<AZ::Vector2>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
 

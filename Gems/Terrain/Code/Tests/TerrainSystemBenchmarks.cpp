@@ -362,7 +362,7 @@ namespace UnitTest
             []([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
                 AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
-                AZStd::vector<AZ::Vector3> inPositions;
+                AZStd::vector<AZ::Vector2> inPositions;
                 const size_t numSamplesX = aznumeric_cast<size_t>(ceil(worldBounds.GetExtents().GetX() / queryResolution.GetX()));
                 const size_t numSamplesY = aznumeric_cast<size_t>(ceil(worldBounds.GetExtents().GetY() / queryResolution.GetY()));
 
@@ -372,7 +372,7 @@ namespace UnitTest
                     for (size_t x = 0; x < numSamplesX; x++)
                     {
                         float fx = aznumeric_cast<float>(worldBounds.GetMin().GetX() + (x * queryResolution.GetX()));
-                        inPositions.emplace_back(fx, fy, 0.0f);
+                        inPositions.emplace_back(fx, fy);
                     }
                 }
 
@@ -467,7 +467,7 @@ namespace UnitTest
             []([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
                 AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
-                AZStd::vector<AZ::Vector3> inPositions;
+                AZStd::vector<AZ::Vector2> inPositions;
                 const size_t numSamplesX = aznumeric_cast<size_t>(ceil(worldBounds.GetExtents().GetX() / queryResolution.GetX()));
                 const size_t numSamplesY = aznumeric_cast<size_t>(ceil(worldBounds.GetExtents().GetY() / queryResolution.GetY()));
 
@@ -477,7 +477,7 @@ namespace UnitTest
                     for (size_t x = 0; x < numSamplesX; x++)
                     {
                         float fx = aznumeric_cast<float>(worldBounds.GetMin().GetX() + (x * queryResolution.GetX()));
-                        inPositions.emplace_back(fx, fy, 0.0f);
+                        inPositions.emplace_back(fx, fy);
                     }
                 }
 
@@ -570,7 +570,7 @@ namespace UnitTest
             []([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
                 AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
-                AZStd::vector<AZ::Vector3> inPositions;
+                AZStd::vector<AZ::Vector2> inPositions;
                 const size_t numSamplesX = aznumeric_cast<size_t>(ceil(worldBounds.GetExtents().GetX() / queryResolution.GetX()));
                 const size_t numSamplesY = aznumeric_cast<size_t>(ceil(worldBounds.GetExtents().GetY() / queryResolution.GetY()));
 
@@ -580,7 +580,7 @@ namespace UnitTest
                     for (size_t x = 0; x < numSamplesX; x++)
                     {
                         float fx = aznumeric_cast<float>(worldBounds.GetMin().GetX() + (x * queryResolution.GetX()));
-                        inPositions.emplace_back(fx, fy, 0.0f);
+                        inPositions.emplace_back(fx, fy);
                     }
                 }
 
@@ -673,7 +673,7 @@ namespace UnitTest
             []([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
                 AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
-                AZStd::vector<AZ::Vector3> inPositions;
+                AZStd::vector<AZ::Vector2> inPositions;
                 const size_t numSamplesX = aznumeric_cast<size_t>(ceil(worldBounds.GetExtents().GetX() / queryResolution.GetX()));
                 const size_t numSamplesY = aznumeric_cast<size_t>(ceil(worldBounds.GetExtents().GetY() / queryResolution.GetY()));
 
@@ -683,7 +683,7 @@ namespace UnitTest
                     for (size_t x = 0; x < numSamplesX; x++)
                     {
                         float fx = aznumeric_cast<float>(worldBounds.GetMin().GetX() + (x * queryResolution.GetX()));
-                        inPositions.emplace_back(fx, fy, 0.0f);
+                        inPositions.emplace_back(fx, fy);
                     }
                 }
 

@@ -531,7 +531,7 @@ const char* TerrainSystem::GetMaxSurfaceName(
 }
 
 void TerrainSystem::ProcessHeightsFromList(
-    const AZStd::array_view<AZ::Vector3>& inPositions,
+    const AZStd::array_view<AZ::Vector2>& inPositions,
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampleFilter) const
 {
@@ -544,14 +544,14 @@ void TerrainSystem::ProcessHeightsFromList(
     for (const auto& position : inPositions)
     {
         bool terrainExists = false;
-        surfacePoint.m_position = position;
-        surfacePoint.m_position.SetZ(GetHeight(position, sampleFilter, &terrainExists));
+        surfacePoint.m_position.Set(position.GetX(), position.GetY(), 0.0f);
+        surfacePoint.m_position.SetZ(GetHeightFromVector2(position, sampleFilter, &terrainExists));
         perPositionCallback(surfacePoint, terrainExists);
     }
 }
 
 void TerrainSystem::ProcessNormalsFromList(
-    const AZStd::array_view<AZ::Vector3>& inPositions,
+    const AZStd::array_view<AZ::Vector2>& inPositions,
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampleFilter) const
 {
@@ -564,14 +564,14 @@ void TerrainSystem::ProcessNormalsFromList(
     for (const auto& position : inPositions)
     {
         bool terrainExists = false;
-        surfacePoint.m_position = position;
-        surfacePoint.m_normal = GetNormal(position, sampleFilter, &terrainExists);
+        surfacePoint.m_position.Set(position.GetX(), position.GetY(), 0.0f);
+        surfacePoint.m_normal = GetNormalFromVector2(position, sampleFilter, &terrainExists);
         perPositionCallback(surfacePoint, terrainExists);
     }
 }
 
 void TerrainSystem::ProcessSurfaceWeightsFromList(
-    const AZStd::array_view<AZ::Vector3>& inPositions,
+    const AZStd::array_view<AZ::Vector2>& inPositions,
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampleFilter) const
 {
@@ -584,14 +584,14 @@ void TerrainSystem::ProcessSurfaceWeightsFromList(
     for (const auto& position : inPositions)
     {
         bool terrainExists = false;
-        surfacePoint.m_position = position;
-        GetSurfaceWeights(position, surfacePoint.m_surfaceTags, sampleFilter, &terrainExists);
+        surfacePoint.m_position.Set(position.GetX(), position.GetY(), 0.0f);
+        GetSurfaceWeightsFromVector2(position, surfacePoint.m_surfaceTags, sampleFilter, &terrainExists);
         perPositionCallback(surfacePoint, terrainExists);
     }
 }
 
 void TerrainSystem::ProcessSurfacePointsFromList(
-    const AZStd::array_view<AZ::Vector3>& inPositions,
+    const AZStd::array_view<AZ::Vector2>& inPositions,
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampleFilter) const
 {
@@ -604,8 +604,8 @@ void TerrainSystem::ProcessSurfacePointsFromList(
     for (const auto& position : inPositions)
     {
         bool terrainExists = false;
-        surfacePoint.m_position = position;
-        GetSurfacePoint(position, surfacePoint, sampleFilter, &terrainExists);
+        surfacePoint.m_position.Set(position.GetX(), position.GetY(), 0.0f);
+        GetSurfacePointFromVector2(position, surfacePoint, sampleFilter, &terrainExists);
         perPositionCallback(surfacePoint, terrainExists);
     }
 }
