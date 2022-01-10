@@ -32,12 +32,9 @@ if(NOT ANDROID_ABI)
     set(ANDROID_ABI arm64-v8a)
 endif()
 
-# The ANDROID_ARM_MODE is only applicable when the ANDROID_ABI starts with "armeabi"
-if(NOT ANDROID_ARM_MODE AND ANDROID_ABI MATCHES "^armeabi")
-    set(ANDROID_ARM_MODE arm)
-endif()
-if(NOT ANDROID_ARM_NEON)
-    set(ANDROID_ARM_NEON FALSE)
+# Only the 64-bit ANDROID ABIs arm supported
+if(NOT ANDROID_ABI MATCHES "^arm64-")
+    message(FATAL_ERROR "Only the 64-bit ANDROID_ABI's are supported. arm64-v8a can be used if not set")
 endif()
 if(NOT ANDROID_NATIVE_API_LEVEL)
     set(ANDROID_NATIVE_API_LEVEL 21)
