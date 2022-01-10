@@ -270,7 +270,6 @@ set(FILES
     Include/Command.h
     Include/HitContext.h
     Include/ICommandManager.h
-    Include/IConsoleConnectivity.h
     Include/IDisplayViewport.h
     Include/IEditorClassFactory.h
     Include/IEventLoopHook.h
@@ -282,9 +281,7 @@ set(FILES
     Include/IObjectManager.h
     Include/IPlugin.h
     Include/IPreferencesPage.h
-    Include/IRenderListener.h
     Include/ISourceControl.h
-    Include/ITextureDatabaseUpdater.h
     Include/ITransformManipulator.h
     Include/IViewPane.h
     Include/ObjectEvent.h
