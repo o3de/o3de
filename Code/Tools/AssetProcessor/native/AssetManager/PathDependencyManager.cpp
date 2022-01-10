@@ -90,12 +90,12 @@ namespace AssetProcessor
 
         AZStd::recursive_mutex mapMutex;
         // Map of <Source PK => Map of <Matched SearchEntry => Product Dependency>>
-        AZStd::unordered_map<AZ::s64, AZStd::unordered_map<const SearchEntry*, AZStd::unordered_set<AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry>>> map;
+        AZStd::unordered_map<AZ::s64, AZStd::unordered_map<const SearchEntry*, AZStd::unordered_set<AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry>>> sourceIdToMatchedSearchDependencies;
 
         // For every search path we created, we're going to see if it matches up against any of the unresolved dependencies
         AZ::parallel_for_each(
             searches.begin(), searches.end(),
-            [&map, &mapMutex, &unresolvedDependencies](const SearchEntry& search)
+            [&sourceIdToMatchedSearchDependencies, &mapMutex, &unresolvedDependencies](const SearchEntry& search)
             {
                 AZStd::unordered_set<AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry> matches;
                 for (const auto& entry: unresolvedDependencies)
@@ -113,14 +113,14 @@ namespace AssetProcessor
                 if (!matches.empty())
                 {
                     AZStd::scoped_lock lock(mapMutex);
-                    auto& vector = map[search.m_sourceEntry->m_sourceID][&search];
-                    vector.insert(matches.begin(), matches.end());
+                    auto& productDependencyDatabaseEntries = sourceIdToMatchedSearchDependencies[search.m_sourceEntry->m_sourceID][&search];
+                    productDependencyDatabaseEntries.insert(matches.begin(), matches.end());
                 }
             });
 
         for (const auto& entry : queuedForResolve)
         {
-            RetryDeferredDependencies(entry, map[entry.m_sourceID], productMap[entry.m_sourceID]);
+            RetryDeferredDependencies(entry, sourceIdToMatchedSearchDependencies[entry.m_sourceID], productMap[entry.m_sourceID]);
         }
     }
 
