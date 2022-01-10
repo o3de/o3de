@@ -9,6 +9,7 @@
 
 #include <AzCore/Debug/BudgetTracker.h>
 #include <AzCore/Math/Crc.h>
+#include <AzCore/std/smart_ptr/weak_ptr.h>
 
 namespace AZ::Debug
 {
@@ -62,12 +63,16 @@ namespace AZ::Debug
 //
 // Anywhere the budget is used, the budget must be declared (either in a header or in the source file itself)
 // AZ_DECLARE_BUDGET(AzCore);
-#define AZ_DEFINE_BUDGET(name)                                                                                                             \
-    ::AZ::Debug::Budget* AZ_BUDGET_GETTER(name)()                                                                                          \
-    {                                                                                                                                      \
-        constexpr static uint32_t crc = AZ_CRC_CE(#name);                                                                                  \
-        static ::AZ::Debug::Budget* budget = ::AZ::Debug::BudgetTracker::GetBudgetFromEnvironment(#name, crc);                             \
-        return budget;                                                                                                                     \
+#define AZ_DEFINE_BUDGET(name)                                                          \
+    ::AZ::Debug::Budget* AZ_BUDGET_GETTER(name)()                                       \
+    {                                                                                   \
+        static AZStd::weak_ptr<::AZ::Debug::Budget> budget;                             \
+        if (budget.expired())                                                           \
+        {                                                                               \
+            constexpr static uint32_t crc = AZ_CRC_CE(#name);                           \
+            budget = ::AZ::Debug::BudgetTracker::GetBudgetFromEnvironment(#name, crc);  \
+        }                                                                               \
+        return budget.lock().get();                                                     \
     }
 #endif
 
