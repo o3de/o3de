@@ -146,6 +146,11 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         PROPERTY COMPILE_DEFINITIONS
         VALUES AZCORETEST_DLL_NAME=\"$<TARGET_FILE_NAME:AzCore.Tests>\"
     )
+    ly_add_target_files(
+        TARGETS AzCore.Tests
+        FILES ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Memory/AllocatorBenchmarkRecordings.bin
+        OUTPUT_SUBDIRECTORY Tests/AzCore/Memory
+    )
 
 endif()
 

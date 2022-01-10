@@ -339,17 +339,17 @@ namespace Terrain
         AZ::Aabb region = sector.m_aabb;
         region.SetMax(region.GetMax() + AZ::Vector3(gridResolution.GetX(), gridResolution.GetY(), 0.0f));
 
+        // We need 4 vertices for each grid point in our sector to hold the _| shape.
+        const size_t numSamplesX = aznumeric_cast<size_t>(ceil(region.GetExtents().GetX() / gridResolution.GetX()));
+        const size_t numSamplesY = aznumeric_cast<size_t>(ceil(region.GetExtents().GetY() / gridResolution.GetY()));
+        sector.m_lineVertices.clear();
+        sector.m_lineVertices.reserve(numSamplesX * numSamplesY * 4);
+
         // This keeps track of the height from the previous point for the _ line.
         float previousHeight = 0.0f;
 
         // This keeps track of the heights from the previous row for the | line.
-        AZStd::vector<float> rowHeights(aznumeric_cast<size_t>(ceil(region.GetExtents().GetX() / gridResolution.GetX())));
-
-        // We need 4 vertices for each grid point in our sector to hold the _| shape.
-        const uint32_t numSamplesX = static_cast<uint32_t>((region.GetMax().GetX() - region.GetMin().GetX()) / gridResolution.GetX());
-        const uint32_t numSamplesY = static_cast<uint32_t>((region.GetMax().GetY() - region.GetMin().GetY()) / gridResolution.GetY());
-        sector.m_lineVertices.clear();
-        sector.m_lineVertices.reserve(numSamplesX * numSamplesY * 4);
+        AZStd::vector<float> rowHeights(numSamplesX);
 
         // For each terrain height value in the region, create the _| grid lines for that point and cache off the height value
         // for use with subsequent grid line calculations.
@@ -376,21 +376,21 @@ namespace Terrain
         };
 
         // This set of nested loops will get replaced with a call to ProcessHeightsFromRegion once the API exists.
-        uint32_t yIndex = 0;
-        for (float y = region.GetMin().GetY(); y < region.GetMax().GetY(); y += gridResolution.GetY())
+        for (size_t yIndex = 0; yIndex < numSamplesY; yIndex++)
         {
-            uint32_t xIndex = 0;
-            for (float x = region.GetMin().GetX(); x < region.GetMax().GetX(); x += gridResolution.GetX())
+            float y = region.GetMin().GetY() + (gridResolution.GetY() * yIndex);
+            for (size_t xIndex = 0; xIndex < numSamplesX; xIndex++)
             {
+                float x = region.GetMin().GetX() + (gridResolution.GetX() * xIndex);
+
                 float height = worldMinZ;
                 bool terrainExists = false;
                 AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
                     height, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats, x, y,
                     AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, &terrainExists);
-                ProcessHeightValue(xIndex, yIndex, AZ::Vector3(x, y, height), terrainExists);
-                xIndex++;
+                ProcessHeightValue(
+                    aznumeric_cast<uint32_t>(xIndex), aznumeric_cast<uint32_t>(yIndex), AZ::Vector3(x, y, height), terrainExists);
             }
-            yIndex++;
         }
     }
 
