@@ -375,7 +375,7 @@ static void DebugDrawColoredBox(AZ::Vector2 pos, AZ::Vector2 size, AZ::Color col
     IDraw2d::HAlign horizontalAlignment = IDraw2d::HAlign::Left,
     IDraw2d::VAlign verticalAlignment = IDraw2d::VAlign::Top)
 {
-    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     CDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
     imageOptions.color = color.GetAsVector3();
@@ -390,7 +390,7 @@ static void DebugDrawColoredBox(AZ::Vector2 pos, AZ::Vector2 size, AZ::Color col
 static void DebugDrawStringWithSizeBox(AZStd::string_view font, unsigned int effectIndex, const char* sizeString,
     const char* testString, AZ::Vector2 pos, float spacing, float size)
 {
-    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     CDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
     if (!font.empty())
@@ -424,7 +424,7 @@ static void DebugDrawStringWithSizeBox(AZStd::string_view font, unsigned int eff
 #if !defined(_RELEASE)
 static void DebugDraw2dFontSizes(AZStd::string_view font, unsigned int effectIndex)
 {
-    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     float xOffset = 20.0f;
     float yOffset = 20.0f;
@@ -546,7 +546,7 @@ static void DebugDrawAlignedTextWithOriginBox(AZ::Vector2 pos,
 #if !defined(_RELEASE)
 static void DebugDraw2dFontAlignment()
 {
-    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
     float w = draw2d->GetViewportWidth();
     float yPos = 20;
 
@@ -613,7 +613,7 @@ static void DebugDraw2dFontAlignment()
 #if !defined(_RELEASE)
 static AZ::Vector2 DebugDrawFontColorTestBox(AZ::Vector2 pos, const char* string, AZ::Vector3 color, float opacity)
 {
-    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     float pointSize = 32.0f;
     const float spacing = 6.0f;
@@ -648,7 +648,7 @@ static AZ::Vector2 DebugDrawFontColorTestBox(AZ::Vector2 pos, const char* string
 #if !defined(_RELEASE)
 static void DebugDraw2dFontColorAndOpacity()
 {
-    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     AZ::Vector2 size;
     AZ::Vector2 pos(20.0f, 20.0f);
@@ -686,7 +686,7 @@ static void DebugDraw2dFontColorAndOpacity()
 #if !defined(_RELEASE)
 static void DebugDraw2dImageRotations()
 {
-    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     AZ::Data::Instance<AZ::RPI::Image> texture = GetMonoTestTexture();
 
@@ -738,7 +738,7 @@ static void DebugDraw2dImageRotations()
 #if !defined(_RELEASE)
 static void DebugDraw2dImageColor()
 {
-    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     AZ::Data::Instance<AZ::RPI::Image> texture = GetMonoAlphaTestTexture();
 
@@ -774,7 +774,7 @@ static void DebugDraw2dImageColor()
 #if !defined(_RELEASE)
 static void DebugDraw2dImageBlendMode()
 {
-    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     auto whiteTexture = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
 
@@ -841,7 +841,7 @@ static void DebugDraw2dImageBlendMode()
 #if !defined(_RELEASE)
 static void DebugDraw2dImageUVs()
 {
-    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     AZ::Data::Instance<AZ::RPI::Image> texture = GetColorTestTexture();
 
@@ -890,7 +890,7 @@ static void DebugDraw2dImageUVs()
 #if !defined(_RELEASE)
 static void DebugDraw2dImagePixelRounding()
 {
-    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     AZ::Data::Instance<AZ::RPI::Image> texture = GetColorTestTexture();
 
@@ -931,7 +931,7 @@ static void DebugDraw2dImagePixelRounding()
 #if !defined(_RELEASE)
 static void DebugDraw2dLineBasic()
 {
-    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     CDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
 
@@ -1422,7 +1422,7 @@ void LyShineDebug::RenderDebug()
 #if !defined(_RELEASE)
 
 #ifndef EXCLUDE_DOCUMENTATION_PURPOSE
-    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
     if (!draw2d)
     {
         return;

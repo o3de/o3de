@@ -49,7 +49,7 @@ namespace EMotionFX
             for (int i = 0; i < params.m_numStates; ++i)
             {
                 AnimGraphNode* state = aznew AnimGraphMotionNode();
-                state->SetName(AZStd::string(1, static_cast<char>(startChar + i)).c_str());
+                state->SetName(AZStd::string(1, startChar + i).c_str());
                 m_rootStateMachine->AddChildNode(state);
                 AddTransitionWithTimeCondition(prevState, state, /*blendTime*/params.m_transitionBlendTime, /*countDownTime*/params.m_conditionCountDownTime);
                 prevState = state;

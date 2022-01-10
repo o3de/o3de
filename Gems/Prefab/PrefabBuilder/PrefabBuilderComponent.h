@@ -53,7 +53,7 @@ namespace AZ::Prefab
             const AzToolsFramework::Prefab::PrefabDom& genericDocument);
         bool ProcessPrefab(
             const AZ::PlatformTagSet& platformTags, const char* filePath, AZ::IO::PathView tempDirPath, const AZ::Uuid& sourceFileUuid,
-            AzToolsFramework::Prefab::PrefabDom&& rootDom,
+            AzToolsFramework::Prefab::PrefabDom& mutableRootDom,
             AZStd::vector<AssetBuilderSDK::JobProduct>& jobProducts);
 
     protected:

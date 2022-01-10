@@ -77,12 +77,6 @@ namespace UnitTest
     public:
         AZ_COMPONENT(TargetSpawnableComponent, "{B4041561-63A7-4E1E-80F1-78C08D497960}");
 
-        TargetSpawnableComponent() = default;
-        explicit TargetSpawnableComponent(AZ::EntityId parent)
-            : m_parent(parent)
-        {
-        }
-
         void Activate() override {}
         void Deactivate() override {}
 
@@ -90,19 +84,14 @@ namespace UnitTest
         {
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection))
             {
-                serializeContext->Class<TargetSpawnableComponent, AZ::Component>()
-                    ->Field("Parent", &TargetSpawnableComponent::m_parent);
+                serializeContext->Class<TargetSpawnableComponent, AZ::Component>();
             }
         }
-
-        AZ::EntityId m_parent;
     };
 
     class SpawnableEntitiesManagerTest : public AllocatorsFixture
     {
     public:
-        constexpr static AZ::u64 EntityIdStartId = 40;
-
         void SetUp() override
         {
             AllocatorsFixture::SetUp();
@@ -122,7 +111,7 @@ namespace UnitTest
             m_spawnable = aznew AzFramework::Spawnable(
                 AZ::Data::AssetId::CreateString("{EB2E8A2B-F253-4A90-BBF4-55F2EED786B8}:0"), AZ::Data::AssetData::AssetStatus::Ready);
             m_spawnableAsset = new AZ::Data::Asset<AzFramework::Spawnable>(m_spawnable, AZ::Data::AssetLoadBehavior::Default);
-            m_ticket = aznew AzFramework::EntitySpawnTicket(*m_spawnableAsset);
+            m_ticket = new AzFramework::EntitySpawnTicket(*m_spawnableAsset);
 
             auto managerInterface = AzFramework::SpawnableEntitiesInterface::Get();
             m_manager = azrtti_cast<AzFramework::SpawnableEntitiesManager*>(managerInterface);
@@ -158,43 +147,22 @@ namespace UnitTest
             {
                 auto entry = AZStd::make_unique<AZ::Entity>();
                 entry->AddComponent(aznew SourceSpawnableComponent());
-                entry->SetId(AZ::EntityId(EntityIdStartId + i));
                 entities.push_back(AZStd::move(entry));
             }
         }
 
-        AZ::Data::Asset<AzFramework::Spawnable> CreateTargetSpawnable(size_t numElements, bool requiresMatchingEntityIds)
+        AZ::Data::Asset<AzFramework::Spawnable> CreateTargetSpawnable(size_t numElements)
         {
             auto target = aznew AzFramework::Spawnable(
                 AZ::Data::AssetId(AZ::Uuid("{716CD8C3-0BA8-4F32-B579-0EC7C967796F}")), AZ::Data::AssetData::AssetStatus::Ready);
 
             AzFramework::Spawnable::EntityList& entities = target->GetEntities();
             entities.reserve(numElements);
-            if (requiresMatchingEntityIds)
+            for (size_t i = 0; i < numElements; ++i)
             {
-                for (size_t i = 0; i < numElements; ++i)
-                {
-                    auto entry = AZStd::make_unique<AZ::Entity>();
-                    if (i != 0)
-                    {
-                        entry->AddComponent(aznew TargetSpawnableComponent(AZ::EntityId(EntityIdStartId + i - 1)));
-                    }
-                    else
-                    {
-                        entry->AddComponent(aznew TargetSpawnableComponent());
-                    }
-                    entry->SetId(AZ::EntityId(EntityIdStartId + i));
-                    entities.push_back(AZStd::move(entry));
-                }
-            }
-            else
-            {
-                for (size_t i = 0; i < numElements; ++i)
-                {
-                    auto entry = AZStd::make_unique<AZ::Entity>();
-                    entry->AddComponent(aznew TargetSpawnableComponent());
-                    entities.push_back(AZStd::move(entry));
-                }
+                auto entry = AZStd::make_unique<AZ::Entity>();
+                entry->AddComponent(aznew TargetSpawnableComponent());
+                entities.push_back(AZStd::move(entry));
             }
 
             return AZ::Data::Asset<AzFramework::Spawnable>(target, AZ::Data::AssetLoadBehavior::NoLoad);
@@ -234,38 +202,6 @@ namespace UnitTest
                         entity->FindComponent<TargetSpawnableComponent>() == nullptr)
                     {
                         return false;
-                    }
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        static bool DoParentEntityIdsMatch(AzFramework::SpawnableConstEntityContainerView entities)
-        {
-            if (entities.empty())
-            {
-                return false;
-            }
-
-            const AZ::Entity* previous = nullptr;
-            for (const AZ::Entity* entity : entities)
-            {
-                if (entity)
-                {
-                    if (previous)
-                    {
-                        if (TargetSpawnableComponent* link = entity->FindComponent<TargetSpawnableComponent>(); link != nullptr)
-                        {
-                            if (link->m_parent != previous->GetId())
-                            {
-                                return false;
-                            }
-                        }
-                        previous = entity;
                     }
                 }
                 else
@@ -580,7 +516,7 @@ namespace UnitTest
             // Make sure we start with a fresh ticket each time, or else each iteration through this loop would continue to build up
             // more and more entities.
             delete m_ticket;
-            m_ticket = aznew AzFramework::EntitySpawnTicket(*m_spawnableAsset);
+            m_ticket = new AzFramework::EntitySpawnTicket(*m_spawnableAsset);
 
             constexpr size_t NumEntities = 4;
             FillSpawnable(NumEntities);
@@ -663,8 +599,7 @@ namespace UnitTest
         using namespace AzFramework;
         static constexpr size_t NumEntities = 4;
         FillSpawnable(NumEntities);
-        constexpr bool requiresMatchingEntityIds = true;
-        AZ::Data::Asset<Spawnable> target = CreateTargetSpawnable(4, requiresMatchingEntityIds);
+        AZ::Data::Asset<Spawnable> target = CreateTargetSpawnable(4);
         InsertEntityAliases<4>(
             { 0, 1, 2, 3 }, { 0, 1, 2, 3 },
             { Spawnable::EntityAliasType::Replace, Spawnable::EntityAliasType::Replace, Spawnable::EntityAliasType::Replace,
@@ -673,13 +608,11 @@ namespace UnitTest
 
         size_t spawnedEntitiesCount = 0;
         bool allReplaced = false;
-        bool allEntityIdsPatched = false;
-        auto callback = [&spawnedEntitiesCount, &allReplaced, &allEntityIdsPatched](
+        auto callback = [&spawnedEntitiesCount, &allReplaced](
             AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
         {
             spawnedEntitiesCount += entities.size();
             allReplaced = AreAllEntitiesReplaced(entities);
-            allEntityIdsPatched = DoParentEntityIdsMatch(entities);
         };
         AzFramework::SpawnAllEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_completionCallback = AZStd::move(callback);
@@ -688,7 +621,6 @@ namespace UnitTest
 
         EXPECT_EQ(4, spawnedEntitiesCount);
         EXPECT_TRUE(allReplaced);
-        EXPECT_TRUE(allEntityIdsPatched);
     }
 
     TEST_F(SpawnableEntitiesManagerTest, SpawnAllEntities_AllAliasesWithAdditional_SourceAndTargetComponentsMerged)
@@ -696,8 +628,7 @@ namespace UnitTest
         using namespace AzFramework;
         static constexpr size_t NumEntities = 4;
         FillSpawnable(NumEntities);
-        constexpr bool requiresMatchingEntityIds = false;
-        AZ::Data::Asset<Spawnable> target = CreateTargetSpawnable(4, requiresMatchingEntityIds);
+        AZ::Data::Asset<Spawnable> target = CreateTargetSpawnable(4);
         InsertEntityAliases<4>(
             { 0, 1, 2, 3 }, { 0, 1, 2, 3 },
             { Spawnable::EntityAliasType::Additional, Spawnable::EntityAliasType::Additional, Spawnable::EntityAliasType::Additional,
@@ -706,13 +637,11 @@ namespace UnitTest
 
         size_t spawnedEntitiesCount = 0;
         bool allAdded = false;
-        bool allEntityIdsPatched = false;
-        auto callback = [&spawnedEntitiesCount, &allAdded, &allEntityIdsPatched](
+        auto callback = [&spawnedEntitiesCount, &allAdded](
             AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
         {
             spawnedEntitiesCount += entities.size();
             allAdded = IsEveryOtherEntityAReplacement(entities);
-            allEntityIdsPatched = DoParentEntityIdsMatch(entities);
         };
         AzFramework::SpawnAllEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_completionCallback = AZStd::move(callback);
@@ -721,7 +650,6 @@ namespace UnitTest
 
         EXPECT_EQ(8, spawnedEntitiesCount);
         EXPECT_TRUE(allAdded);
-        EXPECT_TRUE(allEntityIdsPatched);
     }
 
     TEST_F(SpawnableEntitiesManagerTest, SpawnAllEntities_AllAliasesWithMerge_SourceAndTargetComponentsMerged)
@@ -729,8 +657,7 @@ namespace UnitTest
         using namespace AzFramework;
         static constexpr size_t NumEntities = 4;
         FillSpawnable(NumEntities);
-        constexpr bool requiresMatchingEntityIds = true;
-        AZ::Data::Asset<Spawnable> target = CreateTargetSpawnable(4, requiresMatchingEntityIds);
+        AZ::Data::Asset<Spawnable> target = CreateTargetSpawnable(4);
         InsertEntityAliases<4>(
             { 0, 1, 2, 3 }, { 0, 1, 2, 3 },
             { Spawnable::EntityAliasType::Merge, Spawnable::EntityAliasType::Merge, Spawnable::EntityAliasType::Merge,
@@ -739,13 +666,11 @@ namespace UnitTest
 
         size_t spawnedEntitiesCount = 0;
         bool allMerged = false;
-        bool allEntityIdsPatched = false;
-        auto callback = [&spawnedEntitiesCount, &allMerged, &allEntityIdsPatched](
+        auto callback = [&spawnedEntitiesCount, &allMerged](
             AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
         {
             spawnedEntitiesCount += entities.size();
             allMerged = AreAllMerged(entities);
-            allEntityIdsPatched = DoParentEntityIdsMatch(entities);
         };
         AzFramework::SpawnAllEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_completionCallback = AZStd::move(callback);
@@ -754,7 +679,6 @@ namespace UnitTest
 
         EXPECT_EQ(4, spawnedEntitiesCount);
         EXPECT_TRUE(allMerged);
-        EXPECT_TRUE(allEntityIdsPatched);
     }
 
     //
@@ -1171,8 +1095,7 @@ namespace UnitTest
         using namespace AzFramework;
         static constexpr size_t NumEntities = 4;
         FillSpawnable(NumEntities);
-        constexpr bool requiresMatchingEntityIds = true;
-        AZ::Data::Asset<Spawnable> target = CreateTargetSpawnable(4, requiresMatchingEntityIds);
+        AZ::Data::Asset<Spawnable> target = CreateTargetSpawnable(4);
         InsertEntityAliases<4>(
             { 0, 1, 2, 3 }, { 0, 1, 2, 3 },
             { Spawnable::EntityAliasType::Replace, Spawnable::EntityAliasType::Replace, Spawnable::EntityAliasType::Replace,
@@ -1183,13 +1106,11 @@ namespace UnitTest
 
         size_t spawnedEntitiesCount = 0;
         bool allReplaced = false;
-        bool allEntityIdsPatched = false;
-        auto callback = [&spawnedEntitiesCount, &allReplaced, &allEntityIdsPatched](
+        auto callback = [&spawnedEntitiesCount, &allReplaced](
             AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
         {
             spawnedEntitiesCount += entities.size();
             allReplaced = AreAllEntitiesReplaced(entities);
-            allEntityIdsPatched = DoParentEntityIdsMatch(entities);
         };
         AzFramework::SpawnEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_completionCallback = AZStd::move(callback);
@@ -1198,7 +1119,6 @@ namespace UnitTest
 
         EXPECT_EQ(4, spawnedEntitiesCount);
         EXPECT_TRUE(allReplaced);
-        EXPECT_TRUE(allEntityIdsPatched);
     }
 
     TEST_F(SpawnableEntitiesManagerTest, SpawnEntities_AllAliasesWithAdditional_SourceAndTargetComponentsMerged)
@@ -1206,8 +1126,7 @@ namespace UnitTest
         using namespace AzFramework;
         static constexpr size_t NumEntities = 4;
         FillSpawnable(NumEntities);
-        constexpr bool requiresMatchingEntityIds = false;
-        AZ::Data::Asset<Spawnable> target = CreateTargetSpawnable(4, requiresMatchingEntityIds);
+        AZ::Data::Asset<Spawnable> target = CreateTargetSpawnable(4);
         InsertEntityAliases<4>(
             { 0, 1, 2, 3 }, { 0, 1, 2, 3 },
             { Spawnable::EntityAliasType::Additional, Spawnable::EntityAliasType::Additional, Spawnable::EntityAliasType::Additional,
@@ -1218,14 +1137,12 @@ namespace UnitTest
 
         size_t spawnedEntitiesCount = 0;
         bool allAdded = false;
-        bool allEntityIdsPatched = false;
         auto callback =
-            [&spawnedEntitiesCount, &allAdded, &allEntityIdsPatched](
+            [&spawnedEntitiesCount, &allAdded](
             AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
         {
             spawnedEntitiesCount += entities.size();
             allAdded = IsEveryOtherEntityAReplacement(entities);
-            allEntityIdsPatched = DoParentEntityIdsMatch(entities);
         };
         AzFramework::SpawnEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_completionCallback = AZStd::move(callback);
@@ -1234,7 +1151,6 @@ namespace UnitTest
 
         EXPECT_EQ(8, spawnedEntitiesCount);
         EXPECT_TRUE(allAdded);
-        EXPECT_TRUE(allEntityIdsPatched);
     }
 
     TEST_F(SpawnableEntitiesManagerTest, SpawnEntities_AllAliasesWithMerge_SourceAndTargetComponentsMerged)
@@ -1242,8 +1158,7 @@ namespace UnitTest
         using namespace AzFramework;
         static constexpr size_t NumEntities = 4;
         FillSpawnable(NumEntities);
-        constexpr bool requiresMatchingEntityIds = true;
-        AZ::Data::Asset<Spawnable> target = CreateTargetSpawnable(4, requiresMatchingEntityIds);
+        AZ::Data::Asset<Spawnable> target = CreateTargetSpawnable(4);
         InsertEntityAliases<4>(
             { 0, 1, 2, 3 }, { 0, 1, 2, 3 },
             { Spawnable::EntityAliasType::Merge, Spawnable::EntityAliasType::Merge, Spawnable::EntityAliasType::Merge,
@@ -1254,13 +1169,11 @@ namespace UnitTest
 
         size_t spawnedEntitiesCount = 0;
         bool allMerged = false;
-        bool allEntityIdsPatched = false;
-        auto callback = [&spawnedEntitiesCount, &allMerged, &allEntityIdsPatched](
+        auto callback = [&spawnedEntitiesCount, &allMerged](
             AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
         {
             spawnedEntitiesCount += entities.size();
             allMerged = AreAllMerged(entities);
-            allEntityIdsPatched = DoParentEntityIdsMatch(entities);
         };
         AzFramework::SpawnEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_completionCallback = AZStd::move(callback);
@@ -1269,7 +1182,6 @@ namespace UnitTest
 
         EXPECT_EQ(4, spawnedEntitiesCount);
         EXPECT_TRUE(allMerged);
-        EXPECT_TRUE(allEntityIdsPatched);
     }
 
     //
@@ -1389,36 +1301,6 @@ namespace UnitTest
     //
     // ClaimEntities
     //
-
-    TEST_F(SpawnableEntitiesManagerTest, ClaimEntities_Call_AllEntitiesWereClaimedAndNotDeleted)
-    {
-        static constexpr size_t NumEntities = 4;
-        FillSpawnable(NumEntities);
-
-        AZStd::vector<AZ::Entity*> claimedEntities;
-        auto callback = [&claimedEntities](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableEntityContainerView container)
-        {
-            for (AZ::Entity* entity : container)
-            {
-                claimedEntities.push_back(entity);
-            }
-        };
-
-        {
-            AzFramework::EntitySpawnTicket ticket(*m_spawnableAsset);
-            m_manager->SpawnAllEntities(ticket);
-            m_manager->ClaimEntities(ticket, AZStd::move(callback));
-            m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
-        }
-
-        EXPECT_EQ(NumEntities, claimedEntities.size());
-
-        // If these calls fail it means that the ticket has still deleted the entities, so they weren't properly claimed.
-        for (AZ::Entity* entity : claimedEntities)
-        {
-            delete entity;
-        }
-    }
 
     TEST_F(SpawnableEntitiesManagerTest, ClaimEntities_DeleteTicketBeforeCall_NoCrash)
     {

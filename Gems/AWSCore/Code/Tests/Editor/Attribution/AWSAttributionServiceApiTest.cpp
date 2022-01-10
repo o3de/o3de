@@ -72,11 +72,12 @@ namespace AWSCoreUnitTest
         AWSCore::RequestBuilder requestBuilder{};
         EXPECT_TRUE(request.parameters.BuildRequest(requestBuilder));
         std::shared_ptr<Aws::StringStream> bodyContent = requestBuilder.GetBodyContent();
-        EXPECT_NE(nullptr, bodyContent);
+        EXPECT_TRUE(bodyContent != nullptr);
 
+        AZStd::string bodyString;
         std::istreambuf_iterator<AZStd::string::value_type> eos;
-        AZStd::string bodyString{ std::istreambuf_iterator<AZStd::string::value_type>(*bodyContent), eos };
-        AZ_Printf("AWSAttributionServiceApiTest", "%s", bodyString.c_str());
-        EXPECT_TRUE(bodyString.contains(AZStd::string::format("{\"%s\":\"1.1\"", AwsAttributionAttributeKeyVersion)));
+        bodyString = AZStd::string{ std::istreambuf_iterator<AZStd::string::value_type>(*bodyContent), eos };
+        AZ_Printf("AWSAttributionServiceApiTest", bodyString.c_str());
+        EXPECT_TRUE(bodyString.find(AZStd::string::format("{\"%s\":\"1.1\"", AwsAttributionAttributeKeyVersion)) != AZStd::string::npos);
     }
 }

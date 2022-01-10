@@ -196,6 +196,7 @@
 #define ID_FILE_EXPORT_TERRAINAREA                 33904
 #define ID_FILE_EXPORT_TERRAINAREAWITHOBJECTS      33910
 #define ID_FILE_EXPORT_SELECTEDOBJECTS             33911
+#define ID_TERRAIN_TIMEOFDAY                       33912
 #define ID_SPLINE_PREVIOUS_KEY                     33916
 #define ID_SPLINE_NEXT_KEY                         33917
 #define ID_SPLINE_FLATTEN_ALL                      33918
@@ -289,6 +290,7 @@
 #define ID_TV_TRACKS_TOOLBAR_LAST                                   35183               // for up to 100 "Add Tracks..." dynamically added Track View Track buttons
 #define ID_OPEN_TERRAIN_EDITOR          36007
 #define ID_OPEN_UICANVASEDITOR          36010
+#define ID_TERRAIN_TIMEOFDAYBUTTON      36011
 #define ID_OPEN_TERRAINTEXTURE_EDITOR   36012
 #define ID_SKINS_REFRESH                36014
 #define ID_FILE_GENERATETERRAIN         36016

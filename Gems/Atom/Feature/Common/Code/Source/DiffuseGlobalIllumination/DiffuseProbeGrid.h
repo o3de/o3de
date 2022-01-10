@@ -183,14 +183,11 @@ namespace AZ
             // extents of the probe grid
             AZ::Vector3 m_extents = AZ::Vector3(0.0f, 0.0f, 0.0f);
 
-            // expanded extents for rendering the volume
-            AZ::Vector3 m_renderExtents = AZ::Vector3(0.0f, 0.0f, 0.0f);
-
             // probe grid OBB (world space), built from transform and extents
             AZ::Obb m_obbWs;
 
             // per-axis spacing of probes in the grid
-            AZ::Vector3 m_probeSpacing = AZ::Vector3(0.0f, 0.0f, 0.0f);
+            AZ::Vector3 m_probeSpacing;
 
             // per-axis number of probes in the grid
             uint32_t m_probeCountX = 0;

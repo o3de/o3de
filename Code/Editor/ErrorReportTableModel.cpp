@@ -149,7 +149,11 @@ QVariant CErrorReportTableModel::data(const CErrorRecord& record, int column, in
         case ColumnFile:
             return record.file;
         case ColumnObject:
-            if (record.pObject)
+            if (record.pItem)
+            {
+                return record.pItem->GetFullName();
+            }
+            else if (record.pObject)
             {
                 return record.pObject->GetName();
             }

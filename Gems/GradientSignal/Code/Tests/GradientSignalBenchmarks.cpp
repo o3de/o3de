@@ -23,145 +23,74 @@
 
 namespace UnitTest
 {
-    BENCHMARK_DEFINE_F(GradientSignalBenchmarkFixture, BM_ImageGradientEBusGetValue)(benchmark::State& state)
+    BENCHMARK_DEFINE_F(GradientSignalBenchmarkFixture, BM_ImageGradientGetValue)(benchmark::State& state)
     {
-        CreateTestImageGradient(m_testEntity.get());
-        RunEBusGetValueBenchmark(state);
+        // Create the Image Gradient Component with some default sizes and parameters.
+        GradientSignal::ImageGradientConfig config;
+        const uint32_t imageSize = 4096;
+        const int32_t imageSeed = 12345;
+        config.m_imageAsset = ImageAssetMockAssetHandler::CreateImageAsset(imageSize, imageSize, imageSeed);
+        config.m_tilingX = 1.0f;
+        config.m_tilingY = 1.0f;
+        CreateComponent<GradientSignal::ImageGradientComponent>(m_testEntity.get(), config);
+
+        // Create the Gradient Transform Component with some default parameters.
+        GradientSignal::GradientTransformConfig gradientTransformConfig;
+        gradientTransformConfig.m_wrappingType = GradientSignal::WrappingType::None;
+        CreateComponent<GradientSignal::GradientTransformComponent>(m_testEntity.get(), gradientTransformConfig);
+
+        // Run the benchmark
+        RunGetValueBenchmark(state);
     }
 
-    BENCHMARK_REGISTER_F(GradientSignalBenchmarkFixture, BM_ImageGradientEBusGetValue)
+    BENCHMARK_REGISTER_F(GradientSignalBenchmarkFixture, BM_ImageGradientGetValue)
         ->Args({ 1024, 1024 })
         ->Args({ 2048, 2048 })
         ->Args({ 4096, 4096 })
         ->Unit(::benchmark::kMillisecond);
 
-    BENCHMARK_DEFINE_F(GradientSignalBenchmarkFixture, BM_ImageGradientEBusGetValues)(benchmark::State& state)
+    BENCHMARK_DEFINE_F(GradientSignalBenchmarkFixture, BM_PerlinGradientGetValue)(benchmark::State& state)
     {
-        CreateTestImageGradient(m_testEntity.get());
-        RunEBusGetValuesBenchmark(state);
+        // Create the Perlin Gradient Component with some default sizes and parameters.
+        GradientSignal::PerlinGradientConfig config;
+        config.m_amplitude = 1.0f;
+        config.m_frequency = 1.1f;
+        config.m_octave = 4;
+        config.m_randomSeed = 12345;
+        CreateComponent<GradientSignal::PerlinGradientComponent>(m_testEntity.get(), config);
+
+        // Create the Gradient Transform Component with some default parameters.
+        GradientSignal::GradientTransformConfig gradientTransformConfig;
+        gradientTransformConfig.m_wrappingType = GradientSignal::WrappingType::None;
+        CreateComponent<GradientSignal::GradientTransformComponent>(m_testEntity.get(), gradientTransformConfig);
+
+        // Run the benchmark
+        RunGetValueBenchmark(state);
     }
 
-    BENCHMARK_REGISTER_F(GradientSignalBenchmarkFixture, BM_ImageGradientEBusGetValues)
+    BENCHMARK_REGISTER_F(GradientSignalBenchmarkFixture, BM_PerlinGradientGetValue)
         ->Args({ 1024, 1024 })
         ->Args({ 2048, 2048 })
         ->Args({ 4096, 4096 })
         ->Unit(::benchmark::kMillisecond);
 
-    BENCHMARK_DEFINE_F(GradientSignalBenchmarkFixture, BM_ImageGradientSamplerGetValue)(benchmark::State& state)
+    BENCHMARK_DEFINE_F(GradientSignalBenchmarkFixture, BM_RandomGradientGetValue)(benchmark::State& state)
     {
-        CreateTestImageGradient(m_testEntity.get());
-        RunSamplerGetValueBenchmark(state);
+        // Create the Random Gradient Component with some default parameters.
+        GradientSignal::RandomGradientConfig config;
+        config.m_randomSeed = 12345;
+        CreateComponent<GradientSignal::RandomGradientComponent>(m_testEntity.get(), config);
+
+        // Create the Gradient Transform Component with some default parameters.
+        GradientSignal::GradientTransformConfig gradientTransformConfig;
+        gradientTransformConfig.m_wrappingType = GradientSignal::WrappingType::None;
+        CreateComponent<GradientSignal::GradientTransformComponent>(m_testEntity.get(), gradientTransformConfig);
+
+        // Run the benchmark
+        RunGetValueBenchmark(state);
     }
 
-    BENCHMARK_REGISTER_F(GradientSignalBenchmarkFixture, BM_ImageGradientSamplerGetValue)
-        ->Args({ 1024, 1024 })
-        ->Args({ 2048, 2048 })
-        ->Args({ 4096, 4096 })
-        ->Unit(::benchmark::kMillisecond);
-
-    BENCHMARK_DEFINE_F(GradientSignalBenchmarkFixture, BM_ImageGradientSamplerGetValues)(benchmark::State& state)
-    {
-        CreateTestImageGradient(m_testEntity.get());
-        RunSamplerGetValuesBenchmark(state);
-    }
-
-    BENCHMARK_REGISTER_F(GradientSignalBenchmarkFixture, BM_ImageGradientSamplerGetValues)
-        ->Args({ 1024, 1024 })
-        ->Args({ 2048, 2048 })
-        ->Args({ 4096, 4096 })
-        ->Unit(::benchmark::kMillisecond);
-
-    BENCHMARK_DEFINE_F(GradientSignalBenchmarkFixture, BM_PerlinGradientEBusGetValue)(benchmark::State& state)
-    {
-        CreateTestPerlinGradient(m_testEntity.get());
-        RunEBusGetValueBenchmark(state);
-    }
-
-    BENCHMARK_REGISTER_F(GradientSignalBenchmarkFixture, BM_PerlinGradientEBusGetValue)
-        ->Args({ 1024, 1024 })
-        ->Args({ 2048, 2048 })
-        ->Args({ 4096, 4096 })
-        ->Unit(::benchmark::kMillisecond);
-
-    BENCHMARK_DEFINE_F(GradientSignalBenchmarkFixture, BM_PerlinGradientEBusGetValues)(benchmark::State& state)
-    {
-        CreateTestPerlinGradient(m_testEntity.get());
-        RunEBusGetValuesBenchmark(state);
-    }
-
-    BENCHMARK_REGISTER_F(GradientSignalBenchmarkFixture, BM_PerlinGradientEBusGetValues)
-        ->Args({ 1024, 1024 })
-        ->Args({ 2048, 2048 })
-        ->Args({ 4096, 4096 })
-        ->Unit(::benchmark::kMillisecond);
-
-    BENCHMARK_DEFINE_F(GradientSignalBenchmarkFixture, BM_PerlinGradientSamplerGetValue)(benchmark::State& state)
-    {
-        CreateTestPerlinGradient(m_testEntity.get());
-        RunSamplerGetValueBenchmark(state);
-    }
-
-    BENCHMARK_REGISTER_F(GradientSignalBenchmarkFixture, BM_PerlinGradientSamplerGetValue)
-        ->Args({ 1024, 1024 })
-        ->Args({ 2048, 2048 })
-        ->Args({ 4096, 4096 })
-        ->Unit(::benchmark::kMillisecond);
-
-    BENCHMARK_DEFINE_F(GradientSignalBenchmarkFixture, BM_PerlinGradientSamplerGetValues)(benchmark::State& state)
-    {
-        CreateTestPerlinGradient(m_testEntity.get());
-        RunSamplerGetValuesBenchmark(state);
-    }
-
-    BENCHMARK_REGISTER_F(GradientSignalBenchmarkFixture, BM_PerlinGradientSamplerGetValues)
-        ->Args({ 1024, 1024 })
-        ->Args({ 2048, 2048 })
-        ->Args({ 4096, 4096 })
-        ->Unit(::benchmark::kMillisecond);
-
-    BENCHMARK_DEFINE_F(GradientSignalBenchmarkFixture, BM_RandomGradientEBusGetValue)(benchmark::State& state)
-    {
-        CreateTestRandomGradient(m_testEntity.get());
-        RunEBusGetValueBenchmark(state);
-    }
-
-    BENCHMARK_REGISTER_F(GradientSignalBenchmarkFixture, BM_RandomGradientEBusGetValue)
-        ->Args({ 1024, 1024 })
-        ->Args({ 2048, 2048 })
-        ->Args({ 4096, 4096 })
-        ->Unit(::benchmark::kMillisecond);
-
-    BENCHMARK_DEFINE_F(GradientSignalBenchmarkFixture, BM_RandomGradientEBusGetValues)(benchmark::State& state)
-    {
-        CreateTestRandomGradient(m_testEntity.get());
-        RunEBusGetValuesBenchmark(state);
-    }
-
-    BENCHMARK_REGISTER_F(GradientSignalBenchmarkFixture, BM_RandomGradientEBusGetValues)
-        ->Args({ 1024, 1024 })
-        ->Args({ 2048, 2048 })
-        ->Args({ 4096, 4096 })
-        ->Unit(::benchmark::kMillisecond);
-
-    BENCHMARK_DEFINE_F(GradientSignalBenchmarkFixture, BM_RandomGradientSamplerGetValue)(benchmark::State& state)
-    {
-        CreateTestRandomGradient(m_testEntity.get());
-        RunSamplerGetValueBenchmark(state);
-    }
-
-    BENCHMARK_REGISTER_F(GradientSignalBenchmarkFixture, BM_RandomGradientSamplerGetValue)
-        ->Args({ 1024, 1024 })
-        ->Args({ 2048, 2048 })
-        ->Args({ 4096, 4096 })
-        ->Unit(::benchmark::kMillisecond);
-
-    BENCHMARK_DEFINE_F(GradientSignalBenchmarkFixture, BM_RandomGradientSamplerGetValues)(benchmark::State& state)
-    {
-        CreateTestRandomGradient(m_testEntity.get());
-        RunSamplerGetValuesBenchmark(state);
-    }
-
-    BENCHMARK_REGISTER_F(GradientSignalBenchmarkFixture, BM_RandomGradientSamplerGetValues)
+    BENCHMARK_REGISTER_F(GradientSignalBenchmarkFixture, BM_RandomGradientGetValue)
         ->Args({ 1024, 1024 })
         ->Args({ 2048, 2048 })
         ->Args({ 4096, 4096 })

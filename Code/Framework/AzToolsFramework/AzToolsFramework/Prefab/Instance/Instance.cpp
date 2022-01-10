@@ -142,14 +142,14 @@ namespace AzToolsFramework
             return m_templateSourcePath;
         }
 
-        void Instance::SetTemplateSourcePath(AZ::IO::Path sourcePath)
+        void Instance::SetTemplateSourcePath(AZ::IO::PathView sourcePath)
         {
-            m_templateSourcePath = AZStd::move(sourcePath);
+            m_templateSourcePath = sourcePath;
         }
 
-        void Instance::SetContainerEntityName(AZStd::string containerName)
+        void Instance::SetContainerEntityName(AZStd::string_view containerName)
         {
-            m_containerEntity->SetName(AZStd::move(containerName));
+            m_containerEntity->SetName(containerName);
         }
 
         bool Instance::AddEntity(AZ::Entity& entity)
@@ -609,31 +609,6 @@ namespace AzToolsFramework
 
         AZ::EntityId Instance::GetEntityIdFromAliasPath(AliasPathView relativeAliasPath) const
         {
-            return GetInstanceAndEntityIdFromAliasPath(relativeAliasPath).second;
-        }
-
-        AZStd::pair<Instance*, AZ::EntityId> Instance::GetInstanceAndEntityIdFromAliasPath(AliasPathView relativeAliasPath)
-        {
-            Instance* instance = this;
-            AliasPathView path = relativeAliasPath.ParentPath();
-            for (auto it : path)
-            {
-                InstanceOptionalReference child = instance->FindNestedInstance(it.Native());
-                if (child.has_value())
-                {
-                    instance = &(child->get());
-                }
-                else
-                {
-                    return AZStd::pair<Instance*, AZ::EntityId>(nullptr, AZ::EntityId());
-                }
-            }
-
-            return AZStd::pair<Instance*, AZ::EntityId>(instance, instance->GetEntityId(relativeAliasPath.Filename().Native()));
-        }
-
-        AZStd::pair<const Instance*, AZ::EntityId> Instance::GetInstanceAndEntityIdFromAliasPath(AliasPathView relativeAliasPath) const
-        {
             const Instance* instance = this;
             AliasPathView path = relativeAliasPath.ParentPath();
             for (auto it : path)
@@ -645,11 +620,11 @@ namespace AzToolsFramework
                 }
                 else
                 {
-                    return AZStd::pair<const Instance*, AZ::EntityId>(nullptr, AZ::EntityId());
+                    return AZ::EntityId();
                 }
             }
 
-            return AZStd::pair<const Instance*, AZ::EntityId>(instance, instance->GetEntityId(relativeAliasPath.Filename().Native()));
+            return instance->GetEntityId(relativeAliasPath.Filename().Native());
         }
 
         AZStd::vector<InstanceAlias> Instance::GetNestedInstanceAliases(TemplateId templateId) const

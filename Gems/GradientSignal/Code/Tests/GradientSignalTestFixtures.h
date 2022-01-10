@@ -97,15 +97,7 @@ namespace UnitTest
         void CreateTestEntity(float shapeHalfBounds);
         void DestroyTestEntity();
 
-        void CreateTestImageGradient(AZ::Entity* entity);
-        void CreateTestPerlinGradient(AZ::Entity* entity);
-        void CreateTestRandomGradient(AZ::Entity* entity);
-
-        void RunSamplerGetValueBenchmark(benchmark::State& state);
-        void RunSamplerGetValuesBenchmark(benchmark::State& state);
-
-        void RunEBusGetValueBenchmark(benchmark::State& state);
-        void RunEBusGetValuesBenchmark(benchmark::State& state);
+        void RunGetValueBenchmark(benchmark::State& state);
 
     protected:
         void SetUp(const benchmark::State& state) override

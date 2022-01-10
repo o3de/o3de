@@ -41,6 +41,16 @@
       "CMAKE_BUILD_ARGS":"-j!NUMBER_OF_PROCESSORS!"
     }
   },
+  "android_packaging_all": {
+    "TAGS": [
+      "packaging"
+    ],
+    "COMMAND": "../Windows/python_windows.cmd",
+    "PARAMETERS": {
+      "SCRIPT_PATH": "scripts/build/package/package.py",
+      "SCRIPT_PARAMETERS": "--platform Android --type all"
+    }
+  },
   "profile": {
     "TAGS":[
         "weekly-build-metrics",

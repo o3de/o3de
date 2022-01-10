@@ -13,8 +13,6 @@
 #include "ErrorReport.h"
 #include <AzCore/std/containers/set.h>
 
-#include <CryCommon/IXml.h>
-
 class CErrorRecord;
 struct IObjectManager;
 

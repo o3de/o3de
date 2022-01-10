@@ -25,9 +25,9 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
     {
         AZ::DataStream::StreamType serializationFormat = m_serializationFormat == SerializationFormats::Binary ?
             AZ::DataStream::StreamType::ST_BINARY : AZ::DataStream::StreamType::ST_XML;
-        context.ListPrefabs([&context, serializationFormat](PrefabDocument& prefab)
+        context.ListPrefabs([&context, serializationFormat](AZStd::string_view prefabName, PrefabDom& prefab)
             {
-                ProcessPrefab(context, prefab, serializationFormat);
+                ProcessPrefab(context, prefabName, prefab, serializationFormat);
             });
     }
 
@@ -45,12 +45,12 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         }
     }
 
-    void PrefabCatchmentProcessor::ProcessPrefab(PrefabProcessorContext& context, PrefabDocument& prefab,
+    void PrefabCatchmentProcessor::ProcessPrefab(PrefabProcessorContext& context, AZStd::string_view prefabName, PrefabDom& prefab,
         AZ::DataStream::StreamType serializationFormat)
     {
         using namespace AzToolsFramework::Prefab::SpawnableUtils;
 
-        AZStd::string uniqueName = prefab.GetName();
+        AZStd::string uniqueName = prefabName;
         uniqueName += AzFramework::Spawnable::DotFileExtension;
 
         auto serializer = [serializationFormat](AZStd::vector<uint8_t>& output, const ProcessedObjectStore& object) -> bool
@@ -64,34 +64,45 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
             AZStd::move(uniqueName), context.GetSourceUuid(), AZStd::move(serializer));
         AZ_Assert(spawnable, "Failed to create a new spawnable.");
 
-        Instance& instance = prefab.GetInstance();
-        // Resolve entity aliases that store PrefabDOM information to use the spawnable instead. This is done before the entities are
-        // moved from the instance as they'd otherwise can't be found.
-        context.ResolveSpawnableEntityAliases(prefab.GetName(), *spawnable, instance);
+        Instance instance;
+        if (Prefab::PrefabDomUtils::LoadInstanceFromPrefabDom(
+                instance, prefab, object.GetReferencedAssets(),
+                Prefab::PrefabDomUtils::LoadFlags::AssignRandomEntityId)) // Always assign random entity ids because the spawnable is
+                                                                          // going to be used to create clones of the entities.
+        {
+            // Resolve entity aliases that store PrefabDOM information to use the spawnable instead. This is done before the entities are
+            // moved from the instance as they'd otherwise can't be found.
+            context.ResolveSpawnableEntityAliases(prefabName, *spawnable, instance);
 
-        AzFramework::Spawnable::EntityList& entities = spawnable->GetEntities();
-        instance.DetachAllEntitiesInHierarchy(
-            [&entities, &context](AZStd::unique_ptr<AZ::Entity> entity)
-            {
-                if (entity)
+            AzFramework::Spawnable::EntityList& entities = spawnable->GetEntities();
+            instance.DetachAllEntitiesInHierarchy(
+                [&entities, &context](AZStd::unique_ptr<AZ::Entity> entity)
                 {
-                    entity->InvalidateDependencies();
-                    AZ::Entity::DependencySortOutcome evaluation = entity->EvaluateDependenciesGetDetails();
-                    if (evaluation.IsSuccess())
+                    if (entity)
                     {
-                        entities.emplace_back(AZStd::move(entity));
+                        entity->InvalidateDependencies();
+                        AZ::Entity::DependencySortOutcome evaluation = entity->EvaluateDependenciesGetDetails();
+                        if (evaluation.IsSuccess())
+                        {
+                            entities.emplace_back(AZStd::move(entity));
+                        }
+                        else
+                        {
+                            AZ_Error(
+                                "Prefabs", false, "Entity '%s' %s cannot be activated for the following reason: %s",
+                                entity->GetName().c_str(), entity->GetId().ToString().c_str(), evaluation.GetError().m_message.c_str());
+                            context.ErrorEncountered();
+                        }
                     }
-                    else
-                    {
-                        AZ_Error(
-                            "Prefabs", false, "Entity '%s' %s cannot be activated for the following reason: %s",
-                            entity->GetName().c_str(), entity->GetId().ToString().c_str(), evaluation.GetError().m_message.c_str());
-                        context.ErrorEncountered();
-                    }
-                }
-            });
+                });
 
-        SpawnableUtils::SortEntitiesByTransformHierarchy(*spawnable);
-        context.GetProcessedObjects().push_back(AZStd::move(object));
+            SpawnableUtils::SortEntitiesByTransformHierarchy(*spawnable);
+            context.GetProcessedObjects().push_back(AZStd::move(object));
+        }
+        else
+        {
+            AZ_Error("Prefabs", false, "Failed to convert prefab '%.*s' to a spawnable.", AZ_STRING_ARG(prefabName));
+            context.ErrorEncountered();
+        }
     }
 } // namespace AzToolsFramework::Prefab::PrefabConversionUtils

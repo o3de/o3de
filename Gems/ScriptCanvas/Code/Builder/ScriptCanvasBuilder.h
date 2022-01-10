@@ -38,8 +38,6 @@ namespace ScriptCanvasBuilder
         // use this to initialize the new data, and make sure they have a editor graph variable for proper editor display
         void PopulateFromParsedResults(ScriptCanvas::Grammar::AbstractCodeModelConstPtr abstractCodeModel, const ScriptCanvas::VariableData& variables);
 
-        void SetHandlesToDescription();
-
         // #functions2 provide an identifier for the node/variable in the source that caused the dependency. the root will not have one.
         ScriptCanvasEditor::SourceHandle m_source;
         

@@ -43,8 +43,10 @@ class CLayoutViewPane;
 class CViewManager;
 class CBaseObjectsCache;
 struct HitContext;
+struct IRenderListener;
 class CImageEx;
 class QMenu;
+struct IDataBaseItem;
 
 /** Type of viewport.
 */
@@ -102,6 +104,10 @@ public:
 
     //! Access to view manager.
     CViewManager* GetViewManager() const { return m_viewManager; };
+
+    virtual void RegisterRenderListener(IRenderListener*    piListener) = 0;
+    virtual bool UnregisterRenderListener(IRenderListener*  piListener) = 0;
+    virtual bool IsRenderListenerRegistered(IRenderListener*    piListener) = 0;
 
     virtual void AddPostRenderer(IPostRenderer* pPostRenderer) = 0;
     virtual bool RemovePostRenderer(IPostRenderer* pPostRenderer) = 0;
@@ -224,6 +230,8 @@ public:
     // Drag and drop support on viewports.
     // To be overrided in derived classes.
     //////////////////////////////////////////////////////////////////////////
+    virtual bool CanDrop([[maybe_unused]] const QPoint& point, [[maybe_unused]] IDataBaseItem* pItem) { return false; };
+    virtual void Drop([[maybe_unused]] const QPoint& point, [[maybe_unused]] IDataBaseItem* pItem) {};
     virtual void SetGlobalDropCallback(DropCallback dropCallback, void* dropCallbackCustom)
     {
         m_dropCallback = dropCallback;
@@ -472,6 +480,10 @@ public:
     void ResetCursor() override;
     void SetSupplementaryCursorStr(const QString& str) override;
 
+    void RegisterRenderListener(IRenderListener*    piListener) override;
+    bool UnregisterRenderListener(IRenderListener*  piListener) override;
+    bool IsRenderListenerRegistered(IRenderListener*    piListener) override;
+
     void AddPostRenderer(IPostRenderer* pPostRenderer) override;
     bool RemovePostRenderer(IPostRenderer* pPostRenderer) override;
 
@@ -498,6 +510,8 @@ protected:
     HWND renderOverlayHWND() const;
     void setRenderOverlayVisible(bool);
     bool isRenderOverlayVisible() const;
+
+    void ProcessRenderLisneters(DisplayContext& rstDisplayContext);
 
     void mousePressEvent(QMouseEvent* event) override;
     void mouseReleaseEvent(QMouseEvent* event) override;
@@ -585,6 +599,8 @@ protected:
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     // Same construction matrix is shared by all viewports.
     Matrix34 m_constructionMatrix[LAST_COORD_SYSTEM];
+
+    std::vector<IRenderListener*>           m_cRenderListeners;
 
     typedef std::vector<_smart_ptr<IPostRenderer> > PostRenderers;
     PostRenderers   m_postRenderers;

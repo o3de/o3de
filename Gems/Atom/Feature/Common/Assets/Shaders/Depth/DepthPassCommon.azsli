@@ -17,7 +17,7 @@ struct VSInput
  
 struct VSDepthOutput
 {
-    precise float4 m_position : SV_Position;
+    float4 m_position : SV_Position;
 };
 
 VSDepthOutput DepthPassVS(VSInput IN)

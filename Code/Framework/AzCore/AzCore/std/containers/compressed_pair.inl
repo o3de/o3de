@@ -75,7 +75,7 @@ namespace AZStd
     }
 
     template <typename T1, typename T2>
-    template <typename T, AZStd::enable_if_t<!is_same_v<remove_cvref_t<T>, compressed_pair<T1, T2>>, bool>>
+    template <typename T, AZStd::enable_if_t<!is_same<remove_cvref_t<T>, compressed_pair<T1, T2>>::value, bool>>
     inline constexpr compressed_pair<T1, T2>::compressed_pair(T&& firstElement)
         : first_base_type{ AZStd::forward<T>(firstElement) }
         , second_base_type{}
@@ -117,7 +117,7 @@ namespace AZStd
     {
         return static_cast<const first_base_type&>(*this).get();
     }
-
+    
     template <typename T1, typename T2>
     inline constexpr auto compressed_pair<T1, T2>::second() -> second_base_value_type&
     {

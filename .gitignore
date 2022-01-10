@@ -2,14 +2,18 @@
 .vs/
 .vscode/
 __pycache__
+AssetProcessorTemp/**
 [Bb]uild/
 [Oo]ut/**
 CMakeUserPresets.json
 [Cc]ache/
 /[Ii]nstall/
+Editor/EditorEventLog.xml
+Editor/EditorLayout.xml
 **/*egg-info/**
 **/*egg-link
 **/[Rr]estricted
+UserSettings.xml
 [Uu]ser/
 FrameCapture/**
 .DS_Store
@@ -18,6 +22,9 @@ client*.cfg
 server*.cfg
 .mayaSwatches/
 _savebackup/
+#Output folder for test results when running Automated Tests
+TestResults/**
 *.swatches
 /imgui.ini
-
+/scripts/project_manager/logs/
+/AutomatedTesting/Gem/PythonTests/scripting/TestResults

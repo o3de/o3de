@@ -73,7 +73,6 @@ namespace PhysX::Utils::Characters
         physx::PxMaterial* pxMaterial = static_cast<physx::PxMaterial*>(materials.front()->GetNativePointer());
 
         controllerDesc.material = pxMaterial;
-        controllerDesc.position = PxMathConvertExtended(characterConfig.m_position);
         controllerDesc.slopeLimit = cosf(AZ::DegToRad(characterConfig.m_maximumSlopeAngle));
         controllerDesc.stepOffset = characterConfig.m_stepHeight;
         controllerDesc.upDirection = characterConfig.m_upDirection.IsZero()

@@ -108,7 +108,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         """
         helper = bundler_batch_helper
         seed_list = os.path.join(workspace.paths.engine_root(), "Assets", "Engine", "SeedAssetList.seed")  # Engine seed list
-        asset = r"levels\testdependencieslevel\testdependencieslevel.spawnable"
+        asset = r"levels\testdependencieslevel\level.pak"
 
         # Create Asset list
         helper.call_assetLists(
@@ -191,7 +191,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         """
         helper = bundler_batch_helper
         seed_list = os.path.join(workspace.paths.engine_root(), "Assets", "Engine", "SeedAssetList.seed")  # Engine seed list
-        asset = r"levels\testdependencieslevel\testdependencieslevel.spawnable"
+        asset = r"levels\testdependencieslevel\level.pak"
 
         # Useful bundle locations / names (2 for comparing contents)
         # fmt:off
@@ -924,7 +924,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         # Create a seed file
         helper.call_seeds(
             seedListFile=helper["seed_list_file"],
-            addSeed=r"levels\testdependencieslevel\testdependencieslevel.spawnable",
+            addSeed=r"levels\testdependencieslevel\level.pak",
             platform="pc",
         )
 
@@ -947,9 +947,9 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         # Specifying platform but not "add" or "remove" should fail
         result, _ = helper.call_assetLists(
             assetListFile=helper["asset_info_file_request"],
-            allowOverwrites="",
             seedListFile=helper["seed_list_file"],
             platform="pc",
+            allowOverwrites="",
         )
         assert result, "Overwriting with override threw an error"
 
@@ -982,7 +982,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         request.addfinalizer(lambda: fs.delete([bundle_result_path], True, False))
 
         bundles_folder = os.path.join(workspace.paths.project(), "Bundles")
-        level_pak = r"levels\testdependencieslevel\testdependencieslevel.spawnable"
+        level_pak = r"levels\testdependencieslevel\level.pak"
         bundle_request_path = os.path.join(bundles_folder, "bundle.pak")
         bundle_result_path = os.path.join(bundles_folder,
                                           helper.platform_file_name("bundle.pak", workspace.asset_processor_platform))

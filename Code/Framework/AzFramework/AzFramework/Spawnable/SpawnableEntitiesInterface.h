@@ -10,7 +10,6 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Interface/Interface.h>
-#include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/TypeSafeIntegral.h>
 #include <AzCore/std/functional.h>
 #include <AzFramework/Spawnable/Spawnable.h>
@@ -164,8 +163,6 @@ namespace AzFramework
     {
     public:
         friend class SpawnableEntitiesDefinition;
-
-        AZ_CLASS_ALLOCATOR(AzFramework::EntitySpawnTicket, AZ::SystemAllocator, 0);
 
         using Id = uint32_t;
 

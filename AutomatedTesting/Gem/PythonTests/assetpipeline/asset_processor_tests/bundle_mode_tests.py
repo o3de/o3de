@@ -23,11 +23,12 @@ from ..ap_fixtures.timeout_option_fixture import timeout_option_fixture as timeo
 @pytest.mark.SUITE_periodic
 @pytest.mark.parametrize('launcher_platform', ['windows_editor'])
 @pytest.mark.parametrize('project', ['AutomatedTesting'])
-@pytest.mark.parametrize('level', ['TestDependenciesLevel'])
+@pytest.mark.parametrize('level', ['auto_test'])
 class TestBundleMode(object):
     def test_bundle_mode_with_levels_mounts_bundles_correctly(self, request, editor, level, launcher_platform,
                                                               asset_processor, workspace, bundler_batch_helper):
-        level_pak = os.path.join("levels", level, "TestDependenciesLevel.spawnable")
+        level_pak = os.path.join("levels", level, "level.pak")
+
         bundles_folder = os.path.join(workspace.paths.project(), "Bundles")
         bundle_request_path = os.path.join(bundles_folder, "bundle.pak")
         bundle_result_path = os.path.join(bundles_folder,

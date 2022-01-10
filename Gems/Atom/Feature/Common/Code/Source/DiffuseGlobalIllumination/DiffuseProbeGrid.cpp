@@ -102,16 +102,7 @@ namespace AZ
 
         void DiffuseProbeGrid::SetProbeSpacing(const AZ::Vector3& probeSpacing)
         {
-            // remove previous spacing from the render extents
-            m_renderExtents -= m_probeSpacing;
-
-            // update probe spacing
             m_probeSpacing = probeSpacing;
-
-            // expand the extents by one probe spacing unit in order to blend properly around the edges of the volume
-            m_renderExtents += m_probeSpacing;
-
-            m_obbWs = Obb::CreateFromPositionRotationAndHalfLengths(m_transform.GetTranslation(), m_transform.GetRotation(), m_renderExtents / 2.0f);
 
             // recompute the number of probes since the spacing changed
             UpdateProbeCount();
@@ -137,8 +128,7 @@ namespace AZ
         void DiffuseProbeGrid::SetTransform(const AZ::Transform& transform)
         {
             m_transform = transform;
-
-            m_obbWs = Obb::CreateFromPositionRotationAndHalfLengths(m_transform.GetTranslation(), m_transform.GetRotation(), m_renderExtents / 2.0f);
+            m_obbWs = Obb::CreateFromPositionRotationAndHalfLengths(m_transform.GetTranslation(), m_transform.GetRotation(), m_extents / 2.0f);
 
             // probes need to be relocated since the grid position changed
             m_remainingRelocationIterations = DefaultNumRelocationIterations;
@@ -154,14 +144,10 @@ namespace AZ
         void DiffuseProbeGrid::SetExtents(const AZ::Vector3& extents)
         {
             m_extents = extents;
+            m_obbWs = Obb::CreateFromPositionRotationAndHalfLengths(m_transform.GetTranslation(), m_transform.GetRotation(), m_extents / 2.0f);
 
             // recompute the number of probes since the extents changed
             UpdateProbeCount();
-
-            // expand the extents by one probe spacing unit in order to blend properly around the edges of the volume
-            m_renderExtents = m_extents + m_probeSpacing;
-
-            m_obbWs = Obb::CreateFromPositionRotationAndHalfLengths(m_transform.GetTranslation(), m_transform.GetRotation(), m_renderExtents / 2.0f);
 
             // probes need to be relocated since the grid extents changed
             m_remainingRelocationIterations = DefaultNumRelocationIterations;
@@ -714,11 +700,11 @@ namespace AZ
             RHI::ShaderInputImageIndex imageIndex;
 
             constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_modelToWorld"));
-            AZ::Matrix3x4 modelToWorld = AZ::Matrix3x4::CreateFromTransform(m_transform) * AZ::Matrix3x4::CreateScale(m_renderExtents);
+            AZ::Matrix3x4 modelToWorld = AZ::Matrix3x4::CreateFromTransform(m_transform) * AZ::Matrix3x4::CreateScale(m_extents);
             m_renderObjectSrg->SetConstant(constantIndex, modelToWorld);
 
             constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_modelToWorldInverse"));
-            AZ::Matrix3x4 modelToWorldInverse = modelToWorld.GetInverseFull();
+            AZ::Matrix3x4 modelToWorldInverse = AZ::Matrix3x4::CreateFromTransform(m_transform).GetInverseFull();
             m_renderObjectSrg->SetConstant(constantIndex, modelToWorldInverse);
 
             constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_obbHalfLengths"));

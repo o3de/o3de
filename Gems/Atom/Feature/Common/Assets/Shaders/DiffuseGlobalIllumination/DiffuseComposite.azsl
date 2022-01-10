@@ -150,7 +150,7 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
     float4 encodedNormal = PassSrg::m_normal.Load(screenCoords, sampleIndex);
     float3 normal = DecodeNormalSignedOctahedron(encodedNormal.rgb);
     float4 albedo = PassSrg::m_albedo.Load(screenCoords, sampleIndex);
-    float probeIrradianceBlendWeight = saturate(PassSrg::m_downsampledProbeIrradiance.Load(probeIrradianceCoords, sampleIndex).a);
+    float probeIrradianceBlendWeight = PassSrg::m_downsampledProbeIrradiance.Load(probeIrradianceCoords, sampleIndex).a;
   
     float3 diffuse = float3(0.0f, 0.0f, 0.0f);
     if (probeIrradianceBlendWeight > 0.0f)

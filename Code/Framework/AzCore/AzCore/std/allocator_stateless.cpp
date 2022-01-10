@@ -11,17 +11,17 @@
 
 namespace AZStd
 {
-    stateless_allocator::stateless_allocator() = default;
-    stateless_allocator::stateless_allocator(const char*)
-    {}
+    stateless_allocator::stateless_allocator(const char* name)
+        : m_name(name) {}
 
     const char* stateless_allocator::get_name() const
     {
-        return "AZStd::stateless_allocator";
+        return m_name;
     }
 
-    void stateless_allocator::set_name(const char*)
+    void stateless_allocator::set_name(const char* name)
     {
+        m_name = name;
     }
 
     auto stateless_allocator::allocate(size_type byteSize) -> pointer_type

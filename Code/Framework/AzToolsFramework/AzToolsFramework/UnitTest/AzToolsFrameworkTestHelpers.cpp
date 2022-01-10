@@ -30,7 +30,8 @@ namespace UnitTest
     void MousePressAndMove(
         QWidget* widget, const QPoint& initialPositionWidget, const QPoint& mouseDelta, const Qt::MouseButton mouseButton)
     {
-        QTest::mousePress(widget, mouseButton, Qt::NoModifier, initialPositionWidget);
+        QPoint position = widget->mapToGlobal(initialPositionWidget);
+        QTest::mousePress(widget, mouseButton, Qt::NoModifier, position);
 
         MouseMove(widget, initialPositionWidget, mouseDelta, mouseButton);
     }
@@ -44,15 +45,14 @@ namespace UnitTest
     // - https://lists.qt-project.org/pipermail/development/2019-July/036873.html
     void MouseMove(QWidget* widget, const QPoint& initialPositionWidget, const QPoint& mouseDelta, const Qt::MouseButton mouseButton)
     {
-        const QPoint nextLocalPosition = initialPositionWidget + mouseDelta;
-        const QPoint nextGlobalPosition = widget->mapToGlobal(nextLocalPosition);
+        QPoint nextPosition = widget->mapToGlobal(initialPositionWidget + mouseDelta);
 
         // ^1 To ensure a mouse move event is fired we must call the test mouse move function
         // and also send a mouse move event that matches. Each on their own do not appear to
         // work - please see the links above for more context.
-        QTest::mouseMove(widget, nextLocalPosition);
+        QTest::mouseMove(widget, nextPosition);
         QMouseEvent mouseMoveEvent(
-            QEvent::MouseMove, QPointF(nextLocalPosition), QPointF(nextGlobalPosition), Qt::NoButton, mouseButton, Qt::NoModifier);
+            QEvent::MouseMove, QPointF(nextPosition), QPointF(nextPosition), Qt::NoButton, mouseButton, Qt::NoModifier);
         QApplication::sendEvent(widget, &mouseMoveEvent);
     }
 
@@ -155,23 +155,6 @@ namespace UnitTest
         }
 
         return QWidget::event(event);
-    }
-
-    MouseMoveDetector::MouseMoveDetector(QWidget* parent)
-        : QObject(parent)
-    {
-    }
-
-    bool MouseMoveDetector::eventFilter(QObject* watched, QEvent* event)
-    {
-        if (const auto eventType = event->type(); eventType == QEvent::Type::MouseMove)
-        {
-            auto mouseEvent = static_cast<QMouseEvent*>(event);
-            m_mouseGlobalPosition = mouseEvent->globalPos();
-            m_mouseLocalPosition = mouseEvent->pos();
-        }
-
-        return QObject::eventFilter(watched, event);
     }
 
     void TestEditorActions::Connect()
@@ -588,5 +571,3 @@ namespace UnitTest
         sliceAssets.clear();
     }
 } // namespace UnitTest
-
-#include <moc_AzToolsFrameworkTestHelpers.cpp>

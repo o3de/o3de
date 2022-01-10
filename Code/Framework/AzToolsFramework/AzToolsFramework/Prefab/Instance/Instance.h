@@ -80,8 +80,8 @@ namespace AzToolsFramework
             void SetTemplateId(TemplateId templateId);
 
             const AZ::IO::Path& GetTemplateSourcePath() const;
-            void SetTemplateSourcePath(AZ::IO::Path sourcePath);
-            void SetContainerEntityName(AZStd::string containerName);
+            void SetTemplateSourcePath(AZ::IO::PathView sourcePath);
+            void SetContainerEntityName(AZStd::string_view containerName);
 
             bool AddEntity(AZ::Entity& entity);
             bool AddEntity(AZStd::unique_ptr<AZ::Entity>&& entity);
@@ -169,13 +169,6 @@ namespace AzToolsFramework
             * @return entityId, invalid ID if not found
             */
             AZ::EntityId GetEntityIdFromAliasPath(AliasPathView relativeAliasPath) const;
-            /**
-             * Retrieves the instance pointer and entity id from an alias path that's relative to this instance.
-             *
-             * @return A pair with the Instance and entity id. The Instance is set to null and entityId is set to invalid if not found.
-             */
-            AZStd::pair<Instance*, AZ::EntityId> GetInstanceAndEntityIdFromAliasPath(AliasPathView relativeAliasPath);
-            AZStd::pair<const Instance*, AZ::EntityId> GetInstanceAndEntityIdFromAliasPath(AliasPathView relativeAliasPath) const;
 
 
             /**

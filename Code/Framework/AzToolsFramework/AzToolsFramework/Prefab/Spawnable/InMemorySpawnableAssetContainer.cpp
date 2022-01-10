@@ -112,9 +112,9 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 
         // Use a random uuid as this is only a temporary source.
         PrefabConversionUtils::PrefabProcessorContext context(AZ::Uuid::CreateRandom());
-        PrefabDocument document(spawnableName);
-        document.SetPrefabDom(templateReference->get().GetPrefabDom());
-        context.AddPrefab(AZStd::move(document));
+        PrefabDom copy;
+        copy.CopyFrom(templateReference->get().GetPrefabDom(), copy.GetAllocator(), false);
+        context.AddPrefab(spawnableName, AZStd::move(copy));
         m_converter.ProcessPrefab(context);
 
         if (!context.HasCompletedSuccessfully() || context.GetProcessedObjects().empty())

@@ -343,6 +343,26 @@ namespace AZStd
         static decltype(auto) format(const wchar_t* format, ...);
 
     protected:
+        template<class InputIt>
+        constexpr auto append_iter(InputIt first, InputIt last)
+           -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>;
+
+        template<class InputIt>
+        constexpr auto construct_iter(InputIt first, InputIt last)
+            -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>>;
+
+        template<class InputIt>
+        constexpr auto assign_iter(InputIt first, InputIt last)
+            -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>;
+
+        template<class InputIt>
+        constexpr auto insert_iter(const_iterator insertPos, InputIt first, InputIt last)
+            -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, iterator>;
+
+        template<class InputIt>
+        constexpr auto replace_iter(const_iterator first, const_iterator last, InputIt first2, InputIt last2)
+            -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>;
+
         constexpr auto fits_in_capacity(size_type newSize) -> bool;
 
         inline static constexpr size_type Capacity = MaxElementCount; // current storage reserved for string not including null-terminator

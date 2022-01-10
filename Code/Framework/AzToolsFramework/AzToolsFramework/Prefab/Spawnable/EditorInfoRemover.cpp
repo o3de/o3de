@@ -37,13 +37,13 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         }
 
         prefabProcessorContext.ListPrefabs(
-            [this, &serializeContext, &prefabProcessorContext](PrefabDocument& prefab)
+            [this, &serializeContext, &prefabProcessorContext]([[maybe_unused]] AZStd::string_view prefabName, PrefabDom& prefab)
             {
                 auto result = RemoveEditorInfo(prefab, serializeContext, prefabProcessorContext);
                 if (!result)
                 {
                     AZ_Error(
-                        "Prefab", false, "Converting to runtime Prefab '%s' failed, Error: %s .", prefab.GetName().c_str(),
+                        "Prefab", false, "Converting to runtime Prefab '%.*s' failed, Error: %s .", AZ_STRING_ARG(prefabName),
                         result.GetError().c_str());
                     return;
                 } 
@@ -58,9 +58,10 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         }
     }
 
-    void EditorInfoRemover::GetEntitiesFromInstance(AzToolsFramework::Prefab::Instance& instance, EntityList& hierarchyEntities)
+    void EditorInfoRemover::GetEntitiesFromInstance(
+        AZStd::unique_ptr<AzToolsFramework::Prefab::Instance>& instance, EntityList& hierarchyEntities)
     {
-        instance.GetAllEntitiesInHierarchy(
+        instance->GetAllEntitiesInHierarchy(
             [&hierarchyEntities](const AZStd::unique_ptr<AZ::Entity>& entity)
             {
                 hierarchyEntities.emplace_back(entity.get());
@@ -497,7 +498,7 @@ exportComponent, prefabProcessorContext);
     }
 
     EditorInfoRemover::RemoveEditorInfoResult EditorInfoRemover::RemoveEditorInfo(
-        PrefabDocument& prefab,
+        PrefabDom& prefab,
         AZ::SerializeContext* serializeContext,
         PrefabProcessorContext& prefabProcessorContext)
     {
@@ -509,10 +510,28 @@ exportComponent, prefabProcessorContext);
 
         m_componentRequirementsValidator.SetPlatformTags(prefabProcessorContext.GetPlatformTags());
 
+        // convert Prefab DOM into Prefab Instance.
+        AZStd::unique_ptr<Instance> instance(aznew Instance());
+        if (!Prefab::PrefabDomUtils::LoadInstanceFromPrefabDom(*instance, prefab,
+            Prefab::PrefabDomUtils::LoadFlags::AssignRandomEntityId))
+        {
+            PrefabDomValueReference sourceReference = PrefabDomUtils::FindPrefabDomValue(prefab, PrefabDomUtils::SourceName);
+
+            AZStd::string errorMessage("Failed to Load Prefab Instance from given Prefab Dom during Removal of Editor Info.");
+            if (sourceReference.has_value() &&
+                sourceReference->get().IsString() &&
+                sourceReference->get().GetStringLength() != 0)
+            {
+                AZStd::string_view source(sourceReference->get().GetString(), sourceReference->get().GetStringLength());
+                errorMessage += AZStd::string::format("Prefab Source: %.*s", AZ_STRING_ARG(source));
+            }
+
+            return AZ::Failure(errorMessage);
+        }
+
         // grab all nested entities from the Instance as source entities.
-        Instance& sourceInstance = prefab.GetInstance();
         EntityList sourceEntities;
-        GetEntitiesFromInstance(sourceInstance, sourceEntities);
+        GetEntitiesFromInstance(instance, sourceEntities);
 
         EntityList exportEntities;
 
@@ -578,7 +597,7 @@ exportComponent, prefabProcessorContext);
                 exportEntitiesMap.emplace(entity->GetId(), entity);
             }
         );
-        sourceInstance.RemoveNestedEntities(
+        instance->RemoveNestedEntities(
             [&exportEntitiesMap](const AZStd::unique_ptr<AZ::Entity>& entity)
             {
                 return exportEntitiesMap.find(entity->GetId()) == exportEntitiesMap.end();
@@ -586,7 +605,7 @@ exportComponent, prefabProcessorContext);
         );
 
         // replace entities of instance with exported ones.
-        sourceInstance.GetAllEntitiesInHierarchy(
+        instance->GetAllEntitiesInHierarchy(
             [&exportEntitiesMap](AZStd::unique_ptr<AZ::Entity>& entity)
             {
                 auto entityId = entity->GetId();
@@ -594,6 +613,16 @@ exportComponent, prefabProcessorContext);
                 return true;
             }
         );
+
+        // save the final result in the target Prefab DOM.
+        PrefabDom filteredPrefab;
+        if (!PrefabDomUtils::StoreInstanceInPrefabDom(*instance, filteredPrefab))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Saving exported Prefab Instance within a Prefab Dom failed.")
+            );
+        }
+        prefab.Swap(filteredPrefab);
 
         return AZ::Success();
     }

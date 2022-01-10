@@ -127,7 +127,7 @@ function(ly_copy source_file target_directory)
         if(NOT is_framework)
             # if it is a bundle, there is no contention about the files in the destination, each bundle target will copy everything
             # we dont want these files to invalidate the bundle and cause a new signature
-            file(LOCK "${target_file}.lock" GUARD FUNCTION TIMEOUT 300)
+            file(LOCK ${target_file}.lock GUARD FUNCTION TIMEOUT 300)
             file(SIZE "${source_file}" source_file_size)
             if(EXISTS "${target_file}")
                 file(SIZE "${target_file}" target_file_size)
@@ -176,35 +176,35 @@ if(@target_file_dir@ MATCHES ".app/Contents/MacOS")
             message(STATUS "Fixing ${bundle_path}/Contents/Frameworks/Python.framework...")
             list(APPEND fixup_bundle_ignore Python python3.7m python3.7)
             file(REMOVE_RECURSE
-                "${bundle_path}/Contents/Frameworks/Python.framework/Versions/Current"
-                "${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.7/Headers"
-                "${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.7/lib/Python"
-                "${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.7/lib/python3.7/test"
-                "${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/scipy/io/tests"
-                "${bundle_path}/Contents/Frameworks/Python.framework/Python"
-                "${bundle_path}/Contents/Frameworks/Python.framework/Resources"
-                "${bundle_path}/Contents/Frameworks/Python.framework/Headers"
+                ${bundle_path}/Contents/Frameworks/Python.framework/Versions/Current
+                ${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.7/Headers
+                ${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.7/lib/Python
+                ${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.7/lib/python3.7/test
+                ${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/scipy/io/tests
+                ${bundle_path}/Contents/Frameworks/Python.framework/Python
+                ${bundle_path}/Contents/Frameworks/Python.framework/Resources
+                ${bundle_path}/Contents/Frameworks/Python.framework/Headers
             )
             file(GLOB_RECURSE exe_file_list "${bundle_path}/Contents/Frameworks/Python.framework/**/*.exe")
             if(exe_file_list)
-                file(REMOVE_RECURSE "${exe_file_list}")
+                file(REMOVE_RECURSE ${exe_file_list})
             endif()
-            execute_process(COMMAND "${CMAKE_COMMAND}" -E create_symlink include/python3.7m Headers
-                WORKING_DIRECTORY "${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.7"
+            execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink include/python3.7m Headers
+                WORKING_DIRECTORY ${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.7
             )
-            execute_process(COMMAND "${CMAKE_COMMAND}" -E create_symlink 3.7 Current
-                WORKING_DIRECTORY "${bundle_path}/Contents/Frameworks/Python.framework/Versions/"
+            execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink 3.7 Current
+                WORKING_DIRECTORY ${bundle_path}/Contents/Frameworks/Python.framework/Versions/
             )
-            execute_process(COMMAND "${CMAKE_COMMAND}" -E create_symlink Versions/Current/Python Python
-                WORKING_DIRECTORY "${bundle_path}/Contents/Frameworks/Python.framework"
+            execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink Versions/Current/Python Python
+                WORKING_DIRECTORY ${bundle_path}/Contents/Frameworks/Python.framework
             )
-            execute_process(COMMAND "${CMAKE_COMMAND}" -E create_symlink Versions/Current/Headers Headers
-                WORKING_DIRECTORY "${bundle_path}/Contents/Frameworks/Python.framework"
+            execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink Versions/Current/Headers Headers
+                WORKING_DIRECTORY ${bundle_path}/Contents/Frameworks/Python.framework
             )
-            execute_process(COMMAND "${CMAKE_COMMAND}" -E create_symlink Versions/Current/Resources Resources
-                WORKING_DIRECTORY "${bundle_path}/Contents/Frameworks/Python.framework"
+            execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink Versions/Current/Resources Resources
+                WORKING_DIRECTORY ${bundle_path}/Contents/Frameworks/Python.framework
             )
-            file(CHMOD "${bundle_path}/Contents/Frameworks/Python.framework/Versions/Current/Python"
+            file(CHMOD ${bundle_path}/Contents/Frameworks/Python.framework/Versions/Current/Python 
                 PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE 
             )
         endif()
@@ -215,8 +215,8 @@ if(@target_file_dir@ MATCHES ".app/Contents/MacOS")
         file(TOUCH "${fixup_timestamp_file}")
 
         # fixup bundle ends up removing the rpath of dxc (despite we exclude it)
-        if(EXISTS "${bundle_path}/Contents/MacOS/Builders/DirectXShaderCompiler/bin/dxc-3.7")
-            execute_process(COMMAND $"{LY_INSTALL_NAME_TOOL}" -add_rpath @executable_path/../lib ${bundle_path}/Contents/MacOS/Builders/DirectXShaderCompiler/bin/dxc-3.7)
+        if(EXISTS ${bundle_path}/Contents/MacOS/Builders/DirectXShaderCompiler/bin/dxc-3.7)
+            execute_process(COMMAND ${LY_INSTALL_NAME_TOOL} -add_rpath @executable_path/../lib ${bundle_path}/Contents/MacOS/Builders/DirectXShaderCompiler/bin/dxc-3.7)
         endif()
 
         # misplaced .DS_Store files can cause signing to fail
@@ -226,7 +226,7 @@ if(@target_file_dir@ MATCHES ".app/Contents/MacOS")
             "${bundle_path/}**/*.cstemp"
         )
         if(remove_file_list)
-            file(REMOVE_RECURSE "${remove_file_list}")
+            file(REMOVE_RECURSE ${remove_file_list})
         endif()
 
     endif()
@@ -235,7 +235,7 @@ else() # Non-bundle case
 
     if(depends_on_python)
         # RPATH fix python
-        execute_process(COMMAND "${LY_INSTALL_NAME_TOOL}" -change @rpath/Python @rpath/Python.framework/Versions/Current/Python "@target_file@")
+        execute_process(COMMAND ${LY_INSTALL_NAME_TOOL} -change @rpath/Python @rpath/Python.framework/Versions/Current/Python @target_file@)
     endif()
 
 endif()

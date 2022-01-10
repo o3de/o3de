@@ -997,7 +997,7 @@ void UiCanvasManager::DebugDisplayCanvasData(int setting) const
 {
     bool onlyShowEnabledCanvases = (setting == 2) ? true : false;
 
-    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     float dpiScale = draw2d->GetViewportDpiScalingFactor();
     float xOffset = 20.0f * dpiScale;
@@ -1152,7 +1152,7 @@ void UiCanvasManager::DebugDisplayCanvasData(int setting) const
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasManager::DebugDisplayDrawCallData() const
 {
-    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     float dpiScale = draw2d->GetViewportDpiScalingFactor();
     float xOffset = 20.0f * dpiScale;
@@ -1486,7 +1486,7 @@ void UiCanvasManager::DebugReportDrawCalls(const AZStd::string& name) const
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasManager::DebugDisplayElemBounds(int canvasIndexFilter) const
 {
-    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     int canvasIndex = 0;
     for (auto canvas : m_loadedCanvases)

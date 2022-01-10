@@ -184,10 +184,6 @@ namespace AzToolsFramework
         const float halfGridSquareCount = float(gridSquareCount) * 0.5f;
         const float halfGridSize = halfGridSquareCount * squareSize;
         const float fadeLineLength = cl_viewportFadeLineDistanceScale * squareSize;
-
-        // ensure AuxGeomDraw::OpacityType::Translucent render state is set
-        debugDisplay.SetAlpha(0.5f);
-
         for (size_t lineIndex = 0; lineIndex <= gridSquareCount; ++lineIndex)
         {
             const float lineOffset = -halfGridSize + (lineIndex * squareSize);

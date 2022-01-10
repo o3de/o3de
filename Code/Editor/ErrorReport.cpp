@@ -67,6 +67,24 @@ QString CErrorRecord::GetErrorText() const
     {
         str += QString("\t ");
     }
+    if (pItem)
+    {
+        switch (pItem->GetType())
+        {
+        case EDB_TYPE_MATERIAL:
+            str += QString("\t Material=\"");
+            break;
+        case EDB_TYPE_PARTICLE:
+            str += QString("\t Particle=\"");
+            break;
+        case EDB_TYPE_MUSIC:
+            str += QString("\t Music=\"");
+            break;
+        default:
+            str += QString("\t Item=\"");
+        }
+        str += pItem->GetFullName() + "\"";
+    }
     if (pObject)
     {
         str += QString("\t Object=\"") + pObject->GetName() + "\"";
@@ -83,6 +101,7 @@ CErrorReport::CErrorReport()
     m_bImmediateMode = true;
     m_bShowErrors = true;
     m_pObject = nullptr;
+    m_pItem = nullptr;
     m_pParticle = nullptr;
 }
 
@@ -120,6 +139,10 @@ void CErrorReport::ReportError(CErrorRecord& err)
         if (err.pObject == nullptr && m_pObject != nullptr)
         {
             err.pObject = m_pObject;
+        }
+        else if (err.pItem == nullptr && m_pItem != nullptr)
+        {
+            err.pItem = m_pItem;
         }
         m_errors.push_back(err);
     }
@@ -230,6 +253,12 @@ void CErrorReport::SetImmediateMode(bool bEnable)
 void CErrorReport::SetCurrentValidatorObject(CBaseObject* pObject)
 {
     m_pObject = pObject;
+}
+
+//////////////////////////////////////////////////////////////////////////
+void CErrorReport::SetCurrentValidatorItem(CBaseLibraryItem* pItem)
+{
+    m_pItem = pItem;
 }
 
 //////////////////////////////////////////////////////////////////////////

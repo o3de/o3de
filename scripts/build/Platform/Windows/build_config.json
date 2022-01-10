@@ -59,6 +59,26 @@
       "SCRIPT_PARAMETERS": "--platform=Windows --repository=%REPOSITORY_NAME% --jobname=%JOB_NAME% --jobnumber=%BUILD_NUMBER% --jobnode=%NODE_LABEL% --changelist=%CHANGE_ID%"
     }
   },
+  "windows_packaging_all": {
+    "TAGS": [
+      "packaging"
+    ],
+    "COMMAND": "python_windows.cmd",
+    "PARAMETERS": {
+      "SCRIPT_PATH": "scripts/build/package/package.py",
+      "SCRIPT_PARAMETERS": "--platform Windows --type all"
+    }
+  },
+  "3rdParty_all": {
+    "TAGS": [
+      "packaging"
+    ],
+    "COMMAND": "python_windows.cmd",
+    "PARAMETERS": {
+      "SCRIPT_PATH": "scripts/build/package/package.py",
+      "SCRIPT_PARAMETERS": "--platform 3rdParty --type 3rdParty_all"
+    }
+  },
   "test_impact_analysis_profile": {
     "TAGS": [
     ],

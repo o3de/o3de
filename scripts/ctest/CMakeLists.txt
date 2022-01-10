@@ -17,7 +17,7 @@ endif()
 # Tests
 ################################################################################
 
-if(PAL_TRAIT_TEST_PYTEST_SUPPORTED)
+if(PAL_TRAIT_TEST_LYTESTTOOLS_SUPPORTED)
     foreach(suite_name ${LY_TEST_GLOBAL_KNOWN_SUITE_NAMES})
         ly_add_pytest(
             NAME pytest_sanity_${suite_name}_no_gpu
@@ -32,16 +32,16 @@ if(PAL_TRAIT_TEST_PYTEST_SUPPORTED)
             TEST_REQUIRES gpu
         )
     endforeach()
-
-    # add a custom test which makes sure that the test filtering works!
-    ly_add_test(
-        NAME cli_test_driver
-        EXCLUDE_TEST_RUN_TARGET_FROM_IDE
-        TEST_COMMAND ${LY_PYTHON_CMD} ${CMAKE_CURRENT_LIST_DIR}/ctest_driver_test.py
-            -x ${CMAKE_CTEST_COMMAND} 
-            --build-path ${CMAKE_BINARY_DIR}
-            --config $<CONFIG>
-        TEST_LIBRARY pytest
-    )
-
 endif()
+
+# add a custom test which makes sure that the test filtering works!
+
+ly_add_test(
+    NAME cli_test_driver
+    EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+    TEST_COMMAND ${LY_PYTHON_CMD} ${CMAKE_CURRENT_LIST_DIR}/ctest_driver_test.py
+        -x ${CMAKE_CTEST_COMMAND} 
+        --build-path ${CMAKE_BINARY_DIR}
+    TEST_LIBRARY pytest
+)
+

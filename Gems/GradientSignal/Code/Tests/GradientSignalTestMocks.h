@@ -47,10 +47,10 @@ namespace UnitTest
         static AZ::Data::Asset<GradientSignal::ImageAsset> CreateSpecificPixelImageAsset(
             AZ::u32 width, AZ::u32 height, AZ::u32 pixelX, AZ::u32 pixelY);
 
-        AZ::Data::AssetPtr CreateAsset(const AZ::Data::AssetId& id, [[maybe_unused]] const AZ::Data::AssetType& type) override
+        AZ::Data::AssetPtr CreateAsset(
+            [[maybe_unused]] const AZ::Data::AssetId& id, [[maybe_unused]] const AZ::Data::AssetType& type) override
         {
-            // For our mock handler, always mark our assets as immediately ready.
-            return aznew GradientSignal::ImageAsset(id, AZ::Data::AssetData::AssetStatus::Ready);
+            return AZ::Data::AssetPtr();
         }
 
         void DestroyAsset(AZ::Data::AssetPtr ptr) override

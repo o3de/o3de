@@ -7,6 +7,7 @@
  */
 #include "EditorDefs.h"
 #include "ErrorRecorder.h"
+#include "BaseLibraryItem.h"
 #include "Include/IErrorReport.h"
 
 

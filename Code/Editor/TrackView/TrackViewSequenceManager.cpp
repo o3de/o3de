@@ -409,6 +409,20 @@ void CTrackViewSequenceManager::OnSequenceRemoved(CTrackViewSequence* sequence)
 }
 
 ////////////////////////////////////////////////////////////////////////////
+void CTrackViewSequenceManager::OnDataBaseItemEvent([[maybe_unused]] IDataBaseItem* pItem, EDataBaseItemEvent event)
+{
+    if (event != EDataBaseItemEvent::EDB_ITEM_EVENT_ADD)
+    {
+        const size_t numSequences = m_sequences.size();
+
+        for (size_t i = 0; i < numSequences; ++i)
+        {
+            m_sequences[i]->UpdateDynamicParams();
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////
 CTrackViewAnimNodeBundle CTrackViewSequenceManager::GetAllRelatedAnimNodes(const AZ::EntityId entityId) const
 {
     CTrackViewAnimNodeBundle nodeBundle;

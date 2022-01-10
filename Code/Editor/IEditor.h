@@ -44,6 +44,7 @@ class CMusicManager;
 struct IEditorParticleManager;
 class CEAXPresetManager;
 class CErrorReport;
+class CBaseLibraryItem;
 class ICommandManager;
 class CEditorCommandManager;
 class CHyperGraphManager;
@@ -51,7 +52,10 @@ class CConsoleSynchronization;
 class CUIEnumsDatabase;
 struct ISourceControl;
 struct IEditorClassFactory;
+struct IDataBaseItem;
 struct ITransformManipulator;
+struct IDataBaseManager;
+class IFacialEditor;
 class CDialog;
 #if defined(AZ_PLATFORM_WINDOWS)
 class C3DConnexionDriver;
@@ -78,6 +82,8 @@ struct IEventLoopHook;
 struct IErrorReport; // Vladimir@conffx
 struct IFileUtil;  // Vladimir@conffx
 struct IEditorLog;  // Vladimir@conffx
+struct IEditorMaterialManager;  // Vladimir@conffx
+struct IBaseLibraryManager;  // Vladimir@conffx
 struct IImageUtil;  // Vladimir@conffx
 struct IEditorParticleUtils;  // Leroy@conffx
 struct ILogFile; // Vladimir@conffx
@@ -513,6 +519,10 @@ struct IEditor
     //! Get access to object manager.
     virtual struct IObjectManager* GetObjectManager() = 0;
     virtual CSettingsManager* GetSettingsManager() = 0;
+    //! Get DB manager that own items of specified type.
+    virtual IDataBaseManager* GetDBItemManager(EDataBaseItemType itemType) = 0;
+    virtual IBaseLibraryManager* GetMaterialManagerLibrary() = 0; // Vladimir@conffx
+    virtual IEditorMaterialManager* GetIEditorMaterialManager() = 0; // Vladimir@Conffx
     //! Returns IconManager.
     virtual IIconManager* GetIconManager() = 0;
     //! Get Music Manager.

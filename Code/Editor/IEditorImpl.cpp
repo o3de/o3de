@@ -892,6 +892,11 @@ void CEditorImpl::CloseView(const GUID& classId)
     }
 }
 
+IDataBaseManager* CEditorImpl::GetDBItemManager([[maybe_unused]] EDataBaseItemType itemType)
+{
+    return nullptr;
+}
+
 bool CEditorImpl::SelectColor(QColor& color, QWidget* parent)
 {
     const AZ::Color c = AzQtComponents::fromQColor(color);
@@ -1617,6 +1622,18 @@ SSystemGlobalEnvironment* CEditorImpl::GetEnv()
 SEditorSettings* CEditorImpl::GetEditorSettings()
 {
     return &gSettings;
+}
+
+// Vladimir@Conffx
+IBaseLibraryManager* CEditorImpl::GetMaterialManagerLibrary()
+{
+    return nullptr;
+}
+
+// Vladimir@Conffx
+IEditorMaterialManager* CEditorImpl::GetIEditorMaterialManager()
+{
+    return nullptr;
 }
 
 IImageUtil* CEditorImpl::GetImageUtil()

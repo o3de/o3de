@@ -9,7 +9,6 @@
 #include <Prefab/SpawnableRemoveEditorInfoTestFixture.h>
 
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
-#include <AzToolsFramework/Prefab/Spawnable/PrefabDocument.h>
 #include <AzToolsFramework/ToolsComponents/EditorOnlyEntityComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorOnlyEntityComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
@@ -202,14 +201,15 @@ namespace UnitTest
     {
         ConvertSourceEntitiesToPrefab();
 
-        AzToolsFramework::Prefab::PrefabConversionUtils::PrefabDocument prefab("Test");
-        prefab.SetPrefabDom(m_prefabDom);
         const bool actualResult =
-            m_editorInfoRemover.RemoveEditorInfo(prefab, m_serializeContext, m_prefabProcessorContext).IsSuccess();
+            m_editorInfoRemover.RemoveEditorInfo(m_prefabDom, m_serializeContext, m_prefabProcessorContext).IsSuccess();
 
         EXPECT_EQ(expectedResult, actualResult);
 
-        prefab.GetInstance().DetachAllEntitiesInHierarchy(
+        AZStd::unique_ptr<Instance> convertedInstance(aznew Instance());
+        ASSERT_TRUE(AzToolsFramework::Prefab::PrefabDomUtils::LoadInstanceFromPrefabDom(*convertedInstance, m_prefabDom));
+
+        convertedInstance->DetachAllEntitiesInHierarchy(
             [this](AZStd::unique_ptr<AZ::Entity> entity)
             {
                 m_runtimeEntities.emplace_back(entity.release());
