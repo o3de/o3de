@@ -281,7 +281,7 @@ namespace UnitTests
 
     using PathDependencyTests = PathDependencyDeletionTest;
 
-    TEST_F(PathDependencyTests, SourceAndProductHaveSameName_OnlyOneEntryIsSavedToDatabase)
+    TEST_F(PathDependencyTests, SourceAndProductHaveSameName_SourceFileDependency_MatchesSource)
     {
         using namespace AzToolsFramework::AssetDatabase;
 
@@ -292,7 +292,7 @@ namespace UnitTests
 
         SourceDatabaseEntry source1, source2;
         JobDatabaseEntry job1, job2;
-        ProductDatabaseEntry product1, product2;
+        ProductDatabaseEntry product1, product2, product3;
 
         Util::CreateSourceJobAndProduct(
             m_stateData.get(), scanFolder.m_scanFolderID, source1, job1, product1, "source1.txt", "product1.jpg");
@@ -304,6 +304,47 @@ namespace UnitTests
 
         Util::CreateSourceJobAndProduct(
             m_stateData.get(), scanFolder.m_scanFolderID, source2, job2, product2, "source2.xml", "source2.xml");
+
+        // Create a 2nd product for this source
+        product3 = ProductDatabaseEntry{ job2.m_jobID, product2.m_subID + 1, "source2.txt", AZ::Data::AssetType::CreateRandom() };
+        ASSERT_TRUE(m_stateData->SetProduct(product3));
+
+        manager.QueueSourceForDependencyResolution(source2);
+        manager.ProcessQueuedDependencyResolves();
+
+        ProductDependencyDatabaseEntryContainer productDependencies;
+        m_stateData->GetProductDependencies(productDependencies);
+
+        EXPECT_EQ(productDependencies.size(), 3);
+    }
+
+    TEST_F(PathDependencyTests, SourceAndProductHaveSameName_ProductFileDependency_MatchesProduct)
+    {
+        using namespace AzToolsFramework::AssetDatabase;
+
+        AssetProcessor::PathDependencyManager manager(m_stateData, m_platformConfig.get());
+
+        ScanFolderDatabaseEntry scanFolder("folder", "test", "test", 0);
+        m_stateData->SetScanFolder(scanFolder);
+
+        SourceDatabaseEntry source1, source2;
+        JobDatabaseEntry job1, job2;
+        ProductDatabaseEntry product1, product2, product3;
+
+        Util::CreateSourceJobAndProduct(
+            m_stateData.get(), scanFolder.m_scanFolderID, source1, job1, product1, "source1.txt", "product1.jpg");
+
+        AssetBuilderSDK::ProductPathDependencySet set;
+        set.insert(AssetBuilderSDK::ProductPathDependency("*.xml", AssetBuilderSDK::ProductPathDependencyType::ProductFile));
+
+        manager.SaveUnresolvedDependenciesToDatabase(set, product1, "pc");
+
+        Util::CreateSourceJobAndProduct(
+            m_stateData.get(), scanFolder.m_scanFolderID, source2, job2, product2, "source2.xml", "source2.xml");
+
+        // Create a 2nd product for this source
+        product3 = ProductDatabaseEntry{job2.m_jobID, product2.m_subID + 1, "source2.txt", AZ::Data::AssetType::CreateRandom()};
+        ASSERT_TRUE(m_stateData->SetProduct(product3));
 
         manager.QueueSourceForDependencyResolution(source2);
         manager.ProcessQueuedDependencyResolves();

@@ -102,7 +102,9 @@ namespace AssetProcessor
                 {
                     AZ::IO::PathView searchPath(search.m_path);
 
-                    if(searchPath.Match(entry.m_unresolvedPath))
+                    if(((entry.m_dependencyType == AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry::ProductDep_SourceFile && search.m_isSourcePath)
+                        || (entry.m_dependencyType == AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry::ProductDep_ProductFile && !search.m_isSourcePath))
+                        && /*searchPath.Match(entry.m_unresolvedPath)*/ AZStd::wildcard_match(entry.m_unresolvedPath, search.m_path))
                     {
                         matches.insert(entry);
                     }
@@ -302,7 +304,7 @@ namespace AssetProcessor
     void PathDependencyManager::SaveResolvedDependencies(const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry, const MapSet& exclusionMaps, const AZStd::string& sourceNameWithScanFolder,
         const AZStd::unordered_set<AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry>& dependencyEntries,
         AZStd::string_view matchedPath, bool isSourceDependency, const AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer& matchedProducts,
-        AZStd::unordered_set<AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry>& dependencyContainer) const
+        AZStd::vector<AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry>& dependencyContainer) const
     {
         for (const auto& productDependencyDatabaseEntry : dependencyEntries)
         {
@@ -369,7 +371,7 @@ namespace AssetProcessor
                 entry.m_dependencySubID = matchedProduct.m_subID;
                 entry.m_platform = productDependencyDatabaseEntry.m_platform;
 
-                dependencyContainer.insert(entry);
+                dependencyContainer.push_back(AZStd::move(entry));
 
                 // If there's more than 1 product, reset the ID so further products create new db entries
                 dependencyId = AzToolsFramework::AssetDatabase::InvalidEntryId;
@@ -386,8 +388,7 @@ namespace AssetProcessor
         AZStd::string sourceNameWithScanFolder = ToScanFolderPrefixedPath(aznumeric_cast<int>(sourceEntry.m_scanFolderPK), sourceEntry.m_sourceName.c_str());
         SanitizeForDatabase(sourceNameWithScanFolder);
 
-        // We're using a set to make sure we don't save any duplicates.  This can happen if the source/product name are the same for example
-        AZStd::unordered_set<AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry> dependencyContainer;
+        AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer dependencyVector;
 
         // Go through all the matched dependencies
         for (const auto& pair : matches)
@@ -408,12 +409,10 @@ namespace AssetProcessor
             }
 
             // Go through each dependency we're resolving and create a db entry for each product that resolved it (wildcard/source dependencies will generally create more than 1)
-            SaveResolvedDependencies(sourceEntry, exclusionMaps, sourceNameWithScanFolder, pair.second, searchEntry->m_path, isSourceDependency, matchedProducts, dependencyContainer);
+            SaveResolvedDependencies(
+                sourceEntry, exclusionMaps, sourceNameWithScanFolder, pair.second, searchEntry->m_path, isSourceDependency, matchedProducts,
+                dependencyVector);
         }
-
-        // Copy the set back to the standard container
-        AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer dependencyVector;
-        dependencyVector.insert(dependencyVector.end(), dependencyContainer.begin(), dependencyContainer.end());
 
         // Save everything to the db, this will update matched non-wildcard dependencies and add new records for wildcard matches
         if (!m_stateData->UpdateProductDependencies(dependencyVector))
