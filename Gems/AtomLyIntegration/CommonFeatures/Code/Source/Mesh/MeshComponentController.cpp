@@ -27,9 +27,6 @@
 
 #include <AzCore/RTTI/BehaviorContext.h>
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace AZ
 {
     namespace Render
@@ -628,6 +625,3 @@ namespace AZ
         }
     } // namespace Render
 } // namespace AZ
-
-#pragma optimize("", on)
-#pragma inline_depth()
