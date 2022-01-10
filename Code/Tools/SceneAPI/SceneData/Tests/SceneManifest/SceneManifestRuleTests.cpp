@@ -11,6 +11,7 @@
 #include <SceneAPI/SceneCore/Containers/SceneManifest.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/IScriptProcessorRule.h>
+#include <SceneAPI/SceneCore/Containers/Utilities/Filters.h>
 #include <SceneAPI/SceneData/ReflectionRegistrar.h>
 #include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
 #include <SceneAPI/SceneData/Behaviors/ScriptProcessorRuleBehavior.h>
@@ -270,6 +271,80 @@ namespace AZ
             auto scriptProcessorRuleBehavior =  AZ::SceneAPI::Behaviors::ScriptProcessorRuleBehavior();
             auto update = scriptProcessorRuleBehavior.UpdateManifest(scene, AssetImportRequest::Update, AssetImportRequest::Generic);
             EXPECT_EQ(update, ProcessingResult::Ignored);
+        }
+
+        TEST_F(SceneManifest_JSON, ScriptProcessorRule_DefaultFallbackLogic_Works)
+        {
+            using namespace AZ::SceneAPI;
+
+            constexpr const char* defaultJson = { R"JSON(
+            {
+                "values": [
+                    {
+                        "$type": "ScriptProcessorRule",
+                        "scriptFilename": "foo.py"
+                    }
+                ]
+            })JSON" };
+
+            auto scene = Containers::Scene("mock");
+            auto result = scene.GetManifest().LoadFromString(defaultJson, m_serializeContext.get(), m_jsonRegistrationContext.get());
+            EXPECT_TRUE(result.IsSuccess());
+            EXPECT_FALSE(scene.GetManifest().IsEmpty());
+            ASSERT_EQ(scene.GetManifest().GetEntryCount(), 1);
+
+            auto view = Containers::MakeDerivedFilterView<DataTypes::IScriptProcessorRule>(scene.GetManifest().GetValueStorage());
+            EXPECT_EQ(view.begin()->GetScriptProcessorFallbackLogic(), DataTypes::ScriptProcessorFallbackLogic::FailBuild);
+        }
+
+        TEST_F(SceneManifest_JSON, ScriptProcessorRule_ExplicitFallbackLogic_Works)
+        {
+            using namespace AZ::SceneAPI;
+
+            constexpr const char* fallbackLogicJson = { R"JSON(
+            {
+                "values": [
+                    {
+                        "$type": "ScriptProcessorRule",
+                        "scriptFilename": "foo.py",
+                        "fallbackLogic": "FailBuild"
+                    }
+                ]
+            })JSON" };
+
+            auto scene = Containers::Scene("mock");
+            auto result = scene.GetManifest().LoadFromString(fallbackLogicJson, m_serializeContext.get(), m_jsonRegistrationContext.get());
+            EXPECT_TRUE(result.IsSuccess());
+            EXPECT_FALSE(scene.GetManifest().IsEmpty());
+            ASSERT_EQ(scene.GetManifest().GetEntryCount(), 1);
+
+            auto view = Containers::MakeDerivedFilterView<DataTypes::IScriptProcessorRule>(scene.GetManifest().GetValueStorage());
+            EXPECT_EQ(view.begin()->GetScriptProcessorFallbackLogic(), DataTypes::ScriptProcessorFallbackLogic::FailBuild);
+        }
+
+        TEST_F(SceneManifest_JSON, ScriptProcessorRule_ContinueBuildFallbackLogic_Works)
+        {
+            using namespace AZ::SceneAPI;
+
+            constexpr const char* fallbackLogicJson = { R"JSON(
+            {
+                "values": [
+                    {
+                        "$type": "ScriptProcessorRule",
+                        "scriptFilename": "foo.py",
+                        "fallbackLogic": "ContinueBuild"
+                    }
+                ]
+            })JSON" };
+
+            auto scene = Containers::Scene("mock");
+            auto result = scene.GetManifest().LoadFromString(fallbackLogicJson, m_serializeContext.get(), m_jsonRegistrationContext.get());
+            EXPECT_TRUE(result.IsSuccess());
+            EXPECT_FALSE(scene.GetManifest().IsEmpty());
+            ASSERT_EQ(scene.GetManifest().GetEntryCount(), 1);
+
+            auto view = Containers::MakeDerivedFilterView<DataTypes::IScriptProcessorRule>(scene.GetManifest().GetValueStorage());
+            EXPECT_EQ(view.begin()->GetScriptProcessorFallbackLogic(), DataTypes::ScriptProcessorFallbackLogic::ContinueBuild);
         }
     }
 }

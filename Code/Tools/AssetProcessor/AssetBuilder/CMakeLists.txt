@@ -7,6 +7,22 @@
 #
 
 ly_add_target(
+    NAME AssetBuilder.Static STATIC
+    NAMESPACE AZ
+    FILES_CMAKE
+        asset_builder_static_files.cmake
+        INCLUDE_DIRECTORIES
+            PUBLIC
+                .
+        BUILD_DEPENDENCIES
+            PUBLIC
+                AZ::AzCore
+                AZ::AzFramework
+                AZ::AzToolsFramework
+                AZ::AssetBuilderSDK
+)
+
+ly_add_target(
     NAME AssetBuilder EXECUTABLE
     NAMESPACE AZ
     FILES_CMAKE
@@ -17,6 +33,7 @@ ly_add_target(
             .
     BUILD_DEPENDENCIES
         PRIVATE
+            AssetBuilder.Static
             3rdParty::Qt::Core
             3rdParty::Qt::Gui
             3rdParty::Qt::Network
