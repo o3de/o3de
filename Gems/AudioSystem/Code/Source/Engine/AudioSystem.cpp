@@ -96,13 +96,13 @@ namespace Audio
 
 
     //! NEW AUDIO REQUESTS
-    void CAudioSystem::PushRequestNew(AudioRequestType&& request)
+    void CAudioSystem::PushRequestNew(AudioRequestVariant&& request)
     {
         AZStd::scoped_lock lock(m_pendingRequestsMutex);
         m_pendingRequestsQueue.push_back(AZStd::move(request));
     }
 
-    void CAudioSystem::PushRequestBlockingNew([[maybe_unused]] AudioRequestType&& request)
+    void CAudioSystem::PushRequestBlockingNew([[maybe_unused]] AudioRequestVariant&& request)
     {
         // pass this request to be processed immediately and block this calling thread.
         {
@@ -189,18 +189,20 @@ namespace Audio
             if (!m_blockingRequestsQueue.empty())
             {
                 // Blocking request...
-                AudioRequestType& request(m_blockingRequestsQueue.front());
+                AudioRequestVariant& request(m_blockingRequestsQueue.front());
                 m_oATL.ProcessRequestNew(AZStd::move(request));
-                handledBlockingRequests = true;
-
-                m_mainEvent.release();
-
                 m_blockingRequestsQueue.pop_front();
+
+                handledBlockingRequests = true;
+                m_mainEvent.release();
             }
         }
 
         if (!handledBlockingRequests)
         {
+            // Normal request processing: lock and swap the pending requests queue
+            // so that the queue can be opened for new requests while the current set
+            // of requests can be processed.
             TAudioRequestQueue requestsToProcess{};
             {
                 AZStd::scoped_lock lock(m_pendingRequestsMutex);
@@ -210,7 +212,7 @@ namespace Audio
             while (!requestsToProcess.empty())
             {
                 // Normal request...
-                AudioRequestType& request(requestsToProcess.front());
+                AudioRequestVariant& request(requestsToProcess.front());
                 m_oATL.ProcessRequestNew(AZStd::move(request));
                 requestsToProcess.pop_front();
             }

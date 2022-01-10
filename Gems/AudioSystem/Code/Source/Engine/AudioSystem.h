@@ -71,8 +71,8 @@ namespace Audio
         void Release() override;
 
         //! NEW AUDIO REQUESTS
-        void PushRequestNew(AudioRequestType&& request) override;
-        void PushRequestBlockingNew(AudioRequestType&& request) override;
+        void PushRequestNew(AudioRequestVariant&& request) override;
+        void PushRequestBlockingNew(AudioRequestVariant&& request) override;
         //~ NEW AUDIO REQUESTS
 
         void ExternalUpdate() override;
@@ -120,7 +120,7 @@ namespace Audio
 
 
         //! NEW AUDIO REQUESTS
-        using TAudioRequestQueue = AZStd::deque<AudioRequestType, Audio::AudioSystemStdAllocator>;
+        using TAudioRequestQueue = AZStd::deque<AudioRequestVariant, Audio::AudioSystemStdAllocator>;
         TAudioRequestQueue m_pendingRequestsQueue;
         TAudioRequestQueue m_blockingRequestsQueue;     // maybe doesn't need a queue, and these can be handled one at a time.
         AZStd::mutex m_pendingRequestsMutex;

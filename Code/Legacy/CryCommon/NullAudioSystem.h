@@ -62,8 +62,8 @@ namespace Audio
         void ExternalUpdate() override {}
 
         //! NEW AUDIO REQUESTS
-        void PushRequestNew(AudioRequestType&&) override {}
-        void PushRequestBlockingNew(AudioRequestType&&) override {}
+        void PushRequestNew(AudioRequestVariant&&) override {}
+        void PushRequestBlockingNew(AudioRequestVariant&&) override {}
         //~ NEW AUDIO REQUESTS
 
         void AddRequestListener(AudioRequestCallbackType, void*, EAudioRequestType, TATLEnumFlagsType) override {}

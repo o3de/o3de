@@ -39,7 +39,7 @@ namespace Audio
 
 
         //! NEW AUDIO REQUESTS
-        void ProcessRequestNew(AudioRequestType&& request);
+        void ProcessRequestNew(AudioRequestVariant&& request);
         //~ NEW AUDIO REQUESTS
 
 

@@ -125,16 +125,17 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     // Function Callback Typedefs
     using AudioRequestCallbackType = void(*)(const SAudioRequestInfo* const);
-    using TriggerFinishedCallbackType = void(*)(const TAudioObjectID, const TAudioControlID, void* const);
+    //using TriggerFinishedCallbackType = void(*)(const TAudioObjectID, const TAudioControlID, void* const);
 
 
 
     //! NEW AUDIO REQUESTS
 
+
 #define AUDIO_REQUEST_TYPE(NAMESPACE, CLASS, GUID) \
     AZ_RTTI(Audio::NAMESPACE::CLASS, GUID, Audio::AudioRequestBase);
 
-    class AudioRequestBase
+    struct AudioRequestBase
     {
     public:
         AZ_RTTI(Audio::AudioRequestBase, "{1D31EE4F-8D7F-41FD-87C0-C9BB76555570}");
@@ -162,7 +163,7 @@ namespace Audio
 
     namespace SystemRequest
     {
-        class Initialize
+        struct Initialize
             : public AudioRequestBase
         {
         public:
@@ -170,7 +171,7 @@ namespace Audio
             //size_t m_memorySize{ 0 };     // test!
         };
 
-        class Shutdown
+        struct Shutdown
             : public AudioRequestBase
         {
         public:
@@ -178,7 +179,7 @@ namespace Audio
             //bool m_shutdownFlag_DEMO{ false };    // test!
         };
 
-        class ReserveObject
+        struct ReserveObject
             : public AudioRequestBase
         {
         public:
@@ -188,7 +189,7 @@ namespace Audio
             AZStd::string m_objectName;
         };
 
-        class CreateSource
+        struct CreateSource
             : public AudioRequestBase
         {
         public:
@@ -202,7 +203,7 @@ namespace Audio
             SAudioInputConfig m_sourceConfig{};
         };
 
-        class DestroySource
+        struct DestroySource
             : public AudioRequestBase
         {
         public:
@@ -216,7 +217,7 @@ namespace Audio
             TAudioSourceId m_sourceId{ INVALID_AUDIO_SOURCE_ID };
         };
 
-        class LoadControls
+        struct LoadControls
             : public AudioRequestBase
         {
         public:
@@ -226,7 +227,7 @@ namespace Audio
             EATLDataScope m_scope{ eADS_NONE };
         };
 
-        class UnloadControls
+        struct UnloadControls
             : public AudioRequestBase
         {
         public:
@@ -237,7 +238,7 @@ namespace Audio
 
         // Do we need to differentiate Controls & Preloads?
 
-        class LoadBank
+        struct LoadBank
             : public AudioRequestBase
         {
         public:
@@ -248,7 +249,7 @@ namespace Audio
             bool m_autoLoadOnly{ false };
         };
 
-        class UnloadBank
+        struct UnloadBank
             : public AudioRequestBase
         {
         public:
@@ -257,7 +258,7 @@ namespace Audio
             TAudioPreloadRequestID m_preloadRequestId{ INVALID_AUDIO_PRELOAD_REQUEST_ID };
         };
 
-        class UnloadBanksByScope
+        struct UnloadBanksByScope
             : public AudioRequestBase
         {
         public:
@@ -266,7 +267,7 @@ namespace Audio
             EATLDataScope m_scope{ eADS_NONE };
         };
 
-        class ReloadAll
+        struct ReloadAll
             : public AudioRequestBase
         {
         public:
@@ -277,56 +278,56 @@ namespace Audio
             TAudioPreloadRequestID m_levelPreloadId{ INVALID_AUDIO_PRELOAD_REQUEST_ID };
         };
 
-        class LoseFocus
+        struct LoseFocus
             : public AudioRequestBase
         {
         public:
             AUDIO_REQUEST_TYPE(SystemRequest, LoseFocus, "{8F316485-BDC4-43F2-9333-E85B107C1321}");
         };
 
-        class GetFocus
+        struct GetFocus
             : public AudioRequestBase
         {
         public:
             AUDIO_REQUEST_TYPE(SystemRequest, GetFocus, "{ABBB7450-767B-4B46-825C-19970C1A15DE}");
         };
 
-        class MuteAll
+        struct MuteAll
             : public AudioRequestBase
         {
         public:
             AUDIO_REQUEST_TYPE(SystemRequest, MuteAll, "{9D3888DC-789D-4570-AB2E-85EB21509AA5}");
         };
 
-        class UnmuteAll
+        struct UnmuteAll
             : public AudioRequestBase
         {
         public:
             AUDIO_REQUEST_TYPE(SystemRequest, UnmuteAll, "{7A3AEF49-3152-44F5-AF51-A5D050611161}");
         };
 
-        class StopAllAudio
+        struct StopAllAudio
             : public AudioRequestBase
         {
         public:
             AUDIO_REQUEST_TYPE(SystemRequest, StopAllAudio, "{5D07B532-E4F5-4D37-826F-AAA26A53DFE7}");
         };
 
-        class DrawDebug
+        struct DrawDebug
             : public AudioRequestBase
         {
         public:
             AUDIO_REQUEST_TYPE(SystemRequest, DrawDebug, "{D85EDE10-382C-4748-B888-C442008D6401}");
         };
 
-        class ChangeLanguage
+        struct ChangeLanguage
             : public AudioRequestBase
         {
         public:
             AUDIO_REQUEST_TYPE(SystemRequest, ChangeLanguage, "{7AEEEF69-9685-4473-9EDB-ADC5D467998C}");
         };
 
-        class SetPanningMode
+        struct SetPanningMode
             : public AudioRequestBase
         {
         public:
@@ -335,13 +336,11 @@ namespace Audio
             PanningMode m_panningMode{ PanningMode::Speakers };
         };
 
-        // There seems to be some missing requests: DebugDraw, GetFocus, LoseFocus, etc.
-
     } // namespace System
 
     namespace ObjectRequest
     {
-        class ExecuteTrigger
+        struct ExecuteTrigger
             : public AudioRequestBase
         {
         public:
@@ -350,7 +349,7 @@ namespace Audio
             TAudioControlID m_triggerId{ INVALID_AUDIO_CONTROL_ID };
         };
 
-        class PrepareTrigger
+        struct PrepareTrigger
             : public AudioRequestBase
         {
         public:
@@ -359,7 +358,7 @@ namespace Audio
             TAudioControlID m_triggerId{ INVALID_AUDIO_CONTROL_ID };
         };
 
-        class UnprepareTrigger
+        struct UnprepareTrigger
             : public AudioRequestBase
         {
         public:
@@ -368,7 +367,7 @@ namespace Audio
             TAudioControlID m_triggerId{ INVALID_AUDIO_CONTROL_ID };
         };
 
-        class StopTrigger
+        struct StopTrigger
             : public AudioRequestBase
         {
         public:
@@ -377,7 +376,7 @@ namespace Audio
             TAudioControlID m_triggerId{ INVALID_AUDIO_CONTROL_ID };
         };
 
-        class StopAllTriggers
+        struct StopAllTriggers
             : public AudioRequestBase
         {
         public:
@@ -386,7 +385,7 @@ namespace Audio
             bool m_filterByOwner{ false };
         };
 
-        class SetPosition
+        struct SetPosition
             : public AudioRequestBase
         {
         public:
@@ -395,7 +394,7 @@ namespace Audio
             SATLWorldPosition m_position{};
         };
 
-        class SetParameterValue
+        struct SetParameterValue
             : public AudioRequestBase
         {
         public:
@@ -405,7 +404,7 @@ namespace Audio
             float m_value{ 0.f };
         };
 
-        class SetSwitchValue
+        struct SetSwitchValue
             : public AudioRequestBase
         {
         public:
@@ -415,7 +414,7 @@ namespace Audio
             TAudioSwitchStateID m_stateId{ INVALID_AUDIO_SWITCH_STATE_ID };
         };
 
-        class SetEnvironmentValue
+        struct SetEnvironmentValue
             : public AudioRequestBase
         {
         public:
@@ -425,28 +424,28 @@ namespace Audio
             float m_value{ 0.f };
         };
 
-        class ResetEnvironments
+        struct ResetEnvironments
             : public AudioRequestBase
         {
         public:
             AUDIO_REQUEST_TYPE(ObjectRequest, ResetEnvironments, "{5B92F5C5-DD55-46D9-9666-57F30D0E8CA3}");
         };
 
-        class ResetParameters
+        struct ResetParameters
             : public AudioRequestBase
         {
         public:
             AUDIO_REQUEST_TYPE(ObjectRequest, ResetParameters, "{C94D1F26-9331-47B4-8A81-61C3A3526664}");
         };
 
-        class Release
+        struct Release
             : public AudioRequestBase
         {
         public:
             AUDIO_REQUEST_TYPE(ObjectRequest, Release, "{8C7995B6-AD5C-45AB-AEEE-2AA823843FBC}");
         };
 
-        class ExecuteSourceTrigger
+        struct ExecuteSourceTrigger
             : public AudioRequestBase
         {
         public:
@@ -456,7 +455,7 @@ namespace Audio
             SAudioSourceInfo m_sourceInfo{};
         };
 
-        class SetMultiplePositions
+        struct SetMultiplePositions
             : public AudioRequestBase
         {
         public:
@@ -477,7 +476,7 @@ namespace Audio
 
     namespace ListenerRequest
     {
-        class SetWorldTransform
+        struct SetWorldTransform
             : public AudioRequestBase
         {
         public:
@@ -488,7 +487,7 @@ namespace Audio
 
     } // namespace Listener
 
-    using AudioRequestType = AZStd::variant<
+    using AudioRequestVariant = AZStd::variant<
         Audio::SystemRequest::Initialize,
         Audio::SystemRequest::Shutdown,
         Audio::SystemRequest::ReserveObject,
@@ -592,8 +591,8 @@ namespace Audio
         virtual void ExternalUpdate() = 0;
 
         //! NEW AUDIO REQUESTS
-        virtual void PushRequestNew(AudioRequestType&& request) = 0;
-        virtual void PushRequestBlockingNew(AudioRequestType&& request) = 0;
+        virtual void PushRequestNew(AudioRequestVariant&& request) = 0;
+        virtual void PushRequestBlockingNew(AudioRequestVariant&& request) = 0;
         //~ NEW AUDIO REQUESTS
 
         virtual void AddRequestListener(

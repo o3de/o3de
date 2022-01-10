@@ -129,7 +129,7 @@ namespace Audio
 
     //! NEW AUDIO REQUESTS
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioTranslationLayer::ProcessRequestNew(AudioRequestType&& request)
+    void CAudioTranslationLayer::ProcessRequestNew(AudioRequestVariant&& request)
     {
         // Version A - AZStd::visit w/ a processor object
         // Pros: No wonky syntax, the processor class can be implemented elsewhere
@@ -640,7 +640,7 @@ namespace Audio
 
                 else
                 {
-                    static_assert(false, "AudioRequestType visitor is non-exhaustive across all variant types!");
+                    static_assert(false, "AudioRequestVariant visitor is non-exhaustive across all variant types!");
                     result = EAudioRequestStatus::FailureInvalidRequest;
                 }
 
