@@ -48,7 +48,7 @@ if [[ ! -z "$RUN_CONFIGURE" ]]; then
     echo "${CONFIGURE_CMD}" > ${LAST_CONFIGURE_CMD_FILE}
 fi
 
-echo [ci_build] cmake --build . --target ${CMAKE_TARGET} --config ${CONFIGURATION} -j $(sysctl -n hw.ncpu) -- ${CMAKE_NATIVE_BUILD_ARGS}
-cmake --build . --target ${CMAKE_TARGET} --config ${CONFIGURATION} -j $(sysctl -n hw.ncpu) -- ${CMAKE_NATIVE_BUILD_ARGS}
+echo [ci_build] cmake --build . --target ${CMAKE_TARGET} --config ${CONFIGURATION} -j $(/usr/sbin/sysctl -n hw.ncpu) -- ${CMAKE_NATIVE_BUILD_ARGS}
+cmake --build . --target ${CMAKE_TARGET} --config ${CONFIGURATION} -j $(/usr/sbin/sysctl -n hw.ncpu) -- ${CMAKE_NATIVE_BUILD_ARGS}
 
 popd

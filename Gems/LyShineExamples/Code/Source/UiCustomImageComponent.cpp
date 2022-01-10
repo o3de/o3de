@@ -72,34 +72,23 @@ namespace LyShineExamples
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    void UiCustomImageComponent::Render([[maybe_unused]] LyShine::IRenderGraph* renderGraph)
+    void UiCustomImageComponent::Render(LyShine::IRenderGraph* renderGraph)
     {
-#ifdef LYSHINE_ATOM_TODO // [GHI #3568] Convert draws to use Atom
         // get fade value (tracked by UiRenderer) and compute the desired alpha for the image
         float fade = renderGraph->GetAlphaFade();
         float desiredAlpha = m_overrideAlpha * fade;
         uint8 desiredPackedAlpha = static_cast<uint8>(desiredAlpha * 255.0f);
 
-        // if desired alpha is zero then no need to do any more
-        if (desiredPackedAlpha == 0)
-        {
-            return;
-        }
-
-        ISprite* sprite = (m_overrideSprite) ? m_overrideSprite : m_sprite;
-        ITexture* texture = (sprite) ? sprite->GetTexture() : nullptr;
-
-        if (!texture)
-        {
-            // if there is no texture we will just use a white texture
-            // TODO:  Get a default atom texture here when possible
-            //texture = ???->EF_GetTextureByID(???->GetWhiteTextureId());
-        }
-
         if (m_isRenderCacheDirty)
         {
             RenderToCache(renderGraph);
             m_isRenderCacheDirty = false;
+        }
+
+        // if desired alpha is zero then no need to do any more
+        if (desiredPackedAlpha == 0)
+        {
+            return;
         }
 
         // Render cache is now valid - render using the cache
@@ -109,7 +98,7 @@ namespace LyShineExamples
         if (m_cachedPrimitive.m_vertices[0].color.a != desiredPackedAlpha)
         {
             // go through all the cached vertices and update the alpha values
-            UCol desiredPackedColor = m_cachedPrimitive.m_vertices[0].color;
+            LyShine::UCol desiredPackedColor = m_cachedPrimitive.m_vertices[0].color;
             desiredPackedColor.a = desiredPackedAlpha;
             for (int i = 0; i < m_cachedPrimitive.m_numVertices; ++i)
             {
@@ -117,11 +106,12 @@ namespace LyShineExamples
             }
         }
 
+        ISprite* sprite = (m_overrideSprite) ? m_overrideSprite : m_sprite;
+        AZ::Data::Instance<AZ::RPI::Image> image = sprite->GetImage();
         bool isTextureSRGB = false;
         bool isTexturePremultipliedAlpha = false; // we are not rendering from a render target with alpha in it
         LyShine::BlendMode blendMode = LyShine::BlendMode::Normal;
-        renderGraph->AddPrimitive(&m_cachedPrimitive, texture, m_clamp, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
-#endif
+        renderGraph->AddPrimitive(&m_cachedPrimitive, image, m_clamp, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

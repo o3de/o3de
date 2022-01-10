@@ -456,7 +456,7 @@ namespace ScriptCanvasEditor
                         return;
                     }
 
-                    if (!data->m_runtimeData.m_interface.HasAnyFunctionality())
+                    if (!data->m_interfaceData.m_interface.HasAnyFunctionality())
                     {
                         // check for deleting the old entry
                         return;
@@ -517,7 +517,7 @@ namespace ScriptCanvasEditor
                 return;
             }
 
-            const ScriptCanvas::Grammar::SubgraphInterface& graphInterface = data->m_runtimeData.m_interface;
+            const ScriptCanvas::Grammar::SubgraphInterface& graphInterface = data->m_interfaceData.m_interface;
             if (!graphInterface.HasAnyFunctionality())
             {
                 return;
@@ -566,7 +566,7 @@ namespace ScriptCanvasEditor
                 return;
             }
 
-            const ScriptCanvas::Grammar::SubgraphInterface& graphInterface = data->m_runtimeData.m_interface;
+            const ScriptCanvas::Grammar::SubgraphInterface& graphInterface = data->m_interfaceData.m_interface;
             if (!graphInterface.HasAnyFunctionality())
             {
                 return;

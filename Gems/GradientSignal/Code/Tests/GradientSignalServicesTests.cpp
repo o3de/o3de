@@ -6,13 +6,13 @@
  *
  */
 
-#include "Tests/GradientSignalTestMocks.h"
+#include <Tests/GradientSignalTestFixtures.h>
 
 #include <AzTest/AzTest.h>
 
-#include <Source/Components/ConstantGradientComponent.h>
-#include <Source/Components/DitherGradientComponent.h>
-#include <Source/Components/InvertGradientComponent.h>
+#include <GradientSignal/Components/ConstantGradientComponent.h>
+#include <GradientSignal/Components/DitherGradientComponent.h>
+#include <GradientSignal/Components/InvertGradientComponent.h>
 
 namespace UnitTest
 {

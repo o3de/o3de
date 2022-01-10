@@ -12,6 +12,7 @@
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
 #include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/Component/TickBus.h>
 
 namespace AzNetworking
 {

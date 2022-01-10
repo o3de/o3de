@@ -85,7 +85,7 @@ namespace GraphCanvas
                 if (leftSpot < textRect.right())
                 {
                     int visibleLength = AZStd::GetMin(selectedTextLength, textRect.right() - leftSpot);
-                    QRect highlightRect(textRect.left() + preSelectedTextLength, textRect.top(), visibleLength, textRect.height());
+                    QRect highlightRect(textRect.left() + preSelectedTextLength + 4, textRect.top(), visibleLength, textRect.height());
 
                     // paint the highlight rect
                     painter->fillRect(highlightRect, options.palette.highlight());
