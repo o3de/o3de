@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Tests/GradientSignalTestMocks.h>
+#include <LmbrCentral/Shape/MockShapes.h>
 
 namespace UnitTest
 {
@@ -43,22 +44,35 @@ namespace UnitTest
             return entity->CreateComponent<Component>();
         }
 
+        AZStd::unique_ptr<testing::NiceMock<UnitTest::MockShapeComponentRequests>> CreateMockShape(
+            const AZ::Aabb& spawnerBox, const AZ::EntityId& shapeEntityId);
+        AZStd::unique_ptr<MockSurfaceDataSystem> CreateMockSurfaceDataSystem(const AZ::Aabb& spawnerBox);
+
         AZStd::unique_ptr<AZ::Entity> CreateTestEntity(float shapeHalfBounds);
 
         void CreateTestConstantGradient(AZ::Entity* entity);
         void CreateTestImageGradient(AZ::Entity* entity);
         void CreateTestPerlinGradient(AZ::Entity* entity);
         void CreateTestRandomGradient(AZ::Entity* entity);
+        void CreateTestShapeAreaFalloffGradient(AZ::Entity* entity);
 
         void CreateTestDitherGradient(AZ::Entity* entity, const AZ::EntityId& inputGradientId);
         void CreateTestInvertGradient(AZ::Entity* entity, const AZ::EntityId& inputGradientId);
         void CreateTestLevelsGradient(AZ::Entity* entity, const AZ::EntityId& inputGradientId);
+        void CreateTestMixedGradient(AZ::Entity* entity, const AZ::EntityId& baseGradientId, const AZ::EntityId& mixedGradientId);
         void CreateTestPosterizeGradient(AZ::Entity* entity, const AZ::EntityId& inputGradientId);
         void CreateTestReferenceGradient(AZ::Entity* entity, const AZ::EntityId& inputGradientId);
+        void CreateTestSmoothStepGradient(AZ::Entity* entity, const AZ::EntityId& inputGradientId);
+        void CreateTestThresholdGradient(AZ::Entity* entity, const AZ::EntityId& inputGradientId);
+
+        void CreateTestSurfaceAltitudeGradient(AZ::Entity* entity);
+        void CreateTestSurfaceMaskGradient(AZ::Entity* entity);
+        void CreateTestSurfaceSlopeGradient(AZ::Entity* entity);
 
         AZStd::unique_ptr<AZ::ComponentApplication> m_app;
         AZ::Entity* m_systemEntity = nullptr;
         ImageAssetMockAssetHandler* m_mockHandler = nullptr;
+        AZStd::vector<AZStd::unique_ptr<testing::NiceMock<UnitTest::MockShapeComponentRequests>>>* m_mockShapeHandlers = nullptr;
     };
 
     struct GradientSignalTest
