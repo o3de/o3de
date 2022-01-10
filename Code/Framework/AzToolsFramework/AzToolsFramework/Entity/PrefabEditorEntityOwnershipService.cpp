@@ -349,12 +349,8 @@ namespace AzToolsFramework
             instanceToParentUnder = *m_rootInstance;
         }
 
-        AZStd::unique_ptr<Prefab::Instance> instantiatedPrefabInstance = m_prefabSystemComponent->InstantiatePrefab(
-            filePath, instanceToParentUnder,
-            [this](const EntityList& entities)
-            {
-                HandleEntitiesAdded(entities);
-            });
+        AZStd::unique_ptr<Prefab::Instance> instantiatedPrefabInstance =
+            m_prefabSystemComponent->InstantiatePrefab(filePath, instanceToParentUnder);
 
         if (instantiatedPrefabInstance)
         {
