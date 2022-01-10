@@ -156,8 +156,6 @@ CLyShine::CLyShine([[maybe_unused]] ISystem* system)
     UiElementComponent::Initialize();
     UiCanvasComponent::Initialize();
 
-    UiAnimationSystem::StaticInitialize();
-
     AzFramework::InputChannelEventListener::Connect();
     AzFramework::InputTextEventListener::Connect();
     UiCursorBus::Handler::BusConnect();
