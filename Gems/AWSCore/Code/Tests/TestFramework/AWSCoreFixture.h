@@ -13,6 +13,7 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzFramework/IO/LocalFileIO.h>
+#include <Tests/Utils/Utils.h>
 
 #include <Framework/JsonObjectHandler.h>
 #include <Framework/JsonWriter.h>
@@ -209,7 +210,7 @@ protected:
         return testTempDirPath;
     }
 
-    AZ::Test::ScopedAutoTempDirectory m_testTempDirectory;
+    UnitTest::ScopedTemporaryDirectory m_testTempDirectory;
     AZStd::unique_ptr<AZ::SettingsRegistryImpl> m_settingsRegistry;
     AZStd::unique_ptr<AZ::ComponentApplication> m_app;
 };

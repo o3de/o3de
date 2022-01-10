@@ -19,6 +19,7 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/IO/LocalFileIO.h>
+#include <Tests/Utils/Utils.h>
 
 namespace AWSMetrics
 {
@@ -142,7 +143,7 @@ namespace AWSMetrics
         AZ::IO::FileIOBase* m_priorFileIO = nullptr;
         AZ::IO::FileIOBase* m_localFileIO = nullptr;
 
-        AZ::Test::ScopedAutoTempDirectory m_testDirectory;
+        UnitTest::ScopedTemporaryDirectory m_testDirectory;
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
         AZStd::unique_ptr<AZ::JsonRegistrationContext> m_registrationContext;
         AZStd::unique_ptr<AZ::SettingsRegistryImpl> m_settingsRegistry;

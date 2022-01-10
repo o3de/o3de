@@ -163,6 +163,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 AZ::AzTest
                 AZ::AzFramework
+                AZ::AzFrameworkTestShared
                 AZ::AWSNativeSDKInit
                 Gem::AWSCore.Static
     )

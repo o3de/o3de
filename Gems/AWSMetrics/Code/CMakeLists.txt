@@ -96,6 +96,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
                 AZ::AzCore
                 AZ::AzFramework
+                AZ::AzFrameworkTestShared
                 Gem::AWSMetrics.Static
         RUNTIME_DEPENDENCIES
             Gem::AWSCore
