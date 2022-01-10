@@ -5,15 +5,22 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
+from typing import List
+from math import isclose
+import collections.abc
+
 import azlmbr.bus as bus
 import azlmbr.editor as editor
 import azlmbr.entity as entity
 import azlmbr.legacy.general as general
 import azlmbr.object
 
-from typing import List
-from math import isclose
-import collections.abc
+from editor_python_test_tools.utils import TestHelper as helper
+
+
+def open_base_level():
+    helper.init_idle()
+    helper.open_level("Prefab", "Base")
 
 
 def find_entity_by_name(entity_name):
