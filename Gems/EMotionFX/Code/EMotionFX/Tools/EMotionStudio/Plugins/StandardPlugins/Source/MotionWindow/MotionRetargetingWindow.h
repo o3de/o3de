@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __EMSTUDIO_MOTIONRETARGETINGWINDOW_H
-#define __EMSTUDIO_MOTIONRETARGETINGWINDOW_H
+#pragma once
 
 // include MCore
 #if !defined(Q_MOC_RUN)
@@ -52,6 +51,3 @@ namespace EMStudio
         CommandSystem::SelectionList        m_selectionList;
     };
 } // namespace EMStudio
-
-
-#endif

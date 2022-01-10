@@ -115,6 +115,7 @@ namespace AZ
             m_ownMemoryBlock[i] = false;
         }
 
+        AZ_Assert(m_desc.m_numMemoryBlocks > 0, "At least one memory block is required");
         for (int i = 0; i < m_desc.m_numMemoryBlocks; ++i)
         {
             if (m_desc.m_memoryBlocks[i] == nullptr)  // Allocate memory block if requested!
@@ -130,17 +131,6 @@ namespace AZ
             AZDLMalloc::mspace_az_set_expandable(m_memSpaces[i], false);
 
             m_capacity += m_desc.m_memoryBlocksByteSize[i];
-        }
-
-        if (m_desc.m_numMemoryBlocks == 0)
-        {
-            // Create default memory space if we can to serve for default allocations
-            m_memSpaces[0] = AZDLMalloc::create_mspace(0, m_desc.m_isMultithreadAlloc);
-            if (m_memSpaces[0])
-            {
-                AZDLMalloc::mspace_az_set_expandable(m_memSpaces[0], true);
-                m_capacity = Platform::GetHeapCapacity();
-            }
         }
     }
 

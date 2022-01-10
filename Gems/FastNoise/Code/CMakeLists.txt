@@ -18,9 +18,11 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PUBLIC
-            Legacy::CryCommon
             Gem::GradientSignal
+        PUBLIC
+            AZ::AzCore
         PRIVATE
+            AZ::AzFramework
             Gem::LmbrCentral
 )
 
