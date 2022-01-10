@@ -255,16 +255,16 @@ namespace AZ
             return false;
         }
 
-        AZ::Vector3 CameraComponent::ScreenToWorld([[maybe_unused]] const AzFramework::ScreenPoint& screenPosition)
+        AZ::Vector3 CameraComponent::ScreenToWorld([[maybe_unused]] const AZ::Vector2& screenPosition)
         {
             // not implemented
             return AZ::Vector3::CreateZero();
         }
 
-        AzFramework::ScreenPoint CameraComponent::WorldToScreen([[maybe_unused]] const AZ::Vector3& worldPosition)
+        AZ::Vector2 CameraComponent::WorldToScreen([[maybe_unused]] const AZ::Vector3& worldPosition)
         {
             // not implemented
-            return AzFramework::ScreenPoint();
+            return AZ::Vector2::CreateZero();
         }
 
         void CameraComponent::OnViewportResized(uint32_t width, uint32_t height)

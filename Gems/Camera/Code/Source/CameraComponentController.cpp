@@ -414,14 +414,16 @@ namespace Camera
         return m_isActiveView;
     }
 
-    AZ::Vector3 CameraComponentController::ScreenToWorld(const AzFramework::ScreenPoint& screenPosition)
+    AZ::Vector3 CameraComponentController::ScreenToWorld(const AZ::Vector2& screenPosition)
     {
-        return AzFramework::ScreenToWorld(screenPosition, GetCameraState());
+        const AzFramework::ScreenPoint point{ static_cast<int>(screenPosition.GetX()), static_cast<int>(screenPosition.GetY()) };
+        return AzFramework::ScreenToWorld(point, GetCameraState());
     }
 
-    AzFramework::ScreenPoint CameraComponentController::WorldToScreen(const AZ::Vector3& worldPosition)
+    AZ::Vector2 CameraComponentController::WorldToScreen(const AZ::Vector3& worldPosition)
     {
-        return AzFramework::WorldToScreen(worldPosition, GetCameraState());
+        const AzFramework::ScreenPoint& point = AzFramework::WorldToScreen(worldPosition, GetCameraState());
+        return AZ::Vector2(static_cast<float>(point.m_x), static_cast<float>(point.m_y));
     }
 
     AzFramework::CameraState CameraComponentController::GetCameraState()

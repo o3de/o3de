@@ -111,8 +111,8 @@ namespace Camera
         void MakeActiveView() override;
         bool IsActiveView() override;
 
-        AZ::Vector3 ScreenToWorld(const AzFramework::ScreenPoint& screenPosition) override;
-        AzFramework::ScreenPoint WorldToScreen(const AZ::Vector3& worldPosition) override;
+        AZ::Vector3 ScreenToWorld(const AZ::Vector2& screenPosition) override;
+        AZ::Vector2 WorldToScreen(const AZ::Vector3& worldPosition) override;
 
         // AZ::TransformNotificationBus::Handler interface
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
