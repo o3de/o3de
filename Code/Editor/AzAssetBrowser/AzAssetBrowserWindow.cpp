@@ -83,6 +83,15 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     m_ui->m_assetBrowserTableViewWidget->setVisible(false);
     m_ui->m_toggleDisplayViewBtn->setVisible(false);
     m_ui->m_searchWidget->SetFilterInputInterval(AZStd::chrono::milliseconds(250));
+    m_ui->m_collapseAllButton->setIcon(QIcon(":/stylesheet/img/16x16/layers.png"));
+
+    connect(
+        m_ui->m_collapseAllButton, &QPushButton::released, this,
+        [this]()
+        {
+            m_ui->m_assetBrowserTreeViewWidget->collapseAll();
+        });
+
     if (ed_useNewAssetBrowserTableView)
     {
         m_ui->m_toggleDisplayViewBtn->setVisible(true);
