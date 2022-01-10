@@ -27,6 +27,9 @@
 
 #include <AzCore/RTTI/BehaviorContext.h>
 
+#pragma optimize("", off)
+#pragma inline_depth(0)
+
 namespace AZ
 {
     namespace Render
@@ -253,7 +256,7 @@ namespace AZ
             MaterialComponentNotificationBus::Handler::BusConnect(entityId);
             AzFramework::BoundsRequestBus::Handler::BusConnect(entityId);
             AzFramework::RenderGeometry::IntersectionRequestBus::Handler::BusConnect({ entityId, entityContextId });
-            AzFramework::RenderGeometry::IntersectionNotificationBus::Bind(m_intersectionNotificationsBus, entityContextId);
+            AzFramework::RenderGeometry::IntersectionNotificationBus::Bind(m_intersectionNotificationBus, entityContextId);
 
             // Buses must be connected before RegisterModel in case requests are made as a result of HandleModelChange
             RegisterModel();
@@ -294,11 +297,12 @@ namespace AZ
             if (m_meshFeatureProcessor)
             {
                 m_meshFeatureProcessor->SetTransform(m_meshHandle, world, m_cachedNonUniformScale);
-                // ensure the render geometry is kept in sync with any changes to the entity the mesh is on
-                AzFramework::RenderGeometry::IntersectionNotificationBus::Event(
-                    m_intersectionNotificationsBus, &AzFramework::RenderGeometry::IntersectionNotificationBus::Events::OnGeometryChanged,
-                    m_entityComponentIdPair.GetEntityId());
             }
+
+            // ensure the render geometry is kept in sync with any changes to the entity the mesh is on
+            AzFramework::RenderGeometry::IntersectionNotificationBus::Event(
+                m_intersectionNotificationBus, &AzFramework::RenderGeometry::IntersectionNotificationBus::Events::OnGeometryChanged,
+                m_entityComponentIdPair.GetEntityId());
         }
 
         void MeshComponentController::HandleNonUniformScaleChange(const AZ::Vector3& nonUniformScale)
@@ -378,7 +382,7 @@ namespace AZ
                 MaterialReceiverNotificationBus::Event(entityId, &MaterialReceiverNotificationBus::Events::OnMaterialAssignmentsChanged);
                 AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(entityId);
                 AzFramework::RenderGeometry::IntersectionNotificationBus::Event(
-                    m_intersectionNotificationsBus, &AzFramework::RenderGeometry::IntersectionNotificationBus::Events::OnGeometryChanged,
+                    m_intersectionNotificationBus, &AzFramework::RenderGeometry::IntersectionNotificationBus::Events::OnGeometryChanged,
                     m_entityComponentIdPair.GetEntityId());
             }
         }
@@ -624,3 +628,6 @@ namespace AZ
         }
     } // namespace Render
 } // namespace AZ
+
+#pragma optimize("", on)
+#pragma inline_depth()

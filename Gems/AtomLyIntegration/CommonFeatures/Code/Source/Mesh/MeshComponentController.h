@@ -160,7 +160,7 @@ namespace AZ
             MeshComponentConfig m_configuration;
             AZ::Vector3 m_cachedNonUniformScale = AZ::Vector3::CreateOne();
             //! Cached bus to use to notify RenderGeometry::Intersector the entity/component has changed.
-            AzFramework::RenderGeometry::IntersectionNotificationBus::BusPtr m_intersectionNotificationsBus;
+            AzFramework::RenderGeometry::IntersectionNotificationBus::BusPtr m_intersectionNotificationBus;
 
             MeshFeatureProcessorInterface::ModelChangedEvent::Handler m_changeEventHandler
             {
@@ -172,6 +172,5 @@ namespace AZ
                 [&](const AZ::Vector3& nonUniformScale) { HandleNonUniformScaleChange(nonUniformScale); }
             };
         };
-
     } // namespace Render
 } // namespace AZ

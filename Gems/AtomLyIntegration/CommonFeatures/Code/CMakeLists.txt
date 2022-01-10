@@ -77,8 +77,7 @@ ly_create_alias(NAME AtomLyIntegration_CommonFeatures.Servers NAMESPACE Gem
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME AtomLyIntegration_CommonFeatures.Editor GEM_MODULE
-
+        NAME AtomLyIntegration_CommonFeatures.Editor.Static STATIC
         NAMESPACE Gem
         AUTOUIC
         AUTOMOC
@@ -115,6 +114,25 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             Legacy::EditorCommon
     )
 
+    ly_add_target(
+        NAME AtomLyIntegration_CommonFeatures.Editor GEM_MODULE
+        NAMESPACE Gem
+        FILES_CMAKE
+            atomlyintegration_commonfeatures_shared_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                .
+                Source
+            PUBLIC
+                Include
+        COMPILE_DEFINITIONS
+            PRIVATE
+                ATOMLYINTEGRATION_FEATURE_COMMON_EDITOR
+        BUILD_DEPENDENCIES
+            PRIVATE
+                Gem::AtomLyIntegration_CommonFeatures.Editor.Static
+    )
+
     # The AtomLyIntegration_CommonFeatures.Editor module is used for Builders and Tools
     ly_create_alias(NAME AtomLyIntegration_CommonFeatures.Builders NAMESPACE Gem
         TARGETS
@@ -128,6 +146,33 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::AtomLyIntegration_CommonFeatures.Editor
             Gem::GradientSignal.Tools
     )
+
+    ################################################################################
+    # Tests
+    ################################################################################
+    if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+        ly_add_target(
+            NAME AtomLyIntegration_CommonFeatures.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+            NAMESPACE Gem
+            FILES_CMAKE
+                atomlyintegration_commonfeatures_editor_test_files.cmake
+            INCLUDE_DIRECTORIES
+                PRIVATE
+                    Tests
+                    Source
+            BUILD_DEPENDENCIES
+                PRIVATE
+                    AZ::AzTest
+                    AZ::AzTestShared
+                    AZ::AzToolsFramework
+                    AZ::AzToolsFrameworkTestCommon
+                    Gem::AtomLyIntegration_CommonFeatures.Static
+                    Gem::AtomLyIntegration_CommonFeatures.Editor.Static
+        )
+        ly_add_googletest(
+            NAME Gem::AtomLyIntegration_CommonFeatures.Editor.Tests
+        )
+    endif()
 endif()
 
 # AtomLyIntegration_CommonFeatures gem targets are required as part of the Editor and AssetProcessor
