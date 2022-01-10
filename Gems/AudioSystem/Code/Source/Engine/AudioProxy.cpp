@@ -7,14 +7,12 @@
  */
 
 
-#include "AudioProxy.h"
+#include <AudioProxy.h>
 
 #include <ATLCommon.h>
 #include <SoundCVars.h>
 #include <AudioLogger.h>
 #include <MathConversion.h>
-
-#include <ISystem.h>
 
 namespace Audio
 {

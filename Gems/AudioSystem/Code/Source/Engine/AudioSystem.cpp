@@ -204,7 +204,7 @@ namespace Audio
             TAudioRequestQueue requestsToProcess{};
             {
                 AZStd::scoped_lock lock(m_pendingRequestsMutex);
-                m_pendingRequestsQueue.swap(AZStd::move(requestsToProcess));
+                requestsToProcess.swap(AZStd::move(m_pendingRequestsQueue));
             }
 
             while (!requestsToProcess.empty())

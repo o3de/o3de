@@ -172,14 +172,6 @@ namespace Audio
             {
                 EAudioRequestStatus result = EAudioRequestStatus::None;
 
-                // This should at least get the global audio object, if not it's a failure...
-                auto audioObject = GetRequestObject(request.m_audioObjectId);
-                if (audioObject == nullptr)
-                {
-                    request.SetStatus(EAudioRequestStatus::FailureInvalidObjectId);
-                    return request.GetStatus();
-                }
-
                 request.SetStatus(EAudioRequestStatus::Pending);
 
                 using T = AZStd::decay_t<decltype(request)>;
@@ -312,8 +304,12 @@ namespace Audio
 
                 else if constexpr (AZStd::is_same_v<T, Audio::ObjectRequest::ExecuteTrigger>)
                 {
-                    if (auto it = m_cTriggers.find(request.m_triggerId);
-                        it != m_cTriggers.end())
+                    auto audioObject = GetRequestObject(request.m_audioObjectId);
+                    if (!audioObject)
+                    {
+                        result = EAudioRequestStatus::FailureInvalidObjectId;
+                    }
+                    else if (auto it = m_cTriggers.find(request.m_triggerId); it != m_cTriggers.end())
                     {
                         result = ActivateTrigger(
                             audioObject, it->second
@@ -331,8 +327,12 @@ namespace Audio
 
                 else if constexpr (AZStd::is_same_v<T, Audio::ObjectRequest::PrepareTrigger>)
                 {
-                    if (auto it = m_cTriggers.find(request.m_triggerId);
-                        it != m_cTriggers.end())
+                    auto audioObject = GetRequestObject(request.m_audioObjectId);
+                    if (!audioObject)
+                    {
+                        result = EAudioRequestStatus::FailureInvalidObjectId;
+                    }
+                    else if (auto it = m_cTriggers.find(request.m_triggerId); it != m_cTriggers.end())
                     {
                         result = PrepUnprepTriggerAsync(audioObject, it->second, true);
                     }
@@ -344,8 +344,12 @@ namespace Audio
 
                 else if constexpr (AZStd::is_same_v<T, Audio::ObjectRequest::UnprepareTrigger>)
                 {
-                    if (auto it = m_cTriggers.find(request.m_triggerId);
-                        it != m_cTriggers.end())
+                    auto audioObject = GetRequestObject(request.m_audioObjectId);
+                    if (!audioObject)
+                    {
+                        result = EAudioRequestStatus::FailureInvalidObjectId;
+                    }
+                    else if (auto it = m_cTriggers.find(request.m_triggerId); it != m_cTriggers.end())
                     {
                         result = PrepUnprepTriggerAsync(audioObject, it->second, false);
                     }
@@ -357,8 +361,12 @@ namespace Audio
 
                 else if constexpr (AZStd::is_same_v<T, Audio::ObjectRequest::StopTrigger>)
                 {
-                    if (auto it = m_cTriggers.find(request.m_triggerId);
-                        it != m_cTriggers.end())
+                    auto audioObject = GetRequestObject(request.m_audioObjectId);
+                    if (!audioObject)
+                    {
+                        result = EAudioRequestStatus::FailureInvalidObjectId;
+                    }
+                    else if (auto it = m_cTriggers.find(request.m_triggerId); it != m_cTriggers.end())
                     {
                         result = StopTrigger(audioObject, it->second);
                     }
@@ -370,23 +378,36 @@ namespace Audio
 
                 else if constexpr (AZStd::is_same_v<T, Audio::ObjectRequest::StopAllTriggers>)
                 {
-                    // TODO: Filter by Owner - there is no owner in the request yet
-                    //if (request.m_filterByOwner)
-                    //{
-                    //    StopAllTriggers(audioObject, request.m_owner);
-                    //}
-                    //else
-                    //{
-                    StopAllTriggers(audioObject);
-                    //}
+                    auto audioObject = GetRequestObject(request.m_audioObjectId);
+                    if (!audioObject)
+                    {
+                        result = EAudioRequestStatus::FailureInvalidObjectId;
+                    }
+                    else
+                    {
+                        // TODO: Filter by Owner - there is no owner in the request yet
+                        //if (request.m_filterByOwner)
+                        //{
+                        //    StopAllTriggers(audioObject, request.m_owner);
+                        //}
+                        //else
+                        //{
+                        StopAllTriggers(audioObject);
+                        //}
 
-                    // Should we return the result of StopAllTriggers call instead?
-                    result = EAudioRequestStatus::Success;
+                        // Should we return the result of StopAllTriggers call instead?
+                        result = EAudioRequestStatus::Success;
+                    }
                 }
 
                 else if constexpr (AZStd::is_same_v<T, Audio::ObjectRequest::SetPosition>)
                 {
-                    if (audioObject->HasPosition())
+                    auto audioObject = GetRequestObject(request.m_audioObjectId);
+                    if (!audioObject)
+                    {
+                        result = EAudioRequestStatus::FailureInvalidObjectId;
+                    }
+                    else if (audioObject->HasPosition())
                     {
                         auto const positionalObject = static_cast<CATLAudioObject*>(audioObject);
                         AudioSystemImplementationRequestBus::BroadcastResult(
@@ -407,8 +428,12 @@ namespace Audio
 
                 else if constexpr (AZStd::is_same_v<T, Audio::ObjectRequest::SetParameterValue>)
                 {
-                    if (auto it = m_cRtpcs.find(request.m_parameterId);
-                        it != m_cRtpcs.end())
+                    auto audioObject = GetRequestObject(request.m_audioObjectId);
+                    if (!audioObject)
+                    {
+                        result = EAudioRequestStatus::FailureInvalidObjectId;
+                    }
+                    else if (auto it = m_cRtpcs.find(request.m_parameterId); it != m_cRtpcs.end())
                     {
                         result = SetRtpc(audioObject, it->second, request.m_value);
                     }
@@ -420,8 +445,12 @@ namespace Audio
 
                 else if constexpr (AZStd::is_same_v<T, Audio::ObjectRequest::SetSwitchValue>)
                 {
-                    if (auto itSwitch = m_cSwitches.find(request.m_switchId);
-                        itSwitch != m_cSwitches.end())
+                    auto audioObject = GetRequestObject(request.m_audioObjectId);
+                    if (!audioObject)
+                    {
+                        result = EAudioRequestStatus::FailureInvalidObjectId;
+                    }
+                    else if (auto itSwitch = m_cSwitches.find(request.m_switchId); itSwitch != m_cSwitches.end())
                     {
                         if (auto itState = itSwitch->second->cStates.find(request.m_stateId);
                             itState != itSwitch->second->cStates.end())
@@ -441,7 +470,12 @@ namespace Audio
 
                 else if constexpr (AZStd::is_same_v<T, Audio::ObjectRequest::SetEnvironmentValue>)
                 {
-                    if (audioObject->HasPosition())
+                    auto audioObject = GetRequestObject(request.m_audioObjectId);
+                    if (!audioObject)
+                    {
+                        result = EAudioRequestStatus::FailureInvalidObjectId;
+                    }
+                    else if (audioObject->HasPosition())
                     {
                         if (auto it = m_cEnvironments.find(request.m_environmentId);
                             it != m_cEnvironments.end())
@@ -462,12 +496,28 @@ namespace Audio
 
                 else if constexpr (AZStd::is_same_v<T, Audio::ObjectRequest::ResetParameters>)
                 {
-                    result = ResetRtpcs(audioObject);
+                    auto audioObject = GetRequestObject(request.m_audioObjectId);
+                    if (!audioObject)
+                    {
+                        result = EAudioRequestStatus::FailureInvalidObjectId;
+                    }
+                    else
+                    {
+                        result = ResetRtpcs(audioObject);
+                    }
                 }
 
                 else if constexpr (AZStd::is_same_v<T, Audio::ObjectRequest::ResetEnvironments>)
                 {
-                    result = ResetEnvironments(audioObject);
+                    auto audioObject = GetRequestObject(request.m_audioObjectId);
+                    if (!audioObject)
+                    {
+                        result = EAudioRequestStatus::FailureInvalidObjectId;
+                    }
+                    else
+                    {
+                        result = ResetEnvironments(audioObject);
+                    }
                 }
 
                 else if constexpr (AZStd::is_same_v<T, Audio::ObjectRequest::Release>)
@@ -485,8 +535,12 @@ namespace Audio
 
                 else if constexpr (AZStd::is_same_v<T, Audio::ObjectRequest::ExecuteSourceTrigger>)
                 {
-                    if (auto it = m_cTriggers.find(request.m_triggerId);
-                        it != m_cTriggers.end())
+                    auto audioObject = GetRequestObject(request.m_audioObjectId);
+                    if (!audioObject)
+                    {
+                        result = EAudioRequestStatus::FailureInvalidObjectId;
+                    }
+                    else if (auto it = m_cTriggers.find(request.m_triggerId); it != m_cTriggers.end())
                     {
                         SATLSourceData sourceData(request.m_sourceInfo);
                         result = ActivateTrigger(audioObject, it->second,
@@ -505,7 +559,12 @@ namespace Audio
 
                 else if constexpr (AZStd::is_same_v<T, Audio::ObjectRequest::SetMultiplePositions>)
                 {
-                    if (audioObject->HasPosition())
+                    auto audioObject = GetRequestObject(request.m_audioObjectId);
+                    if (!audioObject)
+                    {
+                        result = EAudioRequestStatus::FailureInvalidObjectId;
+                    }
+                    else if (audioObject->HasPosition())
                     {
                         auto const positionalObject = static_cast<CATLAudioObject*>(audioObject);
                         AudioSystemImplementationRequestBus::BroadcastResult(
@@ -1754,7 +1813,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     EAudioRequestStatus CAudioTranslationLayer::LoseFocus()
     {
-        EAudioRequestStatus result = EAudioRequestStatus::Failure;
+        EAudioRequestStatus result = EAudioRequestStatus::Success;      // default is success when nothing needs to happen
     #if !defined(AUDIO_RELEASE)
         if (!Audio::CVars::s_IgnoreWindowFocus && 0 == (m_nFlags & eAIS_IS_MUTED))
     #endif // !AUDIO_RELEASE
@@ -1777,7 +1836,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     EAudioRequestStatus CAudioTranslationLayer::GetFocus()
     {
-        EAudioRequestStatus result = EAudioRequestStatus::Failure;
+        EAudioRequestStatus result = EAudioRequestStatus::Success;      // default is success when nothing needs to happen
     #if !defined(AUDIO_RELEASE)
         if (!Audio::CVars::s_IgnoreWindowFocus && 0 == (m_nFlags & eAIS_IS_MUTED))
     #endif // !AUDIO_RELEASE
