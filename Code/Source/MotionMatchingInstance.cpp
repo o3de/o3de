@@ -23,6 +23,7 @@
 #include <KdTree.h>
 #include <EMotionFX/Source/Pose.h>
 #include <EMotionFX/Source/TransformData.h>
+#include <PoseDataJointVelocities.h>
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -302,7 +303,7 @@ namespace EMotionFX::MotionMatching
 
         if (m_blending)
         {
-            const float maxBlendTime = AZ::GetMin(GetLowestCostSearchFrequency(), 0.2f);
+            const float maxBlendTime = GetLowestCostSearchFrequency();
             m_blendProgressTime += timePassedInSeconds;
             if (m_blendProgressTime > maxBlendTime)
             {
@@ -334,17 +335,25 @@ namespace EMotionFX::MotionMatching
                     m_queryPose.SetWorldSpaceTransform(motionExtractionJointIndex,
                         currentPose->GetWorldSpaceTransform(motionExtractionJointIndex));
                 }
+
+                // Calculate the joint velocities for the sampled pose using the same method as we do for the frame database.
+                PoseDataJointVelocities* velocityPoseData = m_queryPose.GetAndPreparePoseData<PoseDataJointVelocities>(m_actorInstance);
+                velocityPoseData->CalculateVelocity(m_motionInstance, m_config->GetTrajectoryFeature()->GetRelativeToNodeIndex());
             }
 
-            const size_t lowestCostFrameIndex = m_config->FindLowestCostFrameIndex(this, m_queryPose, currentFrameIndex);
+            const FeatureMatrix& featureMatrix = m_config->GetFeatures().GetFeatureMatrix();
+            Feature::FrameCostContext frameCostContext(featureMatrix, m_queryPose);
+            frameCostContext.m_trajectoryQuery = &m_trajectoryQuery;
+            frameCostContext.m_actorInstance = m_actorInstance;
+
+            const size_t lowestCostFrameIndex = m_config->FindLowestCostFrameIndex(this, frameCostContext, currentFrameIndex);
             const FrameDatabase& frameDatabase = m_config->GetFrameDatabase();
             const Frame& currentFrame = frameDatabase.GetFrame(currentFrameIndex);
             const Frame& lowestCostFrame = frameDatabase.GetFrame(lowestCostFrameIndex);
             const bool sameMotion = (currentFrame.GetSourceMotion() == lowestCostFrame.GetSourceMotion());
             const float timeBetweenFrames = newMotionTime - lowestCostFrame.GetSampleTime();
-            //        const float timeBetweenFrames = lowestCostFrame.GetSampleTime() - currentFrame.GetSampleTime();
-            const bool sameLocation = sameMotion && (AZ::GetAbs(timeBetweenFrames) < 0.2f);
-                
+            const bool sameLocation = sameMotion && (AZ::GetAbs(timeBetweenFrames) < 0.1f);
+
             if (lowestCostFrameIndex != currentFrameIndex && !sameLocation)
             {
                 // Start a blend.
@@ -370,7 +379,7 @@ namespace EMotionFX::MotionMatching
                 SetNewMotionTime(lowestCostFrame.GetSampleTime());
             }
 
-            // Do this always, elsewise we search for the lowest cost frame index too many times.
+            // Do this always, else wise we search for the lowest cost frame index too many times.
             SetTimeSinceLastFrameSwitch(0.0f);
         }
     }
