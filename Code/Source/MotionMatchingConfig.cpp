@@ -13,9 +13,11 @@
 #include <EMotionFX/Source/ActorInstance.h>
 #include <Allocators.h>
 #include <EMotionFX/Source/Motion.h>
+#include <EMotionFX/Source/MotionInstance.h>
 #include <MotionMatchingConfig.h>
 #include <MotionMatchingInstance.h>
 #include <Feature.h>
+#include <FeatureTrajectory.h>
 #include <FrameDatabase.h>
 #include <EMotionFX/Source/TransformData.h>
 
@@ -71,6 +73,38 @@ namespace EMotionFX
             }
 
             return true;
+        }
+
+        void MotionMatchingConfig::DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay, MotionMatchingInstance* instance)
+        {
+            AZ_PROFILE_SCOPE(Animation, "MotionMatchingConfig::DebugDraw");
+
+            // Get the lowest cost frame index from the last search. As we're searching the feature database with a much lower
+            // frequency and sample the animation onwards from this, the resulting frame index does not represent the current
+            // feature values from the shown pose.
+            const size_t curFrameIndex = instance->GetLowestCostFrameIndex();
+            if (curFrameIndex == InvalidIndex)
+            {
+                return;
+            }
+
+            // Find the frame index in the frame database that belongs to the currently used pose.
+            MotionInstance* motionInstance = instance->GetMotionInstance();
+            const size_t currentFrame = m_frameDatabase.FindFrameIndex(motionInstance->GetMotion(), motionInstance->GetCurrentTime());
+            if (currentFrame != InvalidIndex)
+            {
+                m_features.DebugDraw(debugDisplay, instance, currentFrame);
+            }
+
+            // Draw the desired future trajectory and the sampled version of the past trajectory.
+            const TrajectoryQuery& trajectoryQuery = instance->GetTrajectoryQuery();
+            const AZ::Color trajectoryQueryColor = AZ::Color::CreateFromRgba(90,219,64,255);
+            trajectoryQuery.DebugDraw(debugDisplay, trajectoryQueryColor);
+
+            // Draw the trajectory history starting after the sampled version of the past trajectory.
+            const FeatureTrajectory* trajectoryFeature = instance->GetConfig()->GetTrajectoryFeature();
+            const TrajectoryHistory& trajectoryHistory = instance->GetTrajectoryHistory();
+            trajectoryHistory.DebugDraw(debugDisplay, trajectoryQueryColor, trajectoryFeature->GetPastTimeRange());
         }
 
         void MotionMatchingConfig::Reflect(AZ::ReflectContext* context)

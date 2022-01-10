@@ -22,6 +22,8 @@ set(FILES
     Source/FeatureTrajectory.cpp
     Source/FeatureVelocity.cpp
     Source/FeatureVelocity.h
+    Source/PoseDataJointVelocities.cpp
+    Source/PoseDataJointVelocities.h
     Source/TrajectoryHistory.cpp
     Source/TrajectoryHistory.h
     Source/TrajectoryQuery.cpp

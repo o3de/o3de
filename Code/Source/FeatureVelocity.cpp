@@ -19,178 +19,165 @@
 #include <MotionMatchingInstance.h>
 #include <FrameDatabase.h>
 #include <FeatureVelocity.h>
+#include <PoseDataJointVelocities.h>
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
-namespace EMotionFX
+namespace EMotionFX::MotionMatching
 {
-    namespace MotionMatching
+    AZ_CLASS_ALLOCATOR_IMPL(FeatureVelocity, MotionMatchAllocator, 0)
+
+    FeatureVelocity::FeatureVelocity()
+        : Feature()
     {
-        AZ_CLASS_ALLOCATOR_IMPL(FeatureVelocity, MotionMatchAllocator, 0)
+    }
 
-        FeatureVelocity::FeatureVelocity()
-            : Feature()
+    bool FeatureVelocity::Init(const InitSettings& settings)
+    {
+        MCORE_UNUSED(settings);
+
+        if (m_nodeIndex == InvalidIndex)
         {
+            return false;
         }
 
-        bool FeatureVelocity::Init(const InitSettings& settings)
-        {
-            MCORE_UNUSED(settings);
+        return true;
+    }
 
-            if (m_nodeIndex == InvalidIndex)
-            {
-                return false;
-            }
+    void FeatureVelocity::SetNodeIndex(size_t nodeIndex)
+    {
+        m_nodeIndex = nodeIndex;
+    }
 
-            return true;
-        }
+    void FeatureVelocity::FillQueryFeatureValues(size_t startIndex, AZStd::vector<float>& queryFeatureValues, const FrameCostContext& context)
+    {
+        PoseDataJointVelocities* velocityPoseData = static_cast<PoseDataJointVelocities*>(context.m_currentPose.GetPoseDataByType(azrtti_typeid<PoseDataJointVelocities>()));
+        AZ_Assert(velocityPoseData, "Cannot calculate velocity feature cost without joint velocity pose data.");
+        const AZ::Vector3 currentVelocity = velocityPoseData->GetVelocity(m_nodeIndex);
 
-        void FeatureVelocity::SetNodeIndex(size_t nodeIndex)
-        {
-            m_nodeIndex = nodeIndex;
-        }
+        queryFeatureValues[startIndex + 0] = currentVelocity.GetX();
+        queryFeatureValues[startIndex + 1] = currentVelocity.GetY();
+        queryFeatureValues[startIndex + 2] = currentVelocity.GetZ();
+    }
 
-        void FeatureVelocity::FillQueryFeatureValues(size_t startIndex, AZStd::vector<float>& queryFeatureValues, const FrameCostContext& context)
-        {
-            queryFeatureValues[startIndex + 0] = context.m_velocity.GetX();
-            queryFeatureValues[startIndex + 1] = context.m_velocity.GetY();
-            queryFeatureValues[startIndex + 2] = context.m_velocity.GetZ();
-        }
-
-        void FeatureVelocity::ExtractFeatureValues(const ExtractFeatureContext& context)
-        {
-            AZ::Vector3 velocity;
-            CalculateVelocity(context.m_actorInstance, m_nodeIndex, m_relativeToNodeIndex, context.m_frameDatabase->GetFrame(context.m_frameIndex), velocity);
+    void FeatureVelocity::ExtractFeatureValues(const ExtractFeatureContext& context)
+    {
+        AZ::Vector3 velocity;
+        CalculateVelocity(context.m_actorInstance, m_nodeIndex, m_relativeToNodeIndex, context.m_frameDatabase->GetFrame(context.m_frameIndex), velocity);
             
-            SetFeatureData(context.m_featureMatrix, context.m_frameIndex, velocity);
-        }
+        SetFeatureData(context.m_featureMatrix, context.m_frameIndex, velocity);
+    }
 
-        void FeatureVelocity::DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
-            MotionMatchingInstance* instance,
-            const AZ::Vector3& velocity,
-            size_t jointIndex,
-            size_t relativeToJointIndex,
-            const AZ::Color& color)
+    void FeatureVelocity::DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
+        MotionMatchingInstance* instance,
+        const AZ::Vector3& velocity,
+        size_t jointIndex,
+        size_t relativeToJointIndex,
+        const AZ::Color& color)
+    {
+        const ActorInstance* actorInstance = instance->GetActorInstance();
+        const Pose* pose = actorInstance->GetTransformData()->GetCurrentPose();
+        const Transform jointModelTM = pose->GetModelSpaceTransform(jointIndex);
+        const Transform relativeToWorldTM = pose->GetWorldSpaceTransform(relativeToJointIndex);
+
+        const AZ::Vector3 jointPosition = relativeToWorldTM.TransformPoint(jointModelTM.m_position);
+        const float scale = 0.15f;
+        const AZ::Vector3 velocityWorldSpace = relativeToWorldTM.TransformVector(velocity * scale);
+
+        DebugDrawVelocity(debugDisplay, jointPosition, velocityWorldSpace, color);
+    }
+
+    void FeatureVelocity::DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
+        MotionMatchingInstance* instance,
+        size_t frameIndex)
+    {
+        if (m_nodeIndex == InvalidIndex)
         {
-            // Don't visualize joints that remain motionless (zero velocity).
-            if (velocity.GetLength() < AZ::Constants::FloatEpsilon)
-            {
-                return;
-            }
-
-            const float scale = 0.15f;
-            const ActorInstance* actorInstance = instance->GetActorInstance();
-            const Pose* pose = actorInstance->GetTransformData()->GetCurrentPose();
-            const Transform jointModelTM = pose->GetModelSpaceTransform(jointIndex);
-            const Transform relativeToWorldTM = pose->GetWorldSpaceTransform(relativeToJointIndex);
-            const AZ::Vector3 jointPosition = relativeToWorldTM.TransformPoint(jointModelTM.m_position);
-            const AZ::Vector3 velocityWorldSpace = relativeToWorldTM.TransformVector(velocity * scale);
-            const AZ::Vector3 arrowPosition = jointPosition + velocityWorldSpace;
-
-            debugDisplay.DepthTestOff();
-            debugDisplay.SetColor(color);
-
-            debugDisplay.DrawSolidCylinder(/*center=*/(arrowPosition + jointPosition) * 0.5f,
-                /*direction=*/(arrowPosition - jointPosition).GetNormalizedSafe(),
-                /*radius=*/0.003f,
-                /*height=*/(arrowPosition - jointPosition).GetLength(),
-                /*drawShaded=*/false);
-
-            debugDisplay.DrawSolidCone(jointPosition + velocityWorldSpace,
-                velocityWorldSpace ,
-                0.1f * scale,
-                scale * 0.5f,
-                /*drawShaded=*/false);
+            return;
         }
 
-        void FeatureVelocity::DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
-            MotionMatchingInstance* instance,
-            size_t frameIndex)
+        const MotionMatchingConfig* config = instance->GetConfig();
+        const AZ::Vector3 velocity = GetFeatureData(config->GetFeatures().GetFeatureMatrix(), frameIndex);
+        DebugDraw(debugDisplay, instance, velocity, m_nodeIndex, m_relativeToNodeIndex, m_debugColor);
+    }
+
+    float FeatureVelocity::CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const
+    {
+        PoseDataJointVelocities* velocityPoseData = static_cast<PoseDataJointVelocities*>(context.m_currentPose.GetPoseDataByType(azrtti_typeid<PoseDataJointVelocities>()));
+        AZ_Assert(velocityPoseData, "Cannot calculate velocity feature cost without joint velocity pose data.");
+        const AZ::Vector3 currentVelocity = velocityPoseData->GetVelocity(m_nodeIndex);
+
+        const AZ::Vector3 frameVelocity = GetFeatureData(context.m_featureMatrix, frameIndex);
+
+        // Direction difference
+        const float directionDifferenceCost = GetNormalizedDirectionDifference(frameVelocity.GetNormalized(), currentVelocity.GetNormalized());
+
+        // Speed difference
+        // TODO: This needs to be normalized later on, else wise it could be that the direction difference is weights
+        // too heavily or too less compared to what the speed values are
+        const float speedDifferenceCost = AZ::GetAbs(frameVelocity.GetLength() - currentVelocity.GetLength());
+
+        return directionDifferenceCost + speedDifferenceCost;
+    }
+
+    void FeatureVelocity::Reflect(AZ::ReflectContext* context)
+    {
+        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
+        if (!serializeContext)
         {
-            if (m_nodeIndex == InvalidIndex)
-            {
-                return;
-            }
-
-            const MotionMatchingConfig* config = instance->GetConfig();
-            const AZ::Vector3 velocity = GetFeatureData(config->GetFeatures().GetFeatureMatrix(), frameIndex);
-            DebugDraw(debugDisplay, instance, velocity, m_nodeIndex, m_relativeToNodeIndex, m_debugColor);
+            return;
         }
 
-        float FeatureVelocity::CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const
+        serializeContext->Class<FeatureVelocity, Feature>()
+            ->Version(1);
+
+        AZ::EditContext* editContext = serializeContext->GetEditContext();
+        if (!editContext)
         {
-            const AZ::Vector3 frameVelocity = GetFeatureData(context.m_featureMatrix, frameIndex);
-
-            // Direction difference
-            const float directionDifferenceCost = GetNormalizedDirectionDifference(frameVelocity.GetNormalized(), context.m_velocity.GetNormalized());
-
-            // Speed difference
-            // TODO: This needs to be normalized later on, else wise it could be that the direction difference is weights
-            // too heavily or too less compared to what the speed values are
-            const float speedDifferenceCost = AZ::GetAbs(frameVelocity.GetLength() - context.m_velocity.GetLength());
-
-            return directionDifferenceCost + speedDifferenceCost;
+            return;
         }
 
-        void FeatureVelocity::Reflect(AZ::ReflectContext* context)
+        editContext->Class<FeatureVelocity>("FeatureVelocity", "Joint velocity data.")
+            ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+            ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
+            ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
+    }
+
+    size_t FeatureVelocity::GetNumDimensions() const
+    {
+        return 3;
+    }
+
+    AZStd::string FeatureVelocity::GetDimensionName(size_t index, Skeleton* skeleton) const
+    {
+        AZStd::string result;
+
+        Node* joint = skeleton->GetNode(m_nodeIndex);
+        if (joint)
         {
-            AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
-            if (!serializeContext)
-            {
-                return;
-            }
-
-            serializeContext->Class<FeatureVelocity, Feature>()
-                ->Version(1);
-
-            AZ::EditContext* editContext = serializeContext->GetEditContext();
-            if (!editContext)
-            {
-                return;
-            }
-
-            editContext->Class<FeatureVelocity>("FeatureVelocity", "Joint velocity data.")
-                ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
-                ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
+            result = joint->GetName();
+            result += '.';
         }
 
-        size_t FeatureVelocity::GetNumDimensions() const
+        switch (index)
         {
-            return 3;
+            case 0: { result += "VelocityX"; break; }
+            case 1: { result += "VelocityY"; break; }
+            case 2: { result += "VelocityZ"; break; }
+            default: { result += Feature::GetDimensionName(index, skeleton); }
         }
 
-        AZStd::string FeatureVelocity::GetDimensionName(size_t index, Skeleton* skeleton) const
-        {
-            AZStd::string result;
+        return result;
+    }
 
-            Node* joint = skeleton->GetNode(m_nodeIndex);
-            if (joint)
-            {
-                result = joint->GetName();
-                result += '.';
-            }
+    AZ::Vector3 FeatureVelocity::GetFeatureData(const FeatureMatrix& featureMatrix, size_t frameIndex) const
+    {
+        return featureMatrix.GetVector3(frameIndex, m_featureColumnOffset);
+    }
 
-            switch (index)
-            {
-                case 0: { result += "VelocityX"; break; }
-                case 1: { result += "VelocityY"; break; }
-                case 2: { result += "VelocityZ"; break; }
-                default: { result += Feature::GetDimensionName(index, skeleton); }
-            }
-
-            return result;
-        }
-
-        AZ::Vector3 FeatureVelocity::GetFeatureData(const FeatureMatrix& featureMatrix, size_t frameIndex) const
-        {
-            return featureMatrix.GetVector3(frameIndex, m_featureColumnOffset);
-        }
-
-        void FeatureVelocity::SetFeatureData(FeatureMatrix& featureMatrix, size_t frameIndex, const AZ::Vector3& velocity)
-        {
-            featureMatrix.SetVector3(frameIndex, m_featureColumnOffset, velocity);
-        }
-    } // namespace MotionMatching
-} // namespace EMotionFX
+    void FeatureVelocity::SetFeatureData(FeatureMatrix& featureMatrix, size_t frameIndex, const AZ::Vector3& velocity)
+    {
+        featureMatrix.SetVector3(frameIndex, m_featureColumnOffset, velocity);
+    }
+} // namespace EMotionFX::MotionMatching

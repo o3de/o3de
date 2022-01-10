@@ -19,58 +19,55 @@
 #include <FrameDatabase.h>
 #include <FeatureDatabase.h>
 
-namespace EMotionFX
+namespace EMotionFX::MotionMatching
 {
-    namespace MotionMatching
+    class KdTree
     {
-        class KdTree
+    public:
+        AZ_RTTI(KdTree, "{CDA707EC-4150-463B-8157-90D98351ACED}")
+        AZ_CLASS_ALLOCATOR_DECL
+
+        KdTree() = default;
+        virtual ~KdTree();
+
+        bool Init(const FrameDatabase& frameDatabase, const FeatureDatabase& featureDatabase, size_t maxDepth=10, size_t minFramesPerLeaf=1000);
+        void Clear();
+        void PrintStats();
+
+        size_t GetNumNodes() const;
+        size_t GetNumDimensions() const;
+        size_t CalcMemoryUsageInBytes() const;
+        bool IsInitialized() const;
+
+        void FindNearestNeighbors(const AZStd::vector<float>& frameFloats, AZStd::vector<size_t>& resultFrameIndices) const;
+
+    private:
+        struct Node
         {
-        public:
-            AZ_RTTI(KdTree, "{CDA707EC-4150-463B-8157-90D98351ACED}")
-            AZ_CLASS_ALLOCATOR_DECL
-
-            KdTree() = default;
-            virtual ~KdTree();
-
-            bool Init(const FrameDatabase& frameDatabase, const FeatureDatabase& featureDatabase, size_t maxDepth=10, size_t minFramesPerLeaf=1000);
-            void Clear();
-            void PrintStats();
-
-            size_t GetNumNodes() const;
-            size_t GetNumDimensions() const;
-            size_t CalcMemoryUsageInBytes() const;
-            bool IsInitialized() const;
-
-            void FindNearestNeighbors(const AZStd::vector<float>& frameFloats, AZStd::vector<size_t>& resultFrameIndices) const;
-
-        private:
-            struct Node
-            {
-                Node* m_leftNode = nullptr;
-                Node* m_rightNode = nullptr;
-                Node* m_parent = nullptr;
-                float m_median = 0.0f;
-                size_t m_dimension = 0;
-                AZStd::vector<size_t> m_frames;
-            };
-
-            void BuildTreeNodes(const FrameDatabase& frameDatabase, const FeatureDatabase& featureDatabase, Node* node, Node* parent, size_t dimension=0, bool leftSide=true);
-            void FillFeatureValues(const FeatureMatrix& featureMatrix, const Feature* feature, size_t frameIndex, size_t startIndex);
-            void FillFeatureValues(const FeatureDatabase& featureDatabase, size_t frameIndex);
-            void FillFramesForNode(Node* node, const FrameDatabase& frameDatabase, const FeatureDatabase& featureDatabase, Node* parent, bool leftSide);
-            void RecursiveCalcNumFrames(Node* node, size_t& outNumFrames) const;
-            void ClearFramesForNonEssentialNodes();
-            void MergeSmallLeafNodesToParents();
-            void RemoveZeroFrameLeafNodes();
-            void RemoveLeafNode(Node* node);
-            void FindNearestNeighbors(Node* node, const AZStd::vector<float>& frameFloats, AZStd::vector<size_t>& resultFrameIndices) const;
-
-        private:
-            AZStd::vector<Node*> m_nodes;
-            AZStd::vector<float> m_featureValues;
-            size_t m_numDimensions = 0;
-            size_t m_maxDepth = 20;
-            size_t m_minFramesPerLeaf = 1000;
+            Node* m_leftNode = nullptr;
+            Node* m_rightNode = nullptr;
+            Node* m_parent = nullptr;
+            float m_median = 0.0f;
+            size_t m_dimension = 0;
+            AZStd::vector<size_t> m_frames;
         };
-    } // namespace MotionMatching
-} // namespace EMotionFX
+
+        void BuildTreeNodes(const FrameDatabase& frameDatabase, const FeatureDatabase& featureDatabase, Node* node, Node* parent, size_t dimension=0, bool leftSide=true);
+        void FillFeatureValues(const FeatureMatrix& featureMatrix, const Feature* feature, size_t frameIndex, size_t startIndex);
+        void FillFeatureValues(const FeatureDatabase& featureDatabase, size_t frameIndex);
+        void FillFramesForNode(Node* node, const FrameDatabase& frameDatabase, const FeatureDatabase& featureDatabase, Node* parent, bool leftSide);
+        void RecursiveCalcNumFrames(Node* node, size_t& outNumFrames) const;
+        void ClearFramesForNonEssentialNodes();
+        void MergeSmallLeafNodesToParents();
+        void RemoveZeroFrameLeafNodes();
+        void RemoveLeafNode(Node* node);
+        void FindNearestNeighbors(Node* node, const AZStd::vector<float>& frameFloats, AZStd::vector<size_t>& resultFrameIndices) const;
+
+    private:
+        AZStd::vector<Node*> m_nodes;
+        AZStd::vector<float> m_featureValues;
+        size_t m_numDimensions = 0;
+        size_t m_maxDepth = 20;
+        size_t m_minFramesPerLeaf = 1000;
+    };
+} // namespace EMotionFX::MotionMatching

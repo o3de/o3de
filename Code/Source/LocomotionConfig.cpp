@@ -28,6 +28,7 @@
 #include <EMotionFX/Source/Parameter/ParameterFactory.h>
 #include <EMotionFX/Source/Skeleton.h>
 #include <ImGuiMonitorBus.h>
+#include <PoseDataJointVelocities.h>
 
 #include <AzCore/Debug/Timer.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -140,86 +141,24 @@ namespace EMotionFX
             return true;
         }
 
-        void LocomotionConfig::DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
-            MotionMatchingInstance* instance)
-        {
-            AZ_PROFILE_SCOPE(Animation, "LocomotionConfig::DebugDraw");
-
-            MotionMatchingConfig::DebugDraw(debugDisplay, instance);
-
-            // Get the lowest cost frame index from the last search. As we're searching the feature database with a much lower
-            // frequency and sample the animation onwards from this, the resulting frame index does not represent the current
-            // feature values from the shown pose.
-            const size_t curFrameIndex = instance->GetLowestCostFrameIndex();
-            if (curFrameIndex == InvalidIndex)
-            {
-                return;
-            }
-
-            // Find the frame index in the frame database that belongs to the currently used pose.
-            MotionInstance* motionInstance = instance->GetMotionInstance();
-            const size_t currentFrame = m_frameDatabase.FindFrameIndex(motionInstance->GetMotion(), motionInstance->GetCurrentTime());
-            if (currentFrame != InvalidIndex)
-            {
-                m_features.DebugDraw(debugDisplay, instance, currentFrame);
-            }
-
-            // Draw the desired future trajectory and the sampled version of the past trajectory.
-            const TrajectoryQuery& trajectoryQuery = instance->GetTrajectoryQuery();
-            const AZ::Color trajectoryQueryColor = AZ::Color::CreateFromRgba(90,219,64,255);
-            trajectoryQuery.DebugDraw(debugDisplay, trajectoryQueryColor);
-
-            // Draw the trajectory history starting after the sampled version of the past trajectory.
-            const TrajectoryHistory& trajectoryHistory = instance->GetTrajectoryHistory();
-            trajectoryHistory.DebugDraw(debugDisplay, trajectoryQueryColor, m_rootTrajectoryData->GetPastTimeRange());
-        }
-
-        size_t LocomotionConfig::FindLowestCostFrameIndex(MotionMatchingInstance* instance, const Pose& currentPose, size_t currentFrameIndex)
+        size_t LocomotionConfig::FindLowestCostFrameIndex(MotionMatchingInstance* instance, const Feature::FrameCostContext& context, size_t currentFrameIndex)
         {
             AZ::Debug::Timer timer;
             timer.Stamp();
 
             AZ_PROFILE_SCOPE(Animation, "LocomotionConfig::FindLowestCostFrameIndex");
 
-            MotionInstance* motionInstance = instance->GetMotionInstance();
-            FeatureVelocity::FrameCostContext leftFootVelocityContext(m_features.GetFeatureMatrix());
-            FeatureVelocity::FrameCostContext rightFootVelocityContext(m_features.GetFeatureMatrix());
-            FeatureVelocity::FrameCostContext pelvisVelocityContext(m_features.GetFeatureMatrix());
-            Feature::CalculateVelocity(m_leftFootNodeIndex, m_rootNodeIndex, motionInstance, leftFootVelocityContext.m_velocity);
-            Feature::CalculateVelocity(m_rightFootNodeIndex, m_rootNodeIndex, motionInstance, rightFootVelocityContext.m_velocity);
-            Feature::CalculateVelocity(m_pelvisNodeIndex, m_rootNodeIndex, motionInstance, pelvisVelocityContext.m_velocity);
-
-            Feature::FrameCostContext frameCostContext(m_features.GetFeatureMatrix(), currentPose);
-            frameCostContext.m_trajectoryQuery = &instance->GetTrajectoryQuery();
-            frameCostContext.m_actorInstance = instance->GetActorInstance();
-
             // 1. Broad-phase search using KD-tree
             {
                 // Build the input query features that will be compared to every entry in the feature database in the motion matching search.
-                // Remember that the order is very important. It has to be the order in which the frame datas are registered, and only the ones included in the kdTree.
                 size_t startOffset = 0;
                 AZStd::vector<float>& queryFeatureValues = instance->GetQueryFeatureValues();
-
-                // Left foot position.
-                m_leftFootPositionData->FillQueryFeatureValues(startOffset, queryFeatureValues, frameCostContext);
-                startOffset += m_leftFootPositionData->GetNumDimensions();
-
-                // Right foot position.
-                m_rightFootPositionData->FillQueryFeatureValues(startOffset, queryFeatureValues, frameCostContext);
-                startOffset += m_rightFootPositionData->GetNumDimensions();
-
-                // Left foot velocity.
-                m_leftFootVelocityData->FillQueryFeatureValues(startOffset, queryFeatureValues, leftFootVelocityContext);
-                startOffset += m_leftFootVelocityData->GetNumDimensions();
-
-                // Right foot velocity.
-                m_rightFootVelocityData->FillQueryFeatureValues(startOffset, queryFeatureValues, rightFootVelocityContext);
-                startOffset += m_leftFootVelocityData->GetNumDimensions();
-
-                // Pelvis velocity.
-                m_pelvisVelocityData->FillQueryFeatureValues(startOffset, queryFeatureValues, pelvisVelocityContext);
-                startOffset += m_pelvisVelocityData->GetNumDimensions();
-
+                const FeatureDatabase& featureDatabase = instance->GetConfig()->GetFeatures();
+                for (Feature* feature : featureDatabase.GetFeaturesInKdTree())
+                {
+                    feature->FillQueryFeatureValues(startOffset, queryFeatureValues, context);
+                    startOffset += feature->GetNumDimensions();
+                }
                 AZ_Assert(startOffset == queryFeatureValues.size(), "Frame float vector is not the expected size.");
 
                 // Find our nearest frames.
@@ -247,15 +186,15 @@ namespace EMotionFX
                     continue;
                 }
 
-                const float leftFootPositionCost = m_leftFootPositionData->CalculateFrameCost(frameIndex, frameCostContext);
-                const float rightFootPositionCost = m_rightFootPositionData->CalculateFrameCost(frameIndex, frameCostContext);
+                const float leftFootPositionCost = m_leftFootPositionData->CalculateFrameCost(frameIndex, context);
+                const float rightFootPositionCost = m_rightFootPositionData->CalculateFrameCost(frameIndex, context);
                 
-                const float leftFootVelocityCost = m_leftFootVelocityData->CalculateFrameCost(frameIndex, leftFootVelocityContext);
-                const float rightFootVelocityCost = m_rightFootVelocityData->CalculateFrameCost(frameIndex, rightFootVelocityContext);
-                const float pelvisVelocityCost = m_pelvisVelocityData->CalculateFrameCost(frameIndex, pelvisVelocityContext);
+                const float leftFootVelocityCost = m_leftFootVelocityData->CalculateFrameCost(frameIndex, context);
+                const float rightFootVelocityCost = m_rightFootVelocityData->CalculateFrameCost(frameIndex, context);
+                const float pelvisVelocityCost = m_pelvisVelocityData->CalculateFrameCost(frameIndex, context);
 
-                const float trajectoryPastCost = m_rootTrajectoryData->CalculatePastFrameCost(frameIndex, frameCostContext);
-                const float trajectoryFutureCost = m_rootTrajectoryData->CalculateFutureFrameCost(frameIndex, frameCostContext);
+                const float trajectoryPastCost = m_rootTrajectoryData->CalculatePastFrameCost(frameIndex, context);
+                const float trajectoryFutureCost = m_rootTrajectoryData->CalculateFutureFrameCost(frameIndex, context);
 
                 float totalCost =
                     m_factorWeights.m_footPositionFactor * leftFootPositionCost + m_factorWeights.m_footPositionFactor * rightFootPositionCost + // foot position

@@ -50,9 +50,7 @@ namespace EMotionFX
 
             bool RegisterFeatures(const InitSettings& settings) override;
 
-            void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay, MotionMatchingInstance* instance) override;
-
-            size_t FindLowestCostFrameIndex(MotionMatchingInstance* instance, const Pose& currentPose, size_t currentFrameIndex) override;
+            size_t FindLowestCostFrameIndex(MotionMatchingInstance* instance, const Feature::FrameCostContext& context, size_t currentFrameIndex) override;
 
             static void Reflect(AZ::ReflectContext* context);
 

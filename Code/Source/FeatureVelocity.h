@@ -19,6 +19,7 @@
 #include <AzCore/std/containers/vector.h>
 
 #include <EMotionFX/Source/EMotionFXConfig.h>
+#include <EMotionFX/Source/Velocity.h>
 #include <Feature.h>
 
 namespace AZ
@@ -26,61 +27,48 @@ namespace AZ
     class ReflectContext;
 }
 
-namespace EMotionFX
+namespace EMotionFX::MotionMatching
 {
-    namespace MotionMatching
+    class FrameDatabase;
+
+    class EMFX_API FeatureVelocity
+        : public Feature
     {
-        class FrameDatabase;
+    public:
+        AZ_RTTI(FeatureVelocity, "{DEEA4F0F-CE70-4F16-9136-C2BFDDA29336}", Feature)
+        AZ_CLASS_ALLOCATOR_DECL
 
-        class EMFX_API FeatureVelocity
-            : public Feature
-        {
-        public:
-            AZ_RTTI(FeatureVelocity, "{DEEA4F0F-CE70-4F16-9136-C2BFDDA29336}", Feature)
-            AZ_CLASS_ALLOCATOR_DECL
+        FeatureVelocity();
+        ~FeatureVelocity() override = default;
 
-            FeatureVelocity();
-            ~FeatureVelocity() override = default;
+        bool Init(const InitSettings& settings) override;
+        void ExtractFeatureValues(const ExtractFeatureContext& context) override;
 
-            bool Init(const InitSettings& settings) override;
-            void ExtractFeatureValues(const ExtractFeatureContext& context) override;
+        static void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
+            MotionMatchingInstance* instance,
+            const AZ::Vector3& velocity, // in world space
+            size_t jointIndex,
+            size_t relativeToJointIndex,
+            const AZ::Color& color);
 
-            static void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
-                MotionMatchingInstance* instance,
-                const AZ::Vector3& velocity, // in world space
-                size_t jointIndex,
-                size_t relativeToJointIndex,
-                const AZ::Color& color);
+        void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
+            MotionMatchingInstance* instance,
+            size_t frameIndex) override;
 
-            void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
-                MotionMatchingInstance* instance,
-                size_t frameIndex) override;
+        float CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const;
 
-            struct EMFX_API FrameCostContext
-            {
-                FrameCostContext(const FeatureMatrix& featureMatrix)
-                    : m_featureMatrix(featureMatrix)
-                {
-                }
+        void FillQueryFeatureValues(size_t startIndex, AZStd::vector<float>& queryFeatureValues, const FrameCostContext& context) override;
 
-                const FeatureMatrix& m_featureMatrix;
-                AZ::Vector3 m_velocity;
-            };
-            float CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const;
+        void SetNodeIndex(size_t nodeIndex);
 
-            void FillQueryFeatureValues(size_t startIndex, AZStd::vector<float>& queryFeatureValues, const FrameCostContext& context);
+        static void Reflect(AZ::ReflectContext* context);
 
-            void SetNodeIndex(size_t nodeIndex);
+        size_t GetNumDimensions() const override;
+        AZStd::string GetDimensionName(size_t index, Skeleton* skeleton) const override;
+        AZ::Vector3 GetFeatureData(const FeatureMatrix& featureMatrix, size_t frameIndex) const;
+        void SetFeatureData(FeatureMatrix& featureMatrix, size_t frameIndex, const AZ::Vector3& velocity);
 
-            static void Reflect(AZ::ReflectContext* context);
-
-            size_t GetNumDimensions() const override;
-            AZStd::string GetDimensionName(size_t index, Skeleton* skeleton) const override;
-            AZ::Vector3 GetFeatureData(const FeatureMatrix& featureMatrix, size_t frameIndex) const;
-            void SetFeatureData(FeatureMatrix& featureMatrix, size_t frameIndex, const AZ::Vector3& velocity);
-
-        private:
-            size_t m_nodeIndex = InvalidIndex; /**< The node to grab the data from. */
-        };
-    } // namespace MotionMatching
-} // namespace EMotionFX
+    private:
+        size_t m_nodeIndex = InvalidIndex; /**< The joint to extract the data from. */
+    };
+} // namespace EMotionFX::MotionMatching

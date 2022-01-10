@@ -60,11 +60,10 @@ namespace EMotionFX
 
             virtual bool RegisterFeatures(const InitSettings& settings) = 0;
             virtual bool Init(const InitSettings& settings);
-            virtual void DebugDraw([[maybe_unused]] AzFramework::DebugDisplayRequests& debugDisplay,
-                [[maybe_unused]] MotionMatchingInstance* instance) {}
+            void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay, MotionMatchingInstance* instance);
             virtual FeatureTrajectory* GetTrajectoryFeature() const = 0;
 
-            virtual size_t FindLowestCostFrameIndex(MotionMatchingInstance* instance, const Pose& currentPose, size_t currentFrameIndex) = 0;
+            virtual size_t FindLowestCostFrameIndex(MotionMatchingInstance* instance, const Feature::FrameCostContext& context, size_t currentFrameIndex) = 0;
 
             static void Reflect(AZ::ReflectContext* context);
 
@@ -77,7 +76,6 @@ namespace EMotionFX
         protected:
             FrameDatabase m_frameDatabase; /**< The frames and their data. */
             FeatureDatabase m_features;
-            float m_newMotionTime = 0.0f; /**< New motion instance time before sync. */
         };
     } // namespace MotionMatching
 } // namespace EMotionFX
