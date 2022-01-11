@@ -49,17 +49,18 @@ namespace AzToolsFramework
             if (editContext)
             {
                 editContext->Class<EditorSettingPropertyValue>("Editor Settings Property", "Base class for editor settings properties")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "EditorSettingProperty's class attributes.")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
 
                 editContext->Class<EditorSettingPropertyInt>("Editor Settings Property (int)", "An editor setting int property")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "EditorSettingPropertyGroup's class attributes.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(0, &EditorSettingPropertyInt::m_value, "m_value", "Int")
                         ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &EditorSettingPropertyValue::m_name)
+                        ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &EditorSettingPropertyValue::m_description)
                     ;
 
                 editContext->Class<EditorSettingPropertyGroup>("Editor Setting Property group", "This is an editor setting property group")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "EditorSettingPropertyGroup's class attributes.")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(0, &EditorSettingPropertyGroup::m_properties, "m_properties", "Properties in this property group")
@@ -69,9 +70,10 @@ namespace AzToolsFramework
                     ;
 
                 editContext->Class<EditorSettingsBlock>("Editor Settings Block", "Dynamically show Editor Settings")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &EditorSettingsBlock::m_settingValues, "Elements", "Elements in the attribute")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "EditorSettingBlock's class attributes.")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(0, &EditorSettingsBlock::m_settingValues, "Elements", "")
                         ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &EditorSettingsBlock::m_name)
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     //->SetDynamicEditDataProvider(&EditorSettingsBlock::GetSettingPropertyEditData)
