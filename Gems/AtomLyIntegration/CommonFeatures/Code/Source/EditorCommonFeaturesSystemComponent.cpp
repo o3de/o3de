@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -88,14 +89,22 @@ namespace AZ
 
             AzToolsFramework::EditorLevelNotificationBus::Handler::BusConnect();
             AzToolsFramework::AssetBrowser::PreviewerRequestBus::Handler::BusConnect();
-            AzFramework::AssetCatalogEventBus::Handler::BusConnect();
+            if (auto settingsRegistry{ AZ::SettingsRegistry::Get() }; settingsRegistry != nullptr)
+            {
+                auto LifecycleCallback = [this](AZStd::string_view, AZ::SettingsRegistryInterface::Type)
+                {
+                    SetupThumbnails();
+                };
+                AZ::ComponentApplicationLifecycle::RegisterHandler(*settingsRegistry, m_criticalAssetsHandler,
+                    AZStd::move(LifecycleCallback), "CriticalAssetsCompiled");
+            }
             AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusConnect();
         }
 
         void EditorCommonFeaturesSystemComponent::Deactivate()
         {
             AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusDisconnect();
-            AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
+            m_criticalAssetsHandler = {};
             AzToolsFramework::EditorLevelNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::AssetBrowser::PreviewerRequestBus::Handler::BusDisconnect();
 
@@ -190,13 +199,6 @@ namespace AZ
                 AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusDisconnect();
                 AZ_Warning("EditorCommonFeaturesSystemComponent", false, "Failed to instantiate default Atom environment slice.");
             }
-        }
-
-        void EditorCommonFeaturesSystemComponent::OnCatalogLoaded([[maybe_unused]] const char* catalogFile)
-        {
-            AZ::TickBus::QueueFunction([this](){
-                SetupThumbnails();
-            });
         }
 
         const AzToolsFramework::AssetBrowser::PreviewerFactory* EditorCommonFeaturesSystemComponent::GetPreviewerFactory(
