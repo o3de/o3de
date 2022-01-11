@@ -226,7 +226,7 @@ namespace EMotionFX::MotionMatching
         }
 
         constexpr float markerSize = 0.02f;
-        const FeatureMatrix& featureMatrix = instance->GetConfig()->GetFeatures().GetFeatureMatrix();
+        const FeatureMatrix& featureMatrix = instance->GetConfig()->GetFeatureDatabase().GetFeatureMatrix();
 
         debugDisplay.DepthTestOff();
         debugDisplay.SetColor(color);

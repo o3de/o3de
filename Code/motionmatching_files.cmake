@@ -4,7 +4,6 @@ set(FILES
     Source/MotionMatchingModuleInterface.h
     Source/MotionMatchingSystemComponent.cpp
     Source/MotionMatchingSystemComponent.h
-    Source/Allocators.cpp
     Source/Allocators.h
     Source/BlendTreeMotionMatchNode.cpp
     Source/BlendTreeMotionMatchNode.h
@@ -18,6 +17,8 @@ set(FILES
     Source/FeatureMatrix.h
     Source/FeaturePosition.cpp
     Source/FeaturePosition.h
+    Source/FeatureSchema.cpp
+    Source/FeatureSchema.h
     Source/FeatureTrajectory.h
     Source/FeatureTrajectory.cpp
     Source/FeatureVelocity.cpp

@@ -119,15 +119,15 @@ namespace EMotionFX::MotionMatching
 
     protected:
         /**
-            * Calculate a normalized direction vector difference between the two given vectors.
-            * A dot product of the two vectors is taken and the result in range [-1, 1] is scaled to [0, 1].
-            * @result Normalized, absolute difference between the vectors. 
-            * Angle difference     dot result      cost
-            * 0.0 degrees          1.0             0.0
-            * 90.0 degrees         0.0             0.5
-            * 180.0 degrees        -1.0            1.0
-            * 270.0 degrees        0.0             0.5
-            **/
+         * Calculate a normalized direction vector difference between the two given vectors.
+         * A dot product of the two vectors is taken and the result in range [-1, 1] is scaled to [0, 1].
+         * @result Normalized, absolute difference between the vectors. 
+         * Angle difference     dot result      cost
+         * 0.0 degrees          1.0             0.0
+         * 90.0 degrees         0.0             0.5
+         * 180.0 degrees        -1.0            1.0
+         * 270.0 degrees        0.0             0.5
+         **/
         float GetNormalizedDirectionDifference(const AZ::Vector2& directionA, const AZ::Vector2& directionB) const;
         float GetNormalizedDirectionDifference(const AZ::Vector3& directionA, const AZ::Vector3& directionB) const;
 

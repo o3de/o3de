@@ -57,6 +57,7 @@ namespace MotionMatching
         EMotionFX::MotionMatching::MotionMatchingConfig::Reflect(context);
         EMotionFX::MotionMatching::LocomotionConfig::Reflect(context);
 
+        EMotionFX::MotionMatching::FeatureSchema::Reflect(context);
         EMotionFX::MotionMatching::Feature::Reflect(context);
         EMotionFX::MotionMatching::FeaturePosition::Reflect(context);
         EMotionFX::MotionMatching::FeatureTrajectory::Reflect(context);

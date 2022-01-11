@@ -47,7 +47,7 @@ namespace EMotionFX
 
         bool LocomotionConfig::RegisterFeatures(const InitSettings& settings)
         {
-            // TODO: use the editor context to get the right value instead.
+            FeatureSchema& featureSchema = m_featureDatabase.GetFeatureSchema();
 
             //----------------------------------------------------------------------------------------------------------
             // Register the motion extraction trajectory (includes history and future)
@@ -62,7 +62,7 @@ namespace EMotionFX
             m_rootTrajectoryData->SetFutureTimeRange(1.2f);
             m_rootTrajectoryData->SetPastTimeRange(0.7f);
             m_rootTrajectoryData->SetDebugDrawEnabled(true);
-            m_features.RegisterFeature(m_rootTrajectoryData);
+            featureSchema.AddFeature(m_rootTrajectoryData);
             //----------------------------------------------------------------------------------------------------------
 
             //----------------------------------------------------------------------------------------------------------
@@ -78,8 +78,8 @@ namespace EMotionFX
             m_leftFootPositionData->SetRelativeToNodeIndex(m_rootNodeIndex);
             m_leftFootPositionData->SetDebugDrawColor(AZ::Color::CreateFromRgba(255,173,173,255));
             m_leftFootPositionData->SetDebugDrawEnabled(true);
-            m_features.RegisterFeature(m_leftFootPositionData);
-            m_features.AddKdTreeFeature(m_leftFootPositionData);
+            featureSchema.AddFeature(m_leftFootPositionData);
+            m_featureDatabase.AddKdTreeFeature(m_leftFootPositionData);
             //----------------------------------------------------------------------------------------------------------
 
             //----------------------------------------------------------------------------------------------------------
@@ -95,8 +95,8 @@ namespace EMotionFX
             m_rightFootPositionData->SetRelativeToNodeIndex(m_rootNodeIndex);
             m_rightFootPositionData->SetDebugDrawColor(AZ::Color::CreateFromRgba(253,255,182,255));
             m_rightFootPositionData->SetDebugDrawEnabled(true);
-            m_features.RegisterFeature(m_rightFootPositionData);
-            m_features.AddKdTreeFeature(m_rightFootPositionData);
+            featureSchema.AddFeature(m_rightFootPositionData);
+            m_featureDatabase.AddKdTreeFeature(m_rightFootPositionData);
             //----------------------------------------------------------------------------------------------------------
 
             //----------------------------------------------------------------------------------------------------------
@@ -106,8 +106,8 @@ namespace EMotionFX
             m_leftFootVelocityData->SetRelativeToNodeIndex(m_rootNodeIndex);
             m_leftFootVelocityData->SetDebugDrawColor(AZ::Color::CreateFromRgba(155,246,255,255));
             m_leftFootVelocityData->SetDebugDrawEnabled(true);
-            m_features.RegisterFeature(m_leftFootVelocityData);
-            m_features.AddKdTreeFeature(m_leftFootVelocityData);
+            featureSchema.AddFeature(m_leftFootVelocityData);
+            m_featureDatabase.AddKdTreeFeature(m_leftFootVelocityData);
             //----------------------------------------------------------------------------------------------------------
 
             //----------------------------------------------------------------------------------------------------------
@@ -117,8 +117,8 @@ namespace EMotionFX
             m_rightFootVelocityData->SetRelativeToNodeIndex(m_rootNodeIndex);
             m_rightFootVelocityData->SetDebugDrawColor(AZ::Color::CreateFromRgba(189,178,255,255));
             m_rightFootVelocityData->SetDebugDrawEnabled(true);
-            m_features.RegisterFeature(m_rightFootVelocityData);
-            m_features.AddKdTreeFeature(m_rightFootVelocityData);
+            featureSchema.AddFeature(m_rightFootVelocityData);
+            m_featureDatabase.AddKdTreeFeature(m_rightFootVelocityData);
             //----------------------------------------------------------------------------------------------------------
 
             //----------------------------------------------------------------------------------------------------------
@@ -134,8 +134,8 @@ namespace EMotionFX
             m_pelvisVelocityData->SetRelativeToNodeIndex(m_rootNodeIndex);
             m_pelvisVelocityData->SetDebugDrawColor(AZ::Color::CreateFromRgba(185,255,175,255));
             m_pelvisVelocityData->SetDebugDrawEnabled(true);
-            m_features.RegisterFeature(m_pelvisVelocityData);
-            m_features.AddKdTreeFeature(m_pelvisVelocityData);
+            featureSchema.AddFeature(m_pelvisVelocityData);
+            m_featureDatabase.AddKdTreeFeature(m_pelvisVelocityData);
             //----------------------------------------------------------------------------------------------------------
 
             return true;
@@ -153,7 +153,7 @@ namespace EMotionFX
                 // Build the input query features that will be compared to every entry in the feature database in the motion matching search.
                 size_t startOffset = 0;
                 AZStd::vector<float>& queryFeatureValues = instance->GetQueryFeatureValues();
-                const FeatureDatabase& featureDatabase = instance->GetConfig()->GetFeatures();
+                const FeatureDatabase& featureDatabase = instance->GetConfig()->GetFeatureDatabase();
                 for (Feature* feature : featureDatabase.GetFeaturesInKdTree())
                 {
                     feature->FillQueryFeatureValues(startOffset, queryFeatureValues, context);
@@ -162,7 +162,7 @@ namespace EMotionFX
                 AZ_Assert(startOffset == queryFeatureValues.size(), "Frame float vector is not the expected size.");
 
                 // Find our nearest frames.
-                instance->GetConfig()->GetFeatures().GetKdTree().FindNearestNeighbors(queryFeatureValues, instance->GetNearestFrames());
+                featureDatabase.GetKdTree().FindNearestNeighbors(queryFeatureValues, instance->GetNearestFrames());
             }
 
             // 2. Narrow-phase, brute force find the actual best matching frame.
@@ -236,13 +236,13 @@ namespace EMotionFX
             ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Trajectory Future Cost", minTrajectoryFutureCost, m_rootTrajectoryData->GetDebugDrawColor());
             ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Total Cost", minCost, AZ::Color::CreateFromRgba(202,255,191,255));
 
-            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetKdTreeMemoryUsage, m_features.GetKdTree().CalcMemoryUsageInBytes());
-            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetKdTreeNumNodes, m_features.GetKdTree().GetNumNodes());
-            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetKdTreeNumDimensions, m_features.GetKdTree().GetNumDimensions());
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetKdTreeMemoryUsage, m_featureDatabase.GetKdTree().CalcMemoryUsageInBytes());
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetKdTreeNumNodes, m_featureDatabase.GetKdTree().GetNumNodes());
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetKdTreeNumDimensions, m_featureDatabase.GetKdTree().GetNumDimensions());
 
-            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetFeatureMatrixMemoryUsage, m_features.GetFeatureMatrix().CalcMemoryUsageInBytes());
-            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetFeatureMatrixNumFrames, m_features.GetFeatureMatrix().rows());
-            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetFeatureMatrixNumComponents, m_features.GetFeatureMatrix().cols());
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetFeatureMatrixMemoryUsage, m_featureDatabase.GetFeatureMatrix().CalcMemoryUsageInBytes());
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetFeatureMatrixNumFrames, m_featureDatabase.GetFeatureMatrix().rows());
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetFeatureMatrixNumComponents, m_featureDatabase.GetFeatureMatrix().cols());
 
             //AZ_Printf("EMotionFX", "Frame %d = %f    %f/%f   %d nearest",
             //    minCostFrameIndex,

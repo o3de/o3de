@@ -98,7 +98,7 @@ namespace EMotionFX::MotionMatching
         }
 
         const MotionMatchingConfig* config = instance->GetConfig();
-        const AZ::Vector3 velocity = GetFeatureData(config->GetFeatures().GetFeatureMatrix(), frameIndex);
+        const AZ::Vector3 velocity = GetFeatureData(config->GetFeatureDatabase().GetFeatureMatrix(), frameIndex);
         DebugDraw(debugDisplay, instance, velocity, m_nodeIndex, m_relativeToNodeIndex, m_debugColor);
     }
 

@@ -1,0 +1,53 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+#include <AzCore/Memory/Memory.h>
+#include <AzCore/RTTI/RTTI.h>
+#include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/containers/vector.h>
+
+#include <Feature.h>
+
+namespace EMotionFX::MotionMatching
+{
+    /**
+     * The set of features involved in the motion matching search.
+     * The schema represents the order of the features as well as their settings while the feature matrix stores the actual feature data.
+     */
+    class EMFX_API FeatureSchema
+    {
+    public:
+        AZ_RTTI(FrameDatabase, "{E34F6BFE-73DB-4DED-AAB9-09FBC5113236}")
+        AZ_CLASS_ALLOCATOR_DECL
+
+        virtual ~FeatureSchema() = default;
+
+        void AddFeature(Feature* feature);
+        void Clear();
+        
+        size_t GetNumFeatures() const;
+        const Feature* GetFeature(size_t index) const;
+        const AZStd::vector<Feature*>& GetFeatures() const;
+
+        Feature* FindFeatureById(const AZ::TypeId& featureTypeId) const;
+
+        static void Reflect(AZ::ReflectContext* context);
+
+    protected:
+        static Feature* CreateFeatureByType(const AZ::TypeId& typeId);
+
+        AZStd::vector<Feature*> m_features; /**< Ordered set of features (Owns the feature objects). */
+        AZStd::unordered_map<AZ::TypeId, Feature*> m_featuresById; /**< Hash-map for fast access to the features by ID. (Weak ownership) */
+    };
+} // namespace EMotionFX::MotionMatching

@@ -14,63 +14,50 @@
 
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/RTTI/RTTI.h>
-#include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
 #include <Feature.h>
+#include <FeatureSchema.h>
 
-namespace EMotionFX
+namespace EMotionFX::MotionMatching
 {
-    namespace MotionMatching
+    class FrameDatabase;
+    class KdTree;
+
+    class EMFX_API FeatureDatabase
     {
-        class FrameDatabase;
-        class KdTree;
+    public:
+        AZ_RTTI(FrameDatabase, "{4411C941-B4D9-4ABB-993F-5F44FA7345A4}")
+        AZ_CLASS_ALLOCATOR_DECL
 
-        class EMFX_API FeatureDatabase
-        {
-        public:
-            AZ_RTTI(FrameDatabase, "{4411C941-B4D9-4ABB-993F-5F44FA7345A4}")
-            AZ_CLASS_ALLOCATOR_DECL
+        FeatureDatabase();
+        virtual ~FeatureDatabase();
 
-            FeatureDatabase();
-            virtual ~FeatureDatabase();
+        void Clear(); // Clear the data, so you can re-initialize it with new data.
+        size_t CalcMemoryUsageInBytes() const;
 
-            void RegisterFeature(Feature* feature);
-            const Feature* GetFeature(size_t index) const;
-            const AZStd::vector<Feature*>& GetFeatures() const;
+        bool ExtractFeatures(ActorInstance* actorInstance, FrameDatabase* frameDatabase, size_t maxKdTreeDepth=20, size_t minFramesPerKdTreeNode=2000);
+        void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
+            MotionMatchingInstance* instance,
+            size_t frameIndex);
 
-            size_t GetNumFeatureTypes() const;
-            Feature* FindFeatureByType(const AZ::TypeId& featureTypeId) const;
+        // KD-Tree
+        KdTree& GetKdTree() { return *m_kdTree.get(); }
+        const KdTree& GetKdTree() const { return *m_kdTree.get(); }
+        size_t CalcNumDataDimensionsForKdTree(const FeatureDatabase& featureDatabase) const;
+        void AddKdTreeFeature(Feature* feature) { m_featuresInKdTree.push_back(feature); }
+        const AZStd::vector<Feature*>& GetFeaturesInKdTree() const { return m_featuresInKdTree; }
 
-            void Clear(); // Clear the data, so you can re-initialize it with new data.
-            size_t CalcMemoryUsageInBytes() const;
+        FeatureSchema& GetFeatureSchema() { return m_featureSchema; }
+        const FeatureMatrix& GetFeatureMatrix() const { return m_featureMatrix; }
+        void SaveAsCsv(const AZStd::string& filename, Skeleton* skeleton);
 
-            bool ExtractFeatures(ActorInstance* actorInstance, FrameDatabase* frameDatabase, size_t maxKdTreeDepth=20, size_t minFramesPerKdTreeNode=2000);
-            void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
-                MotionMatchingInstance* instance,
-                size_t frameIndex);
+    private:
+        FeatureSchema m_featureSchema;
+        FeatureMatrix m_featureMatrix;
 
-            // KD-Tree
-            KdTree& GetKdTree() { return *m_kdTree.get(); }
-            const KdTree& GetKdTree() const { return *m_kdTree.get(); }
-            size_t CalcNumDataDimensionsForKdTree(const FeatureDatabase& featureDatabase) const;
-            void AddKdTreeFeature(Feature* feature) { m_featuresInKdTree.push_back(feature); }
-            const AZStd::vector<Feature*>& GetFeaturesInKdTree() const { return m_featuresInKdTree; }
-
-            const FeatureMatrix& GetFeatureMatrix() const { return m_featureMatrix; }
-            void SaveAsCsv(const AZStd::string& filename, Skeleton* skeleton);
-
-        private:
-            static Feature* CreateFeatureByType(const AZ::TypeId& typeId); // create from RTTI type
-
-            AZStd::vector<Feature*> m_features; /**< This is a flat vector of all frame datas (Owner of the features). */
-            AZStd::unordered_map<AZ::TypeId, Feature*> m_featuresByType; /**< The per frame additional data. (Weak ownership) */
-
-            FeatureMatrix m_featureMatrix;
-
-            AZStd::unique_ptr<KdTree> m_kdTree; /**< The acceleration structure to speed up the search for lowest cost frames. */
-            AZStd::vector<Feature*> m_featuresInKdTree;
-        };
-    } // namespace MotionMatching
-} // namespace EMotionFX
+        AZStd::unique_ptr<KdTree> m_kdTree; /**< The acceleration structure to speed up the search for lowest cost frames. */
+        AZStd::vector<Feature*> m_featuresInKdTree;
+    };
+} // namespace EMotionFX::MotionMatching
