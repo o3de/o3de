@@ -215,7 +215,7 @@ namespace AZ
         }
 
         template<>
-        float StreamingImageAsset::GetSubImagePixelValue<float>(uint32_t mip, uint32_t slice, uint32_t x, uint32_t y, uint32_t componentIndex)
+        float StreamingImageAsset::GetSubImagePixelValue<float>(uint32_t x, uint32_t y, uint32_t componentIndex, uint32_t mip, uint32_t slice)
         {
             // TODO: Use the component index
             (void)componentIndex;
@@ -235,7 +235,7 @@ namespace AZ
         }
 
         template<>
-        AZ::u32 StreamingImageAsset::GetSubImagePixelValue<AZ::u32>(uint32_t mip, uint32_t slice, uint32_t x, uint32_t y, uint32_t componentIndex)
+        AZ::u32 StreamingImageAsset::GetSubImagePixelValue<AZ::u32>(uint32_t x, uint32_t y, uint32_t componentIndex, uint32_t mip, uint32_t slice)
         {
             // TODO: Use the component index
             (void)componentIndex;

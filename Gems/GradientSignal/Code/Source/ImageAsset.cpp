@@ -198,7 +198,7 @@ namespace GradientSignal
                 uint32_t x = static_cast<uint32_t>(pixelLookup.GetX()) % width;
                 uint32_t y = static_cast<uint32_t>(pixelLookup.GetY()) % height;
 
-                return imageAsset->GetSubImagePixelValue<float>(0, 0, x, y, 0);
+                return imageAsset->GetSubImagePixelValue<float>(x, y);
             }
         }
 

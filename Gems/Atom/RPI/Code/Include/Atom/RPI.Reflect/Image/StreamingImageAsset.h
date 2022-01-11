@@ -87,7 +87,7 @@ namespace AZ
 
             //! Get image pixel value for specified mip and slice
             template<typename T>
-            T GetSubImagePixelValue(uint32_t mip, uint32_t slice, uint32_t x, uint32_t y, uint32_t componentIndex = 0);
+            T GetSubImagePixelValue(uint32_t x, uint32_t y, uint32_t componentIndex = 0, uint32_t mip = 0, uint32_t slice = 0);
 
             //! Returns streaming image pool asset id of the pool that will be used to create the streaming image.
             const Data::AssetId& GetPoolAssetId() const;
