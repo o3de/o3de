@@ -28,6 +28,7 @@ namespace AzToolsFramework
         {
             serializeContext->Class<EditorSettingPropertyValue>()
                 ->Field("Name", &EditorSettingPropertyValue::m_name)
+                ->Field("Description", &EditorSettingPropertyValue::m_description)
                 ;
 
             serializeContext->Class<EditorSettingPropertyInt, EditorSettingPropertyValue>()

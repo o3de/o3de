@@ -15,6 +15,11 @@ namespace AzToolsFramework
         m_name = name;
     }
 
+    void EditorSettingPropertyValue::SetDescription(AZStd::string_view description)
+    {
+        m_description = description;
+    }
+
     EditorSettingPropertyGroup* EditorSettingPropertyGroup::GetGroup(const char* groupName)
     {
         for (EditorSettingPropertyGroup& subGroup : m_groups)
@@ -97,6 +102,7 @@ namespace AzToolsFramework
         }
 
         valuePtr->SetName(settingItem.GetName());
+        valuePtr->SetDescription(settingItem.GetDescription());
         m_settingValues.m_properties.push_back(valuePtr);
         m_settingProperties.emplace_back(AZStd::move(settingItem));
         m_settingPropertyValueMap.insert({ valuePtr, &m_settingProperties.back() });

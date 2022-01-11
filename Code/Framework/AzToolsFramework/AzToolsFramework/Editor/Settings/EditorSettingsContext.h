@@ -29,6 +29,7 @@ namespace AzToolsFramework
         );
 
         AZStd::string_view GetName();
+        AZStd::string_view GetDescription();
         AZStd::string_view GetCategory();
         AZStd::string_view GetSubCategory();
         const AZ::Edit::ElementData* GetEditData() const;

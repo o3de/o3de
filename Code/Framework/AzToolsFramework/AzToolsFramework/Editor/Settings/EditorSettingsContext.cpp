@@ -33,6 +33,11 @@ namespace AzToolsFramework
         return m_editData.m_name;
     }
 
+    AZStd::string_view EditorSettingProperty::GetDescription()
+    {
+        return m_editData.m_description;
+    }
+
     AZStd::string_view EditorSettingProperty::GetCategory()
     {
         return m_category;

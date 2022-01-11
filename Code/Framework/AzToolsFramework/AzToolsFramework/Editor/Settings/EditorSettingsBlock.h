@@ -27,12 +27,14 @@ namespace AzToolsFramework
 
         virtual void someFunction() = 0;
         void SetName(AZStd::string_view name);
+        void SetDescription(AZStd::string_view description);
 
     private:
         friend class EditorSettingsManager;
         friend struct EditorSettingPropertyGroup;
 
         AZStd::string m_name;
+        AZStd::string m_description;
     };
 
     class EditorSettingPropertyInt
