@@ -6,6 +6,8 @@
  *
  */
 
+#include <AzCore/Component/ComponentApplicationBus.h>
+
 #include <AzToolsFramework/Editor/EditorSettingsAPIBus.h>
 #include <AzToolsFramework/Editor/Settings/Dialog/EditorSettingsDialog.h>
 #include <AzToolsFramework/Editor/Settings/Dialog/EditorSettingsTreeWidgetDelegate.h>
@@ -61,6 +63,7 @@ namespace AzToolsFramework
         connect(ui->filter, &FilteredSearchWidget::TextFilterChanged, this, &EditorSettingsDialog::SetFilter);
 
         AZ::SerializeContext* serializeContext = nullptr;
+        
         EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
         AZ_Assert(serializeContext, "Serialization context not available");
 
@@ -87,17 +90,17 @@ namespace AzToolsFramework
 
         // TEST - enable RPE
 
-        Editor::EditorSettingsInterface* editorSettingsInterface = AZ::Interface<Editor::EditorSettingsInterface>::Get();
+        EditorSettingsInterface* editorSettingsInterface = AZ::Interface<EditorSettingsInterface>::Get();
         if (editorSettingsInterface != nullptr)
         {
-            Editor::CategoryMap* categories = editorSettingsInterface->GetSettingsBlocks();
+            CategoryMap* categories = editorSettingsInterface->GetSettingsBlocks();
 
             for (auto cat : *categories)
             {
                 for (auto subcat : cat.second)
                 {
                     auto instance = subcat.second;
-                    const AZ::Uuid& classId = AZ::SerializeTypeInfo<Editor::EditorSettingsBlock>::GetUuid(instance);
+                    const AZ::Uuid& classId = AZ::SerializeTypeInfo<EditorSettingsBlock>::GetUuid(instance);
                     ui->propertyEditor->AddInstance(instance, classId);
                 }
             }

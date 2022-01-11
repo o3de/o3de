@@ -8,7 +8,7 @@
 
 #include <AzToolsFramework/Editor/Settings/EditorSettingsBlock.h>
 
-namespace AzToolsFramework::Editor
+namespace AzToolsFramework
 {
     void EditorSettingPropertyValue::SetName(AZStd::string_view name)
     {

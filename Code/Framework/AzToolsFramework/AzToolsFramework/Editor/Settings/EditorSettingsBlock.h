@@ -13,7 +13,7 @@
 
 #include <AzToolsFramework/Editor/Settings/EditorSettingsContext.h>
 
-namespace AzToolsFramework::Editor
+namespace AzToolsFramework
 {
     using EditorSettingValueToPropertyMap = AZStd::unordered_map<const void*, EditorSettingProperty*>;
 

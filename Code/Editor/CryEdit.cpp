@@ -3684,8 +3684,8 @@ void CCryEditApp::OnValidatelevel()
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnToolsPreferences()
 {
-    AzToolsFramework::Editor::EditorSettingsInterface* editorSettingsInterface =
-        AZ::Interface<AzToolsFramework::Editor::EditorSettingsInterface>::Get();
+    AzToolsFramework::EditorSettingsInterface* editorSettingsInterface =
+        AZ::Interface<AzToolsFramework::EditorSettingsInterface>::Get();
     if (editorSettingsInterface != nullptr)
     {
         editorSettingsInterface->OpenEditorSettingsDialog();

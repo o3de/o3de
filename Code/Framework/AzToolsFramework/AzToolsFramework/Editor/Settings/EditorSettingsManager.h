@@ -15,7 +15,7 @@
 #include <AzToolsFramework/Editor/Settings/Dialog/EditorSettingsDialog.h>
 #include <AzToolsFramework/Editor/Settings/EditorSettingsInterface.h>
 
-namespace AzToolsFramework::Editor
+namespace AzToolsFramework
 {
     class EditorSettingsManager
         : EditorSettingsInterface

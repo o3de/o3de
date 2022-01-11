@@ -12,14 +12,15 @@
 #include <AzCore/std/limits.h>
 #include <AzCore/Interface/Interface.h>
 
-namespace AzToolsFramework::Editor
+namespace AzToolsFramework
 {
+    class EditorSettingsBlock;
+
     using SubCategoryMap = AZStd::map<AZStd::string, EditorSettingsBlock*>;
     using CategoryMap = AZStd::map<AZStd::string, SubCategoryMap>;
 
     /*!
      * EditorSettingsInterface
-     * 
      */
 
     class EditorSettingsInterface

@@ -197,7 +197,7 @@ namespace AzToolsFramework
         EditorEntityAPI* m_editorEntityAPI = nullptr;
 
         EditorEntityManager m_editorEntityManager;
-        Editor::EditorSettingsManager m_editorSettingsManager;
+        EditorSettingsManager m_editorSettingsManager;
 
         UndoSystem::UndoCacheInterface*             m_undoCacheInterface = nullptr;
     };

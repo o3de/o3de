@@ -13,7 +13,7 @@
 #include <AzToolsFramework/Editor/Settings/EditorSettingsContext.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
-namespace AzToolsFramework::Editor
+namespace AzToolsFramework
 {
     EditorSettingsManager::EditorSettingsManager()
     {
