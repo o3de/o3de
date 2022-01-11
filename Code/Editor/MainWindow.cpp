@@ -643,11 +643,11 @@ void MainWindow::InitActions()
         .SetStatusTip(tr("Create a new slice"));
     am->AddAction(ID_FILE_OPEN_SLICE, tr("Open Slice..."))
         .SetStatusTip(tr("Open an existing slice"));
-#endif
     am->AddAction(ID_FILE_SAVE_SELECTED_SLICE, tr("Save selected slice")).SetShortcut(tr("Alt+S"))
         .SetStatusTip(tr("Save the selected slice to the first level root"));
     am->AddAction(ID_FILE_SAVE_SLICE_TO_ROOT, tr("Save Slice to root")).SetShortcut(tr("Ctrl+Alt+S"))
         .SetStatusTip(tr("Save the selected slice to the top level root"));
+#endif
     am->AddAction(ID_FILE_SAVE_LEVEL, tr("&Save"))
         .SetShortcut(tr("Ctrl+S"))
         .SetReserved()
@@ -677,7 +677,9 @@ void MainWindow::InitActions()
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSelected);
     am->AddAction(ID_FILE_EXPORTOCCLUSIONMESH, tr("Export Occlusion Mesh"));
     am->AddAction(ID_FILE_EDITLOGFILE, tr("Show Log File"));
+#ifdef ENABLE_SLICE_EDITOR
     am->AddAction(ID_FILE_RESAVESLICES, tr("Resave All Slices"));
+#endif
     am->AddAction(ID_FILE_PROJECT_MANAGER_SETTINGS, tr("Edit Project Settings..."));
     am->AddAction(ID_FILE_PROJECT_MANAGER_NEW, tr("New Project..."));
     am->AddAction(ID_FILE_PROJECT_MANAGER_OPEN, tr("Open Project..."));

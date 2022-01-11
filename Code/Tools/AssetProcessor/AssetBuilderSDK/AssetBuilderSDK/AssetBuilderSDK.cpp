@@ -1172,19 +1172,10 @@ namespace AssetBuilderSDK
         JobProduct::Reflect(context);
         AssetBuilderDesc::Reflect(context);
 
-        RegisterBuilderRequest::Reflect(context);
-        RegisterBuilderResponse::Reflect(context);
         CreateJobsRequest::Reflect(context);
         CreateJobsResponse::Reflect(context);
         ProcessJobRequest::Reflect(context);
         ProcessJobResponse::Reflect(context);
-
-        BuilderHelloRequest::Reflect(context);
-        BuilderHelloResponse::Reflect(context);
-        CreateJobsNetRequest::Reflect(context);
-        CreateJobsNetResponse::Reflect(context);
-        ProcessJobNetRequest::Reflect(context);
-        ProcessJobNetResponse::Reflect(context);
     }
 
     void InitializeSerializationContext()
@@ -1263,24 +1254,6 @@ namespace AssetBuilderSDK
         }
     }
 
-    void RegisterBuilderRequest::Reflect(AZ::ReflectContext* context)
-    {
-        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-        {
-            serializeContext->Class<RegisterBuilderRequest>()->
-                Version(1)->
-                Field("FilePath", &RegisterBuilderRequest::m_filePath);
-        }
-
-        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-        {
-            behaviorContext->Class<RegisterBuilderRequest>("RegisterBuilderRequest")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
-                ->Attribute(AZ::Script::Attributes::Module, "asset.builder")
-                ->Property("filePath", BehaviorValueProperty(&RegisterBuilderRequest::m_filePath));
-        }
-    }
-
     void AssetBuilderDesc::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -1313,25 +1286,6 @@ namespace AssetBuilderSDK
         }
     }
 
-    void RegisterBuilderResponse::Reflect(AZ::ReflectContext* context)
-    {
-        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-        {
-            serializeContext->Class<RegisterBuilderResponse>()
-                ->Version(1)
-                ->Field("Asset Builder Desc List", &RegisterBuilderResponse::m_assetBuilderDescList);
-        }
-
-        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-        {
-            behaviorContext->Class<RegisterBuilderResponse>("RegisterBuilderResponse")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
-                ->Attribute(AZ::Script::Attributes::Module, "asset.builder")
-                ->Constructor()
-                ->Property("assetBuilderDescList", BehaviorValueProperty(&RegisterBuilderResponse::m_assetBuilderDescList));
-        }
-    }
-
     bool CreateJobsResponse::Succeeded() const
     {
         return m_result == CreateJobsResultCode::Success;
@@ -1360,128 +1314,6 @@ namespace AssetBuilderSDK
                 ->Enum<aznumeric_cast<int>(CreateJobsResultCode::ShuttingDown)>("ResultShuttingDown")
                 ->Enum<aznumeric_cast<int>(CreateJobsResultCode::Success)>("ResultSuccess");
         }
-    }
-
-    void BuilderHelloRequest::Reflect(AZ::ReflectContext* context)
-    {
-        auto serialize = azrtti_cast<AZ::SerializeContext*>(context);
-        if (serialize)
-        {
-            serialize->Class<BuilderHelloRequest>()
-                ->Version(1)
-                ->Field("UUID", &BuilderHelloRequest::m_uuid);
-        }
-    }
-
-    unsigned int BuilderHelloRequest::MessageType()
-    {
-        static unsigned int messageType = AZ_CRC("AssetBuilderSDK::BuilderHelloRequest", 0x213a7248);
-
-        return messageType;
-    }
-
-    unsigned int BuilderHelloRequest::GetMessageType() const
-    {
-        return MessageType();
-    }
-
-    void BuilderHelloResponse::Reflect(AZ::ReflectContext* context)
-    {
-        auto serialize = azrtti_cast<AZ::SerializeContext*>(context);
-        if (serialize)
-        {
-            serialize->Class<BuilderHelloResponse>()
-                ->Version(1)
-                ->Field("Accepted", &BuilderHelloResponse::m_accepted)
-                ->Field("UUID", &BuilderHelloResponse::m_uuid);
-        }
-    }
-
-    unsigned int BuilderHelloResponse::GetMessageType() const
-    {
-        return BuilderHelloRequest::MessageType();
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-
-    void CreateJobsNetRequest::Reflect(AZ::ReflectContext* context)
-    {
-        auto serialize = azrtti_cast<AZ::SerializeContext*>(context);
-        if (serialize)
-        {
-            serialize->Class<CreateJobsNetRequest>()
-                ->Version(1)
-                ->Field("Request", &CreateJobsNetRequest::m_request);
-        }
-    }
-
-    unsigned int CreateJobsNetRequest::MessageType()
-    {
-        static unsigned int messageType = AZ_CRC("AssetBuilderSDK::CreateJobsNetRequest", 0xc48209c0);
-
-        return messageType;
-    }
-
-    unsigned int CreateJobsNetRequest::GetMessageType() const
-    {
-        return MessageType();
-    }
-
-    void CreateJobsNetResponse::Reflect(AZ::ReflectContext* context)
-    {
-        auto serialize = azrtti_cast<AZ::SerializeContext*>(context);
-        if (serialize)
-        {
-            serialize->Class<CreateJobsNetResponse>()
-                ->Version(1)
-                ->Field("Response", &CreateJobsNetResponse::m_response);
-        }
-    }
-
-    unsigned int CreateJobsNetResponse::GetMessageType() const
-    {
-        return CreateJobsNetRequest::MessageType();
-    }
-
-
-
-    void ProcessJobNetRequest::Reflect(AZ::ReflectContext* context)
-    {
-        auto serialize = azrtti_cast<AZ::SerializeContext*>(context);
-        if (serialize)
-        {
-            serialize->Class<ProcessJobNetRequest>()
-                ->Version(1)
-                ->Field("Request", &ProcessJobNetRequest::m_request);
-        }
-    }
-
-    unsigned int ProcessJobNetRequest::MessageType()
-    {
-        static unsigned int messageType = AZ_CRC("AssetBuilderSDK::ProcessJobNetRequest", 0x479f340f);
-
-        return messageType;
-    }
-
-    unsigned int ProcessJobNetRequest::GetMessageType() const
-    {
-        return MessageType();
-    }
-
-    void ProcessJobNetResponse::Reflect(AZ::ReflectContext* context)
-    {
-        auto serialize = azrtti_cast<AZ::SerializeContext*>(context);
-        if (serialize)
-        {
-            serialize->Class<ProcessJobNetResponse>()
-                ->Version(1)
-                ->Field("Response", &ProcessJobNetResponse::m_response);
-        }
-    }
-
-    unsigned int ProcessJobNetResponse::GetMessageType() const
-    {
-        return ProcessJobNetRequest::MessageType();
     }
 
     JobDependency::JobDependency(const AZStd::string& jobKey, const AZStd::string& platformIdentifier, const JobDependencyType& type, const SourceFileDependency& sourceFile)

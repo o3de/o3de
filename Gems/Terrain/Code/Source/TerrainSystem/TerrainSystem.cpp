@@ -105,10 +105,12 @@ void TerrainSystem::Activate()
 
 void TerrainSystem::Deactivate()
 {
+    // Stop listening to the bus even before we signal DestroyBegin so that way any calls to the terrain system as a *result* of
+    // calling DestroyBegin will fail to reach the terrain system.
+    AzFramework::Terrain::TerrainDataRequestBus::Handler::BusDisconnect();
+
     AzFramework::Terrain::TerrainDataNotificationBus::Broadcast(
         &AzFramework::Terrain::TerrainDataNotificationBus::Events::OnTerrainDataDestroyBegin);
-
-    AzFramework::Terrain::TerrainDataRequestBus::Handler::BusDisconnect();
 
     {
         AZStd::unique_lock<AZStd::shared_mutex> lock(m_areaMutex);

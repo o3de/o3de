@@ -122,14 +122,10 @@ namespace LyShine
         uint32_t isClampTextureMode = 0;
         for (int i = 0; i < m_numTextures; ++i)
         {
-            const AZ::RHI::ImageView* imageView = m_textures[i].m_texture ? m_textures[i].m_texture->GetImageView() : nullptr;
-
-            if (!imageView)
-            {
-                // Default to white texture
-                auto image = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
-                imageView = image->GetImageView();
-            }
+            // Default to white texture
+            const AZ::Data::Instance<AZ::RPI::Image>& image = m_textures[i].m_texture ? m_textures[i].m_texture
+                : AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
+            const AZ::RHI::ImageView* imageView = image->GetImageView();
 
             if (imageView)
             {
@@ -138,6 +134,9 @@ namespace LyShine
                 {
                     isClampTextureMode |= (1 << i);
                 }
+#ifndef _RELEASE
+                uiRenderer->DebugUseTexture(image);
+#endif
             }
         }
 
