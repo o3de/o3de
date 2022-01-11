@@ -772,7 +772,7 @@ class EditorTestSuite():
             return_code = editor.get_returncode()
             editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
             # Save the editor log
-            workspace.artifact_manager.save_artifact(os.path.join(editor_utils.retrieve_log_path(), log_name))
+            workspace.artifact_manager.save_artifact(os.path.join(editor_utils.retrieve_log_path(run_id, workspace), log_name))
             if return_code == 0:
                 test_result = Result.Pass.create(test_spec, output, editor_log_content)
             else:
@@ -782,7 +782,7 @@ class EditorTestSuite():
                     (run_id, workspace, self._TIMEOUT_CRASH_LOG), None)
                     # Save the crash log
                     crash_file_name = os.path.basename(workspace.paths.crash_log())
-                    workspace.artifact_manager.save_artifact(os.path.join(editor_utils.retrieve_log_path(), crash_file_name))
+                    workspace.artifact_manager.save_artifact(os.path.join(editor_utils.retrieve_log_path(run_id, workspace), crash_file_name))
                     editor_utils.cycle_crash_report(run_id, workspace)
                 else:
                     test_result = Result.Fail.create(test_spec, output, editor_log_content)
@@ -847,7 +847,7 @@ class EditorTestSuite():
             return_code = editor.get_returncode()
             editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
             # Save the editor log
-            workspace.artifact_manager.save_artifact(os.path.join(editor_utils.retrieve_log_path(), log_name))
+            workspace.artifact_manager.save_artifact(os.path.join(editor_utils.retrieve_log_path(run_id, workspace), log_name))
             if return_code == 0:
                 # No need to scrap the output, as all the tests have passed
                 for test_spec in test_spec_list:
@@ -871,7 +871,7 @@ class EditorTestSuite():
                                 # Save the crash log
                                 crash_file_name = os.path.basename(workspace.paths.crash_log())
                                 workspace.artifact_manager.save_artifact(
-                                    os.path.join(editor_utils.retrieve_log_path(), crash_file_name))
+                                    os.path.join(editor_utils.retrieve_log_path(run_id, workspace), crash_file_name))
                                 editor_utils.cycle_crash_report(run_id, workspace)
                                 results[test_spec_name] = Result.Crash.create(result.test_spec, output, return_code,
                                                                               crash_error, result.editor_log)
