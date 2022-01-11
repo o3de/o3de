@@ -18,7 +18,7 @@
 
 namespace UnitTest
 {
-    class GradientGetValuesBenchmark : public GradientSignalBenchmarkFixture
+    class GradientGetValues : public GradientSignalBenchmarkFixture
     {
     public:
         // We use an enum to list out the different types of GetValue() benchmarks to run so that way we can condense our test cases
@@ -179,95 +179,95 @@ namespace UnitTest
 // registering one set of benchmark runs for each enum value and use ArgNames() to give it a friendly name in the results.
 #define GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(Fixture, Func)                          \
     BENCHMARK_REGISTER_F(Fixture, Func)                                                         \
-        ->Args({ GradientGetValuesBenchmark::GetValuePermutation::EBUS_GET_VALUE, 1024 })       \
-        ->Args({ GradientGetValuesBenchmark::GetValuePermutation::EBUS_GET_VALUE, 2048 })       \
-        ->Args({ GradientGetValuesBenchmark::GetValuePermutation::EBUS_GET_VALUE, 4096 })       \
+        ->Args({ GradientGetValues::GetValuePermutation::EBUS_GET_VALUE, 1024 })       \
+        ->Args({ GradientGetValues::GetValuePermutation::EBUS_GET_VALUE, 2048 })       \
+        ->Args({ GradientGetValues::GetValuePermutation::EBUS_GET_VALUE, 4096 })       \
         ->ArgNames({ "EbusGetValue", "size" })                                                  \
         ->Unit(::benchmark::kMillisecond);                                                      \
     BENCHMARK_REGISTER_F(Fixture, Func)                                                         \
-        ->Args({ GradientGetValuesBenchmark::GetValuePermutation::EBUS_GET_VALUES, 1024 })      \
-        ->Args({ GradientGetValuesBenchmark::GetValuePermutation::EBUS_GET_VALUES, 2048 })      \
-        ->Args({ GradientGetValuesBenchmark::GetValuePermutation::EBUS_GET_VALUES, 4096 })      \
+        ->Args({ GradientGetValues::GetValuePermutation::EBUS_GET_VALUES, 1024 })      \
+        ->Args({ GradientGetValues::GetValuePermutation::EBUS_GET_VALUES, 2048 })      \
+        ->Args({ GradientGetValues::GetValuePermutation::EBUS_GET_VALUES, 4096 })      \
         ->ArgNames({ "EbusGetValues", "size" })                                                 \
         ->Unit(::benchmark::kMillisecond);                                                      \
     BENCHMARK_REGISTER_F(Fixture, Func)                                                         \
-        ->Args({ GradientGetValuesBenchmark::GetValuePermutation::SAMPLER_GET_VALUE, 1024 })    \
-        ->Args({ GradientGetValuesBenchmark::GetValuePermutation::SAMPLER_GET_VALUE, 2048 })    \
-        ->Args({ GradientGetValuesBenchmark::GetValuePermutation::SAMPLER_GET_VALUE, 4096 })    \
+        ->Args({ GradientGetValues::GetValuePermutation::SAMPLER_GET_VALUE, 1024 })    \
+        ->Args({ GradientGetValues::GetValuePermutation::SAMPLER_GET_VALUE, 2048 })    \
+        ->Args({ GradientGetValues::GetValuePermutation::SAMPLER_GET_VALUE, 4096 })    \
         ->ArgNames({ "SamplerGetValue", "size" })                                               \
         ->Unit(::benchmark::kMillisecond);                                                      \
     BENCHMARK_REGISTER_F(Fixture, Func)                                                         \
-        ->Args({ GradientGetValuesBenchmark::GetValuePermutation::SAMPLER_GET_VALUES, 1024 })   \
-        ->Args({ GradientGetValuesBenchmark::GetValuePermutation::SAMPLER_GET_VALUES, 2048 })   \
-        ->Args({ GradientGetValuesBenchmark::GetValuePermutation::SAMPLER_GET_VALUES, 4096 })   \
+        ->Args({ GradientGetValues::GetValuePermutation::SAMPLER_GET_VALUES, 1024 })   \
+        ->Args({ GradientGetValues::GetValuePermutation::SAMPLER_GET_VALUES, 2048 })   \
+        ->Args({ GradientGetValues::GetValuePermutation::SAMPLER_GET_VALUES, 4096 })   \
         ->ArgNames({ "SamplerGetValues", "size" })                                              \
         ->Unit(::benchmark::kMillisecond);
 
     // --------------------------------------------------------------------------------------
     // Base Gradients
 
-    BENCHMARK_DEFINE_F(GradientGetValuesBenchmark, BM_ConstantGradient)(benchmark::State& state)
+    BENCHMARK_DEFINE_F(GradientGetValues, BM_ConstantGradient)(benchmark::State& state)
     {
         auto entity = BuildTestConstantGradient(TestShapeHalfBounds);
         RunGetValueOrGetValuesBenchmark(state, entity->GetId());
     }
 
-    BENCHMARK_DEFINE_F(GradientGetValuesBenchmark, BM_ImageGradient)(benchmark::State& state)
+    BENCHMARK_DEFINE_F(GradientGetValues, BM_ImageGradient)(benchmark::State& state)
     {
         auto entity = BuildTestImageGradient(TestShapeHalfBounds);
         RunGetValueOrGetValuesBenchmark(state, entity->GetId());
     }
 
 
-    BENCHMARK_DEFINE_F(GradientGetValuesBenchmark, BM_PerlinGradient)(benchmark::State& state)
+    BENCHMARK_DEFINE_F(GradientGetValues, BM_PerlinGradient)(benchmark::State& state)
     {
         auto entity = BuildTestPerlinGradient(TestShapeHalfBounds);
         RunGetValueOrGetValuesBenchmark(state, entity->GetId());
     }
 
-    BENCHMARK_DEFINE_F(GradientGetValuesBenchmark, BM_RandomGradient)(benchmark::State& state)
+    BENCHMARK_DEFINE_F(GradientGetValues, BM_RandomGradient)(benchmark::State& state)
     {
         auto entity = BuildTestRandomGradient(TestShapeHalfBounds);
         RunGetValueOrGetValuesBenchmark(state, entity->GetId());
     }
 
-    BENCHMARK_DEFINE_F(GradientGetValuesBenchmark, BM_ShapeAreaFalloffGradient)(benchmark::State& state)
+    BENCHMARK_DEFINE_F(GradientGetValues, BM_ShapeAreaFalloffGradient)(benchmark::State& state)
     {
         auto entity = BuildTestShapeAreaFalloffGradient(TestShapeHalfBounds);
         RunGetValueOrGetValuesBenchmark(state, entity->GetId());
     }
 
-    GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(GradientGetValuesBenchmark, BM_ConstantGradient);
-    GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(GradientGetValuesBenchmark, BM_ImageGradient);
-    GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(GradientGetValuesBenchmark, BM_PerlinGradient);
-    GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(GradientGetValuesBenchmark, BM_RandomGradient);
-    GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(GradientGetValuesBenchmark, BM_ShapeAreaFalloffGradient);
+    GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(GradientGetValues, BM_ConstantGradient);
+    GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(GradientGetValues, BM_ImageGradient);
+    GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(GradientGetValues, BM_PerlinGradient);
+    GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(GradientGetValues, BM_RandomGradient);
+    GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(GradientGetValues, BM_ShapeAreaFalloffGradient);
 
     // --------------------------------------------------------------------------------------
     // Gradient Modifiers
 
-    BENCHMARK_DEFINE_F(GradientGetValuesBenchmark, BM_DitherGradient)(benchmark::State& state)
+    BENCHMARK_DEFINE_F(GradientGetValues, BM_DitherGradient)(benchmark::State& state)
     {
         auto baseEntity = BuildTestRandomGradient(TestShapeHalfBounds);
         auto entity = BuildTestDitherGradient(TestShapeHalfBounds, baseEntity->GetId());
         RunGetValueOrGetValuesBenchmark(state, entity->GetId());
     }
 
-    BENCHMARK_DEFINE_F(GradientGetValuesBenchmark, BM_InvertGradient)(benchmark::State& state)
+    BENCHMARK_DEFINE_F(GradientGetValues, BM_InvertGradient)(benchmark::State& state)
     {
         auto baseEntity = BuildTestRandomGradient(TestShapeHalfBounds);
         auto entity = BuildTestDitherGradient(TestShapeHalfBounds, baseEntity->GetId());
         RunGetValueOrGetValuesBenchmark(state, entity->GetId());
     }
 
-    BENCHMARK_DEFINE_F(GradientGetValuesBenchmark, BM_LevelsGradient)(benchmark::State& state)
+    BENCHMARK_DEFINE_F(GradientGetValues, BM_LevelsGradient)(benchmark::State& state)
     {
         auto baseEntity = BuildTestRandomGradient(TestShapeHalfBounds);
         auto entity = BuildTestLevelsGradient(TestShapeHalfBounds, baseEntity->GetId());
         RunGetValueOrGetValuesBenchmark(state, entity->GetId());
     }
 
-    BENCHMARK_DEFINE_F(GradientGetValuesBenchmark, BM_MixedGradient)(benchmark::State& state)
+    BENCHMARK_DEFINE_F(GradientGetValues, BM_MixedGradient)(benchmark::State& state)
     {
         auto baseEntity = BuildTestRandomGradient(TestShapeHalfBounds);
         auto mixedEntity = BuildTestConstantGradient(TestShapeHalfBounds);
@@ -275,47 +275,47 @@ namespace UnitTest
         RunGetValueOrGetValuesBenchmark(state, entity->GetId());
     }
 
-    BENCHMARK_DEFINE_F(GradientGetValuesBenchmark, BM_PosterizeGradient)(benchmark::State& state)
+    BENCHMARK_DEFINE_F(GradientGetValues, BM_PosterizeGradient)(benchmark::State& state)
     {
         auto baseEntity = BuildTestRandomGradient(TestShapeHalfBounds);
         auto entity = BuildTestPosterizeGradient(TestShapeHalfBounds, baseEntity->GetId());
         RunGetValueOrGetValuesBenchmark(state, entity->GetId());
     }
 
-    BENCHMARK_DEFINE_F(GradientGetValuesBenchmark, BM_ReferenceGradient)(benchmark::State& state)
+    BENCHMARK_DEFINE_F(GradientGetValues, BM_ReferenceGradient)(benchmark::State& state)
     {
         auto baseEntity = BuildTestRandomGradient(TestShapeHalfBounds);
         auto entity = BuildTestReferenceGradient(TestShapeHalfBounds, baseEntity->GetId());
         RunGetValueOrGetValuesBenchmark(state, entity->GetId());
     }
 
-    BENCHMARK_DEFINE_F(GradientGetValuesBenchmark, BM_SmoothStepGradient)(benchmark::State& state)
+    BENCHMARK_DEFINE_F(GradientGetValues, BM_SmoothStepGradient)(benchmark::State& state)
     {
         auto baseEntity = BuildTestRandomGradient(TestShapeHalfBounds);
         auto entity = BuildTestSmoothStepGradient(TestShapeHalfBounds, baseEntity->GetId());
         RunGetValueOrGetValuesBenchmark(state, entity->GetId());
     }
 
-    BENCHMARK_DEFINE_F(GradientGetValuesBenchmark, BM_ThresholdGradient)(benchmark::State& state)
+    BENCHMARK_DEFINE_F(GradientGetValues, BM_ThresholdGradient)(benchmark::State& state)
     {
         auto baseEntity = BuildTestRandomGradient(TestShapeHalfBounds);
         auto entity = BuildTestThresholdGradient(TestShapeHalfBounds, baseEntity->GetId());
         RunGetValueOrGetValuesBenchmark(state, entity->GetId());
     }
 
-    GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(GradientGetValuesBenchmark, BM_DitherGradient);
-    GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(GradientGetValuesBenchmark, BM_InvertGradient);
-    GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(GradientGetValuesBenchmark, BM_LevelsGradient);
-    GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(GradientGetValuesBenchmark, BM_MixedGradient);
-    GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(GradientGetValuesBenchmark, BM_PosterizeGradient);
-    GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(GradientGetValuesBenchmark, BM_ReferenceGradient);
-    GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(GradientGetValuesBenchmark, BM_SmoothStepGradient);
-    GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(GradientGetValuesBenchmark, BM_ThresholdGradient);
+    GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(GradientGetValues, BM_DitherGradient);
+    GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(GradientGetValues, BM_InvertGradient);
+    GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(GradientGetValues, BM_LevelsGradient);
+    GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(GradientGetValues, BM_MixedGradient);
+    GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(GradientGetValues, BM_PosterizeGradient);
+    GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(GradientGetValues, BM_ReferenceGradient);
+    GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(GradientGetValues, BM_SmoothStepGradient);
+    GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(GradientGetValues, BM_ThresholdGradient);
 
     // --------------------------------------------------------------------------------------
     // Surface Gradients
 
-    BENCHMARK_DEFINE_F(GradientGetValuesBenchmark, BM_SurfaceAltitudeGradient)(benchmark::State& state)
+    BENCHMARK_DEFINE_F(GradientGetValues, BM_SurfaceAltitudeGradient)(benchmark::State& state)
     {
         auto mockSurfaceDataSystem =
             CreateMockSurfaceDataSystem(AZ::Aabb::CreateFromMinMax(AZ::Vector3(-TestShapeHalfBounds), AZ::Vector3(TestShapeHalfBounds)));
@@ -324,7 +324,7 @@ namespace UnitTest
         RunGetValueOrGetValuesBenchmark(state, entity->GetId());
     }
 
-    BENCHMARK_DEFINE_F(GradientGetValuesBenchmark, BM_SurfaceMaskGradient)(benchmark::State& state)
+    BENCHMARK_DEFINE_F(GradientGetValues, BM_SurfaceMaskGradient)(benchmark::State& state)
     {
         auto mockSurfaceDataSystem =
             CreateMockSurfaceDataSystem(AZ::Aabb::CreateFromMinMax(AZ::Vector3(-TestShapeHalfBounds), AZ::Vector3(TestShapeHalfBounds)));
@@ -333,7 +333,7 @@ namespace UnitTest
         RunGetValueOrGetValuesBenchmark(state, entity->GetId());
     }
 
-    BENCHMARK_DEFINE_F(GradientGetValuesBenchmark, BM_SurfaceSlopeGradient)(benchmark::State& state)
+    BENCHMARK_DEFINE_F(GradientGetValues, BM_SurfaceSlopeGradient)(benchmark::State& state)
     {
         auto mockSurfaceDataSystem =
             CreateMockSurfaceDataSystem(AZ::Aabb::CreateFromMinMax(AZ::Vector3(-TestShapeHalfBounds), AZ::Vector3(TestShapeHalfBounds)));
@@ -342,9 +342,9 @@ namespace UnitTest
         RunGetValueOrGetValuesBenchmark(state, entity->GetId());
     }
 
-    GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(GradientGetValuesBenchmark, BM_SurfaceAltitudeGradient);
-    GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(GradientGetValuesBenchmark, BM_SurfaceMaskGradient);
-    GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(GradientGetValuesBenchmark, BM_SurfaceSlopeGradient);
+    GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(GradientGetValues, BM_SurfaceAltitudeGradient);
+    GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(GradientGetValues, BM_SurfaceMaskGradient);
+    GRADIENT_SIGNAL_GET_VALUES_BENCHMARK_REGISTER_F(GradientGetValues, BM_SurfaceSlopeGradient);
 
 #endif
 }
