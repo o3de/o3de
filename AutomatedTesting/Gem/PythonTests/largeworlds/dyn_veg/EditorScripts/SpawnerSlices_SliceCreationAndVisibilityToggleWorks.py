@@ -73,7 +73,7 @@ def SpawnerSlices_SliceCreationAndVisibilityToggleWorks():
     slice.SliceRequestBus(bus.Broadcast, "CreateNewSlice", veg_1.id, slice_path)
 
     # 2.3) Verify if the slice has been created successfully
-    spawner_slice_success = helper.wait_for_condition(lambda: path_is_valid_asset(slice_path), 5.0)
+    spawner_slice_success = helper.wait_for_condition(lambda: path_is_valid_asset(slice_path), 10.0)
     Report.result(Tests.spawner_slice_created, spawner_slice_success)
 
     # 3) C2627904: Hiding a slice containing the component clears any visuals from the Viewport

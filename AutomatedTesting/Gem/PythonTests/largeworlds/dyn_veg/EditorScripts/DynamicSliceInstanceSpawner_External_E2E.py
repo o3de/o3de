@@ -132,7 +132,8 @@ def DynamicSliceInstanceSpawner_External_E2E():
     general.save_level()
     general.export_to_engine()
     pak_path = os.path.join(paths.products, "levels", lvl_name, "level.pak")
-    Report.result(Tests.saved_and_exported, os.path.exists(pak_path))
+    success = helper.wait_for_condition(lambda: os.path.exists(pak_path), 10.0)
+    Report.result(Tests.saved_and_exported, success)
 
 
 if __name__ == "__main__":
