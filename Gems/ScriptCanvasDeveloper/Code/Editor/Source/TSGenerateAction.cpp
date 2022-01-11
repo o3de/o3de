@@ -34,6 +34,16 @@ namespace ScriptCanvasDeveloperEditor
             qAction->setShortcut(QAction::tr("Ctrl+Alt+R", "Developer|Reload Text"));
             QObject::connect(qAction, &QAction::triggered, [mainWindow]() { ReloadText(mainWindow); });
 
+            qAction = mainMenu->addAction(QAction::tr("Dump Database"));
+            qAction->setAutoRepeat(false);
+            qAction->setShortcut(QAction::tr("Ctrl+Alt+L", "Developer|Dump Database"));
+            QObject::connect(
+                qAction, &QAction::triggered,
+                []()
+                {
+                    GraphCanvas::TranslationRequestBus::Broadcast(&GraphCanvas::TranslationRequests::DumpDatabase, "sc_translation.log");
+                });
+
         }
 
         return qAction;
