@@ -7,7 +7,6 @@
  */
 
 #include <AzCore/RTTI/BehaviorContext.h>
-#include <AzTest/AzTest.h>
 
 #include <ScriptCanvas/AWSScriptBehaviorDynamoDB.h>
 #include <TestFramework/AWSCoreFixture.h>
@@ -32,7 +31,7 @@ public:
     MOCK_METHOD1(OnGetItemError, void(const AZStd::string&));
 };
 
-using AWSScriptBehaviorDynamoDBTest = UnitTest::ScopedAllocatorSetupFixture;
+using AWSScriptBehaviorDynamoDBTest = AWSCoreFixture;
 
 TEST_F(AWSScriptBehaviorDynamoDBTest, GetItemRaw_CallWithEmptyTableName_InvokeOnError)
 {
