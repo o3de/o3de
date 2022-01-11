@@ -6,7 +6,7 @@
  *
  */
 
-#include "LevelsGradientComponent.h"
+#include <GradientSignal/Components/LevelsGradientComponent.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/RTTI/BehaviorContext.h>

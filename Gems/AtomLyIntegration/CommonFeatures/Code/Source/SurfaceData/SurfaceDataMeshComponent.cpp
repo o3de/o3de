@@ -17,8 +17,6 @@
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
 #include <SurfaceData/Utility/SurfaceDataUtility.h>
 
-#include <MathConversion.h>
-
 namespace SurfaceData
 {
     void SurfaceDataMeshConfig::Reflect(AZ::ReflectContext* context)

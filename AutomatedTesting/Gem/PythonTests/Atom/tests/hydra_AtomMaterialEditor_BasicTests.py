@@ -186,6 +186,11 @@ def run():
     material_editor.set_property(document2_id, property2_name, initial_color)
     material_editor.save_all()
     material_editor.close_all_documents()
+    material_editor.wait_for_condition(lambda:
+                                       (not material_editor.is_open(document1_id)) and
+                                       (not material_editor.is_open(document2_id)) and
+                                       (not material_editor.is_open(document3_id)), 2.0)
+    material_editor.destroy_main_window()
 
 
 if __name__ == "__main__":

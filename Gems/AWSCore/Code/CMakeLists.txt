@@ -202,6 +202,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     3rdParty::Qt::Gui
                     3rdParty::Qt::Widgets
                     AZ::AzTest
+                    AZ::AWSNativeSDKInit
                     Gem::AWSCore.Static
                     Gem::AWSCore.Editor.Static
         )

@@ -15,7 +15,7 @@
 #include <CryCommon/CryListenerSet.h>
 #include <CryCommon/StaticInstance.h>
 
-#if !defined(RELEASE) || defined(RELEASE_LOGGING) || defined(ENABLE_PROFILING_CODE)
+#if (!defined(RELEASE) || defined(RELEASE_LOGGING) || defined(ENABLE_PROFILING_CODE)) && !defined(AZ_LEGACY_CRYSYSTEM_TRAIT_REMOTE_CONSOLE_UNSUPPORTED)
     #define USE_REMOTE_CONSOLE
 
     struct SRemoteServer;

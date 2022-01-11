@@ -29,7 +29,6 @@ if(NOT PAL_TRAIT_WHITEBOX_SUPPORTED)
     if(PAL_TRAIT_BUILD_HOST_TOOLS)
         ly_add_target(
             NAME WhiteBox.Editor GEM_MODULE
-
             NAMESPACE Gem
             FILES_CMAKE
                 whitebox_unsupported_files.cmake
@@ -44,6 +43,8 @@ if(NOT PAL_TRAIT_WHITEBOX_SUPPORTED)
             BUILD_DEPENDENCIES
                 PRIVATE
                     AZ::AzCore
+            RUNTIME_DEPENDENCIES
+                Gem::EditorPythonBindings.Editor
         )
     endif()
     return()
