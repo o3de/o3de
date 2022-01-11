@@ -2602,16 +2602,12 @@ void OutlinerItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
         optionV4.widget->style()->drawControl(QStyle::CE_ItemViewItem, &optionV4, painter);
 
         // Now we setup a Text Document so it can draw the rich text
-        QTextDocument textDoc;
-        textDoc.setDefaultFont(optionV4.font);
-        textDoc.setDefaultStyleSheet("body {color: white}");
-        textDoc.setHtml("<body>" + entityNameRichText + "</body>");
         int verticalOffset = GetEntityNameVerticalOffset(entityId);
         painter->translate(textRect.topLeft() + QPoint(0, verticalOffset));
-        textDoc.setTextWidth(textRect.width());
-        textDoc.drawContents(painter, QRectF(0, 0, textRect.width(), textRect.height()));
 
-        painter->restore();
+        AzToolsFramework::RichTextHighlighter highlighter{ entityNameRichText };
+        highlighter.PaintHighlightedRichText(painter, optionV4, textRect);
+
         OutlinerListModel::s_paintingName = false;
     }
     else
