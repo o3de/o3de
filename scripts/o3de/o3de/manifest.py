@@ -604,8 +604,6 @@ def get_registered(engine_name: str = None,
 
     # check global first then this engine
     if isinstance(engine_name, str):
-        if engine_name in json_data['engines_path']:
-            return pathlib.Path(json_data['engines_path'][engine_name]).resolve()
         engines = get_engines()
         for engine in engines:
             if isinstance(engine, dict):
@@ -626,6 +624,9 @@ def get_registered(engine_name: str = None,
                         this_engines_name = engine_json_data['engine_name']
                         if this_engines_name == engine_name:
                             return engine_path
+        engines_path = json_data.get('engines_path', {})
+        if engine_name in engines_path:
+            return pathlib.Path(engines_path[engine_name]).resolve()
 
     elif isinstance(project_name, str):
         projects = get_all_projects()
