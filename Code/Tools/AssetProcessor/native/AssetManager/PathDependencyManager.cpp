@@ -104,7 +104,7 @@ namespace AssetProcessor
 
                     if(((entry.m_dependencyType == AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry::ProductDep_SourceFile && search.m_isSourcePath)
                         || (entry.m_dependencyType == AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry::ProductDep_ProductFile && !search.m_isSourcePath))
-                        && /*searchPath.Match(entry.m_unresolvedPath)*/ AZStd::wildcard_match(entry.m_unresolvedPath, search.m_path))
+                        && searchPath.Match(entry.m_unresolvedPath))
                     {
                         matches.insert(entry);
                     }
