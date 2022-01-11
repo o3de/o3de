@@ -7,9 +7,6 @@
 #
 
 # Deploy the CDK applications for AWS gems (Linux only)
-# Prerequisites:
-# 1) Node.js is installed
-# 2) Node.js version >= 10.13.0, except for versions 13.0.0 - 13.6.0. A version in active long-term support is recommended.
 
 SOURCE_DIRECTORY=$(dirname "$0")
 PATH=$SOURCE_DIRECTORY/python:$PATH
@@ -61,13 +58,21 @@ then
     exit 1
 fi
 
+echo [cdk_installation] Install nvm $NVM_VERSION
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/$NVM_VERSION/install.sh | bash
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+echo [cdk_installation] Install the current version of nodejs
+nvm install node
+
 echo [cdk_installation] Install the latest version of CDK
-if ! sudo npm uninstall -g aws-cdk;
+if ! npm uninstall -g aws-cdk;
 then
     echo [cdk_bootstrap] Failed to uninstall the current version of CDK
     exit 1
 fi
-if ! sudo npm install -g aws-cdk@latest;
+if ! npm install -g aws-cdk@latest;
 then
     echo [cdk_bootstrap] Failed to install the latest version of CDK
     exit 1

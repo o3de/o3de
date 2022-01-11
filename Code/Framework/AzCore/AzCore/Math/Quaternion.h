@@ -54,11 +54,11 @@ namespace AZ
         //! Sets components using a Vector3 for the imaginary part and a float for the real part.
         static Quaternion CreateFromVector3AndValue(const Vector3& v, float w);
 
-        //! Sets the quaternion to be a rotation around a specified axis.
+        //! Sets the quaternion to be a rotation around a specified axis in radians.
         //! @{
-        static Quaternion CreateRotationX(float angle);
-        static Quaternion CreateRotationY(float angle);
-        static Quaternion CreateRotationZ(float angle);
+        static Quaternion CreateRotationX(float angleInRadians);
+        static Quaternion CreateRotationY(float angleInRadians);
+        static Quaternion CreateRotationZ(float angleInRadians);
         //! @}
 
         //! Creates a quaternion from a Matrix3x3
@@ -166,6 +166,14 @@ namespace AZ
         //! @{
         float NormalizeWithLength();
         float NormalizeWithLengthEstimate();
+        //! @}
+
+        //! Get the shortest equivalent of the rotation.
+        //! In case the w component of the quaternion is negative the rotation is > 180° and taking the longer path.
+        //! The quaternion will be inverted in that case to take the shortest path of rotation.
+        //! @{
+        Quaternion GetShortestEquivalent() const;
+        void ShortestEquivalent();
         //! @}
 
         //! Linearly interpolate towards a destination quaternion.

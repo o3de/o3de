@@ -6,7 +6,7 @@
  *
  */
 
-#include "ConstantGradientComponent.h"
+#include <GradientSignal/Components/ConstantGradientComponent.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>

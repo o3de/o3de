@@ -24,14 +24,14 @@ namespace AZ
         {
             m_elementSize = descriptor.m_elementSize;
             m_elementCount = 0;
-
+            
             m_bufferIndex = descriptor.m_srgLayout->FindShaderInputBufferIndex(Name(descriptor.m_bufferSrgName));
-            AZ_Error(ClassName, m_bufferIndex.IsValid(), "Unable to find %s in view shader resource group.", descriptor.m_bufferSrgName.c_str());
+            AZ_Error(ClassName, m_bufferIndex.IsValid(), "Unable to find %s in %s shader resource group.", descriptor.m_bufferSrgName.c_str(), descriptor.m_srgLayout->GetName().GetCStr());
 
             if (!descriptor.m_elementCountSrgName.empty())
             {
                 m_elementCountIndex = descriptor.m_srgLayout->FindShaderInputConstantIndex(Name(descriptor.m_elementCountSrgName));
-                AZ_Error(ClassName, m_elementCountIndex.IsValid(), "Unable to find %s in view shader resource group.", descriptor.m_elementCountSrgName.c_str());
+                AZ_Error(ClassName, m_elementCountIndex.IsValid(), "Unable to find %s in %s shader resource group.", descriptor.m_elementCountSrgName.c_str(), descriptor.m_srgLayout->GetName().GetCStr());
             }
 
             if (m_bufferIndex.IsValid())
