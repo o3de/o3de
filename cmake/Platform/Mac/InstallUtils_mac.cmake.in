@@ -31,36 +31,36 @@ endfunction()
 function(fixup_python_framework framework_path)
 
     file(REMOVE_RECURSE
-        ${framework_path}/Versions/Current
-        ${framework_path}/Versions/@LY_PYTHON_VERSION_MAJOR_MINOR@/Headers
-        ${framework_path}/Versions/@LY_PYTHON_VERSION_MAJOR_MINOR@/lib/Python
-        ${framework_path}/Versions/@LY_PYTHON_VERSION_MAJOR_MINOR@/lib/python@LY_PYTHON_VERSION_MAJOR_MINOR@/test
-        ${framework_path}/Versions/@LY_PYTHON_VERSION_MAJOR_MINOR@/lib/python@LY_PYTHON_VERSION_MAJOR_MINOR@/site-packages/scipy/io/tests
-        ${framework_path}/Python
-        ${framework_path}/Resources
-        ${framework_path}/Headers
+        "${framework_path}/Versions/Current"
+        "${framework_path}/Versions/@LY_PYTHON_VERSION_MAJOR_MINOR@/Headers"
+        "${framework_path}/Versions/@LY_PYTHON_VERSION_MAJOR_MINOR@/lib/Python"
+        "${framework_path}/Versions/@LY_PYTHON_VERSION_MAJOR_MINOR@/lib/python@LY_PYTHON_VERSION_MAJOR_MINOR@/test"
+        "${framework_path}/Versions/@LY_PYTHON_VERSION_MAJOR_MINOR@/lib/python@LY_PYTHON_VERSION_MAJOR_MINOR@/site-packages/scipy/io/tests"
+        "${framework_path}/Python"
+        "${framework_path}/Resources"
+        "${framework_path}/Headers"
     )
     
     file(GLOB_RECURSE exe_file_list "${framework_path}/**/*.exe")
     if(exe_file_list)
-        file(REMOVE_RECURSE ${exe_file_list})
+        file(REMOVE_RECURSE "${exe_file_list}")
     endif()
-    execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink include/python@LY_PYTHON_VERSION_MAJOR_MINOR@m Headers
-        WORKING_DIRECTORY ${framework_path}/Versions/@LY_PYTHON_VERSION_MAJOR_MINOR@
+    execute_process(COMMAND "${CMAKE_COMMAND}" -E create_symlink include/python@LY_PYTHON_VERSION_MAJOR_MINOR@m Headers
+        WORKING_DIRECTORY "${framework_path}/Versions/@LY_PYTHON_VERSION_MAJOR_MINOR@"
     )
-    execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink @LY_PYTHON_VERSION_MAJOR_MINOR@ Current
-        WORKING_DIRECTORY ${framework_path}/Versions/
+    execute_process(COMMAND "${CMAKE_COMMAND}" -E create_symlink @LY_PYTHON_VERSION_MAJOR_MINOR@ Current
+        WORKING_DIRECTORY "${framework_path}/Versions/"
     )
-    execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink Versions/Current/Python Python
-        WORKING_DIRECTORY ${framework_path}
+    execute_process(COMMAND "${CMAKE_COMMAND}" -E create_symlink Versions/Current/Python Python
+        WORKING_DIRECTORY "${framework_path}"
     )
-    execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink Versions/Current/Headers Headers
-        WORKING_DIRECTORY ${framework_path}
+    execute_process(COMMAND "${CMAKE_COMMAND}" -E create_symlink Versions/Current/Headers Headers
+        WORKING_DIRECTORY "${framework_path}"
     )
-    execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink Versions/Current/Resources Resources
-        WORKING_DIRECTORY ${framework_path}
+    execute_process(COMMAND "${CMAKE_COMMAND}" -E create_symlink Versions/Current/Resources Resources
+        WORKING_DIRECTORY "${framework_path}"
     )
-    file(CHMOD ${framework_path}/Versions/Current/Python 
+    file(CHMOD "${framework_path}/Versions/Current/Python"
         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE 
     )
 
@@ -72,7 +72,7 @@ function(codesign_file file entitlement_file)
         return()
     endif()
 
-    if(EXISTS ${entitlement_file})
+    if(EXISTS "${entitlement_file}")
 
         execute_process(COMMAND "/usr/bin/codesign" "--force" "--sign" "@LY_CODE_SIGN_IDENTITY@" "--deep" "-o" "runtime" "--timestamp" "--entitlements" "${entitlement_file}" "${file}"
             TIMEOUT 300
@@ -108,8 +108,8 @@ function(codesign_python_framework_binaries framework_path)
         "${framework_path}/Versions/@LY_PYTHON_VERSION_MAJOR_MINOR@/Resources/**")
 
     foreach(file ${files})
-        if(NOT EXISTS ${file})
-            file(REMOVE ${file})
+        if(NOT EXISTS "${file}")
+            file(REMOVE "${file}")
             continue()
         endif()
         cmake_path(SET path_var "${file}")
@@ -164,16 +164,16 @@ function(ly_copy source_file target_directory)
 endfunction()
 
 function(ly_download_and_codesign_sdk_python)
-    execute_process(COMMAND ${CMAKE_COMMAND} -DPAL_PLATFORM_NAME=Mac -DLY_3RDPARTY_PATH=${CMAKE_INSTALL_PREFIX}/python -P ${CMAKE_INSTALL_PREFIX}/python/get_python.cmake
-        WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
+    execute_process(COMMAND "${CMAKE_COMMAND}" -DPAL_PLATFORM_NAME=Mac "-DLY_3RDPARTY_PATH=${CMAKE_INSTALL_PREFIX}/python" -P "${CMAKE_INSTALL_PREFIX}/python/get_python.cmake"
+        WORKING_DIRECTORY "${CMAKE_INSTALL_PREFIX}"
     )
-    fixup_python_framework(${CMAKE_INSTALL_PREFIX}/python/runtime/@LY_PYTHON_PACKAGE_NAME@/Python.framework)
-    codesign_python_framework_binaries(${CMAKE_INSTALL_PREFIX}/python/runtime/@LY_PYTHON_PACKAGE_NAME@/Python.framework)
-    codesign_file(${CMAKE_INSTALL_PREFIX}/python/runtime/@LY_PYTHON_PACKAGE_NAME@/Python.framework @LY_ROOT_FOLDER@/python/Platform/Mac/PythonEntitlements.plist)
+    fixup_python_framework("${CMAKE_INSTALL_PREFIX}/python/runtime/@LY_PYTHON_PACKAGE_NAME@/Python.framework")
+    codesign_python_framework_binaries("${CMAKE_INSTALL_PREFIX}/python/runtime/@LY_PYTHON_PACKAGE_NAME@/Python.framework")
+    codesign_file("${CMAKE_INSTALL_PREFIX}/python/runtime/@LY_PYTHON_PACKAGE_NAME@/Python.framework" "@LY_ROOT_FOLDER@/python/Platform/Mac/PythonEntitlements.plist")
 endfunction()
 
 function(ly_codesign_sdk)
-    codesign_file(${LY_INSTALL_PATH_ORIGINAL}/O3DE_SDK.app "none")
+    codesign_file("${LY_INSTALL_PATH_ORIGINAL}/O3DE_SDK.app" "none")
 endfunction()
 
 

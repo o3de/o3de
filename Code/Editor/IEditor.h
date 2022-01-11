@@ -52,7 +52,6 @@ class CUIEnumsDatabase;
 struct ISourceControl;
 struct IEditorClassFactory;
 struct ITransformManipulator;
-class IFacialEditor;
 class CDialog;
 #if defined(AZ_PLATFORM_WINDOWS)
 class C3DConnexionDriver;

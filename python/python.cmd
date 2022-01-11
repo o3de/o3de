@@ -21,7 +21,8 @@ SET PYTHONHOME=%CMD_DIR%\runtime\python-3.7.10-rev2-windows\python
 
 IF EXIST "%PYTHONHOME%" GOTO PYTHONHOME_EXISTS
 
-ECHO Could not find Python for Windows in %CMD_DIR%\..
+ECHO Python not found in %CMD_DIR%
+ECHO Try running %CMD_DIR%\get_python.bat first.
 exit /B 1
 
 :PYTHONHOME_EXISTS
