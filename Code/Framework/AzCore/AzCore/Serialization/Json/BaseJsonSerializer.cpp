@@ -126,12 +126,18 @@ namespace AZ
         : JsonBaseContext(settings.m_metadata, settings.m_reporting,
             StackedString::Format::JsonPointer, settings.m_serializeContext, settings.m_registrationContext)
         , m_clearContainers(settings.m_clearContainers)
+        , m_updateAssociativeContainer(settings.m_updateAssociativeContainer)
     {
     }
 
     bool JsonDeserializerContext::ShouldClearContainers() const
     {
         return m_clearContainers;
+    }
+
+    bool JsonDeserializerContext::ShouldUpdateAssociativeContainer() const
+    {
+        return m_updateAssociativeContainer;
     }
 
 

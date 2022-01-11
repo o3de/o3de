@@ -231,8 +231,29 @@ namespace AZ
             return context.Report(keyResult, "Failed to read key for associative container.");
         }
 
+        void* valueAddress = nullptr;
+        bool keyExists = false;
+        // Check if we should attempt to update the value if a key already exists
+        if (context.ShouldUpdateAssociativeContainer())
+        {
+            auto associativeContainer = container->GetAssociativeContainerInterface();
+            void* existingKeyValuePair = associativeContainer->GetElementByKey(outputValue, keyElement, keyAddress);
+            if (existingKeyValuePair)
+            {
+                valueAddress = pairContainer->GetElementByIndex(existingKeyValuePair, pairElement, 1);
+                expectedSize--;
+                keyExists = true;
+            }
+        }
+
+        // Either we don't want to update values if the key already exists,
+        // or the key does not exist
+        if (!keyExists)
+        {
+            valueAddress = pairContainer->GetElementByIndex(address, pairElement, 1);
+        }
+
         // Load value
-        void* valueAddress = pairContainer->GetElementByIndex(address, pairElement, 1);
         AZ_Assert(valueAddress, "Element reserved for associative container, but unable to retrieve address of the value.");
         ContinuationFlags valueLoadFlags = ContinuationFlags::LoadAsNewInstance; 
         if (valueElement->m_flags & SerializeContext::ClassElement::Flags::FLG_POINTER)
@@ -257,7 +278,18 @@ namespace AZ
         }
         else
         {
-            container->StoreElement(outputValue, address);
+            // Even if the key exists, calling StoreElement will not replace the existing key
+            // and will free the temporary address as expected. Checking if the key already 
+            // exists and skipping the call to StoreElement if it does, makes the intent more
+            // clear. The end result is the same either way.
+            if (!keyExists)
+            {
+                container->StoreElement(outputValue, address);
+            }
+            else
+            {
+                container->FreeReservedElement(outputValue, address, context.GetSerializeContext());
+            }
             if (container->Size(outputValue) != expectedSize)
             {
                 return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unavailable,

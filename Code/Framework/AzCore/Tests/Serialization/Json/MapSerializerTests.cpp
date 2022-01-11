@@ -497,6 +497,31 @@ namespace JsonSerializationTests
         EXPECT_STRCASEEQ("World", entry->second.c_str());
     }
 
+    TEST_F(JsonMapSerializerTests, Load_DuplicateKey_EntryUpdated)
+    {
+        using namespace AZ::JsonSerializationResult;
+
+        this->m_deserializationSettings->m_updateAssociativeContainer = true;
+        this->ResetJsonContexts();
+
+        m_jsonDocument->Parse(R"(
+            {
+                "Hello": "World",
+                "Hello": "Other"
+            })");
+        ASSERT_FALSE(m_jsonDocument->HasParseError());
+
+        StringMap values;
+        ResultCode result = m_unorderedMapSerializer.Load(&values, azrtti_typeid(&values), *m_jsonDocument, *m_jsonDeserializationContext);
+
+        EXPECT_EQ(Processing::Completed, result.GetProcessing());
+        EXPECT_EQ(Outcomes::Success, result.GetOutcome());
+
+        auto entry = values.find("Hello");
+        ASSERT_NE(values.end(), entry);
+        EXPECT_STRCASEEQ("Other", entry->second.c_str());
+    }
+
     TEST_F(JsonMapSerializerTests, Load_DuplicateMultiKey_LoadEverything)
     {
         using namespace AZ::JsonSerializationResult;
