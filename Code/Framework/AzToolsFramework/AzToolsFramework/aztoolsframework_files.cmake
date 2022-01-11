@@ -123,6 +123,8 @@ set(FILES
     ContainerEntity/ContainerEntitySystemComponent.h
     Editor/EditorContextMenuBus.h
     Editor/EditorSettingsAPIBus.h
+    Editor/RichTextHighlighter.h
+    Editor/RichTextHighlighter.cpp
     Entity/EditorEntityStartStatus.h
     Entity/EditorEntityAPIBus.h
     Entity/EditorEntityContextComponent.cpp

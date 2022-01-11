@@ -53,6 +53,7 @@
 #include <AzToolsFramework/ToolsComponents/SelectionComponent.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include  <AzToolsFramework/Editor/RichTextHighlighter.h>
 
 #include "OutlinerDisplayOptionsMenu.h"
 #include "OutlinerSortFilterProxyModel.hxx"
@@ -252,17 +253,9 @@ QVariant OutlinerListModel::dataForName(const QModelIndex& index, int role) cons
         if (s_paintingName && !m_filterString.empty())
         {
             // highlight characters in filter
-            int highlightTextIndex = 0;
-            do
-            {
-                highlightTextIndex = label.lastIndexOf(QString(m_filterString.c_str()), highlightTextIndex - 1, Qt::CaseInsensitive);
-                if (highlightTextIndex >= 0)
-                {
-                    const QString BACKGROUND_COLOR{ "#707070" };
-                    label.insert(static_cast<int>(highlightTextIndex + m_filterString.length()), "</span>");
-                    label.insert(highlightTextIndex, "<span style=\"background-color: " + BACKGROUND_COLOR + "\">");
-                }
-            } while(highlightTextIndex > 0);
+            AzToolsFramework::RichTextHighlighter highlighter;
+            label = highlighter.HighlightText(label, m_filterString.c_str());
+
         }
         return label;
     }

@@ -74,12 +74,6 @@ namespace AzToolsFramework
             void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
         private:
-            void PaintEntryDisplayStringAsRichText(
-                QPainter* painter,
-                const QStyleOptionViewItem& option,
-                const QModelIndex& index,
-                const QString& displayString,
-                const QRect& remainingRect) const;
             void LoadBranchPixMaps();
             void DrawBranchPixMap(EntryBranchType branchType, QPainter* painter, const QPoint& point, const QSize& size) const;
 
