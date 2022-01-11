@@ -53,123 +53,69 @@ namespace AZStd
         using reverse_iterator = AZStd::reverse_iterator<iterator>;
         using const_reverse_iterator = AZStd::reverse_iterator<const_iterator>;
 
-        span()
-            : m_begin(nullptr)
-            , m_end(nullptr)
-        { }
+        constexpr span();
 
         ~span() = default;
 
-        span(pointer s, size_type length)
-            : m_begin(s)
-            , m_end(m_begin + length)
-        {
-            if (length == 0) erase();
-        }
+        constexpr span(pointer s, size_type length);
 
-        span(pointer first, const_pointer last)
-            : m_begin(first)
-            , m_end(last)
-        { }
+        constexpr span(pointer first, const_pointer last);
 
         // We explicitly delete this constructor because it's too easy to accidentally 
         // create a span to just the first element instead of an entire array.
-        span(const_pointer s) = delete;
+        constexpr span(const_pointer s) = delete;
 
         template<AZStd::size_t N>
-        span(AZStd::array<value_type, N>& data)
-            : m_begin(data.data())
-            , m_end(m_begin + data.size())
-        { }
+        constexpr span(AZStd::array<value_type, N>& data);
 
-        span(AZStd::vector<value_type>& data)
-            : m_begin(data.data())
-            , m_end(m_begin + data.size())
-        { }
+        constexpr span(AZStd::vector<value_type>& data);
 
         template<AZStd::size_t N>
-        span(AZStd::fixed_vector<value_type, N>& data)
-            : m_begin(data.data())
-            , m_end(m_begin + data.size())
-        { }
+        constexpr span(AZStd::fixed_vector<value_type, N>& data);
 
         template<AZStd::size_t N>
-        span(const AZStd::array<value_type, N>& data)
-            : m_begin(data.data())
-            , m_end(m_begin + data.size())
-        { }
+        constexpr span(const AZStd::array<value_type, N>& data);
 
-        span(const AZStd::vector<value_type>& data)
-            : m_begin(data.data())
-            , m_end(m_begin + data.size())
-        { }
+        constexpr span(const AZStd::vector<value_type>& data);
 
         template<AZStd::size_t N>
-        span(const AZStd::fixed_vector<value_type, N>& data)
-            : m_begin(data.data())
-            , m_end(m_begin + data.size())
-        { }
+        constexpr span(const AZStd::fixed_vector<value_type, N>& data);
 
-        span(const span&) = default;
+        constexpr span(const span&) = default;
 
-        span(span&& other)
-            : span(other.m_begin, other.m_end)
-        {
-#if AZ_DEBUG_BUILD // Clearing the original pointers isn't necessary, but is good for debugging
-            other.m_begin = nullptr;
-            other.m_end = nullptr;
-#endif
-        }
+        constexpr span(span&& other);
 
-        span& operator=(const span& other) = default;
+        constexpr span& operator=(const span& other) = default;
 
-        span& operator=(span&& other)
-        {
-            m_begin = other.m_begin;
-            m_end = other.m_end;
-#if AZ_DEBUG_BUILD // Clearing the original pointers isn't necessary, but is good for debugging
-            other.m_begin = nullptr;
-            other.m_end = nullptr;
-#endif
-            return *this;
-        }
+        constexpr span& operator=(span&& other);
 
-        size_type size() const { return m_end - m_begin; }
+        constexpr size_type size() const;
 
-        bool empty() const { return m_end == m_begin; }
+        constexpr bool empty() const;
 
-        pointer data() { return m_begin; }
-        const_pointer data() const { return m_begin; }
+        constexpr pointer data();
+        constexpr const_pointer data() const;
 
-        const_reference operator[](size_type index) const 
-        {
-            AZ_Assert(index < size(), "index value is out of range");
-            return m_begin[index]; 
-        }
+        constexpr const_reference operator[](size_type index) const;
+        constexpr reference operator[](size_type index);
 
-        reference operator[](size_type index) 
-        {
-            AZ_Assert(index < size(), "index value is out of range");
-            return m_begin[index]; 
-        }
+        constexpr void erase();
 
-        void erase() { m_begin = m_end = nullptr; }
+        constexpr iterator         begin();
+        constexpr iterator         end();
+        constexpr const_iterator   begin() const;
+        constexpr const_iterator   end() const;
 
-        iterator         begin() { return m_begin; }
-        iterator         end() { return m_end; }
-        const_iterator   begin() const { return m_begin; }
-        const_iterator   end() const { return m_end; }
-
-        const_iterator   cbegin() const { return m_begin; }
-        const_iterator   cend() const { return m_end; }
+        constexpr const_iterator   cbegin() const;
+        constexpr const_iterator   cend() const;
         
-        reverse_iterator rbegin() { return reverse_iterator(m_end); }
-        reverse_iterator rend() { return reverse_iterator(m_begin); }
-        const_reverse_iterator rbegin() const { return reverse_iterator(m_end); }
-        const_reverse_iterator rend() const { return reverse_iterator(m_begin); }
+        constexpr reverse_iterator rbegin();
+        constexpr reverse_iterator rend();
+        constexpr const_reverse_iterator rbegin() const;
+        constexpr const_reverse_iterator rend() const;
         
-        const_reverse_iterator crbegin() const { return const_reverse_iterator(cend()); }
-        const_reverse_iterator crend() const { return const_reverse_iterator(cbegin()); }
+        constexpr const_reverse_iterator crbegin() const;
+        constexpr const_reverse_iterator crend() const;
 
         friend bool operator==(span lhs, span rhs)
         {
@@ -187,3 +133,5 @@ namespace AZStd
         pointer m_end;
     };
 } // namespace AZStd
+
+#include <AzCore/std/containers/span.inl>
