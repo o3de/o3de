@@ -53,7 +53,7 @@ namespace Terrain
 
     AZ::Data::AssetId TerrainPhysicsSurfaceMaterialMapping::GetMaterialLibraryId()
     {
-        if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
+        if (const auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
         {
             if (const auto* physicsConfiguration = physicsSystem->GetConfiguration())
             {
