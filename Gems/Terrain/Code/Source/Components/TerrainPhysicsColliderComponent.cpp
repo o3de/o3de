@@ -255,6 +255,8 @@ namespace Terrain
 
     void TerrainPhysicsColliderComponent::GenerateHeightsInBounds(AZStd::vector<float>& heights) const
     {
+        AZ_PROFILE_FUNCTION(Entity);
+
         const AZ::Vector2 gridResolution = GetHeightfieldGridSpacing();
 
         AZ::Aabb worldSize = GetHeightfieldAabb();
@@ -315,6 +317,8 @@ namespace Terrain
     void TerrainPhysicsColliderComponent::GenerateHeightsAndMaterialsInBounds(
         AZStd::vector<Physics::HeightMaterialPoint>& heightMaterials) const
     {
+        AZ_PROFILE_FUNCTION(Entity);
+
         const AZ::Vector2 gridResolution = GetHeightfieldGridSpacing();
 
         AZ::Aabb worldSize = GetHeightfieldAabb();

@@ -63,7 +63,10 @@ namespace AZ::Render
         // Render aabb
         if (renderFlags[EMotionFX::ActorRenderFlag::RENDER_AABB])
         {
-            RenderAABB(instance, renderActorSettings.m_staticAABBColor);
+            RenderAABB(instance,
+                renderActorSettings.m_enabledNodeBasedAabb, renderActorSettings.m_nodeAABBColor,
+                renderActorSettings.m_enabledMeshBasedAabb, renderActorSettings.m_meshAABBColor,
+                renderActorSettings.m_enabledStaticBasedAabb, renderActorSettings.m_staticAABBColor);
         }
 
         // Render simple line skeleton
@@ -201,11 +204,46 @@ namespace AZ::Render
         return AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
     }
 
-    void AtomActorDebugDraw::RenderAABB(EMotionFX::ActorInstance* instance, const AZ::Color& aabbColor)
+    void AtomActorDebugDraw::RenderAABB(EMotionFX::ActorInstance* instance,
+            bool enableNodeAabb,
+            const AZ::Color& nodeAabbColor,
+            bool enableMeshAabb,
+            const AZ::Color& meshAabbColor,
+            bool enableStaticAabb,
+            const AZ::Color& staticAabbColor)
     {
         RPI::AuxGeomDrawPtr auxGeom = m_auxGeomFeatureProcessor->GetDrawQueue();
-        const AZ::Aabb& aabb = instance->GetAabb();
-        auxGeom->DrawAabb(aabb, aabbColor, RPI::AuxGeomDraw::DrawStyle::Line);
+
+        if (enableNodeAabb)
+        {
+            AZ::Aabb aabb;
+            instance->CalcNodeBasedAabb(&aabb);
+            if (aabb.IsValid())
+            {
+                auxGeom->DrawAabb(aabb, nodeAabbColor, RPI::AuxGeomDraw::DrawStyle::Line);
+            }
+        }
+
+        if (enableMeshAabb)
+        {
+            AZ::Aabb aabb;
+            const size_t lodLevel = instance->GetLODLevel();
+            instance->CalcMeshBasedAabb(lodLevel, &aabb);
+            if (aabb.IsValid())
+            {
+                auxGeom->DrawAabb(aabb, meshAabbColor, RPI::AuxGeomDraw::DrawStyle::Line);
+            }
+        }
+
+        if (enableStaticAabb)
+        {
+            AZ::Aabb aabb;
+            instance->CalcStaticBasedAabb(&aabb);
+            if (aabb.IsValid())
+            {
+                auxGeom->DrawAabb(aabb, staticAabbColor, RPI::AuxGeomDraw::DrawStyle::Line);
+            }
+        }
     }
 
     void AtomActorDebugDraw::RenderLineSkeleton(EMotionFX::ActorInstance* instance, const AZ::Color& skeletonColor)
