@@ -12,6 +12,7 @@
 #include <AtomToolsFramework/Window/AtomToolsMainWindowFactoryRequestBus.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
 
+#include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
@@ -295,10 +296,24 @@ namespace AtomToolsFramework
             QMessageBox::critical(
                 activeWindow(), QString("Failed to compile critical assets"),
                 QString("Failed to compile the following critical assets:\n%1\n%2")
-                    .arg(failedAssets.join(",\n"))
-                    .arg("Make sure this is an Atom project."));
+                .arg(failedAssets.join(",\n"))
+                .arg("Make sure this is an Atom project."));
             ExitMainLoop();
         }
+
+        AZ::ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "CriticalAssetsCompiled", R"({})");
+        // Reload the assetcatalog.xml at this point again
+        // Start Monitoring Asset changes over the network and load the AssetCatalog
+        auto LoadCatalog = [settingsRegistry = m_settingsRegistry.get()](AZ::Data::AssetCatalogRequests* assetCatalogRequests)
+        {
+            if (AZ::IO::FixedMaxPath assetCatalogPath;
+                settingsRegistry->Get(assetCatalogPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
+            {
+                assetCatalogPath /= "assetcatalog.xml";
+                assetCatalogRequests->LoadCatalog(assetCatalogPath.c_str());
+            }
+        };
+        AZ::Data::AssetCatalogRequestBus::Broadcast(AZStd::move(LoadCatalog));
     }
 
     void AtomToolsApplication::SaveSettings()

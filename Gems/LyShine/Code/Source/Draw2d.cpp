@@ -122,27 +122,34 @@ void CDraw2d::OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene)
     }
     m_dynamicDraw->EndInit();
 
-    // Cache draw srg input indices for later use
-    static const char textureIndexName[] = "m_texture";
-    static const char worldToProjIndexName[] = "m_worldToProj";
-    AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = m_dynamicDraw->NewDrawSrg();
-    const AZ::RHI::ShaderResourceGroupLayout* layout = drawSrg->GetLayout();
-    m_shaderData.m_imageInputIndex = layout->FindShaderInputImageIndex(AZ::Name(textureIndexName));
-    AZ_Error("Draw2d", m_shaderData.m_imageInputIndex.IsValid(), "Failed to find shader input constant %s.",
-        textureIndexName);
-    m_shaderData.m_viewProjInputIndex = layout->FindShaderInputConstantIndex(AZ::Name(worldToProjIndexName));
-    AZ_Error("Draw2d", m_shaderData.m_viewProjInputIndex.IsValid(), "Failed to find shader input constant %s.",
-        worldToProjIndexName);
+    // Check that the dynamic draw context has been initialized appropriately
+    if (m_dynamicDraw->IsReady())
+    {
+        // Cache draw srg input indices for later use
+        static const char textureIndexName[] = "m_texture";
+        static const char worldToProjIndexName[] = "m_worldToProj";
+        AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = m_dynamicDraw->NewDrawSrg();
+        if (drawSrg)
+        {
+            const AZ::RHI::ShaderResourceGroupLayout* layout = drawSrg->GetLayout();
+            m_shaderData.m_imageInputIndex = layout->FindShaderInputImageIndex(AZ::Name(textureIndexName));
+            AZ_Error("Draw2d", m_shaderData.m_imageInputIndex.IsValid(), "Failed to find shader input constant %s.",
+                textureIndexName);
+            m_shaderData.m_viewProjInputIndex = layout->FindShaderInputConstantIndex(AZ::Name(worldToProjIndexName));
+            AZ_Error("Draw2d", m_shaderData.m_viewProjInputIndex.IsValid(), "Failed to find shader input constant %s.",
+                worldToProjIndexName);
+        }
 
-    // Cache shader variants that will be used
-    AZ::RPI::ShaderOptionList shaderOptionsClamp;
-    shaderOptionsClamp.push_back(AZ::RPI::ShaderOption(AZ::Name("o_clamp"), AZ::Name("true")));
-    shaderOptionsClamp.push_back(AZ::RPI::ShaderOption(AZ::Name("o_useColorChannels"), AZ::Name("true")));
-    m_shaderData.m_shaderOptionsClamp = m_dynamicDraw->UseShaderVariant(shaderOptionsClamp);
-    AZ::RPI::ShaderOptionList shaderOptionsWrap;
-    shaderOptionsWrap.push_back(AZ::RPI::ShaderOption(AZ::Name("o_clamp"), AZ::Name("false")));
-    shaderOptionsWrap.push_back(AZ::RPI::ShaderOption(AZ::Name("o_useColorChannels"), AZ::Name("true")));
-    m_shaderData.m_shaderOptionsWrap = m_dynamicDraw->UseShaderVariant(shaderOptionsWrap);
+        // Cache shader variants that will be used
+        AZ::RPI::ShaderOptionList shaderOptionsClamp;
+        shaderOptionsClamp.push_back(AZ::RPI::ShaderOption(AZ::Name("o_clamp"), AZ::Name("true")));
+        shaderOptionsClamp.push_back(AZ::RPI::ShaderOption(AZ::Name("o_useColorChannels"), AZ::Name("true")));
+        m_shaderData.m_shaderOptionsClamp = m_dynamicDraw->UseShaderVariant(shaderOptionsClamp);
+        AZ::RPI::ShaderOptionList shaderOptionsWrap;
+        shaderOptionsWrap.push_back(AZ::RPI::ShaderOption(AZ::Name("o_clamp"), AZ::Name("false")));
+        shaderOptionsWrap.push_back(AZ::RPI::ShaderOption(AZ::Name("o_useColorChannels"), AZ::Name("true")));
+        m_shaderData.m_shaderOptionsWrap = m_dynamicDraw->UseShaderVariant(shaderOptionsWrap);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

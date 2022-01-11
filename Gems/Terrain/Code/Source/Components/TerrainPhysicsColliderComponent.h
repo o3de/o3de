@@ -36,6 +36,9 @@ namespace Terrain
 
         SurfaceData::SurfaceTag m_surfaceTag;
         Physics::MaterialId m_materialId;
+
+    private:
+        static AZ::Data::AssetId GetMaterialLibraryId();
     };
 
     class TerrainPhysicsColliderConfig
