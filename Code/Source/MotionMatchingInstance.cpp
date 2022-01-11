@@ -110,7 +110,7 @@ namespace EMotionFX::MotionMatching
 
         // Make sure we have enough space inside the frame floats array, which is used to search the kdTree.
         // It contains the value for each dimension.
-        const size_t numValuesInKdTree = m_config->GetFeatures().CalcNumDataDimensionsForKdTree(m_config->GetFeatures());
+        const size_t numValuesInKdTree = m_config->GetFeatureDatabase().CalcNumDataDimensionsForKdTree(m_config->GetFeatureDatabase());
         m_queryFeatureValues.resize(numValuesInKdTree);
 
         // Initialize the trajectory history.
@@ -341,7 +341,7 @@ namespace EMotionFX::MotionMatching
                 velocityPoseData->CalculateVelocity(m_motionInstance, m_config->GetTrajectoryFeature()->GetRelativeToNodeIndex());
             }
 
-            const FeatureMatrix& featureMatrix = m_config->GetFeatures().GetFeatureMatrix();
+            const FeatureMatrix& featureMatrix = m_config->GetFeatureDatabase().GetFeatureMatrix();
             Feature::FrameCostContext frameCostContext(featureMatrix, m_queryPose);
             frameCostContext.m_trajectoryQuery = &m_trajectoryQuery;
             frameCostContext.m_actorInstance = m_actorInstance;

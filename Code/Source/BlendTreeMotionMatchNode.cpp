@@ -24,361 +24,358 @@
 #include <EMotionFX/Source/Recorder.h>
 #include <EMotionFX/Source/TransformData.h>
 
-namespace EMotionFX
+namespace EMotionFX::MotionMatching
 {
-    namespace MotionMatching
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMotionMatchNode, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMotionMatchNode::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
+
+    BlendTreeMotionMatchNode::BlendTreeMotionMatchNode()
+        : AnimGraphNode()
     {
-        AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMotionMatchNode, AnimGraphAllocator, 0)
-        AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMotionMatchNode::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
+        // Setup the input ports.
+        InitInputPorts(2);
+        SetupInputPort("Goal Pos", INPUTPORT_TARGETPOS, MCore::AttributeVector3::TYPE_ID, PORTID_INPUT_TARGETPOS);
+        SetupInputPort("Goal Facing Dir", INPUTPORT_TARGETFACINGDIR, MCore::AttributeVector3::TYPE_ID, PORTID_INPUT_TARGETFACINGDIR);
 
-        BlendTreeMotionMatchNode::BlendTreeMotionMatchNode()
-            : AnimGraphNode()
+        // Setup the output ports.
+        InitOutputPorts(1);
+        SetupOutputPortAsPose("Output Pose", OUTPUTPORT_POSE, PORTID_OUTPUT_POSE);
+    }
+
+    BlendTreeMotionMatchNode::~BlendTreeMotionMatchNode()
+    {
+    }
+
+    bool BlendTreeMotionMatchNode::InitAfterLoading(AnimGraph* animGraph)
+    {
+        if (!AnimGraphNode::InitAfterLoading(animGraph))
         {
-            // Setup the input ports.
-            InitInputPorts(2);
-            SetupInputPort("Goal Pos", INPUTPORT_TARGETPOS, MCore::AttributeVector3::TYPE_ID, PORTID_INPUT_TARGETPOS);
-            SetupInputPort("Goal Facing Dir", INPUTPORT_TARGETFACINGDIR, MCore::AttributeVector3::TYPE_ID, PORTID_INPUT_TARGETFACINGDIR);
-
-            // Setup the output ports.
-            InitOutputPorts(1);
-            SetupOutputPortAsPose("Output Pose", OUTPUTPORT_POSE, PORTID_OUTPUT_POSE);
+            return false;
         }
 
-        BlendTreeMotionMatchNode::~BlendTreeMotionMatchNode()
+        InitInternalAttributesForAllInstances();
+
+        Reinit();
+        return true;
+    }
+
+    const char* BlendTreeMotionMatchNode::GetPaletteName() const
+    {
+        return "Motion Matching";
+    }
+
+    AnimGraphObject::ECategory BlendTreeMotionMatchNode::GetPaletteCategory() const
+    {
+        return AnimGraphObject::CATEGORY_SOURCES;
+    }
+
+    void BlendTreeMotionMatchNode::UniqueData::Update()
+    {
+        AZ_PROFILE_SCOPE(Animation, "BlendTreeMotionMatchNode::UniqueData::Update");
+
+        auto animGraphNode = azdynamic_cast<BlendTreeMotionMatchNode*>(m_object);
+        AZ_Assert(animGraphNode, "Unique data linked to incorrect node type.");
+
+        ActorInstance* actorInstance = m_animGraphInstance->GetActorInstance();
+
+        // Clear existing data.
+        delete m_instance;
+        delete m_config;
+
+        m_config = aznew MotionMatching::LocomotionConfig();
+        m_instance = aznew MotionMatching::MotionMatchingInstance();
+
+        MotionSet* motionSet = m_animGraphInstance->GetMotionSet();
+        if (!motionSet)
         {
+            SetHasError(true);
+            return;
         }
 
-        bool BlendTreeMotionMatchNode::InitAfterLoading(AnimGraph* animGraph)
+        //---------------------------------
+        AZ::Debug::Timer timer;
+        timer.Stamp();
+
+        // Build a list of motions we want to import the frames from.
+        AZ_Printf("EMotionFX", "[MotionMatching] Importing frames...");
+        MotionMatching::MotionMatchingConfig::InitSettings settings;
+        settings.m_actorInstance = actorInstance;
+        settings.m_frameImportSettings.m_sampleRate = animGraphNode->m_sampleRate;
+        settings.m_importMirrored = animGraphNode->m_mirror;
+        settings.m_maxKdTreeDepth = animGraphNode->m_maxKdTreeDepth;
+        settings.m_minFramesPerKdTreeNode = animGraphNode->m_minFramesPerKdTreeNode;
+        settings.m_motionList.reserve(animGraphNode->m_motionIds.size());
+        for (const AZStd::string& id : animGraphNode->m_motionIds)
         {
-            if (!AnimGraphNode::InitAfterLoading(animGraph))
+            Motion* motion = motionSet->RecursiveFindMotionById(id);
+            if (motion)
             {
-                return false;
+                settings.m_motionList.emplace_back(motion);
             }
-
-            InitInternalAttributesForAllInstances();
-
-            Reinit();
-            return true;
-        }
-
-        const char* BlendTreeMotionMatchNode::GetPaletteName() const
-        {
-            return "Motion Matching";
-        }
-
-        AnimGraphObject::ECategory BlendTreeMotionMatchNode::GetPaletteCategory() const
-        {
-            return AnimGraphObject::CATEGORY_SOURCES;
-        }
-
-        void BlendTreeMotionMatchNode::UniqueData::Update()
-        {
-            AZ_PROFILE_SCOPE(Animation, "BlendTreeMotionMatchNode::UniqueData::Update");
-
-            auto animGraphNode = azdynamic_cast<BlendTreeMotionMatchNode*>(m_object);
-            AZ_Assert(animGraphNode, "Unique data linked to incorrect node type.");
-
-            ActorInstance* actorInstance = m_animGraphInstance->GetActorInstance();
-
-            // Clear existing data.
-            delete m_instance;
-            delete m_config;
-
-            m_config = aznew MotionMatching::LocomotionConfig();
-            m_instance = aznew MotionMatching::MotionMatchingInstance();
-
-            MotionSet* motionSet = m_animGraphInstance->GetMotionSet();
-            if (!motionSet)
+            else
             {
-                SetHasError(true);
-                return;
+                AZ_Warning("EMotionFX", false, "Failed to get motion for motionset entry id '%s'", id.c_str());
             }
-
-            //---------------------------------
-            AZ::Debug::Timer timer;
-            timer.Stamp();
-
-            // Build a list of motions we want to import the frames from.
-            AZ_Printf("EMotionFX", "[MotionMatching] Importing frames...");
-            MotionMatching::MotionMatchingConfig::InitSettings settings;
-            settings.m_actorInstance = actorInstance;
-            settings.m_frameImportSettings.m_sampleRate = animGraphNode->m_sampleRate;
-            settings.m_importMirrored = animGraphNode->m_mirror;
-            settings.m_maxKdTreeDepth = animGraphNode->m_maxKdTreeDepth;
-            settings.m_minFramesPerKdTreeNode = animGraphNode->m_minFramesPerKdTreeNode;
-            settings.m_motionList.reserve(animGraphNode->m_motionIds.size());
-            for (const AZStd::string& id : animGraphNode->m_motionIds)
-            {
-                Motion* motion = motionSet->RecursiveFindMotionById(id);
-                if (motion)
-                {
-                    settings.m_motionList.emplace_back(motion);
-                }
-                else
-                {
-                    AZ_Warning("EMotionFX", false, "Failed to get motion for motionset entry id '%s'", id.c_str());
-                }
-            }
-
-            // Initialize the config (slow).
-            AZ_Printf("EMotionFX", "[MotionMatching] Initializing config...");
-            if (!m_config->Init(settings))
-            {
-                AZ_Warning("EMotionFX", false, "Failed to initialize the motion matching config for anim graph node '%s'!", animGraphNode->GetName());
-                SetHasError(true);
-                return;
-            }
-
-            // Initialize the instance.
-            AZ_Printf("EMotionFX", "[MotionMatching] Initializing instance...");
-            MotionMatching::MotionMatchingInstance::InitSettings initSettings;
-            initSettings.m_actorInstance = actorInstance;
-            initSettings.m_config = m_config;
-            m_instance->Init(initSettings);
-
-            const float initTime = timer.GetDeltaTimeInSeconds();
-            const size_t memUsage = m_config->GetFrameDatabase().CalcMemoryUsageInBytes();
-            AZ_Printf("EMotionFX", "[MotionMatching] Finished in %.2f seconds (mem usage=%d bytes or %.2f mb)", initTime, memUsage, memUsage / (float)(1024 * 1024));
-            //---------------------------------
-
-            SetHasError(false);
         }
 
-        void BlendTreeMotionMatchNode::Update(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
+        // Initialize the config (slow).
+        AZ_Printf("EMotionFX", "[MotionMatching] Initializing config...");
+        if (!m_config->Init(settings))
         {
-            AZ_PROFILE_SCOPE(Animation, "BlendTreeMotionMatchNode::Update");
+            AZ_Warning("EMotionFX", false, "Failed to initialize the motion matching config for anim graph node '%s'!", animGraphNode->GetName());
+            SetHasError(true);
+            return;
+        }
 
-            m_timer.Stamp();
+        // Initialize the instance.
+        AZ_Printf("EMotionFX", "[MotionMatching] Initializing instance...");
+        MotionMatching::MotionMatchingInstance::InitSettings initSettings;
+        initSettings.m_actorInstance = actorInstance;
+        initSettings.m_config = m_config;
+        m_instance->Init(initSettings);
+
+        const float initTime = timer.GetDeltaTimeInSeconds();
+        const size_t memUsage = m_config->GetFrameDatabase().CalcMemoryUsageInBytes();
+        AZ_Printf("EMotionFX", "[MotionMatching] Finished in %.2f seconds (mem usage=%d bytes or %.2f mb)", initTime, memUsage, memUsage / (float)(1024 * 1024));
+        //---------------------------------
+
+        SetHasError(false);
+    }
+
+    void BlendTreeMotionMatchNode::Update(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
+    {
+        AZ_PROFILE_SCOPE(Animation, "BlendTreeMotionMatchNode::Update");
+
+        m_timer.Stamp();
             
-            UniqueData* uniqueData = static_cast<UniqueData*>(FindOrCreateUniqueNodeData(animGraphInstance));
-            UpdateAllIncomingNodes(animGraphInstance, timePassedInSeconds);
-            uniqueData->Clear();
-            if (uniqueData->GetHasError())
-            {
-                m_updateTimeInMs = 0.0f;
-                m_postUpdateTimeInMs = 0.0f;
-                m_outputTimeInMs = 0.0f;
-                return;
-            }
+        UniqueData* uniqueData = static_cast<UniqueData*>(FindOrCreateUniqueNodeData(animGraphInstance));
+        UpdateAllIncomingNodes(animGraphInstance, timePassedInSeconds);
+        uniqueData->Clear();
+        if (uniqueData->GetHasError())
+        {
+            m_updateTimeInMs = 0.0f;
+            m_postUpdateTimeInMs = 0.0f;
+            m_outputTimeInMs = 0.0f;
+            return;
+        }
 
-            AZ::Vector3 targetPos = AZ::Vector3::CreateZero();
-            TryGetInputVector3(animGraphInstance, INPUTPORT_TARGETPOS, targetPos);
+        AZ::Vector3 targetPos = AZ::Vector3::CreateZero();
+        TryGetInputVector3(animGraphInstance, INPUTPORT_TARGETPOS, targetPos);
 
-            AZ::Vector3 targetFacingDir = AZ::Vector3::CreateAxisY();
-            TryGetInputVector3(animGraphInstance, INPUTPORT_TARGETFACINGDIR, targetFacingDir);
+        AZ::Vector3 targetFacingDir = AZ::Vector3::CreateAxisY();
+        TryGetInputVector3(animGraphInstance, INPUTPORT_TARGETFACINGDIR, targetFacingDir);
 
-            MotionMatching::MotionMatchingInstance* instance = uniqueData->m_instance;
-            instance->Update(timePassedInSeconds, targetPos, targetFacingDir, m_trajectoryQueryMode, m_pathRadius, m_pathSpeed);
+        MotionMatching::MotionMatchingInstance* instance = uniqueData->m_instance;
+        instance->Update(timePassedInSeconds, targetPos, targetFacingDir, m_trajectoryQueryMode, m_pathRadius, m_pathSpeed);
 
-            // set the current time to the new calculated time
-            uniqueData->ClearInheritFlags();
-            uniqueData->SetPreSyncTime(instance->GetMotionInstance()->GetCurrentTime());
-            uniqueData->SetCurrentPlayTime(instance->GetNewMotionTime());
+        // set the current time to the new calculated time
+        uniqueData->ClearInheritFlags();
+        uniqueData->SetPreSyncTime(instance->GetMotionInstance()->GetCurrentTime());
+        uniqueData->SetCurrentPlayTime(instance->GetNewMotionTime());
 
-            if (uniqueData->GetPreSyncTime() > uniqueData->GetCurrentPlayTime())
-            {
-                uniqueData->SetPreSyncTime(uniqueData->GetCurrentPlayTime());
-            }
+        if (uniqueData->GetPreSyncTime() > uniqueData->GetCurrentPlayTime())
+        {
+            uniqueData->SetPreSyncTime(uniqueData->GetCurrentPlayTime());
+        }
 
-            //AZ_Printf("EMotionFX", "%f, %f    =    %f", uniqueData->GetPreSyncTime(), uniqueData->GetCurrentPlayTime(), uniqueData->GetCurrentPlayTime() - uniqueData->GetPreSyncTime());
+        //AZ_Printf("EMotionFX", "%f, %f    =    %f", uniqueData->GetPreSyncTime(), uniqueData->GetCurrentPlayTime(), uniqueData->GetCurrentPlayTime() - uniqueData->GetPreSyncTime());
             
-            m_updateTimeInMs = m_timer.GetDeltaTimeInSeconds() * 1000.0f;
-        }
+        m_updateTimeInMs = m_timer.GetDeltaTimeInSeconds() * 1000.0f;
+    }
 
-        void BlendTreeMotionMatchNode::PostUpdate(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
+    void BlendTreeMotionMatchNode::PostUpdate(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
+    {
+        AZ_PROFILE_SCOPE(Animation, "BlendTreeMotionMatchNode::PostUpdate");
+
+        AZ_UNUSED(animGraphInstance);
+        AZ_UNUSED(timePassedInSeconds);
+        m_timer.Stamp();
+
+        for (AZ::u32 i = 0; i < GetNumConnections(); ++i)
         {
-            AZ_PROFILE_SCOPE(Animation, "BlendTreeMotionMatchNode::PostUpdate");
-
-            AZ_UNUSED(animGraphInstance);
-            AZ_UNUSED(timePassedInSeconds);
-            m_timer.Stamp();
-
-            for (AZ::u32 i = 0; i < GetNumConnections(); ++i)
-            {
-                AnimGraphNode* node = GetConnection(i)->GetSourceNode();
-                node->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
-            }
-
-            UniqueData* uniqueData = static_cast<UniqueData*>(FindOrCreateUniqueNodeData(animGraphInstance));
-            MotionMatching::MotionMatchingInstance* instance = uniqueData->m_instance;
-
-            RequestRefDatas(animGraphInstance);
-            AnimGraphRefCountedData* data = uniqueData->GetRefCountedData();
-            data->ClearEventBuffer();
-            data->ZeroTrajectoryDelta();
-
-            if (uniqueData->GetHasError())
-            {
-                return;
-            }
-
-            MotionInstance* motionInstance = instance->GetMotionInstance();
-            motionInstance->UpdateByTimeValues(uniqueData->GetPreSyncTime(), uniqueData->GetCurrentPlayTime(), &data->GetEventBuffer());
-
-            uniqueData->SetCurrentPlayTime(motionInstance->GetCurrentTime());
-            data->GetEventBuffer().UpdateEmitters(this);
-
-            instance->PostUpdate(timePassedInSeconds);
-
-            const Transform& trajectoryDelta = instance->GetMotionExtractionDelta();
-            data->SetTrajectoryDelta(trajectoryDelta);
-            data->SetTrajectoryDeltaMirrored(trajectoryDelta); // TODO: use a real mirrored version here.
-
-            m_postUpdateTimeInMs = m_timer.GetDeltaTimeInSeconds() * 1000.0f;
+            AnimGraphNode* node = GetConnection(i)->GetSourceNode();
+            node->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
         }
 
-        void BlendTreeMotionMatchNode::Output(AnimGraphInstance* animGraphInstance)
+        UniqueData* uniqueData = static_cast<UniqueData*>(FindOrCreateUniqueNodeData(animGraphInstance));
+        MotionMatching::MotionMatchingInstance* instance = uniqueData->m_instance;
+
+        RequestRefDatas(animGraphInstance);
+        AnimGraphRefCountedData* data = uniqueData->GetRefCountedData();
+        data->ClearEventBuffer();
+        data->ZeroTrajectoryDelta();
+
+        if (uniqueData->GetHasError())
         {
-            AZ_PROFILE_SCOPE(Animation, "BlendTreeMotionMatchNode::Output");
-
-            AZ_UNUSED(animGraphInstance);
-            m_timer.Stamp();
-
-            AnimGraphPose* outputPose;
-
-            // Initialize to bind pose.
-            ActorInstance* actorInstance = animGraphInstance->GetActorInstance();
-            RequestPoses(animGraphInstance);
-            outputPose = GetOutputPose(animGraphInstance, OUTPUTPORT_POSE)->GetValue();
-            outputPose->InitFromBindPose(actorInstance);
-
-            if (m_disabled)
-            {
-                return;
-            }
-
-            UniqueData* uniqueData = static_cast<UniqueData*>(FindOrCreateUniqueNodeData(animGraphInstance));
-            if (GetEMotionFX().GetIsInEditorMode())
-            {
-                SetHasError(uniqueData, uniqueData->GetHasError());
-            }
-
-            if (uniqueData->GetHasError())
-            {
-                return;
-            }
-
-            OutputIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_TARGETPOS));
-            OutputIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_TARGETFACINGDIR));
-
-            Pose& outTransformPose = outputPose->GetPose();
-
-            MotionMatching::LocomotionConfig* config = uniqueData->m_config;
-            MotionMatching::LocomotionConfig::FactorWeights& factors = config->GetFactorWeights();
-            factors.m_footPositionFactor = m_footPositionFactor;
-            factors.m_footVelocityFactor = m_footVelocityFactor;
-            factors.m_rootFutureFactor = m_rootFutureFactor;
-            factors.m_rootPastFactor = m_rootPastFactor;
-            factors.m_differentMotionFactor = m_differentMotionFactor;
-            config->SetFactorWeights(factors);
-
-            MotionMatching::MotionMatchingInstance* instance = uniqueData->m_instance;
-            instance->SetLowestCostSearchFrequency(m_lowestCostSearchFrequency);
-            instance->Output(outTransformPose);
-
-            // Performance metrics
-            m_outputTimeInMs = m_timer.GetDeltaTimeInSeconds() * 1000.0f;
-            {
-                //AZ_Printf("MotionMatch", "Update = %.2f, PostUpdate = %.2f, Output = %.2f", m_updateTime, m_postUpdateTime, m_outputTime);
-                ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushPerformanceHistogramValue, "Update", m_updateTimeInMs);
-                ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushPerformanceHistogramValue, "Post Update", m_postUpdateTimeInMs);
-                ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushPerformanceHistogramValue, "Output", m_outputTimeInMs);
-            }
-
-            instance->DebugDraw();
+            return;
         }
 
-        void BlendTreeMotionMatchNode::Reflect(AZ::ReflectContext* context)
+        MotionInstance* motionInstance = instance->GetMotionInstance();
+        motionInstance->UpdateByTimeValues(uniqueData->GetPreSyncTime(), uniqueData->GetCurrentPlayTime(), &data->GetEventBuffer());
+
+        uniqueData->SetCurrentPlayTime(motionInstance->GetCurrentTime());
+        data->GetEventBuffer().UpdateEmitters(this);
+
+        instance->PostUpdate(timePassedInSeconds);
+
+        const Transform& trajectoryDelta = instance->GetMotionExtractionDelta();
+        data->SetTrajectoryDelta(trajectoryDelta);
+        data->SetTrajectoryDeltaMirrored(trajectoryDelta); // TODO: use a real mirrored version here.
+
+        m_postUpdateTimeInMs = m_timer.GetDeltaTimeInSeconds() * 1000.0f;
+    }
+
+    void BlendTreeMotionMatchNode::Output(AnimGraphInstance* animGraphInstance)
+    {
+        AZ_PROFILE_SCOPE(Animation, "BlendTreeMotionMatchNode::Output");
+
+        AZ_UNUSED(animGraphInstance);
+        m_timer.Stamp();
+
+        AnimGraphPose* outputPose;
+
+        // Initialize to bind pose.
+        ActorInstance* actorInstance = animGraphInstance->GetActorInstance();
+        RequestPoses(animGraphInstance);
+        outputPose = GetOutputPose(animGraphInstance, OUTPUTPORT_POSE)->GetValue();
+        outputPose->InitFromBindPose(actorInstance);
+
+        if (m_disabled)
         {
-            AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
-            if (!serializeContext)
-            {
-                return;
-            }
-
-            serializeContext->Class<BlendTreeMotionMatchNode, AnimGraphNode>()
-                ->Version(8)
-                ->Field("motionIds", &BlendTreeMotionMatchNode::m_motionIds)
-                ->Field("maxKdTreeDepth", &BlendTreeMotionMatchNode::m_maxKdTreeDepth)
-                ->Field("minFramesPerKdTreeNode", &BlendTreeMotionMatchNode::m_minFramesPerKdTreeNode)
-                ->Field("footPositionFactor", &BlendTreeMotionMatchNode::m_footPositionFactor)
-                ->Field("footVelocity", &BlendTreeMotionMatchNode::m_footVelocityFactor)
-                ->Field("rootFutureFactor", &BlendTreeMotionMatchNode::m_rootFutureFactor)
-                ->Field("rootPastFactor", &BlendTreeMotionMatchNode::m_rootPastFactor)
-                ->Field("differentMotionFactor", &BlendTreeMotionMatchNode::m_differentMotionFactor)
-                ->Field("sampleRate", &BlendTreeMotionMatchNode::m_sampleRate)
-                ->Field("lowestCostSearchFrequency", &BlendTreeMotionMatchNode::m_lowestCostSearchFrequency)
-                ->Field("mirror", &BlendTreeMotionMatchNode::m_mirror)
-                ->Field("controlSplineMode", &BlendTreeMotionMatchNode::m_trajectoryQueryMode)
-                ->Field("pathRadius", &BlendTreeMotionMatchNode::m_pathRadius)
-                ->Field("pathSpeed", &BlendTreeMotionMatchNode::m_pathSpeed);
-
-            AZ::EditContext* editContext = serializeContext->GetEditContext();
-            if (!editContext)
-            {
-                return;
-            }
-
-            editContext->Class<BlendTreeMotionMatchNode>("Motion Matching Node", "Motion Matching Attributes")
-                ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
-                ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                ->DataElement(AZ_CRC("MotionSetMotionIds", 0x8695c0fa), &BlendTreeMotionMatchNode::m_motionIds, "Motions", "")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
-                ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
-                ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::HideChildren)
-                ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_maxKdTreeDepth, "Max kdTree depth", "The maximum number of hierarchy levels in the kdTree.")
-                ->Attribute(AZ::Edit::Attributes::Min, 1)
-                ->Attribute(AZ::Edit::Attributes::Max, 20)
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
-                ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_minFramesPerKdTreeNode, "Min kdTree node size", "The minimum number of frames to store per kdTree node.")
-                ->Attribute(AZ::Edit::Attributes::Min, 1)
-                ->Attribute(AZ::Edit::Attributes::Max, 100000)
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
-                ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_footPositionFactor, "Foot Position Factor", "")
-                ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
-                ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
-                ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_footVelocityFactor, "Foot Velocity Factor", "")
-                ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
-                ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
-                ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_rootFutureFactor, "Root Future Factor", "")
-                ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
-                ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
-                ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_rootPastFactor, "Root Past Factor", "")
-                ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
-                ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
-                ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_differentMotionFactor, "Different Motion Factor", "")
-                ->Attribute(AZ::Edit::Attributes::Min, 1.0f)
-                ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
-                ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
-                ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_sampleRate, "Sample rate", "The motion frame data sampling frequency.")
-                ->Attribute(AZ::Edit::Attributes::Min, 5)
-                ->Attribute(AZ::Edit::Attributes::Max, 60)
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
-                ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_mirror, "Add mirrored poses?", "")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
-                ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_pathRadius, "Path radius", "")
-                ->Attribute(AZ::Edit::Attributes::Min, 0.0001f)
-                ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
-                ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
-                ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_pathSpeed, "Path speed", "")
-                ->Attribute(AZ::Edit::Attributes::Min, 0.0001f)
-                ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
-                ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
-                ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_lowestCostSearchFrequency, "Search frequency", "Lowest cost search frequency in seconds. So a value of 0.1 means 10 times per second.")
-                ->Attribute(AZ::Edit::Attributes::Min, 0.001f)
-                ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
-                ->Attribute(AZ::Edit::Attributes::Step, 0.05f)
-                ->DataElement(AZ::Edit::UIHandlers::ComboBox, &BlendTreeMotionMatchNode::m_trajectoryQueryMode, "Trajectory mode", "Desired future trajectory generation mode.")
-                ->EnumAttribute(TrajectoryQuery::MODE_TARGETDRIVEN, "Target driven")
-                ->EnumAttribute(TrajectoryQuery::MODE_ONE, "Mode one")
-                ->EnumAttribute(TrajectoryQuery::MODE_TWO, "Mode two")
-                ->EnumAttribute(TrajectoryQuery::MODE_THREE, "Mode three")
-                ->EnumAttribute(TrajectoryQuery::MODE_FOUR, "Mode four");
+            return;
         }
-    } // namespace MotionMatching
-} // namespace EMotionFX
+
+        UniqueData* uniqueData = static_cast<UniqueData*>(FindOrCreateUniqueNodeData(animGraphInstance));
+        if (GetEMotionFX().GetIsInEditorMode())
+        {
+            SetHasError(uniqueData, uniqueData->GetHasError());
+        }
+
+        if (uniqueData->GetHasError())
+        {
+            return;
+        }
+
+        OutputIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_TARGETPOS));
+        OutputIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_TARGETFACINGDIR));
+
+        Pose& outTransformPose = outputPose->GetPose();
+
+        MotionMatching::LocomotionConfig* config = uniqueData->m_config;
+        MotionMatching::LocomotionConfig::FactorWeights& factors = config->GetFactorWeights();
+        factors.m_footPositionFactor = m_footPositionFactor;
+        factors.m_footVelocityFactor = m_footVelocityFactor;
+        factors.m_rootFutureFactor = m_rootFutureFactor;
+        factors.m_rootPastFactor = m_rootPastFactor;
+        factors.m_differentMotionFactor = m_differentMotionFactor;
+        config->SetFactorWeights(factors);
+
+        MotionMatching::MotionMatchingInstance* instance = uniqueData->m_instance;
+        instance->SetLowestCostSearchFrequency(m_lowestCostSearchFrequency);
+        instance->Output(outTransformPose);
+
+        // Performance metrics
+        m_outputTimeInMs = m_timer.GetDeltaTimeInSeconds() * 1000.0f;
+        {
+            //AZ_Printf("MotionMatch", "Update = %.2f, PostUpdate = %.2f, Output = %.2f", m_updateTime, m_postUpdateTime, m_outputTime);
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushPerformanceHistogramValue, "Update", m_updateTimeInMs);
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushPerformanceHistogramValue, "Post Update", m_postUpdateTimeInMs);
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushPerformanceHistogramValue, "Output", m_outputTimeInMs);
+        }
+
+        instance->DebugDraw();
+    }
+
+    void BlendTreeMotionMatchNode::Reflect(AZ::ReflectContext* context)
+    {
+        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
+        if (!serializeContext)
+        {
+            return;
+        }
+
+        serializeContext->Class<BlendTreeMotionMatchNode, AnimGraphNode>()
+            ->Version(8)
+            ->Field("motionIds", &BlendTreeMotionMatchNode::m_motionIds)
+            ->Field("maxKdTreeDepth", &BlendTreeMotionMatchNode::m_maxKdTreeDepth)
+            ->Field("minFramesPerKdTreeNode", &BlendTreeMotionMatchNode::m_minFramesPerKdTreeNode)
+            ->Field("footPositionFactor", &BlendTreeMotionMatchNode::m_footPositionFactor)
+            ->Field("footVelocity", &BlendTreeMotionMatchNode::m_footVelocityFactor)
+            ->Field("rootFutureFactor", &BlendTreeMotionMatchNode::m_rootFutureFactor)
+            ->Field("rootPastFactor", &BlendTreeMotionMatchNode::m_rootPastFactor)
+            ->Field("differentMotionFactor", &BlendTreeMotionMatchNode::m_differentMotionFactor)
+            ->Field("sampleRate", &BlendTreeMotionMatchNode::m_sampleRate)
+            ->Field("lowestCostSearchFrequency", &BlendTreeMotionMatchNode::m_lowestCostSearchFrequency)
+            ->Field("mirror", &BlendTreeMotionMatchNode::m_mirror)
+            ->Field("controlSplineMode", &BlendTreeMotionMatchNode::m_trajectoryQueryMode)
+            ->Field("pathRadius", &BlendTreeMotionMatchNode::m_pathRadius)
+            ->Field("pathSpeed", &BlendTreeMotionMatchNode::m_pathSpeed);
+
+        AZ::EditContext* editContext = serializeContext->GetEditContext();
+        if (!editContext)
+        {
+            return;
+        }
+
+        editContext->Class<BlendTreeMotionMatchNode>("Motion Matching Node", "Motion Matching Attributes")
+            ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+            ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
+            ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+            ->DataElement(AZ_CRC("MotionSetMotionIds", 0x8695c0fa), &BlendTreeMotionMatchNode::m_motionIds, "Motions", "")
+            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
+            ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
+            ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::HideChildren)
+            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_maxKdTreeDepth, "Max kdTree depth", "The maximum number of hierarchy levels in the kdTree.")
+            ->Attribute(AZ::Edit::Attributes::Min, 1)
+            ->Attribute(AZ::Edit::Attributes::Max, 20)
+            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
+            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_minFramesPerKdTreeNode, "Min kdTree node size", "The minimum number of frames to store per kdTree node.")
+            ->Attribute(AZ::Edit::Attributes::Min, 1)
+            ->Attribute(AZ::Edit::Attributes::Max, 100000)
+            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
+            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_footPositionFactor, "Foot Position Factor", "")
+            ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+            ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
+            ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
+            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_footVelocityFactor, "Foot Velocity Factor", "")
+            ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+            ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
+            ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
+            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_rootFutureFactor, "Root Future Factor", "")
+            ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+            ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
+            ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
+            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_rootPastFactor, "Root Past Factor", "")
+            ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+            ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
+            ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
+            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_differentMotionFactor, "Different Motion Factor", "")
+            ->Attribute(AZ::Edit::Attributes::Min, 1.0f)
+            ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
+            ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
+            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_sampleRate, "Sample rate", "The motion frame data sampling frequency.")
+            ->Attribute(AZ::Edit::Attributes::Min, 5)
+            ->Attribute(AZ::Edit::Attributes::Max, 60)
+            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
+            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_mirror, "Add mirrored poses?", "")
+            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
+            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_pathRadius, "Path radius", "")
+            ->Attribute(AZ::Edit::Attributes::Min, 0.0001f)
+            ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
+            ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
+            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_pathSpeed, "Path speed", "")
+            ->Attribute(AZ::Edit::Attributes::Min, 0.0001f)
+            ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
+            ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
+            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_lowestCostSearchFrequency, "Search frequency", "Lowest cost search frequency in seconds. So a value of 0.1 means 10 times per second.")
+            ->Attribute(AZ::Edit::Attributes::Min, 0.001f)
+            ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
+            ->Attribute(AZ::Edit::Attributes::Step, 0.05f)
+            ->DataElement(AZ::Edit::UIHandlers::ComboBox, &BlendTreeMotionMatchNode::m_trajectoryQueryMode, "Trajectory mode", "Desired future trajectory generation mode.")
+            ->EnumAttribute(TrajectoryQuery::MODE_TARGETDRIVEN, "Target driven")
+            ->EnumAttribute(TrajectoryQuery::MODE_ONE, "Mode one")
+            ->EnumAttribute(TrajectoryQuery::MODE_TWO, "Mode two")
+            ->EnumAttribute(TrajectoryQuery::MODE_THREE, "Mode three")
+            ->EnumAttribute(TrajectoryQuery::MODE_FOUR, "Mode four");
+    }
+} // namespace EMotionFX::MotionMatching

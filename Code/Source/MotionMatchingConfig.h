@@ -32,50 +32,50 @@ namespace AZ
 namespace EMotionFX
 {
     class ActorInstance;
+}
 
-    namespace MotionMatching
+namespace EMotionFX::MotionMatching
+{
+    class MotionMatchingInstance;
+    class FeatureTrajectory;
+
+    class EMFX_API MotionMatchingConfig
     {
-        class MotionMatchingInstance;
-        class FeatureTrajectory;
+    public:
+        AZ_RTTI(MotionMatchingConfig, "{7BC3DFF5-8864-4518-B6F0-0553ADFAB5C1}")
+        AZ_CLASS_ALLOCATOR_DECL
 
-        class EMFX_API MotionMatchingConfig
+        struct EMFX_API InitSettings
         {
-        public:
-            AZ_RTTI(MotionMatchingConfig, "{7BC3DFF5-8864-4518-B6F0-0553ADFAB5C1}")
-            AZ_CLASS_ALLOCATOR_DECL
+            ActorInstance* m_actorInstance = nullptr;
+            AZStd::vector<Motion*> m_motionList;
+            FrameDatabase::FrameImportSettings m_frameImportSettings;
+            size_t m_maxKdTreeDepth = 20;
+            size_t m_minFramesPerKdTreeNode = 1000;
+            bool m_importMirrored = false;
 
-            struct EMFX_API InitSettings
-            {
-                ActorInstance* m_actorInstance = nullptr;
-                AZStd::vector<Motion*> m_motionList;
-                FrameDatabase::FrameImportSettings m_frameImportSettings;
-                size_t m_maxKdTreeDepth = 20;
-                size_t m_minFramesPerKdTreeNode = 1000;
-                bool m_importMirrored = false;
-
-            };
-
-            MotionMatchingConfig() = default;
-            virtual ~MotionMatchingConfig() = default;
-
-            virtual bool RegisterFeatures(const InitSettings& settings) = 0;
-            virtual bool Init(const InitSettings& settings);
-            void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay, MotionMatchingInstance* instance);
-            virtual FeatureTrajectory* GetTrajectoryFeature() const = 0;
-
-            virtual size_t FindLowestCostFrameIndex(MotionMatchingInstance* instance, const Feature::FrameCostContext& context, size_t currentFrameIndex) = 0;
-
-            static void Reflect(AZ::ReflectContext* context);
-
-            const FrameDatabase& GetFrameDatabase() const { return m_frameDatabase; }
-            FrameDatabase& GetFrameDatabase() { return m_frameDatabase; }
-
-            const FeatureDatabase& GetFeatures() const { return m_features; }
-            FeatureDatabase& GetFeatures() { return m_features; }
-
-        protected:
-            FrameDatabase m_frameDatabase; /**< The frames and their data. */
-            FeatureDatabase m_features;
         };
-    } // namespace MotionMatching
-} // namespace EMotionFX
+
+        MotionMatchingConfig() = default;
+        virtual ~MotionMatchingConfig() = default;
+
+        virtual bool RegisterFeatures(const InitSettings& settings) = 0;
+        virtual bool Init(const InitSettings& settings);
+        void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay, MotionMatchingInstance* instance);
+        virtual FeatureTrajectory* GetTrajectoryFeature() const = 0;
+
+        virtual size_t FindLowestCostFrameIndex(MotionMatchingInstance* instance, const Feature::FrameCostContext& context, size_t currentFrameIndex) = 0;
+
+        static void Reflect(AZ::ReflectContext* context);
+
+        const FrameDatabase& GetFrameDatabase() const { return m_frameDatabase; }
+        FrameDatabase& GetFrameDatabase() { return m_frameDatabase; }
+
+        const FeatureDatabase& GetFeatureDatabase() const { return m_featureDatabase; }
+        FeatureDatabase& GetFeatureDatabase() { return m_featureDatabase; }
+
+    protected:
+        FrameDatabase m_frameDatabase; /**< The frames and their data. */
+        FeatureDatabase m_featureDatabase;
+    };
+} // namespace EMotionFX::MotionMatching

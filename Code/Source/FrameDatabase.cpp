@@ -29,7 +29,6 @@
 #include <EMotionFX/Source/MotionEventTrack.h>
 
 #include <AzCore/Casting/numeric_cast.h>
-#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 namespace EMotionFX

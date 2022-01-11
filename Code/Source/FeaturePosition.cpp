@@ -80,7 +80,7 @@ namespace EMotionFX::MotionMatching
         const Transform jointModelTM = pose->GetModelSpaceTransform(m_nodeIndex);
         const Transform relativeToWorldTM = pose->GetWorldSpaceTransform(m_relativeToNodeIndex);
 
-        const AZ::Vector3 position = GetFeatureData(config->GetFeatures().GetFeatureMatrix(), frameIndex);
+        const AZ::Vector3 position = GetFeatureData(config->GetFeatureDatabase().GetFeatureMatrix(), frameIndex);
         const AZ::Vector3 transformedPos = relativeToWorldTM.TransformPoint(position);
 
         constexpr float markerSize = 0.03f;
