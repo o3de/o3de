@@ -371,9 +371,9 @@ namespace UnitTest
         const AZ::EntityId id = mockReference->GetId();
         MockGradientArrayRequestsBus mockGradientRequestsBus(id, inputData, dataSize);
 
-        auto entity = CreateEntity();
-        CreateTestReferenceGradient(entity.get(), mockReference->GetId());
-        ActivateEntity(entity.get());
+        // Create a reference gradient with an arbitrary box shape on it.
+        const float HalfBounds = 64.0f;
+        auto entity = BuildTestReferenceGradient(HalfBounds, mockReference->GetId());
 
         TestFixedDataSampler(expectedOutput, dataSize, entity->GetId());
     }
@@ -382,9 +382,9 @@ namespace UnitTest
     {
         // Verify that gradient references can validate and disconnect cyclic connections
 
-        auto constantGradientEntity = CreateEntity();
-        CreateTestConstantGradient(constantGradientEntity.get());
-        ActivateEntity(constantGradientEntity.get());
+        // Create a constant gradient with an arbitrary box shape on it.
+        const float HalfBounds = 64.0f;
+        auto constantGradientEntity = BuildTestConstantGradient(HalfBounds);
 
         // Verify cyclic reference test passes when pointing to gradient generator entity
         auto referenceGradientEntity1 = CreateEntity();
@@ -419,10 +419,16 @@ namespace UnitTest
         auto referenceGradientEntity5 = CreateEntity();
         auto referenceGradientEntity6 = CreateEntity();
 
-        CreateTestReferenceGradient(referenceGradientEntity4.get(), referenceGradientEntity5->GetId());
+        GradientSignal::ReferenceGradientConfig referenceGradientConfig4;
+        referenceGradientConfig4.m_gradientSampler.m_ownerEntityId = referenceGradientEntity4->GetId();
+        referenceGradientConfig4.m_gradientSampler.m_gradientId = referenceGradientEntity5->GetId();
+        CreateComponent<GradientSignal::ReferenceGradientComponent>(referenceGradientEntity4.get(), referenceGradientConfig4);
         ActivateEntity(referenceGradientEntity4.get());
 
-        CreateTestReferenceGradient(referenceGradientEntity5.get(), referenceGradientEntity6->GetId());
+        GradientSignal::ReferenceGradientConfig referenceGradientConfig5;
+        referenceGradientConfig5.m_gradientSampler.m_ownerEntityId = referenceGradientEntity5->GetId();
+        referenceGradientConfig5.m_gradientSampler.m_gradientId = referenceGradientEntity6->GetId();
+        CreateComponent<GradientSignal::ReferenceGradientComponent>(referenceGradientEntity5.get(), referenceGradientConfig5);
         ActivateEntity(referenceGradientEntity5.get());
 
         GradientSignal::ReferenceGradientConfig referenceGradientConfig6;

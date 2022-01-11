@@ -65,141 +65,89 @@ namespace UnitTest
 
     TEST_F(GradientSignalGetValuesTestsFixture, ImageGradientComponent_VerifyGetValueAndGetValuesMatch)
     {
-        auto entity = CreateTestEntity(TestShapeHalfBounds);
-        CreateTestImageGradient(entity.get());
-        ActivateEntity(entity.get());
+        auto entity = BuildTestImageGradient(TestShapeHalfBounds);
         CompareGetValueAndGetValues(entity->GetId());
     }
 
     TEST_F(GradientSignalGetValuesTestsFixture, PerlinGradientComponent_VerifyGetValueAndGetValuesMatch)
     {
-        auto entity = CreateTestEntity(TestShapeHalfBounds);
-        CreateTestPerlinGradient(entity.get());
-        ActivateEntity(entity.get());
+        auto entity = BuildTestPerlinGradient(TestShapeHalfBounds);
         CompareGetValueAndGetValues(entity->GetId());
     }
 
     TEST_F(GradientSignalGetValuesTestsFixture, RandomGradientComponent_VerifyGetValueAndGetValuesMatch)
     {
-        auto entity = CreateTestEntity(TestShapeHalfBounds);
-        CreateTestRandomGradient(entity.get());
-        ActivateEntity(entity.get());
+        auto entity = BuildTestRandomGradient(TestShapeHalfBounds);
         CompareGetValueAndGetValues(entity->GetId());
     }
 
     TEST_F(GradientSignalGetValuesTestsFixture, ConstantGradientComponent_VerifyGetValueAndGetValuesMatch)
     {
-        auto entity = CreateTestEntity(TestShapeHalfBounds);
-        CreateTestConstantGradient(entity.get());
-        ActivateEntity(entity.get());
+        auto entity = BuildTestConstantGradient(TestShapeHalfBounds);
         CompareGetValueAndGetValues(entity->GetId());
     }
 
     TEST_F(GradientSignalGetValuesTestsFixture, ShapeAreaFalloffGradientComponent_VerifyGetValueAndGetValuesMatch)
     {
-        auto entity = CreateTestEntity(TestShapeHalfBounds);
-        CreateTestShapeAreaFalloffGradient(entity.get());
-        ActivateEntity(entity.get());
+        auto entity = BuildTestShapeAreaFalloffGradient(TestShapeHalfBounds);
         CompareGetValueAndGetValues(entity->GetId());
     }
 
     TEST_F(GradientSignalGetValuesTestsFixture, DitherGradientComponent_VerifyGetValueAndGetValuesMatch)
     {
-        auto baseEntity = CreateTestEntity(TestShapeHalfBounds);
-        CreateTestRandomGradient(baseEntity.get());
-        ActivateEntity(baseEntity.get());
+        auto baseEntity = BuildTestRandomGradient(TestShapeHalfBounds);
 
-        auto entity = CreateTestEntity(TestShapeHalfBounds);
-        CreateTestDitherGradient(entity.get(), baseEntity->GetId());
-        ActivateEntity(entity.get());
+        auto entity = BuildTestDitherGradient(TestShapeHalfBounds, baseEntity->GetId());
         CompareGetValueAndGetValues(entity->GetId());
     }
 
     TEST_F(GradientSignalGetValuesTestsFixture, InvertGradientComponent_VerifyGetValueAndGetValuesMatch)
     {
-        auto baseEntity = CreateTestEntity(TestShapeHalfBounds);
-        CreateTestRandomGradient(baseEntity.get());
-        ActivateEntity(baseEntity.get());
-
-        auto entity = CreateTestEntity(TestShapeHalfBounds);
-        CreateTestInvertGradient(entity.get(), baseEntity->GetId());
-        ActivateEntity(entity.get());
+        auto baseEntity = BuildTestRandomGradient(TestShapeHalfBounds);
+        auto entity = BuildTestInvertGradient(TestShapeHalfBounds, baseEntity->GetId());
         CompareGetValueAndGetValues(entity->GetId());
     }
 
     TEST_F(GradientSignalGetValuesTestsFixture, LevelsGradientComponent_VerifyGetValueAndGetValuesMatch)
     {
-        auto baseEntity = CreateTestEntity(TestShapeHalfBounds);
-        CreateTestRandomGradient(baseEntity.get());
-        ActivateEntity(baseEntity.get());
-
-        auto entity = CreateTestEntity(TestShapeHalfBounds);
-        CreateTestLevelsGradient(entity.get(), baseEntity->GetId());
-        ActivateEntity(entity.get());
+        auto baseEntity = BuildTestRandomGradient(TestShapeHalfBounds);
+        auto entity = BuildTestLevelsGradient(TestShapeHalfBounds, baseEntity->GetId());
         CompareGetValueAndGetValues(entity->GetId());
     }
 
     TEST_F(GradientSignalGetValuesTestsFixture, MixedGradientComponent_VerifyGetValueAndGetValuesMatch)
     {
-        auto baseEntity = CreateTestEntity(TestShapeHalfBounds);
-        CreateTestRandomGradient(baseEntity.get());
-        ActivateEntity(baseEntity.get());
-
-        auto mixedEntity = CreateTestEntity(TestShapeHalfBounds);
-        CreateTestConstantGradient(mixedEntity.get());
-        ActivateEntity(mixedEntity.get());
-
-        auto entity = CreateTestEntity(TestShapeHalfBounds);
-        CreateTestMixedGradient(entity.get(), baseEntity->GetId(), mixedEntity->GetId());
-        ActivateEntity(entity.get());
+        auto baseEntity = BuildTestRandomGradient(TestShapeHalfBounds);
+        auto mixedEntity = BuildTestConstantGradient(TestShapeHalfBounds);
+        auto entity = BuildTestMixedGradient(TestShapeHalfBounds, baseEntity->GetId(), mixedEntity->GetId());
         CompareGetValueAndGetValues(entity->GetId());
     }
 
     TEST_F(GradientSignalGetValuesTestsFixture, PosterizeGradientComponent_VerifyGetValueAndGetValuesMatch)
     {
-        auto baseEntity = CreateTestEntity(TestShapeHalfBounds);
-        CreateTestRandomGradient(baseEntity.get());
-        ActivateEntity(baseEntity.get());
-
-        auto entity = CreateTestEntity(TestShapeHalfBounds);
-        CreateTestPosterizeGradient(entity.get(), baseEntity->GetId());
-        ActivateEntity(entity.get());
+        auto baseEntity = BuildTestRandomGradient(TestShapeHalfBounds);
+        auto entity = BuildTestPosterizeGradient(TestShapeHalfBounds, baseEntity->GetId());
         CompareGetValueAndGetValues(entity->GetId());
     }
 
     TEST_F(GradientSignalGetValuesTestsFixture, ReferenceGradientComponent_VerifyGetValueAndGetValuesMatch)
     {
-        auto baseEntity = CreateTestEntity(TestShapeHalfBounds);
-        CreateTestRandomGradient(baseEntity.get());
-        ActivateEntity(baseEntity.get());
-
-        auto entity = CreateTestEntity(TestShapeHalfBounds);
-        CreateTestReferenceGradient(entity.get(), baseEntity->GetId());
-        ActivateEntity(entity.get());
+        auto baseEntity = BuildTestRandomGradient(TestShapeHalfBounds);
+        auto entity = BuildTestReferenceGradient(TestShapeHalfBounds, baseEntity->GetId());
         CompareGetValueAndGetValues(entity->GetId());
     }
 
     TEST_F(GradientSignalGetValuesTestsFixture, SmoothStepGradientComponent_VerifyGetValueAndGetValuesMatch)
     {
-        auto baseEntity = CreateTestEntity(TestShapeHalfBounds);
-        CreateTestRandomGradient(baseEntity.get());
-        ActivateEntity(baseEntity.get());
-
-        auto entity = CreateTestEntity(TestShapeHalfBounds);
-        CreateTestSmoothStepGradient(entity.get(), baseEntity->GetId());
-        ActivateEntity(entity.get());
+        auto baseEntity = BuildTestRandomGradient(TestShapeHalfBounds);
+        auto entity = BuildTestSmoothStepGradient(TestShapeHalfBounds, baseEntity->GetId());
         CompareGetValueAndGetValues(entity->GetId());
     }
 
     TEST_F(GradientSignalGetValuesTestsFixture, ThresholdGradientComponent_VerifyGetValueAndGetValuesMatch)
     {
-        auto baseEntity = CreateTestEntity(TestShapeHalfBounds);
-        CreateTestRandomGradient(baseEntity.get());
-        ActivateEntity(baseEntity.get());
-
-        auto entity = CreateTestEntity(TestShapeHalfBounds);
-        CreateTestThresholdGradient(entity.get(), baseEntity->GetId());
-        ActivateEntity(entity.get());
+        auto baseEntity = BuildTestRandomGradient(TestShapeHalfBounds);
+        auto entity = BuildTestThresholdGradient(TestShapeHalfBounds, baseEntity->GetId());
         CompareGetValueAndGetValues(entity->GetId());
     }
 
@@ -208,9 +156,7 @@ namespace UnitTest
         auto mockSurfaceDataSystem =
             CreateMockSurfaceDataSystem(AZ::Aabb::CreateFromMinMax(AZ::Vector3(-TestShapeHalfBounds), AZ::Vector3(TestShapeHalfBounds)));
 
-        auto entity = CreateTestEntity(TestShapeHalfBounds);
-        CreateTestSurfaceAltitudeGradient(entity.get());
-        ActivateEntity(entity.get());
+        auto entity = BuildTestSurfaceAltitudeGradient(TestShapeHalfBounds);
         CompareGetValueAndGetValues(entity->GetId());
     }
 
@@ -219,9 +165,7 @@ namespace UnitTest
         auto mockSurfaceDataSystem =
             CreateMockSurfaceDataSystem(AZ::Aabb::CreateFromMinMax(AZ::Vector3(-TestShapeHalfBounds), AZ::Vector3(TestShapeHalfBounds)));
 
-        auto entity = CreateTestEntity(TestShapeHalfBounds);
-        CreateTestSurfaceMaskGradient(entity.get());
-        ActivateEntity(entity.get());
+        auto entity = BuildTestSurfaceMaskGradient(TestShapeHalfBounds);
         CompareGetValueAndGetValues(entity->GetId());
     }
 
@@ -230,9 +174,7 @@ namespace UnitTest
         auto mockSurfaceDataSystem =
             CreateMockSurfaceDataSystem(AZ::Aabb::CreateFromMinMax(AZ::Vector3(-TestShapeHalfBounds), AZ::Vector3(TestShapeHalfBounds)));
 
-        auto entity = CreateTestEntity(TestShapeHalfBounds);
-        CreateTestSurfaceSlopeGradient(entity.get());
-        ActivateEntity(entity.get());
+        auto entity = BuildTestSurfaceSlopeGradient(TestShapeHalfBounds);
         CompareGetValueAndGetValues(entity->GetId());
     }
 }

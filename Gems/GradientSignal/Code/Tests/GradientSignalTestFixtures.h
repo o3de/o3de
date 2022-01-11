@@ -44,30 +44,38 @@ namespace UnitTest
             return entity->CreateComponent<Component>();
         }
 
+        // Create a mock shape that will respond to the shape bus with proper responses for the given input box.
         AZStd::unique_ptr<testing::NiceMock<UnitTest::MockShapeComponentRequests>> CreateMockShape(
             const AZ::Aabb& spawnerBox, const AZ::EntityId& shapeEntityId);
+
+        // Create a mock SurfaceDataSystem that will respond to requests for surface points with mock responses for points inside
+        // the given input box.
         AZStd::unique_ptr<MockSurfaceDataSystem> CreateMockSurfaceDataSystem(const AZ::Aabb& spawnerBox);
 
+        // Create an entity with a mock shape and a transform. It won't be activated yet though, because we expect a gradient component
+        // to also get added to it first before activation.
         AZStd::unique_ptr<AZ::Entity> CreateTestEntity(float shapeHalfBounds);
 
-        void CreateTestConstantGradient(AZ::Entity* entity);
-        void CreateTestImageGradient(AZ::Entity* entity);
-        void CreateTestPerlinGradient(AZ::Entity* entity);
-        void CreateTestRandomGradient(AZ::Entity* entity);
-        void CreateTestShapeAreaFalloffGradient(AZ::Entity* entity);
+        // Create and activate an entity with a gradient component of the requested type, initialized with test data.
+        AZStd::unique_ptr<AZ::Entity> BuildTestConstantGradient(float shapeHalfBounds);
+        AZStd::unique_ptr<AZ::Entity> BuildTestImageGradient(float shapeHalfBounds);
+        AZStd::unique_ptr<AZ::Entity> BuildTestPerlinGradient(float shapeHalfBounds);
+        AZStd::unique_ptr<AZ::Entity> BuildTestRandomGradient(float shapeHalfBounds);
+        AZStd::unique_ptr<AZ::Entity> BuildTestShapeAreaFalloffGradient(float shapeHalfBounds);
 
-        void CreateTestDitherGradient(AZ::Entity* entity, const AZ::EntityId& inputGradientId);
-        void CreateTestInvertGradient(AZ::Entity* entity, const AZ::EntityId& inputGradientId);
-        void CreateTestLevelsGradient(AZ::Entity* entity, const AZ::EntityId& inputGradientId);
-        void CreateTestMixedGradient(AZ::Entity* entity, const AZ::EntityId& baseGradientId, const AZ::EntityId& mixedGradientId);
-        void CreateTestPosterizeGradient(AZ::Entity* entity, const AZ::EntityId& inputGradientId);
-        void CreateTestReferenceGradient(AZ::Entity* entity, const AZ::EntityId& inputGradientId);
-        void CreateTestSmoothStepGradient(AZ::Entity* entity, const AZ::EntityId& inputGradientId);
-        void CreateTestThresholdGradient(AZ::Entity* entity, const AZ::EntityId& inputGradientId);
+        AZStd::unique_ptr<AZ::Entity> BuildTestDitherGradient(float shapeHalfBounds, const AZ::EntityId& inputGradientId);
+        AZStd::unique_ptr<AZ::Entity> BuildTestInvertGradient(float shapeHalfBounds, const AZ::EntityId& inputGradientId);
+        AZStd::unique_ptr<AZ::Entity> BuildTestLevelsGradient(float shapeHalfBounds, const AZ::EntityId& inputGradientId);
+        AZStd::unique_ptr<AZ::Entity> BuildTestMixedGradient(
+            float shapeHalfBounds, const AZ::EntityId& baseGradientId, const AZ::EntityId& mixedGradientId);
+        AZStd::unique_ptr<AZ::Entity> BuildTestPosterizeGradient(float shapeHalfBounds, const AZ::EntityId& inputGradientId);
+        AZStd::unique_ptr<AZ::Entity> BuildTestReferenceGradient(float shapeHalfBounds, const AZ::EntityId& inputGradientId);
+        AZStd::unique_ptr<AZ::Entity> BuildTestSmoothStepGradient(float shapeHalfBounds, const AZ::EntityId& inputGradientId);
+        AZStd::unique_ptr<AZ::Entity> BuildTestThresholdGradient(float shapeHalfBounds, const AZ::EntityId& inputGradientId);
 
-        void CreateTestSurfaceAltitudeGradient(AZ::Entity* entity);
-        void CreateTestSurfaceMaskGradient(AZ::Entity* entity);
-        void CreateTestSurfaceSlopeGradient(AZ::Entity* entity);
+        AZStd::unique_ptr<AZ::Entity> BuildTestSurfaceAltitudeGradient(float shapeHalfBounds);
+        AZStd::unique_ptr<AZ::Entity> BuildTestSurfaceMaskGradient(float shapeHalfBounds);
+        AZStd::unique_ptr<AZ::Entity> BuildTestSurfaceSlopeGradient(float shapeHalfBounds);
 
         AZStd::unique_ptr<AZ::ComponentApplication> m_app;
         AZ::Entity* m_systemEntity = nullptr;
@@ -107,25 +115,14 @@ namespace UnitTest
             AZ::Debug::TraceMessageBus::Handler::BusConnect();
             UnitTest::AllocatorsBenchmarkFixture::SetUp(state);
             SetupCoreSystems();
-
-            // Create a default test entity with bounds of 256 m x 256 m x 256 m.
-            const float shapeHalfBounds = 128.0f;
-            m_testEntity = CreateTestEntity(shapeHalfBounds);
         }
 
         void internalTearDown(const benchmark::State& state)
         {
-            m_testEntity.reset();
             TearDownCoreSystems();
             UnitTest::AllocatorsBenchmarkFixture::TearDown(state);
             AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
         }
-
-        void RunSamplerGetValueBenchmark(benchmark::State& state);
-        void RunSamplerGetValuesBenchmark(benchmark::State& state);
-
-        void RunEBusGetValueBenchmark(benchmark::State& state);
-        void RunEBusGetValuesBenchmark(benchmark::State& state);
 
     protected:
         void SetUp(const benchmark::State& state) override
@@ -145,8 +142,6 @@ namespace UnitTest
         {
             internalTearDown(state);
         }
-
-        AZStd::unique_ptr<AZ::Entity> m_testEntity;
     };
 #endif
 }

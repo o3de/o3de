@@ -212,9 +212,9 @@ namespace UnitTest
         const AZ::EntityId id = entityMock->GetId();
         UnitTest::MockGradientArrayRequestsBus mockGradientRequestsBus(id, inputData, dataSize);
 
-        auto entity = CreateEntity();
-        CreateTestInvertGradient(entity.get(), entityMock->GetId());
-        ActivateEntity(entity.get());
+        // Create the entity with an arbitrarily-sized box.
+        const float HalfBounds = 64.0f;
+        auto entity = BuildTestInvertGradient(HalfBounds, entityMock->GetId());
 
         TestFixedDataSampler(expectedOutput, dataSize, entity->GetId());
     }

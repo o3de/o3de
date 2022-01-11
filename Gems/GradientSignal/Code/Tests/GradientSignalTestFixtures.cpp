@@ -146,93 +146,125 @@ namespace UnitTest
         return testEntity;
     }
 
-    void GradientSignalBaseFixture::CreateTestConstantGradient(AZ::Entity* entity)
+    AZStd::unique_ptr<AZ::Entity> GradientSignalBaseFixture::BuildTestConstantGradient(float shapeHalfBounds)
     {
         // Create a Constant Gradient Component with arbitrary parameters.
+        auto entity = CreateTestEntity(shapeHalfBounds);
         GradientSignal::ConstantGradientConfig config;
         config.m_value = 0.75f;
-        CreateComponent<GradientSignal::ConstantGradientComponent>(entity, config);
+        CreateComponent<GradientSignal::ConstantGradientComponent>(entity.get(), config);
+
+        ActivateEntity(entity.get());
+        return entity;
     }
 
-    void GradientSignalBaseFixture::CreateTestImageGradient(AZ::Entity* entity)
+    AZStd::unique_ptr<AZ::Entity> GradientSignalBaseFixture::BuildTestImageGradient(float shapeHalfBounds)
     {
         // Create an Image Gradient Component with arbitrary sizes and parameters.
+        auto entity = CreateTestEntity(shapeHalfBounds);
         GradientSignal::ImageGradientConfig config;
         const uint32_t imageSize = 4096;
         const int32_t imageSeed = 12345;
         config.m_imageAsset = ImageAssetMockAssetHandler::CreateImageAsset(imageSize, imageSize, imageSeed);
         config.m_tilingX = 1.0f;
         config.m_tilingY = 1.0f;
-        CreateComponent<GradientSignal::ImageGradientComponent>(entity, config);
+        CreateComponent<GradientSignal::ImageGradientComponent>(entity.get(), config);
 
         // Create a Gradient Transform Component with arbitrary parameters.
         GradientSignal::GradientTransformConfig gradientTransformConfig;
         gradientTransformConfig.m_wrappingType = GradientSignal::WrappingType::None;
-        CreateComponent<GradientSignal::GradientTransformComponent>(entity, gradientTransformConfig);
+        CreateComponent<GradientSignal::GradientTransformComponent>(entity.get(), gradientTransformConfig);
+
+        ActivateEntity(entity.get());
+        return entity;
     }
 
-    void GradientSignalBaseFixture::CreateTestPerlinGradient(AZ::Entity* entity)
+    AZStd::unique_ptr<AZ::Entity> GradientSignalBaseFixture::BuildTestPerlinGradient(float shapeHalfBounds)
     {
         // Create a Perlin Gradient Component with arbitrary parameters.
+        auto entity = CreateTestEntity(shapeHalfBounds);
         GradientSignal::PerlinGradientConfig config;
         config.m_amplitude = 1.0f;
         config.m_frequency = 1.1f;
         config.m_octave = 4;
         config.m_randomSeed = 12345;
-        CreateComponent<GradientSignal::PerlinGradientComponent>(entity, config);
+        CreateComponent<GradientSignal::PerlinGradientComponent>(entity.get(), config);
 
         // Create a Gradient Transform Component with arbitrary parameters.
         GradientSignal::GradientTransformConfig gradientTransformConfig;
         gradientTransformConfig.m_wrappingType = GradientSignal::WrappingType::None;
-        CreateComponent<GradientSignal::GradientTransformComponent>(entity, gradientTransformConfig);
+        CreateComponent<GradientSignal::GradientTransformComponent>(entity.get(), gradientTransformConfig);
+
+        ActivateEntity(entity.get());
+        return entity;
     }
 
-    void GradientSignalBaseFixture::CreateTestRandomGradient(AZ::Entity* entity)
+    AZStd::unique_ptr<AZ::Entity> GradientSignalBaseFixture::BuildTestRandomGradient(float shapeHalfBounds)
     {
         // Create a Random Gradient Component with arbitrary parameters.
+        auto entity = CreateTestEntity(shapeHalfBounds);
         GradientSignal::RandomGradientConfig config;
         config.m_randomSeed = 12345;
-        CreateComponent<GradientSignal::RandomGradientComponent>(entity, config);
+        CreateComponent<GradientSignal::RandomGradientComponent>(entity.get(), config);
 
         // Create a Gradient Transform Component with arbitrary parameters.
         GradientSignal::GradientTransformConfig gradientTransformConfig;
         gradientTransformConfig.m_wrappingType = GradientSignal::WrappingType::None;
-        CreateComponent<GradientSignal::GradientTransformComponent>(entity, gradientTransformConfig);
+        CreateComponent<GradientSignal::GradientTransformComponent>(entity.get(), gradientTransformConfig);
+
+        ActivateEntity(entity.get());
+        return entity;
     }
 
-    void GradientSignalBaseFixture::CreateTestShapeAreaFalloffGradient(AZ::Entity* entity)
+    AZStd::unique_ptr<AZ::Entity> GradientSignalBaseFixture::BuildTestShapeAreaFalloffGradient(float shapeHalfBounds)
     {
         // Create a Shape Area Falloff Gradient Component with arbitrary parameters.
+        auto entity = CreateTestEntity(shapeHalfBounds);
         GradientSignal::ShapeAreaFalloffGradientConfig config;
         config.m_shapeEntityId = entity->GetId();
         config.m_falloffWidth = 16.0f;
         config.m_falloffType = GradientSignal::FalloffType::InnerOuter;
-        CreateComponent<GradientSignal::ShapeAreaFalloffGradientComponent>(entity, config);
+        CreateComponent<GradientSignal::ShapeAreaFalloffGradientComponent>(entity.get(), config);
+
+        ActivateEntity(entity.get());
+        return entity;
     }
 
-    void GradientSignalBaseFixture::CreateTestDitherGradient(AZ::Entity* entity, const AZ::EntityId& inputGradientId)
+    AZStd::unique_ptr<AZ::Entity> GradientSignalBaseFixture::BuildTestDitherGradient(
+        float shapeHalfBounds, const AZ::EntityId& inputGradientId)
     {
         // Create a Dither Gradient Component with arbitrary parameters.
+        auto entity = CreateTestEntity(shapeHalfBounds);
         GradientSignal::DitherGradientConfig config;
         config.m_gradientSampler.m_gradientId = inputGradientId;
         config.m_useSystemPointsPerUnit = false;
         config.m_pointsPerUnit = 1.0f;
         config.m_patternOffset = AZ::Vector3::CreateZero();
         config.m_patternType = GradientSignal::DitherGradientConfig::BayerPatternType::PATTERN_SIZE_4x4;
-        CreateComponent<GradientSignal::DitherGradientComponent>(entity, config);
+        CreateComponent<GradientSignal::DitherGradientComponent>(entity.get(), config);
+
+        ActivateEntity(entity.get());
+        return entity;
     }
 
-    void GradientSignalBaseFixture::CreateTestInvertGradient(AZ::Entity* entity, const AZ::EntityId& inputGradientId)
+    AZStd::unique_ptr<AZ::Entity> GradientSignalBaseFixture::BuildTestInvertGradient(
+        float shapeHalfBounds, const AZ::EntityId& inputGradientId)
     {
         // Create an Invert Gradient Component.
+        auto entity = CreateTestEntity(shapeHalfBounds);
         GradientSignal::InvertGradientConfig config;
         config.m_gradientSampler.m_gradientId = inputGradientId;
-        CreateComponent<GradientSignal::InvertGradientComponent>(entity, config);
+        CreateComponent<GradientSignal::InvertGradientComponent>(entity.get(), config);
+
+        ActivateEntity(entity.get());
+        return entity;
     }
 
-    void GradientSignalBaseFixture::CreateTestLevelsGradient(AZ::Entity* entity, const AZ::EntityId& inputGradientId)
+    AZStd::unique_ptr<AZ::Entity> GradientSignalBaseFixture::BuildTestLevelsGradient(
+        float shapeHalfBounds, const AZ::EntityId& inputGradientId)
     {
         // Create a Levels Gradient Component with arbitrary parameters.
+        auto entity = CreateTestEntity(shapeHalfBounds);
         GradientSignal::LevelsGradientConfig config;
         config.m_gradientSampler.m_gradientId = inputGradientId;
         config.m_inputMin = 0.1f;
@@ -240,13 +272,17 @@ namespace UnitTest
         config.m_inputMax = 0.9f;
         config.m_outputMin = 0.0f;
         config.m_outputMax = 1.0f;
-        CreateComponent<GradientSignal::LevelsGradientComponent>(entity, config);
+        CreateComponent<GradientSignal::LevelsGradientComponent>(entity.get(), config);
+
+        ActivateEntity(entity.get());
+        return entity;
     }
 
-    void GradientSignalBaseFixture::CreateTestMixedGradient(
-        AZ::Entity* entity, const AZ::EntityId& baseGradientId, const AZ::EntityId& mixedGradientId)
+    AZStd::unique_ptr<AZ::Entity> GradientSignalBaseFixture::BuildTestMixedGradient(
+        float shapeHalfBounds, const AZ::EntityId& baseGradientId, const AZ::EntityId& mixedGradientId)
     {
         // Create a Mixed Gradient Component that mixes two input gradients together in arbitrary ways.
+        auto entity = CreateTestEntity(shapeHalfBounds);
         GradientSignal::MixedGradientConfig config;
 
         GradientSignal::MixedGradientLayer layer;
@@ -262,68 +298,100 @@ namespace UnitTest
         layer.m_gradientSampler.m_opacity = 0.75f;
         config.m_layers.push_back(layer);
 
-        CreateComponent<GradientSignal::MixedGradientComponent>(entity, config);
+        CreateComponent<GradientSignal::MixedGradientComponent>(entity.get(), config);
+
+        ActivateEntity(entity.get());
+        return entity;
     }
 
-    void GradientSignalBaseFixture::CreateTestPosterizeGradient(AZ::Entity* entity, const AZ::EntityId& inputGradientId)
+    AZStd::unique_ptr<AZ::Entity> GradientSignalBaseFixture::BuildTestPosterizeGradient(
+        float shapeHalfBounds, const AZ::EntityId& inputGradientId)
     {
         // Create a Posterize Gradient Component with arbitrary parameters.
+        auto entity = CreateTestEntity(shapeHalfBounds);
         GradientSignal::PosterizeGradientConfig config;
         config.m_gradientSampler.m_gradientId = inputGradientId;
         config.m_mode = GradientSignal::PosterizeGradientConfig::ModeType::Ps;
         config.m_bands = 5;
-        CreateComponent<GradientSignal::PosterizeGradientComponent>(entity, config);
+        CreateComponent<GradientSignal::PosterizeGradientComponent>(entity.get(), config);
+
+        ActivateEntity(entity.get());
+        return entity;
     }
 
-    void GradientSignalBaseFixture::CreateTestReferenceGradient(AZ::Entity* entity, const AZ::EntityId& inputGradientId)
+    AZStd::unique_ptr<AZ::Entity> GradientSignalBaseFixture::BuildTestReferenceGradient(
+        float shapeHalfBounds, const AZ::EntityId& inputGradientId)
     {
         // Create a Reference Gradient Component.
+        auto entity = CreateTestEntity(shapeHalfBounds);
         GradientSignal::ReferenceGradientConfig config;
         config.m_gradientSampler.m_gradientId = inputGradientId;
         config.m_gradientSampler.m_ownerEntityId = entity->GetId();
-        CreateComponent<GradientSignal::ReferenceGradientComponent>(entity, config);
+        CreateComponent<GradientSignal::ReferenceGradientComponent>(entity.get(), config);
+
+        ActivateEntity(entity.get());
+        return entity;
     }
 
-    void GradientSignalBaseFixture::CreateTestSmoothStepGradient(AZ::Entity* entity, const AZ::EntityId& inputGradientId)
+    AZStd::unique_ptr<AZ::Entity> GradientSignalBaseFixture::BuildTestSmoothStepGradient(
+        float shapeHalfBounds, const AZ::EntityId& inputGradientId)
     {
         // Create a Smooth Step Gradient Component with arbitrary parameters.
+        auto entity = CreateTestEntity(shapeHalfBounds);
         GradientSignal::SmoothStepGradientConfig config;
         config.m_gradientSampler.m_gradientId = inputGradientId;
         config.m_smoothStep.m_falloffMidpoint = 0.75f;
         config.m_smoothStep.m_falloffRange = 0.125f;
         config.m_smoothStep.m_falloffStrength = 0.25f;
-        CreateComponent<GradientSignal::SmoothStepGradientComponent>(entity, config);
+        CreateComponent<GradientSignal::SmoothStepGradientComponent>(entity.get(), config);
+
+        ActivateEntity(entity.get());
+        return entity;
     }
 
-    void GradientSignalBaseFixture::CreateTestThresholdGradient(AZ::Entity* entity, const AZ::EntityId& inputGradientId)
+    AZStd::unique_ptr<AZ::Entity> GradientSignalBaseFixture::BuildTestThresholdGradient(
+        float shapeHalfBounds, const AZ::EntityId& inputGradientId)
     {
         // Create a Threshold Gradient Component with arbitrary parameters.
+        auto entity = CreateTestEntity(shapeHalfBounds);
         GradientSignal::ThresholdGradientConfig config;
         config.m_gradientSampler.m_gradientId = inputGradientId;
         config.m_threshold = 0.75f;
-        CreateComponent<GradientSignal::ThresholdGradientComponent>(entity, config);
+        CreateComponent<GradientSignal::ThresholdGradientComponent>(entity.get(), config);
+
+        ActivateEntity(entity.get());
+        return entity;
     }
 
-    void GradientSignalBaseFixture::CreateTestSurfaceAltitudeGradient(AZ::Entity* entity)
+    AZStd::unique_ptr<AZ::Entity> GradientSignalBaseFixture::BuildTestSurfaceAltitudeGradient(float shapeHalfBounds)
     {
         // Create a Surface Altitude Gradient Component with arbitrary parameters.
+        auto entity = CreateTestEntity(shapeHalfBounds);
         GradientSignal::SurfaceAltitudeGradientConfig config;
         config.m_altitudeMin = -5.0f;
         config.m_altitudeMax = 15.0f;
-        CreateComponent<GradientSignal::SurfaceAltitudeGradientComponent>(entity, config);
+        CreateComponent<GradientSignal::SurfaceAltitudeGradientComponent>(entity.get(), config);
+
+        ActivateEntity(entity.get());
+        return entity;
     }
 
-    void GradientSignalBaseFixture::CreateTestSurfaceMaskGradient(AZ::Entity* entity)
+    AZStd::unique_ptr<AZ::Entity> GradientSignalBaseFixture::BuildTestSurfaceMaskGradient(float shapeHalfBounds)
     {
         // Create a Surface Mask Gradient Component with arbitrary parameters.
+        auto entity = CreateTestEntity(shapeHalfBounds);
         GradientSignal::SurfaceMaskGradientConfig config;
         config.m_surfaceTagList.push_back(AZ_CRC_CE("test_mask"));
-        CreateComponent<GradientSignal::SurfaceMaskGradientComponent>(entity, config);
+        CreateComponent<GradientSignal::SurfaceMaskGradientComponent>(entity.get(), config);
+
+        ActivateEntity(entity.get());
+        return entity;
     }
 
-    void GradientSignalBaseFixture::CreateTestSurfaceSlopeGradient(AZ::Entity* entity)
+    AZStd::unique_ptr<AZ::Entity> GradientSignalBaseFixture::BuildTestSurfaceSlopeGradient(float shapeHalfBounds)
     {
         // Create a Surface Slope Gradient Component with arbitrary parameters.
+        auto entity = CreateTestEntity(shapeHalfBounds);
         GradientSignal::SurfaceSlopeGradientConfig config;
         config.m_slopeMin = 5.0f;
         config.m_slopeMax = 50.0f;
@@ -331,7 +399,10 @@ namespace UnitTest
         config.m_smoothStep.m_falloffMidpoint = 0.75f;
         config.m_smoothStep.m_falloffRange = 0.125f;
         config.m_smoothStep.m_falloffStrength = 0.25f;
-        CreateComponent<GradientSignal::SurfaceSlopeGradientComponent>(entity, config);
+        CreateComponent<GradientSignal::SurfaceSlopeGradientComponent>(entity.get(), config);
+
+        ActivateEntity(entity.get());
+        return entity;
     }
 
     void GradientSignalTest::TestFixedDataSampler(const AZStd::vector<float>& expectedOutput, int size, AZ::EntityId gradientEntityId)
@@ -354,141 +425,5 @@ namespace UnitTest
             }
         }
     }
-
-#ifdef HAVE_BENCHMARK
-    void GradientSignalBenchmarkFixture::RunSamplerGetValueBenchmark(benchmark::State& state)
-    {
-        AZ_PROFILE_FUNCTION(Entity);
-
-        // All components are created, so activate the entity
-        ActivateEntity(m_testEntity.get());
-
-        // Create a gradient sampler and run through a series of points to see if they match expectations.
-        GradientSignal::GradientSampler gradientSampler;
-        gradientSampler.m_gradientId = m_testEntity->GetId();
-
-        // Get the height and width ranges for querying from our benchmark parameters
-        float height = aznumeric_cast<float>(state.range(0));
-        float width = aznumeric_cast<float>(state.range(1));
-
-        // Call GetValue() for every height and width in our ranges.
-        for (auto _ : state)
-        {
-            for (float y = 0.0f; y < height; y += 1.0f)
-            {
-                for (float x = 0.0f; x < width; x += 1.0f)
-                {
-                    GradientSignal::GradientSampleParams params;
-                    params.m_position = AZ::Vector3(x, y, 0.0f);
-                    float value = gradientSampler.GetValue(params);
-                    benchmark::DoNotOptimize(value);
-                }
-            }
-        }
-    }
-
-    void GradientSignalBenchmarkFixture::RunSamplerGetValuesBenchmark(benchmark::State& state)
-    {
-        AZ_PROFILE_FUNCTION(Entity);
-
-        // All components are created, so activate the entity
-        ActivateEntity(m_testEntity.get());
-
-        // Create a gradient sampler and run through a series of points to see if they match expectations.
-        GradientSignal::GradientSampler gradientSampler;
-        gradientSampler.m_gradientId = m_testEntity->GetId();
-
-        // Get the height and width ranges for querying from our benchmark parameters
-        float height = aznumeric_cast<float>(state.range(0));
-        float width = aznumeric_cast<float>(state.range(1));
-        int64_t totalQueryPoints = state.range(0) * state.range(1);
-
-        // Call GetValues() for every height and width in our ranges.
-        for (auto _ : state)
-        {
-            // Set up our vector of query positions.
-            AZStd::vector<AZ::Vector3> positions(totalQueryPoints);
-            size_t index = 0;
-            for (float y = 0.0f; y < height; y += 1.0f)
-            {
-                for (float x = 0.0f; x < width; x += 1.0f)
-                {
-                    positions[index++] = AZ::Vector3(x, y, 0.0f);
-                }
-            }
-
-            // Query and get the results.
-            AZStd::vector<float> results(totalQueryPoints);
-            gradientSampler.GetValues(positions, results);
-        }
-    }
-
-    void GradientSignalBenchmarkFixture::RunEBusGetValueBenchmark(benchmark::State& state)
-    {
-        AZ_PROFILE_FUNCTION(Entity);
-
-        // All components are created, so activate the entity
-        ActivateEntity(m_testEntity.get());
-
-        GradientSignal::GradientSampleParams params;
-
-        // Get the height and width ranges for querying from our benchmark parameters
-        float height = aznumeric_cast<float>(state.range(0));
-        float width = aznumeric_cast<float>(state.range(1));
-
-        // Call GetValue() for every height and width in our ranges.
-        for (auto _ : state)
-        {
-            for (float y = 0.0f; y < height; y += 1.0f)
-            {
-                for (float x = 0.0f; x < width; x += 1.0f)
-                {
-                    float value = 0.0f;
-                    params.m_position = AZ::Vector3(x, y, 0.0f);
-                    GradientSignal::GradientRequestBus::EventResult(
-                        value, m_testEntity->GetId(), &GradientSignal::GradientRequestBus::Events::GetValue, params);
-                    benchmark::DoNotOptimize(value);
-                }
-            }
-        }
-    }
-
-    void GradientSignalBenchmarkFixture::RunEBusGetValuesBenchmark(benchmark::State& state)
-    {
-        AZ_PROFILE_FUNCTION(Entity);
-
-        // All components are created, so activate the entity
-        ActivateEntity(m_testEntity.get());
-
-        GradientSignal::GradientSampler gradientSampler;
-        gradientSampler.m_gradientId = m_testEntity->GetId();
-
-        // Get the height and width ranges for querying from our benchmark parameters
-        float height = aznumeric_cast<float>(state.range(0));
-        float width = aznumeric_cast<float>(state.range(1));
-        int64_t totalQueryPoints = state.range(0) * state.range(1);
-
-        // Call GetValues() for every height and width in our ranges.
-        for (auto _ : state)
-        {
-            // Set up our vector of query positions.
-            AZStd::vector<AZ::Vector3> positions(totalQueryPoints);
-            size_t index = 0;
-            for (float y = 0.0f; y < height; y += 1.0f)
-            {
-                for (float x = 0.0f; x < width; x += 1.0f)
-                {
-                    positions[index++] = AZ::Vector3(x, y, 0.0f);
-                }
-            }
-
-            // Query and get the results.
-            AZStd::vector<float> results(totalQueryPoints);
-            GradientSignal::GradientRequestBus::Event(
-                m_testEntity->GetId(), &GradientSignal::GradientRequestBus::Events::GetValues, positions, results);
-        }
-    }
-#endif
-
 }
 
