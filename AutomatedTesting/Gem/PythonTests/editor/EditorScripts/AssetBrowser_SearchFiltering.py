@@ -98,7 +98,13 @@ def AssetBrowser_SearchFiltering():
         # 3) Type the name of an asset in the search bar and make sure it is filtered to and selectable
         asset_browser = editor_window.findChild(QtWidgets.QDockWidget, "Asset Browser")
         search_bar = asset_browser.findChild(QtWidgets.QLineEdit, "textSearch")
-        search_bar.setText("cedar.fbx")
+
+        # Add a small pause when typing in the search bar in order to check that the entries are updated properly
+        search_bar.setText("Cedar.f")
+        general.idle_wait(0.5)
+        search_bar.setText("Cedar.fbx")
+        general.idle_wait(0.5)
+
         asset_browser_tree = asset_browser.findChild(QtWidgets.QTreeView, "m_assetBrowserTreeViewWidget")
         asset_browser_table = asset_browser.findChild(QtWidgets.QTreeView, "m_assetBrowserTableViewWidget")
         found = await pyside_utils.wait_for_condition(lambda: pyside_utils.find_child_by_pattern(asset_browser_table, "cedar.fbx"), 5.0)

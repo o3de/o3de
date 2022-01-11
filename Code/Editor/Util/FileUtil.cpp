@@ -42,8 +42,6 @@
 #include "CheckOutDialog.h"
 #include "ISourceControl.h"
 #include "Dialogs/Generic/UserOptions.h"
-#include "IAssetItem.h"
-#include "IAssetItemDatabase.h"
 #include "Include/IObjectManager.h"
 #include "UsedResources.h"
 #include "Objects/BaseObject.h"
@@ -221,106 +219,6 @@ void CFileUtil::EditTextureFile(const char* textureFile, [[maybe_unused]] bool b
         QString messageString = QObject::tr("Failed to open %1 with texture editor %2.").arg(fullTexturePath.data()).arg(textureEditorPath.data());
         QMessageBox::warning(AzToolsFramework::GetActiveWindow(), warningTitle, messageString);
     }
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-bool CFileUtil::CalculateDccFilename(const QString& assetFilename, QString& dccFilename)
-{
-    if (ExtractDccFilenameFromAssetDatabase(assetFilename, dccFilename))
-    {
-        return true;
-    }
-
-    if (ExtractDccFilenameUsingNamingConventions(assetFilename, dccFilename))
-    {
-        return true;
-    }
-
-    GetIEditor()->GetEnv()->pLog->LogError("Failed to find psd file for texture: '%s'", assetFilename.toUtf8().data());
-    return false;
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CFileUtil::ExtractDccFilenameFromAssetDatabase(const QString& assetFilename, QString& dccFilename)
-{
-    IAssetItemDatabase* pCurrentDatabaseInterface = nullptr;
-    std::vector<IClassDesc*> assetDatabasePlugins;
-    IEditorClassFactory* pClassFactory = GetIEditor()->GetClassFactory();
-    pClassFactory->GetClassesByCategory("Asset Item DB", assetDatabasePlugins);
-
-    for (size_t i = 0; i < assetDatabasePlugins.size(); ++i)
-    {
-        if (assetDatabasePlugins[i]->QueryInterface(__az_uuidof(IAssetItemDatabase), (void**)&pCurrentDatabaseInterface) == S_OK)
-        {
-            if (!pCurrentDatabaseInterface)
-            {
-                continue;
-            }
-
-            QString assetDatabaseDccFilename;
-            IAssetItem* pAssetItem = pCurrentDatabaseInterface->GetAsset(assetFilename.toUtf8().data());
-            if (pAssetItem)
-            {
-                if ((pAssetItem->GetFlags() & IAssetItem::eFlag_Cached))
-                {
-                    QVariant v = pAssetItem->GetAssetFieldValue("dccfilename");
-                    assetDatabaseDccFilename = v.toString();
-                    if (!v.isNull())
-                    {
-                        dccFilename = assetDatabaseDccFilename;
-                        dccFilename = Path::GetRelativePath(dccFilename, false);
-
-                        uint32 attr = CFileUtil::GetAttributes(dccFilename.toUtf8().data());
-
-                        if (CFileUtil::FileExists(dccFilename))
-                        {
-                            return true;
-                        }
-                        else if (GetIEditor()->IsSourceControlAvailable() && (attr & SCC_FILE_ATTRIBUTE_MANAGED))
-                        {
-                            return CFileUtil::GetLatestFromSourceControl(dccFilename.toUtf8().data());
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return false;
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CFileUtil::ExtractDccFilenameUsingNamingConventions(const QString& assetFilename, QString& dccFilename)
-{
-    //else to try find it by naming conventions
-    QString tempStr = assetFilename;
-    int foundSplit = -1;
-    if ((foundSplit = tempStr.lastIndexOf('.')) > 0)
-    {
-        QString first = tempStr.mid(0, foundSplit);
-        tempStr = first + ".psd";
-    }
-    if (CFileUtil::FileExists(tempStr))
-    {
-        dccFilename = tempStr;
-        return true;
-    }
-
-    //else try to find it by replacing post fix _<description> with .psd
-    tempStr = assetFilename;
-    foundSplit = -1;
-    if ((foundSplit = tempStr.lastIndexOf('_')) > 0)
-    {
-        QString first = tempStr.mid(0, foundSplit);
-        tempStr = first + ".psd";
-    }
-    if (CFileUtil::FileExists(tempStr))
-    {
-        dccFilename = tempStr;
-        return true;
-    }
-
-    return false;
 }
 
 //////////////////////////////////////////////////////////////////////////

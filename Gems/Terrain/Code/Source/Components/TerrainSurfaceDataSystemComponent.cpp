@@ -251,6 +251,7 @@ namespace Terrain
             SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
                 &SurfaceData::SurfaceDataSystemRequestBus::Events::UnregisterSurfaceDataProvider, m_providerHandle);
             m_providerHandle = SurfaceData::InvalidSurfaceDataRegistryHandle;
+            SurfaceData::SurfaceDataProviderRequestBus::Handler::BusDisconnect();
         }
         else
         {

@@ -119,6 +119,11 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         NAME Gem::Terrain.Tests
     )
 
+    ly_add_googlebenchmark(
+        NAME Gem::Terrain.Benchmarks
+        TARGET Gem::Terrain.Tests
+    )
+
     # If we are a host platform we want to add tools test like editor tests here
     if(PAL_TRAIT_BUILD_HOST_TOOLS)
         # We support Terrain.Editor.Tests on this platform, add Terrain.Editor.Tests target which depends on Terrain.Editor
