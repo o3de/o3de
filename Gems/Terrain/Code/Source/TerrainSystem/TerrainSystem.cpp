@@ -531,6 +531,86 @@ const char* TerrainSystem::GetMaxSurfaceName(
 }
 
 void TerrainSystem::ProcessHeightsFromList(
+    const AZStd::span<AZ::Vector3>& inPositions,
+    AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
+    Sampler sampleFilter) const
+{
+    if (!perPositionCallback)
+    {
+        return;
+    }
+
+    AzFramework::SurfaceData::SurfacePoint surfacePoint;
+    for (const auto& position : inPositions)
+    {
+        bool terrainExists = false;
+        surfacePoint.m_position = position;
+        surfacePoint.m_position.SetZ(GetHeight(position, sampleFilter, &terrainExists));
+        perPositionCallback(surfacePoint, terrainExists);
+    }
+}
+
+void TerrainSystem::ProcessNormalsFromList(
+    const AZStd::span<AZ::Vector3>& inPositions,
+    AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
+    Sampler sampleFilter) const
+{
+    if (!perPositionCallback)
+    {
+        return;
+    }
+
+    AzFramework::SurfaceData::SurfacePoint surfacePoint;
+    for (const auto& position : inPositions)
+    {
+        bool terrainExists = false;
+        surfacePoint.m_position = position;
+        surfacePoint.m_normal = GetNormal(position, sampleFilter, &terrainExists);
+        perPositionCallback(surfacePoint, terrainExists);
+    }
+}
+
+void TerrainSystem::ProcessSurfaceWeightsFromList(
+    const AZStd::span<AZ::Vector3>& inPositions,
+    AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
+    Sampler sampleFilter) const
+{
+    if (!perPositionCallback)
+    {
+        return;
+    }
+
+    AzFramework::SurfaceData::SurfacePoint surfacePoint;
+    for (const auto& position : inPositions)
+    {
+        bool terrainExists = false;
+        surfacePoint.m_position = position;
+        GetSurfaceWeights(position, surfacePoint.m_surfaceTags, sampleFilter, &terrainExists);
+        perPositionCallback(surfacePoint, terrainExists);
+    }
+}
+
+void TerrainSystem::ProcessSurfacePointsFromList(
+    const AZStd::span<AZ::Vector3>& inPositions,
+    AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
+    Sampler sampleFilter) const
+{
+    if (!perPositionCallback)
+    {
+        return;
+    }
+
+    AzFramework::SurfaceData::SurfacePoint surfacePoint;
+    for (const auto& position : inPositions)
+    {
+        bool terrainExists = false;
+        surfacePoint.m_position = position;
+        GetSurfacePoint(position, surfacePoint, sampleFilter, &terrainExists);
+        perPositionCallback(surfacePoint, terrainExists);
+    }
+}
+
+void TerrainSystem::ProcessHeightsFromListOfVector2(
     const AZStd::span<AZ::Vector2>& inPositions,
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampleFilter) const
@@ -550,7 +630,7 @@ void TerrainSystem::ProcessHeightsFromList(
     }
 }
 
-void TerrainSystem::ProcessNormalsFromList(
+void TerrainSystem::ProcessNormalsFromListOfVector2(
     const AZStd::span<AZ::Vector2>& inPositions,
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampleFilter) const
@@ -570,7 +650,7 @@ void TerrainSystem::ProcessNormalsFromList(
     }
 }
 
-void TerrainSystem::ProcessSurfaceWeightsFromList(
+void TerrainSystem::ProcessSurfaceWeightsFromListOfVector2(
     const AZStd::span<AZ::Vector2>& inPositions,
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampleFilter) const
@@ -590,7 +670,7 @@ void TerrainSystem::ProcessSurfaceWeightsFromList(
     }
 }
 
-void TerrainSystem::ProcessSurfacePointsFromList(
+void TerrainSystem::ProcessSurfacePointsFromListOfVector2(
     const AZStd::span<AZ::Vector2>& inPositions,
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampleFilter) const
@@ -609,7 +689,6 @@ void TerrainSystem::ProcessSurfacePointsFromList(
         perPositionCallback(surfacePoint, terrainExists);
     }
 }
-
 
 void TerrainSystem::ProcessHeightsFromRegion(
     const AZ::Aabb& inRegion,

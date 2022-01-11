@@ -684,10 +684,10 @@ namespace UnitTest
             EXPECT_EQ(found, true);
         };
 
-        AZStd::vector<AZ::Vector2> inPositions;
+        AZStd::vector<AZ::Vector3> inPositions;
         for (auto& testPoint : testPoints)
         {
-            AZ::Vector2 position(testPoint.m_testLocation.GetX(), testPoint.m_testLocation.GetY());
+            AZ::Vector3 position(testPoint.m_testLocation.GetX(), testPoint.m_testLocation.GetY(), 0.0f);
             inPositions.push_back(position);
         }
 
@@ -773,10 +773,10 @@ namespace UnitTest
             EXPECT_EQ(found, true);
         };
 
-        AZStd::vector<AZ::Vector2> inPositions;
+        AZStd::vector<AZ::Vector3> inPositions;
         for (auto& testPoint : testPoints)
         {
-            AZ::Vector2 position(testPoint.m_testLocation.GetX(), testPoint.m_testLocation.GetY());
+            AZ::Vector3 position(testPoint.m_testLocation.GetX(), testPoint.m_testLocation.GetY(), 0.0f);
             inPositions.push_back(position);
         }
 

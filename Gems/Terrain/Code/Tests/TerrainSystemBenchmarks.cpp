@@ -281,7 +281,7 @@ namespace UnitTest
             surfaceGradientShapeRequests.clear();
         }
 
-        void GenerateInputPositionsList(const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds, AZStd::vector<AZ::Vector2>& positions)
+        void GenerateInputPositionsList(const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds, AZStd::vector<AZ::Vector3>& positions)
         {
             const size_t numSamplesX = aznumeric_cast<size_t>(ceil(worldBounds.GetExtents().GetX() / queryResolution.GetX()));
             const size_t numSamplesY = aznumeric_cast<size_t>(ceil(worldBounds.GetExtents().GetY() / queryResolution.GetY()));
@@ -292,7 +292,7 @@ namespace UnitTest
                 for (size_t x = 0; x < numSamplesX; x++)
                 {
                     float fx = aznumeric_cast<float>(worldBounds.GetMin().GetX() + (x * queryResolution.GetX()));
-                    positions.emplace_back(fx, fy);
+                    positions.emplace_back(fx, fy, 0.0f);
                 }
             }
         }
@@ -378,7 +378,7 @@ namespace UnitTest
             [this]([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
                 AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
-                AZStd::vector<AZ::Vector2> inPositions;
+                AZStd::vector<AZ::Vector3> inPositions;
                 GenerateInputPositionsList(queryResolution, worldBounds, inPositions);
 
                 auto perPositionCallback = [](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
@@ -472,7 +472,7 @@ namespace UnitTest
             [this]([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
                 AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
-                AZStd::vector<AZ::Vector2> inPositions;
+                AZStd::vector<AZ::Vector3> inPositions;
                 GenerateInputPositionsList(queryResolution, worldBounds, inPositions);
 
                 auto perPositionCallback = [](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
@@ -564,7 +564,7 @@ namespace UnitTest
             [this]([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
                 AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
-                AZStd::vector<AZ::Vector2> inPositions;
+                AZStd::vector<AZ::Vector3> inPositions;
                 GenerateInputPositionsList(queryResolution, worldBounds, inPositions);
 
                 auto perPositionCallback = [](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
@@ -656,7 +656,7 @@ namespace UnitTest
             [this]([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
                 AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
-                AZStd::vector<AZ::Vector2> inPositions;
+                AZStd::vector<AZ::Vector3> inPositions;
                 GenerateInputPositionsList(queryResolution, worldBounds, inPositions);
 
                 auto perPositionCallback = [](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)

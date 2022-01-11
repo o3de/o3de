@@ -138,16 +138,28 @@ namespace Terrain
 
         //! Given a list of XY coordinates, call the provided callback function with surface data corresponding to each
         //! XY coordinate in the list.
-        virtual void ProcessHeightsFromList(const AZStd::span<AZ::Vector2>& inPositions,
+        virtual void ProcessHeightsFromList(const AZStd::span<AZ::Vector3>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
-        virtual void ProcessNormalsFromList(const AZStd::span<AZ::Vector2>& inPositions,
+        virtual void ProcessNormalsFromList(const AZStd::span<AZ::Vector3>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
-        virtual void ProcessSurfaceWeightsFromList(const AZStd::span<AZ::Vector2>& inPositions,
+        virtual void ProcessSurfaceWeightsFromList(const AZStd::span<AZ::Vector3>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
-        virtual void ProcessSurfacePointsFromList(const AZStd::span<AZ::Vector2>& inPositions,
+        virtual void ProcessSurfacePointsFromList(const AZStd::span<AZ::Vector3>& inPositions,
+            AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
+            Sampler sampleFilter = Sampler::DEFAULT) const override;
+        virtual void ProcessHeightsFromListOfVector2(const AZStd::span<AZ::Vector2>& inPositions,
+            AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
+            Sampler sampleFilter = Sampler::DEFAULT) const override;
+        virtual void ProcessNormalsFromListOfVector2(const AZStd::span<AZ::Vector2>& inPositions,
+            AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
+            Sampler sampleFilter = Sampler::DEFAULT) const override;
+        virtual void ProcessSurfaceWeightsFromListOfVector2(const AZStd::span<AZ::Vector2>& inPositions,
+            AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
+            Sampler sampleFilter = Sampler::DEFAULT) const override;
+        virtual void ProcessSurfacePointsFromListOfVector2(const AZStd::span<AZ::Vector2>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
 
