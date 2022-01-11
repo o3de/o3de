@@ -762,7 +762,7 @@ class EditorTestSuite():
         cmdline = [
             "--runpythontest", test_filename,
             "-logfile", f"@log@/{log_name}",
-            "-project-log-path", ly_test_tools._internal.pytest_plugin.output_path] + test_cmdline_args
+            "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
         editor.args.extend(cmdline)
         editor.start(backupFiles = False, launch_ap = False, configure_settings=False)
 
@@ -834,7 +834,7 @@ class EditorTestSuite():
         cmdline = [
             "--runpythontest", test_filenames_str,
             "-logfile", f"@log@/{log_name}",
-            "-project-log-path", ly_test_tools._internal.pytest_plugin.output_path] + test_cmdline_args
+            "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
 
         editor.args.extend(cmdline)
         editor.start(backupFiles = False, launch_ap = False, configure_settings=False)
