@@ -97,7 +97,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 ATOMLYINTEGRATION_FEATURE_COMMON_EDITOR
         BUILD_DEPENDENCIES
-            PRIVATE
+            PUBLIC
                 Gem::AtomLyIntegration_CommonFeatures.Static
                 Gem::Atom_RPI.Edit
                 Gem::AtomToolsFramework.Static
