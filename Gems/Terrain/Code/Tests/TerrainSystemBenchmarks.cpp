@@ -281,6 +281,22 @@ namespace UnitTest
             surfaceGradientShapeRequests.clear();
         }
 
+        void GenerateInputPositionsList(const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds, AZStd::vector<AZ::Vector2>& positions)
+        {
+            const size_t numSamplesX = aznumeric_cast<size_t>(ceil(worldBounds.GetExtents().GetX() / queryResolution.GetX()));
+            const size_t numSamplesY = aznumeric_cast<size_t>(ceil(worldBounds.GetExtents().GetY() / queryResolution.GetY()));
+
+            for (size_t y = 0; y < numSamplesY; y++)
+            {
+                float fy = aznumeric_cast<float>(worldBounds.GetMin().GetY() + (y * queryResolution.GetY()));
+                for (size_t x = 0; x < numSamplesX; x++)
+                {
+                    float fx = aznumeric_cast<float>(worldBounds.GetMin().GetX() + (x * queryResolution.GetX()));
+                    positions.emplace_back(fx, fy);
+                }
+            }
+        }
+
     protected:
         AZStd::unique_ptr<AZ::ComponentApplication> m_app;
     };
@@ -359,22 +375,11 @@ namespace UnitTest
         // Run the benchmark
         RunTerrainApiBenchmark(
             state,
-            []([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
+            [this]([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
                 AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
                 AZStd::vector<AZ::Vector2> inPositions;
-                const size_t numSamplesX = aznumeric_cast<size_t>(ceil(worldBounds.GetExtents().GetX() / queryResolution.GetX()));
-                const size_t numSamplesY = aznumeric_cast<size_t>(ceil(worldBounds.GetExtents().GetY() / queryResolution.GetY()));
-
-                for (size_t y = 0; y < numSamplesY; y++)
-                {
-                    float fy = aznumeric_cast<float>(worldBounds.GetMin().GetY() + (y * queryResolution.GetY()));
-                    for (size_t x = 0; x < numSamplesX; x++)
-                    {
-                        float fx = aznumeric_cast<float>(worldBounds.GetMin().GetX() + (x * queryResolution.GetX()));
-                        inPositions.emplace_back(fx, fy);
-                    }
-                }
+                GenerateInputPositionsList(queryResolution, worldBounds, inPositions);
 
                 auto perPositionCallback = [](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
                 {
@@ -464,22 +469,11 @@ namespace UnitTest
         // Run the benchmark
         RunTerrainApiBenchmark(
             state,
-            []([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
+            [this]([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
                 AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
                 AZStd::vector<AZ::Vector2> inPositions;
-                const size_t numSamplesX = aznumeric_cast<size_t>(ceil(worldBounds.GetExtents().GetX() / queryResolution.GetX()));
-                const size_t numSamplesY = aznumeric_cast<size_t>(ceil(worldBounds.GetExtents().GetY() / queryResolution.GetY()));
-
-                for (size_t y = 0; y < numSamplesY; y++)
-                {
-                    float fy = aznumeric_cast<float>(worldBounds.GetMin().GetY() + (y * queryResolution.GetY()));
-                    for (size_t x = 0; x < numSamplesX; x++)
-                    {
-                        float fx = aznumeric_cast<float>(worldBounds.GetMin().GetX() + (x * queryResolution.GetX()));
-                        inPositions.emplace_back(fx, fy);
-                    }
-                }
+                GenerateInputPositionsList(queryResolution, worldBounds, inPositions);
 
                 auto perPositionCallback = [](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
                 {
@@ -567,22 +561,11 @@ namespace UnitTest
         // Run the benchmark
         RunTerrainApiBenchmark(
             state,
-            []([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
+            [this]([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
                 AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
                 AZStd::vector<AZ::Vector2> inPositions;
-                const size_t numSamplesX = aznumeric_cast<size_t>(ceil(worldBounds.GetExtents().GetX() / queryResolution.GetX()));
-                const size_t numSamplesY = aznumeric_cast<size_t>(ceil(worldBounds.GetExtents().GetY() / queryResolution.GetY()));
-
-                for (size_t y = 0; y < numSamplesY; y++)
-                {
-                    float fy = aznumeric_cast<float>(worldBounds.GetMin().GetY() + (y * queryResolution.GetY()));
-                    for (size_t x = 0; x < numSamplesX; x++)
-                    {
-                        float fx = aznumeric_cast<float>(worldBounds.GetMin().GetX() + (x * queryResolution.GetX()));
-                        inPositions.emplace_back(fx, fy);
-                    }
-                }
+                GenerateInputPositionsList(queryResolution, worldBounds, inPositions);
 
                 auto perPositionCallback = [](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
                 {
@@ -670,22 +653,11 @@ namespace UnitTest
         // Run the benchmark
         RunTerrainApiBenchmark(
             state,
-            []([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
+            [this]([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
                 AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
                 AZStd::vector<AZ::Vector2> inPositions;
-                const size_t numSamplesX = aznumeric_cast<size_t>(ceil(worldBounds.GetExtents().GetX() / queryResolution.GetX()));
-                const size_t numSamplesY = aznumeric_cast<size_t>(ceil(worldBounds.GetExtents().GetY() / queryResolution.GetY()));
-
-                for (size_t y = 0; y < numSamplesY; y++)
-                {
-                    float fy = aznumeric_cast<float>(worldBounds.GetMin().GetY() + (y * queryResolution.GetY()));
-                    for (size_t x = 0; x < numSamplesX; x++)
-                    {
-                        float fx = aznumeric_cast<float>(worldBounds.GetMin().GetX() + (x * queryResolution.GetX()));
-                        inPositions.emplace_back(fx, fy);
-                    }
-                }
+                GenerateInputPositionsList(queryResolution, worldBounds, inPositions);
 
                 auto perPositionCallback = [](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
                 {
