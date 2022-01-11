@@ -24,7 +24,6 @@ namespace EMotionFX::MotionMatching
         resize(0, 0);
     }
 
-    const static Eigen::IOFormat g_eigenCsvFormat(Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", "\n");
     void FeatureMatrix::SaveAsCsv(const AZStd::string& filename, const AZStd::vector<AZStd::string>& columnNames)
     {
         std::ofstream file(filename.c_str());
@@ -45,7 +44,11 @@ namespace EMotionFX::MotionMatching
         }
 
         // Save coefficients
-        file << format(g_eigenCsvFormat);
+#ifdef O3DE_USE_EIGEN
+        // Force specify precision, else wise values close to 0.0 get rounded to 0.0.
+        const static Eigen::IOFormat csvFormat(/*Eigen::StreamPrecision|FullPrecision*/8, Eigen::DontAlignCols, ", ", "\n");
+        file << format(csvFormat);
+#endif
     }
 
     AZ::Vector2 FeatureMatrix::GetVector2(Index row, Index startColumn) const
@@ -78,7 +81,7 @@ namespace EMotionFX::MotionMatching
 
     size_t FeatureMatrix::CalcMemoryUsageInBytes() const
     {
-        const size_t bytesPerValue = sizeof(Scalar);
+        const size_t bytesPerValue = sizeof(O3DE_MM_FLOATTYPE);
         const size_t numValues = size();
         return numValues * bytesPerValue;
     }
