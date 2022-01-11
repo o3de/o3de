@@ -1352,8 +1352,27 @@ void CCryEditApp::CompileCriticalAssets() const
         }
     }
     assetsInQueueNotifcation.BusDisconnect();
-    CCryEditApp::OutputStartupMessage(QString("Asset Processor is now ready."));
 
+    // Signal the "CriticalAssetsCompiled" lifecycle event
+    // Also reload the "assetcatalog.xml" if it exists
+    if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+    {
+        AZ::ComponentApplicationLifecycle::SignalEvent(*settingsRegistry, "CriticalAssetsCompiled", R"({})");
+        // Reload the assetcatalog.xml at this point again
+        // Start Monitoring Asset changes over the network and load the AssetCatalog
+        auto LoadCatalog = [settingsRegistry](AZ::Data::AssetCatalogRequests* assetCatalogRequests)
+        {
+            if (AZ::IO::FixedMaxPath assetCatalogPath;
+                settingsRegistry->Get(assetCatalogPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
+            {
+                assetCatalogPath /= "assetcatalog.xml";
+                assetCatalogRequests->LoadCatalog(assetCatalogPath.c_str());
+            }
+        };
+        AZ::Data::AssetCatalogRequestBus::Broadcast(AZStd::move(LoadCatalog));
+    }
+
+    CCryEditApp::OutputStartupMessage(QString("Asset Processor is now ready."));
 }
 
 bool CCryEditApp::ConnectToAssetProcessor() const
@@ -1669,7 +1688,7 @@ bool CCryEditApp::InitInstance()
         return false;
     }
 
-    if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get())
+    if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
     {
         AZ::ComponentApplicationLifecycle::SignalEvent(*settingsRegistry, "LegacySystemInterfaceCreated", R"({})");
     }
