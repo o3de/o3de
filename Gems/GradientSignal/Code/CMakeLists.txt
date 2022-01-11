@@ -192,6 +192,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     Gem::GradientSignal.Static
                     Gem::GradientSignal.Editor.Static
                     Gem::LmbrCentral.Editor
+                    Gem::LmbrCentral.Mocks
         )
         ly_add_googletest(
             NAME Gem::GradientSignal.Editor.Tests
