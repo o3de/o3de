@@ -60,14 +60,14 @@ namespace AZStd
 
         ~span() = default;
 
-        span(const_pointer s, size_type length)
+        span(pointer s, size_type length)
             : m_begin(s)
             , m_end(m_begin + length)
         {
             if (length == 0) erase();
         }
 
-        span(const_pointer first, const_pointer last)
+        span(pointer first, const_pointer last)
             : m_begin(first)
             , m_end(last)
         { }
@@ -89,6 +89,23 @@ namespace AZStd
 
         template<AZStd::size_t N>
         span(AZStd::fixed_vector<value_type, N>& data)
+            : m_begin(data.data())
+            , m_end(m_begin + data.size())
+        { }
+
+        template<AZStd::size_t N>
+        span(const AZStd::array<value_type, N>& data)
+            : m_begin(data.data())
+            , m_end(m_begin + data.size())
+        { }
+
+        span(const AZStd::vector<value_type>& data)
+            : m_begin(data.data())
+            , m_end(m_begin + data.size())
+        { }
+
+        template<AZStd::size_t N>
+        span(const AZStd::fixed_vector<value_type, N>& data)
             : m_begin(data.data())
             , m_end(m_begin + data.size())
         { }
@@ -130,14 +147,27 @@ namespace AZStd
             return m_begin[index]; 
         }
 
+        reference operator[](size_type index) 
+        {
+            AZ_Assert(index < size(), "index value is out of range");
+            return m_begin[index]; 
+        }
+
         void erase() { m_begin = m_end = nullptr; }
 
-        iterator         begin() const { return m_begin; }
-        iterator         end() const { return m_end; }
+        iterator         begin() { return m_begin; }
+        iterator         end() { return m_end; }
+        const_iterator   begin() const { return m_begin; }
+        const_iterator   end() const { return m_end; }
+
         const_iterator   cbegin() const { return m_begin; }
         const_iterator   cend() const { return m_end; }
-        reverse_iterator rbegin() const { return reverse_iterator(m_end); }
-        reverse_iterator rend() const { return reverse_iterator(m_begin); }
+        
+        reverse_iterator rbegin() { return reverse_iterator(m_end); }
+        reverse_iterator rend() { return reverse_iterator(m_begin); }
+        const_reverse_iterator rbegin() const { return reverse_iterator(m_end); }
+        const_reverse_iterator rend() const { return reverse_iterator(m_begin); }
+        
         const_reverse_iterator crbegin() const { return const_reverse_iterator(cend()); }
         const_reverse_iterator crend() const { return const_reverse_iterator(cbegin()); }
 
