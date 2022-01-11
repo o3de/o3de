@@ -29,7 +29,6 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
         PUBLIC
-            AZ::AtomCore.API
             AZ::GridMate
             3rdParty::zstd
             3rdParty::lz4

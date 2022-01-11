@@ -8,13 +8,13 @@
 
 #pragma once
 
-#include <AtomCore/std/containers/array_view.h>
 #include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/parallel/shared_mutex.h>
 #include <AzCore/std/containers/map.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Aabb.h>
 
@@ -138,16 +138,16 @@ namespace Terrain
 
         //! Given a list of XY coordinates, call the provided callback function with surface data corresponding to each
         //! XY coordinate in the list.
-        virtual void ProcessHeightsFromList(const AZStd::array_view<AZ::Vector2>& inPositions,
+        virtual void ProcessHeightsFromList(const AZStd::span<AZ::Vector2>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
-        virtual void ProcessNormalsFromList(const AZStd::array_view<AZ::Vector2>& inPositions,
+        virtual void ProcessNormalsFromList(const AZStd::span<AZ::Vector2>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
-        virtual void ProcessSurfaceWeightsFromList(const AZStd::array_view<AZ::Vector2>& inPositions,
+        virtual void ProcessSurfaceWeightsFromList(const AZStd::span<AZ::Vector2>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
-        virtual void ProcessSurfacePointsFromList(const AZStd::array_view<AZ::Vector2>& inPositions,
+        virtual void ProcessSurfacePointsFromList(const AZStd::span<AZ::Vector2>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
 

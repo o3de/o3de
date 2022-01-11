@@ -9,7 +9,9 @@
 set(FILES
     Instance/Instance.h
     Instance/InstanceId.h
+    Instance/InstanceId.cpp
     Instance/InstanceData.h
+    Instance/InstanceData.cpp
     Instance/InstanceDatabase.h
     std/containers/array_view.h
     std/containers/fixed_vector_set.h
