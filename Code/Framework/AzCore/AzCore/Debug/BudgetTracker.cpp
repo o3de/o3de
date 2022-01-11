@@ -12,6 +12,7 @@
 #include <AzCore/Debug/Budget.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Memory/Memory.h>
+#include <AzCore/std/allocator_stateless.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/parallel/scoped_lock.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
@@ -69,7 +70,7 @@ namespace AZ::Debug
             return iter->second;
         }
 
-        auto budget = AZStd::make_shared<Budget>(budgetName, crc);
+        auto budget = AZStd::allocate_shared<Budget>(AZStd::stateless_allocator(), budgetName, crc);
         m_impl->m_budgets.emplace(budgetName, budget);
         return budget;
     }
