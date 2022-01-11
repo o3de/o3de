@@ -6,47 +6,23 @@
  *
  */
 #include <native/FileWatcher/FileWatcher.h>
+#include <native/FileWatcher/FileWatcher_platform.h>
 
 #include <native/utilities/BatchApplicationManager.h>
 
 #include <AzCore/Debug/Trace.h>
-#include <CoreServices/CoreServices.h>
 
 void FileEventStreamCallback(ConstFSEventStreamRef streamRef, void *clientCallBackInfo, size_t numEvents, void *eventPaths, const FSEventStreamEventFlags eventFlags[], const FSEventStreamEventId eventIds[]);
 
-struct FolderRootWatch::PlatformImplementation
-{
-    PlatformImplementation() : m_stream(nullptr), m_runLoop(nullptr) { }
-
-    FSEventStreamRef m_stream;
-    CFRunLoopRef m_runLoop;
-    QString m_renameFileDirectory;
-};
-
-//////////////////////////////////////////////////////////////////////////////
-/// FolderWatchRoot
-FolderRootWatch::FolderRootWatch(const QString rootFolder)
-    : m_root(rootFolder)
-    , m_shutdownThreadSignal(false)
-    , m_fileWatcher(nullptr)
-    , m_platformImpl(new PlatformImplementation())
-{
-}
-
-FolderRootWatch::~FolderRootWatch()
-{
-    // Destructor is required in here since this file contains the definition of struct PlatformImplementation
-    Stop();
-
-    delete m_platformImpl;
-}
-
-bool FolderRootWatch::Start()
+bool FileWatcher::PlatformStart()
 {
     m_shutdownThreadSignal = false;
 
-    CFStringRef rootPath = CFStringCreateWithCString(kCFAllocatorDefault, m_root.toStdString().data(), kCFStringEncodingMacRoman);
-    CFArrayRef pathsToWatch = CFArrayCreate(NULL, (const void **)&rootPath, 1, NULL);
+    CFMutableArrayRef pathsToWatch = CFArrayCreateMutable(nullptr, this->m_folderWatchRoots.size(), nullptr);
+    for (const auto& root : this->m_folderWatchRoots)
+    {
+        CFArrayAppendValue(pathsToWatch, root.m_directory.toCFString());
+    }
     
     // The larger this number, the larger the delay between the kernel knowing a file changed
     // and us actually consuming the event.  It is very important for asset processor to deal with
@@ -60,11 +36,12 @@ bool FolderRootWatch::Start()
     // Set ourselves as the value for the context info field so that in the callback
     // we get passed into it and the callback can call our public API to handle
     // the file change events
-    FSEventStreamContext streamContext;
-    ::memset(&streamContext, 0, sizeof(streamContext));
-    streamContext.info = this;
+    FSEventStreamContext streamContext{
+        /*.version =*/ 0,
+        /*.info =*/ this,
+    };
 
-    m_platformImpl->m_stream = FSEventStreamCreate(NULL,
+    m_platformImpl->m_stream = FSEventStreamCreate(nullptr,
                                  FileEventStreamCallback,
                                  &streamContext,
                                  pathsToWatch,
@@ -72,24 +49,25 @@ bool FolderRootWatch::Start()
                                  timeBetweenKernelUpdateAndNotification,
                                  kFSEventStreamCreateFlagFileEvents);
 
-    AZ_Error("FileWatcher", (m_platformImpl->m_stream != nullptr), "FSEventStreamCreate returned a nullptr. No file events will be reported for %s", m_root.toStdString().c_str());
+    AZ_Error("FileWatcher", (m_platformImpl->m_stream != nullptr), "FSEventStreamCreate returned a nullptr. No file events will be reported.");
 
-    m_thread = std::thread(std::bind(&FolderRootWatch::WatchFolderLoop, this));
-
+    const CFIndex pathCount = CFArrayGetCount(pathsToWatch);
+    for(CFIndex i = 0; i < pathCount; ++i)
+    {
+        CFRelease(CFArrayGetValueAtIndex(pathsToWatch, i));
+    }
     CFRelease(pathsToWatch);
-    CFRelease(rootPath);
 
-    return (m_platformImpl->m_stream != nullptr);
+    return m_platformImpl->m_stream != nullptr;
 }
 
-void FolderRootWatch::Stop()
+void FileWatcher::PlatformStop()
 {
     m_shutdownThreadSignal = true;
 
     if (m_thread.joinable())
     {
         m_thread.join(); // wait for the thread to finish
-        m_thread = std::thread(); //destroy
     }
 
     FSEventStreamStop(m_platformImpl->m_stream);
@@ -97,7 +75,7 @@ void FolderRootWatch::Stop()
     FSEventStreamRelease(m_platformImpl->m_stream);
 }
 
-void FolderRootWatch::WatchFolderLoop()
+void FileWatcher::WatchFolderLoop()
 {
     // Use a half second timeout interval so that we can check if
     // m_shutdownThreadSignal has been changed while we were running the RunLoop
@@ -117,14 +95,14 @@ void FolderRootWatch::WatchFolderLoop()
 
 void FileEventStreamCallback(ConstFSEventStreamRef streamRef, void *clientCallBackInfo, size_t numEvents, void *eventPaths, const FSEventStreamEventFlags eventFlags[], const FSEventStreamEventId eventIds[])
 {
-    FolderRootWatch* watcher = reinterpret_cast<FolderRootWatch*>(clientCallBackInfo);
+    auto* watcher = reinterpret_cast<FileWatcher*>(clientCallBackInfo);
 
     const char** filePaths = reinterpret_cast<const char**>(eventPaths);
 
     for (int i = 0; i < numEvents; ++i)
     {
-        QFileInfo fileInfo(QDir::cleanPath(filePaths[i]));
-        QString fileAndPath = fileInfo.absoluteFilePath();
+        const QFileInfo fileInfo(QDir::cleanPath(filePaths[i]));
+        const QString fileAndPath = fileInfo.absoluteFilePath();
 
         if (!fileInfo.isHidden())
         {
@@ -133,38 +111,38 @@ void FileEventStreamCallback(ConstFSEventStreamRef streamRef, void *clientCallBa
             // so check for all of them
             if (eventFlags[i] & kFSEventStreamEventFlagItemCreated)
             {
-                watcher->ProcessNewFileEvent(fileAndPath);
+                watcher->rawFileAdded(fileAndPath, {});
             }
 
             if (eventFlags[i] & kFSEventStreamEventFlagItemModified)
             {
-                watcher->ProcessModifyFileEvent(fileAndPath);
+                watcher->rawFileModified(fileAndPath, {});
             }
 
             if (eventFlags[i] & kFSEventStreamEventFlagItemRemoved)
             {
-                watcher->ProcessDeleteFileEvent(fileAndPath);
+                watcher->rawFileRemoved(fileAndPath, {});
             }
 
             if (eventFlags[i] & kFSEventStreamEventFlagItemRenamed)
             {
                 if (fileInfo.exists())
                 {
-                    watcher->ProcessNewFileEvent(fileAndPath);
+                    watcher->rawFileAdded(fileAndPath, {});
 
                     // macOS does not send out an event for the directory being
                     // modified when a file has been renamed but the FileWatcher
                     // API expects it so send out the modification event ourselves.
-                    watcher->ProcessModifyFileEvent(fileInfo.absolutePath());
+                    watcher->rawFileModified(fileInfo.absolutePath(), {});
                 }
                 else
                 {
-                    watcher->ProcessDeleteFileEvent(fileAndPath);
+                    watcher->rawFileRemoved(fileAndPath, {});
 
                     // macOS does not send out an event for the directory being
                     // modified when a file has been renamed but the FileWatcher
                     // API expects it so send out the modification event ourselves.
-                    watcher->ProcessModifyFileEvent(fileInfo.absolutePath());
+                    watcher->rawFileModified(fileInfo.absolutePath(), {});
                 }
             }
         }

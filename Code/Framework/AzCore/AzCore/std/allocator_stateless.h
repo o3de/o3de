@@ -26,7 +26,8 @@ namespace AZStd
         using difference_type = ptrdiff_t;
         using allow_memory_leaks = AZStd::true_type;
 
-        stateless_allocator(const char* name = "AZStd::stateless_allocator");
+        stateless_allocator();
+        explicit stateless_allocator(const char*); // Stateless allocator does not store a name
         stateless_allocator(const stateless_allocator& rhs) = default;
 
         stateless_allocator& operator=(const stateless_allocator& rhs) = default;
@@ -51,9 +52,6 @@ namespace AZStd
         bool is_lock_free();
         bool is_stale_read_allowed();
         bool is_delayed_recycling();
-
-    private:
-        const char* m_name;
     };
 
     bool operator==(const stateless_allocator& left, const stateless_allocator& right);

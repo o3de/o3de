@@ -35,10 +35,13 @@ namespace AZ
                     m_scriptFilename = AZStd::move(scriptFilename);
                 }
 
+                DataTypes::ScriptProcessorFallbackLogic GetScriptProcessorFallbackLogic() const override;
+
                 static void Reflect(ReflectContext* context);
 
             protected:
                 AZStd::string m_scriptFilename;
+                DataTypes::ScriptProcessorFallbackLogic m_fallbackLogic = DataTypes::ScriptProcessorFallbackLogic::FailBuild;
             };
         } // SceneData
     } // SceneAPI

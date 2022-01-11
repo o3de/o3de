@@ -6,7 +6,7 @@
  *
  */
 
-#include "ThresholdGradientComponent.h"
+#include <GradientSignal/Components/ThresholdGradientComponent.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
