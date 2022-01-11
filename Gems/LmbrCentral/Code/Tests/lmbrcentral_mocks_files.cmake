@@ -7,5 +7,5 @@
 #
 
 set(FILES
-    Mocks/LmbrCentral/Shape/MockShapes.h
+    ../Mocks/LmbrCentral/Shape/MockShapes.h
 )

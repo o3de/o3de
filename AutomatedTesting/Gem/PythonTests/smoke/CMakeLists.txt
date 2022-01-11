@@ -32,19 +32,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_pytest(
-        NAME AutomatedTesting::EditorTestWithGPU
-        TEST_REQUIRES gpu
-        PATH ${CMAKE_CURRENT_LIST_DIR}/test_Editor_NewExistingLevels_Works.py
-        TIMEOUT 100
-        RUNTIME_DEPENDENCIES
-            AZ::AssetProcessor
-            AZ::PythonBindingsExample
-            Legacy::Editor
-            AutomatedTesting.GameLauncher
-            AutomatedTesting.Assets
-    )
-
-    ly_add_pytest(
         NAME AutomatedTesting::GameLauncherWithGPU
         TEST_SUITE sandbox
         TEST_REQUIRES gpu
