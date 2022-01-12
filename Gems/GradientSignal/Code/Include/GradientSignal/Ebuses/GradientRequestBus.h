@@ -62,22 +62,21 @@ namespace GradientSignal
             // Reference implementation of GetValues for any gradients that don't have their own optimized implementations.
             // This is 10%-60% faster than calling GetValue via EBus many times due to the per-call EBus overhead.
 
-            AZ_Assert(
-                positions.size() == outValues.size(), "input and output lists are different sizes (%zu vs %zu).",
-                positions.size(), outValues.size());
-
-            if (positions.size() == outValues.size())
+            if (positions.size() != outValues.size())
             {
-                GradientSampleParams sampleParams;
-                for (size_t index = 0; index < positions.size(); index++)
-                {
-                    sampleParams.m_position = positions[index];
+                AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
+                return;
+            }
 
-                    // The const_cast is necessary for now since array_view currently only supports const entries.
-                    // If/when array_view is fixed to support non-const, or AZStd::span gets created, the const_cast can get removed.
-                    auto& outValue = const_cast<float&>(outValues[index]);
-                    outValue = GetValue(sampleParams);
-                }
+            GradientSampleParams sampleParams;
+            for (size_t index = 0; index < positions.size(); index++)
+            {
+                sampleParams.m_position = positions[index];
+
+                // The const_cast is necessary for now since array_view currently only supports const entries.
+                // If/when array_view is fixed to support non-const, or AZStd::span gets created, the const_cast can get removed.
+                auto& outValue = const_cast<float&>(outValues[index]);
+                outValue = GetValue(sampleParams);
             }
         }
 

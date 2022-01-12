@@ -41,6 +41,28 @@ namespace UnitTest
             float m_expectedHeight = 0.0f;
         };
 
+        struct NormalTestPoint
+        {
+            AZ::Vector2 m_testLocation = AZ::Vector2::CreateZero();
+            AZ::Vector3 m_expectedNormal = AZ::Vector3::CreateZero();
+        };
+
+        struct HeightTestRegionPoints
+        {
+            size_t m_xIndex;
+            size_t m_yIndex;
+            float m_expectedHeight;
+            AZ::Vector2 m_testLocation = AZ::Vector2::CreateZero();
+        };
+
+        struct NormalTestRegionPoints
+        {
+            size_t m_xIndex;
+            size_t m_yIndex;
+            AZ::Vector3 m_expectedNormal = AZ::Vector3::CreateZero();
+            AZ::Vector2 m_testLocation = AZ::Vector2::CreateZero();
+        };
+
         AZ::ComponentApplication m_app;
 
         AZStd::unique_ptr<NiceMock<UnitTest::MockBoxShapeComponentRequests>> m_boxShapeRequests;
@@ -571,5 +593,313 @@ namespace UnitTest
 
         EXPECT_EQ(tagWeight.m_surfaceType, tagWeight1.m_surfaceType);
         EXPECT_NEAR(tagWeight.m_weight, tagWeight1.m_weight, 0.01f);
+    }
+
+    TEST_F(TerrainSystemTest, TerrainProcessHeightsFromListWithBilinearSamplers)
+    {
+        // This repeats the same test as TerrainHeightQueriesWithBilinearSamplersUseQueryGridToInterpolate
+        // The difference is that it tests the ProcessHeightsFromList variation.
+
+        const AZ::Aabb spawnerBox = AZ::Aabb::CreateFromMinMaxValues(-10.0f, -10.0f, -5.0f, 10.0f, 10.0f, 15.0f);
+        const float amplitudeMeters = 10.0f;
+        const float frequencyMeters = 1.0f;
+        auto entity = CreateAndActivateMockTerrainLayerSpawner(
+            spawnerBox,
+            [amplitudeMeters, frequencyMeters](AZ::Vector3& position, bool& terrainExists)
+            {
+                // Our generated height will be X + Y.
+                float expectedHeight = position.GetX() + position.GetY();
+
+                // If either X or Y aren't evenly divisible by the query frequency, add a scaled value to our generated height.
+                // This will show up as an unexpected height "spike" if it gets used in any bilinear filter queries.
+                float unexpectedVariance =
+                    amplitudeMeters * (fmodf(position.GetX(), frequencyMeters) + fmodf(position.GetY(), frequencyMeters));
+                position.SetZ(expectedHeight + unexpectedVariance);
+                terrainExists = true;
+            });
+
+        // Create and activate the terrain system with our testing defaults for world bounds, and a query resolution at 1 meter intervals.
+        const AZ::Vector2 queryResolution(frequencyMeters);
+        auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
+
+        // Test some points and verify that the results are the expected bilinear filtered result,
+        // whether they're in positive or negative space.
+        // (Z contains the the expected result for convenience).
+        const HeightTestPoint testPoints[] = {
+
+            // Queries directly on grid points.  These should return values of X + Y.
+            { AZ::Vector2(0.0f, 0.0f), 0.0f }, // Should return a height of 0 + 0
+            { AZ::Vector2(1.0f, 0.0f), 1.0f }, // Should return a height of 1 + 0
+            { AZ::Vector2(0.0f, 1.0f), 1.0f }, // Should return a height of 0 + 1
+            { AZ::Vector2(1.0f, 1.0f), 2.0f }, // Should return a height of 1 + 1
+            { AZ::Vector2(3.0f, 5.0f), 8.0f }, // Should return a height of 3 + 5
+
+            { AZ::Vector2(-1.0f, 0.0f), -1.0f }, // Should return a height of -1 + 0
+            { AZ::Vector2(0.0f, -1.0f), -1.0f }, // Should return a height of 0 + -1
+            { AZ::Vector2(-1.0f, -1.0f), -2.0f }, // Should return a height of -1 + -1
+            { AZ::Vector2(-3.0f, -5.0f), -8.0f }, // Should return a height of -3 + -5
+
+            // Queries that are on a grid edge (one axis on the grid, the other somewhere in-between).
+            // These should just be a linear interpolation of the points, so it should still be X + Y.
+
+            { AZ::Vector2(0.25f, 0.0f), 0.25f }, // Should return a height of -0.25 + 0
+            { AZ::Vector2(3.75f, 0.0f), 3.75f }, // Should return a height of -3.75 + 0
+            { AZ::Vector2(0.0f, 0.25f), 0.25f }, // Should return a height of 0 + -0.25
+            { AZ::Vector2(0.0f, 3.75f), 3.75f }, // Should return a height of 0 + -3.75
+
+            { AZ::Vector2(2.0f, 3.75f), 5.75f }, // Should return a height of -2 + -3.75
+            { AZ::Vector2(2.25f, 4.0f), 6.25f }, // Should return a height of -2.25 + -4
+
+            { AZ::Vector2(-0.25f, 0.0f), -0.25f }, // Should return a height of -0.25 + 0
+            { AZ::Vector2(-3.75f, 0.0f), -3.75f }, // Should return a height of -3.75 + 0
+            { AZ::Vector2(0.0f, -0.25f), -0.25f }, // Should return a height of 0 + -0.25
+            { AZ::Vector2(0.0f, -3.75f), -3.75f }, // Should return a height of 0 + -3.75
+
+            { AZ::Vector2(-2.0f, -3.75f), -5.75f }, // Should return a height of -2 + -3.75
+            { AZ::Vector2(-2.25f, -4.0f), -6.25f }, // Should return a height of -2.25 + -4
+
+            // Queries inside a grid square (both axes are in-between grid points)
+            // This is a full bilinear interpolation, but because we're using X + Y for our heights, the interpolated values
+            // should *still* be X + Y assuming the points were sampled correctly from the grid points.
+
+            { AZ::Vector2(3.25f, 5.25f), 8.5f }, // Should return a height of 3.25 + 5.25
+            { AZ::Vector2(7.71f, 9.74f), 17.45f }, // Should return a height of 7.71 + 9.74
+
+            { AZ::Vector2(-3.25f, -5.25f), -8.5f }, // Should return a height of -3.25 + -5.25
+            { AZ::Vector2(-7.71f, -9.74f), -17.45f }, // Should return a height of -7.71 + -9.74
+        };
+
+        auto perPositionCallback = [&testPoints](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists){
+            bool found = false;
+            for (auto& testPoint : testPoints)
+            {
+                if (testPoint.m_testLocation.GetX() == surfacePoint.m_position.GetX() && testPoint.m_testLocation.GetY() == surfacePoint.m_position.GetY())
+                {
+                    constexpr float epsilon = 0.0001f;
+                    EXPECT_NEAR(surfacePoint.m_position.GetZ(), testPoint.m_expectedHeight, epsilon);
+                    found = true;
+                    break;
+                }
+            }
+            EXPECT_EQ(found, true);
+        };
+
+        AZStd::vector<AZ::Vector3> inPositions;
+        for (auto& testPoint : testPoints)
+        {
+            AZ::Vector3 position(testPoint.m_testLocation.GetX(), testPoint.m_testLocation.GetY(), 0.0f);
+            inPositions.push_back(position);
+        }
+
+        terrainSystem->ProcessHeightsFromList(inPositions, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR);
+    }
+
+    TEST_F(TerrainSystemTest, TerrainProcessNormalsFromListWithBilinearSamplers)
+    {
+        // Similar to TerrainProcessHeightsFromListWithBilinearSamplers but for normals
+
+        const AZ::Aabb spawnerBox = AZ::Aabb::CreateFromMinMaxValues(-10.0f, -10.0f, -5.0f, 10.0f, 10.0f, 15.0f);
+        const float amplitudeMeters = 10.0f;
+        const float frequencyMeters = 1.0f;
+        auto entity = CreateAndActivateMockTerrainLayerSpawner(
+            spawnerBox,
+            [amplitudeMeters, frequencyMeters](AZ::Vector3& position, bool& terrainExists)
+            {
+                // Our generated height will be X + Y.
+                float expectedHeight = position.GetX() + position.GetY();
+
+                // If either X or Y aren't evenly divisible by the query frequency, add a scaled value to our generated height.
+                // This will show up as an unexpected height "spike" if it gets used in any bilinear filter queries.
+                float unexpectedVariance =
+                    amplitudeMeters * (fmodf(position.GetX(), frequencyMeters) + fmodf(position.GetY(), frequencyMeters));
+                position.SetZ(expectedHeight + unexpectedVariance);
+                terrainExists = true;
+            });
+
+        // Create and activate the terrain system with our testing defaults for world bounds, and a query resolution at 1 meter intervals.
+        const AZ::Vector2 queryResolution(frequencyMeters);
+        auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
+
+        const NormalTestPoint testPoints[] = {
+
+            { AZ::Vector2(0.0f, 0.0f), AZ::Vector3(-0.5773f, -0.5773f, 0.5773f) },
+            { AZ::Vector2(1.0f, 0.0f), AZ::Vector3(-0.5773f, -0.5773f, 0.5773f) },
+            { AZ::Vector2(0.0f, 1.0f), AZ::Vector3(-0.5773f, -0.5773f, 0.5773f) },
+            { AZ::Vector2(1.0f, 1.0f), AZ::Vector3(-0.5773f, -0.5773f, 0.5773f) },
+            { AZ::Vector2(3.0f, 5.0f), AZ::Vector3(-0.5773f, -0.5773f, 0.5773f) },
+
+            { AZ::Vector2(-1.0f, 0.0f), AZ::Vector3(-0.5773f, -0.5773f, 0.5773f) },
+            { AZ::Vector2(0.0f, -1.0f), AZ::Vector3(-0.5773f, -0.5773f, 0.5773f) },
+            { AZ::Vector2(-1.0f, -1.0f), AZ::Vector3(-0.5773f, -0.5773f, 0.5773f) },
+            { AZ::Vector2(-3.0f, -5.0f), AZ::Vector3(-0.5773f, -0.5773f, 0.5773f) },
+
+            { AZ::Vector2(0.25f, 0.0f), AZ::Vector3(-0.5773f, -0.5773f, 0.5773f) },
+            { AZ::Vector2(3.75f, 0.0f), AZ::Vector3(-0.5773f, -0.5773f, 0.5773f) },
+            { AZ::Vector2(0.0f, 0.25f), AZ::Vector3(-0.5773f, -0.5773f, 0.5773f) },
+            { AZ::Vector2(0.0f, 3.75f), AZ::Vector3(-0.5773f, -0.5773f, 0.5773f) },
+
+            { AZ::Vector2(2.0f, 3.75f), AZ::Vector3(-0.5773f, -0.5773f, 0.5773f) },
+            { AZ::Vector2(2.25f, 4.0f), AZ::Vector3(-0.5773f, -0.5773f, 0.5773f) },
+
+            { AZ::Vector2(-0.25f, 0.0f), AZ::Vector3(-0.5773f, -0.5773f, 0.5773f) },
+            { AZ::Vector2(-3.75f, 0.0f), AZ::Vector3(-0.5773f, -0.5773f, 0.5773f) },
+            { AZ::Vector2(0.0f, -0.25f), AZ::Vector3(-0.5773f, -0.5773f, 0.5773f) },
+            { AZ::Vector2(0.0f, -3.75f), AZ::Vector3(-0.5773f, -0.5773f, 0.5773f) },
+
+            { AZ::Vector2(-2.0f, -3.75f), AZ::Vector3(-0.5773f, -0.5773f, 0.5773f) },
+            { AZ::Vector2(-2.25f, -4.0f), AZ::Vector3(-0.5773f, -0.5773f, 0.5773f) },
+
+            { AZ::Vector2(3.25f, 5.25f), AZ::Vector3(-0.5773f, -0.5773f, 0.5773f) },
+            { AZ::Vector2(7.71f, 9.74f), AZ::Vector3(-0.0292f, 0.9991f, 0.0292f) },
+
+            { AZ::Vector2(-3.25f, -5.25f), AZ::Vector3(-0.5773f, -0.5773f, 0.5773f) },
+            { AZ::Vector2(-7.71f, -9.74f), AZ::Vector3(-0.0366f, -0.9986f, 0.0366f) },
+        };
+
+        auto perPositionCallback = [&testPoints](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists){
+            bool found = false;
+            for (auto& testPoint : testPoints)
+            {
+                if (testPoint.m_testLocation.GetX() == surfacePoint.m_position.GetX() && testPoint.m_testLocation.GetY() == surfacePoint.m_position.GetY())
+                {
+                    constexpr float epsilon = 0.0001f;
+                    EXPECT_NEAR(surfacePoint.m_normal.GetX(), testPoint.m_expectedNormal.GetX(), epsilon);
+                    EXPECT_NEAR(surfacePoint.m_normal.GetY(), testPoint.m_expectedNormal.GetY(), epsilon);
+                    EXPECT_NEAR(surfacePoint.m_normal.GetZ(), testPoint.m_expectedNormal.GetZ(), epsilon);
+                    found = true;
+                    break;
+                }
+            }
+            EXPECT_EQ(found, true);
+        };
+
+        AZStd::vector<AZ::Vector3> inPositions;
+        for (auto& testPoint : testPoints)
+        {
+            AZ::Vector3 position(testPoint.m_testLocation.GetX(), testPoint.m_testLocation.GetY(), 0.0f);
+            inPositions.push_back(position);
+        }
+
+        terrainSystem->ProcessNormalsFromList(inPositions, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR);
+    }
+
+    TEST_F(TerrainSystemTest, TerrainProcessHeightsFromRegionWithBilinearSamplers)
+    {
+        // This repeats the same test as TerrainHeightQueriesWithBilinearSamplersUseQueryGridToInterpolate
+        // The difference is that it tests the ProcessHeightsFromList variation.
+
+        const AZ::Aabb spawnerBox = AZ::Aabb::CreateFromMinMaxValues(-10.0f, -10.0f, -5.0f, 10.0f, 10.0f, 15.0f);
+        const float amplitudeMeters = 10.0f;
+        const float frequencyMeters = 1.0f;
+        auto entity = CreateAndActivateMockTerrainLayerSpawner(
+            spawnerBox,
+            [amplitudeMeters, frequencyMeters](AZ::Vector3& position, bool& terrainExists)
+            {
+                // Our generated height will be X + Y.
+                float expectedHeight = position.GetX() + position.GetY();
+
+                // If either X or Y aren't evenly divisible by the query frequency, add a scaled value to our generated height.
+                // This will show up as an unexpected height "spike" if it gets used in any bilinear filter queries.
+                float unexpectedVariance =
+                    amplitudeMeters * (fmodf(position.GetX(), frequencyMeters) + fmodf(position.GetY(), frequencyMeters));
+                position.SetZ(expectedHeight + unexpectedVariance);
+                terrainExists = true;
+            });
+
+        // Create and activate the terrain system with our testing defaults for world bounds, and a query resolution at 1 meter intervals.
+        const AZ::Vector2 queryResolution(frequencyMeters);
+        auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
+
+        const AZ::Aabb testRegionBox = AZ::Aabb::CreateFromMinMaxValues(-1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f);
+        const AZ::Vector2 stepSize(1.0f);
+
+        const HeightTestRegionPoints testPoints[] = {
+            { 0, 0, -2.0f, AZ::Vector2(-1.0f, -1.0f) },
+            { 1, 0, -1.0f, AZ::Vector2(0.0f, -1.0f) },
+            { 0, 1, -1.0f, AZ::Vector2(-1.0f, 0.0f) },
+            { 1, 1, 0.0f, AZ::Vector2(0.0f, 0.0f) },
+        };
+
+        auto perPositionCallback = [&testPoints](size_t xIndex, size_t yIndex,
+            const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
+        {
+            bool found = false;
+            for (auto& testPoint : testPoints)
+            {
+                if (testPoint.m_xIndex == xIndex && testPoint.m_yIndex == yIndex
+                    && testPoint.m_testLocation.GetX() == surfacePoint.m_position.GetX()
+                    && testPoint.m_testLocation.GetY() == surfacePoint.m_position.GetY())
+                {
+                    constexpr float epsilon = 0.0001f;
+                    EXPECT_NEAR(surfacePoint.m_position.GetZ(), testPoint.m_expectedHeight, epsilon);
+                    found = true;
+                    break;
+                }
+            }
+            EXPECT_EQ(found, true);
+        };
+
+        terrainSystem->ProcessHeightsFromRegion(testRegionBox, stepSize, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR);
+    }
+
+    TEST_F(TerrainSystemTest, TerrainProcessNormalsFromRegionWithBilinearSamplers)
+    {
+        // This repeats the same test as TerrainHeightQueriesWithBilinearSamplersUseQueryGridToInterpolate
+        // The difference is that it tests the ProcessHeightsFromList variation.
+
+        const AZ::Aabb spawnerBox = AZ::Aabb::CreateFromMinMaxValues(-10.0f, -10.0f, -5.0f, 10.0f, 10.0f, 15.0f);
+        const float amplitudeMeters = 10.0f;
+        const float frequencyMeters = 1.0f;
+        auto entity = CreateAndActivateMockTerrainLayerSpawner(
+            spawnerBox,
+            [amplitudeMeters, frequencyMeters](AZ::Vector3& position, bool& terrainExists)
+            {
+                // Our generated height will be X + Y.
+                float expectedHeight = position.GetX() + position.GetY();
+
+                // If either X or Y aren't evenly divisible by the query frequency, add a scaled value to our generated height.
+                // This will show up as an unexpected height "spike" if it gets used in any bilinear filter queries.
+                float unexpectedVariance =
+                    amplitudeMeters * (fmodf(position.GetX(), frequencyMeters) + fmodf(position.GetY(), frequencyMeters));
+                position.SetZ(expectedHeight + unexpectedVariance);
+                terrainExists = true;
+            });
+
+        // Create and activate the terrain system with our testing defaults for world bounds, and a query resolution at 1 meter intervals.
+        const AZ::Vector2 queryResolution(frequencyMeters);
+        auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
+
+        const AZ::Aabb testRegionBox = AZ::Aabb::CreateFromMinMaxValues(-1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f);
+        const AZ::Vector2 stepSize(1.0f);
+
+        const NormalTestRegionPoints testPoints[] = {
+            { 0, 0, AZ::Vector3(-0.5773f, -0.5773f, 0.5773f), AZ::Vector2(-1.0f, -1.0f) },
+            { 1, 0, AZ::Vector3(-0.5773f, -0.5773f, 0.5773f), AZ::Vector2(0.0f, -1.0f) },
+            { 0, 1, AZ::Vector3(-0.5773f, -0.5773f, 0.5773f), AZ::Vector2(-1.0f, 0.0f) },
+            { 1, 1, AZ::Vector3(-0.5773f, -0.5773f, 0.5773f), AZ::Vector2(0.0f, 0.0f) },
+        };
+
+        auto perPositionCallback = [&testPoints](size_t xIndex, size_t yIndex,
+            const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
+        {
+            bool found = false;
+            for (auto& testPoint : testPoints)
+            {
+                if (testPoint.m_xIndex == xIndex && testPoint.m_yIndex == yIndex
+                    && testPoint.m_testLocation.GetX() == surfacePoint.m_position.GetX()
+                    && testPoint.m_testLocation.GetY() == surfacePoint.m_position.GetY())
+                {
+                    constexpr float epsilon = 0.0001f;
+                    EXPECT_NEAR(surfacePoint.m_normal.GetX(), testPoint.m_expectedNormal.GetX(), epsilon);
+                    EXPECT_NEAR(surfacePoint.m_normal.GetY(), testPoint.m_expectedNormal.GetY(), epsilon);
+                    EXPECT_NEAR(surfacePoint.m_normal.GetZ(), testPoint.m_expectedNormal.GetZ(), epsilon);
+                    found = true;
+                    break;
+                }
+            }
+            EXPECT_EQ(found, true);
+        };
+
+        terrainSystem->ProcessNormalsFromRegion(testRegionBox, stepSize, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR);
     }
 } // namespace UnitTest
