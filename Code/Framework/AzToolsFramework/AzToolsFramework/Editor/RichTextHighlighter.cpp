@@ -20,9 +20,9 @@ namespace AzToolsFramework
             highlightTextIndex = highlightedString.lastIndexOf(matchingSubstring, highlightTextIndex - 1, Qt::CaseInsensitive);
             if (highlightTextIndex >= 0)
             {
-                const QString BACKGROUND_COLOR{ "#707070" };
+                const QString backgroundColor{ "#707070" };
                 highlightedString.insert(static_cast<int>(highlightTextIndex + matchingSubstring.length()), "</span>");
-                highlightedString.insert(highlightTextIndex, "<span style=\"background-color: " + BACKGROUND_COLOR + "\">");
+                highlightedString.insert(highlightTextIndex, "<span style=\"background-color: " + backgroundColor + "\">");
             }
         } while (highlightTextIndex > 0);
 
