@@ -293,7 +293,7 @@ namespace AZStd
                     using RawFunctorObjType = AZStd::decay_t<FunctionObj>;
                     #if defined(__GNUC__)
                     // For GNUC, we need to use AZStd::construct_at instead to prevent the error: placement new constructing an object '...' 
-                    // and size ‘8’ in a region of type ‘char’ and size ‘1’ [-Werror=placement-new=]
+                    // and size '8' in a region of type 'char' and size '1' [-Werror=placement-new=]
                     AZStd::construct_at(reinterpret_cast<RawFunctorObjType*>(&functor), RawFunctorObjType(AZStd::forward<FunctionObj>(f)));
                     #else
                     new ((void*)&functor.data)RawFunctorObjType(AZStd::forward<FunctionObj>(f));
