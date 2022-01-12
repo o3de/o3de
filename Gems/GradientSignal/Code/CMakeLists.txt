@@ -142,6 +142,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTestShared
                 Gem::GradientSignal.Static
                 Gem::LmbrCentral
+                Gem::LmbrCentral.Mocks
                 Gem::GradientSignal.Mocks
     )
     
@@ -161,6 +162,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 Gem::GradientSignal.Tests.Static
                 Gem::GradientSignal.Static
                 Gem::LmbrCentral
+                Gem::LmbrCentral.Mocks
                 Gem::GradientSignal.Mocks
     )
     ly_add_googletest(
@@ -191,6 +193,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     Gem::GradientSignal.Static
                     Gem::GradientSignal.Editor.Static
                     Gem::LmbrCentral.Editor
+                    Gem::LmbrCentral.Mocks
         )
         ly_add_googletest(
             NAME Gem::GradientSignal.Editor.Tests
