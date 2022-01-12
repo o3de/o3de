@@ -21,7 +21,6 @@ ly_add_target(
             AZ::AzCore
             AZ::AtomCore
             AZ::AzFramework
-            Gem::Atom_RPI.Public
             Gem::SurfaceData
             Gem::ImageProcessingAtom.Headers
             Gem::LmbrCentral

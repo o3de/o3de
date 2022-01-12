@@ -20,7 +20,6 @@
 
 namespace
 {
-    // Could (should) move these RetrieveValue helper methods over to where our new API lives
     template <ImageProcessingAtom::EPixelFormat>
     float RetrieveValue(const AZ::u8* mem,  size_t index)
     {
@@ -152,17 +151,17 @@ namespace GradientSignal
         return true;
     }
 
-    float GetValueFromImageAsset(const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& imageAsset, const AZ::Vector3& uvw, float tilingX, float tilingY, float defaultValue)
+    float GetValueFromImageAsset(const AZ::Data::Asset<ImageAsset>& imageAsset, const AZ::Vector3& uvw, float tilingX, float tilingY, float defaultValue)
     {
         if (imageAsset.IsReady())
         {
-            const AZ::RHI::ImageDescriptor imageDescriptor = imageAsset->GetImageDescriptor();
-            auto width = imageDescriptor.m_size.m_width;
-            auto height = imageDescriptor.m_size.m_height;
+            const auto& image = imageAsset.Get();
+            AZStd::size_t imageSize = image->m_imageWidth * image->m_imageHeight *
+                static_cast<AZ::u32>(image->m_bytesPerPixel);
             
-            if (width > 0
-                && height > 0
-                )
+            if (image->m_imageWidth > 0 &&
+                image->m_imageHeight > 0 &&
+                image->m_imageData.size() == imageSize)
             {
                 // When "rasterizing" from uvs, a range of 0-1 has slightly different meanings depending on the sampler state.
                 // For repeating states (Unbounded/None, Repeat), a uv value of 1 should wrap around back to our 0th pixel.
@@ -185,8 +184,8 @@ namespace GradientSignal
                 // A 16x16 pixel image and tilingX = tilingY = 1  maps the uv range of 0-1 to 0-16 pixels.  
                 // A 16x16 pixel image and tilingX = tilingY = 1.5 maps the uv range of 0-1 to 0-24 pixels.
 
-                const AZ::Vector3 tiledDimensions((width  * tilingX),
-                    (height * tilingY),
+                const AZ::Vector3 tiledDimensions((image->m_imageWidth * tilingX),
+                    (image->m_imageHeight * tilingY),
                     0.0f);
 
                 // Convert from uv space back to pixel space
@@ -195,10 +194,13 @@ namespace GradientSignal
                 // UVs outside the 0-1 range are treated as infinitely tiling, so that we behave the same as the 
                 // other gradient generators.  As mentioned above, if clamping is desired, we expect it to be applied
                 // outside of this function.
-                uint32_t x = static_cast<uint32_t>(pixelLookup.GetX()) % width;
-                uint32_t y = static_cast<uint32_t>(pixelLookup.GetY()) % height;
+                size_t x = static_cast<size_t>(pixelLookup.GetX()) % image->m_imageWidth;
+                size_t y = static_cast<size_t>(pixelLookup.GetY()) % image->m_imageHeight;
 
-                return imageAsset->GetSubImagePixelValue<float>(x, y);
+                // Flip the y because images are stored in reverse of our world axes
+                size_t index = ((image->m_imageHeight - 1) - y) * image->m_imageWidth + x;
+
+                return RetrieveValue(image->m_imageData.data(), index, image->m_imageFormat);
             }
         }
 
