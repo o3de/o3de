@@ -264,7 +264,7 @@ class EditorComponent:
     def disable_component(self):
         """
         Used to disable the component using its id value.
-        Deprecation warning! Use set_enable(False) instead as this method is in deprecation
+        Deprecation warning! Use set_enabled(False) instead as this method is in deprecation
         :return: None
         """
         warnings.warn("disable_component is deprecated, use set_enabled(False) instead.", DeprecationWarning)
