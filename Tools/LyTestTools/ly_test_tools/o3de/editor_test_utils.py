@@ -71,7 +71,9 @@ def retrieve_crash_output(run_id: int, workspace: AbstractWorkspaceManager, time
     :return str: The contents of the editor crash file (error.log)
     """
     crash_info = "-- No crash log available --"
-    crash_log = os.path.join(retrieve_log_path(run_id, workspace), 'error.log')
+    # Grab the file name of the crash log which can be different depending on platform
+    crash_file_name = os.path.basename(workspace.paths.crash_log())
+    crash_log = os.path.join(retrieve_log_path(run_id, workspace), crash_file_name)
     try:
         waiter.wait_for(lambda: os.path.exists(crash_log), timeout=timeout)
     except AssertionError:                    
@@ -92,7 +94,7 @@ def cycle_crash_report(run_id: int, workspace: AbstractWorkspaceManager) -> None
     :param workspace: Workspace fixture
     """
     log_path = retrieve_log_path(run_id, workspace)
-    files_to_cycle = ['error.log', 'error.dmp']
+    files_to_cycle = ['crash.log', 'error.log', 'error.dmp']
     for filename in files_to_cycle:
         filepath = os.path.join(log_path, filename)
         name, ext = os.path.splitext(filename)
