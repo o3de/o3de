@@ -452,7 +452,7 @@ def get_engine_json_data(engine_name: str = None,
         try:
             engine_json_data = json.load(f)
         except json.JSONDecodeError as e:
-            logger.warn(f'{engine_json} failed to load: {str(e)}')
+            logger.warning(f'{engine_json} failed to load: {str(e)}')
         else:
             return engine_json_data
 
@@ -485,7 +485,7 @@ def get_project_json_data(project_name: str = None,
         try:
             project_json_data = json.load(f)
         except json.JSONDecodeError as e:
-            logger.warn(f'{project_json} failed to load: {str(e)}')
+            logger.warning(f'{project_json} failed to load: {str(e)}')
         else:
             return project_json_data
 
@@ -518,7 +518,7 @@ def get_gem_json_data(gem_name: str = None, gem_path: str or pathlib.Path = None
         try:
             gem_json_data = json.load(f)
         except json.JSONDecodeError as e:
-            logger.warn(f'{gem_json} failed to load: {str(e)}')
+            logger.warning(f'{gem_json} failed to load: {str(e)}')
         else:
             return gem_json_data
 
@@ -551,7 +551,7 @@ def get_template_json_data(template_name: str = None, template_path: str or path
         try:
             template_json_data = json.load(f)
         except json.JSONDecodeError as e:
-            logger.warn(f'{template_json} failed to load: {str(e)}')
+            logger.warning(f'{template_json} failed to load: {str(e)}')
         else:
             return template_json_data
 
@@ -584,7 +584,7 @@ def get_restricted_json_data(restricted_name: str = None, restricted_path: str o
         try:
             restricted_json_data = json.load(f)
         except json.JSONDecodeError as e:
-            logger.warn(f'{restricted_json} failed to load: {str(e)}')
+            logger.warning(f'{restricted_json} failed to load: {str(e)}')
         else:
             return restricted_json_data
 
@@ -632,18 +632,24 @@ def get_registered(engine_name: str = None,
             if isinstance(engine, dict):
                 engine_path = pathlib.Path(engine['path']).resolve()
             else:
-                engine_path = pathlib.Path(engine_object).resolve()
+                engine_path = pathlib.Path(engine).resolve()
 
             engine_json = engine_path / 'engine.json'
-            with engine_json.open('r') as f:
-                try:
-                    engine_json_data = json.load(f)
-                except json.JSONDecodeError as e:
-                    logger.warn(f'{engine_json} failed to load: {str(e)}')
-                else:
-                    this_engines_name = engine_json_data['engine_name']
-                    if this_engines_name == engine_name:
-                        return engine_path
+            if not pathlib.Path(engine_json).is_file():
+                logger.warning(f'{engine_json} does not exist')
+            else:
+                with engine_json.open('r') as f:
+                    try:
+                        engine_json_data = json.load(f)
+                    except json.JSONDecodeError as e:
+                        logger.warning(f'{engine_json} failed to load: {str(e)}')
+                    else:
+                        this_engines_name = engine_json_data['engine_name']
+                        if this_engines_name == engine_name:
+                            return engine_path
+        engines_path = json_data.get('engines_path', {})
+        if engine_name in engines_path:
+            return pathlib.Path(engines_path[engine_name]).resolve()
 
     elif isinstance(project_name, str):
         projects = get_all_projects()
@@ -654,7 +660,7 @@ def get_registered(engine_name: str = None,
                 try:
                     project_json_data = json.load(f)
                 except json.JSONDecodeError as e:
-                    logger.warn(f'{project_json} failed to load: {str(e)}')
+                    logger.warning(f'{project_json} failed to load: {str(e)}')
                 else:
                     this_projects_name = project_json_data['project_name']
                     if this_projects_name == project_name:
@@ -669,7 +675,7 @@ def get_registered(engine_name: str = None,
                 try:
                     gem_json_data = json.load(f)
                 except json.JSONDecodeError as e:
-                    logger.warn(f'{gem_json} failed to load: {str(e)}')
+                    logger.warning(f'{gem_json} failed to load: {str(e)}')
                 else:
                     this_gems_name = gem_json_data['gem_name']
                     if this_gems_name == gem_name:
@@ -684,7 +690,7 @@ def get_registered(engine_name: str = None,
                 try:
                     template_json_data = json.load(f)
                 except json.JSONDecodeError as e:
-                    logger.warn(f'{template_path} failed to load: {str(e)}')
+                    logger.warning(f'{template_path} failed to load: {str(e)}')
                 else:
                     this_templates_name = template_json_data['template_name']
                     if this_templates_name == template_name:
@@ -699,7 +705,7 @@ def get_registered(engine_name: str = None,
                 try:
                     restricted_json_data = json.load(f)
                 except json.JSONDecodeError as e:
-                    logger.warn(f'{restricted_json} failed to load: {str(e)}')
+                    logger.warning(f'{restricted_json} failed to load: {str(e)}')
                 else:
                     this_restricted_name = restricted_json_data['restricted_name']
                     if this_restricted_name == restricted_name:
@@ -734,7 +740,7 @@ def get_registered(engine_name: str = None,
                     try:
                         repo_json_data = json.load(f)
                     except json.JSONDecodeError as e:
-                        logger.warn(f'{cache_file} failed to load: {str(e)}')
+                        logger.warning(f'{cache_file} failed to load: {str(e)}')
                     else:
                         this_repos_name = repo_json_data['repo_name']
                         if this_repos_name == repo_name:

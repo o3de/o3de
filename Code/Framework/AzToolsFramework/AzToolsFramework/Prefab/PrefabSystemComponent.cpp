@@ -277,7 +277,7 @@ namespace AzToolsFramework
         }
 
         AZStd::unique_ptr<Instance> PrefabSystemComponent::InstantiatePrefab(
-            AZ::IO::PathView filePath, InstanceOptionalReference parent)
+            AZ::IO::PathView filePath, InstanceOptionalReference parent, const InstantiatedEntitiesCallback& instantiatedEntitiesCallback)
         {
             // Retrieve the template id for the source prefab filepath
             Prefab::TemplateId templateId = GetTemplateIdFromFilePath(filePath);
@@ -297,11 +297,11 @@ namespace AzToolsFramework
                 return nullptr;
             }
 
-            return InstantiatePrefab(templateId, parent);
+            return InstantiatePrefab(templateId, parent, instantiatedEntitiesCallback);
         }
 
         AZStd::unique_ptr<Instance> PrefabSystemComponent::InstantiatePrefab(
-            TemplateId templateId, InstanceOptionalReference parent)
+            TemplateId templateId, InstanceOptionalReference parent, const InstantiatedEntitiesCallback& instantiatedEntitiesCallback)
         {
             TemplateReference instantiatingTemplate = FindTemplate(templateId);
 
@@ -324,8 +324,10 @@ namespace AzToolsFramework
                 return nullptr;
             }
 
-            AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
-                &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, newEntities);
+            if (instantiatedEntitiesCallback)
+            {
+                instantiatedEntitiesCallback(newEntities);
+            }
 
             return newInstance;
         }
