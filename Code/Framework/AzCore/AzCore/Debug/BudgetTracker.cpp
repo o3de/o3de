@@ -21,7 +21,7 @@ namespace AZ::Debug
 {
     struct BudgetTracker::BudgetTrackerImpl
     {
-        AZStd::unordered_map<const char*, AZStd::shared_ptr<Budget>> m_budgets;
+        AZStd::unordered_map<AZStd::string_view, AZStd::shared_ptr<Budget>> m_budgets;
     };
 
     AZStd::shared_ptr<Budget> BudgetTracker::GetBudgetFromEnvironment(const char* budgetName, uint32_t crc)
