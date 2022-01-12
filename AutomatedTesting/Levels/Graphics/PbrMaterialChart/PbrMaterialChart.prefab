@@ -1474,9 +1474,9 @@
                                 "{}": {
                                     "MaterialAsset": {
                                         "assetId": {
-                                            "guid": "{1FD47684-2E9E-5525-BBCA-251795F9033C}"
+                                            "guid": "{12B5A321-3D64-5DF6-9E15-D8F447229EC1}"
                                         },
-                                        "assetHint": "levels/pbrmaterialchart/materials/basic_m00_r00.azmaterial"
+                                        "assetHint": "levels/graphics/pbrmaterialchart/materials/basic_m00_r00.azmaterial"
                                     }
                                 }
                             }
@@ -1569,9 +1569,9 @@
                                 "{}": {
                                     "MaterialAsset": {
                                         "assetId": {
-                                            "guid": "{B5660D78-818E-5273-AF3D-EC8189E2E6CB}"
+                                            "guid": "{EB8B9C49-D6F4-5098-AC97-543381E2554A}"
                                         },
-                                        "assetHint": "levels/pbrmaterialchart/materials/basic_m00_r01.azmaterial"
+                                        "assetHint": "levels/graphics/pbrmaterialchart/materials/basic_m00_r01.azmaterial"
                                     }
                                 }
                             }
@@ -1824,9 +1824,9 @@
                                 "{}": {
                                     "MaterialAsset": {
                                         "assetId": {
-                                            "guid": "{512443BD-9511-5F13-A84A-3ED5DB9E9B5A}"
+                                            "guid": "{CAA9CAFC-8A48-5406-BE26-448E5AA1A5B0}"
                                         },
-                                        "assetHint": "levels/pbrmaterialchart/materials/basic_m00_r02.azmaterial"
+                                        "assetHint": "levels/graphics/pbrmaterialchart/materials/basic_m00_r02.azmaterial"
                                     }
                                 }
                             }
@@ -1926,9 +1926,9 @@
                                 "{}": {
                                     "MaterialAsset": {
                                         "assetId": {
-                                            "guid": "{E28A5CC5-4B8B-5B90-877A-3D92C75DC75A}"
+                                            "guid": "{2F338C0B-EF86-5AC4-AEE6-28A26BB9E97E}"
                                         },
-                                        "assetHint": "levels/pbrmaterialchart/materials/basic_m00_r03.azmaterial"
+                                        "assetHint": "levels/graphics/pbrmaterialchart/materials/basic_m00_r03.azmaterial"
                                     }
                                 }
                             }
@@ -2028,9 +2028,9 @@
                                 "{}": {
                                     "MaterialAsset": {
                                         "assetId": {
-                                            "guid": "{1495BCCF-3F96-5D0B-8176-228DB22CEC82}"
+                                            "guid": "{9BF4E656-0D4F-5746-A256-32740742712B}"
                                         },
-                                        "assetHint": "levels/pbrmaterialchart/materials/basic_m00_r04.azmaterial"
+                                        "assetHint": "levels/graphics/pbrmaterialchart/materials/basic_m00_r04.azmaterial"
                                     }
                                 }
                             }
@@ -2130,9 +2130,9 @@
                                 "{}": {
                                     "MaterialAsset": {
                                         "assetId": {
-                                            "guid": "{40494612-0ABF-55B5-9C56-E968763FCFDE}"
+                                            "guid": "{850398D7-386A-56C6-AEB2-95E4F64368B1}"
                                         },
-                                        "assetHint": "levels/pbrmaterialchart/materials/basic_m00_r05.azmaterial"
+                                        "assetHint": "levels/graphics/pbrmaterialchart/materials/basic_m00_r05.azmaterial"
                                     }
                                 }
                             }
@@ -2232,9 +2232,9 @@
                                 "{}": {
                                     "MaterialAsset": {
                                         "assetId": {
-                                            "guid": "{76CF9D4A-009F-5494-83AB-6E3D4D1B4A36}"
+                                            "guid": "{74784C2A-A713-5C6A-8B3D-B66CAE3DD055}"
                                         },
-                                        "assetHint": "levels/pbrmaterialchart/materials/basic_m00_r06.azmaterial"
+                                        "assetHint": "levels/graphics/pbrmaterialchart/materials/basic_m00_r06.azmaterial"
                                     }
                                 }
                             }
@@ -2334,9 +2334,9 @@
                                 "{}": {
                                     "MaterialAsset": {
                                         "assetId": {
-                                            "guid": "{8431B792-E6CC-51DD-B82E-F3E4A12FCB4A}"
+                                            "guid": "{4F9F91F7-7E22-5A14-856D-194CC258E70D}"
                                         },
-                                        "assetHint": "levels/pbrmaterialchart/materials/basic_m00_r07.azmaterial"
+                                        "assetHint": "levels/graphics/pbrmaterialchart/materials/basic_m00_r07.azmaterial"
                                     }
                                 }
                             }
@@ -2436,9 +2436,9 @@
                                 "{}": {
                                     "MaterialAsset": {
                                         "assetId": {
-                                            "guid": "{4B1F29FF-7971-5524-AA1B-0DC2392A33C4}"
+                                            "guid": "{842AE870-802B-5934-997F-0965F960ECB9}"
                                         },
-                                        "assetHint": "levels/pbrmaterialchart/materials/basic_m00_r08.azmaterial"
+                                        "assetHint": "levels/graphics/pbrmaterialchart/materials/basic_m00_r08.azmaterial"
                                     }
                                 }
                             }
@@ -2538,9 +2538,9 @@
                                 "{}": {
                                     "MaterialAsset": {
                                         "assetId": {
-                                            "guid": "{785BE6DE-C0EB-5B47-9438-4F9ECFC34A96}"
+                                            "guid": "{0184CF10-E675-5C33-B1B9-009C383AB463}"
                                         },
-                                        "assetHint": "levels/pbrmaterialchart/materials/basic_m00_r09.azmaterial"
+                                        "assetHint": "levels/graphics/pbrmaterialchart/materials/basic_m00_r09.azmaterial"
                                     }
                                 }
                             }
@@ -2640,9 +2640,9 @@
                                 "{}": {
                                     "MaterialAsset": {
                                         "assetId": {
-                                            "guid": "{C40DE9AE-6756-57E7-B3B4-FB0542B5CD0F}"
+                                            "guid": "{6DDA0761-C165-58CC-B45E-03C29F0CF598}"
                                         },
-                                        "assetHint": "levels/pbrmaterialchart/materials/basic_m00_r10.azmaterial"
+                                        "assetHint": "levels/graphics/pbrmaterialchart/materials/basic_m00_r10.azmaterial"
                                     }
                                 }
                             }
@@ -2896,9 +2896,9 @@
                                 "{}": {
                                     "MaterialAsset": {
                                         "assetId": {
-                                            "guid": "{251C4C29-4ECD-5763-AF4F-20675EAC048B}"
+                                            "guid": "{101AB53A-3B3E-5ACF-841C-65DB2BFBF305}"
                                         },
-                                        "assetHint": "levels/pbrmaterialchart/materials/basic_m10_r04.azmaterial"
+                                        "assetHint": "levels/graphics/pbrmaterialchart/materials/basic_m10_r04.azmaterial"
                                     }
                                 }
                             }
@@ -2998,9 +2998,9 @@
                                 "{}": {
                                     "MaterialAsset": {
                                         "assetId": {
-                                            "guid": "{02D082C4-5032-57CC-A081-BC4D8518BCF0}"
+                                            "guid": "{B82B96D6-7511-5E22-A36E-FFF682B3236B}"
                                         },
-                                        "assetHint": "levels/pbrmaterialchart/materials/basic_m10_r05.azmaterial"
+                                        "assetHint": "levels/graphics/pbrmaterialchart/materials/basic_m10_r05.azmaterial"
                                     }
                                 }
                             }
@@ -3100,9 +3100,9 @@
                                 "{}": {
                                     "MaterialAsset": {
                                         "assetId": {
-                                            "guid": "{FA9D8842-95B2-5371-8352-CBEEEAABE676}"
+                                            "guid": "{DBED5292-3E17-5038-9974-80A8BB1F79E8}"
                                         },
-                                        "assetHint": "levels/pbrmaterialchart/materials/basic_m10_r06.azmaterial"
+                                        "assetHint": "levels/graphics/pbrmaterialchart/materials/basic_m10_r06.azmaterial"
                                     }
                                 }
                             }
@@ -3202,9 +3202,9 @@
                                 "{}": {
                                     "MaterialAsset": {
                                         "assetId": {
-                                            "guid": "{522A9626-FF4C-561A-A44A-64B68F7274D2}"
+                                            "guid": "{25F07733-365C-5826-AEE3-E92FBE807555}"
                                         },
-                                        "assetHint": "levels/pbrmaterialchart/materials/basic_m10_r07.azmaterial"
+                                        "assetHint": "levels/graphics/pbrmaterialchart/materials/basic_m10_r07.azmaterial"
                                     }
                                 }
                             }
@@ -3304,9 +3304,9 @@
                                 "{}": {
                                     "MaterialAsset": {
                                         "assetId": {
-                                            "guid": "{06DDFD66-D7F5-5D55-8972-6D61276E88F6}"
+                                            "guid": "{C9A7B916-CF71-5A34-B9B9-54FE8CB058DC}"
                                         },
-                                        "assetHint": "levels/pbrmaterialchart/materials/basic_m10_r00.azmaterial"
+                                        "assetHint": "levels/graphics/pbrmaterialchart/materials/basic_m10_r00.azmaterial"
                                     }
                                 }
                             }
@@ -3399,9 +3399,9 @@
                                 "{}": {
                                     "MaterialAsset": {
                                         "assetId": {
-                                            "guid": "{060EF1B7-1029-5227-B03B-1415C74E9D65}"
+                                            "guid": "{85C8DFC5-358D-579D-B922-14FA1B401571}"
                                         },
-                                        "assetHint": "levels/pbrmaterialchart/materials/basic_m10_r08.azmaterial"
+                                        "assetHint": "levels/graphics/pbrmaterialchart/materials/basic_m10_r08.azmaterial"
                                     }
                                 }
                             }
@@ -3501,9 +3501,9 @@
                                 "{}": {
                                     "MaterialAsset": {
                                         "assetId": {
-                                            "guid": "{7B7BC6F8-150A-518F-816E-2F7DBE786461}"
+                                            "guid": "{51924281-7A06-5654-B783-A4F5759063ED}"
                                         },
-                                        "assetHint": "levels/pbrmaterialchart/materials/basic_m10_r01.azmaterial"
+                                        "assetHint": "levels/graphics/pbrmaterialchart/materials/basic_m10_r01.azmaterial"
                                     }
                                 }
                             }
@@ -3603,9 +3603,9 @@
                                 "{}": {
                                     "MaterialAsset": {
                                         "assetId": {
-                                            "guid": "{270881B6-21E9-509D-A6CD-1046674FB0BE}"
+                                            "guid": "{7877F64E-26E3-558C-B6D9-B609ED6E43BF}"
                                         },
-                                        "assetHint": "levels/pbrmaterialchart/materials/basic_m10_r09.azmaterial"
+                                        "assetHint": "levels/graphics/pbrmaterialchart/materials/basic_m10_r09.azmaterial"
                                     }
                                 }
                             }
@@ -3705,9 +3705,9 @@
                                 "{}": {
                                     "MaterialAsset": {
                                         "assetId": {
-                                            "guid": "{C0538953-C56E-5C1A-BBE2-E6BE04764C20}"
+                                            "guid": "{6CC3C6B9-EE05-5A77-A12D-7085D93D89DB}"
                                         },
-                                        "assetHint": "levels/pbrmaterialchart/materials/basic_m10_r02.azmaterial"
+                                        "assetHint": "levels/graphics/pbrmaterialchart/materials/basic_m10_r02.azmaterial"
                                     }
                                 }
                             }
@@ -3874,9 +3874,9 @@
                                 "{}": {
                                     "MaterialAsset": {
                                         "assetId": {
-                                            "guid": "{5EA26E09-E3D6-5181-8E7A-F2E98A24247C}"
+                                            "guid": "{E6E15876-EEF3-555D-BD80-1B9D5A7ECC7D}"
                                         },
-                                        "assetHint": "levels/pbrmaterialchart/materials/basic_m10_r10.azmaterial"
+                                        "assetHint": "levels/graphics/pbrmaterialchart/materials/basic_m10_r10.azmaterial"
                                     }
                                 }
                             }
@@ -3976,9 +3976,9 @@
                                 "{}": {
                                     "MaterialAsset": {
                                         "assetId": {
-                                            "guid": "{E1A5D708-7A49-5CCA-81C3-4CB337C47703}"
+                                            "guid": "{83179EEC-BAC7-5D39-9788-37D33E9584B1}"
                                         },
-                                        "assetHint": "levels/pbrmaterialchart/materials/basic_m10_r03.azmaterial"
+                                        "assetHint": "levels/graphics/pbrmaterialchart/materials/basic_m10_r03.azmaterial"
                                     }
                                 }
                             }
