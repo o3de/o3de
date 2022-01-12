@@ -669,7 +669,7 @@ namespace UnitTest
             { AZ::Vector2(-7.71f, -9.74f), -17.45f }, // Should return a height of -7.71 + -9.74
         };
 
-        auto perPositionCallback = [&testPoints](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists){
+        auto perPositionCallback = [&testPoints](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists){
             bool found = false;
             for (auto& testPoint : testPoints)
             {
@@ -756,7 +756,7 @@ namespace UnitTest
             { AZ::Vector2(-7.71f, -9.74f), AZ::Vector3(-0.0366f, -0.9986f, 0.0366f) },
         };
 
-        auto perPositionCallback = [&testPoints](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists){
+        auto perPositionCallback = [&testPoints](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists){
             bool found = false;
             for (auto& testPoint : testPoints)
             {
@@ -820,7 +820,9 @@ namespace UnitTest
             { 1, 1, 0.0f, AZ::Vector2(0.0f, 0.0f) },
         };
 
-        auto perPositionCallback = [&testPoints](size_t xIndex, size_t yIndex, const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists){
+        auto perPositionCallback = [&testPoints](size_t xIndex, size_t yIndex,
+            const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
+        {
             bool found = false;
             for (auto& testPoint : testPoints)
             {
@@ -877,7 +879,9 @@ namespace UnitTest
             { 1, 1, AZ::Vector3(-0.5773f, -0.5773f, 0.5773f), AZ::Vector2(0.0f, 0.0f) },
         };
 
-        auto perPositionCallback = [&testPoints](size_t xIndex, size_t yIndex, const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists){
+        auto perPositionCallback = [&testPoints](size_t xIndex, size_t yIndex,
+            const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
+        {
             bool found = false;
             for (auto& testPoint : testPoints)
             {
