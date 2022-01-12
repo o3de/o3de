@@ -229,7 +229,7 @@ def Material_DefaultLibraryUpdatedAcrossLevels_after():
     for test in test_list:
         # 1) Open the correct level is open
         helper.open_level(
-            "physics",
+            "Physics",
             f"Material_DefaultLibraryUpdatedAcrossLevels\\{test.level}"
         )
 
