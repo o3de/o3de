@@ -1,11 +1,20 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 #include "RichTextHighlighter.h"
 
 namespace AzToolsFramework
 {
     RichTextHighlighter::RichTextHighlighter(QString displayString)
-        : m_displayString(displayString){};
+        : m_displayString(displayString)
+    {}
 
-     QString RichTextHighlighter::HighlightText(const QString& displayString, const QString& matchingSubstring)
+    QString RichTextHighlighter::HighlightText(const QString& displayString, const QString& matchingSubstring)
     {
         m_displayString = displayString;
         int highlightTextIndex = 0;
@@ -22,6 +31,7 @@ namespace AzToolsFramework
 
         return m_displayString;
     }
+
     void RichTextHighlighter::PaintHighlightedRichText(QPainter* painter, QStyleOptionViewItem option, QRect availableRect) const
     {
         painter->save();
@@ -47,4 +57,4 @@ namespace AzToolsFramework
 
         painter->restore();
     }
-}
+} // namespace AzToolsFramework

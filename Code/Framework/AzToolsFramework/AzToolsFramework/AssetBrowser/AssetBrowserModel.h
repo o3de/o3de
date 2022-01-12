@@ -85,14 +85,16 @@ namespace AzToolsFramework
             AZStd::shared_ptr<RootAssetBrowserEntry> GetRootEntry() const;
             void SetRootEntry(AZStd::shared_ptr<RootAssetBrowserEntry> rootEntry);
 
-            AssetBrowserFilterModel* GetFilterModel() const;
-            void setFilterModel(AssetBrowserFilterModel* filterModel);
+            AssetBrowserFilterModel* GetFilterModel();
+            const AssetBrowserFilterModel* GetFilterModel() const;
+            void SetFilterModel(AssetBrowserFilterModel* filterModel);
 
             static void SourceIndexesToAssetIds(const QModelIndexList& indexes, AZStd::vector<AZ::Data::AssetId>& assetIds);
             static void SourceIndexesToAssetDatabaseEntries(const QModelIndexList& indexes, AZStd::vector<AssetBrowserEntry*>& entries);
             
         private:
-            AssetBrowserFilterModel* m_filterModel;
+            //Non owning pointer 
+            AssetBrowserFilterModel* m_filterModel = nullptr;
             AZStd::shared_ptr<RootAssetBrowserEntry> m_rootEntry;
             bool m_loaded;
             bool m_addingEntry;

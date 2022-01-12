@@ -5,13 +5,14 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
-#include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <QTextDocument>
+#include <AzCore/base.h>
 #include <QString>
-#include <QStyleOptionViewItem> 
+#include <QStyleOptionViewItem>
+#include <QTextDocument>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800,"-Wunknown-warning-option") // 4251: class 'QScopedPointer<QBrushData,QBrushDataPointerDeleter>' needs to have dll-interface to be used
                                                               // by clients of class 'QBrush' 4800: 'uint': forcing value to bool 'true' or 'false' (performance warning)
@@ -20,6 +21,8 @@ AZ_POP_DISABLE_WARNING
 
 namespace AzToolsFramework
 {
+    //! @class RichTextHighlighter
+    //! @brief Highlights a given string given a matching substring.
     class RichTextHighlighter
     {
     public:
@@ -33,4 +36,4 @@ namespace AzToolsFramework
     public:
         QString m_displayString;
     };
-}
+} // namespace AzToolsFramework

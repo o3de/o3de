@@ -281,12 +281,11 @@ namespace AzToolsFramework
                     ? qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::Name)))
                     : qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::Path)));
 
-                //QString label{ displayString.data() };
                 QStyleOptionViewItem optionV4{ option };
                 initStyleOption(&optionV4, index);
                 optionV4.state &= ~(QStyle::State_HasFocus | QStyle::State_Selected);
 
-                RichTextHighlighter highlighter = RichTextHighlighter();
+                RichTextHighlighter highlighter;
                 if (m_assetBrowserFilerModel && m_assetBrowserFilerModel->GetStringFilter() 
                     && !m_assetBrowserFilerModel->GetStringFilter()->GetFilterString().isEmpty())
                 {

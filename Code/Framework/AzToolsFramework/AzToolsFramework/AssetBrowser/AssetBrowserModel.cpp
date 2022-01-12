@@ -269,12 +269,17 @@ namespace AzToolsFramework
             m_rootEntry = rootEntry;
         }
 
-        AssetBrowserFilterModel* AssetBrowserModel::GetFilterModel() const
+        AssetBrowserFilterModel* AssetBrowserModel::GetFilterModel()
         {
             return m_filterModel;
         }
 
-        void AssetBrowser::AssetBrowserModel::setFilterModel(AssetBrowserFilterModel* filterModel)
+        const AssetBrowserFilterModel* AssetBrowserModel::GetFilterModel() const
+        {
+            return m_filterModel;
+        }
+
+        void AssetBrowser::AssetBrowserModel::SetFilterModel(AssetBrowserFilterModel* filterModel)
         {
             m_filterModel = filterModel;
         }
