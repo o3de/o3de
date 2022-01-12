@@ -95,6 +95,7 @@
 
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Math/MatrixUtils.h>
+#include <AzToolsFramework/Viewport/ViewportManipulatorController.h>
 
 #include <QtGui/private/qhighdpiscaling_p.h>
 
@@ -936,7 +937,7 @@ void EditorViewportWidget::SetViewportId(int id)
     layout->setContentsMargins(QMargins());
     layout->addWidget(m_renderViewport);
 
-    m_renderViewport->GetControllerList()->Add(AZStd::make_shared<SandboxEditor::ViewportManipulatorController>());
+    m_renderViewport->GetControllerList()->Add(AZStd::make_shared<AzToolsFramework::ViewportManipulatorController>());
 
     m_editorModularViewportCameraComposer = AZStd::make_unique<SandboxEditor::EditorModularViewportCameraComposer>(AzFramework::ViewportId(id));
     m_renderViewport->GetControllerList()->Add(m_editorModularViewportCameraComposer->CreateModularViewportCameraController());
