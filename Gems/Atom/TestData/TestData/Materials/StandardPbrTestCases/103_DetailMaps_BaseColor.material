@@ -1,7 +1,7 @@
 {
     "description": "",
     "materialType": "Materials/Types/EnhancedPBR.materialtype",
-    "parentMaterial": "TestData/Materials/StandardPbrTestCases/101_DetailMaps_LucyBaseNoDetailMaps.material",
+    "parentMaterial": "TestData/Materials/StandardPbrTestCases/101_DetailMaps_BaseNoDetailMaps.material",
     "propertyLayoutVersion": 3,
     "properties": {
         "detailLayerGroup": {
