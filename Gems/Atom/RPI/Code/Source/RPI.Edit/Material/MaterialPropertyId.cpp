@@ -99,9 +99,7 @@ namespace AZ
                 }
             }
 
-            AZStd::string fullName;
-            AzFramework::StringFunc::Join(fullName, names.begin(), names.end(), ".");
-            m_fullName = fullName;
+            AzFramework::StringFunc::Join(m_fullName, names.begin(), names.end(), ".");
         }
 
         MaterialPropertyId::operator const Name&() const
