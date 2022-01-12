@@ -121,7 +121,7 @@ namespace ScriptCanvasEditor
         void UpdateName();
 
         //=====================================================================
-        void UpdatePropertyDisplay(const SourceHandle& sourceHandle);
+        void UpdatePropertyDisplay();
         //=====================================================================
 
         void BuildGameEntityData();
