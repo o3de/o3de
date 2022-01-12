@@ -53,6 +53,7 @@ namespace AZ
         class SkinnedMeshInputBuffers;
         class MeshFeatureProcessorInterface;
         class AtomActor;
+        class AtomActorDebugDraw;
 
         //! Render node for managing and rendering actor instances. Each Actor Component
         //! creates an ActorRenderNode. The render node is responsible for drawing meshes and
@@ -85,8 +86,8 @@ namespace AZ
 
             // RenderActorInstance overrides ...
             void OnTick(float timeDelta) override;
+            void DebugDraw(const EMotionFX::ActorRenderFlagBitset& renderFlags);
             void UpdateBounds() override;
-            void DebugDraw(const DebugOptions& debugOptions) override;
             void SetMaterials(const EMotionFX::Integration::ActorAsset::MaterialList& materialPerLOD) override { AZ_UNUSED(materialPerLOD); };
             void SetSkinningMethod(EMotionFX::Integration::SkinningMethod emfxSkinningMethod) override;
             SkinningMethod GetAtomSkinningMethod() const;
@@ -184,12 +185,8 @@ namespace AZ
             void InitWrinkleMasks();
             void UpdateWrinkleMasks();
 
-            // Helper and debug geometry rendering
-            void RenderSkeleton(RPI::AuxGeomDraw* auxGeom);
-            void RenderEMFXDebugDraw(RPI::AuxGeomDraw* auxGeom);
-            RPI::AuxGeomFeatureProcessorInterface* m_auxGeomFeatureProcessor = nullptr;
-            AZStd::vector<AZ::Vector3> m_auxVertices;
-            AZStd::vector<AZ::Color> m_auxColors;
+            // Debug geometry rendering
+            AZStd::unique_ptr<AtomActorDebugDraw> m_atomActorDebugDraw;
 
             AZStd::intrusive_ptr<AZ::Render::SkinnedMeshInputBuffers> m_skinnedMeshInputBuffers = nullptr;
             AZStd::intrusive_ptr<SkinnedMeshInstance> m_skinnedMeshInstance;

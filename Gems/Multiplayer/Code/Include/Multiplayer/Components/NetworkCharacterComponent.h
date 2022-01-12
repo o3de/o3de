@@ -33,7 +33,6 @@ namespace Multiplayer
     };
 
     typedef AZ::EBus<NetworkCharacterRequests> NetworkCharacterRequestBus;
-
  
     //! NetworkCharacterComponent
     //! Provides multiplayer support for game-play player characters.
@@ -47,19 +46,10 @@ namespace Multiplayer
         AZ_MULTIPLAYER_COMPONENT(Multiplayer::NetworkCharacterComponent, s_networkCharacterComponentConcreteUuid, Multiplayer::NetworkCharacterComponentBase)
 
         static void Reflect(AZ::ReflectContext* context);
+        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
+        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
         NetworkCharacterComponent();
-
-        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
-        {
-            incompatible.push_back(AZ_CRC_CE("NetworkRigidBodyService"));
-        }
-
-        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
-        {
-            NetworkCharacterComponentBase::GetRequiredServices(required);
-            required.push_back(AZ_CRC_CE("PhysXCharacterControllerService"));
-        }
 
         // AZ::Component
         void OnInit() override {}

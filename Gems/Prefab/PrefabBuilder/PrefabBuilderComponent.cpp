@@ -175,6 +175,8 @@ namespace AZ::Prefab
         const AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext::ProductAssetDependencyContainer& registeredDependencies,
         AZStd::vector<AssetBuilderSDK::JobProduct>& outputProducts) const
     {
+        using namespace AzToolsFramework::Prefab::PrefabConversionUtils;
+
         outputProducts.reserve(store.size());
 
         AZStd::vector<uint8_t> data;
@@ -211,17 +213,14 @@ namespace AZ::Prefab
             if (AssetBuilderSDK::OutputObject(&object.GetAsset(), object.GetAssetType(), productPath.String(), object.GetAssetType(),
                 object.GetAsset().GetId().m_subId, product))
             {
-                auto findRegisteredDependencies = registeredDependencies.find(object.GetAsset().GetId());
-                if (findRegisteredDependencies != registeredDependencies.end())
-                {
-                    AZStd::transform(findRegisteredDependencies->second.begin(), findRegisteredDependencies->second.end(),
-                        AZStd::back_inserter(product.m_dependencies),
-                        [](const AZ::Data::AssetId& productId) -> AssetBuilderSDK::ProductDependency
-                        {
-                            return AssetBuilderSDK::ProductDependency(productId,
-                                AZ::Data::ProductDependencyInfo::CreateFlags(AZ::Data::AssetLoadBehavior::NoLoad));
-                        });
-                }
+                auto range = registeredDependencies.equal_range(object.GetAsset().GetId());
+                AZStd::transform(range.first, range.second,
+                    AZStd::back_inserter(product.m_dependencies),
+                    [](const auto& dependency) -> AssetBuilderSDK::ProductDependency
+                    {
+                        return AssetBuilderSDK::ProductDependency(
+                            dependency.second.m_assetId, AZ::Data::ProductDependencyInfo::CreateFlags(dependency.second.m_loadBehavior));
+                    });
 
                 outputProducts.push_back(AZStd::move(product));
             }
@@ -238,7 +237,7 @@ namespace AZ::Prefab
 
     bool PrefabBuilderComponent::ProcessPrefab(
         const AZ::PlatformTagSet& platformTags, const char* filePath, AZ::IO::PathView tempDirPath, const AZ::Uuid& sourceFileUuid,
-        AzToolsFramework::Prefab::PrefabDom& mutableRootDom, AZStd::vector<AssetBuilderSDK::JobProduct>& jobProducts)
+        AzToolsFramework::Prefab::PrefabDom&& rootDom, AZStd::vector<AssetBuilderSDK::JobProduct>& jobProducts)
     {
         AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext context(sourceFileUuid);
         AZStd::string rootPrefabName;
@@ -248,7 +247,9 @@ namespace AZ::Prefab
                        filePath);
             return false;
         }
-        context.AddPrefab(AZStd::move(rootPrefabName), AZStd::move(mutableRootDom));
+        AzToolsFramework::Prefab::PrefabConversionUtils::PrefabDocument rootDocument(AZStd::move(rootPrefabName));
+        rootDocument.SetPrefabDom(AZStd::move(rootDom));
+        context.AddPrefab(AZStd::move(rootDocument));
         
         context.SetPlatformTags(AZStd::move(platformTags));
 
@@ -320,8 +321,8 @@ namespace AZ::Prefab
         });
 
         if (ProcessPrefab(
-                platformTags, request.m_fullPath.c_str(), request.m_tempDirPath.c_str(), request.m_sourceFileUUID, mutableRootDom,
-                response.m_outputProducts))
+                platformTags, request.m_fullPath.c_str(), request.m_tempDirPath.c_str(), request.m_sourceFileUUID,
+                AZStd::move(mutableRootDom), response.m_outputProducts))
         {
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
         }

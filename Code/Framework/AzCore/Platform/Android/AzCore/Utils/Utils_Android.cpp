@@ -60,23 +60,34 @@ namespace AZ
             return writeStorage ? AZStd::make_optional<AZ::IO::FixedMaxPathString>(writeStorage) : AZStd::nullopt;
         }
 
-        AZStd::optional<AZ::IO::FixedMaxPathString> ConvertToAbsolutePath(AZStd::string_view path)
+        bool ConvertToAbsolutePath(const char* path, char* absolutePath, AZ::u64 maxLength)
         {
-            AZ::IO::FixedMaxPathString absolutePath;
-            AZ::IO::FixedMaxPathString srcPath{ path };
-            if (AZ::Android::Utils::IsApkPath(srcPath.c_str()))
+            if (AZ::Android::Utils::IsApkPath(path))
             {
-                return srcPath;
+                azstrcpy(absolutePath, maxLength, path);
+                return true;
             }
 
-            if(char* result = realpath(srcPath.c_str(), absolutePath.data()); result)
+#ifdef PATH_MAX
+            static constexpr size_t UnixMaxPathLength = PATH_MAX;
+#else
+            // Fallback to 4096 if the PATH_MAX macro isn't defined on the Unix System
+            static constexpr size_t UnixMaxPathLength = 4096;
+#endif
+            if (!AZ::IO::PathView(path).IsAbsolute())
             {
-                // Fix the size value of the fixed string by calculating the c-string length using char traits
-                absolutePath.resize_no_construct(AZStd::char_traits<char>::length(absolutePath.data()));
-                return absolutePath;
+                // note that realpath fails if the path does not exist and actually changes the return value
+                // to be the actual place that FAILED, which we don't want.
+                // if we fail, we'd prefer to fall through and at least use the original path.
+                char absolutePathBuffer[UnixMaxPathLength];
+                if (const char* result = realpath(path, absolutePathBuffer); result != nullptr)
+                {
+                    azstrcpy(absolutePath, maxLength, absolutePathBuffer);
+                    return true;
+                }
             }
-
-            return AZStd::nullopt;
+            azstrcpy(absolutePath, maxLength, path);
+            return AZ::IO::PathView(absolutePath).IsAbsolute();
         }
     }
 }

@@ -1051,7 +1051,7 @@ public:
         // Replace with a new LocalFileIO...
         m_fileIO = AZStd::make_unique<AZ::IO::LocalFileIO>();
         AZ::IO::FileIOBase::SetInstance(m_fileIO.get());
-        
+
         AZStd::string rootFolder(AZ::Test::GetCurrentExecutablePath());
         AZ::StringFunc::Path::Join(rootFolder.c_str(), "Test.Assets/Gems/AudioSystem/ATLData", rootFolder);
 

@@ -99,6 +99,8 @@ namespace AZ
             // Utility functions
             /// Check if a file or directory exists.
             static bool     Exists(const char* path);
+            /// Check if path is a directory
+            static bool     IsDirectory(const char* path);
             /// FindFiles
             typedef AZStd::function<bool /* true to continue to enumerate otherwise false */ (const char* /* fileName*/, bool /* true if file, false if folder*/)>  FindFileCB;
             static void     FindFiles(const char* filter, FindFileCB cb);

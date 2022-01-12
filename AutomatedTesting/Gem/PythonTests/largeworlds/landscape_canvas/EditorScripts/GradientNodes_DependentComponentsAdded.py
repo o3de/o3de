@@ -104,7 +104,7 @@ def GradientNodes_DependentComponentsAdded():
     # we will be checking for
     commonComponents = [
         'Gradient Transform Modifier',
-        'Vegetation Reference Shape'
+        'Shape Reference'
     ]
     componentNames = []
     for name in gradients:
@@ -114,7 +114,7 @@ def GradientNodes_DependentComponentsAdded():
 
     # Create nodes for the gradients that have additional required dependencies and check if
     # the Entity created by adding the node has the appropriate Component and required
-    # Gradient Transform Modifier and Vegetation Reference Shape components added automatically to it
+    # Gradient Transform Modifier and Shape Reference components added automatically to it
     newGraph = graph.GraphManagerRequestBus(bus.Broadcast, 'GetGraph', newGraphId)
     x = 10.0
     y = 10.0

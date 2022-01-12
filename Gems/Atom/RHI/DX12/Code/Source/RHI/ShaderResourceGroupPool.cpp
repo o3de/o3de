@@ -14,8 +14,6 @@
 #include <RHI/Device.h>
 #include <RHI/Image.h>
 #include <RHI/ImageView.h>
-#include <AzCore/Debug/EventTrace.h>
-
 
 namespace AZ
 {
@@ -204,8 +202,13 @@ namespace AZ
         {
             ShaderResourceGroup& group = static_cast<ShaderResourceGroup&>(groupBase);
             auto& device = static_cast<Device&>(GetDevice());
-            group.m_compiledDataIndex = (group.m_compiledDataIndex + 1) % RHI::Limits::Device::FrameCountMax;
 
+            if (!groupData.IsAnyResourceTypeUpdated())
+            {
+                return RHI::ResultCode::Success;
+            }
+
+            group.m_compiledDataIndex = (group.m_compiledDataIndex + 1) % RHI::Limits::Device::FrameCountMax;
             if (m_constantBufferSize)
             {
                 memcpy(group.GetCompiledData().m_cpuConstantAddress, groupData.GetConstantData().data(), groupData.GetConstantData().size());

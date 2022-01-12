@@ -36,7 +36,7 @@ namespace EMotionFX
         RecordProperty("test_case_id", "C1559124");
 
         const QString assetName = "rin_idle";  // Asset name to appear in table
-        const AZStd::string motionCmd = AZStd::string::format("ImportMotion -filename @devroot@/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin_idle.motion");
+        const AZStd::string motionCmd = AZStd::string::format("ImportMotion -filename @engroot@/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin_idle.motion");
 
         auto motionWindowPlugin = static_cast<EMStudio::MotionWindowPlugin*>(EMStudio::GetPluginManager()->FindActivePlugin(EMStudio::MotionWindowPlugin::CLASS_ID));
         ASSERT_TRUE(motionWindowPlugin) << "Could not find the Motion Window Plugin";

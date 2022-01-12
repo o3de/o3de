@@ -143,12 +143,15 @@ namespace Blast
     void BlastSystemComponent::Deactivate()
     {
         AZ_PROFILE_FUNCTION(Physics);
+        AZ::Data::AssetBus::MultiHandler::BusDisconnect();
         CrySystemEventBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
         BlastSystemRequestBus::Handler::BusDisconnect();
 
         SaveConfiguration();
         DeactivatePhysics();
+
+        m_configuration.m_materialLibrary.Release();
 
         m_assetHandlers.clear();
     };
@@ -254,19 +257,22 @@ namespace Blast
             BlastFamilyComponentRequestBus::Broadcast(
                 &BlastFamilyComponentRequests::FillDebugRenderBuffer, buffer, m_debugRenderMode);
 
-            // This is a system component, and thus is not associated with a specific scene, so use the default scene
+            // This is a system component, and thus is not associated with a specific scene, so use the bootstrap scene
             // for the debug drawing
-            const auto defaultScene = AZ::RPI::RPISystemInterface::Get()->GetDefaultScene();
-            auto drawQueue = AZ::RPI::AuxGeomFeatureProcessorInterface::GetDrawQueueForScene(defaultScene);
-
-            for (DebugLine& line : buffer.m_lines)
+            const auto mainScene = AZ::RPI::RPISystemInterface::Get()->GetSceneByName(AZ::Name("Main"));
+            if (mainScene)
             {
-                AZ::RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments drawArguments;
-                drawArguments.m_verts = &line.m_p0;
-                drawArguments.m_vertCount = 2;
-                drawArguments.m_colors = &line.m_color;
-                drawArguments.m_colorCount = 1;
-                drawQueue->DrawLines(drawArguments);
+                auto drawQueue = AZ::RPI::AuxGeomFeatureProcessorInterface::GetDrawQueueForScene(mainScene);
+
+                for (DebugLine& line : buffer.m_lines)
+                {
+                    AZ::RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments drawArguments;
+                    drawArguments.m_verts = &line.m_p0;
+                    drawArguments.m_vertCount = 2;
+                    drawArguments.m_colors = &line.m_color;
+                    drawArguments.m_colorCount = 1;
+                    drawQueue->DrawLines(drawArguments);
+                }
             }
         }
     }
@@ -286,13 +292,16 @@ namespace Blast
             DefaultConfigurationPath, globalConfiguration);
         AZ_Warning("Blast", loaded, "Failed to load Blast configuration, initializing with default configs.");
 
-        SetGlobalConfiguration(globalConfiguration);
-        SaveConfiguration();
+        ApplyGlobalConfiguration(globalConfiguration);
+        if (!loaded)
+        {
+            SaveConfiguration();
+        }
     }
 
     void BlastSystemComponent::SaveConfiguration()
     {
-        auto assetRoot = AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@");
+        auto assetRoot = AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectroot@");
 
         if (!assetRoot)
         {
@@ -309,7 +318,7 @@ namespace Blast
 
     void BlastSystemComponent::CheckoutConfiguration()
     {
-        const auto assetRoot = AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@");
+        const auto assetRoot = AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectroot@");
 
         AZStd::string fullPath;
         AzFramework::StringFunc::Path::Join(assetRoot, DefaultConfigurationPath, fullPath);
@@ -394,8 +403,13 @@ namespace Blast
 
     void BlastSystemComponent::SetGlobalConfiguration(const BlastGlobalConfiguration& globalConfiguration)
     {
-        m_configuration = globalConfiguration;
+        ApplyGlobalConfiguration(globalConfiguration);
         SaveConfiguration();
+    }
+
+    void BlastSystemComponent::ApplyGlobalConfiguration(const BlastGlobalConfiguration& globalConfiguration)
+    {
+        m_configuration = globalConfiguration;
 
         {
             AZ::Data::Asset<Blast::BlastMaterialLibraryAsset>& materialLibrary = m_configuration.m_materialLibrary;

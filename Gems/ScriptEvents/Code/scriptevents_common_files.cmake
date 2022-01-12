@@ -10,7 +10,7 @@ set(FILES
     Source/ScriptEventsSystemComponent.h
     Source/ScriptEventsSystemComponent.cpp
     Source/ScriptEventParameter.cpp
-    Source/ScriptEventMethod.cpp
+    Source/ScriptEventsMethod.cpp
     Source/ScriptEventsAssetRef.cpp
     Include/ScriptEvents/ScriptEventsGem.h
     Include/ScriptEvents/ScriptEventsAsset.h
@@ -23,7 +23,7 @@ set(FILES
     Include/ScriptEvents/ScriptEventDefinition.h
     Include/ScriptEvents/ScriptEventDefinition.cpp
     Include/ScriptEvents/ScriptEvent.h
-    Include/ScriptEvents/ScriptEventMethod.h
+    Include/ScriptEvents/ScriptEventsMethod.h
     Include/ScriptEvents/ScriptEvent.cpp
     Include/ScriptEvents/ScriptEventParameter.h
     Include/ScriptEvents/ScriptEventSystem.h
@@ -42,6 +42,4 @@ set(FILES
     Include/ScriptEvents/Internal/BehaviorContextBinding/ScriptEventsBindingBus.h
     Include/ScriptEvents/Internal/BehaviorContextBinding/ScriptEventBinding.h
     Include/ScriptEvents/Internal/BehaviorContextBinding/ScriptEventBinding.cpp
-    Include/ScriptEvents/Components/ScriptEventReferencesComponent.h
-    Include/ScriptEvents/Components/ScriptEventReferencesComponent.cpp
 )

@@ -49,33 +49,34 @@ namespace AZ
                     ->Event("ClearIncompatibleMaterialOverrides", &MaterialComponentRequestBus::Events::ClearIncompatibleMaterialOverrides)
                     ->Event("ClearInvalidMaterialOverrides", &MaterialComponentRequestBus::Events::ClearInvalidMaterialOverrides)
                     ->Event("RepairInvalidMaterialOverrides", &MaterialComponentRequestBus::Events::RepairInvalidMaterialOverrides)
+                    ->Event("ApplyAutomaticPropertyUpdates", &MaterialComponentRequestBus::Events::ApplyAutomaticPropertyUpdates)
                     ->Event("SetMaterialOverride", &MaterialComponentRequestBus::Events::SetMaterialOverride)
                     ->Event("GetMaterialOverride", &MaterialComponentRequestBus::Events::GetMaterialOverride)
                     ->Event("ClearMaterialOverride", &MaterialComponentRequestBus::Events::ClearMaterialOverride)
                     ->Event("SetPropertyOverride", &MaterialComponentRequestBus::Events::SetPropertyOverride)
-                    ->Event("SetPropertyOverrideBool", &MaterialComponentRequestBus::Events::SetPropertyOverrideBool)
-                    ->Event("SetPropertyOverrideInt32", &MaterialComponentRequestBus::Events::SetPropertyOverrideInt32)
-                    ->Event("SetPropertyOverrideUInt32", &MaterialComponentRequestBus::Events::SetPropertyOverrideUInt32)
-                    ->Event("SetPropertyOverrideFloat", &MaterialComponentRequestBus::Events::SetPropertyOverrideFloat)
-                    ->Event("SetPropertyOverrideVector2", &MaterialComponentRequestBus::Events::SetPropertyOverrideVector2)
-                    ->Event("SetPropertyOverrideVector3", &MaterialComponentRequestBus::Events::SetPropertyOverrideVector3)
-                    ->Event("SetPropertyOverrideVector4", &MaterialComponentRequestBus::Events::SetPropertyOverrideVector4)
-                    ->Event("SetPropertyOverrideColor", &MaterialComponentRequestBus::Events::SetPropertyOverrideColor)
-                    ->Event("SetPropertyOverrideImageAsset", &MaterialComponentRequestBus::Events::SetPropertyOverrideImageAsset)
-                    ->Event("SetPropertyOverrideImageInstance", &MaterialComponentRequestBus::Events::SetPropertyOverrideImageInstance)
-                    ->Event("SetPropertyOverrideString", &MaterialComponentRequestBus::Events::SetPropertyOverrideString)
+                    ->Event("SetPropertyOverrideBool", &MaterialComponentRequestBus::Events::SetPropertyOverrideT<bool>)
+                    ->Event("SetPropertyOverrideInt32", &MaterialComponentRequestBus::Events::SetPropertyOverrideT<int32_t>)
+                    ->Event("SetPropertyOverrideUInt32", &MaterialComponentRequestBus::Events::SetPropertyOverrideT<uint32_t>)
+                    ->Event("SetPropertyOverrideFloat", &MaterialComponentRequestBus::Events::SetPropertyOverrideT<float>)
+                    ->Event("SetPropertyOverrideVector2", &MaterialComponentRequestBus::Events::SetPropertyOverrideT<AZ::Vector2>)
+                    ->Event("SetPropertyOverrideVector3", &MaterialComponentRequestBus::Events::SetPropertyOverrideT<AZ::Vector3>)
+                    ->Event("SetPropertyOverrideVector4", &MaterialComponentRequestBus::Events::SetPropertyOverrideT<AZ::Vector4>)
+                    ->Event("SetPropertyOverrideColor", &MaterialComponentRequestBus::Events::SetPropertyOverrideT<AZ::Color>)
+                    ->Event("SetPropertyOverrideImage", &MaterialComponentRequestBus::Events::SetPropertyOverrideT<AZ::Data::AssetId>)
+                    ->Event("SetPropertyOverrideString", &MaterialComponentRequestBus::Events::SetPropertyOverrideT<AZStd::string>)
+                    ->Event("SetPropertyOverrideEnum", &MaterialComponentRequestBus::Events::SetPropertyOverrideT<uint32_t>)
                     ->Event("GetPropertyOverride", &MaterialComponentRequestBus::Events::GetPropertyOverride)
-                    ->Event("GetPropertyOverrideBool", &MaterialComponentRequestBus::Events::GetPropertyOverrideBool)
-                    ->Event("GetPropertyOverrideInt32", &MaterialComponentRequestBus::Events::GetPropertyOverrideInt32)
-                    ->Event("GetPropertyOverrideUInt32", &MaterialComponentRequestBus::Events::GetPropertyOverrideUInt32)
-                    ->Event("GetPropertyOverrideFloat", &MaterialComponentRequestBus::Events::GetPropertyOverrideFloat)
-                    ->Event("GetPropertyOverrideVector2", &MaterialComponentRequestBus::Events::GetPropertyOverrideVector2)
-                    ->Event("GetPropertyOverrideVector3", &MaterialComponentRequestBus::Events::GetPropertyOverrideVector3)
-                    ->Event("GetPropertyOverrideVector4", &MaterialComponentRequestBus::Events::GetPropertyOverrideVector4)
-                    ->Event("GetPropertyOverrideColor", &MaterialComponentRequestBus::Events::GetPropertyOverrideColor)
-                    ->Event("GetPropertyOverrideImageAsset", &MaterialComponentRequestBus::Events::GetPropertyOverrideImageAsset)
-                    ->Event("GetPropertyOverrideImageInstance", &MaterialComponentRequestBus::Events::GetPropertyOverrideImageInstance)
-                    ->Event("GetPropertyOverrideString", &MaterialComponentRequestBus::Events::GetPropertyOverrideString)
+                    ->Event("GetPropertyOverrideBool", &MaterialComponentRequestBus::Events::GetPropertyOverrideT<bool>)
+                    ->Event("GetPropertyOverrideInt32", &MaterialComponentRequestBus::Events::GetPropertyOverrideT<int32_t>)
+                    ->Event("GetPropertyOverrideUInt32", &MaterialComponentRequestBus::Events::GetPropertyOverrideT<uint32_t>)
+                    ->Event("GetPropertyOverrideFloat", &MaterialComponentRequestBus::Events::GetPropertyOverrideT<float>)
+                    ->Event("GetPropertyOverrideVector2", &MaterialComponentRequestBus::Events::GetPropertyOverrideT<AZ::Vector2>)
+                    ->Event("GetPropertyOverrideVector3", &MaterialComponentRequestBus::Events::GetPropertyOverrideT<AZ::Vector3>)
+                    ->Event("GetPropertyOverrideVector4", &MaterialComponentRequestBus::Events::GetPropertyOverrideT<AZ::Vector4>)
+                    ->Event("GetPropertyOverrideColor", &MaterialComponentRequestBus::Events::GetPropertyOverrideT<AZ::Color>)
+                    ->Event("GetPropertyOverrideImage", &MaterialComponentRequestBus::Events::GetPropertyOverrideT<AZ::Data::AssetId>)
+                    ->Event("GetPropertyOverrideString", &MaterialComponentRequestBus::Events::GetPropertyOverrideT<AZStd::string>)
+                    ->Event("GetPropertyOverrideEnum", &MaterialComponentRequestBus::Events::GetPropertyOverrideT<uint32_t>)
                     ->Event("ClearPropertyOverride", &MaterialComponentRequestBus::Events::ClearPropertyOverride)
                     ->Event("ClearPropertyOverrides", &MaterialComponentRequestBus::Events::ClearPropertyOverrides)
                     ->Event("ClearAllPropertyOverrides", &MaterialComponentRequestBus::Events::ClearAllPropertyOverrides)
@@ -120,7 +121,12 @@ namespace AZ
             MaterialComponentRequestBus::Handler::BusDisconnect();
             MaterialReceiverNotificationBus::Handler::BusDisconnect();
             TickBus::Handler::BusDisconnect();
+
             ReleaseMaterials();
+
+            // Sending notification to wipe any previously assigned material overrides
+            MaterialComponentNotificationBus::Event(
+                m_entityId, &MaterialComponentNotifications::OnMaterialsUpdated, MaterialAssignmentMap());
 
             m_queuedMaterialUpdateNotification = false;
             m_entityId = AZ::EntityId(AZ::EntityId::InvalidEntityId);
@@ -220,6 +226,11 @@ namespace AZ
             if (!anyQueued)
             {
                 ReleaseMaterials();
+
+                // If no other materials were loaded, the notification must still be sent in case there are externally managed material
+                // instances in the configuration
+                MaterialComponentNotificationBus::Event(
+                    m_entityId, &MaterialComponentNotifications::OnMaterialsUpdated, m_configuration.m_materials);
             }
         }
 
@@ -267,8 +278,6 @@ namespace AZ
             {
                 materialPair.second.Release();
             }
-
-            MaterialComponentNotificationBus::Event(m_entityId, &MaterialComponentNotifications::OnMaterialsUpdated, m_configuration.m_materials);
         }
 
         MaterialAssignmentMap MaterialComponentController::GetOriginalMaterialAssignments() const
@@ -406,6 +415,37 @@ namespace AZ
             }
             LoadMaterials();
         }
+        
+        uint32_t MaterialComponentController::ApplyAutomaticPropertyUpdates()
+        {
+            uint32_t propertiesUpdated = 0;
+
+            for (auto& materialAssignmentPair : m_configuration.m_materials)
+            {
+                MaterialAssignment& materialAssignment = materialAssignmentPair.second;
+                
+                AZStd::vector<AZStd::pair<Name, Name>> renamedProperties;
+
+                for (const auto& propertyPair : materialAssignment.m_propertyOverrides)
+                {
+                    Name propertyId = propertyPair.first;
+
+                    if (materialAssignment.m_materialInstance->GetAsset()->GetMaterialTypeAsset()->ApplyPropertyRenames(propertyId))
+                    {
+                        renamedProperties.emplace_back(propertyPair.first, propertyId);
+                        ++propertiesUpdated;
+                    }
+                }
+                
+                for (const auto& [oldName, newName] : renamedProperties)
+                {
+                    materialAssignment.m_propertyOverrides[newName] = materialAssignment.m_propertyOverrides[oldName];
+                    materialAssignment.m_propertyOverrides.erase(oldName);
+                }
+            }
+
+            return propertiesUpdated;
+        }
 
         void MaterialComponentController::SetDefaultMaterialOverride(const AZ::Data::AssetId& materialAssetId)
         {
@@ -467,76 +507,6 @@ namespace AZ
             QueuePropertyChanges(materialAssignmentId);
         }
 
-        void MaterialComponentController::SetPropertyOverrideBool(
-            const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName, const bool& value)
-        {
-            SetPropertyOverride(materialAssignmentId, propertyName, AZStd::any(value));
-        }
-
-        void MaterialComponentController::SetPropertyOverrideInt32(
-            const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName, const int32_t& value)
-        {
-            SetPropertyOverride(materialAssignmentId, propertyName, AZStd::any(value));
-        }
-
-        void MaterialComponentController::SetPropertyOverrideUInt32(
-            const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName, const uint32_t& value)
-        {
-            SetPropertyOverride(materialAssignmentId, propertyName, AZStd::any(value));
-        }
-
-        void MaterialComponentController::SetPropertyOverrideFloat(
-            const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName, const float& value)
-        {
-            SetPropertyOverride(materialAssignmentId, propertyName, AZStd::any(value));
-        }
-
-        void MaterialComponentController::SetPropertyOverrideVector2(
-            const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName, const AZ::Vector2& value)
-        {
-            SetPropertyOverride(materialAssignmentId, propertyName, AZStd::any(value));
-        }
-
-        void MaterialComponentController::SetPropertyOverrideVector3(
-            const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName, const AZ::Vector3& value)
-        {
-            SetPropertyOverride(materialAssignmentId, propertyName, AZStd::any(value));
-        }
-
-        void MaterialComponentController::SetPropertyOverrideVector4(
-            const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName, const AZ::Vector4& value)
-        {
-            SetPropertyOverride(materialAssignmentId, propertyName, AZStd::any(value));
-        }
-
-        void MaterialComponentController::SetPropertyOverrideColor(
-            const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName, const AZ::Color& value)
-        {
-            SetPropertyOverride(materialAssignmentId, propertyName, AZStd::any(value));
-        }
-
-        void MaterialComponentController::SetPropertyOverrideImageAsset(
-            const MaterialAssignmentId& materialAssignmentId,
-            const AZStd::string& propertyName,
-            const AZ::Data::Asset<AZ::RPI::ImageAsset>& value)
-        {
-            SetPropertyOverride(materialAssignmentId, propertyName, AZStd::any(value));
-        }
-
-        void MaterialComponentController::SetPropertyOverrideImageInstance(
-            const MaterialAssignmentId& materialAssignmentId,
-            const AZStd::string& propertyName,
-            const AZ::Data::Instance<AZ::RPI::Image>& value)
-        {
-            SetPropertyOverride(materialAssignmentId, propertyName, AZStd::any(value));
-        }
-
-        void MaterialComponentController::SetPropertyOverrideString(
-            const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName, const AZStd::string& value)
-        {
-            SetPropertyOverride(materialAssignmentId, propertyName, AZStd::any(value));
-        }
-
         AZStd::any MaterialComponentController::GetPropertyOverride(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) const
         {
             const auto materialIt = m_configuration.m_materials.find(materialAssignmentId);
@@ -552,83 +522,6 @@ namespace AZ
             }
 
             return propertyIt->second;
-        }
-
-        bool MaterialComponentController::GetPropertyOverrideBool(
-            const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) const
-        {
-            const AZStd::any& value = GetPropertyOverride(materialAssignmentId, propertyName);
-            return !value.empty() && value.is<bool>() ? AZStd::any_cast<bool>(value) : false;
-        }
-
-        int32_t MaterialComponentController::GetPropertyOverrideInt32(
-            const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) const
-        {
-            const AZStd::any& value = GetPropertyOverride(materialAssignmentId, propertyName);
-            return !value.empty() && value.is<int32_t>() ? AZStd::any_cast<int32_t>(value) : 0;
-        }
-
-        uint32_t MaterialComponentController::GetPropertyOverrideUInt32(
-            const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) const
-        {
-            const AZStd::any& value = GetPropertyOverride(materialAssignmentId, propertyName);
-            return !value.empty() && value.is<uint32_t>() ? AZStd::any_cast<uint32_t>(value) : 0;
-        }
-
-        float MaterialComponentController::GetPropertyOverrideFloat(
-            const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) const
-        {
-            const AZStd::any& value = GetPropertyOverride(materialAssignmentId, propertyName);
-            return !value.empty() && value.is<float>() ? AZStd::any_cast<float>(value) : 0.0f;
-        }
-
-        AZ::Vector2 MaterialComponentController::GetPropertyOverrideVector2(
-            const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) const
-        {
-            const AZStd::any& value = GetPropertyOverride(materialAssignmentId, propertyName);
-            return !value.empty() && value.is<AZ::Vector2>() ? AZStd::any_cast<AZ::Vector2>(value) : AZ::Vector2::CreateZero();
-        }
-
-        AZ::Vector3 MaterialComponentController::GetPropertyOverrideVector3(
-            const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) const
-        {
-            const AZStd::any& value = GetPropertyOverride(materialAssignmentId, propertyName);
-            return !value.empty() && value.is<AZ::Vector3>() ? AZStd::any_cast<AZ::Vector3>(value) : AZ::Vector3::CreateZero();
-        }
-
-        AZ::Vector4 MaterialComponentController::GetPropertyOverrideVector4(
-            const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) const
-        {
-            const AZStd::any& value = GetPropertyOverride(materialAssignmentId, propertyName);
-            return !value.empty() && value.is<AZ::Vector4>() ? AZStd::any_cast<AZ::Vector4>(value) : AZ::Vector4::CreateZero();
-        }
-
-        AZ::Color MaterialComponentController::GetPropertyOverrideColor(
-            const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) const
-        {
-            const AZStd::any& value = GetPropertyOverride(materialAssignmentId, propertyName);
-            return !value.empty() && value.is<AZ::Color>() ? AZStd::any_cast<AZ::Color>(value) : AZ::Color::CreateZero();
-        }
-
-        AZ::Data::Asset<AZ::RPI::ImageAsset> MaterialComponentController::GetPropertyOverrideImageAsset(
-            const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) const
-        {
-            const AZStd::any& value = GetPropertyOverride(materialAssignmentId, propertyName);
-            return !value.empty() && value.is<AZ::Data::Asset<AZ::RPI::ImageAsset>>() ? AZStd::any_cast<AZ::Data::Asset<AZ::RPI::ImageAsset>>(value) : AZ::Data::Asset<AZ::RPI::ImageAsset>();
-        }
-
-        AZ::Data::Instance<AZ::RPI::Image> MaterialComponentController::GetPropertyOverrideImageInstance(
-            const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) const
-        {
-            const AZStd::any& value = GetPropertyOverride(materialAssignmentId, propertyName);
-            return !value.empty() && value.is<AZ::Data::Instance<AZ::RPI::Image>>() ? AZStd::any_cast<AZ::Data::Instance<AZ::RPI::Image>>(value) : AZ::Data::Instance<AZ::RPI::Image>();
-        }
-
-        AZStd::string MaterialComponentController::GetPropertyOverrideString(
-            const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) const
-        {
-            const AZStd::any& value = GetPropertyOverride(materialAssignmentId, propertyName);
-            return !value.empty() && value.is<AZStd::string>() ? AZStd::any_cast<AZStd::string>(value) : AZStd::string();
         }
 
         void MaterialComponentController::ClearPropertyOverride(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName)

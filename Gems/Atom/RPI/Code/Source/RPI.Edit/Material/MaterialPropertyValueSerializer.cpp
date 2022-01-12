@@ -62,6 +62,8 @@ namespace AZ
                 return context.Report(JsonSerializationResult::Tasks::ReadField, JsonSerializationResult::Outcomes::Catastrophic, "Material type reference not found.");
             }
 
+            const JsonMaterialPropertyValueSerializer::LoadContext* loadContext = context.GetMetadata().Find<JsonMaterialPropertyValueSerializer::LoadContext>();
+
             // Construct the full property name (groupName.propertyName) by parsing it from the JSON path string.
             size_t startPropertyName = context.GetPath().Get().rfind('/');
             size_t startGroupName = context.GetPath().Get().rfind('/', startPropertyName-1);
@@ -70,7 +72,7 @@ namespace AZ
 
             JSR::ResultCode result(JSR::Tasks::ReadField);
 
-            auto propertyDefinition = materialType->FindProperty(groupName, propertyName);
+            auto propertyDefinition = materialType->FindProperty(groupName, propertyName, loadContext->m_materialTypeVersion);
             if (!propertyDefinition)
             {
                 AZStd::string message = AZStd::string::format("Property '%.*s.%.*s' not found in material type.", AZ_STRING_ARG(groupName), AZ_STRING_ARG(propertyName));

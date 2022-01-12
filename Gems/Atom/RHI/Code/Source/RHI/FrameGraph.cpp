@@ -17,8 +17,6 @@
 #include <Atom/RHI/Scope.h>
 #include <Atom/RHI/SwapChain.h>
 #include <Atom/RHI/SwapChainFrameAttachment.h>
-#include <AzCore/Debug/EventTrace.h>
-#include <AzCore/std/sort.h>
 
 namespace AZ
 {
@@ -61,7 +59,7 @@ namespace AZ
 
         void FrameGraph::Begin()
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             AZ_Assert(m_isBuilding == false, "FrameGraph::Begin called, but End was never called on the previous build cycle!");
             AZ_Assert(m_isCompiled == false, "FrameGraph::Clear must be called before reuse.");
@@ -109,13 +107,11 @@ namespace AZ
                 {
                     if (attachment->GetFirstScopeAttachment() == nullptr)
                     {
+                        //We allow the rendering to continue even if an attachment is not used.
                         AZ_Error(
                             "FrameGraph", false,
                             "Invalid State: attachment '%s' was added but never used!",
                             attachment->GetId().GetCStr());
-
-                        Clear();
-                        return ResultCode::InvalidOperation;
                     }
                 }
             }

@@ -18,6 +18,7 @@
 #include <Atom/RPI.Reflect/Material/ShaderCollection.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
+#include <Atom/RPI.Reflect/Material/MaterialVersionUpdate.h>
 
 namespace AZ
 {
@@ -123,6 +124,15 @@ namespace AZ
             //! Returns a map from the UV shader inputs to a custom name.
             MaterialUvNameMap GetUvNameMap() const;
 
+            //! Returns the version of the MaterialTypeAsset.
+            uint32_t GetVersion() const;
+ 
+            const AZStd::vector<MaterialVersionUpdate>& GetMaterialVersionUpdateList() const { return m_materialVersionUpdates; }
+
+            //! Possibly renames @propertyId based on the material version update steps.
+            //! @return true if the property was renamed
+            bool ApplyPropertyRenames(AZ::Name& propertyId) const;
+
         private:
             bool PostLoadInit() override;
 
@@ -162,6 +172,12 @@ namespace AZ
             //! Index in @m_shaderCollection of the shader asset that contains the ObjectSrg.
             uint32_t m_objectSrgShaderIndex = InvalidShaderIndex;
 
+            //! The version of this MaterialTypeAsset. If the version is greater than 1, actions performed
+            //! to update this MaterialTypeAsset will be in m_materialVersionUpdateMap
+            uint32_t m_version = 1;
+
+            //! Contains actions to perform for each material update version.  
+            AZStd::vector<MaterialVersionUpdate> m_materialVersionUpdates;
         };
 
         class MaterialTypeAssetHandler : public AssetHandler<MaterialTypeAsset>

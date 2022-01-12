@@ -9,6 +9,8 @@
 #pragma once
 
 #include <AtomToolsFramework/Viewport/ModularViewportCameraController.h>
+#include <AzCore/Component/TickBus.h>
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Viewport/CameraInput.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <EditorModularViewportCameraComposerBus.h>
@@ -20,6 +22,8 @@ namespace SandboxEditor
     class EditorModularViewportCameraComposer
         : private EditorModularViewportCameraComposerNotificationBus::Handler
         , private Camera::EditorCameraNotificationBus::Handler
+        , private AzFramework::ViewportDebugDisplayEventBus::Handler
+        , private AZ::TickBus::Handler
     {
     public:
         SANDBOX_API explicit EditorModularViewportCameraComposer(AzFramework::ViewportId viewportId);
@@ -29,6 +33,12 @@ namespace SandboxEditor
         SANDBOX_API AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateModularViewportCameraController();
 
     private:
+        // AzFramework::ViewportDebugDisplayEventBus overrides ...
+        void DisplayViewport(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay) override;
+
+        // AZ::TickBus overrides ...
+        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+
         //! Setup all internal camera inputs.
         void SetupCameras();
 
@@ -41,14 +51,20 @@ namespace SandboxEditor
         AZStd::shared_ptr<AzFramework::RotateCameraInput> m_firstPersonRotateCamera;
         AZStd::shared_ptr<AzFramework::PanCameraInput> m_firstPersonPanCamera;
         AZStd::shared_ptr<AzFramework::TranslateCameraInput> m_firstPersonTranslateCamera;
-        AZStd::shared_ptr<AzFramework::ScrollTranslationCameraInput> m_firstPersonScrollCamera;
-        AZStd::shared_ptr<AzFramework::PivotCameraInput> m_pivotCamera;
-        AZStd::shared_ptr<AzFramework::RotateCameraInput> m_pivotRotateCamera;
-        AZStd::shared_ptr<AzFramework::TranslateCameraInput> m_pivotTranslateCamera;
-        AZStd::shared_ptr<AzFramework::PivotDollyScrollCameraInput> m_pivotDollyScrollCamera;
-        AZStd::shared_ptr<AzFramework::PivotDollyMotionCameraInput> m_pivotDollyMoveCamera;
-        AZStd::shared_ptr<AzFramework::PanCameraInput> m_pivotPanCamera;
+        AZStd::shared_ptr<AzFramework::LookScrollTranslationCameraInput> m_firstPersonScrollCamera;
+        AZStd::shared_ptr<AzFramework::FocusCameraInput> m_firstPersonFocusCamera;
+        AZStd::shared_ptr<AzFramework::OrbitCameraInput> m_orbitCamera;
+        AZStd::shared_ptr<AzFramework::RotateCameraInput> m_orbitRotateCamera;
+        AZStd::shared_ptr<AzFramework::TranslateCameraInput> m_orbitTranslateCamera;
+        AZStd::shared_ptr<AzFramework::OrbitDollyScrollCameraInput> m_orbitDollyScrollCamera;
+        AZStd::shared_ptr<AzFramework::OrbitDollyMotionCameraInput> m_orbitDollyMoveCamera;
+        AZStd::shared_ptr<AzFramework::PanCameraInput> m_orbitPanCamera;
+        AZStd::shared_ptr<AzFramework::FocusCameraInput> m_orbitFocusCamera;
 
         AzFramework::ViewportId m_viewportId;
+
+        float m_defaultOrbitOpacity = 0.0f; //!< The default orbit axes opacity (to fade in and out).
+        AZ::Vector3 m_defaultOrbitPoint = AZ::Vector3::CreateZero(); //!< The orbit point to use when no entity is selected.
+        bool m_defaultOrbiting = false; //!< Is the camera default orbiting (orbiting when there's no selected entity).
     };
 } // namespace SandboxEditor

@@ -39,6 +39,7 @@
 #include <Atom/Feature/AuxGeom/AuxGeomFeatureProcessor.h>
 #include <Atom/Feature/Utils/LightingPreset.h>
 #include <Atom/Feature/Utils/ModelPreset.h>
+#include <ColorGrading/LutGenerationPass.h>
 #include <PostProcess/PostProcessFeatureProcessor.h>
 #include <PostProcessing/BlendColorGradingLutsPass.h>
 #include <PostProcessing/BloomParentPass.h>
@@ -50,6 +51,7 @@
 #include <PostProcessing/DepthOfFieldParentPass.h>
 #include <PostProcessing/DepthOfFieldReadBackFocusDepthPass.h>
 #include <PostProcessing/DepthOfFieldWriteFocusDepthFromGpuPass.h>
+#include <PostProcessing/NewDepthOfFieldPasses.h>
 #include <PostProcessing/EyeAdaptationPass.h>
 #include <PostProcessing/LuminanceHistogramGeneratorPass.h>
 #include <PostProcessing/FastDepthAwareBlurPasses.h>
@@ -72,11 +74,6 @@
 
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 
-#if AZ_TRAIT_LUXCORE_SUPPORTED
-#include <Atom/Feature/LuxCore/RenderTexturePass.h>
-#include <Atom/Feature/LuxCore/LuxCoreTexturePass.h>
-#endif
-
 #include <Checkerboard/CheckerboardPass.h>
 #include <Checkerboard/CheckerboardColorResolvePass.h>
 
@@ -95,19 +92,25 @@
 #include <DiffuseGlobalIllumination/DiffuseProbeGridBorderUpdatePass.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridRelocationPass.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridClassificationPass.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridDownsamplePass.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridRenderPass.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.h>
 #include <DiffuseGlobalIllumination/DiffuseGlobalIlluminationFeatureProcessor.h>
+#include <ReflectionScreenSpace/ReflectionScreenSpaceTracePass.h>
 #include <ReflectionScreenSpace/ReflectionScreenSpaceBlurPass.h>
 #include <ReflectionScreenSpace/ReflectionScreenSpaceBlurChildPass.h>
 #include <ReflectionScreenSpace/ReflectionScreenSpaceCompositePass.h>
 #include <ReflectionScreenSpace/ReflectionCopyFrameBufferPass.h>
 #include <OcclusionCullingPlane/OcclusionCullingPlaneFeatureProcessor.h>
+#include <Mesh/ModelReloaderSystem.h>
 
 namespace AZ
 {
     namespace Render
     {
+        CommonSystemComponent::CommonSystemComponent() = default;
+        CommonSystemComponent::~CommonSystemComponent() = default;
+
         void CommonSystemComponent::Reflect(ReflectContext* context)
         {
             AuxGeomFeatureProcessor::Reflect(context);
@@ -213,11 +216,6 @@ namespace AZ
             passSystem->AddPassCreator(Name("DisplayMapperFullScreenPass"), &DisplayMapperFullScreenPass::Create);
             passSystem->AddPassCreator(Name("OutputTransformPass"), &OutputTransformPass::Create);
             passSystem->AddPassCreator(Name("EyeAdaptationPass"), &EyeAdaptationPass::Create);
-            // Add RenderTexture and LuxCoreTexture pass
-#if AZ_TRAIT_LUXCORE_SUPPORTED
-            passSystem->AddPassCreator(Name("RenderTexturePass"), &RenderTexturePass::Create);
-            passSystem->AddPassCreator(Name("LuxCoreTexturePass"), &LuxCoreTexturePass::Create);
-#endif
             passSystem->AddPassCreator(Name("ImGuiPass"), &ImGuiPass::Create);
             passSystem->AddPassCreator(Name("LightCullingPass"), &LightCullingPass::Create);
             passSystem->AddPassCreator(Name("LightCullingRemapPass"), &LightCullingRemap::Create);
@@ -226,6 +224,7 @@ namespace AZ
             passSystem->AddPassCreator(Name("HDRColorGradingPass"), &HDRColorGradingPass::Create);
             passSystem->AddPassCreator(Name("LookModificationCompositePass"), &LookModificationCompositePass::Create);
             passSystem->AddPassCreator(Name("LookModificationTransformPass"), &LookModificationPass::Create);
+            passSystem->AddPassCreator(Name("LutGenerationPass"), &LutGenerationPass::Create);
             passSystem->AddPassCreator(Name("SMAAEdgeDetectionPass"), &SMAAEdgeDetectionPass::Create);
             passSystem->AddPassCreator(Name("SMAABlendingWeightCalculationPass"), &SMAABlendingWeightCalculationPass::Create);
             passSystem->AddPassCreator(Name("SMAANeighborhoodBlendingPass"), &SMAANeighborhoodBlendingPass::Create);
@@ -243,6 +242,10 @@ namespace AZ
             passSystem->AddPassCreator(Name("DepthOfFieldParentPass"), &DepthOfFieldParentPass::Create);
             passSystem->AddPassCreator(Name("DepthOfFieldReadBackFocusDepthPass"), &DepthOfFieldReadBackFocusDepthPass::Create);
             passSystem->AddPassCreator(Name("DepthOfFieldWriteFocusDepthFromGpuPass"), &DepthOfFieldWriteFocusDepthFromGpuPass::Create);
+
+            passSystem->AddPassCreator(Name("NewDepthOfFieldParentPass"), &NewDepthOfFieldParentPass::Create);
+            passSystem->AddPassCreator(Name("NewDepthOfFieldTileReducePass"), &NewDepthOfFieldTileReducePass::Create);
+            passSystem->AddPassCreator(Name("NewDepthOfFieldFilterPass"), &NewDepthOfFieldFilterPass::Create);
 
             // Add FastDepthAwareBlur passes
             passSystem->AddPassCreator(Name("FastDepthAwareBlurHorPass"), &FastDepthAwareBlurHorPass::Create);
@@ -273,6 +276,7 @@ namespace AZ
             passSystem->AddPassCreator(Name("DiffuseProbeGridBorderUpdatePass"), &Render::DiffuseProbeGridBorderUpdatePass::Create);
             passSystem->AddPassCreator(Name("DiffuseProbeGridRelocationPass"), &Render::DiffuseProbeGridRelocationPass::Create);
             passSystem->AddPassCreator(Name("DiffuseProbeGridClassificationPass"), &Render::DiffuseProbeGridClassificationPass::Create);
+            passSystem->AddPassCreator(Name("DiffuseProbeGridDownsamplePass"), &Render::DiffuseProbeGridDownsamplePass::Create);
             passSystem->AddPassCreator(Name("DiffuseProbeGridRenderPass"), &Render::DiffuseProbeGridRenderPass::Create);
 
             passSystem->AddPassCreator(Name("LuminanceHistogramGeneratorPass"), &LuminanceHistogramGeneratorPass::Create);
@@ -281,6 +285,7 @@ namespace AZ
             passSystem->AddPassCreator(Name("DeferredFogPass"), &DeferredFogPass::Create);
 
             // Add Reflection passes
+            passSystem->AddPassCreator(Name("ReflectionScreenSpaceTracePass"), &Render::ReflectionScreenSpaceTracePass::Create);
             passSystem->AddPassCreator(Name("ReflectionScreenSpaceBlurPass"), &Render::ReflectionScreenSpaceBlurPass::Create);
             passSystem->AddPassCreator(Name("ReflectionScreenSpaceBlurChildPass"), &Render::ReflectionScreenSpaceBlurChildPass::Create);
             passSystem->AddPassCreator(Name("ReflectionScreenSpaceCompositePass"), &Render::ReflectionScreenSpaceCompositePass::Create);
@@ -292,10 +297,13 @@ namespace AZ
             // setup handler for load pass template mappings
             m_loadTemplatesHandler = RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler([this]() { this->LoadPassTemplateMappings(); });
             RPI::PassSystemInterface::Get()->ConnectEvent(m_loadTemplatesHandler);
+            
+            m_modelReloaderSystem = AZStd::make_unique<ModelReloaderSystem>();
         }
 
         void CommonSystemComponent::Deactivate()
         {
+            m_modelReloaderSystem.reset();
             m_loadTemplatesHandler.Disconnect();
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<RayTracingFeatureProcessor>();
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<DiffuseGlobalIlluminationFeatureProcessor>();

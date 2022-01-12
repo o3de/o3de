@@ -6,77 +6,7 @@
  *
  */
 
-#include <scenesrg.srgi>
-#include <viewsrg.srgi>
-
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include <MeshMotionVectorCommon.azsli>
 
-struct VSInput
-{
-    float3 m_position : POSITION;
-    
-    // This gets set automatically by the system at runtime only if it's available.
-    // There is a soft naming convention that associates this with o_prevPosition_isBound, which will be set to true whenever m_optional_prevPosition is available.
-    // (search "m_optional_" in ShaderVariantAssetBuilder for details on the naming convention).
-    // [GFX TODO][ATOM-14475]: Come up with a more elegant way to associate the isBound flag with the input stream.
-    // Vertex position of last frame to capture small scale motion due to vertex animation
-    float3 m_optional_prevPosition : POSITIONT;
-};
-
-struct VSOutput
-{
-    float4 m_position : SV_Position;
-    float3 m_worldPos : TEXCOORD0;
-    float3 m_worldPosPrev: TEXCOORD1;
-};
-
-struct PSOutput
-{
-    float2 m_motion : SV_Target0;
-};
-
-// Indicates whether the vertex input struct's "m_optional_prevPosition" is bound. If false, it is not safe to read from m_optional_prevPosition.
-// This option gets set automatically by the system at runtime; there is a soft naming convention that associates it with m_optional_prevPosition.
-// (search "m_optional_" in ShaderVariantAssetBuilder for details on the naming convention).
-// [GFX TODO][ATOM-14475]: Come up with a more elegant way to associate the isBound flag with the input stream.
-option bool o_prevPosition_isBound;
-
-VSOutput MainVS(VSInput IN)
-{
-    VSOutput OUT;
- 
-    OUT.m_worldPos = mul(SceneSrg::GetObjectToWorldMatrix(ObjectSrg::m_objectId), float4(IN.m_position, 1.0)).xyz;
-    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPos, 1.0));
-
-    if (o_prevPosition_isBound)
-    {
-        OUT.m_worldPosPrev = mul(SceneSrg::GetObjectToWorldMatrixPrev(ObjectSrg::m_objectId), float4(IN.m_optional_prevPosition, 1.0)).xyz;
-    }
-    else
-    {
-        OUT.m_worldPosPrev = mul(SceneSrg::GetObjectToWorldMatrixPrev(ObjectSrg::m_objectId), float4(IN.m_position, 1.0)).xyz;
-    }
-
-    return OUT;
-}
-
-PSOutput MainPS(VSOutput IN)
-{
-    PSOutput OUT;
-
-    // Current clip position
-    float4 clipPos = mul(ViewSrg::m_viewProjectionMatrix, float4(IN.m_worldPos, 1.0));
-    
-    // Reprojected last frame's clip position, for skinned mesh it also implies last key frame
-    float4 clipPosPrev = mul(ViewSrg::m_viewProjectionPrevMatrix, float4(IN.m_worldPosPrev, 1.0));
-
-    float2 motion = (clipPos.xy / clipPos.w - clipPosPrev.xy / clipPosPrev.w) * 0.5;
-
-    OUT.m_motion = motion;
-    
-    // Flip y to line up with uv coordinates
-    OUT.m_motion.y = -OUT.m_motion.y;
-    
-    return OUT;
-}
+// Use the mesh motion vector with the default object srg

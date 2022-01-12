@@ -33,7 +33,7 @@ namespace PhysX
                     "PhysX Character Gameplay Configuration", "PhysX Character Gameplay Configuration")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CharacterGameplayConfiguration::m_gravityMultiplier,
-                        "Gravity Multiplier", "Multiplier to be combined with the world gravity value for applying character gravity")
+                        "Gravity Multiplier", "Multiplier for global gravity value that applies only to this character entity.")
                     ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
                     ;
             }

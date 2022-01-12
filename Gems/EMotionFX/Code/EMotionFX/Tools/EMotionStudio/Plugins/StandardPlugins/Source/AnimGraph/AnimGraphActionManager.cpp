@@ -412,11 +412,9 @@ namespace EMStudio
         if (!nodesByAnimGraph.empty())
         {
             MCore::CommandGroup commandGroup("Delete anim graph nodes");
-            AZ::u32 numNodes = 0;
 
             for (const AZStd::pair<EMotionFX::AnimGraph*, AZStd::vector<EMotionFX::AnimGraphNode*>>& animGraphAndNodes : nodesByAnimGraph)
             {
-                numNodes += static_cast<AZ::u32>(animGraphAndNodes.second.size());
                 CommandSystem::DeleteNodes(&commandGroup, animGraphAndNodes.first, animGraphAndNodes.second, true);
             }
 

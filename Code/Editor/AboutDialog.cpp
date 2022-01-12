@@ -6,10 +6,7 @@
  *
  */
 
-
-
 #include "EditorDefs.h"
-
 #include "AboutDialog.h"
 
 // Qt
@@ -33,8 +30,6 @@ CAboutDialog::CAboutDialog(QString versionText, QString richTextCopyrightNotice,
     m_ui->setupUi(this);
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
-    connect(m_ui->m_transparentAgreement, &QLabel::linkActivated, this, &CAboutDialog::OnCustomerAgreement);
-
     m_ui->m_transparentTrademarks->setText(versionText);
 
     m_ui->m_transparentAllRightReserved->setObjectName("copyrightNotice");
@@ -47,13 +42,16 @@ CAboutDialog::CAboutDialog(QString versionText, QString richTextCopyrightNotice,
                     CAboutDialog > QLabel#link { text-decoration: underline; color: #94D2FF; }");
 
     // Prepare background image
-    m_backgroundImage = AzQtComponents::ScalePixmapForScreenDpi(
-        QPixmap(QStringLiteral(":/StartupLogoDialog/splashscreen_background_developer_preview.jpg")),
-        screen(),
-        QSize(m_enforcedWidth, m_enforcedHeight),
+    QPixmap image = AzQtComponents::ScalePixmapForScreenDpi(
+        QPixmap(QStringLiteral(":/StartupLogoDialog/splashscreen_background_2021_11.jpg")),
+        screen(), QSize(m_imageWidth, m_imageHeight),
         Qt::IgnoreAspectRatio,
         Qt::SmoothTransformation
     );
+
+    // Crop image to cut out transparent border
+    QRect cropRect((m_imageWidth - m_enforcedWidth) / 2, (m_imageHeight - m_enforcedHeight) / 2, m_enforcedWidth, m_enforcedHeight);
+    m_backgroundImage = AzQtComponents::CropPixmapForScreenDpi(image, screen(), cropRect);
 
     // Draw the Open 3D Engine logo from svg
     m_ui->m_logo->load(QStringLiteral(":/StartupLogoDialog/o3de_logo.svg"));
@@ -82,11 +80,6 @@ void CAboutDialog::mouseReleaseEvent(QMouseEvent* event)
     }
 
     QDialog::mouseReleaseEvent(event);
-}
-
-void CAboutDialog::OnCustomerAgreement()
-{
-    QDesktopServices::openUrl(QUrl(QStringLiteral("https://www.o3debinaries.org/license")));
 }
 
 #include <moc_AboutDialog.cpp>

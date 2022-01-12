@@ -81,7 +81,6 @@ function ProcessEditor(context)
     context:SetMaterialPropertyVisibility("opacity.textureMap", mainVisibility)
     context:SetMaterialPropertyVisibility("opacity.textureMapUv", mainVisibility)
     context:SetMaterialPropertyVisibility("opacity.factor", mainVisibility)
-    context:SetMaterialPropertyVisibility("opacity.doubleSided", mainVisibility)
 
     if(opacityMode == OpacityMode_Blended or opacityMode == OpacityMode_TintedTransparent) then
         context:SetMaterialPropertyVisibility("opacity.alphaAffectsSpecular", MaterialPropertyVisibility_Enabled)
@@ -91,6 +90,10 @@ function ProcessEditor(context)
 
     if(mainVisibility == MaterialPropertyVisibility_Enabled) then
         local alphaSource = context:GetMaterialPropertyValue_enum("opacity.alphaSource")
+
+        if (opacityMode == OpacityMode_Cutout and alphaSource == AlphaSource_None) then
+            context:SetMaterialPropertyVisibility("opacity.factor", MaterialPropertyVisibility_Hidden)
+        end
 
         if(alphaSource ~= AlphaSource_Split) then
             context:SetMaterialPropertyVisibility("opacity.textureMap", MaterialPropertyVisibility_Hidden)

@@ -10,12 +10,12 @@
 
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
-#include <Atom/Features/PBR/ForwardPassSrg.azsli>
 #include <Atom/Features/Shadow/ShadowmapAtlasLib.azsli>
 #include <Atom/RPI/Math.azsli>
 #include "BicubicPcfFilters.azsli"
-#include "JitterTablePcf.azsli"
 #include "Shadow.azsli"
+#include "NormalOffsetShadows.azsli"
+#include "ESM.azsli"
 
 // ProjectedShadow calculates shadowed area projected from a light.
 class ProjectedShadow
@@ -45,11 +45,6 @@ class ProjectedShadow
     float GetThickness();
 
     bool IsShadowed(float3 shadowPosition);
-    bool IsShadowedWithJitter(
-        float3 jitterUnitX,
-        float3 jitterUnitY,
-        float jitterDepthDiffBase,
-        uint jitterIndex);
     void SetShadowPosition();
     float3 GetAtlasPosition(float2 texturePosition);
     static float UnprojectDepth(uint shadowIndex, float depthBufferValue);
@@ -130,6 +125,7 @@ float ProjectedShadow::GetThickness(uint shadowIndex, float3 worldPosition)
 
     ProjectedShadow shadow;
     shadow.m_worldPosition = worldPosition;
+    shadow.m_normalVector = 0; // The normal vector is used to reduce acne, this is not an issue when using the shadowmap to determine thickness. 
     shadow.m_shadowIndex = shadowIndex;
     shadow.SetShadowPosition();
     return shadow.GetThickness();
@@ -195,13 +191,11 @@ float ProjectedShadow::GetVisibilityEsm()
         const float depth = PerspectiveDepthToLinear(
             m_shadowPosition.z - m_bias, 
             coefficients);
-        const float occluder = shadowmap.SampleLevel(
-            PassSrg::LinearSampler, 
-            float3(atlasPosition.xy * invAtlasSize, atlasPosition.z),
-            /*LOD=*/0).r;
+            
+        const float3 uv = float3(atlasPosition.xy * invAtlasSize, atlasPosition.z);
+        const float esmExponent = ViewSrg::m_projectedShadows[m_shadowIndex].m_esmExponent;
+        const float ratio = SampleESM(shadowmap, PassSrg::LinearSampler, uv, depth, esmExponent);
 
-        const float exponent = -ViewSrg::m_projectedShadows[m_shadowIndex].m_esmExponent * (depth - occluder);
-        const float ratio = exp(exponent);
         // pow() mitigates light bleeding to shadows from near shadow casters.
         return saturate( pow(ratio, 8) );
     }
@@ -234,21 +228,18 @@ float ProjectedShadow::GetVisibilityEsmPcf()
             return 1.;
         }
         const float3 atlasPosition = GetAtlasPosition(m_shadowPosition.xy);
+        const float3 uv = float3(atlasPosition.xy * invAtlasSize, atlasPosition.z);
         const float depth = PerspectiveDepthToLinear(
             m_shadowPosition.z - m_bias,
             coefficients);
-        const float occluder = shadowmap.SampleLevel(
-            PassSrg::LinearSampler,
-            float3(atlasPosition.xy * invAtlasSize, atlasPosition.z),
-            /*LOD=*/0).r;
-
-        const float exponent = -ViewSrg::m_projectedShadows[m_shadowIndex].m_esmExponent * (depth - occluder);
-        float ratio = exp(exponent);
+        
+        const float esmExponent = ViewSrg::m_projectedShadows[m_shadowIndex].m_esmExponent;
+        float ratio = SampleESM(shadowmap, PassSrg::LinearSampler, uv, depth, esmExponent);
 
         static const float pcfFallbackThreshold = 1.04;
         if (ratio > pcfFallbackThreshold)
         {
-            ratio = GetVisibilityPcf();
+            ratio = PCFFallbackForESM(shadowmap, uv, depth, esmExponent);
         }
         else
         {
@@ -322,39 +313,15 @@ bool ProjectedShadow::IsShadowed(float3 shadowPosition)
     return false;
 }
 
-bool ProjectedShadow::IsShadowedWithJitter(
-    float3 jitterUnitX,
-    float3 jitterUnitY,
-    float jitterDepthDiffBase,
-    uint jitterIndex)
-{    
-    ViewSrg::ProjectedShadow shadow = ViewSrg::m_projectedShadows[m_shadowIndex];
-    const float4x4 depthBiasMatrix = shadow.m_depthBiasMatrix;
-    const float boundaryScale = shadow.m_boundaryScale;
-
-    const float2 jitterXY = g_jitterTablePcf[jitterIndex];
-
-    const float dist = distance(m_worldPosition, m_viewPosition);
-    const float boundaryRadius = dist * tan(boundaryScale);
-    // jitterWorldXY is the jittering diff vector from the lighted point on the surface
-    // in the world space.  It is remarked as "v_J" in the comment
-    // named "Calculate depth adjusting diff for jittered samples"
-    // just before the function GetJitterUnitVectorDepthDiffBase.
-    const float3 jitterWorldXY = jitterUnitX * (jitterXY.x * boundaryRadius) + jitterUnitY * (jitterXY.y * boundaryRadius);
-    // The adjusting diff of depth ("d" in the comment) is calculated by
-    //   jitterXY.y * boundaryRadius * jitterDepthDiffBase.
-    const float3 jitterWorldZ = m_lightDirection * (jitterXY.y * boundaryRadius * jitterDepthDiffBase);
-
-    const float3 jitteredWorldPosition = m_worldPosition + jitterWorldXY + jitterWorldZ;
-    const float4 jitteredShadowmapHomogeneous = mul(depthBiasMatrix, float4(jitteredWorldPosition, 1));
-
-    return IsShadowed(jitteredShadowmapHomogeneous.xyz / jitteredShadowmapHomogeneous.w);
-}
-
 void ProjectedShadow::SetShadowPosition()
 {
+    const float normalBias = ViewSrg::m_projectedShadows[m_shadowIndex].m_normalShadowBias;
+    const float shadowmapSize = ViewSrg::m_projectedFilterParams[m_shadowIndex].m_shadowmapSize;
+    const float3 shadowOffset = ComputeNormalShadowOffset(normalBias, m_normalVector, shadowmapSize);
     const float4x4 depthBiasMatrix = ViewSrg::m_projectedShadows[m_shadowIndex].m_depthBiasMatrix;
-    float4 shadowPositionHomogeneous = mul(depthBiasMatrix, float4(m_worldPosition, 1));
+    
+    float4 shadowPositionHomogeneous = mul(depthBiasMatrix, float4(m_worldPosition + shadowOffset, 1));
+         
     m_shadowPosition = shadowPositionHomogeneous.xyz / shadowPositionHomogeneous.w;
     
     m_bias = ViewSrg::m_projectedShadows[m_shadowIndex].m_bias / shadowPositionHomogeneous.w;

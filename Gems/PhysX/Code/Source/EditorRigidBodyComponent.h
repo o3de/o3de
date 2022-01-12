@@ -120,6 +120,8 @@ namespace PhysX
         void InitPhysicsTickHandler();
         void PrePhysicsTick();
 
+        void OnConfigurationChanged();
+
         Debug::DebugDisplayDataChangedEvent::Handler m_debugDisplayDataChangeHandler;
 
         EditorRigidBodyConfiguration m_config;

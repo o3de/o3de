@@ -61,7 +61,9 @@ namespace EMotionFX
             constexpr auto projectPathKey = FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
             if(auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
             {
-                settingsRegistry->Set(projectPathKey, "AutomatedTesting");
+                AZ::IO::FixedMaxPath enginePath;
+                settingsRegistry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+                settingsRegistry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
                 AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*settingsRegistry);
             }
         }

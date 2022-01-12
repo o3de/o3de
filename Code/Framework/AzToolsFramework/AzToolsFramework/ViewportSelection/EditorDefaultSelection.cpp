@@ -27,19 +27,28 @@ namespace AzToolsFramework
         , m_viewportEditorModeTracker(viewportEditorModeTracker)
         , m_componentModeCollection(viewportEditorModeTracker)
     {
+        AZ_Assert(
+            AZ::Interface<ComponentModeCollectionInterface>::Get() == nullptr, "Unexpected registration of component mode collection.")
+        AZ::Interface<ComponentModeCollectionInterface>::Register(&m_componentModeCollection);
+
         ActionOverrideRequestBus::Handler::BusConnect(GetEntityContextId());
         ComponentModeFramework::ComponentModeSystemRequestBus::Handler::BusConnect();
 
         m_manipulatorManager = AZStd::make_shared<AzToolsFramework::ManipulatorManager>(AzToolsFramework::g_mainManipulatorManagerId);
         m_transformComponentSelection = AZStd::make_unique<EditorTransformComponentSelection>(entityDataCache);
-        m_viewportEditorModeTracker->ActivateMode({ /* DefaultViewportId */ }, ViewportEditorMode::Default);
+        m_viewportEditorModeTracker->ActivateMode({ GetEntityContextId() }, ViewportEditorMode::Default);
     }
 
     EditorDefaultSelection::~EditorDefaultSelection()
     {
         ComponentModeFramework::ComponentModeSystemRequestBus::Handler::BusDisconnect();
         ActionOverrideRequestBus::Handler::BusDisconnect();
-        m_viewportEditorModeTracker->DeactivateMode({ /* DefaultViewportId */ }, ViewportEditorMode::Default);
+        m_viewportEditorModeTracker->DeactivateMode({ GetEntityContextId() }, ViewportEditorMode::Default);
+
+        AZ_Assert(
+            AZ::Interface<ComponentModeCollectionInterface>::Get() != nullptr,
+            "Unexpected unregistration of component mode collection.")
+        AZ::Interface<ComponentModeCollectionInterface>::Unregister(&m_componentModeCollection);
     }
 
     void EditorDefaultSelection::SetOverridePhantomWidget(QWidget* phantomOverrideWidget)

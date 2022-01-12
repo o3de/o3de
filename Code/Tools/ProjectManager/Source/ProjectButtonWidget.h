@@ -24,6 +24,7 @@ QT_FORWARD_DECLARE_CLASS(QProgressBar)
 QT_FORWARD_DECLARE_CLASS(QLayout)
 QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
 QT_FORWARD_DECLARE_CLASS(QEvent)
+QT_FORWARD_DECLARE_CLASS(QMenu)
 
 namespace O3DE::ProjectManager
 {
@@ -49,7 +50,7 @@ namespace O3DE::ProjectManager
         QLayout* GetBuildOverlayLayout();
 
     signals:
-        void triggered();
+        void triggered(QMouseEvent* event);
 
     public slots:
         void mousePressEvent(QMouseEvent* event) override;
@@ -82,9 +83,9 @@ namespace O3DE::ProjectManager
         void RestoreDefaultState();
 
         void SetProjectButtonAction(const QString& text, AZStd::function<void()> lambda);
-        void SetProjectBuildButtonAction();
         void SetBuildLogsLink(const QUrl& logUrl);
         void ShowBuildFailed(bool show, const QUrl& logUrl);
+        void ShowBuildRequired();
         void SetProjectBuilding();
 
         void SetLaunchButtonEnabled(bool enabled);
@@ -95,14 +96,20 @@ namespace O3DE::ProjectManager
     signals:
         void OpenProject(const QString& projectName);
         void EditProject(const QString& projectName);
+        void EditProjectGems(const QString& projectName);
         void CopyProject(const ProjectInfo& projectInfo);
         void RemoveProject(const QString& projectName);
         void DeleteProject(const QString& projectName);
         void BuildProject(const ProjectInfo& projectInfo);
+        void OpenCMakeGUI(const ProjectInfo& projectInfo);
 
     private:
         void enterEvent(QEvent* event) override;
         void leaveEvent(QEvent* event) override;
+        void ShowWarning(bool show, const QString& warning);
+        void ShowDefaultBuildButton();
+
+        QMenu* CreateProjectMenu();
 
         ProjectInfo m_projectInfo;
 

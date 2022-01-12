@@ -44,7 +44,7 @@ namespace AZ
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.svg") // [GFX TODO][ATOM-1998] create icons.
                         ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                         ->Attribute(Edit::Attributes::AutoExpand, true)
-                        ->Attribute(Edit::Attributes::HelpPageURL, "https://") // [GFX TODO][ATOM-1998] create page
+                        ->Attribute(Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/atom/directional-light/") // [GFX TODO][ATOM-1998] create page
                         ;
 
                     editContext->Class<DirectionalLightComponentController>(
@@ -59,7 +59,7 @@ namespace AZ
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                         ->DataElement(Edit::UIHandlers::Color, &DirectionalLightComponentConfig::m_color, "Color", "Color of the light")
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
-                            ->Attribute("ColorEditorConfiguration", AZ::RPI::ColorUtils::GetLinearRgbEditorConfig())
+                            ->Attribute("ColorEditorConfiguration", AZ::RPI::ColorUtils::GetRgbEditorConfig())
                         ->DataElement(Edit::UIHandlers::ComboBox, &DirectionalLightComponentConfig::m_intensityMode, "Intensity mode", "Allows specifying light values in lux or Ev100")
                             ->EnumAttribute(PhotometricUnit::Lux, "Lux")
                             ->EnumAttribute(PhotometricUnit::Ev100Illuminance, "Ev100")
@@ -133,17 +133,8 @@ namespace AZ
                             ->EnumAttribute(ShadowFilterMethod::Esm, "ESM")
                             ->EnumAttribute(ShadowFilterMethod::EsmPcf, "ESM+PCF")
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
-                        ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_boundaryWidth, "Softening boundary width",
-                            "Width of the boundary between shadowed area and lit one. "
-                            "Units are in meters. "
-                            "If this is 0, softening edge is disabled.")
-                            ->Attribute(Edit::Attributes::Min, 0.f)
-                            ->Attribute(Edit::Attributes::Max, 0.1f)
-                            ->Attribute(Edit::Attributes::Suffix, " m")
-                            ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
-                        ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsEsmDisabled)
-                        ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_filteringSampleCount, "Filtering sample count",
-                            "This is used only when the pixel is predicted as on the boundary. "
+                        ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_filteringSampleCount, "Filtering sample count\n",
+                            "This is used only when the pixel is predicted to be on the boundary.\n"
                             "Specific to PCF and ESM+PCF.")
                             ->Attribute(Edit::Attributes::Min, 4)
                             ->Attribute(Edit::Attributes::Max, 64)
@@ -151,10 +142,30 @@ namespace AZ
                             ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowPcfDisabled)
                         ->DataElement(
                             Edit::UIHandlers::CheckBox, &DirectionalLightComponentConfig::m_receiverPlaneBiasEnabled,
-                            "Shadow Receiver Plane Bias Enable",
+                            "Shadow Receiver Plane Bias Enable\n",
                             "This reduces shadow acne when using large pcf kernels.")
                           ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
-                          ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowPcfDisabled);
+                          ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowPcfDisabled) 
+                         ->DataElement(
+                            Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_shadowBias,
+                            "Shadow Bias\n",
+                            "Reduces acne by applying a fixed bias along z in shadow-space.\n"
+                            "If this is 0, no biasing is applied.") 
+                           ->Attribute(Edit::Attributes::Min, 0.f)
+                           ->Attribute(Edit::Attributes::Max, 0.2) 
+                           ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                        ->DataElement(
+                           Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_normalShadowBias, "Normal Shadow Bias\n",
+                           "Reduces acne by biasing the shadowmap lookup along the geometric normal.\n"
+                           "If this is 0, no biasing is applied.")
+                           ->Attribute(Edit::Attributes::Min, 0.f)
+                           ->Attribute(Edit::Attributes::Max, 10.0f)
+                           ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                        ->DataElement(
+                            Edit::UIHandlers::CheckBox, &DirectionalLightComponentConfig::m_cascadeBlendingEnabled,
+                            "Blend between cascades\n", "Enables smooth blending between shadow map cascades.")
+                            ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowPcfDisabled)
+                                ;
                 }
             }
 

@@ -54,6 +54,7 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.svg")
                             ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                            ->Attribute(Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/atom/diffuse-probe-grid/")
                             ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, AZ::AzTypeInfo<RPI::ModelAsset>::Uuid())
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Probe Spacing")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
@@ -181,8 +182,7 @@ namespace AZ
 
             CheckTextureAssetNotification(configuration.m_bakedIrradianceTextureRelativePath, configuration.m_bakedIrradianceTextureAsset);
             CheckTextureAssetNotification(configuration.m_bakedDistanceTextureRelativePath, configuration.m_bakedDistanceTextureAsset);
-            CheckTextureAssetNotification(configuration.m_bakedRelocationTextureRelativePath, configuration.m_bakedRelocationTextureAsset);
-            CheckTextureAssetNotification(configuration.m_bakedClassificationTextureRelativePath, configuration.m_bakedClassificationTextureAsset);
+            CheckTextureAssetNotification(configuration.m_bakedProbeDataTextureRelativePath, configuration.m_bakedProbeDataTextureAsset);
         }
 
         void EditorDiffuseProbeGridComponent::CheckTextureAssetNotification(const AZStd::string& relativePath, Data::Asset<RPI::StreamingImageAsset>& configurationAsset)
@@ -195,13 +195,12 @@ namespace AZ
                 {
                     // bake is complete, update configuration with the new baked texture asset
                     AzToolsFramework::ScopedUndoBatch undoBatch("DiffuseProbeGrid Texture Bake");
-                    configurationAsset = { textureAsset.GetAs<RPI::StreamingImageAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
+                    configurationAsset = textureAsset;
                     SetDirty();
 
                     if (m_controller.m_configuration.m_bakedIrradianceTextureAsset.IsReady() &&
                         m_controller.m_configuration.m_bakedDistanceTextureAsset.IsReady() &&
-                        m_controller.m_configuration.m_bakedClassificationTextureAsset.IsReady() &&
-                        m_controller.m_configuration.m_bakedRelocationTextureAsset.IsReady())
+                        m_controller.m_configuration.m_bakedProbeDataTextureAsset.IsReady())
                     {
                         m_controller.UpdateBakedTextures();
                     }
@@ -336,8 +335,7 @@ namespace AZ
             {
                 if (!m_controller.m_configuration.m_bakedIrradianceTextureAsset.GetId().IsValid() ||
                     !m_controller.m_configuration.m_bakedDistanceTextureAsset.GetId().IsValid() ||
-                    !m_controller.m_configuration.m_bakedRelocationTextureAsset.GetId().IsValid() ||
-                    !m_controller.m_configuration.m_bakedClassificationTextureAsset.GetId().IsValid())
+                    !m_controller.m_configuration.m_bakedProbeDataTextureAsset.GetId().IsValid())
                 {
                     return AZ::Failure(AZStd::string("Please bake textures before changing the Diffuse Probe Grid to Baked or Auto-Select mode."));
                 }
@@ -384,21 +382,18 @@ namespace AZ
             // Note: we need to make sure to use the same source image for each bake
             AZStd::string irradianceTextureRelativePath = ValidateOrCreateNewTexturePath(configuration.m_bakedIrradianceTextureRelativePath, DiffuseProbeGridIrradianceFileName);
             AZStd::string distanceTextureRelativePath = ValidateOrCreateNewTexturePath(configuration.m_bakedDistanceTextureRelativePath, DiffuseProbeGridDistanceFileName);
-            AZStd::string relocationTextureRelativePath = ValidateOrCreateNewTexturePath(configuration.m_bakedRelocationTextureRelativePath, DiffuseProbeGridRelocationFileName);
-            AZStd::string classificationTextureRelativePath = ValidateOrCreateNewTexturePath(configuration.m_bakedClassificationTextureRelativePath, DiffuseProbeGridClassificationFileName);
+            AZStd::string probeDataTextureRelativePath = ValidateOrCreateNewTexturePath(configuration.m_bakedProbeDataTextureRelativePath, DiffuseProbeGridProbeDataFileName);
 
             // create the full paths
             char projectPath[AZ_MAX_PATH_LEN];
-            AZ::IO::FileIOBase::GetInstance()->ResolvePath("@devassets@", projectPath, AZ_MAX_PATH_LEN);
+            AZ::IO::FileIOBase::GetInstance()->ResolvePath("@projectroot@", projectPath, AZ_MAX_PATH_LEN);
 
             AZStd::string irradianceTextureFullPath;
             AzFramework::StringFunc::Path::Join(projectPath, irradianceTextureRelativePath.c_str(), irradianceTextureFullPath, true, true);
             AZStd::string distanceTextureFullPath;
             AzFramework::StringFunc::Path::Join(projectPath, distanceTextureRelativePath.c_str(), distanceTextureFullPath, true, true);
-            AZStd::string relocationTextureFullPath;
-            AzFramework::StringFunc::Path::Join(projectPath, relocationTextureRelativePath.c_str(), relocationTextureFullPath, true, true);
-            AZStd::string classificationTextureFullPath;
-            AzFramework::StringFunc::Path::Join(projectPath, classificationTextureRelativePath.c_str(), classificationTextureFullPath, true, true);
+            AZStd::string probeDataTextureFullPath;
+            AzFramework::StringFunc::Path::Join(projectPath, probeDataTextureRelativePath.c_str(), probeDataTextureFullPath, true, true);
 
             // make sure the folder is created
             AZStd::string diffuseProbeGridFolder;
@@ -408,23 +403,20 @@ namespace AZ
             // check out the files in source control
             CheckoutSourceTextureFile(irradianceTextureFullPath);
             CheckoutSourceTextureFile(distanceTextureFullPath);
-            CheckoutSourceTextureFile(relocationTextureFullPath);
-            CheckoutSourceTextureFile(classificationTextureFullPath);
+            CheckoutSourceTextureFile(probeDataTextureFullPath);
 
             // update the configuration
             AzToolsFramework::ScopedUndoBatch undoBatch("DiffuseProbeGrid bake");
             configuration.m_bakedIrradianceTextureRelativePath = irradianceTextureRelativePath;
             configuration.m_bakedDistanceTextureRelativePath = distanceTextureRelativePath;
-            configuration.m_bakedRelocationTextureRelativePath = relocationTextureRelativePath;
-            configuration.m_bakedClassificationTextureRelativePath = classificationTextureRelativePath;
+            configuration.m_bakedProbeDataTextureRelativePath = probeDataTextureRelativePath;
             SetDirty();
 
             // callback for the texture readback
             DiffuseProbeGridBakeTexturesCallback bakeTexturesCallback = [=](
                 DiffuseProbeGridTexture irradianceTexture,
                 DiffuseProbeGridTexture distanceTexture,
-                DiffuseProbeGridTexture relocationTexture,
-                DiffuseProbeGridTexture classificationTexture)
+                DiffuseProbeGridTexture probeDataTexture)
             {
                 // irradiance
                 {
@@ -440,18 +432,11 @@ namespace AZ
                     AZ_Assert(outcome.IsSuccess(), "Failed to write Distance texture .dds file [%s]", distanceTextureFullPath.c_str());
                 }
 
-                // relocation
+                // probe data
                 {
-                    AZ::DdsFile::DdsFileData fileData = { relocationTexture.m_size, relocationTexture.m_format, relocationTexture.m_data.get() };
-                    [[maybe_unused]] const auto outcome = AZ::DdsFile::WriteFile(relocationTextureFullPath, fileData);
-                    AZ_Assert(outcome.IsSuccess(), "Failed to write Relocation texture .dds file [%s]", relocationTextureFullPath.c_str());
-                }
-
-                // classification
-                {
-                    AZ::DdsFile::DdsFileData fileData = { classificationTexture.m_size, classificationTexture.m_format, classificationTexture.m_data.get() };
-                    [[maybe_unused]] const auto outcome = AZ::DdsFile::WriteFile(classificationTextureFullPath, fileData);
-                    AZ_Assert(outcome.IsSuccess(), "Failed to write Classification texture .dds file [%s]", classificationTextureFullPath.c_str());
+                    AZ::DdsFile::DdsFileData fileData = { probeDataTexture.m_size, probeDataTexture.m_format, probeDataTexture.m_data.get() };
+                    [[maybe_unused]] const auto outcome = AZ::DdsFile::WriteFile(probeDataTextureFullPath, fileData);
+                    AZ_Assert(outcome.IsSuccess(), "Failed to write ProbeData texture .dds file [%s]", probeDataTextureFullPath.c_str());
                 }
 
                 m_bakeInProgress = false;
@@ -481,7 +466,7 @@ namespace AZ
             AZStd::string fullPath;
 
             char projectPath[AZ_MAX_PATH_LEN];
-            AZ::IO::FileIOBase::GetInstance()->ResolvePath("@devassets@", projectPath, AZ_MAX_PATH_LEN);
+            AZ::IO::FileIOBase::GetInstance()->ResolvePath("@projectroot@", projectPath, AZ_MAX_PATH_LEN);
 
             if (!relativePath.empty())
             {

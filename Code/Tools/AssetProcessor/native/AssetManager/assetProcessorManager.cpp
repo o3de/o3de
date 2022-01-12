@@ -18,13 +18,14 @@
 
 #include <AzToolsFramework/Debug/TraceContext.h>
 
-
 #include "native/AssetManager/assetProcessorManager.h"
+
 #include <AzCore/std/sort.h>
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 
 #include <native/AssetManager/PathDependencyManager.h>
 #include <native/utilities/BuilderConfigurationBus.h>
+#include <native/utilities/StatsCapture.h>
 
 #include "AssetRequestHandler.h"
 
@@ -56,15 +57,8 @@ namespace AssetProcessor
         // cache this up front.  Note that it can fail here, and will retry later.
         InitializeCacheRoot();
 
-        m_absoluteDevFolderPath[0] = 0;
-        m_absoluteDevGameFolderPath[0] = 0;
-
         QDir assetRoot;
-        if (AssetUtilities::ComputeAssetRoot(assetRoot))
-        {
-            azstrcpy(m_absoluteDevFolderPath, AZ_MAX_PATH_LEN, assetRoot.absolutePath().toUtf8().constData());
-            azstrcpy(m_absoluteDevGameFolderPath, AZ_MAX_PATH_LEN, AssetUtilities::ComputeProjectPath().toUtf8().constData());
-        }
+        AssetUtilities::ComputeAssetRoot(assetRoot);
 
         using namespace AZStd::placeholders;
 
@@ -73,8 +67,10 @@ namespace AssetProcessor
 
         m_sourceFileRelocator = AZStd::make_unique<SourceFileRelocator>(m_stateData, m_platformConfig);
 
-        PopulateJobStateCache();
+        m_excludedFolderCache = AZStd::make_unique<ExcludedFolderCache>(m_platformConfig);
 
+        PopulateJobStateCache();
+        
         AssetProcessor::ProcessingJobInfoBus::Handler::BusConnect();
     }
 
@@ -128,6 +124,9 @@ namespace AssetProcessor
     {
         if (status == AssetProcessor::AssetScanningStatus::Started)
         {
+            // capture scanning stats:
+            AssetProcessor::StatsCapture::BeginCaptureStat("AssetScanning");
+           
             // Ensure that the source file list is populated before a scan begins
             m_sourceFilesInDatabase.clear();
             m_fileModTimes.clear();
@@ -181,6 +180,8 @@ namespace AssetProcessor
                  (status == AssetProcessor::AssetScanningStatus::Stopped))
         {
             m_isCurrentlyScanning = false;
+            AssetProcessor::StatsCapture::EndCaptureStat("AssetScanning");
+            
             // we cannot invoke this immediately - the scanner might be done, but we aren't actually ready until we've processed all remaining messages:
             QMetaObject::invokeMethod(this, "CheckMissingFiles", Qt::QueuedConnection);
         }
@@ -214,13 +215,24 @@ namespace AssetProcessor
         }
         else
         {
+            QString statKey = QString("ProcessJob,%1,%2,%3").arg(jobEntry.m_databaseSourceName).arg(jobEntry.m_jobKey).arg(jobEntry.m_platformInfo.m_identifier.c_str());
+            
             if (status == JobStatus::InProgress)
             {
                 //update to in progress status
                 m_jobRunKeyToJobInfoMap[jobEntry.m_jobRunKey].m_status = JobStatus::InProgress;
+                // stats tracking.  Start accumulating time.
+                AssetProcessor::StatsCapture::BeginCaptureStat(statKey.toUtf8().constData());
+
             }
             else //if failed or succeeded remove from the map
             {
+                // note that sometimes this gets called twice, once by the RCJobs thread and once by the AP itself,
+                // because sometimes jobs take a short cut from "started" -> "failed" or "started" -> "complete
+                // without going thru the RC.
+                // as such, all the code in this block should be crafted to work regardless of whether its double called.
+                AssetProcessor::StatsCapture::EndCaptureStat(statKey.toUtf8().constData());
+                
                 m_jobRunKeyToJobInfoMap.erase(jobEntry.m_jobRunKey);
                 Q_EMIT SourceFinished(sourceUUID, legacySourceUUID);
                 Q_EMIT JobComplete(jobEntry, status);
@@ -262,11 +274,9 @@ namespace AssetProcessor
         }
 
         //look for the job in flight first
-        bool found = false;
         auto foundElement = m_jobRunKeyToJobInfoMap.find(request.m_jobRunKey);
         if (foundElement != m_jobRunKeyToJobInfoMap.end())
         {
-            found = true;
             jobInfo = foundElement->second;
         }
         else
@@ -284,7 +294,6 @@ namespace AssetProcessor
 
             AZ_Assert(jobInfos.size() == 1, "Should only have found one jobInfo!!!");
             jobInfo = AZStd::move(jobInfos[0]);
-            found = true;
         }
 
         if (jobInfo.m_status == JobStatus::Failed_InvalidSourceNameExceedsMaxLimit)
@@ -3360,8 +3369,13 @@ namespace AssetProcessor
             AZStd::string logFileName = AssetUtilities::ComputeJobLogFileName(createJobsRequest);
             {
                 AssetUtilities::JobLogTraceListener jobLogTraceListener(logFileName, runKey, true);
+                // track the time it takes to createJobs.  We can perform analysis later to present it by extension and other stats.
+                QString statKey = QString("CreateJobs,%1,%2").arg(actualRelativePath).arg(builderInfo.m_name.c_str());
+                AssetProcessor::StatsCapture::BeginCaptureStat(statKey.toUtf8().constData());
                 builderInfo.m_createJobFunction(createJobsRequest, createJobsResponse);
+                AssetProcessor::StatsCapture::EndCaptureStat(statKey.toUtf8().constData());
             }
+            
             AssetProcessor::SetThreadLocalJobId(0);
 
             bool isBuilderMissingFingerprint = (createJobsResponse.m_result == AssetBuilderSDK::CreateJobsResultCode::Success
@@ -3580,19 +3594,79 @@ namespace AssetProcessor
                     QString knownPathBeforeWildcard = encodedFileData.left(slashBeforeWildcardIndex + 1); // include the slash
                     QString relativeSearch = encodedFileData.mid(slashBeforeWildcardIndex + 1); // skip the slash
 
-                    for (int i = 0; i < m_platformConfig->GetScanFolderCount(); ++i)
+                    const auto& excludedFolders = m_excludedFolderCache->GetExcludedFolders();
+
+                    // Absolute path, just check the 1 scan folder
+                    if (AZ::IO::PathView(encodedFileData.toUtf8().constData()).IsAbsolute())
                     {
-                        const ScanFolderInfo* scanFolderInfo = &m_platformConfig->GetScanFolderAt(i);
+                        auto scanFolderInfo = m_platformConfig->GetScanFolderForFile(encodedFileData);
 
-                        if (!scanFolderInfo->RecurseSubFolders() && encodedFileData.contains("/"))
+                        if (!m_platformConfig->ConvertToRelativePath(encodedFileData, scanFolderInfo, resultDatabaseSourceName))
                         {
-                            continue;
+                            AZ_Warning(
+                                AssetProcessor::ConsoleChannel, false,
+                                "'%s' does not appear to be in any input folder.  Use relative paths instead.",
+                                sourceDependency.m_sourceFileDependencyPath.c_str());
                         }
+                        else
+                        {
+                            // Make an absolute path that is ScanFolderPath + Part of search path before the wildcard
+                            QDir rooted(scanFolderInfo->ScanPath());
+                            QString scanFolderAndKnownSubPath = rooted.absoluteFilePath(knownPathBeforeWildcard);
 
-                        QDir rooted(scanFolderInfo->ScanPath());
-                        QString absolutePath = rooted.absoluteFilePath(knownPathBeforeWildcard);
+                            resolvedDependencyList.append(m_platformConfig->FindWildcardMatches(
+                                scanFolderAndKnownSubPath, relativeSearch,
+                                excludedFolders, false, scanFolderInfo->RecurseSubFolders()));
+                        }
+                    }
+                    else // Relative path, check every scan folder
+                    {
+                        for (int i = 0; i < m_platformConfig->GetScanFolderCount(); ++i)
+                        {
+                            const ScanFolderInfo* scanFolderInfo = &m_platformConfig->GetScanFolderAt(i);
 
-                        resolvedDependencyList.append(m_platformConfig->FindWildcardMatches(absolutePath, relativeSearch, false, scanFolderInfo->RecurseSubFolders()));
+                            if (!scanFolderInfo->RecurseSubFolders() && encodedFileData.contains("/"))
+                            {
+                                continue;
+                            }
+
+                            QDir rooted(scanFolderInfo->ScanPath());
+                            QString absolutePath = rooted.absoluteFilePath(knownPathBeforeWildcard);
+
+                            resolvedDependencyList.append(m_platformConfig->FindWildcardMatches(
+                                absolutePath, relativeSearch,
+                                excludedFolders, false, scanFolderInfo->RecurseSubFolders()));
+                        }
+                    }
+
+                    // Filter out any excluded files
+                    for (auto itr = resolvedDependencyList.begin(); itr != resolvedDependencyList.end();)
+                    {
+                        if (m_platformConfig->IsFileExcluded(*itr))
+                        {
+                            itr = resolvedDependencyList.erase(itr);
+                        }
+                        else
+                        {
+                            ++itr;
+                        }
+                    }
+
+                    // Convert to relative paths
+                    for (auto dependencyItr = resolvedDependencyList.begin(); dependencyItr != resolvedDependencyList.end();) 
+                    {
+                        QString relativePath, scanFolder;
+                        if (m_platformConfig->ConvertToRelativePath(*dependencyItr, relativePath, scanFolder))
+                        {
+                            *dependencyItr = relativePath;
+                            ++dependencyItr;
+                        }
+                        else
+                        {
+                            AZ_Warning("AssetProcessor", false, "Failed to get relative path for wildcard dependency file %s.  Is the file within a scan folder?",
+                                dependencyItr->toUtf8().constData());
+                            dependencyItr = resolvedDependencyList.erase(dependencyItr);
+                        }
                     }
 
                     resultDatabaseSourceName = encodedFileData.replace('\\', '/');
@@ -3991,18 +4065,28 @@ namespace AssetProcessor
         // It is generally called when a source file modified in any way, including when it is added or deleted.
         // note that this is a "reverse" dependency query - it looks up what depends on a file, not what the file depends on
         using namespace AzToolsFramework::AssetDatabase;
-        QStringList absoluteSourceFilePathQueue;
+        QSet<QString> absoluteSourceFilePathQueue;
         QString databasePath;
         QString scanFolder;
  
-        auto callbackFunction = [&](AzToolsFramework::AssetDatabase::SourceFileDependencyEntry& entry)
+        auto callbackFunction = [this, &absoluteSourceFilePathQueue](SourceFileDependencyEntry& entry)
         {
             QString relativeDatabaseName = QString::fromUtf8(entry.m_source.c_str());
             QString absolutePath = m_platformConfig->FindFirstMatchingFile(relativeDatabaseName);
             if (!absolutePath.isEmpty())
             {
-                absoluteSourceFilePathQueue.push_back(absolutePath);
+                absoluteSourceFilePathQueue.insert(absolutePath);
             }
+            return true;
+        };
+
+        auto callbackFunctionAbsoluteCheck = [&callbackFunction](SourceFileDependencyEntry& entry)
+        {
+            if (AZ::IO::PathView(entry.m_dependsOnSource.c_str()).IsAbsolute())
+            {
+                return callbackFunction(entry);
+            }
+
             return true;
         };
 
@@ -4011,10 +4095,13 @@ namespace AssetProcessor
         if (m_platformConfig->ConvertToRelativePath(sourcePath, databasePath, scanFolder))
         {
            m_stateData->QuerySourceDependencyByDependsOnSource(databasePath.toUtf8().constData(), nullptr, SourceFileDependencyEntry::DEP_Any, callbackFunction);
-
         }
 
-        return absoluteSourceFilePathQueue;
+        // We'll also check with the absolute path, because we support absolute path dependencies
+        m_stateData->QuerySourceDependencyByDependsOnSource(
+            sourcePath.toUtf8().constData(), nullptr, SourceFileDependencyEntry::DEP_Any, callbackFunctionAbsoluteCheck);
+
+        return absoluteSourceFilePathQueue.values();
     }
 
     void AssetProcessorManager::AddSourceToDatabase(AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceDatabaseEntry, const ScanFolderInfo* scanFolder, QString relativeSourceFilePath)
@@ -4771,5 +4858,7 @@ namespace AssetProcessor
         }
         return filesFound;
     }
+
+    
 } // namespace AssetProcessor
 

@@ -9,7 +9,6 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/Entity.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Serialization/Utils.h>
@@ -40,6 +39,7 @@
 #include <Atom/RPI.Reflect/Pass/PassTemplate.h>
 #include <Atom/RPI.Reflect/Pass/RasterPassData.h>
 #include <Atom/RPI.Reflect/Pass/RenderPassData.h>
+#include <Atom/RPI.Reflect/Pass/SlowClearPassData.h>
 
 namespace AZ
 {
@@ -68,6 +68,7 @@ namespace AZ
             PassSlot::Reflect(context);
 
             PassData::Reflect(context);
+            SlowClearPassData::Reflect(context);
             CopyPassData::Reflect(context);
             RenderPassData::Reflect(context);
             ComputePassData::Reflect(context);
@@ -312,7 +313,6 @@ namespace AZ
             Pass::FramePrepareParams params{ &frameGraphBuilder };
 
             {
-                AZ_PROFILE_SCOPE(RPI, "Pass: FrameBegin");
                 m_rootPass->FrameBegin(params);
             }
         }
@@ -456,11 +456,6 @@ namespace AZ
             return m_passLibrary.HasPassesForTemplate(templateName);
         }
 
-        const AZStd::vector<Pass*>& PassSystem::GetPassesForTemplateName(const Name& templateName) const
-        {
-            return m_passLibrary.GetPassesForTemplate(templateName);
-        }
-
         bool PassSystem::AddPassTemplate(const Name& name, const AZStd::shared_ptr<PassTemplate>& passTemplate)
         {
             return m_passLibrary.AddPassTemplate(name, passTemplate);
@@ -469,6 +464,11 @@ namespace AZ
         const AZStd::shared_ptr<PassTemplate> PassSystem::GetPassTemplate(const Name& name) const
         {
             return m_passLibrary.GetPassTemplate(name);
+        }
+
+        void PassSystem::RemovePassTemplate(const Name& name)
+        {
+            m_passLibrary.RemovePassTemplate(name);
         }
 
         void PassSystem::RemovePassFromLibrary(Pass* pass)
@@ -487,10 +487,21 @@ namespace AZ
             RemovePassFromLibrary(pass);
             --m_passCounter;
         }
-
-        AZStd::vector<Pass*> PassSystem::FindPasses(const PassFilter& passFilter) const
+                
+        void PassSystem::ForEachPass(const PassFilter& filter, AZStd::function<PassFilterExecutionFlow(Pass*)> passFunction)
         {
-            return m_passLibrary.FindPasses(passFilter);
+            return m_passLibrary.ForEachPass(filter, passFunction);
+        }
+
+        Pass* PassSystem::FindFirstPass(const PassFilter& filter)
+        {
+            Pass* foundPass = nullptr;
+            m_passLibrary.ForEachPass(filter, [&foundPass](RPI::Pass* pass) ->PassFilterExecutionFlow
+                {
+                    foundPass = pass;
+                    return PassFilterExecutionFlow::StopVisitingPasses;
+                });
+            return foundPass;
         }
 
         SwapChainPass* PassSystem::FindSwapChainPass(AzFramework::NativeWindowHandle windowHandle) const

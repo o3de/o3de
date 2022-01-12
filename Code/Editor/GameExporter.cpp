@@ -28,13 +28,14 @@
 #include "Objects/EntityObject.h"
 
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
 //////////////////////////////////////////////////////////////////////////
-#define MUSIC_LEVEL_LIBRARY_FILE "Music.xml"
-#define MATERIAL_LEVEL_LIBRARY_FILE "Materials.xml"
-#define RESOURCE_LIST_FILE "ResourceList.txt"
-#define USED_RESOURCE_LIST_FILE "UsedResourceList.txt"
-#define SHADER_LIST_FILE "ShadersList.txt"
+#define MUSIC_LEVEL_LIBRARY_FILE "music.xml"
+#define MATERIAL_LEVEL_LIBRARY_FILE "materials.xml"
+#define RESOURCE_LIST_FILE "resourcelist.txt"
+#define USED_RESOURCE_LIST_FILE "usedresourcelist.txt"
+#define SHADER_LIST_FILE "shaderslist.txt"
 
 #define GetAValue(rgb)      ((BYTE)((rgb) >> 24))
 
@@ -145,13 +146,11 @@ bool CGameExporter::Export(unsigned int flags, [[maybe_unused]] EEndian eExportE
             exportSuccessful = false;
         }
 
-        if (exportSuccessful)
+        if (exportSuccessful && m_bAutoExportMode)
         {
-            if (m_bAutoExportMode)
-            {
-                // Remove read-only flags.
-                CrySetFileAttributes(m_levelPak.m_sPath.toUtf8().data(), FILE_ATTRIBUTE_NORMAL);
-            }
+            // Remove read-only flags.
+            auto perms = QFile::permissions(m_levelPak.m_sPath) | QFile::Permission::WriteOwner;
+            QFile::setPermissions(m_levelPak.m_sPath, perms);
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -184,9 +183,9 @@ bool CGameExporter::Export(unsigned int flags, [[maybe_unused]] EEndian eExportE
             ExportOcclusionMesh(sLevelPath.toUtf8().data());
 
             //! Export Level data.
-            CLogFile::WriteLine("Exporting LevelData.xml");
+            CLogFile::WriteLine("Exporting leveldata.xml");
             ExportLevelData(sLevelPath);
-            CLogFile::WriteLine("Exporting LevelData.xml done.");
+            CLogFile::WriteLine("Exporting leveldata.xml done.");
 
             ExportLevelInfo(sLevelPath);
 
@@ -265,26 +264,26 @@ void CGameExporter::ExportOcclusionMesh(const char* pszGamePath)
 void CGameExporter::ExportLevelData(const QString& path, bool /*bExportMission*/)
 {
     IEditor* pEditor = GetIEditor();
-    pEditor->SetStatusText(QObject::tr("Exporting LevelData.xml..."));
+    pEditor->SetStatusText(QObject::tr("Exporting leveldata.xml..."));
 
     char versionString[256];
     pEditor->GetFileVersion().ToString(versionString);
 
-    XmlNodeRef root = XmlHelpers::CreateXmlNode("LevelData");
+    XmlNodeRef root = XmlHelpers::CreateXmlNode("leveldata");
     root->setAttr("SandboxVersion", versionString);
-    XmlNodeRef rootAction = XmlHelpers::CreateXmlNode("LevelDataAction");
+    XmlNodeRef rootAction = XmlHelpers::CreateXmlNode("leveldataaction");
     rootAction->setAttr("SandboxVersion", versionString);
 
     //////////////////////////////////////////////////////////////////////////
     // Save Level Data XML
     //////////////////////////////////////////////////////////////////////////
-    QString levelDataFile = path + "LevelData.xml";
+    QString levelDataFile = path + "leveldata.xml";
     XmlString xmlData = root->getXML();
     CCryMemFile file;
     file.Write(xmlData.c_str(), static_cast<unsigned int>(xmlData.length()));
     m_levelPak.m_pakFile.UpdateFile(levelDataFile.toUtf8().data(), file);
 
-    QString levelDataActionFile = path + "LevelDataAction.xml";
+    QString levelDataActionFile = path + "leveldataaction.xml";
     XmlString xmlDataAction = rootAction->getXML();
     CCryMemFile fileAction;
     fileAction.Write(xmlDataAction.c_str(), static_cast<unsigned int>(xmlDataAction.length()));
@@ -297,7 +296,7 @@ void CGameExporter::ExportLevelData(const QString& path, bool /*bExportMission*/
     if (savedEntities)
     {
         QString entitiesFile;
-        entitiesFile = QStringLiteral("%1%2.entities_xml").arg(path, "Mission0");
+        entitiesFile = QStringLiteral("%1%2.entities_xml").arg(path, "mission0");
         m_levelPak.m_pakFile.UpdateFile(entitiesFile.toUtf8().data(), entitySaveBuffer.begin(), static_cast<int>(entitySaveBuffer.size()));
     }
 }
@@ -325,7 +324,7 @@ void CGameExporter::ExportLevelInfo(const QString& path)
     //////////////////////////////////////////////////////////////////////////
     // Save LevelInfo file.
     //////////////////////////////////////////////////////////////////////////
-    QString filename = path + "LevelInfo.xml";
+    QString filename = path + "levelinfo.xml";
     XmlString xmlData = root->getXML();
 
     CCryMemFile file;

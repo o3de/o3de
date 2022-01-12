@@ -7,7 +7,6 @@
  */
 
 #include <RayTracing/RayTracingFeatureProcessor.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
@@ -150,21 +149,16 @@ namespace AZ
                 {
                     AZ_Assert(blasInstanceFound == false, "Partial set of RayTracingBlas objects found for mesh");
 
-                    // create the BLAS object
-                    subMesh.m_blas = AZ::RHI::RayTracingBlas::CreateRHIRayTracingBlas();
+                    // create the BLAS object and store it in the BLAS list
+                    RHI::Ptr<RHI::RayTracingBlas> rayTracingBlas = AZ::RHI::RayTracingBlas::CreateRHIRayTracingBlas();
+                    itMeshBlasInstance->second.m_subMeshes.push_back({ rayTracingBlas });
 
-                    // create the buffers from the descriptor
-                    subMesh.m_blas->CreateBuffers(*device, &blasDescriptor, *m_bufferPools);
+                    // create the buffers from the BLAS descriptor
+                    rayTracingBlas->CreateBuffers(*device, &blasDescriptor, *m_bufferPools);
 
-                    // store the BLAS in the side list
-                    itMeshBlasInstance->second.m_subMeshes.push_back({ subMesh.m_blas });
+                    // store the BLAS in the mesh
+                    subMesh.m_blas = rayTracingBlas;
                 }
-            }
-
-            if (blasInstanceFound)
-            {
-                // set the mesh BLAS flag so we don't try to rebuild it in the RayTracingAccelerationStructurePass
-                mesh.m_blasBuilt = true;
             }
 
             // set initial transform
@@ -318,7 +312,8 @@ namespace AZ
                         }
 
                         subMesh.m_irradianceColor.StoreToFloat4(meshInfo.m_irradianceColor.data());
-                        rotationMatrix.StoreToRowMajorFloat9(meshInfo.m_worldInvTranspose.data());
+                        Matrix3x4 worldInvTranspose3x4 = Matrix3x4::CreateFromMatrix3x3(rotationMatrix);
+                        worldInvTranspose3x4.StoreToRowMajorFloat12(meshInfo.m_worldInvTranspose.data());
                         meshInfo.m_bufferFlags = subMesh.m_bufferFlags;
                         meshInfo.m_bufferStartIndex = bufferStartIndex;
 
@@ -507,8 +502,14 @@ namespace AZ
                     }
                 }
 
-                RHI::ShaderInputBufferUnboundedArrayIndex bufferUnboundedArrayIndex = srgLayout->FindShaderInputBufferUnboundedArrayIndex(AZ::Name("m_meshBuffers"));
-                m_rayTracingSceneSrg->SetBufferViewUnboundedArray(bufferUnboundedArrayIndex, meshBuffers);
+                // Check if buffer view data changed from previous frame.
+                // Look into making 'm_meshBuffers != meshBuffers' faster by possibly building a crc and doing a crc check.
+                if (m_meshBuffers.size() != meshBuffers.size() || m_meshBuffers != meshBuffers)
+                {
+                    m_meshBuffers = meshBuffers;
+                    RHI::ShaderInputBufferUnboundedArrayIndex bufferUnboundedArrayIndex = srgLayout->FindShaderInputBufferUnboundedArrayIndex(AZ::Name("m_meshBuffers"));
+                    m_rayTracingSceneSrg->SetBufferViewUnboundedArray(bufferUnboundedArrayIndex, m_meshBuffers);
+                }
             }
 
             m_rayTracingSceneSrg->Compile();
@@ -554,8 +555,13 @@ namespace AZ
                     }
                 }
 
-                RHI::ShaderInputImageUnboundedArrayIndex textureUnboundedArrayIndex = srgLayout->FindShaderInputImageUnboundedArrayIndex(AZ::Name("m_materialTextures"));
-                m_rayTracingMaterialSrg->SetImageViewUnboundedArray(textureUnboundedArrayIndex, materialTextures);
+                // Check if image view data changed from previous frame. 
+                if (m_materialTextures.size() != materialTextures.size() || m_materialTextures != materialTextures)
+                {
+                    m_materialTextures = materialTextures;
+                    RHI::ShaderInputImageUnboundedArrayIndex textureUnboundedArrayIndex = srgLayout->FindShaderInputImageUnboundedArrayIndex(AZ::Name("m_materialTextures"));
+                    m_rayTracingMaterialSrg->SetImageViewUnboundedArray(textureUnboundedArrayIndex, materialTextures);
+                }
             }
 
             m_rayTracingMaterialSrg->Compile();

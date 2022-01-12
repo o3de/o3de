@@ -7,5 +7,7 @@
 #
 
 set(FILES
+    Mocks/Terrain/MockTerrainLayerSpawner.h
+    Mocks/Terrain/MockTerrainAreaSurfaceRequestBus.h
     Mocks/Terrain/MockTerrain.h
 )

@@ -16,9 +16,12 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/utils.h>
 
+struct ICVar;
+
 class CVarMenu
     : public QMenu
 {
+    Q_OBJECT
 public:
     // CVar that can be toggled on and off
     struct CVarToggle

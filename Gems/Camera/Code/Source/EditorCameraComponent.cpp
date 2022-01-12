@@ -18,6 +18,7 @@
 
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/View.h>
+#include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 
 namespace Camera
 {
@@ -39,6 +40,16 @@ namespace Camera
                 AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
                     isInGameMode, &AzToolsFramework::EditorEntityContextRequestBus::Events::IsEditorRunningGame);
                 return isInGameMode;
+            });
+
+        // Only allow our camera to move when the transform is not locked.
+        m_controller.SetIsLockedFunction([this]()
+            {
+                bool locked = false;
+                AzToolsFramework::Components::TransformComponentMessages::Bus::EventResult(
+                    locked, GetEntityId(), &AzToolsFramework::Components::TransformComponentMessages::IsTransformLocked);
+
+                return locked;
             });
 
         // Call base class activate, which in turn calls Activate on our controller.
@@ -102,7 +113,7 @@ namespace Camera
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/Camera.svg")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/camera/")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/camera/camera/")
                     ->UIElement(AZ::Edit::UIHandlers::Button,"", "Sets the view to this camera")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorCameraComponent::OnPossessCameraButtonClicked)
                         ->Attribute(AZ::Edit::Attributes::ButtonText, &EditorCameraComponent::GetCameraViewButtonText)

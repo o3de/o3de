@@ -9,7 +9,6 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <AzCore/Component/TickBus.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/Asset/AssetCommon.h>
 
@@ -28,7 +27,6 @@ namespace AtomToolsFramework
     //! AtomToolsDocumentSystemComponent is the central component of the Material Editor Core gem
     class AtomToolsDocumentSystemComponent
         : public AZ::Component
-        , private AZ::TickBus::Handler
         , private AtomToolsDocumentNotificationBus::Handler
         , private AtomToolsDocumentSystemRequestBus::Handler
     {
@@ -59,10 +57,8 @@ namespace AtomToolsFramework
         void OnDocumentExternallyModified(const AZ::Uuid& documentId) override;
         //////////////////////////////////////////////////////////////////////////
 
-        ////////////////////////////////////////////////////////////////////////
-        // AZ::TickBus::Handler overrides...
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
-        ////////////////////////////////////////////////////////////////////////
+        void QueueReopenDocuments();
+        void ReopenDocuments();
 
         ////////////////////////////////////////////////////////////////////////
         // AtomToolsDocumentSystemRequestBus::Handler overrides...
@@ -85,8 +81,9 @@ namespace AtomToolsFramework
         AZStd::intrusive_ptr<AtomToolsDocumentSystemSettings> m_settings;
         AZStd::function<AtomToolsDocument*()> m_documentCreator;
         AZStd::unordered_map<AZ::Uuid, AZStd::shared_ptr<AtomToolsDocument>> m_documentMap;
-        AZStd::unordered_set<AZ::Uuid> m_documentIdsToRebuild;
-        AZStd::unordered_set<AZ::Uuid> m_documentIdsToReopen;
+        AZStd::unordered_set<AZ::Uuid> m_documentIdsWithExternalChanges;
+        AZStd::unordered_set<AZ::Uuid> m_documentIdsWithDependencyChanges;
+        bool m_queueReopenDocuments = false;
         const size_t m_maxMessageBoxLineCount = 15;
     };
 } // namespace AtomToolsFramework

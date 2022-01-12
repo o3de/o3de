@@ -26,7 +26,7 @@
 
 #include <ScriptEvents/Internal/VersionedProperty.h>
 #include <ScriptEvents/ScriptEventParameter.h>
-#include <ScriptEvents/ScriptEventMethod.h>
+#include <ScriptEvents/ScriptEventsMethod.h>
 #include <ScriptEvents/ScriptEventsAsset.h>
 
 #include "ScriptEventTestUtilities.h"
@@ -58,7 +58,6 @@ namespace ScriptEventsTests
 
                 {
                     AZ::ComponentApplication::Descriptor descriptor;
-                    descriptor.m_enableDrilling = false; // We'll manage our own driller in these tests
                     descriptor.m_useExistingAllocator = true; // Use the SystemAllocator we own in this test.
 
                     appStartup.m_createStaticModulesCallback =

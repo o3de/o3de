@@ -52,6 +52,7 @@ class AWSGameLift(core.Construct):
             stack_name=stack_name,
             fleet_configurations=fleet_configurations,
             create_game_session_queue=self.node.try_get_context('create_game_session_queue') == 'true',
+            flex_match=self.node.try_get_context('flex_match') == 'true',
             description=f'Contains resources for the AWS GameLift Gem stack as part of the {project_name} project',
             tags=tags,
             env=env

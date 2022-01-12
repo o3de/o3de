@@ -7,5 +7,6 @@
 #
 
 set(FILES
+    Editor/Core/QtEditorApplication_windows.cpp
     Util/Mailer_Windows.cpp
 )

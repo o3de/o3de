@@ -39,7 +39,7 @@ ly_add_target(
             3rdParty::Lua
             3rdParty::RapidJSON
             3rdParty::RapidXML
-            3rdParty::zlib
+            3rdParty::ZLIB
             3rdParty::zstd
             3rdParty::cityhash
             ${AZ_CORE_PIX_BUILD_DEPENDENCIES}
@@ -145,6 +145,11 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         SOURCES Tests/Debug.cpp
         PROPERTY COMPILE_DEFINITIONS
         VALUES AZCORETEST_DLL_NAME=\"$<TARGET_FILE_NAME:AzCore.Tests>\"
+    )
+    ly_add_target_files(
+        TARGETS AzCore.Tests
+        FILES ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Memory/AllocatorBenchmarkRecordings.bin
+        OUTPUT_SUBDIRECTORY Tests/AzCore/Memory
     )
 
 endif()

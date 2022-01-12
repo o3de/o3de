@@ -381,22 +381,13 @@ namespace AzToolsFramework
             return;
         }
 
-        bool isPrefabSystemEnabled = false;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
-        // For slices, orphan any children that remain attached to the entity
-        // For prefabs, this is an unneeded operation because the prefab system handles the orphans
-        // and the extra reparenting operation can be problematic for consumers subscribed to entity
-        // events, such as the entity outliner.
-        if (!isPrefabSystemEnabled)
+        // Even though these child entities will immediately be destroyed, their entity info may be recycled
+        // Ensure they don't have any lingering inaccurate parent data
+        auto children = entityInfo.GetChildren();
+        for (auto childId : children)
         {
-            auto children = entityInfo.GetChildren();
-            for (auto childId : children)
-            {
-                ReparentChild(childId, AZ::EntityId(), entityId);
-                m_entityOrphanTable[entityId].insert(childId);
-            }
+            ReparentChild(childId, AZ::EntityId(), entityId);
+            m_entityOrphanTable[entityId].insert(childId);
         }
 
         m_savedOrderInfo[entityId] = AZStd::make_pair(entityInfo.GetParent(), entityInfo.GetIndexForSorting());
@@ -458,16 +449,23 @@ namespace AzToolsFramework
         AZStd::unordered_map<AZ::EntityId, AZStd::pair<AZ::EntityId, AZ::u64>>::const_iterator orderItr = m_savedOrderInfo.find(childId);
         if (orderItr != m_savedOrderInfo.end() && orderItr->second.first == parentId)
         {
-            bool sortOrderUpdated = AzToolsFramework::RecoverEntitySortInfo(parentId, childId, orderItr->second.second);
-            m_savedOrderInfo.erase(childId);
-
-            // force notify the child sort order changed on the parent entity info, but only if the restore didn't actually modify
-            // the order internally (and sent ChildEntityOrderArrayUpdated).  that may seem heavy handed, and it is, but necessary
-            // to combat scenarios when the initial override detection returns a false positive (see comment about IDH comparisons
-            // in OnChildSortOrderChanged) and the slice instance source-to-live mapping hasn't been fully reconstructed yet.
-            if (!sortOrderUpdated)
+            bool isPrefabEnabled = false;
+            AzFramework::ApplicationRequests::Bus::BroadcastResult(
+                isPrefabEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+            // If prefabs are enabled, rely on the component to do a sanity check instead of restoring the order from the model
+            if (!isPrefabEnabled)
             {
-                parentInfo.OnChildSortOrderChanged();
+                bool sortOrderUpdated = AzToolsFramework::RecoverEntitySortInfo(parentId, childId, orderItr->second.second);
+                m_savedOrderInfo.erase(childId);
+
+                // force notify the child sort order changed on the parent entity info, but only if the restore didn't actually modify
+                // the order internally (and sent ChildEntityOrderArrayUpdated).  that may seem heavy handed, and it is, but necessary
+                // to combat scenarios when the initial override detection returns a false positive (see comment about IDH comparisons
+                // in OnChildSortOrderChanged) and the slice instance source-to-live mapping hasn't been fully reconstructed yet.
+                if (!sortOrderUpdated)
+                {
+                    parentInfo.OnChildSortOrderChanged();
+                }
             }
         }
         else
@@ -1200,26 +1198,41 @@ namespace AzToolsFramework
         auto childItr = m_childIndexCache.find(childId);
         if (childItr == m_childIndexCache.end())
         {
-            //cache indices for faster lookup
-            m_childIndexCache[childId] = static_cast<AZ::u64>(m_children.size());
-            m_children.push_back(childId);
+            // m_children is guaranteed to be ordered by EntityId, do a sorted insertion
+            auto insertedChildIndex = AZStd::upper_bound(m_children.begin(), m_children.end(), childId);
+            insertedChildIndex = m_children.insert(insertedChildIndex, childId);
+
+            // Cache all affected child indices for fast lookup
+            for (auto it = insertedChildIndex; it != m_children.end(); ++it)
+            {
+                const AZ::u64 newChildIndex = static_cast<AZ::u64>(it - m_children.begin());
+                m_childIndexCache[*it] = newChildIndex;
+            }
         }
     }
 
     void EditorEntityModel::EditorEntityModelEntry::RemoveChild(AZ::EntityId childId)
     {
-        auto childItr = m_childIndexCache.find(childId);
-        if (childItr != m_childIndexCache.end())
+        // Retrieve our child index from the cache
+        auto cachedIndexItr = m_childIndexCache.find(childId);
+        if (cachedIndexItr == m_childIndexCache.end())
         {
-            // Take the last entry and move it into the removed spot instead of deleting the entry and having to move all
-            // following entries one step down.
-            AZ::EntityId backEntity = m_children.back();
-            m_children[childItr->second] = backEntity;
-            // Update cached index for the moved id to the new index.
-            m_childIndexCache[backEntity] = childItr->second;
-            // Now remove the deleted id from the children and cache.
-            m_childIndexCache.erase(childId);
-            m_children.erase(m_children.end() - 1);
+            AZ_Assert(false, "Attempted to remove an unknown child");
+            return;
+        }
+
+        // Build an iterator for m_children based on our cached index
+        auto childItr = m_children.begin() + cachedIndexItr->second;
+
+        // Remove our child from the cache
+        m_childIndexCache.erase(cachedIndexItr);
+
+        // Remove our child, fix up the cache entries for any subsequent children
+        auto elementsToFixItr = m_children.erase(childItr);
+        for (auto it = elementsToFixItr; it != m_children.end(); ++it)
+        {
+            const AZ::u64 newChildIndex = static_cast<AZ::u64>(it - m_children.begin());
+            m_childIndexCache[*it] = newChildIndex;
         }
     }
 
@@ -1256,8 +1269,17 @@ namespace AzToolsFramework
 
     AZ::u64 EditorEntityModel::EditorEntityModelEntry::GetChildIndex(AZ::EntityId childId) const
     {
+        // Return the cached index, if available.
         auto childItr = m_childIndexCache.find(childId);
-        return childItr != m_childIndexCache.end() ? childItr->second : static_cast<AZ::u64>(m_children.size());
+        if (childItr != m_childIndexCache.end())
+        {
+            return childItr->second;
+        }
+
+        // On initialization, GetChildIndex may be queried for a childId that is not yet in the child list.
+        // Return the position it would be inserted at in EditorEntityModelEntry::AddChild
+        auto targetChildPositionItr = AZStd::upper_bound(m_children.begin(), m_children.end(), childId);
+        return static_cast<AZ::u64>(targetChildPositionItr - m_children.begin());
     }
 
     AZStd::string EditorEntityModel::EditorEntityModelEntry::GetName() const

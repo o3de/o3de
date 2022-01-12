@@ -23,9 +23,6 @@ class _LinuxResourceManager(AbstractResourceLocator):
     """
     Override for locating resources in a Linux operating system running LyTestTools.
     """
-    def __init__(self, build_directory: str, project: str):
-        pass
-
     def platform_config_file(self):
         """
         :return: path to the platform config file
@@ -52,10 +49,16 @@ class _LinuxResourceManager(AbstractResourceLocator):
 
     def editor_log(self):
         """
-        :return: path to editor.log
+        :return: path to Editor.log
         """
-        return os.path.join(self.project_log(), "editor.log")
+        return os.path.join(self.project_log(), "Editor.log")
 
+    def crash_log(self):
+        """
+        Return path to the project's crash log dir using the builds project and platform
+        :return: path to Crash.log
+        """
+        return os.path.join(self.project_log(), "crash.log")
 
 class LinuxWorkspaceManager(AbstractWorkspaceManager):
     """

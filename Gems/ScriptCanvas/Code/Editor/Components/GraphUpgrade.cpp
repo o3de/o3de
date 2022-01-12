@@ -438,10 +438,11 @@ namespace ScriptCanvasEditor
             if (nodeConfig.IsValid())
             {
                 ScriptCanvas::NodeUpdateSlotReport nodeUpdateSlotReport;
+                auto nodeEntity = node->GetEntityId();
                 auto nodeOutcome = graph->ReplaceNodeByConfig(node, nodeConfig, nodeUpdateSlotReport);
                 if (nodeOutcome.IsSuccess())
                 {
-                    ScriptCanvas::MergeUpdateSlotReport(node->GetEntityId(), sm->m_updateReport, nodeUpdateSlotReport);
+                    ScriptCanvas::MergeUpdateSlotReport(nodeEntity, sm->m_updateReport, nodeUpdateSlotReport);
 
                     sm->m_allNodes.erase(node);
                     sm->m_outOfDateNodes.erase(node);
@@ -519,7 +520,7 @@ namespace ScriptCanvasEditor
 
         if (validationResults.HasErrors())
         {
-            AZ::Interface<IUpgradeRequests>::Get()->GraphNeedsManualUpgrade(sm->m_asset.GetId());
+            sm->MarkError("Failed to Parse");
 
             for (auto& err : validationResults.GetEvents())
             {
@@ -675,20 +676,20 @@ namespace ScriptCanvasEditor
         RegisterState(ParseGraph);
     }
 
-    void EditorGraphUpgradeMachine::SetAsset(const AZ::Data::Asset<AZ::Data::AssetData>& asset)
+    void EditorGraphUpgradeMachine::SetAsset(SourceHandle& asset)
     {
         if (m_asset != asset)
         {
             m_asset = asset;
-            SetDebugPrefix(asset.GetHint());
+            SetDebugPrefix(asset.Path().c_str());
         }
     }
 
     void EditorGraphUpgradeMachine::OnComplete(IState::ExitStatus exitStatus)
     {
-        UpgradeNotifications::Bus::Broadcast(&UpgradeNotifications::OnGraphUpgradeComplete, m_asset, exitStatus == IState::ExitStatus::Skipped);
-
-        m_asset = {};
+        UpgradeNotificationsBus::Broadcast(&UpgradeNotifications::OnGraphUpgradeComplete, m_asset, exitStatus == IState::ExitStatus::Skipped);
+        // releasing the asset at this stage of the system tick causes a memory crash
+        // m_asset = {};
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -735,7 +736,7 @@ namespace ScriptCanvasEditor
         {
             AZ::SystemTickBus::Handler::BusDisconnect();
 
-            OnComplete(exitStatus);
+            OnComplete(m_error.empty() ? exitStatus : IState::ExitStatus::Skipped);
         }
     }
 

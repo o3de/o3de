@@ -9,9 +9,12 @@
 #pragma once
 
 #include "Include/IPreferencesPage.h"
+
+#include <AzCore/Math/Vector3.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+
 #include <QIcon>
 
 inline AZ::Crc32 EditorPropertyVisibility(const bool enabled)
@@ -43,6 +46,7 @@ private:
     {
         AZ_TYPE_INFO(CameraMovementSettings, "{60B8C07E-5F48-4171-A50B-F45558B5CCA1}")
 
+        AZ::Vector3 m_defaultPosition;
         float m_translateSpeed;
         float m_rotateSpeed;
         float m_scrollSpeed;
@@ -50,13 +54,14 @@ private:
         float m_panSpeed;
         float m_boostMultiplier;
         float m_rotateSmoothness;
-        bool m_rotateSmoothing;
         float m_translateSmoothness;
-        bool m_translateSmoothing;
+        float m_defaultOrbitDistance;
         bool m_captureCursorLook;
-        bool m_pivotYawRotationInverted;
+        bool m_orbitYawRotationInverted;
         bool m_panInvertedX;
         bool m_panInvertedY;
+        bool m_rotateSmoothing;
+        bool m_translateSmoothing;
 
         AZ::Crc32 RotateSmoothingVisibility() const
         {
@@ -80,12 +85,13 @@ private:
         AZStd::string m_translateUpChannelId;
         AZStd::string m_translateDownChannelId;
         AZStd::string m_boostChannelId;
-        AZStd::string m_pivotChannelId;
+        AZStd::string m_orbitChannelId;
         AZStd::string m_freeLookChannelId;
         AZStd::string m_freePanChannelId;
-        AZStd::string m_pivotLookChannelId;
-        AZStd::string m_pivotDollyChannelId;
-        AZStd::string m_pivotPanChannelId;
+        AZStd::string m_orbitLookChannelId;
+        AZStd::string m_orbitDollyChannelId;
+        AZStd::string m_orbitPanChannelId;
+        AZStd::string m_focusChannelId;
     };
 
     CameraMovementSettings m_cameraMovementSettings;

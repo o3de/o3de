@@ -1,0 +1,722 @@
+{
+    "entries": [
+        {
+            "base": "RigidBodyRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Rigid Body"
+            },
+            "methods": [
+                {
+                    "base": "SetLinearVelocity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Linear Velocity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Linear Velocity is invoked"
+                    },
+                    "details": {
+                        "name": "Set Linear Velocity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Linear Velocity"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetKinematic",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Kinematic"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Kinematic is invoked"
+                    },
+                    "details": {
+                        "name": "Set Kinematic"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Enabled"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetMass",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Mass"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Mass is invoked"
+                    },
+                    "details": {
+                        "name": "Set Mass"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Mass"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetGravityEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Gravity Enabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Gravity Enabled is invoked"
+                    },
+                    "details": {
+                        "name": "Set Gravity Enabled"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Enabled"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetAabb",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get AABB"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get AABB is invoked"
+                    },
+                    "details": {
+                        "name": "Get AABB"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "AABB"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ForceAwake",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Force Awake"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Force Awake is invoked"
+                    },
+                    "details": {
+                        "name": "Force Awake"
+                    }
+                },
+                {
+                    "base": "SetAngularDamping",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Angular Damping"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Angular Damping is invoked"
+                    },
+                    "details": {
+                        "name": "Set Angular Damping"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Angular Damping"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ApplyAngularImpulse",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Apply Angular Impulse"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Apply Angular Impulse is invoked"
+                    },
+                    "details": {
+                        "name": "Apply Angular Impulse"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Angular Impulse"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "DisablePhysics",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Disable Physics"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Disable Physics is invoked"
+                    },
+                    "details": {
+                        "name": "Disable Physics"
+                    }
+                },
+                {
+                    "base": "SetSimulationEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Simulation Enabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Simulation Enabled is invoked"
+                    },
+                    "details": {
+                        "name": "Set Simulation Enabled"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Enabled"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetLinearVelocityAtWorldPoint",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Linear Velocity At World Point"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Linear Velocity At World Point is invoked"
+                    },
+                    "details": {
+                        "name": "Get Linear Velocity At World Point"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Linear Velocity"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "World Point"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetAngularVelocity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Angular Velocity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Angular Velocity is invoked"
+                    },
+                    "details": {
+                        "name": "Set Angular Velocity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Angular Velocity"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetCenterOfMassOffset",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Center Of Mass Offset"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Center Of Mass Offset is invoked"
+                    },
+                    "details": {
+                        "name": "Set Center Of Mass Offset"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Offset"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsPhysicsEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Physics Enabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Physics Enabled is invoked"
+                    },
+                    "details": {
+                        "name": "Is Physics Enabled"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Enabled"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetSleepThreshold",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Sleep Threshold"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Sleep Threshold is invoked"
+                    },
+                    "details": {
+                        "name": "Get Sleep Threshold"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Sleep Threshold"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetKinematicTarget",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Kinematic Target"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Kinematic Target is invoked"
+                    },
+                    "details": {
+                        "name": "Set Kinematic Target"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "Kinematic Target"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "EnablePhysics",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Enable Physics"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Enable Physics is invoked"
+                    },
+                    "details": {
+                        "name": "Enable Physics"
+                    }
+                },
+                {
+                    "base": "GetLinearDamping",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Linear Damping"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Linear Damping is invoked"
+                    },
+                    "details": {
+                        "name": "Get Linear Damping"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Linear Damping"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ApplyLinearImpulseAtWorldPoint",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Apply Linear Impulse At World Point"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Apply Linear Impulse At World Point is invoked"
+                    },
+                    "details": {
+                        "name": "Apply Linear Impulse At World Point"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Linear Impulse"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "World Point"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetCenterOfMassWorld",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Center Of Mass World"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Center Of Mass World is invoked"
+                    },
+                    "details": {
+                        "name": "Get Center Of Mass World"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Center of Mass (World)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetCenterOfMassLocal",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Center Of Mass Local"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Center Of Mass Local is invoked"
+                    },
+                    "details": {
+                        "name": "Get Center Of Mass Local"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Center Of Mass (Local)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetLinearDamping",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Linear Damping"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Linear Damping is invoked"
+                    },
+                    "details": {
+                        "name": "Set Linear Damping"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Linear Damping"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetAngularDamping",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Angular Damping"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Angular Damping is invoked"
+                    },
+                    "details": {
+                        "name": "Get Angular Damping"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Angular Damping"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetLinearVelocity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Linear Velocity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Linear Velocity is invoked"
+                    },
+                    "details": {
+                        "name": "Get Linear Velocity"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Linear Velocity"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsAwake",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Awake"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Awake is invoked"
+                    },
+                    "details": {
+                        "name": "Is Awake"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Is Awake"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsGravityEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Gravity Enabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Gravity Enabled is invoked"
+                    },
+                    "details": {
+                        "name": "Is Gravity Enabled"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Is Gravity Enabled"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetInverseMass",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Inverse Mass"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Inverse Mass is invoked"
+                    },
+                    "details": {
+                        "name": "Get Inverse Mass"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Inverse Mass"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetSleepThreshold",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Sleep Threshold"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Sleep Threshold is invoked"
+                    },
+                    "details": {
+                        "name": "Set Sleep Threshold"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Sleep Threshold"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ForceAsleep",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Force Asleep"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Force Asleep is invoked"
+                    },
+                    "details": {
+                        "name": "Force Asleep"
+                    }
+                },
+                {
+                    "base": "GetMass",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Mass"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Mass is invoked"
+                    },
+                    "details": {
+                        "name": "Get Mass"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Mass"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsKinematic",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Kinematic"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Kinematic is invoked"
+                    },
+                    "details": {
+                        "name": "Is Kinematic"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Is Kinematic"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ApplyLinearImpulse",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Apply Linear Impulse"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Apply Linear Impulse is invoked"
+                    },
+                    "details": {
+                        "name": "Apply Linear Impulse"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Linear Impulse"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetAngularVelocity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Angular Velocity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Angular Velocity is invoked"
+                    },
+                    "details": {
+                        "name": "Get Angular Velocity"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Angular Velocity"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

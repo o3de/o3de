@@ -36,6 +36,7 @@
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/UI/ComponentPalette/ComponentPaletteUtil.hxx>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 #include <QGraphicsOpacityEffect>
 #include <QLabel>
@@ -118,6 +119,18 @@ namespace
         for (const AZ::EntityId& childId : entityOrderArray)
         {
             SortEntityChildrenRecursively(childId, comparer);
+        }
+    }
+
+    QModelIndex nextIndexForTree(bool direction, OutlinerTreeView *tree, QModelIndex current)
+    {
+        if (direction)
+        {
+            return tree->indexAbove(current);
+        }
+        else
+        {
+            return tree->indexBelow(current);
         }
     }
 }
@@ -267,8 +280,7 @@ OutlinerWidget::OutlinerWidget(QWidget* pParent, Qt::WindowFlags flags)
     ToolsApplicationEvents::Bus::Handler::BusConnect();
     AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
     AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusConnect();
-    AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusConnect(
-            AzToolsFramework::GetEntityContextId());
+    AzToolsFramework::ViewportEditorModeNotificationsBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
     AzToolsFramework::EditorEntityInfoNotificationBus::Handler::BusConnect();
     AzToolsFramework::EditorWindowUIRequestBus::Handler::BusConnect();
 }
@@ -276,7 +288,7 @@ OutlinerWidget::OutlinerWidget(QWidget* pParent, Qt::WindowFlags flags)
 OutlinerWidget::~OutlinerWidget()
 {
     AzToolsFramework::EditorWindowUIRequestBus::Handler::BusDisconnect();
-    AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusDisconnect();
+    AzToolsFramework::ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
     AzToolsFramework::EditorEntityInfoNotificationBus::Handler::BusDisconnect();
     AzToolsFramework::EditorPickModeNotificationBus::Handler::BusDisconnect();
     EntityHighlightMessages::Bus::Handler::BusDisconnect();
@@ -891,9 +903,7 @@ void OutlinerWidget::DoSelectSliceRootNextToSelection(bool isTraversalUpwards)
         return;
     }
 
-    AZStd::function<QModelIndex(QModelIndex)> getNextIdxFunction =
-        AZStd::bind(isTraversalUpwards ? &QTreeView::indexAbove : &QTreeView::indexBelow, treeView, AZStd::placeholders::_1);
-    QModelIndex nextIdx = getNextIdxFunction(currentIdx);
+    QModelIndex nextIdx = nextIndexForTree(isTraversalUpwards,treeView,currentIdx);
     bool foundSliceRoot = false;
 
     while (nextIdx.isValid() && !foundSliceRoot)
@@ -904,7 +914,7 @@ void OutlinerWidget::DoSelectSliceRootNextToSelection(bool isTraversalUpwards)
         AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
             foundSliceRoot, &AzToolsFramework::ToolsApplicationRequests::IsSliceRootEntity, currentEntityId);
 
-        nextIdx = getNextIdxFunction(currentIdx);
+        nextIdx = nextIndexForTree(isTraversalUpwards, treeView, currentIdx);
     }
 
     if (foundSliceRoot)
@@ -934,13 +944,10 @@ void OutlinerWidget::DoSelectEdgeSliceRoot(bool shouldSelectTopMostSlice)
     }
 
     QModelIndex currentIdx;
-    AZStd::function<QModelIndex(QModelIndex)> getNextIdxFunction;
+
     if (shouldSelectTopMostSlice)
     {
         currentIdx = itemModel->index(0, OutlinerListModel::ColumnName);
-
-        getNextIdxFunction =
-            AZStd::bind(&QTreeView::indexBelow, treeView, AZStd::placeholders::_1);
     }
     else
     {
@@ -949,9 +956,6 @@ void OutlinerWidget::DoSelectEdgeSliceRoot(bool shouldSelectTopMostSlice)
         {
             currentIdx = itemModel->index(itemModel->rowCount(currentIdx) - 1, OutlinerListModel::ColumnName, currentIdx);
         }
-
-        getNextIdxFunction =
-            AZStd::bind(&QTreeView::indexAbove, treeView, AZStd::placeholders::_1);
     }
 
     QModelIndex nextIdx = currentIdx;
@@ -964,7 +968,7 @@ void OutlinerWidget::DoSelectEdgeSliceRoot(bool shouldSelectTopMostSlice)
 
         AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
             foundSliceRoot, &AzToolsFramework::ToolsApplicationRequests::IsSliceRootEntity, currentEntityId);
-        nextIdx = getNextIdxFunction(currentIdx);
+        nextIdx = nextIndexForTree(shouldSelectTopMostSlice,treeView,currentIdx);
     } while (nextIdx.isValid() && !foundSliceRoot);
 
     if (foundSliceRoot)
@@ -1277,6 +1281,8 @@ void OutlinerWidget::OnSearchTextChanged(const QString& activeTextFilter)
 
     m_listModel->SearchStringChanged(filterString);
     m_proxyModel->UpdateFilter();
+
+    m_gui->m_objectTree->expandAll();
 }
 
 void OutlinerWidget::OnFilterChanged(const AzQtComponents::SearchTypeFilterList& activeTypeFilters)
@@ -1335,14 +1341,22 @@ void OutlinerWidget::SetEditorUiEnabled(bool enable)
     EnableUi(enable);
 }
 
-void OutlinerWidget::EnteredComponentMode([[maybe_unused]] const AZStd::vector<AZ::Uuid>& componentModeTypes)
+void OutlinerWidget::OnEditorModeActivated(
+    [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode)
 {
-    EnableUi(false);
+    if (mode == AzToolsFramework::ViewportEditorMode::Component)
+    {
+        EnableUi(false);
+    }
 }
 
-void OutlinerWidget::LeftComponentMode([[maybe_unused]] const AZStd::vector<AZ::Uuid>& componentModeTypes)
+void OutlinerWidget::OnEditorModeDeactivated(
+    [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode)
 {
-    EnableUi(true);
+    if (mode == AzToolsFramework::ViewportEditorMode::Component)
+    {
+        EnableUi(true);
+    }
 }
 
 void OutlinerWidget::OnSliceInstantiated(const AZ::Data::AssetId& /*sliceAssetId*/, AZ::SliceComponent::SliceInstanceAddress& sliceAddress, const AzFramework::SliceInstantiationTicket& /*ticket*/)
@@ -1408,7 +1422,10 @@ void OutlinerWidget::SortContent()
     }
     m_entitiesToSort.clear();
 
-    auto comparer = AZStd::bind(&CompareEntitiesForSorting, AZStd::placeholders::_1, AZStd::placeholders::_2, m_sortMode);
+    auto comparer = [sortMode = m_sortMode](AZ::EntityId left, AZ::EntityId right) -> bool
+    {
+        return CompareEntitiesForSorting(left, right, sortMode);
+    };
     for (const AZ::EntityId& entityId : parentsToSort)
     {
         SortEntityChildren(entityId, comparer);
@@ -1425,7 +1442,10 @@ void OutlinerWidget::OnSortModeChanged(EntityOutliner::DisplaySortMode sortMode)
     if (sortMode != EntityOutliner::DisplaySortMode::Manually)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
-        auto comparer = AZStd::bind(&CompareEntitiesForSorting, AZStd::placeholders::_1, AZStd::placeholders::_2, sortMode);
+        auto comparer = [sortMode = m_sortMode](AZ::EntityId left, AZ::EntityId right) -> bool
+        {
+            return CompareEntitiesForSorting(left, right, sortMode);
+        };
         SortEntityChildrenRecursively(AZ::EntityId(), comparer);
     }
 

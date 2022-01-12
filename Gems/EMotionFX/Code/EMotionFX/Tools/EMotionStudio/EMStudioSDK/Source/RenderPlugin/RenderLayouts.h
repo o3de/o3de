@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __EMSTUDIO_RENDERPLUGINLAYOUTS_H
-#define __EMSTUDIO_RENDERPLUGINLAYOUTS_H
+#pragma once
 
 // include the required headers
 #include "RenderPlugin.h"
@@ -176,6 +175,3 @@ namespace EMStudio
     // register all available layouts (this will be automatically called inside the RenderPlugin's constructor)
     void EMSTUDIO_API RegisterRenderPluginLayouts(RenderPlugin* renderPlugin);
 } // namespace EMStudio
-
-
-#endif

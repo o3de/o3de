@@ -1,5 +1,5 @@
 {
-    "Source" : "ReflectionScreenSpaceBlurVertical",
+    "Source" : "ReflectionScreenSpaceBlurVertical.azsl",
 
     "RasterState" :
     {
@@ -10,7 +10,8 @@
     {
         "Depth" :
         {
-            "Enable" : false
+            "Enable" : true,	// required to bind the depth buffer SRV
+            "CompareFunc" : "Always"
         }
     },
 

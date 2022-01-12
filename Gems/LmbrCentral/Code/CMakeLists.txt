@@ -13,6 +13,7 @@ ly_add_target(
     NAME LmbrCentral.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
+        lmbrcentral_headers_files.cmake
         lmbrcentral_files.cmake
         ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
@@ -25,6 +26,16 @@ ly_add_target(
         PRIVATE
             Legacy::CryCommon
             AZ::AzFramework
+)
+
+ly_add_target(
+    NAME LmbrCentral.API HEADERONLY
+    NAMESPACE Gem
+    FILES_CMAKE
+        lmbrcentral_headers_files.cmake
+    INCLUDE_DIRECTORIES
+        INTERFACE
+            include
 )
 
 ly_add_target(
@@ -110,75 +121,4 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
 
 endif()
 
-################################################################################
-# Tests
-################################################################################
-if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
-    ly_add_target(
-        NAME LmbrCentral.Mocks HEADERONLY
-        NAMESPACE Gem
-        FILES_CMAKE
-            lmbrcentral_mocks_files.cmake
-        INCLUDE_DIRECTORIES
-            INTERFACE
-                Mocks
-    )
-    
-    ly_add_target(
-        NAME LmbrCentral.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
-        NAMESPACE Gem
-        FILES_CMAKE
-            lmbrcentral_tests_files.cmake
-            lmbrcentral_shared_files.cmake
-        INCLUDE_DIRECTORIES
-            PRIVATE
-                Source
-                Tests
-        BUILD_DEPENDENCIES
-            PRIVATE
-                AZ::AzTest
-                AZ::AzTestShared
-                Legacy::CryCommon
-                AZ::AzFramework
-                Gem::LmbrCentral.Static
-                Gem::LmbrCentral.Mocks
-    )
-    ly_add_googletest(
-        NAME Gem::LmbrCentral.Tests
-    )
-
-    if (PAL_TRAIT_BUILD_HOST_TOOLS)
-        ly_add_target(
-            NAME LmbrCentral.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
-            NAMESPACE Gem
-            FILES_CMAKE
-                lmbrcentral_editor_tests_files.cmake
-            INCLUDE_DIRECTORIES
-                PRIVATE
-                    .
-                    Source
-                    Tests
-            COMPILE_DEFINITIONS
-                PRIVATE
-                    LMBR_CENTRAL_EDITOR
-            BUILD_DEPENDENCIES
-                PRIVATE
-                    3rdParty::Qt::Gui
-                    3rdParty::Qt::Widgets
-                    Legacy::CryCommon
-                    Legacy::Editor.Headers
-                    AZ::AzTest
-                    AZ::AzCore
-                    AZ::AzTestShared
-                    AZ::AzToolsFramework
-                    AZ::AzToolsFrameworkTestCommon
-                    AZ::AssetBuilderSDK
-                    AZ::AzManipulatorTestFramework.Static
-                    Gem::LmbrCentral.Static
-                    Gem::LmbrCentral.Editor.Static
-        )
-        ly_add_googletest(
-            NAME Gem::LmbrCentral.Editor.Tests
-        )
-    endif()
-endif()
+add_subdirectory(Tests)

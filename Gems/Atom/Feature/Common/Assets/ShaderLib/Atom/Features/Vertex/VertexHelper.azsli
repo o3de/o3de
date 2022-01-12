@@ -47,6 +47,7 @@ void VertexHelper(in VSInput IN, inout VSOutput OUT, float3 worldPosition, bool 
         DirectionalLightShadow::GetShadowCoords(
             shadowIndex,
             worldPosition,
+            OUT.m_normal,
             OUT.m_shadowCoords);
     }
 }

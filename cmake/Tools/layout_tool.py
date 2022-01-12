@@ -120,10 +120,7 @@ def verify_layout(layout_dir, platform_name, project_path, asset_mode, asset_typ
         warning_count += _warn(f"'system_{platform_name_lower}_{asset_type}.cfg' is missing from {str(layout_path)}")
         system_config_values = None
     else:
-        system_config_values = common.get_config_file_values(str(platform_system_cfg_file), ['r_ShadersRemoteCompiler',
-                                                                                             'r_ShadersAllowCompilation',
-                                                                                             'r_AssetProcessorShaderCompiler',
-                                                                                             'r_ShaderCompilerServer'])
+        system_config_values = common.get_config_file_values(str(platform_system_cfg_file), [])
 
     if bootstrap_values:
 
@@ -146,24 +143,23 @@ def verify_layout(layout_dir, platform_name, project_path, asset_mode, asset_typ
 
         elif system_config_values is not None:
 
-            shaders_remote_compiler = system_config_values.get('r_ShadersRemoteCompiler') or '0'
+            shaders_remote_compiler = '0'
             asset_processor_shader_compiler = system_config_values.get('r_AssetProcessorShaderCompiler') or '0'
-            shader_compiler_server = system_config_values.get('r_ShaderCompilerServer') or LOCAL_HOST
+            shader_compiler_server = LOCAL_HOST
             shaders_allow_compilation = system_config_values.get('r_ShadersAllowCompilation')
 
             def _validate_remote_shader_settings():
 
-                if shader_compiler_server == LOCAL_HOST:
-                    if asset_processor_shader_compiler != '1':
-                        return _warn(f"Connection to the remote shader compiler (r_ShaderCompilerServer) is not properly "
-                                     f"set in system_{platform_name_lower}_{asset_type}.cfg. If it is set to {LOCAL_HOST}, then "
-                                     f"r_AssetProcessorShaderCompiler must be set to 1.")
+                if asset_processor_shader_compiler != '1':
+                    return _warn(f"Connection to the remote shader compiler (r_ShaderCompilerServer) is not properly "
+                                 f"set in system_{platform_name_lower}_{asset_type}.cfg. If it is set to {LOCAL_HOST}, then "
+                                 f"r_AssetProcessorShaderCompiler must be set to 1.")
 
 
-                    else:
-                        if _validate_remote_ap(remote_ip, remote_connect, False) > 0:
-                            return _warn(f"The system_{platform_name_lower}_{asset_type}.cfg file is configured to connect to the"
-                                         f" shader compiler server through the remote connection to the Asset Processor.")
+                else:
+                    if _validate_remote_ap(remote_ip, remote_connect, False) > 0:
+                        return _warn(f"The system_{platform_name_lower}_{asset_type}.cfg file is configured to connect to the"
+                                     f" shader compiler server through the remote connection to the Asset Processor.")
                 return 0
 
             # Validation steps based on the asset mode
@@ -181,16 +177,9 @@ def verify_layout(layout_dir, platform_name, project_path, asset_mode, asset_typ
                     warning_count += _warn("No pak files found for PAK mode deployment")
                     # Check if the shader paks are set
                 if has_shader_pak:
-                    # If the shader paks are set, make sure that the remote shader compiler connection settings are set
-                    # or that it is going through AP
-                    if shaders_remote_compiler == '1':
-                        warning_count += _warn(f"Shader paks are set for project {project_name} but remote shader compiling "
-                                               f"(r_ShadersRemoteCompiler) is still enabled "
-                                               f"for it in system_{platform_name_lower}_{asset_type}.cfg.")
-                    else:
-                        # Since we are not connecting to the shader compiler, also make sure bootstrap is not configured to
-                        # connect to Asset Processor remotely
-                        warning_count += _validate_remote_ap(remote_ip, remote_connect, False)
+                    # Since we are not connecting to the shader compiler, also make sure bootstrap is not configured to
+                    # connect to Asset Processor remotely
+                    warning_count += _validate_remote_ap(remote_ip, remote_connect, False)
 
                     if shaders_allow_compilation is not None and shaders_allow_compilation == '1':
                         warning_count += _warn(f"Shader paks are set for project {project_name} but shader compiling "

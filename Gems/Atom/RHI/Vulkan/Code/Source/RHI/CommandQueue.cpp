@@ -5,13 +5,14 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzCore/Debug/EventTraceDrillerBus.h>
+
 #include <RHI/CommandList.h>
 #include <RHI/CommandQueue.h>
 #include <RHI/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/SwapChain.h>
-#include <Atom/RHI.Reflect/CpuTimingStatistics.h>
+
+#include <AzCore/Debug/Timer.h>
 
 namespace AZ
 {
@@ -46,7 +47,7 @@ namespace AZ
             QueueCommand([=](void* queue) 
             {
                 AZ_PROFILE_SCOPE(RHI, "ExecuteWork");
-                AZ_PROFILE_RHI_VARIABLE(m_lastExecuteDuration);
+                AZ::Debug::ScopedTimer executionTimer(m_lastExecuteDuration);
 
                 Queue* vulkanQueue = static_cast<Queue*>(queue);
 
@@ -80,7 +81,7 @@ namespace AZ
                 }
 
                 {
-                    AZ_PROFILE_RHI_VARIABLE(m_lastPresentDuration);
+                    AZ::Debug::ScopedTimer presentTimer(m_lastPresentDuration);
 
                     // present the image of the current frame.
                     for (RHI::SwapChain* swapChain : request.m_swapChainsToPresent)

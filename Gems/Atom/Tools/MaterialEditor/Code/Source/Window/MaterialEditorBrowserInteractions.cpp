@@ -12,6 +12,7 @@
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AtomToolsFramework/Util/Util.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzCore/std/string/wildcard.h>
 #include <AzQtComponents/Utilities/DesktopUtilities.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
@@ -106,8 +107,8 @@ namespace MaterialEditor
         menu->addAction("Create Material...", [entry]()
             {
                 const QString defaultPath = AtomToolsFramework::GetUniqueFileInfo(
-                    QString(AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@")) +
-                    AZ_CORRECT_FILESYSTEM_SEPARATOR + "Materials" +
+                    QString(AZ::Utils::GetProjectPath().c_str()) +
+                    AZ_CORRECT_FILESYSTEM_SEPARATOR + "Assets" +
                     AZ_CORRECT_FILESYSTEM_SEPARATOR + "untitled." +
                     AZ::RPI::MaterialSourceData::Extension).absoluteFilePath();
 
@@ -182,8 +183,8 @@ namespace MaterialEditor
         menu->addAction("Create Child Material...", [entry]()
             {
                 const QString defaultPath = AtomToolsFramework::GetUniqueFileInfo(
-                    QString(AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@")) +
-                    AZ_CORRECT_FILESYSTEM_SEPARATOR + "Materials" +
+                    QString(AZ::Utils::GetProjectPath().c_str()) +
+                    AZ_CORRECT_FILESYSTEM_SEPARATOR + "Assets" +
                     AZ_CORRECT_FILESYSTEM_SEPARATOR + "untitled." +
                     AZ::RPI::MaterialSourceData::Extension).absoluteFilePath();
 

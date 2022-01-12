@@ -7,7 +7,7 @@
  */
 
 #include "ReflectionCopyFrameBufferPass.h"
-#include "ReflectionScreenSpaceBlurPass.h"
+#include "ReflectionScreenSpaceTracePass.h"
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 
@@ -28,16 +28,17 @@ namespace AZ
 
         void ReflectionCopyFrameBufferPass::BuildInternal()
         {
-            RPI::PassHierarchyFilter passFilter(AZ::Name("ReflectionScreenSpaceBlurPass"));
-            const AZStd::vector<RPI::Pass*>& passes = RPI::PassSystemInterface::Get()->FindPasses(passFilter);
-            if (!passes.empty())
-            {
-                Render::ReflectionScreenSpaceBlurPass* blurPass = azrtti_cast<ReflectionScreenSpaceBlurPass*>(passes.front());
-                Data::Instance<RPI::AttachmentImage>& frameBufferAttachment = blurPass->GetFrameBufferImageAttachment();
+            RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(AZ::Name("ReflectionScreenSpaceTracePass"), GetRenderPipeline());
+            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
+                {
+                    Render::ReflectionScreenSpaceTracePass* tracePass = azrtti_cast<ReflectionScreenSpaceTracePass*>(pass);
+                    Data::Instance<RPI::AttachmentImage>& frameBufferAttachment = tracePass->GetPreviousFrameImageAttachment();
 
-                RPI::PassAttachmentBinding& outputBinding = GetOutputBinding(0);
-                AttachImageToSlot(outputBinding.m_name, frameBufferAttachment);
-            }
+                    RPI::PassAttachmentBinding& outputBinding = GetOutputBinding(0);
+                    AttachImageToSlot(outputBinding.m_name, frameBufferAttachment);
+
+                    return RPI::PassFilterExecutionFlow::StopVisitingPasses;
+                });
 
             FullscreenTrianglePass::BuildInternal();
         }

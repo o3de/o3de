@@ -41,7 +41,7 @@ namespace O3DE::ProjectManager
     public slots:
         bool ChangeToScreen(ProjectManagerScreen screen);
         bool ForceChangeToScreen(ProjectManagerScreen screen, bool addVisit = true);
-        bool GotoPreviousScreen();
+        bool GoToPreviousScreen();
         void ResetScreen(ProjectManagerScreen screen);
         void ResetAllScreens();
         void DeleteScreen(ProjectManagerScreen screen);

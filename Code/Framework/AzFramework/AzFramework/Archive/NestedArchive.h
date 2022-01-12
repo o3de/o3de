@@ -39,7 +39,7 @@ namespace AZ::IO
 
         NestedArchive(IArchive* pArchive, AZStd::string_view strBindRoot, ZipDir::CachePtr pCache, uint32_t nFlags = 0);
         ~NestedArchive() override;
-        
+
         auto GetRootFolderHandle() -> Handle override;
 
         // Adds a new file to the zip or update an existing one
@@ -68,6 +68,9 @@ namespace AZ::IO
         // deletes all files from the archive
         int RemoveAll() override;
 
+        // lists all the files in the archive
+        int ListAllFiles(AZStd::vector<AZ::IO::Path>& outFileEntries) override;
+
         // finds the file; you don't have to close the returned handle
         Handle FindFile(AZStd::string_view szRelativePath) override;
 
@@ -79,7 +82,6 @@ namespace AZ::IO
 
         // returns the full path to the archive file
         AZ::IO::PathView GetFullPath() const override;
-        ZipDir::Cache* GetCache();
 
         uint32_t GetFlags() const override;
         bool SetFlags(uint32_t nFlagsToSet) override;
@@ -87,11 +89,14 @@ namespace AZ::IO
 
         bool SetPackAccessible(bool bAccessible) override;
 
+        ZipDir::Cache* GetCache();
+
     protected:
         // returns the pointer to the relative file path to be passed
         // to the underlying Cache pointer. Uses the given buffer to construct the path.
         // returns nullptr if the file path is invalid
         AZ::IO::FixedMaxPathString AdjustPath(AZStd::string_view szRelativePath);
+
 
         ZipDir::CachePtr m_pCache;
         // the binding root may be empty string - in this case, the absolute path binding won't work

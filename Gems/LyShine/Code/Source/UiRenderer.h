@@ -19,8 +19,6 @@
 #include <AzCore/std/containers/unordered_set.h>
 #endif
 
-class ITexture;
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! UI render interface
 //
@@ -137,6 +135,9 @@ public: // member functions
 
     //! Display debug texture data after rendering
     void DebugDisplayTextureData(int recordingOption);
+
+    //! Track textures being used in the current frame
+    void DebugUseTexture(AZ::Data::Instance<AZ::RPI::Image> image);
 #endif
 
 private: // member functions
@@ -152,7 +153,6 @@ private: // member functions
 
     //! Create a dynamic draw context for this renderer
     AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> CreateDynamicDrawContext(
-        AZ::RPI::ScenePtr scene,
         AZ::Data::Instance<AZ::RPI::Shader> uiShader);
 
     //! Bind the global white texture for all the texture units we use
@@ -175,10 +175,11 @@ protected: // attributes
     // Set by user when viewport context is not the main/default viewport
     AZStd::shared_ptr<AZ::RPI::ViewportContext> m_viewportContext;
 
-    AZ::RPI::ScenePtr m_scene;
+    AZ::RPI::ScenePtr m_ownedScene;
+    AZ::RPI::Scene* m_scene = nullptr;
 
 #ifndef _RELEASE
     int m_debugTextureDataRecordLevel = 0;
-    AZStd::unordered_set<ITexture*> m_texturesUsedInFrame; // LYSHINE_ATOM_TODO - convert to RPI::Image
+    AZStd::unordered_set<AZ::Data::Instance<AZ::RPI::Image>> m_texturesUsedInFrame;
 #endif
 };

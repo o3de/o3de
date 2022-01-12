@@ -38,7 +38,7 @@ namespace AZ
 
             static RHI::Ptr<MergedShaderResourceGroupPool> Create();
 
-            using ShaderResourceGroupList = AZStd::vector<const ShaderResourceGroup*>;
+            using ShaderResourceGroupList = AZStd::fixed_vector<const ShaderResourceGroup*, RHI::Limits::Pipeline::ShaderResourceGroupCountMax>;
             //! Finds or create a new instance of a MergedShaderResourceGroup.
             //! @param shaderResourceGroupList The list of ShaderResourceGroups that are being merged.
             MergedShaderResourceGroup* FindOrCreate(const ShaderResourceGroupList& shaderResourceGroupList);

@@ -11,7 +11,6 @@
 #include "SimpleSerialize.h"
 #include <stack>
 #include <IXml.h>
-#include <ITimer.h>
 #include "xml.h"
 
 class CSerializeXMLReaderImpl

@@ -9,6 +9,7 @@
 
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzToolsFramework/UI/Notifications/ToastBus.h>
 #include <ScriptCanvas/Core/Graph.h>
 #include <ScriptCanvas/Bus/GraphBus.h>
 #include <ScriptCanvas/Bus/NodeIdPair.h>
@@ -27,13 +28,13 @@
 #include <GraphCanvas/Components/Nodes/Wrapper/WrapperNodeBus.h>
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/Components/Slots/Data/DataSlotBus.h>
-#include <GraphCanvas/Components/ToastBus.h>
 #include <GraphCanvas/Types/GraphCanvasGraphSerialization.h>
 #include <GraphCanvas/Editor/GraphModelBus.h>
 
 #include <GraphCanvas/Widgets/NodePropertyBus.h>
 
 #include <Editor/Include/ScriptCanvas/Components/GraphUpgrade.h>
+#include <Editor/Assets/ScriptCanvasUndoHelper.h>
 
 namespace ScriptCanvas
 {
@@ -52,7 +53,7 @@ namespace ScriptCanvasEditor
         , private GraphCanvas::GraphModelRequestBus::Handler
         , private GraphCanvas::SceneNotificationBus::Handler
         , private GraphItemCommandNotificationBus::Handler
-        , private GraphCanvas::ToastNotificationBus::MultiHandler
+        , private AzToolsFramework::ToastNotificationBus::MultiHandler
         , private GeneralEditorNotificationBus::Handler
         , private AZ::SystemTickBus::Handler
     {
@@ -101,6 +102,8 @@ namespace ScriptCanvasEditor
     public:
         AZ_COMPONENT(Graph, "{4D755CA9-AB92-462C-B24F-0B3376F19967}", ScriptCanvas::Graph);
 
+        static ScriptCanvas::DataPtr Create();
+
         static void Reflect(AZ::ReflectContext* context);
 
         Graph(const ScriptCanvas::ScriptCanvasId& scriptCanvasId = AZ::Entity::MakeId())
@@ -136,10 +139,6 @@ namespace ScriptCanvasEditor
         // SceneCounterRequestBus
         AZ::u32 GetNewVariableCounter() override;
         void ReleaseVariableCounter(AZ::u32 variableCounter) override;
-        ////
-
-        // RuntimeBus
-        AZ::Data::AssetId GetAssetId() const override { return m_assetId; }
         ////
 
         // GraphCanvas::GraphModelRequestBus
@@ -221,9 +220,6 @@ namespace ScriptCanvasEditor
         void OnGraphCanvasNodeCreated(const AZ::EntityId& nodeId) override;
         ///////////////////////////
 
-        // EditorGraphRequestBus
-        void SetAssetId(const AZ::Data::AssetId& assetId) override { m_assetId = assetId; }
-
         void CreateGraphCanvasScene() override;
         void ClearGraphCanvasScene() override;
         void DisplayGraphCanvasScene() override;
@@ -235,7 +231,7 @@ namespace ScriptCanvasEditor
             IfOutOfDate,
             Forced
         };
-        bool UpgradeGraph(const AZ::Data::Asset<AZ::Data::AssetData>& asset, UpgradeRequest request, bool isVerbose = true);
+        bool UpgradeGraph(SourceHandle& asset, UpgradeRequest request, bool isVerbose = true);
         void ConnectGraphCanvasBuses();
         void DisconnectGraphCanvasBuses();
         ///////
@@ -302,11 +298,12 @@ namespace ScriptCanvasEditor
         void OnUndoRedoEnd() override;
         ////
 
-        void SetAssetType(AZ::Data::AssetType);
-
         void ReportError(const ScriptCanvas::Node& node, const AZStd::string& errorSource, const AZStd::string& errorMessage) override;
 
         const GraphStatisticsHelper& GetNodeUsageStatistics() const;
+
+        void MarkOwnership(ScriptCanvas::ScriptCanvasData& owner);
+        ScriptCanvas::DataPtr GetOwnership() const;
 
         // Finds and returns all nodes within the graph that are of the specified type
         template <typename NodeType>
@@ -327,7 +324,7 @@ namespace ScriptCanvasEditor
     protected:
         void PostRestore(const UndoData& restoredData) override;
 
-        void UnregisterToast(const GraphCanvas::ToastId& toastId);
+        void UnregisterToast(const AzToolsFramework::ToastId& toastId);
 
         Graph(const Graph&) = delete;
 
@@ -350,7 +347,7 @@ namespace ScriptCanvasEditor
         void HandleQueuedUpdates();
         bool IsNodeVersionConverting(const AZ::EntityId& graphCanvasNodeId) const;
 
-        AZStd::unordered_map< GraphCanvas::ToastId, AZ::EntityId > m_toastNodeIds;
+        AZStd::unordered_map< AzToolsFramework::ToastId, AZ::EntityId > m_toastNodeIds;
 
         // Function Definition Node Extension
         void HandleFunctionDefinitionExtension(ScriptCanvas::Node* node, GraphCanvas::SlotId graphCanvasSlotId, const GraphCanvas::NodeId& nodeId);
@@ -384,12 +381,15 @@ namespace ScriptCanvasEditor
 
         GraphCanvas::NodeFocusCyclingHelper m_focusHelper;
         GraphStatisticsHelper m_statisticsHelper;
+        UndoHelper m_undoHelper;
 
         bool m_ignoreSaveRequests;
 
         //! Defaults to true to signal that this graph does not have the GraphCanvas stuff intermingled
         bool m_saveFormatConverted = true;
 
-        AZ::Data::AssetId m_assetId;
+        ScriptCanvasEditor::SourceHandle m_assetId;
+        // temporary step in cleaning up the graph / asset class structure. This reference is deliberately weak.
+        ScriptCanvas::ScriptCanvasData* m_owner;
     };
 }

@@ -1,0 +1,46 @@
+{
+    "entries": [
+        {
+            "base": "{DE205B79-32D5-5FA9-868A-442CE0388F7F}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Random Point In Cylinder",
+                "category": "Math/Random",
+                "tooltip": "returns a random point in a cylinder"
+            },
+            "slots": [
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Radius_0",
+                    "details": {
+                        "name": "Radius"
+                    }
+                },
+                {
+                    "base": "DataInput_Height_1",
+                    "details": {
+                        "name": "Height"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result_0",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

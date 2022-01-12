@@ -38,7 +38,7 @@ namespace EditorPythonBindings
         static constexpr const char* s_default = "default";
         static constexpr const char* s_globals = "globals";
 
-        // a structure for pybind11 to bind to hold constants, properties, and enums from the Behavior Context 
+        // a structure for pybind11 to bind to hold constants, properties, and enums from the Behavior Context
         struct StaticPropertyHolder final
         {
             AZ_CLASS_ALLOCATOR(StaticPropertyHolder, AZ::SystemAllocator, 0);
@@ -54,7 +54,7 @@ namespace EditorPythonBindings
                 if (m_behaviorContext == nullptr)
                 {
                     return false;
-                }               
+                }
 
                 m_fullName = PyModule_GetName(scope.ptr());
 
@@ -199,12 +199,10 @@ namespace EditorPythonBindings
                 }
             });
 
-            RegisterAliasIfExists(pathsModule, "@devroot@", "devroot");
             RegisterAliasIfExists(pathsModule, "@engroot@", "engroot");
-            RegisterAliasIfExists(pathsModule, "@assets@", "assets");
-            RegisterAliasIfExists(pathsModule, "@devassets@", "devassets");
+            RegisterAliasIfExists(pathsModule, "@products@", "products");
+            RegisterAliasIfExists(pathsModule, "@projectroot@", "projectroot");
             RegisterAliasIfExists(pathsModule, "@log@", "log");
-            RegisterAliasIfExists(pathsModule, "@root@", "root");
 
             const char* executableFolder = nullptr;
             AZ::ComponentApplicationBus::BroadcastResult(executableFolder, &AZ::ComponentApplicationBus::Events::GetExecutableFolder);
@@ -363,7 +361,7 @@ namespace EditorPythonBindings
         m_staticPropertyHolderMap.reset();
         EditorPythonBindings::EditorPythonBindingsNotificationBus::Handler::BusDisconnect();
     }
-    
+
     void PythonReflectionComponent::OnImportModule(PyObject* module)
     {
         pybind11::module parentModule = pybind11::cast<pybind11::module>(module);

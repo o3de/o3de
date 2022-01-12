@@ -30,12 +30,14 @@ set(FILES
     API/AssetDatabaseBus.h
     API/ComponentEntityObjectBus.h
     API/ComponentEntitySelectionBus.h
+    API/ComponentModeCollectionInterface.h
     API/EditorCameraBus.h
     API/EditorCameraBus.cpp
     API/EditorAnimationSystemRequestBus.h
     API/EditorEntityAPI.h
     API/EditorLevelNotificationBus.h
     API/ViewportEditorModeTrackerNotificationBus.h
+    API/ViewportEditorModeTrackerNotificationBus.cpp
     API/EditorVegetationRequestsBus.h
     API/EditorPythonConsoleBus.h
     API/EditorPythonRunnerRequestsBus.h
@@ -45,6 +47,7 @@ set(FILES
     API/EntityCompositionRequestBus.h
     API/EntityCompositionNotificationBus.h
     API/EditorViewportIconDisplayInterface.h
+    API/PythonLoader.h
     API/ViewPaneOptions.h
     API/ViewportEditorModeTrackerInterface.h
     Application/Ticker.h
@@ -114,6 +117,10 @@ set(FILES
     Component/EditorLevelComponentAPIBus.h
     Component/EditorLevelComponentAPIComponent.cpp
     Component/EditorLevelComponentAPIComponent.h
+    ContainerEntity/ContainerEntityInterface.h
+    ContainerEntity/ContainerEntityNotificationBus.h
+    ContainerEntity/ContainerEntitySystemComponent.cpp
+    ContainerEntity/ContainerEntitySystemComponent.h
     Editor/EditorContextMenuBus.h
     Editor/EditorSettingsAPIBus.h
     Entity/EditorEntityStartStatus.h
@@ -141,6 +148,8 @@ set(FILES
     Entity/EditorEntitySortBus.h
     Entity/EditorEntitySortComponent.cpp
     Entity/EditorEntitySortComponent.h
+    Entity/EditorEntitySortComponentSerializer.cpp
+    Entity/EditorEntitySortComponentSerializer.h
     Entity/EditorEntityTransformBus.h
     Entity/PrefabEditorEntityOwnershipInterface.h
     Entity/PrefabEditorEntityOwnershipService.h
@@ -148,9 +157,16 @@ set(FILES
     Entity/SliceEditorEntityOwnershipService.h
     Entity/SliceEditorEntityOwnershipService.cpp
     Entity/SliceEditorEntityOwnershipServiceBus.h
+    Entity/EntityUtilityComponent.h
+    Entity/EntityUtilityComponent.cpp
+    Entity/ReadOnly/ReadOnlyEntityInterface.h
+    Entity/ReadOnly/ReadOnlyEntityBus.h
+    Entity/ReadOnly/ReadOnlyEntitySystemComponent.cpp
+    Entity/ReadOnly/ReadOnlyEntitySystemComponent.h
     Fingerprinting/TypeFingerprinter.h
     Fingerprinting/TypeFingerprinter.cpp
     FocusMode/FocusModeInterface.h
+    FocusMode/FocusModeNotificationBus.h
     FocusMode/FocusModeSystemComponent.h
     FocusMode/FocusModeSystemComponent.cpp
     Logger/TraceLogger.cpp
@@ -490,6 +506,8 @@ set(FILES
     Viewport/ViewportMessages.cpp
     Viewport/ViewportTypes.h
     Viewport/ViewportTypes.cpp
+    Viewport/ViewportSettings.h
+    Viewport/ViewportSettings.cpp
     ViewportUi/Button.h
     ViewportUi/Button.cpp
     ViewportUi/ButtonGroup.h
@@ -544,6 +562,8 @@ set(FILES
     ViewportSelection/EditorTransformComponentSelectionRequestBus.cpp
     ViewportSelection/EditorVisibleEntityDataCache.h
     ViewportSelection/EditorVisibleEntityDataCache.cpp
+    ViewportSelection/InvalidClicks.h
+    ViewportSelection/InvalidClicks.cpp
     ViewportSelection/ViewportEditorModeTracker.cpp
     ViewportSelection/ViewportEditorModeTracker.h
     ToolsFileUtils/ToolsFileUtils.h
@@ -636,13 +656,26 @@ set(FILES
     Prefab/PrefabFocusHandler.h
     Prefab/PrefabFocusHandler.cpp
     Prefab/PrefabFocusInterface.h
+    Prefab/PrefabFocusNotificationBus.h
+    Prefab/PrefabFocusPublicInterface.h
+    Prefab/PrefabFocusUndo.h
+    Prefab/PrefabFocusUndo.cpp
     Prefab/PrefabIdTypes.h
     Prefab/PrefabLoader.h
     Prefab/PrefabLoader.cpp
     Prefab/PrefabLoaderInterface.h
+    Prefab/PrefabLoaderScriptingBus.h
+    Prefab/ScriptingPrefabLoader.h
+    Prefab/ScriptingPrefabLoader.cpp
     Prefab/PrefabSystemComponent.h
     Prefab/PrefabSystemComponent.cpp
     Prefab/PrefabSystemComponentInterface.h
+    Prefab/ProceduralPrefabSystemComponent.h
+    Prefab/ProceduralPrefabSystemComponent.cpp
+    Prefab/ProceduralPrefabSystemComponentInterface.h
+    Prefab/PrefabSystemScriptingBus.h
+    Prefab/PrefabSystemScriptingHandler.h
+    Prefab/PrefabSystemScriptingHandler.cpp
     Prefab/Instance/Instance.h
     Prefab/Instance/Instance.cpp
     Prefab/Instance/InstanceSerializer.h
@@ -665,6 +698,8 @@ set(FILES
     Prefab/Instance/TemplateInstanceMapperInterface.h
     Prefab/Link/Link.h
     Prefab/Link/Link.cpp
+    Prefab/Procedural/ProceduralPrefabAsset.h
+    Prefab/Procedural/ProceduralPrefabAsset.cpp
     Prefab/PrefabPublicHandler.h
     Prefab/PrefabPublicHandler.cpp
     Prefab/PrefabPublicInterface.h
@@ -688,10 +723,17 @@ set(FILES
     Prefab/Spawnable/EditorOnlyEntityHandler/UiEditorOnlyEntityHandler.cpp
     Prefab/Spawnable/EditorOnlyEntityHandler/WorldEditorOnlyEntityHandler.h
     Prefab/Spawnable/EditorOnlyEntityHandler/WorldEditorOnlyEntityHandler.cpp
+    Prefab/Spawnable/EntityAliasTypes.h
+    Prefab/Spawnable/InMemorySpawnableAssetContainer.h
+    Prefab/Spawnable/InMemorySpawnableAssetContainer.cpp
     Prefab/Spawnable/PrefabCatchmentProcessor.h
     Prefab/Spawnable/PrefabCatchmentProcessor.cpp
     Prefab/Spawnable/PrefabConversionPipeline.h
     Prefab/Spawnable/PrefabConversionPipeline.cpp
+    Prefab/Spawnable/PrefabConverterStackProfileNames.h
+    Prefab/Spawnable/PrefabDocument.h
+    Prefab/Spawnable/PrefabDocument.inl
+    Prefab/Spawnable/PrefabDocument.cpp
     Prefab/Spawnable/ProcesedObjectStore.h
     Prefab/Spawnable/ProcesedObjectStore.cpp
     Prefab/Spawnable/PrefabProcessor.h
@@ -734,14 +776,26 @@ set(FILES
     UI/Prefab/PrefabIntegrationInterface.h
     UI/Prefab/PrefabUiHandler.h
     UI/Prefab/PrefabUiHandler.cpp
+    UI/Prefab/PrefabViewportFocusPathHandler.h
+    UI/Prefab/PrefabViewportFocusPathHandler.cpp
+    UI/Prefab/Procedural/ProceduralPrefabReadOnlyHandler.h
+    UI/Prefab/Procedural/ProceduralPrefabReadOnlyHandler.cpp
+    UI/Prefab/Procedural/ProceduralPrefabUiHandler.h
+    UI/Prefab/Procedural/ProceduralPrefabUiHandler.cpp
+    UI/Notifications/ToastNotificationsView.cpp
+    UI/Notifications/ToastNotificationsView.h
+    UI/Notifications/ToastBus.h
     PythonTerminal/ScriptHelpDialog.cpp
     PythonTerminal/ScriptHelpDialog.h
     PythonTerminal/ScriptHelpDialog.ui
     PythonTerminal/ScriptTermDialog.cpp
     PythonTerminal/ScriptTermDialog.h
     PythonTerminal/ScriptTermDialog.ui
-    Input/QtEventToAzInputManager.h
-    Input/QtEventToAzInputManager.cpp
+    Input/QtEventToAzInputMapper.h
+    Input/QtEventToAzInputMapper.cpp
+    Script/LuaSymbolsReporterBus.h
+    Script/LuaSymbolsReporterSystemComponent.h
+    Script/LuaSymbolsReporterSystemComponent.cpp
 )
 
 # Prevent the following files from being grouped in UNITY builds

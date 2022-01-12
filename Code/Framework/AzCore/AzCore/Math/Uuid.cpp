@@ -135,18 +135,12 @@ namespace AZ
         {
             stringLength = strlen(uuidString);
         }
-        if (stringLength > MaxPermissiveStringSize)
-        {
-            if (!skipWarnings)
-            {
-                AZ_Warning("Math", false, "Can't create UUID from string length %zu over maximum %zu", stringLength, MaxPermissiveStringSize);
-            }
-            return Uuid::CreateNull();
-        }
+
         size_t newLength{ 0 };
         char createString[MaxPermissiveStringSize];
 
-        for (size_t curPos = 0; curPos < stringLength; ++curPos)
+        // Loop until we get to the end of the string OR stop once we've accumulated a full UUID string worth of data
+        for (size_t curPos = 0; curPos < stringLength && newLength < ValidUuidStringLength; ++curPos)
         {
             char curChar = uuidString[curPos];
             switch (curChar)

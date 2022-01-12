@@ -7,37 +7,77 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 import os
 import pytest
-import sys
 
 import ly_test_tools.environment.file_system as file_system
-
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../automatedtesting_shared')
-from base import TestAutomationBase
-
-
-@pytest.fixture
-def remove_test_level(request, workspace, project):
-    file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", "tmp_level")], True, True)
-
-    def teardown():
-        file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", "tmp_level")], True, True)
-
-    request.addfinalizer(teardown)
+from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorSharedTest, EditorParallelTest, EditorTestSuite
 
 
 @pytest.mark.SUITE_main
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
-class TestAutomation(TestAutomationBase):
+class TestAutomationNoAutoTestMode(EditorTestSuite):
 
-    def test_BasicEditorWorkflows_LevelEntityComponentCRUD(self, request, workspace, editor, launcher_platform,
-                                                           remove_test_level):
+    # Disable -autotest_mode and -BatchMode. Tests cannot run in -BatchMode due to UI interactions, and these tests
+    # interact with modal dialogs
+    global_extra_cmdline_args = []
+
+    class test_AssetPicker_UI_UX(EditorSharedTest):
+        from .EditorScripts import AssetPicker_UI_UX as test_module
+
+    class test_BasicEditorWorkflows_ExistingLevel_EntityComponentCRUD(EditorSharedTest):
+        from .EditorScripts import BasicEditorWorkflows_ExistingLevel_EntityComponentCRUD as test_module
+
+    class test_BasicEditorWorkflows_LevelEntityComponentCRUD(EditorSingleTest):
+        # Custom teardown to remove level created during test
+        def teardown(self, request, workspace, editor, editor_test_results, launcher_platform):
+            file_system.delete([os.path.join(workspace.paths.engine_root(), "AutomatedTesting", "Levels", "tmp_level")],
+                               True, True)
         from .EditorScripts import BasicEditorWorkflows_LevelEntityComponentCRUD as test_module
-        self._run_test(request, workspace, editor, test_module, batch_mode=False, autotest_mode=False)
 
     @pytest.mark.REQUIRES_gpu
-    def test_BasicEditorWorkflows_GPU_LevelEntityComponentCRUD(self, request, workspace, editor, launcher_platform,
-                                                               remove_test_level):
+    class test_BasicEditorWorkflows_GPU_LevelEntityComponentCRUD(EditorSingleTest):
+        # Disable null renderer
+        use_null_renderer = False
+
+        # Custom teardown to remove level created during test
+        def teardown(self, request, workspace, editor, editor_test_results, launcher_platform):
+            file_system.delete([os.path.join(workspace.paths.engine_root(), "AutomatedTesting", "Levels", "tmp_level")],
+                               True, True)
         from .EditorScripts import BasicEditorWorkflows_LevelEntityComponentCRUD as test_module
-        self._run_test(request, workspace, editor, test_module, batch_mode=False, autotest_mode=False,
-                       use_null_renderer=False)
+
+    class test_InputBindings_Add_Remove_Input_Events(EditorSharedTest):
+        from .EditorScripts import InputBindings_Add_Remove_Input_Events as test_module
+
+
+@pytest.mark.SUITE_main
+@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
+@pytest.mark.parametrize("project", ["AutomatedTesting"])
+class TestAutomationAutoTestMode(EditorTestSuite):
+
+    # Enable only -autotest_mode for these tests. Tests cannot run in -BatchMode due to UI interactions
+    global_extra_cmdline_args = ["-autotest_mode"]
+
+    class test_AssetBrowser_SearchFiltering(EditorSharedTest):
+        from .EditorScripts import AssetBrowser_SearchFiltering as test_module
+
+    class test_AssetBrowser_TreeNavigation(EditorSharedTest):
+        from .EditorScripts import AssetBrowser_TreeNavigation as test_module
+
+    class test_ComponentCRUD_Add_Delete_Components(EditorSharedTest):
+        from .EditorScripts import ComponentCRUD_Add_Delete_Components as test_module
+
+    @pytest.mark.skip("Passes locally/fails on Jenkins. https://github.com/o3de/o3de/issues/6747")
+    class test_Docking_BasicDockedTools(EditorSharedTest):
+        from .EditorScripts import Docking_BasicDockedTools as test_module
+
+    class test_EntityOutliner_EntityOrdering(EditorSharedTest):
+        from .EditorScripts import EntityOutliner_EntityOrdering as test_module
+
+    class test_Menus_EditMenuOptions_Work(EditorSharedTest):
+        from .EditorScripts import Menus_EditMenuOptions as test_module
+
+    class test_Menus_FileMenuOptions_Work(EditorSharedTest):
+        from .EditorScripts import Menus_FileMenuOptions as test_module
+
+    class test_Menus_ViewMenuOptions_Work(EditorSharedTest):
+        from .EditorScripts import Menus_ViewMenuOptions as test_module

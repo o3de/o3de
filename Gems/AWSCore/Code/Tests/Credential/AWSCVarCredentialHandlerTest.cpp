@@ -18,11 +18,16 @@ class AWSCVarCredentialHandlerTest
 {
 public:
     AWSCVarCredentialHandlerTest() = default;
-    virtual ~AWSCVarCredentialHandlerTest() = default;
+    ~AWSCVarCredentialHandlerTest() override = default;
 
     void SetUp() override
     {
         m_credentialHandler = AZStd::make_unique<AWSCVarCredentialHandler>();
+    }
+
+    void TearDown() override
+    {
+        m_credentialHandler.reset();
     }
 
     AZStd::unique_ptr<AWSCVarCredentialHandler> m_credentialHandler;

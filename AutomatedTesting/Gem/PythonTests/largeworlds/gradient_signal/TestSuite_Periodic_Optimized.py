@@ -10,11 +10,12 @@ import pytest
 from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorSharedTest, EditorParallelTest, EditorTestSuite
 
 
-@pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_periodic
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(EditorTestSuite):
+
+    enable_prefab_system = False
 
     class test_GradientGenerators_Incompatibilities(EditorSharedTest):
         from .EditorScripts import GradientGenerators_Incompatibilities as test_module

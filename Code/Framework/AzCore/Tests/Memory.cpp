@@ -12,8 +12,6 @@
 #include <AzCore/Memory/HeapSchema.h>
 #include <AzCore/Memory/HphaSchema.h>
 
-#include <AzCore/Driller/Driller.h>
-#include <AzCore/Memory/MemoryDriller.h>
 #include <AzCore/Memory/AllocationRecords.h>
 #include <AzCore/Debug/StackTracer.h>
 #include <AzCore/UnitTest/TestTypes.h>
@@ -44,16 +42,13 @@ namespace UnitTest
         void SetUp() override
         {
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
-            m_drillerManager = Debug::DrillerManager::Create();
-            m_drillerManager->Register(aznew MemoryDriller);
+            AZ::AllocatorManager::Instance().EnterProfilingMode();
         }
         void TearDown() override
         {
-            Debug::DrillerManager::Destroy(m_drillerManager);
+            AZ::AllocatorManager::Instance().ExitProfilingMode();
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
         }
-    protected:
-        Debug::DrillerManager*      m_drillerManager = nullptr;
     };
 
     class SystemAllocatorTest
@@ -151,7 +146,7 @@ namespace UnitTest
                     AZStd::thread m_threads[m_maxNumThreads];
                     for (unsigned int i = 0; i < m_maxNumThreads; ++i)
                     {
-                        m_threads[i] = AZStd::thread(AZStd::bind(&SystemAllocatorTest::ThreadFunc, this), &m_desc[i]);
+                        m_threads[i] = AZStd::thread(m_desc[i], AZStd::bind(&SystemAllocatorTest::ThreadFunc, this));
                         // give some time offset to the threads so we can test alloc and dealloc at the same time.
                         //AZStd::this_thread::sleep_for(AZStd::chrono::microseconds(500));
                     }
@@ -286,7 +281,7 @@ namespace UnitTest
                 AZStd::thread m_threads[m_maxNumThreads];
                 for (unsigned int i = 0; i < m_maxNumThreads; ++i)
                 {
-                    m_threads[i] = AZStd::thread(AZStd::bind(&SystemAllocatorTest::ThreadFunc, this), &m_desc[i]);
+                    m_threads[i] = AZStd::thread(m_desc[i], AZStd::bind(&SystemAllocatorTest::ThreadFunc, this));
                     // give some time offset to the threads so we can test alloc and dealloc at the same time.
                     AZStd::this_thread::sleep_for(AZStd::chrono::microseconds(500));
                 }
@@ -724,7 +719,7 @@ namespace UnitTest
                 AZStd::thread m_threads[m_maxNumThreads];
                 for (unsigned int i = 0; i < m_maxNumThreads; ++i)
                 {
-                    m_threads[i] = AZStd::thread(AZStd::bind(&ThreadPoolAllocatorTest::AllocDeallocFunc, this), &m_desc[i]);
+                    m_threads[i] = AZStd::thread(m_desc[i], AZStd::bind(&ThreadPoolAllocatorTest::AllocDeallocFunc, this));
                 }
 
                 for (unsigned int i = 0; i < m_maxNumThreads; ++i)
@@ -743,12 +738,12 @@ namespace UnitTest
 
                 for (unsigned int i = m_maxNumThreads/2; i <m_maxNumThreads; ++i)
                 {
-                    m_threads[i] = AZStd::thread(AZStd::bind(&ThreadPoolAllocatorTest::SharedDeAlloc, this), &m_desc[i]);
+                    m_threads[i] = AZStd::thread(m_desc[i], AZStd::bind(&ThreadPoolAllocatorTest::SharedDeAlloc, this));
                 }
 
                 for (unsigned int i = 0; i < m_maxNumThreads/2; ++i)
                 {
-                    m_threads[i] = AZStd::thread(AZStd::bind(&ThreadPoolAllocatorTest::SharedAlloc, this), &m_desc[i]);
+                    m_threads[i] = AZStd::thread(m_desc[i], AZStd::bind(&ThreadPoolAllocatorTest::SharedAlloc, this));
                 }
 
                 for (unsigned int i = 0; i < m_maxNumThreads/2; ++i)

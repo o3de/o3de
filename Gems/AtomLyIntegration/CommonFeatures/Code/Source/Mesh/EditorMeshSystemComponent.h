@@ -8,7 +8,6 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <AzFramework/Application/Application.h>
 
 namespace AZ
 {
@@ -17,7 +16,6 @@ namespace AZ
         //! System component that sets up necessary logic related to EditorMeshComponent.
         class EditorMeshSystemComponent
             : public AZ::Component
-            , private AzFramework::ApplicationLifecycleEvents::Bus::Handler
         {
         public:
             AZ_COMPONENT(EditorMeshSystemComponent, "{4D332E3D-C4FC-410B-A915-8E234CBDD4EC}");
@@ -26,20 +24,12 @@ namespace AZ
 
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
-            static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
             static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
         protected:
             // AZ::Component interface overrides...
             void Activate() override;
             void Deactivate() override;
-
-        private:
-            // AzFramework::ApplicationLifecycleEvents overrides...
-            void OnApplicationAboutToStop() override;
-
-            void SetupThumbnails();
-            void TeardownThumbnails();
         };
     } // namespace Render
 } // namespace AZ

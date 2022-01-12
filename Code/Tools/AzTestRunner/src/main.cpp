@@ -18,45 +18,35 @@ namespace AzTestRunner
     const int LIB_NOT_FOUND = 102;
     const int SYMBOL_NOT_FOUND = 103;
 
-    // note that MODULE_SKIPPED is not an error condition, but not 0 to indicate its not the
-    // same as successfully running tests and finding them.
-    const int MODULE_SKIPPED = 104;
-    const char* INTEG_BOOTSTRAP = "AzTestIntegBootstrap";
-
     //! display proper usage of the application
     void usage([[maybe_unused]] AZ::Test::Platform& platform)
     {
         std::stringstream ss;
         ss <<
             "AzTestRunner\n"
-            "Runs AZ unit and integration tests. Exit code is the result from GoogleTest.\n"
+            "Runs AZ tests. Exit code is the result from GoogleTest.\n"
             "\n"
             "Usage:\n"
-            "   AzTestRunner.exe <lib> (AzRunUnitTests|AzRunIntegTests) [--integ] [--wait-for-debugger] [--pause-on-completion] [google-test-args]\n"
+            "   AzTestRunner.exe <lib> (AzRunUnitTests|AzRunBenchmarks) [--wait-for-debugger] [--pause-on-completion] [google-test-args]\n"
             "\n"
             "Options:\n"
             "   <lib>: the module to test\n"
             "   <hook>: the name of the aztest hook function to run in the <lib>\n"
             "           'AzRunUnitTests' will hook into unit tests\n"
-            "           'AzRunIntegTests' will hook into integration tests\n"
-            "   --integ: tells runner to bootstrap the engine, needed for integration tests\n"
-            "            Note: you can run unit tests with a bootstrapped engine (AzRunUnitTests --integ),\n"
-            "            but running integration tests without a bootstrapped engine (AzRunIntegTests w/ no --integ) might not work.\n"
+            "           'AzRunBenchmarks' will hook into benchmark tests\n"
             "   --wait-for-debugger: tells runner to wait for debugger to attach to process (on supported platforms)\n"
             "   --pause-on-completion: tells the runner to pause after running the tests\n"
             "   --quiet: disables stdout for minimal output while running tests\n"
             "\n"
             "Example:\n"
-            "   AzTestRunner.exe CrySystem.dll AzRunUnitTests --pause-on-completion\n"
-            "   AzTestRunner.exe CrySystem.dll AzRunIntegTests --integ\n"
+            "   AzTestRunner.exe AzCore.Tests.dll AzRunUnitTests --pause-on-completion\n"
             "\n"
             "Exit Codes:\n"
             "   0 - all tests pass\n"
             "   1 - test failure\n"
             << "   " << INCORRECT_USAGE << " - incorrect usage (see above)\n"
             << "   " << LIB_NOT_FOUND << " - library/dll could not be loaded\n"
-            << "   " << SYMBOL_NOT_FOUND << " - export symbol not found\n"
-            << "   " << MODULE_SKIPPED << " - non-integ module was skipped (not an error)\n";
+            << "   " << SYMBOL_NOT_FOUND << " - export symbol not found\n";
 
         std::cerr << ss.str() << std::endl;
     }
@@ -82,7 +72,6 @@ namespace AzTestRunner
 
         // capture optional arguments
         bool waitForDebugger = false;
-        bool isInteg = false;
         bool pauseOnCompletion = false;
         bool quiet = false;
         for (int i = 0; i < argc; i++)
@@ -90,12 +79,6 @@ namespace AzTestRunner
             if (strcmp(argv[i], "--wait-for-debugger") == 0)
             {
                 waitForDebugger = true;
-                AZ::Test::RemoveParameters(argc, argv, i, i);
-                i--;
-            }
-            else if (strcmp(argv[i], "--integ") == 0)
-            {
-                isInteg = true;
                 AZ::Test::RemoveParameters(argc, argv, i, i);
                 i--;
             }
@@ -172,46 +155,10 @@ namespace AzTestRunner
         if (result != 0)
         {
             module.reset();
-
-            if ((isInteg) && (result == SYMBOL_NOT_FOUND))
-            {
-                // special case:  It is not required to put an INTEG test inside every DLL - so if
-                // we failed to find the INTEG entry point in this DLL, its not an error.
-                // its only an error if we find it and there are no tests, or we find it and tests actually
-                // fail.
-                std::cerr << "INTEG module has no entry point and will be skipped: " << lib << std::endl;
-                return MODULE_SKIPPED;
-            }
-
             return result;
         }
 
         platform.SuppressPopupWindows();
-
-        // Grab a bootstrapper library if requested
-        std::shared_ptr<AZ::Test::IModuleHandle> bootstrap;
-        if (isInteg)
-        {
-            bootstrap = platform.GetModule(INTEG_BOOTSTRAP);
-            if (!bootstrap->IsValid())
-            {
-                std::cerr << "FAILED to load bootstrapper" << std::endl;
-                return LIB_NOT_FOUND;
-            }
-
-            // Initialize the bootstrapper
-            auto init = bootstrap->GetFunction("Initialize");
-            if (init->IsValid())
-            {
-                int initResult = (*init)();
-                if (initResult != 0)
-                {
-                    std::cerr << "Bootstrapper Initialize failed with code " << initResult << ", exiting" << std::endl;
-                    return initResult;
-                }
-            }
-        }
-
 
         // run the test main function.
         if (testMainFunction->IsValid())
@@ -231,22 +178,6 @@ namespace AzTestRunner
         // system allocator / etc.
         module.reset();
 
-        // Shutdown the bootstrapper
-        if (bootstrap)
-        {
-            auto shutdown = bootstrap->GetFunction("Shutdown");
-            if (shutdown->IsValid())
-            {
-                int shutdownResult = (*shutdown)();
-                if (shutdownResult != 0)
-                {
-                    std::cerr << "Bootstrapper shutdown failed with code " << shutdownResult << ", exiting" << std::endl;
-                    return shutdownResult;
-                }
-            }
-            bootstrap.reset();
-        }
-
         if (pauseOnCompletion)
         {
             AzTestRunner::pause_on_completion();
@@ -258,6 +189,8 @@ namespace AzTestRunner
 
     int wrapped_main(int argc/*=0*/, char** argv/*=nullptr*/)
     {
+        AZ::Debug::Trace::HandleExceptions(true);
+
         if (argc>0 && argv!=nullptr)
         {
             return wrapped_command_arg_main(argc, argv);

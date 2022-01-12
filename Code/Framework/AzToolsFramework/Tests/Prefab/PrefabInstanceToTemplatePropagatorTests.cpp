@@ -320,7 +320,7 @@ namespace UnitTest
         Instance& addedInstance = *addedInstancePtr;
 
         //create a first instance where the instance will be removed
-        AZStd::unique_ptr<Instance> firstInstance = m_prefabSystemComponent->CreatePrefab({}, MakeInstanceList( AZStd::move(addedInstancePtr) ), "test/path");
+        AZStd::unique_ptr<Instance> firstInstance = m_prefabSystemComponent->CreatePrefab({}, MakeInstanceList(AZStd::move(addedInstancePtr)), "test/path");
         ASSERT_TRUE(firstInstance);
 
         //get added instance alias

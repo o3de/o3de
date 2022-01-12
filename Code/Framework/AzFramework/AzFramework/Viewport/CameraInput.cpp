@@ -94,27 +94,27 @@ namespace AzFramework
         float y;
         float z;
 
-        // 2.4 Factor as RzRyRx
-        if (orientation.GetElement(2, 0) < 1.0f)
+        // 2.5 Factor as RzRxRy
+        if (orientation.GetElement(2, 1) < 1.0f)
         {
-            if (orientation.GetElement(2, 0) > -1.0f)
+            if (orientation.GetElement(2, 1) > -1.0f)
             {
-                x = AZStd::atan2(orientation.GetElement(2, 1), orientation.GetElement(2, 2));
-                y = AZStd::asin(-orientation.GetElement(2, 0));
-                z = AZStd::atan2(orientation.GetElement(1, 0), orientation.GetElement(0, 0));
+                x = AZStd::asin(orientation.GetElement(2, 1));
+                y = AZStd::atan2(-orientation.GetElement(2, 0), orientation.GetElement(2, 2));
+                z = AZStd::atan2(-orientation.GetElement(0, 1), orientation.GetElement(1, 1));
             }
             else
             {
-                x = 0.0f;
-                y = AZ::Constants::Pi * 0.5f;
-                z = -AZStd::atan2(-orientation.GetElement(2, 1), orientation.GetElement(1, 1));
+                x = -AZ::Constants::Pi * 0.5f;
+                y = 0.0f;
+                z = -AZStd::atan2(orientation.GetElement(0, 2), orientation.GetElement(0, 0));
             }
         }
         else
         {
-            x = 0.0f;
-            y = -AZ::Constants::Pi * 0.5f;
-            z = AZStd::atan2(-orientation.GetElement(1, 2), orientation.GetElement(1, 1));
+            x = AZ::Constants::Pi * 0.5f;
+            y = 0.0f;
+            z = AZStd::atan2(orientation.GetElement(0, 2), orientation.GetElement(0, 0));
         }
 
         return { x, y, z };
@@ -122,12 +122,34 @@ namespace AzFramework
 
     void UpdateCameraFromTransform(Camera& camera, const AZ::Transform& transform)
     {
-        const auto eulerAngles = AzFramework::EulerAngles(AZ::Matrix3x3::CreateFromTransform(transform));
+        UpdateCameraFromTranslationAndRotation(
+            camera, transform.GetTranslation(), AzFramework::EulerAngles(AZ::Matrix3x3::CreateFromTransform(transform)));
+    }
 
+    void UpdateCameraFromTranslationAndRotation(Camera& camera, const AZ::Vector3& translation, const AZ::Vector3& eulerAngles)
+    {
         camera.m_pitch = eulerAngles.GetX();
         camera.m_yaw = eulerAngles.GetZ();
-        camera.m_pivot = transform.GetTranslation();
+        camera.m_pivot = translation;
         camera.m_offset = AZ::Vector3::CreateZero();
+    }
+
+    float SmoothValueTime(const float smoothness, float deltaTime)
+    {
+        // note: the math for the lerp smoothing implementation for camera rotation and translation was inspired by this excellent
+        // article by Scott Lembcke: https://www.gamasutra.com/blogs/ScottLembcke/20180404/316046/Improved_Lerp_Smoothing.php
+        const float rate = AZStd::exp2(smoothness);
+        return AZStd::exp2(-rate * deltaTime);
+    }
+
+    float SmoothValue(const float target, const float current, const float time)
+    {
+        return AZ::Lerp(target, current, time);
+    }
+
+    float SmoothValue(const float target, const float current, const float smoothness, const float deltaTime)
+    {
+        return SmoothValue(target, current, SmoothValueTime(smoothness, deltaTime));
     }
 
     bool CameraSystem::HandleEvents(const InputEvent& event)
@@ -191,27 +213,33 @@ namespace AzFramework
 
     Camera Cameras::StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, const float scrollDelta, const float deltaTime)
     {
-        for (int i = 0; i < m_idleCameraInputs.size();)
+        for (int idleIndex = 0; idleIndex < m_idleCameraInputs.size();)
         {
-            auto& cameraInput = m_idleCameraInputs[i];
+            auto& cameraInput = m_idleCameraInputs[idleIndex];
             const bool canBegin = cameraInput->Beginning() &&
                 AZStd::all_of(m_activeCameraInputs.cbegin(), m_activeCameraInputs.cend(),
                               [](const auto& input)
                               {
                                   return !input->Exclusive();
                               }) &&
-                (!cameraInput->Exclusive() || (cameraInput->Exclusive() && m_activeCameraInputs.empty()));
+                (!cameraInput->Exclusive() || m_activeCameraInputs.empty());
 
             if (canBegin)
             {
                 m_activeCameraInputs.push_back(cameraInput);
                 using AZStd::swap;
-                swap(m_idleCameraInputs[i], m_idleCameraInputs[m_idleCameraInputs.size() - 1]);
+                swap(m_idleCameraInputs[idleIndex], m_idleCameraInputs[m_idleCameraInputs.size() - 1]);
                 m_idleCameraInputs.pop_back();
             }
             else
             {
-                i++;
+                // if a camera attempted to start but was not allowed to, ensure activation is cancelled
+                if (!cameraInput->Idle())
+                {
+                    cameraInput->CancelActivation();
+                }
+
+                idleIndex++;
             }
         }
 
@@ -223,21 +251,21 @@ namespace AzFramework
                 return acc;
             });
 
-        for (int i = 0; i < m_activeCameraInputs.size();)
+        for (int activeIndex = 0; activeIndex < m_activeCameraInputs.size();)
         {
-            auto& cameraInput = m_activeCameraInputs[i];
+            auto& cameraInput = m_activeCameraInputs[activeIndex];
             if (cameraInput->Ending())
             {
                 cameraInput->ClearActivation();
                 m_idleCameraInputs.push_back(cameraInput);
                 using AZStd::swap;
-                swap(m_activeCameraInputs[i], m_activeCameraInputs[m_activeCameraInputs.size() - 1]);
+                swap(m_activeCameraInputs[activeIndex], m_activeCameraInputs[m_activeCameraInputs.size() - 1]);
                 m_activeCameraInputs.pop_back();
             }
             else
             {
                 cameraInput->ContinueActivation();
-                i++;
+                activeIndex++;
             }
         }
 
@@ -291,6 +319,11 @@ namespace AzFramework
         {
             return false;
         };
+
+        m_constrainPitch = []() constexpr
+        {
+            return true;
+        };
     }
 
     bool RotateCameraInput::HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, [[maybe_unused]] const float scrollDelta)
@@ -308,11 +341,17 @@ namespace AzFramework
         Camera nextCamera = targetCamera;
 
         const float rotateSpeed = m_rotateSpeedFn();
-        nextCamera.m_pitch -= float(cursorDelta.m_y) * rotateSpeed * Invert(m_invertPitchFn());
-        nextCamera.m_yaw -= float(cursorDelta.m_x) * rotateSpeed * Invert(m_invertYawFn());
+        const float deltaPitch = aznumeric_cast<float>(cursorDelta.m_y) * rotateSpeed * Invert(m_invertPitchFn());
+        const float deltaYaw = aznumeric_cast<float>(cursorDelta.m_x) * rotateSpeed * Invert(m_invertYawFn());
 
+        nextCamera.m_pitch -= deltaPitch;
+        nextCamera.m_yaw -= deltaYaw;
         nextCamera.m_yaw = WrapYawRotation(nextCamera.m_yaw);
-        nextCamera.m_pitch = ClampPitchRotation(nextCamera.m_pitch);
+
+        if (m_constrainPitch())
+        {
+            nextCamera.m_pitch = ClampPitchRotation(nextCamera.m_pitch);
+        }
 
         return nextCamera;
     }
@@ -437,9 +476,10 @@ namespace AzFramework
         {
             if (input->m_state == InputChannel::State::Began)
             {
-                m_translation |= TranslationFromKey(input->m_channelId, m_translateCameraInputChannelIds);
-                if (m_translation != TranslationType::Nil)
+                if (auto translation = TranslationFromKey(input->m_channelId, m_translateCameraInputChannelIds);
+                    translation != TranslationType::Nil)
                 {
+                    m_translation |= translation;
                     BeginActivation();
                 }
 
@@ -451,11 +491,16 @@ namespace AzFramework
             // ensure we don't process end events in the idle state
             else if (input->m_state == InputChannel::State::Ended && !Idle())
             {
-                m_translation &= ~(TranslationFromKey(input->m_channelId, m_translateCameraInputChannelIds));
-                if (m_translation == TranslationType::Nil)
+                if (auto translation = TranslationFromKey(input->m_channelId, m_translateCameraInputChannelIds);
+                    translation != TranslationType::Nil)
                 {
-                    EndActivation();
+                    m_translation &= ~translation;
+                    if (m_translation == TranslationType::Nil)
+                    {
+                        EndActivation();
+                    }
                 }
+
                 if (input->m_channelId == m_translateCameraInputChannelIds.m_boostChannelId)
                 {
                     m_boost = false;
@@ -533,8 +578,8 @@ namespace AzFramework
         m_translateCameraInputChannelIds = translateCameraInputChannelIds;
     }
 
-    PivotCameraInput::PivotCameraInput(const InputChannelId& pivotChannelId)
-        : m_pivotChannelId(pivotChannelId)
+    OrbitCameraInput::OrbitCameraInput(const InputChannelId& orbitChannelId)
+        : m_orbitChannelId(orbitChannelId)
     {
         m_pivotFn = []([[maybe_unused]] const AZ::Vector3& position, [[maybe_unused]] const AZ::Vector3& direction)
         {
@@ -542,11 +587,11 @@ namespace AzFramework
         };
     }
 
-    bool PivotCameraInput::HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, const float scrollDelta)
+    bool OrbitCameraInput::HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, const float scrollDelta)
     {
         if (const auto* input = AZStd::get_if<DiscreteInputEvent>(&event))
         {
-            if (input->m_channelId == m_pivotChannelId)
+            if (input->m_channelId == m_orbitChannelId)
             {
                 if (input->m_state == InputChannel::State::Began)
                 {
@@ -561,13 +606,13 @@ namespace AzFramework
 
         if (Active())
         {
-            return m_pivotCameras.HandleEvents(event, cursorDelta, scrollDelta);
+            return m_orbitCameras.HandleEvents(event, cursorDelta, scrollDelta);
         }
 
         return !Idle();
     }
 
-    Camera PivotCameraInput::StepCamera(
+    Camera OrbitCameraInput::StepCamera(
         const Camera& targetCamera, const ScreenVector& cursorDelta, const float scrollDelta, const float deltaTime)
     {
         Camera nextCamera = targetCamera;
@@ -581,12 +626,12 @@ namespace AzFramework
         if (Active())
         {
             MovePivotDetached(nextCamera, m_pivotFn(targetCamera.Translation(), targetCamera.Rotation().GetBasisY()));
-            nextCamera = m_pivotCameras.StepCamera(nextCamera, cursorDelta, scrollDelta, deltaTime);
+            nextCamera = m_orbitCameras.StepCamera(nextCamera, cursorDelta, scrollDelta, deltaTime);
         }
 
         if (Ending())
         {
-            m_pivotCameras.Reset();
+            m_orbitCameras.Reset();
 
             nextCamera.m_pivot = nextCamera.Translation();
             nextCamera.m_offset = AZ::Vector3::CreateZero();
@@ -595,12 +640,12 @@ namespace AzFramework
         return nextCamera;
     }
 
-    void PivotCameraInput::SetPivotInputChannelId(const InputChannelId& pivotChanneId)
+    void OrbitCameraInput::SetOrbitInputChannelId(const InputChannelId& orbitChanneId)
     {
-        m_pivotChannelId = pivotChanneId;
+        m_orbitChannelId = orbitChanneId;
     }
 
-    PivotDollyScrollCameraInput::PivotDollyScrollCameraInput()
+    OrbitDollyScrollCameraInput::OrbitDollyScrollCameraInput()
     {
         m_scrollSpeedFn = []() constexpr
         {
@@ -608,7 +653,7 @@ namespace AzFramework
         };
     }
 
-    bool PivotDollyScrollCameraInput::HandleEvents(
+    bool OrbitDollyScrollCameraInput::HandleEvents(
         const InputEvent& event, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] const float scrollDelta)
     {
         if (const auto* scroll = AZStd::get_if<ScrollEvent>(&event))
@@ -619,36 +664,45 @@ namespace AzFramework
         return !Idle();
     }
 
-    static Camera PivotDolly(const Camera& targetCamera, const float delta)
+    static Camera OrbitDolly(const Camera& targetCamera, const float delta)
     {
         Camera nextCamera = targetCamera;
 
-        const auto pivotDirection = targetCamera.m_offset.GetNormalized();
-        nextCamera.m_offset -= pivotDirection * delta;
-        const auto pivotDot = targetCamera.m_offset.Dot(nextCamera.m_offset);
-        const auto distance = nextCamera.m_offset.GetLength() * AZ::GetSign(pivotDot);
-
-        const auto minDistance = 0.01f;
-        if (distance < minDistance || pivotDot < 0.0f)
+        // handle case where pivot and offset may be the same to begin with
+        // choose negative y-axis for offset to default to moving the camera backwards from the pivot (standard centered pivot behavior)
+        const auto pivotDirection = [&targetCamera]
         {
-            nextCamera.m_offset = pivotDirection * minDistance;
+            if (const auto offsetLength = targetCamera.m_offset.GetLength(); AZ::IsCloseMag(offsetLength, 0.0f))
+            {
+                return -AZ::Vector3::CreateAxisY();
+            }
+            else
+            {
+                return targetCamera.m_offset / offsetLength;
+            }
+        }();
+
+        nextCamera.m_offset -= pivotDirection * delta;
+        if (pivotDirection.Dot(nextCamera.m_offset) < 0.0f)
+        {
+            nextCamera.m_offset = pivotDirection * 0.001f;
         }
 
         return nextCamera;
     }
 
-    Camera PivotDollyScrollCameraInput::StepCamera(
+    Camera OrbitDollyScrollCameraInput::StepCamera(
         const Camera& targetCamera,
         [[maybe_unused]] const ScreenVector& cursorDelta,
         const float scrollDelta,
         [[maybe_unused]] const float deltaTime)
     {
-        const auto nextCamera = PivotDolly(targetCamera, aznumeric_cast<float>(scrollDelta) * m_scrollSpeedFn());
+        const auto nextCamera = OrbitDolly(targetCamera, aznumeric_cast<float>(scrollDelta) * m_scrollSpeedFn());
         EndActivation();
         return nextCamera;
     }
 
-    PivotDollyMotionCameraInput::PivotDollyMotionCameraInput(const InputChannelId& dollyChannelId)
+    OrbitDollyMotionCameraInput::OrbitDollyMotionCameraInput(const InputChannelId& dollyChannelId)
         : m_dollyChannelId(dollyChannelId)
     {
         m_motionSpeedFn = []() constexpr
@@ -657,28 +711,28 @@ namespace AzFramework
         };
     }
 
-    bool PivotDollyMotionCameraInput::HandleEvents(
+    bool OrbitDollyMotionCameraInput::HandleEvents(
         const InputEvent& event, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] const float scrollDelta)
     {
         HandleActivationEvents(event, m_dollyChannelId, cursorDelta, m_clickDetector, *this);
         return CameraInputUpdatingAfterMotion(*this);
     }
 
-    Camera PivotDollyMotionCameraInput::StepCamera(
+    Camera OrbitDollyMotionCameraInput::StepCamera(
         const Camera& targetCamera,
         const ScreenVector& cursorDelta,
         [[maybe_unused]] const float scrollDelta,
         [[maybe_unused]] const float deltaTime)
     {
-        return PivotDolly(targetCamera, aznumeric_cast<float>(cursorDelta.m_y) * m_motionSpeedFn());
+        return OrbitDolly(targetCamera, aznumeric_cast<float>(cursorDelta.m_y) * m_motionSpeedFn());
     }
 
-    void PivotDollyMotionCameraInput::SetDollyInputChannelId(const InputChannelId& dollyChannelId)
+    void OrbitDollyMotionCameraInput::SetDollyInputChannelId(const InputChannelId& dollyChannelId)
     {
         m_dollyChannelId = dollyChannelId;
     }
 
-    ScrollTranslationCameraInput::ScrollTranslationCameraInput()
+    LookScrollTranslationCameraInput::LookScrollTranslationCameraInput()
     {
         m_scrollSpeedFn = []() constexpr
         {
@@ -686,7 +740,7 @@ namespace AzFramework
         };
     }
 
-    bool ScrollTranslationCameraInput::HandleEvents(
+    bool LookScrollTranslationCameraInput::HandleEvents(
         const InputEvent& event, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] const float scrollDelta)
     {
         if (const auto* scroll = AZStd::get_if<ScrollEvent>(&event))
@@ -697,7 +751,7 @@ namespace AzFramework
         return !Idle();
     }
 
-    Camera ScrollTranslationCameraInput::StepCamera(
+    Camera LookScrollTranslationCameraInput::StepCamera(
         const Camera& targetCamera,
         [[maybe_unused]] const ScreenVector& cursorDelta,
         const float scrollDelta,
@@ -717,14 +771,14 @@ namespace AzFramework
 
     Camera SmoothCamera(const Camera& currentCamera, const Camera& targetCamera, const CameraProps& cameraProps, const float deltaTime)
     {
-        const auto clamp_rotation = [](const float angle)
+        const auto clampRotation = [](const float angle)
         {
             return AZStd::fmod(angle + AZ::Constants::TwoPi, AZ::Constants::TwoPi);
         };
 
         // keep yaw in 0 - 360 range
-        float targetYaw = clamp_rotation(targetCamera.m_yaw);
-        const float currentYaw = clamp_rotation(currentCamera.m_yaw);
+        float targetYaw = clampRotation(targetCamera.m_yaw);
+        const float currentYaw = clampRotation(currentCamera.m_yaw);
 
         // return the sign of the float input (-1, 0, 1)
         const auto sign = [](const float value)
@@ -733,21 +787,17 @@ namespace AzFramework
         };
 
         // ensure smooth transition when moving across 0 - 360 boundary
-        const float yawDelta = targetYaw - currentYaw;
-        if (AZStd::abs(yawDelta) >= AZ::Constants::Pi)
+        if (const float yawDelta = targetYaw - currentYaw; AZStd::abs(yawDelta) >= AZ::Constants::Pi)
         {
             targetYaw -= AZ::Constants::TwoPi * sign(yawDelta);
         }
 
         Camera camera;
-        // note: the math for the lerp smoothing implementation for camera rotation and translation was inspired by this excellent
-        // article by Scott Lembcke: https://www.gamasutra.com/blogs/ScottLembcke/20180404/316046/Improved_Lerp_Smoothing.php
         if (cameraProps.m_rotateSmoothingEnabledFn())
         {
-            const float lookRate = AZStd::exp2(cameraProps.m_rotateSmoothnessFn());
-            const float lookTime = AZStd::exp2(-lookRate * deltaTime);
-            camera.m_pitch = AZ::Lerp(targetCamera.m_pitch, currentCamera.m_pitch, lookTime);
-            camera.m_yaw = AZ::Lerp(targetYaw, currentYaw, lookTime);
+            const float lookTime = SmoothValueTime(cameraProps.m_rotateSmoothnessFn(), deltaTime);
+            camera.m_pitch = SmoothValue(targetCamera.m_pitch, currentCamera.m_pitch, lookTime);
+            camera.m_yaw = SmoothValue(targetYaw, currentYaw, lookTime);
         }
         else
         {
@@ -757,8 +807,7 @@ namespace AzFramework
 
         if (cameraProps.m_translateSmoothingEnabledFn())
         {
-            const float moveRate = AZStd::exp2(cameraProps.m_translateSmoothnessFn());
-            const float moveTime = AZStd::exp2(-moveRate * deltaTime);
+            const float moveTime = SmoothValueTime(cameraProps.m_rotateSmoothnessFn(), deltaTime);
             camera.m_pivot = targetCamera.m_pivot.Lerp(currentCamera.m_pivot, moveTime);
             camera.m_offset = targetCamera.m_offset.Lerp(currentCamera.m_offset, moveTime);
         }
@@ -769,6 +818,81 @@ namespace AzFramework
         }
 
         return camera;
+    }
+
+    FocusCameraInput::FocusCameraInput(const InputChannelId& focusChannelId, FocusOffsetFn offsetFn)
+        : m_focusChannelId(focusChannelId)
+        , m_offsetFn(offsetFn)
+    {
+    }
+
+    bool FocusCameraInput::HandleEvents(
+        const InputEvent& event, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] float scrollDelta)
+    {
+        if (const auto* input = AZStd::get_if<DiscreteInputEvent>(&event))
+        {
+            if (input->m_channelId == m_focusChannelId && input->m_state == InputChannel::State::Began)
+            {
+                BeginActivation();
+            }
+        }
+
+        return !Idle();
+    }
+
+    Camera FocusCameraInput::StepCamera(
+        const Camera& targetCamera,
+        [[maybe_unused]] const ScreenVector& cursorDelta,
+        [[maybe_unused]] float scrollDelta,
+        [[maybe_unused]] float deltaTime)
+    {
+        const auto pivot = m_pivotFn();
+
+        if (!pivot.has_value())
+        {
+            EndActivation();
+            return targetCamera;
+        }
+
+        if (Beginning())
+        {
+            // as the camera starts, record the camera we would like to end up as
+            m_nextCamera.m_offset = m_offsetFn(pivot.value().GetDistance(targetCamera.Translation()));
+            const auto angles =
+                EulerAngles(AZ::Matrix3x3::CreateFromMatrix3x4(AZ::Matrix3x4::CreateLookAt(targetCamera.Translation(), pivot.value())));
+            m_nextCamera.m_pitch = angles.GetX();
+            m_nextCamera.m_yaw = angles.GetZ();
+            m_nextCamera.m_pivot = targetCamera.m_pivot;
+        }
+
+        // end the behavior when the camera is in alignment
+        if (AZ::IsCloseMag(targetCamera.m_pitch, m_nextCamera.m_pitch) && AZ::IsCloseMag(targetCamera.m_yaw, m_nextCamera.m_yaw))
+        {
+            EndActivation();
+        }
+
+        return m_nextCamera;
+    }
+
+    void FocusCameraInput::SetPivotFn(PivotFn pivotFn)
+    {
+        m_pivotFn = AZStd::move(pivotFn);
+    }
+
+    void FocusCameraInput::SetFocusInputChannelId(const InputChannelId& focusChannelId)
+    {
+        m_focusChannelId = focusChannelId;
+    }
+
+    bool CustomCameraInput::HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, const float scrollDelta)
+    {
+        return m_handleEventsFn(*this, event, cursorDelta, scrollDelta);
+    }
+
+    Camera CustomCameraInput::StepCamera(
+        const Camera& targetCamera, const ScreenVector& cursorDelta, const float scrollDelta, const float deltaTime)
+    {
+        return m_stepCameraFn(*this, targetCamera, cursorDelta, scrollDelta, deltaTime);
     }
 
     InputEvent BuildInputEvent(const InputChannel& inputChannel, const WindowSize& windowSize)

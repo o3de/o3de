@@ -18,7 +18,6 @@
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
 #include <AtomCore/Utils/ScopedValue.h>
 
@@ -57,7 +56,7 @@ namespace AZ
 
         RHI::ResultCode Material::Init(MaterialAsset& materialAsset)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RPI);
 
             ScopedValue isInitializing(&m_isInitializing, true, false);
 
@@ -234,7 +233,7 @@ namespace AZ
         {
             ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Material::OnAssetReloaded %s", this, asset.GetHint().c_str());
 
-            Data::Asset<MaterialAsset> newMaterialAsset = { asset.GetAs<MaterialAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
+            Data::Asset<MaterialAsset> newMaterialAsset = Data::static_pointer_cast<MaterialAsset>(asset);
 
             if (newMaterialAsset)
             {
@@ -320,7 +319,7 @@ namespace AZ
 
         bool Material::Compile()
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RPI);
 
             if (NeedsCompile() && CanCompile())
             {
@@ -386,9 +385,39 @@ namespace AZ
             return m_currentChangeId;
         }
 
-        MaterialPropertyIndex Material::FindPropertyIndex(const Name& propertyId) const
+        MaterialPropertyIndex Material::FindPropertyIndex(const Name& propertyId, bool* wasRenamed, Name* newName) const
         {
-            return m_layout->FindPropertyIndex(propertyId);
+            if (wasRenamed)
+            {
+                *wasRenamed = false;
+            }
+
+            MaterialPropertyIndex index = m_layout->FindPropertyIndex(propertyId);
+            if (!index.IsValid())
+            {
+                Name renamedId = propertyId;
+                
+                if (m_materialAsset->GetMaterialTypeAsset()->ApplyPropertyRenames(renamedId))
+                {                                
+                    index = m_layout->FindPropertyIndex(renamedId);
+
+                    if (wasRenamed)
+                    {
+                        *wasRenamed = true;
+                    }
+
+                    if (newName)
+                    {
+                        *newName = renamedId;
+                    }
+
+                    AZ_Warning("Material", false,
+                        "Material property '%s' has been renamed to '%s'. Consider updating the corresponding source data.",
+                        propertyId.GetCStr(),
+                        renamedId.GetCStr());
+                }
+            }
+            return index;
         }
 
         template<typename Type>
@@ -580,7 +609,7 @@ namespace AZ
                     }
                 }
 
-                if (Data::Asset<StreamingImageAsset> streamingImageAsset = { imageAsset.GetAs<StreamingImageAsset>(), AZ::Data::AssetLoadBehavior::PreLoad })
+                if (Data::Asset<StreamingImageAsset> streamingImageAsset = Data::static_pointer_cast<StreamingImageAsset>(imageAsset))
                 {
                     Data::Instance<Image> image = StreamingImage::FindOrCreate(streamingImageAsset);
                     if (!image)

@@ -1,4 +1,6 @@
 @echo off
+:: Keep changes local
+SETLOCAL enableDelayedExpansion
 
 REM 
 REM Copyright (c) Contributors to the Open 3D Engine Project
@@ -21,15 +23,12 @@ COLOR 8E
 cd %~dp0
 PUSHD %~dp0
 
-:: Keep changes local
-SETLOCAL enableDelayedExpansion
-
 CALL %~dp0\Project_Env.bat
 
 echo.
 echo _____________________________________________________________________
 echo.
-echo ~    LY DCC Scripting Interface CMD ...
+echo ~    O3DE %O3DE_PROJECT% Asset Gem CMD ...
 echo _____________________________________________________________________
 echo.
 

@@ -99,7 +99,6 @@ namespace AzToolsFramework
             // Generates a new path
             static AZ::IO::Path GeneratePath();
         };
-
     } // namespace Prefab
 } // namespace AzToolsFramework
 

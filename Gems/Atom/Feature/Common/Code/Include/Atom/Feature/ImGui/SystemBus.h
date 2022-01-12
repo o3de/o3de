@@ -15,11 +15,6 @@
 
 namespace AZ
 {
-    namespace RPI
-    {
-        class PassHierarchyFilter;
-    }
-
     namespace Render
     {
         class ImGuiPass;
@@ -51,7 +46,7 @@ namespace AZ
             //! Pushes whichever ImGui pass is default on the top of the active context stack. Returns true/false for success/fail.
             virtual bool PushActiveContextFromDefaultPass() = 0;
             //! Pushes whichever ImGui pass is provided in passHierarchy on the top of the active context stack. Returns true/false for success/fail.
-            virtual bool PushActiveContextFromPass(const RPI::PassHierarchyFilter& passHierarchy) = 0;
+            virtual bool PushActiveContextFromPass(const AZStd::vector<AZStd::string>& passHierarchy) = 0;
             //! Pops the active context off the top of the active context stack. Returns true if there's a context to pop.
             virtual bool PopActiveContext() = 0;
             //! Gets the context at the top of the active context stack. Returns nullptr if the stack is emtpy.

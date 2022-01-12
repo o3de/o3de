@@ -1,5 +1,5 @@
 {
-    "Source" : "AuxGeomObject",
+    "Source" : "AuxGeomObject.azsl",
 
     "DepthStencilState" : { 
         "Depth" : { "Enable" : true, "CompareFunc" : "GreaterEqual" }

@@ -16,9 +16,6 @@
 namespace AzFramework
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    const InputDeviceId InputDeviceKeyboard::Id("keyboard");
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
     bool InputDeviceKeyboard::IsKeyboardDevice(const InputDeviceId& inputDeviceId)
     {
         return (inputDeviceId.GetNameCrc32() == Id.GetNameCrc32());
@@ -182,8 +179,9 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceKeyboard::InputDeviceKeyboard(AzFramework::InputDeviceId id)
-        : InputDevice(id)
+    InputDeviceKeyboard::InputDeviceKeyboard(const InputDeviceId& inputDeviceId,
+                                             ImplementationFactory implementationFactory)
+        : InputDevice(inputDeviceId)
         , m_modifierKeyStates(AZStd::make_shared<ModifierKeyStates>())
         , m_allChannelsById()
         , m_keyChannelsById()
@@ -203,8 +201,8 @@ namespace AzFramework
             m_keyChannelsById[channelId] = channel;
         }
 
-        // Create the platform specific implementation
-        m_pimpl.reset(Implementation::Create(*this));
+        // Create the platform specific or custom implementation
+        m_pimpl.reset(implementationFactory ? implementationFactory(*this) : nullptr);
 
         // Connect to the text entry request bus
         InputTextEntryRequestBus::Handler::BusConnect(GetInputDeviceId());

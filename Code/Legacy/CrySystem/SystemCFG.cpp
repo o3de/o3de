@@ -292,10 +292,10 @@ static bool ParseSystemConfig(const AZStd::string& strSysConfigFilePath, ILoadCo
             // to either root or assets/config.  this is done so that code can just request a simple file name and get its data
             if (
                 !(file.Open(filename.c_str(), "rb")) &&
-                !(file.Open((AZStd::string("@root@/") + filename).c_str(), "rb")) &&
-                !(file.Open((AZStd::string("@assets@/") + filename).c_str(), "rb")) &&
-                !(file.Open((AZStd::string("@assets@/config/") + filename).c_str(), "rb")) &&
-                !(file.Open((AZStd::string("@assets@/config/spec/") + filename).c_str(), "rb"))
+                !(file.Open((AZStd::string("@products@/") + filename).c_str(), "rb")) &&
+                !(file.Open((AZStd::string("@products@/") + filename).c_str(), "rb")) &&
+                !(file.Open((AZStd::string("@products@/config/") + filename).c_str(), "rb")) &&
+                !(file.Open((AZStd::string("@products@/config/spec/") + filename).c_str(), "rb"))
                 )
             {
                 if (warnIfMissing)
@@ -414,7 +414,7 @@ static bool ParseSystemConfig(const AZStd::string& strSysConfigFilePath, ILoadCo
                     // replace '\\\\' with '\\' and '\\\"' with '\"'
                     AZ::StringFunc::Replace(strValue, "\\\\", "\\");
                     AZ::StringFunc::Replace(strValue, "\\\"", "\"");
-                    
+
                     pSink->OnLoadConfigurationEntry(strKey.c_str(), strValue.c_str(), strGroup.c_str());
                 }
             }

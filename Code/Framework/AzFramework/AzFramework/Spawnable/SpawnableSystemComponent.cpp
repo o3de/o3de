@@ -8,6 +8,7 @@
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetSerializer.h>
+#include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Spawnable/SpawnableMetaData.h>
@@ -45,8 +46,7 @@ namespace AzFramework
 
     void SpawnableSystemComponent::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
     {
-        m_entitiesManager.ProcessQueue(
-            SpawnableEntitiesManager::CommandQueuePriority::High | SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        ProcessSpawnableQueue();
         RootSpawnableNotificationBus::ExecuteQueuedEvents();
     }
 
@@ -62,18 +62,9 @@ namespace AzFramework
         m_entitiesManager.ProcessQueue(SpawnableEntitiesManager::CommandQueuePriority::High);
     }
 
-    void SpawnableSystemComponent::OnCatalogLoaded([[maybe_unused]] const char* catalogFile)
-    {
-        if (!m_catalogAvailable)
-        {
-            m_catalogAvailable = true;
-            LoadRootSpawnableFromSettingsRegistry();
-        }
-    }
-
     uint64_t SpawnableSystemComponent::AssignRootSpawnable(AZ::Data::Asset<Spawnable> rootSpawnable)
     {
-        uint64_t generation = 0;
+        uint32_t generation = 0;
 
         if (m_rootSpawnableId == rootSpawnable.GetId())
         {
@@ -88,16 +79,25 @@ namespace AzFramework
             // Suspend and resume processing in the container that completion calls aren't received until
             // everything has been setup to accept callbacks from the call.
             m_rootSpawnableContainer.Reset(rootSpawnable);
-            m_rootSpawnableContainer.SpawnAllEntities();
             generation = m_rootSpawnableContainer.GetCurrentGeneration();
-            AZ_TracePrintf("Spawnables", "Root spawnable set to '%s' at generation %zu.\n", rootSpawnable.GetHint().c_str(),
-                generation);
+
+            // Don't send out the alert that the root spawnable has been assigned until the spawnable itself is ready. The common
+            // use case is for handlers to do something with the information in the spawnable before the entities get spawned.
+            m_rootSpawnableContainer.Alert(
+                [rootSpawnable](uint32_t generation)
+                {
+                    RootSpawnableNotificationBus::Broadcast(
+                        &RootSpawnableNotificationBus::Events::OnRootSpawnableAssigned, AZStd::move(rootSpawnable), generation);
+                }, SpawnableEntitiesContainer::CheckIfSpawnableIsLoaded::Yes);
+            m_rootSpawnableContainer.SpawnAllEntities();
             m_rootSpawnableContainer.Alert(
                 [newSpawnable = AZStd::move(rootSpawnable)](uint32_t generation)
                 {
                     RootSpawnableNotificationBus::QueueBroadcast(
-                        &RootSpawnableNotificationBus::Events::OnRootSpawnableAssigned, newSpawnable, generation);
+                        &RootSpawnableNotificationBus::Events::OnRootSpawnableReady, AZStd::move(newSpawnable), generation);
                 });
+
+            AZ_TracePrintf("Spawnables", "Root spawnable set to '%s' at generation %zu.\n", rootSpawnable.GetHint().c_str(), generation);     
         }
         else
         {
@@ -121,10 +121,22 @@ namespace AzFramework
         m_rootSpawnableId = AZ::Data::AssetId();
     }
 
+    void SpawnableSystemComponent::ProcessSpawnableQueue()
+    {
+        m_entitiesManager.ProcessQueue(
+            SpawnableEntitiesManager::CommandQueuePriority::High | SpawnableEntitiesManager::CommandQueuePriority::Regular);
+    }
+
     void SpawnableSystemComponent::OnRootSpawnableAssigned([[maybe_unused]] AZ::Data::Asset<Spawnable> rootSpawnable,
         [[maybe_unused]] uint32_t generation)
     {
         AZ_TracePrintf("Spawnables", "New root spawnable '%s' assigned (generation: %i).\n", rootSpawnable.GetHint().c_str(), generation);
+    }
+
+    void SpawnableSystemComponent::OnRootSpawnableReady(
+        [[maybe_unused]] AZ::Data::Asset<Spawnable> rootSpawnable, [[maybe_unused]] uint32_t generation)
+    {
+        AZ_TracePrintf("Spawnables", "Entities from new root spawnable '%s' are ready (generation: %i).\n", rootSpawnable.GetHint().c_str(), generation);
     }
 
     void SpawnableSystemComponent::OnRootSpawnableReleased([[maybe_unused]] uint32_t generation)
@@ -137,20 +149,29 @@ namespace AzFramework
         // Register with AssetDatabase
         AZ_Assert(AZ::Data::AssetManager::IsReady(), "Spawnables can't be registered because the Asset Manager is not ready yet.");
         AZ::Data::AssetManager::Instance().RegisterHandler(&m_assetHandler, AZ::AzTypeInfo<Spawnable>::Uuid());
-        
+
         // Register with AssetCatalog
         AZ::Data::AssetCatalogRequestBus::Broadcast(
             &AZ::Data::AssetCatalogRequestBus::Events::EnableCatalogForAsset, AZ::AzTypeInfo<Spawnable>::Uuid());
         AZ::Data::AssetCatalogRequestBus::Broadcast(
             &AZ::Data::AssetCatalogRequestBus::Events::AddExtension, Spawnable::FileExtension);
 
-        AssetCatalogEventBus::Handler::BusConnect();
+        // Register for the CriticalAssetsCompiled lifecycle event to trigger the loading of the root spawnable
+        auto settingsRegistry = AZ::SettingsRegistry::Get();
+        AZ_Assert(settingsRegistry, "Unable to change root spawnable callback because Settings Registry is not available.");
+
+        auto LifecycleCallback = [this](AZStd::string_view, AZ::SettingsRegistryInterface::Type)
+        {
+            LoadRootSpawnableFromSettingsRegistry();
+        };
+        AZ::ComponentApplicationLifecycle::RegisterHandler(*settingsRegistry, m_criticalAssetsHandler,
+            AZStd::move(LifecycleCallback), "CriticalAssetsCompiled");
+
+
         RootSpawnableNotificationBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
 
-        auto registry = AZ::SettingsRegistry::Get();
-        AZ_Assert(registry, "Unable to change root spawnable callback because Settings Registry is not available.");
-        m_registryChangeHandler = registry->RegisterNotifier([this](AZStd::string_view path, AZ::SettingsRegistryInterface::Type /*type*/)
+        m_registryChangeHandler = settingsRegistry->RegisterNotifier([this](AZStd::string_view path, AZ::SettingsRegistryInterface::Type /*type*/)
             {
                 if (path.starts_with(RootSpawnableRegistryKey))
                 {
@@ -161,17 +182,20 @@ namespace AzFramework
 
     void SpawnableSystemComponent::Deactivate()
     {
+        ProcessSpawnableQueue();
+
         m_registryChangeHandler.Disconnect();
 
         AZ::TickBus::Handler::BusDisconnect();
         RootSpawnableNotificationBus::Handler::BusDisconnect();
-        AssetCatalogEventBus::Handler::BusDisconnect();
+        // Unregister Lifecycle event handler
+        m_criticalAssetsHandler = {};
 
-        if (m_catalogAvailable)
+        if (m_rootSpawnableId.IsValid())
         {
             ReleaseRootSpawnable();
 
-            // The SpawnalbleSystemComponent needs to guarantee there's no more processing left to do by the
+            // The SpawnableSystemComponent needs to guarantee there's no more processing left to do by the
             // entity manager before it can safely destroy it on shutdown, but also to make sure that are no
             // more calls to the callback registered to the root spawnable as that accesses this component.
             m_rootSpawnableContainer.Clear();
@@ -188,8 +212,6 @@ namespace AzFramework
 
     void SpawnableSystemComponent::LoadRootSpawnableFromSettingsRegistry()
     {
-        AZ_Assert(m_catalogAvailable, "Attempting to load root spawnable while the catalog is not available yet.");
-
         auto registry = AZ::SettingsRegistry::Get();
         AZ_Assert(registry, "Unable to check for root spawnable because the Settings Registry is not available.");
 

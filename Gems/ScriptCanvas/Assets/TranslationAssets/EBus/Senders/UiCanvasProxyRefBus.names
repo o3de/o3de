@@ -1,0 +1,39 @@
+{
+    "entries": [
+        {
+            "base": "UiCanvasProxyRefBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "UI Canvas Proxy Ref",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "base": "SetCanvasRefEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Canvas Ref Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Canvas Ref Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Set Canvas Ref Entity",
+                        "tooltip": "Sets the entity to mirror. The entity should have a Ui Canvas Asset Ref component. Used to display the same UI canvas on multiple entities in the 3D world"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Canvas Asset Ref EntityID",
+                                "tooltip": "The entity to mirror"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

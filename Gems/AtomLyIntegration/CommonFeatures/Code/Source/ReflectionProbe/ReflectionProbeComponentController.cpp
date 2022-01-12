@@ -16,7 +16,6 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Asset/AssetSerializer.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <AzFramework/Entity/EntityContextBus.h>
@@ -35,7 +34,7 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ReflectionProbeComponentConfig>()
-                    ->Version(0)
+                    ->Version(1)
                     ->Field("OuterHeight", &ReflectionProbeComponentConfig::m_outerHeight)
                     ->Field("OuterLength", &ReflectionProbeComponentConfig::m_outerLength)
                     ->Field("OuterWidth", &ReflectionProbeComponentConfig::m_outerWidth)
@@ -49,7 +48,9 @@ namespace AZ
                     ->Field("AuthoredCubeMapAsset", &ReflectionProbeComponentConfig::m_authoredCubeMapAsset)
                     ->Field("EntityId", &ReflectionProbeComponentConfig::m_entityId)
                     ->Field("UseParallaxCorrection", &ReflectionProbeComponentConfig::m_useParallaxCorrection)
-                    ->Field("ShowVisualization", &ReflectionProbeComponentConfig::m_showVisualization);
+                    ->Field("ShowVisualization", &ReflectionProbeComponentConfig::m_showVisualization)
+                    ->Field("RenderExposure", &ReflectionProbeComponentConfig::m_renderExposure)
+                    ->Field("BakeExposure", &ReflectionProbeComponentConfig::m_bakeExposure);
             }
         }
 
@@ -157,6 +158,9 @@ namespace AZ
                 cubeMapAsset.QueueLoad();
                 Data::AssetBus::MultiHandler::BusConnect(cubeMapAsset.GetId());
             }
+
+            // set cubemap render exposure
+            m_featureProcessor->SetRenderExposure(m_handle, m_configuration.m_renderExposure);
         }
 
         void ReflectionProbeComponentController::Deactivate()
@@ -282,6 +286,16 @@ namespace AZ
             m_configuration.m_innerWidth = AZStd::min(m_configuration.m_innerWidth, m_configuration.m_outerWidth);
             m_configuration.m_innerLength = AZStd::min(m_configuration.m_innerLength, m_configuration.m_outerLength);
             m_configuration.m_innerHeight = AZStd::min(m_configuration.m_innerHeight, m_configuration.m_outerHeight);
+        }
+
+        void ReflectionProbeComponentController::SetBakeExposure(float bakeExposure)
+        {
+            if (!m_featureProcessor)
+            {
+                return;
+            }
+
+            m_featureProcessor->SetBakeExposure(m_handle, bakeExposure);
         }
 
         void ReflectionProbeComponentController::BakeReflectionProbe(BuildCubeMapCallback callback, const AZStd::string& relativePath)

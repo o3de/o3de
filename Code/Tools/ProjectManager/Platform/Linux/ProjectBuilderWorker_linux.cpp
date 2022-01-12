@@ -19,29 +19,15 @@ namespace O3DE::ProjectManager
     {
         // Attempt to use the Ninja build system if it is installed (described in the o3de documentation) if possible,
         // otherwise default to the the default for Linux (Unix Makefiles)
-        auto    whichNinjaResult = ProjectUtils::ExecuteCommandResult("which", QStringList{"ninja"}, QProcessEnvironment::systemEnvironment());
+        auto    whichNinjaResult = ProjectUtils::ExecuteCommandResult("which", QStringList{"ninja"});
         QString cmakeGenerator = (whichNinjaResult.IsSuccess()) ? "Ninja Multi-Config" : "Unix Makefiles";
         bool    compileProfileOnBuild = (whichNinjaResult.IsSuccess());
 
-        // On Linux the default compiler is gcc. For O3DE, it is clang, so we need to specify the version of clang that is detected
-        // in order to get the compiler option.
-        auto compilerOptionResult = ProjectUtils::FindSupportedCompilerForPlatform();
-        if (!compilerOptionResult.IsSuccess())
-        {
-            return AZ::Failure(compilerOptionResult.GetError());
-        }
-        auto clangCompilers = compilerOptionResult.GetValue().split('|');
-        AZ_Assert(clangCompilers.length()==2, "Invalid clang compiler pair specification");
-
-        QString clangCompilerOption = clangCompilers[0];
-        QString clangPPCompilerOption = clangCompilers[1];
         QString targetBuildPath = QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix);
         QStringList generateProjectArgs = QStringList{ProjectCMakeCommand,
                                                       "-B", ProjectBuildPathPostfix,
                                                       "-S", ".",
                                                       QString("-G%1").arg(cmakeGenerator),
-                                                      QString("-DCMAKE_C_COMPILER=").append(clangCompilerOption),
-                                                      QString("-DCMAKE_CXX_COMPILER=").append(clangPPCompilerOption),
                                                       QString("-DLY_3RDPARTY_PATH=").append(thirdPartyPath)};
         if (!compileProfileOnBuild)
         {
@@ -52,7 +38,7 @@ namespace O3DE::ProjectManager
 
     AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructCmakeBuildCommandArguments() const
     {
-        auto    whichNinjaResult = ProjectUtils::ExecuteCommandResult("which", QStringList{"ninja"}, QProcessEnvironment::systemEnvironment());
+        auto    whichNinjaResult = ProjectUtils::ExecuteCommandResult("which", QStringList{"ninja"});
         bool    compileProfileOnBuild = (whichNinjaResult.IsSuccess());
         QString targetBuildPath = QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix);
         QString launcherTargetName = m_projectInfo.m_projectName + ".GameLauncher";

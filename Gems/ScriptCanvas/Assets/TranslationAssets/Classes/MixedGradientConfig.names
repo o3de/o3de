@@ -1,0 +1,138 @@
+{
+    "entries": [
+        {
+            "base": "MixedGradientConfig",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "MixedGradientConfig"
+            },
+            "methods": [
+                {
+                    "base": "GetNumLayers",
+                    "context": "MixedGradientConfig",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetNumLayers"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetNumLayers is invoked"
+                    },
+                    "details": {
+                        "name": "MixedGradientConfig::GetNumLayers",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{40403A44-31FE-4D1D-941C-6593759CCCBD}",
+                            "details": {
+                                "name": "MixedGradientConfig*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u64"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AddLayer",
+                    "context": "MixedGradientConfig",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke AddLayer"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after AddLayer is invoked"
+                    },
+                    "details": {
+                        "name": "MixedGradientConfig::AddLayer",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{40403A44-31FE-4D1D-941C-6593759CCCBD}",
+                            "details": {
+                                "name": "MixedGradientConfig*"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "RemoveLayer",
+                    "context": "MixedGradientConfig",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke RemoveLayer"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after RemoveLayer is invoked"
+                    },
+                    "details": {
+                        "name": "MixedGradientConfig::RemoveLayer",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{40403A44-31FE-4D1D-941C-6593759CCCBD}",
+                            "details": {
+                                "name": "MixedGradientConfig*"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetLayer",
+                    "context": "MixedGradientConfig",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetLayer"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetLayer is invoked"
+                    },
+                    "details": {
+                        "name": "MixedGradientConfig::GetLayer",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{40403A44-31FE-4D1D-941C-6593759CCCBD}",
+                            "details": {
+                                "name": "MixedGradientConfig*"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{957264F7-A169-4D47-B94C-659B078026D4}",
+                            "details": {
+                                "name": "MixedGradientLayer*"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

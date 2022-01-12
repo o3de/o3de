@@ -265,7 +265,7 @@ class AbstractResourceLocator(object):
         Return path to AssetProcessor's log file using the project bin dir
         :return: path to 'AP_Gui.log' file in <ap_log_dir> folder
         """
-        return os.path.join(self.ap_log_dir(), 'AP_Gui.log')
+        return os.path.join(self.ap_log_dir(), 'AP_GUI.log')
 
     def project_cache(self):
         """
@@ -277,7 +277,7 @@ class AbstractResourceLocator(object):
     def get_shader_compiler_path(self):
         """
         Return path to shader compiler executable
-        ex. engine_root/dev/windows_vs2019/bin/profile/CrySCompileServer
+        ex. engine_root/dev/windows/bin/profile/CrySCompileServer
         :return: path to CrySCompileServer executable
         """
         return os.path.join(self.build_directory(), 'CrySCompileServer')
@@ -313,7 +313,7 @@ class AbstractResourceLocator(object):
     def shader_compiler_config_file(self):
         """
         Return path to the Shader Compiler config file
-        ex. engine_root/dev/windows_vs2019/bin/profile/config.ini
+        ex. engine_root/dev/windows/bin/profile/config.ini
         :return: path to the Shader Compiler config file
         """
         return os.path.join(self.build_directory(), 'config.ini')
@@ -321,7 +321,7 @@ class AbstractResourceLocator(object):
     def shader_cache(self):
         """
         Return path to the shader cache for the current build
-        ex. engine_root/dev/windows_vs2019/bin/profile/Cache
+        ex. engine_root/dev/windows/bin/profile/Cache
         :return: path to the shader cache for the current build
         """
         return os.path.join(self.build_directory(), 'Cache')
@@ -378,9 +378,20 @@ class AbstractResourceLocator(object):
     def editor_log(self):
         """
         Return path to the project's editor log dir using the builds project and platform
-        :return: path to editor.log
+        :return: path to Editor.log
         """
         raise NotImplementedError(
             "editor_log() is not implemented on the base AbstractResourceLocator() class. "
             "It must be defined by the inheriting class - "
             "i.e. _WindowsResourceLocator(AbstractResourceLocator).editor_log()")
+
+    @abstractmethod
+    def crash_log(self):
+        """
+        Return path to the project's crash log dir using the builds project and platform
+        :return: path to error.log/crash.log
+        """
+        raise NotImplementedError(
+            "crash_log() is not implemented on the base AbstractResourceLocator() class. "
+            "It must be defined by the inheriting class - "
+            "i.e. _WindowsResourceLocator(AbstractResourceLocator).crash_log()")

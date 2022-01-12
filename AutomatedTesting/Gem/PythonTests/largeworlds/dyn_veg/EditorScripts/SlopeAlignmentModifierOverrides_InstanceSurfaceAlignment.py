@@ -66,7 +66,7 @@ def SlopeAlignmentModifierOverrides_InstanceSurfaceAlignment():
     # Create a spawner entity setup with all needed components
     center_point = math.Vector3(512.0, 512.0, 32.0)
     asset_path = os.path.join("Slices", "PinkFlower.dynamicslice")
-    spawner_entity = dynveg.create_vegetation_area("Instance Spawner", center_point, 16.0, 16.0, 32.0, asset_path)
+    spawner_entity = dynveg.create_dynamic_slice_vegetation_area("Instance Spawner", center_point, 16.0, 16.0, 32.0, asset_path)
 
     # Create a sloped mesh surface for the instances to plant on
     center_point = math.Vector3(502.0, 512.0, 24.0)

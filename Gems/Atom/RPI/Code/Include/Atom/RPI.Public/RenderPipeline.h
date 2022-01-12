@@ -32,7 +32,6 @@ namespace AZ
     namespace RPI
     {
         class Scene;
-        struct TickTimeInfo;
         class ShaderResourceGroup;
         class AnyAsset;
         class WindowContext;
@@ -203,7 +202,7 @@ namespace AZ
             void OnRemovedFromScene(Scene* scene);
 
             // Called when this pipeline is about to be rendered
-            void OnStartFrame(const TickTimeInfo& tick);
+            void OnStartFrame(float time);
 
             // Called when the rendering of current frame is finished.
             void OnFrameEnd();
@@ -227,9 +226,6 @@ namespace AZ
             Ptr<ParentPass> m_rootPass;
             
             PipelineViewMap m_pipelineViewsByTag;
-            
-            /// The system time when the last time this pipeline render was started
-            float m_lastRenderStartTime = 0;
             
             // RenderPipeline's name id, it will be used to identify the render pipeline when it's added to a Scene
             RenderPipelineId m_nameId;

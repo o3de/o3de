@@ -36,6 +36,7 @@ ly_add_target(
         PUBLIC
             AZ::AtomCore
             Gem::Atom_RPI.Public
+            Gem::AtomLyIntegration_CommonFeatures.Static
             Gem::LmbrCentral
     COMPILE_DEFINITIONS
         PUBLIC
@@ -108,6 +109,8 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzToolsFramework
                 Legacy::Editor.Headers
                 3rdParty::OpenGLInterface
+                Gem::AtomToolsFramework.Static
+                Gem::AtomToolsFramework.Editor
         COMPILE_DEFINITIONS
             PUBLIC
                 EMFX_EMSTUDIOLYEMBEDDED

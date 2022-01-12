@@ -1,5 +1,5 @@
 { 
-    "Source" : "ReflectionProbeBlendWeight",
+    "Source" : "ReflectionProbeBlendWeight.azsl",
 
     "RasterState" :
     {

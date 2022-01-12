@@ -20,8 +20,8 @@ import re
 
 from o3de import manifest, register, validation, utils
 
-logger = logging.getLogger()
-logging.basicConfig()
+logger = logging.getLogger('o3de.engine_template')
+logging.basicConfig(format=utils.LOG_FORMAT)
 
 binary_file_ext = {
     '.pak',
@@ -59,6 +59,14 @@ binary_file_ext = {
     '.motionset'
 }
 
+cpp_file_ext = {
+    '.cpp',
+    '.h',
+    '.hpp',
+    '.hxx',
+    '.inl'
+}
+
 expect_license_info_ext = {
     '.cpp',
     '.h',
@@ -77,6 +85,7 @@ restricted_platforms = {
 
 template_file_name = 'template.json'
 this_script_parent = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
+
 
 def _replace_license_text(source_data: str):
     while '{BEGIN_LICENSE}' in source_data:
@@ -173,7 +182,7 @@ def _execute_template_json(json_data: dict,
     # regular copy if not templated
     for copy_file in json_data['copyFiles']:
         # construct the input file name
-        in_file = template_path / 'Template' /copy_file['file']
+        in_file = template_path / 'Template' / copy_file['file']
 
         # the file can be marked as optional, if it is and it does not exist skip
         if copy_file['isOptional'] and copy_file['isOptional'] == 'true':
@@ -238,7 +247,7 @@ def _execute_restricted_template_json(json_data: dict,
     for copy_file in json_data['copyFiles']:
         # construct the input file name
         in_file = template_restricted_path / restricted_platform / template_restricted_platform_relative_path\
-                  / template_name / 'Template'/ copy_file['file']
+                  / template_name / 'Template' / copy_file['file']
 
         # the file can be marked as optional, if it is and it does not exist skip
         if copy_file['isOptional'] and copy_file['isOptional'] == 'true':
@@ -356,7 +365,7 @@ def create_template(source_path: pathlib.Path,
                     keep_restricted_in_template: bool = False,
                     keep_license_text: bool = False,
                     replace: list = None,
-                    force: bool = False)  -> int:
+                    force: bool = False) -> int:
     """
     Create a template from a source directory using replacement
 
@@ -399,15 +408,12 @@ def create_template(source_path: pathlib.Path,
         source_name = os.path.basename(source_path)
     sanitized_source_name = utils.sanitize_identifier_for_cpp(source_name)
 
-    # if no template path, error
+    # if no template path, use default_templates_folder path
     if not template_path:
-        logger.info(f'Template path empty. Using source name {source_name}')
-        template_path = source_name
-    if not template_path.is_absolute():
         default_templates_folder = manifest.get_registered(default_folder='templates')
-        template_path = default_templates_folder / template_path
-        logger.info(f'Template path not a full path. Using default templates folder {template_path}')
-    if not force and template_path.is_dir():
+        template_path = default_templates_folder / source_name
+        logger.info(f'Template path empty. Using default templates folder {template_path}')
+    if not force and template_path.is_dir() and len(list(template_path.iterdir())):
         logger.error(f'Template path {template_path} already exists.')
         return 1
 
@@ -518,20 +524,51 @@ def create_template(source_path: pathlib.Path,
     replacements.append((source_name.upper(), '${NameUpper}'))
     replacements.append((source_name, '${Name}'))
     replacements.append((sanitized_source_name, '${SanitizedCppName}'))
+    sanitized_name_index = len(replacements) - 1
 
-    def _transform_into_template(s_data: object) -> (bool, str):
+    def _is_cpp_file(file_path: pathlib.Path) -> bool:
+        """
+        Internal helper method to check if a file is a C++ file based
+        on its extension, so we can determine if we need to prefer
+        the ${SanitizedCppName}
+        :param file_path: The input file path
+        :return: bool: Whether or not the input file path has a C++ extension
+        """
+        name, ext = os.path.splitext(file_path)
+
+        return ext.lower() in cpp_file_ext
+
+    def _transform_into_template(s_data: object,
+                                 prefer_sanitized_name: bool = False) -> (bool, str):
         """
         Internal function to transform any data into templated data
         :param s_data: the input data, this could be file data or file name data
+        :param prefer_sanitized_name: Optionally swap the sanitized name with the normal name
+                                      This can be necessary when creating the template, the source
+                                      name and sanitized source name might be the same, but C++
+                                      files will need to prefer the sanitized version, or else
+                                      there might be compile errors (e.g. '-' characters in the name)
         :return: bool: whether or not the returned data MAY need to be transformed to instantiate it
                  t_data: potentially transformed data 0 for success or non 0 failure code
         """
+        def swap_sanitized_name_and_normal():
+            replacements[sanitized_name_index-1], replacements[sanitized_name_index] = \
+                replacements[sanitized_name_index], replacements[sanitized_name_index-1]
+
         # copy the src data to the transformed data, then operate only on transformed data
         t_data = str(s_data)
+
+        # If we need to prefer the sanitized name, then swap it for the normal
+        if prefer_sanitized_name:
+            swap_sanitized_name_and_normal()
 
         # run all the replacements
         for replacement in replacements:
             t_data = t_data.replace(replacement[0], replacement[1])
+
+        # Once we are done running the replacements, reset the list if we had modified it
+        if prefer_sanitized_name:
+            swap_sanitized_name_and_normal()
 
         if not keep_license_text:
             t_data = _replace_license_text(t_data)
@@ -704,7 +741,7 @@ def create_template(source_path: pathlib.Path,
                         # open the file and attempt to transform it
                         with open(entry_abs, 'r') as s:
                             source_data = s.read()
-                            templated, source_data = _transform_into_template(source_data)
+                            templated, source_data = _transform_into_template(source_data, _is_cpp_file(entry_abs))
 
                             # if the file type is a file that we expect to fins license header and we don't find any
                             # warn that the we didn't find the license info, this makes it easy to make sure we didn't
@@ -840,7 +877,7 @@ def create_template(source_path: pathlib.Path,
                         # open the file and attempt to transform it
                         with open(entry_abs, 'r') as s:
                             source_data = s.read()
-                            templated, source_data = _transform_into_template(source_data)
+                            templated, source_data = _transform_into_template(source_data, _is_cpp_file(entry_abs))
 
                             # if the file type is a file that we expect to fins license header and we don't find any
                             # warn that the we didn't find the license info, this makes it easy to make sure we didn't
@@ -1066,7 +1103,7 @@ def create_from_template(destination_path: pathlib.Path,
         logger.error(f'Could not find the template {template_name}=>{template_path}')
         return 1
 
-    # the template.json should be in the template_path, make sure it's there a nd valid
+    # the template.json should be in the template_path, make sure it is valid
     template_json = template_path / 'template.json'
     if not validation.valid_o3de_template_json(template_json):
         logger.error(f'Template json {template_path} is invalid.')
@@ -1077,7 +1114,7 @@ def create_from_template(destination_path: pathlib.Path,
         try:
             template_json_data = json.load(s)
         except KeyError as e:
-            logger.error(f'Could read template json {template_json}: {str(e)}.')
+            logger.error(f'Could not read template json {template_json}: {str(e)}.')
             return 1
 
     # read template name from the json
@@ -1169,12 +1206,12 @@ def create_from_template(destination_path: pathlib.Path,
                 # something is wrong with either the --template-restricted-platform-relative or the template is.
                 if template_restricted_platform_relative_path != template_json_restricted_platform_relative_path:
                     logger.error(f'The supplied --template-restricted-platform-relative-path'
-                                f' "{template_restricted_platform_relative_path}" does not match the'
-                                f' templates.json  "restricted_platform_relative_path". Either'
-                                f' --template-restricted-platform-relative-path is incorrect or the templates'
-                                f' "restricted_platform_relative_path" is wrong. Note that since this template'
-                                f' specifies "restricted_platform_relative_path" it need not be supplied and'
-                                f' "{template_json_restricted_platform_relative_path}" will be used.')
+                                 f' "{template_restricted_platform_relative_path}" does not match the'
+                                 f' templates.json  "restricted_platform_relative_path". Either'
+                                 f' --template-restricted-platform-relative-path is incorrect or the templates'
+                                 f' "restricted_platform_relative_path" is wrong. Note that since this template'
+                                 f' specifies "restricted_platform_relative_path" it need not be supplied and'
+                                 f' "{template_json_restricted_platform_relative_path}" will be used.')
                     return 1
     else:
         # The user has not supplied --template-restricted-platform-relative-path, try to read it from
@@ -1215,7 +1252,7 @@ def create_from_template(destination_path: pathlib.Path,
     # destination restricted path
     elif destination_restricted_path:
         if os.path.isabs(destination_restricted_path):
-            restricted_default_path = manifest.get_registered(default='restricted')
+            restricted_default_path = manifest.get_registered(default_folder='restricted')
             new_destination_restricted_path = restricted_default_path / destination_restricted_path
             logger.info(f'{destination_restricted_path} is not a full path, making it relative'
                         f' to default restricted path = {new_destination_restricted_path}')
@@ -1270,7 +1307,7 @@ def create_from_template(destination_path: pathlib.Path,
             os.makedirs(destination_restricted_path, exist_ok=True)
 
             # read the restricted_name from the destination restricted.json
-            restricted_json = destination_restricted_path / restricted.json
+            restricted_json = destination_restricted_path / 'restricted.json'
             if not os.path.isfile(restricted_json):
                 with open(restricted_json, 'w') as s:
                     restricted_json_data = {}
@@ -1302,12 +1339,13 @@ def create_project(project_path: pathlib.Path,
                    no_register: bool = False,
                    system_component_class_id: str = None,
                    editor_system_component_class_id: str = None,
-                   module_id: str = None) -> int:
+                   module_id: str = None,
+                   project_id: str = None) -> int:
     """
     Template instantiation specialization that makes all default assumptions for a Project template instantiation,
      reducing the effort needed in instancing a project
     :param project_path: the project path, can be absolute or relative to default projects path
-    :param project_name: the project name, defaults to project_path basename if not provided 
+    :param project_name: the project name, defaults to project_path basename if not provided
     :param template_path: the path to the template you want to instance, can be absolute or relative to default templates path
     :param template_name: the name the registered template you want to instance, defaults to DefaultProject, resolves template_path
     :param project_restricted_path: path to the projects restricted folder, can be absolute or relative to the restricted='projects'
@@ -1330,6 +1368,7 @@ def create_project(project_path: pathlib.Path,
     :param editor_system_component_class_id: optionally specify a uuid for the editor system component class, default is
      random uuid
     :param module_id: optionally specify a uuid for the module class, default is random uuid
+    :param project_id: optionally specify a str for the project id, default is random uuid
     :return: 0 for success or non 0 failure code
     """
     if template_name and template_path:
@@ -1369,7 +1408,7 @@ def create_project(project_path: pathlib.Path,
         try:
             template_json_data = json.load(s)
         except json.JSONDecodeError as e:
-            logger.error(f'Could read template json {template_json}: {str(e)}.')
+            logger.error(f'Could not read template json {template_json}: {str(e)}.')
             return 1
 
     # read template name from the json
@@ -1484,13 +1523,9 @@ def create_project(project_path: pathlib.Path,
     if not project_path:
         logger.error('Project path cannot be empty.')
         return 1
-    if not os.path.isabs(project_path):
-        default_projects_folder = manifest.get_registered(default_folder='projects')
-        new_project_path = default_projects_folder / project_path
-        logger.info(f'Project Path {project_path} is not a full path, we must assume its relative'
-                    f' to default projects path = {new_project_path}')
-        project_path = new_project_path
-    if not force and os.path.isdir(project_path) and len(os.listdir(project_path)) > 0:
+
+    project_path = project_path.resolve()
+    if not force and project_path.is_dir() and len(list(project_path.iterdir())):
         logger.error(f'Project path {project_path} already exists and is not empty.')
         return 1
     elif not os.path.isdir(project_path):
@@ -1544,6 +1579,12 @@ def create_project(project_path: pathlib.Path,
     replacements.append(("${NameUpper}", project_name.upper()))
     replacements.append(("${NameLower}", project_name.lower()))
     replacements.append(("${SanitizedCppName}", sanitized_cpp_name))
+
+    # was a project id specified
+    if project_id:
+        replacements.append(("${ProjectId}", project_id))
+    else:
+        replacements.append(("${ProjectId}", '{' + str(uuid.uuid4()) + '}'))
 
     # module id is a uuid with { and -
     if module_id:
@@ -1752,7 +1793,7 @@ def create_gem(gem_path: pathlib.Path,
         try:
             template_json_data = json.load(s)
         except json.JSONDecodeError as e:
-            logger.error(f'Could read template json {template_json}: {str(e)}.')
+            logger.error(f'Could not read template json {template_json}: {str(e)}.')
             return 1
 
     # read template name from the json
@@ -1865,14 +1906,10 @@ def create_gem(gem_path: pathlib.Path,
     if not gem_path:
         logger.error('Gem path cannot be empty.')
         return 1
-    if not os.path.isabs(gem_path):
-        default_gems_folder = manifest.get_registered(default_folder='gems')
-        new_gem_path = default_gems_folder / gem_path
-        logger.info(f'Gem Path {gem_path} is not a full path, we must assume its relative'
-                    f' to default gems path = {new_gem_path}')
-        gem_path = new_gem_path
-    if not force and os.path.isdir(gem_path):
-        logger.error(f'Gem path {gem_path} already exists.')
+
+    gem_path = gem_path.resolve()
+    if not force and gem_path.is_dir() and len(list(gem_path.iterdir())):
+        logger.error(f'Gem path {gem_path} already exists and is not empty.')
         return 1
     else:
         os.makedirs(gem_path, exist_ok=force)
@@ -1897,16 +1934,18 @@ def create_gem(gem_path: pathlib.Path,
     # gem restricted path
     elif gem_restricted_path:
         if not os.path.isabs(gem_restricted_path):
-            default_gems_restricted_folder = manifest.get_registered(restricted_name='gems')
-            new_gem_restricted_path = default_gems_restricted_folder /gem_restricted_path
-            logger.info(f'Gem restricted path {gem_restricted_path} is not a full path, we must assume its'
-                        f' relative to default gems restricted path = {new_gem_restricted_path}')
-            gem_restricted_path = new_gem_restricted_path
-    elif template_restricted_path:
+            gem_restricted_default_path = manifest.get_registered(restricted_name='gems')
+            if gem_restricted_default_path:
+                new_gem_restricted_path = gem_restricted_default_path / gem_restricted_path
+                logger.info(f'Gem restricted path {gem_restricted_path} is not a full path, we must assume its'
+                            f' relative to default gems restricted path = {new_gem_restricted_path}')
+                gem_restricted_path = new_gem_restricted_path
+    else:
         gem_restricted_default_path = manifest.get_registered(restricted_name='gems')
-        logger.info(f'--gem-restricted-path is not specified, using default gem restricted path / gem name'
-                    f' = {gem_restricted_default_path}')
-        gem_restricted_path = gem_restricted_default_path
+        if gem_restricted_default_path:
+            logger.info(f'--gem-restricted-path is not specified, using default <gem restricted path> / <gem name>'
+                        f' = {gem_restricted_default_path}')
+            gem_restricted_path = gem_restricted_default_path / gem_name
 
     # gem restricted relative
     if not gem_restricted_platform_relative_path:
@@ -1925,7 +1964,6 @@ def create_gem(gem_path: pathlib.Path,
     replacements.append(("${NameUpper}", gem_name.upper()))
     replacements.append(("${NameLower}", gem_name.lower()))
     replacements.append(("${SanitizedCppName}", sanitized_cpp_name))
-    
 
     # module id is a uuid with { and -
     if module_id:
@@ -2093,7 +2131,8 @@ def _run_create_project(args: argparse) -> int:
                           args.no_register,
                           args.system_component_class_id,
                           args.editor_system_component_class_id,
-                          args.module_id)
+                          args.module_id,
+                          args.project_id)
 
 
 def _run_create_gem(args: argparse) -> int:
@@ -2127,8 +2166,13 @@ def add_args(subparsers) -> None:
     call add_args and execute: python o3de.py create-gem --gem-path TestGem
     :param subparsers: the caller instantiates subparsers and passes it in here
     """
+
     # turn a directory into a template
     create_template_subparser = subparsers.add_parser('create-template')
+
+    # Sub-commands should declare their own verbosity flag, if desired
+    utils.add_verbosity_arg(create_template_subparser)
+
     create_template_subparser.add_argument('-sp', '--source-path', type=pathlib.Path, required=True,
                                            help='The path to the source that you want to make into a template')
     create_template_subparser.add_argument('-tp', '--template-path', type=pathlib.Path, required=False,
@@ -2203,16 +2247,20 @@ def add_args(subparsers) -> None:
 
     # create from template
     create_from_template_subparser = subparsers.add_parser('create-from-template')
+
+    # Sub-commands should declare their own verbosity flag, if desired
+    utils.add_verbosity_arg(create_from_template_subparser)
+
     create_from_template_subparser.add_argument('-dp', '--destination-path', type=pathlib.Path, required=True,
                                                 help='The path to where you want the template instantiated,'
-                                                     ' can be absolute or dev root relative.'
+                                                     ' can be absolute or relative to the current working directory.'
                                                      'Ex. C:/o3de/Test'
                                                      'Test = <destination_name>')
 
     group = create_from_template_subparser.add_mutually_exclusive_group(required=True)
     group.add_argument('-tp', '--template-path', type=pathlib.Path, required=False,
                        help='The path to the template you want to instantiate, can be absolute'
-                            ' or dev root/Templates relative.'
+                            ' or relative to the current working directory.'
                             'Ex. C:/o3de/Template/TestTemplate'
                             'TestTemplate = <template_name>')
     group.add_argument('-tn', '--template-name', type=str, required=False,
@@ -2286,9 +2334,13 @@ def add_args(subparsers) -> None:
 
     # creation of a project from a template (like create from template but makes project assumptions)
     create_project_subparser = subparsers.add_parser('create-project')
+
+    # Sub-commands should declare their own verbosity flag, if desired
+    utils.add_verbosity_arg(create_project_subparser)
+
     create_project_subparser.add_argument('-pp', '--project-path', type=pathlib.Path, required=True,
                                           help='The location of the project you wish to create from the template,'
-                                               ' can be an absolute path or dev root relative.'
+                                               ' can be an absolute path or relative to the current working directory.'
                                                ' Ex. C:/o3de/TestProject'
                                                ' TestProject = <project_name> if --project-name not provided')
     create_project_subparser.add_argument('-pn', '--project-name', type=str, required=False,
@@ -2300,7 +2352,7 @@ def add_args(subparsers) -> None:
     group = create_project_subparser.add_mutually_exclusive_group(required=False)
     group.add_argument('-tp', '--template-path', type=pathlib.Path, required=False,
                        default=None,
-                       help='the path to the template you want to instance, can be absolute or'
+                       help='The path to the template you want to instance, can be absolute or'
                             ' relative to default templates path')
     group.add_argument('-tn', '--template-name', type=str, required=False,
                        default=None,
@@ -2310,8 +2362,8 @@ def add_args(subparsers) -> None:
     group = create_project_subparser.add_mutually_exclusive_group(required=False)
     group.add_argument('-prp', '--project-restricted-path', type=pathlib.Path, required=False,
                        default=None,
-                       help='path to the projects restricted folder, can be absolute or relative'
-                            ' to the restricted="projects"')
+                       help='The path to the projects restricted folder, can be absolute or relative to'
+                            ' the default restricted projects directory')
     group.add_argument('-prn', '--project-restricted-name', type=str, required=False,
                        default=None,
                        help='The name of the registered projects restricted path. If supplied this will resolve'
@@ -2321,7 +2373,7 @@ def add_args(subparsers) -> None:
     group.add_argument('-trp', '--template-restricted-path', type=pathlib.Path, required=False,
                        default=None,
                        help='The templates restricted path can be absolute or relative to'
-                            ' restricted="templates"')
+                            ' the default restricted templates directory')
     group.add_argument('-trn', '--template-restricted-name', type=str, required=False,
                        default=None,
                        help='The name of the registered templates restricted path. If supplied this will resolve'
@@ -2374,6 +2426,9 @@ def add_args(subparsers) -> None:
     create_project_subparser.add_argument('--module-id', type=uuid.UUID, required=False,
                                           help='The uuid you want to associate with the module, default is a random'
                                                ' uuid Ex. {b60c92eb-3139-454b-a917-a9d3c5819594}')
+    create_project_subparser.add_argument('--project-id', type=str, required=False,
+                                          help='The str id you want to associate with the project, default is a random uuid'
+                                               ' Ex. {b60c92eb-3139-454b-a917-a9d3c5819594}')
     create_project_subparser.add_argument('-f', '--force', action='store_true', default=False,
                                       help='Copies over instantiated template directory even if it exist.')
     create_project_subparser.add_argument('--no-register', action='store_true', default=False,
@@ -2383,8 +2438,12 @@ def add_args(subparsers) -> None:
 
     # creation of a gem from a template (like create from template but makes gem assumptions)
     create_gem_subparser = subparsers.add_parser('create-gem')
+
+    # Sub-commands should declare their own verbosity flag, if desired
+    utils.add_verbosity_arg(create_gem_subparser)
+
     create_gem_subparser.add_argument('-gp', '--gem-path', type=pathlib.Path, required=True,
-                                      help='The gem path, can be absolute or relative to default gems path')
+                                      help='The gem path, can be absolute or relative to the current working directory')
     create_gem_subparser.add_argument('-gn', '--gem-name', type=str,
                                           help='The name to use when substituting the ${Name} placeholder for the gem,'
                                                ' must be alphanumeric, '
@@ -2405,19 +2464,18 @@ def add_args(subparsers) -> None:
     group = create_gem_subparser.add_mutually_exclusive_group(required=False)
     group.add_argument('-grp', '--gem-restricted-path', type=pathlib.Path, required=False,
                        default=None,
-                       help='The path to the gem restricted to write to folder if any, can be'
-                            'absolute or dev root relative, default is dev root/restricted.')
+                       help='The gem restricted path, can be absolute or relative to'
+                            ' the default restricted gems directory')
     group.add_argument('-grn', '--gem-restricted-name', type=str, required=False,
                        default=None,
-                       help='The path to the gem restricted to write to folder if any, can be'
-                            'absolute or dev root relative, default is dev root/restricted. If supplied'
-                            ' this will resolve the --gem-restricted-path.')
+                       help='The name of the gem to look up the gem restricted path if any.'
+                            'If supplied this will resolve the --gem-restricted-path.')
 
     group = create_gem_subparser.add_mutually_exclusive_group(required=False)
     group.add_argument('-trp', '--template-restricted-path', type=pathlib.Path, required=False,
                        default=None,
                        help='The templates restricted path, can be absolute or relative to'
-                            ' the restricted="templates"')
+                            ' the default restricted templates directory')
     group.add_argument('-trn', '--template-restricted-name', type=str, required=False,
                        default=None,
                        help='The name of the registered templates restricted path. If supplied'
@@ -2483,16 +2541,18 @@ if __name__ == "__main__":
     the_parser = argparse.ArgumentParser()
 
     # add subparsers
-    the_subparsers = the_parser.add_subparsers(help='sub-command help', dest='command', required=True)
+    subparsers = the_parser.add_subparsers(help='To get help on a sub-command:\nengine_template.py <sub-command> -h',
+                                           title='Sub-Commands', dest='command', required=True)
 
-    # add args to the parser
-    add_args(the_subparsers)
+    # add args to the parsers
+    add_args(subparsers)
 
     # parse args
     the_args = the_parser.parse_args()
 
     # run
     ret = the_args.func(the_args) if hasattr(the_args, 'func') else 1
+    logger.info('Success!' if ret == 0 else 'Completed with issues: result {}'.format(ret))
 
     # return
     sys.exit(ret)

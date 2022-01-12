@@ -35,7 +35,6 @@ namespace AZStd
 
             destroy_thread_info(ti);
             ThreadEventBus::Broadcast(&ThreadEventBus::Events::OnThreadExit, this_thread::get_id());
-            ThreadDrillerEventBus::Broadcast(&ThreadDrillerEventBus::Events::OnThreadExit, this_thread::get_id());
             pthread_exit(nullptr);
             return nullptr;
         }
@@ -58,6 +57,10 @@ namespace AZStd
                 if (desc->m_priority >= sched_get_priority_min(SCHED_FIFO) && desc->m_priority <= sched_get_priority_max(SCHED_FIFO))
                 {
                     priority = desc->m_priority;
+                }
+                else
+                {
+                    priority = SCHED_OTHER;
                 }
                 if (desc->m_name)
                 {
@@ -84,7 +87,6 @@ namespace AZStd
             Platform::PostCreateThread(tId, name, cpuId);
 
             ThreadEventBus::Broadcast(&ThreadEventBus::Events::OnThreadEnter, thread::id(tId), desc);
-            ThreadDrillerEventBus::Broadcast(&ThreadDrillerEventBus::Events::OnThreadEnter, thread::id(tId), desc);
             return tId;
         }
     }

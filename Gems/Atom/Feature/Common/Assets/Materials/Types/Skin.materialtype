@@ -1,7 +1,7 @@
 {
     "description": "Material Type tailored for rendering skin, with support for blended wrinkle maps that work with animated vertex blend shapes.",
+    "version": 3,
     "propertyLayout": {
-        "version": 3,
         "groups": [
             {
                 "name": "baseColor",
@@ -973,15 +973,15 @@
             "tag": "ForwardPass"
         },
         {
-            "file": "Shaders/Shadow/Shadowmap.shader",
+            "file": "Shaders/Shadow/ShadowmapSkin.shader",
             "tag": "Shadowmap"
         },
         {
-            "file": "Shaders/Depth/DepthPass.shader",
+            "file": "Shaders/Depth/DepthPassSkin.shader",
             "tag": "DepthPass"
         },
         {
-            "file": "Shaders/MotionVector/MeshMotionVector.shader",
+            "file": "Shaders/MotionVector/MeshMotionVectorSkin.shader",
             "tag": "MeshMotionVector"
         }
     ],
@@ -1082,6 +1082,12 @@
             "type": "Lua",
             "args": {
                 "file": "Skin_WrinkleMaps.lua"
+            }
+        },
+        {
+            "type": "Lua",
+            "args": {
+                "file": "Skin_SpecularF0.lua"
             }
         },
         {

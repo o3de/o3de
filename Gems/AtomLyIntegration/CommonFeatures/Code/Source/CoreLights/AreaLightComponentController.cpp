@@ -70,12 +70,12 @@ namespace AZ::Render
                 ->Event("SetEnableShadow", &AreaLightRequestBus::Events::SetEnableShadow)
                 ->Event("GetShadowBias", &AreaLightRequestBus::Events::GetShadowBias)
                 ->Event("SetShadowBias", &AreaLightRequestBus::Events::SetShadowBias)
+                ->Event("GetNormalShadowBias", &AreaLightRequestBus::Events::GetNormalShadowBias)
+                ->Event("SetNormalShadowBias", &AreaLightRequestBus::Events::SetNormalShadowBias)
                 ->Event("GetShadowmapMaxSize", &AreaLightRequestBus::Events::GetShadowmapMaxSize)
                 ->Event("SetShadowmapMaxSize", &AreaLightRequestBus::Events::SetShadowmapMaxSize)
                 ->Event("GetShadowFilterMethod", &AreaLightRequestBus::Events::GetShadowFilterMethod)
                 ->Event("SetShadowFilterMethod", &AreaLightRequestBus::Events::SetShadowFilterMethod)
-                ->Event("GetSofteningBoundaryWidthAngle", &AreaLightRequestBus::Events::GetSofteningBoundaryWidthAngle)
-                ->Event("SetSofteningBoundaryWidthAngle", &AreaLightRequestBus::Events::SetSofteningBoundaryWidthAngle)
                 ->Event("GetFilteringSampleCount", &AreaLightRequestBus::Events::GetFilteringSampleCount)
                 ->Event("SetFilteringSampleCount", &AreaLightRequestBus::Events::SetFilteringSampleCount)
                 ->Event("GetEsmExponent", &AreaLightRequestBus::Events::GetEsmExponent)
@@ -93,9 +93,9 @@ namespace AZ::Render
 
                 ->VirtualProperty("ShadowsEnabled", "GetEnableShadow", "SetEnableShadow")
                 ->VirtualProperty("ShadowBias", "GetShadowBias", "SetShadowBias")
+                ->VirtualProperty("NormalShadowBias", "GetNormalShadowBias", "SetNormalShadowBias")
                 ->VirtualProperty("ShadowmapMaxSize", "GetShadowmapMaxSize", "SetShadowmapMaxSize")
                 ->VirtualProperty("ShadowFilterMethod", "GetShadowFilterMethod", "SetShadowFilterMethod")
-                ->VirtualProperty("SofteningBoundaryWidthAngle", "GetSofteningBoundaryWidthAngle", "SetSofteningBoundaryWidthAngle")
                 ->VirtualProperty("FilteringSampleCount", "GetFilteringSampleCount", "SetFilteringSampleCount")
                 ->VirtualProperty("EsmExponent", "GetEsmExponent", "SetEsmExponent");
             ;
@@ -261,6 +261,11 @@ namespace AZ::Render
             m_lightShapeDelegate->SetPhotometricUnit(m_configuration.m_intensityMode);
             m_lightShapeDelegate->SetIntensity(m_configuration.m_intensity);
         }
+
+        if (m_configuration.m_attenuationRadiusMode == LightAttenuationRadiusMode::Automatic)
+        {
+            AttenuationRadiusChanged();
+        }
     }
 
     void AreaLightComponentController::ChromaChanged()
@@ -305,9 +310,9 @@ namespace AZ::Render
             if (m_configuration.m_enableShadow)
             {
                 m_lightShapeDelegate->SetShadowBias(m_configuration.m_bias);
+                m_lightShapeDelegate->SetNormalShadowBias(m_configuration.m_normalShadowBias);
                 m_lightShapeDelegate->SetShadowmapMaxSize(m_configuration.m_shadowmapMaxSize);
                 m_lightShapeDelegate->SetShadowFilterMethod(m_configuration.m_shadowFilterMethod);
-                m_lightShapeDelegate->SetSofteningBoundaryWidthAngle(m_configuration.m_boundaryWidthInDegrees);
                 m_lightShapeDelegate->SetFilteringSampleCount(m_configuration.m_filteringSampleCount);
                 m_lightShapeDelegate->SetEsmExponent(m_configuration.m_esmExponent);
             }
@@ -478,6 +483,20 @@ namespace AZ::Render
         }
     }
 
+    void AreaLightComponentController::SetNormalShadowBias(float bias)
+    {
+        m_configuration.m_normalShadowBias = bias;
+        if (m_lightShapeDelegate)
+        {
+            m_lightShapeDelegate->SetNormalShadowBias(bias);
+        }
+    }
+
+    float AreaLightComponentController::GetNormalShadowBias() const
+    {
+        return m_configuration.m_normalShadowBias;
+    }
+
     ShadowmapSize AreaLightComponentController::GetShadowmapMaxSize() const
     {
         return m_configuration.m_shadowmapMaxSize;
@@ -503,20 +522,6 @@ namespace AZ::Render
         if (m_lightShapeDelegate)
         {
             m_lightShapeDelegate->SetShadowFilterMethod(method);
-        }
-    }
-
-    float AreaLightComponentController::GetSofteningBoundaryWidthAngle() const
-    {
-        return m_configuration.m_boundaryWidthInDegrees;
-    }
-
-    void AreaLightComponentController::SetSofteningBoundaryWidthAngle(float width)
-    {
-        m_configuration.m_boundaryWidthInDegrees = width;
-        if (m_lightShapeDelegate)
-        {
-            m_lightShapeDelegate->SetSofteningBoundaryWidthAngle(width);
         }
     }
 

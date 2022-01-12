@@ -127,9 +127,9 @@ namespace AZ
             static void Reflect(AZ::ReflectContext* context);
 
             ImageSubresourceLayoutPlaced() = default;
-            ImageSubresourceLayoutPlaced(const ImageSubresourceLayout& subresourceLayout, size_t offset);
+            ImageSubresourceLayoutPlaced(const ImageSubresourceLayout& subresourceLayout, uint32_t offset);
 
-            size_t m_offset = 0;
+            uint32_t m_offset = 0;
         };
 
         /**

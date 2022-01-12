@@ -50,7 +50,7 @@ private:
     QScopedPointer<Ui::StartupLogoDialog>   m_ui;
 
     QPixmap                                 m_backgroundImage;
-    const int                               m_enforcedWidth = 600;
-    const int                               m_enforcedHeight = 300;
+    const int                               m_enforcedWidth = 668;
+    const int                               m_enforcedHeight = 368;
 };
 

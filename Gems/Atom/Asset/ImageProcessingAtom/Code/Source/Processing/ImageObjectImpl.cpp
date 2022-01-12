@@ -183,10 +183,9 @@ namespace ImageProcessingAtom
             return EAlphaContent::eAlphaContent_Absent;
         }
 
-        //if it's compressed format, return indeterminate. if user really want to know the content, they may convert the format to ARGB8 first
         if (!CPixelFormats::GetInstance().IsPixelFormatUncompressed(m_pixelFormat))
         {
-            AZ_Assert(false, "the function only works right with uncompressed formats. convert to uncompressed format if you get accurate result");
+            AZ_TracePrintf("Image processing", "GetAlphaContent() was called for compressed format\n");
             return EAlphaContent::eAlphaContent_Indeterminate;
         }
 
@@ -314,130 +313,6 @@ namespace ImageProcessingAtom
             delete m_mips[i];
         }
         m_mips.clear();
-    }
-
-    //note: there are some unreasonable parts of the save files formats for cry textures. We might need to rethink about
-    // it for new renderer
-    bool CImageObject::SaveImage(const char* filename, IImageObjectPtr alphaImage, AZStd::vector<AZStd::string>& outFilePaths) const
-    {
-        AZ::IO::SystemFile file;
-        file.Open(filename, AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY);
-
-        AZ::IO::SystemFileStream fileSaveStream(&file, true);
-        if (!fileSaveStream.IsOpen())
-        {
-            AZ_Warning("Image Processing", false, "%s: failed to create file %s", __FUNCTION__, filename);
-            return false;
-        }
-
-        if (alphaImage)
-        {
-            AZ_Assert(HasImageFlags(EIF_AttachedAlpha), "attached alpha image flag wasn't set");
-            AZ_Assert(!alphaImage->HasImageFlags(EIF_AttachedAlpha), "alpha image shouldn't have attached alpha image flag");
-
-            // inherit cubemap and decal image flags to attached alpha image
-            alphaImage->AddImageFlags(GetImageFlags() & (EIF_Cubemap
-                                                         | EIF_Decal | EIF_Splitted));
-            alphaImage->SetNumPersistentMips(m_numPersistentMips);
-        }
-
-        bool bOk = SaveImage(fileSaveStream);
-        bool hasSplitFlag = HasImageFlags(EIF_Splitted);
-
-        //append alpha image data in the end if there is no split
-        if (bOk && alphaImage && !hasSplitFlag)
-        {
-            //4 bytes extension tag, 4 bytes attached alpha tag, then 4 bytes of chunk size
-            fileSaveStream.Write(sizeof(FOURCC_CExt), &FOURCC_CExt); // marker for the start of O3DE Extended data
-            fileSaveStream.Write(sizeof(FOURCC_AttC), &FOURCC_AttC); // Attached Channel chunk
-
-            uint32_t size = 0;
-            uint32_t sizeBytes = sizeof(size);
-            fileSaveStream.Write(sizeBytes, &size); //size of attached chunk
-
-            //save alpha image and get the size
-            AZ::IO::SizeType startPos = fileSaveStream.GetCurPos();
-            bOk = alphaImage->SaveImage(fileSaveStream);
-            AZ::IO::SizeType endPos = fileSaveStream.GetCurPos();
-            size = static_cast<uint32_t>(endPos - startPos);
-
-            //move back to beginning of chunk and write chunk size then move back to end
-            fileSaveStream.Seek(startPos - sizeBytes, AZ::IO::GenericStream::ST_SEEK_BEGIN);
-            fileSaveStream.Write(sizeBytes, &size);
-            fileSaveStream.Seek(endPos, AZ::IO::GenericStream::ST_SEEK_BEGIN);
-
-            // marker for the end of O3DE Extended data
-            fileSaveStream.Write(sizeof(FOURCC_CEnd), &FOURCC_CEnd);
-        }
-
-        if (!bOk)
-        {
-            AZ::IO::SystemFile::Delete(filename);
-            return false;
-        }
-
-        // It's important to maintain the product output sequence. Asset Database/Browser will use the first product to determine the source type!
-        outFilePaths.push_back(filename);
-
-        // save stand alone products
-        if (hasSplitFlag)
-        {
-            // alpha
-            if (alphaImage)
-            {
-                AZStd::string alphaFile = AZStd::string::format("%s.a", filename);
-
-                AZ::IO::SystemFile outAlphaFile;
-                outAlphaFile.Open(alphaFile.c_str(), AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY);
-
-                AZ::IO::SystemFileStream alphaFileSaveStream(&outAlphaFile, true);
-
-                if (alphaFileSaveStream.IsOpen())
-                {
-                    alphaImage->SaveImage(alphaFileSaveStream);
-                    outFilePaths.push_back(alphaFile);
-                }
-                else
-                {
-                    AZ_Warning("Image Processing", false, "%s: failed to create file %s", __FUNCTION__, alphaFile.c_str());
-                }
-            }
-
-            // mips
-            AZ::u32 numStreamable = GetMipCount() - m_numPersistentMips;
-            for (AZ::u32 mip = 0; mip < numStreamable; mip++)
-            {
-                AZ::u32 nameIdx = numStreamable - mip;
-                AZStd::string mipFileName = AZStd::string::format("%s.%d", filename, nameIdx);
-                SaveMipToFile(mip, mipFileName);
-                outFilePaths.push_back(mipFileName);
-                if (alphaImage)
-                {
-                    AZStd::string mipAlphaFileName = mipFileName + "a";
-                    alphaImage->SaveMipToFile(mip, mipAlphaFileName);
-                    outFilePaths.push_back(mipAlphaFileName);
-                }
-            }
-        }
-
-        return bOk;
-    }
-
-    bool CImageObject::SaveMipToFile(AZ::u32 mip, const AZStd::string& filename) const
-    {
-        AZ::IO::SystemFile saveFile;
-        saveFile.Open(filename.c_str(), AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY);
-
-        AZ::IO::SystemFileStream saveFileStream(&saveFile, true);
-
-        if (!saveFileStream.IsOpen())
-        {
-            AZ_Warning("Image Processing", false, "%s: failed to create file %s", __FUNCTION__, filename.c_str());
-            return false;
-        }
-
-        saveFileStream.Write(GetMipBufSize(mip), m_mips[mip]->m_pData);
-        return true;
     }
 
     float CImageObject::CalculateAverageBrightness() const
@@ -639,63 +514,6 @@ namespace ImageProcessingAtom
             exthead.arraySize = 1;
         }
 
-        return true;
-    }
-
-    bool CImageObject::SaveImage(AZ::IO::SystemFileStream& saveFileStream) const
-    {
-        DDS_FILE_DESC_LEGACY desc;
-        DDS_HEADER_DXT10 exthead;
-
-        desc.dwMagic = FOURCC_DDS;
-
-        if (!BuildSurfaceHeader(desc.header))
-        {
-            return false;
-        }
-
-        if (desc.header.IsDX10Ext() && !BuildSurfaceExtendedHeader(exthead))
-        {
-            return false;
-        }
-
-        saveFileStream.Write(sizeof(desc), &desc);
-
-        if (desc.header.IsDX10Ext())
-        {
-            saveFileStream.Write(sizeof(exthead), &exthead);
-        }
-
-        AZ::u32 faces = 1;
-
-        //for cubemap. export each face and its mipmap
-        if (HasImageFlags(EIF_Cubemap))
-        {
-            faces = 6;
-        }
-
-        AZ::u32 mipStart = 0;
-        if (HasImageFlags(EIF_Splitted))
-        {
-            if (m_numPersistentMips < m_mips.size())
-            {
-                mipStart = (AZ::u32)m_mips.size() - m_numPersistentMips;
-            }
-            else
-            {
-                AZ_Assert(false, "numPersistentMips wasn't setup correctly");
-            }
-        }
-
-        for (AZ::u32 face = 0; face < faces; face++)
-        {
-            for (AZ::u32 mip = mipStart; mip < m_mips.size(); ++mip)
-            {
-                const MipLevel& level = *m_mips[mip];
-                AZ::u32 faceBufSize = level.m_pitch * level.m_rowCount / faces;
-                saveFileStream.Write(faceBufSize, level.m_pData + faceBufSize * face);
-            }
-        }
         return true;
     }
 
@@ -950,37 +768,6 @@ namespace ImageProcessingAtom
                 }
 
                 pixelOp->SetRGBA(pixelBuf, color[0], color[1], color[2], finalSmoothness);
-            }
-        }
-    }
-
-    void CImageObject::ConvertLegacyGloss()
-    {
-        if (!(CPixelFormats::GetInstance().IsPixelFormatUncompressed(m_pixelFormat)))
-        {
-            AZ_Assert(false, "%s function only works with uncompressed pixel format", __FUNCTION__);
-            return;
-        }
-
-        //create pixel operation function
-        IPixelOperationPtr pixelOp = CreatePixelOperation(m_pixelFormat);
-
-        //get count of bytes per pixel
-        AZ::u32 pixelBytes = CPixelFormats::GetInstance().GetPixelFormatInfo(m_pixelFormat)->bitsPerBlock / 8;
-
-        const AZ::u32 mips = (AZ::u32)m_mips.size();
-        float color[4];
-        for (AZ::u32 mip = 0; mip < mips; ++mip)
-        {
-            AZ::u8* pixelBuf = m_mips[mip]->m_pData;
-            const AZ::u32 pixelCount = GetPixelCount(mip);
-
-            for (AZ::u32 i = 0; i < pixelCount; ++i, pixelBuf += pixelBytes)
-            {
-                pixelOp->GetRGBA(pixelBuf, color[0], color[1], color[2], color[3]);
-                // Convert from (1 - s * 0.7)^6 to (1 - s)^2
-                color[3] = 1 - pow(1.0f - color[3] * 0.7f, 3.0f);
-                pixelOp->SetRGBA(pixelBuf, color[0], color[1], color[2], color[3]);
             }
         }
     }

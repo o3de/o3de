@@ -43,16 +43,14 @@ namespace AZ
             RHI::Size m_size;
         };
 
-        static const char* DiffuseProbeGridIrradianceFileName = "Irradiance_lutrgba16.dds";
+        static const char* DiffuseProbeGridIrradianceFileName = "Irradiance_lutrgba16f.dds";
         static const char* DiffuseProbeGridDistanceFileName = "Distance_lutrg32f.dds";
-        static const char* DiffuseProbeGridRelocationFileName = "Relocation_lutrgba16f.dds";
-        static const char* DiffuseProbeGridClassificationFileName = "Classification_lutr32f.dds";
+        static const char* DiffuseProbeGridProbeDataFileName = "ProbeData_lutrgba16f.dds";
 
         using DiffuseProbeGridBakeTexturesCallback = AZStd::function<void(
             DiffuseProbeGridTexture irradianceTexture,
             DiffuseProbeGridTexture distanceTexture,
-            DiffuseProbeGridTexture relocationTexture,
-            DiffuseProbeGridTexture classificationTexture)>;
+            DiffuseProbeGridTexture probeDataTexture)>;
 
         struct DiffuseProbeGridBakedTextures
         {
@@ -63,14 +61,8 @@ namespace AZ
             Data::Instance<RPI::Image> m_distanceImage;
             AZStd::string m_distanceImageRelativePath;
 
-            // relocation and classification images need to be recreated as RW textures
-            RHI::ImageDescriptor m_relocationImageDescriptor;
-            AZStd::array_view<uint8_t> m_relocationImageData;
-            AZStd::string m_relocationImageRelativePath;
-
-            RHI::ImageDescriptor m_classificationImageDescriptor;
-            AZStd::array_view<uint8_t> m_classificationImageData;
-            AZStd::string m_classificationImageRelativePath;
+            Data::Instance<RPI::Image> m_probeDataImage;
+            AZStd::string m_probeDataImageRelativePath;
         };
 
         // DiffuseProbeGridFeatureProcessorInterface provides an interface to the feature processor for code outside of Atom
@@ -102,8 +94,7 @@ namespace AZ
                 DiffuseProbeGridBakeTexturesCallback callback,
                 const AZStd::string& irradianceTextureRelativePath,
                 const AZStd::string& distanceTextureRelativePath,
-                const AZStd::string& relocationTextureRelativePath,
-                const AZStd::string& classificationTextureRelativePath) = 0;
+                const AZStd::string& probeDataTextureRelativePath) = 0;
 
             // check for and retrieve a new baked texture asset (does not apply to hot-reloaded assets, only initial bakes)
             virtual bool CheckTextureAssetNotification(
@@ -114,8 +105,7 @@ namespace AZ
             virtual bool AreBakedTexturesReferenced(
                 const AZStd::string& irradianceTextureRelativePath,
                 const AZStd::string& distanceTextureRelativePath,
-                const AZStd::string& relocationTextureRelativePath,
-                const AZStd::string& classificationTextureRelativePath) = 0;
+                const AZStd::string& probeDataTextureRelativePath) = 0;
 
         };
     } // namespace Render

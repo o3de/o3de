@@ -19,6 +19,7 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Time/ITime.h>
 #include <AzCore/Utils/Utils.h>
 #include <MathConversion.h>
 
@@ -50,7 +51,6 @@
 #include "GameExporter.h"
 #include "MainWindow.h"
 #include "LevelFileDialog.h"
-#include "StatObjBus.h"
 #include "Undo/Undo.h"
 
 #include <Atom/RPI.Public/ViewportContext.h>
@@ -59,15 +59,6 @@
 // LmbrCentral
 #include <LmbrCentral/Audio/AudioSystemComponentBus.h>
 #include <LmbrCentral/Rendering/EditorLightComponentBus.h> // for LmbrCentral::EditorLightComponentRequestBus
-
-//#define PROFILE_LOADING_WITH_VTUNE
-
-// profilers api.
-//#include "pure.h"
-#ifdef PROFILE_LOADING_WITH_VTUNE
-#include "C:\Program Files\Intel\Vtune\Analyzer\Include\VTuneApi.h"
-#pragma comment(lib,"C:\\Program Files\\Intel\\Vtune\\Analyzer\\Lib\\VTuneApi.lib")
-#endif
 
 static const char* kAutoBackupFolder = "_autobackup";
 static const char* kHoldFolder = "$tmp_hold"; // conform to the ignored file types $tmp[0-9]*_ regex
@@ -254,9 +245,6 @@ void CCryEditDoc::DeleteContents()
 
     EBUS_EVENT(AzToolsFramework::EditorEntityContextRequestBus, ResetEditorContext);
 
-    // [LY-90904] move this to the EditorVegetationManager component
-    InstanceStatObjEventBus::Broadcast(&InstanceStatObjEventBus::Events::ReleaseData);
-
     //////////////////////////////////////////////////////////////////////////
     // Clear all undo info.
     //////////////////////////////////////////////////////////////////////////
@@ -316,8 +304,6 @@ void CCryEditDoc::Save(TDocMultiArchive& arrXmlAr)
 
             // Fog settings  ///////////////////////////////////////////////////////
             SerializeFogSettings((*arrXmlAr[DMAS_GENERAL]));
-
-            SerializeNameSelection((*arrXmlAr[DMAS_GENERAL]));
         }
     }
     AfterSave();
@@ -408,9 +394,6 @@ void CCryEditDoc::Load(TDocMultiArchive& arrXmlAr, const QString& szFilename)
 
         int t0 = GetTickCount();
 
-#ifdef PROFILE_LOADING_WITH_VTUNE
-        VTResume();
-#endif
         // Load level-specific audio data.
         AZStd::string levelFileName{ fileName.toUtf8().constData() };
         AZStd::to_lower(levelFileName.begin(), levelFileName.end());
@@ -466,12 +449,6 @@ void CCryEditDoc::Load(TDocMultiArchive& arrXmlAr, const QString& szFilename)
             }
         }
 
-        if (!isPrefabEnabled)
-        {
-            // Name Selection groups
-            SerializeNameSelection((*arrXmlAr[DMAS_GENERAL]));
-        }
-
         {
             CAutoLogTime logtime("Post Load");
 
@@ -483,10 +460,6 @@ void CCryEditDoc::Load(TDocMultiArchive& arrXmlAr, const QString& szFilename)
         }
 
         CSurfaceTypeValidator().Validate();
-
-#ifdef PROFILE_LOADING_WITH_VTUNE
-        VTPause();
-#endif
 
         LogLoadTime(GetTickCount() - t0);
         // Loaded with success, remove event from log file
@@ -607,16 +580,6 @@ void CCryEditDoc::SerializeFogSettings(CXmlArchive& xmlAr)
         {
             CXmlTemplate::SetValues(m_fogTemplate, fog);
         }
-    }
-}
-
-void CCryEditDoc::SerializeNameSelection(CXmlArchive& xmlAr)
-{
-    IObjectManager* pObjManager = GetIEditor()->GetObjectManager();
-
-    if (pObjManager)
-    {
-        pObjManager->SerializeNameSelection(xmlAr.root, xmlAr.bLoading);
     }
 }
 
@@ -765,7 +728,9 @@ bool CCryEditDoc::OnOpenDocument(const QString& lpszPathName)
 
 bool CCryEditDoc::BeforeOpenDocument(const QString& lpszPathName, TOpenDocContext& context)
 {
-    CTimeValue loading_start_time = gEnv->pTimer->GetAsyncTime();
+    const AZ::TimeMs timeMs = AZ::GetRealElapsedTimeMs();
+    const double timeSec = AZ::TimeMsToSecondsDouble(timeMs);
+    const CTimeValue loading_start_time(timeSec);
 
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
@@ -806,7 +771,7 @@ bool CCryEditDoc::BeforeOpenDocument(const QString& lpszPathName, TOpenDocContex
 
 bool CCryEditDoc::DoOpenDocument(TOpenDocContext& context)
 {
-    CTimeValue& loading_start_time = context.loading_start_time;
+    const CTimeValue& loading_start_time = context.loading_start_time;
 
     bool isPrefabEnabled = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
@@ -876,7 +841,9 @@ bool CCryEditDoc::DoOpenDocument(TOpenDocContext& context)
 
     StartStreamingLoad();
 
-    CTimeValue loading_end_time = gEnv->pTimer->GetAsyncTime();
+    const AZ::TimeMs timeMs = AZ::GetRealElapsedTimeMs();
+    const double timeSec = AZ::TimeMsToSecondsDouble(timeMs);
+    const CTimeValue loading_end_time(timeSec);
 
     CLogFile::FormatLine("-----------------------------------------------------------");
     CLogFile::FormatLine("Successfully opened document %s", context.absoluteLevelPath.toUtf8().data());
@@ -1108,7 +1075,7 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
     if (QFileInfo(filename).isRelative())
     {
         // Resolving the path through resolvepath would normalize and lowcase it, and in this case, we don't want that.
-        fullPathName = Path::ToUnixPath(QDir(QString::fromUtf8(gEnv->pFileIO->GetAlias("@devassets@"))).absoluteFilePath(fullPathName));
+        fullPathName = Path::ToUnixPath(QDir(QString::fromUtf8(gEnv->pFileIO->GetAlias("@projectroot@"))).absoluteFilePath(fullPathName));
     }
 
     if (!CFileUtil::OverwriteFile(fullPathName))
@@ -1139,7 +1106,7 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
         const QString oldLevelPattern = QDir(oldLevelFolder).absoluteFilePath("*.*");
         const QString oldLevelName = Path::GetFile(GetLevelPathName());
         const QString oldLevelXml = Path::ReplaceExtension(oldLevelName, "xml");
-        AZ::IO::ArchiveFileIterator findHandle = pIPak->FindFirst(oldLevelPattern.toUtf8().data(), AZ::IO::IArchive::eFileSearchType_AllowOnDiskAndInZips);
+        AZ::IO::ArchiveFileIterator findHandle = pIPak->FindFirst(oldLevelPattern.toUtf8().data(), AZ::IO::FileSearchLocation::Any);
         if (findHandle)
         {
             do
@@ -1273,7 +1240,7 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
         if (savedEntities)
         {
             AZ_PROFILE_SCOPE(AzToolsFramework, "CCryEditDoc::SaveLevel Updated PakFile levelEntities.editor_xml");
-            pakFile.UpdateFile("LevelEntities.editor_xml", entitySaveBuffer.begin(), static_cast<int>(entitySaveBuffer.size()));
+            pakFile.UpdateFile("levelentities.editor_xml", entitySaveBuffer.begin(), static_cast<int>(entitySaveBuffer.size()));
 
             // Save XML archive to pak file.
             bool bSaved = xmlAr.SaveToPak(Path::GetPath(tempSaveFile), pakFile);
@@ -1501,7 +1468,7 @@ bool CCryEditDoc::LoadEntitiesFromLevel(const QString& levelPakFile)
         bool pakOpened = pakSystem->OpenPack(levelPakFile.toUtf8().data());
         if (pakOpened)
         {
-            const QString entityFilename = Path::GetPath(levelPakFile) + "LevelEntities.editor_xml";
+            const QString entityFilename = Path::GetPath(levelPakFile) + "levelentities.editor_xml";
 
             CCryFile entitiesFile;
             if (entitiesFile.Open(entityFilename.toUtf8().data(), "rt"))
@@ -2159,7 +2126,7 @@ bool CCryEditDoc::LoadXmlArchiveArray(TDocMultiArchive& arrXmlAr, const QString&
         xmlAr.bLoading = true;
 
         // bound to the level folder, as if it were the assets folder.
-        // this mounts (whateverlevelname.ly) as @assets@/Levels/whateverlevelname/ and thus it works...
+        // this mounts (whateverlevelname.ly) as @products@/Levels/whateverlevelname/ and thus it works...
         bool openLevelPakFileSuccess = pIPak->OpenPack(levelPath.toUtf8().data(), absoluteLevelPath.toUtf8().data());
         if (!openLevelPakFileSuccess)
         {

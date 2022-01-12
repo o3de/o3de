@@ -1,6 +1,12 @@
 {
     "Source" : "./TerrainPBR_ForwardPass.azsl",
 
+    "CompilerHints" :
+    { 
+        "DisableOptimizations" : false,
+        "GenerateDebugInfo" : false
+    },
+
     "DepthStencilState" :
     {
         "Depth" :
@@ -38,5 +44,6 @@
       ]
     },
 
-    "DrawList" : "forward"
+    "DrawList" : "forward",
+    "DisabledRHIBackends": ["metal"]
 }

@@ -34,6 +34,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzFramework/Asset/AssetSystemComponent.h>
 #include <ToolsComponents/ToolsAssetCatalogComponent.h>
+#include <AssetBuilderStatic.h>
 
 // Command-line parameter options:
 static const char* const s_paramHelp = "help"; // Print help information.
@@ -51,10 +52,10 @@ static const char* const s_paramDebugCreate = "debug_create"; // Debug mode for 
 static const char* const s_paramDebugProcess = "debug_process"; // Debug mode for the process job of the specified file.
 static const char* const s_paramPlatformTags = "tags"; // Additional list of tags to add platform tag list.
 static const char* const s_paramPlatform = "platform"; // Platform to use
+static const char* const s_paramRegisterBuilders = "register"; // Indicates the AP is starting up and requesting a list of registered builders
 
 // Task modes:
 static const char* const s_taskResident = "resident"; // stays up and running indefinitely, accepting jobs via network connection
-static const char* const s_taskRegisterBuilder = "register"; // outputs all the builder descriptors
 static const char* const s_taskCreateJob = "create"; // runs a builders createJobs function
 static const char* const s_taskProcessJob = "process"; // runs processJob function
 static const char* const s_taskDebug = "debug"; // runs a one shot job in a fake environment for a specified file.
@@ -204,6 +205,40 @@ void AssetBuilderComponent::Reflect(AZ::ReflectContext* context)
     }
 }
 
+bool AssetBuilderComponent::DoHelloPing()
+{
+    using namespace AssetBuilder;
+
+    BuilderHelloRequest request;
+    BuilderHelloResponse response;
+
+    AZStd::string id;
+
+    if (!GetParameter(s_paramId, id))
+    {
+        return false;
+    }
+
+    request.m_uuid = AZ::Uuid::CreateString(id.c_str());
+
+    AZ_TracePrintf(
+        "AssetBuilderComponent", "RunInResidentMode: Pinging asset processor with the builder UUID %s\n",
+        request.m_uuid.ToString<AZStd::string>().c_str());
+
+    bool result = AzFramework::AssetSystem::SendRequest(request, response);
+
+    AZ_Error("AssetBuilder", result, "Failed to send hello request to Asset Processor");
+    // This error is only shown if we successfully got a response AND the response explicitly indicates the AP rejected the builder
+    AZ_Error("AssetBuilder", !result || response.m_accepted, "Asset Processor rejected connection request");
+
+    if (result)
+    {
+        AZ_TracePrintf("AssetBuilder", "Builder ID: %s\n", response.m_uuid.ToString<AZStd::string>().c_str());
+    }
+
+    return result;
+}
+
 bool AssetBuilderComponent::Run()
 {
     AZ_TracePrintf("AssetBuilderComponent", "Run:  Parsing command line.\n");
@@ -217,8 +252,8 @@ bool AssetBuilderComponent::Run()
     }
 
     AZStd::string task;
-
     AZStd::string debugFile;
+
     if (GetParameter(s_paramDebug, debugFile, false))
     {
         task = s_taskDebug;
@@ -256,11 +291,13 @@ bool AssetBuilderComponent::Run()
     AZ_TracePrintf("AssetBuilderComponent", "Run: Connecting back to Asset Processor...\n");
     bool connectedToAssetProcessor = ConnectToAssetProcessor();
     //AP connection is required to access the asset catalog
-    AZ_Error("AssetBuilder", connectedToAssetProcessor, "Failed to establish a network connection to the AssetProcessor. Use -help for options.");;
+    AZ_Error("AssetBuilder", connectedToAssetProcessor, "Failed to establish a network connection to the AssetProcessor. Use -help for options.");
+
+    bool registerBuilders = commandLine->GetNumSwitchValues(s_paramRegisterBuilders) > 0;
 
     IBuilderApplication* builderApplication = AZ::Interface<IBuilderApplication>::Get();
 
-    if(!builderApplication)
+    if (!builderApplication)
     {
         AZ_Error("AssetBuilder", false, "Failed to retreive IBuilderApplication interface");
         return false;
@@ -274,7 +311,7 @@ bool AssetBuilderComponent::Run()
     {
         if (task == s_taskResident)
         {
-            result = RunInResidentMode();
+            result = RunInResidentMode(registerBuilders);
         }
         else if (task == s_taskDebug)
         {
@@ -370,52 +407,54 @@ bool AssetBuilderComponent::ConnectToAssetProcessor()
 
 //////////////////////////////////////////////////////////////////////////
 
-bool AssetBuilderComponent::RunInResidentMode()
+bool AssetBuilderComponent::SendRegisteredBuildersToAp()
 {
-    using namespace AssetBuilderSDK;
+    AssetBuilder::BuilderRegistrationRequest registrationRequest;
+
+    for (const auto& [uuid, desc] : m_assetBuilderDescMap)
+    {
+        AssetBuilder::BuilderRegistration registration;
+
+        registration.m_name = desc->m_name;
+        registration.m_analysisFingerprint = desc->m_analysisFingerprint;
+        registration.m_flags = desc->m_flags;
+        registration.m_flagsByJobKey = desc->m_flagsByJobKey;
+        registration.m_version = desc->m_version;
+        registration.m_busId = desc->m_busId;
+        registration.m_patterns = desc->m_patterns;
+        registration.m_productsToKeepOnFailure = desc->m_productsToKeepOnFailure;
+
+        registrationRequest.m_builders.push_back(AZStd::move(registration));
+    }
+
+    bool result = SendRequest(registrationRequest);
+
+    AZ_Error("AssetBuilder", result, "Failed to send builder registration request to Asset Processor");
+
+    return result;
+}
+
+bool AssetBuilderComponent::RunInResidentMode(bool sendRegistration)
+{
+    using namespace AssetBuilder;
     using namespace AZStd::placeholders;
 
     AZ_TracePrintf("AssetBuilderComponent", "RunInResidentMode: Starting resident mode (waiting for commands to arrive)\n");
 
-    AZStd::string port, id, builderFolder;
-
-    if (!GetParameter(s_paramId, id)
-        || !GetParameter(s_paramModule, builderFolder))
-    {
-        return false;
-    }
-
-    if (!LoadBuilders(builderFolder))
-    {
-        return false;
-    }
-
     AzFramework::SocketConnection::GetInstance()->AddMessageHandler(CreateJobsNetRequest::MessageType(), AZStd::bind(&AssetBuilderComponent::CreateJobsResidentHandler, this, _1, _2, _3, _4));
     AzFramework::SocketConnection::GetInstance()->AddMessageHandler(ProcessJobNetRequest::MessageType(), AZStd::bind(&AssetBuilderComponent::ProcessJobResidentHandler, this, _1, _2, _3, _4));
 
-    BuilderHelloRequest request;
-    BuilderHelloResponse response;
+    bool result = DoHelloPing() && ((sendRegistration && SendRegisteredBuildersToAp()) || !sendRegistration);
 
-    request.m_uuid = AZ::Uuid::CreateString(id.c_str());
-
-    AZ_TracePrintf("AssetBuilderComponent", "RunInResidentMode: Pinging asset processor with the builder UUID %s\n", request.m_uuid.ToString<AZStd::string>().c_str());
-
-    bool result = AzFramework::AssetSystem::SendRequest(request, response);
-
-    AZ_Error("AssetBuilder", result, "Failed to send hello request to Asset Processor");
-    // This error is only shown if we successfully got a response AND the response explicitly indicates the AP rejected the builder
-    AZ_Error("AssetBuilder", !result || response.m_accepted, "Asset Processor rejected connection request");
-
-    if (result && response.m_accepted)
+    if (result)
     {
         m_running = true;
 
         m_jobThreadDesc.m_name = "Builder Job Thread";
-        m_jobThread = AZStd::thread(AZStd::bind(&AssetBuilderComponent::JobThread, this), &m_jobThreadDesc);
+        m_jobThread = AZStd::thread(m_jobThreadDesc, AZStd::bind(&AssetBuilderComponent::JobThread, this));
 
         AzFramework::EngineConnectionEvents::Bus::Handler::BusConnect(); // Listen for disconnects
 
-        AZ_TracePrintf("AssetBuilder", "Builder ID: %s\n", response.m_uuid.ToString<AZStd::string>().c_str());
         AZ_TracePrintf("AssetBuilder", "Resident mode ready\n");
         m_mainEvent.acquire();
         AZ_TracePrintf("AssetBuilder", "Shutting down\n");
@@ -683,31 +722,26 @@ void AssetBuilderComponent::ProcessJob(const AssetBuilderSDK::ProcessJobFunction
     AZ_Assert(settingsRegistry != nullptr, "SettingsRegistry must be ready for use in the AssetBuilder.");
 
     // The root path is the cache plus the platform name.
-    AZ::IO::FixedMaxPath newRoot(m_gameCache);
+    AZ::IO::FixedMaxPath newProjectCache(m_gameCache);
     // Check if the platform identifier is a valid "asset platform"
     // If so, use it, other wise use the OS default platform as a fail safe
     // This is to make sure the "debug platform" isn't added as a path segment
-    // the Cache Root folder
+    // the Cache ProjectCache folder
     if (AzFramework::PlatformHelper::GetPlatformIdFromName(request.m_platformInfo.m_identifier) != AzFramework::PlatformId::Invalid)
     {
-        newRoot /= request.m_platformInfo.m_identifier;
+        newProjectCache /= request.m_platformInfo.m_identifier;
     }
     else
     {
-        newRoot /= AzFramework::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME);
+        newProjectCache /= AzFramework::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME);
     }
-
-    // The asset path is root and the lower case game name.
-    AZ::IO::FixedMaxPath newAssets = newRoot;
 
     // Now set the paths and run the job.
     {
         // Save out the prior paths.
-        ScopedAliasSetter assetAliasScope(*ioBase, "@assets@", newAssets.c_str());
-        ScopedAliasSetter rootAliasScope(*ioBase, "@root@", newRoot.c_str());
-        ScopedAliasSetter projectplatformCacheAliasScope(*ioBase, "@projectplatformcache@", newRoot.c_str());
+        ScopedAliasSetter projectPlatformCacheAliasScope(*ioBase, "@products@", newProjectCache.c_str());
         ScopedSettingsRegistrySetter cacheRootFolderScope(*settingsRegistry,
-            AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder, newRoot.Native());
+            AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder, newProjectCache.Native());
 
         // Invoke the Process Job function
         job(request, outResponse);
@@ -741,11 +775,7 @@ bool AssetBuilderComponent::RunOneShotTask(const AZStd::string& task)
 
     AZ::StringFunc::Path::Normalize(inputFilePath);
     AZ::StringFunc::Path::Normalize(outputFilePath);
-    if (task == s_taskRegisterBuilder)
-    {
-        return HandleRegisterBuilder(inputFilePath, outputFilePath);
-    }
-    else if (task == s_taskCreateJob)
+    if (task == s_taskCreateJob)
     {
         auto func = [this](const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response)
             {
@@ -901,7 +931,7 @@ void AssetBuilderComponent::JobThread()
         {
             case JobType::Create:
             {
-                using namespace AssetBuilderSDK;
+                using namespace AssetBuilder;
 
                 auto* netRequest = azrtti_cast<CreateJobsNetRequest*>(job->m_netRequest.get());
                 auto* netResponse = azrtti_cast<CreateJobsNetResponse*>(job->m_netResponse.get());
@@ -927,7 +957,7 @@ void AssetBuilderComponent::JobThread()
             }
             case JobType::Process:
             {
-                using namespace AssetBuilderSDK;
+                using namespace AssetBuilder;
 
                 AZ_TracePrintf("AssetBuilder", "Running processJob task\n");
 
@@ -986,14 +1016,14 @@ void AssetBuilderComponent::JobThread()
 
 void AssetBuilderComponent::CreateJobsResidentHandler(AZ::u32 /*typeId*/, AZ::u32 serial, const void* data, AZ::u32 dataLength)
 {
-    using namespace AssetBuilderSDK;
+    using namespace AssetBuilder;
 
     ResidentJobHandler<CreateJobsNetRequest, CreateJobsNetResponse>(serial, data, dataLength, JobType::Create);
 }
 
 void AssetBuilderComponent::ProcessJobResidentHandler(AZ::u32 /*typeId*/, AZ::u32 serial, const void* data, AZ::u32 dataLength)
 {
-    using namespace AssetBuilderSDK;
+    using namespace AssetBuilder;
 
     ResidentJobHandler<ProcessJobNetRequest, ProcessJobNetResponse>(serial, data, dataLength, JobType::Process);
 }
@@ -1021,18 +1051,6 @@ bool AssetBuilderComponent::HandleTask(const AZStd::string& inputFilePath, const
     }
 
     return true;
-}
-
-bool AssetBuilderComponent::HandleRegisterBuilder(const AZStd::string& /*inputFilePath*/, const AZStd::string& outputFilePath) const
-{
-    AssetBuilderSDK::RegisterBuilderResponse response;
-
-    for (const auto& pair : m_assetBuilderDescMap)
-    {
-        response.m_assetBuilderDescList.push_back(*pair.second);
-    }
-
-    return AZ::Utils::SaveObjectToFile(outputFilePath, AZ::DataStream::ST_XML, &response);
 }
 
 void AssetBuilderComponent::UpdateResultCode(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const

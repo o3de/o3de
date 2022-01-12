@@ -40,10 +40,10 @@ AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 namespace
 {
     // File name extension for python files
-    const QString s_kPythonFileNameSpec = "*.py";
+    const QString s_kPythonFileNameSpec("*.py");
 
     // Tree root element name
-    const QString s_kRootElementName = "Python Scripts";
+    const QString s_kRootElementName("Python Scripts");
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -91,7 +91,7 @@ CPythonScriptsDialog::CPythonScriptsDialog(QWidget* parent)
             {
                 AZ::IO::Path newSourcePath = jsonSourcePathPointer;
                 // Resolve any file aliases first - Do not use ResolvePath() as that assumes
-                // any relative path is underneath the @assets@ alias
+                // any relative path is underneath the @products@ alias
                 if (auto fileIoBase = AZ::IO::FileIOBase::GetInstance(); fileIoBase != nullptr)
                 {
                     AZ::IO::FixedMaxPath replacedAliasPath;

@@ -37,7 +37,7 @@ namespace AssetProcessor
         public AZ::Data::AssetCatalog
     {
     public:
-        
+
         AZ_COMPONENT(ToolsAssetCatalogComponent, "{AE68E46B-0E21-499A-8309-41408BCBE4BF}");
 
         ToolsAssetCatalogComponent() = default;

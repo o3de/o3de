@@ -15,9 +15,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 
-#include <LmbrCentral/Rendering/MaterialAsset.h>
-#include <LmbrCentral/Rendering/MeshAsset.h>
-
 #include <Vegetation/Ebuses/AreaInfoBus.h>
 #include <Vegetation/Ebuses/AreaSystemRequestBus.h>
 #include <Vegetation/Ebuses/DebugNotificationBus.h>
