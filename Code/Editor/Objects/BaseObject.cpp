@@ -36,12 +36,6 @@
 // To use the Andrew's algorithm in order to make convex hull from the points, this header is needed.
 #include "Util/GeometryUtil.h"
 
-namespace {
-    QColor kLinkColorParent = QColor(0, 255, 255);
-    QColor kLinkColorChild = QColor(0, 0, 255);
-    QColor kLinkColorGray = QColor(128, 128, 128);
-}
-
 extern CObjectManager* g_pObjectManager;
 
 //////////////////////////////////////////////////////////////////////////
