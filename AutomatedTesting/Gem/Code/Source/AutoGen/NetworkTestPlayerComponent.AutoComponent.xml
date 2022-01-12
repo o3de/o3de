@@ -29,8 +29,6 @@
         <Param Type="float" Name="SomeFloat" />
     </RemoteProcedure>
 
-    <RemoteProcedure Name="AuthorityToClientNoParams_PlayFx" InvokeFrom="Authority" HandleOn="Client" IsPublic="false" IsReliable="true" GenerateEventBindings="true" Description="" />
-
     <RemoteProcedure Name="ServerToAuthority_DealDamage" InvokeFrom="Server" HandleOn="Authority" IsPublic="false" IsReliable="true" GenerateEventBindings="true" Description="" >
         <Param Type="float" Name="damage" />
     </RemoteProcedure>
