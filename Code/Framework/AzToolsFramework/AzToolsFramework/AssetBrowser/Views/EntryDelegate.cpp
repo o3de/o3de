@@ -285,13 +285,12 @@ namespace AzToolsFramework
                 initStyleOption(&optionV4, index);
                 optionV4.state &= ~(QStyle::State_HasFocus | QStyle::State_Selected);
 
-                RichTextHighlighter highlighter;
                 if (m_assetBrowserFilerModel && m_assetBrowserFilerModel->GetStringFilter() 
                     && !m_assetBrowserFilerModel->GetStringFilter()->GetFilterString().isEmpty())
                 {
-                    highlighter.HighlightText(displayString, m_assetBrowserFilerModel->GetStringFilter()->GetFilterString());
+                    displayString = RichTextHighlighter::HighlightText(displayString, m_assetBrowserFilerModel->GetStringFilter()->GetFilterString());
                 }
-                highlighter.PaintHighlightedRichText(painter, optionV4, remainingRect);
+                RichTextHighlighter::PaintHighlightedRichText(displayString, painter, optionV4, remainingRect);
             }
         }
 

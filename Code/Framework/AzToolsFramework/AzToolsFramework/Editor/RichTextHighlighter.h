@@ -27,13 +27,10 @@ namespace AzToolsFramework
     {
     public:
         AZ_CLASS_ALLOCATOR(RichTextHighlighter, AZ::SystemAllocator, 0);
-        RichTextHighlighter() = default;
-        RichTextHighlighter(QString displayString);
+        RichTextHighlighter() = delete;
 
-        QString HighlightText(const QString& displayString, const QString& matchingSubstring);
-        void PaintHighlightedRichText(QPainter* painter, QStyleOptionViewItem option, QRect availableRect) const;
+        static QString HighlightText(const QString& displayString, const QString& matchingSubstring);
+        static void PaintHighlightedRichText(const QString& highlightedString,QPainter* painter, QStyleOptionViewItem option, QRect availableRect);
 
-    public:
-        QString m_displayString;
     };
 } // namespace AzToolsFramework

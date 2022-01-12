@@ -10,29 +10,26 @@
 
 namespace AzToolsFramework
 {
-    RichTextHighlighter::RichTextHighlighter(QString displayString)
-        : m_displayString(displayString)
-    {}
 
     QString RichTextHighlighter::HighlightText(const QString& displayString, const QString& matchingSubstring)
     {
-        m_displayString = displayString;
+        QString highlightedString = displayString;
         int highlightTextIndex = 0;
         do
         {
-            highlightTextIndex = m_displayString.lastIndexOf(matchingSubstring, highlightTextIndex - 1, Qt::CaseInsensitive);
+            highlightTextIndex = highlightedString.lastIndexOf(matchingSubstring, highlightTextIndex - 1, Qt::CaseInsensitive);
             if (highlightTextIndex >= 0)
             {
                 const QString BACKGROUND_COLOR{ "#707070" };
-                m_displayString.insert(static_cast<int>(highlightTextIndex + matchingSubstring.length()), "</span>");
-                m_displayString.insert(highlightTextIndex, "<span style=\"background-color: " + BACKGROUND_COLOR + "\">");
+                highlightedString.insert(static_cast<int>(highlightTextIndex + matchingSubstring.length()), "</span>");
+                highlightedString.insert(highlightTextIndex, "<span style=\"background-color: " + BACKGROUND_COLOR + "\">");
             }
         } while (highlightTextIndex > 0);
 
-        return m_displayString;
+        return highlightedString;
     }
 
-    void RichTextHighlighter::PaintHighlightedRichText(QPainter* painter, QStyleOptionViewItem option, QRect availableRect) const
+    void RichTextHighlighter::PaintHighlightedRichText(const QString& highlightedString,QPainter* painter, QStyleOptionViewItem option, QRect availableRect)
     {
         painter->save();
         painter->setRenderHint(QPainter::Antialiasing);
@@ -50,7 +47,7 @@ namespace AzToolsFramework
         {
             textDoc.setDefaultStyleSheet("body {color: #7C7C7C}");
         }
-        textDoc.setHtml("<body>" + m_displayString + "</body>");
+        textDoc.setHtml("<body>" + highlightedString + "</body>");
         painter->translate(availableRect.topLeft());
         textDoc.setTextWidth(availableRect.width());
         textDoc.drawContents(painter, QRectF(0, 0, availableRect.width(), availableRect.height()));

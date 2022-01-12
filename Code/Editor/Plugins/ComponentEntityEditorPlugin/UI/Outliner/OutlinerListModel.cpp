@@ -253,9 +253,7 @@ QVariant OutlinerListModel::dataForName(const QModelIndex& index, int role) cons
         if (s_paintingName && !m_filterString.empty())
         {
             // highlight characters in filter
-            AzToolsFramework::RichTextHighlighter highlighter;
-            label = highlighter.HighlightText(label, m_filterString.c_str());
-
+            label = AzToolsFramework::RichTextHighlighter::HighlightText(label, m_filterString.c_str());
         }
         return label;
     }
@@ -2605,8 +2603,7 @@ void OutlinerItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
         int verticalOffset = GetEntityNameVerticalOffset(entityId);
         painter->translate(textRect.topLeft() + QPoint(0, verticalOffset));
 
-        AzToolsFramework::RichTextHighlighter highlighter{ entityNameRichText };
-        highlighter.PaintHighlightedRichText(painter, optionV4, textRect);
+        AzToolsFramework::RichTextHighlighter::PaintHighlightedRichText(entityNameRichText, painter, optionV4, textRect);
 
         OutlinerListModel::s_paintingName = false;
     }
