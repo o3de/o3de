@@ -319,9 +319,9 @@ def get_o3de_build_path(root_directory=get_o3de_engine_root(),
 #
 # other ways to deal with it:
 # 1 - Use the running application .exe to discover the build path?
-# 2 - Set PATH_O3DE_BUILD envar in
+# 2 - If developer set PATH_O3DE_BUILD envar in
 #        "C:\Depot\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\.env"
-# 3 - Set in commandline (or from .bat file)
+# 3 - Set envar in commandline before executing script (or from .bat file)
 # 4 - To Do (maybe): Set in a dccsi_configuration.setreg? 
 # -------------------------------------------------------------------------
 
@@ -380,16 +380,16 @@ def get_check_global_project():
     """Gets o3de project via .o3de data in user directory"""
 
     from collections import OrderedDict
-    from box import Box
+    import box
     
     bootstrap_box = None
     json_file_path = Path(PATH_USER_O3DE_BOOTSTRAP)
     if json_file_path.exists():
         try:
-            bootstrap_box = Box.from_json(filename=str(json_file_path.resolve()),
-                                          encoding="utf-8",
-                                          errors="strict",
-                                          object_pairs_hook=OrderedDict)
+            bootstrap_box = box.Box.from_json(filename=str(json_file_path.resolve()),
+                                              encoding="utf-8",
+                                              errors="strict",
+                                              object_pairs_hook=OrderedDict)
         except IOError as e:
             # this file runs in py2.7 for Maya 2020, FileExistsError is not defined
             _LOGGER.error('Bad file interaction: {}'.format(json_file_path.resolve()))

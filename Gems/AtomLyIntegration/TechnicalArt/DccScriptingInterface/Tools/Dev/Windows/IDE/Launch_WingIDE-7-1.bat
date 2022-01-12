@@ -61,8 +61,8 @@ echo.
 echo     O3DE_DEV = %O3DE_DEV%
 
 :: shared location for default O3DE python location
-set PATH_O3DE_PYTHON_INSTALL=%O3DE_DEV%\Python
-echo    PATH_O3DE_PYTHON_INSTALL = %PATH_O3DE_PYTHON_INSTALL%
+set "PATH_O3DE_PYTHON_INSTALL=%O3DE_DEV%\Python"
+echo     PATH_O3DE_PYTHON_INSTALL = %PATH_O3DE_PYTHON_INSTALL%
 
 echo.
 

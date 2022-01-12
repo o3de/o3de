@@ -51,7 +51,7 @@ IF "%MAYA_PROJECT%"=="" (set MAYA_PROJECT=%PATH_O3DE_PROJECT%)
 echo     MAYA_PROJECT = %MAYA_PROJECT%
 
 :: maya sdk path
-set DCCSI_TOOLS_MAYA_PATH=%PATH_DCCSI_TOOLS%\DCC\Maya
+set "DCCSI_TOOLS_MAYA_PATH=%PATH_DCCSI_TOOLS%\DCC\Maya"
 echo     DCCSI_TOOLS_MAYA_PATH = %DCCSI_TOOLS_MAYA_PATH%
 
 set MAYA_MODULE_PATH=%DCCSI_TOOLS_MAYA_PATH%;%MAYA_MODULE_PATH%
@@ -60,10 +60,10 @@ echo     MAYA_MODULE_PATH = %MAYA_MODULE_PATH%
 :: Maya File Paths, etc
 :: https://knowledge.autodesk.com/support/maya/learn-explore/caas/CloudHelp/cloudhelp/2015/ENU/Maya/files/Environment-Variables-File-path-variables-htm.html
 :::: Set Maya native project acess to this project
-IF "%MAYA_LOCATION%"=="" (set MAYA_LOCATION=%ProgramFiles%\Autodesk\Maya%MAYA_VERSION%)
+IF "%MAYA_LOCATION%"=="" (set "MAYA_LOCATION=%ProgramFiles%\Autodesk\Maya%MAYA_VERSION%")
 echo     MAYA_LOCATION = %MAYA_LOCATION%
 
-IF "%MAYA_BIN_PATH%"=="" (set MAYA_BIN_PATH=%MAYA_LOCATION%\bin)
+IF "%MAYA_BIN_PATH%"=="" (set "MAYA_BIN_PATH=%MAYA_LOCATION%\bin")
 echo     MAYA_BIN_PATH = %MAYA_BIN_PATH%
 
 :: these improve the boot up time (Ha ... not really much)
@@ -85,43 +85,43 @@ echo     DCCSI_MAYA_SET_CALLBACKS = %DCCSI_MAYA_SET_CALLBACKS%
 :: But I like the console window for development and debugging early boot
 
 :: shared location for 64bit DCCSI_PY_MAYA python location (2.7)
-set DCCSI_PY_MAYA=%MAYA_BIN_PATH%\mayapy.exe
+set "DCCSI_PY_MAYA=%MAYA_BIN_PATH%\mayapy.exe"
 echo     DCCSI_PY_MAYA = %DCCSI_PY_MAYA%
 
 :: add to the PATH
 SET PATH=%MAYA_BIN_PATH%;%PATH%
 
 :: Local DCCsi Maya plugins access (ours)
-set DCCSI_MAYA_PLUG_IN_PATH=%DCCSI_TOOLS_MAYA_PATH%\plugins
+set "DCCSI_MAYA_PLUG_IN_PATH=%DCCSI_TOOLS_MAYA_PATH%\plugins"
 :: also attached to maya's built-it env var
 set MAYA_PLUG_IN_PATH=%DCCSI_MAYA_PLUG_IN_PATH%;MAYA_PLUG_IN_PATH
 echo     DCCSI_MAYA_PLUG_IN_PATH = %DCCSI_MAYA_PLUG_IN_PATH%
 
 :: Local DCCsi Maya shelves (ours)
-set DCCSI_MAYA_SHELF_PATH=%DCCSI_TOOLS_MAYA_PATH%\Prefs\Shelves
+set "DCCSI_MAYA_SHELF_PATH=%DCCSI_TOOLS_MAYA_PATH%\Prefs\Shelves"
 set MAYA_SHELF_PATH=%DCCSI_MAYA_SHELF_PATH%
 echo     DCCSI_MAYA_SHELF_PATH = %DCCSI_MAYA_SHELF_PATH%
 
 :: Local DCCsi Maya icons path (ours)
-set DCCSI_MAYA_XBMLANGPATH=%DCCSI_TOOLS_MAYA_PATH%\Prefs\icons
+set "DCCSI_MAYA_XBMLANGPATH=%DCCSI_TOOLS_MAYA_PATH%\Prefs\icons"
 :: also attached to maya's built-it env var
 set XBMLANGPATH=%DCCSI_MAYA_XBMLANGPATH%;%XBMLANGPATH%
 echo     DCCSI_MAYA_XBMLANGPATH = %DCCSI_MAYA_XBMLANGPATH%
 
 :: Local DCCsi Maya Mel scripts (ours)
-set DCCSI_MAYA_SCRIPT_MEL_PATH=%DCCSI_TOOLS_MAYA_PATH%\Scripts\Mel
+set "DCCSI_MAYA_SCRIPT_MEL_PATH=%DCCSI_TOOLS_MAYA_PATH%\Scripts\Mel"
 :: also attached to maya's built-it env var
 set MAYA_SCRIPT_PATH=%DCCSI_MAYA_SCRIPT_MEL_PATH%;%MAYA_SCRIPT_PATH%
 echo     DCCSI_MAYA_SCRIPT_MEL_PATH = %DCCSI_MAYA_SCRIPT_MEL_PATH%
 
 :: Local DCCsi Maya Python scripts (ours)
-set DCCSI_MAYA_SCRIPT_PY_PATH=%DCCSI_TOOLS_MAYA_PATH%\Scripts\Python
+set "DCCSI_MAYA_SCRIPT_PY_PATH=%DCCSI_TOOLS_MAYA_PATH%\Scripts\Python"
 :: also attached to maya's built-it env var
 set MAYA_SCRIPT_PATH=%DCCSI_MAYA_SCRIPT_PY_PATH%;%MAYA_SCRIPT_PATH%
 echo     DCCSI_MAYA_SCRIPT_PY_PATH = %DCCSI_MAYA_SCRIPT_PY_PATH%
 
 :: DCCsi Maya boostrap, userSetup.py access (ours)
-set DCCSI_MAYA_SCRIPT_PATH=%DCCSI_TOOLS_MAYA_PATH%\Scripts
+set "DCCSI_MAYA_SCRIPT_PATH=%DCCSI_TOOLS_MAYA_PATH%\Scripts"
 :: also attached to maya's built-it env var
 set MAYA_SCRIPT_PATH=%DCCSI_MAYA_SCRIPT_PATH%;%MAYA_SCRIPT_PATH%
 echo     DCCSI_MAYA_SCRIPT_PATH = %DCCSI_MAYA_SCRIPT_PATH%
