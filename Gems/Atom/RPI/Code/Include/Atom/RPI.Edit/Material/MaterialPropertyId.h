@@ -41,8 +41,14 @@ namespace AZ
             operator const Name&() const;
 
             //! Returns a pointer to the full name ("[groupName].[propertyName]"). 
+            //! Same as Name::GetCStr()
             //! This is included for convenience so it can be used for error messages in the same way an AZ::Name is used.
             const char* GetCStr() const;
+            
+            //! Returns a string_view of the full name ("[groupName].[propertyName]").
+            //! Same as Name::GetStringView()
+            //! This is included for convenience so it can be used for string comparison in the same way an AZ::Name is used.
+            AZStd::string_view GetStringView() const;
 
             //! Returns a hash of the full name. This is needed for compatibility with NameIdReflectionMap.
             Name::Hash GetHash() const;
