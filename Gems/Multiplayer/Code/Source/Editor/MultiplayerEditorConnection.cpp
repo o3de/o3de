@@ -100,8 +100,8 @@ namespace Multiplayer
     {
         // Editor Server Init is intended for non-release targets
         m_byteStream.Write(packet.GetAssetData().GetSize(), reinterpret_cast<void*>(packet.ModifyAssetData().GetBuffer()));
-
-        // In case if this is the last update, process the byteStream buffer. Otherwise more packets are expected
+        
+        // If this is the last update then process the byteStream buffer. Otherwise more packets are expected
         if (packet.GetLastUpdate())
         {
             // This is the last expected packet
@@ -150,9 +150,8 @@ namespace Multiplayer
             AZ::Interface<INetworkSpawnableLibrary>::Get()->BuildSpawnablesList();
 
             // Load the level via the root spawnable that was registered
-            const AZ::CVarFixedString loadLevelString = "LoadLevel Root.spawnable";
             const auto console = AZ::Interface<AZ::IConsole>::Get();
-            console->PerformCommand(loadLevelString.c_str());
+            console->PerformCommand("LoadLevel Root.spawnable");
 
             // Setup the normal multiplayer connection
             AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
