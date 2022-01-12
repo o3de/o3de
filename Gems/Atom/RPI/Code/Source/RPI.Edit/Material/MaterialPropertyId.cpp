@@ -111,6 +111,11 @@ namespace AZ
         {
             return m_fullName.GetCStr();
         }
+        
+        AZStd::string_view MaterialPropertyId::GetStringView() const
+        {
+            return m_fullName.GetStringView();
+        }
 
         Name::Hash MaterialPropertyId::GetHash() const
         {
