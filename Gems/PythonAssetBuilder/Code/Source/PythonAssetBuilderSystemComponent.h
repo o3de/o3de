@@ -11,7 +11,6 @@
 #include <AzCore/Component/Component.h>
 
 #include <PythonAssetBuilder/PythonAssetBuilderBus.h>
-#include <PythonAssetBuilder/PythonBuilderRequestBus.h>
 
 namespace PythonAssetBuilder
 {
@@ -21,7 +20,6 @@ namespace PythonAssetBuilder
     class PythonAssetBuilderSystemComponent
         : public AZ::Component
         , protected PythonAssetBuilderRequestBus::Handler
-        , protected PythonBuilderRequestBus::Handler
     {
     public:
         AZ_COMPONENT(PythonAssetBuilderSystemComponent, "{E2872C13-D103-4534-9A95-76A66C8DDB5D}");
@@ -41,13 +39,6 @@ namespace PythonAssetBuilder
         // PythonAssetBuilderRequestBus
         AZ::Outcome<bool, AZStd::string> RegisterAssetBuilder(const AssetBuilderSDK::AssetBuilderDesc& desc) override;
         AZ::Outcome<AZStd::string, AZStd::string> GetExecutableFolder() const override;
-
-        // PythonBuilderRequestBus
-        AZ::Outcome<AZ::EntityId, AZStd::string> CreateEditorEntity(const AZStd::string& name) override;
-        AZ::Outcome<AZ::Data::AssetType, AZStd::string> WriteSliceFile(
-            AZStd::string_view filename,
-            AZStd::vector<AZ::EntityId> entityList,
-            bool makeDynamic) override;
 
     private:
         using PythonBuilderWorkerPointer = AZStd::shared_ptr<PythonBuilderWorker>;

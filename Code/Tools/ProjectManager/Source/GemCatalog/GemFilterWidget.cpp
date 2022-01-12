@@ -7,6 +7,9 @@
  */
 
 #include <GemCatalog/GemFilterWidget.h>
+
+#include <AzCore/Math/MathUtils.h>
+
 #include <QButtonGroup>
 #include <QCheckBox>
 #include <QLabel>
@@ -213,11 +216,98 @@ namespace O3DE::ProjectManager
         m_filterLayout->setContentsMargins(0, 0, 0, 0);
         filterSection->setLayout(m_filterLayout);
 
+        ResetAllFilters();
+    }
+
+    void GemFilterWidget::ResetAllFilters()
+    {
         ResetGemStatusFilter();
-        AddGemOriginFilter();
-        AddTypeFilter();
-        AddPlatformFilter();
-        AddFeatureFilter();
+        ResetGemOriginFilter();
+        ResetTypeFilter();
+        ResetFeatureFilter();
+    }
+
+    void GemFilterWidget::ResetFilterWidget(
+        FilterCategoryWidget*& filterPtr,
+        const QString& filterName,
+        const QVector<QString>& elementNames,
+        const QVector<int>& elementCounts,
+        int defaultShowCount)
+    {
+        bool wasCollapsed = false;
+        if (filterPtr)
+        {
+            wasCollapsed = filterPtr->IsCollapsed();
+        }
+
+        FilterCategoryWidget* filterWidget = new FilterCategoryWidget(
+            filterName, elementNames, elementCounts, /*showAllLessButton=*/defaultShowCount != 4, /*collapsed*/ wasCollapsed,
+            /*defaultShowCount=*/defaultShowCount);
+        if (filterPtr)
+        {
+            m_filterLayout->replaceWidget(filterPtr, filterWidget);
+        }
+        else
+        {
+            m_filterLayout->addWidget(filterWidget);
+        }
+
+        filterPtr->deleteLater();
+        filterPtr = filterWidget;
+    }
+
+    template<typename filterType, typename filterFlagsType>
+    void GemFilterWidget::ResetSimpleOrFilter(
+        FilterCategoryWidget*& filterPtr,
+        const QString& filterName,
+        int numFilterElements,
+        bool (*filterMatcher)(GemModel*, filterType, int),
+        QString (*typeStringGetter)(filterType),
+        filterFlagsType (GemSortFilterProxyModel::*filterFlagsGetter)() const,
+        void (GemSortFilterProxyModel::*filterFlagsSetter)(const filterFlagsType&))
+    {
+        QVector<QString> elementNames;
+        QVector<int> elementCounts;
+        const int numGems = m_gemModel->rowCount();
+        for (int filterIndex = 0; filterIndex < numFilterElements; ++filterIndex)
+        {
+            const filterType gemFilterToBeCounted = static_cast<filterType>(1 << filterIndex);
+
+            int gemFilterCount = 0;
+            for (int gemIndex = 0; gemIndex < numGems; ++gemIndex)
+            {
+                // If filter matches increment filter count
+                gemFilterCount += filterMatcher(m_gemModel, gemFilterToBeCounted, gemIndex);
+            }
+            elementNames.push_back(typeStringGetter(gemFilterToBeCounted));
+            elementCounts.push_back(gemFilterCount);
+        }
+
+        // Replace existing filter and delete old one
+        ResetFilterWidget(filterPtr, filterName, elementNames, elementCounts);
+
+        const QList<QAbstractButton*> buttons = filterPtr->GetButtonGroup()->buttons();
+        for (int i = 0; i < buttons.size(); ++i)
+        {
+            const filterType gemFilter = static_cast<filterType>(1 << i);
+            QAbstractButton* button = buttons[i];
+
+            connect(
+                button, &QAbstractButton::toggled, this,
+                [=](bool checked)
+                {
+                    filterFlagsType gemFilters = (m_filterProxyModel->*filterFlagsGetter)();
+                    if (checked)
+                    {
+                        gemFilters |= gemFilter;
+                    }
+                    else
+                    {
+                        gemFilters &= ~gemFilter;
+                    }
+                    (m_filterProxyModel->*filterFlagsSetter)(gemFilters);
+                });
+        }
     }
 
     void GemFilterWidget::ResetGemStatusFilter()
@@ -241,25 +331,7 @@ namespace O3DE::ProjectManager
         elementNames.push_back(GemSortFilterProxyModel::GetGemActiveString(GemSortFilterProxyModel::GemActive::Inactive));
         elementCounts.push_back(totalGems - enabledGemTotal);
 
-        bool wasCollapsed = false;
-        if (m_statusFilter)
-        {
-            wasCollapsed = m_statusFilter->IsCollapsed();
-        }
-
-        FilterCategoryWidget* filterWidget =
-            new FilterCategoryWidget("Status", elementNames, elementCounts, /*showAllLessButton=*/false, /*collapsed*/wasCollapsed);
-        if (m_statusFilter)
-        {
-            m_filterLayout->replaceWidget(m_statusFilter, filterWidget);
-        }
-        else
-        {
-            m_filterLayout->addWidget(filterWidget);
-        }
-
-        m_statusFilter->deleteLater();
-        m_statusFilter = filterWidget;
+        ResetFilterWidget(m_statusFilter, "Status", elementNames, elementCounts);
 
         const QList<QAbstractButton*> buttons = m_statusFilter->GetButtonGroup()->buttons();
 
@@ -317,157 +389,42 @@ namespace O3DE::ProjectManager
         connect(activeButton, &QAbstractButton::toggled, this, updateGemActive);
     }
 
-    void GemFilterWidget::AddGemOriginFilter()
+    void GemFilterWidget::ResetGemOriginFilter()
     {
-        QVector<QString> elementNames;
-        QVector<int> elementCounts;
-        const int numGems = m_gemModel->rowCount();
-        for (int originIndex = 0; originIndex < GemInfo::NumGemOrigins; ++originIndex)
-        {
-            const GemInfo::GemOrigin gemOriginToBeCounted = static_cast<GemInfo::GemOrigin>(1 << originIndex);
-
-            int gemOriginCount = 0;
-            for (int gemIndex = 0; gemIndex < numGems; ++gemIndex)
+        ResetSimpleOrFilter<GemInfo::GemOrigin, GemInfo::GemOrigins>
+        (
+            m_originFilter, "Provider", GemInfo::NumGemOrigins,
+            [](GemModel* gemModel, GemInfo::GemOrigin origin, int gemIndex)
             {
-                const GemInfo::GemOrigin gemOrigin = m_gemModel->GetGemOrigin(m_gemModel->index(gemIndex, 0));
-
-                // Is the gem of the given origin?
-                if (gemOriginToBeCounted == gemOrigin)
-                {
-                    gemOriginCount++;
-                }
-            }
-
-            elementNames.push_back(GemInfo::GetGemOriginString(gemOriginToBeCounted));
-            elementCounts.push_back(gemOriginCount);
-        }
-
-        FilterCategoryWidget* filterWidget = new FilterCategoryWidget("Provider", elementNames, elementCounts, /*showAllLessButton=*/false);
-        m_filterLayout->addWidget(filterWidget);
-
-        const QList<QAbstractButton*> buttons = filterWidget->GetButtonGroup()->buttons();
-        for (int i = 0; i < buttons.size(); ++i)
-        {
-            const GemInfo::GemOrigin gemOrigin = static_cast<GemInfo::GemOrigin>(1 << i);
-            QAbstractButton* button = buttons[i];
-
-            connect(button, &QAbstractButton::toggled, this, [=](bool checked)
-                {
-                    GemInfo::GemOrigins gemOrigins = m_filterProxyModel->GetGemOrigins();
-                    if (checked)
-                    {
-                        gemOrigins |= gemOrigin;
-                    }
-                    else
-                    {
-                        gemOrigins &= ~gemOrigin;
-                    }
-                    m_filterProxyModel->SetGemOrigins(gemOrigins);
-                });
-        }
+                return origin == gemModel->GetGemOrigin(gemModel->index(gemIndex, 0)); 
+            },
+            &GemInfo::GetGemOriginString, &GemSortFilterProxyModel::GetGemOrigins, &GemSortFilterProxyModel::SetGemOrigins
+        );
     }
 
-    void GemFilterWidget::AddTypeFilter()
+    void GemFilterWidget::ResetTypeFilter()
     {
-        QVector<QString> elementNames;
-        QVector<int> elementCounts;
-        const int numGems = m_gemModel->rowCount();
-        for (int typeIndex = 0; typeIndex < GemInfo::NumTypes; ++typeIndex)
-        {
-            const GemInfo::Type type = static_cast<GemInfo::Type>(1 << typeIndex);
-
-            int typeGemCount = 0;
-            for (int gemIndex = 0; gemIndex < numGems; ++gemIndex)
+        ResetSimpleOrFilter<GemInfo::Type, GemInfo::Types>(
+            m_typeFilter, "Type", GemInfo::NumTypes,
+            [](GemModel* gemModel, GemInfo::Type type, int gemIndex)
             {
-                const GemInfo::Types types = m_gemModel->GetTypes(m_gemModel->index(gemIndex, 0));
-
-                // Is type (Asset, Code, Tool) part of the gem?
-                if (types & type)
-                {
-                    typeGemCount++;
-                }
-            }
-
-            elementNames.push_back(GemInfo::GetTypeString(type));
-            elementCounts.push_back(typeGemCount);
-        }
-
-        FilterCategoryWidget* filterWidget = new FilterCategoryWidget("Type", elementNames, elementCounts, /*showAllLessButton=*/false);
-        m_filterLayout->addWidget(filterWidget);
-
-        const QList<QAbstractButton*> buttons = filterWidget->GetButtonGroup()->buttons();
-        for (int i = 0; i < buttons.size(); ++i)
-        {
-            const GemInfo::Type type = static_cast<GemInfo::Type>(1 << i);
-            QAbstractButton* button = buttons[i];
-
-            connect(button, &QAbstractButton::toggled, this, [=](bool checked)
-                {
-                    GemInfo::Types types = m_filterProxyModel->GetTypes();
-                    if (checked)
-                    {
-                        types |= type;
-                    }
-                    else
-                    {
-                        types &= ~type;
-                    }
-                    m_filterProxyModel->SetTypes(types);
-                });
-        }
+                return static_cast<bool>(type & gemModel->GetTypes(gemModel->index(gemIndex, 0)));
+            },
+            &GemInfo::GetTypeString, &GemSortFilterProxyModel::GetTypes, &GemSortFilterProxyModel::SetTypes);
     }
 
-    void GemFilterWidget::AddPlatformFilter()
+    void GemFilterWidget::ResetPlatformFilter()
     {
-        QVector<QString> elementNames;
-        QVector<int> elementCounts;
-        const int numGems = m_gemModel->rowCount();
-        for (int platformIndex = 0; platformIndex < GemInfo::NumPlatforms; ++platformIndex)
-        {
-            const GemInfo::Platform platform = static_cast<GemInfo::Platform>(1 << platformIndex);
-
-            int platformGemCount = 0;
-            for (int gemIndex = 0; gemIndex < numGems; ++gemIndex)
+        ResetSimpleOrFilter<GemInfo::Platform, GemInfo::Platforms>(
+            m_platformFilter, "Supported Platforms", GemInfo::NumPlatforms,
+            [](GemModel* gemModel, GemInfo::Platform platform, int gemIndex)
             {
-                const GemInfo::Platforms platforms = m_gemModel->GetPlatforms(m_gemModel->index(gemIndex, 0));
-
-                // Is platform supported?
-                if (platforms & platform)
-                {
-                    platformGemCount++;
-                }
-            }
-
-            elementNames.push_back(GemInfo::GetPlatformString(platform));
-            elementCounts.push_back(platformGemCount);
-        }
-
-        FilterCategoryWidget* filterWidget = new FilterCategoryWidget("Supported Platforms", elementNames, elementCounts, /*showAllLessButton=*/false);
-        m_filterLayout->addWidget(filterWidget);
-
-        const QList<QAbstractButton*> buttons = filterWidget->GetButtonGroup()->buttons();
-        for (int i = 0; i < buttons.size(); ++i)
-        {
-            const GemInfo::Platform platform = static_cast<GemInfo::Platform>(1 << i);
-            QAbstractButton* button = buttons[i];
-
-            connect(button, &QAbstractButton::toggled, this, [=](bool checked)
-                {
-                    GemInfo::Platforms platforms = m_filterProxyModel->GetPlatforms();
-                    if (checked)
-                    {
-                        platforms |= platform;
-                    }
-                    else
-                    {
-                        platforms &= ~platform;
-                    }
-                    m_filterProxyModel->SetPlatforms(platforms);
-                });
-        }
+                return static_cast<bool>(platform & gemModel->GetPlatforms(gemModel->index(gemIndex, 0)));
+            },
+            &GemInfo::GetPlatformString, &GemSortFilterProxyModel::GetPlatforms, &GemSortFilterProxyModel::SetPlatforms);
     }
 
-    void GemFilterWidget::AddFeatureFilter()
+    void GemFilterWidget::ResetFeatureFilter()
     {
         // Alphabetically sorted, unique features and their number of occurrences in the gem database.
         QMap<QString, int> uniqueFeatureCounts;
@@ -497,11 +454,15 @@ namespace O3DE::ProjectManager
             elementCounts.push_back(iterator.value());
         }
 
-        FilterCategoryWidget* filterWidget = new FilterCategoryWidget("Features", elementNames, elementCounts,
-            /*showAllLessButton=*/true, false, /*defaultShowCount=*/5);
-        m_filterLayout->addWidget(filterWidget);
+        ResetFilterWidget(m_featureFilter, "Features", elementNames, elementCounts, /*defaultShowCount=*/5);
 
-        const QList<QAbstractButton*> buttons = filterWidget->GetButtonGroup()->buttons();
+        for (QMetaObject::Connection& connection : m_featureTagConnections)
+        {
+            disconnect(connection);
+        }
+        m_featureTagConnections.clear();
+
+        const QList<QAbstractButton*> buttons = m_featureFilter->GetButtonGroup()->buttons();
         for (int i = 0; i < buttons.size(); ++i)
         {
             const QString& feature = elementNames[i];
@@ -523,13 +484,13 @@ namespace O3DE::ProjectManager
                 });
 
             // Sync the UI state with the proxy model filtering.
-            connect(m_filterProxyModel, &GemSortFilterProxyModel::OnInvalidated, this, [=]
+            m_featureTagConnections.push_back(connect(m_filterProxyModel, &GemSortFilterProxyModel::OnInvalidated, this, [=]
                 {
                     const QSet<QString>& filteredFeatureTags = m_filterProxyModel->GetFeatures();
                     const bool isChecked = filteredFeatureTags.contains(button->text());
                     QSignalBlocker signalsBlocker(button);
                     button->setChecked(isChecked);
-                });
+                }));
         }
     }
 } // namespace O3DE::ProjectManager

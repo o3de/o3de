@@ -8,7 +8,6 @@
 
 #include <CpuProfilerImpl.h>
 
-#include <AzCore/Debug/Timer.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Statistics/StatisticalProfilerProxy.h>
@@ -282,7 +281,7 @@ namespace Profiler
             m_stackLevel = 0;
             m_cachedTimeRegionMap.clear();
             m_timeRegionStack.clear();
-            m_cachedTimeRegions.clear();
+            ResetCachedData();
         }
 
         timeRegion.m_stackDepth = aznumeric_cast<uint16_t>(m_stackLevel);
@@ -325,12 +324,26 @@ namespace Profiler
     // Gets called when region ends and all data is set
     void CpuTimingLocalStorage::AddCachedRegion(const CachedTimeRegion& timeRegionCached)
     {
-        if (m_hitSizeLimitMap[timeRegionCached.m_groupRegionName.m_regionName])
+        if (auto iter = m_hitSizeLimitMap.find(timeRegionCached.m_groupRegionName.m_regionName);
+            iter != m_hitSizeLimitMap.end() && iter->second)
         {
             return;
         }
-        // Add an entry to the cached region
-        m_cachedTimeRegions.push_back(timeRegionCached);
+        // Add an entry to the cached region. Discard excess data in case there is too much to handle.
+        if (m_cachedTimeRegions.size() < TimeRegionStackSize)
+        {
+            m_cachedTimeRegions.push_back(timeRegionCached);
+        }
+        // Warn only once per thread if the cached data limit has been reached.
+        else if (!m_cachedDataLimitReached)
+        {
+            AZ_Warning(
+                "Profiler", false,
+                "Limit for profiling data has been reached by thread %i. Excess data will be discarded. Considering moving or reducing "
+                "profiler markers to prevent data loss.",
+                m_executingThreadId);
+            m_cachedDataLimitReached = true;
+        }
 
         // If the stack is empty, add it to the local cache map. Only gets called when the stack is empty
         // NOTE: this is where the largest overhead will be, but due to it only being called when the stack is empty
@@ -354,7 +367,7 @@ namespace Profiler
             }
 
             // Clear the cached regions
-            m_cachedTimeRegions.clear();
+            ResetCachedData();
         }
     }
 
@@ -371,8 +384,15 @@ namespace Profiler
                 m_cachedTimeRegionMap.clear();
                 m_hitSizeLimitMap.clear();
             }
+
             m_cachedTimeRegionMutex.unlock();
         }
+    }
+
+    void CpuTimingLocalStorage::ResetCachedData()
+    {
+        m_cachedTimeRegions.clear();
+        m_cachedDataLimitReached = false;
     }
 
     // --- CpuProfilingStatisticsSerializer ---

@@ -29,14 +29,14 @@
         },
         "normal": {
             "flipY": true,
-            "textureMap": "Objects/Lucy/Lucy_Normal.png"
+            "textureMap": "Objects/Hermanubis/Hermanubis_Normal.png"
         },
         "subsurfaceScattering": {
             "enableSubsurfaceScattering": true,
-            "influenceMap": "Objects/Lucy/Lucy_thickness.tif",
+            "influenceMap": "TestData/Textures/checker8x8_gray_512.png",
             "scatterDistance": 15.0,
             "subsurfaceScatterFactor": 0.4300000071525574,
-            "thicknessMap": "Objects/Lucy/Lucy_thickness.tif",
+            "thicknessMap": "Objects/Hermanubis/Hermanubis_thickness.tif",
             "transmissionAttenuation": 15.0,
             "transmissionDistortion": 0.3499999940395355,
             "transmissionMode": "ThickObject",
@@ -47,8 +47,7 @@
                 0.3182879388332367,
                 0.16388189792633058,
                 1.0
-            ],
-            "useInfluenceMap": false
+            ]
         },
         "wrinkleLayers": {
             "baseColorMap1": "TestData/Textures/cc0/Lava004_1K_Color.jpg",

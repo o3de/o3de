@@ -18,7 +18,6 @@ namespace O3DE::ProjectManager
 {
     DownloadController::DownloadController(QWidget* parent)
         : QObject()
-        , m_lastProgress(0)
         , m_parent(parent)
     {
         m_worker = new DownloadWorker();
@@ -41,9 +40,11 @@ namespace O3DE::ProjectManager
     void DownloadController::AddGemDownload(const QString& gemName)
     {
         m_gemNames.push_back(gemName);
+        emit GemDownloadAdded(gemName);
+
         if (m_gemNames.size() == 1)
         {
-            m_worker->SetGemToDownload(m_gemNames[0], false);
+            m_worker->SetGemToDownload(m_gemNames.front(), false);
             m_workerThread.start();
         }
     }
@@ -62,32 +63,46 @@ namespace O3DE::ProjectManager
             else
             {
                 m_gemNames.erase(findResult);
+                emit GemDownloadRemoved(gemName);
             }
         }
     }
 
-    void DownloadController::UpdateUIProgress(int progress)
+    void DownloadController::UpdateUIProgress(int bytesDownloaded, int totalBytes)
     {
-        m_lastProgress = progress;
-        emit GemDownloadProgress(progress);
+        emit GemDownloadProgress(m_gemNames.front(), bytesDownloaded, totalBytes);
     }
 
-    void DownloadController::HandleResults(const QString& result)
+    void DownloadController::HandleResults(const QString& result, const QString& detailedError)
     {
         bool succeeded = true;
         
         if (!result.isEmpty())
         {
-            QMessageBox::critical(nullptr, tr("Gem download"), result);
+            if (!detailedError.isEmpty())
+            {
+                QMessageBox gemDownloadError;
+                gemDownloadError.setIcon(QMessageBox::Critical);
+                gemDownloadError.setWindowTitle(tr("Gem download"));
+                gemDownloadError.setText(result);
+                gemDownloadError.setDetailedText(detailedError);
+                gemDownloadError.exec();
+            }
+            else
+            {
+                QMessageBox::critical(nullptr, tr("Gem download"), result);
+            }
             succeeded = false;
         }
 
+        QString gemName = m_gemNames.front();
         m_gemNames.erase(m_gemNames.begin());
-        emit Done(succeeded);
+        emit Done(gemName, succeeded);
+        emit GemDownloadRemoved(gemName);
 
         if (!m_gemNames.empty())
         {
-            emit StartGemDownload(m_gemNames[0]);
+            emit StartGemDownload(m_gemNames.front());
         }
         else
         {

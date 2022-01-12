@@ -300,48 +300,6 @@ namespace AZ
             }
         }
 
-        bool MaterialTypeSourceData::ConvertPropertyValueToSourceDataFormat(const PropertyDefinition& propertyDefinition, MaterialPropertyValue& propertyValue) const
-        {
-            if (propertyDefinition.m_dataType == AZ::RPI::MaterialPropertyDataType::Enum && propertyValue.Is<uint32_t>())
-            {
-                const uint32_t index = propertyValue.GetValue<uint32_t>();
-                if (index >= propertyDefinition.m_enumValues.size())
-                {
-                    AZ_Error("Material source data", false, "Invalid value for material enum property: '%s'.", propertyDefinition.m_name.c_str());
-                    return false;
-                }
-
-                propertyValue = propertyDefinition.m_enumValues[index];
-                return true;
-            }
-
-            // Image asset references must be converted from asset IDs to a relative source file path
-            if (propertyDefinition.m_dataType == AZ::RPI::MaterialPropertyDataType::Image && propertyValue.Is<Data::Asset<ImageAsset>>())
-            {
-                const Data::Asset<ImageAsset>& imageAsset = propertyValue.GetValue<Data::Asset<ImageAsset>>();
-
-                Data::AssetInfo imageAssetInfo;
-                if (imageAsset.GetId().IsValid())
-                {
-                    bool result = false;
-                    AZStd::string rootFilePath;
-                    const AZStd::string platformName = ""; // Empty for default
-                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(result, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetAssetInfoById,
-                        imageAsset.GetId(), imageAsset.GetType(), platformName, imageAssetInfo, rootFilePath);
-                    if (!result)
-                    {
-                        AZ_Error("Material source data", false, "Image asset could not be found for property: '%s'.", propertyDefinition.m_name.c_str());
-                        return false;
-                    }
-                }
-
-                propertyValue = imageAssetInfo.m_relativePath;
-                return true;
-            }
-
-            return true;
-        }
-
         Outcome<Data::Asset<MaterialTypeAsset>> MaterialTypeSourceData::CreateMaterialTypeAsset(Data::AssetId assetId, AZStd::string_view materialTypeSourceFilePath, bool elevateWarnings) const
         {
             MaterialTypeAssetCreator materialTypeAssetCreator;
@@ -393,11 +351,12 @@ namespace AZ
             for (const ShaderVariantReferenceData& shaderRef : m_shaderCollection)
             {
                 const auto& shaderFile = shaderRef.m_shaderFilePath;
-                const auto& shaderAsset = AssetUtils::LoadAsset<ShaderAsset>(materialTypeSourceFilePath, shaderFile, 0);
+                auto shaderAssetResult = AssetUtils::LoadAsset<ShaderAsset>(materialTypeSourceFilePath, shaderFile, 0);
 
-                if (shaderAsset)
+                if (shaderAssetResult)
                 {
-                    auto optionsLayout = shaderAsset.GetValue()->GetShaderOptionGroupLayout();
+                    auto shaderAsset = shaderAssetResult.GetValue();
+                    auto optionsLayout = shaderAsset->GetShaderOptionGroupLayout();
                     ShaderOptionGroup options{ optionsLayout };
                     for (auto& iter : shaderRef.m_shaderOptionValues)
                     {
@@ -408,12 +367,11 @@ namespace AZ
                     }
 
                     materialTypeAssetCreator.AddShader(
-                        shaderAsset.GetValue(), options.GetShaderVariantId(),
-                        shaderRef.m_shaderTag.IsEmpty() ? Uuid::CreateRandom().ToString<AZ::Name>() : shaderRef.m_shaderTag
-                    );
+                        shaderAsset, options.GetShaderVariantId(),
+                        shaderRef.m_shaderTag.IsEmpty() ? Uuid::CreateRandom().ToString<AZ::Name>() : shaderRef.m_shaderTag);
 
                     // Gather UV names
-                    const ShaderInputContract& shaderInputContract = shaderAsset.GetValue()->GetInputContract();
+                    const ShaderInputContract& shaderInputContract = shaderAsset->GetInputContract();
                     for (const ShaderInputContract::StreamChannelInfo& channel : shaderInputContract.m_streamChannels)
                     {
                         const RHI::ShaderSemantic& semantic = channel.m_semantic;
@@ -493,15 +451,20 @@ namespace AZ
                         {
                         case MaterialPropertyDataType::Image:
                         {
-                            Outcome<Data::Asset<ImageAsset>> imageAssetResult = MaterialUtils::GetImageAssetReference(materialTypeSourceFilePath, property.m_value.GetValue<AZStd::string>());
+                            Data::Asset<ImageAsset> imageAsset;
 
-                            if (imageAssetResult.IsSuccess())
+                            MaterialUtils::GetImageAssetResult result = MaterialUtils::GetImageAssetReference(
+                                imageAsset, materialTypeSourceFilePath, property.m_value.GetValue<AZStd::string>());
+
+                            if (result == MaterialUtils::GetImageAssetResult::Missing)
                             {
-                                materialTypeAssetCreator.SetPropertyValue(propertyId.GetFullName(), imageAssetResult.GetValue());
+                                materialTypeAssetCreator.ReportError(
+                                    "Material property '%s': Could not find the image '%s'", propertyId.GetFullName().GetCStr(),
+                                    property.m_value.GetValue<AZStd::string>().data());
                             }
                             else
                             {
-                                materialTypeAssetCreator.ReportError("Material property '%s': Could not find the image '%s'", propertyId.GetFullName().GetCStr(), property.m_value.GetValue<AZStd::string>().data());
+                                materialTypeAssetCreator.SetPropertyValue(propertyId.GetFullName(), imageAsset);
                             }
                         }
                         break;

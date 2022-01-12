@@ -12,7 +12,6 @@ import pytest
 import os
 import sys
 
-from ly_test_tools import LAUNCHERS
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../automatedtesting_shared')
 
 from base import TestAutomationBase
@@ -24,42 +23,49 @@ class TestAutomation(TestAutomationBase):
 
     def _run_prefab_test(self, request, workspace, editor, test_module, batch_mode=True, autotest_mode=True):
         self._run_test(request, workspace, editor, test_module, 
-            extra_cmdline_args=["--regset=/Amazon/Preferences/EnablePrefabSystem=true"], 
             batch_mode=batch_mode,
             autotest_mode=autotest_mode)
 
-    def test_PrefabLevel_OpensLevelWithEntities(self, request, workspace, editor, launcher_platform):
-        from .tests import PrefabLevel_OpensLevelWithEntities as test_module
+    def test_OpenLevel_ContainingTwoEntities(self, request, workspace, editor, launcher_platform):
+        from Prefab.tests.open_level import OpenLevel_ContainingTwoEntities as test_module
         self._run_prefab_test(request, workspace, editor, test_module)
 
-    def test_PrefabBasicWorkflow_CreatePrefab(self, request, workspace, editor, launcher_platform):
-        from .tests import PrefabBasicWorkflow_CreatePrefab as test_module
+    def test_CreatePrefab_WithSingleEntity(self, request, workspace, editor, launcher_platform):
+        from Prefab.tests.create_prefab import CreatePrefab_WithSingleEntity as test_module
         self._run_prefab_test(request, workspace, editor, test_module)
         
-    def test_PrefabBasicWorkflow_InstantiatePrefab(self, request, workspace, editor, launcher_platform):
-        from .tests import PrefabBasicWorkflow_InstantiatePrefab as test_module
+    def test_InstantiatePrefab_ContainingASingleEntity(self, request, workspace, editor, launcher_platform):
+        from Prefab.tests.instantiate_prefab import InstantiatePrefab_ContainingASingleEntity as test_module
         self._run_prefab_test(request, workspace, editor, test_module)
 
-    def test_PrefabBasicWorkflow_CreateAndDeletePrefab(self, request, workspace, editor, launcher_platform):
-        from .tests import PrefabBasicWorkflow_CreateAndDeletePrefab as test_module
+    def test_DeletePrefab_ContainingASingleEntity(self, request, workspace, editor, launcher_platform):
+        from Prefab.tests.delete_prefab import DeletePrefab_ContainingASingleEntity as test_module
         self._run_prefab_test(request, workspace, editor, test_module)
 
-    def test_PrefabBasicWorkflow_CreateAndReparentPrefab(self, request, workspace, editor, launcher_platform):
-        from .tests import PrefabBasicWorkflow_CreateAndReparentPrefab as test_module
+    def test_ReparentPrefab_UnderAnotherPrefab(self, request, workspace, editor, launcher_platform):
+        from Prefab.tests.reparent_prefab import ReparentPrefab_UnderAnotherPrefab as test_module
         self._run_prefab_test(request, workspace, editor, test_module, autotest_mode=False)
 
-    def test_PrefabBasicWorkflow_CreateReparentAndDetachPrefab(self, request, workspace, editor, launcher_platform):
-        from .tests import PrefabBasicWorkflow_CreateReparentAndDetachPrefab as test_module
+    def test_DetachPrefab_UnderAnotherPrefab(self, request, workspace, editor, launcher_platform):
+        from Prefab.tests.detach_prefab import DetachPrefab_UnderAnotherPrefab as test_module
         self._run_prefab_test(request, workspace, editor, test_module, autotest_mode=False)
 
-    def test_PrefabBasicWorkflow_CreateAndDuplicatePrefab(self, request, workspace, editor, launcher_platform):
-        from .tests import PrefabBasicWorkflow_CreateAndDuplicatePrefab as test_module
+    def test_DuplicatePrefab_ContainingASingleEntity(self, request, workspace, editor, launcher_platform):
+        from Prefab.tests.duplicate_prefab import DuplicatePrefab_ContainingASingleEntity as test_module
         self._run_prefab_test(request, workspace, editor, test_module)
 
-    def test_PrefabComplexWorflow_CreatePrefabOfChildEntity(self, request, workspace, editor, launcher_platform):
-        from .tests import PrefabComplexWorflow_CreatePrefabOfChildEntity as test_module
+    def test_CreatePrefab_UnderAnEntity(self, request, workspace, editor, launcher_platform):
+        from Prefab.tests.create_prefab import CreatePrefab_UnderAnEntity as test_module
         self._run_prefab_test(request, workspace, editor, test_module, autotest_mode=False)
 
-    def test_PrefabComplexWorflow_CreatePrefabInsidePrefab(self, request, workspace, editor, launcher_platform):
-        from .tests import PrefabComplexWorflow_CreatePrefabInsidePrefab as test_module
+    def test_CreatePrefab_UnderAnotherPrefab(self, request, workspace, editor, launcher_platform):
+        from Prefab.tests.create_prefab import CreatePrefab_UnderAnotherPrefab as test_module
+        self._run_prefab_test(request, workspace, editor, test_module, autotest_mode=False)
+
+    def test_DeleteEntity_UnderAnotherPrefab(self, request, workspace, editor, launcher_platform):
+        from Prefab.tests.delete_entity import DeleteEntity_UnderAnotherPrefab as test_module
+        self._run_prefab_test(request, workspace, editor, test_module, autotest_mode=False)
+
+    def test_DeleteEntity_UnderLevelPrefab(self, request, workspace, editor, launcher_platform):
+        from Prefab.tests.delete_entity import DeleteEntity_UnderLevelPrefab as test_module
         self._run_prefab_test(request, workspace, editor, test_module, autotest_mode=False)

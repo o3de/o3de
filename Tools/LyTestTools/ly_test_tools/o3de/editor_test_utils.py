@@ -24,7 +24,7 @@ def kill_all_ly_processes(include_asset_processor: bool = True) -> None:
     :return: None
     """
     LY_PROCESSES = [
-        'Editor', 'Profiler', 'RemoteConsole',
+        'Editor', 'Profiler', 'RemoteConsole', 'o3de'
     ]
     AP_PROCESSES = [
         'AssetProcessor', 'AssetProcessorBatch', 'AssetBuilder'
@@ -126,9 +126,9 @@ def retrieve_editor_log_content(run_id: int, log_name: str, workspace: AbstractW
         with open(editor_log) as f:
             editor_info = ""
             for line in f:
-                editor_info += f"[editor.log]  {line}"
+                editor_info += f"[{log_name}]  {line}"
     except Exception as ex:
-        editor_info = f"-- Error reading editor.log: {str(ex)} --"
+        editor_info = f"-- Error reading {log_name}: {str(ex)} --"
     return editor_info
 
 def retrieve_last_run_test_index_from_output(test_spec_list: list[EditorTestBase], output: str) -> int:

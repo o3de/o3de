@@ -61,6 +61,7 @@ namespace AZ
             RHI::ShaderInputNameIndex m_outerObbHalfLengthsRenderConstantIndex = "m_outerObbHalfLengths";
             RHI::ShaderInputNameIndex m_innerObbHalfLengthsRenderConstantIndex = "m_innerObbHalfLengths";
             RHI::ShaderInputNameIndex m_useParallaxCorrectionRenderConstantIndex = "m_useParallaxCorrection";
+            RHI::ShaderInputNameIndex m_exposureConstantIndex = "m_exposure";
             RHI::ShaderInputNameIndex m_reflectionCubeMapRenderImageIndex = "m_reflectionCubeMap";
         };
 
@@ -105,6 +106,14 @@ namespace AZ
 
             // enables or disables rendering of the visualization sphere
             void ShowVisualization(bool showVisualization);
+
+            // the exposure to use when rendering meshes with this probe's cubemap
+            void SetRenderExposure(float renderExposure);
+            float GetRenderExposure() const { return m_renderExposure; }
+
+            // the exposure to use when baking the probe cubemap
+            void SetBakeExposure(float bakeExposure);
+            float GetBakeExposure() const { return m_bakeExposure; }
 
         private:
 
@@ -157,6 +166,8 @@ namespace AZ
             RHI::ConstPtr<RHI::DrawPacket> m_blendWeightDrawPacket;
             RHI::ConstPtr<RHI::DrawPacket> m_renderOuterDrawPacket;
             RHI::ConstPtr<RHI::DrawPacket> m_renderInnerDrawPacket;
+            float m_renderExposure = 0.0f;
+            float m_bakeExposure = 0.0f;
             bool m_updateSrg = false;
 
             const RHI::DrawItemSortKey InvalidSortKey = static_cast<RHI::DrawItemSortKey>(-1);
@@ -169,8 +180,10 @@ namespace AZ
             RPI::Ptr<RPI::EnvironmentCubeMapPass> m_environmentCubeMapPass = nullptr;
             RPI::RenderPipelineId m_environmentCubeMapPipelineId;
             BuildCubeMapCallback m_callback;
-            RHI::ShaderInputNameIndex m_iblExposureConstantIndex = "m_iblExposure";
-            float m_previousExposure = 0.0f;
+            RHI::ShaderInputNameIndex m_globalIblExposureConstantIndex = "m_iblExposure";
+            RHI::ShaderInputNameIndex m_skyBoxExposureConstantIndex = "m_cubemapExposure";
+            float m_previousGlobalIblExposure = 0.0f;
+            float m_previousSkyBoxExposure = 0.0f;
             bool m_buildingCubeMap = false;
         };
 

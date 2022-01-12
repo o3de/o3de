@@ -10,8 +10,6 @@
 
 #if AZ_LOADSCREENCOMPONENT_ENABLED
 
-#include <IRenderer.h>
-
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <LyShine/Bus/UiCanvasBus.h>
@@ -31,12 +29,12 @@ namespace LyShine
 
     void LyShineLoadScreenComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.emplace_back(AZ_CRC("LyShineLoadScreenService", 0xBB5EAB17));
+        provided.emplace_back(AZ_CRC("LyShineLoadScreenService", 0xbb5eab17));
     }
 
     void LyShineLoadScreenComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.emplace_back(AZ_CRC("LyShineLoadScreenService", 0xBB5EAB17));
+        incompatible.emplace_back(AZ_CRC("LyShineLoadScreenService", 0xbb5eab17));
     }
 
     void LyShineLoadScreenComponent::Init()

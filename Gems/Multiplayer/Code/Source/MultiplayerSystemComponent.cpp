@@ -13,6 +13,7 @@
 #include <ConnectionData/ClientToServerConnectionData.h>
 #include <ConnectionData/ServerToClientConnectionData.h>
 #include <EntityDomains/FullOwnershipEntityDomain.h>
+#include <EntityDomains/NullEntityDomain.h>
 #include <ReplicationWindows/NullReplicationWindow.h>
 #include <ReplicationWindows/ServerToClientReplicationWindow.h>
 #include <Source/AutoGen/AutoComponentTypes.h>
@@ -831,17 +832,20 @@ namespace Multiplayer
             if (multiplayerType == MultiplayerAgentType::ClientServer || multiplayerType == MultiplayerAgentType::DedicatedServer)
             {
                 m_spawnNetboundEntities = true;
-                m_initEvent.Signal(m_networkInterface);
-
+                m_initEvent.Signal(m_networkInterface); //< Note! This might initialize our network entity manager for us
                 if (!m_networkEntityManager.IsInitialized())
                 {
-                    // Set up a full ownership domain if we didn't construct a domain during the initialize event
                     const AZ::CVarFixedString serverAddr = cl_serveraddr;
                     const uint16_t serverPort = cl_serverport;
                     const AzNetworking::ProtocolType serverProtocol = sv_protocol;
                     const AzNetworking::IpAddress hostId = AzNetworking::IpAddress(serverAddr.c_str(), serverPort, serverProtocol);
+                    // Set up a full ownership domain if we didn't construct a domain during the initialize event
                     m_networkEntityManager.Initialize(hostId, AZStd::make_unique<FullOwnershipEntityDomain>());
                 }
+            }
+            else if (multiplayerType == MultiplayerAgentType::Client)
+            {
+                m_networkEntityManager.Initialize(AzNetworking::IpAddress(), AZStd::make_unique<NullEntityDomain>());
             }
         }
         m_agentType = multiplayerType;
@@ -1106,7 +1110,6 @@ namespace Multiplayer
     void MultiplayerSystemComponent::OnAutonomousEntityReplicatorCreated()
     {
         m_autonomousEntityReplicatorCreatedHandler.Disconnect();
-        //m_networkEntityManager.GetNetworkEntityAuthorityTracker()->ResetTimeoutTime(AZ::TimeMs{ 2000 });
         m_clientMigrationEndEvent.Signal();
     }
 
@@ -1132,8 +1135,14 @@ namespace Multiplayer
         // make sure the player prefab path is lowercase (how it's stored in the cache folder)
         auto sv_defaultPlayerSpawnAssetLowerCase = static_cast<AZ::CVarFixedString>(sv_defaultPlayerSpawnAsset);
         AZStd::to_lower(sv_defaultPlayerSpawnAssetLowerCase.begin(), sv_defaultPlayerSpawnAssetLowerCase.end());
-        PrefabEntityId playerPrefabEntityId(AZ::Name(static_cast<AZ::CVarFixedString>(sv_defaultPlayerSpawnAssetLowerCase).c_str()));
+        PrefabEntityId playerPrefabEntityId(AZ::Name(sv_defaultPlayerSpawnAssetLowerCase.c_str()));
+
         INetworkEntityManager::EntityList entityList = m_networkEntityManager.CreateEntitiesImmediate(playerPrefabEntityId, NetEntityRole::Authority, AZ::Transform::CreateIdentity(), Multiplayer::AutoActivate::DoNotActivate);
+
+        AZ_Warning(
+            "MultiplayerSystemComponent", !entityList.empty(),
+            "SpawnDefaultPlayerPrefab failed. Missing sv_defaultPlayerSpawnAsset at path '%s'.\n",
+            sv_defaultPlayerSpawnAssetLowerCase.c_str())
 
         for (NetworkEntityHandle subEntity : entityList)
         {

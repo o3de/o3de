@@ -25,9 +25,7 @@
 
 #include <AzGameFramework/Application/GameApplication.h>
 
-#include <CryLibrary.h>
 #include <ISystem.h>
-#include <ITimer.h>
 #include <LegacyAllocator.h>
 
 #include <Launcher_Traits_Platform.h>
@@ -80,146 +78,6 @@ namespace
         }
     }
 
-#if AZ_TRAIT_LAUNCHER_USE_CRY_DYNAMIC_MODULE_HANDLE
-    // mimics AZ::DynamicModuleHandle but uses CryLibrary under the hood,
-    // which is necessary to properly load legacy Cry libraries on some platforms
-    class DynamicModuleHandle
-    {
-    public:
-        AZ_CLASS_ALLOCATOR(DynamicModuleHandle, AZ::OSAllocator, 0)
-
-        static AZStd::unique_ptr<DynamicModuleHandle> Create(const char* fullFileName)
-        {
-            return AZStd::unique_ptr<DynamicModuleHandle>(aznew DynamicModuleHandle(fullFileName));
-        }
-
-        DynamicModuleHandle(const DynamicModuleHandle&) = delete;
-        DynamicModuleHandle& operator=(const DynamicModuleHandle&) = delete;
-
-        ~DynamicModuleHandle()
-        {
-            Unload();
-        }
-
-        // argument is strictly to match the API of AZ::DynamicModuleHandle
-        bool Load(bool unused)
-        {
-            AZ_UNUSED(unused);
-
-            if (IsLoaded())
-            {
-                return true;
-            }
-
-            m_moduleHandle = CryLoadLibrary(m_fileName.c_str());
-            return IsLoaded();
-        }
-
-        bool Unload()
-        {
-            if (!IsLoaded())
-            {
-                return false;
-            }
-
-            return CryFreeLibrary(m_moduleHandle);
-        }
-
-        bool IsLoaded() const
-        {
-            return m_moduleHandle != nullptr;
-        }
-
-        const AZ::OSString& GetFilename() const
-        {
-            return m_fileName;
-        }
-
-        template<typename Function>
-        Function GetFunction(const char* functionName) const
-        {
-            if (IsLoaded())
-            {
-                return reinterpret_cast<Function>(CryGetProcAddress(m_moduleHandle, functionName));
-            }
-            else
-            {
-                return nullptr;
-            }
-        }
-
-
-    private:
-        DynamicModuleHandle(const char* fileFullName)
-            : m_fileName()
-            , m_moduleHandle(nullptr)
-        {
-            m_fileName = AZ::OSString::format("%s%s%s",
-                CrySharedLibraryPrefix, fileFullName, CrySharedLibraryExtension);
-        }
-
-        AZ::OSString m_fileName;
-        HMODULE m_moduleHandle;
-    };
-#else
-    // mimics AZ::DynamicModuleHandle but also calls InjectEnvironmentFunction on
-    // the loaded module which is necessary to properly load legacy Cry libraries
-    class DynamicModuleHandle
-    {
-    public:
-        AZ_CLASS_ALLOCATOR(DynamicModuleHandle, AZ::OSAllocator, 0);
-
-        static AZStd::unique_ptr<DynamicModuleHandle> Create(const char* fullFileName)
-        {
-            return AZStd::unique_ptr<DynamicModuleHandle>(aznew DynamicModuleHandle(fullFileName));
-        }
-
-        bool Load(bool isInitializeFunctionRequired)
-        {
-            const bool loaded = m_moduleHandle->Load(isInitializeFunctionRequired);
-            if (loaded)
-            {
-                // We need to inject the environment first thing so that allocators are available immediately
-                InjectEnvironmentFunction injectEnv = GetFunction<InjectEnvironmentFunction>(INJECT_ENVIRONMENT_FUNCTION);
-                if (injectEnv)
-                {
-                    auto env = AZ::Environment::GetInstance();
-                    injectEnv(env);
-                }
-            }
-            return loaded;
-        }
-
-        bool Unload()
-        {
-            bool unloaded = m_moduleHandle->Unload();
-            if (unloaded)
-            {
-                DetachEnvironmentFunction detachEnv = GetFunction<DetachEnvironmentFunction>(DETACH_ENVIRONMENT_FUNCTION);
-                if (detachEnv)
-                {
-                    detachEnv();
-                }
-            }
-            return unloaded;
-        }
-
-        template<typename Function>
-        Function GetFunction(const char* functionName) const
-        {
-            return m_moduleHandle->GetFunction<Function>(functionName);
-        }
-
-    private:
-        DynamicModuleHandle(const char* fileFullName)
-            : m_moduleHandle(AZ::DynamicModuleHandle::Create(fileFullName))
-        {
-        }
-
-        AZStd::unique_ptr<AZ::DynamicModuleHandle> m_moduleHandle;
-    };
-#endif // AZ_TRAIT_LAUNCHER_USE_CRY_DYNAMIC_MODULE_HANDLE
-
     void RunMainLoop(AzGameFramework::GameApplication& gameApplication)
     {
         // Ideally we'd just call GameApplication::RunMainLoop instead, but
@@ -254,7 +112,7 @@ namespace
             }
 
             // Update the AzFramework application tick bus
-            gameApplication.Tick(gEnv->pTimer->GetFrameTime());
+            gameApplication.Tick();
 
             // Post-update CrySystem
             if (system)
@@ -369,55 +227,68 @@ namespace O3DELauncher
         }
     }
 
-    void CompileCriticalAssets();
     void CreateRemoteFileIO();
 
-    bool ConnectToAssetProcessor()
-    {
-        bool connectedToAssetProcessor{};
-        // When the AssetProcessor is already launched it should take less than a second to perform a connection
-        // but when the AssetProcessor needs to be launch it could take up to 15 seconds to have the AssetProcessor initialize
-        // and able to negotiate a connection when running a debug build
-        // and to negotiate a connection
-        // Setting the connectTimeout to 3 seconds if not set within the settings registry
-
-        AzFramework::AssetSystem::ConnectionSettings connectionSettings;
-        AzFramework::AssetSystem::ReadConnectionSettingsFromSettingsRegistry(connectionSettings);
-
-        connectionSettings.m_launchAssetProcessorOnFailedConnection = true;
-        connectionSettings.m_connectionIdentifier = AzFramework::AssetSystem::ConnectionIdentifiers::Game;
-        connectionSettings.m_loggingCallback = []([[maybe_unused]] AZStd::string_view logData)
-        {
-            AZ_TracePrintf("Launcher", "%.*s", aznumeric_cast<int>(logData.size()), logData.data());
-        };
-
-        AzFramework::AssetSystemRequestBus::BroadcastResult(connectedToAssetProcessor, &AzFramework::AssetSystemRequestBus::Events::EstablishAssetProcessorConnection, connectionSettings);
-
-        if (connectedToAssetProcessor)
-        {
-            AZ_TracePrintf("Launcher", "Connected to Asset Processor\n");
-            CreateRemoteFileIO();
-            CompileCriticalAssets();
-        }
-
-        return connectedToAssetProcessor;
-    }
-
-    //! Compiles the critical assets that are within the Engine directory of Open 3D Engine
-    //! This code should be in a centralized location, but doesn't belong in AzFramework
-    //! since it is specific to how Open 3D Engine projects has assets setup
+    // This function make sure the launcher has signaled the "CriticalAssetsCompiled"
+    // lifecycle event as well as to load the "assetcatalog.xml" file if it exists
     void CompileCriticalAssets()
     {
-        // VERY early on, as soon as we can, request that the asset system make sure the following assets take priority over others,
-        // so that by the time we ask for them there is a greater likelihood that they're already good to go.
-        // these can be loaded later but are still important:
-        AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, "/texturemsg/");
-        AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, "engineassets/materials");
-        AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, "engineassets/geomcaches");
-        AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, "engineassets/objects");
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            AZ::ComponentApplicationLifecycle::SignalEvent(*settingsRegistry, "CriticalAssetsCompiled", R"({})");
+            // Reload the assetcatalog.xml at this point again
+            // Start Monitoring Asset changes over the network and load the AssetCatalog
+            auto LoadCatalog = [settingsRegistry](AZ::Data::AssetCatalogRequests* assetCatalogRequests)
+            {
+                if (AZ::IO::FixedMaxPath assetCatalogPath;
+                    settingsRegistry->Get(assetCatalogPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
+                {
+                    assetCatalogPath /= "assetcatalog.xml";
+                    assetCatalogRequests->LoadCatalog(assetCatalogPath.c_str());
+                }
+            };
+            AZ::Data::AssetCatalogRequestBus::Broadcast(AZStd::move(LoadCatalog));
+        }
+    }
 
-        // some are specifically extra important and will cause issues if missing completely:
-        AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::CompileAssetSync, "engineassets/objects/default.cgf");
+    // If the connect option is false, this function will return true
+    // to make sure the Launcher passes the connected to AP check
+    // If REMOTE_ASSET_PROCESSOR is not defined, then the launcher doesn't need
+    // to connect to the AssetProcessor and therefore this function returns true
+    bool ConnectToAssetProcessor([[maybe_unused]] bool connect)
+    {
+        bool connectedToAssetProcessor = true;
+#if defined(REMOTE_ASSET_PROCESSOR)
+        if (connect)
+        {
+            // When the AssetProcessor is already launched it should take less than a second to perform a connection
+            // but when the AssetProcessor needs to be launch it could take up to 15 seconds to have the AssetProcessor initialize
+            // and able to negotiate a connection when running a debug build
+            // and to negotiate a connection
+            // Setting the connectTimeout to 3 seconds if not set within the settings registry
+
+            AzFramework::AssetSystem::ConnectionSettings connectionSettings;
+            AzFramework::AssetSystem::ReadConnectionSettingsFromSettingsRegistry(connectionSettings);
+
+            connectionSettings.m_launchAssetProcessorOnFailedConnection = true;
+            connectionSettings.m_connectionIdentifier = AzFramework::AssetSystem::ConnectionIdentifiers::Game;
+            connectionSettings.m_loggingCallback = []([[maybe_unused]] AZStd::string_view logData)
+            {
+                AZ_TracePrintf("Launcher", "%.*s", aznumeric_cast<int>(logData.size()), logData.data());
+            };
+
+            AzFramework::AssetSystemRequestBus::BroadcastResult(connectedToAssetProcessor, &AzFramework::AssetSystemRequestBus::Events::EstablishAssetProcessorConnection, connectionSettings);
+
+            if (connectedToAssetProcessor)
+            {
+                AZ_TracePrintf("Launcher", "Connected to Asset Processor\n");
+                CreateRemoteFileIO();
+            }
+        }
+
+#endif
+        CompileCriticalAssets();
+        return connectedToAssetProcessor;
     }
 
     //! Remote FileIO to use as a Virtual File System
@@ -564,25 +435,21 @@ namespace O3DELauncher
 
             gameApplication.Start({}, gameApplicationStartupParams);
 
-#if defined(REMOTE_ASSET_PROCESSOR)
-            bool allowedEngineConnection = !systemInitParams.bToolMode && !systemInitParams.bTestMode && bg_ConnectToAssetProcessor;
 
             //connect to the asset processor using the bootstrap values
-            if (allowedEngineConnection)
+            const bool allowedEngineConnection = !systemInitParams.bToolMode && !systemInitParams.bTestMode && bg_ConnectToAssetProcessor;
+            if (!ConnectToAssetProcessor(allowedEngineConnection))
             {
-                if (!ConnectToAssetProcessor())
+                AZ::s64 waitForConnect{};
+                AZ::SettingsRegistryMergeUtils::PlatformGet(*settingsRegistry, waitForConnect,
+                    AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey, "wait_for_connect");
+                if (waitForConnect != 0)
                 {
-                    AZ::s64 waitForConnect{};
-                    AZ::SettingsRegistryMergeUtils::PlatformGet(*settingsRegistry, waitForConnect,
-                        AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey, "wait_for_connect");
-                    if (waitForConnect != 0)
-                    {
-                        AZ_Error("Launcher", false, "Failed to connect to AssetProcessor.");
-                        return ReturnCode::ErrAssetProccessor;
-                    }
+                    AZ_Error("Launcher", false, "Failed to connect to AssetProcessor.");
+                    return ReturnCode::ErrAssetProccessor;
                 }
             }
-#endif
+
             AZ_Assert(AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady(), "System allocator was not created or creation failed.");
             //Initialize the Debug trace instance to create necessary environment variables
             AZ::Debug::Trace::Instance().Init();
@@ -649,13 +516,13 @@ namespace O3DELauncher
 
         // Create CrySystem.
     #if !defined(AZ_MONOLITHIC_BUILD)
-        AZStd::unique_ptr<DynamicModuleHandle> crySystemLibrary;
-        PFNCREATESYSTEMINTERFACE CreateSystemInterface = nullptr;
-
-        crySystemLibrary = DynamicModuleHandle::Create("CrySystem");
-        if (crySystemLibrary->Load(false))
+        constexpr const char* crySystemLibraryName = AZ_TRAIT_OS_DYNAMIC_LIBRARY_PREFIX  "CrySystem" AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION;
+        AZStd::unique_ptr<AZ::DynamicModuleHandle> crySystemLibrary = AZ::DynamicModuleHandle::Create(crySystemLibraryName);
+        if (crySystemLibrary->Load(true))
         {
-            CreateSystemInterface = crySystemLibrary->GetFunction<PFNCREATESYSTEMINTERFACE>("CreateSystemInterface");
+            PFNCREATESYSTEMINTERFACE CreateSystemInterface =
+                crySystemLibrary->GetFunction<PFNCREATESYSTEMINTERFACE>("CreateSystemInterface");
+
             if (CreateSystemInterface)
             {
                 systemInitParams.pSystem = CreateSystemInterface(systemInitParams);

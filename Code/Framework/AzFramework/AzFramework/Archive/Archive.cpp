@@ -34,7 +34,6 @@
 #include <AzFramework/Archive/Archive.h>
 #include <AzFramework/Archive/NestedArchive.h>
 #include <AzFramework/Archive/ArchiveBus.h>
-#include <AzFramework/Archive/ArchiveVars.h>
 #include <AzFramework/Archive/MissingFileReport.h>
 #include <AzFramework/Archive/ZipDirFind.h>
 #include <AzFramework/Archive/ZipDirCacheFactory.h>
@@ -43,13 +42,10 @@
 
 namespace AZ::IO
 {
-    AZ_CVAR(int, sys_PakPriority, aznumeric_cast<int>(ArchiveVars{}.nPriority), nullptr, AZ::ConsoleFunctorFlags::Null,
-        "If set to 1, tells Archive to try to open the file in pak first, then go to file system");
-    AZ_CVAR(int, sys_PakMessageInvalidFileAccess, ArchiveVars{}.nMessageInvalidFileAccess, nullptr, AZ::ConsoleFunctorFlags::Null,
-        "Message Box synchronous file access when in game");
-
-    AZ_CVAR(int, sys_PakWarnOnPakAccessFailures, ArchiveVars{}.nWarnOnPakAccessFails, nullptr, AZ::ConsoleFunctorFlags::Null,
-        "If 1, access failure for Paks is treated as a warning, if zero it is only a log message.");
+    AZ_CVAR(int, sys_PakPriority, aznumeric_cast<int>(ArchiveVars{}.m_fileSearchPriority), nullptr, AZ::ConsoleFunctorFlags::Null,
+        "If set to 0, tells Archive to try to open the file on the file system first othewise check mounted paks.\n"
+        "If set to 1, tells Archive to try to open the file in pak first, then go to file system.\n"
+        "If set to 2, tells the Archive to only open files from the pak");
     AZ_CVAR(int, sys_report_files_not_found_in_paks, 0, nullptr, AZ::ConsoleFunctorFlags::Null,
         "Reports when files are searched for in paks and not found. 1 = log, 2 = warning, 3 = error");
     AZ_CVAR(int32_t, az_archive_verbosity, 0, nullptr, AZ::ConsoleFunctorFlags::Null,
@@ -437,9 +433,9 @@ namespace AZ::IO
 
 
     //////////////////////////////////////////////////////////////////////////
-    bool Archive::IsFileExist(AZStd::string_view sFilename, EFileSearchLocation fileLocation)
+    bool Archive::IsFileExist(AZStd::string_view sFilename, FileSearchLocation fileLocation)
     {
-        const AZ::IO::ArchiveLocationPriority nVarPakPriority = GetPakPriority();
+        const AZ::IO::FileSearchPriority nVarPakPriority = GetPakPriority();
 
         auto szFullPath = AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(sFilename);
         if (!szFullPath)
@@ -450,25 +446,25 @@ namespace AZ::IO
 
         switch(fileLocation)
         {
-        case IArchive::eFileLocation_Any:
+        case FileSearchLocation::Any:
             // Search for file based on pak priority
             switch (nVarPakPriority)
             {
-            case ArchiveLocationPriority::ePakPriorityFileFirst:
+            case FileSearchPriority::FileFirst:
                 return FileIOBase::GetDirectInstance()->Exists(szFullPath->c_str()) || FindPakFileEntry(szFullPath->Native());
-            case ArchiveLocationPriority::ePakPriorityPakFirst:
+            case FileSearchPriority::PakFirst:
                 return FindPakFileEntry(szFullPath->Native()) || IO::FileIOBase::GetDirectInstance()->Exists(szFullPath->c_str());
-            case ArchiveLocationPriority::ePakPriorityPakOnly:
+            case FileSearchPriority::PakOnly:
                 return FindPakFileEntry(szFullPath->Native());
             default:
-                AZ_Assert(false, "PakPriority %d doesn't match a value in the ArchiveLocationPriority enum",
+                AZ_Assert(false, "PakPriority %d doesn't match a value in the FileSearchPriority enum",
                     aznumeric_cast<int>(nVarPakPriority));
             }
             break;
-        case IArchive::eFileLocation_InPak:
+        case FileSearchLocation::InPak:
             return FindPakFileEntry(szFullPath->Native());
-        case IArchive::eFileLocation_OnDisk:
-            if (nVarPakPriority != ArchiveLocationPriority::ePakPriorityPakOnly)
+        case FileSearchLocation::OnDisk:
+            if (nVarPakPriority != FileSearchPriority::PakOnly)
             {
                 return FileIOBase::GetDirectInstance()->Exists(szFullPath->c_str());
             }
@@ -485,7 +481,7 @@ namespace AZ::IO
     //////////////////////////////////////////////////////////////////////////
     bool Archive::IsFolder(AZStd::string_view sPath)
     {
-        AZStd::fixed_string<AZ::IO::MaxPathLength > filePath{ sPath };
+        AZ::IO::FixedMaxPath filePath{ sPath };
         return AZ::IO::FileIOBase::GetDirectInstance()->IsDirectory(filePath.c_str());
     }
 
@@ -515,7 +511,7 @@ namespace AZ::IO
 
         // get the priority into local variable to avoid it changing in the course of
         // this function execution (?)
-        const ArchiveLocationPriority nVarPakPriority = GetPakPriority();
+        const FileSearchPriority nVarPakPriority = GetPakPriority();
 
         AZ::IO::OpenMode nOSFlags = AZ::IO::GetOpenModeFromStringMode(szMode);
 
@@ -628,17 +624,17 @@ namespace AZ::IO
 
         switch (nVarPakPriority)
         {
-        case ArchiveLocationPriority::ePakPriorityFileFirst:
+        case FileSearchPriority::FileFirst:
         {
             AZ::IO::HandleType fileHandle = OpenFromFileSystem();
             return fileHandle != AZ::IO::InvalidHandle ? fileHandle : OpenFromArchive();
         }
-        case ArchiveLocationPriority::ePakPriorityPakFirst:
+        case FileSearchPriority::PakFirst:
         {
             AZ::IO::HandleType fileHandle = OpenFromArchive();
             return fileHandle != AZ::IO::InvalidHandle ? fileHandle : OpenFromFileSystem();
         }
-        case ArchiveLocationPriority::ePakPriorityPakOnly:
+        case FileSearchPriority::PakOnly:
         {
             return OpenFromArchive();
         }
@@ -810,7 +806,7 @@ namespace AZ::IO
             return 0;
         }
 
-        if (GetPakPriority() == ArchiveLocationPriority::ePakPriorityFileFirst) // if the file system files have priority now..
+        if (GetPakPriority() == FileSearchPriority::FileFirst) // if the file system files have priority now..
         {
             IArchive::SignedFileSize nFileSize = GetFileSizeOnDisk(fullPath->Native());
             if (nFileSize != IArchive::FILE_NOT_PRESENT)
@@ -825,7 +821,7 @@ namespace AZ::IO
             return pFileEntry->desc.lSizeUncompressed;
         }
 
-        if (bAllowUseFileSystem || GetPakPriority() == ArchiveLocationPriority::ePakPriorityPakFirst) // if the archive files had more priority, we didn't attempt fopen before- try it now
+        if (bAllowUseFileSystem || GetPakPriority() == FileSearchPriority::PakFirst) // if the archive files had more priority, we didn't attempt fopen before- try it now
         {
             IArchive::SignedFileSize nFileSize = GetFileSizeOnDisk(fullPath->Native());
             if (nFileSize != IArchive::FILE_NOT_PRESENT)
@@ -1023,7 +1019,7 @@ namespace AZ::IO
 
 
     //////////////////////////////////////////////////////////////////////////
-    AZ::IO::ArchiveFileIterator Archive::FindFirst(AZStd::string_view pDir, EFileSearchType searchType)
+    AZ::IO::ArchiveFileIterator Archive::FindFirst(AZStd::string_view pDir, FileSearchLocation searchType)
     {
         auto szFullPath = AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(pDir);
         if (!szFullPath)
@@ -1036,18 +1032,21 @@ namespace AZ::IO
         bool bAllowUseFileSystem{};
         switch (searchType)
         {
-            case IArchive::eFileSearchType_AllowInZipsOnly:
-                bAllowUseFileSystem = false;
-                bScanZips = true;
-                break;
-            case IArchive::eFileSearchType_AllowOnDiskAndInZips:
-                bAllowUseFileSystem = true;
-                bScanZips = true;
-                break;
-            case IArchive::eFileSearchType_AllowOnDiskOnly:
-                bAllowUseFileSystem = true;
-                bScanZips = false;
-                break;
+        case FileSearchLocation::InPak:
+            bAllowUseFileSystem = false;
+            bScanZips = true;
+            break;
+        case FileSearchLocation::Any:
+            bAllowUseFileSystem = true;
+            bScanZips = true;
+            break;
+        case FileSearchLocation::OnDisk:
+            bAllowUseFileSystem = true;
+            bScanZips = false;
+            break;
+        default:
+            AZ_Assert(false, "Invalid search location value supplied");
+            break;
         }
 
         AZStd::intrusive_ptr pFindData = aznew AZ::IO::FindData();
@@ -1218,7 +1217,7 @@ namespace AZ::IO
         else
         {
             // [LYN-2376] Remove once legacy slice support is removed
-            AZStd::vector<AZStd::string> levelDirs;
+            AZStd::vector<AZ::IO::Path> levelDirs;
 
             if (addLevels)
             {
@@ -1241,6 +1240,10 @@ namespace AZ::IO
 
             m_arrZips.insert(revItZip.base(), desc);
 
+            // This lock is for m_arrZips.
+            // Unlock it now because the modification is complete, and events responding to this signal
+            // will attempt to lock the same mutex, causing the application to lock up.
+            lock.unlock();
             m_levelOpenEvent.Signal(levelDirs);
         }
 
@@ -1376,7 +1379,7 @@ namespace AZ::IO
             return true;
         }
 
-        if (AZ::IO::ArchiveFileIterator fileIterator = FindFirst(pWildcardIn, IArchive::eFileSearchType_AllowOnDiskOnly); fileIterator)
+        if (AZ::IO::ArchiveFileIterator fileIterator = FindFirst(pWildcardIn, FileSearchLocation::OnDisk); fileIterator)
         {
             AZStd::vector<AZ::IO::FixedMaxPath> files;
             do
@@ -1951,15 +1954,15 @@ namespace AZ::IO
     }
 
     // gets the current archive priority
-    ArchiveLocationPriority Archive::GetPakPriority() const
+    FileSearchPriority Archive::GetPakPriority() const
     {
-        int pakPriority = aznumeric_cast<int>(ArchiveVars{}.nPriority);
+        FileSearchPriority pakPriority = ArchiveVars{}.m_fileSearchPriority;
         if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
         {
-            [[maybe_unused]] AZ::GetValueResult getCvarResult = console->GetCvarValue("sys_PakPriority", pakPriority);
+            [[maybe_unused]] AZ::GetValueResult getCvarResult = console->GetCvarValue("sys_PakPriority", reinterpret_cast<int&>(pakPriority));
             AZ_Error("Archive", getCvarResult == AZ::GetValueResult::Success, "Lookup of 'sys_PakPriority console variable failed with error %s", AZ::GetEnumString(getCvarResult));
         }
-        return static_cast<ArchiveLocationPriority>(pakPriority);
+        return pakPriority;
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -2026,13 +2029,13 @@ namespace AZ::IO
 
                 switch (GetPakPriority())
                 {
-                case ArchiveLocationPriority::ePakPriorityFileFirst:
+                case FileSearchPriority::FileFirst:
                     info.m_conflictResolution = AZ::IO::ConflictResolution::PreferFile;
                     break;
-                case ArchiveLocationPriority::ePakPriorityPakFirst:
+                case FileSearchPriority::PakFirst:
                     info.m_conflictResolution = AZ::IO::ConflictResolution::PreferArchive;
                     break;
-                case ArchiveLocationPriority::ePakPriorityPakOnly:
+                case FileSearchPriority::PakOnly:
                     info.m_conflictResolution = AZ::IO::ConflictResolution::UseArchiveOnly;
                     break;
                 }
@@ -2143,13 +2146,13 @@ namespace AZ::IO
         return manifestInfo;
     }
 
-    AZStd::vector<AZStd::string> Archive::ScanForLevels(ZipDir::CachePtr pZip)
+    AZStd::vector<AZ::IO::Path> Archive::ScanForLevels(ZipDir::CachePtr pZip)
     {
-        AZStd::queue<AZStd::string> scanDirs;
-        AZStd::vector<AZStd::string> levelDirs;
-        AZStd::string currentDir = "levels";
-        AZStd::string currentDirPattern;
-        AZStd::string currentFilePattern;
+        AZStd::queue<AZ::IO::Path> scanDirs;
+        AZStd::vector<AZ::IO::Path> levelDirs;
+        AZ::IO::Path currentDir = "levels";
+        AZ::IO::Path currentDirPattern;
+        AZ::IO::Path currentFilePattern;
         ZipDir::FindDir findDir(pZip);
 
         findDir.FindFirst(currentDir.c_str());
@@ -2167,11 +2170,10 @@ namespace AZ::IO
                 scanDirs.pop();
             }
 
-            currentDirPattern = currentDir + AZ_FILESYSTEM_SEPARATOR_WILDCARD;
-            currentFilePattern = currentDir + AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING + "level.pak";
+            currentDirPattern = currentDir / "*";
+            currentFilePattern = currentDir / "level.pak";
 
-            ZipDir::FileEntry* fileEntry = findFile.FindExact(currentFilePattern.c_str());
-            if (fileEntry)
+            if (ZipDir::FileEntry* fileEntry = findFile.FindExact(currentFilePattern); fileEntry)
             {
                 levelDirs.emplace_back(currentDir);
                 continue;
@@ -2179,9 +2181,7 @@ namespace AZ::IO
 
             for (findDir.FindFirst(currentDirPattern.c_str()); findDir.GetDirEntry(); findDir.FindNext())
             {
-                AZStd::string_view dirName = findDir.GetDirName();
-                AZStd::string dirToAdd = AZStd::string::format("%s/%.*s", currentDir.data(), aznumeric_cast<int>(dirName.size()), dirName.data());
-                scanDirs.push(dirToAdd);
+                scanDirs.push(currentDir / findDir.GetDirName());
             }
         } while (!scanDirs.empty());
 

@@ -6,13 +6,11 @@
  *
  */
 
-#include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
 #include <Asset/EditorAssetSystemComponent.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/IOUtils.h>
-#include <AzCore/IO/FileIOEventBus.h>
 #include <AzCore/UnitTest/UnitTest.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <Editor/Framework/ScriptCanvasGraphUtilities.h>

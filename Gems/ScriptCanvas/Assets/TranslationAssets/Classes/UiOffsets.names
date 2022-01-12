@@ -1,0 +1,346 @@
+{
+    "entries": [
+        {
+            "base": "UiOffsets",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "UI Offsets",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "base": "SetBottom",
+                    "context": "UiOffsets",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Bottom"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Bottom is invoked"
+                    },
+                    "details": {
+                        "name": "Set Bottom"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F681BA9D-245C-4630-B20E-05DD752FAD57}",
+                            "details": {
+                                "name": "Offsets"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetRight",
+                    "context": "UiOffsets",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Right"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Right is invoked"
+                    },
+                    "details": {
+                        "name": "Set Right"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F681BA9D-245C-4630-B20E-05DD752FAD57}",
+                            "details": {
+                                "name": "Offsets"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetOffsets",
+                    "context": "UiOffsets",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Offsets"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Offsets is invoked"
+                    },
+                    "details": {
+                        "name": "Set Offsets"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F681BA9D-245C-4630-B20E-05DD752FAD57}",
+                            "details": {
+                                "name": "Offsets"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Left"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Top"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Right"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Bottom"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetTop",
+                    "context": "UiOffsets",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Top"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Top is invoked"
+                    },
+                    "details": {
+                        "name": "Set Top"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F681BA9D-245C-4630-B20E-05DD752FAD57}",
+                            "details": {
+                                "name": "Offsets"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetLeft",
+                    "context": "UiOffsets",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Left"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Left is invoked"
+                    },
+                    "details": {
+                        "name": "Set Left"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F681BA9D-245C-4630-B20E-05DD752FAD57}",
+                            "details": {
+                                "name": "Offsets"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Getleft",
+                    "details": {
+                        "name": "Get Left"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F681BA9D-245C-4630-B20E-05DD752FAD57}",
+                            "details": {
+                                "name": "Offsets"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Setleft",
+                    "details": {
+                        "name": "Set Left"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F681BA9D-245C-4630-B20E-05DD752FAD57}",
+                            "details": {
+                                "name": "Offsets"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Gettop",
+                    "details": {
+                        "name": "Get Top"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F681BA9D-245C-4630-B20E-05DD752FAD57}",
+                            "details": {
+                                "name": "Offsets"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Settop",
+                    "details": {
+                        "name": "Set Top"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F681BA9D-245C-4630-B20E-05DD752FAD57}",
+                            "details": {
+                                "name": "Offsets"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Getright",
+                    "details": {
+                        "name": "Get Right"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F681BA9D-245C-4630-B20E-05DD752FAD57}",
+                            "details": {
+                                "name": "Offsets"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Setright",
+                    "details": {
+                        "name": "Set Right"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F681BA9D-245C-4630-B20E-05DD752FAD57}",
+                            "details": {
+                                "name": "Offsets"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Getbottom",
+                    "details": {
+                        "name": "Get Bottom"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F681BA9D-245C-4630-B20E-05DD752FAD57}",
+                            "details": {
+                                "name": "Offsets"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Setbottom",
+                    "details": {
+                        "name": "Set Bottom"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F681BA9D-245C-4630-B20E-05DD752FAD57}",
+                            "details": {
+                                "name": "Offsets"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -132,24 +132,7 @@ function(add_project_json_external_subdirectories project_path)
     endif()
 endfunction()
 
-# Add the projects here so the above function is found
-foreach(project ${LY_PROJECTS})
-    file(REAL_PATH ${project} full_directory_path BASE_DIRECTORY ${CMAKE_SOURCE_DIR})
-    string(SHA256 full_directory_hash ${full_directory_path})
-
-    # Truncate the full_directory_hash down to 8 characters to avoid hitting the Windows 260 character path limit
-    # when the external subdirectory contains relative paths of significant length
-    string(SUBSTRING ${full_directory_hash} 0 8 full_directory_hash)
-
-    get_filename_component(project_folder_name ${project} NAME)
-    list(APPEND LY_PROJECTS_FOLDER_NAME ${project_folder_name})
-    add_subdirectory(${project} "${project_folder_name}-${full_directory_hash}")
-    ly_generate_project_build_path_setreg(${full_directory_path})
-    add_project_json_external_subdirectories(${full_directory_path})
-
-    # Get project name
-    o3de_read_json_key(project_name ${full_directory_path}/project.json "project_name")
-
+function(install_project_asset_artifacts project_real_path)
     # The cmake tar command has a bit of a flaw
     # Any paths within the archive files it creates are relative to the current working directory.
     # That means with the setup of:
@@ -172,13 +155,12 @@ if("${CMAKE_INSTALL_CONFIG_NAME}" MATCHES "^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$")
     if(NOT DEFINED LY_ASSET_DEPLOY_ASSET_TYPE)
         set(LY_ASSET_DEPLOY_ASSET_TYPE @LY_ASSET_DEPLOY_ASSET_TYPE@)
     endif()
-    message(STATUS "Generating ${install_pak_output_folder}/engine.pak from @full_directory_path@/Cache/${LY_ASSET_DEPLOY_ASSET_TYPE}")
+    message(STATUS "Generating ${install_pak_output_folder}/engine.pak from @project_real_path@/Cache/${LY_ASSET_DEPLOY_ASSET_TYPE}")
     file(MAKE_DIRECTORY "${install_pak_output_folder}")
-    cmake_path(SET cache_product_path "@full_directory_path@/Cache/${LY_ASSET_DEPLOY_ASSET_TYPE}")
+    cmake_path(SET cache_product_path "@project_real_path@/Cache/${LY_ASSET_DEPLOY_ASSET_TYPE}")
     # Copy the generated cmake_dependencies.*.setreg files for loading gems in non-monolithic to the cache
     file(GLOB gem_source_paths_setreg "${runtime_output_directory_RELEASE}/Registry/*.setreg")
-    # The MergeSettingsToRegistry_TargetBuildDependencyRegistry function looks for lowercase "registry"
-    # So make sure the to copy it to a lowercase path, so that it works on non-case sensitive filesystems
+    # The MergeSettingsToRegistry_TargetBuildDependencyRegistry function looks for lowercase "registry" directory
     file(MAKE_DIRECTORY "${cache_product_path}/registry")
     file(COPY ${gem_source_paths_setreg} DESTINATION "${cache_product_path}/registry")
 
@@ -194,11 +176,42 @@ if("${CMAKE_INSTALL_CONFIG_NAME}" MATCHES "^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$")
             message(STATUS "${install_output_folder}/engine.pak generated")
         endif()
     endif()
+
+    # Remove copied .setreg files from the Cache directory
+    unset(artifacts_to_remove)
+    foreach(gem_source_path_setreg IN LISTS gem_source_paths_setreg)
+        cmake_path(GET gem_source_path_setreg FILENAME setreg_filename)
+        list(APPEND artifacts_to_remove "${cache_product_path}/registry/${setreg_filename}")
+    endforeach()
+    if (artifacts_to_remove)
+        file(REMOVE ${artifacts_to_remove})
+    endif()
 endif()
 ]=])
 
     string(CONFIGURE "${install_engine_pak_template}" install_engine_pak_code @ONLY)
     ly_install_run_code("${install_engine_pak_code}")
+endfunction()
+
+# Add the projects here so the above function is found
+foreach(project ${LY_PROJECTS})
+    file(REAL_PATH ${project} full_directory_path BASE_DIRECTORY ${CMAKE_SOURCE_DIR})
+    string(SHA256 full_directory_hash ${full_directory_path})
+
+    # Truncate the full_directory_hash down to 8 characters to avoid hitting the Windows 260 character path limit
+    # when the external subdirectory contains relative paths of significant length
+    string(SUBSTRING ${full_directory_hash} 0 8 full_directory_hash)
+
+    get_filename_component(project_folder_name ${project} NAME)
+    list(APPEND LY_PROJECTS_FOLDER_NAME ${project_folder_name})
+    add_subdirectory(${project} "${project_folder_name}-${full_directory_hash}")
+    ly_generate_project_build_path_setreg(${full_directory_path})
+    add_project_json_external_subdirectories(${full_directory_path})
+
+    # Get project name
+    o3de_read_json_key(project_name ${full_directory_path}/project.json "project_name")
+
+   install_project_asset_artifacts(${full_directory_path})
 
 endforeach()
 

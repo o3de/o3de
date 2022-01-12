@@ -53,6 +53,7 @@ set(FILES
     Materials/Types/StandardPBR_LowEndForward.azsl
     Materials/Types/StandardPBR_LowEndForward.shader
     Materials/Types/StandardPBR_LowEndForward_EDS.shader
+    Materials/Types/StandardPBR_Metallic.lua
     Materials/Types/StandardPBR_ParallaxState.lua
     Materials/Types/StandardPBR_Roughness.lua
     Materials/Types/StandardPBR_ShaderEnable.lua
@@ -129,6 +130,7 @@ set(FILES
     Passes/DownsampleMipChain.pass
     Passes/EnvironmentCubeMapDepthMSAA.pass
     Passes/EnvironmentCubeMapForwardMSAA.pass
+    Passes/EnvironmentCubeMapForwardSubsurfaceMSAA.pass
     Passes/EnvironmentCubeMapPipeline.pass
     Passes/EnvironmentCubeMapSkyBox.pass
     Passes/EsmShadowmaps.pass
@@ -198,6 +200,7 @@ set(FILES
     Passes/Skinning.pass
     Passes/SkyBox.pass
     Passes/SkyBox_TwoOutputs.pass
+    Passes/SlowClear.pass
     Passes/SMAA1xApplyLinearHDRColor.pass
     Passes/SMAA1xApplyPerceptualColor.pass
     Passes/SMAABlendingWeightCalculation.pass
@@ -205,7 +208,6 @@ set(FILES
     Passes/SMAAEdgeDetection.pass
     Passes/SMAANeighborhoodBlending.pass
     Passes/SsaoCompute.pass
-    Passes/SsaoHalfRes.pass
     Passes/SsaoParent.pass
     Passes/SubsurfaceScattering.pass
     Passes/Taa.pass
@@ -304,6 +306,7 @@ set(FILES
     ShaderLib/Atom/Features/ScreenSpace/ScreenSpaceUtil.azsli
     ShaderLib/Atom/Features/Shadow/BicubicPcfFilters.azsli
     ShaderLib/Atom/Features/Shadow/DirectionalLightShadow.azsli
+    ShaderLib/Atom/Features/Shadow/ESM.azsli
     ShaderLib/Atom/Features/Shadow/NormalOffsetShadows.azsli
     ShaderLib/Atom/Features/Shadow/ProjectedShadow.azsli
     ShaderLib/Atom/Features/Shadow/ReceiverPlaneDepthBias.azsli
@@ -363,8 +366,6 @@ set(FILES
     Shaders/LightCulling/LightCullingRemap.shader
     Shaders/LightCulling/LightCullingTilePrepare.azsl
     Shaders/LightCulling/LightCullingTilePrepare.shader
-    Shaders/LuxCore/RenderTexture.azsl
-    Shaders/LuxCore/RenderTexture.shader
     Shaders/MorphTargets/MorphTargetCS.azsl
     Shaders/MorphTargets/MorphTargetCS.shader
     Shaders/MorphTargets/MorphTargetSRG.azsli

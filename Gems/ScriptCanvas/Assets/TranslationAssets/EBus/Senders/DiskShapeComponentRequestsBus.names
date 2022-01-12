@@ -1,0 +1,82 @@
+{
+    "entries": [
+        {
+            "base": "DiskShapeComponentRequestsBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Disk Shape Component",
+                "category": "Rendering/Shapes"
+            },
+            "methods": [
+                {
+                    "base": "GetDiskConfiguration",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Disk Configuration"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Disk Configuration is invoked"
+                    },
+                    "details": {
+                        "name": "Get Disk Configuration"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{24EC2919-F198-4871-8404-F6DE8A16275E}",
+                            "details": {
+                                "name": "Configuration",
+                                "tooltip": "Disk shape configuration parameters"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetRadius",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Radius"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Radius is invoked"
+                    },
+                    "details": {
+                        "name": "Set Radius"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetRadius",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Radius"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Radius is invoked"
+                    },
+                    "details": {
+                        "name": "Get Radius"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

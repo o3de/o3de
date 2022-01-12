@@ -130,7 +130,7 @@ namespace EMotionFX
         }
     }
 
-    Transform UniformMotionData::SampleJointTransform(const SampleSettings& settings, size_t jointSkeletonIndex) const
+    Transform UniformMotionData::SampleJointTransform(const MotionDataSampleSettings& settings, size_t jointSkeletonIndex) const
     {
         const Actor* actor = settings.m_actorInstance->GetActor();
         const MotionLinkData* motionLinkData = FindMotionLinkData(actor);
@@ -147,8 +147,7 @@ namespace EMotionFX
         size_t indexB;
         CalculateInterpolationIndicesUniform(settings.m_sampleTime, m_sampleSpacing, m_duration, m_numSamples, indexA, indexB, t);
 
-        const Skeleton* skeleton = actor->GetSkeleton();
-        const bool inPlace = (settings.m_inPlace && skeleton->GetNode(jointSkeletonIndex)->GetIsRootNode());
+        const bool inPlace = (settings.m_inPlace && jointSkeletonIndex == actor->GetMotionExtractionNodeIndex());
 
         // Sample the interpolated data.
         Transform result;
@@ -196,7 +195,7 @@ namespace EMotionFX
         return result;
     }
 
-    void UniformMotionData::SamplePose(const SampleSettings& settings, Pose* outputPose) const
+    void UniformMotionData::SamplePose(const MotionDataSampleSettings& settings, Pose* outputPose) const
     {
         AZ_Assert(settings.m_actorInstance, "Expecting a valid actor instance.");
         const Actor* actor = settings.m_actorInstance->GetActor();
@@ -210,13 +209,12 @@ namespace EMotionFX
 
         const AZStd::vector<size_t>& jointLinks = motionLinkData->GetJointDataLinks();
         const ActorInstance* actorInstance = settings.m_actorInstance;
-        const Skeleton* skeleton = actor->GetSkeleton();
         const Pose* bindPose = actorInstance->GetTransformData()->GetBindPose();
         const size_t numNodes = actorInstance->GetNumEnabledNodes();
         for (size_t i = 0; i < numNodes; ++i)
         {
             const size_t skeletonJointIndex = actorInstance->GetEnabledNode(i);
-            const bool inPlace = (settings.m_inPlace && skeleton->GetNode(skeletonJointIndex)->GetIsRootNode());
+            const bool inPlace = (settings.m_inPlace && skeletonJointIndex == actor->GetMotionExtractionNodeIndex());
 
             // Sample the interpolated data.
             Transform result;

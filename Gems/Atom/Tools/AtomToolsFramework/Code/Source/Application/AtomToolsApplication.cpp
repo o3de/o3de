@@ -12,6 +12,7 @@
 #include <AtomToolsFramework/Window/AtomToolsMainWindowFactoryRequestBus.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
 
+#include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
@@ -79,12 +80,18 @@ namespace AtomToolsFramework
         m_styleManager.reset(new AzQtComponents::StyleManager(this));
         m_styleManager->initialize(this, engineRootPath);
 
-        connect(&m_timer, &QTimer::timeout, this, [&]()
+        m_timer.setInterval(1);
+        connect(&m_timer, &QTimer::timeout, this, [this]()
         {
             this->PumpSystemEventLoopUntilEmpty();
             this->Tick();
         });
 
+        connect(this, &QGuiApplication::applicationStateChanged, this, [this]()
+        {
+            // Limit the update interval when not in focus to reduce power consumption and interference with other applications
+            this->m_timer.setInterval((applicationState() & Qt::ApplicationActive) ? 1 : 32);
+        });
     }
 
     AtomToolsApplication ::~AtomToolsApplication()
@@ -169,7 +176,8 @@ namespace AtomToolsFramework
 
         Base::StartCommon(systemEntity);
 
-        m_traceLogger.PrepareLogFile(GetBuildTargetName() + ".log");
+        const bool clearLogFile = GetSettingOrDefault("/O3DE/AtomToolsFramework/Application/ClearLogOnStart", false);
+        m_traceLogger.OpenLogFile(GetBuildTargetName() + ".log", clearLogFile);
 
         AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusConnect();
         AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotificationBus::Broadcast(
@@ -288,10 +296,24 @@ namespace AtomToolsFramework
             QMessageBox::critical(
                 activeWindow(), QString("Failed to compile critical assets"),
                 QString("Failed to compile the following critical assets:\n%1\n%2")
-                    .arg(failedAssets.join(",\n"))
-                    .arg("Make sure this is an Atom project."));
+                .arg(failedAssets.join(",\n"))
+                .arg("Make sure this is an Atom project."));
             ExitMainLoop();
         }
+
+        AZ::ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "CriticalAssetsCompiled", R"({})");
+        // Reload the assetcatalog.xml at this point again
+        // Start Monitoring Asset changes over the network and load the AssetCatalog
+        auto LoadCatalog = [settingsRegistry = m_settingsRegistry.get()](AZ::Data::AssetCatalogRequests* assetCatalogRequests)
+        {
+            if (AZ::IO::FixedMaxPath assetCatalogPath;
+                settingsRegistry->Get(assetCatalogPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
+            {
+                assetCatalogPath /= "assetcatalog.xml";
+                assetCatalogRequests->LoadCatalog(assetCatalogPath.c_str());
+            }
+        };
+        AZ::Data::AssetCatalogRequestBus::Broadcast(AZStd::move(LoadCatalog));
     }
 
     void AtomToolsApplication::SaveSettings()
@@ -454,10 +476,10 @@ namespace AtomToolsFramework
         return false;
     }
 
-    void AtomToolsApplication::Tick(float deltaOverride)
+    void AtomToolsApplication::Tick()
     {
         TickSystem();
-        Base::Tick(deltaOverride);
+        Base::Tick();
 
         if (WasExitMainLoopRequested())
         {

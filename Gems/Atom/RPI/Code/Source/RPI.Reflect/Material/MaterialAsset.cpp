@@ -226,10 +226,12 @@ namespace AZ
             
             if (changesWereApplied)
             {
-                AZ_Warning("MaterialAsset", false,
+                AZ_Warning(
+                    "MaterialAsset", false,
                     "This material is based on version '%u' of %s, but the material type is now at version '%u'. "
-                    "Automatic updates are available. Consider updating the .material source file.",
-                    originalVersion, m_materialTypeAsset.ToString<AZStd::string>().c_str(), m_materialTypeAsset->GetVersion());
+                    "Automatic updates are available. Consider updating the .material source file for '%s'.",
+                    originalVersion, m_materialTypeAsset.ToString<AZStd::string>().c_str(), m_materialTypeAsset->GetVersion(),
+                    GetId().ToString<AZStd::string>().c_str());
             }
 
             m_materialTypeVersion = m_materialTypeAsset->GetVersion();
@@ -237,7 +239,7 @@ namespace AZ
 
         void MaterialAsset::ReinitializeMaterialTypeAsset(Data::Asset<Data::AssetData> asset)
         {
-            Data::Asset<MaterialTypeAsset> newMaterialTypeAsset = { asset.GetAs<MaterialTypeAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
+            Data::Asset<MaterialTypeAsset> newMaterialTypeAsset = Data::static_pointer_cast<MaterialTypeAsset>(asset);
 
             if (newMaterialTypeAsset)
             {

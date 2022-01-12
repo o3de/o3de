@@ -2,6 +2,7 @@
     "gem_name": "GameState",
     "display_name": "Game State",
     "license": "Apache-2.0 Or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "origin": "Open 3D Engine - o3de.org",
     "type": "Code",
     "summary": "The Game State Gem provides a generic framework to determine and manage game states and game state transitions in Open 3D Engine.",

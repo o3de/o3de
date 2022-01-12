@@ -30,6 +30,9 @@ namespace AzToolsFramework::Prefab
         //! @param entityId The entityId of the entity whose owning instance we want the prefab system to focus on.
         virtual PrefabFocusOperationResult FocusOnOwningPrefab(AZ::EntityId entityId) = 0;
 
+        //! Set the focused prefab instance to the parent of the currently focused prefab instance. Supports undo/redo.
+        virtual PrefabFocusOperationResult FocusOnParentOfFocusedPrefab(AzFramework::EntityContextId entityContextId) = 0;
+
         //! Set the focused prefab instance to the instance at position index of the current path. Supports undo/redo.
         //! @param index The index of the instance in the current path that we want the prefab system to focus on.
         virtual PrefabFocusOperationResult FocusOnPathIndex(AzFramework::EntityContextId entityContextId, int index) = 0;
@@ -54,5 +57,19 @@ namespace AzToolsFramework::Prefab
         //! Returns the size of the path to the currently focused instance.
         virtual const int GetPrefabFocusPathLength(AzFramework::EntityContextId entityContextId) const = 0;
     };
+
+    /**
+     * The primary purpose of this bus is to facilitate writing automated tests for prefab focus mode.
+     * If you would like to integrate prefabs focus mode into your system, please call PrefabFocusPublicInterface
+     * for better performance.
+     */
+    class PrefabFocusPublicRequests
+        : public AZ::EBusTraits
+    {
+    public:
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+    };
+
+    using PrefabFocusPublicRequestBus = AZ::EBus<PrefabFocusPublicInterface, PrefabFocusPublicRequests>;
 
 } // namespace AzToolsFramework::Prefab

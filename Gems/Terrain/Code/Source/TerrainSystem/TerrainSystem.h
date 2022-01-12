@@ -138,6 +138,7 @@ namespace Terrain
 
     private:
         void ClampPosition(float x, float y, AZ::Vector2& outPosition, AZ::Vector2& normalizedDelta) const;
+        bool InWorldBounds(float x, float y) const;
 
         AZ::EntityId FindBestAreaEntityAtPosition(float x, float y, AZ::Aabb& bounds) const;
         void GetOrderedSurfaceWeights(
@@ -168,7 +169,14 @@ namespace Terrain
         bool m_terrainSurfacesDirty = false;
         AZ::Aabb m_dirtyRegion;
 
+        // Cached data for each terrain area to use when looking up terrain data.
+        struct TerrainAreaData
+        {
+            AZ::Aabb m_areaBounds{ AZ::Aabb::CreateNull() };
+            bool m_useGroundPlane{ false };
+        };
+
         mutable AZStd::shared_mutex m_areaMutex;
-        AZStd::map<AZ::EntityId, AZ::Aabb, TerrainLayerPriorityComparator> m_registeredAreas;
+        AZStd::map<AZ::EntityId, TerrainAreaData, TerrainLayerPriorityComparator> m_registeredAreas;
     };
 } // namespace Terrain

@@ -26,6 +26,7 @@
 #include <AzCore/std/functional.h>
 #include <AzCore/std/parallel/condition_variable.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AzCore/UnitTest/Mocks/MockFileIOBase.h>
 #include <AZTestShared/Utils/Utils.h>
 #include <Streamer/IStreamerMock.h>
 #include <Tests/Asset/BaseAssetManagerTest.h>
@@ -131,8 +132,8 @@ namespace UnitTest
     * This will test the aspect of the system where ObjectStreams and asset jobs loading dependent
     * assets will do the work in their own thread.
     */
-    class AssetJobsFloodTest
-        : public BaseAssetManagerTest
+
+    class AssetJobsFloodTest : public DisklessAssetManagerBase
     {
     public:
         TestAssetManager* m_testAssetManager{ nullptr };
@@ -183,15 +184,14 @@ namespace UnitTest
 
         void SetUp() override
         {
-            BaseAssetManagerTest::SetUp();
+            DisklessAssetManagerBase::SetUp();
             SetupTest();
         }
 
         void TearDown() override
         {
-            TearDownTest();
             AssetManager::Destroy();
-            BaseAssetManagerTest::TearDown();
+            DisklessAssetManagerBase::TearDown();
         }
 
         void SetupAssets()
@@ -257,9 +257,9 @@ namespace UnitTest
                 AssetWithSerializedData ap2;
                 AssetWithSerializedData ap3;
 
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset4.txt", AZ::DataStream::ST_XML, &ap1, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset5.txt", AZ::DataStream::ST_XML, &ap2, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset6.txt", AZ::DataStream::ST_XML, &ap3, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset4.txt", &ap1, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset5.txt", &ap2, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset6.txt", &ap3, m_serializeContext));
 
                 AssetWithAssetReference assetWithPreload1;
                 AssetWithAssetReference assetWithPreload2;
@@ -273,11 +273,11 @@ namespace UnitTest
                 noLoadAsset.m_asset = m_testAssetManager->CreateAsset<AssetWithSerializedData>(MyAsset2Id, AssetLoadBehavior::NoLoad);
                 EXPECT_EQ(m_assetHandlerAndCatalog->m_numCreations, 4);
 
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset1.txt", AZ::DataStream::ST_XML, &assetWithPreload1, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset2.txt", AZ::DataStream::ST_XML, &assetWithPreload2, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset3.txt", AZ::DataStream::ST_XML, &assetWithPreload3, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "DelayLoadAsset.txt", AZ::DataStream::ST_XML, &delayedAsset, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "NoLoadAsset.txt", AZ::DataStream::ST_XML, &noLoadAsset, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset1.txt", &assetWithPreload1, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset2.txt", &assetWithPreload2, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset3.txt", &assetWithPreload3, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("DelayLoadAsset.txt", &delayedAsset, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("NoLoadAsset.txt", &noLoadAsset, m_serializeContext));
 
                 AssetWithQueueAndPreLoadReferences preLoadRoot;
                 AssetWithQueueAndPreLoadReferences preLoadA;
@@ -297,16 +297,16 @@ namespace UnitTest
                 preLoadBrokenA.m_preLoad = m_testAssetManager->CreateAsset<AssetWithAssetReference>(PreloadBrokenDepBId, AssetLoadBehavior::PreLoad);
                 preLoadBrokenB.m_preLoad = m_testAssetManager->CreateAsset<AssetWithAssetReference>(PreloadAssetNoDataId, AssetLoadBehavior::PreLoad);
 
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "PreLoadRoot.txt", AZ::DataStream::ST_XML, &preLoadRoot, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "PreLoadA.txt", AZ::DataStream::ST_XML, &preLoadA, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "PreLoadB.txt", AZ::DataStream::ST_XML, &noRefs, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "PreLoadC.txt", AZ::DataStream::ST_XML, &noRefs, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "QueueLoadA.txt", AZ::DataStream::ST_XML, &queueLoadA, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "QueueLoadB.txt", AZ::DataStream::ST_XML, &noRefs, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "QueueLoadC.txt", AZ::DataStream::ST_XML, &noRefs, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "PreLoadBrokenA.txt", AZ::DataStream::ST_XML, &preLoadBrokenA, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "PreLoadBrokenB.txt", AZ::DataStream::ST_XML, &preLoadBrokenB, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "PreLoadNoData.txt", AZ::DataStream::ST_XML, &noRefs, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("PreLoadRoot.txt", &preLoadRoot, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("PreLoadA.txt", &preLoadA, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("PreLoadB.txt", &noRefs, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("PreLoadC.txt", &noRefs, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("QueueLoadA.txt", &queueLoadA, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("QueueLoadB.txt", &noRefs, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("QueueLoadC.txt", &noRefs, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("PreLoadBrokenA.txt", &preLoadBrokenA, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("PreLoadBrokenB.txt", &preLoadBrokenB, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("PreLoadNoData.txt", &noRefs, m_serializeContext));
 
                 AssetWithQueueAndPreLoadReferences circularA;
                 AssetWithQueueAndPreLoadReferences circularB;
@@ -318,41 +318,13 @@ namespace UnitTest
                 circularC.m_preLoad = m_testAssetManager->CreateAsset<AssetWithAssetReference>(CircularBId, AssetLoadBehavior::PreLoad);
                 circularD.m_preLoad = circularC.m_preLoad;
 
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "CircularA.txt", AZ::DataStream::ST_XML, &circularA, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "CircularB.txt", AZ::DataStream::ST_XML, &circularB, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "CircularC.txt", AZ::DataStream::ST_XML, &circularC, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "CircularD.txt", AZ::DataStream::ST_XML, &circularD, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("CircularA.txt", &circularA, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("CircularB.txt", &circularB, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("CircularC.txt", &circularC, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("CircularD.txt", &circularD, m_serializeContext));
+
                 m_assetHandlerAndCatalog->m_numCreations = 0;
             }
-        }
-
-        void TearDownTest()
-        {
-            DeleteAssetFromDisk(GetTestFolderPath() + "TestAsset4.txt");
-            DeleteAssetFromDisk(GetTestFolderPath() + "TestAsset5.txt");
-            DeleteAssetFromDisk(GetTestFolderPath() + "TestAsset6.txt");
-
-            DeleteAssetFromDisk(GetTestFolderPath() + "TestAsset1.txt");
-            DeleteAssetFromDisk(GetTestFolderPath() + "TestAsset2.txt");
-            DeleteAssetFromDisk(GetTestFolderPath() + "TestAsset3.txt");
-            DeleteAssetFromDisk(GetTestFolderPath() + "DelayLoadAsset.txt");
-            DeleteAssetFromDisk(GetTestFolderPath() + "NoLoadAsset.txt");
-
-            DeleteAssetFromDisk(GetTestFolderPath() + "PreLoadRoot.txt");
-            DeleteAssetFromDisk(GetTestFolderPath() + "PreLoadA.txt");
-            DeleteAssetFromDisk(GetTestFolderPath() + "PreLoadB.txt");
-            DeleteAssetFromDisk(GetTestFolderPath() + "PreLoadC.txt");
-            DeleteAssetFromDisk(GetTestFolderPath() + "QueueLoadA.txt");
-            DeleteAssetFromDisk(GetTestFolderPath() + "QueueLoadB.txt");
-            DeleteAssetFromDisk(GetTestFolderPath() + "QueueLoadC.txt");
-            DeleteAssetFromDisk(GetTestFolderPath() + "PreLoadBrokenA.txt");
-            DeleteAssetFromDisk(GetTestFolderPath() + "PreLoadBrokenB.txt");
-            DeleteAssetFromDisk(GetTestFolderPath() + "PreLoadNoData.txt");
-
-            DeleteAssetFromDisk(GetTestFolderPath() + "CircularA.txt");
-            DeleteAssetFromDisk(GetTestFolderPath() + "CircularB.txt");
-            DeleteAssetFromDisk(GetTestFolderPath() + "CircularC.txt");
-            DeleteAssetFromDisk(GetTestFolderPath() + "CircularD.txt");
         }
 
         void CheckFinishedCreationsAndDestructions()
@@ -367,7 +339,7 @@ namespace UnitTest
     };
 
     static constexpr AZStd::chrono::seconds MaxDispatchTimeoutSeconds = BaseAssetManagerTest::DefaultTimeoutSeconds * 12;
-    
+
     template <typename Pred>
     bool DispatchEventsUntilCondition(AZ::Data::AssetManager& assetManager, Pred&& conditionPredicate,
         AZStd::chrono::seconds logIntervalSeconds = BaseAssetManagerTest::DefaultTimeoutSeconds,
@@ -609,23 +581,8 @@ namespace UnitTest
         EXPECT_EQ(baseStatus, expected_base_status);
     }
 
-    struct DebugListener : AZ::Interface<IDebugAssetEvent>::Registrar
-    {
-        void AssetStatusUpdate(AZ::Data::AssetId id, AZ::Data::AssetData::AssetStatus status) override
-        {
-            AZ::Debug::Trace::Output(
-                "", AZStd::string::format("Status %s - %d\n", id.ToString<AZStd::string>().c_str(), static_cast<int>(status)).c_str());
-        }
-        void ReleaseAsset(AZ::Data::AssetId id) override
-        {
-            AZ::Debug::Trace::Output(
-                "", AZStd::string::format("Release %s\n", id.ToString<AZStd::string>().c_str()).c_str());
-        }
-    };
-
     TEST_F(AssetJobsFloodTest, RapidAcquireAndRelease)
     {
-        DebugListener listener;  
         auto assetUuids = {
             MyAsset1Id,
             MyAsset2Id,
@@ -652,11 +609,11 @@ namespace UnitTest
             threads.emplace_back([this, &threadCount, &cv, assetUuid]() {
                 bool checkLoaded = true;
 
-                for (int i = 0; i < 5000; i++)
+                for (int i = 0; i < 1000; i++)
                 {
                     Asset<AssetWithAssetReference> asset1 =
                         m_testAssetManager->GetAsset(assetUuid, azrtti_typeid<AssetWithAssetReference>(), AZ::Data::AssetLoadBehavior::PreLoad);
-                    
+
                     if (checkLoaded)
                     {
                         asset1.BlockUntilLoadComplete();
@@ -678,7 +635,7 @@ namespace UnitTest
         while (threadCount > 0 && !timedOut)
         {
             AZStd::unique_lock<AZStd::mutex> lock(mutex);
-            timedOut = (AZStd::cv_status::timeout == cv.wait_until(lock, AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds * 20000));
+            timedOut = (AZStd::cv_status::timeout == cv.wait_until(lock, AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds));
         }
 
         ASSERT_EQ(threadCount, 0) << "Thread count is non-zero, a thread has likely deadlocked.  Test will not shut down cleanly.";
@@ -729,8 +686,8 @@ namespace UnitTest
 
             AssetWithSerializedData ap;
 
-            EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "a.txt", AZ::DataStream::ST_XML, &ap, m_serializeContext));
-            EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "b.txt", AZ::DataStream::ST_XML, &ap, m_serializeContext));
+            EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("a.txt", &ap, m_serializeContext));
+            EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("b.txt", &ap, m_serializeContext));
         }
 
         auto& assetManager = AssetManager::Instance();
@@ -793,7 +750,7 @@ namespace UnitTest
     * Verify that loads without using the Asset Container still work correctly
     */
     class AssetContainerDisableTest
-        : public BaseAssetManagerTest
+        : public DisklessAssetManagerBase
     {
     public:
         static inline const AZ::Uuid MyAsset1Id{ "{5B29FE2B-6B41-48C9-826A-C723951B0560}" };
@@ -812,7 +769,7 @@ namespace UnitTest
 
         void SetUp() override
         {
-            BaseAssetManagerTest::SetUp();
+            DisklessAssetManagerBase::SetUp();
             SetupTest();
 
         }
@@ -822,7 +779,7 @@ namespace UnitTest
             AssetManager::Instance().UnregisterHandler(m_assetHandlerAndCatalog);
             delete m_assetHandlerAndCatalog;
             AssetManager::Destroy();
-            BaseAssetManagerTest::TearDown();
+            DisklessAssetManagerBase::TearDown();
         }
 
         void SetupAssets()
@@ -864,9 +821,9 @@ namespace UnitTest
                 AssetWithSerializedData ap2;
                 AssetWithSerializedData ap3;
 
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset4.txt", AZ::DataStream::ST_XML, &ap1, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset5.txt", AZ::DataStream::ST_XML, &ap2, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset6.txt", AZ::DataStream::ST_XML, &ap3, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset4.txt", &ap1, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset5.txt", &ap2, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset6.txt", &ap3, m_serializeContext));
 
                 AssetWithAssetReference assetWithPreload1;
                 AssetWithAssetReference assetWithPreload2;
@@ -877,9 +834,9 @@ namespace UnitTest
                 assetWithPreload3.m_asset = m_testAssetManager->CreateAsset<AssetWithSerializedData>(MyAsset6Id, AssetLoadBehavior::PreLoad);
                 EXPECT_EQ(m_assetHandlerAndCatalog->m_numCreations, 3);
 
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset1.txt", AZ::DataStream::ST_XML, &assetWithPreload1, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset2.txt", AZ::DataStream::ST_XML, &assetWithPreload2, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset3.txt", AZ::DataStream::ST_XML, &assetWithPreload3, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset1.txt", &assetWithPreload1, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset2.txt", &assetWithPreload2, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset3.txt", &assetWithPreload3, m_serializeContext));
 
                 m_assetHandlerAndCatalog->m_numCreations = 0;
             }
@@ -957,11 +914,11 @@ namespace UnitTest
         m_testAssetManager->SetParallelDependentLoadingEnabled(true);
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS || AZ_TRAIT_DISABLE_FAILED_ASSET_LOAD_TESTS
+#if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     TEST_F(AssetJobsFloodTest, DISABLED_LoadTest_SameAsset_DifferentFilters)
 #else
     TEST_F(AssetJobsFloodTest, LoadTest_SameAsset_DifferentFilters)
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS || AZ_TRAIT_DISABLE_FAILED_ASSET_LOAD_TESTS
+#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     {
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusConnect();
 
@@ -1190,7 +1147,7 @@ namespace UnitTest
 #if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     TEST_F(AssetJobsFloodTest, DISABLED_ContainerFilterTest_ContainersWithAndWithoutFiltering_Success)
 #else
-    TEST_F(AssetJobsFloodTest, DISABLED_ContainerFilterTest_ContainersWithAndWithoutFiltering_Success)
+    TEST_F(AssetJobsFloodTest, ContainerFilterTest_ContainersWithAndWithoutFiltering_Success)
 #endif // !AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     {
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusConnect();
@@ -1306,11 +1263,11 @@ namespace UnitTest
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusDisconnect();
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS || AZ_TRAIT_DISABLE_FAILED_ASSET_LOAD_TESTS
+#if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     TEST_F(AssetJobsFloodTest, DISABLED_AssetWithNoLoadReference_LoadDependencies_NoLoadNotLoaded)
 #else
     TEST_F(AssetJobsFloodTest, AssetWithNoLoadReference_LoadDependencies_NoLoadNotLoaded)
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS || AZ_TRAIT_DISABLE_FAILED_ASSET_LOAD_TESTS
+#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     {
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusConnect();
         // Setup has already created/destroyed assets
@@ -1347,11 +1304,11 @@ namespace UnitTest
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusDisconnect();
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS || AZ_TRAIT_DISABLE_FAILED_ASSET_LOAD_TESTS
+#if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     TEST_F(AssetJobsFloodTest, DISABLED_AssetWithNoLoadReference_LoadContainerDependencies_LoadAllLoadsNoLoad)
 #else
     TEST_F(AssetJobsFloodTest, AssetWithNoLoadReference_LoadContainerDependencies_LoadAllLoadsNoLoad)
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS || AZ_TRAIT_DISABLE_FAILED_ASSET_LOAD_TESTS
+#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     {
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusConnect();
         // Setup has already created/destroyed assets
@@ -1386,11 +1343,11 @@ namespace UnitTest
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusDisconnect();
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS || AZ_TRAIT_DISABLE_FAILED_ASSET_LOAD_TESTS
+#if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     TEST_F(AssetJobsFloodTest, DISABLED_AssetWithNoLoadReference_LoadDependencies_BehaviorObeyed)
 #else
     TEST_F(AssetJobsFloodTest, AssetWithNoLoadReference_LoadDependencies_BehaviorObeyed)
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS || AZ_TRAIT_DISABLE_FAILED_ASSET_LOAD_TESTS
+#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     {
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusConnect();
         // Setup has already created/destroyed assets
@@ -2029,11 +1986,12 @@ namespace UnitTest
         CheckFinishedCreationsAndDestructions();
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusDisconnect();
     }
+
     /**
     * Run multiple threads that get and release assets simultaneously to test AssetManager's thread safety
     */
     class AssetJobsMultithreadedTest
-        : public BaseAssetManagerTest
+        : public DisklessAssetManagerBase
     {
     public:
         static inline const AZ::Uuid MyAsset1Id{ "{5B29FE2B-6B41-48C9-826A-C723951B0560}" };
@@ -2042,6 +2000,7 @@ namespace UnitTest
         static inline const AZ::Uuid MyAsset4Id{ "{EE99215B-7AB4-4757-B8AF-F78BD4903AC4}" };
         static inline const AZ::Uuid MyAsset5Id{ "{D9CDAB04-D206-431E-BDC0-1DD615D56197}" };
         static inline const AZ::Uuid MyAsset6Id{ "{B2F139C3-5032-4B52-ADCA-D52A8F88E043}" };
+
 
         // Initialize the Job Manager with 2 threads for the Asset Manager to use.
         size_t GetNumJobManagerThreads() const override { return 2; }
@@ -2093,9 +2052,9 @@ namespace UnitTest
                 AssetWithSerializedData ap2;
                 AssetWithSerializedData ap3;
 
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset4.txt", AZ::DataStream::ST_XML, &ap1, &context));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset5.txt", AZ::DataStream::ST_XML, &ap2, &context));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset6.txt", AZ::DataStream::ST_XML, &ap3, &context));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset4.txt", &ap1, &context));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset5.txt", &ap2, &context));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset6.txt", &ap3, &context));
 
                 AssetWithAssetReference assetWithPreload1;
                 AssetWithAssetReference assetWithPreload2;
@@ -2104,9 +2063,9 @@ namespace UnitTest
                 assetWithPreload2.m_asset = AssetManager::Instance().CreateAsset<AssetWithSerializedData>(MyAsset5Id, AssetLoadBehavior::PreLoad);
                 assetWithPreload3.m_asset = AssetManager::Instance().CreateAsset<AssetWithSerializedData>(MyAsset6Id, AssetLoadBehavior::PreLoad);
 
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset1.txt", AZ::DataStream::ST_XML, &assetWithPreload1, &context));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset2.txt", AZ::DataStream::ST_XML, &assetWithPreload2, &context));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset3.txt", AZ::DataStream::ST_XML, &assetWithPreload3, &context));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset1.txt", &assetWithPreload1, &context));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset2.txt", &assetWithPreload2, &context));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset3.txt", &assetWithPreload3, &context));
 
                 EXPECT_TRUE(assetHandlerAndCatalog->m_numCreations == 3);
                 assetHandlerAndCatalog->m_numCreations = 0;
@@ -2206,22 +2165,22 @@ namespace UnitTest
                 // A will be saved to disk with MyAsset1Id
                 AssetWithAssetReference a;
                 a.m_asset = AssetManager::Instance().CreateAsset<AssetWithSerializedData>(MyAsset2Id);
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset1.txt", AZ::DataStream::ST_XML, &a, &context));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset1.txt", &a, &context));
                 AssetWithAssetReference b;
                 b.m_asset = AssetManager::Instance().CreateAsset<AssetWithSerializedData>(MyAsset3Id);
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset2.txt", AZ::DataStream::ST_XML, &b, &context));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset2.txt", &b, &context));
                 AssetWithAssetReference c;
                 c.m_asset = AssetManager::Instance().CreateAsset<AssetWithSerializedData>(MyAsset4Id);
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset3.txt", AZ::DataStream::ST_XML, &c, &context));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset3.txt", &c, &context));
                 AssetWithAssetReference d;
                 d.m_asset = AssetManager::Instance().CreateAsset<AssetWithSerializedData>(MyAsset5Id);
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset4.txt", AZ::DataStream::ST_XML, &d, &context));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset4.txt", &d, &context));
                 AssetWithAssetReference e;
                 e.m_asset = AssetManager::Instance().CreateAsset<AssetWithSerializedData>(MyAsset6Id);
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset5.txt", AZ::DataStream::ST_XML, &e, &context));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset5.txt", &e, &context));
                 AssetWithAssetReference f;
                 f.m_asset = AssetManager::Instance().CreateAsset<AssetWithSerializedData>(MyAsset1Id); // refer back to asset1
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset6.txt", AZ::DataStream::ST_XML, &f, &context));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset6.txt", &f, &context));
 
                 EXPECT_TRUE(assetHandlerAndCatalog->m_numCreations == 6);
                 assetHandlerAndCatalog->m_numCreations = 0;
@@ -2297,6 +2256,45 @@ namespace UnitTest
             AssetManager::Destroy();
         }
 
+        struct MockAssetContainer : AssetContainer
+        {
+            MockAssetContainer(Asset<AssetData> assetData, const AssetLoadParameters& loadParams)
+            {
+                // Copying the code in the original constructor, we can't call that constructor because it will not invoke our virtual method
+                m_rootAsset = AssetInternal::WeakAsset<AssetData>(assetData);
+                m_containerAssetId = m_rootAsset.GetId();
+
+                AddDependentAssets(assetData, loadParams);
+            }
+
+        protected:
+            AZStd::vector<AZStd::pair<AssetInfo, Asset<AssetData>>> CreateAndQueueDependentAssets(
+                const AZStd::vector<AssetInfo>& dependencyInfoList, const AssetLoadParameters& loadParamsCopyWithNoLoadingFilter) override
+            {
+                auto result = AssetContainer::CreateAndQueueDependentAssets(dependencyInfoList, loadParamsCopyWithNoLoadingFilter);
+
+                // Sleep for a long enough time to allow asset loads to complete and start triggering AssetReady events
+                // This forces the race condition to occur
+                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(500));
+
+                return result;
+            }
+        };
+
+        struct MockAssetManager : AssetManager
+        {
+            explicit MockAssetManager(const Descriptor& desc)
+                : AssetManager(desc)
+            {
+            }
+
+        protected:
+            AZStd::shared_ptr<AssetContainer> CreateAssetContainer(Asset<AssetData> asset, const AssetLoadParameters& loadParams) const override
+            {
+                return AZStd::shared_ptr<AssetContainer>(aznew MockAssetContainer(asset, loadParams));
+            }
+        };
+
         void ParallelDeepAssetReferences()
         {
             SerializeContext context;
@@ -2304,7 +2302,7 @@ namespace UnitTest
             AssetWithAssetReference::Reflect(context);
 
             AssetManager::Descriptor desc;
-            AssetManager::Create(desc);
+            AssetManager::SetInstance(aznew MockAssetManager(desc));
 
             auto& db = AssetManager::Instance();
 
@@ -2323,26 +2321,26 @@ namespace UnitTest
                 // AssetD is MYASSETD
                 AssetWithSerializedData d;
                 d.m_data = 42;
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset4.txt", AZ::DataStream::ST_XML, &d, &context));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset4.txt", &d, &context));
 
                 // AssetC is MYASSETC
                 AssetWithAssetReference c;
-                c.m_asset = AssetManager::Instance().CreateAsset<AssetWithSerializedData>(AssetId(MyAssetDId)); // point at D
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset3.txt", AZ::DataStream::ST_XML, &c, &context));
+                c.m_asset = db.CreateAsset<AssetWithSerializedData>(AssetId(MyAssetDId)); // point at D
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset3.txt", &c, &context));
 
                 // AssetB is MYASSETB
                 AssetWithAssetReference b;
-                b.m_asset = AssetManager::Instance().CreateAsset<AssetWithAssetReference>(AssetId(MyAssetCId)); // point at C
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset2.txt", AZ::DataStream::ST_XML, &b, &context));
+                b.m_asset = db.CreateAsset<AssetWithAssetReference>(AssetId(MyAssetCId)); // point at C
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset2.txt", &b, &context));
 
                 // AssetA will be written to disk as MYASSETA
                 AssetWithAssetReference a;
-                a.m_asset = AssetManager::Instance().CreateAsset<AssetWithAssetReference>(AssetId(MyAssetBId)); // point at B
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset1.txt", AZ::DataStream::ST_XML, &a, &context));
+                a.m_asset = db.CreateAsset<AssetWithAssetReference>(AssetId(MyAssetBId)); // point at B
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset1.txt", &a, &context));
             }
 
-            const size_t numThreads = 4;
-            AZStd::atomic_int threadCount(numThreads);
+            constexpr size_t NumThreads = 4;
+            AZStd::atomic_int threadCount(NumThreads);
             AZStd::condition_variable cv;
             AZStd::vector<AZStd::thread> threads;
             AZStd::atomic_bool keepDispatching(true);
@@ -2357,7 +2355,7 @@ namespace UnitTest
 
             AZStd::thread dispatchThread(dispatch);
 
-            for (size_t threadIdx = 0; threadIdx < numThreads; ++threadIdx)
+            for (size_t threadIdx = 0; threadIdx < NumThreads; ++threadIdx)
             {
                 threads.emplace_back([&threadCount, &db, &cv]()
                     {
@@ -2545,15 +2543,14 @@ namespace UnitTest
 #if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     TEST_F(AssetJobsMultithreadedTest, DISABLED_ParallelDeepAssetReferences)
 #else
-    // temporarily disabled until sporadic failures can be root caused
-    TEST_F(AssetJobsMultithreadedTest, DISABLED_ParallelDeepAssetReferences)
+    TEST_F(AssetJobsMultithreadedTest, ParallelDeepAssetReferences)
 #endif // AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     {
         ParallelDeepAssetReferences();
     }
 
     class AssetManagerTests
-        : public BaseAssetManagerTest
+        : public DisklessAssetManagerBase
     {
     protected:
         static inline const AZ::Uuid MyAsset1Id{ "{5B29FE2B-6B41-48C9-826A-C723951B0560}" };
@@ -2568,7 +2565,7 @@ namespace UnitTest
 
         void SetUp() override
         {
-            BaseAssetManagerTest::SetUp();
+            DisklessAssetManagerBase::SetUp();
 
             m_console = AZStd::make_unique<AZ::Console>();
             AZ::Interface<AZ::IConsole>::Register(m_console.get());
@@ -2607,7 +2604,7 @@ namespace UnitTest
             AssetManager::Destroy();
             AZ::Interface<AZ::IConsole>::Unregister(m_console.get());
             m_console = nullptr;
-            BaseAssetManagerTest::TearDown();
+            DisklessAssetManagerBase::TearDown();
         }
     };
 
@@ -2958,7 +2955,7 @@ namespace UnitTest
     * the middle of loading.  The tests help ensure that assets can't get stuck in perpetual loading states.
     **/
     class AssetManagerClearAssetReferenceTests
-        : public BaseAssetManagerTest
+        : public DisklessAssetManagerBase
     {
     protected:
         static inline const AZ::Uuid RootAssetId{ "{AB13F568-C676-41FE-A7E9-341F71A78104}" };
@@ -2977,7 +2974,7 @@ namespace UnitTest
 
         void SetUp() override
         {
-            BaseAssetManagerTest::SetUp();
+            DisklessAssetManagerBase::SetUp();
 
             // create the database
             AssetManager::Descriptor desc;
@@ -3015,21 +3012,18 @@ namespace UnitTest
 
             // Create and save the dependent asset first, so that we can get a reference to it.
             AssetWithSerializedData dependentBlockingAsset;
-            EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "DependentPreloadBlockingAsset.txt",
-                AZ::DataStream::ST_XML, &dependentBlockingAsset, m_serializeContext));
+            EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("DependentPreloadBlockingAsset.txt", &dependentBlockingAsset, m_serializeContext));
 
             AssetWithAssetReference dependentAsset;
             dependentAsset.m_asset = AssetManager::Instance().CreateAsset<AssetWithAssetReference>(
                 NestedDependentPreloadBlockingAssetId, AssetLoadBehavior::PreLoad);
-            EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "DependentPreloadAsset.txt",
-                AZ::DataStream::ST_XML, &dependentAsset, m_serializeContext));
+            EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("DependentPreloadAsset.txt", &dependentAsset, m_serializeContext));
 
             // Create and save the top-level asset.
             AssetWithAssetReference rootAsset;
             rootAsset.m_asset = AssetManager::Instance().CreateAsset<AssetWithAssetReference>(
                 DependentPreloadAssetId, AssetLoadBehavior::PreLoad);
-            EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "RootAsset.txt",
-                AZ::DataStream::ST_XML, &rootAsset, m_serializeContext));
+            EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("RootAsset.txt", &rootAsset, m_serializeContext));
         }
 
         void TearDown() override
@@ -3041,7 +3035,7 @@ namespace UnitTest
             delete m_assetHandlerAndCatalog;
 
             AssetManager::Destroy();
-            BaseAssetManagerTest::TearDown();
+            DisklessAssetManagerBase::TearDown();
         }
     };
 

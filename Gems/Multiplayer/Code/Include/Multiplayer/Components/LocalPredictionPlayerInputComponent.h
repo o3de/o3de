@@ -99,8 +99,8 @@ namespace Multiplayer
         double m_moveAccumulator = 0.0;
         double m_clientBankedTime = 0.0;
 
-        AZ::TimeMs m_lastInputReceivedTimeMs = AZ::TimeMs{ 0 };
-        AZ::TimeMs m_lastCorrectionSentTimeMs = AZ::TimeMs{ 0 };
+        AZ::TimeMs m_lastInputReceivedTimeMs = AZ::Time::ZeroTimeMs;
+        AZ::TimeMs m_lastCorrectionSentTimeMs = AZ::Time::ZeroTimeMs;
 
         ClientInputId m_clientInputId = ClientInputId{ 0 }; // Clients incrementing inputId
         ClientInputId m_lastClientInputId = ClientInputId{ 0 }; // Last inputId processed by the server

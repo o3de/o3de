@@ -24,8 +24,6 @@
 
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentConstants.h>
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
-#include <AtomLyIntegration/CommonFeatures/Grid/GridComponentConstants.h>
-#include <AtomLyIntegration/CommonFeatures/Grid/GridComponentConfig.h>
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentConstants.h>
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
 #include <AtomLyIntegration/CommonFeatures/PostProcess/PostFxLayerComponentConstants.h>
@@ -37,14 +35,13 @@
 #include <EMotionFX/Source/ActorManager.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
-
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.h>
 
 namespace EMStudio
 {
-    static constexpr float DepthNear = 0.01f;
-
-    AnimViewportRenderer::AnimViewportRenderer(AZ::RPI::ViewportContextPtr viewportContext)
+    AnimViewportRenderer::AnimViewportRenderer(AZ::RPI::ViewportContextPtr viewportContext, const RenderOptions* renderOptions)
         : m_windowContext(viewportContext->GetWindowContext())
+        , m_renderOptions(renderOptions)
     {
         // Create a new entity context
         m_entityContext = AZStd::make_unique<AzFramework::EntityContext>();
@@ -123,22 +120,16 @@ namespace EMStudio
         const AZ::Render::LightingPreset* preset = lightingPresetAsset->GetDataAs<AZ::Render::LightingPreset>();
         SetLightingPreset(preset);
 
-        // Create grid
+        // Create the ground plane
         AzFramework::EntityContextRequestBus::EventResult(
-            m_gridEntity, entityContextId, &AzFramework::EntityContextRequestBus::Events::CreateEntity, "ViewportGrid");
-        AZ_Assert(m_gridEntity != nullptr, "Failed to create grid entity.");
+            m_groundEntity, entityContextId, &AzFramework::EntityContextRequestBus::Events::CreateEntity, "ViewportModel");
+        AZ_Assert(m_groundEntity != nullptr, "Failed to create model entity.");
 
-        AZ::Render::GridComponentConfig gridConfig;
-        gridConfig.m_gridSize = 20.0f;
-        gridConfig.m_axisColor = AZ::Color(0.5f, 0.5f, 0.5f, 1.0f);
-        gridConfig.m_primaryColor = AZ::Color(0.3f, 0.3f, 0.3f, 1.0f);
-        gridConfig.m_secondaryColor = AZ::Color(0.5f, 0.5f, 0.5f, 1.0f);
-        auto gridComponent = m_gridEntity->CreateComponent(AZ::Render::GridComponentTypeId);
-        gridComponent->SetConfiguration(gridConfig);
-
-        m_gridEntity->CreateComponent(azrtti_typeid<AzFramework::TransformComponent>());
-        m_gridEntity->Init();
-        m_gridEntity->Activate();
+        m_groundEntity->CreateComponent(AZ::Render::MeshComponentTypeId);
+        m_groundEntity->CreateComponent(AZ::Render::MaterialComponentTypeId);
+        m_groundEntity->CreateComponent(azrtti_typeid<AzFramework::TransformComponent>());
+        m_groundEntity->Init();
+        m_groundEntity->Activate();
 
         Reinit();
     }
@@ -148,7 +139,7 @@ namespace EMStudio
         // Destroy all the entity we created.
         m_entityContext->DestroyEntity(m_iblEntity);
         m_entityContext->DestroyEntity(m_postProcessEntity);
-        m_entityContext->DestroyEntity(m_gridEntity);
+        m_entityContext->DestroyEntity(m_groundEntity);
         for (AZ::Entity* entity : m_actorEntities)
         {
             m_entityContext->DestroyEntity(entity);
@@ -188,20 +179,13 @@ namespace EMStudio
         if (!m_actorEntities.empty())
         {
             // Find the actor instance and calculate the center from aabb.
-            AZ::Vector3 actorCenter = AZ::Vector3::CreateZero();
             EMotionFX::Integration::ActorComponent* actorComponent =
                 m_actorEntities[0]->FindComponent<EMotionFX::Integration::ActorComponent>();
             EMotionFX::ActorInstance* actorInstance = actorComponent->GetActorInstance();
             if (actorInstance)
             {
-                actorCenter += actorInstance->GetAabb().GetCenter();
+                result = actorInstance->GetAabb().GetCenter();
             }
-            
-            // Just return the position of the first entity.
-            AZ::Transform worldTransform;
-            AZ::TransformBus::EventResult(worldTransform, m_actorEntities[0]->GetId(), &AZ::TransformBus::Events::GetWorldTM);
-            result = worldTransform.GetTranslation();
-            result += actorCenter;
         }
 
         return result;
@@ -221,6 +205,11 @@ namespace EMStudio
         }
     }
 
+    AZStd::shared_ptr<AzFramework::Scene> AnimViewportRenderer::GetFrameworkScene() const
+    {
+        return m_frameworkScene;
+    }
+
     void AnimViewportRenderer::ResetEnvironment()
     {
         // Reset environment
@@ -230,6 +219,15 @@ namespace EMStudio
         const AZ::Matrix4x4 rotationMatrix = AZ::Matrix4x4::CreateIdentity();
         auto skyBoxFeatureProcessorInterface = m_scene->GetFeatureProcessor<AZ::Render::SkyBoxFeatureProcessorInterface>();
         skyBoxFeatureProcessorInterface->SetCubemapRotationMatrix(rotationMatrix);
+
+        // Reset ground entity
+        AZ::Transform groundTransform = AZ::Transform::CreateIdentity();
+        AZ::TransformBus::Event(m_groundEntity->GetId(), &AZ::TransformBus::Events::SetLocalTM, groundTransform);
+
+        auto modelAsset = AZ::RPI::AssetUtils::GetAssetByProductPath<AZ::RPI::ModelAsset>(
+            "objects/groudplane/groundplane_512x512m.azmodel", AZ::RPI::AssetUtils::TraceLevel::Assert);
+        AZ::Render::MeshComponentRequestBus::Event(
+            m_groundEntity->GetId(), &AZ::Render::MeshComponentRequestBus::Events::SetModelAsset, modelAsset);
     }
 
     void AnimViewportRenderer::ReinitActorEntities()
@@ -326,8 +324,11 @@ namespace EMStudio
                 ->GetOrCreateExposureControlSettingsInterface();
 
         Camera::Configuration cameraConfig;
-        cameraConfig.m_fovRadians = AZ::Constants::HalfPi;
-        cameraConfig.m_nearClipDistance = DepthNear;
+        cameraConfig.m_fovRadians = AZ::DegToRad(m_renderOptions->GetFOV());
+        cameraConfig.m_nearClipDistance = m_renderOptions->GetNearClipPlaneDistance();
+        cameraConfig.m_farClipDistance = m_renderOptions->GetFarClipPlaneDistance();
+        cameraConfig.m_frustumWidth = DefaultFrustumDimension;
+        cameraConfig.m_frustumHeight = DefaultFrustumDimension;
 
         preset->ApplyLightingPreset(
             iblFeatureProcessor, m_skyboxFeatureProcessor, exposureControlSettingInterface, m_directionalLightFeatureProcessor,

@@ -12,6 +12,7 @@ set(FILES
     AssetFileInfoListComparison.cpp
     AssetSeedManager.cpp
     AssetSystemMocks.h
+    AzToolsFrameworkTestHelpersTest.cpp
     BoundsTestComponent.cpp
     BoundsTestComponent.h
     ComponentAdapterTests.cpp
@@ -28,6 +29,9 @@ set(FILES
     Entity/EditorEntitySearchComponentTests.cpp
     Entity/EditorEntitySelectionTests.cpp
     Entity/EntityUtilityComponentTests.cpp
+    Entity/ReadOnly/ReadOnlyEntityFixture.cpp
+    Entity/ReadOnly/ReadOnlyEntityFixture.h
+    Entity/ReadOnly/ReadOnlyEntityTests.cpp
     EntityIdQLabelTests.cpp
     EntityInspectorTests.cpp
     EntityOwnershipService/EntityOwnershipServiceTestFixture.cpp
@@ -45,6 +49,7 @@ set(FILES
     FocusMode/EditorFocusModeSelectionTests.cpp
     FocusMode/EditorFocusModeTests.cpp
     GenericComponentWrapperTest.cpp
+    Input/QtEventToAzInputMapperTests.cpp
     InstanceDataHierarchy.cpp
     IntegerPrimtitiveTestConfig.h
     LogLines.cpp
@@ -66,11 +71,12 @@ set(FILES
     Prefab/PrefabFocus/PrefabFocusTests.cpp
     Prefab/MockPrefabFileIOActionValidator.cpp
     Prefab/MockPrefabFileIOActionValidator.h
+    Prefab/PrefabDeleteTests.cpp
     Prefab/PrefabDuplicateTests.cpp
     Prefab/PrefabEntityAliasTests.cpp
     Prefab/PrefabInstanceToTemplatePropagatorTests.cpp
     Prefab/PrefabInstantiateTests.cpp
-    Prefab/PrefabInstantiateTests.cpp
+    Prefab/PrefabAssetFixupTests.cpp
     Prefab/PrefabLoadTemplateTests.cpp
     Prefab/PrefabTestComponent.cpp
     Prefab/PrefabTestComponent.h
@@ -100,6 +106,8 @@ set(FILES
     Prefab/SpawnableSortEntitiesTests.cpp
     Prefab/PrefabScriptingTests.cpp
     Prefab/ProceduralPrefabAssetTests.cpp
+    Prefab/ProceduralPrefabSystemComponentTests.cpp
+    PropertyIntCtrlCommonTests.cpp
     PropertyIntCtrlCommonTests.h
     PropertyIntSliderCtrlTests.cpp
     PropertyIntSpinCtrlTests.cpp
@@ -126,6 +134,7 @@ set(FILES
     UI/EntityIdQLineEditTests.cpp
     UI/EntityOutlinerTests.cpp
     UI/EntityPropertyEditorTests.cpp
+    UI/AssetBrowserTests.cpp
     UndoStack.cpp
     Viewport/ClusterTests.cpp
     Viewport/ViewportEditorModeTests.cpp
@@ -134,5 +143,6 @@ set(FILES
     Viewport/ViewportUiDisplayTests.cpp
     Viewport/ViewportUiManagerTests.cpp
     Viewport/ViewportUiWidgetManagerTests.cpp
+    Viewport/ViewportInteractionTests.cpp
     Visibility/EditorVisibilityTests.cpp
 )

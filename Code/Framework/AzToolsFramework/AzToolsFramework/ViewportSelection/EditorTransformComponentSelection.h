@@ -20,6 +20,7 @@
 #include <AzToolsFramework/Commands/EntityManipulatorCommand.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityBus.h>
 #include <AzToolsFramework/Manipulators/BaseManipulator.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
@@ -160,6 +161,7 @@ namespace AzToolsFramework
         , private EditorManipulatorCommandUndoRedoRequestBus::Handler
         , private AZ::TransformNotificationBus::MultiHandler
         , private ViewportInteraction::ViewportSettingsNotificationBus::Handler
+        , private ReadOnlyEntityPublicNotificationBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
@@ -297,6 +299,9 @@ namespace AzToolsFramework
         // ViewportSettingsNotificationBus overrides ...
         void OnGridSnappingChanged(bool enabled) override;
 
+        // ReadOnlyEntityPublicNotificationBus overrides ...
+        void OnReadOnlyEntityStatusChanged(const AZ::EntityId& entityId, bool readOnly) override;
+
         // Helpers to safely interact with the TransformBus (requests).
         void SetEntityWorldTranslation(AZ::EntityId entityId, const AZ::Vector3& worldTranslation);
         void SetEntityLocalTranslation(AZ::EntityId entityId, const AZ::Vector3& localTranslation);
@@ -308,7 +313,7 @@ namespace AzToolsFramework
         bool PerformGroupDitto(AZ::EntityId entityId);
         bool PerformIndividualDitto(AZ::EntityId entityId);
         void PerformManipulatorDitto(AZ::EntityId entityId);
-        void PerformSnapToTerrain(const ViewportInteraction::MouseInteractionEvent& mouseInteraction);
+        void PerformSnapToSurface(const ViewportInteraction::MouseInteractionEvent& mouseInteraction);
 
         //! Responsible for keeping the space cluster in sync with the current reference frame.
         void UpdateSpaceCluster(ReferenceFrame referenceFrame);
@@ -317,7 +322,7 @@ namespace AzToolsFramework
         void SetAllViewportUiVisible(bool visible);
 
         AZ::EntityId m_hoveredEntityId; //!< What EntityId is the mouse currently hovering over (if any).
-        AZ::EntityId m_cachedEntityIdUnderCursor; //!< Store the EntityId on each mouse move for use in Display.
+        AZ::EntityId m_currentEntityIdUnderCursor; //!< Store the EntityId on each mouse move for use in Display.
         AZ::EntityId m_editorCameraComponentEntityId; //!< The EditorCameraComponent EntityId if it is set.
         EntityIdSet m_selectedEntityIds; //!< Represents the current entities in the selection.
 
@@ -356,6 +361,23 @@ namespace AzToolsFramework
         SnappingCluster m_snappingCluster; //!< Related viewport ui state for aligning positions to a grid or reference frame.
         bool m_viewportUiVisible = true; //!< Used to hide/show the viewport ui elements.
     };
+
+    //! Bundles viewport state that impacts how accents are added/removed in HandleAccents.
+    struct HandleAccentsContext
+    {
+        bool m_hasSelectedEntities;
+        bool m_ctrlHeld;
+        bool m_usingBoxSelect;
+        bool m_usingStickySelect;
+    };
+
+    //! Updates whether accents (icon highlights) are added/removed for a given entity based on the cursor position.
+    void HandleAccents(
+        AZ::EntityId currentEntityIdUnderCursor,
+        AZ::EntityId& hoveredEntityIdUnderCursor,
+        const HandleAccentsContext& handleAccentsContext,
+        ViewportInteraction::MouseButtons mouseButtons,
+        const AZStd::function<void(AZ::EntityId, bool)>& setEntityAccentedFn);
 
     //! The ETCS (EntityTransformComponentSelection) namespace contains functions and data used exclusively by
     //! the EditorTransformComponentSelection type. Functions in this namespace are exposed to facilitate testing

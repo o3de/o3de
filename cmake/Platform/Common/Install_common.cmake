@@ -202,18 +202,16 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
     endforeach()
     list(JOIN INCLUDE_DIRECTORIES_PLACEHOLDER "\n" INCLUDE_DIRECTORIES_PLACEHOLDER)
 
-    string(REPEAT " " 8 PLACEHOLDER_INDENT)
-    get_target_property(RUNTIME_DEPENDENCIES_PLACEHOLDER ${TARGET_NAME} MANUALLY_ADDED_DEPENDENCIES)
-    if(RUNTIME_DEPENDENCIES_PLACEHOLDER) # not found properties return the name of the variable with a "-NOTFOUND" at the end, here we set it to empty if not found
-        set(RUNTIME_DEPENDENCIES_PLACEHOLDER "${PLACEHOLDER_INDENT}${RUNTIME_DEPENDENCIES_PLACEHOLDER}")
-        list(JOIN RUNTIME_DEPENDENCIES_PLACEHOLDER "\n${PLACEHOLDER_INDENT}" RUNTIME_DEPENDENCIES_PLACEHOLDER)
-    else()
-        unset(RUNTIME_DEPENDENCIES_PLACEHOLDER)
-    endif()
-
     string(REPEAT " " 12 PLACEHOLDER_INDENT)
     get_property(interface_build_dependencies_props TARGET ${TARGET_NAME} PROPERTY LY_DELAYED_LINK)
     unset(INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER)
+    # We can have private build dependencies that contains direct or indirect runtime dependencies.
+    # Since imported targets cannot contain build dependencies, we need another way to propagate the runtime dependencies.
+    # We dont want to put such dependencies in the interface because a user can mistakenly use a symbol that is not available 
+    # when using the engine from source (and that the author of the target didn't want to set public). 
+    # To overcome this, we will actually expose the private build dependencies as runtime dependencies. Our runtime dependency
+    # algorithm will walk recursively also through static libraries and will only copy binaries to the output.
+    unset(RUNTIME_DEPENDENCIES_PLACEHOLDER) 
     if(interface_build_dependencies_props)
         cmake_parse_arguments(build_deps "" "" "PRIVATE;PUBLIC;INTERFACE" ${interface_build_dependencies_props})
         # Interface and public dependencies should always be exposed
@@ -226,6 +224,14 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
         if("${target_type}" STREQUAL "STATIC_LIBRARY")
             set(build_deps_target "${build_deps_target};${build_deps_PRIVATE}")
         endif()
+
+        # But we will also pass the private dependencies as runtime dependencies (as long as they are targets, note the comment above)
+        foreach(build_dep_private IN LISTS build_deps_PRIVATE)
+            if(TARGET ${build_dep_private})
+                list(APPEND RUNTIME_DEPENDENCIES_PLACEHOLDER "${build_dep_private}")
+            endif()
+        endforeach()
+        
         foreach(build_dependency IN LISTS build_deps_target)
             # Skip wrapping produced when targets are not created in the same directory
             if(build_dependency)
@@ -234,6 +240,18 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
         endforeach()
     endif()
     list(JOIN INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER "\n" INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER)
+
+    string(REPEAT " " 8 PLACEHOLDER_INDENT)
+    get_target_property(manually_added_dependencies ${TARGET_NAME} MANUALLY_ADDED_DEPENDENCIES)
+    if(manually_added_dependencies) # not found properties return the name of the variable with a "-NOTFOUND" at the end, here we set it to empty if not found
+        list(APPEND RUNTIME_DEPENDENCIES_PLACEHOLDER ${manually_added_dependencies})
+    endif()
+    if(RUNTIME_DEPENDENCIES_PLACEHOLDER)   
+        set(RUNTIME_DEPENDENCIES_PLACEHOLDER "${PLACEHOLDER_INDENT}${RUNTIME_DEPENDENCIES_PLACEHOLDER}")
+        list(JOIN RUNTIME_DEPENDENCIES_PLACEHOLDER "\n${PLACEHOLDER_INDENT}" RUNTIME_DEPENDENCIES_PLACEHOLDER)
+    else()
+        unset(RUNTIME_DEPENDENCIES_PLACEHOLDER)
+    endif()
 
     string(REPEAT " " 8 PLACEHOLDER_INDENT)
     # If a target has an LY_PROJECT_NAME property, forward that property to new target
@@ -477,26 +495,52 @@ function(ly_setup_cmake_install)
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
 
-    # Findo3de.cmake file: we generate a different Findo3de.camke file than the one we have in cmake. This one is going to expose all
-    # targets that are pre-built
-    unset(FIND_PACKAGES_PLACEHOLDER)
-
-    # Add to the FIND_PACKAGES_PLACEHOLDER all directories in which ly_add_target were called in
-    get_property(all_subdirectories GLOBAL PROPERTY LY_ALL_TARGET_DIRECTORIES)
-    foreach(target_subdirectory IN LISTS all_subdirectories)
-        cmake_path(RELATIVE_PATH target_subdirectory BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE relative_target_subdirectory)
-        string(APPEND FIND_PACKAGES_PLACEHOLDER "    add_subdirectory(${relative_target_subdirectory})\n")
-    endforeach()
-
+    # Findo3de.cmake file: we generate a different Findo3de.cmake file than the one we have in the source dir.
     configure_file(${LY_ROOT_FOLDER}/cmake/install/Findo3de.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/cmake/Findo3de.cmake @ONLY)
     ly_install(FILES "${CMAKE_CURRENT_BINARY_DIR}/cmake/Findo3de.cmake"
         DESTINATION cmake
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
 
-    # BuiltInPackage_<platform>.cmake: since associations could happen in any cmake file across the engine. We collect
-    # all the associations in ly_associate_package and then generate them into BuiltInPackages_<platform>.cmake. This
-    # will consolidate all associations in one file
+    unset(find_subdirectories)
+    # Add to find_subdirectories all directories in which ly_add_target were called in
+    get_property(all_subdirectories GLOBAL PROPERTY LY_ALL_TARGET_DIRECTORIES)
+    foreach(target_subdirectory IN LISTS all_subdirectories)
+        cmake_path(RELATIVE_PATH target_subdirectory BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE relative_target_subdirectory)
+        string(APPEND find_subdirectories "add_subdirectory(${relative_target_subdirectory})\n")
+    endforeach()
+    set(permutation_find_subdirectories ${CMAKE_CURRENT_BINARY_DIR}/cmake/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}/o3de_subdirectories_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+    file(GENERATE OUTPUT ${permutation_find_subdirectories}
+        CONTENT 
+"# Generated by O3DE install\n
+${find_subdirectories}
+"
+    )
+    ly_install(FILES "${permutation_find_subdirectories}"
+        DESTINATION cmake/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}
+        COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}
+    )
+
+    set(pal_builtin_file ${CMAKE_CURRENT_BINARY_DIR}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/BuiltInPackages_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+    file(GENERATE OUTPUT ${pal_builtin_file}
+        CONTENT 
+"# Generated by O3DE install\n
+if(LY_MONOLITHIC_GAME)
+    include(cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/Monolithic/BuiltInPackages_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+else()
+    include(cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/Default/BuiltInPackages_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+endif()
+"
+    )
+    ly_install(FILES "${pal_builtin_file}"
+        DESTINATION cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}
+        COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
+    )
+
+    # ${LY_BUILD_PERMUTATION}/BuiltInPackage_<platform>.cmake: since associations could happen in any cmake file across the engine. We collect
+    # all the associations in ly_associate_package and then generate them into BuiltInPackages_<platform>.cmake. This will consolidate all 
+    # associations in one file
+    # Associations are sensitive to platform and build permutation, so we make different files for each.
     get_property(all_package_names GLOBAL PROPERTY LY_PACKAGE_NAMES)
     list(REMOVE_DUPLICATES all_package_names)
     set(builtinpackages "# Generated by O3DE install\n\n")
@@ -507,13 +551,13 @@ function(ly_setup_cmake_install)
         string(APPEND builtinpackages "ly_associate_package(PACKAGE_NAME ${package_name} TARGETS ${targets} PACKAGE_HASH ${package_hash})\n")
     endforeach()
 
-    set(pal_builtin_file ${CMAKE_CURRENT_BINARY_DIR}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/BuiltInPackages_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
-    file(GENERATE OUTPUT ${pal_builtin_file}
+    set(permutation_builtin_file ${CMAKE_CURRENT_BINARY_DIR}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}/BuiltInPackages_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+    file(GENERATE OUTPUT ${permutation_builtin_file}
         CONTENT ${builtinpackages}
     )
-    ly_install(FILES "${pal_builtin_file}"
-        DESTINATION cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}
-        COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
+    ly_install(FILES "${permutation_builtin_file}"
+        DESTINATION cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}
+        COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}
     )
 
 endfunction()
@@ -531,9 +575,13 @@ function(ly_setup_runtime_dependencies)
             string(TOUPPER ${conf} UCONF)
             ly_install(CODE
 "function(ly_copy source_file target_directory)
-    cmake_path(GET source_file FILENAME file_name)
-    if(NOT EXISTS \${target_directory}/\${file_name})
-        file(COPY \"\${source_file}\" DESTINATION \"\${target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS})
+    cmake_path(GET source_file FILENAME target_filename)
+    cmake_path(APPEND full_target_directory \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}\" \"\${target_directory}\")
+    cmake_path(APPEND target_file \"\${full_target_directory}\" \"\${target_filename}\")
+    if(\"\${source_file}\" IS_NEWER_THAN \"\${target_file}\")
+        message(STATUS \"Copying \${source_file} to \${full_target_directory}...\")
+        file(COPY \"\${source_file}\" DESTINATION \"\${full_target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS} FOLLOW_SYMLINK_CHAIN)
+        file(TOUCH_NOCREATE \"${target_file}\")
     endif()
 endfunction()"
                 COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
@@ -558,12 +606,7 @@ endfunction()"
         endif()
 
         # runtime dependencies that need to be copied to the output
-        # Anywhere CMAKE_INSTALL_PREFIX is used, it has to be escaped so it is baked into the cmake_install.cmake script instead
-        # of baking the path. This is needed so `cmake --install --prefix <someprefix>` works regardless of the CMAKE_INSTALL_PREFIX
-        # used to generate the solution.
-        # CMAKE_INSTALL_PREFIX is still used when building the INSTALL target
-        set(install_output_folder "\${CMAKE_INSTALL_PREFIX}/${runtime_output_directory}")
-        set(target_file_dir "${install_output_folder}/${target_runtime_output_subdirectory}")
+        set(target_file_dir "${runtime_output_directory}/${target_runtime_output_subdirectory}")
         ly_get_runtime_dependencies(runtime_dependencies ${target})
         foreach(runtime_dependency ${runtime_dependencies})
             unset(runtime_command)

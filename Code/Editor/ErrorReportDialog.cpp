@@ -362,10 +362,6 @@ void CErrorReportDialog::CopyToClipboard()
             {
                 str += QString::fromLatin1(" [Object: %1]").arg(pRecord->pObject->GetName());
             }
-            if (pRecord->pItem)
-            {
-                str += QString::fromLatin1(" [Material: %1]").arg(pRecord->pItem->GetName());
-            }
             str += QString::fromLatin1("\r\n");
         }
     }

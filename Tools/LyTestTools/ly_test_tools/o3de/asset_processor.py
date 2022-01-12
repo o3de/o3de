@@ -416,19 +416,15 @@ class AssetProcessor(object):
         self.restore_ap_settings()
 
     def process_exists(self):
-        try:
-            my_pid = self.get_pid()
-            if my_pid == -1:
-                return False
-            return psutil.pid_exists(my_pid)
-        except psutil.NoSuchProcess:
-            pass
+        if self._ap_proc:
+            return self._ap_proc.poll() is None
         return False
 
     def batch_process(self, timeout=DEFAULT_TIMEOUT_SECONDS, fastscan=True, capture_output=False, platforms=None,
                       extra_params=None, add_gem_scan_folders=None, add_config_scan_folders=None, decode=True,
-                      expect_failure=False, scan_folder_pattern=None):
-        self.create_temp_log_root()
+                      expect_failure=False, scan_folder_pattern=None, create_temp_log=True):
+        if create_temp_log:
+            self.create_temp_log_root()
         ap_path = self._workspace.paths.asset_processor_batch()
         command = self.build_ap_command(ap_path=ap_path, fastscan=fastscan, platforms=platforms,
                                         extra_params=extra_params, add_gem_scan_folders=add_gem_scan_folders,
@@ -442,7 +438,7 @@ class AssetProcessor(object):
     def gui_process(self, timeout=DEFAULT_TIMEOUT_SECONDS, fastscan=True, capture_output=False, platforms=None,
                     extra_params=None, add_gem_scan_folders=None, add_config_scan_folders=None, decode=True,
                     expect_failure=False, quitonidle=False, connect_to_ap=False, accept_input=True, run_until_idle=True,
-                    scan_folder_pattern=None):
+                    scan_folder_pattern=None, create_temp_log=True):
         ap_path = os.path.abspath(self._workspace.paths.asset_processor())
         ap_exe_path = os.path.dirname(ap_path)
         extra_gui_params = []
@@ -472,7 +468,8 @@ class AssetProcessor(object):
             else:
                 extra_gui_params.append(extra_params)
 
-        self.create_temp_log_root()
+        if create_temp_log:
+            self.create_temp_log_root()
         command = self.build_ap_command(ap_path=ap_path, fastscan=fastscan, platforms=platforms,
                                         extra_params=extra_gui_params, add_gem_scan_folders=add_gem_scan_folders,
                                         add_config_scan_folders=add_config_scan_folders,
@@ -580,7 +577,7 @@ class AssetProcessor(object):
             if isinstance(platforms, list):
                 platforms = ','.join(platforms)
             command.append(f'--platforms={platforms}')
-        for key, value in self._enabled_platform_overrides:
+        for key, value in self._enabled_platform_overrides.items():
             command.append(f'--regset="f{ASSET_PROCESSOR_SETTINGS_ROOT_KEY}/Platforms/{key}={value}"')
 
         if extra_params:

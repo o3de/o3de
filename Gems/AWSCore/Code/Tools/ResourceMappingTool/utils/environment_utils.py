@@ -7,6 +7,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 import logging
 import os
+import platform
 from typing import Dict
 
 from utils import file_utils
@@ -37,6 +38,20 @@ def setup_qt_environment(bin_path: str) -> None:
 
     new_path = os.pathsep.join([binaries_path, path])
     os.environ['PATH'] = new_path
+
+    # On Linux, we need to load pyside2 and related modules as well
+    if platform.system() == 'Linux':
+        import ctypes
+
+        preload_shared_libs = [f'{bin_path}/libpyside2.abi3.so.5.14',
+                               f'{bin_path}/libQt5Widgets.so.5']
+
+        for preload_shared_lib in preload_shared_libs:
+            if not os.path.exists(preload_shared_lib):
+                logger.error(f"Cannot find required shared library at {preload_shared_lib}")
+                return
+            else:
+                ctypes.CDLL(preload_shared_lib)
 
     global qt_binaries_linked
     qt_binaries_linked = True

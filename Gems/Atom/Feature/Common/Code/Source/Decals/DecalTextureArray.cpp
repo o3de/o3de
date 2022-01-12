@@ -78,7 +78,7 @@ namespace AZ
                     AZ_Warning("DecalTextureArray", false, "Material property: %s does not have a valid asset Id", propertyName.GetCStr());
                     return {};
                 }
-                return { imageAsset.GetAs< AZ::RPI::StreamingImageAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
+                return Data::static_pointer_cast<AZ::RPI::StreamingImageAsset>(imageAsset);
             }
 
             static AZ::Data::Asset<AZ::RPI::StreamingImageAsset> GetStreamingImageAsset(const AZ::Data::Asset<Data::AssetData> materialAssetData, const AZ::Name& propertyName)

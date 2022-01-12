@@ -7,9 +7,11 @@
  */
 
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 
 #include <Activity/AWSGameLiftAcceptMatchActivity.h>
 #include <AWSGameLiftSessionConstants.h>
+#include <Request/IAWSGameLiftInternalRequests.h>
 
 #include <aws/core/utils/Outcome.h>
 #include <aws/gamelift/model/AcceptMatchRequest.h>
@@ -42,13 +44,19 @@ namespace AWSGameLift
             return request;
         }
 
-        void AcceptMatch(const Aws::GameLift::GameLiftClient& gameliftClient,
-            const AWSGameLiftAcceptMatchRequest& AcceptMatchRequest)
+        void AcceptMatch(const AWSGameLiftAcceptMatchRequest& AcceptMatchRequest)
         {
+            auto gameliftClient = AZ::Interface<IAWSGameLiftInternalRequests>::Get()->GetGameLiftClient();
+            if (!gameliftClient)
+            {
+                AZ_Error(AWSGameLiftAcceptMatchActivityName, false, AWSGameLiftClientMissingErrorMessage);
+                return;
+            }
+
             AZ_TracePrintf(AWSGameLiftAcceptMatchActivityName, "Requesting AcceptMatch against Amazon GameLift service ...");
 
             Aws::GameLift::Model::AcceptMatchRequest request = BuildAWSGameLiftAcceptMatchRequest(AcceptMatchRequest);
-            auto AcceptMatchOutcome = gameliftClient.AcceptMatch(request);
+            auto AcceptMatchOutcome = gameliftClient->AcceptMatch(request);
 
             if (AcceptMatchOutcome.IsSuccess())
             {

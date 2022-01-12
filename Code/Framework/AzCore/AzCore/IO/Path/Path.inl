@@ -101,7 +101,11 @@ namespace AZ::IO
     }
 
     // native format observers
-    constexpr auto PathView::Native() const noexcept -> AZStd::string_view
+    constexpr auto PathView::Native() const noexcept -> const AZStd::string_view&
+    {
+        return m_path;
+    }
+    constexpr auto PathView::Native() noexcept -> AZStd::string_view&
     {
         return m_path;
     }
@@ -1038,6 +1042,13 @@ namespace AZ::IO
 
     // as_posix
     // Returns a copy of the path with the path separators converted to PosixPathSeparator
+    template <typename StringType>
+    constexpr auto BasicPath<StringType>::AsPosix() const -> string_type
+    {
+        string_type resultPath(m_path.begin(), m_path.end());
+        AZStd::replace(resultPath.begin(), resultPath.end(), WindowsPathSeparator, PosixPathSeparator);
+        return resultPath;
+    }
     template <typename StringType>
     AZStd::string BasicPath<StringType>::StringAsPosix() const
     {

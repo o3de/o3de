@@ -47,7 +47,6 @@ struct IConsole;
 struct IRemoteConsole;
 struct IRenderer;
 struct IProcess;
-struct ITimer;
 struct ICryFont;
 struct IMovieSystem;
 namespace Audio
@@ -57,7 +56,6 @@ namespace Audio
 struct SFileVersion;
 struct INameTable;
 struct ILevelSystem;
-struct IViewSystem;
 class IXMLBinarySerializer;
 struct IAVI_Reader;
 class CPNoise3;
@@ -75,7 +73,6 @@ namespace AZ
 
 typedef void* WIN_HWND;
 
-class CCamera;
 struct CLoadingTimeProfiler;
 
 class ICmdLine;
@@ -430,7 +427,7 @@ struct ISystemUserCallback
 
     // Description:
     //   Show message by provider.
-    virtual int ShowMessage(const char* text, const char* caption, unsigned int uType) { return CryMessageBox(text, caption, uType); }
+    virtual void ShowMessage(const char* text, const char* caption, unsigned int uType) { CryMessageBox(text, caption, uType); }
 
     // </interfuscator:shuffle>
 
@@ -612,7 +609,6 @@ struct SSystemGlobalEnvironment
 {
     AZ::IO::IArchive*          pCryPak;
     AZ::IO::FileIOBase*        pFileIO;
-    ITimer*                    pTimer;
     ICryFont*                  pCryFont;
     ::IConsole*                  pConsole;
     ISystem*                   pSystem = nullptr;
@@ -739,24 +735,6 @@ public:
 #undef GetUserName
 #endif
 
-
-struct IProfilingSystem
-{
-    // <interfuscator:shuffle>
-    virtual ~IProfilingSystem() {}
-    //////////////////////////////////////////////////////////////////////////
-    // VTune Profiling interface.
-
-    // Summary:
-    //   Resumes vtune data collection.
-    virtual void VTuneResume() = 0;
-    // Summary:
-    //   Pauses vtune data collection.
-    virtual void VTunePause() = 0;
-    //////////////////////////////////////////////////////////////////////////
-    // </interfuscator:shuffle>
-};
-
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Description:
@@ -833,16 +811,13 @@ struct ISystem
     // Description:
     //   Report message by provider or by using CryMessageBox.
     //   Doesn't terminate the execution.
-    virtual int ShowMessage(const char* text, const char* caption, unsigned int uType) = 0;
+    virtual void ShowMessage(const char* text, const char* caption, unsigned int uType) = 0;
 
     // Summary:
     //   Compare specified verbosity level to the one currently set.
     virtual bool CheckLogVerbosity(int verbosity) = 0;
 
     // return the related subsystem interface
-
-    //
-    virtual IViewSystem* GetIViewSystem() = 0;
     virtual ILevelSystem* GetILevelSystem() = 0;
     virtual ICmdLine* GetICmdLine() = 0;
     virtual ILog* GetILog() = 0;
@@ -851,18 +826,8 @@ struct ISystem
     virtual IMovieSystem* GetIMovieSystem() = 0;
     virtual ::IConsole* GetIConsole() = 0;
     virtual IRemoteConsole* GetIRemoteConsole() = 0;
-    virtual IProfilingSystem* GetIProfilingSystem() = 0;
     virtual ISystemEventDispatcher* GetISystemEventDispatcher() = 0;
 
-    virtual ITimer* GetITimer() = 0;
-
-    // Arguments:
-    //   bValue - Set to true when running on a cheat protected server or a client that is connected to it (not used in singleplayer).
-    virtual void SetForceNonDevMode(bool bValue) = 0;
-    // Return Value:
-    //   True when running on a cheat protected server or a client that is connected to it (not used in singleplayer).
-    virtual bool GetForceNonDevMode() const = 0;
-    virtual bool WasInDevMode() const = 0;
     virtual bool IsDevMode() const = 0;
     //////////////////////////////////////////////////////////////////////////
 
@@ -886,18 +851,6 @@ struct ISystem
     // Description:
     //   When ignore update sets to true, system will ignore and updates and render calls.
     virtual void IgnoreUpdates(bool bIgnore) = 0;
-
-    // Summary:
-    //   Sets the active process
-    // Arguments:
-    //   process - A pointer to a class that implement the IProcess interface.
-    virtual void SetIProcess(IProcess* process) = 0;
-
-    // Summary:
-    //   Gets the active process.
-    // Return Value:
-    //   A pointer to the current active process.
-    virtual IProcess* GetIProcess() = 0;
 
     // Return Value:
     //   True if system running in Test mode.
@@ -938,8 +891,6 @@ struct ISystem
     //   pCallback - 0 means normal LoadConfigVar behaviour is used
     virtual void LoadConfiguration(const char* sFilename, ILoadConfigurationEntrySink* pSink = 0, bool warnIfMissing = true) = 0;
 
-    virtual ESystemConfigSpec GetMaxConfigSpec() const = 0;
-
     //////////////////////////////////////////////////////////////////////////
 
     // Summary:
@@ -963,10 +914,6 @@ struct ISystem
     // Summary:
     //   Retrieves the perlin noise singleton instance.
     virtual CPNoise3* GetNoiseGen() = 0;
-
-    // Summary:
-    //   Retrieves system update counter.
-    virtual uint64 GetUpdateCounter() = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // Error callback handling
@@ -999,13 +946,6 @@ struct ISystem
     // Typically it should only be called by CryAssert.
     virtual void SetAssertVisible(bool bAssertVisble) = 0;
     //////////////////////////////////////////////////////////////////////////
-
-    // Summary:
-    //  Enable/Disable drawing the console
-    virtual void SetConsoleDrawEnabled(bool enabled) = 0;
-
-    //  Enable/Disable drawing the UI
-    virtual void SetUIDrawEnabled(bool enabled) = 0;
 
     // Summary:
     //   Get the index of the currently running O3DE application. (0 = first instance, 1 = second instance, etc)
@@ -1055,12 +995,6 @@ struct ISystem
 #endif
 
     // Summary:
-    //      Gets the root window message handler function
-    //      The returned pointer is platform-specific:
-    //      For Windows OS, the pointer is of type WNDPROC
-    virtual void* GetRootWindowMessageHandler() = 0;
-
-    // Summary:
     //      Register a IWindowMessageHandler that will be informed about window messages
     //      The delivered messages are platform-specific
     virtual void RegisterWindowMessageHandler(IWindowMessageHandler* pHandler) = 0;
@@ -1068,10 +1002,6 @@ struct ISystem
     // Summary:
     //      Unregister an IWindowMessageHandler that was previously registered using RegisterWindowMessageHandler
     virtual void UnregisterWindowMessageHandler(IWindowMessageHandler* pHandler) = 0;
-
-    // Create an instance of a Local File IO object (which reads directly off the local filesystem, instead of,
-    // for example, reading from the network or a pack or USB or such.
-    virtual std::shared_ptr<AZ::IO::FileIOBase> CreateLocalFileIO() = 0;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // EBus interface used to listen for cry system notifications
@@ -1121,24 +1051,16 @@ inline ISystem* GetISystem()
 
 // Description:
 //   This function must be called once by each module at the beginning, to setup global pointers.
-extern "C" AZ_DLL_EXPORT void ModuleInitISystem(ISystem* pSystem, const char* moduleName);
-extern "C" AZ_DLL_EXPORT void ModuleShutdownISystem(ISystem* pSystem);
-extern "C" AZ_DLL_EXPORT void InjectEnvironment(void* env);
-extern "C" AZ_DLL_EXPORT void DetachEnvironment();
+void ModuleInitISystem(ISystem* pSystem, const char* moduleName);
+void ModuleShutdownISystem(ISystem* pSystem);
 
 void* GetModuleInitISystemSymbol();
 void* GetModuleShutdownISystemSymbol();
-void* GetInjectEnvironmentSymbol();
-void* GetDetachEnvironmentSymbol();
 
 #define PREVENT_MODULE_AND_ENVIRONMENT_SYMBOL_STRIPPING \
     AZ_UNUSED(GetModuleInitISystemSymbol()); \
-    AZ_UNUSED(GetModuleShutdownISystemSymbol()); \
-    AZ_UNUSED(GetInjectEnvironmentSymbol()); \
-    AZ_UNUSED(GetDetachEnvironmentSymbol());
+    AZ_UNUSED(GetModuleShutdownISystemSymbol());
 
-
-extern bool g_bProfilerEnabled;
 
 // Summary:
 //   Interface of the DLL.

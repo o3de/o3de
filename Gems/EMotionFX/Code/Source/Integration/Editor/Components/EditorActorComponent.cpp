@@ -196,6 +196,8 @@ namespace EMotionFX
         //////////////////////////////////////////////////////////////////////////
         void EditorActorComponent::Activate()
         {
+            AzToolsFramework::Components::EditorComponentBase::Activate();
+
             LoadActorAsset();
 
             const AZ::EntityId entityId = GetEntityId();
@@ -226,6 +228,8 @@ namespace EMotionFX
 
             DestroyActorInstance();
             m_actorAsset.Release();
+
+            AzToolsFramework::Components::EditorComponentBase::Deactivate();
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -588,7 +592,15 @@ namespace EMotionFX
             if (asset)
             {
                 m_actorAsset = asset;
-                OnAssetSelected();
+
+                // SetPrimaryAsset function can be called while this component is not activated
+                // due to incompatible services. For example by dragging and dropping a FBX to an
+                // entity that already has an actor or mesh component in it. Only proceed to load actor
+                // asset if the component is activated (by checking if it's connected to EditorActorComponentRequestBus).
+                if (EditorActorComponentRequestBus::Handler::BusIsConnected())
+                {
+                    OnAssetSelected();
+                }
             }
         }
 

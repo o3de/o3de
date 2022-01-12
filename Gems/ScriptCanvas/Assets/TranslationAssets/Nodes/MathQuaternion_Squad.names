@@ -1,0 +1,64 @@
+{
+    "entries": [
+        {
+            "base": "{E7275C69-D728-5468-9402-C4FBA1ADDA97}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Squad",
+                "category": "Math/Quaternion",
+                "tooltip": "returns the quadratic interpolation, that is: Squad(From, To, In, Out, T) = Slerp(Slerp(From, Out, T), Slerp(To, In, T), 2(1 - T)T)"
+            },
+            "slots": [
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_From_0",
+                    "details": {
+                        "name": "From"
+                    }
+                },
+                {
+                    "base": "DataInput_To_1",
+                    "details": {
+                        "name": "To"
+                    }
+                },
+                {
+                    "base": "DataInput_In_2",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "DataInput_Out_3",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_T_4",
+                    "details": {
+                        "name": "T"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result_0",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

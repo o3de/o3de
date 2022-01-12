@@ -6,7 +6,7 @@
  *
  */
 
-#include "ImageGradientComponent.h"
+#include <GradientSignal/Components/ImageGradientComponent.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Debug/Profiler.h>
@@ -129,13 +129,16 @@ namespace GradientSignal
 
     void ImageGradientComponent::Activate()
     {
+        // This will immediately call OnGradientTransformChanged and initialize m_gradientTransform.
+        GradientTransformNotificationBus::Handler::BusConnect(GetEntityId());
+
         SetupDependencies();
 
         ImageGradientRequestBus::Handler::BusConnect(GetEntityId());
         GradientRequestBus::Handler::BusConnect(GetEntityId());
         AZ::Data::AssetBus::Handler::BusConnect(m_configuration.m_imageAsset.GetId());
 
-        AZStd::lock_guard<decltype(m_imageMutex)> imageLock(m_imageMutex);
+        AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
         m_configuration.m_imageAsset.QueueLoad();
     }
 
@@ -144,10 +147,11 @@ namespace GradientSignal
         AZ::Data::AssetBus::Handler::BusDisconnect();
         GradientRequestBus::Handler::BusDisconnect();
         ImageGradientRequestBus::Handler::BusDisconnect();
+        GradientTransformNotificationBus::Handler::BusDisconnect();
 
         m_dependencyMonitor.Reset();
 
-        AZStd::lock_guard<decltype(m_imageMutex)> imageLock(m_imageMutex);
+        AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
         m_configuration.m_imageAsset.Release();
     }
 
@@ -173,37 +177,43 @@ namespace GradientSignal
 
     void ImageGradientComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        AZStd::lock_guard<decltype(m_imageMutex)> imageLock(m_imageMutex);
+        AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
         m_configuration.m_imageAsset = asset;
     }
 
     void ImageGradientComponent::OnAssetMoved(AZ::Data::Asset<AZ::Data::AssetData> asset, [[maybe_unused]] void* oldDataPointer)
     {
-        AZStd::lock_guard<decltype(m_imageMutex)> imageLock(m_imageMutex);
+        AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
         m_configuration.m_imageAsset = asset;
     }
 
     void ImageGradientComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        AZStd::lock_guard<decltype(m_imageMutex)> imageLock(m_imageMutex);
+        AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
         m_configuration.m_imageAsset = asset;
+    }
+
+    void ImageGradientComponent::OnGradientTransformChanged(const GradientTransform& newTransform)
+    {
+        AZStd::unique_lock<decltype(m_imageMutex)> lock(m_imageMutex);
+        m_gradientTransform = newTransform;
     }
 
     float ImageGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
-
         AZ::Vector3 uvw = sampleParams.m_position;
-
         bool wasPointRejected = false;
-        const bool shouldNormalizeOutput = true;
-        GradientTransformRequestBus::Event(
-            GetEntityId(), &GradientTransformRequestBus::Events::TransformPositionToUVW, sampleParams.m_position, uvw, shouldNormalizeOutput, wasPointRejected);
 
-        if (!wasPointRejected)
         {
-            AZStd::lock_guard<decltype(m_imageMutex)> imageLock(m_imageMutex);
-            return GetValueFromImageAsset(m_configuration.m_imageAsset, uvw, m_configuration.m_tilingX, m_configuration.m_tilingY, 0.0f);
+            AZStd::shared_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
+
+            m_gradientTransform.TransformPositionToUVWNormalized(sampleParams.m_position, uvw, wasPointRejected);
+
+            if (!wasPointRejected)
+            {
+                return GetValueFromImageAsset(
+                    m_configuration.m_imageAsset, uvw, m_configuration.m_tilingX, m_configuration.m_tilingY, 0.0f);
+            }
         }
 
         return 0.0f;
@@ -225,7 +235,7 @@ namespace GradientSignal
             AZ::Data::AssetBus::Handler::BusDisconnect(m_configuration.m_imageAsset.GetId());
 
             {
-                AZStd::lock_guard<decltype(m_imageMutex)> imageLock(m_imageMutex);
+                AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
                 m_configuration.m_imageAsset = AZ::Data::AssetManager::Instance().FindOrCreateAsset(assetId, azrtti_typeid<ImageAsset>(), m_configuration.m_imageAsset.GetAutoLoadBehavior());
             }
 

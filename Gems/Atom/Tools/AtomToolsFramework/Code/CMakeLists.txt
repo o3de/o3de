@@ -42,6 +42,7 @@ ly_add_target(
             Gem::Atom_RHI.Reflect
             Gem::Atom_Feature_Common.Static
             Gem::Atom_Bootstrap.Headers
+            Gem::ImageProcessingAtom.Headers
 )
 
 ly_add_target(
@@ -60,4 +61,35 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::AtomToolsFramework.Static
+    RUNTIME_DEPENDENCIES
+        Gem::ImageProcessingAtom.Editor
 )
+
+################################################################################
+# Tests
+################################################################################
+if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+
+    ly_add_target(
+        NAME AtomToolsFramework.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAMESPACE Gem
+        FILES_CMAKE
+            atomtoolsframework_tests_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                .
+                Tests
+        BUILD_DEPENDENCIES
+            PRIVATE
+                AZ::AzTest
+                AZ::AzTestShared
+                AZ::AzFrameworkTestShared
+                Gem::AtomToolsFramework.Static
+                Gem::Atom_Utils.TestUtils.Static
+    )
+
+    ly_add_googletest(
+        NAME Gem::AtomToolsFramework.Tests
+    )
+
+endif()

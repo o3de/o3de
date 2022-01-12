@@ -24,6 +24,9 @@ namespace AzFramework
         virtual ~XcbConnectionManager() = default;
 
         virtual xcb_connection_t* GetXcbConnection() const = 0;
+
+        //! Enables/Disables XInput Raw Input events.
+        virtual void SetEnableXInput(xcb_connection_t* connection, bool enable) = 0;
     };
 
     class XcbConnectionManagerBusTraits

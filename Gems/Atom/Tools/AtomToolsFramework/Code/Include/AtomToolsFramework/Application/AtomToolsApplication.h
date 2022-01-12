@@ -58,7 +58,7 @@ namespace AtomToolsFramework
         void CreateStaticModules(AZStd::vector<AZ::Module*>& outModules) override;
         const char* GetCurrentConfigurationName() const override;
         void StartCommon(AZ::Entity* systemEntity) override;
-        void Tick(float deltaOverride = -1.f) override;
+        void Tick() override;
         void Stop() override;
 
     protected:

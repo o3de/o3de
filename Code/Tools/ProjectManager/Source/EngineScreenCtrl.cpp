@@ -39,11 +39,20 @@ namespace O3DE::ProjectManager
 
         m_tabWidget->addTab(m_engineSettingsScreen, tr("General"));
         m_tabWidget->addTab(m_gemRepoScreen, tr("Gem Repositories"));
+
+        // when tab changes, notify the current screen so it can refresh
+        connect(m_tabWidget, &QTabWidget::currentChanged, this, &EngineScreenCtrl::TabChanged);
+
         topBarHLayout->addWidget(m_tabWidget);
 
         vLayout->addWidget(topBarFrameWidget);
 
         setLayout(vLayout);
+    }
+
+    void EngineScreenCtrl::TabChanged([[maybe_unused]] int index)
+    {
+        NotifyCurrentScreen();
     }
 
     ProjectManagerScreen EngineScreenCtrl::GetScreenEnum()
@@ -63,12 +72,16 @@ namespace O3DE::ProjectManager
 
     bool EngineScreenCtrl::ContainsScreen(ProjectManagerScreen screen)
     {
-        if (screen == m_engineSettingsScreen->GetScreenEnum() || screen == m_gemRepoScreen->GetScreenEnum())
-        {
-            return true;
-        }
+        return screen == m_engineSettingsScreen->GetScreenEnum() || screen == m_gemRepoScreen->GetScreenEnum();
+    }
 
-        return false;
+    void EngineScreenCtrl::NotifyCurrentScreen()
+    {
+        ScreenWidget* screen = reinterpret_cast<ScreenWidget*>(m_tabWidget->currentWidget());
+        if (screen)
+        {
+            screen->NotifyCurrentScreen();
+        }
     }
 
     void EngineScreenCtrl::GoToScreen(ProjectManagerScreen screen)

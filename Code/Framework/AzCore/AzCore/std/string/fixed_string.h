@@ -343,26 +343,6 @@ namespace AZStd
         static decltype(auto) format(const wchar_t* format, ...);
 
     protected:
-        template<class InputIt>
-        constexpr auto append_iter(InputIt first, InputIt last)
-           -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>;
-
-        template<class InputIt>
-        constexpr auto construct_iter(InputIt first, InputIt last)
-            -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>>;
-
-        template<class InputIt>
-        constexpr auto assign_iter(InputIt first, InputIt last)
-            -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>;
-
-        template<class InputIt>
-        constexpr auto insert_iter(const_iterator insertPos, InputIt first, InputIt last)
-            -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, iterator>;
-
-        template<class InputIt>
-        constexpr auto replace_iter(const_iterator first, const_iterator last, InputIt first2, InputIt last2)
-            -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>;
-
         constexpr auto fits_in_capacity(size_type newSize) -> bool;
 
         inline static constexpr size_type Capacity = MaxElementCount; // current storage reserved for string not including null-terminator
@@ -464,6 +444,15 @@ namespace AZStd
     constexpr bool operator>=(const basic_fixed_string<Element, MaxElementCount, Traits>& lhs, const Element* rhs);
     template<class Element, size_t MaxElementCount, class Traits>
     constexpr bool operator>=(const Element* lhs, const basic_fixed_string<Element, MaxElementCount, Traits>& rhs);
+
+    // C++20 erase helpers
+    template<class Element, size_t MaxElementCount, class Traits, class U>
+    constexpr auto erase(basic_fixed_string<Element, MaxElementCount, Traits>& container, const U& element)
+        -> typename basic_fixed_string<Element, MaxElementCount, Traits>::size_type;
+
+    template<class Element, size_t MaxElementCount, class Traits, class Predicate>
+    constexpr auto erase_if(basic_fixed_string<Element, MaxElementCount, Traits>& container, Predicate predicate)
+        -> typename basic_fixed_string<Element, MaxElementCount, Traits>::size_type;
 
     template<class T>
     struct hash;

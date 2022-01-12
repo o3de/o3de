@@ -212,6 +212,7 @@ public:
     void OnEditFetch();
     void OnFileExportToGameNoSurfaceTexture();
     void OnViewSwitchToGame();
+    void OnViewSwitchToGameFullScreen();
     void OnViewDeploy();
     void DeleteSelectedEntities(bool includeDescendants);
     void OnMoveObject();
@@ -236,7 +237,6 @@ public:
     void OnSyncPlayerUpdate(QAction* action);
     void OnResourcesReduceworkingset();
     void OnDummyCommand() {};
-    void OnShowHelpers();
     void OnFileSave();
     void OnUpdateDocumentReady(QAction* action);
     void OnUpdateFileOpen(QAction* action);

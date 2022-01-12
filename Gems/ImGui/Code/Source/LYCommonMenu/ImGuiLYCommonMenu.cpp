@@ -13,6 +13,7 @@
 #include <AzCore/std/sort.h>
 #include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
+#include <AzFramework/Viewport/ViewportBus.h>
 #include <ILevelSystem.h>
 #include "ImGuiColorDefines.h"
 #include "LYImGuiUtils/ImGuiDrawHelpers.h"
@@ -43,11 +44,15 @@ namespace ImGui
         m_assetExplorer.Initialize();
         m_cameraMonitor.Initialize();
         m_entityOutliner.Initialize();
+
+        m_deltaTimeHistogram.Init("onTick Delta Time (Milliseconds)", 250, LYImGuiUtils::HistogramContainer::ViewType::Histogram, true, 0.0f, 60.0f);
+        AZ::TickBus::Handler::BusConnect();
     }
 
     void ImGuiLYCommonMenu::Shutdown()
     {
         // Disconnect EBusses
+        AZ::TickBus::Handler::BusDisconnect();
         ImGuiUpdateListenerBus::Handler::BusDisconnect();
 
         // shutdown sub menu objects
@@ -92,8 +97,36 @@ namespace ImGui
 
     void ImGuiLYCommonMenu::OnImGuiUpdate()
     {
+        float dpiScalingFactor = 1.0f;
+        ImGuiManagerBus::BroadcastResult(dpiScalingFactor, &ImGuiManagerBus::Events::GetDpiScalingFactor);
+
+        // Utility function to calculate the size in device pixels based on the current DPI
+        const auto dpiAwareSizeFn = [dpiScalingFactor](float size)
+        {
+            return dpiScalingFactor * size;
+        };
+
+        AZStd::optional<AzFramework::ViewportBorderPadding> viewportBorderPaddingOpt;
+        AzFramework::ViewportBorderRequestBus::BroadcastResult(
+            viewportBorderPaddingOpt, &AzFramework::ViewportBorderRequestBus::Events::GetViewportBorderPadding);
+
+        AzFramework::ViewportBorderPadding viewportBorderPadding = viewportBorderPaddingOpt.value_or(AzFramework::ViewportBorderPadding{});
+        // Utility function to return the current offset (scaled by DPI) if a viewport border
+        // is active (otherwise 0.0)
+        auto dpiAwareBorderOffsetFn = [&viewportBorderPaddingOpt, &dpiAwareSizeFn](float size)
+        {
+            return viewportBorderPaddingOpt.has_value() ? dpiAwareSizeFn(size) : 0.0f;
+        };
+
+        // Shift the menu down if a viewport border is active
+        ImVec2 cachedSafeArea = ImGui::GetStyle().DisplaySafeAreaPadding;
+        ImGui::GetStyle().DisplaySafeAreaPadding = ImVec2(cachedSafeArea.x, cachedSafeArea.y + dpiAwareSizeFn(viewportBorderPadding.m_top));
+
         if (ImGui::BeginMainMenuBar())
         {
+            // Constant to shift right aligned menu items by (distance to the left) when a viewport border is active
+            const float rightAlignedBorderOffset = dpiAwareBorderOffsetFn(36.0f);
+
             // Get Discrete Input state now, we will use it both inside the ImGui SubMenu, and along the main task bar ( when it is on )
             bool discreteInputEnabled = false;
             ImGuiManagerBus::BroadcastResult(discreteInputEnabled, &IImGuiManager::GetEnableDiscreteInputMode);
@@ -101,7 +134,8 @@ namespace ImGui
             // Input Mode Display
             {
                 const float prevCursorPos = ImGui::GetCursorPosX();
-                ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 300.0f);
+                ImGui::SetCursorPosX(
+                    ImGui::GetWindowWidth() - dpiAwareSizeFn(300.0f + viewportBorderPadding.m_right) - rightAlignedBorderOffset);
 
                 AZStd::string inputTitle = "Input: ";
                 if (!discreteInputEnabled)
@@ -152,11 +186,15 @@ namespace ImGui
             }
 
             // Add some space before the first menu so it won't overlap with view control buttons
-            ImGui::SetCursorPosX(40.f);
+            ImGui::SetCursorPosX(dpiAwareSizeFn(40.0f + viewportBorderPadding.m_left));
 
             // Main Open 3D Engine menu
             if (ImGui::BeginMenu("O3DE"))
             {
+                if (ImGui::MenuItem("Delta Time Graph"))
+                {
+                    m_showDeltaTimeGraphs = !m_showDeltaTimeGraphs;
+                }
                 // Asset Explorer
                 if (ImGui::MenuItem("Asset Explorer"))
                 {
@@ -557,11 +595,12 @@ namespace ImGui
                 // End LY Common Tools menu
                 ImGui::EndMenu();
             }
-            const int labelSize{ 100 };
-            const int buttonSize{ 40 };
+
+            const float labelSize = dpiAwareSizeFn(100.0f + viewportBorderPadding.m_right) + rightAlignedBorderOffset;
+            const float buttonSize = dpiAwareSizeFn(40.0f + viewportBorderPadding.m_right) + rightAlignedBorderOffset;
             ImGuiUpdateListenerBus::Broadcast(&IImGuiUpdateListener::OnImGuiMainMenuUpdate);
             ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - labelSize);
-            float backgroundHeight = ImGui::GetTextLineHeight() + 3;
+            float backgroundHeight = ImGui::GetTextLineHeight() + dpiAwareSizeFn(3.0f);
             ImVec2 cursorPos = ImGui::GetCursorScreenPos();
             ImGui::GetWindowDrawList()->AddRectFilled(
                 cursorPos, ImVec2(cursorPos.x + labelSize, cursorPos.y + backgroundHeight), IM_COL32(0, 115, 187, 255));
@@ -580,6 +619,9 @@ namespace ImGui
             ImGui::EndMainMenuBar();
         }
 
+        // Restore original safe area.
+        ImGui::GetStyle().DisplaySafeAreaPadding = cachedSafeArea;
+
         // Update Contextual Controller Window
         if (m_controllerLegendWindowVisible)
         {
@@ -594,6 +636,17 @@ namespace ImGui
         m_assetExplorer.ImGuiUpdate();
         m_cameraMonitor.ImGuiUpdate();
         m_entityOutliner.ImGuiUpdate();
+        if (m_showDeltaTimeGraphs)
+        {
+            ImGui::SetNextWindowSize({ 500, 200 }, ImGuiCond_Once);
+            if (ImGui::Begin(
+                    "Delta Time Graphs", &m_showDeltaTimeGraphs,
+                    ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_NoSavedSettings))
+            {
+                m_deltaTimeHistogram.Draw(ImGui::GetColumnWidth(), 100.0f);
+            }
+            ImGui::End();
+        }
     }
 
     void ImGuiLYCommonMenu::OnImGuiUpdate_DrawControllerLegend()
@@ -720,7 +773,6 @@ namespace ImGui
 
         // Set the timer and connect to tick bus to count down.
         m_telemetryCaptureTimeRemaining = m_telemetryCaptureTime;
-        AZ::TickBus::Handler::BusConnect();
 
         // Get the current ImGui Display state to restore it later.
         ImGuiManagerBus::BroadcastResult(m_telemetryCapturePreCaptureState, &IImGuiManager::GetClientMenuBarState);
@@ -740,16 +792,20 @@ namespace ImGui
 
         // Reset timer and disconnect tick bus
         m_telemetryCaptureTimeRemaining = 0.0f;
-        AZ::TickBus::Handler::BusDisconnect();
     }
 
     // OnTick just used for telemetry captures.
     void ImGuiLYCommonMenu::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
-        m_telemetryCaptureTimeRemaining -= deltaTime;
-        if (m_telemetryCaptureTimeRemaining <= 0.0f)
+        m_deltaTimeHistogram.PushValue(deltaTime*1000.0f); // convert to milliseconds
+
+        if (m_telemetryCaptureTimeRemaining > 0.0f)
         {
-            StopTelemetryCapture();
+            m_telemetryCaptureTimeRemaining -= deltaTime;
+            if (m_telemetryCaptureTimeRemaining <= 0.0f)
+            {
+                StopTelemetryCapture();
+            }
         }
     }
 } // namespace ImGui
