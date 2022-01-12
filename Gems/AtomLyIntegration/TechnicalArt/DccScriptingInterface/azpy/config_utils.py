@@ -319,9 +319,9 @@ def get_o3de_build_path(root_directory=get_o3de_engine_root(),
 #
 # other ways to deal with it:
 # 1 - Use the running application .exe to discover the build path?
-# 2 - Set PATH_O3DE_BUILD envar in
+# 2 - If developer set PATH_O3DE_BUILD envar in
 #        "C:\Depot\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\.env"
-# 3 - Set in commandline (or from .bat file)
+# 3 - Set envar in commandline before executing script (or from .bat file)
 # 4 - To Do (maybe): Set in a dccsi_configuration.setreg? 
 # -------------------------------------------------------------------------
 
