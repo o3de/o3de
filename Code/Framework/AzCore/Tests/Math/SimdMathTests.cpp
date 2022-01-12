@@ -2679,7 +2679,7 @@ namespace UnitTest
     {
         float testStoreValues[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
-        Simd::Vec3::FloatType srcRows[4];
+        Simd::Vec4::FloatType srcRows[4];
         srcRows[0] = Simd::Vec4::LoadImmediate(0.0f, 1.0f, 2.0f, 3.0f);
         srcRows[1] = Simd::Vec4::LoadImmediate(4.0f, 5.0f, 6.0f, 7.0f);
         srcRows[2] = Simd::Vec4::LoadImmediate(8.0f, 9.0f, -1.0f, -2.0f);
@@ -2710,7 +2710,7 @@ namespace UnitTest
     {
         float testStoreValues[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
-        Simd::Vec3::FloatType srcRows[4];
+        Simd::Vec4::FloatType srcRows[4];
         srcRows[0] = Simd::Vec4::LoadImmediate(0.0f, 1.0f, 2.0f, 3.0f);
         srcRows[1] = Simd::Vec4::LoadImmediate(4.0f, 5.0f, 6.0f, 7.0f);
         srcRows[2] = Simd::Vec4::LoadImmediate(8.0f, 9.0f, 9.1f, 9.9f);
