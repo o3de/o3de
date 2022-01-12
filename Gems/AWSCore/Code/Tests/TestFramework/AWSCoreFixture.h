@@ -138,7 +138,7 @@ public:
             m_app = AZStd::make_unique<AZ::ComponentApplication>();
         }
 
-        AWSNativeSDKInit::InitializationManager::InitAwsApi();
+        AWSNativeSDKInit::InitializationManager::InitAwsApiNoLogging();
     }
 
     void TearDown() override

@@ -542,7 +542,7 @@ namespace AWSClientAuthUnitTest
             m_jobContext.reset(aznew AZ::JobContext(*m_jobManager, *m_jobCancelGroup));
             AZ::JobContext::SetGlobalContext(m_jobContext.get());
 
-            AWSNativeSDKInit::InitializationManager::InitAwsApi();
+            AWSNativeSDKInit::InitializationManager::InitAwsApiNoLogging();
             m_cognitoIdentityProviderClientMock = std::make_shared<CognitoIdentityProviderClientMock>();
             m_cognitoIdentityClientMock = std::make_shared<CognitoIdentityClientMock>();
         }

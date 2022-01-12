@@ -38,7 +38,7 @@ public:
         m_jobContext.reset(aznew AZ::JobContext(*m_jobManager, *m_jobCancelGroup));
         AZ::JobContext::SetGlobalContext(m_jobContext.get());
 
-        AWSNativeSDKInit::InitializationManager::InitAwsApi();
+        AWSNativeSDKInit::InitializationManager::InitAwsApiNoLogging();
     }
 
     void TearDown() override
