@@ -96,8 +96,7 @@
 
 #include <ScriptCanvas/Core/ScriptCanvasBus.h>
 #include <ScriptCanvas/Core/Graph.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
+
 #include <ScriptCanvas/Libraries/Core/FunctionDefinitionNode.h>
 
 #include <GraphCanvas/GraphCanvasBus.h>
@@ -145,16 +144,14 @@
 ////
 
 #include <Editor/Assets/ScriptCanvasAssetHelpers.h>
-#include <Editor/Assets/ScriptCanvasAssetTracker.h>
-#include <Editor/Assets/ScriptCanvasAssetTrackerDefinitions.h>
-
 #include <ScriptCanvas/Asset/AssetDescription.h>
 #include <ScriptCanvas/Components/EditorScriptCanvasComponent.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
+
 
 #include <Editor/QtMetaTypes.h>
 #include <GraphCanvas/Components/SceneBus.h>
 
+#include <Editor/LyViewPaneNames.h>
 
 namespace ScriptCanvasEditor
 {
@@ -358,21 +355,6 @@ namespace ScriptCanvasEditor
         }
     }
 
-    void Workspace::OnAssetReady(const ScriptCanvasMemoryAsset::pointer memoryAsset)
-    {
-        // open the file in the main window
-//         const ScriptCanvasEditor::SourceHandle& fileAssetId = memoryAsset->GetFileAssetId();
-// 
-//         if (AssetTrackerNotificationBus::MultiHandler::BusIsConnectedId(fileAssetId))
-//         {
-//             AssetTrackerNotificationBus::MultiHandler::BusDisconnect(fileAssetId);
-// 
-//             m_mainWindow->OpenScriptCanvasAsset(*memoryAsset);
-// 
-//             SignalAssetComplete(fileAssetId);
-//         }
-    }
-
     void Workspace::SignalAssetComplete(const ScriptCanvasEditor::SourceHandle& /*fileAssetId*/)
     {
         // When we are done loading all assets we can safely set the focus to the recorded asset
@@ -453,7 +435,7 @@ namespace ScriptCanvasEditor
             m_scriptCanvasAssetModel = new ScriptCanvasAssetBrowserModel(this);
 
             AzToolsFramework::AssetBrowser::AssetGroupFilter* scriptCanvasAssetFilter = new AzToolsFramework::AssetBrowser::AssetGroupFilter();
-            scriptCanvasAssetFilter->SetAssetGroup(ScriptCanvasAsset::Description::GetGroup(azrtti_typeid<ScriptCanvasAsset>()));
+            scriptCanvasAssetFilter->SetAssetGroup(ScriptCanvas::SubgraphInterfaceAssetDescription().GetGroupImpl());
             scriptCanvasAssetFilter->SetFilterPropagation(AzToolsFramework::AssetBrowser::AssetBrowserEntryFilter::PropagateDirection::Down);
 
             m_scriptCanvasAssetModel->setSourceModel(assetBrowserModel);
@@ -1154,23 +1136,20 @@ namespace ScriptCanvasEditor
             return AZ::Success(outTabIndex);
         }
 
-        auto loadedGraph = LoadFromFile(fileAssetId.Path().c_str());
-        if (!loadedGraph.IsSuccess())
+        auto loadedGraphOutcome = LoadFromFile(fileAssetId.Path().c_str());
+        if (!loadedGraphOutcome.IsSuccess())
         {
-            return AZ::Failure(AZStd::string("Failed to load graph at %s", fileAssetId.Path().c_str()));
+            return AZ::Failure(AZStd::string::format("Failed to load graph at %s", fileAssetId.Path().c_str()));
         }
 
-        outTabIndex = CreateAssetTab(loadedGraph.GetValue(), fileState);
-
-        if (!m_isRestoringWorkspace)
-        {
-            SetActiveAsset(loadedGraph.GetValue());
-        }
+        auto loadedGraph = loadedGraphOutcome.TakeValue();
+        CompleteDescriptionInPlace(loadedGraph);
+        outTabIndex = CreateAssetTab(loadedGraph, fileState);
 
         if (outTabIndex >= 0)
         {
-            AddRecentFile(loadedGraph.GetValue().Path().c_str());
-            OpenScriptCanvasAssetImplementation(loadedGraph.GetValue(), fileState);
+            AddRecentFile(loadedGraph.Path().c_str());
+            OpenScriptCanvasAssetImplementation(loadedGraph, fileState);
             return AZ::Success(outTabIndex);
         }
         else
@@ -1185,6 +1164,11 @@ namespace ScriptCanvasEditor
         if (!fileAssetId.IsDescriptionValid())
         {
             return AZ::Failure(AZStd::string("Unable to open asset with invalid asset id"));
+        }
+
+        if (!m_isRestoringWorkspace)
+        {
+            SetActiveAsset(scriptCanvasAsset);
         }
 
         if (!scriptCanvasAsset.IsDescriptionValid())
@@ -1363,9 +1347,11 @@ namespace ScriptCanvasEditor
         AZ::Outcome<ScriptCanvasEditor::SourceHandle, AZStd::string> outcome = LoadFromFile(fullPath);
         if (!outcome.IsSuccess())
         {
-            QMessageBox::warning(this, "Invalid Source File", QString("'%1' failed to load properly.").arg(fullPath), QMessageBox::Ok);
+            QMessageBox::warning(this, "Invalid Source File"
+                , QString("'%1' failed to load properly.\nFailure: %2").arg(fullPath).arg(outcome.GetError().c_str()), QMessageBox::Ok);
             m_errorFilePath = fullPath;
-            AZ_Warning("ScriptCanvas", false, "Unable to open file as a ScriptCanvas graph: %s", fullPath);
+            AZ_Warning("ScriptCanvas", false, "Unable to open file as a ScriptCanvas graph: %s. Failure: %s"
+                , fullPath, outcome.GetError().c_str());
             return;
         }
 
@@ -1497,17 +1483,17 @@ namespace ScriptCanvasEditor
 
         for (;;)
         {
-            ScriptCanvasAssetDescription description;
-            AZStd::string newAssetName = AZStd::string::format(description.GetAssetNamePatternImpl(), ++scriptCanvasEditorDefaultNewNameCount);
+            AZStd::string newAssetName = AZStd::string::format(SourceDescription::GetAssetNamePattern()
+                , ++scriptCanvasEditorDefaultNewNameCount);
             
             AZStd::array<char, AZ::IO::MaxPathLength> assetRootArray;
-            if (!AZ::IO::FileIOBase::GetInstance()->ResolvePath(description.GetSuggestedSavePathImpl()
+            if (!AZ::IO::FileIOBase::GetInstance()->ResolvePath(SourceDescription::GetSuggestedSavePath()
                 , assetRootArray.data(), assetRootArray.size()))
             {
                 AZ_ErrorOnce("Script Canvas", false, "Unable to resolve @projectroot@ path");
             }
 
-            AzFramework::StringFunc::Path::Join(assetRootArray.data(), (newAssetName + description.GetExtensionImpl()).data(), assetPath);
+            AzFramework::StringFunc::Path::Join(assetRootArray.data(), (newAssetName + SourceDescription::GetFileExtension()).data(), assetPath);
             AZ::Data::AssetInfo assetInfo;
 
             if (!AssetHelpers::GetAssetInfo(assetPath, assetInfo))
@@ -1614,7 +1600,14 @@ namespace ScriptCanvasEditor
 
     bool MainWindow::OnFileSave()
     {
-        return SaveAssetImpl(m_activeGraph, Save::InPlace);
+        if (auto metaData = m_tabBar->GetTabData(m_activeGraph); metaData && metaData->m_fileState == Tracker::ScriptCanvasFileState::NEW)
+        {
+            return SaveAssetImpl(m_activeGraph, Save::As);
+        }
+        else
+        {
+            return SaveAssetImpl(m_activeGraph, Save::InPlace);
+        }
     }
 
     bool MainWindow::OnFileSaveAs()
@@ -1635,7 +1628,6 @@ namespace ScriptCanvasEditor
         }
 
         PrepareAssetForSave(inMemoryAssetId);
-        ScriptCanvasAssetDescription assetDescription;
 
         AZStd::string suggestedFilename;
         AZStd::string suggestedFileFilter;
@@ -1644,16 +1636,16 @@ namespace ScriptCanvasEditor
         if (save == Save::InPlace)
         {
             isValidFileName = true;
-            suggestedFileFilter = ScriptCanvasAssetDescription().GetExtensionImpl();
+            suggestedFileFilter = SourceDescription::GetFileExtension();
             suggestedFilename = inMemoryAssetId.Path().c_str();
         }
         else
         {
-            suggestedFileFilter = ScriptCanvasAssetDescription().GetExtensionImpl();
+            suggestedFileFilter = SourceDescription::GetFileExtension();
 
             if (inMemoryAssetId.Path().empty())
             {
-                suggestedFilename = ScriptCanvasAssetDescription().GetSuggestedSavePathImpl();
+                suggestedFilename = SourceDescription::GetSuggestedSavePath();
             }
             else
             {
@@ -1675,9 +1667,9 @@ namespace ScriptCanvasEditor
             {
                 AZStd::string filePath = selectedFile.toUtf8().data();
 
-                if (!AZ::StringFunc::EndsWith(filePath, assetDescription.GetExtensionImpl(), false))
+                if (!AZ::StringFunc::EndsWith(filePath, SourceDescription::GetFileExtension(), false))
                 {
-                    filePath += assetDescription.GetExtensionImpl();
+                    filePath += SourceDescription::GetFileExtension();
                 }
 
                 AZStd::string fileName;
@@ -1709,9 +1701,9 @@ namespace ScriptCanvasEditor
             AZStd::string internalStringFile = selectedFile.toUtf8().data();
 
 
-            if (!AZ::StringFunc::EndsWith(internalStringFile, assetDescription.GetExtensionImpl(), false))
+            if (!AZ::StringFunc::EndsWith(internalStringFile, SourceDescription::GetFileExtension(), false))
             {
-                internalStringFile += assetDescription.GetExtensionImpl();
+                internalStringFile += SourceDescription::GetFileExtension();
             }
 
             if (!AssetHelpers::IsValidSourceFile(internalStringFile, GetActiveScriptCanvasId()))
@@ -3505,19 +3497,23 @@ namespace ScriptCanvasEditor
         return findChild<QObject*>(elementName);
     }
 
-    AZ::EntityId MainWindow::FindEditorNodeIdByAssetNodeId(const ScriptCanvasEditor::SourceHandle& assetId, AZ::EntityId assetNodeId) const
+    AZ::EntityId MainWindow::FindEditorNodeIdByAssetNodeId([[maybe_unused]] const ScriptCanvasEditor::SourceHandle& assetId
+        , [[maybe_unused]] AZ::EntityId assetNodeId) const
     {
-        AZ::EntityId editorEntityId;
-        AssetTrackerRequestBus::BroadcastResult
-            ( editorEntityId, &AssetTrackerRequests::GetEditorEntityIdFromSceneEntityId, assetId.Id(), assetNodeId);
+        AZ::EntityId editorEntityId{};
+//         AssetTrackerRequestBus::BroadcastResult
+//             ( editorEntityId, &AssetTrackerRequests::GetEditorEntityIdFromSceneEntityId, assetId.Id(), assetNodeId);
+        // #sc_editor_asset_redux fix logger
         return editorEntityId;
     }
 
-    AZ::EntityId MainWindow::FindAssetNodeIdByEditorNodeId(const ScriptCanvasEditor::SourceHandle& assetId, AZ::EntityId editorNodeId) const
+    AZ::EntityId MainWindow::FindAssetNodeIdByEditorNodeId([[maybe_unused]] const ScriptCanvasEditor::SourceHandle& assetId
+        , [[maybe_unused]] AZ::EntityId editorNodeId) const
     {
-        AZ::EntityId sceneEntityId;
-        AssetTrackerRequestBus::BroadcastResult
-            ( sceneEntityId, &AssetTrackerRequests::GetSceneEntityIdFromEditorEntityId, assetId.Id(), editorNodeId);
+        AZ::EntityId sceneEntityId{};
+        // AssetTrackerRequestBus::BroadcastResult
+        // ( sceneEntityId, &AssetTrackerRequests::GetSceneEntityIdFromEditorEntityId, assetId.Id(), editorNodeId);
+        // #sc_editor_asset_redux fix logger
         return sceneEntityId;
     }
 

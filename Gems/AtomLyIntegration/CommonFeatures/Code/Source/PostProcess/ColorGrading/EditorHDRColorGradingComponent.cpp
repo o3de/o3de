@@ -11,6 +11,9 @@
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzCore/StringFunc/StringFunc.h>
+#include <Atom/RPI.Public/ViewportContextManager.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/Base.h>
 
 namespace AZ
 {
@@ -199,7 +202,14 @@ namespace AZ
             }
 
             const char* LutAttachment = "LutOutput";
-            const AZStd::vector<AZStd::string> LutGenerationPassHierarchy{ "LutGenerationPass" };
+            auto renderPipelineName = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get()
+                                            ->GetDefaultViewportContext()
+                                            ->GetCurrentPipeline()
+                                            ->GetId();
+            const AZStd::vector<AZStd::string> LutGenerationPassHierarchy{
+                renderPipelineName.GetCStr(),
+                "LutGenerationPass"
+            };
 
             char resolvedOutputFilePath[AZ_MAX_PATH_LEN] = { 0 };
             AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(m_currentTiffFilePath.c_str(), resolvedOutputFilePath, AZ_MAX_PATH_LEN);

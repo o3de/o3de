@@ -7,7 +7,6 @@
  */
 
 #include "ScriptCanvasUndoHelper.h"
-#include "ScriptCanvasMemoryAsset.h"
 #include <Undo/ScriptCanvasGraphCommand.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
 
