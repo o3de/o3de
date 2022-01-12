@@ -585,21 +585,25 @@ namespace AzFramework
         EBUS_EVENT_PTR(m_notificationBus, AZ::TransformNotificationBus, OnParentChanged, oldParent, parentId);
         m_parentChangedEvent.Signal(oldParent, parentId);
 
-        if (oldParent != parentId) // Don't send removal notification while activating.
+        // Check if we're attached to an entity; the following notifications rely upon having a valid entity id
+        if (m_entity != nullptr)
         {
-            EBUS_EVENT_ID(oldParent, AZ::TransformNotificationBus, OnChildRemoved, GetEntityId());
-            auto oldParentTransform = AZ::TransformBus::FindFirstHandler(oldParent);
-            if (oldParentTransform)
+            if (oldParent != parentId) // Don't send removal notification while activating.
             {
-                oldParentTransform->NotifyChildChangedEvent(AZ::ChildChangeType::Removed, GetEntityId());
+                EBUS_EVENT_ID(oldParent, AZ::TransformNotificationBus, OnChildRemoved, GetEntityId());
+                auto oldParentTransform = AZ::TransformBus::FindFirstHandler(oldParent);
+                if (oldParentTransform)
+                {
+                    oldParentTransform->NotifyChildChangedEvent(AZ::ChildChangeType::Removed, GetEntityId());
+                }
             }
-        }
 
-        EBUS_EVENT_ID(parentId, AZ::TransformNotificationBus, OnChildAdded, GetEntityId());
-        auto newParentTransform = AZ::TransformBus::FindFirstHandler(parentId);
-        if (newParentTransform)
-        {
-            newParentTransform->NotifyChildChangedEvent(AZ::ChildChangeType::Added, GetEntityId());
+            EBUS_EVENT_ID(parentId, AZ::TransformNotificationBus, OnChildAdded, GetEntityId());
+            auto newParentTransform = AZ::TransformBus::FindFirstHandler(parentId);
+            if (newParentTransform)
+            {
+                newParentTransform->NotifyChildChangedEvent(AZ::ChildChangeType::Added, GetEntityId());
+            }
         }
     }
 
