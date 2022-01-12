@@ -16,7 +16,7 @@ For instance, if you want to add py2.7 compatible libs, for apps like Maya2020:
 "C:\Depot\o3de-engine\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\Tools\DCC\Maya\readme.txt"
 
 These pyside2-tools can be useful, and they are not pip installed, nor distributed.
-C:\Depot\o3de-engine\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\3rdParty\Python\pyside2-tools
+"C:\Depot\o3de-engine\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\3rdParty\Python\pyside2-tools"
 
 pyside2-tools instructions:
 
