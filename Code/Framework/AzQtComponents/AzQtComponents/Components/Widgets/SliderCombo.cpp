@@ -256,40 +256,15 @@ SliderDoubleCombo::~SliderDoubleCombo()
 
 void SliderDoubleCombo::setValueSlider(double value)
 {
-    const bool doEmit = m_value != value;
     m_value = value;
-
     updateSpinBox();
-    updateSlider();
-
-    if (doEmit)
-    {
-        // We don't want to update the slider from setValue as this
-        // causes rounding errors in the tooltip hint.
-        m_fromSlider = true;
-        Q_EMIT valueChanged();
-    }
 }
 
 void SliderDoubleCombo::setValue(double value)
 {
-    const bool doEmit = m_value != value;
     m_value = value;
-
     updateSpinBox();
-    if (!m_fromSlider)
-    {
-        updateSlider();
-
-        if (doEmit)
-        {
-            Q_EMIT valueChanged();
-        }
-    }
-    else
-    {
-        m_fromSlider = false;
-    }
+    updateSlider();
 }
 
 SliderDouble* SliderDoubleCombo::slider() const
