@@ -230,7 +230,7 @@ namespace AZ
         EBUS_EVENT_ID(m_id, EntityBus, OnEntityDeactivated, m_id);
         EBUS_EVENT(EntitySystemBus, OnEntityDeactivated, m_id);
 
-        AZ_Assert(m_state == State::Active, "Component should be in Active state to br Deactivated!");
+        AZ_Assert(m_state == State::Active, "Component should be in Active state to be Deactivated!");
         SetState(State::Deactivating);
 
         for (ComponentArrayType::reverse_iterator it = m_components.rbegin(); it != m_components.rend(); ++it)
