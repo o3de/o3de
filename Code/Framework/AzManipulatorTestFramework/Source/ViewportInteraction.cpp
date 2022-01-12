@@ -10,6 +10,7 @@
 #include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzManipulatorTestFramework/ViewportInteraction.h>
 #include <AzToolsFramework/Manipulators/ManipulatorBus.h>
+#include <AzManipulatorTestFramework/AzManipulatorTestFrameworkUtils.h>
 
 namespace AzManipulatorTestFramework
 {
@@ -19,6 +20,9 @@ namespace AzManipulatorTestFramework
         AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler::BusConnect(m_viewportId);
         AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Handler::BusConnect(m_viewportId);
         AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler::BusConnect(m_viewportId);
+
+        m_cameraState =
+            AzFramework::CreateIdentityDefaultCamera(AZ::Vector3::CreateZero(), AzManipulatorTestFramework::DefaultViewportSize);
     }
 
     ViewportInteraction::~ViewportInteraction()
@@ -113,6 +117,16 @@ namespace AzManipulatorTestFramework
         m_stickySelect = enabled;
     }
 
+    void ViewportInteraction::SetIconsVisible(const bool visible)
+    {
+        m_iconsVisible = visible;
+    }
+
+    void ViewportInteraction::SetHelpersVisible(const bool visible)
+    {
+        m_helpersVisible = visible;
+    }
+
     AZ::Vector3 ViewportInteraction::DefaultEditorCameraPosition() const
     {
         return {};
@@ -147,5 +161,15 @@ namespace AzManipulatorTestFramework
     float ViewportInteraction::DeviceScalingFactor()
     {
         return 1.0f;
+    }
+
+    bool ViewportInteraction::IconsVisible() const
+    {
+        return m_iconsVisible;
+    }
+
+    bool ViewportInteraction::HelpersVisible() const
+    {
+        return m_helpersVisible;
     }
 } // namespace AzManipulatorTestFramework

@@ -60,7 +60,7 @@ struct IViewPaneClass
     //////////////////////////////////////////////////////////////////////////
     HRESULT STDMETHODCALLTYPE QueryInterface(const IID& riid, void** ppvObj)
     {
-        if (riid == __uuidof(IViewPaneClass))
+        if (riid == __az_uuidof(IViewPaneClass))
         {
             *ppvObj = this;
             return S_OK;

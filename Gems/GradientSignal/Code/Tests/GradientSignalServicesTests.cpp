@@ -6,13 +6,13 @@
  *
  */
 
-#include "Tests/GradientSignalTestMocks.h"
+#include <Tests/GradientSignalTestFixtures.h>
 
 #include <AzTest/AzTest.h>
 
-#include <Source/Components/ConstantGradientComponent.h>
-#include <Source/Components/DitherGradientComponent.h>
-#include <Source/Components/InvertGradientComponent.h>
+#include <GradientSignal/Components/ConstantGradientComponent.h>
+#include <GradientSignal/Components/DitherGradientComponent.h>
+#include <GradientSignal/Components/InvertGradientComponent.h>
 
 namespace UnitTest
 {
@@ -212,12 +212,9 @@ namespace UnitTest
         const AZ::EntityId id = entityMock->GetId();
         UnitTest::MockGradientArrayRequestsBus mockGradientRequestsBus(id, inputData, dataSize);
 
-        GradientSignal::InvertGradientConfig config;
-        config.m_gradientSampler.m_gradientId = entityMock->GetId();
-
-        auto entity = CreateEntity();
-        CreateComponent<GradientSignal::InvertGradientComponent>(entity.get(), config);
-        ActivateEntity(entity.get());
+        // Create the entity with an arbitrarily-sized box.
+        const float HalfBounds = 64.0f;
+        auto entity = BuildTestInvertGradient(HalfBounds, entityMock->GetId());
 
         TestFixedDataSampler(expectedOutput, dataSize, entity->GetId());
     }

@@ -16,7 +16,6 @@
 
 #include <Editor/View/Widgets/NodePalette/NodePaletteModel.h>
 
-#include <Editor/Assets/ScriptCanvasAssetHelpers.h>
 #include <Editor/Include/ScriptCanvas/Bus/RequestBus.h>
 #include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
 #include <Editor/Nodes/NodeUtils.h>
@@ -1160,7 +1159,7 @@ namespace ScriptCanvasEditor
         , AZStd::string_view eventName
         , const ScriptCanvas::EBusBusId& busId
         , const ScriptCanvas::EBusEventId& eventId
-        , const AZ::BehaviorEBusEventSender&
+        , const AZ::BehaviorEBusEventSender& sender
         , ScriptCanvas::PropertyStatus propertyStatus
         , bool isOverload)
     {
@@ -1194,6 +1193,17 @@ namespace ScriptCanvasEditor
             senderInformation->m_displayName = details.m_name.empty() ? eventName : details.m_name.c_str();
             senderInformation->m_toolTip = details.m_tooltip.empty() ? "" : details.m_tooltip;
 
+            auto safeRegister = [](AZ::BehaviorMethod* method)
+            {
+                if (method && AZ::MethodReturnsAzEventByReferenceOrPointer(*method))
+                {
+                    const AZ::BehaviorParameter* resultParameter = method->GetResult();
+                    ScriptCanvas::ReflectEventTypeOnDemand(resultParameter->m_typeId, resultParameter->m_name, resultParameter->m_azRtti);
+                }
+            };
+
+            safeRegister(sender.m_event);
+            safeRegister(sender.m_broadcast);
             m_registeredNodes.emplace(AZStd::make_pair(nodeIdentifier, senderInformation));
         }
     }

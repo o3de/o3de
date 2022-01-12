@@ -284,13 +284,14 @@ namespace O3DE::ProjectManager
                     {
                         currentButton = projectButtonIter.value();
                         currentButton->RestoreDefaultState();
-                        m_projectsFlowLayout->addWidget(currentButton);
                     }
                 }
 
                 // Check whether project manager has successfully built the project
                 if (currentButton)
                 {
+                    m_projectsFlowLayout->addWidget(currentButton);
+
                     bool projectBuiltSuccessfully = false;
                     SettingsInterface::Get()->GetProjectBuiltSuccessfully(projectBuiltSuccessfully, project);
 
@@ -341,6 +342,7 @@ namespace O3DE::ProjectManager
         }
 
         m_stack->setCurrentWidget(m_projectsContent);
+        m_projectsFlowLayout->update();
     }
 
     ProjectManagerScreen ProjectsScreen::GetScreenEnum()
@@ -399,7 +401,6 @@ namespace O3DE::ProjectManager
     {
         if (ProjectUtils::AddProjectDialog(this))
         {
-            ResetProjectsContent();
             emit ChangeScreenRequest(ProjectManagerScreen::Projects);
         }
     }
@@ -490,7 +491,6 @@ namespace O3DE::ProjectManager
             // Open file dialog and choose location for copied project then register copy with O3DE
             if (ProjectUtils::CopyProjectDialog(projectInfo.m_path, newProjectInfo, this))
             {
-                ResetProjectsContent();
                 emit NotifyBuildProject(newProjectInfo);
                 emit ChangeScreenRequest(ProjectManagerScreen::Projects);
             }
@@ -503,7 +503,6 @@ namespace O3DE::ProjectManager
             // Unregister Project from O3DE and reload projects
             if (ProjectUtils::UnregisterProject(projectPath))
             {
-                ResetProjectsContent();
                 emit ChangeScreenRequest(ProjectManagerScreen::Projects);
             }
         }

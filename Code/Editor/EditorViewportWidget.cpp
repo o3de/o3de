@@ -46,6 +46,7 @@
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
+#include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 
@@ -453,9 +454,6 @@ void EditorViewportWidget::Update()
 
     // Render
     {
-        // TODO: Move out this logic to a controller and refactor to work with Atom
-        ProcessRenderLisneters(m_displayContext);
-
         m_displayContext.Flush2D();
 
         // Post Render Callback
@@ -1029,8 +1027,6 @@ void EditorViewportWidget::OnTitleMenu(QMenu* menu)
     AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Safe Frame"), &gSettings.viewports.bShowSafeFrame);
     AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Construction Plane"), &gSettings.snap.constructPlaneDisplay);
     AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Trigger Bounds"), &gSettings.viewports.bShowTriggerBounds);
-    AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Icons"), &gSettings.viewports.bShowIcons, &gSettings.viewports.bShowSizeBasedIcons);
-    AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Size-based Icons"), &gSettings.viewports.bShowSizeBasedIcons, &gSettings.viewports.bShowIcons);
     AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Helpers of Frozen Objects"), &gSettings.viewports.nShowFrozenHelpers);
 
     if (!m_predefinedAspectRatios.IsEmpty())
@@ -1621,14 +1617,14 @@ Vec3 EditorViewportWidget::ViewToWorld(
     auto ray = m_renderViewport->ViewportScreenToWorldRay(AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(vp));
 
     const float maxDistance = 10000.f;
-    Vec3 v = AZVec3ToLYVec3(ray.direction) * maxDistance;
+    Vec3 v = AZVec3ToLYVec3(ray.m_direction) * maxDistance;
 
     if (!_finite(v.x) || !_finite(v.y) || !_finite(v.z))
     {
         return Vec3(0, 0, 0);
     }
 
-    Vec3 colp = AZVec3ToLYVec3(ray.origin) + 0.002f * v;
+    Vec3 colp = AZVec3ToLYVec3(ray.m_origin) + 0.002f * v;
 
     return colp;
 }
@@ -2418,6 +2414,16 @@ bool EditorViewportSettings::StickySelectEnabled() const
 AZ::Vector3 EditorViewportSettings::DefaultEditorCameraPosition() const
 {
     return SandboxEditor::CameraDefaultEditorPosition();
+}
+
+bool EditorViewportSettings::IconsVisible() const
+{
+    return AzToolsFramework::IconsVisible();
+}
+
+bool EditorViewportSettings::HelpersVisible() const
+{
+    return AzToolsFramework::HelpersVisible();
 }
 
 AZ_CVAR_EXTERNED(bool, ed_previewGameInFullscreen_once);

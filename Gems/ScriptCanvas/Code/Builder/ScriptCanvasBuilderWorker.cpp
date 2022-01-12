@@ -18,7 +18,6 @@
 #include <Builder/ScriptCanvasBuilderWorker.h>
 #include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
 #include <ScriptCanvas/Asset/SubgraphInterfaceAssetHandler.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
 #include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
 #include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
@@ -45,10 +44,8 @@ namespace ScriptCanvasBuilder
         AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), fullPath, false);
         AzFramework::StringFunc::Path::Normalize(fullPath);
 
-        AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset> asset;
         const ScriptCanvasEditor::Graph* sourceGraph = nullptr;
         const ScriptCanvas::GraphData* graphData = nullptr;
-
         ScriptCanvasEditor::SourceHandle sourceHandle;
 
         auto sourceOutcome = ScriptCanvasEditor::LoadFromFile(fullPath);
@@ -58,7 +55,13 @@ namespace ScriptCanvasBuilder
             sourceGraph = sourceHandle.Get();
             graphData = sourceGraph->GetGraphDataConst();
         }
-        
+        else
+        {
+            AZ_TracePrintf(s_scriptCanvasBuilder, "Failed to load the file: %s", fullPath.c_str());
+            response.m_result = AssetBuilderSDK::CreateJobsResultCode::Failed;
+        }
+
+        // in terms of job creation, assert on anything but smooth sailing from this point
         AZ_Assert(sourceGraph, "Graph component is missing from entity.");
         AZ_Assert(graphData, "GraphData is missing from entity");
 
