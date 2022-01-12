@@ -327,6 +327,8 @@ def init_o3de_pyside2_tools():
 
 # -------------------------------------------------------------------------
 def validate_o3de_pyside2():
+    # To Do: finish implementing
+    # To Do: doc strings
     # add Qt binaries to the Windows path to handle finding DLL file dependencies
     if sys.platform.startswith('win'):
         _LOGGER.info('~   Qt/PySide2 bootstrapped PATH for Windows.')
@@ -638,48 +640,65 @@ def get_config_settings(engine_path=_O3DE_DEV,
 def export_settings(settings,
                     dccsi_sys_path=_DCCSI_SYS_PATH,
                     dccsi_pythonpath=_DCCSI_PYTHONPATH):
-        # to do: need to add malformed json validation to <dccsi>\settings.json
-        # this can cause a bad error that is deep and hard to debug
     
-        os.environ['DYNACONF_DCCSI_LOCAL_SETTINGS'] = "True"  
+    # To Do: when running script from IDE settings.local.json are
+    # correctly written to the < dccsi > root folder (script is cwd?)
+    # when I run this from cli using O3DE Python:
+    #     "C:\Depot\o3de-dev\python\python.cmd"
+    # the setting end up in that folder:
+    #     C:\Depot\o3de-dev\python\settings.local.json"
+    # we need to ensure that the settings are written to the < dccsi >
     
-        # make sure the dnyaconf synthetic env is updated before writting settings
-        # this will make it into our settings file as "DCCSI_SYS_PATH":<value>
-        add_path_list_to_envar(dccsi_sys_path, 'DYNACONF_DCCSI_SYS_PATH')
-        add_path_list_to_envar(dccsi_pythonpath, 'DYNACONF_DCCSI_PYTHONPATH')
-        # we did not use list_to_addsitedir() because we are just ensuring
-        # the managed envar path list is updated so paths are written to settings
-        
-        # update settings
-        from dynaconf import settings
-        settings.setenv()
-        
-        # writting settings
-        from dynaconf import loaders
-        from dynaconf.utils.boxing import DynaBox
+    # To Do: multiple configs in different states can actually be written,
+    # so provide a output path and name so a collection can be made in
+    #     < dccsi >\configs\settings.core.json
+    #     < dccsi >\configs\settings.python.json
+    #     < dccsi >\configs\settings.pyside.json, etc.
+    # dynaconf has way to load specific settings files,
+    # which could be useful for tools?
     
-        _settings_dict = settings.as_dict()
-        
-        # default temp filename
-        _settings_file = Path('settings.local.json')
-        
-        # writes to a file, the format is inferred by extension
-        # can be .yaml, .toml, .ini, .json, .py
-        #loaders.write(_settings_file, DynaBox(data).to_dict(), merge=False, env='development')
-        #loaders.write(_settings_file, DynaBox(data).to_dict())
+    # To Do: need to add malformed json validation to <dccsi>\settings.json
+    # this can cause a bad error that is deep and hard to debug
+
+    os.environ['DYNACONF_DCCSI_LOCAL_SETTINGS'] = "True"  
+
+    # make sure the dnyaconf synthetic env is updated before writting settings
+    # this will make it into our settings file as "DCCSI_SYS_PATH":<value>
+    add_path_list_to_envar(dccsi_sys_path, 'DYNACONF_DCCSI_SYS_PATH')
+    add_path_list_to_envar(dccsi_pythonpath, 'DYNACONF_DCCSI_PYTHONPATH')
+    # we did not use list_to_addsitedir() because we are just ensuring
+    # the managed envar path list is updated so paths are written to settings
     
-        # we want to possibly modify or stash our settings into a o3de .setreg
-        from box import Box
-        _settings_box = Box(_settings_dict)
+    # update settings
+    from dynaconf import settings
+    settings.setenv()
     
-        _LOGGER.info('Pretty print, _settings_box: {}'.format(_settings_file))
-        _LOGGER.info(str(_settings_box.to_json(sort_keys=True,
-                                               indent=4)))
-        
-        # writes settings box
-        _settings_box.to_json(filename=_settings_file.as_posix(),
-                               sort_keys=True,
-                               indent=4)
+    # writting settings
+    from dynaconf import loaders
+    from dynaconf.utils.boxing import DynaBox
+
+    _settings_dict = settings.as_dict()
+    
+    # default temp filename
+    _settings_file = Path('settings.local.json')
+    
+    # writes to a file, the format is inferred by extension
+    # can be .yaml, .toml, .ini, .json, .py
+    #loaders.write(_settings_file, DynaBox(data).to_dict(), merge=False, env='development')
+    #loaders.write(_settings_file, DynaBox(data).to_dict())
+
+    # we want to possibly modify or stash our settings into a o3de .setreg
+    from box import Box
+    _settings_box = Box(_settings_dict)
+
+    _LOGGER.info('Pretty print, _settings_box: {}'.format(_settings_file))
+    _LOGGER.info(str(_settings_box.to_json(sort_keys=True,
+                                           indent=4)))
+    
+    # writes settings box
+    _settings_box.to_json(filename=_settings_file.as_posix(),
+                           sort_keys=True,
+                           indent=4)
 # --- END -----------------------------------------------------------------
 
 
