@@ -286,7 +286,9 @@ namespace Audio
 
         return sResult;
     }
-    CATLAudioFileEntry::CATLAudioFileEntry(const char * const filePath, IATLAudioFileEntryData * const implData)
+
+#endif // !AUDIO_RELEASE
+    CATLAudioFileEntry::CATLAudioFileEntry(const char* const filePath, IATLAudioFileEntryData* const implData)
         : m_filePath(filePath)
         , m_fileSize(0)
         , m_useCount(0)
@@ -299,6 +301,4 @@ namespace Audio
     }
 
     CATLAudioFileEntry::~CATLAudioFileEntry() = default;
-
-#endif // !AUDIO_RELEASE
 } // namespace Audio
