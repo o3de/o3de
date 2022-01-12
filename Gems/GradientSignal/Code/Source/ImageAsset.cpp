@@ -184,7 +184,7 @@ namespace GradientSignal
                 // A 16x16 pixel image and tilingX = tilingY = 1  maps the uv range of 0-1 to 0-16 pixels.  
                 // A 16x16 pixel image and tilingX = tilingY = 1.5 maps the uv range of 0-1 to 0-24 pixels.
 
-                const AZ::Vector3 tiledDimensions((image->m_imageWidth * tilingX),
+                const AZ::Vector3 tiledDimensions((image->m_imageWidth  * tilingX),
                     (image->m_imageHeight * tilingY),
                     0.0f);
 
