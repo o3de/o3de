@@ -454,9 +454,6 @@ void EditorViewportWidget::Update()
 
     // Render
     {
-        // TODO: Move out this logic to a controller and refactor to work with Atom
-        ProcessRenderLisneters(m_displayContext);
-
         m_displayContext.Flush2D();
 
         // Post Render Callback

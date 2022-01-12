@@ -148,6 +148,7 @@ set(FILES
     Math/Matrix4x4PerformanceTests.cpp
     Math/Matrix4x4Tests.cpp
     Math/MatrixUtilsTests.cpp
+    Math/MathTest.h
     Math/MathTestData.h
     Math/ObbPerformanceTests.cpp
     Math/ObbTests.cpp

@@ -47,6 +47,9 @@ ly_add_target(
             Gem::LyShine.Static
             Legacy::CryCommon
             Gem::LmbrCentral
+        PUBLIC
+            Gem::Atom_RHI.Reflect
+            Gem::Atom_RPI.Public
     RUNTIME_DEPENDENCIES
         Gem::LmbrCentral
         Gem::TextureAtlas

@@ -24,7 +24,7 @@ def kill_all_ly_processes(include_asset_processor: bool = True) -> None:
     :return: None
     """
     LY_PROCESSES = [
-        'Editor', 'Profiler', 'RemoteConsole',
+        'Editor', 'Profiler', 'RemoteConsole', 'o3de'
     ]
     AP_PROCESSES = [
         'AssetProcessor', 'AssetProcessorBatch', 'AssetBuilder'

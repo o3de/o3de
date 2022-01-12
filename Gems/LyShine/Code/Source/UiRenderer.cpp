@@ -76,7 +76,7 @@ void UiRenderer::OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene)
     // Create a dynamic draw context for UI Canvas drawing for the scene
     m_dynamicDraw = CreateDynamicDrawContext(uiShader);
 
-    if (m_dynamicDraw)
+    if (m_dynamicDraw && m_dynamicDraw->IsReady())
     {
         // Cache shader data such as input indices for later use
         CacheShaderData(m_dynamicDraw);
@@ -85,7 +85,7 @@ void UiRenderer::OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene)
     }
     else
     {
-        AZ_Error(LogName, false, "Failed to create a dynamic draw context for LyShine. \
+        AZ_Error(LogName, false, "Failed to create or initialize a dynamic draw context for LyShine. \
             This can happen if the LyShine pass hasn't been added to the main render pipeline.");
     }
 }
@@ -414,7 +414,7 @@ void UiRenderer::DebugDisplayTextureData(int recordingOption)
             return lhs.second > rhs.second;
         });
 
-        CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+        IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
         // setup to render lines of text for the debug display
 

@@ -8,6 +8,7 @@
 
 #include <Source/NetworkEntity/NetworkSpawnableLibrary.h>
 #include <AzCore/Asset/AssetManagerBus.h>
+#include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Interface/Interface.h>
@@ -17,12 +18,20 @@ namespace Multiplayer
     NetworkSpawnableLibrary::NetworkSpawnableLibrary()
     {
         AZ::Interface<INetworkSpawnableLibrary>::Register(this);
-        AzFramework::AssetCatalogEventBus::Handler::BusConnect();
+        if (auto settingsRegistry{ AZ::SettingsRegistry::Get() }; settingsRegistry != nullptr)
+        {
+            auto LifecycleCallback = [this](AZStd::string_view, AZ::SettingsRegistryInterface::Type)
+            {
+                BuildSpawnablesList();
+            };
+            AZ::ComponentApplicationLifecycle::RegisterHandler(*settingsRegistry, m_criticalAssetsHandler,
+                AZStd::move(LifecycleCallback), "CriticalAssetsCompiled");
+        }
     }
 
     NetworkSpawnableLibrary::~NetworkSpawnableLibrary()
     {
-        AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
+        m_criticalAssetsHandler = {};
         AZ::Interface<INetworkSpawnableLibrary>::Unregister(this);
     }
 
@@ -48,11 +57,6 @@ namespace Multiplayer
         const AZ::Name name = AZ::Name(relativePath);
         m_spawnables[name] = id;
         m_spawnablesReverseLookup[id] = name;
-    }
-
-    void NetworkSpawnableLibrary::OnCatalogLoaded([[maybe_unused]] const char* catalogFile)
-    {
-        BuildSpawnablesList();
     }
 
     AZ::Name NetworkSpawnableLibrary::GetSpawnableNameFromAssetId(AZ::Data::AssetId assetId)

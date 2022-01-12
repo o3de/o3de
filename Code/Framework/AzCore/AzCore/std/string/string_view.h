@@ -280,10 +280,30 @@ namespace AZStd
         static constexpr char_type* assign(char_type* dest, size_t count, char_type ch) noexcept
         {
             AZ_Assert(dest, "Invalid input!");
-            for (char_type* iter = dest; count; --count, ++iter)
+
+            if constexpr (AZStd::is_same_v<char_type, char>)
             {
-                assign(*iter, ch);
+                // Use builtin_memset if available for char type
+                if (az_builtin_is_constant_evaluated())
+                {
+                    for (char_type* iter = dest; count; --count, ++iter)
+                    {
+                        assign(*iter, ch);
+                    }
+                }
+                else
+                {
+                    ::memset(dest, ch, count);
+                }
             }
+            else
+            {
+                for (char_type* iter = dest; count; --count, ++iter)
+                {
+                    assign(*iter, ch);
+                }
+            }
+
             return dest;
         }
         static constexpr bool eq(char_type left, char_type right) noexcept { return left == right; }
@@ -301,7 +321,7 @@ namespace AZStd
                 return __builtin_wmemcmp(s1, s2, count);
             }
             else
-#endif
+#endif // !defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC >= 100000
             {
                 for (; count; --count, ++s1, ++s2)
                 {
@@ -329,7 +349,7 @@ namespace AZStd
                 return __builtin_wcslen(s);
             }
             else
-#endif // defined(AZ_COMPILER_GCC)
+#endif // !defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC >= 100000
             {
                 size_t strLength{};
                 for (; *s; ++s, ++strLength)
@@ -344,7 +364,7 @@ namespace AZStd
                 // There is a bug with the __builtin_char_memchr intrinsic in Visual Studio 2017 15.8.x and 15.9.x
                 // It reads in one more additional character than the value of count.
                 // This is probably due to assuming null-termination
-#if (!defined(AZ_COMPILER_MSVC) || AZ_COMPILER_MSVC < 1915 || AZ_COMPILER_MSVC > 1916) && !defined(AZ_COMPILER_GCC)
+#if !defined(AZ_COMPILER_GCC)
             if constexpr (AZStd::is_same_v<char_type, char>)
             {
                 return __builtin_char_memchr(s, ch, count);
@@ -354,7 +374,7 @@ namespace AZStd
                 return __builtin_wmemchr(s, ch, count);
             }
             else
-#endif
+#endif 
             {
                 for (; count; --count, ++s)
                 {
@@ -369,63 +389,111 @@ namespace AZStd
         static constexpr char_type* move(char_type* dest, const char_type* src, size_t count) noexcept
         {
             AZ_Assert(dest != nullptr && src != nullptr, "Invalid input!");
-            if (count == 0)
+            if (count == 0 || src == dest)
             {
                 return dest;
             }
-            char_type* result = dest;
-            // The less than(<), greater than(>) and other variants(<=, >=)
-            // Cannot be compare pointers within a constexpr due to the potential for undefined behavior
-            // per the bullet linked in the C++ standard at http://eel.is/c++draft/expr.compound#expr.rel-5
-            // Now clang and gcc compilers allow the use of this relation operators in a constexpr, but
-            // msvc is not so forgiving
-            // So a workaround of iterating the src pointer, checking for equality with the dest pointer
-            // is used to check for overlap
-            auto should_copy_forward = [](const char_type* dest1, const char_type* src2, size_t count2) constexpr -> bool
+
+        #if az_has_builtin_memmove
+            __builtin_memmove(dest, src, count * sizeof(char_type));
+        #else
+            auto NonBuiltinMove = [](char_type* dest1, const char_type* src1, size_t count1) constexpr
+                -> char_type*
             {
-                bool dest_less_than_src{ true };
-                for(const char_type* src_iter = src2; src_iter != src2 + count2; ++src_iter)
+                if (az_builtin_is_constant_evaluated())
                 {
-                    if (src_iter == dest1)
+                    // The less than(<), greater than(>) and other variants(<=, >=)
+                    // Cannot be compare pointers within a constexpr due to the potential for undefined behavior
+                    // per the bullet linked in the C++ standard at http://eel.is/c++draft/expr.compound#expr.rel-5
+                    // Now clang and gcc compilers allow the use of this relation operators in a constexpr, but
+                    // msvc is not so forgiving
+                    // So a workaround of iterating the src pointer, checking for equality with the dest pointer
+                    // is used to check for overlap
+                    auto should_copy_forward = [](const char_type* dest2, const char_type* src2, size_t count2) constexpr -> bool
                     {
-                        dest_less_than_src = false;
-                        break;
+                        bool dest_less_than_src{ true };
+                        for (const char_type* src_iter = src2; src_iter != src2 + count2; ++src_iter)
+                        {
+                            if (src_iter == dest2)
+                            {
+                                dest_less_than_src = false;
+                                break;
+                            }
+                        }
+                        return dest_less_than_src;
+                    };
+
+                    if (should_copy_forward(dest1, src1, count1))
+                    {
+                        copy(dest1, src1, count1);
+                    }
+                    else
+                    {
+                        copy_backward(dest1, src1, count1);
                     }
                 }
-                return dest_less_than_src;
+                else
+                {
+                    // Use the faster ::memmove operation at runtime
+                    ::memmove(dest1, src1, count1 * sizeof(char_type));
+                }
+
+                return dest1;
             };
+            NonBuiltinMove(dest, src, count);
+        #endif
 
-            if (should_copy_forward(dest, src, count))
-            {
-                copy(dest, src, count);
-            }
-            else
-            {
-                copy_backward(dest, src, count);
-            }
-
-            return result;
+            return dest;
         }
         static constexpr char_type* copy(char_type* dest, const char_type* src, size_t count) noexcept
         {
-            char_type* result = dest;
-            for(; count; --count, ++dest, ++src)
+        #if az_has_builtin_memcpy
+            __builtin_memcpy(dest, src, count * sizeof(char_type));
+        #else
+            auto NonBuiltinCopy = [](char_type* dest1, const char_type* src1, size_t count1) constexpr
+                -> char_type*
             {
-                assign(*dest, *src);
-            }
-            return result;
+                if (az_builtin_is_constant_evaluated())
+                {
+                    for (; count1; --count1, ++dest1, ++src1)
+                    {
+                        assign(*dest1, *src1);
+                    }
+                }
+                else
+                {
+                    AZ_Assert(dest1 != nullptr && src1 != nullptr, "Invalid input!");
+                    ::memcpy(dest1, src1, count1 * sizeof(char_type));
+                }
+                return dest1;
+            };
+            NonBuiltinCopy(dest, src, count);
+        #endif
+
+            return dest;
         }
         // Extension for constexpr workarounds: Addresses of a string literal cannot be compared at compile time and MSVC and clang will just refuse to compile the constexpr
         // Adding a copy_backwards overload that always copies backwards.
-        static constexpr char_type* copy_backward(char_type* dest, const char_type*src, size_t count) noexcept
+        static constexpr char_type* copy_backward(char_type* dest, const char_type* src, size_t count) noexcept
         {
             char_type* result = dest;
-            dest += count;
-            src += count;
-            for (; count; --count)
+        #if az_has_builtin_memmove
+            __builtin_memmove(dest, src, count * sizeof(char_type));
+        #else
+            if (az_builtin_is_constant_evaluated())
             {
-                assign(*--dest, *--src);
+                dest += count;
+                src += count;
+                for (; count; --count)
+                {
+                    assign(*--dest, *--src);
+                }
             }
+            else
+            {
+                ::memmove(dest, src, count);
+            }
+        #endif
             return result;
         }
 
