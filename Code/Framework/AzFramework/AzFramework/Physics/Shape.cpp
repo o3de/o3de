@@ -9,6 +9,7 @@
 #include "Shape.h"
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Physics/ClassConverters.h>
+#include <AzFramework/Physics/RagdollEMotionBus.h>
 
 namespace Physics
 {
@@ -44,29 +45,39 @@ namespace Physics
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ColliderConfiguration::m_isTrigger, "Trigger", "If set, this collider will act as a trigger")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &ColliderConfiguration::GetIsTriggerVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &ColliderConfiguration::OnDataChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ColliderConfiguration::m_isSimulated, "Simulated", "If set, this collider will partake in collision in the physical simulation")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &ColliderConfiguration::GetIsTriggerVisibility)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &ColliderConfiguration::m_isTrigger) // Trigger shapes ignore simulated flag, making it read-only in the UI.
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &ColliderConfiguration::OnDataChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ColliderConfiguration::m_isInSceneQueries, "In Scene Queries", "If set, this collider will be visible for scene queries")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &ColliderConfiguration::GetIsTriggerVisibility)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &ColliderConfiguration::OnDataChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ColliderConfiguration::m_collisionLayer, "Collision Layer", "The collision layer assigned to the collider")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &ColliderConfiguration::GetCollisionLayerVisibility)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &ColliderConfiguration::OnDataChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ColliderConfiguration::m_collisionGroupId, "Collides With", "The collision group containing the layers this collider collides with")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &ColliderConfiguration::GetCollisionLayerVisibility)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &ColliderConfiguration::OnDataChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ColliderConfiguration::m_position, "Offset", "Local offset from the rigid body")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &ColliderConfiguration::GetOffsetVisibility)
                         ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &ColliderConfiguration::OnDataChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ColliderConfiguration::m_rotation, "Rotation", "Local rotation relative to the rigid body")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &ColliderConfiguration::GetOffsetVisibility)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &ColliderConfiguration::OnDataChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ColliderConfiguration::m_materialSelection, "Physics Materials", "Select which physics materials to use for each element of this shape")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &ColliderConfiguration::GetMaterialSelectionVisibility)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &ColliderConfiguration::OnDataChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ColliderConfiguration::m_tag, "Tag", "Tag used to identify colliders from one another")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &ColliderConfiguration::OnDataChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ColliderConfiguration::m_restOffset, "Rest offset",
                         "Bodies will come to rest separated by the sum of their rest offset values (must be less than contact offset)")
                         ->Attribute(AZ::Edit::Attributes::Step, 1e-2f)
                         ->Attribute(AZ::Edit::Attributes::Max, 50.0f)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &ColliderConfiguration::OnRestOffsetChanged)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::ValuesOnly)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &ColliderConfiguration::OnDataChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ColliderConfiguration::m_contactOffset, "Contact offset",
                         "Bodies will begin to generate contacts when within the sum of their contact offsets (must exceed rest offset)")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
@@ -74,9 +85,15 @@ namespace Physics
                         ->Attribute(AZ::Edit::Attributes::Max, 50.0f)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &ColliderConfiguration::OnContactOffsetChanged)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::ValuesOnly)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &ColliderConfiguration::OnDataChanged)
                     ;
             }
         }
+    }
+
+    void ColliderConfiguration::OnDataChanged()
+    {
+        RagdollEMotionNotificationBus::Broadcast(&RagdollEMotionNotificationBus::Events::OnRagdollColliderConfigurationChanged);
     }
 
     void ColliderConfiguration::OnRestOffsetChanged()

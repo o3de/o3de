@@ -105,7 +105,10 @@ namespace EMotionFX
 
         return result;
     }
-
+    RagdollNodeWidget::~RagdollNodeWidget()
+    {
+        Physics::RagdollEMotionNotificationBus::Handler::BusDisconnect();
+    }
     QWidget* RagdollNodeWidget::CreateNoSelectionWidget(QWidget* parent)
     {
         QLabel* noSelectionLabel = new QLabel("Select joints from the Skeleton Outliner and add it to the ragdoll using the right-click menu", parent);
@@ -114,6 +117,36 @@ namespace EMotionFX
         return noSelectionLabel;
     }
 
+    void RagdollNodeWidget::OnRagdollPropertiesConfigurationChanged()
+    {
+        if (m_ragdollNodeEditor->isVisible())
+        {
+            SetActorDirty();
+        }
+    }
+    void RagdollNodeWidget::OnRagdollJointLimitConfigurationChanged()
+    {
+        if (m_jointLimitWidget->isVisible())
+        {
+            SetActorDirty();
+        }
+    }
+    void RagdollNodeWidget::OnRagdollColliderConfigurationChanged()
+    {
+        if (m_collidersWidget->isVisible())
+        {
+            SetActorDirty();
+        }
+    }
+
+    void RagdollNodeWidget::SetActorDirty()
+    {
+        Actor* actor = GetActor();
+        if (actor)
+        {
+            actor->SetDirtyFlag(true);
+        }
+    }
     void RagdollNodeWidget::InternalReinit()
     {
         const QModelIndexList& selectedModelIndices = GetSelectedModelIndices();
@@ -125,6 +158,12 @@ namespace EMotionFX
             Physics::RagdollNodeConfiguration* ragdollNodeConfig = GetRagdollNodeConfig();
             if (ragdollNodeConfig)
             {
+                AzPhysics::JointConfiguration* jointLimitConfig = ragdollNodeConfig->m_jointConfig.get();
+                jointLimitConfig->SetPropertyVisibility(AzPhysics::JointConfiguration::PropertyVisibility::ParentLocalRotation, jointLimitConfig != nullptr);
+                jointLimitConfig->SetPropertyVisibility(AzPhysics::JointConfiguration::PropertyVisibility::ChildLocalRotation, jointLimitConfig != nullptr);
+
+                Physics::RagdollEMotionNotificationBus::Handler::BusConnect();
+
                 m_addColliderButton->show();
                 m_addRemoveButton->setText("Remove from ragdoll");
 

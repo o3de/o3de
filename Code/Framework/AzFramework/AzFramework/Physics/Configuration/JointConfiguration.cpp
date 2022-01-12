@@ -11,6 +11,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Physics/RagdollEMotionBus.h>
 
 namespace AzPhysics
 {
@@ -38,21 +39,31 @@ namespace AzPhysics
                     ->DataElement(AZ::Edit::UIHandlers::Default, &JointConfiguration::m_parentLocalRotation,
                         "Parent local rotation", "Parent joint frame relative to parent body.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &JointConfiguration::GetParentLocalRotationVisibility)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &JointConfiguration::OnDataChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &JointConfiguration::m_parentLocalPosition,
                         "Parent local position", "Joint position relative to parent body.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &JointConfiguration::GetParentLocalPositionVisibility)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &JointConfiguration::OnDataChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &JointConfiguration::m_childLocalRotation,
                         "Child local rotation", "Child joint frame relative to child body.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &JointConfiguration::GetChildLocalRotationVisibility)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &JointConfiguration::OnDataChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &JointConfiguration::m_childLocalPosition,
                         "Child local position", "Joint position relative to child body.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &JointConfiguration::GetChildLocalPositionVisibility)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &JointConfiguration::OnDataChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &JointConfiguration::m_startSimulationEnabled,
                         "Start simulation enabled", "When active, the joint will be enabled when the simulation begins.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &JointConfiguration::GetStartSimulationEnabledVisibility)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &JointConfiguration::OnDataChanged)
                     ;
             }
         }
+    }
+
+    void JointConfiguration::OnDataChanged()
+    {
+        Physics::RagdollEMotionNotificationBus::Broadcast(&Physics::RagdollEMotionNotificationBus::Events::OnRagdollJointLimitConfigurationChanged);
     }
 
     AZ::Crc32 JointConfiguration::GetPropertyVisibility(JointConfiguration::PropertyVisibility property) const

@@ -10,7 +10,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Physics/Ragdoll.h>
 #include <AzFramework/Physics/ClassConverters.h>
-
+#include <AzFramework/Physics/RagdollEMotionBus.h>
 
 namespace Physics
 {
@@ -46,6 +46,11 @@ namespace Physics
                 ;
             }
         }
+    }
+
+    void RagdollNodeConfiguration::OnDataChanged()
+    {
+        RagdollEMotionNotificationBus::Broadcast(&RagdollEMotionNotificationBus::Events::OnRagdollPropertiesConfigurationChanged);
     }
 
     RagdollConfiguration::RagdollConfiguration()

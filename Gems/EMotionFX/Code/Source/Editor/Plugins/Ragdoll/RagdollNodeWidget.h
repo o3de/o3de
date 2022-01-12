@@ -10,6 +10,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzFramework/Physics/Ragdoll.h>
+#include <AzFramework/Physics/RagdollEMotionBus.h>
 #include <AzQtComponents/Components/Widgets/Card.h>
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
 #include <Editor/SkeletonModelJointWidget.h>
@@ -22,6 +23,7 @@ QT_FORWARD_DECLARE_CLASS(QPushButton)
 namespace Physics
 {
     class RagdollNodeConfiguration;
+    class RagdollEMotionNotifications;
 }
 
 namespace EMotionFX
@@ -47,15 +49,21 @@ namespace EMotionFX
 
     class RagdollNodeWidget
         : public SkeletonModelJointWidget
+        , private Physics::RagdollEMotionNotificationBus::Handler
     {
         Q_OBJECT //AUTOMOC
 
     public:
         RagdollNodeWidget(QWidget* parent = nullptr);
-        ~RagdollNodeWidget() = default;
+        ~RagdollNodeWidget();
 
         bool HasCopiedJointLimits() const { return !m_copiedJointLimit.empty(); }
         const AZStd::string& GetCopiedJointLimits() const { return m_copiedJointLimit; }
+
+        void SetActorDirty();
+        void OnRagdollPropertiesConfigurationChanged() override;
+        void OnRagdollJointLimitConfigurationChanged() override;
+        void OnRagdollColliderConfigurationChanged() override;
 
     public slots:
         void OnAddRemoveRagdollNode();

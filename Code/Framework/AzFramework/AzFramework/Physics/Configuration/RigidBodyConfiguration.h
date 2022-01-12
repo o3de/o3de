@@ -34,6 +34,7 @@ namespace AzPhysics
 
         MassComputeFlags GetMassComputeFlags() const;
         void SetMassComputeFlags(MassComputeFlags flags);
+        virtual void OnDataChanged(){}
 
         bool IsCCDEnabled() const;
 

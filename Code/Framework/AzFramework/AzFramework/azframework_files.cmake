@@ -262,6 +262,7 @@ set(FILES
     Physics/CharacterBus.h
     Physics/Ragdoll.cpp
     Physics/Ragdoll.h
+    Physics/RagdollEMotionBus.h
     Physics/Utils.h
     Physics/Utils.cpp
     Physics/ClassConverters.cpp
