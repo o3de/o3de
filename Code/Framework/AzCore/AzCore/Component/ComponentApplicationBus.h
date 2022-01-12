@@ -37,11 +37,6 @@ namespace AZ
         class ComponentFactoryInterface;
     }
 
-    namespace Debug
-    {
-        class DrillerManager;
-    }
-
     struct ApplicationTypeQuery
     {
         bool IsEditor() const;

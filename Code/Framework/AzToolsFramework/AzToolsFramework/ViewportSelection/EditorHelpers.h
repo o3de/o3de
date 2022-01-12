@@ -106,4 +106,12 @@ namespace AzToolsFramework
         const EditorVisibleEntityDataCache* m_entityDataCache = nullptr; //!< Entity Data queried by the EditorHelpers.
         const FocusModeInterface* m_focusModeInterface = nullptr; //!< API to interact with focus mode functionality.
     };
+
+    //! Calculate the icon scale based on how far away it is from a given point.
+    //! @note This is mostly likely distance from the camera.
+    float GetIconScale(float distance);
+
+    //! Calculate the icon size based on how far away it is from a given point.
+    //! @note This is the base icon size multiplied by the icon scale to give a final viewport size.
+    float GetIconSize(float distance);
 } // namespace AzToolsFramework

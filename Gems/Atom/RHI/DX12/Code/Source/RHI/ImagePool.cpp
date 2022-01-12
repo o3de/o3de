@@ -11,8 +11,6 @@
 #include <RHI/Image.h>
 #include <RHI/ResourcePoolResolver.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace DX12
@@ -33,7 +31,7 @@ namespace AZ
 
             RHI::ResultCode UpdateImage(const RHI::ImageUpdateRequest& request, size_t& bytesTransferred)
             {
-                AZ_TRACE_METHOD();
+                AZ_PROFILE_FUNCTION(RHI);
 
                 AZStd::lock_guard<AZStd::mutex> lock(m_imagePacketMutex);
 

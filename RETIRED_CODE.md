@@ -2,7 +2,7 @@
 
 The main goal of this list, is to enable future developers to find old code that might be useful when implementing new,or re-implementing missing features.
 
-|Date  | Commit hash | Short description of removed functionality|
+|Date  | PR | Short description of removed functionality|
 |--|--|--|
 | 2021-11-25 |  | ObjectManager - parameter begin/end editing callbacks|
 | 2021-11-25 |  | ObjectManager - `InvertSelection()`|
@@ -30,4 +30,11 @@ The main goal of this list, is to enable future developers to find old code that
 | 2021-11-28 |  | unused CUndoBaseLibraryManager and CUndoBaseLibrary|
 | 2021-11-28 |  | IXmlNode - unused shareChildren/deleteChildAt/clone/insertChild/replaceChild functionality|
 | 2021-11-28 |  | CXmlArchive - unused Load/Save methods|
-
+| 2021-12-03 | #6086 | MemoryDriller, PlatformMemoryInstrumentation - Driller no longer functional (Profiler was deleted months ago)|
+| 2021-12-03 | #6086 | TraceMessageDrillerBus, TraceMessagesDriller - Driller no longer functional (Profiler was deleted months ago)|
+| 2021-12-03 | #6086 | ThreadDrillerEvents - Driller no longer functional (Profiler was deleted months ago)|
+| 2021-12-03 | #6086 | CarrierDrillerBus, CarrierDriller, ReplicaDriller, SessionDriller, SessionDrillerBus (from GridMate) - Driller no longer functional (Profiler was deleted months ago)|
+| 2021-12-03 | #6086 | AssetTracking, Gems/AssetMemoryAnalyzer - Relies on driller that is no longer functional (Profiler was deleted months ago)|
+| 2021-12-03 | #6086 | DrillerBus, DrillerManager, DrillerEvents, EventTraceDrillerBus, Driller, DrillerDefaultStringPool - Driller no longer functional (Profiler was deleted months ago)|
+| 2021-12-03 | #6086 | FileIOEvents - Prone to false-positives (errors from other threads), not really useful|
+| 2021-12-03 | #6086 | FileIOBus - Unused and not the best way to implement a filesystem replacement|

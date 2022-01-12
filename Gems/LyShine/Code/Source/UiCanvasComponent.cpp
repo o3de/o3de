@@ -2122,13 +2122,13 @@ void UiCanvasComponent::DebugReportDrawCalls(AZ::IO::HandleType fileHandle, LySh
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiCanvasComponent::DebugDisplayElemBounds(CDraw2d* draw2d) const
+void UiCanvasComponent::DebugDisplayElemBounds(IDraw2d* draw2d) const
 {
     DebugDisplayChildElemBounds(draw2d, m_rootElement);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiCanvasComponent::DebugDisplayChildElemBounds(CDraw2d* draw2d, const AZ::EntityId entity) const
+void UiCanvasComponent::DebugDisplayChildElemBounds(IDraw2d* draw2d, const AZ::EntityId entity) const
 {
     AZ::u64 time = AZStd::GetTimeUTCMilliSecond();
     uint32 fractionsOfOneSecond = time % 1000;
@@ -3605,7 +3605,7 @@ void UiCanvasComponent::CreateRenderTarget()
         return;
     }
 
-#ifdef LYSHINE_ATOM_TODO // [LYN-3359] Support RTT using Atom
+#ifdef LYSHINE_ATOM_TODO // [GHI #6269] Support RTT using Atom
     // Create a render target that this canvas will be rendered to.
     // The render target size is the canvas size.
     m_renderTargetHandle = gEnv->pRenderer->CreateRenderTarget(m_renderTargetName.c_str(),
@@ -3636,11 +3636,11 @@ void UiCanvasComponent::DestroyRenderTarget()
     if (m_renderTargetHandle > 0)
     {
         ISystem::CrySystemNotificationBus::Handler::BusDisconnect();
-#ifdef LYSHINE_ATOM_TODO // [LYN-3359] Support RTT using Atom
+#ifdef LYSHINE_ATOM_TODO // [GHI #6269] Support RTT using Atom
         gEnv->pRenderer->DestroyDepthSurface(m_renderTargetDepthSurface);
 #endif
         m_renderTargetDepthSurface = nullptr;
-#ifdef LYSHINE_ATOM_TODO // [LYN-3359] Support RTT using Atom
+#ifdef LYSHINE_ATOM_TODO // [GHI #6269] Support RTT using Atom
         gEnv->pRenderer->DestroyRenderTarget(m_renderTargetHandle);
 #endif
         m_renderTargetHandle = -1;
@@ -3650,7 +3650,7 @@ void UiCanvasComponent::DestroyRenderTarget()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasComponent::RenderCanvasToTexture()
 {
-#ifdef LYSHINE_ATOM_TODO // [LYN-3359] Support RTT using Atom
+#ifdef LYSHINE_ATOM_TODO // [GHI #6269] Support RTT using Atom
     if (m_renderTargetHandle <= 0)
     {
         return;

@@ -17,7 +17,7 @@ SOURCE_DIRECTORY=${PWD}
 pushd $OUTPUT_DIRECTORY
 
 LAST_CONFIGURE_CMD_FILE=ci_last_configure_cmd.txt
-CONFIGURE_CMD="cmake ${SOURCE_DIRECTORY} ${CMAKE_OPTIONS} ${EXTRA_CMAKE_OPTIONS}"
+CONFIGURE_CMD="cmake '${SOURCE_DIRECTORY}' ${CMAKE_OPTIONS} ${EXTRA_CMAKE_OPTIONS}"
 if [[ -n "$CMAKE_LY_PROJECTS" ]]; then
     CONFIGURE_CMD="${CONFIGURE_CMD} -DLY_PROJECTS='${CMAKE_LY_PROJECTS}'"
 fi
@@ -40,7 +40,7 @@ if [[ ! -z "$RUN_CONFIGURE" ]]; then
     eval echo [ci_build] ${CONFIGURE_CMD}
     eval ${CONFIGURE_CMD}
     # Save the run only if success
-    eval echo "${CONFIGURE_CMD}" > ${LAST_CONFIGURE_CMD_FILE}
+    echo "${CONFIGURE_CMD}" > ${LAST_CONFIGURE_CMD_FILE}
 fi
 
 eval echo [ci_build] cmake --build . --target ${CMAKE_TARGET} --config ${CONFIGURATION} -j $(grep -c processor /proc/cpuinfo) -- ${CMAKE_NATIVE_BUILD_ARGS}

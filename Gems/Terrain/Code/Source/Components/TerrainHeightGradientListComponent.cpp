@@ -48,6 +48,15 @@ namespace Terrain
                     ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("GradientService"))
                 ;
             }
+
+            if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+            {
+                behaviorContext->Class<TerrainHeightGradientListConfig>()
+                    ->Attribute(AZ::Script::Attributes::Category, "Terrain")
+                    ->Constructor()
+                    ->Property("gradientEntities", BehaviorValueProperty(&TerrainHeightGradientListConfig::m_gradientEntities))
+                ;
+            }
         }
     }
 
@@ -151,7 +160,7 @@ namespace Terrain
     {
         float maxSample = 0.0f;
         terrainExists = false;
-        AZ_WarningOnce("Terrain", !m_isRequestInProgress, "Detected cyclic dependences with terrain height entity references");
+        AZ_WarningOnce("Terrain", !m_isRequestInProgress, "Detected cyclic dependencies with terrain height entity references");
         if (!m_isRequestInProgress)
         {
             m_isRequestInProgress = true;

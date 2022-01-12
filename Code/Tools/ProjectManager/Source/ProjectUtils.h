@@ -98,5 +98,14 @@ namespace O3DE::ProjectManager
          */
         AZ::IO::FixedMaxPath GetEditorExecutablePath(const AZ::IO::PathView& projectPath);
 
+
+        /**
+         * Display a dialog with general and detailed sections for the given AZ::Outcome 
+         * @param title Dialog title
+         * @param outcome The AZ::Outcome with general and detailed error messages
+         * @param parent Optional QWidget parent
+         */
+        void DisplayDetailedError(const QString& title, const AZ::Outcome<void, AZStd::pair<AZStd::string, AZStd::string>>& outcome, QWidget* parent = nullptr);
+
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager

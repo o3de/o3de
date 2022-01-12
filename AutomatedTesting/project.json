@@ -7,8 +7,10 @@
     "android_settings": {
         "package_name": "com.lumberyard.yourgame",
         "version_number": 1,
-        "version_name": "1.0.0.0",
+        "version_name": "1.0.0",
         "orientation": "landscape"
     },
-    "engine": "o3de"
+    "engine": "o3de",
+    "display_name": "AutomatedTesting",
+    "icon_path": "preview.png"
 }

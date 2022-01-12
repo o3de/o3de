@@ -101,7 +101,7 @@ static const int g_numDstBlendModes = 10;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 #if !defined(_RELEASE)
-#ifdef LYSHINE_ATOM_TODO
+#ifdef LYSHINE_ATOM_TODO // [GHI #6270] Support RTT using Atom
 static int Create2DTexture(int width, int height, byte* data, ETEX_Format format)
 {
     IRenderer* renderer = gEnv->pRenderer;
@@ -120,7 +120,7 @@ static AZ::Vector2 GetTextureSize(AZ::Data::Instance<AZ::RPI::Image> image)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 #if !defined(_RELEASE)
-#ifdef LYSHINE_ATOM_TODO
+#ifdef LYSHINE_ATOM_TODO // [GHI #6270] Support RTT using Atom
 static void FillTextureRectWithCheckerboard(uint32* data, int textureWidth, int textureHeight,
     int minX, int minY, [[maybe_unused]] int rectWidth, int rectHeight,
     int tileWidth, int tileHeight, uint32* colors, bool varyAlpha)
@@ -152,7 +152,7 @@ static void FillTextureRectWithCheckerboard(uint32* data, int textureWidth, int 
 #if !defined(_RELEASE)
 static AZ::Data::Instance<AZ::RPI::Image> CreateMonoTestTexture()
 {
-#ifdef LYSHINE_ATOM_TODO
+#ifdef LYSHINE_ATOM_TODO // [GHI #6270] Support RTT using Atom
     const int width = 32;
     const int height = 32;
     uint32 data[width * height];
@@ -192,7 +192,7 @@ static AZ::Data::Instance<AZ::RPI::Image> CreateMonoTestTexture()
 #if !defined(_RELEASE)
 static AZ::Data::Instance<AZ::RPI::Image> CreateColorTestTexture()
 {
-#ifdef LYSHINE_ATOM_TODO
+#ifdef LYSHINE_ATOM_TODO // [GHI #6270] Support RTT using Atom
     const int width = 32;
     const int height = 32;
     uint32 data[width * height];
@@ -232,7 +232,7 @@ static AZ::Data::Instance<AZ::RPI::Image> CreateColorTestTexture()
 #if !defined(_RELEASE)
 static AZ::Data::Instance<AZ::RPI::Image> CreateMonoAlphaTestTexture()
 {
-#ifdef LYSHINE_ATOM_TODO
+#ifdef LYSHINE_ATOM_TODO // [GHI #6270] Support RTT using Atom
     const int width = 32;
     const int height = 32;
     uint32 data[width * height];
@@ -272,7 +272,7 @@ static AZ::Data::Instance<AZ::RPI::Image> CreateMonoAlphaTestTexture()
 #if !defined(_RELEASE)
 static AZ::Data::Instance<AZ::RPI::Image> CreateColorAlphaTestTexture()
 {
-#ifdef LYSHINE_ATOM_TODO
+#ifdef LYSHINE_ATOM_TODO // [GHI #6270] Support RTT using Atom
     const int width = 32;
     const int height = 32;
     uint32 data[width * height];
@@ -375,7 +375,7 @@ static void DebugDrawColoredBox(AZ::Vector2 pos, AZ::Vector2 size, AZ::Color col
     IDraw2d::HAlign horizontalAlignment = IDraw2d::HAlign::Left,
     IDraw2d::VAlign verticalAlignment = IDraw2d::VAlign::Top)
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     CDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
     imageOptions.color = color.GetAsVector3();
@@ -390,7 +390,7 @@ static void DebugDrawColoredBox(AZ::Vector2 pos, AZ::Vector2 size, AZ::Color col
 static void DebugDrawStringWithSizeBox(AZStd::string_view font, unsigned int effectIndex, const char* sizeString,
     const char* testString, AZ::Vector2 pos, float spacing, float size)
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     CDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
     if (!font.empty())
@@ -424,7 +424,7 @@ static void DebugDrawStringWithSizeBox(AZStd::string_view font, unsigned int eff
 #if !defined(_RELEASE)
 static void DebugDraw2dFontSizes(AZStd::string_view font, unsigned int effectIndex)
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     float xOffset = 20.0f;
     float yOffset = 20.0f;
@@ -546,7 +546,7 @@ static void DebugDrawAlignedTextWithOriginBox(AZ::Vector2 pos,
 #if !defined(_RELEASE)
 static void DebugDraw2dFontAlignment()
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
     float w = draw2d->GetViewportWidth();
     float yPos = 20;
 
@@ -613,7 +613,7 @@ static void DebugDraw2dFontAlignment()
 #if !defined(_RELEASE)
 static AZ::Vector2 DebugDrawFontColorTestBox(AZ::Vector2 pos, const char* string, AZ::Vector3 color, float opacity)
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     float pointSize = 32.0f;
     const float spacing = 6.0f;
@@ -648,7 +648,7 @@ static AZ::Vector2 DebugDrawFontColorTestBox(AZ::Vector2 pos, const char* string
 #if !defined(_RELEASE)
 static void DebugDraw2dFontColorAndOpacity()
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     AZ::Vector2 size;
     AZ::Vector2 pos(20.0f, 20.0f);
@@ -686,7 +686,7 @@ static void DebugDraw2dFontColorAndOpacity()
 #if !defined(_RELEASE)
 static void DebugDraw2dImageRotations()
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     AZ::Data::Instance<AZ::RPI::Image> texture = GetMonoTestTexture();
 
@@ -738,7 +738,7 @@ static void DebugDraw2dImageRotations()
 #if !defined(_RELEASE)
 static void DebugDraw2dImageColor()
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     AZ::Data::Instance<AZ::RPI::Image> texture = GetMonoAlphaTestTexture();
 
@@ -774,7 +774,7 @@ static void DebugDraw2dImageColor()
 #if !defined(_RELEASE)
 static void DebugDraw2dImageBlendMode()
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     auto whiteTexture = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
 
@@ -841,7 +841,7 @@ static void DebugDraw2dImageBlendMode()
 #if !defined(_RELEASE)
 static void DebugDraw2dImageUVs()
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     AZ::Data::Instance<AZ::RPI::Image> texture = GetColorTestTexture();
 
@@ -890,7 +890,7 @@ static void DebugDraw2dImageUVs()
 #if !defined(_RELEASE)
 static void DebugDraw2dImagePixelRounding()
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     AZ::Data::Instance<AZ::RPI::Image> texture = GetColorTestTexture();
 
@@ -931,7 +931,7 @@ static void DebugDraw2dImagePixelRounding()
 #if !defined(_RELEASE)
 static void DebugDraw2dLineBasic()
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     CDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
 
@@ -1422,7 +1422,7 @@ void LyShineDebug::RenderDebug()
 #if !defined(_RELEASE)
 
 #ifndef EXCLUDE_DOCUMENTATION_PURPOSE
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
     if (!draw2d)
     {
         return;

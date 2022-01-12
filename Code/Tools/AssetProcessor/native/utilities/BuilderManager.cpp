@@ -16,6 +16,7 @@
 #include <native/utilities/AssetBuilderInfo.h>
 #include <QCoreApplication>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AssetBuilder/AssetBuilderStatic.h>
 
 namespace AssetProcessor
 {
@@ -138,7 +139,7 @@ namespace AssetProcessor
         }
     }
 
-    bool Builder::Start()
+    bool Builder::Start(bool doRegistration)
     {
         // Get the current BinXXX folder based on the current running AP
         QString applicationDir = QCoreApplication::instance()->applicationDirPath();
@@ -155,7 +156,7 @@ namespace AssetProcessor
             return false;
         }
 
-        const AZStd::string params = BuildParams("resident", buildersFolder.c_str(), UuidString(), "", "");
+        const AZStd::vector<AZStd::string> params = BuildParams("resident", buildersFolder.c_str(), UuidString(), "", "", doRegistration);
 
         m_processWatcher = LaunchProcess(fullExePathString.c_str(), params);
 
@@ -179,7 +180,7 @@ namespace AssetProcessor
         return !m_processWatcher || (m_processWatcher && m_processWatcher->IsProcessRunning(exitCode));
     }
 
-    AZStd::string Builder::BuildParams(const char* task, const char* moduleFilePath, const AZStd::string& builderGuid, const AZStd::string& jobDescriptionFile, const AZStd::string& jobResponseFile) const
+    AZStd::vector<AZStd::string> Builder::BuildParams(const char* task, const char* moduleFilePath, const AZStd::string& builderGuid, const AZStd::string& jobDescriptionFile, const AZStd::string& jobResponseFile, bool doRegistration) const
     {
         QDir projectCacheRoot;
         AssetUtilities::ComputeProjectCacheRoot(projectCacheRoot);
@@ -191,35 +192,29 @@ namespace AssetProcessor
         int portNumber = 0;
         ApplicationServerBus::BroadcastResult(portNumber, &ApplicationServerBus::Events::GetServerListeningPort);
 
-        AZStd::string params;
-#if !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
-        params = AZStd::string::format(
-            R"(-task=%s -id="%s" -project-name="%s" -project-cache-path="%s" -project-path="%s" -engine-path="%s" -port %d)",
-            task, builderGuid.c_str(), projectName.c_str(), projectCacheRoot.absolutePath().toUtf8().constData(),
-            projectPath.c_str(), enginePath.c_str(), portNumber);
-#else
-        params = AZStd::string::format(
-            R"(-task=%s -id="%s" -project-name="\"%s\"" -project-cache-path="\"%s\"" -project-path="\"%s\"" -engine-path="\"%s\"" -port %d)",
-            task, builderGuid.c_str(), projectName.c_str(), projectCacheRoot.absolutePath().toUtf8().constData(),
-            projectPath.c_str(), enginePath.c_str(), portNumber);
-#endif // !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
+        AZStd::vector<AZStd::string> params;
+        params.emplace_back(AZStd::string::format(R"(-task="%s")", task));
+        params.emplace_back(AZStd::string::format(R"(-id="%s")", builderGuid.c_str()));
+        params.emplace_back(AZStd::string::format(R"(-project-name="%s")", projectName.c_str()));
+        params.emplace_back(AZStd::string::format(R"(-project-cache-path="%s")", projectCacheRoot.absolutePath().toUtf8().constData()));
+        params.emplace_back(AZStd::string::format(R"(-project-path="%s")", projectPath.c_str()));
+        params.emplace_back(AZStd::string::format(R"(-engine-path="%s")", enginePath.c_str()));
+        params.emplace_back(AZStd::string::format("-port=%d", portNumber));
+
+        if(doRegistration)
+        {
+            params.emplace_back("--register");
+        }
 
         if (moduleFilePath && moduleFilePath[0])
         {
-        #if !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
-            params.append(AZStd::string::format(R"( -module="%s")", moduleFilePath).c_str());
-        #else
-            params.append(AZStd::string::format(R"( -module="\"%s\"")", moduleFilePath).c_str());
-        #endif // !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
+            params.emplace_back(AZStd::string::format(R"(-module="%s")", moduleFilePath));
         }
 
         if (!jobDescriptionFile.empty() && !jobResponseFile.empty())
         {
-        #if !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
-            params = AZStd::string::format(R"(%s -input="%s" -output="%s")", params.c_str(), jobDescriptionFile.c_str(), jobResponseFile.c_str());
-        #else
-            params = AZStd::string::format(R"(%s -input="\"%s\"" -output="\"%s\"")", params.c_str(), jobDescriptionFile.c_str(), jobResponseFile.c_str());
-        #endif // !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
+            params.emplace_back(AZStd::string::format(R"(-input="%s")", jobDescriptionFile.c_str()));
+            params.emplace_back(AZStd::string::format(R"(-output="%s")", jobResponseFile.c_str()));
         }
 
         auto settingsRegistry = AZ::SettingsRegistry::Get();
@@ -232,28 +227,25 @@ namespace AssetProcessor
             for (size_t optionIndex = 0; optionIndex < commandOptionCount; ++optionIndex)
             {
                 const AZStd::string& optionValue = commandLine.GetSwitchValue(optionKey, optionIndex);
-                params.append(AZStd::string::format(
-#if !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
-                    R"( --%s="%s")",
-#else
-                    R"( --%s="\"%s\"")",
-#endif
-                    optionKey, optionValue.c_str()));
+                params.emplace_back(AZStd::string::format(R"(--%s="%s")", optionKey, optionValue.c_str()));
             }
         }
 
         return params;
     }
 
-    AZStd::unique_ptr<AzFramework::ProcessWatcher> Builder::LaunchProcess(const char* fullExePath, const AZStd::string& params) const
+    AZStd::unique_ptr<AzFramework::ProcessWatcher> Builder::LaunchProcess(const char* fullExePath, const AZStd::vector<AZStd::string>& params) const
     {
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
         processLaunchInfo.m_processExecutableString = fullExePath;
-        processLaunchInfo.m_commandlineParameters = AZStd::string::format("\"%s\" %s", fullExePath, params.c_str());
+
+        AZStd::vector<AZStd::string> commandLineArray{ fullExePath };
+        commandLineArray.insert(commandLineArray.end(), params.begin(), params.end());
+        processLaunchInfo.m_commandlineParameters = AZStd::move(commandLineArray);
         processLaunchInfo.m_showWindow = false;
         processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_IDLE;
 
-        AZ_TracePrintf(AssetProcessor::DebugChannel, "Executing AssetBuilder with parameters: %s\n", processLaunchInfo.m_commandlineParameters.c_str());
+        AZ_TracePrintf(AssetProcessor::DebugChannel, "Executing AssetBuilder with parameters: %s\n", processLaunchInfo.GetCommandLineParametersAsString().c_str());
 
         auto processWatcher = AZStd::unique_ptr<AzFramework::ProcessWatcher>(AzFramework::ProcessWatcher::LaunchProcess(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT));
 
@@ -364,17 +356,19 @@ namespace AssetProcessor
     BuilderManager::BuilderManager(ConnectionManager* connectionManager)
     {
         using namespace AZStd::placeholders;
-        connectionManager->RegisterService(AssetBuilderSDK::BuilderHelloRequest::MessageType(), AZStd::bind(&BuilderManager::IncomingBuilderPing, this, _1, _2, _3, _4, _5));
+        connectionManager->RegisterService(AssetBuilder::BuilderHelloRequest::MessageType(), AZStd::bind(&BuilderManager::IncomingBuilderPing, this, _1, _2, _3, _4, _5));
 
         // Setup a background thread to pump the idle builders so they don't get blocked trying to output to stdout/err
-        m_pollingThread = AZStd::thread([this]()
+        AZStd::thread_desc desc;
+        desc.m_name = "BuilderManager Idle Pump";
+        m_pollingThread = AZStd::thread(desc, [this]()
+            {
+                while (!m_quitListener.WasQuitRequested())
                 {
-                    while (!m_quitListener.WasQuitRequested())
-                    {
-                        PumpIdleBuilders();
-                        AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(s_IdleBuilderPumpingDelayMS));
-                    }
-                });
+                    PumpIdleBuilders();
+                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(s_IdleBuilderPumpingDelayMS));
+                }
+            });
 
         m_quitListener.BusConnect();
         BusConnect();
@@ -413,8 +407,8 @@ namespace AssetProcessor
 
     void BuilderManager::IncomingBuilderPing(AZ::u32 connId, AZ::u32 /*type*/, AZ::u32 serial, QByteArray payload, QString platform)
     {
-        AssetBuilderSDK::BuilderHelloRequest requestPing;
-        AssetBuilderSDK::BuilderHelloResponse responsePing;
+        AssetBuilder::BuilderHelloRequest requestPing;
+        AssetBuilder::BuilderHelloResponse responsePing;
 
         if (!AZ::Utils::LoadObjectFromBufferInPlace(payload.data(), payload.length(), requestPing))
         {
@@ -490,7 +484,7 @@ namespace AssetProcessor
         return builder;
     }
 
-    BuilderRef BuilderManager::GetBuilder()
+    BuilderRef BuilderManager::GetBuilder(bool doRegistration)
     {
         AZStd::shared_ptr<Builder> newBuilder;
         BuilderRef builderRef;
@@ -498,26 +492,29 @@ namespace AssetProcessor
         {
             AZStd::unique_lock<AZStd::mutex> lock(m_buildersMutex);
 
-            for (auto itr = m_builders.begin(); itr != m_builders.end(); )
+            if (!doRegistration)
             {
-                auto& builder = itr->second;
-
-                if (!builder->m_busy)
+                for (auto itr = m_builders.begin(); itr != m_builders.end();)
                 {
-                    builder->PumpCommunicator();
+                    auto& builder = itr->second;
 
-                    if (builder->IsValid())
+                    if (!builder->m_busy)
                     {
-                        return BuilderRef(builder);
+                        builder->PumpCommunicator();
+
+                        if (builder->IsValid())
+                        {
+                            return BuilderRef(builder);
+                        }
+                        else
+                        {
+                            itr = m_builders.erase(itr);
+                        }
                     }
                     else
                     {
-                        itr = m_builders.erase(itr);
+                        ++itr;
                     }
-                }
-                else
-                {
-                    ++itr;
                 }
             }
 
@@ -530,7 +527,7 @@ namespace AssetProcessor
             builderRef = BuilderRef(newBuilder);
         }
 
-        if (!newBuilder->Start())
+        if (!newBuilder->Start(doRegistration))
         {
             AZ_Error("BuilderManager", false, "Builder failed to start");
 

@@ -191,8 +191,8 @@ namespace AzToolsFramework
     {
         m_manipulatorView->Draw(
             GetManipulatorManagerId(), managerState, GetManipulatorId(),
-            { ApplySpace(GetLocalTransform()), GetNonUniformScale(), AZ::Vector3::CreateZero(), MouseOver() }, debugDisplay, cameraState,
-            mouseInteraction);
+            ManipulatorState{ ApplySpace(GetLocalTransform()), GetNonUniformScale(), AZ::Vector3::CreateZero(), MouseOver() }, debugDisplay,
+            cameraState, mouseInteraction);
     }
 
     void AngularManipulator::SetAxis(const AZ::Vector3& axis)

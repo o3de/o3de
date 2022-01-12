@@ -8,6 +8,7 @@
 
 set(FILES
     Include/Terrain/Ebuses/TerrainAreaSurfaceRequestBus.h
+    Include/Terrain/TerrainDataConstants.h
     Source/Components/TerrainHeightGradientListComponent.cpp
     Source/Components/TerrainHeightGradientListComponent.h
     Source/Components/TerrainLayerSpawnerComponent.cpp
@@ -30,10 +31,23 @@ set(FILES
     Source/TerrainRenderer/Components/TerrainSurfaceMaterialsListComponent.h
     Source/TerrainRenderer/Components/TerrainMacroMaterialComponent.cpp
     Source/TerrainRenderer/Components/TerrainMacroMaterialComponent.h
+    Source/TerrainRenderer/Aabb2i.cpp
+    Source/TerrainRenderer/Aabb2i.h
     Source/TerrainRenderer/TerrainFeatureProcessor.cpp
     Source/TerrainRenderer/TerrainFeatureProcessor.h
+    Source/TerrainRenderer/TerrainDetailMaterialManager.cpp
+    Source/TerrainRenderer/TerrainDetailMaterialManager.h
+    Source/TerrainRenderer/TerrainMacroMaterialManager.cpp
+    Source/TerrainRenderer/TerrainMacroMaterialManager.h
+    Source/TerrainRenderer/TerrainMeshManager.cpp
+    Source/TerrainRenderer/TerrainMeshManager.h
+    Source/TerrainRenderer/BindlessImageArrayHandler.cpp
+    Source/TerrainRenderer/BindlessImageArrayHandler.h
     Source/TerrainRenderer/TerrainAreaMaterialRequestBus.h
+    Source/TerrainRenderer/TerrainMacroMaterialBus.cpp
     Source/TerrainRenderer/TerrainMacroMaterialBus.h
+    Source/TerrainRenderer/Vector2i.cpp
+    Source/TerrainRenderer/Vector2i.h
     Source/TerrainSystem/TerrainSystem.cpp
     Source/TerrainSystem/TerrainSystem.h
     Source/TerrainSystem/TerrainSystemBus.h

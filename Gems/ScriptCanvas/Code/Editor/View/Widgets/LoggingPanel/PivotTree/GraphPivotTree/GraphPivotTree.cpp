@@ -9,11 +9,9 @@
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
-
-#include <Editor/View/Widgets/LoggingPanel/PivotTree/GraphPivotTree/GraphPivotTree.h>
-
-#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
+#include <Editor/View/Widgets/LoggingPanel/PivotTree/GraphPivotTree/GraphPivotTree.h>
+#include <ScriptCanvas/Asset/RuntimeAsset.h>
 
 namespace ScriptCanvasEditor
 {
@@ -355,7 +353,7 @@ namespace ScriptCanvasEditor
         m_assetModel = new AzToolsFramework::AssetBrowser::AssetBrowserFilterModel();
 
         AzToolsFramework::AssetBrowser::AssetGroupFilter* assetFilter = new AzToolsFramework::AssetBrowser::AssetGroupFilter();
-        assetFilter->SetAssetGroup(ScriptCanvasEditor::ScriptCanvasAsset::Description::GetGroup(azrtti_typeid<ScriptCanvasAsset>()));
+        assetFilter->SetAssetGroup(ScriptCanvasEditor::SourceDescription::GetGroup());
 
         assetFilter->SetFilterPropagation(AzToolsFramework::AssetBrowser::AssetBrowserEntryFilter::PropagateDirection::Down);
 
@@ -530,7 +528,7 @@ namespace ScriptCanvasEditor
             {
                 const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry* productEntry = azrtti_cast<const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry*>(entry);
 
-                if (productEntry->GetAssetType() == azrtti_typeid<ScriptCanvasEditor::ScriptCanvasAsset>())
+                if (productEntry->GetAssetType() == azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>())
                 {
                     auto mapIter = m_graphTreeItemMapping.find(productEntry->GetAssetId());
 
@@ -556,7 +554,7 @@ namespace ScriptCanvasEditor
         {
             const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry* productEntry = static_cast<const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry*>(entry);
 
-            if (productEntry->GetAssetType() == azrtti_typeid<ScriptCanvasEditor::ScriptCanvasAsset>())
+            if (productEntry->GetAssetType() == azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>())
             {
                 OnEntityGraphRegistered(AZ::NamedEntityId(), ScriptCanvas::GraphIdentifier(productEntry->GetAssetId(), k_dynamicallySpawnedControllerId));
             }

@@ -39,8 +39,8 @@ namespace Multiplayer
                     "Network Binding", "The Network Binding component marks an entity as able to be replicated across the network")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Multiplayer")
-                    ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/NetBind.png")
-                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/NetBind.png")
+                    ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/NetBinding.svg")
+                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/NetBinding.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"));
             }
         }
@@ -167,7 +167,10 @@ namespace Multiplayer
 
     void NetBindComponent::Deactivate()
     {
-        AZ_Assert(m_needsToBeStopped == false, "Entity appears to have been improperly deleted. Use MarkForRemoval to correctly clean up a networked entity.");
+        AZ_Assert(
+            m_needsToBeStopped == false,
+            "Entity (%s) appears to have been improperly deleted. Use MarkForRemoval to correctly clean up a networked entity.",
+            GetEntity() ? GetEntity()->GetName().c_str() : "null");
         m_handleLocalServerRpcMessageEventHandle.Disconnect();
         if (NetworkRoleHasController(m_netEntityRole))
         {

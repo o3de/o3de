@@ -94,6 +94,23 @@ endif()
 # cpack generation. CPACK_BINARY_DIR persists across cpack invocations
 set(LY_CMAKE_PACKAGE_DOWNLOAD_PATH ${CPACK_BINARY_DIR}/${CPACK_CMAKE_PACKAGE_FILE})
 
+# Scan the source and 3p packages for licenses, then add the generated license results to the binary output folder.
+# These results will be installed to the root of the install folder and copied to the S3 bucket specific to each platform
+set(CPACK_3P_LICENSE_FILE "${CPACK_BINARY_DIR}/NOTICES.txt")
+set(CPACK_3P_MANIFEST_FILE "${CPACK_BINARY_DIR}/SPDX-License.json")
+
+configure_file(${LY_ROOT_FOLDER}/cmake/Packaging/LicenseScan.cmake.in
+    ${CPACK_BINARY_DIR}/LicenseScan.cmake
+    @ONLY
+)
+ly_install(SCRIPT ${CPACK_BINARY_DIR}/LicenseScan.cmake
+    COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
+)
+ly_install(FILES ${CPACK_3P_LICENSE_FILE} ${CPACK_3P_MANIFEST_FILE}
+    DESTINATION .
+    COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
+)
+
 configure_file(${LY_ROOT_FOLDER}/cmake/Packaging/CMakeDownload.cmake.in
     ${CPACK_BINARY_DIR}/CMakeDownload.cmake
     @ONLY

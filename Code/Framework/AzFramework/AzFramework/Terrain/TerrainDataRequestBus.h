@@ -144,12 +144,55 @@ namespace AzFramework
                 return result;
             }
             SurfaceData::SurfacePoint BehaviorContextGetSurfacePointFromVector2(
-                const AZ::Vector2& inPosition,
-                Sampler sampleFilter = Sampler::DEFAULT) const
+                const AZ::Vector2& inPosition, Sampler sampleFilter = Sampler::DEFAULT) const
             {
                 SurfaceData::SurfacePoint result;
                 GetSurfacePointFromVector2(inPosition, result, sampleFilter);
                 return result;
+            }
+            // Private variations of the GetHeight.., GetNormal..., GetMaxSurfaceWeight..., GetSurfaceWeights... APIs
+            // exposed to BehaviorContext that does not use the terrainExists "out" parameter.
+            float BehaviorContextGetHeight(const AZ::Vector3& position, Sampler sampler = Sampler::BILINEAR)
+            {
+                return GetHeight(position, sampler, nullptr);
+            }
+            float BehaviorContextGetHeightFromVector2(const AZ::Vector2& position, Sampler sampler = Sampler::BILINEAR)
+            {
+                return GetHeightFromVector2(position, sampler, nullptr);
+            }
+            float BehaviorContextGetHeightFromFloats(float x, float y, Sampler sampler = Sampler::BILINEAR)
+            {
+                return GetHeightFromFloats(x, y, sampler, nullptr);
+            }
+            AZ::Vector3 BehaviorContextGetNormal(const AZ::Vector3& position, Sampler sampleFilter = Sampler::BILINEAR)
+            {
+                return GetNormal(position, sampleFilter, nullptr);
+            }
+            SurfaceData::SurfaceTagWeight BehaviorContextGetMaxSurfaceWeight(
+                const AZ::Vector3& position, Sampler sampleFilter = Sampler::BILINEAR)
+            {
+                return GetMaxSurfaceWeight(position, sampleFilter, nullptr);
+            }
+            SurfaceData::SurfaceTagWeight BehaviorContextGetMaxSurfaceWeightFromVector2(
+                const AZ::Vector2& inPosition, Sampler sampleFilter = Sampler::DEFAULT)
+            {
+                return GetMaxSurfaceWeightFromVector2(inPosition, sampleFilter, nullptr);
+            }
+            SurfaceData::SurfaceTagWeightList BehaviorContextGetSurfaceWeights(
+                const AZ::Vector3& inPosition,
+                Sampler sampleFilter = Sampler::DEFAULT)
+            {
+                SurfaceData::SurfaceTagWeightList list;
+                GetSurfaceWeights(inPosition, list, sampleFilter, nullptr);
+                return list;
+            }
+            SurfaceData::SurfaceTagWeightList BehaviorContextGetSurfaceWeightsFromVector2(
+                const AZ::Vector2& inPosition,
+                Sampler sampleFilter = Sampler::DEFAULT)
+            {
+                SurfaceData::SurfaceTagWeightList list;
+                GetSurfaceWeightsFromVector2(inPosition, list, sampleFilter, nullptr);
+                return list;
             }
         };
         using TerrainDataRequestBus = AZ::EBus<TerrainDataRequests>;

@@ -8,8 +8,6 @@
 
 #include <CoreLights/SimplePointLightFeatureProcessor.h>
 
-#include <AzCore/Debug/EventTrace.h>
-
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Color.h>
 

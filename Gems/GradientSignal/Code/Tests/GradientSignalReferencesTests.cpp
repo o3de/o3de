@@ -10,18 +10,18 @@
 #include <AzTest/AzTest.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Math/MathUtils.h>
-#include "Tests/GradientSignalTestMocks.h"
+#include <Tests/GradientSignalTestFixtures.h>
 
-#include <Source/Components/MixedGradientComponent.h>
-#include <Source/Components/ReferenceGradientComponent.h>
-#include <Source/Components/ShapeAreaFalloffGradientComponent.h>
-#include <Source/Components/SurfaceAltitudeGradientComponent.h>
-#include <Source/Components/SurfaceMaskGradientComponent.h>
-#include <Source/Components/SurfaceSlopeGradientComponent.h>
-#include <Source/Components/RandomGradientComponent.h>
-#include <Source/Components/ConstantGradientComponent.h>
-#include <Source/Components/DitherGradientComponent.h>
-#include <Components/ImageGradientComponent.h>
+#include <GradientSignal/Components/MixedGradientComponent.h>
+#include <GradientSignal/Components/ReferenceGradientComponent.h>
+#include <GradientSignal/Components/ShapeAreaFalloffGradientComponent.h>
+#include <GradientSignal/Components/SurfaceAltitudeGradientComponent.h>
+#include <GradientSignal/Components/SurfaceMaskGradientComponent.h>
+#include <GradientSignal/Components/SurfaceSlopeGradientComponent.h>
+#include <GradientSignal/Components/RandomGradientComponent.h>
+#include <GradientSignal/Components/ConstantGradientComponent.h>
+#include <GradientSignal/Components/DitherGradientComponent.h>
+#include <GradientSignal/Components/ImageGradientComponent.h>
 
 namespace UnitTest
 {
@@ -371,12 +371,9 @@ namespace UnitTest
         const AZ::EntityId id = mockReference->GetId();
         MockGradientArrayRequestsBus mockGradientRequestsBus(id, inputData, dataSize);
 
-        GradientSignal::ReferenceGradientConfig config;
-        config.m_gradientSampler.m_gradientId = mockReference->GetId();
-
-        auto entity = CreateEntity();
-        CreateComponent<GradientSignal::ReferenceGradientComponent>(entity.get(), config);
-        ActivateEntity(entity.get());
+        // Create a reference gradient with an arbitrary box shape on it.
+        const float HalfBounds = 64.0f;
+        auto entity = BuildTestReferenceGradient(HalfBounds, mockReference->GetId());
 
         TestFixedDataSampler(expectedOutput, dataSize, entity->GetId());
     }
@@ -385,10 +382,9 @@ namespace UnitTest
     {
         // Verify that gradient references can validate and disconnect cyclic connections
 
-        auto constantGradientEntity = CreateEntity();
-        GradientSignal::ConstantGradientConfig constantGradientConfig;
-        CreateComponent<GradientSignal::ConstantGradientComponent>(constantGradientEntity.get(), constantGradientConfig);
-        ActivateEntity(constantGradientEntity.get());
+        // Create a constant gradient with an arbitrary box shape on it.
+        const float HalfBounds = 64.0f;
+        auto constantGradientEntity = BuildTestConstantGradient(HalfBounds);
 
         // Verify cyclic reference test passes when pointing to gradient generator entity
         auto referenceGradientEntity1 = CreateEntity();

@@ -22,10 +22,12 @@
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Component/EntityId.h>
-#include <AzCore/Jobs/JobCompletion.h>
 
 namespace AZ
 {
+    // forward declares
+    class Job;
+
     namespace RPI
     {
         //! @class FeatureProcessor
@@ -51,6 +53,7 @@ namespace AZ
 
             struct SimulatePacket
             {
+                AZ::Job* m_parentJob = nullptr;
             };
             
             struct RenderPacket

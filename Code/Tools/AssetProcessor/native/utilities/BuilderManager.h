@@ -39,7 +39,7 @@ namespace AssetProcessor
         virtual ~BuilderManagerBusTraits() = default;
 
         //! Returns a builder for doing work
-        virtual BuilderRef GetBuilder() = 0;
+        virtual BuilderRef GetBuilder(bool doRegistration) = 0;
     };
 
     using BuilderManagerBus = AZ::EBus<BuilderManagerBusTraits>;
@@ -98,13 +98,13 @@ namespace AssetProcessor
     private:
 
         //! Starts the builder process and waits for it to connect
-        bool Start();
+        bool Start(bool doRegistration);
 
         //! Sets the connection id and signals that the builder has connected
         void SetConnection(AZ::u32 connId);
 
-        AZStd::string BuildParams(const char* task, const char* moduleFilePath, const AZStd::string& builderGuid, const AZStd::string& jobDescriptionFile, const AZStd::string& jobResponseFile) const;
-        AZStd::unique_ptr<AzFramework::ProcessWatcher> LaunchProcess(const char* fullExePath, const AZStd::string& params) const;
+        AZStd::vector<AZStd::string> BuildParams(const char* task, const char* moduleFilePath, const AZStd::string& builderGuid, const AZStd::string& jobDescriptionFile, const AZStd::string& jobResponseFile, bool doRegistration) const;
+        AZStd::unique_ptr<AzFramework::ProcessWatcher> LaunchProcess(const char* fullExePath, const AZStd::vector<AZStd::string>& params) const;
 
         //! Waits for the builder exe to send the job response and pumps stdout/err
         BuilderRunJobOutcome WaitForBuilderResponse(AssetBuilderSDK::JobCancelListener* jobCancelListener, AZ::u32 processTimeoutLimitInSeconds, AZStd::binary_semaphore* waitEvent) const;
@@ -169,7 +169,7 @@ namespace AssetProcessor
         void ConnectionLost(AZ::u32 connId);
 
         //BuilderManagerBus
-        BuilderRef GetBuilder() override;
+        BuilderRef GetBuilder(bool doRegistration) override;
 
     private:
 
