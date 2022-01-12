@@ -20,6 +20,7 @@
 
 // AzQtComponents
 #include <AzQtComponents/Utilities/QtWindowUtilities.h>
+#include <AzQtComponents/Components/Widgets/PushButton.h>
 
 // Editor
 #include "AzAssetBrowser/AzAssetBrowserRequestHandler.h"
@@ -83,10 +84,11 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     m_ui->m_assetBrowserTableViewWidget->setVisible(false);
     m_ui->m_toggleDisplayViewBtn->setVisible(false);
     m_ui->m_searchWidget->SetFilterInputInterval(AZStd::chrono::milliseconds(250));
-    m_ui->m_collapseAllButton->setIcon(QIcon(":/stylesheet/img/16x16/layers.png"));
 
+    m_ui->m_collapseAllButton->setAutoRaise(true); // hover highlight
+    m_ui->m_collapseAllButton->setIcon(QIcon(":/stylesheet/img/24x24/layers.png"));
     connect(
-        m_ui->m_collapseAllButton, &QPushButton::released, this,
+        m_ui->m_collapseAllButton, &QToolButton::released, this,
         [this]()
         {
             m_ui->m_assetBrowserTreeViewWidget->collapseAll();
@@ -95,6 +97,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     if (ed_useNewAssetBrowserTableView)
     {
         m_ui->m_toggleDisplayViewBtn->setVisible(true);
+        m_ui->m_toggleDisplayViewBtn->setAutoRaise(true);
         m_ui->m_toggleDisplayViewBtn->setIcon(QIcon(":/Menu/menu.svg"));
 
         m_tableModel->setFilterRole(Qt::DisplayRole);
