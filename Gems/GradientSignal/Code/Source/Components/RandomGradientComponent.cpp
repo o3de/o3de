@@ -145,6 +145,22 @@ namespace GradientSignal
         m_gradientTransform = newTransform;
     }
 
+    float RandomGradientComponent::GetRandomValue(const AZ::Vector3& position, AZStd::size_t seed) const
+    {
+        // generating stable pseudo-random noise from a position based hash
+        float x = position.GetX();
+        float y = position.GetY();
+        AZStd::size_t result = 0;
+
+        AZStd::hash_combine<float>(result, x * seed + y);
+        AZStd::hash_combine<float>(result, y * seed + x);
+        AZStd::hash_combine<float>(result, x * y * seed);
+
+        // always returns [0.0,1.0]
+        return static_cast<float>(result % std::numeric_limits<AZ::u8>::max()) / static_cast<float>(std::numeric_limits<AZ::u8>::max());
+    }
+
+
     float RandomGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
 
@@ -158,22 +174,49 @@ namespace GradientSignal
 
         if (!wasPointRejected)
         {
-            //generating stable pseudo-random noise from a position based hash 
-            float x = uvw.GetX();
-            float y = uvw.GetY();
-            AZStd::size_t result = 0;
-            const AZStd::size_t seed = m_configuration.m_randomSeed + AZStd::size_t(2); // Add 2 to avoid seeds 0 and 1, which can create strange patterns with this particular algorithm
+            const AZStd::size_t seed = m_configuration.m_randomSeed +
+                AZStd::size_t(2); // Add 2 to avoid seeds 0 and 1, which can create strange patterns with this particular algorithm
 
-            AZStd::hash_combine<float>(result, x * seed + y);
-            AZStd::hash_combine<float>(result, y * seed + x);
-            AZStd::hash_combine<float>(result, x * y * seed);
-
-            //always returns [0.0,1.0]
-            return static_cast<float>(result % std::numeric_limits<AZ::u8>::max()) / static_cast<float>(std::numeric_limits<AZ::u8>::max());
+            return GetRandomValue(uvw, seed);
         }
 
         return 0.0f;
     }
+
+    void RandomGradientComponent::GetValues(AZStd::array_view<AZ::Vector3> positions, AZStd::array_view<float> outValues) const
+    {
+        if (positions.size() != outValues.size())
+        {
+            AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
+            return;
+        }
+
+        AZ::Vector3 uvw;
+        bool wasPointRejected = false;
+        const AZStd::size_t seed = m_configuration.m_randomSeed +
+            AZStd::size_t(2); // Add 2 to avoid seeds 0 and 1, which can create strange patterns with this particular algorithm
+
+        AZStd::shared_lock<decltype(m_transformMutex)> lock(m_transformMutex);
+
+        for (size_t index = 0; index < positions.size(); index++)
+        {
+            // The const_cast is necessary for now since array_view currently only supports const entries.
+            // If/when array_view is fixed to support non-const, or AZStd::span gets created, the const_cast can get removed.
+            auto& outValue = const_cast<float&>(outValues[index]);
+
+            m_gradientTransform.TransformPositionToUVW(positions[index], uvw, wasPointRejected);
+
+            if (!wasPointRejected)
+            {
+                outValue = GetRandomValue(uvw, seed);
+            }
+            else
+            {
+                outValue = 0.0f;
+            }
+        }
+    }
+
 
     int RandomGradientComponent::GetRandomSeed() const
     {
