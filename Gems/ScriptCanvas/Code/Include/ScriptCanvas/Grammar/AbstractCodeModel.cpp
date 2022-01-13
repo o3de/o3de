@@ -240,7 +240,6 @@ namespace ScriptCanvas
                     // #sc_user_slot_variable_ux consider getting all variables from the UX variable manager, or from the ACM and looking them up in the variable manager for ordering
                     m_sourceVariableByDatum.insert(AZStd::make_pair(datum, &variablePair.second));
                 }
-
             }
 
             for (auto& sourceVariable : sortedVariables)
@@ -1714,6 +1713,7 @@ namespace ScriptCanvas
                 auto iter = m_inputVariableByNodelingInSlot.find(input);
                 if (iter != m_inputVariableByNodelingInSlot.end())
                 {
+                    // #sc_user_slot_variable_ux don't add variable name if not necessary
                     VariablePtr variable = iter->second;
                     const Slot* slot = iter->first;
                     variable->m_name = call->ModScope()->AddVariableName(slot->GetName());
@@ -4644,35 +4644,59 @@ namespace ScriptCanvas
 
         void AbstractCodeModel::ParseNodelingVariables(const Node& node, NodelingType nodelingType)
         {
-            // #sc_user_slot_variable_ux adjust once datums are more coordinated
-            auto createVariablesSlots = [&](AZStd::unordered_map<const Slot*, VariablePtr>& variablesBySlots, const AZStd::vector<const Slot*>& slots, bool slotHasDatum)
+            // This function accounts for all the ways users have been able to introduce input/output data in their SC function definitions.
+            // They have been able to create slots, variables, or both. This function reads the datums to create the correct ACM
+            // variable per required SC user variable. It uses slots as the key, and checks datums in the SC variable list for possible
+            // matches.
+            auto createVariablesSlots = [&](AZStd::unordered_map<const Slot*, VariablePtr>& variablesBySlots, const AZStd::vector<const Slot*>& slots, bool errorOnMissingDatum)
             {
                 for (const auto& slot : slots)
                 {
                     auto variable = AZStd::make_shared<Variable>();
+                    auto variableDatum = slot->FindDatum();
+                    bool initializeDatum = true;
 
-                    if (slotHasDatum)
+                    if (variableDatum)
                     {
-                        auto variableDatum = slot->FindDatum();
-                        if (!variableDatum)
-                        {
-                            AddError(nullptr, aznew Internal::ParseError(node.GetEntityId(), AZStd::string::format("Datum missing from Slot %s on Node %s", slot->GetName().data(), node.GetNodeName().c_str())));
-                            return;
-                        }
+                        initializeDatum = false;
+                    }
+                    else if (errorOnMissingDatum)
+                    {
+                        AddError(nullptr, aznew Internal::ParseError(node.GetEntityId(), AZStd::string::format("Datum missing from Slot %s on Node %s", slot->GetName().data(), node.GetNodeName().c_str())));
+                        return;
+                    }
 
-                        // #sc_user_slot_variable_ux consider getting all variables from the UX variable manager, or from the ACM and looking them up in the variable manager for ordering
-//                         auto iter = m_sourceVariableByDatum.find(variableDatum);
-//                         if (iter == m_sourceVariableByDatum.end())
-//                         {
-//                             AddError(nullptr, aznew Internal::ParseError(node.GetEntityId(), AZStd::string::format("Datum missing from Slot %s on Node %s", slot->GetName().data(), node.GetNodeName().c_str())));
-//                             return;
-//                         }
-//                      variable->m_sourceVariableId = iter->second->GetVariableId();
+                    // find the other variable
+                    auto iter = m_sourceVariableByDatum.find(variableDatum);
+                    if (iter != m_sourceVariableByDatum.end())
+                    {
+                        initializeDatum = false;
+                    }
+                    else if (!variableDatum && errorOnMissingDatum)
+                    {
+                        AddError(nullptr, aznew Internal::ParseError(node.GetEntityId(), AZStd::string::format("Datum missing from Slot %s on Node %s", slot->GetName().data(), node.GetNodeName().c_str())));
+                        return;
+                    }
+
+                    VariablePtr premadeVariable = iter != m_sourceVariableByDatum.end()
+                        ? AZStd::const_pointer_cast<Variable>(FindVariable(iter->second->GetVariableId()))
+                        : VariablePtr();
+
+                    if (premadeVariable)
+                    {
+                        initializeDatum = false;
+                        variable = premadeVariable;
+                    }
+
+                    variable->m_sourceSlotId = slot->GetId();
+
+                    if (!premadeVariable && variableDatum)
+                    {
                         variable->m_datum = *variableDatum;
                     }
-                    else
+
+                    if (initializeDatum)
                     {
-                        // make a new datum and a source slot id and all that
                         variable->m_datum.SetType(slot->GetDataType());
                     }
 
@@ -4680,7 +4704,11 @@ namespace ScriptCanvas
                     variable->m_sourceSlotId = slot->GetId();
                     variable->m_isFromFunctionDefinitionSlot = true;
                     variablesBySlots.insert({ slot, variable });
-                    m_variables.push_back(variable);
+
+                    if (!premadeVariable)
+                    {
+                        m_variables.push_back(variable);
+                    }
                 }
             };
 
