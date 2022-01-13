@@ -120,7 +120,7 @@ namespace GradientSignal
 
             if (m_isRequestInProgress)
             {
-                AZ_ErrorOnce("GradientSignal", !m_isRequestInProgress, "Detected cyclic dependences with gradient entity references");
+                AZ_ErrorOnce("GradientSignal", !m_isRequestInProgress, "Detected cyclic dependencies with gradient entity references");
             }
             else
             {
@@ -197,7 +197,7 @@ namespace GradientSignal
 
             if (m_isRequestInProgress)
             {
-                AZ_ErrorOnce("GradientSignal", !m_isRequestInProgress, "Detected cyclic dependences with gradient entity references");
+                AZ_ErrorOnce("GradientSignal", !m_isRequestInProgress, "Detected cyclic dependencies with gradient entity references");
                 ClearOutputValues(outValues);
                 return;
             }

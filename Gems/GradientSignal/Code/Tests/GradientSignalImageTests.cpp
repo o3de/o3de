@@ -417,7 +417,6 @@ namespace UnitTest
             TestFixedDataSampler(expectedOutput, dataSize, entity->GetId());
         }
     }
-
 }
 
 
