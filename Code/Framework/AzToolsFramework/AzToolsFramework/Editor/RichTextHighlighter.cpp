@@ -34,8 +34,6 @@ namespace AzToolsFramework
         painter->save();
         painter->setRenderHint(QPainter::Antialiasing);
 
-        const QRect textRect = option.widget->style()->proxy()->subElementRect(QStyle::SE_ItemViewItemText, &option);
-
         // Now we setup a Text Document so it can draw the rich text
         QTextDocument textDoc;
         textDoc.setDefaultFont(option.font);
