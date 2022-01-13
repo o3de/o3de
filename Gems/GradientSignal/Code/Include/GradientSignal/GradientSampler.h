@@ -152,10 +152,7 @@ namespace GradientSignal
         auto ClearOutputValues = [](AZStd::span<float> outValues)
         {
             // If we don't have a valid gradient (or it is fully transparent), clear out all the output values.
-            for (size_t index = 0; index < outValues.size(); index++)
-            {
-                outValues[index] = 0.0f;
-            }
+            memset(outValues.data(), 0, outValues.size() * sizeof(float));
         };
 
         if (m_opacity <= 0.0f || !m_gradientId.IsValid())
@@ -211,10 +208,8 @@ namespace GradientSignal
         }
 
         // Perform any post-fetch transformations on the gradient values (invert, levels, opacity).
-        for (size_t index = 0; index < outValues.size(); index++)
+        for (auto& outValue : outValues)
         {
-            auto& outValue = outValues[index];
-
             if (m_invertInput)
             {
                 outValue = 1.0f - outValue;

@@ -146,9 +146,9 @@ namespace GradientSignal
         }
 
         m_configuration.m_gradientSampler.GetValues(positions, outValues);
-        for (size_t index = 0; index < outValues.size(); index++)
+        for (auto& outValue : outValues)
         {
-            outValues[index] = 1.0f - AZ::GetClamp(outValues[index], 0.0f, 1.0f);
+            outValue = 1.0f - AZ::GetClamp(outValue, 0.0f, 1.0f);
         }
     }
 

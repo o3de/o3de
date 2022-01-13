@@ -145,8 +145,7 @@ namespace GradientSignal
 
         for (auto& outValue : outValues)
         {
-            float& writableOutValue = const_cast<float&>(outValue);
-            writableOutValue = m_configuration.m_value;
+            outValue = m_configuration.m_value;
         }
     }
 

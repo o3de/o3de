@@ -201,9 +201,9 @@ namespace GradientSignal
         // If there's no shape, there's no falloff.
         if (!shapeConnected)
         {
-            for (size_t index = 0; index < positions.size(); index++)
+            for (auto& outValue : outValues)
             {
-                outValues[index] = 1.0f;
+                outValue = 1.0f;
             }
         }
     }
