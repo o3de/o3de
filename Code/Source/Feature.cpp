@@ -32,6 +32,35 @@ namespace EMotionFX::MotionMatching
 {
     AZ_CLASS_ALLOCATOR_IMPL(Feature, MotionMatchAllocator, 0)
 
+    bool Feature::Init(const InitSettings& settings)
+    {
+        const Actor* actor = settings.m_actorInstance->GetActor();
+        const Skeleton* skeleton = actor->GetSkeleton();
+
+        const Node* joint = skeleton->FindNodeByNameNoCase(m_jointName.c_str());
+        m_jointIndex = joint ? joint->GetNodeIndex() : InvalidIndex;
+        if (m_jointIndex == InvalidIndex)
+        {
+            AZ_Error("MotionMatching", false, "Feature::Init(): Cannot find index for joint named '%s'.", m_jointName.c_str());
+            return false;
+        }
+
+        const Node* relativeToJoint = skeleton->FindNodeByNameNoCase(m_relativeToJointName.c_str());
+        m_relativeToNodeIndex = relativeToJoint ? relativeToJoint->GetNodeIndex() : InvalidIndex;
+        if (m_relativeToNodeIndex == InvalidIndex)
+        {
+            AZ_Error("MotionMatching", false, "Feature::Init(): Cannot find index for joint named '%s'.", m_relativeToJointName.c_str());
+            return false;
+        }
+
+        // Set a default feature name in case it did not get set manually.
+        if (m_name.empty())
+        {
+            m_name = AZStd::string::format("%s (%s)", this->RTTI_GetTypeName(), m_jointName.c_str());
+        }
+        return true;
+    }
+
     void Feature::SetDebugDrawColor(const AZ::Color& color)
     {
         m_debugColor = color;
@@ -204,7 +233,7 @@ namespace EMotionFX::MotionMatching
 
         editContext->Class<Feature>("Feature", "Base class for the frame data")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-            ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
+                ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
     }
 } // namespace EMotionFX::MotionMatching

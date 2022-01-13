@@ -51,7 +51,7 @@ namespace EMotionFX::MotionMatching
 
         FeatureSchema& GetFeatureSchema() { return m_featureSchema; }
         const FeatureMatrix& GetFeatureMatrix() const { return m_featureMatrix; }
-        void SaveAsCsv(const AZStd::string& filename, Skeleton* skeleton);
+        void SaveAsCsv(const AZStd::string& filename);
 
     private:
         FeatureSchema m_featureSchema;

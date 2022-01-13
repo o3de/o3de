@@ -56,7 +56,7 @@ namespace EMotionFX::MotionMatching
             static constexpr size_t s_componentsPerSample = 4;
         };
 
-        FeatureTrajectory();
+        FeatureTrajectory() = default;
         ~FeatureTrajectory() override = default;
 
         bool Init(const InitSettings& settings) override;
@@ -73,6 +73,7 @@ namespace EMotionFX::MotionMatching
         void SetPastTimeRange(float timeInSeconds);
         void SetFutureTimeRange(float timeInSeconds);
         void SetFacingAxis(const Axis axis);
+        void UpdateFacingAxis();
 
         size_t GetNumFutureSamples() const { return m_numFutureSamples; }
         size_t GetNumPastSamples() const { return m_numPastSamples; }
@@ -83,12 +84,10 @@ namespace EMotionFX::MotionMatching
         AZ::Vector2 CalculateFacingDirection(const Pose& pose, const Transform& invRootTransform) const;
         AZ::Vector3 GetFacingAxisDir() const { return m_facingAxisDir; }
 
-        void SetNodeIndex(size_t nodeIndex);
-
         static void Reflect(AZ::ReflectContext* context);
 
         size_t GetNumDimensions() const override;
-        AZStd::string GetDimensionName(size_t index, Skeleton* skeleton) const override;
+        AZStd::string GetDimensionName(size_t index) const override;
 
         // Shared helper function to draw a facing direction.
         static void DebugDrawFacingDirection(AzFramework::DebugDisplayRequests& debugDisplay,
@@ -129,11 +128,10 @@ namespace EMotionFX::MotionMatching
             const Sample& sample,
             const AZ::Vector3& samplePosWorldSpace) const;
 
-        size_t m_nodeIndex = InvalidIndex32; /**< The node to grab the data from. */
-        size_t m_numFutureSamples = 5; /**< How many samples do we store per frame, for the future trajectory of this frame? */
-        size_t m_numPastSamples = 5; /**< How many samples do we store per frame, for the past (history) of the trajectory of this frame? */
-        float m_futureTimeRange = 1.0f; /**< How many seconds do we look into the future? */
-        float m_pastTimeRange = 1.0f; /**< How many seconds do we look back in the past? */
+        size_t m_numFutureSamples = 6; /**< How many samples do we store per frame, for the future trajectory of this frame? */
+        size_t m_numPastSamples = 4; /**< How many samples do we store per frame, for the past (history) of the trajectory of this frame? */
+        float m_futureTimeRange = 1.2f; /**< How many seconds do we look into the future? */
+        float m_pastTimeRange = 0.7f; /**< How many seconds do we look back in the past? */
 
         Axis m_facingAxis = Axis::Y; /** Which of this node's axes points forward? */
         AZ::Vector3 m_facingAxisDir = AZ::Vector3::CreateAxisY();

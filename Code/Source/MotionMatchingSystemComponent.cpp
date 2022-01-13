@@ -23,7 +23,6 @@
 #include <MotionMatchingConfig.h>
 #include <MotionMatchingInstance.h>
 #include <Feature.h>
-#include <LocomotionConfig.h>
 #include <MotionMatchEventData.h>
 #include <FeaturePosition.h>
 #include <FeatureTrajectory.h>
@@ -55,7 +54,6 @@ namespace MotionMatching
 
         EMotionFX::MotionMatching::MotionMatchingInstance::Reflect(context);
         EMotionFX::MotionMatching::MotionMatchingConfig::Reflect(context);
-        EMotionFX::MotionMatching::LocomotionConfig::Reflect(context);
 
         EMotionFX::MotionMatching::FeatureSchema::Reflect(context);
         EMotionFX::MotionMatching::Feature::Reflect(context);

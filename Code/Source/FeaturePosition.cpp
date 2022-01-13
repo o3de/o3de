@@ -29,33 +29,10 @@ namespace EMotionFX::MotionMatching
 {
     AZ_CLASS_ALLOCATOR_IMPL(FeaturePosition, MotionMatchAllocator, 0)
 
-    FeaturePosition::FeaturePosition()
-        : Feature()
-        , m_nodeIndex(MCORE_INVALIDINDEX32)
-    {
-    }
-
-    bool FeaturePosition::Init(const InitSettings& settings)
-    {
-        MCORE_UNUSED(settings);
-
-        if (m_nodeIndex == MCORE_INVALIDINDEX32)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    void FeaturePosition::SetNodeIndex(size_t nodeIndex)
-    {
-        m_nodeIndex = nodeIndex;
-    }
-
     void FeaturePosition::FillQueryFeatureValues(size_t startIndex, AZStd::vector<float>& queryFeatureValues, const FrameCostContext& context)
     {
         const Transform invRootTransform = context.m_currentPose.GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
-        const AZ::Vector3 worldInputPosition = context.m_currentPose.GetWorldSpaceTransform(m_nodeIndex).m_position;
+        const AZ::Vector3 worldInputPosition = context.m_currentPose.GetWorldSpaceTransform(m_jointIndex).m_position;
         const AZ::Vector3 relativeInputPosition = invRootTransform.TransformPoint(worldInputPosition);
         queryFeatureValues[startIndex + 0] = relativeInputPosition.GetX();
         queryFeatureValues[startIndex + 1] = relativeInputPosition.GetY();
@@ -65,7 +42,7 @@ namespace EMotionFX::MotionMatching
     void FeaturePosition::ExtractFeatureValues(const ExtractFeatureContext& context)
     {
         const Transform invRootTransform = context.m_framePose->GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
-        const AZ::Vector3 nodeWorldPosition = context.m_framePose->GetWorldSpaceTransform(m_nodeIndex).m_position;
+        const AZ::Vector3 nodeWorldPosition = context.m_framePose->GetWorldSpaceTransform(m_jointIndex).m_position;
         const AZ::Vector3 position = invRootTransform.TransformPoint(nodeWorldPosition);
         SetFeatureData(context.m_featureMatrix, context.m_frameIndex, position);
     }
@@ -77,7 +54,7 @@ namespace EMotionFX::MotionMatching
         const MotionMatchingConfig* config = instance->GetConfig();
         const ActorInstance* actorInstance = instance->GetActorInstance();
         const Pose* pose = actorInstance->GetTransformData()->GetCurrentPose();
-        const Transform jointModelTM = pose->GetModelSpaceTransform(m_nodeIndex);
+        const Transform jointModelTM = pose->GetModelSpaceTransform(m_jointIndex);
         const Transform relativeToWorldTM = pose->GetWorldSpaceTransform(m_relativeToNodeIndex);
 
         const AZ::Vector3 position = GetFeatureData(config->GetFeatureDatabase().GetFeatureMatrix(), frameIndex);
@@ -92,7 +69,7 @@ namespace EMotionFX::MotionMatching
     float FeaturePosition::CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const
     {
         const Transform invRootTransform = context.m_currentPose.GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
-        const AZ::Vector3 worldInputPosition = context.m_currentPose.GetWorldSpaceTransform(m_nodeIndex).m_position;
+        const AZ::Vector3 worldInputPosition = context.m_currentPose.GetWorldSpaceTransform(m_jointIndex).m_position;
         const AZ::Vector3 relativeInputPosition = invRootTransform.TransformPoint(worldInputPosition);
         const AZ::Vector3 framePosition = GetFeatureData(context.m_featureMatrix, frameIndex); // This is already relative to the root node
         return (framePosition - relativeInputPosition).GetLength();
@@ -117,7 +94,7 @@ namespace EMotionFX::MotionMatching
 
         editContext->Class<FeaturePosition>("FeaturePosition", "Joint position data.")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-            ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
+                ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
     }
 
@@ -126,23 +103,17 @@ namespace EMotionFX::MotionMatching
         return 3;
     }
 
-    AZStd::string FeaturePosition::GetDimensionName(size_t index, Skeleton* skeleton) const
+    AZStd::string FeaturePosition::GetDimensionName(size_t index) const
     {
-        AZStd::string result;
-
-        Node* joint = skeleton->GetNode(m_nodeIndex);
-        if (joint)
-        {
-            result = joint->GetName();
-            result += '.';
-        }
+        AZStd::string result = m_jointName;
+        result += '.';
 
         switch (index)
         {
             case 0: { result += "PosX"; break; }
             case 1: { result += "PosY"; break; }
             case 2: { result += "PosZ"; break; }
-            default: { result += Feature::GetDimensionName(index, skeleton); }
+            default: { result += Feature::GetDimensionName(index); }
         }
 
         return result;

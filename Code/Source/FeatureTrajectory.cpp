@@ -30,26 +30,11 @@ namespace EMotionFX::MotionMatching
 {
     AZ_CLASS_ALLOCATOR_IMPL(FeatureTrajectory, MotionMatchAllocator, 0)
 
-    FeatureTrajectory::FeatureTrajectory()
-        : Feature()
-    {
-    }
-
     bool FeatureTrajectory::Init(const InitSettings& settings)
     {
-        MCORE_UNUSED(settings);
-
-        if (m_nodeIndex == MCORE_INVALIDINDEX32)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    void FeatureTrajectory::SetNodeIndex(size_t nodeIndex)
-    {
-        m_nodeIndex = nodeIndex;
+        const bool result = Feature::Init(settings);
+        UpdateFacingAxis();
+        return result;
     }
 
     size_t FeatureTrajectory::CalcNumSamplesPerFrame() const
@@ -60,7 +45,11 @@ namespace EMotionFX::MotionMatching
     void FeatureTrajectory::SetFacingAxis(const Axis axis)
     {
         m_facingAxis = axis;
+        UpdateFacingAxis();
+    }
 
+    void FeatureTrajectory::UpdateFacingAxis()
+    {
         switch (m_facingAxis)
         {
         case Axis::X:
@@ -94,7 +83,7 @@ namespace EMotionFX::MotionMatching
     {
         // Get the facing direction of the given joint for the given pose in animation world space.
         // The given pose is either sampled into the relative past or future based on the frame we want to extract the feature for.
-        const AZ::Vector3 facingDirAnimationWorldSpace = pose.GetWorldSpaceTransform(m_nodeIndex).TransformVector(m_facingAxisDir);
+        const AZ::Vector3 facingDirAnimationWorldSpace = pose.GetWorldSpaceTransform(m_jointIndex).TransformVector(m_facingAxisDir);
 
         // The invRootTransform is the inverse of the world space transform for the given joint at the frame we want to extract the feature for.
         // The result after this will be the facing direction relative to the frame we want to extract the feature for.
@@ -107,7 +96,7 @@ namespace EMotionFX::MotionMatching
     FeatureTrajectory::Sample FeatureTrajectory::GetSampleFromPose(const Pose& pose, const Transform& invRootTransform) const
     {
         // Position of the root joint in the model space relative to frame to extract.
-        const AZ::Vector2 position = AZ::Vector2(invRootTransform.TransformPoint(pose.GetWorldSpaceTransform(m_nodeIndex).m_position));
+        const AZ::Vector2 position = AZ::Vector2(invRootTransform.TransformPoint(pose.GetWorldSpaceTransform(m_jointIndex).m_position));
 
         // Calculate the facing direction.
         const AZ::Vector2 facingDirection = CalculateFacingDirection(pose, invRootTransform);
@@ -262,7 +251,7 @@ namespace EMotionFX::MotionMatching
         size_t frameIndex)
     {
         const ActorInstance* actorInstance = instance->GetActorInstance();
-        const Transform transform = actorInstance->GetTransformData()->GetCurrentPose()->GetWorldSpaceTransform(m_nodeIndex);
+        const Transform transform = actorInstance->GetTransformData()->GetCurrentPose()->GetWorldSpaceTransform(m_jointIndex);
 
         DebugDrawTrajectory(debugDisplay, instance, frameIndex, transform,
             m_debugColor, m_numPastSamples, AZStd::bind(&FeatureTrajectory::CalcPastFrameIndex, this, AZStd::placeholders::_1));
@@ -371,7 +360,7 @@ namespace EMotionFX::MotionMatching
         return CalcNumSamplesPerFrame() * Sample::s_componentsPerSample;
     }
 
-    AZStd::string FeatureTrajectory::GetDimensionName(size_t index, Skeleton* skeleton) const
+    AZStd::string FeatureTrajectory::GetDimensionName(size_t index) const
     {
         AZStd::string result = "Trajectory";
 
@@ -398,7 +387,7 @@ namespace EMotionFX::MotionMatching
             case 1: { result += "PosY"; break; }
             case 2: { result += "FacingDirX"; break; }
             case 3: { result += "FacingDirY"; break; }
-            default: { result += Feature::GetDimensionName(index, skeleton); }
+            default: { result += Feature::GetDimensionName(index); }
         }
 
         return result;

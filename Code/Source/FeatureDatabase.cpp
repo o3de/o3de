@@ -159,7 +159,7 @@ namespace EMotionFX::MotionMatching
         }
     }
 
-    void FeatureDatabase::SaveAsCsv(const AZStd::string& filename, Skeleton* skeleton)
+    void FeatureDatabase::SaveAsCsv(const AZStd::string& filename)
     {
         AZStd::vector<AZStd::string> columnNames;
 
@@ -168,7 +168,7 @@ namespace EMotionFX::MotionMatching
             const size_t numDimensions = feature->GetNumDimensions();
             for (size_t dimension = 0; dimension < numDimensions; ++dimension)
             {
-                columnNames.push_back(feature->GetDimensionName(dimension, skeleton));
+                columnNames.push_back(feature->GetDimensionName(dimension));
             }
         }
 
