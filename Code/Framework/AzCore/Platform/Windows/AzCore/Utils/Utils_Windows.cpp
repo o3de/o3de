@@ -47,4 +47,16 @@ namespace AZ::Utils
 
         return {};
     }
+
+    bool SetEnv(const char* envname, const char* envvalue, bool overwrite)
+    {
+        AZ_UNUSED(overwrite);
+
+        return _putenv_s(envname, envvalue);
+    }
+
+    bool UnSetEnv(const char* envname)
+    {
+        return SetEnv(envname, "", 1);
+    }
 } // namespace AZ::Utils

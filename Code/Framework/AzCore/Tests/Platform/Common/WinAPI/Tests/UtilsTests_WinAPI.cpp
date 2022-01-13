@@ -69,4 +69,28 @@ namespace UnitTest
         ASSERT_TRUE(absolutePath);
         EXPECT_STRCASEEQ(executableDirectory, absolutePath->c_str());
     }
+
+    TEST_F(UtilsTestFixture, SetEnv_GetExpectedVariable_Succeeds)
+    {
+        AZ::Utils::SetEnv("UT-O3DE-ENVVAR", "TEST", 1);
+
+        char* variableValue = nullptr;
+        std::size_t valueSize = 0;
+        auto result = _dupenv_s(&variableValue, &valueSize, "UT-O3DE-ENVVAR");
+        ASSERT_TRUE(result == 0 && variableValue != nullptr && valueSize > 0);
+        EXPECT_STRCASEEQ("TEST", variableValue);
+        free(variableValue);
+    }
+
+    TEST_F(UtilsTestFixture, UnSetEnv_GetExpectedEmptyVariable_Succeeds)
+    {
+        AZ::Utils::SetEnv("UT-O3DE-ENVVAR", "TEST", 1);
+        AZ::Utils::UnSetEnv("UT-O3DE-ENVVAR");
+
+        char* variableValue = nullptr;
+        std::size_t valueSize = 0;
+        auto result = _dupenv_s(&variableValue, &valueSize, "UT-O3DE-ENVVAR");
+        ASSERT_TRUE(result == 0 && variableValue == nullptr && valueSize == 0);
+        free(variableValue);
+    }
 }
