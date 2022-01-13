@@ -43,7 +43,26 @@ if [[ ! -z "$RUN_CONFIGURE" ]]; then
     echo "${CONFIGURE_CMD}" > ${LAST_CONFIGURE_CMD_FILE}
 fi
 
-eval echo [ci_build] cmake --build . --target ${CMAKE_TARGET} --config ${CONFIGURATION} -j $(grep -c processor /proc/cpuinfo) -- ${CMAKE_NATIVE_BUILD_ARGS}
-eval cmake --build . --target ${CMAKE_TARGET} --config ${CONFIGURATION} -j $(grep -c processor /proc/cpuinfo) -- ${CMAKE_NATIVE_BUILD_ARGS}
+# In cases where the ratio of cores to memory may cause out of memory issues if we have too many cores,
+# make sure that we have at least 2 GB (2097152 kb) of ram per core and not over allocate the number of jobs
+TOTAL_MEMORY=$(cat /proc/meminfo | grep MemTotal | awk '{print $2}')
+MIN_MEMORY_PER_CORE=2097152
+TOTAL_CORE_COUNT=$(grep -c processor /proc/cpuinfo)
+MAX_CORE_USAGE=$(expr $TOTAL_MEMORY / $MIN_MEMORY_PER_CORE)
+
+echo "Total Memory       : $TOTAL_MEMORY"
+echo "Min Memory Per Job : $MIN_MEMORY_PER_CORE"
+echo "Total Cores        : $TOTAL_CORE_COUNT"
+echo "Max Usable Cores   : $MAX_CORE_USAGE"
+
+if [ $TOTAL_CORE_COUNT -gt $MAX_CORE_USAGE ]
+then
+    CORE_COUNT=$MAX_CORE_USAGE
+else
+    CORE_COUNT=$TOTAL_CORE_COUNT
+fi
+
+eval echo [ci_build] cmake --build . --target ${CMAKE_TARGET} --config ${CONFIGURATION} -j $CORE_COUNT -- ${CMAKE_NATIVE_BUILD_ARGS}
+eval cmake --build . --target ${CMAKE_TARGET} --config ${CONFIGURATION} -j $CORE_COUNT -- ${CMAKE_NATIVE_BUILD_ARGS}
 
 popd
