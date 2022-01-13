@@ -371,12 +371,9 @@ namespace UnitTest
         const AZ::EntityId id = mockReference->GetId();
         MockGradientArrayRequestsBus mockGradientRequestsBus(id, inputData, dataSize);
 
-        GradientSignal::ReferenceGradientConfig config;
-        config.m_gradientSampler.m_gradientId = mockReference->GetId();
-
-        auto entity = CreateEntity();
-        CreateComponent<GradientSignal::ReferenceGradientComponent>(entity.get(), config);
-        ActivateEntity(entity.get());
+        // Create a reference gradient with an arbitrary box shape on it.
+        const float HalfBounds = 64.0f;
+        auto entity = BuildTestReferenceGradient(HalfBounds, mockReference->GetId());
 
         TestFixedDataSampler(expectedOutput, dataSize, entity->GetId());
     }
@@ -385,10 +382,9 @@ namespace UnitTest
     {
         // Verify that gradient references can validate and disconnect cyclic connections
 
-        auto constantGradientEntity = CreateEntity();
-        GradientSignal::ConstantGradientConfig constantGradientConfig;
-        CreateComponent<GradientSignal::ConstantGradientComponent>(constantGradientEntity.get(), constantGradientConfig);
-        ActivateEntity(constantGradientEntity.get());
+        // Create a constant gradient with an arbitrary box shape on it.
+        const float HalfBounds = 64.0f;
+        auto constantGradientEntity = BuildTestConstantGradient(HalfBounds);
 
         // Verify cyclic reference test passes when pointing to gradient generator entity
         auto referenceGradientEntity1 = CreateEntity();
