@@ -100,5 +100,9 @@ namespace UnitTest
             ProcessSurfaceWeightsFromRegion, void(const AZ::Aabb&, const AZ::Vector2&, AzFramework::Terrain::SurfacePointRegionFillCallback, Sampler));
         MOCK_CONST_METHOD4(
             ProcessSurfacePointsFromRegion, void(const AZ::Aabb&, const AZ::Vector2&, AzFramework::Terrain::SurfacePointRegionFillCallback, Sampler));
+        MOCK_CONST_METHOD0(
+            GetTerrainRaycastEntityContextId, AzFramework::EntityContextId());
+        MOCK_CONST_METHOD1(
+            GetClosestIntersection, AzFramework::RenderGeometry::RayResult(const AzFramework::RenderGeometry::RayRequest&));
     };
 } // namespace UnitTest

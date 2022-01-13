@@ -12,6 +12,8 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/std/containers/span.h>
+#include <AzFramework/Entity/EntityContextBus.h>
+#include <AzFramework/Render/GeometryIntersectionStructures.h>
 #include <AzFramework/SurfaceData/SurfaceData.h>
 
 namespace AzFramework
@@ -180,6 +182,11 @@ namespace AzFramework
                 SurfacePointRegionFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT) const = 0;
 
+            //! Get the terrain raycast entity context id.
+            virtual EntityContextId GetTerrainRaycastEntityContextId() const = 0;
+
+            //! Given a ray, return the closest intersection with terrain.
+            virtual RenderGeometry::RayResult GetClosestIntersection(const RenderGeometry::RayRequest& ray) const = 0;
 
         private:
             // Private variations of the GetSurfacePoint API exposed to BehaviorContext that returns a value instead of
