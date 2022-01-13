@@ -402,7 +402,6 @@ namespace EMotionFX
                 m_callbackInfo.reset(new Audio::SAudioCallBackInfos(
                     this,
                     reinterpret_cast<void*>(static_cast<uintptr_t>(GetEntityId())),
-                    nullptr,
                     (Audio::eARF_PRIORITY_NORMAL | Audio::eARF_SYNC_FINISHED_CALLBACK)
                 ));
             }

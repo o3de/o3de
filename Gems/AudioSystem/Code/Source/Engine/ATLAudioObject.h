@@ -58,7 +58,6 @@ namespace Audio
             , numLoadingEvents(0)
             , pOwnerOverride(nullptr)
             , pUserData(nullptr)
-            , pUserDataOwner(nullptr)
         {}
 
         TATLEnumFlagsType nFlags;
@@ -67,7 +66,6 @@ namespace Audio
         size_t numLoadingEvents;
         void* pOwnerOverride;
         void* pUserData;
-        void* pUserDataOwner;
     };
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -91,7 +89,8 @@ namespace Audio
         ~CATLAudioObjectBase() override {}
 
         void ReportStartingTriggerInstance(const TAudioTriggerInstanceID audioTriggerInstanceID, const TAudioControlID audioControlID);
-        void ReportStartedTriggerInstance(const TAudioTriggerInstanceID audioTriggerInstanceID, void* const pOwnerOverride, void* const pUserData, void* const pUserDataOwner, const TATLEnumFlagsType nFlags);
+        void ReportStartedTriggerInstance(const TAudioTriggerInstanceID audioTriggerInstanceID,
+            void* const pOwnerOverride, void* const pUserData, const TATLEnumFlagsType nFlags);
 
         void ReportStartedEvent(const CATLEvent* const pEvent);
         void ReportFinishedEvent(const CATLEvent* const pEvent, const bool bSuccess);

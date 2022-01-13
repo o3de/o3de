@@ -12,30 +12,9 @@
 #include <IAudioSystem.h>
 #include <IAudioSystemImplementation.h>
 
-#include <platform.h>
-
-#if !defined(AUDIO_RELEASE)
-    #include <sstream>
-#endif // !AUDIO_RELEASE
 
 namespace Audio
 {
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    enum EAudioEventResult : TATLEnumFlagsType
-    {
-        eAER_NONE           = 0,
-        eAER_SUCCESS        = 1,
-        eAER_FAILED         = 2,
-        eAER_STILL_LOADING  = 3,
-    };
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    enum EAudioRequestInfoFlags : TATLEnumFlagsType
-    {
-        eARIF_NONE                  = 0,
-        eARIF_WAITING_FOR_REMOVAL   = AUDIO_BIT(0),
-    };
-
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     struct SAudioEventListener
     {

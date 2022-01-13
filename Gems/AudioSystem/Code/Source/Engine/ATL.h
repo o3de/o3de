@@ -85,7 +85,6 @@ namespace Audio
             const CATLTrigger* const pTrigger,
             void* const pOwner = nullptr,
             void* const pUserData = nullptr,
-            void* const pUserDataOwner = nullptr,
             const TATLEnumFlagsType nFlags = INVALID_AUDIO_ENUM_FLAG_TYPE,
             const SATLSourceData* pSourceData = nullptr);
         EAudioRequestStatus StopTrigger(

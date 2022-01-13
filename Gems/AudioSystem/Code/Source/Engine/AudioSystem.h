@@ -78,7 +78,9 @@ namespace Audio
 
         void ExternalUpdate() override;
 
-        void AddRequestListener(AudioRequestCallbackType func, void* const callbackOwner, EAudioRequestType const requestType = eART_AUDIO_ALL_REQUESTS, TATLEnumFlagsType const specificRequestMask = ALL_AUDIO_REQUEST_SPECIFIC_TYPE_FLAGS) override;
+        void AddRequestListener(AudioRequestCallbackType func, void* const callbackOwner,
+            EAudioRequestType const requestType = eART_AUDIO_ALL_REQUESTS,
+            TATLEnumFlagsType const specificRequestMask = ALL_AUDIO_REQUEST_SPECIFIC_TYPE_FLAGS) override;
         void RemoveRequestListener(AudioRequestCallbackType func, void* const callbackOwner) override;
 
         TAudioControlID GetAudioTriggerID(const char* const sAudioTriggerName) const override;

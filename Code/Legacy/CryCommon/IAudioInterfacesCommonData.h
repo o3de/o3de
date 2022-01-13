@@ -366,18 +366,6 @@ namespace Audio
     };
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    struct SAudioRequestDataBase
-    {
-        explicit SAudioRequestDataBase(const EAudioRequestType eType = eART_NONE)
-            : eRequestType(eType)
-        {}
-
-        virtual ~SAudioRequestDataBase() {}
-
-        const EAudioRequestType eRequestType;
-    };
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
     struct SAudioSourceInfo
     {
         TAudioSourceId m_sourceId{ INVALID_AUDIO_SOURCE_ID };
@@ -412,11 +400,9 @@ namespace Audio
         explicit SAudioCallBackInfos(
             void* const pPassedObjectToNotify = nullptr,
             void* const pPassedUserData = nullptr,
-            void* const pPassedUserDataOwner = nullptr,
             const TATLEnumFlagsType nPassedRequestFlags = eARF_PRIORITY_NORMAL)
             : pObjectToNotify(pPassedObjectToNotify)
             , pUserData(pPassedUserData)
-            , pUserDataOwner(pPassedUserDataOwner)
             , nRequestFlags(nPassedRequestFlags)
         {
         }
@@ -424,7 +410,6 @@ namespace Audio
         SAudioCallBackInfos(const SAudioCallBackInfos& other)
             : pObjectToNotify(other.pObjectToNotify)
             , pUserData(other.pUserData)
-            , pUserDataOwner(other.pUserDataOwner)
             , nRequestFlags(other.nRequestFlags)
         {
         }
@@ -437,26 +422,8 @@ namespace Audio
 
         void* const pObjectToNotify;
         void* const pUserData;
-        void* const pUserDataOwner;
         const TATLEnumFlagsType nRequestFlags;
     };
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    //struct SAudioRequest
-    //{
-    //    SAudioRequest() = default;
-    //    ~SAudioRequest() = default;
-
-    //    SAudioRequest(const SAudioRequest& other) = delete;
-    //    SAudioRequest& operator=(const SAudioRequest& other) = delete;
-
-    //    TATLEnumFlagsType nFlags{ eARF_NONE };
-    //    TAudioObjectID nAudioObjectID{ INVALID_AUDIO_OBJECT_ID };
-    //    void* pOwner{ nullptr };
-    //    void* pUserData{ nullptr };
-    //    void* pUserDataOwner{ nullptr };
-    //    SAudioRequestDataBase* pData{ nullptr };
-    //};
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     struct SAudioRequestInfo
@@ -465,7 +432,6 @@ namespace Audio
             const EAudioRequestResult ePassedResult,
             void* const pPassedOwner,
             void* const pPassedUserData,
-            void* const pPassedUserDataOwner,
             const EAudioRequestType ePassedAudioRequestType,
             const TATLEnumFlagsType nPassedSpecificAudioRequest,
             const TAudioControlID nPassedAudioControlID,
@@ -474,7 +440,6 @@ namespace Audio
             : eResult(ePassedResult)
             , pOwner(pPassedOwner)
             , pUserData(pPassedUserData)
-            , pUserDataOwner(pPassedUserDataOwner)
             , eAudioRequestType(ePassedAudioRequestType)
             , nSpecificAudioRequest(nPassedSpecificAudioRequest)
             , nAudioControlID(nPassedAudioControlID)
@@ -485,7 +450,6 @@ namespace Audio
         const EAudioRequestResult eResult;
         void* const pOwner;
         void* const pUserData;
-        void* const pUserDataOwner;
         const EAudioRequestType eAudioRequestType;
         const TATLEnumFlagsType nSpecificAudioRequest;
         const TAudioControlID nAudioControlID;

@@ -547,7 +547,6 @@ namespace Audio
                         result = ActivateTrigger(audioObject, it->second,
                             nullptr, // request.pOwner
                             nullptr, // request.pUserData
-                            nullptr, // request.pUserDataOwner
                             0,       // request.nFlags
                             &sourceData
                         );
@@ -1175,7 +1174,6 @@ namespace Audio
         const CATLTrigger* const pTrigger,
         void* const pOwner /* = nullptr */,
         void* const pUserData /* = nullptr */,
-        void* const pUserDataOwner /* = nullptr */,
         const TATLEnumFlagsType nFlags /* = INVALID_AUDIO_ENUM_FLAG_TYPE */,
         const SATLSourceData* pSourceData /* = nullptr */)
     {
@@ -1262,7 +1260,7 @@ namespace Audio
         }
 
         // Either removes the eATS_STARTING flag on this trigger instance or removes it if no event was started.
-        pAudioObject->ReportStartedTriggerInstance(m_nTriggerInstanceIDCounter++, pOwner, pUserData, pUserDataOwner, nFlags);
+        pAudioObject->ReportStartedTriggerInstance(m_nTriggerInstanceIDCounter++, pOwner, pUserData, nFlags);
 
 #if !defined(AUDIO_RELEASE)
         if (eResult != EAudioRequestStatus::Success)

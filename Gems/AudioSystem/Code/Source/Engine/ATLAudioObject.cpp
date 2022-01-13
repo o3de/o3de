@@ -42,7 +42,6 @@ namespace Audio
         const TAudioTriggerInstanceID audioTriggerInstanceID,
         void* const pOwnerOverride,
         void* const pUserData,
-        void* const pUserDataOwner,
         const TATLEnumFlagsType nFlags)
     {
         TObjectTriggerStates::iterator Iter(m_cTriggers.find(audioTriggerInstanceID));
@@ -54,7 +53,6 @@ namespace Audio
             {
                 rTriggerInstState.pOwnerOverride = pOwnerOverride;
                 rTriggerInstState.pUserData = pUserData;
-                rTriggerInstState.pUserDataOwner = pUserDataOwner;
                 rTriggerInstState.nFlags &= ~eATS_STARTING;
 
                 if ((nFlags & eARF_SYNC_FINISHED_CALLBACK) == 0)
@@ -73,6 +71,38 @@ namespace Audio
         {
             g_audioLogger.Log(LogType::Warning, "Reported a started instance %u that couldn't be found on an object %u",
                 audioTriggerInstanceID, GetID());
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    void CATLAudioObjectBase::ReportFinishedTriggerInstance(TObjectTriggerStates::iterator& iTriggerEntry)
+    {
+        SATLTriggerInstanceState& rTriggerInstState = iTriggerEntry->second;
+        // TODO:
+        // SAudioRequest oRequest;
+        // SAudioCallbackManagerRequestData<eACMRT_REPORT_FINISHED_TRIGGER_INSTANCE> oRequestData(rTriggerInstState.nTriggerID);
+        // oRequest.nFlags = (eARF_PRIORITY_HIGH | eARF_THREAD_SAFE_PUSH | eARF_SYNC_CALLBACK);
+        // oRequest.nAudioObjectID = GetID();
+        // oRequest.pData = &oRequestData;
+        // oRequest.pOwner = rTriggerInstState.pOwnerOverride;
+        // oRequest.pUserData = rTriggerInstState.pUserData;
+
+        // if ((rTriggerInstState.nFlags & eATS_CALLBACK_ON_AUDIO_THREAD) != 0)
+        //{
+        //    oRequest.nFlags &= ~eARF_SYNC_CALLBACK;
+        //}
+
+        // AudioSystemThreadSafeRequestBus::Broadcast(&AudioSystemThreadSafeRequestBus::Events::PushRequestThreadSafe, oRequest);
+
+        if ((rTriggerInstState.nFlags & eATS_PREPARED) != 0)
+        {
+            // if the trigger instance was manually prepared -- keep it
+            rTriggerInstState.nFlags &= ~eATS_PLAYING;
+        }
+        else
+        {
+            // if the trigger instance wasn't prepared -- kill it
+            m_cTriggers.erase(iTriggerEntry);
         }
     }
 
@@ -302,40 +332,6 @@ namespace Audio
 
         m_nRefCounter = 0;
     }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CATLAudioObjectBase::ReportFinishedTriggerInstance(TObjectTriggerStates::iterator& iTriggerEntry)
-    {
-        SATLTriggerInstanceState& rTriggerInstState = iTriggerEntry->second;
-        // TODO:
-        //SAudioRequest oRequest;
-        //SAudioCallbackManagerRequestData<eACMRT_REPORT_FINISHED_TRIGGER_INSTANCE> oRequestData(rTriggerInstState.nTriggerID);
-        //oRequest.nFlags = (eARF_PRIORITY_HIGH | eARF_THREAD_SAFE_PUSH | eARF_SYNC_CALLBACK);
-        //oRequest.nAudioObjectID = GetID();
-        //oRequest.pData = &oRequestData;
-        //oRequest.pOwner = rTriggerInstState.pOwnerOverride;
-        //oRequest.pUserData = rTriggerInstState.pUserData;
-        //oRequest.pUserDataOwner = rTriggerInstState.pUserDataOwner;
-
-        //if ((rTriggerInstState.nFlags & eATS_CALLBACK_ON_AUDIO_THREAD) != 0)
-        //{
-        //    oRequest.nFlags &= ~eARF_SYNC_CALLBACK;
-        //}
-
-        //AudioSystemThreadSafeRequestBus::Broadcast(&AudioSystemThreadSafeRequestBus::Events::PushRequestThreadSafe, oRequest);
-
-        if ((rTriggerInstState.nFlags & eATS_PREPARED) != 0)
-        {
-            // if the trigger instance was manually prepared -- keep it
-            rTriggerInstState.nFlags &= ~eATS_PLAYING;
-        }
-        else
-        {
-            //if the trigger instance wasn't prepared -- kill it
-            m_cTriggers.erase(iTriggerEntry);
-        }
-    }
-
 
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
