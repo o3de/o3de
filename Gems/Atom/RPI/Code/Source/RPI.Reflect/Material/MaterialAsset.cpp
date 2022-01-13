@@ -304,7 +304,7 @@ namespace AZ
                 m_materialTypeAsset = newMaterialTypeAsset;
 
                 // If the material asset was not finalized on disk, then we clear the previously finalized property values to force re-finalize.
-                // This 
+                // This is necessary in case the property layout changed in some way.
                 if (!m_wasPreFinalized)
                 {
                     m_isFinalized = false;
