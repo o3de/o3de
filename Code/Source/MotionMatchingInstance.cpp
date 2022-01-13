@@ -21,6 +21,7 @@
 #include <Feature.h>
 #include <FeatureTrajectory.h>
 #include <KdTree.h>
+#include <ImGuiMonitorBus.h>
 #include <EMotionFX/Source/Pose.h>
 #include <EMotionFX/Source/TransformData.h>
 #include <PoseDataJointVelocities.h>
@@ -150,7 +151,7 @@ namespace EMotionFX::MotionMatching
             outputPose.CompensateForMotionExtraction();
         }
     }
-        
+
     void MotionMatchingInstance::SamplePose(Motion* motion, Pose& outputPose, float sampleTime) const
     {
         MotionDataSampleSettings sampleSettings;
@@ -381,6 +382,18 @@ namespace EMotionFX::MotionMatching
 
             // Do this always, else wise we search for the lowest cost frame index too many times.
             SetTimeSinceLastFrameSwitch(0.0f);
+        }
+
+        // ImGui monitor
+        {
+            const FeatureDatabase& featureDatabase = m_config->GetFeatureDatabase();
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetKdTreeMemoryUsage, featureDatabase.GetKdTree().CalcMemoryUsageInBytes());
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetKdTreeNumNodes, featureDatabase.GetKdTree().GetNumNodes());
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetKdTreeNumDimensions, featureDatabase.GetKdTree().GetNumDimensions());
+
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetFeatureMatrixMemoryUsage, featureDatabase.GetFeatureMatrix().CalcMemoryUsageInBytes());
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetFeatureMatrixNumFrames, featureDatabase.GetFeatureMatrix().rows());
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetFeatureMatrixNumComponents, featureDatabase.GetFeatureMatrix().cols());
         }
     }
 

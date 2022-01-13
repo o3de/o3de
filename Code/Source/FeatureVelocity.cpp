@@ -28,33 +28,11 @@ namespace EMotionFX::MotionMatching
 {
     AZ_CLASS_ALLOCATOR_IMPL(FeatureVelocity, MotionMatchAllocator, 0)
 
-    FeatureVelocity::FeatureVelocity()
-        : Feature()
-    {
-    }
-
-    bool FeatureVelocity::Init(const InitSettings& settings)
-    {
-        MCORE_UNUSED(settings);
-
-        if (m_nodeIndex == InvalidIndex)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    void FeatureVelocity::SetNodeIndex(size_t nodeIndex)
-    {
-        m_nodeIndex = nodeIndex;
-    }
-
     void FeatureVelocity::FillQueryFeatureValues(size_t startIndex, AZStd::vector<float>& queryFeatureValues, const FrameCostContext& context)
     {
         PoseDataJointVelocities* velocityPoseData = static_cast<PoseDataJointVelocities*>(context.m_currentPose.GetPoseDataByType(azrtti_typeid<PoseDataJointVelocities>()));
         AZ_Assert(velocityPoseData, "Cannot calculate velocity feature cost without joint velocity pose data.");
-        const AZ::Vector3 currentVelocity = velocityPoseData->GetVelocity(m_nodeIndex);
+        const AZ::Vector3 currentVelocity = velocityPoseData->GetVelocity(m_jointIndex);
 
         queryFeatureValues[startIndex + 0] = currentVelocity.GetX();
         queryFeatureValues[startIndex + 1] = currentVelocity.GetY();
@@ -64,7 +42,7 @@ namespace EMotionFX::MotionMatching
     void FeatureVelocity::ExtractFeatureValues(const ExtractFeatureContext& context)
     {
         AZ::Vector3 velocity;
-        CalculateVelocity(context.m_actorInstance, m_nodeIndex, m_relativeToNodeIndex, context.m_frameDatabase->GetFrame(context.m_frameIndex), velocity);
+        CalculateVelocity(context.m_actorInstance, m_jointIndex, m_relativeToNodeIndex, context.m_frameDatabase->GetFrame(context.m_frameIndex), velocity);
             
         SetFeatureData(context.m_featureMatrix, context.m_frameIndex, velocity);
     }
@@ -92,21 +70,21 @@ namespace EMotionFX::MotionMatching
         MotionMatchingInstance* instance,
         size_t frameIndex)
     {
-        if (m_nodeIndex == InvalidIndex)
+        if (m_jointIndex == InvalidIndex)
         {
             return;
         }
 
         const MotionMatchingConfig* config = instance->GetConfig();
         const AZ::Vector3 velocity = GetFeatureData(config->GetFeatureDatabase().GetFeatureMatrix(), frameIndex);
-        DebugDraw(debugDisplay, instance, velocity, m_nodeIndex, m_relativeToNodeIndex, m_debugColor);
+        DebugDraw(debugDisplay, instance, velocity, m_jointIndex, m_relativeToNodeIndex, m_debugColor);
     }
 
     float FeatureVelocity::CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const
     {
         PoseDataJointVelocities* velocityPoseData = static_cast<PoseDataJointVelocities*>(context.m_currentPose.GetPoseDataByType(azrtti_typeid<PoseDataJointVelocities>()));
         AZ_Assert(velocityPoseData, "Cannot calculate velocity feature cost without joint velocity pose data.");
-        const AZ::Vector3 currentVelocity = velocityPoseData->GetVelocity(m_nodeIndex);
+        const AZ::Vector3 currentVelocity = velocityPoseData->GetVelocity(m_jointIndex);
 
         const AZ::Vector3 frameVelocity = GetFeatureData(context.m_featureMatrix, frameIndex);
 
@@ -130,7 +108,8 @@ namespace EMotionFX::MotionMatching
         }
 
         serializeContext->Class<FeatureVelocity, Feature>()
-            ->Version(1);
+            ->Version(1)
+            ;
 
         AZ::EditContext* editContext = serializeContext->GetEditContext();
         if (!editContext)
@@ -138,7 +117,7 @@ namespace EMotionFX::MotionMatching
             return;
         }
 
-        editContext->Class<FeatureVelocity>("FeatureVelocity", "Joint velocity data.")
+        editContext->Class<FeatureVelocity>("FeatureVelocity", "Matches joint velocities.")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
@@ -149,23 +128,17 @@ namespace EMotionFX::MotionMatching
         return 3;
     }
 
-    AZStd::string FeatureVelocity::GetDimensionName(size_t index, Skeleton* skeleton) const
+    AZStd::string FeatureVelocity::GetDimensionName(size_t index) const
     {
-        AZStd::string result;
-
-        Node* joint = skeleton->GetNode(m_nodeIndex);
-        if (joint)
-        {
-            result = joint->GetName();
-            result += '.';
-        }
+        AZStd::string result = m_jointName;
+        result += '.';
 
         switch (index)
         {
             case 0: { result += "VelocityX"; break; }
             case 1: { result += "VelocityY"; break; }
             case 2: { result += "VelocityZ"; break; }
-            default: { result += Feature::GetDimensionName(index, skeleton); }
+            default: { result += Feature::GetDimensionName(index); }
         }
 
         return result;

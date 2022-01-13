@@ -38,10 +38,9 @@ namespace EMotionFX::MotionMatching
         AZ_RTTI(FeatureVelocity, "{DEEA4F0F-CE70-4F16-9136-C2BFDDA29336}", Feature)
         AZ_CLASS_ALLOCATOR_DECL
 
-        FeatureVelocity();
+        FeatureVelocity() = default;
         ~FeatureVelocity() override = default;
 
-        bool Init(const InitSettings& settings) override;
         void ExtractFeatureValues(const ExtractFeatureContext& context) override;
 
         static void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
@@ -59,16 +58,11 @@ namespace EMotionFX::MotionMatching
 
         void FillQueryFeatureValues(size_t startIndex, AZStd::vector<float>& queryFeatureValues, const FrameCostContext& context) override;
 
-        void SetNodeIndex(size_t nodeIndex);
-
         static void Reflect(AZ::ReflectContext* context);
 
         size_t GetNumDimensions() const override;
-        AZStd::string GetDimensionName(size_t index, Skeleton* skeleton) const override;
+        AZStd::string GetDimensionName(size_t index) const override;
         AZ::Vector3 GetFeatureData(const FeatureMatrix& featureMatrix, size_t frameIndex) const;
         void SetFeatureData(FeatureMatrix& featureMatrix, size_t frameIndex, const AZ::Vector3& velocity);
-
-    private:
-        size_t m_nodeIndex = InvalidIndex; /**< The joint to extract the data from. */
     };
 } // namespace EMotionFX::MotionMatching

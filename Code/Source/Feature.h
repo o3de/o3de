@@ -53,7 +53,7 @@ namespace EMotionFX::MotionMatching
             ActorInstance* m_actorInstance = nullptr;
             FeatureMatrix::Index m_featureColumnStartOffset = 0;
         };
-        virtual bool Init(const InitSettings& settings) = 0;
+        virtual bool Init(const InitSettings& settings);
 
         struct EMFX_API ExtractFeatureContext
         {
@@ -100,9 +100,18 @@ namespace EMotionFX::MotionMatching
         void SetDebugDrawEnabled(bool enabled);
         bool GetDebugDrawEnabled() const;
 
+        void SetJointName(const AZStd::string& jointName) { m_jointName = jointName; }
+        const AZStd::string& GetJointName() const { return m_jointName; }
+
+        void SetRelativeToJointName(const AZStd::string& jointName) { m_relativeToJointName = jointName; }
+        const AZStd::string& GetRelativeToJointName() const { return m_relativeToJointName; }
+
+        void SetName(const AZStd::string& name) { m_name = name; }
+        const AZStd::string& GetName() const { return m_name; }
+
         // Column offset for the first value for the given feature
         virtual size_t GetNumDimensions() const = 0;
-        virtual AZStd::string GetDimensionName([[maybe_unused]] size_t index, [[maybe_unused]] Skeleton* skeleton) const { return "Unknown"; }
+        virtual AZStd::string GetDimensionName([[maybe_unused]] size_t index) const { return "Unknown"; }
         FeatureMatrix::Index GetColumnOffset() const { return m_featureColumnOffset; }
         void SetColumnOffset(FeatureMatrix::Index offset) { m_featureColumnOffset = offset; }
 
@@ -132,11 +141,16 @@ namespace EMotionFX::MotionMatching
         float GetNormalizedDirectionDifference(const AZ::Vector3& directionA, const AZ::Vector3& directionB) const;
 
         AZ::TypeId m_id = AZ::TypeId::CreateRandom(); /**< The frame data id. Use this instead of the RTTI class Id. This is because we can have multiple of the same types. */
+        AZStd::string m_name; /**< Display name used for feature identification and debug visualizations. */
         FrameDatabase* m_frameDatabase = nullptr; /**< The frame database from which the feature got calculated from and belongs to. */
-        size_t m_relativeToNodeIndex = 0; /**< Make the data relative to this node (default=0). */
+        AZStd::string m_jointName; /**< Joint name to extract the data from. */
+        AZStd::string m_relativeToJointName; /**< Make the data relative to this node (default=0). */
         AZ::Color m_debugColor = AZ::Colors::Green; /**< The debug drawing color. */
         bool m_debugDrawEnabled = false; /**< Is debug drawing enabled for this data? */
 
+        // Instance data (depends on the feature schema or actor instance).
         FeatureMatrix::Index m_featureColumnOffset; // Float/Value offset, starting column for where the feature should be places at
+        size_t m_relativeToNodeIndex = InvalidIndex;
+        size_t m_jointIndex = InvalidIndex;
     };
 } // namespace EMotionFX::MotionMatching

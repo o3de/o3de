@@ -52,8 +52,6 @@ namespace EMotionFX
 
             size_t FindLowestCostFrameIndex(MotionMatchingInstance* instance, const Feature::FrameCostContext& context, size_t currentFrameIndex) override;
 
-            static void Reflect(AZ::ReflectContext* context);
-
             AZ_INLINE FactorWeights& GetFactorWeights() { return m_factorWeights; }
             AZ_INLINE const FactorWeights& GetFactorWeights() const { return m_factorWeights; }
             AZ_INLINE void SetFactorWeights(const FactorWeights& factors) { m_factorWeights = factors; }

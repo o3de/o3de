@@ -49,94 +49,72 @@ namespace EMotionFX
         {
             FeatureSchema& featureSchema = m_featureDatabase.GetFeatureSchema();
 
-            //----------------------------------------------------------------------------------------------------------
-            // Register the motion extraction trajectory (includes history and future)
-            const Node* rootNode = settings.m_actorInstance->GetActor()->GetMotionExtractionNode();//GetActor()->GetSkeleton()->FindNodeByNameNoCase("root");
-            m_rootNodeIndex = rootNode ? rootNode->GetNodeIndex() : 0;
-            m_rootTrajectoryData = aznew FeatureTrajectory();
-            m_rootTrajectoryData->SetNodeIndex(m_rootNodeIndex);
-            m_rootTrajectoryData->SetRelativeToNodeIndex(m_rootNodeIndex);
-            m_rootTrajectoryData->SetDebugDrawColor(AZ::Color::CreateFromRgba(157,78,221,255));
-            m_rootTrajectoryData->SetNumFutureSamplesPerFrame(6);
-            m_rootTrajectoryData->SetNumPastSamplesPerFrame(4);
-            m_rootTrajectoryData->SetFutureTimeRange(1.2f);
-            m_rootTrajectoryData->SetPastTimeRange(0.7f);
-            m_rootTrajectoryData->SetDebugDrawEnabled(true);
-            featureSchema.AddFeature(m_rootTrajectoryData);
-            //----------------------------------------------------------------------------------------------------------
+            const Node* rootJoint = settings.m_actorInstance->GetActor()->GetMotionExtractionNode();
+            const AZStd::string& rootJointName = rootJoint->GetNameString();
 
             //----------------------------------------------------------------------------------------------------------
-            // Grab the left foot positions
-            const Node* leftFootNode = settings.m_actorInstance->GetActor()->GetSkeleton()->FindNodeByNameNoCase("L_foot_JNT");
-            m_leftFootNodeIndex = leftFootNode ? leftFootNode->GetNodeIndex() : MCORE_INVALIDINDEX32;
-            if (!leftFootNode)
-            {
-                return false;
-            }
+            // Past and future root trajectory
+            m_rootTrajectoryData = aznew FeatureTrajectory();
+            m_rootTrajectoryData->SetJointName(rootJointName);
+            m_rootTrajectoryData->SetRelativeToJointName(rootJointName);
+            m_rootTrajectoryData->SetDebugDrawColor(AZ::Color::CreateFromRgba(157,78,221,255));
+            m_rootTrajectoryData->SetDebugDrawEnabled(true);
+            featureSchema.AddFeature(m_rootTrajectoryData);
+
+            //----------------------------------------------------------------------------------------------------------
+            // Left foot position
             m_leftFootPositionData = aznew FeaturePosition();
-            m_leftFootPositionData->SetNodeIndex(m_leftFootNodeIndex);
-            m_leftFootPositionData->SetRelativeToNodeIndex(m_rootNodeIndex);
+            m_leftFootPositionData->SetName("Left Foot Position");
+            m_leftFootPositionData->SetJointName("L_foot_JNT");
+            m_leftFootPositionData->SetRelativeToJointName(rootJointName);
             m_leftFootPositionData->SetDebugDrawColor(AZ::Color::CreateFromRgba(255,173,173,255));
             m_leftFootPositionData->SetDebugDrawEnabled(true);
             featureSchema.AddFeature(m_leftFootPositionData);
             m_featureDatabase.AddKdTreeFeature(m_leftFootPositionData);
-            //----------------------------------------------------------------------------------------------------------
 
             //----------------------------------------------------------------------------------------------------------
-            // Grab the right foot positions
-            const Node* rightFootNode = settings.m_actorInstance->GetActor()->GetSkeleton()->FindNodeByNameNoCase("R_foot_JNT");
-            m_rightFootNodeIndex = rightFootNode ? rightFootNode->GetNodeIndex() : MCORE_INVALIDINDEX32;
-            if (!rightFootNode)
-            {
-                return false;
-            }
+            // Right foot position
             m_rightFootPositionData = aznew FeaturePosition();
-            m_rightFootPositionData->SetNodeIndex(m_rightFootNodeIndex);
-            m_rightFootPositionData->SetRelativeToNodeIndex(m_rootNodeIndex);
+            m_rightFootPositionData->SetName("Right Foot Position");
+            m_rightFootPositionData->SetJointName("R_foot_JNT");
+            m_rightFootPositionData->SetRelativeToJointName(rootJointName);
             m_rightFootPositionData->SetDebugDrawColor(AZ::Color::CreateFromRgba(253,255,182,255));
             m_rightFootPositionData->SetDebugDrawEnabled(true);
             featureSchema.AddFeature(m_rightFootPositionData);
             m_featureDatabase.AddKdTreeFeature(m_rightFootPositionData);
-            //----------------------------------------------------------------------------------------------------------
 
             //----------------------------------------------------------------------------------------------------------
-            // Grab the left foot velocities
+            // Left foot velocity
             m_leftFootVelocityData = aznew FeatureVelocity();
-            m_leftFootVelocityData->SetNodeIndex(m_leftFootNodeIndex);
-            m_leftFootVelocityData->SetRelativeToNodeIndex(m_rootNodeIndex);
+            m_leftFootVelocityData->SetName("Left Foot Velocity");
+            m_leftFootVelocityData->SetJointName("L_foot_JNT");
+            m_leftFootVelocityData->SetRelativeToJointName(rootJointName);
             m_leftFootVelocityData->SetDebugDrawColor(AZ::Color::CreateFromRgba(155,246,255,255));
             m_leftFootVelocityData->SetDebugDrawEnabled(true);
             featureSchema.AddFeature(m_leftFootVelocityData);
             m_featureDatabase.AddKdTreeFeature(m_leftFootVelocityData);
-            //----------------------------------------------------------------------------------------------------------
 
             //----------------------------------------------------------------------------------------------------------
-            // Grab the right foot velocities
+            // Right foot velocity
             m_rightFootVelocityData = aznew FeatureVelocity();
-            m_rightFootVelocityData->SetNodeIndex(m_rightFootNodeIndex);
-            m_rightFootVelocityData->SetRelativeToNodeIndex(m_rootNodeIndex);
+            m_rightFootVelocityData->SetName("Right Foot Velocity");
+            m_rightFootVelocityData->SetJointName("R_foot_JNT");
+            m_rightFootVelocityData->SetRelativeToJointName(rootJointName);
             m_rightFootVelocityData->SetDebugDrawColor(AZ::Color::CreateFromRgba(189,178,255,255));
             m_rightFootVelocityData->SetDebugDrawEnabled(true);
             featureSchema.AddFeature(m_rightFootVelocityData);
             m_featureDatabase.AddKdTreeFeature(m_rightFootVelocityData);
-            //----------------------------------------------------------------------------------------------------------
 
             //----------------------------------------------------------------------------------------------------------
-            // Grab the pelvis velocity
-            const Node* pelvisNode = settings.m_actorInstance->GetActor()->GetSkeleton()->FindNodeByNameNoCase("C_pelvis_JNT");
-            m_pelvisNodeIndex = pelvisNode ? pelvisNode->GetNodeIndex() : MCORE_INVALIDINDEX32;
-            if (!pelvisNode)
-            {
-                return false;
-            }
+            // Pelvis velocity
             m_pelvisVelocityData = aznew FeatureVelocity();
-            m_pelvisVelocityData->SetNodeIndex(m_pelvisNodeIndex);
-            m_pelvisVelocityData->SetRelativeToNodeIndex(m_rootNodeIndex);
+            m_pelvisVelocityData->SetName("Pelvis Velocity");
+            m_pelvisVelocityData->SetJointName("C_pelvis_JNT");
+            m_pelvisVelocityData->SetRelativeToJointName(rootJointName);
             m_pelvisVelocityData->SetDebugDrawColor(AZ::Color::CreateFromRgba(185,255,175,255));
             m_pelvisVelocityData->SetDebugDrawEnabled(true);
             featureSchema.AddFeature(m_pelvisVelocityData);
             m_featureDatabase.AddKdTreeFeature(m_pelvisVelocityData);
-            //----------------------------------------------------------------------------------------------------------
 
             return true;
         }
@@ -181,6 +159,7 @@ namespace EMotionFX
             {
                 const Frame& frame = m_frameDatabase.GetFrame(frameIndex);
 
+                // TODO: This shouldn't be there, we should be discarding the frames when extracting the features and not at runtime when checking the cost.
                 if (frame.GetSampleTime() >= frame.GetSourceMotion()->GetDuration() - 1.0f)
                 {
                     continue;
@@ -227,63 +206,16 @@ namespace EMotionFX
             const float time = timer.GetDeltaTimeInSeconds();
             ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushPerformanceHistogramValue, "FindLowestCostFrameIndex", time * 1000.0f);
 
-            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Left Foot Position Cost", minLeftFootPositionCost, m_leftFootPositionData->GetDebugDrawColor());
-            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Right Foot Position Cost", minRightFootPositionCost, m_rightFootPositionData->GetDebugDrawColor());
-            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Left Foot Velocity Cost", minLeftFootVelocityCost, m_leftFootVelocityData->GetDebugDrawColor());
-            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Right Foot Velocity Cost", minRightFootVelocityCost, m_rightFootVelocityData->GetDebugDrawColor());
-            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Pelvis Velocity Cost", minPelvisVelocityCost, m_pelvisVelocityData->GetDebugDrawColor());
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, m_leftFootPositionData->GetName().c_str(), minLeftFootPositionCost, m_leftFootPositionData->GetDebugDrawColor());
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, m_rightFootPositionData->GetName().c_str(), minRightFootPositionCost, m_rightFootPositionData->GetDebugDrawColor());
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, m_leftFootVelocityData->GetName().c_str(), minLeftFootVelocityCost, m_leftFootVelocityData->GetDebugDrawColor());
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, m_rightFootVelocityData->GetName().c_str(), minRightFootVelocityCost, m_rightFootVelocityData->GetDebugDrawColor());
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, m_pelvisVelocityData->GetName().c_str(), minPelvisVelocityCost, m_pelvisVelocityData->GetDebugDrawColor());
             ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Trajectory Past Cost", minTrajectoryPastCost, m_rootTrajectoryData->GetDebugDrawColor());
             ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Trajectory Future Cost", minTrajectoryFutureCost, m_rootTrajectoryData->GetDebugDrawColor());
             ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Total Cost", minCost, AZ::Color::CreateFromRgba(202,255,191,255));
 
-            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetKdTreeMemoryUsage, m_featureDatabase.GetKdTree().CalcMemoryUsageInBytes());
-            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetKdTreeNumNodes, m_featureDatabase.GetKdTree().GetNumNodes());
-            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetKdTreeNumDimensions, m_featureDatabase.GetKdTree().GetNumDimensions());
-
-            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetFeatureMatrixMemoryUsage, m_featureDatabase.GetFeatureMatrix().CalcMemoryUsageInBytes());
-            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetFeatureMatrixNumFrames, m_featureDatabase.GetFeatureMatrix().rows());
-            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetFeatureMatrixNumComponents, m_featureDatabase.GetFeatureMatrix().cols());
-
-            //AZ_Printf("EMotionFX", "Frame %d = %f    %f/%f   %d nearest",
-            //    minCostFrameIndex,
-            //    minCost,
-            //    m_frameDatabase.GetFrame(minCostFrameIndex).GetSampleTime(),
-            //    m_frameDatabase.GetFrame(minCostFrameIndex).GetSourceMotion()->GetMaxTime(),
-            //    instance->GetNearestFrames().size()
-            //);
             return minCostFrameIndex;
-        }
-
-        void LocomotionConfig::Reflect(AZ::ReflectContext* context)
-        {
-            AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
-            if (!serializeContext)
-            {
-                return;
-            }
-
-            serializeContext->Class<LocomotionConfig, MotionMatchingConfig>()
-                ->Version(1)
-                ->Field("leftFootNodeIndex", &LocomotionConfig::m_leftFootNodeIndex)
-                ->Field("rightFootNodeIndex", &LocomotionConfig::m_rightFootNodeIndex)
-                ->Field("rootNodeIndex", &LocomotionConfig::m_rootNodeIndex);
-
-            AZ::EditContext* editContext = serializeContext->GetEditContext();
-            if (!editContext)
-            {
-                return;
-            }
-
-            editContext->Class<LocomotionConfig>("LocomotionConfig", "Locomotion config for motion matching")
-                ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
-                ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                ->DataElement(AZ_CRC("ActorNode", 0x35d9eb50), &LocomotionConfig::m_rootNodeIndex, "Root node", "The root node.")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                ->DataElement(AZ_CRC("ActorNode", 0x35d9eb50), &LocomotionConfig::m_leftFootNodeIndex, "Left foot node", "The left foot node.")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                ->DataElement(AZ_CRC("ActorNode", 0x35d9eb50), &LocomotionConfig::m_rightFootNodeIndex, "Right foot node", "The right foot node.")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree);
         }
     } // namespace MotionMatching
 } // namespace EMotionFX
