@@ -9,6 +9,7 @@
 set(FILES
     base.h
     Docs.h
+    variadic.h
     Platform.cpp
     Platform.h
     PlatformDef.h

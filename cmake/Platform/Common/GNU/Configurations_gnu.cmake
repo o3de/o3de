@@ -28,7 +28,7 @@ ly_append_configurations_options(
         ${LY_GCC_GCOV_FLAGS}
         ${LY_GCC_GPROF_FLAGS}
 
-        # Disabled warnings (please do not disable any others without first consulting ly-warnings)
+        # Disabled warnings 
         -Wno-format-security
         -Wno-multichar
         -Wno-parentheses
@@ -54,6 +54,10 @@ ly_append_configurations_options(
         -Wno-stringop-truncation
         -Wno-memset-elt-size
         -Wno-unused-but-set-variable
+        -Wno-enum-compare
+        -Wno-int-in-bool-context
+        -Wno-sequence-point
+        -Wno-delete-non-virtual-dtor
 
     COMPILATION_C
         -Wno-absolute-value
