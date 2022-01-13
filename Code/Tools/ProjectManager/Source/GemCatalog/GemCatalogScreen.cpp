@@ -19,8 +19,10 @@
 #include <GemCatalog/GemDependenciesDialog.h>
 #include <GemCatalog/GemUpdateDialog.h>
 #include <GemCatalog/GemUninstallDialog.h>
+#include <GemCatalog/GemItemDelegate.h>
 #include <DownloadController.h>
 #include <ProjectUtils.h>
+#include <AdjustableHeaderWidget.h>
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -40,6 +42,8 @@ namespace O3DE::ProjectManager
     GemCatalogScreen::GemCatalogScreen(QWidget* parent)
         : ScreenWidget(parent)
     {
+        int sidePanelWidth = 240;
+
         m_gemModel = new GemModel(this);
         m_proxyModel = new GemSortFilterProxyModel(m_gemModel, this);
 
@@ -69,10 +73,8 @@ namespace O3DE::ProjectManager
         hLayout->setMargin(0);
         vLayout->addLayout(hLayout);
 
-        m_gemListView = new GemListView(m_proxyModel, m_proxyModel->GetSelectionModel(), this);
-
         m_rightPanelStack = new QStackedWidget(this);
-        m_rightPanelStack->setFixedWidth(240);
+        m_rightPanelStack->setFixedWidth(sidePanelWidth);
 
         m_gemInspector = new GemInspector(m_gemModel, this);
 
@@ -81,18 +83,35 @@ namespace O3DE::ProjectManager
         connect(m_gemInspector, &GemInspector::UninstallGem, this, &GemCatalogScreen::UninstallGem);
 
         QWidget* filterWidget = new QWidget(this);
-        filterWidget->setFixedWidth(240);
+        filterWidget->setFixedWidth(sidePanelWidth);
         m_filterWidgetLayout = new QVBoxLayout();
         m_filterWidgetLayout->setMargin(0);
         m_filterWidgetLayout->setSpacing(0);
         filterWidget->setLayout(m_filterWidgetLayout);
 
-        GemListHeaderWidget* listHeaderWidget = new GemListHeaderWidget(m_proxyModel);
+        GemListHeaderWidget* catalogHeaderWidget = new GemListHeaderWidget(m_proxyModel);
+
+        int headerTableMinWidth = MinWindowWidth - sidePanelWidth * 2;
+        AdjustableHeaderWidget* listHeaderWidget = new AdjustableHeaderWidget(
+            QStringList{ tr("Gem Name"), tr("Gem Summary"), tr("Status") },
+            QVector<int>{ GemItemDelegate::s_summaryStartX - 30,
+                          headerTableMinWidth - GemItemDelegate::s_summaryStartX - GemItemDelegate::s_buttonWidth - GemItemDelegate::s_itemMargins.right() * 3,
+                          GemItemDelegate::s_buttonWidth },
+            headerTableMinWidth, this);
+
+        m_gemListView = new GemListView(m_proxyModel, m_proxyModel->GetSelectionModel(), listHeaderWidget, this);
+
+        QHBoxLayout* listHeaderLayout = new QHBoxLayout();
+        listHeaderLayout->setMargin(0);
+        listHeaderLayout->setSpacing(0);
+        listHeaderLayout->addSpacing(GemItemDelegate::s_itemMargins.left());
+        listHeaderLayout->addWidget(listHeaderWidget);
 
         QVBoxLayout* middleVLayout = new QVBoxLayout();
         middleVLayout->setMargin(0);
         middleVLayout->setSpacing(0);
-        middleVLayout->addWidget(listHeaderWidget);
+        middleVLayout->addWidget(catalogHeaderWidget);
+        middleVLayout->addLayout(listHeaderLayout);
         middleVLayout->addWidget(m_gemListView);
 
         hLayout->addWidget(filterWidget);

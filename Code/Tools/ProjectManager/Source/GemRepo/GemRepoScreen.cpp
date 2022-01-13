@@ -15,6 +15,8 @@
 #include <PythonBindingsInterface.h>
 #include <ProjectManagerDefs.h>
 #include <ProjectUtils.h>
+#include <AdjustableHeaderWidget.h>
+#include <ProjectManagerDefs.h>
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -248,6 +250,9 @@ namespace O3DE::ProjectManager
 
     QFrame* GemRepoScreen::CreateReposContent()
     {
+        int inspectorWidth = 240;
+        int middleLayoutLeftIndent = 60;
+
         QFrame* contentFrame = new QFrame(this);
 
         QHBoxLayout* hLayout = new QHBoxLayout();
@@ -255,7 +260,7 @@ namespace O3DE::ProjectManager
         hLayout->setSpacing(0);
         contentFrame->setLayout(hLayout);
 
-        hLayout->addSpacing(60);
+        hLayout->addSpacing(middleLayoutLeftIndent);
 
         QVBoxLayout* middleVLayout = new QVBoxLayout();
         middleVLayout->setMargin(0);
@@ -293,31 +298,23 @@ namespace O3DE::ProjectManager
 
         middleVLayout->addSpacing(30);
 
+        int headerTableMinWidth = MinWindowWidth - inspectorWidth - middleLayoutLeftIndent;
         // Create a QTableWidget just for its header
         // Using a seperate model allows the setup  of a header exactly as needed
-        m_gemRepoHeaderTable = new QTableWidget(this);
+        m_gemRepoHeaderTable = new AdjustableHeaderWidget(
+            QStringList{ tr("Repository Name"), tr("Creator"), tr("Updated") },
+            QVector<int> {
+            GemRepoItemDelegate::s_nameMaxWidth + GemRepoItemDelegate::s_contentSpacing, 
+            GemRepoItemDelegate::s_creatorMaxWidth + GemRepoItemDelegate::s_contentSpacing,
+            GemRepoItemDelegate::s_updatedMaxWidth + GemRepoItemDelegate::s_contentSpacing },
+            headerTableMinWidth,
+            this);
         m_gemRepoHeaderTable->setObjectName("gemRepoHeaderTable");
-        m_gemRepoListHeader = m_gemRepoHeaderTable->horizontalHeader();
-        m_gemRepoListHeader->setObjectName("gemRepoListHeader");
-        m_gemRepoListHeader->setDefaultAlignment(Qt::AlignLeft);
-        m_gemRepoListHeader->setSectionResizeMode(QHeaderView::ResizeMode::Fixed);
+        m_gemRepoHeaderTable->m_header->setObjectName("gemRepoListHeader");
 
-        // Insert columns so the header labels will show up
-        m_gemRepoHeaderTable->insertColumn(0);
-        m_gemRepoHeaderTable->insertColumn(1);
-        m_gemRepoHeaderTable->insertColumn(2);
-        m_gemRepoHeaderTable->setHorizontalHeaderLabels({ tr("Repository Name"), tr("Creator"), tr("Updated") });
-
-        const int headerExtraMargin = 18;
-        m_gemRepoListHeader->resizeSection(0, GemRepoItemDelegate::s_nameMaxWidth + GemRepoItemDelegate::s_contentSpacing + headerExtraMargin);
-        m_gemRepoListHeader->resizeSection(1, GemRepoItemDelegate::s_creatorMaxWidth + GemRepoItemDelegate::s_contentSpacing);
-        m_gemRepoListHeader->resizeSection(2, GemRepoItemDelegate::s_updatedMaxWidth + GemRepoItemDelegate::s_contentSpacing);
-
-        // Required to set stylesheet in code as it will not be respected if set in qss
-        m_gemRepoHeaderTable->horizontalHeader()->setStyleSheet("QHeaderView::section { background-color:transparent; color:white; font-size:12px; border-style:none; }");
         middleVLayout->addWidget(m_gemRepoHeaderTable);
 
-        m_gemRepoListView = new GemRepoListView(m_gemRepoModel, m_gemRepoModel->GetSelectionModel(), this);
+        m_gemRepoListView = new GemRepoListView(m_gemRepoModel, m_gemRepoModel->GetSelectionModel(), m_gemRepoHeaderTable, this);
         middleVLayout->addWidget(m_gemRepoListView);
 
         connect(m_gemRepoListView, &GemRepoListView::RemoveRepo, this, &GemRepoScreen::HandleRemoveRepoButton);
@@ -326,7 +323,7 @@ namespace O3DE::ProjectManager
         hLayout->addLayout(middleVLayout);
 
         m_gemRepoInspector = new GemRepoInspector(m_gemRepoModel, this);
-        m_gemRepoInspector->setFixedWidth(240);
+        m_gemRepoInspector->setFixedWidth(inspectorWidth);
         hLayout->addWidget(m_gemRepoInspector);
 
         return contentFrame;

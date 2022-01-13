@@ -16,7 +16,7 @@
 namespace O3DE::ProjectManager
 {
     GemRequirementDelegate::GemRequirementDelegate(QAbstractItemModel* model, QObject* parent)
-        : GemItemDelegate(model, parent)
+        : GemItemDelegate(model, nullptr, parent)
     {
     }
 

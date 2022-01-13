@@ -18,13 +18,14 @@ QT_FORWARD_DECLARE_CLASS(QEvent)
 
 namespace O3DE::ProjectManager
 {
+    QT_FORWARD_DECLARE_CLASS(AdjustableHeaderWidget)
+
     class GemRepoItemDelegate
         : public QStyledItemDelegate
     {
         Q_OBJECT // AUTOMOC
 
-    public:
-        explicit GemRepoItemDelegate(QAbstractItemModel* model, QObject* parent = nullptr);
+    public: explicit GemRepoItemDelegate(QAbstractItemModel* model, AdjustableHeaderWidget* header, QObject* parent = nullptr);
         ~GemRepoItemDelegate() = default;
 
         void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& modelIndex) const override;
@@ -71,6 +72,8 @@ namespace O3DE::ProjectManager
         void DrawEditButtons(QPainter* painter, const QRect& contentRect) const;
 
         QAbstractItemModel* m_model = nullptr;
+
+        AdjustableHeaderWidget* m_headerWidget = nullptr;
 
         QPixmap m_refreshIcon;
         QPixmap m_editIcon;

@@ -16,13 +16,15 @@
 
 namespace O3DE::ProjectManager
 {
+    QT_FORWARD_DECLARE_CLASS(AdjustableHeaderWidget)
+
     class GemListView
         : public QListView
     {
         Q_OBJECT // AUTOMOC
 
-    public:
-        explicit GemListView(QAbstractItemModel* model, QItemSelectionModel* selectionModel, QWidget* parent = nullptr);
+    public: explicit GemListView(
+                  QAbstractItemModel* model, QItemSelectionModel* selectionModel, AdjustableHeaderWidget* header, QWidget* parent = nullptr);
         ~GemListView() = default;
     };
 } // namespace O3DE::ProjectManager

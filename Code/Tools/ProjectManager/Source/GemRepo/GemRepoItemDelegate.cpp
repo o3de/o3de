@@ -9,16 +9,19 @@
 #include <GemRepo/GemRepoItemDelegate.h>
 #include <GemRepo/GemRepoModel.h>
 #include <ProjectManagerDefs.h>
+#include <AdjustableHeaderWidget.h>
 
 #include <QEvent>
 #include <QPainter>
 #include <QMouseEvent>
+#include <QHeaderView>
 
 namespace O3DE::ProjectManager
 {
-    GemRepoItemDelegate::GemRepoItemDelegate(QAbstractItemModel* model, QObject* parent)
+    GemRepoItemDelegate::GemRepoItemDelegate(QAbstractItemModel* model, AdjustableHeaderWidget* header, QObject* parent)
         : QStyledItemDelegate(parent)
         , m_model(model)
+        , m_headerWidget(header)
     {
         m_refreshIcon   = QIcon(":/Refresh.svg").pixmap(s_refreshIconSize, s_refreshIconSize);
         m_editIcon      = QIcon(":/Edit.svg").pixmap(s_iconSize, s_iconSize);
@@ -75,6 +78,7 @@ namespace O3DE::ProjectManager
 
         QRect repoNameRect = GetTextRect(standardFont, repoName, s_fontSize);
         int currentHorizontalOffset = contentRect.left();
+        int horizontalSectionIndex = 0;
         repoNameRect.moveTo(currentHorizontalOffset, contentRect.center().y() - repoNameRect.height() / 2);
         repoNameRect = painter->boundingRect(repoNameRect, Qt::TextSingleLine, repoName);
 
@@ -85,7 +89,7 @@ namespace O3DE::ProjectManager
         repoCreator = standardFontMetrics.elidedText(repoCreator, Qt::TextElideMode::ElideRight, s_creatorMaxWidth);
 
         QRect repoCreatorRect = GetTextRect(standardFont, repoCreator, s_fontSize);
-        currentHorizontalOffset += s_nameMaxWidth + s_contentSpacing;
+        currentHorizontalOffset += m_headerWidget->m_header->sectionSize(horizontalSectionIndex++);
         repoCreatorRect.moveTo(currentHorizontalOffset, contentRect.center().y() - repoCreatorRect.height() / 2);
         repoCreatorRect = painter->boundingRect(repoCreatorRect, Qt::TextSingleLine, repoCreator);
 
@@ -96,7 +100,7 @@ namespace O3DE::ProjectManager
         repoUpdatedDate = standardFontMetrics.elidedText(repoUpdatedDate, Qt::TextElideMode::ElideRight, s_updatedMaxWidth);
 
         QRect repoUpdatedDateRect = GetTextRect(standardFont, repoUpdatedDate, s_fontSize);
-        currentHorizontalOffset += s_creatorMaxWidth + s_contentSpacing;
+        currentHorizontalOffset += m_headerWidget->m_header->sectionSize(horizontalSectionIndex++);
         repoUpdatedDateRect.moveTo(currentHorizontalOffset, contentRect.center().y() - repoUpdatedDateRect.height() / 2);
         repoUpdatedDateRect = painter->boundingRect(repoUpdatedDateRect, Qt::TextSingleLine, repoUpdatedDate);
 

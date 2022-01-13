@@ -17,13 +17,19 @@ QT_FORWARD_DECLARE_CLASS(QAbstractItemModel)
 
 namespace O3DE::ProjectManager
 {
+    QT_FORWARD_DECLARE_CLASS(AdjustableHeaderWidget)
+
     class GemRepoListView
         : public QListView
     {
         Q_OBJECT // AUTOMOC
 
     public:
-        explicit GemRepoListView(QAbstractItemModel* model, QItemSelectionModel* selectionModel, QWidget* parent = nullptr);
+        explicit GemRepoListView(
+                  QAbstractItemModel* model,
+                  QItemSelectionModel* selectionModel,
+                  AdjustableHeaderWidget* header,
+                  QWidget* parent = nullptr);
         ~GemRepoListView() = default;
 
     signals:

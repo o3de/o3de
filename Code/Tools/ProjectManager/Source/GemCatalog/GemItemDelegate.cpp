@@ -9,6 +9,8 @@
 #include <GemCatalog/GemItemDelegate.h>
 #include <GemCatalog/GemModel.h>
 #include <GemCatalog/GemSortFilterProxyModel.h>
+#include <AdjustableHeaderWidget.h>
+
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
 #include <QEvent>
@@ -22,12 +24,14 @@
 #include <QAbstractTextDocumentLayout>
 #include <QDesktopServices>
 #include <QMovie>
+#include <QHeaderView>
 
 namespace O3DE::ProjectManager
 {
-    GemItemDelegate::GemItemDelegate(QAbstractItemModel* model, QObject* parent)
+    GemItemDelegate::GemItemDelegate(QAbstractItemModel* model, AdjustableHeaderWidget* header, QObject* parent)
         : QStyledItemDelegate(parent)
         , m_model(model)
+        , m_headerWidget(header)
     {
         AddPlatformIcon(GemInfo::Android, ":/Android.svg");
         AddPlatformIcon(GemInfo::iOS, ":/iOS.svg");
@@ -113,10 +117,12 @@ namespace O3DE::ProjectManager
             painter->restore();
         }
 
+        int summaryStartX = m_headerWidget->m_header->sectionSize(0);
+
         // Gem name
         QString gemName = GemModel::GetDisplayName(modelIndex);
         QFont gemNameFont(options.font);
-        const int firstColumnMaxTextWidth = s_summaryStartX - 30;
+        const int firstColumnMaxTextWidth = summaryStartX - 30;
         gemNameFont.setPixelSize(static_cast<int>(s_gemNameFontSize));
         gemNameFont.setBold(true);
         gemName = QFontMetrics(gemNameFont).elidedText(gemName, Qt::TextElideMode::ElideRight, firstColumnMaxTextWidth);
@@ -141,26 +147,26 @@ namespace O3DE::ProjectManager
         const QStringList featureTags = GemModel::GetFeatures(modelIndex);
         const bool hasTags = !featureTags.isEmpty();
         const QString summary = GemModel::GetSummary(modelIndex);
-        const QRect summaryRect = CalcSummaryRect(contentRect, hasTags);
+        const QRect summaryRect = CalcSummaryRect(contentRect, summaryStartX, hasTags);
         DrawText(summary, painter, summaryRect, standardFont);
 
         DrawDownloadStatusIcon(painter, contentRect, buttonRect, modelIndex);
         DrawButton(painter, buttonRect, modelIndex);
         DrawPlatformIcons(painter, contentRect, modelIndex);
-        DrawFeatureTags(painter, contentRect, featureTags, standardFont, summaryRect);
+        DrawFeatureTags(painter, contentRect, featureTags, standardFont, summaryRect, summaryStartX);
 
         painter->restore();
     }
 
-    QRect GemItemDelegate::CalcSummaryRect(const QRect& contentRect, bool hasTags) const
+    QRect GemItemDelegate::CalcSummaryRect(const QRect& contentRect, int summaryStartX, bool hasTags) const
     {
         const int featureTagAreaHeight = 30;
         const int summaryHeight = contentRect.height() - (hasTags * featureTagAreaHeight);
 
         const int additionalSummarySpacing = s_itemMargins.right() * 3;
-        const QSize summarySize = QSize(contentRect.width() - s_summaryStartX - s_buttonWidth - additionalSummarySpacing,
+        const QSize summarySize = QSize(contentRect.width() - summaryStartX - s_buttonWidth - additionalSummarySpacing,
             summaryHeight);
-        return QRect(QPoint(contentRect.left() + s_summaryStartX, contentRect.top()), summarySize);
+        return QRect(QPoint(contentRect.left() + summaryStartX, contentRect.top()), summarySize);
     }
 
     QSize GemItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& modelIndex) const
@@ -207,7 +213,8 @@ namespace O3DE::ProjectManager
             // we must manually handle html links because we aren't using QLabels
             const QStringList featureTags = GemModel::GetFeatures(modelIndex);
             const bool hasTags = !featureTags.isEmpty();
-            const QRect summaryRect = CalcSummaryRect(contentRect, hasTags);
+            int summaryStartX = m_headerWidget->m_header->sectionSize(0);
+            const QRect summaryRect = CalcSummaryRect(contentRect, summaryStartX, hasTags);
             if (summaryRect.contains(mouseEvent->pos()))
             {
                 const QString html = GemModel::GetSummary(modelIndex);
@@ -331,14 +338,20 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void GemItemDelegate::DrawFeatureTags(QPainter* painter, const QRect& contentRect, const QStringList& featureTags, const QFont& standardFont, const QRect& summaryRect) const
+    void GemItemDelegate::DrawFeatureTags(
+        QPainter* painter,
+        const QRect& contentRect,
+        const QStringList& featureTags,
+        const QFont& standardFont,
+        const QRect& summaryRect,
+        int summaryStartX) const
     {
         QFont gemFeatureTagFont(standardFont);
         gemFeatureTagFont.setPixelSize(s_featureTagFontSize);
         gemFeatureTagFont.setBold(false);
         painter->setFont(gemFeatureTagFont);
 
-        int x = s_summaryStartX;
+        int x = summaryStartX;
         for (const QString& featureTag : featureTags)
         {
             QRect featureTagRect = GetTextRect(gemFeatureTagFont, featureTag, s_featureTagFontSize);
