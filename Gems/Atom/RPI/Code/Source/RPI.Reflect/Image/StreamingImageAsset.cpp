@@ -46,6 +46,12 @@ namespace AZ
         }
 
         template <>
+        AZ::s32 RetrieveIntValue<AZ::RHI::Format::Unknown>([[maybe_unused]] const AZ::u8* mem, [[maybe_unused]] size_t index)
+        {
+            return 0;
+        }
+
+        template <>
         AZ::u32 RetrieveUintValue<AZ::RHI::Format::R8_UNORM>(const AZ::u8* mem, size_t index)
         {
             return mem[index] / static_cast<AZ::u32>(std::numeric_limits<AZ::u8>::max());
@@ -56,19 +62,27 @@ namespace AZ
         {
             // 16 bits per channel
             auto actualMem = reinterpret_cast<const AZ::u16*>(mem);
-            actualMem += index;
 
-            return *actualMem / static_cast<AZ::u32>(std::numeric_limits<AZ::u16>::max());
+            return actualMem[index] / static_cast<AZ::u32>(std::numeric_limits<AZ::u16>::max());
         }
 
         template <>
-        AZ::u32 RetrieveUintValue<AZ::RHI::Format::R32_UINT>(const AZ::u8* mem, size_t index)
+        AZ::s32 RetrieveIntValue<AZ::RHI::Format::R16_SINT>(const AZ::u8* mem, size_t index)
+        {
+            // 16 bits per channel
+            auto actualMem = reinterpret_cast<const AZ::s16*>(mem);
+
+            return actualMem[index] / static_cast<AZ::s32>(std::numeric_limits<AZ::s16>::max());
+        }
+
+        template <>
+        float RetrieveFloatValue<AZ::RHI::Format::R32_UINT>(const AZ::u8* mem, size_t index)
         {
             // 32 bits per channel
-            auto actualMem = reinterpret_cast<const AZ::u32*>(mem);
+            auto actualMem = reinterpret_cast<const float*>(mem);
             actualMem += index;
 
-            return *actualMem / static_cast<AZ::u32>(std::numeric_limits<AZ::u32>::max());
+            return *actualMem;
         }
 
         template <>
@@ -85,6 +99,8 @@ namespace AZ
         {
             switch (format)
             {
+            case AZ::RHI::Format::R32_UINT:
+                return RetrieveFloatValue<AZ::RHI::Format::R32_UINT>(mem, index);
             case AZ::RHI::Format::R32_FLOAT:
                 return RetrieveFloatValue<AZ::RHI::Format::R32_FLOAT>(mem, index);
             default:
@@ -100,10 +116,19 @@ namespace AZ
                 return RetrieveUintValue<AZ::RHI::Format::R8_UNORM>(mem, index);
             case AZ::RHI::Format::R16_UNORM:
                 return RetrieveUintValue<AZ::RHI::Format::R16_UNORM>(mem, index);
-            case AZ::RHI::Format::R32_UINT:
-                return RetrieveUintValue<AZ::RHI::Format::R32_UINT>(mem, index);
             default:
                 return RetrieveUintValue<AZ::RHI::Format::Unknown>(mem, index);
+            }
+        }
+
+        AZ::s32 RetrieveIntValue(const AZ::u8* mem, size_t index, AZ::RHI::Format format)
+        {
+            switch (format)
+            {
+            case AZ::RHI::Format::R16_SINT:
+                return RetrieveIntValue<AZ::RHI::Format::R16_SINT>(mem, index);
+            default:
+                return RetrieveIntValue<AZ::RHI::Format::Unknown>(mem, index);
             }
         }
     }
@@ -220,10 +245,10 @@ namespace AZ
             return mipChainAsset->GetSubImageData(mip - mipChain.m_mipOffset, slice);
         }
 
-        template<>
-        float StreamingImageAsset::GetSubImagePixelValue<float>(uint32_t x, uint32_t y, uint32_t componentIndex, uint32_t mip, uint32_t slice)
+        template<typename T>
+        T StreamingImageAsset::GetSubImagePixelValueInternal(uint32_t x, uint32_t y, uint32_t componentIndex, uint32_t mip, uint32_t slice)
         {
-            AZStd::vector<float> values;
+            AZStd::vector<T> values;
             auto position = AZStd::make_pair(x, y);
 
             GetSubImagePixelValues(position, position, values, componentIndex, mip, slice);
@@ -233,27 +258,25 @@ namespace AZ
                 return values[0];
             }
 
-            return 0.0f;
+            return aznumeric_cast<T>(0);
+        }
+
+        template<>
+        float StreamingImageAsset::GetSubImagePixelValue<float>(uint32_t x, uint32_t y, uint32_t componentIndex, uint32_t mip, uint32_t slice)
+        {
+            return GetSubImagePixelValueInternal<float>(x, y, componentIndex, mip, slice);
         }
 
         template<>
         AZ::u32 StreamingImageAsset::GetSubImagePixelValue<AZ::u32>(uint32_t x, uint32_t y, uint32_t componentIndex, uint32_t mip, uint32_t slice)
         {
-            // TODO: Use the component index
-            (void)componentIndex;
+            return GetSubImagePixelValueInternal<AZ::u32>(x, y, componentIndex, mip, slice);
+        }
 
-            auto imageData = GetSubImageData(mip, slice);
-
-            if (!imageData.empty())
-            {
-                const AZ::RHI::ImageDescriptor imageDescriptor = GetImageDescriptor();
-                auto width = imageDescriptor.m_size.m_width;
-                size_t index = (y * width) + x;
-
-                return Internal::RetrieveUintValue(imageData.data(), index, imageDescriptor.m_format);
-            }
-
-            return 0;
+        template<>
+        AZ::s32 StreamingImageAsset::GetSubImagePixelValue<AZ::s32>(uint32_t x, uint32_t y, uint32_t componentIndex, uint32_t mip, uint32_t slice)
+        {
+            return GetSubImagePixelValueInternal<AZ::s32>(x, y, componentIndex, mip, slice);
         }
 
         void StreamingImageAsset::GetSubImagePixelValues(AZStd::pair<uint32_t, uint32_t> topLeft, AZStd::pair<uint32_t, uint32_t> bottomRight, AZStd::array_view<float> outValues, uint32_t componentIndex, uint32_t mip, uint32_t slice)
@@ -277,6 +300,58 @@ namespace AZ
 
                         auto& outValue = const_cast<float&>(outValues[outValuesIndex++]);
                         outValue = Internal::RetrieveFloatValue(imageData.data(), imageDataIndex, imageDescriptor.m_format);
+                    }
+                }
+            }
+        }
+
+        void StreamingImageAsset::GetSubImagePixelValues(AZStd::pair<uint32_t, uint32_t> topLeft, AZStd::pair<uint32_t, uint32_t> bottomRight, AZStd::array_view<AZ::u32> outValues, uint32_t componentIndex, uint32_t mip, uint32_t slice)
+        {
+            // TODO: Use the component index
+            (void)componentIndex;
+
+            auto imageData = GetSubImageData(mip, slice);
+
+            if (!imageData.empty())
+            {
+                const AZ::RHI::ImageDescriptor imageDescriptor = GetImageDescriptor();
+                auto width = imageDescriptor.m_size.m_width;
+
+                size_t outValuesIndex = 0;
+                for (uint32_t x = topLeft.first; x < bottomRight.first; ++x)
+                {
+                    for (uint32_t y = topLeft.second; y < bottomRight.second; ++y)
+                    {
+                        size_t imageDataIndex = (y * width) + x;
+
+                        auto& outValue = const_cast<AZ::u32&>(outValues[outValuesIndex++]);
+                        outValue = Internal::RetrieveUintValue(imageData.data(), imageDataIndex, imageDescriptor.m_format);
+                    }
+                }
+            }
+        }
+
+        void StreamingImageAsset::GetSubImagePixelValues(AZStd::pair<uint32_t, uint32_t> topLeft, AZStd::pair<uint32_t, uint32_t> bottomRight, AZStd::array_view<AZ::s32> outValues, uint32_t componentIndex, uint32_t mip, uint32_t slice)
+        {
+            // TODO: Use the component index
+            (void)componentIndex;
+
+            auto imageData = GetSubImageData(mip, slice);
+
+            if (!imageData.empty())
+            {
+                const AZ::RHI::ImageDescriptor imageDescriptor = GetImageDescriptor();
+                auto width = imageDescriptor.m_size.m_width;
+
+                size_t outValuesIndex = 0;
+                for (uint32_t x = topLeft.first; x < bottomRight.first; ++x)
+                {
+                    for (uint32_t y = topLeft.second; y < bottomRight.second; ++y)
+                    {
+                        size_t imageDataIndex = (y * width) + x;
+
+                        auto& outValue = const_cast<AZ::s32&>(outValues[outValuesIndex++]);
+                        outValue = Internal::RetrieveIntValue(imageData.data(), imageDataIndex, imageDescriptor.m_format);
                     }
                 }
             }
