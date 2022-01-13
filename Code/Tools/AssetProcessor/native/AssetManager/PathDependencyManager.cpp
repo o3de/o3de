@@ -9,18 +9,24 @@
 #include "PathDependencyManager.h"
 #include <AzCore/std/string/wildcard.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Jobs/Algorithms.h>
 #include <utilities/PlatformConfiguration.h>
 #include <utilities/assetUtils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <utilities/StatsCapture.h>
 
 namespace AssetProcessor
 {
     void SanitizeForDatabase(AZStd::string& str)
     {
-        // Not calling normalize because wildcards should be preserved.
         AZStd::to_lower(str.begin(), str.end());
-        AZStd::replace(str.begin(), str.end(), AZ_WRONG_DATABASE_SEPARATOR, AZ_CORRECT_DATABASE_SEPARATOR);
-        AzFramework::StringFunc::Replace(str, AZ_DOUBLE_CORRECT_DATABASE_SEPARATOR, AZ_CORRECT_DATABASE_SEPARATOR_STRING);
+
+        // Not calling normalize because wildcards should be preserved.
+        if (AZ::StringFunc::Contains(str, AZ_WRONG_DATABASE_SEPARATOR, true))
+        {
+            AZStd::replace(str.begin(), str.end(), AZ_WRONG_DATABASE_SEPARATOR, AZ_CORRECT_DATABASE_SEPARATOR);
+            AzFramework::StringFunc::Replace(str, AZ_DOUBLE_CORRECT_DATABASE_SEPARATOR, AZ_CORRECT_DATABASE_SEPARATOR_STRING);
+        }
     }
 
     PathDependencyManager::PathDependencyManager(AZStd::shared_ptr<AssetDatabaseConnection> stateData, PlatformConfiguration* platformConfig)
@@ -29,7 +35,97 @@ namespace AssetProcessor
 
     }
 
-    void PathDependencyManager::SaveUnresolvedDependenciesToDatabase(AssetBuilderSDK::ProductPathDependencySet& unresolvedDependencies, const AzToolsFramework::AssetDatabase::ProductDatabaseEntry& productEntry, const AZStd::string& platform)
+    void PathDependencyManager::QueueSourceForDependencyResolution(const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry)
+    {
+        m_queuedForResolve.push_back(sourceEntry);
+    }
+
+    void PathDependencyManager::ProcessQueuedDependencyResolves()
+    {
+        if (m_queuedForResolve.empty())
+        {
+            return;
+        }
+
+        auto queuedForResolve = m_queuedForResolve;
+        m_queuedForResolve.clear();
+
+        // Grab every product from the database and map to Source PK -> [products]
+        AZStd::unordered_map<AZ::s64, AZStd::vector<AzToolsFramework::AssetDatabase::ProductDatabaseEntry>> productMap;
+        m_stateData->QueryCombined([&productMap](const AzToolsFramework::AssetDatabase::CombinedDatabaseEntry& entry)
+        {
+            productMap[entry.m_sourcePK].push_back(entry);
+            return true;
+        });
+
+        // Build up a list of all the paths we need to search for: products + 2 variations of the source path
+        AZStd::vector<SearchEntry> searches;
+
+        for (const auto& entry : queuedForResolve)
+        {
+            // Search for each product
+            for (const auto& productEntry : productMap[entry.m_sourceID])
+            {
+                const AZStd::string& productName = productEntry.m_productName;
+
+                // strip path of the <platform>/
+                AZStd::string_view result = AssetUtilities::StripAssetPlatformNoCopy(productName);
+                searches.emplace_back(result, false, &entry, &productEntry);
+            }
+
+            // Search for the source path
+            AZStd::string sourceNameWithScanFolder =
+                ToScanFolderPrefixedPath(aznumeric_cast<int>(entry.m_scanFolderPK), entry.m_sourceName.c_str());
+            AZStd::string sanitizedSourceName = entry.m_sourceName;
+
+            SanitizeForDatabase(sourceNameWithScanFolder);
+            SanitizeForDatabase(sanitizedSourceName);
+
+            searches.emplace_back(sourceNameWithScanFolder, true, &entry, nullptr);
+            searches.emplace_back(sanitizedSourceName, true, &entry, nullptr);
+        }
+
+        AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer unresolvedDependencies;
+        m_stateData->GetUnresolvedProductDependencies(unresolvedDependencies);
+
+        AZStd::recursive_mutex mapMutex;
+        // Map of <Source PK => Map of <Matched SearchEntry => Product Dependency>>
+        AZStd::unordered_map<AZ::s64, AZStd::unordered_map<const SearchEntry*, AZStd::unordered_set<AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry>>> sourceIdToMatchedSearchDependencies;
+
+        // For every search path we created, we're going to see if it matches up against any of the unresolved dependencies
+        AZ::parallel_for_each(
+            searches.begin(), searches.end(),
+            [&sourceIdToMatchedSearchDependencies, &mapMutex, &unresolvedDependencies](const SearchEntry& search)
+            {
+                AZStd::unordered_set<AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry> matches;
+                for (const auto& entry: unresolvedDependencies)
+                {
+                    AZ::IO::PathView searchPath(search.m_path);
+
+                    if(((entry.m_dependencyType == AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry::ProductDep_SourceFile && search.m_isSourcePath)
+                        || (entry.m_dependencyType == AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry::ProductDep_ProductFile && !search.m_isSourcePath))
+                        && searchPath.Match(entry.m_unresolvedPath))
+                    {
+                        matches.insert(entry);
+                    }
+                }
+
+                if (!matches.empty())
+                {
+                    AZStd::scoped_lock lock(mapMutex);
+                    auto& productDependencyDatabaseEntries = sourceIdToMatchedSearchDependencies[search.m_sourceEntry->m_sourceID][&search];
+                    productDependencyDatabaseEntries.insert(matches.begin(), matches.end());
+                }
+            });
+
+        for (const auto& entry : queuedForResolve)
+        {
+            RetryDeferredDependencies(entry, sourceIdToMatchedSearchDependencies[entry.m_sourceID], productMap[entry.m_sourceID]);
+        }
+    }
+
+    void PathDependencyManager::SaveUnresolvedDependenciesToDatabase(AssetBuilderSDK::ProductPathDependencySet& unresolvedDependencies,
+        const AzToolsFramework::AssetDatabase::ProductDatabaseEntry& productEntry, const AZStd::string& platform)
     {
         using namespace AzToolsFramework::AssetDatabase;
 
@@ -206,9 +302,9 @@ namespace AssetProcessor
     }
 
     void PathDependencyManager::SaveResolvedDependencies(const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry, const MapSet& exclusionMaps, const AZStd::string& sourceNameWithScanFolder,
-        const AZStd::vector<AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry>& dependencyEntries,
+        const AZStd::unordered_set<AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry>& dependencyEntries,
         AZStd::string_view matchedPath, bool isSourceDependency, const AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer& matchedProducts,
-        AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer& dependencyContainer) const
+        AZStd::vector<AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry>& dependencyContainer) const
     {
         for (const auto& productDependencyDatabaseEntry : dependencyEntries)
         {
@@ -267,8 +363,7 @@ namespace AssetProcessor
                 }
 
                 // All checks passed, this is a valid dependency we need to save to the db
-                dependencyContainer.push_back();
-                auto& entry = dependencyContainer.back();
+                AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry entry;
 
                 entry.m_productDependencyID = dependencyId;
                 entry.m_productPK = productDependencyDatabaseEntry.m_productPK;
@@ -276,62 +371,30 @@ namespace AssetProcessor
                 entry.m_dependencySubID = matchedProduct.m_subID;
                 entry.m_platform = productDependencyDatabaseEntry.m_platform;
 
+                dependencyContainer.push_back(AZStd::move(entry));
+
                 // If there's more than 1 product, reset the ID so further products create new db entries
                 dependencyId = AzToolsFramework::AssetDatabase::InvalidEntryId;
             }
         }
     }
 
-    void PathDependencyManager::RetryDeferredDependencies(const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry)
+    void PathDependencyManager::RetryDeferredDependencies(const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry,
+        const AZStd::unordered_map<const SearchEntry*, AZStd::unordered_set<AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry>>& matches,
+        const AZStd::vector<AzToolsFramework::AssetDatabase::ProductDatabaseEntry>& products)
     {
         MapSet exclusionMaps = PopulateExclusionMaps();
 
-        // Gather a list of all the products this source file produced
-        AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer products;
-        if (!m_stateData->GetProductsBySourceName(sourceEntry.m_sourceName.c_str(), products))
-        {
-            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Source %s did not have any products.  Skipping dependency processing.\n", sourceEntry.m_sourceName.c_str());
-            return;
-        }
-
-        AZStd::unordered_map<AZStd::string, AZStd::vector<AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry>> map;
-
-        // Build up a list of all the paths we need to search for: products + 2 variations of the source path
-        AZStd::vector<AZStd::string> searchPaths;
-
-        for (const auto& productEntry : products)
-        {
-            const AZStd::string& productName = productEntry.m_productName;
-
-            // strip path of the <platform>/
-            AZStd::string strippedPath = AssetUtilities::StripAssetPlatform(productName).toUtf8().constData();
-            SanitizeForDatabase(strippedPath);
-
-            searchPaths.push_back(strippedPath);
-        }
-
         AZStd::string sourceNameWithScanFolder = ToScanFolderPrefixedPath(aznumeric_cast<int>(sourceEntry.m_scanFolderPK), sourceEntry.m_sourceName.c_str());
-        AZStd::string sanitizedSourceName = sourceEntry.m_sourceName;
-
         SanitizeForDatabase(sourceNameWithScanFolder);
-        SanitizeForDatabase(sanitizedSourceName);
 
-        searchPaths.push_back(sourceNameWithScanFolder);
-        searchPaths.push_back(sanitizedSourceName);
-
-        m_stateData->QueryProductDependenciesUnresolvedAdvanced(searchPaths, [&map](AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry& entry, const AZStd::string& matchedPath)
-        {
-            map[matchedPath].push_back(AZStd::move(entry));
-            return true;
-        });
-
-        AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer dependencyContainer;
+        AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer dependencyVector;
 
         // Go through all the matched dependencies
-        for (const auto& pair : map)
+        for (const auto& pair : matches)
         {
-            AZStd::string_view matchedPath = pair.first;
-            const bool isSourceDependency = matchedPath == sanitizedSourceName || matchedPath == sourceNameWithScanFolder;
+            const SearchEntry* searchEntry = pair.first;
+            const bool isSourceDependency = searchEntry->m_isSourcePath;
 
             AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer matchedProducts;
 
@@ -342,34 +405,24 @@ namespace AssetProcessor
             }
             else
             {
-                for (const auto& productEntry : products)
-                {
-                    const AZStd::string& productName = productEntry.m_productName;
-
-                    // strip path of the leading asset platform /<platform>
-                    AZStd::string strippedPath = AssetUtilities::StripAssetPlatform(productName).toUtf8().constData();
-                    SanitizeForDatabase(strippedPath);
-
-                    if (strippedPath == matchedPath)
-                    {
-                        matchedProducts.push_back(productEntry);
-                    }
-                }
+                matchedProducts.push_back(*searchEntry->m_productEntry);
             }
 
             // Go through each dependency we're resolving and create a db entry for each product that resolved it (wildcard/source dependencies will generally create more than 1)
-            SaveResolvedDependencies(sourceEntry, exclusionMaps, sourceNameWithScanFolder, pair.second, matchedPath, isSourceDependency, matchedProducts, dependencyContainer);
+            SaveResolvedDependencies(
+                sourceEntry, exclusionMaps, sourceNameWithScanFolder, pair.second, searchEntry->m_path, isSourceDependency, matchedProducts,
+                dependencyVector);
         }
 
-        // Save everything to the db
-        if (!m_stateData->UpdateProductDependencies(dependencyContainer))
+        // Save everything to the db, this will update matched non-wildcard dependencies and add new records for wildcard matches
+        if (!m_stateData->UpdateProductDependencies(dependencyVector))
         {
             AZ_Error("PathDependencyManager", false, "Failed to update product dependencies");
         }
         else
         {
             // Send a notification for each dependency that has been resolved
-            NotifyResolvedDependencies(dependencyContainer);
+            NotifyResolvedDependencies(dependencyVector);
         }
     }
 
@@ -460,7 +513,7 @@ namespace AssetProcessor
                 if (isExactDependency)
                 {
                     // Search for products in the cache platform folder
-                    // Example: If a path dependency is "test1.asset" in AutomatedTesting on PC, this would search 
+                    // Example: If a path dependency is "test1.asset" in AutomatedTesting on PC, this would search
                     //  "AutomatedTesting/Cache/pc/test1.asset"
                     m_stateData->GetProductsByProductName(productNameWithPlatform, productInfoContainer);
 
