@@ -52,7 +52,7 @@ namespace AZ
         {
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = JobKey;
-            materialBuilderDescriptor.m_version = 112; // material dependency improvements
+            materialBuilderDescriptor.m_version = 113; // material dependency improvements
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.material", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.materialtype", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_busId = azrtti_typeid<MaterialBuilder>();
@@ -95,7 +95,7 @@ namespace AZ
             
             const bool currentFileIsMaterial = AzFramework::StringFunc::Path::IsExtension(currentFilePath.c_str(), MaterialSourceData::Extension);
             const bool referencedFileIsMaterialType = AzFramework::StringFunc::Path::IsExtension(referencedParentPath.c_str(), MaterialTypeSourceData::Extension);
-            const bool ShouldFinalizeMaterialAssets = MaterialUtils::BuildersShouldFinalizeMaterialAssets();
+            const bool shouldFinalizeMaterialAssets = MaterialUtils::BuildersShouldFinalizeMaterialAssets();
 
             AZStd::vector<AZStd::string> possibleDependencies = RPI::AssetUtils::GetPossibleDepenencyPaths(currentFilePath, referencedParentPath);
             for (auto& file : possibleDependencies)
@@ -118,7 +118,7 @@ namespace AZ
                         // If we aren't finalizing material assets, then a normal job dependency isn't needed because the MaterialTypeAsset data won't be used.
                         // However, we do still need at least an OrderOnce dependency to ensure the Asset Processor knows about the material type asset so the builder can get it's AssetId.
                         // This can significantly reduce AP processing time when a material type or its shaders are edited.
-                        if (currentFileIsMaterial && referencedFileIsMaterialType && !ShouldFinalizeMaterialAssets)
+                        if (currentFileIsMaterial && referencedFileIsMaterialType && !shouldFinalizeMaterialAssets)
                         {
                             jobDependency.m_type = AssetBuilderSDK::JobDependencyType::OrderOnce;
                         }
