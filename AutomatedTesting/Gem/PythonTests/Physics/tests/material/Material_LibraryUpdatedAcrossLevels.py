@@ -253,7 +253,7 @@ def Material_LibraryUpdatedAcrossLevels():
         # 1) Open the correct level for the test
         helper.open_level(
             "Physics",
-            f"Material_LibraryUpdatedAcrossLevels\\{test.level_index}"
+            os.path.join("Material_LibraryUpdatedAcrossLevels", str(test.level_index))
         )
 
         # 2) Open Game Mode
