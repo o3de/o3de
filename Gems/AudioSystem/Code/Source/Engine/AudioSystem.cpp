@@ -104,7 +104,12 @@ namespace Audio
 
     void CAudioSystem::PushRequestBlockingNew([[maybe_unused]] AudioRequestVariant&& request)
     {
-        // pass this request to be processed immediately and block this calling thread.
+        // Add this request to be processed immediately.
+        // Acquire the m_mainEvent semaphore to block the main thread.
+        // Release the m_processingEvent so that when the request is finished the audio thread doesn't
+        // block through it's time slice and can immediately re-enter the run loop to process more.
+        // This helps when there's a longer queue of blocking requests so that the back-and-forth between
+        // threads is minimized.
         {
             AZStd::scoped_lock lock(m_blockingRequestsMutex);
             m_blockingRequestsQueue.push_back(AZStd::move(request));
@@ -112,6 +117,12 @@ namespace Audio
 
         m_processingEvent.release();
         m_mainEvent.acquire();
+    }
+
+    void CAudioSystem::PushCallbackNew(AudioRequestVariant&& callback)
+    {
+        AZStd::scoped_lock lock(m_pendingCallbacksMutex);
+        m_pendingCallbacksQueue.push_back(AZStd::move(callback));
     }
     //~ NEW AUDIO REQUESTS
 
@@ -153,6 +164,29 @@ namespace Audio
     {
         // Main Thread!
         AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::ExternalUpdate - called from non-Main thread!");
+
+        {
+            TAudioRequestQueue callbacksToProcess{};
+            {
+                AZStd::scoped_lock lock(m_pendingCallbacksMutex);
+                callbacksToProcess.swap(AZStd::move(m_pendingCallbacksQueue));
+            }
+
+            while (!callbacksToProcess.empty())
+            {
+                AudioRequestVariant& callbackVariant(callbacksToProcess.front());
+                AZStd::visit(
+                    [](auto&& callback)
+                    {
+                        if (callback.m_callback)
+                        {
+                            callback.m_callback(callback);
+                        }
+                    },
+                    callbackVariant);
+                callbacksToProcess.pop_front();
+            }
+        }
 
         // Other notifications to be sent out...
         AudioTriggerNotificationBus::ExecuteQueuedEvents();
@@ -402,9 +436,9 @@ namespace Audio
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    IAudioProxy* CAudioSystem::GetFreeAudioProxy()
+    IAudioProxy* CAudioSystem::GetAudioProxy()
     {
-        AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::GetFreeAudioProxy - called from a non-Main thread!");
+        AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::GetAudioProxy - called from a non-Main thread!");
         CAudioProxy* audioProxy = nullptr;
 
         if (!m_apAudioProxies.empty())
@@ -419,7 +453,7 @@ namespace Audio
         #if !defined(AUDIO_RELEASE)
             if (!audioProxy)
             {
-                g_audioLogger.Log(LogType::Assert, "AudioSystem::GetFreeAudioProxy - failed to create new AudioProxy instance!");
+                g_audioLogger.Log(LogType::Assert, "AudioSystem::GetAudioProxy - failed to create new AudioProxy instance!");
             }
         #endif // !AUDIO_RELEASE
         }
@@ -428,9 +462,9 @@ namespace Audio
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioSystem::FreeAudioProxy(IAudioProxy* const audioProxyI)
+    void CAudioSystem::RecycleAudioProxy(IAudioProxy* const audioProxyI)
     {
-        AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::FreeAudioProxy - called from a non-Main thread!");
+        AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::RecycleAudioProxy - called from a non-Main thread!");
         auto const audioProxy = static_cast<CAudioProxy*>(audioProxyI);
 
         if (AZStd::find(m_apAudioProxiesToBeFreed.begin(), m_apAudioProxiesToBeFreed.end(), audioProxy) != m_apAudioProxiesToBeFreed.end()

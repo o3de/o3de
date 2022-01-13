@@ -40,7 +40,7 @@ CAudioControlsEditorPlugin::CAudioControlsEditorPlugin(IEditor* editor)
     options.canHaveMultipleInstances = true;
     RegisterQtViewPane<CAudioControlsEditorWindow>(editor, LyViewPane::AudioControlsEditor, LyViewPane::CategoryOther, options);
 
-    ms_pIAudioProxy = AZ::Interface<Audio::IAudioSystem>::Get()->GetFreeAudioProxy();
+    ms_pIAudioProxy = AZ::Interface<Audio::IAudioSystem>::Get()->GetAudioProxy();
     if (ms_pIAudioProxy)
     {
         ms_pIAudioProxy->Initialize("AudioControlsEditor-Preview");

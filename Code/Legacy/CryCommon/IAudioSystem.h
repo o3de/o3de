@@ -9,9 +9,6 @@
 
 #pragma once
 
-#include <IAudioInterfacesCommonData.h>
-
-#include <AzCore/base.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Interface/Interface.h>
@@ -20,9 +17,9 @@
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/containers/variant.h>
 
+#include <IAudioInterfacesCommonData.h>
+
 // External forward declarations.
-struct IVisArea;
-struct ICVar;
 struct SSystemInitParams;
 
 namespace Audio
@@ -35,63 +32,12 @@ namespace Audio
         eADS_ALL            = 3,
     };
 
-    enum EAudioManagerRequestType : TATLEnumFlagsType
-    {
-        eAMRT_NONE                      = 0,
-        eAMRT_INIT_AUDIO_IMPL           = AUDIO_BIT(0),
-        eAMRT_RELEASE_AUDIO_IMPL        = AUDIO_BIT(1),
-        eAMRT_RESERVE_AUDIO_OBJECT_ID   = AUDIO_BIT(2),
-        eAMRT_CREATE_SOURCE             = AUDIO_BIT(5),
-        eAMRT_DESTROY_SOURCE            = AUDIO_BIT(6),
-        eAMRT_PARSE_CONTROLS_DATA       = AUDIO_BIT(7),
-        eAMRT_PARSE_PRELOADS_DATA       = AUDIO_BIT(8),
-        eAMRT_CLEAR_CONTROLS_DATA       = AUDIO_BIT(9),
-        eAMRT_CLEAR_PRELOADS_DATA       = AUDIO_BIT(10),
-        eAMRT_PRELOAD_SINGLE_REQUEST    = AUDIO_BIT(11),
-        eAMRT_UNLOAD_SINGLE_REQUEST     = AUDIO_BIT(12),
-        eAMRT_UNLOAD_AFCM_DATA_BY_SCOPE = AUDIO_BIT(13),
-        eAMRT_REFRESH_AUDIO_SYSTEM      = AUDIO_BIT(14),
-        eAMRT_LOSE_FOCUS                = AUDIO_BIT(15),
-        eAMRT_GET_FOCUS                 = AUDIO_BIT(16),
-        eAMRT_MUTE_ALL                  = AUDIO_BIT(17),
-        eAMRT_UNMUTE_ALL                = AUDIO_BIT(18),
-        eAMRT_STOP_ALL_SOUNDS           = AUDIO_BIT(19),
-        eAMRT_DRAW_DEBUG_INFO           = AUDIO_BIT(20),
-        eAMRT_CHANGE_LANGUAGE           = AUDIO_BIT(21),
-        eAMRT_SET_AUDIO_PANNING_MODE    = AUDIO_BIT(22),
-    };
-
     enum EAudioCallbackManagerRequestType : TATLEnumFlagsType
     {
         eACMRT_NONE                             = 0,
         eACMRT_REPORT_STARTED_EVENT             = AUDIO_BIT(0),
         eACMRT_REPORT_FINISHED_EVENT            = AUDIO_BIT(1),
         eACMRT_REPORT_FINISHED_TRIGGER_INSTANCE = AUDIO_BIT(2),
-    };
-
-    enum EAudioListenerRequestType : TATLEnumFlagsType
-    {
-        eALRT_NONE = 0,
-        eALRT_SET_POSITION = AUDIO_BIT(0),
-    };
-
-    enum EAudioObjectRequestType : TATLEnumFlagsType
-    {
-        eAORT_NONE                      = 0,
-        eAORT_PREPARE_TRIGGER           = AUDIO_BIT(0),
-        eAORT_UNPREPARE_TRIGGER         = AUDIO_BIT(1),
-        eAORT_EXECUTE_TRIGGER           = AUDIO_BIT(2),
-        eAORT_STOP_TRIGGER              = AUDIO_BIT(3),
-        eAORT_STOP_ALL_TRIGGERS         = AUDIO_BIT(4),
-        eAORT_SET_POSITION              = AUDIO_BIT(5),
-        eAORT_SET_RTPC_VALUE            = AUDIO_BIT(6),
-        eAORT_SET_SWITCH_STATE          = AUDIO_BIT(7),
-        eAORT_SET_ENVIRONMENT_AMOUNT    = AUDIO_BIT(8),
-        eAORT_RESET_ENVIRONMENTS        = AUDIO_BIT(9),
-        eAORT_RESET_RTPCS               = AUDIO_BIT(10),
-        eAORT_RELEASE_OBJECT            = AUDIO_BIT(11),
-        eAORT_EXECUTE_SOURCE_TRIGGER    = AUDIO_BIT(12),
-        eAORT_SET_MULTI_POSITIONS       = AUDIO_BIT(13),
     };
 
     enum EAudioObjectObstructionCalcType : TATLEnumFlagsType
@@ -125,15 +71,15 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     // Function Callback Typedefs
     using AudioRequestCallbackType = void(*)(const SAudioRequestInfo* const);
-    //using TriggerFinishedCallbackType = void(*)(const TAudioObjectID, const TAudioControlID, void* const);
 
 
 
     //! NEW AUDIO REQUESTS
 
-
 #define AUDIO_REQUEST_TYPE(NAMESPACE, CLASS, GUID) \
-    AZ_RTTI(Audio::NAMESPACE::CLASS, GUID, Audio::AudioRequestBase);
+        AZ_RTTI(Audio::NAMESPACE::CLASS, GUID, Audio::AudioRequestBase); \
+        using Callback_##NAMESPACE##CLASS = AZStd::function<void(const CLASS&)>; \
+        Callback_##NAMESPACE##CLASS m_callback;
 
     struct AudioRequestBase
     {
@@ -168,7 +114,6 @@ namespace Audio
         {
         public:
             AUDIO_REQUEST_TYPE(SystemRequest, Initialize, "{8C777214-109E-4C44-A0F5-FCECF601C1E6}");
-            //size_t m_memorySize{ 0 };     // test!
         };
 
         struct Shutdown
@@ -176,7 +121,6 @@ namespace Audio
         {
         public:
             AUDIO_REQUEST_TYPE(SystemRequest, Shutdown, "{33F13AAE-3E08-4C9A-939B-2D111403DD76}");
-            //bool m_shutdownFlag_DEMO{ false };    // test!
         };
 
         struct ReserveObject
@@ -185,7 +129,7 @@ namespace Audio
         public:
             AUDIO_REQUEST_TYPE(SystemRequest, ReserveObject, "{A0FA000F-EBE1-4DCB-ADA8-9C05B27D71E9}");
 
-            TAudioObjectID* m_objectId;
+            TAudioObjectID m_objectId{ INVALID_AUDIO_OBJECT_ID };   // this will receive the new id
             AZStd::string m_objectName;
         };
 
@@ -338,6 +282,7 @@ namespace Audio
 
     } // namespace System
 
+
     namespace ObjectRequest
     {
         struct ExecuteTrigger
@@ -466,6 +411,7 @@ namespace Audio
 
     } // namespace Object
 
+
     namespace CallbackRequest
     {
         // TODO:
@@ -473,6 +419,7 @@ namespace Audio
         // Report Finished Event
         // Report Finished Trigger Instance
     } // namespace Callback
+
 
     namespace ListenerRequest
     {
@@ -486,6 +433,7 @@ namespace Audio
         };
 
     } // namespace Listener
+
 
     using AudioRequestVariant = AZStd::variant<
         Audio::SystemRequest::Initialize,
@@ -537,7 +485,6 @@ namespace Audio
 
         virtual void Initialize(const char* sObjectName, bool bInitAsync = true) = 0;
         virtual void Release() = 0;
-        virtual void Reset() = 0;
 
         virtual void ExecuteSourceTrigger(TAudioControlID nTriggerID, const SAudioSourceInfo& rSourceInfo, const SAudioCallBackInfos& rCallbackInfos = SAudioCallBackInfos::GetEmptyObject()) = 0;
         virtual void ExecuteTrigger(TAudioControlID nTriggerID, const SAudioCallBackInfos& rCallbackInfos = SAudioCallBackInfos::GetEmptyObject()) = 0;
@@ -550,8 +497,8 @@ namespace Audio
         virtual void SetPosition(const AZ::Vector3& rPosition) = 0;
         virtual void SetMultiplePositions(const MultiPositionParams& params) = 0;
         virtual void SetEnvironmentAmount(TAudioEnvironmentID nEnvironmentID, float fAmount) = 0;
-        virtual void SetCurrentEnvironments() = 0;
-        virtual void ResetRtpcValues() = 0;
+        virtual void ResetEnvironments() = 0;
+        virtual void ResetParameters() = 0;
         virtual TAudioObjectID GetAudioObjectID() const = 0;
     };
 
@@ -593,6 +540,7 @@ namespace Audio
         //! NEW AUDIO REQUESTS
         virtual void PushRequestNew(AudioRequestVariant&& request) = 0;
         virtual void PushRequestBlockingNew(AudioRequestVariant&& request) = 0;
+        virtual void PushCallbackNew(AudioRequestVariant&& callback) = 0;
         //~ NEW AUDIO REQUESTS
 
         virtual void AddRequestListener(
@@ -619,8 +567,8 @@ namespace Audio
         virtual void UpdateControlsPath() = 0;
         virtual void RefreshAudioSystem(const char* levelName) = 0;
 
-        virtual IAudioProxy* GetFreeAudioProxy() = 0;
-        virtual void FreeAudioProxy(IAudioProxy* pIAudioProxy) = 0;
+        virtual IAudioProxy* GetAudioProxy() = 0;
+        virtual void RecycleAudioProxy(IAudioProxy* pIAudioProxy) = 0;
 
         virtual TAudioSourceId CreateAudioSource(const SAudioInputConfig& sourceConfig) = 0;
         virtual void DestroyAudioSource(TAudioSourceId sourceId) = 0;

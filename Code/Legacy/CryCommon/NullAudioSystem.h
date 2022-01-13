@@ -23,7 +23,6 @@ namespace Audio
 
         void Initialize(const char*, const bool = true) override {}
         void Release() override {}
-        void Reset() override {}
         void ExecuteSourceTrigger(TAudioControlID, const SAudioSourceInfo&, const SAudioCallBackInfos& = SAudioCallBackInfos::GetEmptyObject()) override {}
         void ExecuteTrigger(TAudioControlID, const SAudioCallBackInfos& = SAudioCallBackInfos::GetEmptyObject()) override {}
         void StopAllTriggers() override {}
@@ -35,8 +34,8 @@ namespace Audio
         void SetPosition(const AZ::Vector3&) override {}
         void SetMultiplePositions(const MultiPositionParams&) override {}
         void SetEnvironmentAmount(TAudioEnvironmentID, float) override {}
-        void SetCurrentEnvironments() override {}
-        void ResetRtpcValues() override {}
+        void ResetEnvironments() override {}
+        void ResetParameters() override {}
         TAudioObjectID GetAudioObjectID() const override { return INVALID_AUDIO_OBJECT_ID; }
     };
 
@@ -64,6 +63,7 @@ namespace Audio
         //! NEW AUDIO REQUESTS
         void PushRequestNew(AudioRequestVariant&&) override {}
         void PushRequestBlockingNew(AudioRequestVariant&&) override {}
+        void PushCallbackNew(AudioRequestVariant&&) override {}
         //~ NEW AUDIO REQUESTS
 
         void AddRequestListener(AudioRequestCallbackType, void*, EAudioRequestType, TATLEnumFlagsType) override {}
@@ -84,8 +84,8 @@ namespace Audio
         void UpdateControlsPath() override {}
         void RefreshAudioSystem(const char*) override {}
 
-        IAudioProxy* GetFreeAudioProxy() override { return static_cast<IAudioProxy*>(&m_nullAudioProxy); }
-        void FreeAudioProxy(IAudioProxy*) override {}
+        IAudioProxy* GetAudioProxy() override { return static_cast<IAudioProxy*>(&m_nullAudioProxy); }
+        void RecycleAudioProxy(IAudioProxy*) override {}
 
         TAudioSourceId CreateAudioSource(const SAudioInputConfig&) override { return INVALID_AUDIO_SOURCE_ID; }
         void DestroyAudioSource(TAudioSourceId) override {}

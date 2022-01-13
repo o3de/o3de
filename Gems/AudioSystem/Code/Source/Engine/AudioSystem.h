@@ -73,6 +73,7 @@ namespace Audio
         //! NEW AUDIO REQUESTS
         void PushRequestNew(AudioRequestVariant&& request) override;
         void PushRequestBlockingNew(AudioRequestVariant&& request) override;
+        void PushCallbackNew(AudioRequestVariant&& callback) override;
         //~ NEW AUDIO REQUESTS
 
         void ExternalUpdate() override;
@@ -95,8 +96,8 @@ namespace Audio
         void UpdateControlsPath() override;
         void RefreshAudioSystem(const char* const levelName) override;
 
-        IAudioProxy* GetFreeAudioProxy() override;
-        void FreeAudioProxy(IAudioProxy* const pIAudioProxy) override;
+        IAudioProxy* GetAudioProxy() override;
+        void RecycleAudioProxy(IAudioProxy* const pIAudioProxy) override;
 
         TAudioSourceId CreateAudioSource(const SAudioInputConfig& sourceConfig) override;
         void DestroyAudioSource(TAudioSourceId sourceId) override;
@@ -122,9 +123,11 @@ namespace Audio
         //! NEW AUDIO REQUESTS
         using TAudioRequestQueue = AZStd::deque<AudioRequestVariant, Audio::AudioSystemStdAllocator>;
         TAudioRequestQueue m_pendingRequestsQueue;
-        TAudioRequestQueue m_blockingRequestsQueue;     // maybe doesn't need a queue, and these can be handled one at a time.
+        TAudioRequestQueue m_blockingRequestsQueue;
+        TAudioRequestQueue m_pendingCallbacksQueue;
         AZStd::mutex m_pendingRequestsMutex;
         AZStd::mutex m_blockingRequestsMutex;
+        AZStd::mutex m_pendingCallbacksMutex;
         //~ NEW AUDIO REQUESTS
 
         // Synchronization objects

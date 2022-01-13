@@ -51,7 +51,7 @@ namespace LmbrCentral
         AZ_Assert(!m_audioProxy, "AudioProxyComponent::Activate - Audio Proxy has been set already!");
         if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
         {
-            m_audioProxy = audioSystem->GetFreeAudioProxy();
+            m_audioProxy = audioSystem->GetAudioProxy();
         }
 
         if (m_audioProxy)

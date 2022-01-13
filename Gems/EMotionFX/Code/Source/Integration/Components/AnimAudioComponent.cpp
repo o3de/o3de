@@ -586,7 +586,7 @@ namespace EMotionFX
                         if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get();
                             audioSystem != nullptr)
                         {
-                            proxy = audioSystem->GetFreeAudioProxy();
+                            proxy = audioSystem->GetAudioProxy();
                             AZ_Assert(proxy, "Failed to get free audio proxy");
 
                             AZStd::string proxyName = AZStd::string::format("%s:%d", name.c_str(), jointId);

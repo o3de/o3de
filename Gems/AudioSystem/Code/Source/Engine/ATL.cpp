@@ -129,7 +129,7 @@ namespace Audio
 
     //! NEW AUDIO REQUESTS
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioTranslationLayer::ProcessRequestNew(AudioRequestVariant&& request)
+    void CAudioTranslationLayer::ProcessRequestNew(AudioRequestVariant&& requestVariant)
     {
         // Version A - AZStd::visit w/ a processor object
         // Pros: No wonky syntax, the processor class can be implemented elsewhere
@@ -166,9 +166,10 @@ namespace Audio
         //AZStd::visit(RequestProcessor{}, request);
 
 
+        bool hasCallback = false;
         // VERSION B
         EAudioRequestStatus status = AZStd::visit(
-            [this]([[maybe_unused]] auto&& request) -> EAudioRequestStatus
+            [this, &hasCallback]([[maybe_unused]] auto&& request) -> EAudioRequestStatus
             {
                 EAudioRequestStatus result = EAudioRequestStatus::None;
 
@@ -200,9 +201,9 @@ namespace Audio
                 else if constexpr (AZStd::is_same_v<T, Audio::SystemRequest::ReserveObject>)
                 {
                 #if !defined(AUDIO_RELEASE)
-                    result = BoolToARS(ReserveAudioObjectID(*request.m_objectId, request.m_objectName.c_str()));
+                    result = BoolToARS(ReserveAudioObjectID(request.m_objectId, request.m_objectName.c_str()));
                 #else
-                    result = BoolToARS(ReserveAudioObjectID(*request.m_objectId));
+                    result = BoolToARS(ReserveAudioObjectID(request.m_objectId));
                 #endif // !AUDIO_RELEASE
                 }
 
@@ -645,9 +646,19 @@ namespace Audio
                 }
 
                 request.SetStatus(result);
+                if (request.m_callback)
+                {
+                    hasCallback = true;
+                }
+
                 return result;
             }
-            , request);
+            , requestVariant);
+
+        if (hasCallback)
+        {
+            AZ::Interface<IAudioSystem>::Get()->PushCallbackNew(AZStd::move(requestVariant));
+        }
 
         if (status != EAudioRequestStatus::Success)
         {
