@@ -9,12 +9,17 @@
 
 #include <AzCore/Math/Vector2.h>
 #include <LyShine/UiBase.h>
-#include <Atom/RPI.Reflect/Image/Image.h>
+#include <AtomCore/Instance/Instance.h>
 
 class IDraw2d;
 class ISprite;
 struct IUiAnimationSystem;
 class UiEntityContext;
+
+namespace AZ::RPI
+{
+    class Image;
+}
 
 // The following ifdef block is the standard way of creating macros which make exporting
 // from a DLL simpler. All files within this DLL are compiled with the LYSHINE_EXPORTS
