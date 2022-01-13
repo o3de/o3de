@@ -53,12 +53,16 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         AzToolsFramework::Prefab::Instance& GetInstance();
         const AzToolsFramework::Prefab::Instance& GetInstance() const;
 
+        AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& GetReferencedAssets();
+        const AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& GetReferencedAssets() const;
+
     private:
         bool ConstructInstanceFromPrefabDom(const PrefabDom& prefab);
         
         mutable PrefabDom m_dom;
         AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> m_instance;
         AZStd::string m_name;
+        AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>> m_referencedAssets;
         mutable bool m_isDirty{ false };
     };
 } // namespace AzToolsFramework::Prefab::PrefabConversionUtils

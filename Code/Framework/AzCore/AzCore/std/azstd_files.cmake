@@ -64,6 +64,8 @@ set(FILES
     containers/rbtree.h
     containers/ring_buffer.h
     containers/set.h
+    containers/span.h
+    containers/span.inl
     containers/stack.h
     containers/unordered_map.h
     containers/unordered_set.h
