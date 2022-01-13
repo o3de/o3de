@@ -215,8 +215,8 @@ namespace
     //
     // Visualization:
     // - O: AABB miss
-    // - X: AABB hit and recursed but no trianlge hit found
-    // - T: AABB hit and recursed with a trianlge hit found
+    // - X: AABB hit and recursed but no triangle hit found
+    // - T: AABB hit and recursed with a triangle hit found
     // - ?: AABB hit but not recursed because closer triangle hit already found
     // ________________________________________
     // |                   |         |         |
@@ -274,7 +274,7 @@ namespace
         const float centerX = ClampToGridRoundDefault(center.GetX(), gridResolutionX);
         const float centerY = ClampToGridRoundDefault(center.GetY(), gridResolutionY);
 
-        // Create an array containing each sub-divided quadrant paried with a
+        // Create an array containing each sub-divided quadrant paired with a
         // float where we will store the T value of the nearest intersection.
         AZStd::array<AZStd::pair<AZ::Aabb, float>, 4> quadrantNearestIntersectionTPairs;
         quadrantNearestIntersectionTPairs[0] = AZStd::make_pair<AZ::Aabb, float>(AZ::Aabb::CreateFromMinMax({minX, minY, minZ}, {centerX, centerY, maxZ}), FLT_MAX);
