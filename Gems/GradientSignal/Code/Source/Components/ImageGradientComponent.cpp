@@ -219,6 +219,39 @@ namespace GradientSignal
         return 0.0f;
     }
 
+    void ImageGradientComponent::GetValues(AZStd::array_view<AZ::Vector3> positions, AZStd::array_view<float> outValues) const
+    {
+        if (positions.size() != outValues.size())
+        {
+            AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
+            return;
+        }
+
+        AZ::Vector3 uvw;
+        bool wasPointRejected = false;
+
+        AZStd::shared_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
+
+        for (size_t index = 0; index < positions.size(); index++)
+        {
+            // The const_cast is necessary for now since array_view currently only supports const entries.
+            // If/when array_view is fixed to support non-const, or AZStd::span gets created, the const_cast can get removed.
+            auto& outValue = const_cast<float&>(outValues[index]);
+
+            m_gradientTransform.TransformPositionToUVWNormalized(positions[index], uvw, wasPointRejected);
+
+            if (!wasPointRejected)
+            {
+                outValue = GetValueFromImageAsset(
+                    m_configuration.m_imageAsset, uvw, m_configuration.m_tilingX, m_configuration.m_tilingY, 0.0f);
+            }
+            else
+            {
+                outValue = 0.0f;
+            }
+        }
+    }
+
     AZStd::string ImageGradientComponent::GetImageAssetPath() const
     {
         AZStd::string assetPathString;
