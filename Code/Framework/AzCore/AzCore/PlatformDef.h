@@ -74,13 +74,18 @@
 #if defined(AZ_COMPILER_MSVC)
 
 /// Disables a warning using push style. For use matched with an AZ_POP_WARNING
-#define AZ_PUSH_DISABLE_WARNING_MSVC(_msvcOption)       \
+#define AZ_PUSH_DISABLE_WARNING_1(_msvcOption)          \
     __pragma(warning(push))                             \
     __pragma(warning(disable : _msvcOption))
 
-#define AZ_PUSH_DISABLE_WARNING_1(_msvcOption)          AZ_PUSH_DISABLE_WARNING_MSVC(_msvcOption)
-#define AZ_PUSH_DISABLE_WARNING_2(_msvcOption, _2)      AZ_PUSH_DISABLE_WARNING_MSVC(_msvcOption)
-#define AZ_PUSH_DISABLE_WARNING_3(_msvcOption, _2, _3)  AZ_PUSH_DISABLE_WARNING_MSVC(_msvcOption)
+#define AZ_PUSH_DISABLE_WARNING_2(_msvcOption, _2)      \
+    __pragma(warning(push))                             \
+    __pragma(warning(disable : _msvcOption))
+
+#define AZ_PUSH_DISABLE_WARNING_3(_msvcOption, _2, _3)  \
+    __pragma(warning(push))                             \
+    __pragma(warning(disable : _msvcOption))
+
 
 /// Pops the warning stack. For use matched with an AZ_PUSH_DISABLE_WARNING
 #define AZ_POP_DISABLE_WARNING                          \
