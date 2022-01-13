@@ -21,7 +21,7 @@ ly_add_target(
         INTERFACE
             Gem::GameState
             Gem::LocalUser
-            Gem::LyShine.Static
+            Gem::LyShine.Clients.API
             Gem::SaveData.Static
             Gem::MessagePopup.Static
             Legacy::CryCommon

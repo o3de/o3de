@@ -269,14 +269,7 @@ set(FILES
     LevelTreeModel.h
     Include/Command.h
     Include/HitContext.h
-    Include/IAnimationCompressionManager.h
-    Include/IAssetItem.h
-    Include/IAssetItemDatabase.h
     Include/ICommandManager.h
-    Include/IConsoleConnectivity.h
-    Include/IDataBaseItem.h
-    Include/IDataBaseLibrary.h
-    Include/IDataBaseManager.h
     Include/IDisplayViewport.h
     Include/IEditorClassFactory.h
     Include/IEventLoopHook.h
@@ -288,9 +281,7 @@ set(FILES
     Include/IObjectManager.h
     Include/IPlugin.h
     Include/IPreferencesPage.h
-    Include/IRenderListener.h
     Include/ISourceControl.h
-    Include/ITextureDatabaseUpdater.h
     Include/ITransformManipulator.h
     Include/IViewPane.h
     Include/ObjectEvent.h
@@ -372,9 +363,6 @@ set(FILES
     ActionManager.h
     ShortcutDispatcher.cpp
     ShortcutDispatcher.h
-    BaseLibraryManager.cpp
-    BaseLibraryItem.h
-    BaseLibraryManager.h
     CheckOutDialog.cpp
     CheckOutDialog.h
     CheckOutDialog.ui
@@ -457,18 +445,14 @@ set(FILES
     GameResourcesExporter.cpp
     GameExporter.h
     GameResourcesExporter.h
-    Geometry/TriMesh.cpp
-    Geometry/TriMesh.h
     AboutDialog.h
     AboutDialog.ui
     DocMultiArchive.h
-    EditMode/DeepSelection.h
     FBXExporterDialog.h
     FileTypeUtils.h
     GridUtils.h
     IObservable.h
     IPostRenderer.h
-    LightmapCompiler/SimpleTriangleRasterizer.h
     ToolBox.h
     TrackViewNewSequenceDialog.h
     UndoConfigSpec.h
@@ -559,11 +543,9 @@ set(FILES
     AboutDialog.cpp
     ErrorReportTableModel.h
     ErrorReportTableModel.cpp
-    EditMode/DeepSelection.cpp
     FBXExporterDialog.cpp
     FBXExporterDialog.ui
     FileTypeUtils.cpp
-    LightmapCompiler/SimpleTriangleRasterizer.cpp
     ToolBox.cpp
     TrackViewNewSequenceDialog.cpp
     TrackViewNewSequenceDialog.ui

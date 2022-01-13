@@ -33,6 +33,7 @@ namespace GradientSignal
         static void Reflect(AZ::ReflectContext* context);
 
         inline float GetValue(const GradientSampleParams& sampleParams) const;
+        inline void GetValues(AZStd::array_view<AZ::Vector3> positions, AZStd::array_view<float> outValues) const;
 
         bool IsEntityInHierarchy(const AZ::EntityId& entityId) const;
 
@@ -119,7 +120,7 @@ namespace GradientSignal
 
             if (m_isRequestInProgress)
             {
-                AZ_ErrorOnce("GradientSignal", !m_isRequestInProgress, "Detected cyclic dependences with gradient entity references");
+                AZ_ErrorOnce("GradientSignal", !m_isRequestInProgress, "Detected cyclic dependencies with gradient entity references");
             }
             else
             {
@@ -145,4 +146,93 @@ namespace GradientSignal
 
         return output * m_opacity;
     }
+
+    inline void GradientSampler::GetValues(AZStd::array_view<AZ::Vector3> positions, AZStd::array_view<float> outValues) const
+    {
+        auto ClearOutputValues = [](AZStd::array_view<float> outValues)
+        {
+            // If we don't have a valid gradient (or it is fully transparent), clear out all the output values.
+            for (size_t index = 0; index < outValues.size(); index++)
+            {
+                // The const_cast is necessary for now since array_view currently only supports const entries.
+                // If/when array_view is fixed to support non-const, or AZStd::span gets created, the const_cast can get removed.
+                auto& outValue = const_cast<float&>(outValues[index]);
+                outValue = 0.0f;
+            }
+        };
+
+        if (m_opacity <= 0.0f || !m_gradientId.IsValid())
+        {
+            ClearOutputValues(outValues);
+            return;
+        }
+
+        AZStd::vector<AZ::Vector3> transformedPositions;
+        bool useTransformedPositions = false;
+
+        // apply transform if set
+        if (m_enableTransform && GradientSamplerUtil::AreTransformParamsSet(*this))
+        {
+            AZ::Matrix3x4 matrix3x4;
+            matrix3x4.SetFromEulerDegrees(m_rotate);
+            matrix3x4.MultiplyByScale(m_scale);
+            matrix3x4.SetTranslation(m_translate);
+
+            useTransformedPositions = true;
+            transformedPositions.resize(positions.size());
+            for (size_t index = 0; index < positions.size(); index++)
+            {
+                transformedPositions[index] = matrix3x4 * positions[index];
+            }
+        }
+
+        {
+            // Block other threads from accessing the surface data bus while we are in GetValue (which may call into the SurfaceData bus).
+            // We lock our surface data mutex *before* checking / setting "isRequestInProgress" so that we prevent race conditions
+            // that create false detection of cyclic dependencies when multiple requests occur on different threads simultaneously.
+            // (One case where this was previously able to occur was in rapid updating of the Preview widget on the
+            // GradientSurfaceDataComponent in the Editor when moving the threshold sliders back and forth rapidly)
+            auto& surfaceDataContext = SurfaceData::SurfaceDataSystemRequestBus::GetOrCreateContext(false);
+            typename SurfaceData::SurfaceDataSystemRequestBus::Context::DispatchLockGuard scopeLock(surfaceDataContext.m_contextMutex);
+
+            if (m_isRequestInProgress)
+            {
+                AZ_ErrorOnce("GradientSignal", !m_isRequestInProgress, "Detected cyclic dependencies with gradient entity references");
+                ClearOutputValues(outValues);
+                return;
+            }
+            else
+            {
+                m_isRequestInProgress = true;
+
+                GradientRequestBus::Event(
+                    m_gradientId, &GradientRequestBus::Events::GetValues, useTransformedPositions ? transformedPositions : positions,
+                    outValues);
+
+                m_isRequestInProgress = false;
+            }
+        }
+
+        // Perform any post-fetch transformations on the gradient values (invert, levels, opacity).
+        for (size_t index = 0; index < outValues.size(); index++)
+        {
+            // The const_cast is necessary for now since array_view currently only supports const entries.
+            // If/when array_view is fixed to support non-const, or AZStd::span gets created, the const_cast can get removed.
+            auto& outValue = const_cast<float&>(outValues[index]);
+
+            if (m_invertInput)
+            {
+                outValue = 1.0f - outValue;
+            }
+
+            // apply levels if set
+            if (m_enableLevels && GradientSamplerUtil::AreLevelParamsSet(*this))
+            {
+                outValue = GetLevels(outValue, m_inputMid, m_inputMin, m_inputMax, m_outputMin, m_outputMax);
+            }
+
+            outValue = outValue * m_opacity;
+        }
+    }
+
 }

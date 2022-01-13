@@ -61,6 +61,7 @@ namespace GradientSignal
 
         // GradientRequestBus overrides...
         float GetValue(const GradientSampleParams& sampleParams) const override;
+        void GetValues(AZStd::array_view<AZ::Vector3> positions, AZStd::array_view<float> outValues) const override;
 
     private:
         RandomGradientConfig m_configuration;
@@ -73,5 +74,7 @@ namespace GradientSignal
         // RandomGradientRequestBus overrides...
         int GetRandomSeed() const override;
         void SetRandomSeed(int seed) override;
+
+        float GetRandomValue(const AZ::Vector3& position, AZStd::size_t seed) const;
     };
 }
