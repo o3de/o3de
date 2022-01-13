@@ -667,7 +667,8 @@ namespace ScriptCanvasEditor
                         }
 
                         // Now that the slot has a valid type/name, we can actually promote it to a variable
-                        if (PromoteToVariableAction(endpoint) /*&& slot->IsVariableReference()*/)
+                        // #sc_user_slot_variable_ux add a value indicating that the slot is new
+                        if (PromoteToVariableAction(endpoint, true))
                         {
                             ScriptCanvas::GraphVariable* variable = slot->GetVariable();
 
@@ -2081,20 +2082,20 @@ namespace ScriptCanvasEditor
         return false;
     }
 
-    bool Graph::ConvertSlotToReference(const GraphCanvas::Endpoint& endpoint)
+    bool Graph::ConvertSlotToReference(const GraphCanvas::Endpoint& endpoint, bool isNewSlot)
     {
         ScriptCanvas::Endpoint scEndpoint = ConvertToScriptCanvasEndpoint(endpoint);
         ScriptCanvas::Node* canvasNode = FindNode(scEndpoint.GetNodeId());
 
         if (canvasNode)
         {
-            return canvasNode->ConvertSlotToReference(scEndpoint.GetSlotId());
+            return canvasNode->ConvertSlotToReference(scEndpoint.GetSlotId(), isNewSlot);
         }
 
         return false;
     }
 
-    bool Graph::CanConvertSlotToReference(const GraphCanvas::Endpoint& endpoint)
+    bool Graph::CanConvertSlotToReference(const GraphCanvas::Endpoint& endpoint, bool isNewSlot)
     {
         ScriptCanvas::Endpoint scEndpoint = ConvertToScriptCanvasEndpoint(endpoint);
         ScriptCanvas::Node* canvasNode = FindNode(scEndpoint.GetNodeId());
@@ -2104,7 +2105,7 @@ namespace ScriptCanvasEditor
             ScriptCanvas::Slot* slot = canvasNode->GetSlot(scEndpoint.GetSlotId());
             if (slot)
             {
-                return slot->CanConvertToReference();
+                return slot->CanConvertToReference(isNewSlot);
             }
         }
 
@@ -2170,7 +2171,7 @@ namespace ScriptCanvasEditor
         return handledEvent;
     }
 
-    bool Graph::CanPromoteToVariable(const GraphCanvas::Endpoint& endpoint) const
+    bool Graph::CanPromoteToVariable(const GraphCanvas::Endpoint& endpoint, [[maybe_unused]] bool isNewSlot) const
     {
         ScriptCanvas::Endpoint scriptCanvasEndpoint = ConvertToScriptCanvasEndpoint(endpoint);        
         auto activeSlot = FindSlot(scriptCanvasEndpoint);
@@ -2189,8 +2190,9 @@ namespace ScriptCanvasEditor
         return false;
     }
 
-    bool Graph::PromoteToVariableAction(const GraphCanvas::Endpoint& endpoint)
+    bool Graph::PromoteToVariableAction(const GraphCanvas::Endpoint& endpoint, bool isNewSlot)
     {
+        // #sc_user_slot_variable_ux make the fix here...rework is user added or something
         ScriptCanvas::Endpoint scriptCanvasEndpoint = ConvertToScriptCanvasEndpoint(endpoint);
 
         auto activeNode = FindNode(scriptCanvasEndpoint.GetNodeId());
@@ -2282,12 +2284,12 @@ namespace ScriptCanvasEditor
 
         AZ::Outcome<ScriptCanvas::VariableId, AZStd::string> addOutcome;
 
-        // #functions2 slot<->variable re-use the activeDatum, send the pointer (actually, all of the source slot information, and make a special conversion)
+        // #sc_user_slot_variable_ux re-use the activeDatum, send the pointer (actually, all of the source slot information, and make a special conversion)
         ScriptCanvas::GraphVariableManagerRequestBus::EventResult(addOutcome, GetScriptCanvasId(), &ScriptCanvas::GraphVariableManagerRequests::AddVariable, variableName, variableDatum, true);
 
         if (addOutcome.IsSuccess())
         {
-            GraphCanvas::DataSlotRequestBus::Event(endpoint.GetSlotId(), &GraphCanvas::DataSlotRequests::ConvertToReference);
+            GraphCanvas::DataSlotRequestBus::Event(endpoint.GetSlotId(), &GraphCanvas::DataSlotRequests::ConvertToReference, isNewSlot);
 
             activeSlot->SetVariableReference(addOutcome.GetValue());
 
@@ -2319,7 +2321,7 @@ namespace ScriptCanvasEditor
         {
             if (!targetSlot->IsVariableReference())
             {
-                GraphCanvas::DataSlotRequestBus::Event(referenceTarget.GetSlotId(), &GraphCanvas::DataSlotRequests::ConvertToReference);
+                GraphCanvas::DataSlotRequestBus::Event(referenceTarget.GetSlotId(), &GraphCanvas::DataSlotRequests::ConvertToReference, false);
             }
 
             if (targetSlot->IsVariableReference())
@@ -2884,7 +2886,7 @@ namespace ScriptCanvasEditor
 
         for (auto graphCanvasEndpoint : referencableEndpoints)
         {
-            GraphCanvas::DataSlotRequestBus::Event(graphCanvasEndpoint.GetSlotId(), &GraphCanvas::DataSlotRequests::ConvertToReference);
+            GraphCanvas::DataSlotRequestBus::Event(graphCanvasEndpoint.GetSlotId(), &GraphCanvas::DataSlotRequests::ConvertToReference, false);
 
             ScriptCanvas::Endpoint scriptCanvasEndpoint = ConvertToScriptCanvasEndpoint(graphCanvasEndpoint);
 

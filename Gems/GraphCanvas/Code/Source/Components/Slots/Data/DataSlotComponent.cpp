@@ -294,9 +294,9 @@ namespace GraphCanvas
         }
     }
 
-    bool DataSlotComponent::ConvertToReference()
+    bool DataSlotComponent::ConvertToReference(bool isNewSlot)
     {
-        if (CanConvertToReference())
+        if (CanConvertToReference(isNewSlot))
         {
             AZ::EntityId nodeId = GetNode();
             GraphId graphId;
@@ -307,7 +307,7 @@ namespace GraphCanvas
                 ScopedGraphUndoBlocker undoBlocker(graphId);
 
                 bool convertedToReference = false;
-                GraphModelRequestBus::EventResult(convertedToReference, graphId, &GraphModelRequests::ConvertSlotToReference, Endpoint(nodeId, GetEntityId()));
+                GraphModelRequestBus::EventResult(convertedToReference, graphId, &GraphModelRequests::ConvertSlotToReference, Endpoint(nodeId, GetEntityId()), isNewSlot);
 
                 if (convertedToReference)
                 {
@@ -326,8 +326,9 @@ namespace GraphCanvas
         return m_dataSlotType == DataSlotType::Reference;
     }
 
-    bool DataSlotComponent::CanConvertToReference() const
+    bool DataSlotComponent::CanConvertToReference([[maybe_unused]] bool isNewSlot) const
     {
+        // #sc_user_slot_variable_ux  make sure this can be converted to reference, or created as one
         bool canToggleReference = false;        
 
         if (m_canConvertSlotTypes && DataSlotUtils::IsValueDataSlotType(m_dataSlotType) && !HasConnections())
@@ -336,7 +337,7 @@ namespace GraphCanvas
             GraphId graphId;
 
             SceneMemberRequestBus::EventResult(graphId, nodeId, &SceneMemberRequests::GetScene);            
-            GraphModelRequestBus::EventResult(canToggleReference, graphId, &GraphModelRequests::CanConvertSlotToReference, Endpoint(nodeId, GetEntityId()));
+            GraphModelRequestBus::EventResult(canToggleReference, graphId, &GraphModelRequests::CanConvertSlotToReference, Endpoint(nodeId, GetEntityId()), isNewSlot);
         }
 
         return canToggleReference;

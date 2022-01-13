@@ -94,12 +94,12 @@ namespace MockGraphCanvasServices
         GraphCanvas::DataSlotRequestBus::Handler::BusDisconnect();
     }
 
-    bool MockDataSlotComponent::ConvertToReference()
+    bool MockDataSlotComponent::ConvertToReference([[maybe_unused]] bool isNewSlot = false)
     {
         return false;
     }
 
-    bool MockDataSlotComponent::CanConvertToReference() const
+    bool MockDataSlotComponent::CanConvertToReference([[maybe_unused]] bool isNewSlot = false) const
     {
         return false;
     }
