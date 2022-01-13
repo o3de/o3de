@@ -53,7 +53,7 @@ namespace AZ
         {
             AssetBuilderSDK::AssetBuilderDesc builder;
             builder.m_name = PassBuilderJobKey;
-            builder.m_version = 14; // making .pass files emit product dependencies for the shaders they reference so they are picked up by the asset bundler
+            builder.m_version = 15; // Changed dependency type to OrderOnce
             builder.m_busId = azrtti_typeid<PassBuilder>();
             builder.m_createJobFunction = AZStd::bind(&PassBuilder::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
             builder.m_processJobFunction = AZStd::bind(&PassBuilder::ProcessJob, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
@@ -97,27 +97,16 @@ namespace AZ
         // Helper function to get a file reference and create a corresponding job dependency
         bool AddDependency(FindPassReferenceAssetParams& params, AssetBuilderSDK::JobDescriptor* job)
         {
-            AZStd::string_view& file = params.dependencySourceFile;
-            AZ::Data::AssetInfo sourceInfo;
-            AZStd::string watchFolder;
-            bool fileFound = false;
-            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(fileFound, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath, file.data(), sourceInfo, watchFolder);
-
-            if (fileFound)
-            {
-                AssetBuilderSDK::JobDependency jobDependency;
-                jobDependency.m_jobKey = params.jobKey;
-                jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
-                jobDependency.m_sourceFile.m_sourceFileDependencyPath = file;
-                job->m_jobDependencyList.push_back(jobDependency);
-                AZ_TracePrintf(PassBuilderName, "Creating job dependency on file [%s] \n", file.data());
-                return true;
-            }
-            else
-            {
-                AZ_Error(PassBuilderName, false, "Could not find referenced file [%s]", file.data());
-                return false;
-            }
+            // We use an OrderOnce job dependency to ensure that the Asset Processor knows about the
+            // referenced asset, so we can make an AssetId for it later in ProcessJob. OrderOnce is
+            // enough because we don't need to read any data from the asset, we just needs its ID.
+            AssetBuilderSDK::JobDependency jobDependency;
+            jobDependency.m_jobKey = params.jobKey;
+            jobDependency.m_type = AssetBuilderSDK::JobDependencyType::OrderOnce;
+            jobDependency.m_sourceFile.m_sourceFileDependencyPath = params.dependencySourceFile;
+            job->m_jobDependencyList.push_back(jobDependency);
+            AZ_TracePrintf(PassBuilderName, "Creating job dependency on file [%.*s] \n", AZ_STRING_ARG(params.dependencySourceFile));
+            return true;
         }
 
         bool SetJobKeyForExtension(const AZStd::string& filePath, FindPassReferenceAssetParams& params)
