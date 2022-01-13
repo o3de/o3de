@@ -539,7 +539,7 @@ namespace UnitTest
     {
     };
 
-    TEST_P(MoveMoveWrapParamQtEventToAzInputMapperFixture, MouseMove_NoAzHandlers_VerifyMouseMovementViewport)
+    TEST_P(MoveMoveWrapParamQtEventToAzInputMapperFixture, DISABLED_MouseMove_NoAzHandlers_VerifyMouseMovementViewport)
     {
 
         // setup
