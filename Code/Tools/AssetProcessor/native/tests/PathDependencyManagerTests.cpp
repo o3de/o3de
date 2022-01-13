@@ -12,6 +12,7 @@
 #include "AzToolsFramework/API/AssetDatabaseBus.h"
 #include "AssetDatabase/AssetDatabase.h"
 #include <AssetManager/PathDependencyManager.h>
+#include <AzCore/Component/Entity.h>
 #include <AzCore/Jobs/JobContext.h>
 #include <AzCore/Jobs/JobManager.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
@@ -362,14 +363,16 @@ namespace UnitTests
         static inline constexpr int NumTestDependencies = 4; // Must be a multiple of 4
         static inline constexpr int NumTestProducts = 2; // Must be a multiple of 2
 
-        ProductDatabaseEntryContainer m_products;
-        SourceDatabaseEntry m_source1, m_source2, m_source4;
-        JobDatabaseEntry m_job1, m_job2, m_job4;
-        ProductDatabaseEntry m_product1, m_product2, m_product4;
-        ProductDependencyDatabaseEntryContainer m_dependencies;
+        AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer m_products;
+        AzToolsFramework::AssetDatabase::SourceDatabaseEntry m_source1, m_source2, m_source4;
+        AzToolsFramework::AssetDatabase::JobDatabaseEntry m_job1, m_job2, m_job4;
+        AzToolsFramework::AssetDatabase::ProductDatabaseEntry m_product1, m_product2, m_product4;
+        AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer m_dependencies;
 
         void SetupTestData()
         {
+            using namespace AzToolsFramework::AssetDatabase;
+
             ScanFolderDatabaseEntry scanFolder("folder", "test", "test", 0);
             ASSERT_TRUE(m_stateData->SetScanFolder(scanFolder));
 

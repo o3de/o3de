@@ -124,12 +124,22 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         return *m_instance;
     }
 
+    AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& PrefabDocument::GetReferencedAssets()
+    {
+        return m_referencedAssets;
+    }
+
+    const AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& PrefabDocument::GetReferencedAssets() const
+    {
+        return m_referencedAssets;
+    }
+
     bool PrefabDocument::ConstructInstanceFromPrefabDom(const PrefabDom& prefab)
     {
         using namespace AzToolsFramework::Prefab;
 
         m_instance->Reset();
-        if (PrefabDomUtils::LoadInstanceFromPrefabDom(*m_instance, prefab, PrefabDomUtils::LoadFlags::AssignRandomEntityId))
+        if (PrefabDomUtils::LoadInstanceFromPrefabDom(*m_instance, prefab, m_referencedAssets, PrefabDomUtils::LoadFlags::AssignRandomEntityId))
         {
             return true;
         }

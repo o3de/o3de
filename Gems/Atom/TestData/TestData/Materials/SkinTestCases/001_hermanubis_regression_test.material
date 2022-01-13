@@ -11,7 +11,7 @@
                 0.29372090101242068,
                 1.0
             ],
-            "textureMap": "Objects/Lucy/Lucy_bronze_BaseColor.png",
+            "textureMap": "Objects/Hermanubis/Hermanubis_bronze_BaseColor.png",
             "useTexture": false
         },
         "detailLayerGroup": {
@@ -30,14 +30,14 @@
         },
         "normal": {
             "flipY": true,
-            "textureMap": "Objects/Lucy/Lucy_Normal.png"
+            "textureMap": "Objects/Hermanubis/Hermanubis_Normal.png"
         },
         "subsurfaceScattering": {
             "enableSubsurfaceScattering": true,
-            "influenceMap": "Objects/Lucy/Lucy_thickness.tif",
+            "influenceMap": "Objects/Hermanubis/Hermanubis_thickness.tif",
             "scatterDistance": 15.0,
             "subsurfaceScatterFactor": 0.4300000071525574,
-            "thicknessMap": "Objects/Lucy/Lucy_thickness.tif",
+            "thicknessMap": "Objects/Hermanubis/Hermanubis_thickness.tif",
             "transmissionAttenuation": 15.0,
             "transmissionDistortion": 0.3499999940395355,
             "transmissionMode": "ThickObject",

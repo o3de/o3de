@@ -62,8 +62,6 @@ private:
         bool m_showBBoxes;
         bool m_drawEntityLabels;
         bool m_showTriggerBounds;
-        bool m_showIcons;
-        bool m_distanceScaleIcons;
         bool m_showFrozenHelpers;
         bool m_fillSelectedShapes;
         bool m_showGridGuide;
