@@ -127,7 +127,7 @@ namespace AZ
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<MaterialAssetBuilderComponent, SceneAPI::SceneCore::ExportingComponent>()
-                    ->Version(18);  // material dependency improvements 
+                    ->Version(19);  // material dependency improvements 
             }
         }
         
