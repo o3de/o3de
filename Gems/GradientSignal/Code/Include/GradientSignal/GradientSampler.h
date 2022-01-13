@@ -33,7 +33,7 @@ namespace GradientSignal
         static void Reflect(AZ::ReflectContext* context);
 
         inline float GetValue(const GradientSampleParams& sampleParams) const;
-        inline void GetValues(AZStd::array_view<AZ::Vector3> positions, AZStd::array_view<float> outValues) const;
+        inline void GetValues(AZStd::span<AZ::Vector3> positions, AZStd::span<float> outValues) const;
 
         bool IsEntityInHierarchy(const AZ::EntityId& entityId) const;
 
@@ -147,17 +147,14 @@ namespace GradientSignal
         return output * m_opacity;
     }
 
-    inline void GradientSampler::GetValues(AZStd::array_view<AZ::Vector3> positions, AZStd::array_view<float> outValues) const
+    inline void GradientSampler::GetValues(AZStd::span<AZ::Vector3> positions, AZStd::span<float> outValues) const
     {
-        auto ClearOutputValues = [](AZStd::array_view<float> outValues)
+        auto ClearOutputValues = [](AZStd::span<float> outValues)
         {
             // If we don't have a valid gradient (or it is fully transparent), clear out all the output values.
             for (size_t index = 0; index < outValues.size(); index++)
             {
-                // The const_cast is necessary for now since array_view currently only supports const entries.
-                // If/when array_view is fixed to support non-const, or AZStd::span gets created, the const_cast can get removed.
-                auto& outValue = const_cast<float&>(outValues[index]);
-                outValue = 0.0f;
+                outValues[index] = 0.0f;
             }
         };
 
@@ -216,9 +213,7 @@ namespace GradientSignal
         // Perform any post-fetch transformations on the gradient values (invert, levels, opacity).
         for (size_t index = 0; index < outValues.size(); index++)
         {
-            // The const_cast is necessary for now since array_view currently only supports const entries.
-            // If/when array_view is fixed to support non-const, or AZStd::span gets created, the const_cast can get removed.
-            auto& outValue = const_cast<float&>(outValues[index]);
+            auto& outValue = outValues[index];
 
             if (m_invertInput)
             {

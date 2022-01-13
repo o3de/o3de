@@ -137,6 +137,21 @@ namespace GradientSignal
         return output;
     }
 
+    void InvertGradientComponent::GetValues(AZStd::span<AZ::Vector3> positions, AZStd::span<float> outValues) const
+    {
+        if (positions.size() != outValues.size())
+        {
+            AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
+            return;
+        }
+
+        m_configuration.m_gradientSampler.GetValues(positions, outValues);
+        for (size_t index = 0; index < outValues.size(); index++)
+        {
+            outValues[index] = 1.0f - AZ::GetClamp(outValues[index], 0.0f, 1.0f);
+        }
+    }
+
     bool InvertGradientComponent::IsEntityInHierarchy(const AZ::EntityId& entityId) const
     {
         return m_configuration.m_gradientSampler.IsEntityInHierarchy(entityId);

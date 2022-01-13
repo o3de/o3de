@@ -77,6 +77,7 @@ namespace GradientSignal
         //////////////////////////////////////////////////////////////////////////
         // GradientRequestBus
         float GetValue(const GradientSampleParams& sampleParams) const override;
+        void GetValues(AZStd::span<AZ::Vector3> positions, AZStd::span<float> outValues) const override;
         bool IsEntityInHierarchy(const AZ::EntityId& entityId) const override;
 
         //////////////////////////////////////////////////////////////////////////
@@ -102,6 +103,9 @@ namespace GradientSignal
         GradientSampler& GetGradientSampler() override;
 
     private:
+        float GetCalculatedPointsPerUnit() const;
+        float GetDitherValue(const AZ::Vector3& scaledPosition, float value) const;
+
         DitherGradientConfig m_configuration;
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
     };

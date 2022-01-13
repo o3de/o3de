@@ -183,7 +183,7 @@ namespace GradientSignal
         return 0.0f;
     }
 
-    void RandomGradientComponent::GetValues(AZStd::array_view<AZ::Vector3> positions, AZStd::array_view<float> outValues) const
+    void RandomGradientComponent::GetValues(AZStd::span<AZ::Vector3> positions, AZStd::span<float> outValues) const
     {
         if (positions.size() != outValues.size())
         {
@@ -200,19 +200,15 @@ namespace GradientSignal
 
         for (size_t index = 0; index < positions.size(); index++)
         {
-            // The const_cast is necessary for now since array_view currently only supports const entries.
-            // If/when array_view is fixed to support non-const, or AZStd::span gets created, the const_cast can get removed.
-            auto& outValue = const_cast<float&>(outValues[index]);
-
             m_gradientTransform.TransformPositionToUVW(positions[index], uvw, wasPointRejected);
 
             if (!wasPointRejected)
             {
-                outValue = GetRandomValue(uvw, seed);
+                outValues[index] = GetRandomValue(uvw, seed);
             }
             else
             {
-                outValue = 0.0f;
+                outValues[index] = 0.0f;
             }
         }
     }

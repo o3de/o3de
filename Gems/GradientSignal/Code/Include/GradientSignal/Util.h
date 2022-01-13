@@ -53,28 +53,61 @@ namespace GradientSignal
 
     inline float GetLevels(float input, float inputMid, float inputMin, float inputMax, float outputMin, float outputMax)
     {
-        input = AZ::GetClamp(input, 0.0f, 1.0f);
-        inputMid = AZ::GetClamp(inputMid, 0.01f, 10.0f);        // Clamp the midpoint to a non-zero value so that it's always safe to divide by it.
+        inputMid = AZ::GetClamp(inputMid, 0.01f, 10.0f); // Clamp the midpoint to a non-zero value so that it's always safe to divide by it.
         inputMin = AZ::GetClamp(inputMin, 0.0f, 1.0f);
         inputMax = AZ::GetClamp(inputMax, 0.0f, 1.0f);
         outputMin = AZ::GetClamp(outputMin, 0.0f, 1.0f);
         outputMax = AZ::GetClamp(outputMax, 0.0f, 1.0f);
 
-        float inputCorrected = 0.0f;
         if (inputMin == inputMax)
         {
-            inputCorrected = (input <= inputMin) ? 0.0f : 1.0f;
+            return (AZ::GetClamp(input, 0.0f, 1.0f) <= inputMin) ? outputMin : outputMax;
         }
-        else
-        {
-            const float inputRemapped = AZ::GetMin(AZ::GetMax(input - inputMin, 0.0f) / (inputMax - inputMin), 1.0f);
-            // Note:  Some paint programs map the midpoint using 1/mid where low values are dark and high values are light, 
-            // others do the reverse and use mid directly, so low values are light and high values are dark.  We've chosen to 
-            // align with 1/mid since it appears to be the more prevalent of the two approaches.
-            inputCorrected = powf(inputRemapped, 1.0f / inputMid);
-        }
+
+        const float inputMidReciprocal = 1.0f / inputMid;
+        const float inputExtentsReciprocal = 1.0f / (inputMax - inputMin);
+
+        const float inputRemapped =
+            AZ::GetMin(AZ::GetMax(AZ::GetClamp(input, 0.0f, 1.0f) - inputMin, 0.0f) * inputExtentsReciprocal, 1.0f);
+
+        // Note:  Some paint programs map the midpoint using 1/mid where low values are dark and high values are light, 
+        // others do the reverse and use mid directly, so low values are light and high values are dark.  We've chosen to 
+        // align with 1/mid since it appears to be the more prevalent of the two approaches.
+        const float inputCorrected = powf(inputRemapped, inputMidReciprocal);
 
         return AZ::Lerp(outputMin, outputMax, inputCorrected);
     }
 
+    inline void GetLevels(AZStd::span<float> inOutValues, float inputMid, float inputMin, float inputMax, float outputMin, float outputMax)
+    {
+        inputMid = AZ::GetClamp(inputMid, 0.01f, 10.0f); // Clamp the midpoint to a non-zero value so that it's always safe to divide by it.
+        inputMin = AZ::GetClamp(inputMin, 0.0f, 1.0f);
+        inputMax = AZ::GetClamp(inputMax, 0.0f, 1.0f);
+        outputMin = AZ::GetClamp(outputMin, 0.0f, 1.0f);
+        outputMax = AZ::GetClamp(outputMax, 0.0f, 1.0f);
+
+        if (inputMin == inputMax)
+        {
+            for (auto& inOutValue : inOutValues)
+            {
+                inOutValue = (AZ::GetClamp(inOutValue, 0.0f, 1.0f) <= inputMin) ? outputMin : outputMax;
+            }
+        }
+
+        const float inputMidReciprocal = 1.0f / inputMid;
+        const float inputExtentsReciprocal = 1.0f / (inputMax - inputMin);
+
+        for (auto& inOutValue : inOutValues)
+        {
+            const float inputRemapped =
+                AZ::GetMin(AZ::GetMax(AZ::GetClamp(inOutValue, 0.0f, 1.0f) - inputMin, 0.0f) * inputExtentsReciprocal, 1.0f);
+
+            // Note:  Some paint programs map the midpoint using 1/mid where low values are dark and high values are light,
+            // others do the reverse and use mid directly, so low values are light and high values are dark.  We've chosen to
+            // align with 1/mid since it appears to be the more prevalent of the two approaches.
+            const float inputCorrected = powf(inputRemapped, inputMidReciprocal);
+
+            inOutValue = AZ::Lerp(outputMin, outputMax, inputCorrected);
+        }
+    }
 } // namespace GradientSignal
