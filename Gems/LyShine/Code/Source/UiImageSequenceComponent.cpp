@@ -9,7 +9,7 @@
 #include "Sprite.h"
 #include "RenderGraph.h"
 
-#include <LyShine/Draw2d.h>
+#include <LyShine/IDraw2d.h>
 #include <LyShine/ISprite.h>
 #include <LyShine/IRenderGraph.h>
 #include <LyShine/Bus/UiElementBus.h>

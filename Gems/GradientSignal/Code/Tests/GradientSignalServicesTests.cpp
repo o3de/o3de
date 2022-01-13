@@ -31,7 +31,7 @@ namespace UnitTest
         config.m_value = expectedOutput;
 
         auto entity = CreateEntity();
-        CreateComponent<GradientSignal::ConstantGradientComponent>(entity.get(), config);
+        entity->CreateComponent<GradientSignal::ConstantGradientComponent>(config);
         ActivateEntity(entity.get());
 
         GradientSignal::GradientSampler gradientSampler;
@@ -75,7 +75,7 @@ namespace UnitTest
         config.m_gradientSampler.m_gradientId = entityMock->GetId();
 
         auto entity = CreateEntity();
-        CreateComponent<GradientSignal::DitherGradientComponent>(entity.get(), config);
+        entity->CreateComponent<GradientSignal::DitherGradientComponent>(config);
         ActivateEntity(entity.get());
 
         TestFixedDataSampler(expectedOutput, dataSize, entity->GetId());
@@ -109,7 +109,7 @@ namespace UnitTest
         config.m_gradientSampler.m_gradientId = entityMock->GetId();
 
         auto entity = CreateEntity();
-        CreateComponent<GradientSignal::DitherGradientComponent>(entity.get(), config);
+        entity->CreateComponent<GradientSignal::DitherGradientComponent>(config);
         ActivateEntity(entity.get());
 
         TestFixedDataSampler(expectedOutput, dataSize, entity->GetId());
@@ -147,7 +147,7 @@ namespace UnitTest
         config.m_gradientSampler.m_gradientId = entityMock->GetId();
 
         auto entity = CreateEntity();
-        CreateComponent<GradientSignal::DitherGradientComponent>(entity.get(), config);
+        entity->CreateComponent<GradientSignal::DitherGradientComponent>(config);
         ActivateEntity(entity.get());
 
         TestFixedDataSampler(expectedOutput, dataSize, entity->GetId());
@@ -185,7 +185,7 @@ namespace UnitTest
         config.m_gradientSampler.m_gradientId = entityMock->GetId();
 
         auto entity = CreateEntity();
-        CreateComponent<GradientSignal::DitherGradientComponent>(entity.get(), config);
+        entity->CreateComponent<GradientSignal::DitherGradientComponent>(config);
         ActivateEntity(entity.get());
 
         TestFixedDataSampler(expectedOutput, dataSize, entity->GetId());
