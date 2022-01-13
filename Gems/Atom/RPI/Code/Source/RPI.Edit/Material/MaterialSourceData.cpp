@@ -312,6 +312,9 @@ namespace AZ
                     {
                         materialAssetCreator.ReportWarning("Source data for material property value is invalid.");
                     }
+                    // If the source value type is a string, there are two possible property types: Image and Enum. If there is a "." in
+                    // the string (for the extension) we assume it's an Image and look up the referenced Asset. Otherwise, we can assume
+                    // it's an Enum value and just preserve the original string.
                     else if (property.second.m_value.Is<AZStd::string>() && AzFramework::StringFunc::Contains(property.second.m_value.GetValue<AZStd::string>(), "."))
                     {
                         Data::Asset<ImageAsset> imageAsset;
