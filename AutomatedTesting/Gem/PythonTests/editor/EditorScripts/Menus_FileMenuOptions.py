@@ -32,10 +32,10 @@ def Menus_FileMenuOptions_Work():
 
     file_menu_options = [
         ("New Level",),
-        #("Open Level",),               Temporarily disabled due to https://github.com/o3de/o3de/issues/6605
+        ("Open Level",),                #Temporarily disabled due to https://github.com/o3de/o3de/issues/6605
         #("Import",),                   Temporarily disabled due to https://github.com/o3de/o3de/issues/6746
         ("Save",),
-        #("Save As",),                  Temporarily disabled due to https://github.com/o3de/o3de/issues/6605
+        ("Save As",),                   #Temporarily disabled due to https://github.com/o3de/o3de/issues/6605
         ("Save Level Statistics",),
         ("Edit Project Settings",),
         #("Edit Platform Settings",),   Temporarily disabled due to https://github.com/o3de/o3de/issues/6604

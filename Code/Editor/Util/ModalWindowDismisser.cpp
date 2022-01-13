@@ -15,7 +15,7 @@
 // Qt
 #include <QDialog>
 #include <QTimer>
-
+#pragma optimize("", off)
 ModalWindowDismisser::ModalWindowDismisser()
 {
     qApp->installEventFilter(this);
@@ -45,7 +45,8 @@ bool ModalWindowDismisser::eventFilter(QObject* object, QEvent* event)
     {
         if (dialog->isModal())
         {
-            if (event->type() == QEvent::Show)
+            QEvent::Type test = event->type();
+            if (test == QEvent::Show)
             {
                 auto it = AZStd::find(m_windows.begin(), m_windows.end(), dialog);
                 if (it == m_windows.end())
