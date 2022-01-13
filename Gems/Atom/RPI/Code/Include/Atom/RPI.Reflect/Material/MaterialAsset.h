@@ -34,8 +34,6 @@ namespace AZ
         class MaterialAssetHandler;
 
         //! MaterialAsset defines a single material, which can be used to create a Material instance for rendering at runtime.
-        //! It fetches MaterialTypeSourceData from the MaterialTypeAsset it owned.
-        //! 
         //! Use a MaterialAssetCreator to create a MaterialAsset.
         class MaterialAsset
             : public AZ::Data::AssetData
@@ -46,7 +44,6 @@ namespace AZ
             friend class MaterialVersionUpdate;
             friend class MaterialAssetCreator;
             friend class MaterialAssetHandler;
-            friend class MaterialAssetCreatorCommon;
             friend class UnitTest::MaterialTests;
             friend class UnitTest::MaterialAssetTests;
 
@@ -117,8 +114,18 @@ namespace AZ
             //!
             //! Note that even though material source data files contain only override values and inherit the rest from
             //! their parent material, they all get flattened at build time so every MaterialAsset has the full set of values.
+            //!
+            //! Calling GetPropertyValues() will automatically finalize the material asset if it isn't finalized already. The
+            //! MaterialTypeAsset must be loaded and ready.
             const AZStd::vector<MaterialPropertyValue>& GetPropertyValues() const;
 
+            //! Returns the list of raw values for all properties in this material, as listed in the source .material file(s), before the material asset was Finalized.
+            //! 
+            //! The MaterialAsset can be created in a "half-baked" state (see MaterialUtils::BuildersShouldFinalizeMaterialAssets) where
+            //! minimal processing has been done because it did not yet have access to the MaterialTypeAsset. In that case, the list will
+            //! be populated with values copied from the source .material file with little or no validation or other processing. It includes
+            //! all parent .material files, with properties listed in low-to-high priority order. 
+            //! This list will be empty however if the asset was finalized at build-time.
             const AZStd::vector<AZStd::pair<Name, MaterialPropertyValue>>& GetRawPropertyValues() const;
 
         private:
