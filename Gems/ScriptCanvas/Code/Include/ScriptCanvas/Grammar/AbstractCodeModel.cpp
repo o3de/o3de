@@ -237,7 +237,7 @@ namespace ScriptCanvas
 
                 if (auto datum = variablePair.second.GetDatum())
                 {
-                    // #functions2 slot<->variable consider getting all variables from the UX variable manager, or from the ACM and looking them up in the variable manager for ordering
+                    // #sc_user_slot_variable_ux consider getting all variables from the UX variable manager, or from the ACM and looking them up in the variable manager for ordering
                     m_sourceVariableByDatum.insert(AZStd::make_pair(datum, &variablePair.second));
                 }
 
@@ -248,7 +248,7 @@ namespace ScriptCanvas
                 auto datum = sourceVariable->GetDatum();
                 AZ_Assert(datum != nullptr, "the datum must be valid");
 
-                // #functions2 slot<->variable check to verify if it is a member variable
+                // #sc_user_slot_variable_ux check to verify if it is a member variable
                 auto variable = sourceVariable->GetScope() == VariableFlags::Scope::Graph
                     ? AddMemberVariable(*datum, sourceVariable->GetVariableName(), sourceVariable->GetVariableId())
                     : AddVariable(*datum, sourceVariable->GetVariableName(), sourceVariable->GetVariableId());
@@ -1671,7 +1671,7 @@ namespace ScriptCanvas
 
                     if (returnValue.second->m_source->m_sourceSlotId == slot->GetId())
                     {
-                        // #functions2 slot<->variable determine if the root or the function call should be passed in here...the slot/node lead to the user call on the thread, but it may not even be created yet
+                        // #sc_user_slot_variable_ux determine if the root or the function call should be passed in here...the slot/node lead to the user call on the thread, but it may not even be created yet
                         return AZStd::make_pair(root, returnValue.second->m_source);
                     }
                 }
@@ -4644,7 +4644,7 @@ namespace ScriptCanvas
 
         void AbstractCodeModel::ParseNodelingVariables(const Node& node, NodelingType nodelingType)
         {
-            // #functions2 slot<->variable adjust once datums are more coordinated
+            // #sc_user_slot_variable_ux adjust once datums are more coordinated
             auto createVariablesSlots = [&](AZStd::unordered_map<const Slot*, VariablePtr>& variablesBySlots, const AZStd::vector<const Slot*>& slots, bool slotHasDatum)
             {
                 for (const auto& slot : slots)
@@ -4660,7 +4660,7 @@ namespace ScriptCanvas
                             return;
                         }
 
-                        // #functions2 slot<->variable consider getting all variables from the UX variable manager, or from the ACM and looking them up in the variable manager for ordering
+                        // #sc_user_slot_variable_ux consider getting all variables from the UX variable manager, or from the ACM and looking them up in the variable manager for ordering
 //                         auto iter = m_sourceVariableByDatum.find(variableDatum);
 //                         if (iter == m_sourceVariableByDatum.end())
 //                         {
