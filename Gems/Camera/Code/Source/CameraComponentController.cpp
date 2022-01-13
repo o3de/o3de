@@ -414,10 +414,20 @@ namespace Camera
         return m_isActiveView;
     }
 
-    AZ::Vector3 CameraComponentController::ScreenToWorld(const AZ::Vector2& screenPosition)
+    AZ::Vector3 CameraComponentController::ScreenToWorld(const AZ::Vector2& screenPosition, float depth)
     {
         const AzFramework::ScreenPoint point{ static_cast<int>(screenPosition.GetX()), static_cast<int>(screenPosition.GetY()) };
-        return AzFramework::ScreenToWorld(point, GetCameraState());
+        const AzFramework::CameraState& cameraState = GetCameraState();
+        if (depth == 0.f)
+        {
+            return AzFramework::ScreenToWorld(point, cameraState);
+        }
+        else
+        {
+            const AZ::Vector3 rayOrigin = AzFramework::ScreenToWorld(point, cameraState);
+            const AZ::Vector3 rayDirection = cameraState.m_orthographic ? cameraState.m_forward : (rayOrigin - cameraState.m_position);
+            return rayOrigin + (rayDirection.GetNormalized() * depth);
+        }
     }
 
     AZ::Vector2 CameraComponentController::WorldToScreen(const AZ::Vector3& worldPosition)

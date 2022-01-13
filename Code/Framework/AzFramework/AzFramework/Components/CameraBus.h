@@ -132,7 +132,10 @@ namespace Camera
 
         //! Unprojects a position in screen space pixel coordinates to world space.
         //! Note: The position returned will be on the near clip plane of the camera in world space.
-        virtual AZ::Vector3 ScreenToWorld(const AZ::Vector2& screenPosition) = 0;
+        //! @param screenPosition The absolute screen position
+        //! @param depth The Z offset into the world from the screen
+        //! @return the position in world space
+        virtual AZ::Vector3 ScreenToWorld(const AZ::Vector2& screenPosition, float depth) = 0;
 
         //! Projects a position in world space to screen space for the given camera.
         virtual AZ::Vector2 WorldToScreen(const AZ::Vector3& worldPosition) = 0;

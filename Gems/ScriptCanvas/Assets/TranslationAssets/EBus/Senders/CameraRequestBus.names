@@ -102,6 +102,12 @@
                             "details": {
                                 "name": "Screen Position"
                             }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Depth"
+                            }
                         }
                     ],
                     "results": [

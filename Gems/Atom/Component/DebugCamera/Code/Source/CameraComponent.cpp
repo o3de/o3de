@@ -255,7 +255,7 @@ namespace AZ
             return false;
         }
 
-        AZ::Vector3 CameraComponent::ScreenToWorld([[maybe_unused]] const AZ::Vector2& screenPosition)
+        AZ::Vector3 CameraComponent::ScreenToWorld([[maybe_unused]] const AZ::Vector2& screenPosition, [[maybe_unused]] float depth)
         {
             // not implemented
             return AZ::Vector3::CreateZero();
