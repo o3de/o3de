@@ -1390,7 +1390,7 @@ namespace AzToolsFramework
         AZStd::string ProductDatabaseEntry::ToString() const
         {
             return AZStd::string::format("ProductDatabaseEntry id:%" PRId64 " jobpk: %" PRId64 " subid: %i productname: %s assettype: %s hash: %" PRId64,
-                                         static_cast<int64_t>(m_productID), static_cast<int64_t>(m_jobPK), m_subID, m_productName.c_str(), m_assetType.ToString<AZStd::string>().c_str(), m_hash);
+                                         static_cast<int64_t>(m_productID), static_cast<int64_t>(m_jobPK), m_subID, m_productName.c_str(), m_assetType.ToString<AZStd::string>().c_str(), static_cast<int64_t>(m_hash));
         }
 
         auto ProductDatabaseEntry::GetColumns()
