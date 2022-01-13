@@ -83,6 +83,20 @@ namespace AzToolsFramework
                 return AZ::Failure(findCommonRootOutcome.TakeError());
             }
 
+            // order entities by their respective position within Entity Outliner
+            std::sort(
+                topLevelEntities.begin(), topLevelEntities.end(),
+                [&commonRootEntityId](AZ::Entity* entity1, AZ::Entity* entity2)
+                {
+                    AZ::u64 index1;
+                    EditorEntitySortRequestBus::EventResult(
+                        index1, commonRootEntityId, &EditorEntitySortRequests::GetChildEntityIndex, entity1->GetId());
+                    AZ::u64 index2;
+                    EditorEntitySortRequestBus::EventResult(
+                        index2, commonRootEntityId, &EditorEntitySortRequests::GetChildEntityIndex, entity2->GetId());
+                    return index1 < index2;
+                });
+
             AZ::EntityId containerEntityId;
 
             InstanceOptionalReference instanceToCreate;
@@ -152,9 +166,6 @@ namespace AzToolsFramework
                         "(PrefabEditorEntityOwnershipInterface unavailable)."));
                 }
 
-                // Create the Prefab
-                AZ_Assert(filePath.IsAbsolute(), "CreatePrefabInMemory requires an absolute file path.");
-
                 instanceToCreate = prefabEditorEntityOwnershipInterface->CreatePrefab(
                     entities, AZStd::move(instancePtrs), m_prefabLoaderInterface->GenerateRelativePath(filePath),
                     commonRootEntityOwningInstance);
@@ -172,6 +183,7 @@ namespace AzToolsFramework
 
                 // Parent the non-container top level entities to the container entity.
                 // Parenting the top level container entities will be done during the creation of links.
+                EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnEntitiesAboutToBeCloned);
                 for (AZ::Entity* topLevelEntity : topLevelEntities)
                 {
                     if (!IsInstanceContainerEntity(topLevelEntity->GetId()))
@@ -179,6 +191,7 @@ namespace AzToolsFramework
                         AZ::TransformBus::Event(topLevelEntity->GetId(), &AZ::TransformBus::Events::SetParent, containerEntityId);
                     }
                 }
+                EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnEntitiesCloned);
 
                 // Update the template of the instance since the entities are modified since the template creation.
                 Prefab::PrefabDom serializedInstance;
@@ -279,6 +292,8 @@ namespace AzToolsFramework
 
         CreatePrefabResult PrefabPublicHandler::CreatePrefabInDisk(const EntityIdList& entityIds, AZ::IO::PathView filePath)
         {
+            AZ_Assert(filePath.IsAbsolute(), "CreatePrefabInMemory requires an absolute file path.");
+
             auto result = CreatePrefabInMemory(entityIds, filePath);
             if (result.IsSuccess())
             {
