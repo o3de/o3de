@@ -72,14 +72,4 @@ namespace AZ::Utils
         azstrcpy(absolutePath, maxLength, path);
         return AZ::IO::PathView(absolutePath).IsAbsolute();
     }
-
-    bool SetEnv(const char* envname, const char* envvalue, bool overwrite)
-    {
-        return setenv(envname, envvalue, overwrite) != -1;
-    }
-
-    bool UnSetEnv(const char* envname)
-    {
-        return unsetenv(envname) != -1;
-    }
 } // namespace AZ::Utils

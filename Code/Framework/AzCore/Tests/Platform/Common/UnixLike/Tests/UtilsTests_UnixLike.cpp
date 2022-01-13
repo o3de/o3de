@@ -36,22 +36,4 @@ namespace UnitTest
         ASSERT_TRUE(absolutePath);
         EXPECT_STRCASEEQ(executableDirectory, absolutePath->c_str());
     }
-
-    TEST_F(UtilsUnixLikeTestFixture, SetEnv_GetExpectedVariable_Succeeds)
-    {
-        AZ::Utils::SetEnv("UT-O3DE-ENVVAR", "TEST", 1);
-
-        auto result = std::getenv("UT-O3DE-ENVVAR");
-        ASSERT_TRUE(result != nullptr);
-        EXPECT_STRCASEEQ("TEST", result);
-    }
-
-    TEST_F(UtilsUnixLikeTestFixture, UnSetEnv_GetExpectedEmptyVariable_Succeeds)
-    {
-        AZ::Utils::SetEnv("UT-O3DE-ENVVAR", "TEST", 1);
-        AZ::Utils::UnSetEnv("UT-O3DE-ENVVAR");
-
-        auto result = std::getenv("UT-O3DE-ENVVAR");
-        ASSERT_TRUE(result == nullptr);
-    }
 }

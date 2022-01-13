@@ -114,18 +114,5 @@ namespace AZ
         template<typename Container = AZStd::string>
         AZ::Outcome<Container, AZStd::string> ReadFile(
             AZStd::string_view filePath, size_t maxFileSize = AZStd::numeric_limits<size_t>::max());
-
-        //! Create or modify environment variable.
-        //! @param envname The environment variable name
-        //! @param envvalue The environment variable name
-        //! @param overwrite If name does exist in the environment, then its value is changed to value if overwrite is nonzero;
-        //! if overwrite is zero, then the value of name is not changed
-        //! @returns Return true if successful, otherwise false
-        bool SetEnv(const char* envname, const char* envvalue, bool overwrite);
-
-        //! Remove environment variable.
-        //! @param envname The environment variable name
-        //! @returns Return true if successful, otherwise false
-        bool UnSetEnv(const char* envname);
     }
 }
