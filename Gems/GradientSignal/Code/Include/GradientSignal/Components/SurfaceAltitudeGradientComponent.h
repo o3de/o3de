@@ -89,6 +89,7 @@ namespace GradientSignal
         //////////////////////////////////////////////////////////////////////////
         // GradientRequestBus
         float GetValue(const GradientSampleParams& sampleParams) const override;
+        void GetValues(AZStd::span<AZ::Vector3> positions, AZStd::span<float> outValues) const override;
 
     protected:
         //////////////////////////////////////////////////////////////////////////
@@ -105,7 +106,18 @@ namespace GradientSignal
         void AddTag(AZStd::string tag) override;
 
     private:
-        mutable AZStd::recursive_mutex m_cacheMutex;
+        static float CalculateAltitudeRatio(const SurfaceData::SurfacePointList& points, float altitudeMin, float altitudeMax)
+        {
+            if (points.empty())
+            {
+                return 0.0f;
+            }
+
+            const AZ::Vector3& position = points.front().m_position;
+            return GetRatio(altitudeMin, altitudeMax, position.GetZ());
+        }
+
+        mutable AZStd::shared_mutex m_cacheMutex;
         SurfaceAltitudeGradientConfig m_configuration;
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
         AZStd::atomic_bool m_dirty{ false };
