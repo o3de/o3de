@@ -7,11 +7,12 @@
  */
 #pragma once
 
+#include <AzCore/Component/EntityId.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Vector3.h>
-#include <AzCore/Component/EntityId.h>
 #include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Transform.h>
+#include <AzCore/std/containers/span.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <GradientSignal/GradientTransform.h>
 
