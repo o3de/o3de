@@ -49,21 +49,56 @@ include(cmake/O3DEJson.cmake)
 # Subdirectory processing
 ################################################################################
 
-function(add_engine_json_external_subdirectories)
-    read_json_external_subdirs(external_subdis ${LY_ROOT_FOLDER}/engine.json)
-    foreach(external_subdir ${external_subdis})
-        file(REAL_PATH ${external_subdir} real_external_subdir BASE_DIRECTORY ${LY_ROOT_FOLDER})
-        list(APPEND engine_external_subdirs ${real_external_subdir})
-    endforeach()
+# this function is building up the LY_EXTERNAL_SUBDIRS global property
+function(add_engine_gem_json_external_subdirectories gem_path)
+    set(gem_json_path ${gem_path}/gem.json)
+    if(EXISTS ${gem_json_path})
+        read_json_external_subdirs(gem_external_subdirs ${gem_path}/gem.json)
+        foreach(gem_external_subdir ${gem_external_subdirs})
+            file(REAL_PATH ${gem_external_subdir} real_external_subdir BASE_DIRECTORY ${gem_path})
+            set_property(GLOBAL APPEND PROPERTY LY_EXTERNAL_SUBDIRS ${real_external_subdir})
+            add_engine_gem_json_external_subdirectories(${real_external_subdir})
+        endforeach()
+    endif()
+endfunction()
 
-    set_property(GLOBAL APPEND PROPERTY LY_EXTERNAL_SUBDIRS ${engine_external_subdirs})
+function(add_engine_json_external_subdirectories)
+    read_json_external_subdirs(engine_external_subdirs ${LY_ROOT_FOLDER}/engine.json)
+    foreach(engine_external_subdir ${engine_external_subdirs})
+        file(REAL_PATH ${engine_external_subdir} real_external_subdir BASE_DIRECTORY ${LY_ROOT_FOLDER})
+        set_property(GLOBAL APPEND PROPERTY LY_EXTERNAL_SUBDIRS ${real_external_subdir})
+        add_engine_gem_json_external_subdirectories(${real_external_subdir})
+    endforeach()
+endfunction()
+
+function(add_subdirectory_on_externalsubdirs)
+    get_property(external_subdirs GLOBAL PROPERTY LY_EXTERNAL_SUBDIRS)
+    list(APPEND LY_EXTERNAL_SUBDIRS ${external_subdirs})
+    # Loop over the additional external subdirectories and invoke add_subdirectory on them
+    foreach(external_directory ${LY_EXTERNAL_SUBDIRS})
+        # Hash the external_directory name and append it to the Binary Directory section of add_subdirectory
+        # This is to deal with potential situations where multiple external directories has the same last directory name
+        # For example if D:/Company1/RayTracingGem and F:/Company2/Path/RayTracingGem were both added as a subdirectory
+        file(REAL_PATH ${external_directory} full_directory_path)
+        string(SHA256 full_directory_hash ${full_directory_path})
+        # Truncate the full_directory_hash down to 8 characters to avoid hitting the Windows 260 character path limit
+        # when the external subdirectory contains relative paths of significant length
+        string(SUBSTRING ${full_directory_hash} 0 8 full_directory_hash)
+        # Use the last directory as the suffix path to use for the Binary Directory
+        get_filename_component(directory_name ${external_directory} NAME)
+        add_subdirectory(${external_directory} ${CMAKE_BINARY_DIR}/External/${directory_name}-${full_directory_hash})
+    endforeach()
 endfunction()
 
 # Add the projects first so the Launcher can find them
 include(cmake/Projects.cmake)
 
 if(NOT INSTALLED_ENGINE)
-    
+    # Add external subdirectories listed in the engine.json. LY_EXTERNAL_SUBDIRS is a cache variable so the user can add extra
+    # external subdirectories. This should go before adding the rest of the targets so the targets are availbe to the launcher.
+    add_engine_json_external_subdirectories()
+    add_subdirectory_on_externalsubdirs()
+
     # Add the rest of the targets
     add_subdirectory(Assets)
     add_subdirectory(Code)
@@ -73,30 +108,10 @@ if(NOT INSTALLED_ENGINE)
     add_subdirectory(Templates)
     add_subdirectory(Tools)
 
-    # Add external subdirectories listed in the engine.json. LY_EXTERNAL_SUBDIRS is a cache variable so the user can add extra
-    # external subdirectories
-    add_engine_json_external_subdirectories()
 else()
     ly_find_o3de_packages()
+    add_subdirectory_on_externalsubdirs()
 endif()
-
-get_property(external_subdirs GLOBAL PROPERTY LY_EXTERNAL_SUBDIRS)
-list(APPEND LY_EXTERNAL_SUBDIRS ${external_subdirs})
-
-# Loop over the additional external subdirectories and invoke add_subdirectory on them
-foreach(external_directory ${LY_EXTERNAL_SUBDIRS})
-    # Hash the extenal_directory name and append it to the Binary Directory section of add_subdirectory
-    # This is to deal with potential situations where multiple external directories has the same last directory name
-    # For example if D:/Company1/RayTracingGem and F:/Company2/Path/RayTracingGem were both added as a subdirectory
-    file(REAL_PATH ${external_directory} full_directory_path)
-    string(SHA256 full_directory_hash ${full_directory_path})
-    # Truncate the full_directory_hash down to 8 characters to avoid hitting the Windows 260 character path limit
-    # when the external subdirectory contains relative paths of significant length
-    string(SUBSTRING ${full_directory_hash} 0 8 full_directory_hash)
-    # Use the last directory as the suffix path to use for the Binary Directory
-    get_filename_component(directory_name ${external_directory} NAME)
-    add_subdirectory(${external_directory} ${CMAKE_BINARY_DIR}/External/${directory_name}-${full_directory_hash})
-endforeach()
 
 ################################################################################
 # Post-processing

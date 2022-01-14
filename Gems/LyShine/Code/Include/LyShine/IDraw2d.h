@@ -482,6 +482,50 @@ public: // static member functions
         return nullptr;
     }
 
+    //! Helper to load a texture
+    static AZ::Data::Instance<AZ::RPI::Image> LoadTexture(const AZStd::string& pathName)
+    {
+        if (gEnv && gEnv->pLyShine) // [LYSHINE_ATOM_TODO][GHI #3569] Remove LyShine global interface pointer from legacy global environment
+        {
+            return gEnv->pLyShine->LoadTexture(pathName);
+        }
+
+        return nullptr;
+    }
+
+    //! Given a position and size and an alignment return the top left corner of the aligned quad
+    static AZ::Vector2 Align(AZ::Vector2 position, AZ::Vector2 size, IDraw2d::HAlign horizontalAlignment, IDraw2d::VAlign verticalAlignment)
+    {
+        AZ::Vector2 result = AZ::Vector2::CreateZero();
+        switch (horizontalAlignment)
+        {
+        case IDraw2d::HAlign::Left:
+            result.SetX(position.GetX());
+            break;
+        case IDraw2d::HAlign::Center:
+            result.SetX(position.GetX() - size.GetX() * 0.5f);
+            break;
+        case IDraw2d::HAlign::Right:
+            result.SetX(position.GetX() - size.GetX());
+            break;
+        }
+
+        switch (verticalAlignment)
+        {
+        case IDraw2d::VAlign::Top:
+            result.SetY(position.GetY());
+            break;
+        case IDraw2d::VAlign::Center:
+            result.SetY(position.GetY() - size.GetY() * 0.5f);
+            break;
+        case IDraw2d::VAlign::Bottom:
+            result.SetY(position.GetY() - size.GetY());
+            break;
+        }
+
+        return result;
+    }
+
     //! Round the X and Y coordinates of a point using the given rounding policy
     template<typename T>
     static T RoundXY(T value, IDraw2d::Rounding roundingType)
