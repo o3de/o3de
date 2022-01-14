@@ -266,14 +266,16 @@ namespace UnitTest
         warningFinder.AddExpectedErrorMessage("Automatic updates are available. Consider updating the .material source file");
         warningFinder.AddExpectedErrorMessage("This material is based on version '1'");
         warningFinder.AddExpectedErrorMessage("material type is now at version '2'");
+        
+        materialAsset->Finalize();
+        
+        warningFinder.CheckExpectedErrorsFound();
 
         // Even though this material was created using the old version of the material type, it's property values should get automatically
         // updated to align with the new property layout in the latest MaterialTypeAsset.
         MaterialPropertyIndex myIntIndex = materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(Name{"MyIntRenamed"});
         EXPECT_EQ(2, myIntIndex.GetIndex());
         EXPECT_EQ(7, materialAsset->GetPropertyValues()[myIntIndex.GetIndex()].GetValue<int32_t>());
-
-        warningFinder.CheckExpectedErrorsFound();
 
         // Since the MaterialAsset has already been updated, and the warning reported once, we should not see the "consider updating"
         // warning reported again on subsequent property accesses.
