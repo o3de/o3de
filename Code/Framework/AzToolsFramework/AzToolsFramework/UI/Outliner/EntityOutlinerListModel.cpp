@@ -263,7 +263,6 @@ namespace AzToolsFramework
                     label = AzToolsFramework::RichTextHighlighter::HighlightText(label, m_filterString.c_str());
                 }
                 return label;
-                return label;
             }
             break;
         case Qt::ToolTipRole:
