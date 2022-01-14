@@ -84,6 +84,7 @@ namespace AzToolsFramework
                 return AZ::Failure(findCommonRootOutcome.TakeError());
             }
 
+            // order entities by their respective position within Entity Outliner
             EditorEntitySortRequestBus::Event(
                 commonRootEntityId,
                 [&topLevelEntities](EditorEntitySortRequestBus::Events* sortRequests)
@@ -95,20 +96,6 @@ namespace AzToolsFramework
                             return sortRequests->GetChildEntityIndex(entity1->GetId()) <
                                 sortRequests->GetChildEntityIndex(entity2->GetId());
                         });
-                });
-
-            // order entities by their respective position within Entity Outliner
-            std::sort(
-                topLevelEntities.begin(), topLevelEntities.end(),
-                [&commonRootEntityId](AZ::Entity* entity1, AZ::Entity* entity2)
-                {
-                    AZ::u64 index1;
-                    EditorEntitySortRequestBus::EventResult(
-                        index1, commonRootEntityId, &EditorEntitySortRequests::GetChildEntityIndex, entity1->GetId());
-                    AZ::u64 index2;
-                    EditorEntitySortRequestBus::EventResult(
-                        index2, commonRootEntityId, &EditorEntitySortRequests::GetChildEntityIndex, entity2->GetId());
-                    return index1 < index2;
                 });
 
             AZ::EntityId containerEntityId;
