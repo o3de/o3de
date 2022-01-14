@@ -79,7 +79,6 @@
 #define AZ_PUSH_DISABLE_WARNING_MSVC(_msvcOption)       \
     __pragma(warning(push))                             \
     __pragma(warning(disable : _msvcOption))
-#define AZ_PUSH_DISABLE_WARNING_MSVC(_msvcOption)
 #define AZ_PUSH_DISABLE_WARNING_CLANG(_clangOption)
 #define AZ_PUSH_DISABLE_WARNING_GCC(_gccOption)
 

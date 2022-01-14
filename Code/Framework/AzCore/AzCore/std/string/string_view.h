@@ -346,28 +346,21 @@ namespace AZStd
 
         static constexpr size_t length(const char_type* s) noexcept
         {
+            // For GCC versions less than 10, __builtin_strlen and __builtin_wcslen is not supported as const expressions
+            // so for that case it will need to manually count the characters (at compile time) instead
+
+#if defined(AZ_COMPILER_GCC) && AZ_COMPILER_GCC < 100000
+
             if constexpr (AZStd::is_same_v<char_type, char>)
             {
-                if (az_builtin_is_constant_evaluated())
-                {
-#if !defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC >= 100000
-                    return __builtin_strlen(s);
-#endif
-                }
-                else
+                if (!az_builtin_is_constant_evaluated())
                 {
                     return strlen(s);
                 }
             }
             else if constexpr (AZStd::is_same_v<char_type, wchar_t>)
             {
-                if (az_builtin_is_constant_evaluated())
-                {
-#if !defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC >= 100000
-                    return __builtin_wcslen(s);
-#endif
-                }
-                else
+                if (!az_builtin_is_constant_evaluated())
                 {
                     return wcslen(s);
                 }
@@ -379,7 +372,26 @@ namespace AZStd
                 ;
             }
             return strLength;
+#else
 
+            if constexpr (AZStd::is_same_v<char_type, char>)
+            {
+                return __builtin_strlen(s);
+            }
+            else if constexpr (AZStd::is_same_v<char_type, wchar_t>)
+            {
+                return __builtin_wcslen(s);
+            }
+            else
+            {
+                size_t strLength{};
+                for (; *s; ++s, ++strLength)
+                {
+                    ;
+                }
+                return strLength;
+            }
+#endif // defined(AZ_COMPILER_GCC) && AZ_COMPILER_GCC < 100000
         }
 
         static constexpr const char_type* find(const char_type* s, size_t count, const char_type& ch) noexcept
