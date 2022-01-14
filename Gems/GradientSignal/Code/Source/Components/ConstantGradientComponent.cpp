@@ -143,10 +143,7 @@ namespace GradientSignal
             return;
         }
 
-        for (auto& outValue : outValues)
-        {
-            outValue = m_configuration.m_value;
-        }
+        AZStd::fill(outValues.begin(), outValues.end(), m_configuration.m_value);
     }
 
     float ConstantGradientComponent::GetConstantValue() const
