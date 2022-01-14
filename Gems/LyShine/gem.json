@@ -24,6 +24,7 @@
         "Atom_Bootstrap",
         "AtomFont",
         "TextureAtlas",
-        "AtomToolsFramework"
+        "AtomToolsFramework",
+        "UiBasics"
     ]
 }

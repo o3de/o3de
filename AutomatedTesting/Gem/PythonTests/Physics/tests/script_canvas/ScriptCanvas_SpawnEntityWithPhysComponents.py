@@ -106,7 +106,7 @@ def ScriptCanvas_SpawnEntityWithPhysComponents():
     # Main Script
     helper.init_idle()
     # 1) Open Level
-    helper.open_level("physics", "ScriptCanvas_SpawnEntityWithPhysComponents")
+    helper.open_level("Physics", "ScriptCanvas_SpawnEntityWithPhysComponents")
 
     # 2) Enter Game Mode
     helper.enter_game_mode(Tests.enter_game_mode)

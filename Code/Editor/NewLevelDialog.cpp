@@ -115,7 +115,6 @@ CNewLevelDialog::~CNewLevelDialog()
 void CNewLevelDialog::OnStartup()
 {
     UpdateData(false);
-    setFocus();
 }
 
 void CNewLevelDialog::UpdateData(bool fromUi)

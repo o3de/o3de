@@ -20,7 +20,7 @@
 #include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Debug/Trace.h>
 
-#include <LyShine/Draw2d.h>
+#include <LyShine/IDraw2d.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // PUBLIC MEMBER FUNCTIONS
@@ -76,7 +76,7 @@ void UiRenderer::OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene)
     // Create a dynamic draw context for UI Canvas drawing for the scene
     m_dynamicDraw = CreateDynamicDrawContext(uiShader);
 
-    if (m_dynamicDraw)
+    if (m_dynamicDraw && m_dynamicDraw->IsReady())
     {
         // Cache shader data such as input indices for later use
         CacheShaderData(m_dynamicDraw);
@@ -85,7 +85,7 @@ void UiRenderer::OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene)
     }
     else
     {
-        AZ_Error(LogName, false, "Failed to create a dynamic draw context for LyShine. \
+        AZ_Error(LogName, false, "Failed to create or initialize a dynamic draw context for LyShine. \
             This can happen if the LyShine pass hasn't been added to the main render pipeline.");
     }
 }
@@ -449,7 +449,7 @@ void UiRenderer::DebugDisplayTextureData(int recordingOption)
         // local function to write a line of text (with a background rect) and increment Y offset
         AZStd::function<void(const char*, const AZ::Vector3&)> WriteLine = [&](const char* buffer, const AZ::Vector3& color)
         {
-            CDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
+            IDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
             textOptions.color = color;
             AZ::Vector2 textSize = draw2d->GetTextSize(buffer, fontSize, &textOptions);
             AZ::Vector2 rectTopLeft = AZ::Vector2(xOffset - 2, yOffset);
