@@ -15,7 +15,6 @@ ly_associate_package(PACKAGE_NAME pybind11-2.4.3-rev3-multiplatform             
 ly_associate_package(PACKAGE_NAME cityhash-1.1-multiplatform                            TARGETS cityhash                    PACKAGE_HASH 0ace9e6f0b2438c5837510032d2d4109125845c0efd7d807f4561ec905512dd2)
 ly_associate_package(PACKAGE_NAME expat-2.4.2-rev1-windows                              TARGETS expat                       PACKAGE_HASH 123d81dcd0e30306fdb0d062348b992e68358cc31f0a15a98c4c04fc68dc437e)
 ly_associate_package(PACKAGE_NAME zstd-1.35-multiplatform                               TARGETS zstd                        PACKAGE_HASH 45d466c435f1095898578eedde85acf1fd27190e7ea99aeaa9acfd2f09e12665)
-ly_associate_package(PACKAGE_NAME SQLite-3.32.2-rev3-multiplatform                      TARGETS SQLite                      PACKAGE_HASH dd4d3de6cbb4ce3d15fc504ba0ae0587e515dc89a25228037035fc0aef4831f4)
 ly_associate_package(PACKAGE_NAME glad-2.0.0-beta-rev2-multiplatform                    TARGETS glad                        PACKAGE_HASH ff97ee9664e97d0854b52a3734c2289329d9f2b4cd69478df6d0ca1f1c9392ee)
 ly_associate_package(PACKAGE_NAME xxhash-0.7.4-rev1-multiplatform                       TARGETS xxhash                      PACKAGE_HASH e81f3e6c4065975833996dd1fcffe46c3cf0f9e3a4207ec5f4a1b564ba75861e)
 
@@ -49,3 +48,4 @@ ly_associate_package(PACKAGE_NAME astc-encoder-3.2-rev2-windows                 
 ly_associate_package(PACKAGE_NAME ISPCTexComp-36b80aa-rev1-windows                      TARGETS ISPCTexComp                 PACKAGE_HASH b6fa6ea28a2808a9a5524c72c37789c525925e435770f2d94eb2d387360fa2d0)
 ly_associate_package(PACKAGE_NAME lz4-1.9.3-vcpkg-rev4-windows                          TARGETS lz4                         PACKAGE_HASH 4ea457b833cd8cfaf8e8e06ed6df601d3e6783b606bdbc44a677f77e19e0db16)
 ly_associate_package(PACKAGE_NAME azslc-1.7.34-rev1-windows                             TARGETS azslc                       PACKAGE_HASH 44eb2e0fc4b0f1c75d0fb6f24c93a5753655b84dbc3e6ad45389ed3b9cf7a4b0)
+ly_associate_package(PACKAGE_NAME SQLite-3.37.2-rev1-windows        	                TARGETS SQLite                      PACKAGE_HASH c1658c8ed5cf0e45d4a5da940c6a6d770b76e0f4f57313b70d0fd306885f015e)
