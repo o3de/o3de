@@ -106,13 +106,12 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 3rdParty::AWSNativeSDK::AWSClientAuth
                 AZ::AzCore
                 AZ::AzFramework
-                AZ::AWSNativeSDKInit
+                AZ::AWSNativeSDKTest
                 Gem::AWSClientAuth.Static
                 Gem::AWSCore
                 Gem::HttpRequestor
         RUNTIME_DEPENDENCIES
             Gem::AWSCore
-            AZ::AWSNativeSDKInit
             Gem::HttpRequestor
    )
    ly_add_googletest(

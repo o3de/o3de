@@ -32,7 +32,7 @@ namespace AWSNativeSDKInit
     public:
         static const char* const initializationManagerTag;
 
-        InitializationManager() = default;
+        InitializationManager();
         ~InitializationManager();
 
         // Call to guarantee that the API is initialized with proper Open 3D Engine settings.
@@ -41,14 +41,12 @@ namespace AWSNativeSDKInit
         // This will prevent a the AWS SDK from going through the shutdown routine until all references are gone, or
         // the AZ::EnvironmentVariable system is brought down.
         static void InitAwsApi();
-        static void InitAwsApiNoLogging();
         static bool IsInitialized();
 
         // Remove our reference
         static void Shutdown();
     private:    
         void InitializeAwsApiInternal();
-        void InitializeAwsApiInternalNoLogging();
         void ShutdownAwsApiInternal();
 
         MemoryManager m_memoryManager;

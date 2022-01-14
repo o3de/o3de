@@ -17,7 +17,7 @@
 #include <Framework/JsonObjectHandler.h>
 #include <Framework/JsonWriter.h>
 
-#include <AWSNativeSDKInit/AWSNativeSDKInit.h>
+#include <AWSNativeSDKTest.h>
 
 namespace AWSCoreTestingUtils
 {
@@ -138,7 +138,7 @@ public:
             m_app = AZStd::make_unique<AZ::ComponentApplication>();
         }
 
-        AWSNativeSDKInit::InitializationManager::InitAwsApiNoLogging();
+        AWSNativeSDKTest::TestSDKManager::Init();
     }
 
     void TearDown() override
@@ -148,7 +148,7 @@ public:
 
     void TearDownFixture(bool mockSettingsRegistry = true) 
     {
-        AWSNativeSDKInit::InitializationManager::Shutdown();
+        AWSNativeSDKTest::TestSDKManager::Shutdown();
 
         if (mockSettingsRegistry)
         {

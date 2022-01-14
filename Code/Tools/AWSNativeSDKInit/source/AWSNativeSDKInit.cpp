@@ -34,6 +34,11 @@ namespace AWSNativeSDKInit
     const char* const InitializationManager::initializationManagerTag = "AWSNativeSDKInitializer";
     AZ::EnvironmentVariable<InitializationManager> InitializationManager::s_initManager = nullptr;
 
+    InitializationManager::InitializationManager()
+    {
+        InitializeAwsApiInternal();
+    }
+
     InitializationManager::~InitializationManager()
     {
         ShutdownAwsApiInternal();
@@ -42,15 +47,6 @@ namespace AWSNativeSDKInit
     void InitializationManager::InitAwsApi()
     {
         s_initManager = AZ::Environment::CreateVariable<InitializationManager>(initializationManagerTag);
-        s_initManager->InitializeAwsApiInternal();
-
-        Platform::CopyCaCertBundle();
-    }
-
-    void InitializationManager::InitAwsApiNoLogging()
-    {
-        s_initManager = AZ::Environment::CreateVariable<InitializationManager>(initializationManagerTag);
-        s_initManager->InitializeAwsApiInternalNoLogging();
 
         Platform::CopyCaCertBundle();
     }
@@ -64,7 +60,6 @@ namespace AWSNativeSDKInit
     {
         return s_initManager.IsConstructed();
     }
-
     void InitializationManager::InitializeAwsApiInternal()
     {
 #if defined(PLATFORM_SUPPORTS_AWS_NATIVE_SDK)
@@ -87,15 +82,6 @@ namespace AWSNativeSDKInit
 #endif // #if defined(PLATFORM_SUPPORTS_AWS_NATIVE_SDK)
     }
 
-    void InitializationManager::InitializeAwsApiInternalNoLogging()
-    {
-#if defined(PLATFORM_SUPPORTS_AWS_NATIVE_SDK)
-        m_awsSDKOptions.memoryManagementOptions.memoryManager = &m_memoryManager;
-        Platform::CustomizeSDKOptions(m_awsSDKOptions);
-        Aws::InitAPI(m_awsSDKOptions);
-#endif // #if defined(PLATFORM_SUPPORTS_AWS_NATIVE_SDK)
-    }
-
     void InitializationManager::ShutdownAwsApiInternal()
     {
 #if defined(PLATFORM_SUPPORTS_AWS_NATIVE_SDK)
@@ -103,5 +89,4 @@ namespace AWSNativeSDKInit
         Platform::CustomizeShutdown();
 #endif // #if defined(PLATFORM_SUPPORTS_AWS_NATIVE_SDK)
     }
-
 }

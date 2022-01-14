@@ -35,7 +35,7 @@ namespace HttpRequestor
         desc.m_name = s_loggingName;
         desc.m_cpuId = AFFINITY_MASK_USERTHREADS;
         m_runThread = true;
-        AWSNativeSDKInit::InitializationManager::InitAwsApiNoLogging();
+        AWSNativeSDKInit::InitializationManager::InitAwsApi();
         auto function = [this]
         {
             ThreadFunction();
