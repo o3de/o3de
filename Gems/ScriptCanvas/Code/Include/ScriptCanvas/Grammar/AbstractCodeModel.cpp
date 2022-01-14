@@ -237,7 +237,7 @@ namespace ScriptCanvas
 
                 if (auto datum = variablePair.second.GetDatum())
                 {
-                    // #sc_user_slot_variable_ux consider getting all variables from the UX variable manager, or from the ACM and looking them up in the variable manager for ordering
+                    // #functions2 slot<->variable consider getting all variables from the UX variable manager, or from the ACM and looking them up in the variable manager for ordering
                     m_sourceVariableByDatum.insert(AZStd::make_pair(datum, &variablePair.second));
                 }
             }
@@ -247,7 +247,7 @@ namespace ScriptCanvas
                 auto datum = sourceVariable->GetDatum();
                 AZ_Assert(datum != nullptr, "the datum must be valid");
 
-                // #sc_user_slot_variable_ux check to verify if it is a member variable
+                // #functions2 slot<->variable check to verify if it is a member variable
                 auto variable = sourceVariable->GetScope() == VariableFlags::Scope::Graph
                     ? AddMemberVariable(*datum, sourceVariable->GetVariableName(), sourceVariable->GetVariableId())
                     : AddVariable(*datum, sourceVariable->GetVariableName(), sourceVariable->GetVariableId());
@@ -1670,7 +1670,7 @@ namespace ScriptCanvas
 
                     if (returnValue.second->m_source->m_sourceSlotId == slot->GetId())
                     {
-                        // #sc_user_slot_variable_ux determine if the root or the function call should be passed in here...the slot/node lead to the user call on the thread, but it may not even be created yet
+                        // #functions2 slot<->variable determine if the root or the function call should be passed in here...the slot/node lead to the user call on the thread, but it may not even be created yet
                         return AZStd::make_pair(root, returnValue.second->m_source);
                     }
                 }

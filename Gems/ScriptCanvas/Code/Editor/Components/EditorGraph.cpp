@@ -667,7 +667,6 @@ namespace ScriptCanvasEditor
                         }
 
                         // Now that the slot has a valid type/name, we can actually promote it to a variable
-                        // #sc_user_slot_variable_ux add a value indicating that the slot is new
                         if (PromoteToVariableAction(endpoint, true))
                         {
                             ScriptCanvas::GraphVariable* variable = slot->GetVariable();
@@ -2191,7 +2190,6 @@ namespace ScriptCanvasEditor
 
     bool Graph::PromoteToVariableAction(const GraphCanvas::Endpoint& endpoint, bool isNewSlot)
     {
-        // #sc_user_slot_variable_ux make the fix here...rework is user added or something
         ScriptCanvas::Endpoint scriptCanvasEndpoint = ConvertToScriptCanvasEndpoint(endpoint);
 
         auto activeNode = FindNode(scriptCanvasEndpoint.GetNodeId());
@@ -2283,7 +2281,6 @@ namespace ScriptCanvasEditor
 
         AZ::Outcome<ScriptCanvas::VariableId, AZStd::string> addOutcome;
 
-        // #sc_user_slot_variable_ux re-use the activeDatum, send the pointer (actually, all of the source slot information, and make a special conversion)
         ScriptCanvas::GraphVariableManagerRequestBus::EventResult(addOutcome, GetScriptCanvasId(), &ScriptCanvas::GraphVariableManagerRequests::AddVariable, variableName, variableDatum, true);
 
         if (addOutcome.IsSuccess())

@@ -328,7 +328,6 @@ namespace GraphCanvas
 
     bool DataSlotComponent::CanConvertToReference([[maybe_unused]] bool isNewSlot) const
     {
-        // #sc_user_slot_variable_ux  make sure this can be converted to reference, or created as one
         bool canToggleReference = false;        
 
         if (m_canConvertSlotTypes && DataSlotUtils::IsValueDataSlotType(m_dataSlotType) && !HasConnections())
