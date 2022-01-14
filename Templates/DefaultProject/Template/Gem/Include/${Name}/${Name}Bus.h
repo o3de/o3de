@@ -22,7 +22,7 @@ namespace ${SanitizedCppName}
         virtual ~${SanitizedCppName}Requests() = default;
         // Put your public methods here
     };
-    
+
     class ${SanitizedCppName}BusTraits
         : public AZ::EBusTraits
     {

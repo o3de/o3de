@@ -52,7 +52,7 @@ namespace ${SanitizedCppName}
     void ${SanitizedCppName}SystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
     }
-    
+
     ${SanitizedCppName}SystemComponent::${SanitizedCppName}SystemComponent()
     {
         if (${SanitizedCppName}Interface::Get() == nullptr)
