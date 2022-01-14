@@ -1221,7 +1221,7 @@ namespace O3DE::ProjectManager
         auto result = ExecuteWithLockErrorHandling(
             [&]
             {
-                for (auto repoUri : m_manifest.attr("get_repos")())
+                for (auto repoUri : m_manifest.attr("get_manifest_repos")())
                 {
                     gemRepos.push_back(GetGemRepoInfo(repoUri));
                 }
