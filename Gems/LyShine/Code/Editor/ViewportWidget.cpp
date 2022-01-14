@@ -351,10 +351,15 @@ void ViewportWidget::SetRedrawEnabled(bool enabled)
     m_canvasRenderIsEnabled = enabled;
 }
 
-AZ::Vector2 ViewportWidget::GetRenderViewportSize()
+AZ::Vector2 ViewportWidget::GetRenderViewportSize() const
 {
     AZ::Vector2 widgetSize(aznumeric_cast<float>(size().width()), aznumeric_cast<float>(size().height()));
-    return widgetSize * GetViewportContext()->GetDpiScalingFactor();
+    return widgetSize * WidgetToViewportFactor();
+}
+
+float ViewportWidget::WidgetToViewportFactor() const
+{
+    return GetViewportContext()->GetDpiScalingFactor();
 }
 
 void ViewportWidget::PickItem(AZ::EntityId entityId)

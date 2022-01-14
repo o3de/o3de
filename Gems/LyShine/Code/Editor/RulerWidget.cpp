@@ -62,7 +62,7 @@ void RulerWidget::paintEvent([[maybe_unused]] QPaintEvent* event)
     float translation = (m_orientation == Orientation::Horizontal) ? translationAndScale.translation.GetX() : translationAndScale.translation.GetY();
 
     // Convert back to qt widget coords for painting
-    float dpiScaleFactor = m_editorWindow->GetViewport()->GetViewportContext()->GetDpiScalingFactor();
+    float dpiScaleFactor = m_editorWindow->GetViewport()->WidgetToViewportFactor();
     if (dpiScaleFactor != 0)
     {
         scale /= dpiScaleFactor;
