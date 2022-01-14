@@ -674,7 +674,6 @@ namespace ScriptCanvasEditor
 
                             if (variable)
                             {
-                                // functions 2.0 set variable scope to function 
                                 if (variable->GetScope() != ScriptCanvas::VariableFlags::Scope::Function)
                                 {
                                     variable->SetScope(ScriptCanvas::VariableFlags::Scope::Function);
