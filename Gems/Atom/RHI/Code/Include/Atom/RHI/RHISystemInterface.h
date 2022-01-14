@@ -67,7 +67,7 @@ namespace AZ
 
             virtual void QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable) = 0;
             
-			virtual const PhysicalDeviceDescriptor& GetPhysicalDeviceDescriptor() = 0;
+            virtual const PhysicalDeviceDescriptor& GetPhysicalDeviceDescriptor() = 0;
         };
 
         //! This bus exists to give RHI samples the ability to slot in scopes manually
