@@ -131,10 +131,7 @@ namespace ScriptEvents
             return AZ::Failure(AZStd::string::format("%s, invalid name specified, event name must only have alpha numeric characters, may not start with a number and may not have white space", name.c_str()));
         }
 
-        if (m_methods.empty())
-        {
-            return AZ::Failure(AZStd::string::format("Script Events (%s) must provide at least one event otherwise they are unusable, be sure to add an event before saving.", name.c_str()));
-        }
+        AZ_Warning("Script Events", !m_methods.empty(), AZStd::string::format("Script Events (%s) must provide at least one event, otherwise they are unusable.", name.c_str()).c_str());
 
         // Validate each method
         AZStd::string methodName;
