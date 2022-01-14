@@ -1142,7 +1142,7 @@ namespace ScriptCanvasEditor
             {
                 if (slot->IsVariableReference())
                 {
-                    return true;
+                    return !slot->IsUserAdded();
                 }
                 else
                 {
@@ -1254,7 +1254,7 @@ namespace ScriptCanvasEditor
             return nullptr;
         }
 
-        if (slot->IsVariableReference())
+        if (slot->IsVariableReference() && !slot->IsUserAdded())
         {
             ScriptCanvasVariableReferenceDataInterface* dataInterface = aznew ScriptCanvasVariableReferenceDataInterface(&m_variableDataModel, GetScriptCanvasId(), scriptCanvasNodeId, scriptCanvasSlotId);
             GraphCanvas::NodePropertyDisplay* dataDisplay = nullptr;
