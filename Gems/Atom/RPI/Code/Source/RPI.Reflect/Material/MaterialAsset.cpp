@@ -199,10 +199,7 @@ namespace AZ
 
         const AZStd::vector<MaterialPropertyValue>& MaterialAsset::GetPropertyValues() const
         {
-            // This can't be done in MaterialAssetHandler::LoadAssetData because the MaterialTypeAsset isn't necessarily loaded at that point.
-            // And it can't be done in PostLoadInit() because that happens on the next frame which might be too late. So we finalize just-in-time
-            // when properties are accessed.
-            const_cast<MaterialAsset*>(this)->Finalize();
+            AZ_Error(s_debugTraceName, IsFinalized(), "MaterialAsset must be finalized before its property values can be accessed");
 
             return m_propertyValues;
         }
