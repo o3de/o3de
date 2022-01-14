@@ -1177,4 +1177,124 @@ namespace AZ::Dom
     {
         return m_value;
     }
+
+    Value& Value::operator[](const PathEntry& entry)
+    {
+        if (entry.IsEndOfArray())
+        {
+            Array::ContainerType& array = GetArrayInternal();
+            array.push_back();
+            return array[array.size() - 1];
+        }
+        return entry.IsIndex() ? operator[](entry.GetIndex()) : operator[](entry.GetKey());
+    }
+
+    const Value& Value::operator[](const PathEntry& entry) const
+    {
+        return entry.IsIndex() ? operator[](entry.GetIndex()) : operator[](entry.GetKey());
+    }
+
+    Value& Value::operator[](const Path& path)
+    {
+        Value* value = this;
+        for (const PathEntry& entry : path)
+        {
+            value = &value->operator[](entry);
+        }
+        return *value;
+    }
+
+    const Value& Value::operator[](const Path& path) const
+    {
+        const Value* value = this;
+        for (const PathEntry& entry : path)
+        {
+            value = &value->operator[](entry);
+        }
+        return *value;
+    }
+
+    const Value* Value::FindChild(const PathEntry& entry) const
+    {
+        if (entry.IsEndOfArray())
+        {
+            return nullptr;
+        }
+        else if (entry.IsIndex())
+        {
+            const Array::ContainerType& array = GetArrayInternal();
+            const size_t index = entry.GetIndex();
+            if (index < array.size())
+            {
+                return &array[index];
+            }
+        }
+        else
+        {
+            const Object::ContainerType& obj = GetObjectInternal();
+            auto memberIt = FindMember(entry.GetKey());
+            if (memberIt != obj.end())
+            {
+                return &memberIt->second;
+            }
+        }
+        return nullptr;
+    }
+
+    Value* Value::FindMutableChild(const PathEntry& entry)
+    {
+        if (entry.IsEndOfArray())
+        {
+            Array::ContainerType& array = GetArrayInternal();
+            array.push_back();
+            return &array[array.size() - 1];
+        }
+        else if (entry.IsIndex())
+        {
+            Array::ContainerType& array = GetArrayInternal();
+            const size_t index = entry.GetIndex();
+            if (index < array.size())
+            {
+                return &array[index];
+            }
+        }
+        else
+        {
+            Object::ContainerType& obj = GetObjectInternal();
+            auto memberIt = FindMutableMember(entry.GetKey());
+            if (memberIt != obj.end())
+            {
+                return &memberIt->second;
+            }
+        }
+        return nullptr;
+    }
+
+    const Value* Value::FindChild(const Path& path) const
+    {
+        const Value* value = this;
+        for (const PathEntry& entry : path)
+        {
+            value = value->FindChild(entry);
+            if (value == nullptr)
+            {
+                return nullptr;
+            }
+        }
+        return value;
+    }
+
+    Value* Value::FindMutableChild(const Path& path)
+    {
+        Value* value = this;
+        for (const PathEntry& entry : path)
+        {
+            value = value->FindMutableChild(entry);
+            if (value == nullptr)
+            {
+                return nullptr;
+            }
+        }
+        return value;
+    }
 } // namespace AZ::Dom

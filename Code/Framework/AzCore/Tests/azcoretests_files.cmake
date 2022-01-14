@@ -219,6 +219,7 @@ set(FILES
     DOM/DomFixtures.h
     DOM/DomJsonTests.cpp
     DOM/DomJsonBenchmarks.cpp
+    DOM/DomPathTests.cpp
     DOM/DomValueTests.cpp
     DOM/DomValueBenchmarks.cpp
 )
