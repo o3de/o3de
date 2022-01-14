@@ -336,7 +336,7 @@ namespace ViewportHelpers
 
             draw2d.SetTextAlignment(IDraw2d::HAlign::Center, IDraw2d::VAlign::Bottom);
             draw2d.SetTextRotation(0.0f);
-            draw2d.DrawText(rotationString.toUtf8().data(), rotationStringPos, GetDpiScaledSize(16.0f), 1.0f);
+            draw2d.DrawText(rotationString.toUtf8().data(), rotationStringPos, 8.0f, 1.0f);
         }
     }
 
@@ -347,9 +347,11 @@ namespace ViewportHelpers
         const AZ::Vector2 textLabelOffset(10.0f, -10.0f);
         QPoint viewportCursorPos = viewport->mapFromGlobal(QCursor::pos());
         AZ::Vector2 textPos = AZ::Vector2(aznumeric_cast<float>(viewportCursorPos.x()), aznumeric_cast<float>(viewportCursorPos.y())) + textLabelOffset;
+        float dpiScale = viewport->GetViewportContext()->GetDpiScalingFactor();
+        textPos *= dpiScale;
 
         draw2d.SetTextAlignment(IDraw2d::HAlign::Left, IDraw2d::VAlign::Bottom);
         draw2d.SetTextRotation(0.0f);
-        draw2d.DrawText(textLabel.c_str(), textPos, GetDpiScaledSize(16.0f), 1.0f);
+        draw2d.DrawText(textLabel.c_str(), textPos, 8.0f, 1.0f);
     }
 }   // namespace ViewportHelpers

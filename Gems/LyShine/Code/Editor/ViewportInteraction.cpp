@@ -674,13 +674,13 @@ void ViewportInteraction::MouseReleaseEvent(QMouseEvent* ev,
         {
             // test to see if the mouse position is inside the viewport on each axis
             const QPoint& pos = ev->pos();
-            const QSize& size = m_editorWindow->GetViewport()->size();
+            const AZ::Vector2 size = m_editorWindow->GetViewport()->GetRenderViewportSize();
 
             ViewportDragInteraction::EndState inWidget;
-            if (pos.x() >= 0 && pos.x() < size.width())
-                inWidget = pos.y() >= 0 && pos.y() < size.height() ? ViewportDragInteraction::EndState::Inside : ViewportDragInteraction::EndState::OutsideY;
+            if (pos.x() >= 0 && pos.x() < size.GetX())
+                inWidget = pos.y() >= 0 && pos.y() < size.GetY() ? ViewportDragInteraction::EndState::Inside : ViewportDragInteraction::EndState::OutsideY;
             else
-                inWidget = pos.y() >= 0 && pos.y() < size.height() ? ViewportDragInteraction::EndState::OutsideX : ViewportDragInteraction::EndState::OutsideXY;
+                inWidget = pos.y() >= 0 && pos.y() < size.GetY() ? ViewportDragInteraction::EndState::OutsideX : ViewportDragInteraction::EndState::OutsideXY;
 
             // Some interactions end differently depending on whether the mouse was released inside or outside the viewport
             m_dragInteraction->EndInteraction(inWidget);
@@ -709,12 +709,12 @@ void ViewportInteraction::MouseReleaseEvent(QMouseEvent* ev,
     UpdateCursor();
 }
 
-void ViewportInteraction::MouseWheelEvent(QWheelEvent* ev)
+bool ViewportInteraction::MouseWheelEvent(QWheelEvent* ev)
 {
     if (m_leftButtonIsActive || m_middleButtonIsActive)
     {
         // Ignore event.
-        return;
+        return false;
     }
 
     const QPoint numDegrees(ev->angleDelta());
@@ -735,6 +735,8 @@ void ViewportInteraction::MouseWheelEvent(QWheelEvent* ev)
 
         SetCanvasToViewportScale(QuantizeZoomScale(newScale), &pivotPoint);
     }
+
+    return true;
 }
 
 bool ViewportInteraction::KeyPressEvent(QKeyEvent* ev)
@@ -921,9 +923,9 @@ void ViewportInteraction::GetScaleToFitTransformProps(const AZ::Vector2* newCanv
         EBUS_EVENT_ID_RESULT(canvasSize, m_editorWindow->GetCanvas(), UiCanvasBus, GetCanvasSize);
     }
 
-    QSize viewportSize = QtHelpers::GetDpiScaledViewportSize(*m_editorWindow->GetViewport());
-    const int viewportWidth = viewportSize.width();
-    const int viewportHeight = viewportSize.height();
+    AZ::Vector2 viewportSize = m_editorWindow->GetViewport()->GetRenderViewportSize();
+    const int viewportWidth = viewportSize.GetX();
+    const int viewportHeight = viewportSize.GetY();
 
     // We pad the edges of the viewport to allow the user to easily see the borders of
     // the canvas edges, which is especially helpful if there are anchors sitting on
@@ -1008,9 +1010,12 @@ void ViewportInteraction::SetCanvasToViewportScale(float newScale, Vec2i* option
         }
         else
         {
+            AZ::Vector2 viewportSize = m_editorWindow->GetViewport()->GetRenderViewportSize();
+            const int viewportWidth = viewportSize.GetX();
+            const int viewportHeight = viewportSize.GetY();
             pivotPoint = Vec2i(
-                    static_cast<int>(m_editorWindow->GetViewport()->size().width() * 0.5f),
-                    static_cast<int>(m_editorWindow->GetViewport()->size().height() * 0.5f));
+                    static_cast<int>(viewportWidth * 0.5f),
+                    static_cast<int>(viewportHeight * 0.5f));
         }
 
         // Get the distance between our pivot point and the upper-left corner of the

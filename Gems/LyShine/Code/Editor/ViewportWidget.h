@@ -72,6 +72,9 @@ public: // member functions
     //! Used by ViewportInteraction for drawing
     ViewportHighlight* GetViewportHighlight() { return m_viewportHighlight.get(); }
 
+    //! Get the size of the RPI render viewport
+    AZ::Vector2 GetRenderViewportSize();
+
     bool IsInObjectPickMode() { return m_inObjectPickMode; }
     void PickItem(AZ::EntityId entityId);
 

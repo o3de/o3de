@@ -61,6 +61,14 @@ void RulerWidget::paintEvent([[maybe_unused]] QPaintEvent* event)
     float scale = translationAndScale.scale;
     float translation = (m_orientation == Orientation::Horizontal) ? translationAndScale.translation.GetX() : translationAndScale.translation.GetY();
 
+    // Convert back to qt widget coords for painting
+    float dpiScaleFactor = m_editorWindow->GetViewport()->GetViewportContext()->GetDpiScalingFactor();
+    if (dpiScaleFactor != 0)
+    {
+        scale /= dpiScaleFactor;
+        translation /= dpiScaleFactor;
+    }
+
     // If the viewport is really small then scale can be zero (or very close) which would cause a divide by zero in later math so we just don't paint anything
     const float epsilon = 0.00001f;
     if (scale < epsilon)
@@ -87,7 +95,9 @@ void RulerWidget::paintEvent([[maybe_unused]] QPaintEvent* event)
 void RulerWidget::mousePressEvent(QMouseEvent* ev)
 {
     // start a drag interaction to create a guide
-    AZ::Vector2 viewportMousePos = QtHelpers::MapGlobalPosToLocalVector2(m_editorWindow->GetViewport(), ev->globalPos());
+    AZ::Vector2 localMousePos = QtHelpers::MapGlobalPosToLocalVector2(m_editorWindow->GetViewport(), ev->globalPos());
+    float dpiScaleFactor = m_editorWindow->GetViewport()->GetViewportContext()->GetDpiScalingFactor();
+    AZ::Vector2 viewportMousePos = localMousePos * dpiScaleFactor;
     bool isVertical = m_orientation == Orientation::Vertical;
     m_dragInteraction = new ViewportAddGuideInteraction(m_editorWindow, m_editorWindow->GetCanvas(), isVertical, viewportMousePos);
 }
@@ -98,7 +108,10 @@ void RulerWidget::mouseMoveEvent(QMouseEvent* ev)
     // We only get the events if the mouse is pressed down. So we only get here when adding a ruler.
     if (m_dragInteraction)
     {
-        AZ::Vector2 viewportMousePos = QtHelpers::MapGlobalPosToLocalVector2(m_editorWindow->GetViewport(), ev->globalPos());
+        AZ::Vector2 localMousePos = QtHelpers::MapGlobalPosToLocalVector2(m_editorWindow->GetViewport(), ev->globalPos());
+        float dpiScaleFactor = m_editorWindow->GetViewport()->GetViewportContext()->GetDpiScalingFactor();
+        AZ::Vector2 viewportMousePos = localMousePos * dpiScaleFactor;
+
         m_dragInteraction->Update(viewportMousePos);
     }
 

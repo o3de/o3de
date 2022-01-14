@@ -351,6 +351,12 @@ void ViewportWidget::SetRedrawEnabled(bool enabled)
     m_canvasRenderIsEnabled = enabled;
 }
 
+AZ::Vector2 ViewportWidget::GetRenderViewportSize()
+{
+    AZ::Vector2 widgetSize(aznumeric_cast<float>(size().width()), aznumeric_cast<float>(size().height()));
+    return widgetSize * GetViewportContext()->GetDpiScalingFactor();
+}
+
 void ViewportWidget::PickItem(AZ::EntityId entityId)
 {
     AzToolsFramework::EditorPickModeRequestBus::Broadcast(
@@ -640,27 +646,34 @@ void ViewportWidget::mouseReleaseEvent(QMouseEvent* ev)
 
 void ViewportWidget::wheelEvent(QWheelEvent* ev)
 {
+    bool handled = false;
     UiEditorMode editorMode = m_editorWindow->GetEditorMode();
-    QWheelEvent scaledEvent(
-        WidgetToViewport(ev->position()),
-        ev->globalPosition(),
-        ev->pixelDelta(),
-        ev->angleDelta(),
-        ev->buttons(),
-        ev->modifiers(),
-        ev->phase(),
-        ev->inverted()
-    );
-
     if (editorMode == UiEditorMode::Edit)
     {
+        QWheelEvent scaledEvent(
+            WidgetToViewport(ev->position()),
+            ev->globalPosition(),
+            ev->pixelDelta(),
+            ev->angleDelta(),
+            ev->buttons(),
+            ev->modifiers(),
+            ev->phase(),
+            ev->inverted()
+        );
+
         // in Edit mode just send input to ViewportInteraction
-        m_viewportInteraction->MouseWheelEvent(&scaledEvent);
+        handled = m_viewportInteraction->MouseWheelEvent(&scaledEvent);
     }
 
-    RenderViewportWidget::wheelEvent(ev);
-
-    Refresh();
+    if (handled)
+    {
+        ev->accept();
+        Refresh();
+    }
+    else
+    {
+        RenderViewportWidget::wheelEvent(ev);
+    }
 }
 
 bool ViewportWidget::eventFilter([[maybe_unused]] QObject* watched, QEvent* event)
