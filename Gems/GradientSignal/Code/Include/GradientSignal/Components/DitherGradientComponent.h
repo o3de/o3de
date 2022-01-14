@@ -103,6 +103,10 @@ namespace GradientSignal
         GradientSampler& GetGradientSampler() override;
 
     private:
+        static int ScaledPositionToPatternIndex(const AZ::Vector3& scaledPosition, int patternSize);
+        static float GetDitherValue4x4(const AZ::Vector3& scaledPosition);
+        static float GetDitherValue8x8(const AZ::Vector3& scaledPosition);
+
         float GetCalculatedPointsPerUnit() const;
         float GetDitherValue(const AZ::Vector3& scaledPosition, float value) const;
 
