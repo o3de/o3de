@@ -3874,8 +3874,12 @@ namespace ScriptCanvasEditor
         contextMenu.AddMenuAction(aznew ExposeSlotMenuAction(&contextMenu));
         contextMenu.AddMenuAction(aznew CreateAzEventHandlerSlotMenuAction(&contextMenu));
 
-        // disabling until references can be changed
-        // contextMenu.AddMenuAction(aznew SetDataSlotTypeMenuAction(&contextMenu));
+        auto setSlotTypeAction = aznew SetDataSlotTypeMenuAction(&contextMenu);
+        // Changing slot type is disabled temporarily because now that that user data slots are correctly coordinated with their reference
+        // variables, their type cannot be changed. The next change will allow all variables to change their type post creation, and then
+        // that will allow this action to be enabled.
+        setSlotTypeAction->setEnabled(false);
+        contextMenu.AddMenuAction(setSlotTypeAction);
 
         return HandleContextMenu(contextMenu, slotId, screenPoint, scenePoint);
     }

@@ -462,7 +462,6 @@ namespace ScriptCanvas
 
     bool Slot::CanConvertToReference(bool isNewSlot) const
     {
-        // #sc_user_slot_variable_ux  make sure this can be converted to reference, or created as one
         return (!m_isUserAdded || isNewSlot) && CanConvertTypes() && !m_isVariableReference && !m_node->HasConnectedNodes((*this));
     }
 
