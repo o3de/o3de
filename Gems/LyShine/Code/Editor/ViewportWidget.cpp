@@ -507,7 +507,7 @@ void ViewportWidget::OnRenderTick()
         return;
     }
 
-    const float dpiScale = GetViewportContext()->GetDpiScalingFactor();
+    const float dpiScale = WidgetToViewportFactor();
     ViewportIcon::SetDpiScaleFactor(dpiScale);
 
     UiEditorMode editorMode = m_editorWindow->GetEditorMode();

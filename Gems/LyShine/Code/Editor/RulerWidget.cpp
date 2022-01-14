@@ -96,7 +96,7 @@ void RulerWidget::mousePressEvent(QMouseEvent* ev)
 {
     // start a drag interaction to create a guide
     AZ::Vector2 localMousePos = QtHelpers::MapGlobalPosToLocalVector2(m_editorWindow->GetViewport(), ev->globalPos());
-    float dpiScaleFactor = m_editorWindow->GetViewport()->GetViewportContext()->GetDpiScalingFactor();
+    float dpiScaleFactor = m_editorWindow->GetViewport()->WidgetToViewportFactor();
     AZ::Vector2 viewportMousePos = localMousePos * dpiScaleFactor;
     bool isVertical = m_orientation == Orientation::Vertical;
     m_dragInteraction = new ViewportAddGuideInteraction(m_editorWindow, m_editorWindow->GetCanvas(), isVertical, viewportMousePos);
@@ -109,7 +109,7 @@ void RulerWidget::mouseMoveEvent(QMouseEvent* ev)
     if (m_dragInteraction)
     {
         AZ::Vector2 localMousePos = QtHelpers::MapGlobalPosToLocalVector2(m_editorWindow->GetViewport(), ev->globalPos());
-        float dpiScaleFactor = m_editorWindow->GetViewport()->GetViewportContext()->GetDpiScalingFactor();
+        float dpiScaleFactor = m_editorWindow->GetViewport()->WidgetToViewportFactor();
         AZ::Vector2 viewportMousePos = localMousePos * dpiScaleFactor;
 
         m_dragInteraction->Update(viewportMousePos);

@@ -347,7 +347,7 @@ namespace ViewportHelpers
         const AZ::Vector2 textLabelOffset(10.0f, -10.0f);
         QPoint viewportCursorPos = viewport->mapFromGlobal(QCursor::pos());
         AZ::Vector2 textPos = AZ::Vector2(aznumeric_cast<float>(viewportCursorPos.x()), aznumeric_cast<float>(viewportCursorPos.y())) + textLabelOffset;
-        float dpiScale = viewport->GetViewportContext()->GetDpiScalingFactor();
+        float dpiScale = viewport->WidgetToViewportFactor();
         textPos *= dpiScale;
 
         draw2d.SetTextAlignment(IDraw2d::HAlign::Left, IDraw2d::VAlign::Bottom);
