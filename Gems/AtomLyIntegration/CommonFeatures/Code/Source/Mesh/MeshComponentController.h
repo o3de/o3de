@@ -116,6 +116,9 @@ namespace AZ
             void SetVisibility(bool visible) override;
             bool GetVisibility() const override;
 
+            void SetRayTracingEnabled(bool enabled) override;
+            bool GetRayTracingEnabled() const override;
+
             // BoundsRequestBus and MeshComponentRequestBus overrides ...
             AZ::Aabb GetWorldBounds() override;
             AZ::Aabb GetLocalBounds() override;
