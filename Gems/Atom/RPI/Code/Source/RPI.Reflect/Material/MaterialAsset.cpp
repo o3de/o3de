@@ -123,7 +123,7 @@ namespace AZ
 
             if (!reportWarning)
             {
-                reportWarning = [](const char* message)
+                reportWarning = []([[maybe_unused]] const char* message)
                 {
                     AZ_Warning(s_debugTraceName, false, "%s", message);
                 };
