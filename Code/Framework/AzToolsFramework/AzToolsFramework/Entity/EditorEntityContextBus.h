@@ -201,11 +201,8 @@ namespace AzToolsFramework
         //! Fired after the EditorEntityContext fails to export the root level slice to the game stream
         virtual void OnSaveStreamForGameFailure(AZStd::string_view /*failureString*/) {}
 
-        //! Fired when the user triggers a clone of ComponentEntity object(s), before operation begins
-        virtual void OnEntitiesAboutToBeCloned() {}
-
-        //! Fires when the user triggers a clone of ComponentEntity object(s)), after operation completes
-        virtual void OnEntitiesCloned() {}
+        //! Preserve entity order when re-parenting entities
+        virtual void ForceAddEntitiesToBack(bool /*forceAddToBack*/) {}
 
     };
 
