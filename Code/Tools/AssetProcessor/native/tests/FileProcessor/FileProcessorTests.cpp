@@ -28,11 +28,12 @@ namespace UnitTests
         // not share with others created using ":memory:" and get a unique database instead.
         m_data->m_databaseLocation = m_data->m_temporarySourceDir.absoluteFilePath("test_database.sqlite").toUtf8().constData();
 
-        ON_CALL(m_data->m_databaseLocationListener, GetAssetDatabaseLocation(_))
+
+        ON_CALL(m_data->m_databaseLocationListener, GetAssetDatabaseLocation(::testing::_))
             .WillByDefault(
                 DoAll( // set the 0th argument ref (string) to the database location and return true.
-                    SetArgReferee<0>(m_data->m_databaseLocation),
-                    Return(true)));
+                    ::testing::SetArgReferee<0>(m_data->m_databaseLocation),
+                    ::testing::Return(true)));
 
         // Initialize the database:
         m_data->m_connection.ClearData(); // this is expected to reset/clear/reopen
