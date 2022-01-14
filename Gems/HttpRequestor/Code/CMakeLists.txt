@@ -71,5 +71,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     )
     ly_add_googletest(
         NAME Gem::HttpRequestor.Tests
+        TEST_SUITE sandbox
     )
 endif()
