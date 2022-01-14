@@ -45,7 +45,7 @@ namespace EMotionFX::MotionMatching
             MotionMatchingInstance* instance,
             size_t frameIndex) override;
 
-        float CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const;
+        float CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const override;
 
         void FillQueryFeatureValues(size_t startIndex, AZStd::vector<float>& queryFeatureValues, const FrameCostContext& context) override;
 

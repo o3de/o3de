@@ -82,7 +82,7 @@ namespace EMotionFX::MotionMatching
         delete m_instance;
         delete m_config;
 
-        m_config = aznew MotionMatching::LocomotionConfig();
+        m_config = aznew MotionMatching::MotionMatchingConfig();
         m_instance = aznew MotionMatching::MotionMatchingInstance();
 
         MotionSet* motionSet = m_animGraphInstance->GetMotionSet();
@@ -259,19 +259,10 @@ namespace EMotionFX::MotionMatching
         OutputIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_TARGETPOS));
         OutputIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_TARGETFACINGDIR));
 
-        Pose& outTransformPose = outputPose->GetPose();
-
-        MotionMatching::LocomotionConfig* config = uniqueData->m_config;
-        MotionMatching::LocomotionConfig::FactorWeights& factors = config->GetFactorWeights();
-        factors.m_footPositionFactor = m_footPositionFactor;
-        factors.m_footVelocityFactor = m_footVelocityFactor;
-        factors.m_rootFutureFactor = m_rootFutureFactor;
-        factors.m_rootPastFactor = m_rootPastFactor;
-        factors.m_differentMotionFactor = m_differentMotionFactor;
-        config->SetFactorWeights(factors);
-
         MotionMatching::MotionMatchingInstance* instance = uniqueData->m_instance;
         instance->SetLowestCostSearchFrequency(m_lowestCostSearchFrequency);
+
+        Pose& outTransformPose = outputPose->GetPose();
         instance->Output(outTransformPose);
 
         // Performance metrics
@@ -295,21 +286,17 @@ namespace EMotionFX::MotionMatching
         }
 
         serializeContext->Class<BlendTreeMotionMatchNode, AnimGraphNode>()
-            ->Version(8)
-            ->Field("motionIds", &BlendTreeMotionMatchNode::m_motionIds)
+            ->Version(9)
             ->Field("maxKdTreeDepth", &BlendTreeMotionMatchNode::m_maxKdTreeDepth)
             ->Field("minFramesPerKdTreeNode", &BlendTreeMotionMatchNode::m_minFramesPerKdTreeNode)
-            ->Field("footPositionFactor", &BlendTreeMotionMatchNode::m_footPositionFactor)
-            ->Field("footVelocity", &BlendTreeMotionMatchNode::m_footVelocityFactor)
-            ->Field("rootFutureFactor", &BlendTreeMotionMatchNode::m_rootFutureFactor)
-            ->Field("rootPastFactor", &BlendTreeMotionMatchNode::m_rootPastFactor)
-            ->Field("differentMotionFactor", &BlendTreeMotionMatchNode::m_differentMotionFactor)
             ->Field("sampleRate", &BlendTreeMotionMatchNode::m_sampleRate)
             ->Field("lowestCostSearchFrequency", &BlendTreeMotionMatchNode::m_lowestCostSearchFrequency)
             ->Field("mirror", &BlendTreeMotionMatchNode::m_mirror)
             ->Field("controlSplineMode", &BlendTreeMotionMatchNode::m_trajectoryQueryMode)
             ->Field("pathRadius", &BlendTreeMotionMatchNode::m_pathRadius)
-            ->Field("pathSpeed", &BlendTreeMotionMatchNode::m_pathSpeed);
+            ->Field("pathSpeed", &BlendTreeMotionMatchNode::m_pathSpeed)
+            ->Field("motionIds", &BlendTreeMotionMatchNode::m_motionIds)
+            ;
 
         AZ::EditContext* editContext = serializeContext->GetEditContext();
         if (!editContext)
@@ -321,10 +308,6 @@ namespace EMotionFX::MotionMatching
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-            ->DataElement(AZ_CRC("MotionSetMotionIds", 0x8695c0fa), &BlendTreeMotionMatchNode::m_motionIds, "Motions", "")
-            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
-            ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
-            ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::HideChildren)
             ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_maxKdTreeDepth, "Max kdTree depth", "The maximum number of hierarchy levels in the kdTree.")
             ->Attribute(AZ::Edit::Attributes::Min, 1)
             ->Attribute(AZ::Edit::Attributes::Max, 20)
@@ -333,26 +316,6 @@ namespace EMotionFX::MotionMatching
             ->Attribute(AZ::Edit::Attributes::Min, 1)
             ->Attribute(AZ::Edit::Attributes::Max, 100000)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
-            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_footPositionFactor, "Foot Position Factor", "")
-            ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-            ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
-            ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
-            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_footVelocityFactor, "Foot Velocity Factor", "")
-            ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-            ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
-            ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
-            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_rootFutureFactor, "Root Future Factor", "")
-            ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-            ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
-            ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
-            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_rootPastFactor, "Root Past Factor", "")
-            ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-            ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
-            ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
-            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_differentMotionFactor, "Different Motion Factor", "")
-            ->Attribute(AZ::Edit::Attributes::Min, 1.0f)
-            ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
-            ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
             ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_sampleRate, "Sample rate", "The motion frame data sampling frequency.")
             ->Attribute(AZ::Edit::Attributes::Min, 5)
             ->Attribute(AZ::Edit::Attributes::Max, 60)
@@ -372,10 +335,15 @@ namespace EMotionFX::MotionMatching
             ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
             ->Attribute(AZ::Edit::Attributes::Step, 0.05f)
             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &BlendTreeMotionMatchNode::m_trajectoryQueryMode, "Trajectory mode", "Desired future trajectory generation mode.")
-            ->EnumAttribute(TrajectoryQuery::MODE_TARGETDRIVEN, "Target driven")
-            ->EnumAttribute(TrajectoryQuery::MODE_ONE, "Mode one")
-            ->EnumAttribute(TrajectoryQuery::MODE_TWO, "Mode two")
-            ->EnumAttribute(TrajectoryQuery::MODE_THREE, "Mode three")
-            ->EnumAttribute(TrajectoryQuery::MODE_FOUR, "Mode four");
+                ->EnumAttribute(TrajectoryQuery::MODE_TARGETDRIVEN, "Target driven")
+                ->EnumAttribute(TrajectoryQuery::MODE_ONE, "Mode one")
+                ->EnumAttribute(TrajectoryQuery::MODE_TWO, "Mode two")
+                ->EnumAttribute(TrajectoryQuery::MODE_THREE, "Mode three")
+                ->EnumAttribute(TrajectoryQuery::MODE_FOUR, "Mode four")
+            ->DataElement(AZ_CRC("MotionSetMotionIds", 0x8695c0fa), &BlendTreeMotionMatchNode::m_motionIds, "Motions", "")
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
+                ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
+                ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::HideChildren)
+            ;
     }
 } // namespace EMotionFX::MotionMatching

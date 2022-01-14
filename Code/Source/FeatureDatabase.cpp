@@ -77,7 +77,6 @@ namespace EMotionFX::MotionMatching
 
             Feature::InitSettings frameSettings;
             frameSettings.m_actorInstance = actorInstance;
-            feature->SetFrameDatabase(frameDatabase);
             if (!feature->Init(frameSettings))
             {
                 return false;

@@ -37,13 +37,15 @@ namespace EMotionFX
 namespace EMotionFX::MotionMatching
 {
     class MotionMatchingInstance;
-    class FeatureTrajectory;
 
     class EMFX_API MotionMatchingConfig
     {
     public:
         AZ_RTTI(MotionMatchingConfig, "{7BC3DFF5-8864-4518-B6F0-0553ADFAB5C1}")
         AZ_CLASS_ALLOCATOR_DECL
+
+        MotionMatchingConfig() = default;
+        virtual ~MotionMatchingConfig() = default;
 
         struct EMFX_API InitSettings
         {
@@ -53,18 +55,12 @@ namespace EMotionFX::MotionMatching
             size_t m_maxKdTreeDepth = 20;
             size_t m_minFramesPerKdTreeNode = 1000;
             bool m_importMirrored = false;
-
         };
-
-        MotionMatchingConfig() = default;
-        virtual ~MotionMatchingConfig() = default;
-
-        virtual bool RegisterFeatures(const InitSettings& settings) = 0;
-        virtual bool Init(const InitSettings& settings);
+        bool RegisterFeatures(const InitSettings& settings);
+        bool Init(const InitSettings& settings);
         void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay, MotionMatchingInstance* instance);
-        virtual FeatureTrajectory* GetTrajectoryFeature() const = 0;
 
-        virtual size_t FindLowestCostFrameIndex(MotionMatchingInstance* instance, const Feature::FrameCostContext& context, size_t currentFrameIndex) = 0;
+        size_t FindLowestCostFrameIndex(MotionMatchingInstance* instance, const Feature::FrameCostContext& context, AZStd::vector<float>& tempCosts, AZStd::vector<float>& minCosts);
 
         static void Reflect(AZ::ReflectContext* context);
 

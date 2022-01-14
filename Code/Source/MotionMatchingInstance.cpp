@@ -60,6 +60,17 @@ namespace EMotionFX::MotionMatching
         AZ_Assert(settings.m_actorInstance, "The actor instance cannot be a nullptr.");
         AZ_Assert(settings.m_config, "The motion match data cannot be nullptr.");
 
+        // Update the cached pointer to the trajectory feature.
+        const FeatureSchema& featureSchema = settings.m_config->GetFeatureDatabase().GetFeatureSchema();
+        for (Feature* feature : featureSchema.GetFeatures())
+        {
+            if (feature->RTTI_GetType() == azrtti_typeid<FeatureTrajectory>())
+            {
+                m_cachedTrajectoryFeature = static_cast<FeatureTrajectory*>(feature);
+                break;
+            }
+        }
+
         // Debug display initialization.
         const auto AddDebugDisplay = [=](AZ::s32 debugDisplayId)
         {
@@ -122,7 +133,7 @@ namespace EMotionFX::MotionMatching
         }
         m_trajectoryHistory.Init(*m_actorInstance->GetTransformData()->GetCurrentPose(),
             rootJointIndex,
-            m_config->GetTrajectoryFeature()->GetFacingAxisDir(),
+            m_cachedTrajectoryFeature->GetFacingAxisDir(),
             m_trajectorySecsToTrack);
     }
 
@@ -282,7 +293,7 @@ namespace EMotionFX::MotionMatching
 
         // Register the current actor instance position to the history data of the spline.
         m_trajectoryQuery.Update(m_actorInstance,
-            m_config->GetTrajectoryFeature(),
+            m_cachedTrajectoryFeature,
             m_trajectoryHistory,
             mode,
             targetPos,
@@ -339,7 +350,7 @@ namespace EMotionFX::MotionMatching
 
                 // Calculate the joint velocities for the sampled pose using the same method as we do for the frame database.
                 PoseDataJointVelocities* velocityPoseData = m_queryPose.GetAndPreparePoseData<PoseDataJointVelocities>(m_actorInstance);
-                velocityPoseData->CalculateVelocity(m_motionInstance, m_config->GetTrajectoryFeature()->GetRelativeToNodeIndex());
+                velocityPoseData->CalculateVelocity(m_motionInstance, m_cachedTrajectoryFeature->GetRelativeToNodeIndex());
             }
 
             const FeatureMatrix& featureMatrix = m_config->GetFeatureDatabase().GetFeatureMatrix();
@@ -347,7 +358,7 @@ namespace EMotionFX::MotionMatching
             frameCostContext.m_trajectoryQuery = &m_trajectoryQuery;
             frameCostContext.m_actorInstance = m_actorInstance;
 
-            const size_t lowestCostFrameIndex = m_config->FindLowestCostFrameIndex(this, frameCostContext, currentFrameIndex);
+            const size_t lowestCostFrameIndex = m_config->FindLowestCostFrameIndex(this, frameCostContext, m_tempCosts, m_minCosts);
             const FrameDatabase& frameDatabase = m_config->GetFrameDatabase();
             const Frame& currentFrame = frameDatabase.GetFrame(currentFrameIndex);
             const Frame& lowestCostFrame = frameDatabase.GetFrame(lowestCostFrameIndex);

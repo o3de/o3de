@@ -21,7 +21,7 @@ namespace EMotionFX::MotionMatching
 {
     AZ_CLASS_ALLOCATOR_IMPL(FeatureSchema, MotionMatchAllocator, 0)
 
-    const Feature* FeatureSchema::GetFeature(size_t index) const
+    Feature* FeatureSchema::GetFeature(size_t index) const
     {
         return m_features[index];
     }

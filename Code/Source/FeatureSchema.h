@@ -37,7 +37,7 @@ namespace EMotionFX::MotionMatching
         void Clear();
         
         size_t GetNumFeatures() const;
-        const Feature* GetFeature(size_t index) const;
+        Feature* GetFeature(size_t index) const;
         const AZStd::vector<Feature*>& GetFeatures() const;
 
         Feature* FindFeatureById(const AZ::TypeId& featureTypeId) const;
