@@ -182,6 +182,8 @@ namespace AZ
                     ->Event("GetMinimumScreenCoverage", &MeshComponentRequestBus::Events::GetMinimumScreenCoverage)
                     ->Event("SetQualityDecayRate", &MeshComponentRequestBus::Events::SetQualityDecayRate)
                     ->Event("GetQualityDecayRate", &MeshComponentRequestBus::Events::GetQualityDecayRate)
+                    ->Event("SetRayTracingEnabled", &MeshComponentRequestBus::Events::SetRayTracingEnabled)
+                    ->Event("GetRayTracingEnabled", &MeshComponentRequestBus::Events::GetRayTracingEnabled)
                     ->VirtualProperty("ModelAssetId", "GetModelAssetId", "SetModelAssetId")
                     ->VirtualProperty("ModelAssetPath", "GetModelAssetPath", "SetModelAssetPath")
                     ->VirtualProperty("SortKey", "GetSortKey", "SetSortKey")
@@ -189,6 +191,7 @@ namespace AZ
                     ->VirtualProperty("LodOverride", "GetLodOverride", "SetLodOverride")
                     ->VirtualProperty("MinimumScreenCoverage", "GetMinimumScreenCoverage", "SetMinimumScreenCoverage")
                     ->VirtualProperty("QualityDecayRate", "GetQualityDecayRate", "SetQualityDecayRate")
+                    ->VirtualProperty("RayTracingEnabled", "GetRayTracingEnabled", "SetRayTracingEnabled")
                     ;
                 
                 behaviorContext->EBus<MeshComponentNotificationBus>("MeshComponentNotificationBus")
@@ -559,6 +562,25 @@ namespace AZ
         bool MeshComponentController::GetVisibility() const
         {
             return m_isVisible;
+        }
+
+        void MeshComponentController::SetRayTracingEnabled(bool enabled)
+        {
+            if (m_meshHandle.IsValid() && m_meshFeatureProcessor)
+            {
+                m_meshFeatureProcessor->SetRayTracingEnabled(m_meshHandle, enabled);
+                m_configuration.m_isRayTracingEnabled = enabled;
+            }
+        }
+
+        bool MeshComponentController::GetRayTracingEnabled() const
+        {
+            if (m_meshHandle.IsValid() && m_meshFeatureProcessor)
+            {
+                return m_meshFeatureProcessor->GetRayTracingEnabled(m_meshHandle);
+            }
+
+            return false;
         }
 
         Aabb MeshComponentController::GetWorldBounds()
