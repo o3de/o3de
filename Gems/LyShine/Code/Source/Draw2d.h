@@ -180,9 +180,6 @@ private:
 
 public: // static member functions
 
-    //! Given a position and size and an alignment return the top left corner of the aligned quad
-    static AZ::Vector2 Align(AZ::Vector2 position, AZ::Vector2 size, HAlign horizontalAlignment, VAlign verticalAlignment);
-
     //! Helper to load a texture
     static AZ::Data::Instance<AZ::RPI::Image> LoadTexture(const AZStd::string& pathName);
 
