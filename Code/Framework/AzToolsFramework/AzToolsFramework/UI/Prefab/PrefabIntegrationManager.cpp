@@ -341,7 +341,8 @@ namespace AzToolsFramework
             }
 
             // Instantiate Prefab
-            if (selectedEntities.size() == 0 || (!readOnlyEntityInSelection && !onlySelectedEntityIsClosedPrefabContainer))
+            if (selectedEntities.size() == 0 ||
+                selectedEntities.size() == 1 && !readOnlyEntityInSelection && !onlySelectedEntityIsClosedPrefabContainer)
             {
                 QAction* instantiateAction = menu->addAction(QObject::tr("Instantiate Prefab..."));
                 instantiateAction->setToolTip(QObject::tr("Instantiates a prefab file in the scene."));
