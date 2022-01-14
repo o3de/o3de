@@ -66,7 +66,7 @@
     "COMMAND": "build_linux.sh",
     "PARAMETERS": {
       "CONFIGURATION": "profile",
-      "OUTPUT_DIRECTORY": "build/linux",
+      "OUTPUT_DIRECTORY": "build/linux_gcc",
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_UNITY_BUILD=FALSE -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DLY_PARALLEL_LINK_JOBS=4 -DLY_GCC_BUILD_FOR_GCOV=OFF",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all"
@@ -109,7 +109,7 @@
     "COMMAND": "build_test_linux.sh",
     "PARAMETERS": {
       "CONFIGURATION": "profile",
-      "OUTPUT_DIRECTORY": "build/linux",
+      "OUTPUT_DIRECTORY": "build/linux_gcc",
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_UNITY_BUILD=FALSE -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DLY_PARALLEL_LINK_JOBS=4 -DLY_GCC_BUILD_FOR_GCOV=ON",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all",
