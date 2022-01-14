@@ -261,7 +261,19 @@ namespace AZ
             return AZ::Vector3::CreateZero();
         }
 
+        AZ::Vector3 CameraComponent::ScreenNdcToWorld([[maybe_unused]] const AZ::Vector2& screenPosition, [[maybe_unused]] float depth)
+        {
+            // not implemented
+            return AZ::Vector3::CreateZero();
+        }
+
         AZ::Vector2 CameraComponent::WorldToScreen([[maybe_unused]] const AZ::Vector3& worldPosition)
+        {
+            // not implemented
+            return AZ::Vector2::CreateZero();
+        }
+
+        AZ::Vector2 CameraComponent::WorldToScreenNdc([[maybe_unused]] const AZ::Vector3& worldPosition)
         {
             // not implemented
             return AZ::Vector2::CreateZero();

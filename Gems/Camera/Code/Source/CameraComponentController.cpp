@@ -10,6 +10,7 @@
 #include "CameraViewRegistrationBus.h"
 
 #include <AzCore/Math/MatrixUtils.h>
+#include <AzCore/Math/VectorConversions.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/ViewportContextManager.h>
 #include <Atom/RPI.Public/ViewportContext.h>
@@ -414,20 +415,42 @@ namespace Camera
         return m_isActiveView;
     }
 
+    namespace Util
+    {
+        AZ::Vector3 GetWorldPosition(const AZ::Vector3& origin, float depth, const AzFramework::CameraState& cameraState)
+        {
+            if (depth == 0.f)
+            {
+                return origin;
+            }
+            else
+            {
+                const AZ::Vector3 rayDirection = cameraState.m_orthographic ? cameraState.m_forward : (origin - cameraState.m_position);
+                return origin + (rayDirection.GetNormalized() * depth);
+            }
+        }
+    }
+
     AZ::Vector3 CameraComponentController::ScreenToWorld(const AZ::Vector2& screenPosition, float depth)
     {
         const AzFramework::ScreenPoint point{ static_cast<int>(screenPosition.GetX()), static_cast<int>(screenPosition.GetY()) };
         const AzFramework::CameraState& cameraState = GetCameraState();
-        if (depth == 0.f)
-        {
-            return AzFramework::ScreenToWorld(point, cameraState);
-        }
-        else
-        {
-            const AZ::Vector3 rayOrigin = AzFramework::ScreenToWorld(point, cameraState);
-            const AZ::Vector3 rayDirection = cameraState.m_orthographic ? cameraState.m_forward : (rayOrigin - cameraState.m_position);
-            return rayOrigin + (rayDirection.GetNormalized() * depth);
-        }
+        const AZ::Vector3 origin = AzFramework::ScreenToWorld(point, cameraState);
+        return Util::GetWorldPosition(origin, depth, cameraState);
+    }
+
+    AZ::Vector3 CameraComponentController::ScreenNdcToWorld(const AZ::Vector2& screenNdcPosition, float depth)
+    {
+        const AzFramework::CameraState& cameraState = GetCameraState();
+        const AZ::Vector3 origin = AzFramework::ScreenNdcToWorld(screenNdcPosition, AzFramework::InverseCameraView(cameraState), AzFramework::InverseCameraProjection(cameraState));
+        return Util::GetWorldPosition(origin, depth, cameraState);
+    }
+
+    AZ::Vector2 CameraComponentController::WorldToScreenNdc(const AZ::Vector3& worldPosition)
+    {
+        const AzFramework::CameraState& cameraState = GetCameraState();
+        const AZ::Vector3 screenPosition = AzFramework::WorldToScreenNdc(worldPosition, AzFramework::CameraView(cameraState), AzFramework::CameraProjection(cameraState));
+        return AZ::Vector3ToVector2(screenPosition); 
     }
 
     AZ::Vector2 CameraComponentController::WorldToScreen(const AZ::Vector3& worldPosition)

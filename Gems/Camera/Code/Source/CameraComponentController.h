@@ -112,7 +112,9 @@ namespace Camera
         bool IsActiveView() override;
 
         AZ::Vector3 ScreenToWorld(const AZ::Vector2& screenPosition, float depth) override;
+        AZ::Vector3 ScreenNdcToWorld(const AZ::Vector2& screenNdcPosition, float depth) override;
         AZ::Vector2 WorldToScreen(const AZ::Vector3& worldPosition) override;
+        AZ::Vector2 WorldToScreenNdc(const AZ::Vector3& worldPosition) override;
 
         // AZ::TransformNotificationBus::Handler interface
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
