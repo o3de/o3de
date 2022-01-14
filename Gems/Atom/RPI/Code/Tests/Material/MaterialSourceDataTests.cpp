@@ -228,8 +228,13 @@ namespace UnitTest
 
         Data::Asset<MaterialAsset> materialAsset = materialAssetOutcome.GetValue();
         
+        ErrorMessageFinder expectNotFinalizedError("MaterialAsset must be finalized");
+
         EXPECT_FALSE(materialAsset->IsFinalized());
-        // Note we avoid calling  GetPropertyValues() because that will auto-finalize the material. We want to check its raw property values first.
+
+        expectNotFinalizedError.ResetCounts();
+        EXPECT_TRUE(materialAsset->GetPropertyValues().empty());
+        expectNotFinalizedError.CheckExpectedErrorsFound();
 
         auto findRawPropertyValue = [materialAsset](const char* propertyId)
         {
@@ -275,12 +280,14 @@ namespace UnitTest
         tester.SerializeOut(materialAsset.Get());
         materialAsset = tester.SerializeIn(Uuid::CreateRandom(), ObjectStream::FilterDescriptor{AZ::Data::AssetFilterNoAssetLoading});
         
-        // We check the raw property values again on the loaded data, showing that the same data is available in the original un-finalized state.
-        checkRawPropertyValues();
-
-        // The material will automatically finalize itself when the properties are accessed.
+        // We check that everything is still in the original un-finalized state after going through the serialization process.
         EXPECT_FALSE(materialAsset->IsFinalized());
-        materialAsset->GetPropertyValues();
+        checkRawPropertyValues();
+        expectNotFinalizedError.ResetCounts();
+        EXPECT_TRUE(materialAsset->GetPropertyValues().empty());
+        expectNotFinalizedError.CheckExpectedErrorsFound();
+
+        materialAsset->Finalize();
         EXPECT_TRUE(materialAsset->IsFinalized());
 
         // Now all the property values should be available through the main GetPropertyValues() API.
@@ -295,6 +302,8 @@ namespace UnitTest
         EXPECT_EQ(materialAsset->GetPropertyValues()[8].GetValue<Data::Asset<ImageAsset>>(), m_testImageAsset);
         EXPECT_EQ(materialAsset->GetPropertyValues()[9].GetValue<uint32_t>(), 1u);
 
+        // The raw property values are still available (because they are needed if a hot-reload of the MaterialTypeAsset occurs)
+        checkRawPropertyValues();
     }
 
     void CheckEqual(MaterialSourceData& a, MaterialSourceData& b)
@@ -757,8 +766,9 @@ namespace UnitTest
         tester.SerializeOut(materialAssetLevel3.Get());
         materialAssetLevel3 = tester.SerializeIn(Uuid::CreateRandom(), ObjectStream::FilterDescriptor{AZ::Data::AssetFilterNoAssetLoading});
 
-
-        // The properties will finalize automatically when we call GetPropertyValues()...
+        materialAssetLevel1->Finalize();
+        materialAssetLevel2->Finalize();
+        materialAssetLevel3->Finalize();
 
         AZStd::array_view<MaterialPropertyValue> properties;
 
@@ -779,10 +789,6 @@ namespace UnitTest
         EXPECT_EQ(properties[myFloat.GetIndex()].GetValue<float>(), 3.5f);
         EXPECT_EQ(properties[myFloat2.GetIndex()].GetValue<Vector2>(), Vector2(4.1f, 4.2f));
         EXPECT_EQ(properties[myColor.GetIndex()].GetValue<Color>(), Color(0.15f, 0.25f, 0.35f, 0.45f));
-        
-        EXPECT_TRUE(materialAssetLevel1->IsFinalized());
-        EXPECT_TRUE(materialAssetLevel2->IsFinalized());
-        EXPECT_TRUE(materialAssetLevel3->IsFinalized());
     }
 
     TEST_F(MaterialSourceDataTests, CreateMaterialAsset_MultiLevelDataInheritance_Error_MaterialTypesDontMatch)

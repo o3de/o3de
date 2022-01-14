@@ -33,7 +33,7 @@ namespace AZ
         class MaterialAsset;
         class MaterialAssetCreator;
 
-        enum MaterialAssetProcessingMode
+        enum class MaterialAssetProcessingMode
         {
             PreBake,      //!< all material asset processing is done in the Asset Processor, producing a finalized material asset
             DeferredBake  //!< some material asset processing is deferred, and the material asset is finalized at runtime after loading

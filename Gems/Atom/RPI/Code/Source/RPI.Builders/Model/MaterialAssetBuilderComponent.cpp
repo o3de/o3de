@@ -45,7 +45,8 @@ namespace AZ
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<MaterialAssetDependenciesComponent, Component>()
-                    ->Version(5) // <<<<< This probably is NOT the version number you want to bump. What you're looking for is MaterialAssetBuilderComponent::Reflect below
+                    ->Version(5) // <<<<< If you have made changes to material code and need to force scene files to be reprocessed, this probably is
+                                 // NOT the version number you want to bump . What you're looking for is MaterialAssetBuilderComponent::Reflect below.
                     ->Attribute(Edit::Attributes::SystemComponentTags, AZStd::vector<Crc32>({ AssetBuilderSDK::ComponentTags::AssetBuilder }));
             }
         }
@@ -127,7 +128,7 @@ namespace AZ
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<MaterialAssetBuilderComponent, SceneAPI::SceneCore::ExportingComponent>()
-                    ->Version(19);  // material dependency improvements 
+                    ->Version(20);  // material dependency improvements 
             }
         }
         

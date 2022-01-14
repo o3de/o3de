@@ -107,6 +107,11 @@ namespace AZ
             //! If false, property values can be accessed through GetRawPropertyValues().
             bool IsFinalized() const;
             
+            //! If the material asset is not finalized yet, this does the final processing of the raw property values to
+            //! get the material asset ready to be used.
+            //! Note the MaterialTypeAsset must be valid before this is called.
+            void Finalize(AZStd::function<void(const char*)> reportWarning = nullptr, AZStd::function<void(const char*)> reportError = nullptr);
+
             //! Returns the list of values for all properties in this material.
             //! The entries in this list align with the entries in the MaterialPropertiesLayout. Each AZStd::any is guaranteed 
             //! to have a value of type that matches the corresponding MaterialPropertyDescriptor.
@@ -130,12 +135,6 @@ namespace AZ
 
         private:
             bool PostLoadInit() override;
-
-            //! If the material asset is not finalized yet, this does the final processing of m_rawPropertyValues to
-            //! get the material asset ready to be used.
-            //! Note m_materialTypeAsset must be valid before this is called.
-            //! @param elevateWarnings Indicates whether to treat warnings as errors
-            void Finalize(AZStd::function<void(const char*)> reportWarning = nullptr, AZStd::function<void(const char*)> reportError = nullptr);
 
             //! Checks the material type version and potentially applies a series of property changes (most common are simple property renames)
             //! based on the MaterialTypeAsset's version update procedure.
