@@ -10,7 +10,6 @@
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzFramework/Spawnable/Spawnable.h>
-#include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Interface/Interface.h>
 
 namespace Multiplayer
@@ -42,7 +41,8 @@ namespace Multiplayer
 
         auto enumerateCallback = [this](const AZ::Data::AssetId id, const AZ::Data::AssetInfo& info)
         {
-            if (info.m_assetType == AZ::AzTypeInfo<AzFramework::Spawnable>::Uuid())
+            if (info.m_assetType == AZ::AzTypeInfo<AzFramework::Spawnable>::Uuid() &&
+                info.m_relativePath.ends_with(".network.spawnable"))
             {
                 ProcessSpawnableAsset(info.m_relativePath, id);
             }
