@@ -9,7 +9,6 @@
 
 #include <AzCore/Debug/BudgetTracker.h>
 #include <AzCore/Math/Crc.h>
-#include <AzCore/std/smart_ptr/weak_ptr.h>
 
 namespace AZ::Debug
 {
@@ -66,13 +65,13 @@ namespace AZ::Debug
 #define AZ_DEFINE_BUDGET(name)                                                          \
     ::AZ::Debug::Budget* AZ_BUDGET_GETTER(name)()                                       \
     {                                                                                   \
-        static AZStd::weak_ptr<::AZ::Debug::Budget> budget;                             \
-        if (budget.expired())                                                           \
+        static ::AZ::Debug::Budget* budget = nullptr;                                   \
+        if (budget == nullptr)                                                          \
         {                                                                               \
             constexpr static uint32_t crc = AZ_CRC_CE(#name);                           \
-            budget = ::AZ::Debug::BudgetTracker::GetBudgetFromEnvironment(#name, crc);  \
+            ::AZ::Debug::BudgetTracker::GetBudgetFromEnvironment(budget, #name, crc);   \
         }                                                                               \
-        return budget.lock().get();                                                     \
+        return budget;                                                                  \
     }
 #endif
 

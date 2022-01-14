@@ -12,26 +12,25 @@
 #include <AzCore/Debug/Budget.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Memory/Memory.h>
-#include <AzCore/std/allocator_stateless.h>
 #include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/parallel/scoped_lock.h>
-#include <AzCore/std/smart_ptr/make_shared.h>
 
 namespace AZ::Debug
 {
     struct BudgetTracker::BudgetTrackerImpl
     {
-        AZStd::unordered_map<AZStd::string_view, AZStd::shared_ptr<Budget>> m_budgets;
+        AZStd::unordered_map<AZStd::string_view, Budget> m_budgets;
+        AZStd::unordered_set<Budget**> m_externalBudgetRefs;
     };
 
-    AZStd::shared_ptr<Budget> BudgetTracker::GetBudgetFromEnvironment(const char* budgetName, uint32_t crc)
+    void BudgetTracker::GetBudgetFromEnvironment(Budget*& extBudgetRef, const char* budgetName, uint32_t crc)
     {
         BudgetTracker* tracker = Interface<BudgetTracker>::Get();
         if (tracker)
         {
-            return tracker->GetBudget(budgetName, crc);
+            tracker->GetBudget(extBudgetRef, budgetName, crc);
         }
-        return nullptr;
     }
 
     BudgetTracker::~BudgetTracker()
@@ -56,22 +55,24 @@ namespace AZ::Debug
         if (m_impl)
         {
             Interface<BudgetTracker>::Unregister(this);
+
+            for (auto budgetRef : m_impl->m_externalBudgetRefs)
+            {
+                *budgetRef = nullptr;
+            }
+
             delete m_impl;
             m_impl = nullptr;
         }
     }
 
-    AZStd::shared_ptr<Budget> BudgetTracker::GetBudget(const char* budgetName, uint32_t crc)
+    void BudgetTracker::GetBudget(Budget*& extBudgetRef, const char* budgetName, uint32_t crc)
     {
         AZStd::scoped_lock lock{ m_mutex };
 
-        if (auto iter = m_impl->m_budgets.find(budgetName); iter != m_impl->m_budgets.end())
-        {
-            return iter->second;
-        }
+        m_impl->m_externalBudgetRefs.insert(&extBudgetRef);
 
-        auto budget = AZStd::allocate_shared<Budget>(AZStd::stateless_allocator(), budgetName, crc);
-        m_impl->m_budgets.emplace(budgetName, budget);
-        return budget;
+        auto iter = m_impl->m_budgets.try_emplace(budgetName, budgetName, crc).first;
+        extBudgetRef = &iter->second;
     }
 } // namespace AZ::Debug

@@ -11,7 +11,6 @@
 #include <AzCore/Module/Environment.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/parallel/mutex.h>
-#include <AzCore/std/smart_ptr/shared_ptr.h>
 
 namespace AZ::Debug
 {
@@ -21,7 +20,7 @@ namespace AZ::Debug
     {
     public:
         AZ_TYPE_INFO(BudgetTracker, "{E14A746D-BFFE-4C02-90FB-4699B79864A5}");
-        static AZStd::shared_ptr<Budget> GetBudgetFromEnvironment(const char* budgetName, uint32_t crc);
+        static void GetBudgetFromEnvironment(Budget*& extBudgetRef, const char* budgetName, uint32_t crc);
 
         ~BudgetTracker();
 
@@ -29,7 +28,7 @@ namespace AZ::Debug
         bool Init();
         void Reset();
 
-        AZStd::shared_ptr<Budget> GetBudget(const char* budgetName, uint32_t crc);
+        void GetBudget(Budget*& extBudgetRef, const char* budgetName, uint32_t crc);
 
     private:
         struct BudgetTrackerImpl;
