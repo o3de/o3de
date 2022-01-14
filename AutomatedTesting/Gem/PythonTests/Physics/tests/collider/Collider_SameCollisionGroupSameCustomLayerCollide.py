@@ -127,7 +127,7 @@ def Collider_SameCollisionGroupSameCustomLayerCollide():
     # Main Script
     # 1) Load the level
     helper.init_idle()
-    helper.open_level("physics", "Collider_SameCollisionGroupSameCustomLayerCollide")
+    helper.open_level("Physics", "Collider_SameCollisionGroupSameCustomLayerCollide")
 
     # 2) Enter Game Mode
     helper.enter_game_mode(Tests.enter_game_mode)
