@@ -194,9 +194,9 @@ namespace AZ::SceneAPI::Behaviors
                 azrtti_typeid<AZ::SceneAPI::SceneData::MeshGroup>(),
                 meshNodeName.GetPath()));
 
-            //AZ::SceneAPI::SceneData::CoordinateSystemRule
+            // this clears out the mesh coordinates each mesh group will be rotated and translated
+            // using the attached scene graph node
             auto coordinateSystemRule = AZStd::make_shared<AZ::SceneAPI::SceneData::CoordinateSystemRule>();
-            //coordinateSystemRule->SetTargetCoordinateSystem(AZ::SceneAPI::SceneData::CoordinateSystemRule::CoordinateSystem::ZUpPositiveYForward);
             coordinateSystemRule->SetUseAdvancedData(true);
             coordinateSystemRule->SetRotation(AZ::Quaternion::CreateIdentity());
             coordinateSystemRule->SetTranslation(AZ::Vector3::CreateZero());
@@ -301,11 +301,6 @@ namespace AZ::SceneAPI::Behaviors
 
             // get node matrix data to set the entity's local transform
             const auto nodeTransform = azrtti_cast<const DataTypes::ITransform*>(graph.GetNodeContent(thisTransformIndex));
-            //auto xform = AZ::Transform::CreateIdentity();
-            //xform.SetTranslation({ nodeTransform->GetMatrix().GetTranslation().GetX() * 100.0f,
-            //                       nodeTransform->GetMatrix().GetTranslation().GetY() * 100.0f,
-            //                       nodeTransform->GetMatrix().GetTranslation().GetZ() * 100.0f });
-            //entityTransform->SetLocalTM(xform);
             entityTransform->SetLocalTM(AZ::Transform::CreateFromMatrix3x4(nodeTransform->GetMatrix()));
         }
 
