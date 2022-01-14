@@ -14,6 +14,7 @@
 #include <GradientSignal/Ebuses/SurfaceSlopeGradientRequestBus.h>
 #include <SurfaceData/SurfaceDataTypes.h>
 #include <GradientSignal/SmoothStep.h>
+#include <GradientSignal/Util.h>
 
 namespace LmbrCentral
 {

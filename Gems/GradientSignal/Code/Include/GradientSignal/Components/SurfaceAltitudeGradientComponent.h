@@ -15,6 +15,7 @@
 #include <SurfaceData/SurfaceDataTypes.h>
 #include <LmbrCentral/Dependency/DependencyNotificationBus.h>
 #include <AzCore/Component/TickBus.h>
+#include <GradientSignal/Util.h>
 
 namespace LmbrCentral
 {
