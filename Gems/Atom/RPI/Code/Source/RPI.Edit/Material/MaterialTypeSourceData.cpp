@@ -130,17 +130,12 @@ namespace AZ
             return nullptr;
         }
 
-        bool MaterialTypeSourceData::ApplyPropertyRenames(MaterialPropertyId& propertyId, uint32_t materialTypeVersion) const
+        bool MaterialTypeSourceData::ApplyPropertyRenames(MaterialPropertyId& propertyId) const
         {
             bool renamed = false;
 
             for (const VersionUpdateDefinition& versionUpdate : m_versionUpdates)
             {
-                if (materialTypeVersion >= versionUpdate.m_toVersion)
-                {
-                    continue;
-                }
-
                 for (const VersionUpdatesRenameOperationDefinition& action : versionUpdate.m_actions)
                 {
                     if (action.m_operation == "rename")
@@ -161,7 +156,7 @@ namespace AZ
             return renamed;
         }
 
-        const MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::FindProperty(AZStd::string_view groupName, AZStd::string_view propertyName, uint32_t materialTypeVersion) const
+        const MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::FindProperty(AZStd::string_view groupName, AZStd::string_view propertyName) const
         {
             auto groupIter = m_propertyLayout.m_properties.find(groupName);
             if (groupIter != m_propertyLayout.m_properties.end())
@@ -178,7 +173,7 @@ namespace AZ
             // Property has not been found, try looking for renames in the version history
 
             MaterialPropertyId propertyId = MaterialPropertyId{groupName, propertyName};
-            ApplyPropertyRenames(propertyId, materialTypeVersion);
+            ApplyPropertyRenames(propertyId);
 
             // Do the search again with the new names
 
