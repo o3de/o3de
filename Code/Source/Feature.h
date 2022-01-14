@@ -85,6 +85,10 @@ namespace EMotionFX::MotionMatching
             const Pose& m_currentPose; //! Current actor instance pose.
             const TrajectoryQuery* m_trajectoryQuery;
         };
+        virtual float CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const;
+
+        void SetCostFactor(float costFactor) { m_costFactor = costFactor; }
+        float GetCostFactor() const { return m_costFactor; }
 
         virtual void FillQueryFeatureValues([[maybe_unused]] size_t startIndex,
             [[maybe_unused]] AZStd::vector<float>& queryFeatureValues,
@@ -109,7 +113,7 @@ namespace EMotionFX::MotionMatching
         void SetName(const AZStd::string& name) { m_name = name; }
         const AZStd::string& GetName() const { return m_name; }
 
-        // Column offset for the first value for the given feature
+        // Column offset for the first value for the given feature inside the feature matrix.
         virtual size_t GetNumDimensions() const = 0;
         virtual AZStd::string GetDimensionName([[maybe_unused]] size_t index) const { return "Unknown"; }
         FeatureMatrix::Index GetColumnOffset() const { return m_featureColumnOffset; }
@@ -117,10 +121,7 @@ namespace EMotionFX::MotionMatching
 
         const AZ::TypeId& GetId() const { return m_id; }
         size_t GetRelativeToNodeIndex() const { return m_relativeToNodeIndex; }
-        void SetId(const AZ::TypeId& id);
         void SetRelativeToNodeIndex(size_t nodeIndex);
-        void SetFrameDatabase(FrameDatabase* frameDatabase);
-        FrameDatabase* GetFrameDatabase() const;
 
         static void Reflect(AZ::ReflectContext* context);
         static void CalculateVelocity(size_t jointIndex, size_t relativeToJointIndex, MotionInstance* motionInstance, AZ::Vector3& outVelocity);
@@ -140,13 +141,14 @@ namespace EMotionFX::MotionMatching
         float GetNormalizedDirectionDifference(const AZ::Vector2& directionA, const AZ::Vector2& directionB) const;
         float GetNormalizedDirectionDifference(const AZ::Vector3& directionA, const AZ::Vector3& directionB) const;
 
+        // Shared and reflected data.
         AZ::TypeId m_id = AZ::TypeId::CreateRandom(); /**< The frame data id. Use this instead of the RTTI class Id. This is because we can have multiple of the same types. */
         AZStd::string m_name; /**< Display name used for feature identification and debug visualizations. */
-        FrameDatabase* m_frameDatabase = nullptr; /**< The frame database from which the feature got calculated from and belongs to. */
         AZStd::string m_jointName; /**< Joint name to extract the data from. */
         AZStd::string m_relativeToJointName; /**< Make the data relative to this node (default=0). */
         AZ::Color m_debugColor = AZ::Colors::Green; /**< The debug drawing color. */
         bool m_debugDrawEnabled = false; /**< Is debug drawing enabled for this data? */
+        float m_costFactor = 1.0f; /** The cost factor for the feature is multiplied with the actual and can be used to change a feature's influence in the motion matching search. */
 
         // Instance data (depends on the feature schema or actor instance).
         FeatureMatrix::Index m_featureColumnOffset; // Float/Value offset, starting column for where the feature should be places at

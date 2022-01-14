@@ -10,24 +10,50 @@
 *
 */
 
-#include <EMotionFX/Source/ActorInstance.h>
-#include <Allocators.h>
-#include <EMotionFX/Source/Motion.h>
-#include <EMotionFX/Source/MotionInstance.h>
-#include <MotionMatchingConfig.h>
-#include <MotionMatchingInstance.h>
-#include <Feature.h>
-#include <FeatureTrajectory.h>
-#include <FrameDatabase.h>
-#include <EMotionFX/Source/TransformData.h>
-
+#include <AzCore/Debug/Timer.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
+#include <EMotionFX/Source/ActorInstance.h>
+#include <EMotionFX/Source/Motion.h>
+#include <EMotionFX/Source/MotionInstance.h>
+#include <EMotionFX/Source/TransformData.h>
+
+#include <Allocators.h>
+#include <Feature.h>
+#include <FeatureTrajectory.h>
+#include <FeatureSchemaDefault.h>
+#include <FrameDatabase.h>
+#include <ImGuiMonitorBus.h>
+#include <KdTree.h>
+#include <MotionMatchingConfig.h>
+#include <MotionMatchingInstance.h>
+
 namespace EMotionFX::MotionMatching
 {
     AZ_CLASS_ALLOCATOR_IMPL(MotionMatchingConfig, MotionMatchAllocator, 0)
+
+    bool MotionMatchingConfig::RegisterFeatures(const InitSettings& settings)
+    {
+        FeatureSchema& featureSchema = m_featureDatabase.GetFeatureSchema();
+
+        const Node* rootJoint = settings.m_actorInstance->GetActor()->GetMotionExtractionNode();
+        if (!rootJoint)
+        {
+            AZ_Error("MotionMatching", false, "Cannot register features. Cannot find motion extraction joint.");
+            return false;
+        }
+
+        DefaultFeatureSchemaInitSettings defaultSettings;
+        defaultSettings.m_rootJointName = rootJoint->GetNameString();
+        defaultSettings.m_leftFootJointName = "L_foot_JNT";
+        defaultSettings.m_rightFootJointName = "R_foot_JNT";
+        defaultSettings.m_pelvisJointName = "C_pelvis_JNT";
+        DefaultFeatureSchema(featureSchema, defaultSettings);
+
+        return true;
+    }
 
     bool MotionMatchingConfig::Init(const InitSettings& settings)
     {
@@ -61,6 +87,15 @@ namespace EMotionFX::MotionMatching
         {
             AZ_Error("EMotionFX", false, "Failed to register features inside motion matching config.");
             return false;
+        }
+
+        // Use all features other than the trajectory for the broad-phase search using the KD-Tree.
+        for (Feature* feature : m_featureDatabase.GetFeatureSchema().GetFeatures())
+        {
+            if (feature->RTTI_GetType() != azrtti_typeid<FeatureTrajectory>())
+            {
+                m_featureDatabase.AddKdTreeFeature(feature);
+            }
         }
 
         // Now build the per frame data (slow).
@@ -100,9 +135,124 @@ namespace EMotionFX::MotionMatching
         trajectoryQuery.DebugDraw(debugDisplay, trajectoryQueryColor);
 
         // Draw the trajectory history starting after the sampled version of the past trajectory.
-        const FeatureTrajectory* trajectoryFeature = instance->GetConfig()->GetTrajectoryFeature();
+        const FeatureTrajectory* trajectoryFeature = instance->GetTrajectoryFeature();
         const TrajectoryHistory& trajectoryHistory = instance->GetTrajectoryHistory();
         trajectoryHistory.DebugDraw(debugDisplay, trajectoryQueryColor, trajectoryFeature->GetPastTimeRange());
+    }
+
+    size_t MotionMatchingConfig::FindLowestCostFrameIndex(MotionMatchingInstance* instance, const Feature::FrameCostContext& context, AZStd::vector<float>& tempCosts, AZStd::vector<float>& minCosts)
+    {
+        AZ::Debug::Timer timer;
+        timer.Stamp();
+
+        AZ_PROFILE_SCOPE(Animation, "MotionMatching::FindLowestCostFrameIndex");
+
+        FeatureDatabase& featureDatabase = instance->GetConfig()->GetFeatureDatabase();
+        const FeatureSchema& featureSchema = featureDatabase.GetFeatureSchema();
+        const FeatureTrajectory* trajectoryFeature = instance->GetTrajectoryFeature();
+
+        // 1. Broad-phase search using KD-tree
+        {
+            // Build the input query features that will be compared to every entry in the feature database in the motion matching search.
+            size_t startOffset = 0;
+            AZStd::vector<float>& queryFeatureValues = instance->GetQueryFeatureValues();
+            for (Feature* feature : featureDatabase.GetFeaturesInKdTree())
+            {
+                feature->FillQueryFeatureValues(startOffset, queryFeatureValues, context);
+                startOffset += feature->GetNumDimensions();
+            }
+            AZ_Assert(startOffset == queryFeatureValues.size(), "Frame float vector is not the expected size.");
+
+            // Find our nearest frames.
+            featureDatabase.GetKdTree().FindNearestNeighbors(queryFeatureValues, instance->GetNearestFrames());
+        }
+
+        // 2. Narrow-phase, brute force find the actual best matching frame (frame with the minimal cost).
+        float minCost = FLT_MAX;
+        size_t minCostFrameIndex = 0;
+        tempCosts.resize(featureSchema.GetNumFeatures());
+        minCosts.resize(featureSchema.GetNumFeatures());
+        float minTrajectoryPastCost = 0.0f;
+        float minTrajectoryFutureCost = 0.0f;
+
+        // Iterate through the frames filtered by the broad-phase search.
+        for (const size_t frameIndex : instance->GetNearestFrames())
+        {
+            float frameCost = 0.0f;
+
+            // Calculate the frame cost by accumulating the weighted feature costs.
+            for (size_t featureIndex = 0; featureIndex < featureSchema.GetNumFeatures(); ++featureIndex)
+            {
+                Feature* feature = featureSchema.GetFeature(featureIndex);
+                if (feature->RTTI_GetType() != azrtti_typeid<FeatureTrajectory>())
+                {
+                    const float featureCost = feature->CalculateFrameCost(frameIndex, context);
+                    const float featureCostFactor = feature->GetCostFactor();
+                    const float featureFinalCost = featureCost * featureCostFactor;
+
+                    frameCost += featureFinalCost;
+                    tempCosts[featureIndex] = featureFinalCost;
+                }
+            }
+
+            // Manually add the trajectory cost.
+            float trajectoryPastCost = 0.0f;
+            float trajectoryFutureCost = 0.0f;
+            if (trajectoryFeature)
+            {
+                trajectoryPastCost = trajectoryFeature->CalculatePastFrameCost(frameIndex, context);
+                trajectoryFutureCost = trajectoryFeature->CalculateFutureFrameCost(frameIndex, context);
+                frameCost += 0.5f * trajectoryPastCost; // TODO: This needs to be exposed to the edit context and not hard-coded.
+                frameCost += 0.75f * trajectoryFutureCost;
+            }
+
+            // Track the minimum feature and frame costs.
+            if (frameCost < minCost)
+            {
+                minCost = frameCost;
+                minCostFrameIndex = frameIndex;
+
+                for (size_t featureIndex = 0; featureIndex < featureSchema.GetNumFeatures(); ++featureIndex)
+                {
+                    Feature* feature = featureSchema.GetFeature(featureIndex);
+                    if (feature->RTTI_GetType() != azrtti_typeid<FeatureTrajectory>())
+                    {
+                        minCosts[featureIndex] = tempCosts[featureIndex];
+                    }
+                }
+
+                minTrajectoryPastCost = trajectoryPastCost;
+                minTrajectoryFutureCost = trajectoryFutureCost;
+            }
+        }
+
+        // 3. ImGui debug visualization
+        {
+            const float time = timer.GetDeltaTimeInSeconds();
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushPerformanceHistogramValue, "FindLowestCostFrameIndex", time * 1000.0f);
+
+            for (size_t featureIndex = 0; featureIndex < featureSchema.GetNumFeatures(); ++featureIndex)
+            {
+                Feature* feature = featureSchema.GetFeature(featureIndex);
+                if (feature->RTTI_GetType() != azrtti_typeid<FeatureTrajectory>())
+                {
+                    ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue,
+                        feature->GetName().c_str(),
+                        minCosts[featureIndex],
+                        feature->GetDebugDrawColor());
+                }
+            }
+
+            if (trajectoryFeature)
+            {
+                ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Trajectory Future", minTrajectoryFutureCost, trajectoryFeature->GetDebugDrawColor());
+                ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Trajectory Past", minTrajectoryPastCost, trajectoryFeature->GetDebugDrawColor());
+            }
+
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Total Cost", minCost, AZ::Color::CreateFromRgba(202,255,191,255));
+        }
+
+        return minCostFrameIndex;
     }
 
     void MotionMatchingConfig::Reflect(AZ::ReflectContext* context)

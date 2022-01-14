@@ -19,6 +19,8 @@ set(FILES
     Source/FeaturePosition.h
     Source/FeatureSchema.cpp
     Source/FeatureSchema.h
+    Source/FeatureSchemaDefault.cpp
+    Source/FeatureSchemaDefault.h
     Source/FeatureTrajectory.h
     Source/FeatureTrajectory.cpp
     Source/FeatureVelocity.cpp
@@ -36,8 +38,6 @@ set(FILES
     Source/ImGuiMonitorBus.h
     Source/KdTree.cpp
     Source/KdTree.h
-    Source/LocomotionConfig.cpp
-    Source/LocomotionConfig.h
     Source/MotionMatchEventData.cpp
     Source/MotionMatchEventData.h
     Source/MotionMatchingConfig.cpp

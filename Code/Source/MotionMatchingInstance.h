@@ -82,6 +82,11 @@ namespace EMotionFX
             const AZStd::vector<float>& GetQueryFeatureValues() const { return m_queryFeatureValues; }
             AZStd::vector<float>& GetQueryFeatureValues() { return m_queryFeatureValues; }
 
+            /**
+             * Get the cached trajectory feature.
+             * The trajectory feature is searched in the feature schema used in the current instance at init time.
+             */
+            FeatureTrajectory* GetTrajectoryFeature() const { return m_cachedTrajectoryFeature; }
             const TrajectoryQuery& GetTrajectoryQuery() const { return m_trajectoryQuery; }
             const TrajectoryHistory& GetTrajectoryHistory() const { return m_trajectoryHistory; }
             const Transform& GetMotionExtractionDelta() const { return m_motionExtractionDelta; }
@@ -102,6 +107,8 @@ namespace EMotionFX
 
             AZStd::vector<float> m_queryFeatureValues;
             AZStd::vector<size_t> m_nearestFrames;
+
+            FeatureTrajectory* m_cachedTrajectoryFeature = nullptr; /** Cached pointer to the trajectory feature in the feature schema. */
             TrajectoryQuery m_trajectoryQuery;
             TrajectoryHistory m_trajectoryHistory;
             static constexpr float m_trajectorySecsToTrack = 5.0f;
@@ -114,6 +121,10 @@ namespace EMotionFX
             bool m_blending = false;
             float m_blendWeight = 1.0f;
             float m_blendProgressTime = 0.0f; // How long are we already blending? In seconds.
+
+            /// Buffers used for MotionMatchingConfig::FindLowestCostFrameIndex().
+            AZStd::vector<float> m_tempCosts;
+            AZStd::vector<float> m_minCosts;
 
             AZStd::vector<AzFramework::DebugDisplayRequests*> m_debugDisplays;
         };

@@ -81,14 +81,10 @@ namespace EMotionFX::MotionMatching
         return m_debugDrawEnabled;
     }
 
-    void Feature::SetFrameDatabase(FrameDatabase* frameDatabase)
+    float Feature::CalculateFrameCost([[maybe_unused]] size_t frameIndex, [[maybe_unused]] const FrameCostContext& context) const
     {
-        m_frameDatabase = frameDatabase;
-    }
-
-    FrameDatabase* Feature::GetFrameDatabase() const
-    {
-        return m_frameDatabase;
+        AZ_Assert(false, "Feature::CalculateFrameCost(): Not implemented for the given feature.");
+        return 0.0f;
     }
 
     void Feature::SetRelativeToNodeIndex(size_t nodeIndex)

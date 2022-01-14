@@ -16,7 +16,8 @@
 #include <EMotionFX/Source/AnimGraphNode.h>
 #include <EMotionFX/Source/EMotionFXConfig.h>
 #include <MotionMatchingInstance.h>
-#include <LocomotionConfig.h>
+#include <FeatureSchema.h>
+#include <MotionMatchingConfig.h>
 #include <ImGuiMonitor.h>
 
 namespace EMotionFX::MotionMatching
@@ -64,7 +65,7 @@ namespace EMotionFX::MotionMatching
 
         public:
             MotionMatching::MotionMatchingInstance* m_instance = nullptr;
-            MotionMatching::LocomotionConfig* m_config = nullptr;
+            MotionMatching::MotionMatchingConfig* m_config = nullptr;
         };
 
         BlendTreeMotionMatchNode();
@@ -92,11 +93,6 @@ namespace EMotionFX::MotionMatching
 
         AZStd::vector<AZStd::string> m_motionIds;
 
-        float m_footPositionFactor = 1.0f;
-        float m_footVelocityFactor = 1.0f;
-        float m_rootFutureFactor = 1.0f;
-        float m_rootPastFactor = 1.0f;
-        float m_differentMotionFactor = 1.0f;
         float m_pathRadius = 1.0f;
         float m_pathSpeed = 1.0f;
         float m_lowestCostSearchFrequency = 0.1f;
