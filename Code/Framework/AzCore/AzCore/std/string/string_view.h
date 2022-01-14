@@ -310,6 +310,8 @@ namespace AZStd
         static constexpr bool lt(char_type left, char_type right) noexcept { return left < right; }
         static constexpr int compare(const char_type* s1, const char_type* s2, size_t count) noexcept
         {
+            // In GCC versions prior to major version 10, __builtin_memcmp fails in valid checks in constexpr evaluation
+#if !defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC >= 100000
             if constexpr (AZStd::is_same_v<char_type, char>)
             {
                 return __builtin_memcmp(s1, s2, count);
@@ -319,6 +321,7 @@ namespace AZStd
                 return __builtin_wmemcmp(s1, s2, count);
             }
             else
+#endif // !defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC >= 100000
             {
                 for (; count; --count, ++s1, ++s2)
                 {
@@ -336,6 +339,7 @@ namespace AZStd
         }
         static constexpr size_t length(const char_type* s) noexcept
         {
+#if !defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC >= 100000
             if constexpr (AZStd::is_same_v<char_type, char>)
             {
                 return __builtin_strlen(s);
@@ -345,6 +349,7 @@ namespace AZStd
                 return __builtin_wcslen(s);
             }
             else
+#endif // !defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC >= 100000
             {
                 size_t strLength{};
                 for (; *s; ++s, ++strLength)
@@ -356,6 +361,10 @@ namespace AZStd
         }
         static constexpr const char_type* find(const char_type* s, size_t count, const char_type& ch) noexcept
         {
+                // There is a bug with the __builtin_char_memchr intrinsic in Visual Studio 2017 15.8.x and 15.9.x
+                // It reads in one more additional character than the value of count.
+                // This is probably due to assuming null-termination
+#if !defined(AZ_COMPILER_GCC)
             if constexpr (AZStd::is_same_v<char_type, char>)
             {
                 return __builtin_char_memchr(s, ch, count);
@@ -363,9 +372,10 @@ namespace AZStd
             else if constexpr (AZStd::is_same_v<char_type, wchar_t>)
             {
                 return __builtin_wmemchr(s, ch, count);
-
+                
             }
             else
+#endif 
             {
                 for (; count; --count, ++s)
                 {
@@ -438,8 +448,6 @@ namespace AZStd
         }
         static constexpr char_type* copy(char_type* dest, const char_type* src, size_t count) noexcept
         {
-            AZ_Assert(dest != nullptr && src != nullptr, "Invalid input!");
-
         #if az_has_builtin_memcpy
             __builtin_memcpy(dest, src, count * sizeof(char_type));
         #else
@@ -455,6 +463,7 @@ namespace AZStd
                 }
                 else
                 {
+                    AZ_Assert(dest1 != nullptr && src1 != nullptr, "Invalid input!");
                     ::memcpy(dest1, src1, count1 * sizeof(char_type));
                 }
                 return dest1;

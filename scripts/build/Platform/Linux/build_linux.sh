@@ -43,7 +43,28 @@ if [[ ! -z "$RUN_CONFIGURE" ]]; then
     echo "${CONFIGURE_CMD}" > ${LAST_CONFIGURE_CMD_FILE}
 fi
 
-eval echo [ci_build] cmake --build . --target ${CMAKE_TARGET} --config ${CONFIGURATION} -j $(grep -c processor /proc/cpuinfo) -- ${CMAKE_NATIVE_BUILD_ARGS}
-eval cmake --build . --target ${CMAKE_TARGET} --config ${CONFIGURATION} -j $(grep -c processor /proc/cpuinfo) -- ${CMAKE_NATIVE_BUILD_ARGS}
+TOTAL_MEMORY=$(cat /proc/meminfo | grep MemTotal | awk '{print $2}')
+TOTAL_CORE_COUNT=$(grep -c processor /proc/cpuinfo)
+echo "Total Memory       : $TOTAL_MEMORY"
+echo "Total Cores        : $TOTAL_CORE_COUNT"
+
+# For machines that has a core to memory ratio that could cause running out of resources, 
+# we will check for en environment variable LY_MIN_MEMORY_PER_CORE to restrict the number
+# of cores that we will allow.  If set, it will use this as the minimum anticipated memory
+# that all cores will need in order to no fall below that number. 
+# This is based on the value the total memory (in Kb) divided by the LY_MIN_MEMORY_PER_CORE 
+# (in kB, e.g. 2 Gb = 2097152 kb)
+if [[ "${LY_MIN_MEMORY_PER_CORE:-0}" -gt 0 ]]; then
+    MIN_MEMORY_PER_CORE=${LY_MIN_MEMORY_PER_CORE}
+    MAX_CORE_USAGE=$(expr $TOTAL_MEMORY / $MIN_MEMORY_PER_CORE)
+    echo "Min Memory Per Job : $MIN_MEMORY_PER_CORE"
+    echo "Max Usable Cores   : $MAX_CORE_USAGE"
+    CORE_COUNT=$MAX_CORE_USAGE
+else
+    CORE_COUNT=$TOTAL_CORE_COUNT
+fi
+
+eval echo [ci_build] cmake --build . --target ${CMAKE_TARGET} --config ${CONFIGURATION} -j $CORE_COUNT -- ${CMAKE_NATIVE_BUILD_ARGS}
+eval cmake --build . --target ${CMAKE_TARGET} --config ${CONFIGURATION} -j $CORE_COUNT -- ${CMAKE_NATIVE_BUILD_ARGS}
 
 popd

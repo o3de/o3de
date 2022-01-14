@@ -977,26 +977,30 @@ namespace AZ
     {
         return AzGenericTypeInfo::Uuid<U>();
     }
-    
+
+    #if defined(AZ_COMPILER_MSVC)
     template<template<AZStd::size_t...> class U, typename = void>
+    #else
+    template<template<auto...> class U, typename = void>
+#endif 
     inline const AZ::TypeId& RttiTypeId()
     {
         return AzGenericTypeInfo::Uuid<U>();
     }
     
-    template<template<typename, AZStd::size_t> class U, typename = void>
+    template<template<typename, auto> class U, typename = void>
     inline const AZ::TypeId& RttiTypeId()
     {
         return AzGenericTypeInfo::Uuid<U>();
     }
     
-    template<template<typename, typename, AZStd::size_t> class U, typename = void>
+    template<template<typename, typename, auto> class U, typename = void>
     inline const AZ::TypeId& RttiTypeId()
     {
         return AzGenericTypeInfo::Uuid<U>();
     }
     
-    template<template<typename, typename, typename, AZStd::size_t> class U, typename = void>
+    template<template<typename, typename, typename, auto> class U, typename = void>
     inline const AZ::TypeId& RttiTypeId()
     {
         return AzGenericTypeInfo::Uuid<U>();
@@ -1027,15 +1031,22 @@ namespace AZ
     }
 
     // Returns true if the type is contained, otherwise false. Safe to call for type not supporting AZRtti (returns false unless type fully match).
+
+#if defined(AZ_COMPILER_MSVC)
+    // There is a bug with the MSVC compiler when using the 'auto' keyword here. It appears that MSVC is unable to distinguish between a template
+    // template argument with a type variadic pack vs a template plate argument with a non-type auto variadic pack. 
     template<template<AZStd::size_t...> class T, class U>
-    inline bool     RttiIsTypeOf(const U&)
+#else
+    template<template<auto...> class T, class U>
+#endif // defined(AZ_COMPILER_MSVC)
+    inline bool RttiIsTypeOf(const U&)
     {
         using CheckType = typename AZ::Internal::RttiRemoveQualifiers<U>::type;
         return AzGenericTypeInfo::Uuid<T>() == RttiTypeId<CheckType, AZ::GenericTypeIdTag>();
     }
 
     // Returns true if the type is contained, otherwise false. Safe to call for type not supporting AZRtti (returns false unless type fully match).
-    template<template<typename, AZStd::size_t> class T, class U>
+    template<template<typename, auto> class T, class U>
     inline bool     RttiIsTypeOf(const U&)
     {
         using CheckType = typename AZ::Internal::RttiRemoveQualifiers<U>::type;
@@ -1043,7 +1054,7 @@ namespace AZ
     }
 
     // Returns true if the type is contained, otherwise false.Safe to call for type not supporting AZRtti(returns false unless type fully match).
-    template<template<typename, typename, AZStd::size_t> class T, class U>
+    template<template<typename, typename, auto> class T, class U>
     inline bool     RttiIsTypeOf(const U&)
     {
         using CheckType = typename AZ::Internal::RttiRemoveQualifiers<U>::type;
@@ -1051,7 +1062,7 @@ namespace AZ
     }
 
     // Returns true if the type is contained, otherwise false.Safe to call for type not supporting AZRtti(returns false unless type fully match).
-    template<template<typename, typename, typename, AZStd::size_t> class T, class U>
+    template<template<typename, typename, typename, auto> class T, class U>
     inline bool     RttiIsTypeOf(const U&)
     {
         using CheckType = typename AZ::Internal::RttiRemoveQualifiers<U>::type;

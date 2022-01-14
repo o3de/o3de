@@ -3793,7 +3793,7 @@ namespace ScriptCanvasEditor
             {
                 if (assetSanitizationSet.find(currentIter->first) == assetSanitizationSet.end())
                 {
-                    currentIter->second = {};
+                    currentIter->second = ScriptEvents::ScriptEventsAssetPtr{};
                     currentIter = GetGraphData()->m_scriptEventAssets.erase(currentIter);
                     graphNeedsDirtying = true;
                 }

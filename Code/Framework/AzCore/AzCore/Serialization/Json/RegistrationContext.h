@@ -69,7 +69,11 @@ namespace AZ
                 return HandlesTypeId(azrtti_typeid<T>(), overwriteExisting);
             }
 
+#if defined(AZ_COMPILER_MSVC)
             template<template<AZStd::size_t...> class T>
+#else
+            template<template<auto...> class T>
+#endif // defined(AZ_COMPILER_MSVC)
             SerializerBuilder* HandlesType(bool overwriteExisting = false)
             {
                 return HandlesTypeId(azrtti_typeid<T>(), overwriteExisting);

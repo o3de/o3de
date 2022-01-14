@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/std/typetraits/typetraits.h>
 #include <AzCore/std/typetraits/invoke_traits.h>
 
 namespace AZStd

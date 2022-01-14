@@ -85,6 +85,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         AUTOUIC
         FILES_CMAKE
             ${physx_editor_files}
+        PLATFORM_INCLUDE_FILES
+            ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common/${PAL_TRAIT_COMPILER_ID}/physx_editor_static_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
         COMPILE_DEFINITIONS
             PUBLIC
                 PHYSX_EDITOR

@@ -10,10 +10,17 @@
 //////////////////////////////////////////////////////////////////////////
 // Platforms
 
+#include <AzCore/variadic.h>
+
 #include "PlatformRestrictedFileDef.h"
 
 #if defined(__clang__)
     #define AZ_COMPILER_CLANG   __clang_major__
+#elif defined(__GNUC__)
+    //  Assign AZ_COMPILER_GCC to a number that represents the major+minor (2 digits) + path level (2 digits)  i.e. 3.2.0 == 30200
+    #define AZ_COMPILER_GCC     (__GNUC__ * 10000 \
+                               + __GNUC_MINOR__ * 100 \
+                               + __GNUC_PATCHLEVEL__)
 #elif defined(_MSC_VER)
     #define AZ_COMPILER_MSVC    _MSC_VER
 #else
@@ -29,7 +36,7 @@
 #define AZ_DYNAMIC_LIBRARY_PREFIX       AZ_TRAIT_OS_DYNAMIC_LIBRARY_PREFIX
 #define AZ_DYNAMIC_LIBRARY_EXTENSION    AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION
 
-#if defined(AZ_COMPILER_CLANG)
+#if defined(AZ_COMPILER_CLANG) || defined(AZ_COMPILER_GCC)
     #define AZ_DLL_EXPORT               AZ_TRAIT_OS_DLL_EXPORT_CLANG
     #define AZ_DLL_IMPORT               AZ_TRAIT_OS_DLL_IMPORT_CLANG
 #elif defined(AZ_COMPILER_MSVC)
@@ -67,12 +74,30 @@
 #if defined(AZ_COMPILER_MSVC)
 
 /// Disables a warning using push style. For use matched with an AZ_POP_WARNING
-#define AZ_PUSH_DISABLE_WARNING(_msvcOption, __)    \
-    __pragma(warning(push))                         \
+
+// Compiler specific AZ_PUSH_DISABLE_WARNING
+#define AZ_PUSH_DISABLE_WARNING_MSVC(_msvcOption)       \
+    __pragma(warning(push))                             \
+    __pragma(warning(disable : _msvcOption))
+#define AZ_PUSH_DISABLE_WARNING_MSVC(_msvcOption)
+#define AZ_PUSH_DISABLE_WARNING_CLANG(_clangOption)
+#define AZ_PUSH_DISABLE_WARNING_GCC(_gccOption)
+
+// Variadic definitions for AZ_PUSH_DISABLE_WARNING for the current compiler
+#define AZ_PUSH_DISABLE_WARNING_1(_msvcOption)          \
+    __pragma(warning(push))                             \
+    __pragma(warning(disable : _msvcOption))
+
+#define AZ_PUSH_DISABLE_WARNING_2(_msvcOption, _2)      \
+    __pragma(warning(push))                             \
+    __pragma(warning(disable : _msvcOption))
+
+#define AZ_PUSH_DISABLE_WARNING_3(_msvcOption, _2, _3)  \
+    __pragma(warning(push))                             \
     __pragma(warning(disable : _msvcOption))
 
 /// Pops the warning stack. For use matched with an AZ_PUSH_DISABLE_WARNING
-#define AZ_POP_DISABLE_WARNING                      \
+#define AZ_POP_DISABLE_WARNING                          \
     __pragma(warning(pop))
 
 
@@ -94,16 +119,49 @@
 #   define AZ_FUNCTION_SIGNATURE    __FUNCSIG__
 
 //////////////////////////////////////////////////////////////////////////
-#elif defined(AZ_COMPILER_CLANG)
+#elif defined(AZ_COMPILER_CLANG) || defined(AZ_COMPILER_GCC)
+
+#if defined(AZ_COMPILER_CLANG)
 
 /// Disables a single warning using push style. For use matched with an AZ_POP_WARNING
-#define AZ_PUSH_DISABLE_WARNING(__, _clangOption)           \
-    _Pragma("clang diagnostic push")                        \
+
+// Compiler specific AZ_PUSH_DISABLE_WARNING
+#define AZ_PUSH_DISABLE_WARNING_CLANG(_clangOption)  \
+    _Pragma("clang diagnostic push")                 \
     _Pragma(AZ_STRINGIZE(clang diagnostic ignored _clangOption))
+#define AZ_PUSH_DISABLE_WARNING_MSVC(_msvcOption)
+#define AZ_PUSH_DISABLE_WARNING_GCC(_gccOption)
+
+// Variadic definitions for AZ_PUSH_DISABLE_WARNING for the current compiler
+#define AZ_PUSH_DISABLE_WARNING_1(_1)
+#define AZ_PUSH_DISABLE_WARNING_2(_1, _clangOption)     AZ_PUSH_DISABLE_WARNING_CLANG(_clangOption)
+#define AZ_PUSH_DISABLE_WARNING_3(_1, _clangOption, _2) AZ_PUSH_DISABLE_WARNING_CLANG(_clangOption)
 
 /// Pops the warning stack. For use matched with an AZ_PUSH_DISABLE_WARNING
 #define AZ_POP_DISABLE_WARNING                              \
     _Pragma("clang diagnostic pop")
+
+#else
+
+/// Disables a single warning using push style. For use matched with an AZ_POP_WARNING
+
+// Compiler specific AZ_PUSH_DISABLE_WARNING
+#define AZ_PUSH_DISABLE_WARNING_GCC(_gccOption)             \
+    _Pragma("GCC diagnostic push")                          \
+    _Pragma(AZ_STRINGIZE(GCC diagnostic ignored _gccOption))
+#define AZ_PUSH_DISABLE_WARNING_CLANG(_clangOption)
+#define AZ_PUSH_DISABLE_WARNING_MSVC(_msvcOption)
+
+// Variadic definitions for AZ_PUSH_DISABLE_WARNING for the current compiler
+#define AZ_PUSH_DISABLE_WARNING_1(_1)
+#define AZ_PUSH_DISABLE_WARNING_2(_1, _2)
+#define AZ_PUSH_DISABLE_WARNING_3(_1, _2, _gccOption)   AZ_PUSH_DISABLE_WARNING_GCC(_gccOption)
+
+/// Pops the warning stack. For use matched with an AZ_PUSH_DISABLE_WARNING
+#define AZ_POP_DISABLE_WARNING                              
+    _Pragma("GCC diagnostic pop")
+
+#endif // defined(AZ_COMPILER_CLANG)
 
 #define AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 #define AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
@@ -120,6 +178,8 @@
 #else
     #error Compiler not supported
 #endif
+
+#define AZ_PUSH_DISABLE_WARNING(...) AZ_MACRO_SPECIALIZE(AZ_PUSH_DISABLE_WARNING_, AZ_VA_NUM_ARGS(__VA_ARGS__), (__VA_ARGS__))
 
 // We need to define AZ_DEBUG_BUILD in debug mode. We can also define it in debug optimized mode (left up to the user).
 // note that _DEBUG is not in fact always defined on all platforms, and only AZ_DEBUG_BUILD should be relied on.
