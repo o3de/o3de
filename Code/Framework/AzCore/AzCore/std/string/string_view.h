@@ -348,7 +348,6 @@ namespace AZStd
         {
             // For GCC versions less than 10, __builtin_strlen and __builtin_wcslen is not supported as const expressions
             // so for that case it will need to manually count the characters (at compile time) instead
-
 #if defined(AZ_COMPILER_GCC) && AZ_COMPILER_GCC < 100000
 
             if constexpr (AZStd::is_same_v<char_type, char>)
@@ -396,7 +395,34 @@ namespace AZStd
 
         static constexpr const char_type* find(const char_type* s, size_t count, const char_type& ch) noexcept
         {
-#if !defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC >= 100000
+            // For GCC versions less than 10, __builtin_char_memchr and __builtin_wmemchr is not supported, and 
+            // __builtin_memchr is not supported as const expressions. In those cases we will manually locate and 
+            // return the pointer to 's' (at compile time)
+#if defined(AZ_COMPILER_GCC) && AZ_COMPILER_GCC < 100000
+            if constexpr (AZStd::is_same_v<char_type, char>)
+            {
+                if (!az_builtin_is_constant_evaluated())
+                {
+                    return static_cast<const char_type*>(__builtin_memchr(s, ch, count));
+                }
+            }
+            else if constexpr (AZStd::is_same_v<char_type, wchar_t>)
+            {
+                if (!az_builtin_is_constant_evaluated())
+                {
+                    return wmemchr(s, ch, count);
+                }
+            }
+
+            for (; count; --count, ++s)
+            {
+                if (eq(*s, ch))
+                {
+                    return s;
+                }
+            }
+            return nullptr;
+#else
             if constexpr (AZStd::is_same_v<char_type, char>)
             {
                 return __builtin_char_memchr(s, ch, count);
@@ -407,7 +433,6 @@ namespace AZStd
                 
             }
             else
-#endif 
             {
                 for (; count; --count, ++s)
                 {
@@ -418,6 +443,7 @@ namespace AZStd
                 }
                 return nullptr;
             }
+#endif 
         }
         static constexpr char_type* move(char_type* dest, const char_type* src, size_t count) noexcept
         {
