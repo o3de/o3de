@@ -149,6 +149,8 @@ namespace AZ
         /// Needs to match declared parameter type.
         template <template <typename...> class> constexpr bool false_v1 = false;
 #if defined(AZ_COMPILER_MSVC)
+        // There is a bug with the MSVC compiler when using the 'auto' keyword here. It appears that MSVC is unable to distinguish between a template
+        // template argument with a type variadic pack vs a template plate argument with a non-type auto variadic pack. 
         template<template<AZStd::size_t...> class> constexpr bool false_v2 = false;
 #else
         template<template<auto...> class> constexpr bool false_v2 = false;
@@ -173,6 +175,8 @@ namespace AZ
             return s_uuid;
         }
 #if defined(AZ_COMPILER_MSVC)
+        // There is a bug with the MSVC compiler when using the 'auto' keyword here. It appears that MSVC is unable to distinguish between a template
+        // template argument with a type variadic pack vs a template plate argument with a non-type auto variadic pack. 
         template<template<AZStd::size_t...> class T>
 #else
         template<template<auto...> class T>

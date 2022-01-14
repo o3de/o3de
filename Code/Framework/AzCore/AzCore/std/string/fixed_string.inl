@@ -40,11 +40,7 @@ namespace AZStd
         size_type rhsOffset, size_type count)
     {   // construct from rhs [rhsOffset, rhsOffset + count)
         AZSTD_CONTAINER_ASSERT(rhs.size() >= rhsOffset, "Invalid offset");
-        size_type num = rhs.size() - rhsOffset;
-        if (count < num)
-        {
-            num = count;    // trim num to size
-        }
+        size_type num = AZStd::min(count, rhs.size() - rhsOffset);
 
         // make room and assign new stuff
         pointer data = m_buffer;

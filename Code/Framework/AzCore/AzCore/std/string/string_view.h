@@ -308,48 +308,71 @@ namespace AZStd
         }
         static constexpr bool eq(char_type left, char_type right) noexcept { return left == right; }
         static constexpr bool lt(char_type left, char_type right) noexcept { return left < right; }
-        static constexpr int compare(const char_type* s1, const char_type* s2, size_t count) noexcept
-        {
-            // In GCC versions prior to major version 10, __builtin_memcmp fails in valid checks in constexpr evaluation
-#if !defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC >= 100000
-            if constexpr (AZStd::is_same_v<char_type, char>)
-            {
-                return __builtin_memcmp(s1, s2, count);
-            }
-            else if constexpr (AZStd::is_same_v<char_type, wchar_t>)
-            {
-                return __builtin_wmemcmp(s1, s2, count);
-            }
-            else
-#endif // !defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC >= 100000
-            {
-                for (; count; --count, ++s1, ++s2)
-                {
-                    if (lt(*s1, *s2))
+        static constexpr int compare(const char_type* s1, const char_type* s2, size_t count) noexcept 
+        { 
+            // In GCC versions prior to major version 10, __builtin_memcmp fails in valid checks in constexpr evaluation 
+#if !defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC >= 100000 
+            if constexpr (AZStd::is_same_v<char_type, char>) 
+            { 
+                return __builtin_memcmp(s1, s2, count); 
+            } 
+            else if constexpr (AZStd::is_same_v<char_type, wchar_t>) 
+            { 
+                return __builtin_wmemcmp(s1, s2, count); 
+            } else 
+#endif 
+            { 
+                if (az_builtin_is_constant_evaluated()) 
+                { 
+                    for (; count; --count, ++s1, ++s2) 
                     {
-                        return -1;
-                    }
-                    else if (lt(*s2, *s1))
-                    {
-                        return 1;
-                    }
-                }
-                return 0;
-            }
+                        if (lt(*s1, *s2)) 
+                        { 
+                            return -1; 
+                        } 
+                        else if (lt(*s2, *s1)) 
+                        { 
+                            return 1; 
+                        } 
+                    } 
+                    return 0; 
+                } 
+                else 
+                { 
+                    return ::memcmp(s1, s2, count * sizeof(char_type)); 
+                } 
+            } 
         }
+
         static constexpr size_t length(const char_type* s) noexcept
         {
-#if !defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC >= 100000
             if constexpr (AZStd::is_same_v<char_type, char>)
             {
-                return __builtin_strlen(s);
+#if !defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC >= 100000
+                if (az_builtin_is_constant_evaluated())
+                {
+                    return __builtin_strlen(s);
+                }
+                else
+#endif
+                {
+                    return strlen(s);
+                }
             }
             else if constexpr (AZStd::is_same_v<char_type, wchar_t>)
             {
-                return __builtin_wcslen(s);
+#if !defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC >= 100000
+                if (az_builtin_is_constant_evaluated())
+                {
+                    return __builtin_wcslen(s);
+                }
+                else
+#endif
+                {
+                    return wcslen(s);
+                }
             }
             else
-#endif // !defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC >= 100000
             {
                 size_t strLength{};
                 for (; *s; ++s, ++strLength)
@@ -359,6 +382,7 @@ namespace AZStd
                 return strLength;
             }
         }
+
         static constexpr const char_type* find(const char_type* s, size_t count, const char_type& ch) noexcept
         {
                 // There is a bug with the __builtin_char_memchr intrinsic in Visual Studio 2017 15.8.x and 15.9.x

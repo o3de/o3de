@@ -979,10 +979,12 @@ namespace AZ
     }
 
     #if defined(AZ_COMPILER_MSVC)
+    // There is a bug with the MSVC compiler when using the 'auto' keyword here. It appears that MSVC is unable to distinguish between a template
+    // template argument with a type variadic pack vs a template plate argument with a non-type auto variadic pack. 
     template<template<AZStd::size_t...> class U, typename = void>
     #else
     template<template<auto...> class U, typename = void>
-#endif 
+    #endif // defined(AZ_COMPILER_MSVC)
     inline const AZ::TypeId& RttiTypeId()
     {
         return AzGenericTypeInfo::Uuid<U>();

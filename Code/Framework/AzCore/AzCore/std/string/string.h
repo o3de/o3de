@@ -1485,11 +1485,11 @@ namespace AZStd
             }
         };
 
-        // Clang supports compile-time check for printf-like signatures
+        // Clang/GCC supports compile-time check for printf-like signatures
         // On MSVC, *only* if /analyze flag is enabled(defines _PREFAST_) we can also do a compile-time check
         // For not affecting final release binary size, we don't use the templated version on Release configuration either
 #if AZ_COMPILER_CLANG || AZ_COMPILER_GCC || defined(_PREFAST_) || defined(_RELEASE)
-#    if AZ_COMPILER_CLANG
+#    if AZ_COMPILER_CLANG || AZ_COMPILER_GCC
 #        define FORMAT_FUNC      __attribute__((format(printf, 1, 2)))
 #        define FORMAT_FUNC_ARG
 #    elif AZ_COMPILER_MSVC
