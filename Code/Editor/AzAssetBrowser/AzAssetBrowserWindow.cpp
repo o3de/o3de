@@ -88,7 +88,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     m_ui->m_collapseAllButton->setAutoRaise(true); // hover highlight
     m_ui->m_collapseAllButton->setIcon(QIcon(":/stylesheet/img/24x24/layers.png"));
     connect(
-        m_ui->m_collapseAllButton, &QToolButton::pressed, this,
+        m_ui->m_collapseAllButton, &QToolButton::clicked, this,
         [this]()
         {
             m_ui->m_assetBrowserTreeViewWidget->collapseAll();
