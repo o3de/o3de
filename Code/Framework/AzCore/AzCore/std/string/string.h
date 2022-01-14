@@ -2071,9 +2071,8 @@ namespace AZStd
     template<class Element, class Traits, class Allocator>
     struct hash< basic_string< Element, Traits, Allocator> >
     {
-        typedef basic_string< Element, Traits, Allocator> argument_type;
-        typedef AZStd::size_t                           result_type;
-        inline result_type operator()(const argument_type& value) const
+        using is_transparent = void;
+        inline constexpr size_t operator()(const basic_string_view<Element, Traits>& value) const
         {
             return hash_string(value.begin(), value.length());
         }
