@@ -3873,7 +3873,9 @@ namespace ScriptCanvasEditor
         contextMenu.AddMenuAction(aznew ConvertReferenceToVariableNodeAction(&contextMenu));
         contextMenu.AddMenuAction(aznew ExposeSlotMenuAction(&contextMenu));
         contextMenu.AddMenuAction(aznew CreateAzEventHandlerSlotMenuAction(&contextMenu));
-        contextMenu.AddMenuAction(aznew SetDataSlotTypeMenuAction(&contextMenu));
+
+        // disabling until references can be changed
+        // contextMenu.AddMenuAction(aznew SetDataSlotTypeMenuAction(&contextMenu));
 
         return HandleContextMenu(contextMenu, slotId, screenPoint, scenePoint);
     }
