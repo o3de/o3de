@@ -502,7 +502,7 @@ void ViewportWidget::OnRenderTick()
         return;
     }
 
-    const float dpiScale = QtHelpers::GetHighDpiScaleFactor(*this);
+    const float dpiScale = GetViewportContext()->GetDpiScalingFactor();
     ViewportIcon::SetDpiScaleFactor(dpiScale);
 
     UiEditorMode editorMode = m_editorWindow->GetEditorMode();
@@ -514,6 +514,12 @@ void ViewportWidget::OnRenderTick()
     {
         RenderPreviewMode();
     }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void ViewportWidget::OnViewportDpiScalingChanged(float dpiScale)
+{
+    ViewportIcon::SetDpiScaleFactor(dpiScale);
 }
 
 void ViewportWidget::RefreshTick()
@@ -988,8 +994,7 @@ void ViewportWidget::RenderEditMode()
     EBUS_EVENT_ID(canvasEntityId, UiCanvasBus, SetTargetCanvasSize, false, canvasSize);
 
     // Render this canvas
-    QSize scaledViewportSize = QtHelpers::GetDpiScaledViewportSize(*this);
-    AZ::Vector2 viewportSize(static_cast<float>(scaledViewportSize.width()), static_cast<float>(scaledViewportSize.height()));
+    AZ::Vector2 viewportSize = GetRenderViewportSize();
     EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, RenderCanvasInEditorViewport, false, viewportSize);
 
     m_draw2d->SetSortKey(topLayerKey);
@@ -1098,15 +1103,12 @@ void ViewportWidget::UpdatePreviewMode(float deltaTime)
 
     if (canvasEntityId.IsValid())
     {
-        QSize scaledViewportSize = QtHelpers::GetDpiScaledViewportSize(*this);
-        AZ::Vector2 viewportSize(static_cast<float>(scaledViewportSize.width()), static_cast<float>(scaledViewportSize.height()));
-
         // Get the canvas size
         AZ::Vector2 canvasSize = m_editorWindow->GetPreviewCanvasSize();
         if (canvasSize.GetX() == 0.0f && canvasSize.GetY() == 0.0f)
         {
             // special value of (0,0) means use the viewport size
-            canvasSize = viewportSize;
+            canvasSize = GetRenderViewportSize();;
         }
 
         // Set the target size of the canvas
@@ -1140,8 +1142,7 @@ void ViewportWidget::RenderPreviewMode()
 
     if (canvasEntityId.IsValid())
     {
-        QSize scaledViewportSize = QtHelpers::GetDpiScaledViewportSize(*this);
-        AZ::Vector2 viewportSize(static_cast<float>(scaledViewportSize.width()), static_cast<float>(scaledViewportSize.height()));
+        AZ::Vector2 viewportSize = GetRenderViewportSize();
 
         // Get the canvas size
         AZ::Vector2 canvasSize = m_editorWindow->GetPreviewCanvasSize();
@@ -1221,13 +1222,13 @@ void ViewportWidget::RenderPreviewMode()
 
 void ViewportWidget::RenderViewportBackground()
 {
-    QSize viewportSize = QtHelpers::GetDpiScaledViewportSize(*this);
+    AZ::Vector2 viewportSize = GetRenderViewportSize();
     AZ::Color backgroundColor = ViewportHelpers::backgroundColorDark;
     const AZ::Data::Instance<AZ::RPI::Image>& image = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
 
     Draw2dHelper draw2d(m_draw2d.get());
     draw2d.SetImageColor(backgroundColor.GetAsVector3());
-    draw2d.DrawImage(image, AZ::Vector2(0.0f, 0.0f), AZ::Vector2(static_cast<float>(viewportSize.width()), static_cast<float>(viewportSize.height())));
+    draw2d.DrawImage(image, AZ::Vector2(0.0f, 0.0f), viewportSize);
 }
 
 void ViewportWidget::SetupShortcuts()

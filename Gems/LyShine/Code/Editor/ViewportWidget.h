@@ -159,6 +159,7 @@ private: // member functions
 
     // AZ::RPI::ViewportContextNotificationBus::Handler overrides...
     void OnRenderTick() override;
+    void OnViewportDpiScalingChanged(float dpiScale) override;
 
     //! Update UI canvases when in edit mode
     void UpdateEditMode(float deltaTime);
