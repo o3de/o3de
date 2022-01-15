@@ -2,7 +2,7 @@
     "description": "",
     "materialType": "Materials/Types/StandardPBR.materialtype",
     "parentMaterial": "",
-    "propertyLayoutVersion": 3,
+    "materialTypeVersion": 3,
     "properties": {
         "baseColor": {
             "textureMap": "Materials/WornMetal/worn_metal_basecolor.jpg"
