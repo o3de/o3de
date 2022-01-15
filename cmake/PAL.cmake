@@ -343,7 +343,7 @@ function(o3de_pal_dir out_name in_name object_restricted_path object_path) #pare
             cmake_path(GET current_object_path PARENT_PATH parent_path)
             cmake_path(GET current_object_path FILENAME path_segment)
             list(PREPEND path_segments_visited ${path_segment})
-            cmake_path(COMPARE current_object_path NOT_EQUAL parent_path is_prev_path_segment)
+            cmake_path(COMPARE "${current_object_path}" NOT_EQUAL "${parent_path}" is_prev_path_segment)
             cmake_path(SET current_object_path "${parent_path}")
 
             set(is_prev_path_segment TRUE)
@@ -351,7 +351,7 @@ function(o3de_pal_dir out_name in_name object_restricted_path object_path) #pare
                 # Remove one path segment from the end of the current_object_path and prepend it to the list path_segments
                 cmake_path(GET current_object_path PARENT_PATH parent_path)
                 cmake_path(GET current_object_path FILENAME path_segment)
-                cmake_path(COMPARE current_object_path NOT_EQUAL parent_path is_prev_path_segment)
+                cmake_path(COMPARE "${current_object_path}" NOT_EQUAL "${parent_path}" is_prev_path_segment)
                 cmake_path(SET current_object_path "${parent_path}")
                 # The Path is in a PAL structure
                 # Decompose the path into sections before "Platform" and after "Platform"
