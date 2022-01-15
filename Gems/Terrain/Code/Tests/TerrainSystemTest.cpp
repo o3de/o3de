@@ -902,4 +902,168 @@ namespace UnitTest
 
         terrainSystem->ProcessNormalsFromRegion(testRegionBox, stepSize, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR);
     }
+
+    TEST_F(TerrainSystemTest, TerrainProcessSurfaceWeightsFromRegion)
+    {
+        const AZ::Aabb spawnerBox = AZ::Aabb::CreateFromMinMaxValues(-10.0f, -10.0f, -5.0f, 10.0f, 10.0f, 15.0f);
+        auto entity = CreateAndActivateMockTerrainLayerSpawner(
+            spawnerBox,
+            [](AZ::Vector3& position, bool& terrainExists)
+            {
+                position.SetZ(1.0f);
+                terrainExists = true;
+            });
+
+        // Create and activate the terrain system with our testing defaults for world bounds, and a query resolution at 1 meter intervals.
+        const AZ::Vector2 queryResolution(1.0f);
+        auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
+
+        const AZ::Aabb testRegionBox = AZ::Aabb::CreateFromMinMaxValues(-3.0f, -3.0f, -1.0f, 3.0f, 3.0f, 1.0f);
+        const AZ::Vector2 stepSize(1.0f);
+
+        const SurfaceData::SurfaceTag tag1 = SurfaceData::SurfaceTag("tag1");
+        const SurfaceData::SurfaceTag tag2 = SurfaceData::SurfaceTag("tag2");
+        const SurfaceData::SurfaceTag tag3 = SurfaceData::SurfaceTag("tag3");
+
+        AzFramework::SurfaceData::SurfaceTagWeight tagWeight1;
+        tagWeight1.m_surfaceType = tag1;
+        tagWeight1.m_weight = 1.0f;
+
+        AzFramework::SurfaceData::SurfaceTagWeight tagWeight2;
+        tagWeight2.m_surfaceType = tag2;
+        tagWeight2.m_weight = 0.7f;
+
+        AzFramework::SurfaceData::SurfaceTagWeight tagWeight3;
+        tagWeight3.m_surfaceType = tag3;
+        tagWeight3.m_weight = 0.3f;
+
+        NiceMock<UnitTest::MockTerrainAreaSurfaceRequestBus> mockSurfaceRequests(entity->GetId());
+        ON_CALL(mockSurfaceRequests, GetSurfaceWeights).WillByDefault(
+            [&tagWeight1, &tagWeight2, &tagWeight3](const AZ::Vector3& position, AzFramework::SurfaceData::SurfaceTagWeightList& surfaceWeights)
+            {
+                surfaceWeights.clear();
+                float absYPos = fabsf(position.GetY());
+                if (absYPos < 1.0f)
+                {
+                    surfaceWeights.push_back(tagWeight1);
+                }
+                else if(absYPos < 2.0f)
+                {
+                    surfaceWeights.push_back(tagWeight2);
+                }
+                else
+                {
+                    surfaceWeights.push_back(tagWeight3);
+                }
+            }
+        );
+
+        auto perPositionCallback = [&tagWeight1, &tagWeight2, &tagWeight3](size_t xIndex, size_t yIndex,
+            const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
+        {
+            constexpr float epsilon = 0.0001f;
+            float absYPos = fabsf(surfacePoint.m_position.GetY());
+            if (absYPos < 1.0f)
+            {
+                EXPECT_EQ(surfacePoint.m_surfaceTags[0].m_surfaceType, tagWeight1.m_surfaceType);
+                EXPECT_NEAR(surfacePoint.m_surfaceTags[0].m_weight, tagWeight1.m_weight, epsilon);
+            }
+            else if(absYPos < 2.0f)
+            {
+                EXPECT_EQ(surfacePoint.m_surfaceTags[0].m_surfaceType, tagWeight2.m_surfaceType);
+                EXPECT_NEAR(surfacePoint.m_surfaceTags[0].m_weight, tagWeight2.m_weight, epsilon);
+            }
+            else
+            {
+                EXPECT_EQ(surfacePoint.m_surfaceTags[0].m_surfaceType, tagWeight3.m_surfaceType);
+                EXPECT_NEAR(surfacePoint.m_surfaceTags[0].m_weight, tagWeight3.m_weight, epsilon);
+            }
+        };
+
+        terrainSystem->ProcessSurfaceWeightsFromRegion(testRegionBox, stepSize, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR);
+    }
+
+    TEST_F(TerrainSystemTest, TerrainProcessSurfacePointsFromRegion)
+    {
+        const AZ::Aabb spawnerBox = AZ::Aabb::CreateFromMinMaxValues(-10.0f, -10.0f, -5.0f, 10.0f, 10.0f, 15.0f);
+        auto entity = CreateAndActivateMockTerrainLayerSpawner(
+            spawnerBox,
+            [](AZ::Vector3& position, bool& terrainExists)
+            {
+                position.SetZ(position.GetX() + position.GetY());
+                terrainExists = true;
+            });
+
+        // Create and activate the terrain system with our testing defaults for world bounds, and a query resolution at 1 meter intervals.
+        const AZ::Vector2 queryResolution(1.0f);
+        auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
+
+        const AZ::Aabb testRegionBox = AZ::Aabb::CreateFromMinMaxValues(-3.0f, -3.0f, -1.0f, 3.0f, 3.0f, 1.0f);
+        const AZ::Vector2 stepSize(1.0f);
+
+        const SurfaceData::SurfaceTag tag1 = SurfaceData::SurfaceTag("tag1");
+        const SurfaceData::SurfaceTag tag2 = SurfaceData::SurfaceTag("tag2");
+        const SurfaceData::SurfaceTag tag3 = SurfaceData::SurfaceTag("tag3");
+
+        AzFramework::SurfaceData::SurfaceTagWeight tagWeight1;
+        tagWeight1.m_surfaceType = tag1;
+        tagWeight1.m_weight = 1.0f;
+
+        AzFramework::SurfaceData::SurfaceTagWeight tagWeight2;
+        tagWeight2.m_surfaceType = tag2;
+        tagWeight2.m_weight = 0.7f;
+
+        AzFramework::SurfaceData::SurfaceTagWeight tagWeight3;
+        tagWeight3.m_surfaceType = tag3;
+        tagWeight3.m_weight = 0.3f;
+
+        NiceMock<UnitTest::MockTerrainAreaSurfaceRequestBus> mockSurfaceRequests(entity->GetId());
+        ON_CALL(mockSurfaceRequests, GetSurfaceWeights).WillByDefault(
+            [&tagWeight1, &tagWeight2, &tagWeight3](const AZ::Vector3& position, AzFramework::SurfaceData::SurfaceTagWeightList& surfaceWeights)
+            {
+                surfaceWeights.clear();
+                float absYPos = fabsf(position.GetY());
+                if (absYPos < 1.0f)
+                {
+                    surfaceWeights.push_back(tagWeight1);
+                }
+                else if(absYPos < 2.0f)
+                {
+                    surfaceWeights.push_back(tagWeight2);
+                }
+                else
+                {
+                    surfaceWeights.push_back(tagWeight3);
+                }
+            }
+        );
+
+        auto perPositionCallback = [&tagWeight1, &tagWeight2, &tagWeight3](size_t xIndex, size_t yIndex,
+            const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
+        {
+            constexpr float epsilon = 0.0001f;
+            float expectedHeight = surfacePoint.m_position.GetX() + surfacePoint.m_position.GetY();
+
+            EXPECT_NEAR(surfacePoint.m_position.GetZ(), expectedHeight, epsilon);
+
+            float absYPos = fabsf(surfacePoint.m_position.GetY());
+            if (absYPos < 1.0f)
+            {
+                EXPECT_EQ(surfacePoint.m_surfaceTags[0].m_surfaceType, tagWeight1.m_surfaceType);
+                EXPECT_NEAR(surfacePoint.m_surfaceTags[0].m_weight, tagWeight1.m_weight, epsilon);
+            }
+            else if(absYPos < 2.0f)
+            {
+                EXPECT_EQ(surfacePoint.m_surfaceTags[0].m_surfaceType, tagWeight2.m_surfaceType);
+                EXPECT_NEAR(surfacePoint.m_surfaceTags[0].m_weight, tagWeight2.m_weight, epsilon);
+            }
+            else
+            {
+                EXPECT_EQ(surfacePoint.m_surfaceTags[0].m_surfaceType, tagWeight3.m_surfaceType);
+                EXPECT_NEAR(surfacePoint.m_surfaceTags[0].m_weight, tagWeight3.m_weight, epsilon);
+            }
+        };
+
+        terrainSystem->ProcessSurfacePointsFromRegion(testRegionBox, stepSize, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
+    }
 } // namespace UnitTest
