@@ -253,6 +253,12 @@ namespace AZ
             AZ_Assert(shaderVariantAsset, "Reloaded ShaderVariantAsset is null");
             const ShaderVariantStableId stableId = shaderVariantAsset->GetStableId();
 
+            // check the supervariantIndex of the ShaderVariantAsset to make sure it matches the supervariantIndex of this shader instance
+            if (shaderVariantAsset->GetSupervariantIndex() != m_supervariantIndex.GetIndex())
+            {
+                return;
+            }
+
             // We make a copy of the updated variant because OnShaderVariantReinitialized must not be called inside
             // m_variantCacheMutex or deadlocks may occur.
             // Or if there is an error, we leave this object in its default state to indicate there was an error.
