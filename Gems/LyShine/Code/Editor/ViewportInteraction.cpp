@@ -924,26 +924,26 @@ void ViewportInteraction::GetScaleToFitTransformProps(const AZ::Vector2* newCanv
     }
 
     AZ::Vector2 viewportSize = m_editorWindow->GetViewport()->GetRenderViewportSize();
-    const int viewportWidth = viewportSize.GetX();
-    const int viewportHeight = viewportSize.GetY();
+    const float viewportWidth = viewportSize.GetX();
+    const float viewportHeight = viewportSize.GetY();
 
     // We pad the edges of the viewport to allow the user to easily see the borders of
     // the canvas edges, which is especially helpful if there are anchors sitting on
     // the edges of the canvas.
     static const int canvasBorderPaddingInPixels = 32;
     AZ::Vector2 viewportPaddedSize(
-        aznumeric_cast<float>(viewportWidth - canvasBorderPaddingInPixels),
-        aznumeric_cast<float>(viewportHeight - canvasBorderPaddingInPixels));
+        viewportWidth - canvasBorderPaddingInPixels,
+        viewportHeight - canvasBorderPaddingInPixels);
 
     // Guard against very small viewports
     if (viewportPaddedSize.GetX() <= 0.0f)
     {
-        viewportPaddedSize.SetX(aznumeric_cast<float>(viewportWidth));
+        viewportPaddedSize.SetX(viewportWidth);
     }
 
     if (viewportPaddedSize.GetY() <= 0.0f)
     {
-        viewportPaddedSize.SetY(aznumeric_cast<float>(viewportHeight));
+        viewportPaddedSize.SetY(viewportHeight);
     }
 
     // Use a "scale to fit" approach
@@ -951,8 +951,8 @@ void ViewportInteraction::GetScaleToFitTransformProps(const AZ::Vector2* newCanv
             viewportPaddedSize.GetX() / canvasSize.GetX(),
             viewportPaddedSize.GetY() / canvasSize.GetY());
 
-    const int scaledCanvasWidth = static_cast<int>(canvasSize.GetX() * canvasToViewportScale);
-    const int scaledCanvasHeight = static_cast<int>(canvasSize.GetY() * canvasToViewportScale);
+    const float scaledCanvasWidth = canvasSize.GetX() * canvasToViewportScale;
+    const float scaledCanvasHeight = canvasSize.GetY() * canvasToViewportScale;
 
     // Centers the canvas within the viewport
     propsOut.translation = AZ::Vector3(
@@ -1011,8 +1011,8 @@ void ViewportInteraction::SetCanvasToViewportScale(float newScale, Vec2i* option
         else
         {
             AZ::Vector2 viewportSize = m_editorWindow->GetViewport()->GetRenderViewportSize();
-            const int viewportWidth = viewportSize.GetX();
-            const int viewportHeight = viewportSize.GetY();
+            const float viewportWidth = viewportSize.GetX();
+            const float viewportHeight = viewportSize.GetY();
             pivotPoint = Vec2i(
                     static_cast<int>(viewportWidth * 0.5f),
                     static_cast<int>(viewportHeight * 0.5f));
