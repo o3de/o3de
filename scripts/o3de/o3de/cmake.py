@@ -236,21 +236,21 @@ def get_enabled_gem_cmake_file(project_name: str = None,
 
     if platform == 'Common':
         possible_project_enable_gem_filename_paths = [
-            pathlib.Path(project_path / 'Gem/Code' / enable_gem_filename),
             pathlib.Path(project_path / 'Gem' / enable_gem_filename),
+            pathlib.Path(project_path / 'Gem/Code' / enable_gem_filename),
             pathlib.Path(project_path / 'Code' / enable_gem_filename)
         ]
         for possible_project_enable_gem_filename_path in possible_project_enable_gem_filename_paths:
             if possible_project_enable_gem_filename_path.is_file():
                 return possible_project_enable_gem_filename_path.resolve()
-        return possible_project_enable_gem_filename_paths[1].resolve()
+        return possible_project_enable_gem_filename_paths[0].resolve()
     else:
         possible_project_platform_enable_gem_filename_paths = [
-            pathlib.Path(project_path / 'Gem/Code/Platform' / platform / enable_gem_filename),
             pathlib.Path(project_path / 'Gem/Platform' / platform / enable_gem_filename),
+            pathlib.Path(project_path / 'Gem/Code/Platform' / platform / enable_gem_filename),
             pathlib.Path(project_path / 'Code/Platform' / platform / enable_gem_filename)
         ]
         for possible_project_platform_enable_gem_filename_path in possible_project_platform_enable_gem_filename_paths:
             if possible_project_platform_enable_gem_filename_path.is_file():
                 return possible_project_platform_enable_gem_filename_path.resolve()
-        return possible_project_platform_enable_gem_filename_paths[1].resolve()
+        return possible_project_platform_enable_gem_filename_paths[0].resolve()
