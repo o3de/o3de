@@ -384,8 +384,8 @@ namespace LyShine
         // When module is linked statically, we'll share the application's gEnv pointer.
         gEnv = system.GetGlobalEnvironment();
 #endif
-        m_lyShine = new CLyShine();
-        AZ::Interface<ILyShine>::Register(m_lyShine);
+        m_lyShine = AZStd::make_unique<CLyShine>();
+        AZ::Interface<ILyShine>::Register(m_lyShine.get());
 
         system.GetILevelSystem()->AddListener(this);
 
@@ -404,9 +404,8 @@ namespace LyShine
 
         if (m_lyShine)
         {
-            AZ::Interface<ILyShine>::Unregister(m_lyShine);
-            delete m_lyShine;
-            m_lyShine = nullptr;
+            AZ::Interface<ILyShine>::Unregister(m_lyShine.get());
+            m_lyShine.reset();
         }
     }
 
