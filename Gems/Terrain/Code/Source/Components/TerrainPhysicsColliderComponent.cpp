@@ -344,7 +344,7 @@ namespace Terrain
         AZStd::vector<Physics::MaterialId> materialList = GetMaterialList();
 
         auto perPositionCallback = [&heightMaterials, &materialList, this, worldCenterZ, worldHeightBoundsMin, worldHeightBoundsMax]
-            (size_t xIndex, size_t yIndex, const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
+            ([[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex, const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
         {
             float height = surfacePoint.m_position.GetZ();
 

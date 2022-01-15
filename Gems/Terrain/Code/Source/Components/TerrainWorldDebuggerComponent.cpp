@@ -297,7 +297,7 @@ namespace Terrain
         {
             if (sector.m_isDirty)
             {
-                RebuildSectorWireframe(sector, heightDataResolution, worldMinZ);
+                RebuildSectorWireframe(sector, heightDataResolution);
             }
 
             if (!sector.m_lineVertices.empty())
@@ -317,7 +317,7 @@ namespace Terrain
 
     }
 
-    void TerrainWorldDebuggerComponent::RebuildSectorWireframe(WireframeSector& sector, const AZ::Vector2& gridResolution, float worldMinZ)
+    void TerrainWorldDebuggerComponent::RebuildSectorWireframe(WireframeSector& sector, const AZ::Vector2& gridResolution)
     {
         if (!sector.m_isDirty)
         {
@@ -354,7 +354,7 @@ namespace Terrain
         // For each terrain height value in the region, create the _| grid lines for that point and cache off the height value
         // for use with subsequent grid line calculations.
         auto ProcessHeightValue = [gridResolution, &previousHeight, &rowHeights, &sector]
-            (uint32_t xIndex, uint32_t yIndex, const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
+            (size_t xIndex, size_t yIndex, const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
         {
             // Don't add any vertices for the first column or first row.  These grid lines will be handled by an adjacent sector, if
             // there is one.
