@@ -485,9 +485,9 @@ public: // static member functions
     //! Helper to load a texture
     static AZ::Data::Instance<AZ::RPI::Image> LoadTexture(const AZStd::string& pathName)
     {
-        if (gEnv && gEnv->pLyShine) // [LYSHINE_ATOM_TODO][GHI #3569] Remove LyShine global interface pointer from legacy global environment
+        if (AZ::Interface<ILyShine>::Get())
         {
-            return gEnv->pLyShine->LoadTexture(pathName);
+            return AZ::Interface<ILyShine>::Get()->LoadTexture(pathName);
         }
 
         return nullptr;
