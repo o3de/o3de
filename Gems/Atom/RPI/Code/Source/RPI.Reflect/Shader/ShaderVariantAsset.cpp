@@ -65,6 +65,11 @@ namespace AZ
             return m_buildTimestamp;
         }
 
+        uint32_t ShaderVariantAsset::GetSupervariantIndex() const
+        {
+            return (m_assetId.m_subId >> SupervariantIndexBitPosition) & SupervariantIndexMaxValue;
+        }
+
         const RHI::ShaderStageFunction* ShaderVariantAsset::GetShaderStageFunction(RHI::ShaderStage shaderStage) const
         {
             return m_functionsByStage[static_cast<size_t>(shaderStage)].get();
