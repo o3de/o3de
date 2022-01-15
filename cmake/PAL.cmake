@@ -232,10 +232,13 @@ endfunction()
 #! o3de_restricted_path:
 #
 # \arg:o3de_json_file json file to read restricted id from
-# \arg:restricted_name name of the restricted object
-function(o3de_restricted_path o3de_json_file restricted_path parent_relative_path)
+# \arg:restricted_path output path of the restricted object
+# \arg:parent_relative_path optional output of the path relative to the parent
+function(o3de_restricted_path o3de_json_file restricted_path) #parent_relative_path
     o3de_restricted_id(${o3de_json_file} restricted_name parent_relative)
-    set(${parent_relative_path} ${parent_relative} PARENT_SCOPE)
+    if(${ARGC} GREATER 2)
+        set(${ARGV2} ${parent_relative} PARENT_SCOPE)
+    endif()
     if(restricted_name)
         o3de_find_restricted_folder(${restricted_name} restricted_folder)
         if(restricted_folder)
@@ -254,7 +257,7 @@ foreach(detection_file ${detection_files})
 endforeach()
 
 # set the O3DE_ENGINE_RESTRICTED_PATH
-o3de_restricted_path(${LY_ROOT_FOLDER}/engine.json O3DE_ENGINE_RESTRICTED_PATH engine_has_no_parent)
+o3de_restricted_path(${LY_ROOT_FOLDER}/engine.json O3DE_ENGINE_RESTRICTED_PATH)
 
 # detect platforms in the restricted path
 file(GLOB detection_files ${O3DE_ENGINE_RESTRICTED_PATH}/*/cmake/PALDetection_*.cmake)
