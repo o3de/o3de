@@ -1,0 +1,20 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+struct UVs
+{
+    float2 m_uv0;
+    float2 m_uv1;
+};
+
+void EvaluateUVs(in float2 uv0, in float2 uv1, out float2 uv0Out, out float2 uv1Out)
+{
+    // By design, only UV0 is allowed to apply UV transforms
+    uv0Out = mul(MaterialSrg::m_uvMatrix, float3(uv0, 1.0)).xy;
+    uv1Out = uv1;
+}

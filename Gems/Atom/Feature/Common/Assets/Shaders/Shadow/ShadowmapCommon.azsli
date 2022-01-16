@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <scenesrg.srgi>
 #include <viewsrg.srgi>
 
 struct VertexInput
@@ -23,11 +22,10 @@ struct VertexOutput
 
 VertexOutput MainVS(VertexInput input)
 {
-    const float4x4 worldMatrix = ObjectSrg::GetWorldMatrix();
     VertexOutput output;
-    
-    const float3 worldPosition = mul(worldMatrix, float4(input.m_position, 1.0)).xyz;
-    output.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPosition, 1.0));
+    float4 worldPosition;
+    VertexLocalToWorld(IN.m_position, worldPosition);
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
 
     return output;
 }

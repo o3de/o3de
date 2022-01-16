@@ -1018,6 +1018,26 @@
             ]
         }
     },
+    "shaderFunctions": [
+        {
+            "file": "./ShaderFunctions/EvaluateVertex.azsli",
+            "tag": "EvaluateVertexPosition",
+            "objectSrg": "",
+            "materialSrg": ""
+        },
+        {
+            "file": "./ShaderFunctions/EvaluateVertex.azsli",
+            "tag": "EvaluateVertex",
+            "objectSrg": "",
+            "materialSrg": ""
+        },
+        {
+            "file": "./ShaderFunctions/EvaluateVertex_PDO.azsli",
+            "tag": "EvaluateVertex_PDO",
+            "objectSrg": "",
+            "materialSrg": ""
+        }
+    ],
     "shaders": [
         {
             "file": "./StandardPBR_ForwardPass.shader",

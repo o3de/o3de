@@ -27,6 +27,12 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
         return SceneSrg::GetObjectToWorldInverseTransposeMatrix(m_objectId);
     }
 
+    //! Returns the matrix for transforming points from Object Space to World Space in the previous frame.
+    float4x4 GetWorldMatrixPrev()
+    {
+        return SceneSrg::GetObjectToWorldMatrixPrev(m_objectId);
+    }
+
     //! Reflection Probe (smallest probe volume that overlaps the object position)
     struct ReflectionProbeData
     {

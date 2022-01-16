@@ -1,0 +1,22 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+// This material function exists to support user-defined deformation (e.g. wind)
+void VertexLocalToWorld(float3 position, out worldPosition)
+{
+    float4x4 localToWorld = ObjectSrg::GetWorldMatrix();
+    worldPosition = mul(localToWorld, float4(position, 1.0));
+}
+
+void VertexLocalToWorldPrev(float3 position, out worldPositionPrev)
+{
+    float4x4 localToWorld = ObjectSrg::GetWorldMatrixPrev();
+    worldPositionPrev = mul(localToWorld, float4(position, 1.0));
+}

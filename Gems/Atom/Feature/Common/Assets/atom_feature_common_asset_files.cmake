@@ -314,6 +314,8 @@ set(FILES
     ShaderLib/Atom/Features/Shadow/ShadowmapAtlasLib.azsli
     ShaderLib/Atom/Features/Skin/SkinObjectSrg.azsli
     ShaderLib/Atom/Features/Vertex/VertexHelper.azsli
+    ShaderLib/Atom/MaterialFunctions/StaticMeshTransforms.azsli
+    ShaderLib/Atom/MaterialFunctions/SkinnedMeshTransforms.azsli
     ShaderResourceGroups/SceneSrg.azsli
     ShaderResourceGroups/SceneSrgAll.azsli
     ShaderResourceGroups/ViewSrg.azsli
