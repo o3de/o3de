@@ -56,9 +56,9 @@ namespace UnitTest
                 params.m_position = positions[positionIndex];
                 float value = gradientSampler.GetValue(params);
 
-                // We use ASSERT_EQ instead of EXPECT_EQ because if one value doesn't match, they probably all won't, so there's no reason
-                // to keep running and printing failures for every value.
-                ASSERT_EQ(value, results[positionIndex]);
+                // We use ASSERT_NEAR instead of EXPECT_NEAR because if one value doesn't match, they probably all won't, so there's no
+                // reason to keep running and printing failures for every value.
+                ASSERT_NEAR(value, results[positionIndex], 0.000001f);
             }
         }
     };
