@@ -25,7 +25,7 @@
 #include <QVariant>
 #include <QVBoxLayout>
 #include <QWheelEvent>
-
+#pragma optimize("", off)
 namespace AzQtComponents
 {
 static QString g_horizontalSliderClass = QStringLiteral("HorizontalSlider");
