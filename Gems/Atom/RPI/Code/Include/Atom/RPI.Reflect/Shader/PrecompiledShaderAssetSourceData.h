@@ -17,14 +17,14 @@ namespace AZ
 
     namespace RPI
     {
-        //! This asset contains is loaded from a Json file and contains information about
+        //! This asset is loaded from a Json file and contains information about
         //! precompiled shader variants and their associated API name.
-        struct RootShaderVariantAssetSourceData final
+        struct PrecompiledRootShaderVariantAssetSourceData final
             : public Data::AssetData
         {
         public:
-            AZ_RTTI(RootShaderVariantAssetSourceData, "{661EF8A7-7BAC-41B6-AD5C-C7249B2390AD}");
-            AZ_CLASS_ALLOCATOR(RootShaderVariantAssetSourceData, SystemAllocator, 0);
+            AZ_RTTI(PrecompiledRootShaderVariantAssetSourceData, "{661EF8A7-7BAC-41B6-AD5C-C7249B2390AD}");
+            AZ_CLASS_ALLOCATOR(PrecompiledRootShaderVariantAssetSourceData, SystemAllocator, 0);
 
             static void Reflect(ReflectContext* context);
 
@@ -32,7 +32,22 @@ namespace AZ
             AZStd::string m_rootShaderVariantAssetFileName;
         };
 
-        //! This asset contains is loaded from a Json file and contains information about
+        //! This asset is loaded from a Json file and contains information about
+        //! precompiled shader supervariants
+        struct PrecompiledSupervariantSourceData final
+            : public Data::AssetData
+        {
+        public:
+            AZ_RTTI(PrecompiledSupervariantSourceData, "{630BDF15-CE7C-4E2C-882E-4F7AF09C8BB6}");
+            AZ_CLASS_ALLOCATOR(PrecompiledSupervariantSourceData, SystemAllocator, 0);
+
+            static void Reflect(ReflectContext* context);
+
+            AZ::Name m_name;
+            AZStd::vector<AZStd::unique_ptr<PrecompiledRootShaderVariantAssetSourceData>> m_rootShaderVariantAssets;
+        };
+
+        //! This asset is loaded from a Json file and contains information about
         //! precompiled shader assets.
         struct PrecompiledShaderAssetSourceData final
             : public Data::AssetData
@@ -45,7 +60,7 @@ namespace AZ
 
             AZStd::string m_shaderAssetFileName;
             AZStd::vector<AZStd::string> m_platformIdentifiers;
-            AZStd::vector<AZStd::unique_ptr<RootShaderVariantAssetSourceData>> m_rootShaderVariantAssets;
+            AZStd::vector<AZStd::unique_ptr<PrecompiledSupervariantSourceData>> m_supervariants;
         };
     } // namespace RPI
 } // namespace AZ
