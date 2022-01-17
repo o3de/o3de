@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_SCRIPT_CONTEXT_H
-#define AZCORE_SCRIPT_CONTEXT_H
+#pragma once
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/function/function_fwd.h>
@@ -1032,4 +1031,3 @@ namespace AZ
     }
 
 } // namespace AZ
-#endif // AZCORE_SCRIPT_CONTEXT_H

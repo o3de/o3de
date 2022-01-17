@@ -6,14 +6,14 @@
 #
 #
 
-ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/source/Platform/${PAL_PLATFORM_NAME})
+o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/source/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
 
 ly_add_target(
     NAME AWSNativeSDKInit STATIC
     NAMESPACE AZ
     FILES_CMAKE
         aws_native_sdk_init_files.cmake
-        ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+        ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
             include

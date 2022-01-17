@@ -17,6 +17,7 @@
 
 #include <AzCore/Component/TickBus.h>
 
+#define PSOCacheVersion 0 // Bump this if you want to reset PSO cache for everyone
 
 namespace AZ
 {
@@ -85,10 +86,17 @@ namespace AZ
                 AZStd::string uuidString;
                 assetId.m_guid.ToString<AZStd::string>(uuidString, false, false);
 
+                RHI::RHISystemInterface* rhiSystem = RHI::RHISystemInterface::Get();
+                RHI::PhysicalDeviceDescriptor physicalDeviceDesc = rhiSystem->GetPhysicalDeviceDescriptor();
+
                 char pipelineLibraryPathTemp[AZ_MAX_PATH_LEN];
                 azsnprintf(
-                    pipelineLibraryPathTemp, AZ_MAX_PATH_LEN, "@user@/Atom/PipelineStateCache/%s/%s_%s_%d.bin", platformName.GetCStr(),
-                    shaderName.GetCStr(), uuidString.data(), assetId.m_subId);
+                    pipelineLibraryPathTemp, AZ_MAX_PATH_LEN, "@user@/Atom/PipelineStateCache_%s_%i_%i _Ver_%i/%s/%s_%s_%d.bin",
+                    ToString(physicalDeviceDesc.m_vendorId).data(), physicalDeviceDesc.m_deviceId, physicalDeviceDesc.m_driverVersion, PSOCacheVersion,
+                    platformName.GetCStr(),
+                    shaderName.GetCStr(),
+                    uuidString.data(),
+                    assetId.m_subId);
 
                 fileIOBase->ResolvePath(pipelineLibraryPathTemp, pipelineLibraryPath, pipelineLibraryPathLength);
                 return true;

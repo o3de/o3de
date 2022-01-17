@@ -484,6 +484,7 @@ namespace AZ::IO
         // as_posix
         //! Replicates the behavior of the Python pathlib as_posix method
         //! by replacing the Windows Path Separator with the Posix Path Seperator
+        constexpr string_type AsPosix() const;
         AZStd::string StringAsPosix() const;
         constexpr AZStd::fixed_string<MaxPathLength> FixedMaxPathStringAsPosix() const noexcept;
 

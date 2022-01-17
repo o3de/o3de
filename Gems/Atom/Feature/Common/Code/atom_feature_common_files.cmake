@@ -46,9 +46,6 @@ set(FILES
     Include/Atom/Feature/Utils/MultiSparseVector.h
     Include/Atom/Feature/Utils/ProfilingCaptureBus.h
     Include/Atom/Feature/Utils/SparseVector.h
-    Include/Atom/Feature/LuxCore/LuxCoreBus.h
-    Include/Atom/Feature/LuxCore/LuxCoreTexturePass.h
-    Include/Atom/Feature/LuxCore/RenderTexturePass.h
     Source/CommonModule.cpp
     Source/CommonSystemComponent.cpp
     Source/FrameCaptureSystemComponent.cpp
@@ -317,18 +314,6 @@ set(FILES
     Source/SkyBox/SkyBoxFogSettings.cpp
     Source/TransformService/TransformServiceFeatureProcessor.cpp
     Source/Utils/GpuBufferHandler.cpp
-    Source/LuxCore/LuxCoreTexturePass.cpp
-    Source/LuxCore/RenderTexturePass.cpp
-    Source/LuxCore/LuxCoreMaterial.cpp
-    Source/LuxCore/LuxCoreMaterial.h
-    Source/LuxCore/LuxCoreMesh.cpp
-    Source/LuxCore/LuxCoreMesh.h
-    Source/LuxCore/LuxCoreObject.cpp
-    Source/LuxCore/LuxCoreObject.h
-    Source/LuxCore/LuxCoreRenderer.cpp
-    Source/LuxCore/LuxCoreRenderer.h
-    Source/LuxCore/LuxCoreTexture.cpp
-    Source/LuxCore/LuxCoreTexture.h
 )
 
 set(SKIP_UNITY_BUILD_INCLUSION_FILES

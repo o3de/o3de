@@ -261,6 +261,11 @@ namespace AZ::Render
             m_lightShapeDelegate->SetPhotometricUnit(m_configuration.m_intensityMode);
             m_lightShapeDelegate->SetIntensity(m_configuration.m_intensity);
         }
+
+        if (m_configuration.m_attenuationRadiusMode == LightAttenuationRadiusMode::Automatic)
+        {
+            AttenuationRadiusChanged();
+        }
     }
 
     void AreaLightComponentController::ChromaChanged()

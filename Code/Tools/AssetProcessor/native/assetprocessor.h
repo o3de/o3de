@@ -85,7 +85,7 @@ namespace AssetProcessor
 
     enum AssetCatalogStatus
     {
-        RequiresSaving, 
+        RequiresSaving,
         UpToDate
     };
 
@@ -213,11 +213,11 @@ namespace AssetProcessor
 
         bool m_critical = false;
         int m_priority = -1;
-        // indicates whether we need to check the server first for the outputs of this job 
+        // indicates whether we need to check the server first for the outputs of this job
         // before we start processing locally
         bool m_checkServer = false;
-         
-        // Indicates whether this job needs to be processed irrespective of whether its fingerprint got modified or not. 
+
+        // Indicates whether this job needs to be processed irrespective of whether its fingerprint got modified or not.
         bool m_autoProcessJob = false;
 
         AssetBuilderSDK::AssetBuilderDesc   m_assetBuilderDesc;
@@ -251,9 +251,9 @@ namespace AssetProcessor
 
         JobDetails() = default;
     };
- 
-    //! JobDesc struct is used for identifying jobs that need to be processed again 
-    //! because of job dependency declared on them by other jobs  
+
+    //! JobDesc struct is used for identifying jobs that need to be processed again
+    //! because of job dependency declared on them by other jobs
     struct JobDesc
     {
         AZStd::string m_databaseSourceName;
@@ -283,7 +283,7 @@ namespace AssetProcessor
         }
     };
 
-    //! JobIndentifier is an internal structure that store all the data that can uniquely identify a job 
+    //! JobIndentifier is an internal structure that store all the data that can uniquely identify a job
     struct JobIndentifier
     {
         JobDesc m_jobDesc;

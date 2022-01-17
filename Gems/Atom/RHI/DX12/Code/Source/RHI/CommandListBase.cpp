@@ -85,7 +85,7 @@ namespace AZ
             return m_hardwareQueueClass;
         }
 
-        void CommandListBase::SetAftermathEventMarker(const AZStd::string& markerData)
+        void CommandListBase::SetAftermathEventMarker(const char* markerData)
         {
             auto& device = static_cast<Device&>(GetDevice());
             Aftermath::SetAftermathEventMarker(m_aftermathCommandListContext, markerData, device.IsAftermathInitialized());

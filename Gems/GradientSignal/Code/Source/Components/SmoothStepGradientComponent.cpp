@@ -6,7 +6,7 @@
  *
  */
 
-#include "SmoothStepGradientComponent.h"
+#include <GradientSignal/Components/SmoothStepGradientComponent.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>

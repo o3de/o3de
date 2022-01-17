@@ -368,16 +368,19 @@ void CullDecals(uint groupIndex, TileLightData tileLightData, float3 aabb_center
         float3 decalPosition = WorldToView_Point(decal.m_position); 
         
         // just wrapping a bounding sphere around a cube for now to get a minor perf boost. i.e. the sphere radius is sqrt(x*x + y*y + z*z)
-        // ATOM-4224 - try AABB-AABB and implement depth binning for the decals
-        float maxHalfSize = max(max(decal.m_halfSize.x, decal.m_halfSize.y), decal.m_halfSize.z);
-        float boundingSphereRadiusSqr = maxHalfSize * maxHalfSize * 3;            
+        // ATOM-4224 - try AABB-AABB 
+        float boundingSphereRadiusSqr = dot(decal.m_halfSize, decal.m_halfSize);
           
         bool potentiallyIntersects = TestSphereVsAabb(decalPosition, boundingSphereRadiusSqr, aabb_center, aabb_extents);
+        
         if (potentiallyIntersects) 
         {                                           
-            // Implement and profile fine-grained light culling testing
-            // ATOM-3732 
-            MarkLightAsVisibleInSharedMemory(decalIndex, 0xFFFF);            
+            uint inside = 0;
+            float2 minmax = ComputePointLightMinMaxZ(sqrt(boundingSphereRadiusSqr), decalPosition);
+            if (IsObjectInsideTile(tileLightData, minmax, inside))
+            {
+                MarkLightAsVisibleInSharedMemory(decalIndex, inside);            
+            }
         }          
     }   
 }
