@@ -376,7 +376,7 @@ namespace AZ::Render
 
     bool AtomActorInstance::GetVisibility() const
     {
-	    return IsVisible();
+        return IsVisible();
     }
 
     void AtomActorInstance::SetRayTracingEnabled(bool enabled)
