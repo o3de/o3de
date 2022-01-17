@@ -130,10 +130,13 @@ namespace AtomToolsFramework
                     ->Attribute(AZ::Script::Attributes::Category, "Editor")
                     ->Attribute(AZ::Script::Attributes::Module, "atomtools.general");
             };
-            // The reflection here is based on patterns in CryEditPythonHandler::Reflect
+
             addGeneral(behaviorContext->Method(
                 "idle_wait_frames", &AtomToolsApplication::PyIdleWaitFrames, nullptr,
                 "Waits idling for a frames. Primarily used for auto-testing."));
+            addGeneral(behaviorContext->Method(
+                "exit", &AtomToolsApplication::PyExit, nullptr,
+                "Exit application. Primarily used for auto-testing."));
         }
     }
 
@@ -563,5 +566,10 @@ namespace AtomToolsFramework
         QEventLoop loop;
         Ticker ticker(&loop, frames);
         loop.exec();
+    }
+
+    void AtomToolsApplication::PyExit()
+    {
+        AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
     }
 } // namespace AtomToolsFramework
