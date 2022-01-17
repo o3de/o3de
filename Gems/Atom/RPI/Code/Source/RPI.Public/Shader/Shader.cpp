@@ -26,20 +26,33 @@ namespace AZ
         Data::Instance<Shader> Shader::FindOrCreate(const Data::Asset<ShaderAsset>& shaderAsset, const Name& supervariantName)
         {
             auto anySupervariantName = AZStd::any(supervariantName);
-            Data::Instance<Shader> shaderInstance = Data::InstanceDatabase<Shader>::Instance().FindOrCreate(
-                Data::InstanceId::CreateFromAssetId(shaderAsset.GetId()), shaderAsset, &anySupervariantName);
 
-            if (shaderInstance)
+            // retrieve the supervariant index from the shader asset
+            SupervariantIndex supervariantIndex = shaderAsset->GetSupervariantIndex(supervariantName);
+            if (!supervariantIndex.IsValid())
             {
-                // [GFX TODO][ATOM-15813] Change InstanceDatabase<Shader> to support multiple instances with different supervariants.
-                // At this time we do not support multiple supervariants loaded for a shader asset simultaneously, so if this shader
-                // is referring to the wrong supervariant we need to change it to the correct one.
-                SupervariantIndex supervariantIndex = shaderAsset->GetSupervariantIndex(supervariantName);
-                if (supervariantIndex.IsValid() && shaderInstance->GetSupervariantIndex() != supervariantIndex)
-                {
-                    shaderInstance->ChangeSupervariant(supervariantIndex);
-                }
+                AZ_Error("Shader", false, "Supervariant with name %s, was not found in shader %s", supervariantName.GetCStr(), shaderAsset->GetName().GetCStr());
+                return nullptr;
             }
+
+            // create the InstanceId from the combined assetId and supervariantIndex
+            const Data::AssetId& assetId = shaderAsset.GetId();
+            uint32_t shaderSupervariantIndex = supervariantIndex.GetIndex();
+
+            const uint32_t instanceIdDataSize = sizeof(assetId.m_guid) + sizeof(assetId.m_subId) + sizeof(shaderSupervariantIndex);
+            uint8_t instanceIdData[instanceIdDataSize];
+            uint8_t* instanceIdDataPtr = instanceIdData;
+
+            memcpy(instanceIdDataPtr, &assetId.m_guid, sizeof(assetId.m_guid));
+            instanceIdDataPtr += sizeof(assetId.m_guid);
+            memcpy(instanceIdDataPtr, &assetId.m_subId, sizeof(assetId.m_subId));
+            instanceIdDataPtr += sizeof(assetId.m_subId);
+            memcpy(instanceIdDataPtr, &shaderSupervariantIndex, sizeof(shaderSupervariantIndex));
+
+            Data::InstanceId instanceId = Data::InstanceId::CreateData(instanceIdData, instanceIdDataSize);
+
+            // retrieve the shader instance from the Instance database
+            Data::Instance<Shader> shaderInstance = Data::InstanceDatabase<Shader>::Instance().FindOrCreate(instanceId, shaderAsset, &anySupervariantName);
 
             return shaderInstance;
         }
@@ -247,6 +260,12 @@ namespace AZ
 
             AZ_Assert(shaderVariantAsset, "Reloaded ShaderVariantAsset is null");
             const ShaderVariantStableId stableId = shaderVariantAsset->GetStableId();
+
+            // check the supervariantIndex of the ShaderVariantAsset to make sure it matches the supervariantIndex of this shader instance
+            if (shaderVariantAsset->GetSupervariantIndex() != m_supervariantIndex.GetIndex())
+            {
+                return;
+            }
 
             // We make a copy of the updated variant because OnShaderVariantReinitialized must not be called inside
             // m_variantCacheMutex or deadlocks may occur.
@@ -484,15 +503,6 @@ namespace AZ
         RHI::DrawListTag Shader::GetDrawListTag() const
         {
             return m_drawListTag;
-        }
-
-        void Shader::ChangeSupervariant(SupervariantIndex supervariantIndex)
-        {
-            if (supervariantIndex != m_supervariantIndex)
-            {
-                m_supervariantIndex = supervariantIndex;
-                Init(*m_asset);
-            }
         }
 
     } // namespace RPI
