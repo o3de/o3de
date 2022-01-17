@@ -59,7 +59,7 @@ namespace AZStd
 
         constexpr span(pointer s, size_type length);
 
-        constexpr span(pointer first, const_pointer last);
+        constexpr span(pointer first, pointer last);
 
         // We explicitly delete this constructor because it's too easy to accidentally 
         // create a span to just the first element instead of an entire array.

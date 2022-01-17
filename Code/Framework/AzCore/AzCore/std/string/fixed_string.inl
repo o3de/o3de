@@ -1760,7 +1760,8 @@ namespace AZStd
     template<class Element, size_t MaxElementCount, class Traits>
     struct hash<basic_fixed_string<Element, MaxElementCount, Traits>>
     {
-        inline constexpr size_t operator()(const basic_fixed_string<Element, MaxElementCount, Traits>& value) const
+        using is_transparent = void;
+        inline constexpr size_t operator()(const basic_string_view<Element, Traits>& value) const
         {
             return hash_string(value.begin(), value.length());
         }
