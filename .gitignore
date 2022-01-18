@@ -18,6 +18,7 @@ client*.cfg
 server*.cfg
 .mayaSwatches/
 _savebackup/
+TestResults/**
 *.swatches
 /imgui.ini
 
