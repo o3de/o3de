@@ -173,9 +173,11 @@ class TestMaterialEditorBasicTests(object):
             "Document saved as copy is saved with changes: True",
             "Document saved as child is saved with changes: True",
             "Save All worked as expected: True",
+            "P1: Asset Browser visibility working as expected: True",
+            "P1: Inspector visibility working as expected: True",
         ]
         unexpected_lines = [
-            "Traceback (most recent call last):"
+            # Including any lines in unexpected_lines will cause the test to run for the duration of the timeout
         ]
 
         hydra.launch_and_validate_results(
