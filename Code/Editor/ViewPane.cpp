@@ -38,7 +38,6 @@
 #include "Viewport.h"
 #include "LayoutConfigDialog.h"
 #include "TopRendererWnd.h"
-#include "UserMessageDefines.h"
 #include "MainWindow.h"
 #include "QtViewPaneManager.h"
 #include "EditorViewportWidget.h"

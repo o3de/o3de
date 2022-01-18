@@ -14,7 +14,6 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Outcome/Outcome.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
-#include "WipFeatureManager.h"
 #include "CryEditDoc.h"
 #include "ViewPane.h"
 
