@@ -6,6 +6,8 @@
  *
  */
 
+#include "Entity/EditorEntitySortComponent.h"
+
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzTest/AzTest.h>
 
@@ -42,10 +44,22 @@ namespace UnitTest
             // because it's created before the EditorEntityModel that our EntityOutlinerListModel subscribes to, and we want to
             // recreate it as part of the fixture regardless.
             CreateRootPrefab();
+
+            auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+            auto rootEntity = prefabEditorEntityOwnershipInterface->GetRootPrefabInstance()->get().GetContainerEntity();
+            rootEntity->get().Deactivate();
+            rootEntity->get().CreateComponent<AzToolsFramework::Components::EditorEntitySortComponent>();
+            rootEntity->get().Activate();
+
+            AzToolsFramework::EditorEntityContextNotificationBus::Broadcast(
+                &AzToolsFramework::EditorEntityContextNotification::ForceAddEntitiesToBack, true);
         }
 
         void TearDownEditorFixtureImpl() override
         {
+            AzToolsFramework::EditorEntityContextNotificationBus::Broadcast(
+                &AzToolsFramework::EditorEntityContextNotification::ForceAddEntitiesToBack, false);
+
             m_undoStack = nullptr;
             m_modelTester.reset();
             m_model.reset();
@@ -80,6 +94,7 @@ namespace UnitTest
             entity->AddComponent(transform);
             transform->SetParent(parentId);
 
+            entity->CreateComponent<AzToolsFramework::Components::EditorEntitySortComponent>();
             entity->Activate();
 
             // Update our undo cache entry to include the rename / reparent as one atomic operation.
@@ -128,6 +143,26 @@ namespace UnitTest
             // Ensure the model process its entity update queue
             m_model->ProcessEntityUpdates();
         }
+
+        void VerifyEntityOrder(AZStd::map<AZStd::string, size_t>& entityMap, AZ::EntityId containerId)
+        {
+            auto instanceEntityMapperInterface = AZ::Interface<InstanceEntityMapperInterface>::Get();
+            auto instance = instanceEntityMapperInterface->FindOwningInstance(containerId);
+            auto parentIndex = m_model->GetIndexFromEntity(containerId);
+
+            auto verifyEntityMapping = [this, &entityMap, &parentIndex](const AZ::Entity& entity) -> bool
+            {
+                auto it = entityMap.find(entity.GetName());
+                EXPECT_TRUE(it != entityMap.end());
+
+                auto entityIndex = m_model->GetIndexFromEntity(entity.GetId());
+                //EXPECT_EQ(it->second, entityIndex.row() - parentIndex.row());
+                EXPECT_EQ(it->second, entityIndex.row());
+                return true;
+            };
+
+            instance->get().GetConstEntities(verifyEntityMapping);
+        }
         
         AZStd::unique_ptr<AzToolsFramework::EntityOutlinerListModel> m_model;
         AZStd::unique_ptr<QAbstractItemModelTester> m_modelTester;
@@ -136,24 +171,64 @@ namespace UnitTest
     TEST_F(EntityOutlinerTest, TestCreateFlatHierarchyUndoAndRedoWorks)
     {
         constexpr size_t entityCount = 10;
+        AZStd::map<AZStd::string, size_t> entityMap;
+        AZStd::vector<AZ::EntityId> entityIds;
 
         for (size_t i = 0; i < entityCount; ++i)
         {
-            CreateNamedEntity(AZStd::string::format("Entity%zu", i));
+            AZStd::string entityName = AZStd::string::format("Entity%zu", i);
+            entityIds.push_back(CreateNamedEntity(entityName));
             EXPECT_EQ(m_model->rowCount(GetRootIndex()), i + 1);
+            //entityMap[entityName] = i;
+
+            
+            QApplication::processEvents();
+            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(100));
         }
 
+
+        for (auto entityId : entityIds)
+        {
+            AZ::Entity* entity = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
+            auto entityIndex = m_model->GetIndexFromEntity(entityId);
+            entityMap[entity->GetName()] = entityIndex.row();
+        }
+
+        // undo creating entities
         for (int i = entityCount; i > 0; --i)
         {
             Undo();
             EXPECT_EQ(m_model->rowCount(GetRootIndex()), i - 1);
         }
 
+        // redo creating entities
         for (size_t i = 0; i < entityCount; ++i)
         {
             Redo();
             EXPECT_EQ(m_model->rowCount(GetRootIndex()), i + 1);
         }
+
+        auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+        auto parentId = prefabEditorEntityOwnershipInterface->GetRootPrefabInstance()->get().GetContainerEntityId();
+
+        // verify order is consistent after redo
+        VerifyEntityOrder(entityMap, parentId);
+
+        //// test deletion
+        //for (auto entityId : entityIds)
+        //{
+        //    m_prefabPublicInterface->DeleteEntitiesAndAllDescendantsInInstance(AzToolsFramework::EntityIdList{ entityId });
+        //}
+        //ProcessDeferredUpdates();
+        //EXPECT_EQ(m_model->rowCount(GetRootIndex()), 0);
+
+        // undo deletion
+      /*  Undo();
+        EXPECT_EQ(m_model->rowCount(GetRootIndex()), entityCount);
+        */
+        // verify order is consistent after undoing deletions
+        //VerifyEntityOrder(entityMap, parentId);
     }
 
     TEST_F(EntityOutlinerTest, TestCreateNestedHierarchyUndoAndRedoWorks)
@@ -190,5 +265,43 @@ namespace UnitTest
             Redo();
             EXPECT_EQ(modelDepth(), i + 1);
         }
+    }
+
+    TEST_F(EntityOutlinerTest, TestCreatePrefabWorks)
+    {
+        constexpr size_t entityCount = 10;
+        AZStd::map<AZStd::string, size_t> entityMap;
+        AZStd::vector<AZ::EntityId> entityIds;
+
+        for (size_t i = 0; i < entityCount; ++i)
+        {
+            AZStd::string entityName = AZStd::string::format("Entity%zu", i);
+            entityIds.push_back(CreateNamedEntity(entityName));
+            EXPECT_EQ(m_model->rowCount(GetRootIndex()), i + 1);
+            entityMap[entityName] = i;
+        }
+
+        for (auto entityId : entityIds)
+        {
+            AZ::Entity* entity = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
+            auto entityIndex = m_model->GetIndexFromEntity(entityId);
+            entityMap[entity->GetName()] = entityIndex.row();
+        }
+
+        auto createPrefabResult = m_prefabPublicInterface->CreatePrefabInMemory(entityIds, PrefabMockFilePath);
+        EXPECT_TRUE(createPrefabResult.IsSuccess());
+
+        auto containerId1 = createPrefabResult.GetValue();
+        VerifyEntityOrder(entityMap, containerId1);
+
+        
+        auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+        auto levelId = prefabEditorEntityOwnershipInterface->GetRootPrefabInstance()->get().GetContainerEntityId();
+        auto instantiatePrefabResult = m_prefabPublicInterface->InstantiatePrefab(PrefabMockFilePath, levelId, AZ::Vector3::CreateZero());
+        EXPECT_TRUE(instantiatePrefabResult.IsSuccess());
+
+        auto containerId2 = instantiatePrefabResult.GetValue();
+        VerifyEntityOrder(entityMap, containerId2);
     }
 } // namespace UnitTest
