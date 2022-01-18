@@ -131,7 +131,7 @@ namespace AZ
             
             if (!reportError)
             {
-                reportError = [](const char* message)
+                reportError = []([[maybe_unused]] const char* message)
                 {
                     AZ_Error(s_debugTraceName, false, "%s", message);
                 };
