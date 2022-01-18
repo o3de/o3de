@@ -30,21 +30,20 @@
 #include <AzToolsFramework/Prefab/PrefabSystemScriptingBus.h>
 #include <AzToolsFramework/Prefab/Procedural/ProceduralPrefabAsset.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
-#include <SceneAPI/SceneCore/Components/ExportingComponent.h>
-#include <SceneAPI/SceneCore/Containers/Scene.h>
-#include <SceneAPI/SceneCore/Containers/SceneManifest.h>
-#include <SceneAPI/SceneCore/Containers/Views/SceneGraphDownwardsIterator.h>
-#include <SceneAPI/SceneCore/Containers/Views/SceneGraphUpwardsIterator.h>
-#include <SceneAPI/SceneCore/DataTypes/DataTypeUtilities.h>
-#include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshData.h>
-#include <SceneAPI/SceneCore/DataTypes/GraphData/ITransform.h>
-#include <SceneAPI/SceneCore/Events/AssetImportRequest.h>
-#include <SceneAPI/SceneCore/Events/ExportEventContext.h>
-#include <SceneAPI/SceneCore/Events/ExportProductList.h>
-#include <SceneAPI/SceneCore/Utilities/FileUtilities.h>
-#include <SceneAPI/SceneData/Groups/MeshGroup.h>
-
 #include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
+#include <SceneAPI/SceneData/Groups/MeshGroup.h>
+#include <SceneAPI/SceneCore/Utilities/FileUtilities.h>
+#include <SceneAPI/SceneCore/Events/ExportProductList.h>
+#include <SceneAPI/SceneCore/Events/ExportEventContext.h>
+#include <SceneAPI/SceneCore/Events/AssetImportRequest.h>
+#include <SceneAPI/SceneCore/DataTypes/GraphData/ITransform.h>
+#include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshData.h>
+#include <SceneAPI/SceneCore/DataTypes/DataTypeUtilities.h>
+#include <SceneAPI/SceneCore/Containers/Views/SceneGraphUpwardsIterator.h>
+#include <SceneAPI/SceneCore/Containers/Views/SceneGraphDownwardsIterator.h>
+#include <SceneAPI/SceneCore/Containers/SceneManifest.h>
+#include <SceneAPI/SceneCore/Containers/Scene.h>
+#include <SceneAPI/SceneCore/Components/ExportingComponent.h>
 
 namespace AZStd
 {
@@ -64,6 +63,8 @@ namespace AZ::SceneAPI::Behaviors
     //
     // ExportEventHandler
     //
+
+    static constexpr const char s_PrefabGroupBehaviorCreateDefaultKey[] = "/O3DE/Preferences/Prefabs/CreateDefaults";
 
     struct PrefabGroupBehavior::ExportEventHandler final
         : public AZ::SceneAPI::SceneCore::ExportingComponent
@@ -106,6 +107,17 @@ namespace AZ::SceneAPI::Behaviors
         if (action != Events::AssetImportRequest::ConstructDefault)
         {
             return Events::ProcessingResult::Ignored;
+        }
+
+        // this toggle makes constructing default mesh groups and a prefab optional
+        if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry)
+        {
+            bool createDefaultPrefab = true;
+            settingsRegistry->Get(createDefaultPrefab, s_PrefabGroupBehaviorCreateDefaultKey);
+            if (createDefaultPrefab == false)
+            {
+                return Events::ProcessingResult::Ignored;
+            }
         }
 
         using MeshTransformPair = AZStd::pair<Containers::SceneGraph::NodeIndex, Containers::SceneGraph::NodeIndex>;
@@ -172,6 +184,7 @@ namespace AZ::SceneAPI::Behaviors
             const auto thisNodeIndex = entry.first;
             const auto meshNodeIndex = entry.second.first;
             const auto meshNodeName = graph.GetNodeName(meshNodeIndex);
+            AZStd::string meshNodePath { meshNodeName.GetPath() };
 
             AZStd::string meshNodeFullName;
             meshNodeFullName = relativeSourcePath;
@@ -180,7 +193,7 @@ namespace AZ::SceneAPI::Behaviors
 
             auto meshGroup = AZStd::make_shared<AZ::SceneAPI::SceneData::MeshGroup>();
             meshGroup->SetName(meshNodeFullName.c_str());
-            meshGroup->GetSceneNodeSelectionList().AddSelectedNode(meshNodeName.GetPath());
+            meshGroup->GetSceneNodeSelectionList().AddSelectedNode(AZStd::move(meshNodePath));
             for (const auto& meshGoupNamePair : meshTransformMap)
             {
                 if (meshGoupNamePair.first != thisNodeIndex)
@@ -223,7 +236,7 @@ namespace AZ::SceneAPI::Behaviors
                 editorMeshComponent,
                 &AzToolsFramework::EntityUtilityBus::Events::GetOrAddComponentByTypeName,
                 entityId,
-                "AZ::Render::EditorMeshComponent");
+                "{DCE68F6E-2E16-4CB4-A834-B6C2F900A7E9} AZ::Render::EditorMeshComponent");
 
             // assign mesh asset id hint using JSON
             auto meshAssetJson = AZStd::string::format(
@@ -241,7 +254,7 @@ namespace AZ::SceneAPI::Behaviors
 
             if (result == false)
             {
-                AZ_Error("prefab", false, "UpdateComponentForEntity failed for Mesh component");
+                AZ_Error("prefab", false, "UpdateComponentForEntity failed for EditorMeshComponent component");
                 return Events::ProcessingResult::Ignored;
             }
 
