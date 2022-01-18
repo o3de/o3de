@@ -90,7 +90,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 Gem::AWSCore
                 Gem::AWSGameLift.Client.Static
                 3rdParty::AWSNativeSDK::GameLiftClient
-                AZ::AWSNativeSDKTest
+                AZ::AWSNativeSDKTestLibs
     )
     # Add AWSGameLift.Client.Tests to googletest
     ly_add_googletest(

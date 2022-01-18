@@ -7,7 +7,7 @@
  */
 
 
-#include <AWSNativeSDKTest.h>
+#include <AWSNativeSDKTestManager.h>
 
 #include <AzCore/Module/Environment.h>
 #include <AzTest/Utils.h>
@@ -16,29 +16,29 @@
 #include <aws/core/Aws.h>
 #include <aws/core/utils/logging/AWSLogging.h>
 
-namespace AWSNativeSDKTest
+namespace AWSNativeSDKTestLibs
 {
-    AZ::EnvironmentVariable<TestSDKManager> TestSDKManager::s_sdkManager = nullptr;
+    AZ::EnvironmentVariable<AWSNativeSDKTestManager> AWSNativeSDKTestManager::s_sdkManager = nullptr;
 
-    TestSDKManager::TestSDKManager()
+    AWSNativeSDKTestManager::AWSNativeSDKTestManager()
     {
         AZ::Test::SetEnv("AWS_DEFAULT_REGION", "us-east-1", 1);
         m_awsSDKOptions.memoryManagementOptions.memoryManager = &m_memoryManager;
         Aws::InitAPI(m_awsSDKOptions);
     }
 
-    TestSDKManager::~TestSDKManager()
+    AWSNativeSDKTestManager::~AWSNativeSDKTestManager()
     {
         Aws::ShutdownAPI(m_awsSDKOptions);
         AZ::Test::UnsetEnv("AWS_DEFAULT_REGION");
     }
 
-    void TestSDKManager::Init()
+    void AWSNativeSDKTestManager::Init()
     {
-        s_sdkManager = AZ::Environment::CreateVariable<TestSDKManager>(TestSDKManager::SdkManagerTag);
+        s_sdkManager = AZ::Environment::CreateVariable<AWSNativeSDKTestManager>(AWSNativeSDKTestManager::SdkManagerTag);
     }
 
-    void TestSDKManager::Shutdown()
+    void AWSNativeSDKTestManager::Shutdown()
     {
         s_sdkManager = nullptr;
     }

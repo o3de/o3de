@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AWSNativeSDKTest.h>
+#include <AWSNativeSDKTestManager.h>
 #include <AzCore/Jobs/JobManager.h>
 #include <AzCore/Jobs/JobManagerBus.h>
 #include <AzCore/Jobs/JobContext.h>
@@ -39,12 +39,12 @@ public:
         m_jobContext.reset(aznew AZ::JobContext(*m_jobManager, *m_jobCancelGroup));
         AZ::JobContext::SetGlobalContext(m_jobContext.get());
 
-        AWSNativeSDKTest::TestSDKManager::Init();
+        AWSNativeSDKTestLibs::AWSNativeSDKTestManager::Init();
     }
 
     void TearDown() override
     {
-        AWSNativeSDKTest::TestSDKManager::Shutdown();
+        AWSNativeSDKTestLibs::AWSNativeSDKTestManager::Shutdown();
 
         AZ::JobContext::SetGlobalContext(nullptr);
         m_jobContext.reset();

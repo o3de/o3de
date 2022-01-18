@@ -19,7 +19,7 @@
 #include <AzTest/AzTest.h>
 
 #include <AWSCoreSystemComponent.h>
-#include <AWSNativeSDKTest.h>
+#include <AWSNativeSDKTestManager.h>
 #include <Configuration/AWSCoreConfiguration.h>
 #include <Credential/AWSCredentialManager.h>
 #include <Framework/AWSApiJob.h>
@@ -105,7 +105,7 @@ public:
 TEST_F(AWSCoreSystemComponentTest, ComponentActivateTest)
 {
     // Shutdown SDK which is init in fixture setup step
-    AWSNativeSDKTest::TestSDKManager::Shutdown();
+    AWSNativeSDKTestLibs::AWSNativeSDKTestManager::Shutdown();
 
     EXPECT_FALSE(m_coreSystemsComponent->IsAWSApiInitialized());
 

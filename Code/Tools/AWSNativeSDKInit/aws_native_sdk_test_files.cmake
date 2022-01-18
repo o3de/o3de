@@ -7,6 +7,6 @@
 #
 
 set(FILES
-    tests/AWSNativeSDKTest.cpp
-    tests/AWSNativeSDKTest.h
+    tests/libs/AWSNativeSDKTestManager.cpp
+    tests/libs/AWSNativeSDKTestManager.h
 )

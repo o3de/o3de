@@ -106,7 +106,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 3rdParty::AWSNativeSDK::AWSClientAuth
                 AZ::AzCore
                 AZ::AzFramework
-                AZ::AWSNativeSDKTest
+                AZ::AWSNativeSDKTestLibs
                 Gem::AWSClientAuth.Static
                 Gem::AWSCore
                 Gem::HttpRequestor

@@ -15,23 +15,23 @@
 
 #include <aws/core/Aws.h>
 
-namespace AWSNativeSDKTest
+namespace AWSNativeSDKTestLibs
 {
     // Entry point for AWSNativeSDK's initialization and shutdown for test environment
     // Use an AZ::Environment variable to enforce only one init and shutdown
-    class TestSDKManager
+    class AWSNativeSDKTestManager
     {
     public:
         static constexpr const char SdkManagerTag[] = "TestAWSSDKManager";
 
-        TestSDKManager();
-        ~TestSDKManager();
+        AWSNativeSDKTestManager();
+        ~AWSNativeSDKTestManager();
 
         static void Init();
         static void Shutdown();
 
     private:
-        static AZ::EnvironmentVariable<TestSDKManager> s_sdkManager;
+        static AZ::EnvironmentVariable<AWSNativeSDKTestManager> s_sdkManager;
 
         AWSNativeSDKInit::MemoryManager m_memoryManager;
         Aws::SDKOptions m_awsSDKOptions;
