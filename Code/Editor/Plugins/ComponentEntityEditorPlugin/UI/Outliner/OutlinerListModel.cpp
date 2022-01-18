@@ -2601,9 +2601,11 @@ void OutlinerItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
 
         // Now we setup a Text Document so it can draw the rich text
         int verticalOffset = GetEntityNameVerticalOffset(entityId);
-        painter->translate(textRect.topLeft() + QPoint(0, verticalOffset));
 
-        AzToolsFramework::RichTextHighlighter::PaintHighlightedRichText(entityNameRichText, painter, optionV4, textRect);
+        AzToolsFramework::RichTextHighlighter::PaintHighlightedRichText(
+            entityNameRichText, painter, optionV4, textRect, QPoint(0, verticalOffset));
+
+        painter->restore();
 
         OutlinerListModel::s_paintingName = false;
     }

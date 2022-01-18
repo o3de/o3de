@@ -2367,6 +2367,7 @@ namespace AzToolsFramework
         optionV4.widget->style()->drawControl(QStyle::CE_ItemViewItem, &optionV4, painter);
 
         AzToolsFramework::RichTextHighlighter::PaintHighlightedRichText(entityNameRichText, painter, optionV4, textRect);
+        painter->restore();
 
         EntityOutlinerListModel::s_paintingName = false;
     }
