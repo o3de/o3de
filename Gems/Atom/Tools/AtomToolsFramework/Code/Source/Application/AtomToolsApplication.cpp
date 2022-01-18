@@ -171,13 +171,14 @@ namespace AtomToolsFramework
 
     void AtomToolsApplication::StartCommon(AZ::Entity* systemEntity)
     {
-        AzFramework::AssetSystemStatusBus::Handler::BusConnect();
         AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusConnect();
 
         Base::StartCommon(systemEntity);
 
         const bool clearLogFile = GetSettingOrDefault("/O3DE/AtomToolsFramework/Application/ClearLogOnStart", false);
         m_traceLogger.OpenLogFile(GetBuildTargetName() + ".log", clearLogFile);
+
+        ConnectToAssetProcessor();
 
         AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusConnect();
         AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotificationBus::Broadcast(
@@ -236,7 +237,7 @@ namespace AtomToolsFramework
         return AZStd::vector<AZStd::string>({});
     }
 
-    void AtomToolsApplication::AssetSystemAvailable()
+    void AtomToolsApplication::ConnectToAssetProcessor()
     {
         bool connectedToAssetProcessor = false;
 
@@ -245,18 +246,19 @@ namespace AtomToolsFramework
         // and able to negotiate a connection when running a debug build
         // and to negotiate a connection
 
-        auto targetName = GetBuildTargetName();
+        const auto targetName = GetBuildTargetName();
 
         AzFramework::AssetSystem::ConnectionSettings connectionSettings;
         AzFramework::AssetSystem::ReadConnectionSettingsFromSettingsRegistry(connectionSettings);
         connectionSettings.m_connectionDirection =
             AzFramework::AssetSystem::ConnectionSettings::ConnectionDirection::ConnectToAssetProcessor;
-        connectionSettings.m_connectionIdentifier = GetBuildTargetName();
+        connectionSettings.m_connectionIdentifier = targetName;
         connectionSettings.m_loggingCallback = [targetName]([[maybe_unused]] AZStd::string_view logData)
         {
             AZ_UNUSED(targetName);  // Prevent unused warning in release builds
             AZ_TracePrintf(targetName.c_str(), "%.*s", aznumeric_cast<int>(logData.size()), logData.data());
         };
+
         AzFramework::AssetSystemRequestBus::BroadcastResult(
             connectedToAssetProcessor, &AzFramework::AssetSystemRequestBus::Events::EstablishAssetProcessorConnection, connectionSettings);
 
@@ -264,8 +266,6 @@ namespace AtomToolsFramework
         {
             CompileCriticalAssets();
         }
-
-        AzFramework::AssetSystemStatusBus::Handler::BusDisconnect();
     }
 
     void AtomToolsApplication::CompileCriticalAssets()
@@ -302,6 +302,7 @@ namespace AtomToolsFramework
         }
 
         AZ::ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "CriticalAssetsCompiled", R"({})");
+
         // Reload the assetcatalog.xml at this point again
         // Start Monitoring Asset changes over the network and load the AssetCatalog
         auto LoadCatalog = [settingsRegistry = m_settingsRegistry.get()](AZ::Data::AssetCatalogRequests* assetCatalogRequests)
