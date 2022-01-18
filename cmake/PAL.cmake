@@ -298,21 +298,27 @@ function(ly_get_absolute_pal_filename out_name in_name)
 
     # parent relative path is optional
     if(${ARGC} GREATER 4)
-        set(parent_relative_path ${ARGV4})
+        if(ARGV4)
+            set(parent_relative_path ${ARGV4})
+        endif()
     endif()
 
     # The Default object path for path is the LY_ROOT_FOLDER
     cmake_path(SET object_path NORMALIZE "${LY_ROOT_FOLDER}")
     if(${ARGC} GREATER 3)
-        # The user has supplied an object restricted path, the object path for consideration
-        cmake_path(SET object_path NORMALIZE ${ARGV3})
+        if(ARGV3)
+            # The user has supplied an object restricted path, the object path for consideration
+            cmake_path(SET object_path NORMALIZE ${ARGV3})
+        endif()
     endif()
 
     # The default restricted object path is O3DE_ENGINE_RESTRICTED_PATH
     cmake_path(SET object_restricted_path NORMALIZE "${O3DE_ENGINE_RESTRICTED_PATH}")
     if(${ARGC} GREATER 2)
-        # The user has supplied an object restricted path
-        cmake_path(SET object_restricted_path NORMALIZE ${ARGV2})
+        if(ARGV3)
+            # The user has supplied an object restricted path
+            cmake_path(SET object_restricted_path NORMALIZE ${ARGV2})
+        endif()
     endif()
 
     if(${ARGC} GREATER 4)
@@ -394,21 +400,27 @@ function(ly_get_list_relative_pal_filename out_name in_name)
 
     # parent relative path is optional
     if(${ARGC} GREATER 4)
-        set(parent_relative_path ${ARGV4})
+        if(ARGV4)
+            set(parent_relative_path ${ARGV4})
+        endif()
     endif()
 
     # The Default object path for path is the LY_ROOT_FOLDER
     cmake_path(SET object_path NORMALIZE "${LY_ROOT_FOLDER}")
     if(${ARGC} GREATER 3)
-        # The user has supplied an object restricted path, the object path for consideration
-        cmake_path(SET object_path NORMALIZE ${ARGV3})
+        if(ARGV3)
+            # The user has supplied an object restricted path, the object path for consideration
+            cmake_path(SET object_path NORMALIZE ${ARGV3})
+        endif()
     endif()
 
     # The default restricted object path is O3DE_ENGINE_RESTRICTED_PATH
     cmake_path(SET object_restricted_path NORMALIZE "${O3DE_ENGINE_RESTRICTED_PATH}")
     if(${ARGC} GREATER 2)
-        # The user has supplied an object restricted path
-        cmake_path(SET object_restricted_path NORMALIZE ${ARGV2})
+        if(ARGV2)
+            # The user has supplied an object restricted path
+            cmake_path(SET object_restricted_path NORMALIZE ${ARGV2})
+        endif()
     endif()
 
     if(${ARGC} GREATER 4)
