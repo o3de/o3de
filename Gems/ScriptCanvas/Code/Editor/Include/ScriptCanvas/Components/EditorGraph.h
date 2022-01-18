@@ -175,12 +175,12 @@ namespace ScriptCanvasEditor
         void RemoveSlot(const GraphCanvas::Endpoint& endpoint) override;
         bool IsSlotRemovable(const GraphCanvas::Endpoint& endpoint) const override;
 
-        bool ConvertSlotToReference(const GraphCanvas::Endpoint& endpoint) override;
-        bool CanConvertSlotToReference(const GraphCanvas::Endpoint& endpoint) override;
+        bool ConvertSlotToReference(const GraphCanvas::Endpoint& endpoint, bool isNewSlot = false) override;
+        bool CanConvertSlotToReference(const GraphCanvas::Endpoint& endpoint, bool isNewSlot = false) override;
         GraphCanvas::CanHandleMimeEventOutcome CanHandleReferenceMimeEvent(const GraphCanvas::Endpoint& endpoint, const QMimeData* mimeData) override;
         bool HandleReferenceMimeEvent(const GraphCanvas::Endpoint& endpoint, const QMimeData* mimeData) override;
-        bool CanPromoteToVariable(const GraphCanvas::Endpoint& endpoint) const override;
-        bool PromoteToVariableAction(const GraphCanvas::Endpoint& endpoint) override;
+        bool CanPromoteToVariable(const GraphCanvas::Endpoint& endpoint, bool isNewSlot = false) const override;
+        bool PromoteToVariableAction(const GraphCanvas::Endpoint& endpoint, bool isNewSlot = false) override;
         bool SynchronizeReferences(const GraphCanvas::Endpoint& sourceEndpoint, const GraphCanvas::Endpoint& targetEndpoint) override;
 
         bool ConvertSlotToValue(const GraphCanvas::Endpoint& endpoint) override;
