@@ -68,18 +68,14 @@ namespace AZStd
         template<AZStd::size_t N>
         constexpr span(AZStd::array<value_type, N>& data);
 
-        constexpr span(AZStd::vector<value_type>& data);
-
-        template<AZStd::size_t N>
-        constexpr span(AZStd::fixed_vector<value_type, N>& data);
+        template<typename Container>
+        constexpr span(Container& data);
 
         template<AZStd::size_t N>
         constexpr span(const AZStd::array<value_type, N>& data);
 
-        constexpr span(const AZStd::vector<value_type>& data);
-
-        template<AZStd::size_t N>
-        constexpr span(const AZStd::fixed_vector<value_type, N>& data);
+        template<typename Container>
+        constexpr span(const Container& data);
 
         constexpr span(const span&) = default;
 
@@ -132,6 +128,24 @@ namespace AZStd
         pointer m_begin;
         pointer m_end;
     };
+
+    template<class Container>
+    span(const Container&) -> span<const typename Container::value_type>;
+
+    template<class Container>
+    span(Container&) -> span<typename Container::value_type>;
+
+    template<class Element>
+    span(typename span<Element>::const_pointer, typename span<Element>::size_type) -> span<const typename span<Element>::value_type>;
+
+    template<class Element>
+    span(typename span<Element>::pointer, typename span<Element>::size_type) -> span<typename span<Element>::value_type>;
+
+    template<class Element>
+    span(typename span<Element>::const_pointer, typename span<Element>::const_pointer) -> span<const typename span<Element>::value_type>;
+
+    template<class Element>
+    span(typename span<Element>::pointer, typename span<Element>::pointer) -> span<typename span<Element>::value_type>;
 } // namespace AZStd
 
 #include <AzCore/std/containers/span.inl>
