@@ -29,7 +29,7 @@ namespace AzToolsFramework
         return highlightedString;
     }
 
-    void RichTextHighlighter::PaintHighlightedRichText(const QString& highlightedString,QPainter* painter, QStyleOptionViewItem option, QRect availableRect, QPoint offset/* = QPoint(0.f,0.f)*/)
+    void RichTextHighlighter::PaintHighlightedRichText(const QString& highlightedString,QPainter* painter, QStyleOptionViewItem option, QRect availableRect, QPoint offset /* = QPoint()*/)
     {
         // Now we setup a Text Document so it can draw the rich text
         QTextDocument textDoc;
