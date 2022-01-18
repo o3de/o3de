@@ -24,7 +24,7 @@ namespace AZStd
     }
 
     template <class Element>
-    inline constexpr span<Element>::span(pointer first, const_pointer last)
+    inline constexpr span<Element>::span(pointer first, pointer last)
         : m_begin(first)
         , m_end(last)
     { }

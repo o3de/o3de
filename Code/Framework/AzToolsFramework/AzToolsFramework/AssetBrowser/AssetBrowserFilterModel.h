@@ -48,7 +48,7 @@ namespace AzToolsFramework
             // AssetBrowserComponentNotificationBus
             //////////////////////////////////////////////////////////////////////////
             void OnAssetBrowserComponentReady() override;
-
+            QSharedPointer<const StringFilter> GetStringFilter() const;
         Q_SIGNALS:
             void filterChanged();
             //////////////////////////////////////////////////////////////////////////
@@ -70,7 +70,7 @@ namespace AzToolsFramework
             //Asset source name match filter
             FilterConstType m_filter;
             AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: class '...' needs to have dll-interface to be used by clients of class '...'
-            QWeakPointer<const StringFilter> m_stringFilter;
+            QSharedPointer<const StringFilter> m_stringFilter;
             QWeakPointer<const CompositeFilter> m_assetTypeFilter;
             QCollator m_collator;  // cache the collator as its somewhat expensive to constantly create and destroy one.
             AZ_POP_DISABLE_WARNING

@@ -110,8 +110,14 @@ namespace AZ
                     PrepareSrgDescriptors(m_dynamicBuffersDescriptors, vertexCount, strandsCount);
                 }
  
-                Data::Instance<RPI::ShaderResourceGroup> GetSimSrgForCompute() { return m_simSrgForCompute; }
-                Data::Instance<RPI::ShaderResourceGroup> GetSimSrgForRaster() { return m_simSrgForRaster; }
+                Data::Instance<RPI::ShaderResourceGroup> GetSimSrgForCompute()
+                {
+                    return m_initialized ? m_simSrgForCompute : nullptr;
+                }
+
+                Data::Instance<RPI::ShaderResourceGroup> GetSimSrgForRaster()
+                {
+                    return m_initialized ? m_simSrgForRaster : nullptr; }
 
                 bool IsInitialized() { return m_initialized;  }
 
