@@ -76,5 +76,29 @@ namespace UnitTest
             GetSurfacePointFromVector2, void(const AZ::Vector2&, AzFramework::SurfaceData::SurfacePoint&, Sampler, bool*));
         MOCK_CONST_METHOD5(
             GetSurfacePointFromFloats, void(float, float, AzFramework::SurfaceData::SurfacePoint&, Sampler, bool*));
+        MOCK_CONST_METHOD3(
+            ProcessHeightsFromList, void(const AZStd::span<AZ::Vector3>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler));
+        MOCK_CONST_METHOD3(
+            ProcessNormalsFromList, void(const AZStd::span<AZ::Vector3>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler));
+        MOCK_CONST_METHOD3(
+            ProcessSurfaceWeightsFromList, void(const AZStd::span<AZ::Vector3>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler));
+        MOCK_CONST_METHOD3(
+            ProcessSurfacePointsFromList, void(const AZStd::span<AZ::Vector3>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler));
+        MOCK_CONST_METHOD3(
+            ProcessHeightsFromListOfVector2, void(const AZStd::span<AZ::Vector2>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler));
+        MOCK_CONST_METHOD3(
+            ProcessNormalsFromListOfVector2, void(const AZStd::span<AZ::Vector2>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler));
+        MOCK_CONST_METHOD3(
+            ProcessSurfaceWeightsFromListOfVector2, void(const AZStd::span<AZ::Vector2>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler));
+        MOCK_CONST_METHOD3(
+            ProcessSurfacePointsFromListOfVector2, void(const AZStd::span<AZ::Vector2>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler));
+        MOCK_CONST_METHOD4(
+            ProcessHeightsFromRegion, void(const AZ::Aabb&, const AZ::Vector2&, AzFramework::Terrain::SurfacePointRegionFillCallback, Sampler));
+        MOCK_CONST_METHOD4(
+            ProcessNormalsFromRegion, void(const AZ::Aabb&, const AZ::Vector2&, AzFramework::Terrain::SurfacePointRegionFillCallback, Sampler));
+        MOCK_CONST_METHOD4(
+            ProcessSurfaceWeightsFromRegion, void(const AZ::Aabb&, const AZ::Vector2&, AzFramework::Terrain::SurfacePointRegionFillCallback, Sampler));
+        MOCK_CONST_METHOD4(
+            ProcessSurfacePointsFromRegion, void(const AZ::Aabb&, const AZ::Vector2&, AzFramework::Terrain::SurfacePointRegionFillCallback, Sampler));
     };
 } // namespace UnitTest

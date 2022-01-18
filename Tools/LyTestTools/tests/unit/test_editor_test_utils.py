@@ -17,14 +17,15 @@ class TestEditorTestUtils(unittest.TestCase):
 
     @mock.patch('ly_test_tools.environment.process_utils.kill_processes_named')
     def test_KillAllLyProcesses_IncludeAP_CallsCorrectly(self, mock_kill_processes_named):
-        process_list = ['Editor', 'Profiler', 'RemoteConsole', 'AssetProcessor', 'AssetProcessorBatch', 'AssetBuilder']
+        process_list = ['Editor', 'Profiler', 'RemoteConsole', 'o3de', 'AssetProcessor', 'AssetProcessorBatch',
+                        'AssetBuilder']
 
         editor_test_utils.kill_all_ly_processes(include_asset_processor=True)
         mock_kill_processes_named.assert_called_once_with(process_list, ignore_extensions=True)
 
     @mock.patch('ly_test_tools.environment.process_utils.kill_processes_named')
     def test_KillAllLyProcesses_NotIncludeAP_CallsCorrectly(self, mock_kill_processes_named):
-        process_list = ['Editor', 'Profiler', 'RemoteConsole']
+        process_list = ['Editor', 'Profiler', 'RemoteConsole', 'o3de']
         ap_process_list = ['AssetProcessor', 'AssetProcessorBatch', 'AssetBuilder']
 
         editor_test_utils.kill_all_ly_processes(include_asset_processor=False)
@@ -59,22 +60,31 @@ class TestEditorTestUtils(unittest.TestCase):
 
         assert expected == editor_test_utils.retrieve_log_path(0, mock_workspace)
 
+    @mock.patch('os.listdir')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
+    @mock.patch('os.path.join', mock.MagicMock())
+    @mock.patch('os.path.basename', mock.MagicMock())
+    @mock.patch('os.path.isfile', mock.MagicMock())
     @mock.patch('ly_test_tools.environment.waiter.wait_for', mock.MagicMock())
-    def test_RetrieveCrashOutput_CrashLogExists_ReturnsLogInfo(self, mock_retrieve_log_path):
-        mock_retrieve_log_path.return_value = 'mock_log_path'
+    def test_RetrieveCrashOutput_CrashLogExists_ReturnsLogInfo(self, mock_retrieve_log_path, mock_listdir):
+        mock_retrieve_log_path.return_value = 'mock_path'
         mock_workspace = mock.MagicMock()
         mock_log = 'mock crash info'
+        mock_listdir.return_value = ['mock_error_log.log']
 
         with mock.patch('builtins.open', mock.mock_open(read_data=mock_log)) as mock_file:
             assert mock_log == editor_test_utils.retrieve_crash_output(0, mock_workspace, 0)
 
+    @mock.patch('os.listdir')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
+    @mock.patch('os.path.isfile', mock.MagicMock())
     @mock.patch('ly_test_tools.environment.waiter.wait_for', mock.MagicMock())
-    def test_RetrieveCrashOutput_CrashLogNotExists_ReturnsError(self, mock_retrieve_log_path):
+    def test_RetrieveCrashOutput_CrashLogNotExists_ReturnsError(self, mock_retrieve_log_path, mock_listdir):
         mock_retrieve_log_path.return_value = 'mock_log_path'
         mock_workspace = mock.MagicMock()
+        mock_workspace.paths.crash_log.return_value = 'mock_file.log'
         error_message = "No crash log available"
+        mock_listdir.return_value = ['mock_file.log']
 
         assert error_message in editor_test_utils.retrieve_crash_output(0, mock_workspace, 0)
 
@@ -85,7 +95,7 @@ class TestEditorTestUtils(unittest.TestCase):
     @mock.patch('os.path.exists')
     def test_CycleCrashReport_DmpExists_NamedCorrectly(self, mock_exists, mock_retrieve_log_path, mock_strftime,
                                                        mock_rename):
-        mock_exists.side_effect = [False, True]
+        mock_exists.side_effect = [False, False, True]
         mock_retrieve_log_path.return_value = 'mock_log_path'
         mock_workspace = mock.MagicMock()
         mock_strftime.return_value = 'mock_strftime'
@@ -101,7 +111,7 @@ class TestEditorTestUtils(unittest.TestCase):
     @mock.patch('os.path.exists')
     def test_CycleCrashReport_LogExists_NamedCorrectly(self, mock_exists, mock_retrieve_log_path, mock_strftime,
                                                        mock_rename):
-        mock_exists.side_effect = [True, False]
+        mock_exists.side_effect = [False, True, False]
         mock_retrieve_log_path.return_value = 'mock_log_path'
         mock_workspace = mock.MagicMock()
         mock_strftime.return_value = 'mock_strftime'

@@ -172,8 +172,6 @@ namespace GradientSignal
 
     float LevelsGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
-
         float output = 0.0f;
 
         output = GetLevels(
@@ -185,6 +183,21 @@ namespace GradientSignal
             m_configuration.m_outputMax);
 
         return output;
+    }
+
+    void LevelsGradientComponent::GetValues(AZStd::span<AZ::Vector3> positions, AZStd::span<float> outValues) const
+    {
+        if (positions.size() != outValues.size())
+        {
+            AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
+            return;
+        }
+
+        m_configuration.m_gradientSampler.GetValues(positions, outValues);
+
+        GetLevels(outValues, 
+                m_configuration.m_inputMid, m_configuration.m_inputMin, m_configuration.m_inputMax,
+                m_configuration.m_outputMin, m_configuration.m_outputMax);
     }
 
     bool LevelsGradientComponent::IsEntityInHierarchy(const AZ::EntityId& entityId) const

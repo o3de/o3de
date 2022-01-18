@@ -62,6 +62,7 @@ namespace GradientSignal
         //////////////////////////////////////////////////////////////////////////
         // GradientRequestBus
         float GetValue(const GradientSampleParams& sampleParams) const override;
+        void GetValues(AZStd::span<AZ::Vector3> positions, AZStd::span<float> outValues) const override;
 
     protected:
         //////////////////////////////////////////////////////////////////////////
