@@ -424,9 +424,9 @@ function(ly_get_list_relative_pal_filename out_name in_name)
     endif()
 
     if(${ARGC} GREATER 4)
-        o3de_pal_dir(abs_name ${in_name} ${object_restricted_path} ${object_path} ${parent_relative_path})
+        o3de_pal_dir(abs_name ${in_name} "${object_restricted_path}" "${object_path}" "${parent_relative_path}")
     else()
-        o3de_pal_dir(abs_name ${in_name} ${object_restricted_path} ${object_path})
+        o3de_pal_dir(abs_name ${in_name} "${object_restricted_path}" "${object_path}")
     endif()
 
     cmake_path(RELATIVE_PATH abs_name BASE_DIRECTORY ${CMAKE_CURRENT_LIST_DIR} OUTPUT_VARIABLE relative_name)
