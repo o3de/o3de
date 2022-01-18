@@ -44,7 +44,6 @@ class CMusicManager;
 struct IEditorParticleManager;
 class CEAXPresetManager;
 class CErrorReport;
-class CBaseLibraryItem;
 class ICommandManager;
 class CEditorCommandManager;
 class CHyperGraphManager;
@@ -52,10 +51,7 @@ class CConsoleSynchronization;
 class CUIEnumsDatabase;
 struct ISourceControl;
 struct IEditorClassFactory;
-struct IDataBaseItem;
 struct ITransformManipulator;
-struct IDataBaseManager;
-class IFacialEditor;
 class CDialog;
 #if defined(AZ_PLATFORM_WINDOWS)
 class C3DConnexionDriver;
@@ -69,7 +65,6 @@ class CSelectionTreeManager;
 struct SEditorSettings;
 class CGameExporter;
 class IAWSResourceManager;
-struct IEditorPanelUtils;
 
 namespace WinWidget
 {
@@ -83,8 +78,6 @@ struct IEventLoopHook;
 struct IErrorReport; // Vladimir@conffx
 struct IFileUtil;  // Vladimir@conffx
 struct IEditorLog;  // Vladimir@conffx
-struct IEditorMaterialManager;  // Vladimir@conffx
-struct IBaseLibraryManager;  // Vladimir@conffx
 struct IImageUtil;  // Vladimir@conffx
 struct IEditorParticleUtils;  // Leroy@conffx
 struct ILogFile; // Vladimir@conffx
@@ -167,8 +160,6 @@ enum EEditorNotifyEvent
     eNotify_OnEndTerrainRebuild,       // Sent when terrain end rebuilt (resized,...)
     eNotify_OnVegetationObjectSelection, // When vegetation objects selection change.
     eNotify_OnVegetationPanelUpdate,   // When vegetation objects selection change.
-
-    eNotify_OnDisplayRenderUpdate,     // Sent when editor finish terrain texture generation.
 
     eNotify_OnDataBaseUpdate,          // DataBase Library was modified.
 
@@ -508,8 +499,6 @@ struct IEditor
     virtual CBaseObject* NewObject(const char* typeName, const char* fileName = "", const char* name = "", float x = 0.0f, float y = 0.0f, float z = 0.0f, bool modifyDoc = true) = 0;
     //! Delete object
     virtual void DeleteObject(CBaseObject* obj) = 0;
-    //! Clone object
-    virtual CBaseObject* CloneObject(CBaseObject* obj) = 0;
     //! Get current selection group
     virtual CSelectionGroup* GetSelection() = 0;
     virtual CBaseObject* GetSelectedObject() = 0;
@@ -524,14 +513,8 @@ struct IEditor
     //! Get access to object manager.
     virtual struct IObjectManager* GetObjectManager() = 0;
     virtual CSettingsManager* GetSettingsManager() = 0;
-    //! Get DB manager that own items of specified type.
-    virtual IDataBaseManager* GetDBItemManager(EDataBaseItemType itemType) = 0;
-    virtual IBaseLibraryManager* GetMaterialManagerLibrary() = 0; // Vladimir@conffx
-    virtual IEditorMaterialManager* GetIEditorMaterialManager() = 0; // Vladimir@Conffx
     //! Returns IconManager.
     virtual IIconManager* GetIconManager() = 0;
-    //! Get Panel Editor Utilities
-    virtual IEditorPanelUtils* GetEditorPanelUtils() = 0;
     //! Get Music Manager.
     virtual CMusicManager* GetMusicManager() = 0;
     virtual float GetTerrainElevation(float x, float y) = 0;

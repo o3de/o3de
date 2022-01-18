@@ -59,7 +59,7 @@ UNDISCLOSED.
 
 #pragma once
 
-static const float HALF_MAX = 65504.0f;
+#include <Atom/Features/PostProcessing/Aces.azsli>
 
 float AcesCcToLinear(float value)
 {

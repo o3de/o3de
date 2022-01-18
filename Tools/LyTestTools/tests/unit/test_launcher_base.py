@@ -146,15 +146,6 @@ class TestBaseLauncher:
 
         mock_stop_ap.assert_called_once()
 
-    @mock.patch('ly_test_tools.launchers.platforms.base.Launcher.save_project_log_files')
-    def test_Teardown_TeardownCalled_CallsSaveProjectLogFiles(self, under_test):
-        mock_workspace = mock.MagicMock()
-        mock_args = ['foo']
-        mock_launcher = ly_test_tools.launchers.Launcher(mock_workspace, mock_args)
-
-        mock_launcher.teardown()
-        under_test.assert_called_once()
-
     @mock.patch('os.path.exists', mock.MagicMock(return_value=True))
     @mock.patch('ly_test_tools._internal.managers.artifact_manager.ArtifactManager.save_artifact')
     @mock.patch('os.listdir')
@@ -220,4 +211,11 @@ class TestLauncherBuilder(object):
         dummy_workspace.paths.build_directory.return_value = 'dummy'
         under_test = ly_test_tools.launchers.launcher_helper.create_editor(
             dummy_workspace, ly_test_tools.HOST_OS_GENERIC_EXECUTABLE)
+        assert isinstance(under_test, ly_test_tools.launchers.Launcher)
+
+    def test_CreateEditor_InvalidPlatform_ValidLauncherStillReturned(self):
+        dummy_workspace = mock.MagicMock()
+        dummy_workspace.paths.build_directory.return_value = 'dummy'
+        under_test = ly_test_tools.launchers.launcher_helper.create_editor(
+            dummy_workspace, 'does not exist')
         assert isinstance(under_test, ly_test_tools.launchers.Launcher)

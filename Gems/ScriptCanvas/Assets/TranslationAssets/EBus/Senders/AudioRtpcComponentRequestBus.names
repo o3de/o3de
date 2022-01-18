@@ -1,0 +1,67 @@
+{
+    "entries": [
+        {
+            "base": "AudioRtpcComponentRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Audio RTPC",
+                "category": "Audio"
+            },
+            "methods": [
+                {
+                    "base": "SetValue",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Value"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Value is invoked"
+                    },
+                    "details": {
+                        "name": "Set Value",
+                        "tooltip": "Sets the value of the default RTPC."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetRtpcValue",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set RTPC Value"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set RTPC Value is invoked"
+                    },
+                    "details": {
+                        "name": "Set RTPC Value",
+                        "tooltip": "Sets the value of the specified RTPC"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "RTPC Name"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -15,6 +15,7 @@
 #include <AzCore/std/sort.h>
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/Commands/EntityStateCommand.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
@@ -271,6 +272,68 @@ namespace AzToolsFramework
         return editorComponentBaseComponent;
     }
 
+    bool OffersRequiredServices(
+        const AZ::SerializeContext::ClassData* componentClass,
+        const AZStd::vector<AZ::ComponentServiceType>& serviceFilter,
+        const AZStd::vector<AZ::ComponentServiceType>& incompatibleServiceFilter
+    )
+    {
+        AZ_Assert(componentClass, "Component class must not be null");
+
+        if (!componentClass)
+        {
+            return false;
+        }
+
+        AZ::ComponentDescriptor* componentDescriptor = nullptr;
+        AZ::ComponentDescriptorBus::EventResult(
+            componentDescriptor, componentClass->m_typeId, &AZ::ComponentDescriptor::GetDescriptor);
+        if (!componentDescriptor)
+        {
+            return false;
+        }
+
+        // If no services are provided, this function returns true
+        if (serviceFilter.empty())
+        {
+            return true;
+        }
+
+        AZ::ComponentDescriptor::DependencyArrayType providedServices;
+        componentDescriptor->GetProvidedServices(providedServices, nullptr);
+
+        //reject this component if it does not offer any of the required services
+        if (AZStd::find_first_of(
+            providedServices.begin(),
+            providedServices.end(),
+            serviceFilter.begin(),
+            serviceFilter.end()) == providedServices.end())
+        {
+            return false;
+        }
+
+        //reject this component if it does offer any of the incompatible services
+        if (AZStd::find_first_of(
+            providedServices.begin(),
+            providedServices.end(),
+            incompatibleServiceFilter.begin(),
+            incompatibleServiceFilter.end()) != providedServices.end())
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    bool OffersRequiredServices(
+        const AZ::SerializeContext::ClassData* componentClass,
+        const AZStd::vector<AZ::ComponentServiceType>& serviceFilter
+    )
+    {
+        const AZStd::vector<AZ::ComponentServiceType> incompatibleServices;
+        return OffersRequiredServices(componentClass, serviceFilter, incompatibleServices);
+    }
+
     bool ShouldInspectorShowComponent(const AZ::Component* component)
     {
         if (!component)
@@ -405,6 +468,18 @@ namespace AzToolsFramework
         AZ_PROFILE_FUNCTION(AzToolsFramework);
         EntityIdList children;
         EditorEntityInfoRequestBus::EventResult(children, parentId, &EditorEntityInfoRequestBus::Events::GetChildren);
+
+        // If Prefabs are enabled, don't check the order for an invalid parent, just return its children (i.e. the root container entity)
+        // There will currently always be one root container entity, so there's no order to retrieve
+        if (!parentId.IsValid())
+        {
+            bool isPrefabEnabled = false;
+            AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+            if (isPrefabEnabled)
+            {
+                return children;
+            }
+        }
 
         EntityIdList entityChildOrder;
         AZ::EntityId sortEntityId = GetEntityIdForSortInfo(parentId);

@@ -9,12 +9,16 @@
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 #include <AzToolsFramework/AssetBrowser/Views/EntryDelegate.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzQtComponents/Components/StyledBusyLabel.h>
+#include <AzToolsFramework/Editor/RichTextHighlighter.h>
 
 #include <QApplication>
+#include <QTextDocument>
+
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // 4251: class 'QScopedPointer<QBrushData,QBrushDataPointerDeleter>' needs to have dll-interface to be used by clients of class 'QBrush'
                                                                // 4800: 'uint': forcing value to bool 'true' or 'false' (performance warning)
 #include <QAbstractItemView>
@@ -160,13 +164,20 @@ namespace AzToolsFramework
             LoadBranchPixMaps();
         }
 
+        void SearchEntryDelegate::Init()
+        {
+            AssetBrowserModel* assetBrowserModel;
+            AssetBrowserComponentRequestBus::BroadcastResult(assetBrowserModel, &AssetBrowserComponentRequests::GetAssetBrowserModel);
+            AZ_Assert(assetBrowserModel, "Failed to get filebrowser model");
+            m_assetBrowserFilerModel = assetBrowserModel->GetFilterModel();
+        }
+
         void SearchEntryDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
         {
             auto data = index.data(AssetBrowserModel::Roles::EntryRole);
             if (data.canConvert<const AssetBrowserEntry*>())
             {
                 bool isEnabled = (option.state & QStyle::State_Enabled) != 0;
-                bool isSelected = (option.state & QStyle::State_Selected) != 0;
 
                 QStyle* style = option.widget ? option.widget->style() : QApplication::style();
 
@@ -225,29 +236,36 @@ namespace AzToolsFramework
                         const QModelIndex indexBelow = viewModel->index(index.row() + 1, index.column());
                         const QModelIndex indexAbove = viewModel->index(index.row() - 1, index.column());
 
-                        auto aboveEntry = qvariant_cast<const AssetBrowserEntry*>(indexBelow.data(AssetBrowserModel::Roles::EntryRole));
-                        auto belowEntry = qvariant_cast<const AssetBrowserEntry*>(indexAbove.data(AssetBrowserModel::Roles::EntryRole));
+                        auto belowEntry = qvariant_cast<const AssetBrowserEntry*>(indexBelow.data(AssetBrowserModel::Roles::EntryRole));
+                        auto aboveEntry = qvariant_cast<const AssetBrowserEntry*>(indexAbove.data(AssetBrowserModel::Roles::EntryRole));
 
-                        auto aboveSourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(aboveEntry);
                         auto belowSourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(belowEntry);
+                        auto aboveSourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(aboveEntry);
 
-                        // if current index is the last entry in the view
-                        // or the index above it is a Source Entry and
-                        // the index below is invalid or is valid but it is also a source entry
-                        // then the current index is the only child.
-                        if (index.row() == viewModel->rowCount() - 1 ||
-                            (indexBelow.isValid() && aboveSourceEntry &&
-                             (!indexAbove.isValid() || (indexAbove.isValid() && belowSourceEntry))))
+                        // Last item and the above entry is a source entry
+                        // or indexBelow is a source entry and the index above is not
+                        if (viewModel->rowCount() > 0 && index.row() == viewModel->rowCount() - 1)
+                        {
+                            if (aboveSourceEntry)
+                            {
+                                DrawBranchPixMap(EntryBranchType::OneChild, painter, branchIconTopLeft, iconSize);
+                            }
+                            else
+                            {
+                                DrawBranchPixMap(EntryBranchType::Last, painter, branchIconTopLeft, iconSize);
+                            }
+                        }
+                        else if (belowSourceEntry && aboveSourceEntry)
                         {
                             DrawBranchPixMap(EntryBranchType::OneChild, painter, branchIconTopLeft, iconSize); // Draw One Child Icon
                         }
-                        else if (indexBelow.isValid() && aboveSourceEntry) // The index above is a source entry
+                        else if (belowSourceEntry && !aboveSourceEntry)
                         {
-                            DrawBranchPixMap(EntryBranchType::Last, painter, branchIconTopLeft, iconSize); // Draw First child Icon
+                            DrawBranchPixMap(EntryBranchType::Last, painter, branchIconTopLeft, iconSize);
                         }
-                        else if (indexAbove.isValid() && belowSourceEntry) // The index below is a source entry
+                        else if (aboveSourceEntry) // The index above is a source entry
                         {
-                            DrawBranchPixMap(EntryBranchType::First, painter, branchIconTopLeft, iconSize); // Draw Last Child Icon
+                            DrawBranchPixMap(EntryBranchType::First, painter, branchIconTopLeft, iconSize); // Draw First Child Icon
                         }
                         else //the index above and below are also child entries
                         {
@@ -258,13 +276,21 @@ namespace AzToolsFramework
                     remainingRect.adjust(thumbX, 0, 0, 0); // bump it to the right by the size of the thumbnail
                     remainingRect.adjust(EntrySpacingLeftPixels, 0, 0, 0); // bump it to the right by the spacing.
                 }
+
                 QString displayString = index.column() == aznumeric_cast<int>(AssetBrowserEntry::Column::Name)
                     ? qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::Name)))
                     : qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::Path)));
 
-                style->drawItemText(
-                    painter, remainingRect, option.displayAlignment, actualPalette, isEnabled, displayString,
-                    isSelected ? QPalette::HighlightedText : QPalette::Text);
+                QStyleOptionViewItem optionV4{ option };
+                initStyleOption(&optionV4, index);
+                optionV4.state &= ~(QStyle::State_HasFocus | QStyle::State_Selected);
+
+                if (m_assetBrowserFilerModel && m_assetBrowserFilerModel->GetStringFilter() 
+                    && !m_assetBrowserFilerModel->GetStringFilter()->GetFilterString().isEmpty())
+                {
+                    displayString = RichTextHighlighter::HighlightText(displayString, m_assetBrowserFilerModel->GetStringFilter()->GetFilterString());
+                }
+                RichTextHighlighter::PaintHighlightedRichText(displayString, painter, optionV4, remainingRect);
             }
         }
 
@@ -286,7 +312,6 @@ namespace AzToolsFramework
                     absoluteIconPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / TreeIconPathLast;
                     break;
                 case AzToolsFramework::AssetBrowser::EntryBranchType::OneChild:
-                default:
                     absoluteIconPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / TreeIconPathOneChild;
                     break;
                 }
@@ -311,5 +336,4 @@ namespace AzToolsFramework
 
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
-
 #include "AssetBrowser/Views/moc_EntryDelegate.cpp"

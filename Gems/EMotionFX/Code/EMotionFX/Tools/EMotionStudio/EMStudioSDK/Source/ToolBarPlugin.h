@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __EMSTUDIO_TOOLBARPLUGIN_H
-#define __EMSTUDIO_TOOLBARPLUGIN_H
+#pragma once
 
 // include MCore
 #if !defined(Q_MOC_RUN)
@@ -59,5 +58,3 @@ namespace EMStudio
         QPointer<QToolBar>   m_bar;
     };
 }   // namespace EMStudio
-
-#endif

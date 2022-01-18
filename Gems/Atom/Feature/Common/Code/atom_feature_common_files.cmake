@@ -12,6 +12,7 @@ set(FILES
     Include/Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h
     Include/Atom/Feature/Automation/AtomAutomationBus.h
     Include/Atom/Feature/AuxGeom/AuxGeomFeatureProcessor.h
+    Include/Atom/Feature/ColorGrading/LutResolution.h
     Include/Atom/Feature/CoreLights/CoreLightsConstants.h
     Include/Atom/Feature/DisplayMapper/AcesOutputTransformPass.h
     Include/Atom/Feature/DisplayMapper/AcesOutputTransformLutPass.h
@@ -45,9 +46,6 @@ set(FILES
     Include/Atom/Feature/Utils/MultiSparseVector.h
     Include/Atom/Feature/Utils/ProfilingCaptureBus.h
     Include/Atom/Feature/Utils/SparseVector.h
-    Include/Atom/Feature/LuxCore/LuxCoreBus.h
-    Include/Atom/Feature/LuxCore/LuxCoreTexturePass.h
-    Include/Atom/Feature/LuxCore/RenderTexturePass.h
     Source/CommonModule.cpp
     Source/CommonSystemComponent.cpp
     Source/FrameCaptureSystemComponent.cpp
@@ -66,6 +64,8 @@ set(FILES
     Source/AuxGeom/DynamicPrimitiveProcessor.h
     Source/AuxGeom/FixedShapeProcessor.cpp
     Source/AuxGeom/FixedShapeProcessor.h
+    Source/ColorGrading/LutGenerationPass.cpp
+    Source/ColorGrading/LutGenerationPass.h
     Source/CoreLights/CapsuleLightFeatureProcessor.h
     Source/CoreLights/CapsuleLightFeatureProcessor.cpp
     Source/CoreLights/CascadedShadowmapsPass.h
@@ -130,6 +130,8 @@ set(FILES
     Source/DiffuseGlobalIllumination/DiffuseProbeGridRelocationPass.h
     Source/DiffuseGlobalIllumination/DiffuseProbeGridClassificationPass.cpp
     Source/DiffuseGlobalIllumination/DiffuseProbeGridClassificationPass.h
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridDownsamplePass.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridDownsamplePass.h
     Source/DiffuseGlobalIllumination/DiffuseProbeGridRenderPass.cpp
     Source/DiffuseGlobalIllumination/DiffuseProbeGridRenderPass.h
     Source/DiffuseGlobalIllumination/DiffuseProbeGrid.cpp
@@ -214,8 +216,6 @@ set(FILES
     Source/PostProcessing/BloomCompositePass.cpp
     Source/PostProcessing/BloomParentPass.h
     Source/PostProcessing/BloomParentPass.cpp
-    Source/PostProcessing/HDRColorGradingPass.cpp
-    Source/PostProcessing/HDRColorGradingPass.h
     Source/PostProcessing/EditorModeFeedbackPass.cpp
     Source/PostProcessing/EditorModeFeedbackPass.h
     Source/PostProcessing/DepthOfFieldCompositePass.h
@@ -238,12 +238,16 @@ set(FILES
     Source/PostProcessing/EyeAdaptationPass.h
     Source/PostProcessing/FastDepthAwareBlurPasses.cpp
     Source/PostProcessing/FastDepthAwareBlurPasses.h
+    Source/PostProcessing/HDRColorGradingPass.cpp
+    Source/PostProcessing/HDRColorGradingPass.h
     Source/PostProcessing/LookModificationCompositePass.cpp
     Source/PostProcessing/LookModificationCompositePass.h
     Source/PostProcessing/LookModificationTransformPass.cpp
     Source/PostProcessing/LookModificationTransformPass.h
     Source/PostProcessing/LuminanceHistogramGeneratorPass.h
     Source/PostProcessing/LuminanceHistogramGeneratorPass.cpp
+    Source/PostProcessing/NewDepthOfFieldPasses.cpp
+    Source/PostProcessing/NewDepthOfFieldPasses.h
     Source/PostProcessing/PostProcessingShaderOptionBase.cpp
     Source/PostProcessing/PostProcessingShaderOptionBase.h
     Source/PostProcessing/SMAABasePass.cpp
@@ -274,6 +278,8 @@ set(FILES
     Source/RayTracing/RayTracingPassData.h
     Source/ReflectionProbe/ReflectionProbeFeatureProcessor.cpp
     Source/ReflectionProbe/ReflectionProbe.cpp
+    Source/ReflectionScreenSpace/ReflectionScreenSpaceTracePass.cpp
+    Source/ReflectionScreenSpace/ReflectionScreenSpaceTracePass.h
     Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurPass.cpp
     Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurPass.h
     Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurChildPass.cpp
@@ -312,18 +318,6 @@ set(FILES
     Source/SkyBox/SkyBoxFogSettings.cpp
     Source/TransformService/TransformServiceFeatureProcessor.cpp
     Source/Utils/GpuBufferHandler.cpp
-    Source/LuxCore/LuxCoreTexturePass.cpp
-    Source/LuxCore/RenderTexturePass.cpp
-    Source/LuxCore/LuxCoreMaterial.cpp
-    Source/LuxCore/LuxCoreMaterial.h
-    Source/LuxCore/LuxCoreMesh.cpp
-    Source/LuxCore/LuxCoreMesh.h
-    Source/LuxCore/LuxCoreObject.cpp
-    Source/LuxCore/LuxCoreObject.h
-    Source/LuxCore/LuxCoreRenderer.cpp
-    Source/LuxCore/LuxCoreRenderer.h
-    Source/LuxCore/LuxCoreTexture.cpp
-    Source/LuxCore/LuxCoreTexture.h
 )
 
 set(SKIP_UNITY_BUILD_INCLUSION_FILES

@@ -15,6 +15,10 @@
 
 namespace AzFramework
 {
+    //! Default value to use for detecting if the mouse has moved far enough after a mouse down to no longer
+    //! register a click when a mouse up occurs.
+    inline constexpr float DefaultMouseMoveDeadZone = 2.0f;
+
     struct ScreenVector;
 
     //! Utility class to help detect different types of mouse click (mouse down and up with
@@ -66,7 +70,7 @@ namespace AzFramework
         };
 
         float m_moveAccumulator = 0.0f; //!< How far the mouse has moved after mouse down.
-        float m_deadZone = 2.0f; //!< How far to move before a click is cancelled (when Move will fire).
+        float m_deadZone = DefaultMouseMoveDeadZone; //!< How far to move before a click is cancelled (when Move will fire).
         float m_doubleClickInterval = 0.4f; //!< Default double click interval, can be overridden.
         DetectionState m_detectionState; //!< Internal state of ClickDetector.
         //! Mouse down time (happens each mouse down, helps with double click handling).

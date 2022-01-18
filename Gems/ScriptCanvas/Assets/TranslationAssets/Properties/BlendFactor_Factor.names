@@ -1,0 +1,29 @@
+{
+    "entries": [
+        {
+            "base": "BlendFactor_Factor",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Factor",
+                "category": "Constants/Blend Factor"
+            },
+            "methods": [
+                {
+                    "base": "GetBlendFactor_Factor",
+                    "details": {
+                        "name": "Get Factor"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

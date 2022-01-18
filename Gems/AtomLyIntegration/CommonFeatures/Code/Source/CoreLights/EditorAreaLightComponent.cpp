@@ -75,7 +75,7 @@ namespace AZ
                         ->DataElement(Edit::UIHandlers::Color, &AreaLightComponentConfig::m_color, "Color", "Color of the light")
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::LightTypeIsSelected)
-                            ->Attribute("ColorEditorConfiguration", RPI::ColorUtils::GetLinearRgbEditorConfig())
+                            ->Attribute("ColorEditorConfiguration", RPI::ColorUtils::GetRgbEditorConfig())
                         ->DataElement(Edit::UIHandlers::ComboBox, &AreaLightComponentConfig::m_intensityMode, "Intensity mode", "Allows specifying which photometric unit to work in.")
                             ->Attribute(AZ::Edit::Attributes::EnumValues, &AreaLightComponentConfig::GetValidPhotometricUnits)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::LightTypeIsSelected)
@@ -136,7 +136,7 @@ namespace AZ
                             ->Attribute(Edit::Attributes::Min, 0.0f)
                             ->Attribute(Edit::Attributes::Max, 100.0f)
                             ->Attribute(Edit::Attributes::SoftMin, 0.0f)
-                            ->Attribute(Edit::Attributes::SoftMax, 1.0f)
+                            ->Attribute(Edit::Attributes::SoftMax, 10.0f)
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::ShadowsDisabled)
@@ -171,7 +171,16 @@ namespace AZ
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::IsEsmDisabled)
-                            ;
+                        ->DataElement(
+                            Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_normalShadowBias, "Normal Shadow Bias\n",
+                            "Reduces acne by biasing the shadowmap lookup along the geometric normal.\n"
+                            "If this is 0, no biasing is applied.")
+                            ->Attribute(Edit::Attributes::Min, 0.f)
+                            ->Attribute(Edit::Attributes::Max, 10.0f)
+                            ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                            ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
+                            ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::ShadowsDisabled)
+                                ;
                 }
             }
 

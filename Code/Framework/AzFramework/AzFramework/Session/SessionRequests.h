@@ -31,16 +31,16 @@ namespace AzFramework
         CreateSessionRequest() = default;
         virtual ~CreateSessionRequest() = default;
 
-        // A unique identifier for a player or entity creating the session.
+        //! A unique identifier for a player or entity creating the session.
         AZStd::string m_creatorId;
 
-        // A collection of custom properties for a session.
+        //! A collection of custom properties for a session.
         AZStd::unordered_map<AZStd::string, AZStd::string> m_sessionProperties;
 
-        // A descriptive label that is associated with a session.
+        //! A descriptive label that is associated with a session.
         AZStd::string m_sessionName;
 
-        // The maximum number of players that can be connected simultaneously to the session.
+        //! The maximum number of players that can be connected simultaneously to the session.
         uint64_t m_maxPlayer = 0;
     };
 
@@ -54,17 +54,17 @@ namespace AzFramework
         SearchSessionsRequest() = default;
         virtual ~SearchSessionsRequest() = default;
 
-        // String containing the search criteria for the session search. If no filter expression is included, the request returns results
-        // for all active sessions.
+        //! String containing the search criteria for the session search. If no filter expression is included, the request returns results
+        //! for all active sessions.
         AZStd::string m_filterExpression;
 
-        // Instructions on how to sort the search results. If no sort expression is included, the request returns results in random order.
+        //! Instructions on how to sort the search results. If no sort expression is included, the request returns results in random order.
         AZStd::string m_sortExpression;
 
-        // The maximum number of results to return.
+        //! The maximum number of results to return.
         uint8_t m_maxResult = 0;
 
-        // A token that indicates the start of the next sequential page of results.
+        //! A token that indicates the start of the next sequential page of results.
         AZStd::string m_nextToken;
     };
 
@@ -78,10 +78,10 @@ namespace AzFramework
         SearchSessionsResponse() = default;
         virtual ~SearchSessionsResponse() = default;
 
-        // A collection of sessions that match the search criteria and sorted in specific order.
+        //! A collection of sessions that match the search criteria and sorted in specific order.
         AZStd::vector<SessionConfig> m_sessionConfigs;
 
-        // A token that indicates the start of the next sequential page of results.
+        //! A token that indicates the start of the next sequential page of results.
         AZStd::string m_nextToken;
     };
 
@@ -95,13 +95,13 @@ namespace AzFramework
         JoinSessionRequest() = default;
         virtual ~JoinSessionRequest() = default;
 
-        // A unique identifier for the session.
+        //! A unique identifier for the session.
         AZStd::string m_sessionId;
 
-        // A unique identifier for a player. Player IDs are developer-defined.
+        //! A unique identifier for a player. Player IDs are developer-defined.
         AZStd::string m_playerId;
 
-        // Developer-defined information related to a player.
+        //! Developer-defined information related to a player.
         AZStd::string m_playerData;
     };
 } // namespace AzFramework

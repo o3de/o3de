@@ -18,6 +18,7 @@
 
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/View.h>
+#include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 
 namespace Camera
 {
@@ -39,6 +40,16 @@ namespace Camera
                 AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
                     isInGameMode, &AzToolsFramework::EditorEntityContextRequestBus::Events::IsEditorRunningGame);
                 return isInGameMode;
+            });
+
+        // Only allow our camera to move when the transform is not locked.
+        m_controller.SetIsLockedFunction([this]()
+            {
+                bool locked = false;
+                AzToolsFramework::Components::TransformComponentMessages::Bus::EventResult(
+                    locked, GetEntityId(), &AzToolsFramework::Components::TransformComponentMessages::IsTransformLocked);
+
+                return locked;
             });
 
         // Call base class activate, which in turn calls Activate on our controller.

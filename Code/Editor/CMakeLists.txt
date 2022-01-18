@@ -63,7 +63,7 @@ ly_add_target(
 set(pal_cmake_files "")
 foreach(enabled_platform ${LY_PAL_TOOLS_ENABLED})
     string(TOLOWER ${enabled_platform} enabled_platform_lowercase)
-    ly_get_list_relative_pal_filename(pal_cmake_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${enabled_platform})
+    o3de_pal_dir(pal_cmake_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${enabled_platform} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
     list(APPEND pal_cmake_files ${pal_cmake_dir}/editor_lib_${enabled_platform_lowercase}_files.cmake)
 endforeach()
 
@@ -131,7 +131,7 @@ ly_add_source_properties(
     PROPERTY COMPILE_DEFINITIONS 
     VALUES 
         O3DE_COPYRIGHT_YEAR=${LY_VERSION_COPYRIGHT_YEAR}
-        LY_BUILD=${LY_VERSION_BUILD_NUMBER}
+        LY_VERSION_BUILD_NUMBER=${LY_VERSION_BUILD_NUMBER}
         ${LY_PAL_TOOLS_DEFINES}
 )
 ly_add_source_properties(
@@ -249,38 +249,9 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral
     )
+
     ly_add_googletest(
         NAME Legacy::EditorLib.Tests
     )
 
-    ly_add_target(
-        NAME EditorLib.Camera.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
-        NAMESPACE Legacy
-        FILES_CMAKE
-            Lib/Tests/Camera/editor_lib_camera_test_files.cmake
-        INCLUDE_DIRECTORIES
-            PRIVATE
-                .
-        BUILD_DEPENDENCIES
-            PRIVATE
-                AZ::AzCore
-                AZ::AzTest
-                AZ::AzToolsFramework
-                AZ::AzTestShared
-                Legacy::EditorLib
-                Gem::Camera.Editor
-                Gem::AtomToolsFramework.Static
-        RUNTIME_DEPENDENCIES
-            Legacy::EditorLib
-    )
-
-    ly_add_source_properties(
-        SOURCES Lib/Tests/Camera/test_EditorCamera.cpp
-        PROPERTY COMPILE_DEFINITIONS 
-        VALUES CAMERA_EDITOR_MODULE="$<TARGET_FILE_BASE_NAME:Camera.Editor>"
-    )
-
-    ly_add_googletest(
-        NAME Legacy::EditorLib.Camera.Tests
-    )
 endif()

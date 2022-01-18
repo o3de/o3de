@@ -9,7 +9,7 @@ QMainWindow {
 
 #ScreensCtrl {
     min-width:1200px;
-    min-height:800px;
+    min-height:700px;
 }
 
 QPushButton:focus {
@@ -59,6 +59,24 @@ QTabBar::focus {
 QTabBar::tab:focus {
     background-color: #525252;
     color: #4082eb;
+}
+
+#ToastNotification {
+    background-color: black;
+    border-radius: 20px;
+    border:1px solid #dddddd;
+    qproperty-minimumSize: 100px 50px;
+}
+
+#ToastNotification #icon_frame {
+    border-radius: 4px;
+    qproperty-minimumSize: 44px 20px;
+}
+
+#ToastNotification #iconLabel {
+    qproperty-minimumSize: 30px 20px;
+    qproperty-maximumSize: 30px 20px;
+    margin-left: 6px;
 }
 
 /************** General (Forms) **************/
@@ -214,17 +232,26 @@ QTabBar::tab:focus {
                             stop: 0 #555555, stop: 1.0 #777777);
 }
 
+#dialogSubTitle {
+    font-size:14px;
+    font-weight:600;
+}
+
 #horizontalSeparatingLine {
     color: #666666;
 }
 
+#verticalSeparatingLine {
+    color: #888888;
+}
+
 /************** Project Settings **************/
 #projectSettings {
-    margin-top:42px;
+    margin-top:30px;
 }
 
 #projectTemplate {
-    margin: 55px 0 0 50px;
+    margin: 25px 0 0 50px;
 }
 #projectTemplateLabel {
     font-size:16px;
@@ -296,6 +323,16 @@ QTabBar::tab:focus {
 #projectTemplate QPushButton:focus {
     outline: none;
     border:none;
+}
+
+#projectSettingsSectionTitle
+{
+    font-size:18px;
+}
+
+#projectSmallInfoLabel
+{
+    font-size:10px;
 }
 
 #projectSettingsTab::tab-bar {
@@ -481,6 +518,34 @@ QProgressBar::chunk {
     font-weight: 600;
 }
 
+#gemCatalogMenuButton {
+    qproperty-flat: true;
+    max-width:36px;
+    min-width:36px;
+    max-height:24px;
+    min-height:24px;
+}
+
+#GemCatalogCartOverlayGemDownloadHeader {
+    margin:0;
+    padding: 0px;
+    background-color: #333333;
+}
+
+#GemCatalogCartOverlayGemDownloadBG {
+    margin:0;
+    padding: 0px;
+    background-color: #444444;
+}
+
+#gemCatalogMenuButton {
+    qproperty-flat: true;
+    max-width:36px;
+    min-width:36px;
+    max-height:24px;
+    min-height:24px;
+}
+
 #GemCatalogHeaderLabel {
     font-size: 12px;
     color: #FFFFFF;
@@ -507,6 +572,47 @@ QProgressBar::chunk {
     margin-right:5px;
     padding:4px;
     margin-top:5px;
+}
+
+#gemCatalogUpdateGemButton,
+#gemCatalogUninstallGemButton 
+{
+    qproperty-flat: true;
+    min-height:24px;
+    max-height:24px;
+    border-radius: 3px;
+    text-align:center;
+    font-size:12px;
+    font-weight:600;
+}
+
+#gemCatalogUpdateGemButton {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #888888, stop: 1.0 #555555);
+}
+#gemCatalogUpdateGemButton:hover {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #999999, stop: 1.0 #666666);
+}
+#gemCatalogUpdateGemButton:pressed {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #555555, stop: 1.0 #777777);
+}
+
+#footer > #gemCatalogUninstallGemButton,
+#gemCatalogUninstallGemButton {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #E32C27, stop: 1.0 #951D21);
+}
+#footer > #gemCatalogUninstallGemButton:hover,
+#gemCatalogUninstallGemButton:hover {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #FD3129, stop: 1.0 #AF2221);
+}
+#footer > #gemCatalogUninstallGemButton:pressed,
+#gemCatalogUninstallGemButton:pressed {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #951D1F, stop: 1.0 #C92724);
 }
 
 /************** Filter Tag widget **************/
@@ -641,6 +747,12 @@ QProgressBar::chunk {
 
 #gemRepoAddDialogInstructionTitleLabel {
     font-size:14px;
+    font-weight:bold;
+}
+
+#gemRepoAddDialogWarningLabel {
+    font-size:12px;
+    font-style:italic;
 }
 
 #addGemRepoDialog #formFrame {

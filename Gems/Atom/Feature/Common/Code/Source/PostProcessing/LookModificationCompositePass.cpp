@@ -31,12 +31,14 @@ namespace AZ
             0,
             [](const uint8_t& value)
             {
-                auto passes = RPI::PassSystem::Get()->FindPasses(RPI::PassClassFilter<LookModificationCompositePass>());
-                for (auto* pass : passes)
-                {
-                    LookModificationCompositePass* lookModPass = azrtti_cast<LookModificationCompositePass*>(pass);
-                    lookModPass->SetSampleQuality(LookModificationCompositePass::SampleQuality(value));
-                }
+                RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassClass<LookModificationCompositePass>();
+                RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [value](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
+                    {
+                        LookModificationCompositePass* lookModPass = azrtti_cast<LookModificationCompositePass*>(pass);
+                        lookModPass->SetSampleQuality(LookModificationCompositePass::SampleQuality(value));
+
+                         return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+                    });
             },
             ConsoleFunctorFlags::Null,
             "This can be increased to deal with particularly tricky luts. Range (0-2). 0 (default) - Standard linear sampling. 1 - 7 tap b-spline sampling. 2 - 19 tap b-spline sampling."

@@ -43,7 +43,7 @@ namespace AtomToolsFramework
         m_propertyEditor->Setup(context, instanceNotificationHandler, false);
         m_propertyEditor->AddInstance(instance, instanceClassId, nullptr, instanceToCompare);
         m_propertyEditor->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-        m_propertyEditor->InvalidateAll();
+        m_propertyEditor->QueueInvalidation(AzToolsFramework::PropertyModificationRefreshLevel::Refresh_EntireTree);
 
         m_layout->addWidget(m_propertyEditor);
         setLayout(m_layout);

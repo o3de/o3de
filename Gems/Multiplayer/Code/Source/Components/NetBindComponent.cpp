@@ -39,8 +39,8 @@ namespace Multiplayer
                     "Network Binding", "The Network Binding component marks an entity as able to be replicated across the network")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Multiplayer")
-                    ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/NetBind.png")
-                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/NetBind.png")
+                    ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/NetBinding.svg")
+                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/NetBinding.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"));
             }
         }
@@ -167,7 +167,10 @@ namespace Multiplayer
 
     void NetBindComponent::Deactivate()
     {
-        AZ_Assert(m_needsToBeStopped == false, "Entity appears to have been improperly deleted. Use MarkForRemoval to correctly clean up a networked entity.");
+        AZ_Assert(
+            m_needsToBeStopped == false,
+            "Entity (%s) appears to have been improperly deleted. Use MarkForRemoval to correctly clean up a networked entity.",
+            GetEntity() ? GetEntity()->GetName().c_str() : "null");
         m_handleLocalServerRpcMessageEventHandle.Disconnect();
         if (NetworkRoleHasController(m_netEntityRole))
         {
@@ -317,7 +320,7 @@ namespace Multiplayer
         return false;
     }
 
-    bool NetBindComponent::HandlePropertyChangeMessage([[maybe_unused]] AzNetworking::ISerializer& serializer, [[maybe_unused]] bool notifyChanges)
+    bool NetBindComponent::HandlePropertyChangeMessage(AzNetworking::ISerializer& serializer, bool notifyChanges)
     {
         const NetEntityRole netEntityRole = m_netEntityRole;
         ReplicationRecord replicationRecord(netEntityRole);
@@ -394,9 +397,9 @@ namespace Multiplayer
         m_syncRewindEvent.Signal();
     }
 
-    void NetBindComponent::NotifyServerMigration(const HostId& hostId, AzNetworking::ConnectionId connectionId)
+    void NetBindComponent::NotifyServerMigration(const HostId& remoteHostId)
     {
-        m_entityServerMigrationEvent.Signal(m_netEntityHandle, hostId, connectionId);
+        m_entityServerMigrationEvent.Signal(m_netEntityHandle, remoteHostId);
     }
 
     void NetBindComponent::NotifyPreRender(float deltaTime)
@@ -492,7 +495,7 @@ namespace Multiplayer
     void NetBindComponent::FillTotalReplicationRecord(ReplicationRecord& replicationRecord) const
     {
         replicationRecord.Append(m_totalRecord);
-        // if we have any outstanding changes yet to be logged, grab those as well
+        // If we have any outstanding changes yet to be logged, grab those as well
         if (m_currentRecord.HasChanges())
         {
             replicationRecord.Append(m_currentRecord);

@@ -67,30 +67,6 @@ if (editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'GetCurrentLevelName'
     if(general.get_num_selected() == 0):
         print("clear_selection works")
     
-    general.hide_all_objects()
-    
-    if(general.is_object_hidden(objs_list[1])):
-        print("hide_all_objects works")
-    
-    general.unhide_object(objs_list[1])
-    
-    if not(general.is_object_hidden(objs_list[1])):
-        print("unhide_object works")
-    
-    general.hide_object(objs_list[1])
-    
-    if(general.is_object_hidden(objs_list[1])):
-        print("hide_object works")
-    
-    general.unhide_all_objects()
-    
-    general.freeze_object(objs_list[1])
-    
-    if(general.is_object_frozen(objs_list[1])):
-        print("freeze_object works")
-    
-    general.unfreeze_object(objs_list[1])
-    
     position = general.get_position(objs_list[1])
     px1, py1, pz1 = fetch_vector3_parts(position)
     general.set_position(objs_list[1], px1 + 10, py1 - 4, pz1 + 3)

@@ -2,7 +2,9 @@
     "gem_name": "TickBusOrderViewer",
     "display_name": "Tick Bus Order Viewer",
     "license": "Apache-2.0 Or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
     "type": "Tool",
     "summary": "The Tick Bus Order Viewer Gem provides a console variable that displays the order of runtime tick events.",
     "canonical_tags": [

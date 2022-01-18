@@ -7,6 +7,12 @@
 #
 
 set(FILES
+    Include/Multiplayer/AutoGen/AutoComponentTypes_Header.jinja
+    Include/Multiplayer/AutoGen/AutoComponentTypes_Source.jinja
+    Include/Multiplayer/AutoGen/AutoComponent_Common.jinja
+    Include/Multiplayer/AutoGen/AutoComponent_Header.jinja
+    Include/Multiplayer/AutoGen/AutoComponent_Source.jinja
+    Tests/AutoGen/TestMultiplayerComponent.AutoComponent.xml
     Tests/ClientHierarchyTests.cpp
     Tests/ServerHierarchyBenchmarks.cpp
     Tests/CommonHierarchySetup.h
@@ -15,8 +21,11 @@ set(FILES
     Tests/Main.cpp
     Tests/MockInterfaces.h
     Tests/MultiplayerSystemTests.cpp
+    Tests/NetworkInputTests.cpp
     Tests/NetworkTransformTests.cpp
     Tests/RewindableContainerTests.cpp
     Tests/RewindableObjectTests.cpp
     Tests/ServerHierarchyTests.cpp
+    Tests/TestMultiplayerComponent.h
+    Tests/TestMultiplayerComponent.cpp
 )

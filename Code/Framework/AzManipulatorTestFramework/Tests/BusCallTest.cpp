@@ -7,6 +7,8 @@
  */
 
 #include "AzManipulatorTestFrameworkTestFixtures.h"
+
+#include <AzToolsFramework/Viewport/ViewportTypes.h>
 #include <AzToolsFramework/ViewportSelection/EditorDefaultSelection.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 
@@ -34,8 +36,8 @@ namespace UnitTest
     TEST_F(AzManipulatorTestFrameworkBusCallTestFixture, ConsumeViewportLeftMouseClick)
     {
         // given a left mouse down ray in world space
-        auto event =
-            AzManipulatorTestFramework::CreateMouseInteractionEvent(m_interaction, AzToolsFramework::ViewportInteraction::MouseEvent::Down);
+        auto event = AzToolsFramework::ViewportInteraction::BuildMouseInteractionEvent(
+            m_interaction, AzToolsFramework::ViewportInteraction::MouseEvent::Down);
 
         // consume the mouse down and up events
         AzManipulatorTestFramework::DispatchMouseInteractionEvent(event);
@@ -53,8 +55,8 @@ namespace UnitTest
     TEST_F(AzManipulatorTestFrameworkBusCallTestFixture, ConsumeViewportMouseMoveHover)
     {
         // given a left mouse down ray in world space
-        const auto event =
-            AzManipulatorTestFramework::CreateMouseInteractionEvent(m_interaction, AzToolsFramework::ViewportInteraction::MouseEvent::Move);
+        const auto event = AzToolsFramework::ViewportInteraction::BuildMouseInteractionEvent(
+            m_interaction, AzToolsFramework::ViewportInteraction::MouseEvent::Move);
 
         // consume the mouse move event
         AzManipulatorTestFramework::DispatchMouseInteractionEvent(event);
@@ -72,8 +74,8 @@ namespace UnitTest
     TEST_F(AzManipulatorTestFrameworkBusCallTestFixture, ConsumeViewportMouseMoveActive)
     {
         // given a left mouse down ray in world space
-        auto event =
-            AzManipulatorTestFramework::CreateMouseInteractionEvent(m_interaction, AzToolsFramework::ViewportInteraction::MouseEvent::Down);
+        auto event = AzToolsFramework::ViewportInteraction::BuildMouseInteractionEvent(
+            m_interaction, AzToolsFramework::ViewportInteraction::MouseEvent::Down);
 
         // consume the mouse down event
         AzManipulatorTestFramework::DispatchMouseInteractionEvent(event);
@@ -113,8 +115,8 @@ namespace UnitTest
             });
 
         // given a left mouse down ray in world space
-        auto event =
-            AzManipulatorTestFramework::CreateMouseInteractionEvent(m_interaction, AzToolsFramework::ViewportInteraction::MouseEvent::Down);
+        auto event = AzToolsFramework::ViewportInteraction::BuildMouseInteractionEvent(
+            m_interaction, AzToolsFramework::ViewportInteraction::MouseEvent::Down);
 
         // consume the mouse down event
         AzManipulatorTestFramework::DispatchMouseInteractionEvent(event);

@@ -77,8 +77,8 @@ def SurfaceMaskFilterOverrides_MultipleDescriptorOverridesPlantAsExpected():
     # 2) Create a new instance spawner entity with multiple Dynamic Slice Instance Spawner descriptors
     spawner_center_point = math.Vector3(512.0, 512.0, 32.0)
     asset_path = os.path.join("Slices", "PinkFlower.dynamicslice")
-    spawner_entity = dynveg.create_vegetation_area("Instance Spawner", spawner_center_point, 16.0, 16.0, 16.0,
-                                                   asset_path)
+    spawner_entity = dynveg.create_dynamic_slice_vegetation_area("Instance Spawner", spawner_center_point, 16.0, 16.0, 16.0,
+                                                                               asset_path)
     asset_list_component = spawner_entity.components[2]
     desc_asset = hydra.get_component_property_value(asset_list_component,
                                                     "Configuration|Embedded Assets")[0]

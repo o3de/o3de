@@ -9,7 +9,6 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <AzCore/Math/Uuid.h>
 #include <QString>
 #include <QStringList>
 #include <QVector>
@@ -57,7 +56,9 @@ namespace O3DE::ProjectManager
             UnknownDownloadStatus = -1,
             NotDownloaded,
             Downloading,
-            Downloaded,
+            DownloadSuccessful,
+            DownloadFailed,
+            Downloaded
         };
         static QString GetDownloadStatusString(DownloadStatus status);
 
@@ -71,18 +72,21 @@ namespace O3DE::ProjectManager
 
         QString m_path;
         QString m_name = "Unknown Gem Name";
-        QString m_displayName = "Unknown Gem Name";
+        QString m_displayName;
         QString m_creator = "Unknown Creator";
         GemOrigin m_gemOrigin = Local;
-        bool m_isAdded = false; //! Is the gem currently added and enabled in the project?
+        bool m_isAdded = false; //! Is the gem explicitly added (not a dependency) and enabled in the project?
         QString m_summary = "No summary provided.";
         Platforms m_platforms;
         Types m_types; //! Asset and/or Code and/or Tool
         DownloadStatus m_downloadStatus = UnknownDownloadStatus;
         QStringList m_features;
         QString m_requirement;
+        QString m_licenseText;
+        QString m_licenseLink;
         QString m_directoryLink;
         QString m_documentationLink;
+        QString m_repoUri;
         QString m_version = "Unknown Version";
         QString m_lastUpdatedDate = "Unknown Date";
         int m_binarySizeInKB = 0;

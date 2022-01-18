@@ -34,12 +34,19 @@ R"({
                       "valueAttribute":"testmode"
                   },
                   "level":{
-                      "attributeType":"NUMBER",
+                      "attributeType":"DOUBLE",
                       "valueAttribute":10.0
                   },
                   "items":{
                       "attributeType":"STRING_LIST",
                       "valueAttribute":["test1","test2","test3"]
+                  }
+              }},
+             {"playerId":"secondplayer",
+              "attributes":{
+                  "mode":{
+                      "attributeType":"STRING",
+                      "valueAttribute":"testmode"
                   }
               }}
          ]}
@@ -162,8 +169,11 @@ R"({
 
         MOCK_METHOD0(OnSessionHealthCheck, bool());
         MOCK_METHOD1(OnCreateSessionBegin, bool(const AzFramework::SessionConfig&));
+        MOCK_METHOD0(OnCreateSessionEnd, void());
         MOCK_METHOD0(OnDestroySessionBegin, bool());
+        MOCK_METHOD0(OnDestroySessionEnd, void());
         MOCK_METHOD2(OnUpdateSessionBegin, void(const AzFramework::SessionConfig&, const AZStd::string&));
+        MOCK_METHOD0(OnUpdateSessionEnd, void());
     };
 
     class GameLiftServerManagerTest
@@ -254,6 +264,7 @@ R"({
         EXPECT_CALL(handlerMock, OnDestroySessionBegin()).Times(1).WillOnce(testing::Return(false));
         EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), GetTerminationTime()).Times(1);
         EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), ProcessEnding()).Times(0);
+        EXPECT_CALL(handlerMock, OnDestroySessionEnd()).Times(0);
 
         AZ_TEST_START_TRACE_SUPPRESSION;
         m_serverManager->m_gameLiftServerSDKWrapperMockPtr->m_onProcessTerminateFunc();
@@ -274,9 +285,36 @@ R"({
         SessionNotificationsHandlerMock handlerMock;
         EXPECT_CALL(handlerMock, OnDestroySessionBegin()).Times(1).WillOnce(testing::Return(true));
         EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), GetTerminationTime()).Times(1);
-        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), ProcessEnding()).Times(1);
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), ProcessEnding())
+            .Times(1)
+            .WillOnce(testing::Return(Aws::GameLift::GenericOutcome(nullptr)));
+        EXPECT_CALL(handlerMock, OnDestroySessionEnd()).Times(1);
 
         m_serverManager->m_gameLiftServerSDKWrapperMockPtr->m_onProcessTerminateFunc();
+
+        EXPECT_FALSE(AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get());
+    }
+
+    TEST_F(GameLiftServerManagerTest, OnProcessTerminate_OnDestroySessionBeginReturnsTrue_TerminationNotificationSentButFail)
+    {
+        m_serverManager->InitializeGameLiftServerSDK();
+        m_serverManager->NotifyGameLiftProcessReady();
+        if (!AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get())
+        {
+            AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Register(m_serverManager.get());
+        }
+
+        SessionNotificationsHandlerMock handlerMock;
+        EXPECT_CALL(handlerMock, OnDestroySessionBegin()).Times(1).WillOnce(testing::Return(true));
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), GetTerminationTime()).Times(1);
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), ProcessEnding())
+            .Times(1)
+            .WillOnce(testing::Return(Aws::GameLift::GenericOutcome()));
+        EXPECT_CALL(handlerMock, OnDestroySessionEnd()).Times(0);
+
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        m_serverManager->m_gameLiftServerSDKWrapperMockPtr->m_onProcessTerminateFunc();
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
 
         EXPECT_FALSE(AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get());
     }
@@ -316,6 +354,7 @@ R"({
         m_serverManager->NotifyGameLiftProcessReady();
         SessionNotificationsHandlerMock handlerMock;
         EXPECT_CALL(handlerMock, OnCreateSessionBegin(testing::_)).Times(1).WillOnce(testing::Return(false));
+        EXPECT_CALL(handlerMock, OnCreateSessionEnd()).Times(0);
         EXPECT_CALL(handlerMock, OnDestroySessionBegin()).Times(1).WillOnce(testing::Return(true));
         EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), ProcessEnding()).Times(1);
         AZ_TEST_START_TRACE_SUPPRESSION;
@@ -329,6 +368,7 @@ R"({
         m_serverManager->NotifyGameLiftProcessReady();
         SessionNotificationsHandlerMock handlerMock;
         EXPECT_CALL(handlerMock, OnCreateSessionBegin(testing::_)).Times(1).WillOnce(testing::Return(true));
+        EXPECT_CALL(handlerMock, OnCreateSessionEnd()).Times(1);
         EXPECT_CALL(handlerMock, OnDestroySessionBegin()).Times(1).WillOnce(testing::Return(true));
         EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), ActivateGameSession())
             .Times(1)
@@ -349,6 +389,7 @@ R"({
         m_serverManager->NotifyGameLiftProcessReady();
         SessionNotificationsHandlerMock handlerMock;
         EXPECT_CALL(handlerMock, OnCreateSessionBegin(testing::_)).Times(1).WillOnce(testing::Return(true));
+        EXPECT_CALL(handlerMock, OnCreateSessionEnd()).Times(0);
         EXPECT_CALL(handlerMock, OnDestroySessionBegin()).Times(1).WillOnce(testing::Return(true));
         EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), ActivateGameSession())
             .Times(1)
@@ -359,12 +400,13 @@ R"({
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
     }
 
-    TEST_F(GameLiftServerManagerTest, OnUpdateGameSession_TriggerWithUnknownReason_OnUpdateSessionBeginGetCalledOnce)
+    TEST_F(GameLiftServerManagerTest, OnUpdateGameSession_TriggerWithUnknownReason_OnUpdateSessionGetCalledOnce)
     {
         m_serverManager->InitializeGameLiftServerSDK();
         m_serverManager->NotifyGameLiftProcessReady();
         SessionNotificationsHandlerMock handlerMock;
         EXPECT_CALL(handlerMock, OnUpdateSessionBegin(testing::_, testing::_)).Times(1);
+        EXPECT_CALL(handlerMock, OnUpdateSessionEnd()).Times(1);
 
         m_serverManager->m_gameLiftServerSDKWrapperMockPtr->m_onUpdateGameSessionFunc(
             Aws::GameLift::Server::Model::UpdateGameSession(
@@ -373,12 +415,13 @@ R"({
                 "testticket"));
     }
 
-    TEST_F(GameLiftServerManagerTest, OnUpdateGameSession_TriggerWithEmptyMatchmakingData_OnUpdateSessionBeginGetCalledOnce)
+    TEST_F(GameLiftServerManagerTest, OnUpdateGameSession_TriggerWithEmptyMatchmakingData_OnUpdateSessionGetCalledOnce)
     {
         m_serverManager->InitializeGameLiftServerSDK();
         m_serverManager->NotifyGameLiftProcessReady();
         SessionNotificationsHandlerMock handlerMock;
         EXPECT_CALL(handlerMock, OnUpdateSessionBegin(testing::_, testing::_)).Times(1);
+        EXPECT_CALL(handlerMock, OnUpdateSessionEnd()).Times(1);
 
         m_serverManager->m_gameLiftServerSDKWrapperMockPtr->m_onUpdateGameSessionFunc(
             Aws::GameLift::Server::Model::UpdateGameSession(
@@ -387,12 +430,13 @@ R"({
                 "testticket"));
     }
 
-    TEST_F(GameLiftServerManagerTest, OnUpdateGameSession_TriggerWithValidMatchmakingData_OnUpdateSessionBeginGetCalledOnce)
+    TEST_F(GameLiftServerManagerTest, OnUpdateGameSession_TriggerWithValidMatchmakingData_OnUpdateSessionGetCalledOnce)
     {
         m_serverManager->InitializeGameLiftServerSDK();
         m_serverManager->NotifyGameLiftProcessReady();
         SessionNotificationsHandlerMock handlerMock;
         EXPECT_CALL(handlerMock, OnUpdateSessionBegin(testing::_, testing::_)).Times(1);
+        EXPECT_CALL(handlerMock, OnUpdateSessionEnd()).Times(1);
 
         Aws::GameLift::Server::Model::GameSession gameSession;
         gameSession.SetMatchmakerData(TEST_SERVER_MATCHMAKING_DATA);
@@ -401,12 +445,13 @@ R"({
                 gameSession, Aws::GameLift::Server::Model::UpdateReason::MATCHMAKING_DATA_UPDATED, "testticket"));
     }
 
-    TEST_F(GameLiftServerManagerTest, OnUpdateGameSession_TriggerWithInvalidMatchmakingData_OnUpdateSessionBeginGetCalledOnce)
+    TEST_F(GameLiftServerManagerTest, OnUpdateGameSession_TriggerWithInvalidMatchmakingData_OnUpdateSessionGetCalledOnce)
     {
         m_serverManager->InitializeGameLiftServerSDK();
         m_serverManager->NotifyGameLiftProcessReady();
         SessionNotificationsHandlerMock handlerMock;
         EXPECT_CALL(handlerMock, OnUpdateSessionBegin(testing::_, testing::_)).Times(1);
+        EXPECT_CALL(handlerMock, OnUpdateSessionEnd()).Times(1);
 
         Aws::GameLift::Server::Model::GameSession gameSession;
         gameSession.SetMatchmakerData("{invalid}");

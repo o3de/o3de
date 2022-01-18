@@ -38,7 +38,10 @@ namespace AZ
                     ->Field("IsDebugColoringEnabled", &DirectionalLightComponentConfig::m_isDebugColoringEnabled)
                     ->Field("ShadowFilterMethod", &DirectionalLightComponentConfig::m_shadowFilterMethod)
                     ->Field("PcfFilteringSampleCount", &DirectionalLightComponentConfig::m_filteringSampleCount)
-                    ->Field("ShadowReceiverPlaneBiasEnabled", &DirectionalLightComponentConfig::m_receiverPlaneBiasEnabled);
+                    ->Field("ShadowReceiverPlaneBiasEnabled", &DirectionalLightComponentConfig::m_receiverPlaneBiasEnabled)
+                    ->Field("Shadow Bias", &DirectionalLightComponentConfig::m_shadowBias)
+                    ->Field("Normal Shadow Bias", &DirectionalLightComponentConfig::m_normalShadowBias)
+                    ->Field("CascadeBlendingEnabled", &DirectionalLightComponentConfig::m_cascadeBlendingEnabled);
             }
         }
 
@@ -111,8 +114,7 @@ namespace AZ
 
         bool DirectionalLightComponentConfig::IsShadowPcfDisabled() const
         {
-            return !(m_shadowFilterMethod == ShadowFilterMethod::Pcf ||
-                m_shadowFilterMethod == ShadowFilterMethod::EsmPcf);
+            return !(m_shadowFilterMethod == ShadowFilterMethod::Pcf);
         }
 
         bool DirectionalLightComponentConfig::IsEsmDisabled() const

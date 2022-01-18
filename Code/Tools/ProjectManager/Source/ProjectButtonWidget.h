@@ -24,6 +24,7 @@ QT_FORWARD_DECLARE_CLASS(QProgressBar)
 QT_FORWARD_DECLARE_CLASS(QLayout)
 QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
 QT_FORWARD_DECLARE_CLASS(QEvent)
+QT_FORWARD_DECLARE_CLASS(QMenu)
 
 namespace O3DE::ProjectManager
 {
@@ -49,7 +50,7 @@ namespace O3DE::ProjectManager
         QLayout* GetBuildOverlayLayout();
 
     signals:
-        void triggered();
+        void triggered(QMouseEvent* event);
 
     public slots:
         void mousePressEvent(QMouseEvent* event) override;
@@ -95,6 +96,7 @@ namespace O3DE::ProjectManager
     signals:
         void OpenProject(const QString& projectName);
         void EditProject(const QString& projectName);
+        void EditProjectGems(const QString& projectName);
         void CopyProject(const ProjectInfo& projectInfo);
         void RemoveProject(const QString& projectName);
         void DeleteProject(const QString& projectName);
@@ -106,6 +108,8 @@ namespace O3DE::ProjectManager
         void leaveEvent(QEvent* event) override;
         void ShowWarning(bool show, const QString& warning);
         void ShowDefaultBuildButton();
+
+        QMenu* CreateProjectMenu();
 
         ProjectInfo m_projectInfo;
 

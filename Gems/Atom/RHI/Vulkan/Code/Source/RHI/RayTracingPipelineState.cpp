@@ -10,8 +10,6 @@
 #include <Atom/RHI.Reflect/SamplerState.h>
 #include <Atom/RHI.Reflect/Vulkan/ShaderStageFunction.h>
 #include <RHI/Device.h>
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace Vulkan

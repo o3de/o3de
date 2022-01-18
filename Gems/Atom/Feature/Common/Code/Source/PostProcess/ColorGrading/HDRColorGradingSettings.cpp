@@ -33,6 +33,7 @@ namespace AZ
                 target->m_enabled = m_enabled;
                 
 #define AZ_GFX_BOOL_PARAM(NAME, MEMBER_NAME, DefaultValue) ;
+#define AZ_GFX_COMMON_PARAM(ValueType, Name, MemberName, DefaultValue) ;
 #define AZ_GFX_FLOAT_PARAM(NAME, MEMBER_NAME, DefaultValue)                                                  \
     {                                                                                                        \
                 target->Set##NAME(AZ::Lerp(target->MEMBER_NAME, MEMBER_NAME, alpha));                        \

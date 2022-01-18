@@ -7,7 +7,7 @@
 
 include_guard()
 
-include(cmake/LySet.cmake)
+include(${LY_ROOT_FOLDER}/cmake/LySet.cmake)
 
 # OVERVIEW:
 # this is the Open 3D Engine Package system.
@@ -80,10 +80,7 @@ macro(ly_package_message)
     endif()
 endmacro()
 
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/packages)
-
-include(cmake/LYPackage_S3Downloader.cmake)
-
+include(${LY_ROOT_FOLDER}/cmake/LYPackage_S3Downloader.cmake)
 
 # Attempts one time to download a file.
 # sets should_retry to true if the caller should retry due to an intermittent problem
@@ -617,7 +614,7 @@ endfunction()
 # and ensure the path to the package root is added to the find_package search paths.
 # For example
 # ly_associate_package(TARGETS zlib PACKAGE_NAME zlib-1.2.8-multiplatform PACKAGE_HASH e6f34b8ac16acf881e3d666ef9fd0c1aee94c3f69283fb6524d35d6f858eebbb)
-# - this waill cause it to automatically download and activate this package if it finds a target that
+# - this will cause it to automatically download and activate this package if it finds a target that
 # depends on '3rdParty::zlib' in its runtime or its build time dependency list.
 # - note that '3rdParty' is implied, do not specify it in the TARGETS list.
 function(ly_associate_package)
@@ -687,6 +684,7 @@ endmacro()
 # is associated with a package, as above.  If it is, it makes sure that the package
 # is brought into scope (and if necessary, downloaded.)
 macro(ly_download_associated_package find_library_name)
+    unset(package_name)
     ly_get_package_association(${find_library_name} package_name)
     if (package_name)
         # it is an associated package.
@@ -711,11 +709,11 @@ if (NOT CMAKE_SCRIPT_MODE_FILE)
     # include the built in 3rd party packages that are for every platform.
     # you can put your package associations anywhere, but this provides
     # a good starting point.
-    include(cmake/3rdParty/BuiltInPackages.cmake)
+    include(${LY_ROOT_FOLDER}/cmake/3rdParty/BuiltInPackages.cmake)
 endif()
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
-    include(cmake/LYWrappers.cmake)
+    include(${LY_ROOT_FOLDER}/cmake/LYWrappers.cmake)
     # Importing this globally to handle AUTOMOC, AUTOUIC, AUTORCC
     ly_parse_third_party_dependencies(3rdParty::Qt)
 endif()

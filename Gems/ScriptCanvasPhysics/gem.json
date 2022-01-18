@@ -2,7 +2,9 @@
     "gem_name": "ScriptCanvasPhysics",
     "display_name": "Script Canvas Physics",
     "license": "Apache-2.0 Or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
     "type": "Code",
     "summary": "The Script Canvas Physics Gem provides Script Canvas nodes for physics scene queries such as raycasts.",
     "canonical_tags": [

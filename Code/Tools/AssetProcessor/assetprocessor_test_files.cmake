@@ -36,6 +36,7 @@ set(FILES
     native/tests/platformconfiguration/platformconfigurationtests.h
     native/tests/utilities/JobModelTest.cpp
     native/tests/utilities/JobModelTest.h
+    native/tests/utilities/StatsCaptureTest.cpp
     native/tests/AssetCatalog/AssetCatalogUnitTests.cpp
     native/tests/assetscanner/AssetScannerTests.h
     native/tests/assetscanner/AssetScannerTests.cpp
@@ -47,6 +48,7 @@ set(FILES
     native/tests/InternalBuilders/SettingsRegistryBuilderTests.cpp
     native/tests/MissingDependencyScannerTests.cpp
     native/tests/SourceFileRelocatorTests.cpp
+    native/tests/PathDependencyManagerTests.cpp
     native/tests/AssetProcessorMessagesTests.cpp
     native/unittests/AssetProcessingStateDataUnitTests.cpp
     native/unittests/AssetProcessingStateDataUnitTests.h
@@ -66,8 +68,6 @@ set(FILES
     native/unittests/PlatformConfigurationUnitTests.h
     native/unittests/RCcontrollerUnitTests.cpp
     native/unittests/RCcontrollerUnitTests.h
-    native/unittests/ShaderCompilerUnitTests.cpp
-    native/unittests/ShaderCompilerUnitTests.h
     native/unittests/UnitTestRunner.cpp
     native/unittests/UnitTestRunner.h
     native/unittests/UtilitiesUnitTests.cpp

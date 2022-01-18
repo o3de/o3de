@@ -243,7 +243,7 @@ namespace AZ
 
             if (StringFunc::StartsWith(curr->m_name, command, false))
             {
-                AZLOG_INFO("- %s : %s\n", curr->m_name, curr->m_desc);
+                AZLOG_INFO("- %s : %s", curr->m_name, curr->m_desc);
 
                 if (commandSubset.size() < MaxConsoleCommandPlusArgsLength)
                 {
@@ -433,29 +433,29 @@ namespace AZ
             {
                 if ((curr->GetFlags() & requiredSet) != requiredSet)
                 {
-                    AZLOG_WARN("%s failed required set flag check\n", curr->m_name);
+                    AZLOG_WARN("%s failed required set flag check", curr->m_name);
                     continue;
                 }
 
                 if ((curr->GetFlags() & requiredClear) != ConsoleFunctorFlags::Null)
                 {
-                    AZLOG_WARN("%s failed required clear flag check\n", curr->m_name);
+                    AZLOG_WARN("%s failed required clear flag check", curr->m_name);
                     continue;
                 }
 
                 if ((curr->GetFlags() & ConsoleFunctorFlags::IsCheat) != ConsoleFunctorFlags::Null)
                 {
-                    AZLOG_WARN("%s is marked as a cheat\n", curr->m_name);
+                    AZLOG_WARN("%s is marked as a cheat", curr->m_name);
                 }
 
                 if ((curr->GetFlags() & ConsoleFunctorFlags::IsDeprecated) != ConsoleFunctorFlags::Null)
                 {
-                    AZLOG_WARN("%s is marked as deprecated\n", curr->m_name);
+                    AZLOG_WARN("%s is marked as deprecated", curr->m_name);
                 }
 
                 if ((curr->GetFlags() & ConsoleFunctorFlags::NeedsReload) != ConsoleFunctorFlags::Null)
                 {
-                    AZLOG_WARN("Changes to %s will only take effect after level reload\n", curr->m_name);
+                    AZLOG_WARN("Changes to %s will only take effect after level reload", curr->m_name);
                 }
 
                 // Letting this intentionally fall-through, since in editor we can register common variables multiple times
@@ -468,7 +468,7 @@ namespace AZ
                     {
                         CVarFixedString value;
                         curr->GetValue(value);
-                        AZLOG_INFO("> %s : %s\n", curr->GetName(), value.empty() ? "<empty>" : value.c_str());
+                        AZLOG_INFO("> %s : %s", curr->GetName(), value.empty() ? "<empty>" : value.c_str());
                     }
                     flags = curr->GetFlags();
                 }
@@ -639,9 +639,10 @@ namespace AZ
     {
         // Make sure the there is a JSON object at the ConsoleRuntimeCommandKey or ConsoleAutoexecKey
         // So that JSON Patch is able to add values underneath that object (JSON Patch doesn't create intermediate objects)
-        settingsRegistry.MergeSettings(R"({ "Amazon": { "AzCore": { "Runtime": { "ConsoleCommands": {} } } })"
-            R"(,"O3DE": { "Autoexec": { "ConsoleCommands": {} } } })",
-            SettingsRegistryInterface::Format::JsonMergePatch);
+        settingsRegistry.MergeSettings(R"({})", SettingsRegistryInterface::Format::JsonMergePatch,
+            IConsole::ConsoleRuntimeCommandKey);
+        settingsRegistry.MergeSettings(R"({})", SettingsRegistryInterface::Format::JsonMergePatch,
+            IConsole::ConsoleAutoexecCommandKey);
         m_consoleCommandKeyHandler = settingsRegistry.RegisterNotifier(ConsoleCommandKeyNotificationHandler{ settingsRegistry, *this });
 
         JsonApplyPatchSettings applyPatchSettings;

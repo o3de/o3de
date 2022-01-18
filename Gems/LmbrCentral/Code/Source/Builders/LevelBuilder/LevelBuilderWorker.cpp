@@ -162,10 +162,8 @@ namespace LevelBuilder
 
         extractResult.wait();
 
-        auto levelsubfolder = AZ::IO::Path(tempDirectory) / "level";
-
-        PopulateLevelSliceDependencies(levelsubfolder.Native(), productDependencies, productPathDependencies);
-        PopulateMissionDependencies(levelPakFile, levelsubfolder.Native(), productPathDependencies);
+        PopulateLevelSliceDependencies(tempDirectory, productDependencies, productPathDependencies);
+        PopulateMissionDependencies(levelPakFile, tempDirectory, productPathDependencies);
         PopulateLevelAudioControlDependencies(levelPakFile, productPathDependencies);
     }
 

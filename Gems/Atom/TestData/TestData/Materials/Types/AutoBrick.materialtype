@@ -1,7 +1,7 @@
 {
     "description": "This is an example of a custom material type using Atom's PBR shading model: procedurally generated brick or tile.",
+    "version": 3,
     "propertyLayout": {
-        "version": 3,
         "groups": [
             {
                 "name": "shape",

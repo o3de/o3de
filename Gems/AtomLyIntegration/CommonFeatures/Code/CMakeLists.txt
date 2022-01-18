@@ -6,8 +6,8 @@
 #
 #
 
-ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
-ly_get_list_relative_pal_filename(common_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common)
+o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
+set(common_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common)
 
 ly_add_target(
     NAME AtomLyIntegration_CommonFeatures.Public HEADERONLY
@@ -86,6 +86,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         FILES_CMAKE
             atomlyintegration_commonfeatures_editor_files.cmake
             ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+        PLATFORM_INCLUDE_FILES
+            ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
                 .
@@ -109,6 +111,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         RUNTIME_DEPENDENCIES
             Gem::Atom_RPI.Editor
             Gem::Atom_Feature_Common.Editor
+            Gem::AtomToolsFramework.Editor
             Legacy::EditorCommon
     )
 

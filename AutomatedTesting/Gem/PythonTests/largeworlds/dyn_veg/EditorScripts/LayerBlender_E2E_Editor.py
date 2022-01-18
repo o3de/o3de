@@ -76,9 +76,9 @@ def LayerBlender_E2E_Editor():
     # 1) Create a new, temporary level
     lvl_name = "tmp_level"
     helper.init_idle()
-    level_created = general.create_level_no_prompt(lvl_name, 1024, 1, 4096, False)
+    level_created = helper.create_level(lvl_name)
     general.idle_wait(1.0)
-    Report.critical_result(Tests.level_created, level_created == 0)
+    Report.critical_result(Tests.level_created, level_created)
 
     general.set_current_view_position(500.49, 498.69, 46.66)
     general.set_current_view_rotation(-42.05, 0.00, -36.33)
@@ -86,17 +86,17 @@ def LayerBlender_E2E_Editor():
     # 2) Create 2 vegetation areas with different meshes
     purple_position = math.Vector3(504.0, 512.0, 32.0)
     purple_asset_path = os.path.join("Slices", "PurpleFlower.dynamicslice")
-    spawner_entity_1 = dynveg.create_vegetation_area("Purple Spawner",
-                                                     purple_position,
-                                                     16.0, 16.0, 1.0,
-                                                     purple_asset_path)
+    spawner_entity_1 = dynveg.create_dynamic_slice_vegetation_area("Purple Spawner",
+                                                                                 purple_position,
+                                                                                 16.0, 16.0, 1.0,
+                                                                                 purple_asset_path)
 
     pink_position = math.Vector3(520.0, 512.0, 32.0)
     pink_asset_path = os.path.join("Slices", "PinkFlower.dynamicslice")
-    spawner_entity_2 = dynveg.create_vegetation_area("Pink Spawner",
-                                                     pink_position,
-                                                     16.0, 16.0, 1.0,
-                                                     pink_asset_path)
+    spawner_entity_2 = dynveg.create_dynamic_slice_vegetation_area("Pink Spawner",
+                                                                                 pink_position,
+                                                                                 16.0, 16.0, 1.0,
+                                                                                 pink_asset_path)
 
     base_position = math.Vector3(512.0, 512.0, 32.0)
     dynveg.create_surface_entity("Surface Entity",
@@ -156,7 +156,8 @@ def LayerBlender_E2E_Editor():
     general.save_level()
     general.export_to_engine()
     pak_path = os.path.join(paths.products, "levels", lvl_name, "level.pak")
-    Report.result(Tests.saved_and_exported, os.path.exists(pak_path))
+    success = helper.wait_for_condition(lambda: os.path.exists(pak_path), 10.0)
+    Report.result(Tests.saved_and_exported, success)
 
 
 if __name__ == "__main__":

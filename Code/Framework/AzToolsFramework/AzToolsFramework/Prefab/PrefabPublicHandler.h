@@ -54,6 +54,7 @@ namespace AzToolsFramework
             
             PrefabOperationResult GenerateUndoNodesForEntityChangeAndUpdateCache(AZ::EntityId entityId, UndoSystem::URSequencePoint* parentUndoBatch) override;
 
+            bool IsOwnedByProceduralPrefabInstance(AZ::EntityId entityId) const override;
             bool IsInstanceContainerEntity(AZ::EntityId entityId) const override;
             bool IsLevelInstanceContainerEntity(AZ::EntityId entityId) const override;
             AZ::EntityId GetInstanceContainerEntityId(AZ::EntityId entityId) const override;
@@ -63,7 +64,7 @@ namespace AzToolsFramework
 
             PrefabOperationResult DeleteEntitiesInInstance(const EntityIdList& entityIds) override;
             PrefabOperationResult DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds) override;
-            PrefabOperationResult DuplicateEntitiesInInstance(const EntityIdList& entityIds) override;
+            DuplicatePrefabResult DuplicateEntitiesInInstance(const EntityIdList& entityIds) override;
 
             PrefabOperationResult DetachPrefab(const AZ::EntityId& containerEntityId) override;
 
@@ -78,6 +79,8 @@ namespace AzToolsFramework
 
             InstanceOptionalReference GetOwnerInstanceByEntityId(AZ::EntityId entityId) const;
             bool EntitiesBelongToSameInstance(const EntityIdList& entityIds) const;
+            void AddNewEntityToSortOrder(Instance& owningInstance, PrefabDom& domToAddEntityUnder,
+                const EntityAlias& parentEntityAlias, const EntityAlias& entityToAddAlias);
 
             /**
              * Duplicate a list of entities owned by a common owning instance by directly

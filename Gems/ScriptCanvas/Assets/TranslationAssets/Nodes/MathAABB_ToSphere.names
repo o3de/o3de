@@ -1,0 +1,46 @@
+{
+    "entries": [
+        {
+            "base": "{214CCB41-01CA-578C-9D7F-1237202A885B}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "To Sphere",
+                "category": "Math/AABB",
+                "tooltip": "returns the center and radius of smallest sphere that contains Source"
+            },
+            "slots": [
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Source_0",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "base": "DataOutput_Center_0",
+                    "details": {
+                        "name": "Center"
+                    }
+                },
+                {
+                    "base": "DataOutput_Radius_1",
+                    "details": {
+                        "name": "Radius"
+                    }
+                }
+            ]
+        }
+    ]
+}

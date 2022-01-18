@@ -18,7 +18,6 @@
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <TerrainSystem/TerrainSystemBus.h>
 
-#include <AzCore/Component/TransformBus.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <AzCore/Math/Aabb.h>
 
@@ -53,17 +52,17 @@ namespace Terrain
         bool m_useGroundPlane = true;
     };
 
+    static const AZ::Uuid TerrainLayerSpawnerComponentTypeId = "{3848605F-A4EA-478C-B710-84AB8DCA9EC5}";
 
     class TerrainLayerSpawnerComponent
         : public AZ::Component
-        , private AZ::TransformNotificationBus::Handler
         , private LmbrCentral::ShapeComponentNotificationsBus::Handler
         , private Terrain::TerrainSpawnerRequestBus::Handler
     {
     public:
         template<typename, typename>
         friend class LmbrCentral::EditorWrappedComponentBase;
-        AZ_COMPONENT(TerrainLayerSpawnerComponent, "{3848605F-A4EA-478C-B710-84AB8DCA9EC5}");
+        AZ_COMPONENT(TerrainLayerSpawnerComponent, TerrainLayerSpawnerComponentTypeId);
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services);
@@ -81,10 +80,6 @@ namespace Terrain
         bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const override;
 
     protected:
-        //////////////////////////////////////////////////////////////////////////
-        // AZ::TransformNotificationBus::Handler
-        void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
-
         // ShapeComponentNotificationsBus
         void OnShapeChanged(ShapeChangeReasons changeReason) override;
 

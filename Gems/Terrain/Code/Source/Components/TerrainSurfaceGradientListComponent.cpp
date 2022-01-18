@@ -8,6 +8,7 @@
 
 #include <Components/TerrainSurfaceGradientListComponent.h>
 
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
@@ -45,6 +46,17 @@ namespace Terrain
                         "Surface type to map to this gradient.")
                 ;
             }
+        }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<TerrainSurfaceGradientMapping>()
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Category, "Terrain")
+                ->Attribute(AZ::Script::Attributes::Module, "terrain")
+                ->Constructor()
+                ->Property("gradientEntityId", BehaviorValueProperty(&TerrainSurfaceGradientMapping::m_gradientEntityId))
+                ->Property("surfaceTag", BehaviorValueProperty(&TerrainSurfaceGradientMapping::m_surfaceTag));
         }
     }
 
@@ -166,7 +178,7 @@ namespace Terrain
     
     void TerrainSurfaceGradientListComponent::GetSurfaceWeights(
         const AZ::Vector3& inPosition,
-        AzFramework::SurfaceData::OrderedSurfaceTagWeightSet& outSurfaceWeights) const
+        AzFramework::SurfaceData::SurfaceTagWeightList& outSurfaceWeights) const
     {
         outSurfaceWeights.clear();
 
@@ -178,16 +190,15 @@ namespace Terrain
             GradientSignal::GradientRequestBus::EventResult(weight,
                 mapping.m_gradientEntityId, &GradientSignal::GradientRequestBus::Events::GetValue, params);
 
-            AzFramework::SurfaceData::SurfaceTagWeight tagWeight;
-            tagWeight.m_surfaceType = mapping.m_surfaceTag;
-            tagWeight.m_weight = weight;
-            outSurfaceWeights.emplace(tagWeight);
+            outSurfaceWeights.emplace_back(mapping.m_surfaceTag, weight);
         }
     }
 
     void TerrainSurfaceGradientListComponent::OnCompositionChanged()
     {
-        TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId());
+        TerrainSystemServiceRequestBus::Broadcast(
+            &TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId(),
+            AzFramework::Terrain::TerrainDataNotifications::SurfaceData);
     }
 
 } // namespace Terrain

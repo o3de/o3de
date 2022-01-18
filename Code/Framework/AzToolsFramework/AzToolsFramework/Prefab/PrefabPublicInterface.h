@@ -26,6 +26,7 @@ namespace AzToolsFramework
     {
         typedef AZ::Outcome<AZ::EntityId, AZStd::string> CreatePrefabResult;
         typedef AZ::Outcome<AZ::EntityId, AZStd::string> InstantiatePrefabResult;
+        typedef AZ::Outcome<EntityIdList, AZStd::string> DuplicatePrefabResult;
         typedef AZ::Outcome<void, AZStd::string> PrefabOperationResult;
         typedef AZ::Outcome<bool, AZStd::string> PrefabRequestResult;
         typedef AZ::Outcome<AZ::EntityId, AZStd::string> PrefabEntityResult;
@@ -100,6 +101,13 @@ namespace AzToolsFramework
              */
             virtual PrefabOperationResult GenerateUndoNodesForEntityChangeAndUpdateCache(
                 AZ::EntityId entityId, UndoSystem::URSequencePoint* parentUndoBatch) = 0;
+
+            /**
+             * Detects if an entity is owned by a procedural prefab.
+             * @param entityId The entity to query.
+             * @return True if the entity is owned by a procedural prefab instance, false otherwise.
+             */
+            virtual bool IsOwnedByProceduralPrefabInstance(AZ::EntityId entityId) const = 0;
             
             /**
              * Detects if an entity is the container entity for its owning prefab instance.
@@ -160,14 +168,15 @@ namespace AzToolsFramework
             /**
               * Duplicates all entities in the owning instance. Bails if the entities don't all belong to the same instance.
               * @param entities The entities to duplicate.
-              * @return An outcome object; on failure, it comes with an error message detailing the cause of the error.
+              * @return An outcome object with a list of ids of target entities' duplicates if duplication succeeded;
+              *  on failure, it comes with an error message detailing the cause of the error.
               */
-            virtual PrefabOperationResult DuplicateEntitiesInInstance(const EntityIdList& entityIds) = 0;
+            virtual DuplicatePrefabResult DuplicateEntitiesInInstance(const EntityIdList& entityIds) = 0;
 
             /**
               * If the entity id is a container entity id, detaches the prefab instance corresponding to it. This includes converting
               * the container entity into a regular entity and putting it under the parent prefab, removing the link between this
-              * instance and the parent, removing links between this instance and it's nested instances, adding entities directly 
+              * instance and the parent, removing links between this instance and its nested instances, and adding entities directly 
               * owned by this instance under the parent instance.
               * Bails if the entity is not a container entity or belongs to the level prefab instance.
               * @param containerEntityId The container entity id of the instance to detach.

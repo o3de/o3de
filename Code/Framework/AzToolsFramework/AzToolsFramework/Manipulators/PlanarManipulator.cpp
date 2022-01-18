@@ -171,7 +171,7 @@ namespace AzToolsFramework
         const AzFramework::CameraState& cameraState,
         const ViewportInteraction::MouseInteraction& mouseInteraction)
     {
-        if (cl_manipulatorDrawDebug)
+        if (ed_manipulatorDrawDebug)
         {
             if (PerformingAction())
             {
@@ -202,8 +202,8 @@ namespace AzToolsFramework
         {
             view->Draw(
                 GetManipulatorManagerId(), managerState, GetManipulatorId(),
-                { ApplySpace(GetLocalTransform()), GetNonUniformScale(), AZ::Vector3::CreateZero(), MouseOver() }, debugDisplay,
-                cameraState, mouseInteraction);
+                ManipulatorState{ ApplySpace(GetLocalTransform()), GetNonUniformScale(), AZ::Vector3::CreateZero(), MouseOver() },
+                debugDisplay, cameraState, mouseInteraction);
         }
     }
 

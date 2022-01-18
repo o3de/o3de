@@ -56,9 +56,10 @@ namespace AZ
                     ;
 
                 serializeContext->Class<PassSlot>()
-                    ->Version(1)
+                    ->Version(2)
                     ->Field("Name", &PassSlot::m_name)
                     ->Field("ShaderInputName", &PassSlot::m_shaderInputName)
+                    ->Field("ShaderImageDimensionsConstant", &PassSlot::m_shaderImageDimensionsName)
                     ->Field("ShaderInputArrayIndex", &PassSlot::m_shaderInputArrayIndex)
                     ->Field("SlotType", &PassSlot::m_slotType)
                     ->Field("ScopeAttachmentUsage", &PassSlot::m_scopeAttachmentUsage)

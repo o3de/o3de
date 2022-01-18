@@ -6,8 +6,6 @@
 #
 #
 
-ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
-
 ly_add_target(
     NAME Atom_Utils.Static STATIC
     NAMESPACE Gem
@@ -27,10 +25,34 @@ ly_add_target(
             3rdParty::libpng
 )
 
+if(PAL_TRAIT_BUILD_HOST_TOOLS)
+
+    ly_add_target(
+        NAME Atom_Utils.TestUtils.Static STATIC
+        NAMESPACE Gem
+        FILES_CMAKE
+            atom_utils_editor_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                Source
+            PUBLIC
+                Include
+        BUILD_DEPENDENCIES
+            PRIVATE
+                AZ::AtomCore
+                AZ::AzCore
+                AZ::AzFramework
+                AZ::AzToolsFramework
+    )
+endif()
+
 ################################################################################
 # Tests
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+
+    o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
+
     ly_add_target(
         NAME Atom_Utils.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem

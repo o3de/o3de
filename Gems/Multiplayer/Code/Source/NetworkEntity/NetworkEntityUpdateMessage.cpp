@@ -18,7 +18,6 @@ namespace Multiplayer
         , m_entityId(rhs.m_entityId)
         , m_isDelete(rhs.m_isDelete)
         , m_wasMigrated(rhs.m_wasMigrated)
-        , m_takeOwnership(rhs.m_takeOwnership)
         , m_hasValidPrefabId(rhs.m_hasValidPrefabId)
         , m_prefabEntityId(rhs.m_prefabEntityId)
         , m_data(AZStd::move(rhs.m_data))
@@ -31,7 +30,6 @@ namespace Multiplayer
         , m_entityId(rhs.m_entityId)
         , m_isDelete(rhs.m_isDelete)
         , m_wasMigrated(rhs.m_wasMigrated)
-        , m_takeOwnership(rhs.m_takeOwnership)
         , m_hasValidPrefabId(rhs.m_hasValidPrefabId)
         , m_prefabEntityId(rhs.m_prefabEntityId)
     {
@@ -58,11 +56,10 @@ namespace Multiplayer
         ;
     }
 
-    NetworkEntityUpdateMessage::NetworkEntityUpdateMessage(NetEntityId entityId, bool wasMigrated, bool takeOwnership)
+    NetworkEntityUpdateMessage::NetworkEntityUpdateMessage(NetEntityId entityId, bool wasMigrated)
         : m_entityId(entityId)
         , m_isDelete(true)
         , m_wasMigrated(wasMigrated)
-        , m_takeOwnership(takeOwnership)
     {
         // this is a delete entity message c-tor
     }
@@ -73,7 +70,6 @@ namespace Multiplayer
         m_entityId = rhs.m_entityId;
         m_isDelete = rhs.m_isDelete;
         m_wasMigrated = rhs.m_wasMigrated;
-        m_takeOwnership = rhs.m_takeOwnership;
         m_hasValidPrefabId = rhs.m_hasValidPrefabId;
         m_prefabEntityId = rhs.m_prefabEntityId;
         m_data = AZStd::move(rhs.m_data);
@@ -86,7 +82,6 @@ namespace Multiplayer
         m_entityId = rhs.m_entityId;
         m_isDelete = rhs.m_isDelete;
         m_wasMigrated = rhs.m_wasMigrated;
-        m_takeOwnership = rhs.m_takeOwnership;
         m_hasValidPrefabId = rhs.m_hasValidPrefabId;
         m_prefabEntityId = rhs.m_prefabEntityId;
         if (rhs.m_data != nullptr)
@@ -104,7 +99,6 @@ namespace Multiplayer
              && (m_entityId == rhs.m_entityId)
              && (m_isDelete == rhs.m_isDelete)
              && (m_wasMigrated == rhs.m_wasMigrated)
-             && (m_takeOwnership == rhs.m_takeOwnership)
              && (m_hasValidPrefabId == rhs.m_hasValidPrefabId)
              && (m_prefabEntityId == rhs.m_prefabEntityId));
     }
@@ -160,11 +154,6 @@ namespace Multiplayer
         return m_wasMigrated;
     }
 
-    bool NetworkEntityUpdateMessage::GetTakeOwnership() const
-    {
-        return m_takeOwnership;
-    }
-
     bool NetworkEntityUpdateMessage::GetHasValidPrefabId() const
     {
         return m_hasValidPrefabId;
@@ -210,17 +199,15 @@ namespace Multiplayer
         serializer.Serialize(m_entityId, "EntityId");
 
         // Use the upper 4 bits for boolean flags, and the lower 4 bits for the network role
-        uint8_t networkTypeAndFlags = (m_isDelete ? 0x80 : 0x00)
-                                    | (m_wasMigrated ? 0x40 : 0x00)
-                                    | (m_takeOwnership ? 0x20 : 0x00)
+        uint8_t networkTypeAndFlags = (m_isDelete ? 0x40 : 0x00)
+                                    | (m_wasMigrated ? 0x20 : 0x00)
                                     | (m_hasValidPrefabId ? 0x10 : 0x00)
                                     | static_cast<uint8_t>(m_networkRole);
 
         if (serializer.Serialize(networkTypeAndFlags, "TypeAndFlags"))
         {
-            m_isDelete = (networkTypeAndFlags & 0x80) == 0x80;
-            m_wasMigrated = (networkTypeAndFlags & 0x40) == 0x40;
-            m_takeOwnership = (networkTypeAndFlags & 0x20) == 0x20;
+            m_isDelete = (networkTypeAndFlags & 0x40) == 0x40;
+            m_wasMigrated = (networkTypeAndFlags & 0x20) == 0x20;
             m_hasValidPrefabId = (networkTypeAndFlags & 0x10) == 0x10;
             m_networkRole = static_cast<NetEntityRole>(networkTypeAndFlags & 0x0F);
         }

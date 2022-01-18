@@ -23,9 +23,9 @@
 // AzCore
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Utils/Utils.h>
 
 // AzFramework
-#include <AzFramework/API/ApplicationAPI.h>
 
 // AzQtComponents
 #include <AzQtComponents/Utilities/DesktopUtilities.h>
@@ -42,8 +42,6 @@
 #include "CheckOutDialog.h"
 #include "ISourceControl.h"
 #include "Dialogs/Generic/UserOptions.h"
-#include "IAssetItem.h"
-#include "IAssetItemDatabase.h"
 #include "Include/IObjectManager.h"
 #include "UsedResources.h"
 #include "Objects/BaseObject.h"
@@ -54,92 +52,14 @@
 #include <Shellapi.h>
 #endif
 
-bool CFileUtil::s_singleFileDlgPref[IFileUtil::EFILE_TYPE_LAST] = { true, true, true, true, true };
-bool CFileUtil::s_multiFileDlgPref[IFileUtil::EFILE_TYPE_LAST] = { true, true, true, true, true };
+bool CFileUtil::s_singleFileDlgPref[IFileUtil::EFILE_TYPE_LAST] = { true, true, true, true };
+bool CFileUtil::s_multiFileDlgPref[IFileUtil::EFILE_TYPE_LAST] = { true, true, true, true };
 
 CAutoRestorePrimaryCDRoot::~CAutoRestorePrimaryCDRoot()
 {
     QDir::setCurrent(GetIEditor()->GetPrimaryCDFolder());
 }
 
-bool CFileUtil::CompileLuaFile(const char* luaFilename)
-{
-    QString luaFile = luaFilename;
-
-    if (luaFile.isEmpty())
-    {
-        return false;
-    }
-
-    // Check if this file is in Archive.
-    {
-        CCryFile file;
-        if (file.Open(luaFilename, "rb"))
-        {
-            // Check if in pack.
-            if (file.IsInPak())
-            {
-                return true;
-            }
-        }
-    }
-
-    luaFile = Path::GamePathToFullPath(luaFilename);
-
-    // First try compiling script and see if it have any errors.
-    QString LuaCompiler;
-    QString CompilerOutput;
-
-    // Create the filepath of the lua compiler
-    QString szExeFileName = qApp->applicationFilePath();
-    QString exePath = Path::GetPath(szExeFileName);
-
-#if defined(AZ_PLATFORM_WINDOWS)
-    const char* luaCompiler = "LuaCompiler.exe";
-#else
-    const char* luaCompiler = "lua";
-#endif
-    LuaCompiler = Path::AddPathSlash(exePath) + luaCompiler + " ";
-
-    AZStd::string path = luaFile.toUtf8().data();
-    EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePath, path);
-
-    QString finalPath = path.c_str();
-    finalPath = "\"" + finalPath + "\"";
-
-    // Add the name of the Lua file
-    QString cmdLine = LuaCompiler + finalPath;
-
-    // Execute the compiler and capture the output
-    if (!GetIEditor()->ExecuteConsoleApp(cmdLine, CompilerOutput))
-    {
-        QMessageBox::critical(QApplication::activeWindow(), QString(), QObject::tr("Error while executing '%1', make sure the file is in" \
-            " your Primary CD folder !").arg(luaCompiler));
-        return false;
-    }
-
-    // Check return string
-    if (!CompilerOutput.isEmpty())
-    {
-        // Errors while compiling file.
-
-        // Show output from Lua compiler
-        if (QMessageBox::critical(QApplication::activeWindow(), QObject::tr("Lua Compiler"),
-            QObject::tr("Error output from Lua compiler:\r\n%1\r\nDo you want to edit the file ?").arg(CompilerOutput), QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
-        {
-            int line = 0;
-            int index = CompilerOutput.indexOf("at line");
-            if (index >= 0)
-            {
-                azsscanf(CompilerOutput.mid(index).toUtf8().data(), "at line %d", &line);
-            }
-            // Open the Lua file for editing
-            EditTextFile(luaFile.toUtf8().data(), line);
-        }
-        return false;
-    }
-    return true;
-}
 //////////////////////////////////////////////////////////////////////////
 bool CFileUtil::ExtractFile(QString& file, bool bMsgBoxAskForExtraction, const char* pDestinationFilename)
 {
@@ -205,7 +125,7 @@ void CFileUtil::EditTextFile(const char* txtFile, int line, IFileUtil::ETextFile
 {
     QString file = txtFile;
 
-    QString fullPathName =  Path::GamePathToFullPath(file);
+    QString fullPathName = Path::GamePathToFullPath(file);
     ExtractFile(fullPathName);
     QString cmd(fullPathName);
 #if defined (AZ_PLATFORM_WINDOWS)
@@ -299,164 +219,6 @@ void CFileUtil::EditTextureFile(const char* textureFile, [[maybe_unused]] bool b
         QString messageString = QObject::tr("Failed to open %1 with texture editor %2.").arg(fullTexturePath.data()).arg(textureEditorPath.data());
         QMessageBox::warning(AzToolsFramework::GetActiveWindow(), warningTitle, messageString);
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CFileUtil::EditMayaFile(const char* filepath, const bool bExtractFromPak, const bool bUseGameFolder)
-{
-    QString dosFilepath = PathUtil::ToDosPath(filepath).c_str();
-    if (bExtractFromPak)
-    {
-        ExtractFile(dosFilepath);
-    }
-
-    if (bUseGameFolder)
-    {
-        const QString sGameFolder = Path::GetEditingGameDataFolder().c_str();
-        int nLength = sGameFolder.toUtf8().count();
-        if (azstrnicmp(filepath, sGameFolder.toUtf8().data(), nLength) != 0)
-        {
-            dosFilepath = sGameFolder + '\\' + filepath;
-        }
-
-        dosFilepath = PathUtil::ToDosPath(dosFilepath.toUtf8().data()).c_str();
-    }
-
-    const char* engineRoot;
-    EBUS_EVENT_RESULT(engineRoot, AzFramework::ApplicationRequests::Bus, GetEngineRoot);
-
-    const QString fullPath = QString(engineRoot) + '\\' + dosFilepath;
-
-    if (gSettings.animEditor.isEmpty())
-    {
-        AzQtComponents::ShowFileOnDesktop(fullPath);
-    }
-    else
-    {
-        if (!QProcess::startDetached(gSettings.animEditor, { fullPath }))
-        {
-            CryMessageBox("Can't open the file. You can specify a source editor in Sandbox Preferences or create an association in Windows.", "Cannot open file!", MB_OK | MB_ICONERROR);
-        }
-    }
-    return true;
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CFileUtil::EditFile(const char* filePath, const bool bExtrackFromPak, const bool bUseGameFolder)
-{
-    QString extension = filePath;
-    extension.remove(0, extension.lastIndexOf('.'));
-
-    if (extension.compare(".ma") == 0)
-    {
-        return EditMayaFile(filePath, bExtrackFromPak, bUseGameFolder);
-    }
-    else if ((extension.compare(".bspace") == 0) || (extension.compare(".comb") == 0))
-    {
-        EditTextFile(filePath, 0, IFileUtil::FILE_TYPE_BSPACE);
-        return true;
-    }
-
-    return false;
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CFileUtil::CalculateDccFilename(const QString& assetFilename, QString& dccFilename)
-{
-    if (ExtractDccFilenameFromAssetDatabase(assetFilename, dccFilename))
-    {
-        return true;
-    }
-
-    if (ExtractDccFilenameUsingNamingConventions(assetFilename, dccFilename))
-    {
-        return true;
-    }
-
-    GetIEditor()->GetEnv()->pLog->LogError("Failed to find psd file for texture: '%s'", assetFilename.toUtf8().data());
-    return false;
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CFileUtil::ExtractDccFilenameFromAssetDatabase(const QString& assetFilename, QString& dccFilename)
-{
-    IAssetItemDatabase* pCurrentDatabaseInterface = nullptr;
-    std::vector<IClassDesc*> assetDatabasePlugins;
-    IEditorClassFactory* pClassFactory = GetIEditor()->GetClassFactory();
-    pClassFactory->GetClassesByCategory("Asset Item DB", assetDatabasePlugins);
-
-    for (size_t i = 0; i < assetDatabasePlugins.size(); ++i)
-    {
-        if (assetDatabasePlugins[i]->QueryInterface(__uuidof(IAssetItemDatabase), (void**)&pCurrentDatabaseInterface) == S_OK)
-        {
-            if (!pCurrentDatabaseInterface)
-            {
-                continue;
-            }
-
-            QString assetDatabaseDccFilename;
-            IAssetItem* pAssetItem = pCurrentDatabaseInterface->GetAsset(assetFilename.toUtf8().data());
-            if (pAssetItem)
-            {
-                if ((pAssetItem->GetFlags() & IAssetItem::eFlag_Cached))
-                {
-                    QVariant v = pAssetItem->GetAssetFieldValue("dccfilename");
-                    assetDatabaseDccFilename = v.toString();
-                    if (!v.isNull())
-                    {
-                        dccFilename = assetDatabaseDccFilename;
-                        dccFilename = Path::GetRelativePath(dccFilename, false);
-
-                        uint32 attr = CFileUtil::GetAttributes(dccFilename.toUtf8().data());
-
-                        if (CFileUtil::FileExists(dccFilename))
-                        {
-                            return true;
-                        }
-                        else if (GetIEditor()->IsSourceControlAvailable() && (attr & SCC_FILE_ATTRIBUTE_MANAGED))
-                        {
-                            return CFileUtil::GetLatestFromSourceControl(dccFilename.toUtf8().data());
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return false;
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CFileUtil::ExtractDccFilenameUsingNamingConventions(const QString& assetFilename, QString& dccFilename)
-{
-    //else to try find it by naming conventions
-    QString tempStr = assetFilename;
-    int foundSplit = -1;
-    if ((foundSplit = tempStr.lastIndexOf('.')) > 0)
-    {
-        QString first = tempStr.mid(0, foundSplit);
-        tempStr = first + ".psd";
-    }
-    if (CFileUtil::FileExists(tempStr))
-    {
-        dccFilename = tempStr;
-        return true;
-    }
-
-    //else try to find it by replacing post fix _<description> with .psd
-    tempStr = assetFilename;
-    foundSplit = -1;
-    if ((foundSplit = tempStr.lastIndexOf('_')) > 0)
-    {
-        QString first = tempStr.mid(0, foundSplit);
-        tempStr = first + ".psd";
-    }
-    if (CFileUtil::FileExists(tempStr))
-    {
-        dccFilename = tempStr;
-        return true;
-    }
-
-    return false;
 }
 
 //////////////////////////////////////////////////////////////////////////

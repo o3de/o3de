@@ -112,8 +112,6 @@ SEditorSettings::SEditorSettings()
     m_showCircularDependencyError = true;
     bAutoloadLastLevelAtStartup = false;
     bMuteAudio = false;
-    bEnableGameModeVR = false;
-
 
     objectHideMask = 0;
     objectSelectMask = 0xFFFFFFFF; // Initially all selectable.
@@ -144,9 +142,6 @@ SEditorSettings::SEditorSettings()
     viewports.bShowMeshStatsOnMouseOver = false;
     viewports.bDrawEntityLabels = false;
     viewports.bShowTriggerBounds = false;
-    viewports.bShowIcons = true;
-    viewports.bDistanceScaleIcons = true;
-    viewports.bShowSizeBasedIcons = false;
     viewports.nShowFrozenHelpers = true;
     viewports.bFillSelectedShapes = false;
     viewports.nTopMapTextureResolution = 512;
@@ -473,7 +468,7 @@ void SEditorSettings::LoadValue(const char* sSection, const char* sKey, ESystemC
 }
 
 //////////////////////////////////////////////////////////////////////////
-void SEditorSettings::Save()
+void SEditorSettings::Save(bool isEditorClosing)
 {
     QString strStringPlaceholder;
 
@@ -536,8 +531,6 @@ void SEditorSettings::Save()
     SaveValue("Settings", "ShowMeshStatsOnMouseOver", viewports.bShowMeshStatsOnMouseOver);
     SaveValue("Settings", "DrawEntityLabels", viewports.bDrawEntityLabels);
     SaveValue("Settings", "ShowTriggerBounds", viewports.bShowTriggerBounds);
-    SaveValue("Settings", "ShowIcons", viewports.bShowIcons);
-    SaveValue("Settings", "ShowSizeBasedIcons", viewports.bShowSizeBasedIcons);
     SaveValue("Settings", "ShowFrozenHelpers", viewports.nShowFrozenHelpers);
     SaveValue("Settings", "FillSelectedShapes", viewports.bFillSelectedShapes);
     SaveValue("Settings", "MapTextureResolution", viewports.nTopMapTextureResolution);
@@ -640,14 +633,16 @@ void SEditorSettings::Save()
     // --- Settings Registry values
 
     // Prefab System UI
-    AzFramework::ApplicationRequests::Bus::Broadcast(
-        &AzFramework::ApplicationRequests::SetPrefabSystemEnabled, prefabSystem);
+    AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::SetPrefabSystemEnabled, prefabSystem);
 
     AzToolsFramework::Prefab::PrefabLoaderInterface* prefabLoaderInterface =
         AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
     prefabLoaderInterface->SetSaveAllPrefabsPreference(levelSaveSettings.saveAllPrefabsPreference);
 
-    SaveSettingsRegistryFile();
+    if (!isEditorClosing)
+    {
+        SaveSettingsRegistryFile();
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -736,8 +731,6 @@ void SEditorSettings::Load()
     LoadValue("Settings", "ShowMeshStatsOnMouseOver", viewports.bShowMeshStatsOnMouseOver);
     LoadValue("Settings", "DrawEntityLabels", viewports.bDrawEntityLabels);
     LoadValue("Settings", "ShowTriggerBounds", viewports.bShowTriggerBounds);
-    LoadValue("Settings", "ShowIcons", viewports.bShowIcons);
-    LoadValue("Settings", "ShowSizeBasedIcons", viewports.bShowSizeBasedIcons);
     LoadValue("Settings", "ShowFrozenHelpers", viewports.nShowFrozenHelpers);
     LoadValue("Settings", "FillSelectedShapes", viewports.bFillSelectedShapes);
     LoadValue("Settings", "MapTextureResolution", viewports.nTopMapTextureResolution);

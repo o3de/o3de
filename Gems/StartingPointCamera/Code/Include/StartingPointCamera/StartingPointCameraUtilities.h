@@ -16,24 +16,16 @@ namespace Camera
 {
     const char* GetNameFromUuid(const AZ::Uuid& uuid);
 
-    //////////////////////////////////////////////////////////////////////////
-    /// This methods will 0 out a vector component and re-normalize it
-    //////////////////////////////////////////////////////////////////////////
-    void MaskComponentFromNormalizedVector(AZ::Vector3& v, VectorComponentType vectorComponentType);
+    //! This methods will 0 out specified vector components and re-normalize it
+    void MaskComponentFromNormalizedVector(AZ::Vector3& v, bool ignoreX, bool ignoreY, bool ignoreZ);
 
-    //////////////////////////////////////////////////////////////////////////
-    /// This will calculate the requested Euler angle from a given AZ::Quaternion
-    //////////////////////////////////////////////////////////////////////////
+    //! This will calculate the requested Euler angle from a given AZ::Quaternion
     float GetEulerAngleFromTransform(const AZ::Transform& rotation, EulerAngleType eulerAngleType);
 
-    //////////////////////////////////////////////////////////////////////////
-    /// This will calculate an AZ::Transform based on an Euler angle
-    //////////////////////////////////////////////////////////////////////////
+    //! This will calculate an AZ::Transform based on an Euler angle
     AZ::Transform CreateRotationFromEulerAngle(EulerAngleType rotationType, float radians);
 
-    //////////////////////////////////////////////////////////////////////////
-    /// Creates the Quaternion representing the rotation looking down the vector
-    //////////////////////////////////////////////////////////////////////////
+    //! Creates the Quaternion representing the rotation looking down the vector
     AZ::Quaternion CreateQuaternionFromViewVector(const AZ::Vector3 lookVector);
 
 } //namespace Camera

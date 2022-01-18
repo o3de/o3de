@@ -104,6 +104,11 @@ namespace
         }
     }
 
+    // Currently (December 13, 2021), this function is only used by slice editor code.
+    // When the slice editor is not enabled, there are no references to the
+    // HideActionWhileEntitiesDeselected function, causing a compiler warning and
+    // subsequently a build error.
+#ifdef ENABLE_SLICE_EDITOR
     void HideActionWhileEntitiesDeselected(QAction* action, EEditorNotifyEvent editorNotifyEvent)
     {
         if (action == nullptr)
@@ -127,6 +132,7 @@ namespace
             break;
         }
     }
+#endif
 
     void DisableActionWhileInSimMode(QAction* action, EEditorNotifyEvent editorNotifyEvent)
     {
@@ -374,7 +380,6 @@ QMenu* LevelEditorMenuHandler::CreateFileMenu()
     {
         DisableActionWhileLevelChanges(fileOpenSlice, e);
     }));
-#endif
 
     // Save Selected Slice
     auto saveSelectedSlice = fileMenu.AddAction(ID_FILE_SAVE_SELECTED_SLICE);
@@ -391,7 +396,7 @@ QMenu* LevelEditorMenuHandler::CreateFileMenu()
     {
         HideActionWhileEntitiesDeselected(saveSliceToRoot, e);
     }));
-
+#endif
     // Open Recent
     m_mostRecentLevelsMenu = fileMenu.AddMenu(tr("Open Recent"));
     connect(m_mostRecentLevelsMenu, &QMenu::aboutToShow, this, &LevelEditorMenuHandler::UpdateMRUFiles);
@@ -439,9 +444,10 @@ QMenu* LevelEditorMenuHandler::CreateFileMenu()
     // Show Log File
     fileMenu.AddAction(ID_FILE_EDITLOGFILE);
 
+#ifdef ENABLE_SLICE_EDITOR
     fileMenu.AddSeparator();
-
     fileMenu.AddAction(ID_FILE_RESAVESLICES);
+#endif
 
     fileMenu.AddSeparator();
 
@@ -538,6 +544,7 @@ void LevelEditorMenuHandler::PopulateEditMenu(ActionManager::MenuWrapper& editMe
     auto snapMenu = modifyMenu.AddMenu(tr("Snap"));
 
     snapMenu.AddAction(AzToolsFramework::SnapAngle);
+    snapMenu.AddAction(AzToolsFramework::SnapToGrid);
 
     auto transformModeMenu = modifyMenu.AddMenu(tr("Transform Mode"));
     transformModeMenu.AddAction(AzToolsFramework::EditModeMove);
@@ -723,7 +730,8 @@ QMenu* LevelEditorMenuHandler::CreateViewMenu()
     // MISSING AVIRECORDER
 
     viewportViewsMenuWrapper.AddSeparator();
-    viewportViewsMenuWrapper.AddAction(ID_DISPLAY_SHOWHELPERS);
+    viewportViewsMenuWrapper.AddAction(AzToolsFramework::Helpers);
+    viewportViewsMenuWrapper.AddAction(AzToolsFramework::Icons);
 
     // Refresh Style
     viewMenu.AddAction(ID_SKINS_REFRESH);
@@ -832,7 +840,7 @@ QAction* LevelEditorMenuHandler::CreateViewPaneAction(const QtViewPane* view)
 
         if (view->m_options.showOnToolsToolbar)
         {
-            action->setIcon(QIcon(view->m_options.toolbarIcon));
+            action->setIcon(QIcon(view->m_options.toolbarIcon.c_str()));
         }
 
         m_actionManager->AddAction(view->m_id, action);

@@ -55,14 +55,6 @@ def pytest_configure(config):
     ly_test_tools._internal.pytest_plugin.build_directory = _get_build_directory(config)
     ly_test_tools._internal.pytest_plugin.output_path = _get_output_path(config)
 
-
-def pytest_pycollect_makeitem(collector, name, obj):
-    import inspect
-    if inspect.isclass(obj):
-        for base in obj.__bases__:
-            if hasattr(base, "pytest_custom_makeitem"):
-                return base.pytest_custom_makeitem(collector, name, obj)
-
 def _get_build_directory(config):
     """
     Fetch and verify the cmake build directory CLI arg, without creating an error when unset
@@ -421,7 +413,7 @@ def crash_log_watchdog(request, workspace):
 
 def _crash_log_watchdog(request, workspace, raise_on_crash):
     """Separate implementation to call directly during unit tests"""
-    error_log = os.path.join(workspace.paths.project_log(), 'error.log')
+    error_log = workspace.paths.crash_log()
     crash_log_watchdog = ly_test_tools.environment.watchdog.CrashLogWatchdog(
         error_log, raise_on_condition=raise_on_crash)
 

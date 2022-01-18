@@ -10,11 +10,12 @@
 #include <gmock/gmock.h>
 
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzFramework/Physics/HeightfieldProviderBus.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
+#include <TerrainSystem/TerrainSystemBus.h>
 
 namespace UnitTest
 {
-
     class MockTerrainSystemService : private Terrain::TerrainSystemServiceRequestBus::Handler
     {
     public:
@@ -33,27 +34,8 @@ namespace UnitTest
 
         MOCK_METHOD1(RegisterArea, void(AZ::EntityId areaId));
         MOCK_METHOD1(UnregisterArea, void(AZ::EntityId areaId));
-        MOCK_METHOD1(RefreshArea, void(AZ::EntityId areaId));
-    };
-
-    class MockTerrainDataNotificationListener : public AzFramework::Terrain::TerrainDataNotificationBus::Handler
-    {
-    public:
-        MockTerrainDataNotificationListener()
-        {
-            AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
-        }
-
-        ~MockTerrainDataNotificationListener()
-        {
-            AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
-        }
-
-        MOCK_METHOD0(OnTerrainDataCreateBegin, void());
-        MOCK_METHOD0(OnTerrainDataCreateEnd, void());
-        MOCK_METHOD0(OnTerrainDataDestroyBegin, void());
-        MOCK_METHOD0(OnTerrainDataDestroyEnd, void());
-        MOCK_METHOD2(OnTerrainDataChanged, void(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask));
+        MOCK_METHOD2(
+            RefreshArea, void(AZ::EntityId areaId, AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask changeMask));
     };
 
     class MockTerrainAreaHeightRequests : public Terrain::TerrainAreaHeightRequestBus::Handler
@@ -69,11 +51,7 @@ namespace UnitTest
             Terrain::TerrainAreaHeightRequestBus::Handler::BusDisconnect();
         }
 
-        MOCK_METHOD3(GetHeight, void(
-            const AZ::Vector3& inPosition,
-            AZ::Vector3& outPosition,
-            bool& terrainExists));
-
+        MOCK_METHOD3(GetHeight, void(const AZ::Vector3& inPosition, AZ::Vector3& outPosition, bool& terrainExists));
     };
 
     class MockTerrainSpawnerRequests : public Terrain::TerrainSpawnerRequestBus::Handler
@@ -92,4 +70,5 @@ namespace UnitTest
         MOCK_METHOD2(GetPriority, void(AZ::u32& outLayer, AZ::u32& outPriority));
         MOCK_METHOD0(GetUseGroundPlane, bool());
     };
-}
+
+} // namespace UnitTest

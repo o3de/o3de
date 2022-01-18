@@ -17,6 +17,7 @@
 #include <MorphTargets/MorphTargetDispatchItem.h>
 
 #include <Atom/RPI.Public/Model/ModelLodUtils.h>
+#include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
@@ -24,7 +25,6 @@
 
 #include <Atom/RHI/CommandList.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Jobs/JobCompletion.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/RTTI/TypeInfo.h>
@@ -94,13 +94,13 @@ namespace AZ
                         renderProxy.m_instance->m_model->WaitForUpload();
                     }
 
-                    //Note: we are creating pointers to the meshDataInstance cullpacket and lod packet here,
+                    //Note: we are creating pointers to the modelDataInstance cullpacket and lod packet here,
                     //and holding them until the skinnedMeshDispatchItems are dispatched. There is an assumption that the underlying
                     //data will not move during this phase.
-                    MeshDataInstance& meshDataInstance = **renderProxy.m_meshHandle;
-                    m_workgroup.m_cullPackets.push_back(&meshDataInstance.GetCullPacket());
-                    m_workgroup.m_drawListMask |= meshDataInstance.GetCullPacket().m_drawListMask;
-                    m_lodPackets.push_back(&meshDataInstance.GetLodPacket());
+                    ModelDataInstance& modelDataInstance = **renderProxy.m_meshHandle;
+                    m_workgroup.m_cullPackets.push_back(&modelDataInstance.GetCullPacket());
+                    m_workgroup.m_drawListMask |= modelDataInstance.GetCullPacket().m_drawListMask;
+                    m_lodPackets.push_back(&modelDataInstance.GetLodPacket());
                     m_potentiallyVisibleProxies.push_back(&renderProxy);
                 }
             }
@@ -186,8 +186,8 @@ namespace AZ
                     renderProxy.m_instance->m_model->WaitForUpload();
                 }
 
-                MeshDataInstance& meshDataInstance = **renderProxy.m_meshHandle;
-                const RPI::Cullable& cullable = meshDataInstance.GetCullable();
+                ModelDataInstance& modelDataInstance = **renderProxy.m_meshHandle;
+                const RPI::Cullable& cullable = modelDataInstance.GetCullable();
 
                 for (const RPI::ViewPtr& viewPtr : packet.m_views)
                 {
@@ -241,12 +241,12 @@ namespace AZ
 
         void SkinnedMeshFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
         {
-            InitSkinningAndMorphPass(pipeline->GetRootPass());
+            InitSkinningAndMorphPass(pipeline.get());
         }
 
         void SkinnedMeshFeatureProcessor::OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline)
         {
-            InitSkinningAndMorphPass(renderPipeline->GetRootPass());
+            InitSkinningAndMorphPass(renderPipeline);
         }
 
         void SkinnedMeshFeatureProcessor::OnBeginPrepareRender()
@@ -289,9 +289,10 @@ namespace AZ
             return false;
         }
 
-        void SkinnedMeshFeatureProcessor::InitSkinningAndMorphPass(const RPI::Ptr<RPI::ParentPass> pipelineRootPass)
+        void SkinnedMeshFeatureProcessor::InitSkinningAndMorphPass(RPI::RenderPipeline* renderPipeline)
         {
-            RPI::Ptr<RPI::Pass> skinningPass = pipelineRootPass->FindPassByNameRecursive(AZ::Name{ "SkinningPass" });
+            RPI::PassFilter skinPassFilter = RPI::PassFilter::CreateWithPassName(AZ::Name{ "SkinningPass" }, renderPipeline);
+            RPI::Ptr<RPI::Pass> skinningPass = RPI::PassSystemInterface::Get()->FindFirstPass(skinPassFilter);
             if (skinningPass)
             {
                 SkinnedMeshComputePass* skinnedMeshComputePass = azdynamic_cast<SkinnedMeshComputePass*>(skinningPass.get());
@@ -310,7 +311,8 @@ namespace AZ
                 }
             }
 
-            RPI::Ptr<RPI::Pass> morphTargetPass = pipelineRootPass->FindPassByNameRecursive(AZ::Name{ "MorphTargetPass" });
+            RPI::PassFilter morphPassFilter = RPI::PassFilter::CreateWithPassName(AZ::Name{ "MorphTargetPass" }, renderPipeline);
+            RPI::Ptr<RPI::Pass> morphTargetPass = RPI::PassSystemInterface::Get()->FindFirstPass(morphPassFilter);
             if (morphTargetPass)
             {
                 MorphTargetComputePass* morphTargetComputePass = azdynamic_cast<MorphTargetComputePass*>(morphTargetPass.get());

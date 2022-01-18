@@ -309,12 +309,20 @@ void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(const {{ Prop
 {#
 
 #}
+{% macro PrintRpcParameters(printPrefix, paramDefines) -%}
+{% if paramDefines|count > 0 -%}
+{{ printPrefix }}{{ ', '.join(paramDefines) }}
+{%- endif %}
+{%- endmacro -%}
+{#
+
+#}
 {% macro DefineRpcInvocation(Component, ClassName, Property, InvokeFrom, HandleOn) %}
 {%     set paramNames   = [] %}
 {%     set paramTypes   = [] %}
 {%     set paramDefines = [] %}
 {{     AutoComponentMacros.ParseRpcParams(Property, paramNames, paramTypes, paramDefines) }}
-void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(paramDefines) }})
+void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}({{ PrintRpcParameters('', paramDefines) }})
 {
     constexpr Multiplayer::RpcIndex rpcId = static_cast<Multiplayer::RpcIndex>({{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure::{{ UpperFirst(Property.attrib['Name']) }});
 {% if Property.attrib['IsReliable']|booleanTrue %}
@@ -341,26 +349,10 @@ void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(par
 {#
 
 #}
-{% macro DefineRpcSignal(Component, ClassName, Property, InvokeFrom) %}
-{%     set paramNames   = [] %}
-{%     set paramTypes   = [] %}
-{%     set paramDefines = [] %}
-{{     AutoComponentMacros.ParseRpcParams(Property, paramNames, paramTypes, paramDefines) }}
-void {{ ClassName }}::Signal{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(paramDefines) }})
-{
-    m_{{ UpperFirst(Property.attrib['Name']) }}Event.Signal({{ ', '.join(paramNames) }});
-}
-{% endmacro %}
-{#
-
-#}
 {% macro DefineRpcInvocations(Component, ClassName, InvokeFrom, HandleOn, IsProtected) %}
 {% call(Property) AutoComponentMacros.ParseRemoteProcedures(Component, InvokeFrom, HandleOn) %}
 {%    if Property.attrib['IsPublic']|booleanTrue != IsProtected %}
 {{ DefineRpcInvocation(Component, ClassName, Property, InvokeFrom, HandleOn) -}}
-{%    if Property.attrib['GenerateEventBindings']|booleanTrue == true %}
-{{ DefineRpcSignal(Component, ClassName, Property, InvokeFrom) -}}
-{% endif %}
 {%    endif %}
 {% endcall %}
 {% endmacro %}
@@ -374,34 +366,45 @@ void {{ ClassName }}::Signal{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.jo
 {%     set paramTypes   = [] %}
 {%     set paramDefines = [] %}
 {{     AutoComponentMacros.ParseRpcParams(Property, paramNames, paramTypes, paramDefines) }}
-            ->Method("{{ UpperFirst(Property.attrib['Name']) }}", [](const {{ ClassName }}* self, {{ ', '.join(paramDefines) }}) {
-                        self->m_controller->{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(paramNames) }});
-                    })
-            ->Method("{{ UpperFirst(Property.attrib['Name']) }}ByEntityId", [](AZ::EntityId id, {{ ', '.join(paramDefines) }}) {
-
-                        AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
-                        if (!entity)
-                        {
-                            AZ_Warning("Network Property", false, "{{ ClassName }} {{ UpperFirst(Property.attrib['Name']) }}ByEntityId failed. The entity with id %s doesn't exist, please provide a valid entity id.", id.ToString().c_str())
-                            return;
-                        }
-
-                        {{ ClassName }}* networkComponent = entity->FindComponent<{{ ClassName }}>();
-                        if (!networkComponent)
-                        {
-                            AZ_Warning("Network Property", false, "{{ ClassName }} {{ UpperFirst(Property.attrib['Name']) }}ByEntityId failed. Entity '%s' (id: %s) is missing {{ ClassName }}, be sure to add {{ ClassName }} to this entity.", entity->GetName().c_str(), id.ToString().c_str())
-                            return;
-                        }
-
-                        {{ ClassName }}Controller* controller = static_cast<{{ ClassName }}Controller*>(networkComponent->GetController());
-                        if (!controller)
-                        {
-                            AZ_Warning("Network Property", false, "{{ ClassName }} {{ UpperFirst(Property.attrib['Name']) }}ByEntityId method failed. Entity '%s' (id: %s) {{ ClassName }} is missing the network controller. This RemoteProcedure can only be invoked from {{InvokeFrom}} network entities, because this entity doesn't have a controller, it must not be a {{InvokeFrom}} entity. Please check your network context before attempting to call {{ UpperFirst(Property.attrib['Name']) }}.", entity->GetName().c_str(), id.ToString().c_str())
-                            return;
-                        }
-
-                        controller->{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(paramNames) }});
-                    }, { { { "Source", "The Source containing the {{ ClassName }}Controller" }{% for paramName in paramNames %}, {"{{ paramName }}"}{% endfor %}}})
+            ->Method("{{ UpperFirst(Property.attrib['Name']) }}", []({{ ClassName }}* self{{ PrintRpcParameters(', ', paramDefines) }}){
+{%            if (InvokeFrom == 'Server')  %}
+                self->{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(paramNames) }});
+{%            elif (InvokeFrom == 'Authority') or (InvokeFrom == 'Autonomous') %}
+                if (self->m_controller)
+                {
+                    self->m_controller->{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(paramNames) }});
+                }
+                else
+                {
+                    AZ_Warning("Network RPC", false, "{{ ClassName }} {{ UpperFirst(Property.attrib['Name']) }} method failed. Entity '%s' (id: %s) {{ ClassName }} is missing the network controller. This remote-procedure can only be invoked from {{InvokeFrom}} network entities, because this entity doesn't have a controller, it must not be a {{InvokeFrom}} entity. Please check your network context before attempting to call {{ UpperFirst(Property.attrib['Name']) }}.", self->GetEntity()->GetName().c_str(), self->GetEntityId().ToString().c_str())
+                }
+{%            endif %}
+            })
+            ->Method("{{ UpperFirst(Property.attrib['Name']) }}ByEntityId", [](AZ::EntityId id{{ PrintRpcParameters(', ', paramDefines) }}) {
+                AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
+                if (!entity)
+                {
+                    AZ_Warning("Network RPC", false, "{{ ClassName }} {{ UpperFirst(Property.attrib['Name']) }}ByEntityId failed. The entity with id %s doesn't exist, please provide a valid entity id.", id.ToString().c_str())
+                    return;
+                }
+                {{ ClassName }}* networkComponent = entity->FindComponent<{{ ClassName }}>();
+                if (!networkComponent)
+                {
+                    AZ_Warning("Network RPC", false, "{{ ClassName }} {{ UpperFirst(Property.attrib['Name']) }}ByEntityId failed. Entity '%s' (id: %s) is missing {{ ClassName }}, be sure to add {{ ClassName }} to this entity.", entity->GetName().c_str(), id.ToString().c_str())
+                    return;
+                }
+{%            if (InvokeFrom == 'Server') %}
+                networkComponent->{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(paramNames) }});
+{%            elif (InvokeFrom == 'Authority') or (InvokeFrom == 'Autonomous') %}
+                {{ ClassName }}Controller* controller = static_cast<{{ ClassName }}Controller*>(networkComponent->GetController());
+                if (!controller)
+                {
+                    AZ_Warning("Network RPC", false, "{{ ClassName }} {{ UpperFirst(Property.attrib['Name']) }}ByEntityId method failed. Entity '%s' (id: %s) {{ ClassName }} is missing the network controller. This RemoteProcedure can only be invoked from {{InvokeFrom}} network entities, because this entity doesn't have a controller, it must not be a {{InvokeFrom}} entity. Please check your network context before attempting to call {{ UpperFirst(Property.attrib['Name']) }}.", entity->GetName().c_str(), id.ToString().c_str())
+                    return;
+                }
+                controller->{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(paramNames) }});
+{%            endif %}
+            }, { { { "Source", "The Source containing the {{ ClassName }}Controller" }{% for paramName in paramNames %}, {"{{ paramName }}"}{% endfor %}}})
                 ->Attribute(AZ::Script::Attributes::ToolTip, "{{Property.attrib['Description']}}")
 {%    endif %}
 {% endcall %}
@@ -436,9 +439,13 @@ void {{ ClassName }}::Signal{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.jo
 {%     set paramTypes   = [] %}
 {%     set paramDefines = [] %}
 {{     AutoComponentMacros.ParseRpcParams(Property, paramNames, paramTypes, paramDefines) }}
-        ->Method("Get{{ UpperFirst(Property.attrib['Name']) }}Event", [](const {{ ClassName }}* self) -> AZ::Event<{{ ', '.join(paramTypes) }}>&
+        ->Method("Get{{ UpperFirst(Property.attrib['Name']) }}Event", []({{ ClassName }}* self) -> AZ::Event<{{ ', '.join(paramTypes) }}>&
         {
+{%        if HandleOn == 'Client' %}
+            return self->Get{{ UpperFirst(Property.attrib['Name']) }}Event();
+{%        elif (HandleOn == 'Authority') or (HandleOn == 'Autonomous') %}
             return self->m_controller->Get{{ UpperFirst(Property.attrib['Name']) }}Event();
+{%        endif %}
         })
             ->Attribute(AZ::Script::Attributes::AzEventDescription, {{ LowerFirst(Property.attrib['Name']) }}EventDesc)
         ->Method("Get{{ UpperFirst(Property.attrib['Name']) }}EventByEntityId", [](AZ::EntityId id) -> AZ::Event<{{ ', '.join(paramTypes) }}>*
@@ -456,7 +463,9 @@ void {{ ClassName }}::Signal{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.jo
                 AZ_Warning("Network Property", false, "{{ ClassName }} Get{{ UpperFirst(Property.attrib['Name']) }}EventByEntityId failed. Entity '%s' (id: %s) is missing {{ ClassName }}, be sure to add {{ ClassName }} to this entity.", entity->GetName().c_str(), id.ToString().c_str())
                 return nullptr;
             }
-
+{%        if HandleOn == 'Client' %}
+            return &networkComponent->Get{{ UpperFirst(Property.attrib['Name']) }}Event();
+{%        elif (HandleOn == 'Authority') or (HandleOn == 'Autonomous') %}
             {{ ClassName }}Controller* controller = static_cast<{{ ClassName }}Controller*>(networkComponent->GetController());
             if (!controller)
             {
@@ -465,6 +474,7 @@ void {{ ClassName }}::Signal{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.jo
             }
 
             return &controller->Get{{ UpperFirst(Property.attrib['Name']) }}Event();
+{%        endif %}
         })
             ->Attribute(AZ::Script::Attributes::AzEventDescription, AZStd::move({{ LowerFirst(Property.attrib['Name']) }}EventDesc))
 {% endif %}
@@ -493,30 +503,32 @@ case {{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure::{{ Upp
             if (m_controller)
             {
                 AZ_Assert(GetNetBindComponent()->GetNetEntityRole() == Multiplayer::NetEntityRole::Authority, "Entity proxy does not have authority");
-                m_controller->Handle{{ UpperFirst(Property.attrib['Name']) }}(invokingConnection, {{ ', '.join(rpcParamList) }});
-{% if Property.attrib['GenerateEventBindings']|booleanTrue == true %}
-                m_controller->Signal{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(rpcParamList) }});
-{% endif %}
+                m_controller->Handle{{ UpperFirst(Property.attrib['Name']) }}(invokingConnection{{ PrintRpcParameters(', ', rpcParamList) }});
+{%            if (Property.attrib['GenerateEventBindings']|booleanTrue == true) %}
+                m_controller->Get{{ UpperFirst(Property.attrib['Name']) }}Event().Signal({{ PrintRpcParameters('', rpcParamList) }});
+{%            endif %}
             }
-{% if Property.attrib['IsReliable']|booleanTrue %}
-{# if the rpc is not reliable we can simply drop it, also note message reliability type is default reliable in EntityRpcMessage #}
             else // Note that this rpc is marked reliable, trigger the appropriate rpc event so it can be forwarded
             {
+{%            if Property.attrib['IsReliable']|booleanTrue %}
+{#              if the rpc is not reliable we can simply drop it, also note message reliability type is default reliable in EntityRpcMessage #}
                 m_netBindComponent->{{ "GetSend" + InvokeFrom + "To" + HandleOn + "RpcEvent" }}().Signal(message);
+{%            endif %}
             }
-
-{% endif %}
 {% elif HandleOn == 'Autonomous' %}
             if (m_controller)
             {
                 AZ_Assert(GetNetBindComponent()->GetNetEntityRole() == Multiplayer::NetEntityRole::Autonomous, "Entity proxy does not have autonomy");
-                m_controller->Handle{{ UpperFirst(Property.attrib['Name']) }}(invokingConnection, {{ ', '.join(rpcParamList) }});
-{% if Property.attrib['GenerateEventBindings']|booleanTrue == true %}
-                m_controller->Signal{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(rpcParamList) }});
-{% endif %}
+                m_controller->Handle{{ UpperFirst(Property.attrib['Name']) }}(invokingConnection{{ PrintRpcParameters(', ', rpcParamList) }});
+{%            if Property.attrib['GenerateEventBindings']|booleanTrue == true %}
+                m_controller->Get{{ UpperFirst(Property.attrib['Name']) }}Event().Signal({{ PrintRpcParameters('', rpcParamList) }});
+{%            endif %}
             }
-{% else %}
-            Handle{{ UpperFirst(Property.attrib['Name']) }}(invokingConnection, {{ ', '.join(rpcParamList) }});
+{% elif HandleOn == 'Client' %}
+            Handle{{ UpperFirst(Property.attrib['Name']) }}(invokingConnection{{ PrintRpcParameters(', ', rpcParamList) }});
+{%        if Property.attrib['GenerateEventBindings']|booleanTrue == true %}
+            m_{{ UpperFirst(Property.attrib['Name']) }}Event.Signal({{ PrintRpcParameters('', rpcParamList) }});
+{%        endif %}
 {% endif %}
         }
         else if (paramsSerialized)

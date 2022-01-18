@@ -1300,6 +1300,35 @@ namespace SettingsRegistryTests
     }
 
     //
+    // MergeSettings
+    //
+    TEST_F(SettingsRegistryTest, MergeSettings_MergeJsonWithAnchorKey_StoresSettingsUnderneathKey)
+    {
+        constexpr AZStd::string_view anchorKey = "/Anchor/Root/0";
+        constexpr auto mergeFormat = AZ::SettingsRegistryInterface::Format::JsonMergePatch;
+        EXPECT_TRUE(m_registry->MergeSettings(R"({ "Test": "1" })", mergeFormat, anchorKey));
+        EXPECT_EQ(AZ::SettingsRegistryInterface::Type::Array, m_registry->GetType("/Anchor/Root"));
+        EXPECT_EQ(AZ::SettingsRegistryInterface::Type::Object, m_registry->GetType("/Anchor/Root/0"));
+        EXPECT_EQ(AZ::SettingsRegistryInterface::Type::String, m_registry->GetType("/Anchor/Root/0/Test"));
+    }
+
+    TEST_F(SettingsRegistryTest, MergeSettings_NotifierSignals_AtAnchorKeyAndStoresMergeType)
+    {
+        AZStd::string_view anchorKey = "/Anchor/Root";
+        bool callbackInvoked{};
+        auto callback = [anchorKey, &callbackInvoked](AZStd::string_view path, AZ::SettingsRegistryInterface::Type type)
+        {
+            EXPECT_EQ(anchorKey, path);
+            EXPECT_EQ(AZ::SettingsRegistryInterface::Type::Array, type);
+            callbackInvoked = true;
+        };
+        auto testNotifier1 = m_registry->RegisterNotifier(callback);
+        constexpr auto mergeFormat = AZ::SettingsRegistryInterface::Format::JsonMergePatch;
+        EXPECT_TRUE(m_registry->MergeSettings(R"([ "Test" ])", mergeFormat, anchorKey));
+        EXPECT_TRUE(callbackInvoked);
+    }
+
+    //
     // MergeSettingsFile
     //
 
@@ -1331,7 +1360,7 @@ namespace SettingsRegistryTests
 
         auto callback = [this](AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
         {
-            EXPECT_TRUE(path.empty());
+            EXPECT_EQ("/Path", path);
             AZ::s64 value = -1;
             bool result = m_registry->Get(value, "/Path/Test");
             EXPECT_TRUE(result);

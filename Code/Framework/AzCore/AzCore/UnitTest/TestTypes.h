@@ -13,8 +13,6 @@
 
 #include <AzCore/Debug/BudgetTracker.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/Driller/Driller.h>
-#include <AzCore/Memory/MemoryDriller.h>
 #include <AzCore/Memory/AllocationRecords.h>
 
 #if defined(HAVE_BENCHMARK)
@@ -39,7 +37,6 @@ namespace UnitTest
     */
     class AllocatorsBase
     {
-        AZ::Debug::DrillerManager* m_drillerManager;
         bool m_ownsAllocator{};
     public:
 
@@ -47,8 +44,7 @@ namespace UnitTest
 
         void SetupAllocator(const AZ::SystemAllocator::Descriptor& allocatorDesc = {})
         {
-            m_drillerManager = AZ::Debug::DrillerManager::Create();
-            m_drillerManager->Register(aznew AZ::Debug::MemoryDriller);
+            AZ::AllocatorManager::Instance().EnterProfilingMode();
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
 
             // Only create the SystemAllocator if it s not ready
@@ -68,33 +64,49 @@ namespace UnitTest
                 AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
             }
             m_ownsAllocator = false;
-            AZ::Debug::DrillerManager::Destroy(m_drillerManager);
 
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
+            AZ::AllocatorManager::Instance().ExitProfilingMode();
         }
     };
 
     /**
-    * RAII wrapper of AllocatorBase.
-    * The benefit of using this wrapper instead of AllocatorsTestFixture is that SetUp/TearDown of the allocator is managed
-    * on construction/destruction, allowing member variables of derived classes to exist as value (and do heap allocation).
-    */
-    class ScopedAllocatorSetupFixture 
-        : public ::testing::Test
-        , AllocatorsBase
+     * RAII wrapper of AllocatorBase.
+     * The benefit of using this wrapper instead of AllocatorsTestFixture is that SetUp/TearDown of the allocator is managed
+     * on construction/destruction, allowing member variables of derived classes to exist as value (and do heap allocation).
+     */
+    class ScopedAllocatorFixture : AllocatorsBase
     {
     public:
-        ScopedAllocatorSetupFixture() { SetupAllocator(); }
-        explicit ScopedAllocatorSetupFixture(const AZ::SystemAllocator::Descriptor& allocatorDesc) { SetupAllocator(allocatorDesc); }
-        ~ScopedAllocatorSetupFixture() { TeardownAllocator(); }
+        ScopedAllocatorFixture()
+        {
+            SetupAllocator();
+        }
+        explicit ScopedAllocatorFixture(const AZ::SystemAllocator::Descriptor& allocatorDesc)
+        {
+            SetupAllocator(allocatorDesc);
+        }
+        ~ScopedAllocatorFixture() override
+        {
+            TeardownAllocator();
+        }
+    };
+
+    // Like ScopedAllocatorFixture, but includes the Test base class
+    class ScopedAllocatorSetupFixture
+        : public ::testing::Test
+        , public ScopedAllocatorFixture
+    {
+    public:
+        ScopedAllocatorSetupFixture() = default;
+        explicit ScopedAllocatorSetupFixture(const AZ::SystemAllocator::Descriptor& allocatorDesc) : ScopedAllocatorFixture(allocatorDesc){}
     };
 
     /**
     * Helper class to handle the boiler plate of setting up a test fixture that uses the system allocators
     * If you wish to do additional setup and tear down be sure to call the base class SetUp first and TearDown
     * last.
-    * By default memory tracking through driller is enabled.
-    * Defaults to a heap size of 15 MB
+    * By default memory tracking is enabled.
     */
 
     class AllocatorsTestFixture
@@ -119,12 +131,12 @@ namespace UnitTest
     using AllocatorsFixture = AllocatorsTestFixture;
 
 #if defined(HAVE_BENCHMARK)
+
     /**
     * Helper class to handle the boiler plate of setting up a benchmark fixture that uses the system allocators
     * If you wish to do additional setup and tear down be sure to call the base class SetUp first and TearDown
     * last.
-    * By default memory tracking through driller is disabled.
-    * Defaults to a heap size of 15 MB
+    * By default memory tracking is enabled.
     */
     class AllocatorsBenchmarkFixture
         : public ::benchmark::Fixture
@@ -224,7 +236,7 @@ namespace UnitTest
         static constexpr bool sHasPadding = size < alignment;
         AZStd::enable_if<sHasPadding, char[(alignment - size) % alignment]> mPadding;
     };
-    
+
     template <AZ::u32 size, AZ::u8 instance, size_t alignment>
     int CreationCounter<size, instance, alignment>::s_count = 0;
     template <AZ::u32 size, AZ::u8 instance, size_t alignment>

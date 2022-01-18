@@ -12,7 +12,6 @@
 
 #if defined(AZ_RESTRICTED_PLATFORM) || defined(AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS)
 #undef AZ_RESTRICTED_SECTION
-#define SYSTEMINIT_CPP_SECTION_1 1
 #define SYSTEMINIT_CPP_SECTION_2 2
 #define SYSTEMINIT_CPP_SECTION_3 3
 #define SYSTEMINIT_CPP_SECTION_4 4
@@ -31,7 +30,6 @@
 #define SYSTEMINIT_CPP_SECTION_17 17
 #endif
 
-#include "CryLibrary.h"
 #include "CryPath.h"
 
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
@@ -54,7 +52,6 @@
 #include <AzFramework/Archive/ArchiveFileIO.h>
 
 #include <LoadScreenBus.h>
-#include <LyShine/Bus/UiSystemBus.h>
 #include <AzFramework/Logging/MissingAssetLogger.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
 #include <AzCore/Interface/Interface.h>
@@ -70,9 +67,6 @@
 #include "windows.h"
 #include <float.h>
 
-// To enable profiling with vtune (https://software.intel.com/en-us/intel-vtune-amplifier-xe), make sure the line below is not commented out
-//#define  PROFILE_WITH_VTUNE
-
 #endif //WIN32
 
 #include <IRenderer.h>
@@ -82,8 +76,6 @@
 #include <IAudioSystem.h>
 #include <ICmdLine.h>
 #include <IProcess.h>
-#include <LyShine/ILyShine.h>
-#include <HMDBus.h>
 
 #include <AzFramework/Archive/Archive.h>
 #include "XConsole.h"
@@ -93,7 +85,6 @@
 #include "SystemEventDispatcher.h"
 #include "LevelSystem/LevelSystem.h"
 #include "LevelSystem/SpawnableLevelSystem.h"
-#include "ViewSystem/ViewSystem.h"
 #include <CrySystemBus.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Jobs/JobManagerBus.h>
@@ -171,48 +162,12 @@ void CryEngineSignalHandler(int signal)
 
 #define LOCALIZATION_TRANSLATIONS_LIST_FILE_NAME "Libs/Localization/localization.xml"
 
-//////////////////////////////////////////////////////////////////////////
-#if defined(WIN32) || defined(LINUX) || defined(APPLE)
-#   define DLL_MODULE_INIT_ISYSTEM "ModuleInitISystem"
-#   define DLL_MODULE_SHUTDOWN_ISYSTEM "ModuleShutdownISystem"
-#   define DLL_INITFUNC_RENDERER "PackageRenderConstructor"
-#   define DLL_INITFUNC_SOUND "CreateSoundSystem"
-#   define DLL_INITFUNC_FONT "CreateCryFontInterface"
-#   define DLL_INITFUNC_3DENGINE "CreateCry3DEngine"
-#   define DLL_INITFUNC_UI "CreateLyShineInterface"
-#define AZ_RESTRICTED_SECTION_IMPLEMENTED
-#elif defined(AZ_RESTRICTED_PLATFORM)
-#define AZ_RESTRICTED_SECTION SYSTEMINIT_CPP_SECTION_1
-#include AZ_RESTRICTED_FILE(SystemInit_cpp)
-#endif
-#if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-#undef AZ_RESTRICTED_SECTION_IMPLEMENTED
-#else
-#   define DLL_MODULE_INIT_ISYSTEM (LPCSTR)2
-#   define DLL_MODULE_SHUTDOWN_ISYSTEM (LPCSTR)3
-#   define DLL_INITFUNC_RENDERER  (LPCSTR)1
-#   define DLL_INITFUNC_RENDERER  (LPCSTR)1
-#   define DLL_INITFUNC_SOUND     (LPCSTR)1
-#   define DLL_INITFUNC_PHYSIC    (LPCSTR)1
-#   define DLL_INITFUNC_FONT      (LPCSTR)1
-#   define DLL_INITFUNC_3DENGINE  (LPCSTR)1
-#   define DLL_INITFUNC_UI        (LPCSTR)1
-#endif
-
 #define AZ_TRACE_SYSTEM_WINDOW AZ::Debug::Trace::GetDefaultSystemWindow()
 
 #ifdef WIN32
 extern HMODULE gDLLHandle;
 #endif
 
-namespace
-{
-#if defined(AZ_PLATFORM_WINDOWS)
-    // on windows, we lock our cache using a lockfile.  On other platforms this is not necessary since devices like ios, android, consoles cannot
-    // run more than one game process that uses the same folder anyway.
-    HANDLE g_cacheLock = INVALID_HANDLE_VALUE;
-#endif
-}
 
 //static int g_sysSpecChanged = false;
 
@@ -292,96 +247,6 @@ static void CmdCrashTest(IConsoleCmdArgs* pArgs)
 }
 AZ_POP_DISABLE_WARNING
 
-//////////////////////////////////////////////////////////////////////////
-struct SysSpecOverrideSink
-    : public ILoadConfigurationEntrySink
-{
-    virtual void OnLoadConfigurationEntry(const char* szKey, const char* szValue, const char* szGroup)
-    {
-        ICVar* pCvar = gEnv->pConsole->GetCVar(szKey);
-
-        if (pCvar)
-        {
-            const bool wasNotInConfig = ((pCvar->GetFlags() & VF_WASINCONFIG) == 0);
-            bool applyCvar = wasNotInConfig;
-            if (applyCvar == false)
-            {
-                // Special handling for sys_spec_full
-                if (azstricmp(szKey, "sys_spec_full") == 0)
-                {
-                    // If it is set to 0 then ignore this request to set to something else
-                    // If it is set to 0 then the user wants to changes system spec settings in system.cfg
-                    if (pCvar->GetIVal() != 0)
-                    {
-                        applyCvar = true;
-                    }
-                }
-                else
-                {
-                    // This could bypass the restricted cvar checks that exist elsewhere depending on
-                    // the calling code so we also need check here before setting.
-                    bool isConst = pCvar->IsConstCVar();
-                    bool isCheat = ((pCvar->GetFlags() & (VF_CHEAT | VF_CHEAT_NOCHECK | VF_CHEAT_ALWAYS_CHECK)) != 0);
-                    bool isReadOnly = ((pCvar->GetFlags() & VF_READONLY) != 0);
-                    bool isDeprecated = ((pCvar->GetFlags() & VF_DEPRECATED) != 0);
-                    bool allowApplyCvar = true;
-
-                    if ((isConst || isCheat || isReadOnly) || isDeprecated)
-                    {
-                        allowApplyCvar = !isDeprecated && (gEnv->pSystem->IsDevMode()) || (gEnv->IsEditor());
-                    }
-
-                    if ((allowApplyCvar) || ALLOW_CONST_CVAR_MODIFICATIONS)
-                    {
-                        applyCvar = true;
-                    }
-                }
-            }
-
-            if (applyCvar)
-            {
-                pCvar->Set(szValue);
-            }
-            else
-            {
-                CryLogAlways("NOT VF_WASINCONFIG Ignoring cvar '%s' new value '%s' old value '%s' group '%s'", szKey, szValue, pCvar->GetString(), szGroup);
-            }
-        }
-        else
-        {
-            CryLogAlways("Can't find cvar '%s' value '%s' group '%s'", szKey, szValue, szGroup);
-        }
-    }
-};
-
-#if !defined(CONSOLE)
-struct SysSpecOverrideSinkConsole
-    : public ILoadConfigurationEntrySink
-{
-    virtual void OnLoadConfigurationEntry(const char* szKey, const char* szValue, const char* szGroup)
-    {
-        // Ignore platform-specific cvars that should just be executed on the console
-        if (azstricmp(szGroup, "Platform") == 0)
-        {
-            return;
-        }
-
-        ICVar* pCvar = gEnv->pConsole->GetCVar(szKey);
-        if (pCvar)
-        {
-            pCvar->Set(szValue);
-        }
-        else
-        {
-            // If the cvar doesn't exist, calling this function only saves the value in case it's registered later where
-            // at that point it will be set from the stored value. This is required because otherwise registering the
-            // cvar bypasses any callbacks and uses values directly from the cvar group files.
-            gEnv->pConsole->LoadConfigVar(szKey, szValue);
-        }
-    }
-};
-#endif
-
 static ESystemConfigPlatform GetDevicePlatform()
 {
 #if defined(AZ_PLATFORM_WINDOWS) || defined(AZ_PLATFORM_LINUX)
@@ -403,117 +268,6 @@ static ESystemConfigPlatform GetDevicePlatform()
     AZ_Assert(false, "Platform not supported");
     return CONFIG_INVALID_PLATFORM;
 #endif
-}
-
-//////////////////////////////////////////////////////////////////////////
-#if !defined(AZ_MONOLITHIC_BUILD)
-
-AZStd::unique_ptr<AZ::DynamicModuleHandle> CSystem::LoadDynamiclibrary(const char* dllName) const
-{
-    AZStd::unique_ptr<AZ::DynamicModuleHandle> handle = AZ::DynamicModuleHandle::Create(dllName);
-
-    bool libraryLoaded = handle->Load(false);
-    // We need to inject the environment first thing so that allocators are available immediately
-    InjectEnvironmentFunction injectEnv = handle->GetFunction<InjectEnvironmentFunction>(INJECT_ENVIRONMENT_FUNCTION);
-    if (injectEnv)
-    {
-        auto env = AZ::Environment::GetInstance();
-        injectEnv(env);
-    }
-
-    if (!libraryLoaded)
-    {
-        handle.release();
-    }
-    return handle;
-}
-
-//////////////////////////////////////////////////////////////////////////
-AZStd::unique_ptr<AZ::DynamicModuleHandle> CSystem::LoadDLL(const char* dllName)
-{
-    AZ_TracePrintf(AZ_TRACE_SYSTEM_WINDOW, "Loading DLL: %s", dllName);
-
-    AZStd::unique_ptr<AZ::DynamicModuleHandle> handle = LoadDynamiclibrary(dllName);
-
-    if (!handle)
-    {
-#if defined(LINUX) || defined(APPLE)
-        AZ_Assert(false, "Error loading dylib: %s, error :  %s\n", dllName, dlerror());
-#else
-        AZ_Assert(false, "Error loading dll: %s, error code %d", dllName, GetLastError());
-#endif
-        return handle;
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // After loading DLL initialize it by calling ModuleInitISystem
-    //////////////////////////////////////////////////////////////////////////
-    AZStd::string moduleName = PathUtil::GetFileName(dllName);
-
-    typedef void*(*PtrFunc_ModuleInitISystem)(ISystem* pSystem, const char* moduleName);
-    PtrFunc_ModuleInitISystem pfnModuleInitISystem = handle->GetFunction<PtrFunc_ModuleInitISystem>(DLL_MODULE_INIT_ISYSTEM);
-    if (pfnModuleInitISystem)
-    {
-        pfnModuleInitISystem(this, moduleName.c_str());
-    }
-
-    return handle;
-}
-
-// TODO:DLL  #endif //#if defined(AZ_HAS_DLL_SUPPORT) && !defined(AZ_MONOLITHIC_BUILD)
-#endif //if !defined(AZ_MONOLITHIC_BUILD)
-//////////////////////////////////////////////////////////////////////////
-bool CSystem::LoadEngineDLLs()
-{
-    return true;
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CSystem::UnloadDLL(const char* dllName)
-{
-    bool isSuccess = false;
-
-    AZ::Crc32 key(dllName);
-    AZStd::unique_ptr<AZ::DynamicModuleHandle> empty;
-    AZStd::unique_ptr<AZ::DynamicModuleHandle>& hModule = stl::find_in_map_ref(m_moduleDLLHandles, key, empty);
-    if ((hModule) && (hModule->IsLoaded()))
-    {
-        DetachEnvironmentFunction detachEnv = hModule->GetFunction<DetachEnvironmentFunction>(DETACH_ENVIRONMENT_FUNCTION);
-        if (detachEnv)
-        {
-            detachEnv();
-        }
-
-        isSuccess = hModule->Unload();
-        hModule.release();
-    }
-
-    return isSuccess;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CSystem::ShutdownModuleLibraries()
-{
-#if !defined(AZ_MONOLITHIC_BUILD)
-    for (auto iterator = m_moduleDLLHandles.begin(); iterator != m_moduleDLLHandles.end(); ++iterator)
-    {
-        typedef void*( * PtrFunc_ModuleShutdownISystem )(ISystem* pSystem);
-
-        PtrFunc_ModuleShutdownISystem pfnModuleShutdownISystem = iterator->second->GetFunction<PtrFunc_ModuleShutdownISystem>(DLL_MODULE_SHUTDOWN_ISYSTEM);
-        if (pfnModuleShutdownISystem)
-        {
-            pfnModuleShutdownISystem(this);
-        }
-        if (iterator->second->IsLoaded())
-        {
-            iterator->second->Unload();
-        }
-        iterator->second.release();
-    }
-
-    m_moduleDLLHandles.clear();
-
-#endif // !defined(AZ_MONOLITHIC_BUILD)
 }
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -575,9 +329,6 @@ bool CSystem::InitFileSystem()
         m_pUserCallback->OnInitProgress("Initializing File System...");
     }
 
-    // get the DirectInstance FileIOBase which should be the AZ::LocalFileIO
-    m_env.pFileIO = AZ::IO::FileIOBase::GetDirectInstance();
-
     m_env.pCryPak = AZ::Interface<AZ::IO::IArchive>::Get();
     m_env.pFileIO = AZ::IO::FileIOBase::GetInstance();
     AZ_Assert(m_env.pCryPak, "CryPak has not been initialized on AZ::Interface");
@@ -601,33 +352,6 @@ bool CSystem::InitFileSystem()
 
 void CSystem::ShutdownFileSystem()
 {
-#if defined(AZ_PLATFORM_WINDOWS)
-    if (g_cacheLock != INVALID_HANDLE_VALUE)
-    {
-        CloseHandle(g_cacheLock);
-        g_cacheLock = INVALID_HANDLE_VALUE;
-    }
-#endif
-
-    using namespace AZ::IO;
-
-    FileIOBase* directInstance = FileIOBase::GetDirectInstance();
-    FileIOBase* pakInstance = FileIOBase::GetInstance();
-
-    if (directInstance == m_env.pFileIO)
-    {
-        // we only mess with file io if we own the instance that we installed.
-        // if we dont' own the instance, then we never configured fileIO and we should not alter it.
-        delete directInstance;
-        FileIOBase::SetDirectInstance(nullptr);
-
-        if (pakInstance != directInstance)
-        {
-            delete pakInstance;
-            FileIOBase::SetInstance(nullptr);
-        }
-    }
-
     m_env.pFileIO = nullptr;
 }
 
@@ -649,7 +373,7 @@ bool CSystem::InitFileSystem_LoadEngineFolders(const SSystemInitParams&)
     auto projectName = AZ::Utils::GetProjectName();
     AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Project Name: %s\n", projectName.empty() ? "None specified" : projectName.c_str());
 
-    OpenBasicPaks();
+    OpenPlatformPaks();
 
     // Load game-specific folder.
     LoadConfiguration("game.cfg");
@@ -702,33 +426,6 @@ bool CSystem::InitAudioSystem(const SSystemInitParams& initParams)
     }
 
     return result;
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CSystem::InitVTuneProfiler()
-{
-#ifdef PROFILE_WITH_VTUNE
-
-    WIN_HMODULE hModule = LoadDLL("VTuneApi.dll");
-    if (!hModule)
-    {
-        return false;
-    }
-
-        VTPause = (VTuneFunction) CryGetProcAddress(hModule, "VTPause");
-        VTResume = (VTuneFunction) CryGetProcAddress(hModule, "VTResume");
-        if (!VTPause || !VTResume)
-        {
-        AZ_Assert(false, "VTune did not initialize correctly.")
-        return false;
-    }
-    else
-    {
-        AZ_TracePrintf(AZ_TRACE_SYSTEM_WINDOW, "VTune API Initialized");
-    }
-#endif //PROFILE_WITH_VTUNE
-
-    return true;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -786,29 +483,19 @@ void CSystem::InitLocalization()
     OpenLanguageAudioPak(language.c_str());
 }
 
-void CSystem::OpenBasicPaks()
+void CSystem::OpenPlatformPaks()
 {
-    static bool bBasicPaksLoaded = false;
-    if (bBasicPaksLoaded)
+    static bool bPlatformPaksLoaded = false;
+    if (bPlatformPaksLoaded)
     {
         return;
     }
-    bBasicPaksLoaded = true;
-
-    // open pak files
-    constexpr AZStd::string_view paksFolder = "@products@/*.pak"; // (@products@ assumed)
-    m_env.pCryPak->OpenPacks(paksFolder);
-
-    InlineInitializationProcessing("CSystem::OpenBasicPaks OpenPacks( paksFolder.c_str() )");
+    bPlatformPaksLoaded = true;
 
     //////////////////////////////////////////////////////////////////////////
     // Open engine packs
     //////////////////////////////////////////////////////////////////////////
 
-    const char* const assetsDir = "@products@";
-
-    // After game paks to have same search order as with files on disk
-    m_env.pCryPak->OpenPack(assetsDir, "engine.pak");
 
 #if defined(AZ_RESTRICTED_PLATFORM)
 #define AZ_RESTRICTED_SECTION SYSTEMINIT_CPP_SECTION_15
@@ -816,6 +503,7 @@ void CSystem::OpenBasicPaks()
 #endif
 
 #ifdef AZ_PLATFORM_ANDROID
+    const char* const assetsDir = "@products@";
     // Load Android Obb files if available
     const char* obbStorage = AZ::Android::Utils::GetObbStoragePath();
     AZStd::string mainObbPath = AZStd::move(AZStd::string::format("%s/%s", obbStorage, AZ::Android::Utils::GetObbFileName(true)));
@@ -824,7 +512,7 @@ void CSystem::OpenBasicPaks()
     m_env.pCryPak->OpenPack(assetsDir, patchObbPath.c_str());
 #endif //AZ_PLATFORM_ANDROID
 
-    InlineInitializationProcessing("CSystem::OpenBasicPaks OpenPacks( Engine... )");
+    InlineInitializationProcessing("CSystem::OpenPlatformPaks OpenPacks( Engine... )");
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1047,7 +735,17 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
 
     m_pCmdLine = new CCmdLine(startupParams.szSystemCmdLine);
 
-    AZCoreLogSink::Connect();
+    // Init AZCoreLogSink. Don't suppress system output if we're running as an editor-server
+    bool suppressSystemOutput = true;
+    if (const ICmdLineArg* isEditorServerArg = m_pCmdLine->FindArg(eCLAT_Pre, "editorsv_isDedicated"))
+    {
+        bool editorsv_isDedicated = false;
+        if (isEditorServerArg->GetBoolValue(editorsv_isDedicated) && editorsv_isDedicated)
+        {
+            suppressSystemOutput = false;
+        }
+    }
+    AZCoreLogSink::Connect(suppressSystemOutput);
 
     // Registers all AZ Console Variables functors specified within CrySystem
     if (auto azConsole = AZ::Interface<AZ::IConsole>::Get(); azConsole)
@@ -1328,7 +1026,7 @@ AZ_POP_DISABLE_WARNING
         //////////////////////////////////////////////////////////////////////////
         // Open basic pak files after intro movie playback started
         //////////////////////////////////////////////////////////////////////////
-        OpenBasicPaks();
+        OpenPlatformPaks();
 
         //////////////////////////////////////////////////////////////////////////
         // AUDIO
@@ -1371,17 +1069,6 @@ AZ_POP_DISABLE_WARNING
                                                             AzFramework::SystemCursorState::ConstrainedAndHidden);
         }
 
-        //////////////////////////////////////////////////////////////////////////
-        // TIME
-        //////////////////////////////////////////////////////////////////////////
-        AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Time initialization");
-        if (!m_Time.Init())
-        {
-            AZ_Assert(false, "Failed to initialize CTimer instance.");
-            return false;
-        }
-        m_Time.ResetTimer();
-
         // CONSOLE
         //////////////////////////////////////////////////////////////////////////
         if (!InitConsole())
@@ -1393,7 +1080,7 @@ AZ_POP_DISABLE_WARNING
         {
             m_pUserCallback->OnInitProgress("Initializing additional systems...");
         }
-        AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Initializing additional systems");
+        AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Initializing additional systems\n");
 
 
         InlineInitializationProcessing("CSystem::Init AIInit");
@@ -1415,17 +1102,6 @@ AZ_POP_DISABLE_WARNING
         }
 
         InlineInitializationProcessing("CSystem::Init Level System");
-
-        //////////////////////////////////////////////////////////////////////////
-        // VIEW SYSTEM (must be created after m_pLevelSystem)
-        m_pViewSystem = new LegacyViewSystem::CViewSystem(this);
-
-        InlineInitializationProcessing("CSystem::Init View System");
-
-        if (m_env.pLyShine)
-        {
-            m_env.pLyShine->PostInit();
-        }
 
         InlineInitializationProcessing("CSystem::Init InitLmbrAWS");
 
@@ -1454,12 +1130,6 @@ AZ_POP_DISABLE_WARNING
 #endif
 
     InlineInitializationProcessing("CSystem::Init End");
-
-    if (gEnv->IsDedicated())
-    {
-        SCVarsClientConfigSink CVarsClientConfigSink;
-        LoadConfiguration("client.cfg", &CVarsClientConfigSink);
-    }
 
     // Send out EBus event
     EBUS_EVENT(CrySystemEventBus, OnCrySystemInitialized, *this, startupParams);
@@ -1520,37 +1190,11 @@ static AZStd::string ConcatPath(const char* szPart1, const char* szPart2)
     return ret;
 }
 
-// Helper to maintain backwards compatibility with our CVar but not force our new code to
-// pull in CryCommon by routing through an environment variable
-void CmdSetAwsLogLevel(IConsoleCmdArgs* pArgs)
-{
-    static const char* const logLevelEnvVar = "sys_SetLogLevel";
-    static AZ::EnvironmentVariable<int> logVar = AZ::Environment::CreateVariable<int>(logLevelEnvVar);
-    if (pArgs->GetArgCount() > 1)
-    {
-        int logLevel = atoi(pArgs->GetArg(1));
-        *logVar = logLevel;
-        AZ_TracePrintf("AWSLogging", "Log level set to %d", *logVar);
-    }
-}
-
 //////////////////////////////////////////////////////////////////////////
 void CSystem::CreateSystemVars()
 {
     assert(gEnv);
     assert(gEnv->pConsole);
-
-    // Register DLL names as cvars before we load them
-    //
-    EVarFlags dllFlags = (EVarFlags)0;
-    m_sys_dll_response_system = REGISTER_STRING("sys_dll_response_system", 0, dllFlags,                 "Specifies the DLL to load for the dynamic response system");
-
-    m_sys_initpreloadpacks = REGISTER_STRING("sys_initpreloadpacks", "", 0,     "Specifies the paks for an engine initialization");
-    m_sys_menupreloadpacks = REGISTER_STRING("sys_menupreloadpacks", 0, 0,      "Specifies the paks for a main menu loading");
-
-#ifndef _RELEASE
-    m_sys_resource_cache_folder = REGISTER_STRING("sys_resource_cache_folder", "Editor\\ResourceCache", 0, "Folder for resource compiled locally. Managed by Sandbox.");
-#endif
 
 #if AZ_LOADSCREENCOMPONENT_ENABLED
     m_game_load_screen_uicanvas_path = REGISTER_STRING("game_load_screen_uicanvas_path", "", 0, "Game load screen UiCanvas path.");
@@ -1566,8 +1210,6 @@ void CSystem::CreateSystemVars()
 #endif // if AZ_LOADSCREENCOMPONENT_ENABLED
 
     REGISTER_INT("cvDoVerboseWindowTitle", 0, VF_NULL, "");
-
-    m_pCVarQuit = REGISTER_INT("ExitOnQuit", 1, VF_NULL, "");
 
     // Register an AZ Console command to quit the engine.
     // The command is available even in Release builds.
@@ -1589,51 +1231,13 @@ void CSystem::CreateSystemVars()
     REGISTER_STRING_CB("sys_version", "", VF_CHEAT, "Override system file/product version", SystemVersionChanged);
 #endif // #ifndef _RELEASE
 
-    m_cvAIUpdate = REGISTER_INT("ai_NoUpdate", 0, VF_CHEAT, "Disables AI system update when 1");
-
-    m_cvMemStats = REGISTER_INT("MemStats", 0, 0,
-            "0/x=refresh rate in milliseconds\n"
-            "Use 1000 to switch on and 0 to switch off\n"
-            "Usage: MemStats [0..]");
-    m_cvMemStatsThreshold = REGISTER_INT ("MemStatsThreshold", 32000, VF_NULL, "");
-    m_cvMemStatsMaxDepth = REGISTER_INT("MemStatsMaxDepth", 4, VF_NULL, "");
-
-    attachVariable("sys_PakReadSlice", &g_cvars.archiveVars.nReadSlice, "If non-0, means number of kilobytes to use to read files in portions. Should only be used on Win9x kernels");
-
-    attachVariable("sys_PakInMemorySizeLimit", &g_cvars.archiveVars.nInMemoryPerPakSizeLimit, "Individual pak size limit for being loaded into memory (MB)");
-    attachVariable("sys_PakTotalInMemorySizeLimit", &g_cvars.archiveVars.nTotalInMemoryPakSizeLimit, "Total limit (in MB) for all in memory paks");
-    attachVariable("sys_PakLoadCache", &g_cvars.archiveVars.nLoadCache, "Load in memory paks from _LoadCache folder");
-    attachVariable("sys_PakLoadModePaks", &g_cvars.archiveVars.nLoadModePaks, "Load mode switching paks from modes folder");
-    attachVariable("sys_PakStreamCache", &g_cvars.archiveVars.nStreamCache, "Load in memory paks for faster streaming (cgf_cache.pak,dds_cache.pak)");
-    attachVariable("sys_PakSaveTotalResourceList", &g_cvars.archiveVars.nSaveTotalResourceList, "Save resource list");
     attachVariable("sys_PakSaveLevelResourceList", &g_cvars.archiveVars.nSaveLevelResourceList, "Save resource list when loading level");
-    attachVariable("sys_PakSaveFastLoadResourceList", &g_cvars.archiveVars.nSaveFastloadResourceList, "Save resource list during initial loading");
-    attachVariable("sys_PakSaveMenuCommonResourceList", &g_cvars.archiveVars.nSaveMenuCommonResourceList, "Save resource list during front end menu flow");
-    attachVariable("sys_PakMessageInvalidFileAccess", &g_cvars.archiveVars.nMessageInvalidFileAccess, "Message Box synchronous file access when in game");
     attachVariable("sys_PakLogInvalidFileAccess", &g_cvars.archiveVars.nLogInvalidFileAccess, "Log synchronous file access when in game");
-#ifndef _RELEASE
-    attachVariable("sys_PakLogAllFileAccess", &g_cvars.archiveVars.nLogAllFileAccess, "Log all file access allowing you to easily see whether a file has been loaded directly, or which pak file.");
-#endif
-    attachVariable("sys_PakValidateFileHash", &g_cvars.archiveVars.nValidateFileHashes, "Validate file hashes in pak files for collisions");
-    attachVariable("sys_UncachedStreamReads", &g_cvars.archiveVars.nUncachedStreamReads, "Enable stream reads via an uncached file handle");
-    attachVariable("sys_PakDisableNonLevelRelatedPaks", &g_cvars.archiveVars.nDisableNonLevelRelatedPaks, "Disables all paks that are not required by specific level; This is used with per level splitted assets.");
-    attachVariable("sys_PakWarnOnPakAccessFailures", &g_cvars.archiveVars.nWarnOnPakAccessFails, "If 1, access failure for Paks is treated as a warning, if zero it is only a log message.");
-
-    static const int fileSystemCaseSensitivityDefault = 0;
-    REGISTER_CVAR2("sys_FilesystemCaseSensitivity", &g_cvars.sys_FilesystemCaseSensitivity, fileSystemCaseSensitivityDefault, VF_NULL,
-        "0 - CryPak lowercases all input file names\n"
-        "1 - CryPak preserves file name casing\n"
-        "Default is 1");
 
     m_sysNoUpdate = REGISTER_INT("sys_noupdate", 0, VF_CHEAT,
             "Toggles updating of system with sys_script_debugger.\n"
             "Usage: sys_noupdate [0/1]\n"
             "Default is 0 (system updates during debug).");
-
-    m_sysWarnings = REGISTER_INT("sys_warnings", 0, 0,
-            "Toggles printing system warnings.\n"
-            "Usage: sys_warnings [0/1]\n"
-            "Default is 0 (off).");
 
 #if defined(_RELEASE) && defined(CONSOLE) && !defined(ENABLE_LW_PROFILERS)
     enum
@@ -1646,10 +1250,6 @@ void CSystem::CreateSystemVars()
         e_sysKeyboardDefault = 1
     };
 #endif
-    m_sysKeyboard = REGISTER_INT("sys_keyboard", e_sysKeyboardDefault, 0,
-            "Enables keyboard.\n"
-            "Usage: sys_keyboard [0/1]\n"
-            "Default is 1 (on).");
 
     m_svDedicatedMaxRate = REGISTER_FLOAT("sv_DedicatedMaxRate", 30.0f, 0,
             "Sets the maximum update rate when running as a dedicated server.\n"
@@ -1665,56 +1265,13 @@ void CSystem::CreateSystemVars()
         "Usage: sv_DedicatedCPUVariance [5..50]\n"
         "Default is 10.");
 
-    m_cvSSInfo =  REGISTER_INT("sys_SSInfo", 0, 0,
-            "Show SourceSafe information (Name,Comment,Date) for file errors."
-            "Usage: sys_SSInfo [0/1]\n"
-            "Default is 0 (off)");
-
-    m_cvEntitySuppressionLevel = REGISTER_INT("e_EntitySuppressionLevel", 0, 0,
-            "Defines the level at which entities are spawned.\n"
-            "Entities marked with lower level will not be spawned - 0 means no level.\n"
-            "Usage: e_EntitySuppressionLevel [0-infinity]\n"
-            "Default is 0 (off)");
-
     m_sys_firstlaunch = REGISTER_INT("sys_firstlaunch", 0, 0,
             "Indicates that the game was run for the first time.");
-
-    m_sys_main_CPU = REGISTER_INT("sys_main_CPU", 0, 0,
-            "Specifies the physical CPU index main will run on");
-
-    m_sys_TaskThread_CPU[0] = REGISTER_INT("sys_TaskThread0_CPU", 3, 0,
-            "Specifies the physical CPU index taskthread0 will run on");
-
-    m_sys_TaskThread_CPU[1] = REGISTER_INT("sys_TaskThread1_CPU", 5, 0,
-            "Specifies the physical CPU index taskthread1 will run on");
-
-    m_sys_TaskThread_CPU[2] = REGISTER_INT("sys_TaskThread2_CPU", 4, 0,
-            "Specifies the physical CPU index taskthread2 will run on");
-
-    m_sys_TaskThread_CPU[3] = REGISTER_INT("sys_TaskThread3_CPU", 3, 0,
-            "Specifies the physical CPU index taskthread3 will run on");
-
-    m_sys_TaskThread_CPU[4] = REGISTER_INT("sys_TaskThread4_CPU", 2, 0,
-            "Specifies the physical CPU index taskthread4 will run on");
-
-    m_sys_TaskThread_CPU[5] = REGISTER_INT("sys_TaskThread5_CPU", 1, 0,
-            "Specifies the physical CPU index taskthread5 will run on");
 
 #if defined(AZ_RESTRICTED_PLATFORM)
 #define AZ_RESTRICTED_SECTION SYSTEMINIT_CPP_SECTION_12
 #include AZ_RESTRICTED_FILE(SystemInit_cpp)
 #endif
-
-    m_sys_min_step = REGISTER_FLOAT("sys_min_step", 0.01f, 0,
-            "Specifies the minimum physics step in a separate thread");
-    m_sys_max_step = REGISTER_FLOAT("sys_max_step", 0.05f, 0,
-            "Specifies the maximum physics step in a separate thread");
-
-    // used in define MEMORY_DEBUG_POINT()
-    m_sys_memory_debug = REGISTER_INT("sys_memory_debug", 0, VF_CHEAT,
-            "Enables to activate low memory situation is specific places in the code (argument defines which place), 0=off");
-
-    REGISTER_CVAR2("sys_vtune", &g_cvars.sys_vtune, 0, VF_NULL, "");
 
 #if defined(AZ_RESTRICTED_PLATFORM)
 #define AZ_RESTRICTED_SECTION SYSTEMINIT_CPP_SECTION_17
@@ -1726,40 +1283,7 @@ void CSystem::CreateSystemVars()
 #   define SYS_STREAMING_CPU_DEFAULT_VALUE 1
 #   define SYS_STREAMING_CPU_WORKER_DEFAULT_VALUE 5
 #endif
-    REGISTER_CVAR2("sys_streaming_CPU", &g_cvars.sys_streaming_cpu, SYS_STREAMING_CPU_DEFAULT_VALUE, VF_NULL, "Specifies the physical CPU file IO thread run on");
-    REGISTER_CVAR2("sys_streaming_CPU_worker", &g_cvars.sys_streaming_cpu_worker, SYS_STREAMING_CPU_WORKER_DEFAULT_VALUE, VF_NULL, "Specifies the physical CPU file IO worker thread/s run on");
-    REGISTER_CVAR2("sys_streaming_memory_budget", &g_cvars.sys_streaming_memory_budget, 10 * 1024, VF_NULL, "Temp memory streaming system can use in KB");
-    REGISTER_CVAR2("sys_streaming_max_finalize_per_frame", &g_cvars.sys_streaming_max_finalize_per_frame, 0, VF_NULL,
-        "Maximum stream finalizing calls per frame to reduce the CPU impact on main thread (0 to disable)");
-    REGISTER_CVAR2("sys_streaming_max_bandwidth", &g_cvars.sys_streaming_max_bandwidth, 0, VF_NULL, "Enables capping of max streaming bandwidth in MB/s");
-    REGISTER_CVAR2("sys_streaming_debug", &g_cvars.sys_streaming_debug, 0, VF_NULL, "Enable streaming debug information\n"
-        "0=off\n"
-        "1=Streaming Stats\n"
-        "2=File IO\n"
-        "3=Request Order\n"
-        "4=Write to Log\n"
-        "5=Stats per extension\n"
-        );
-    REGISTER_CVAR2("sys_streaming_requests_grouping_time_period", &g_cvars.sys_streaming_requests_grouping_time_period, 2, VF_NULL, // Vlad: 2 works better than 4 visually, should be be re-tested when streaming pak's activated
-        "Streaming requests are grouped by request time and then sorted by disk offset");
-    REGISTER_CVAR2("sys_streaming_debug_filter", &g_cvars.sys_streaming_debug_filter, 0, VF_NULL, "Set streaming debug information filter.\n"
-        "0=all\n"
-        "1=Texture\n"
-        "2=Geometry\n"
-        "3=Terrain\n"
-        "4=Animation\n"
-        "5=Music\n"
-        "6=Sound\n"
-        "7=Shader\n"
-        );
-    g_cvars.sys_streaming_debug_filter_file_name = REGISTER_STRING("sys_streaming_debug_filter_file_name", "", VF_CHEAT,
-            "Set streaming debug information filter");
-    REGISTER_CVAR2("sys_streaming_debug_filter_min_time", &g_cvars.sys_streaming_debug_filter_min_time, 0.f, VF_NULL, "Show only slow items.");
-    REGISTER_CVAR2("sys_streaming_resetstats", &g_cvars.sys_streaming_resetstats, 0, VF_NULL,
-        "Reset all the streaming stats");
 #define DEFAULT_USE_OPTICAL_DRIVE_THREAD (gEnv->IsDedicated() ? 0 : 1)
-    REGISTER_CVAR2("sys_streaming_use_optical_drive_thread", &g_cvars.sys_streaming_use_optical_drive_thread, DEFAULT_USE_OPTICAL_DRIVE_THREAD, VF_NULL,
-        "Allow usage of an extra optical drive thread for faster streaming from 2 medias");
 
     const char* localizeFolder = "Localization";
     g_cvars.sys_localization_folder = REGISTER_STRING_CB("sys_localization_folder", localizeFolder, VF_NULL,
@@ -1768,9 +1292,6 @@ void CSystem::CreateSystemVars()
             "Usage: sys_localization_folder <folder name>\n"
             "Default: Localization\n",
             CSystem::OnLocalizationFolderCVarChanged);
-
-    REGISTER_CVAR2("sys_streaming_in_blocks", &g_cvars.sys_streaming_in_blocks, 1, VF_NULL,
-        "Streaming of large files happens in blocks");
 
 #if (defined(WIN32) || defined(WIN64)) && defined(_DEBUG)
     REGISTER_CVAR2("sys_float_exceptions", &g_cvars.sys_float_exceptions, 2, 0, "Use or not use floating point exceptions.");
@@ -1790,11 +1311,6 @@ void CSystem::CreateSystemVars()
     REGISTER_CVAR2("sys_WER", &g_cvars.sys_WER, 0, 0, "Enables Windows Error Reporting");
 #endif
 
-#ifdef USE_HTTP_WEBSOCKETS
-    REGISTER_CVAR2("sys_simple_http_base_port", &g_cvars.sys_simple_http_base_port, 1880, VF_REQUIRE_APP_RESTART,
-        "sets the base port for the simple http server to run on, defaults to 1880");
-#endif
-
     const int DEFAULT_DUMP_TYPE = 2;
 
     REGISTER_CVAR2("sys_dump_type", &g_cvars.sys_dump_type, DEFAULT_DUMP_TYPE, VF_NULL,
@@ -1805,8 +1321,6 @@ void CSystem::CreateSystemVars()
         "3: Create a full minidump (+ all memory)\n"
         );
     REGISTER_CVAR2("sys_dump_aux_threads", &g_cvars.sys_dump_aux_threads, 1, VF_NULL, "Dumps callstacks of other threads in case of a crash");
-
-    REGISTER_CVAR2("sys_limit_phys_thread_count", &g_cvars.sys_limit_phys_thread_count, 1, VF_NULL, "Limits p_num_threads to physical CPU count - 1");
 
 #if (defined(WIN32) || defined(WIN64)) && defined(_RELEASE)
     const int DEFAULT_SYS_MAX_FPS = 0;
@@ -1819,11 +1333,8 @@ void CSystem::CreateSystemVars()
 
     REGISTER_CVAR2("sys_maxTimeStepForMovieSystem", &g_cvars.sys_maxTimeStepForMovieSystem, 0.1f, VF_NULL, "Caps the time step for the movie system so that a cut-scene won't be jumped in the case of an extreme stall.");
 
-    REGISTER_CVAR2("sys_force_installtohdd_mode", &g_cvars.sys_force_installtohdd_mode, 0, VF_NULL, "Forces install to HDD mode even when doing DVD emulation");
-
     REGISTER_CVAR2("sys_report_files_not_found_in_paks", &g_cvars.sys_report_files_not_found_in_paks, 0, VF_NULL, "Reports when files are searched for in paks and not found. 1 = log, 2 = warning, 3 = error");
 
-    m_sys_preload = REGISTER_INT("sys_preload", 0, 0, "Preload Game Resources");
     REGISTER_COMMAND("sys_crashtest", CmdCrashTest, VF_CHEAT, "Make the game crash\n"
         "0=off\n"
         "1=null pointer exception\n"
@@ -1862,19 +1373,10 @@ void CSystem::CreateSystemVars()
             "To speed up loading from non HD media\n"
             "0=off / 1=enabled");
     */
-    REGISTER_CVAR2("sys_AI", &g_cvars.sys_ai, 1, 0, "Enables AI Update");
-    REGISTER_CVAR2("sys_entities", &g_cvars.sys_entitysystem, 1, 0, "Enables Entities Update");
     REGISTER_CVAR2("sys_trackview", &g_cvars.sys_trackview, 1, 0, "Enables TrackView Update");
 
     //Defines selected language.
     REGISTER_STRING_CB("g_language", "", VF_NULL, "Defines which language pak is loaded", CSystem::OnLanguageCVarChanged);
-
-#if defined(WIN32)
-    REGISTER_CVAR2("sys_display_threads", &g_cvars.sys_display_threads, 0, 0, "Displays Thread info");
-#elif defined(AZ_RESTRICTED_PLATFORM)
-#define AZ_RESTRICTED_SECTION SYSTEMINIT_CPP_SECTION_13
-#include AZ_RESTRICTED_FILE(SystemInit_cpp)
-#endif
 
     // adding CVAR to toggle assert verbosity level
     const int defaultAssertValue = 1;
@@ -1898,8 +1400,6 @@ void CSystem::CreateSystemVars()
     // Since the UI Canvas Editor is incomplete, we have a variable to enable it.
     // By default it is now enabled. Modify system.cfg or game.cfg to disable it
     REGISTER_INT("sys_enableCanvasEditor", 1, VF_NULL, "Enables the UI Canvas Editor");
-
-    REGISTER_COMMAND("sys_SetLogLevel", CmdSetAwsLogLevel, 0, "Set AWS log level [0 - 6].");
 }
 
 //////////////////////////////////////////////////////////////////////////

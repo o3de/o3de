@@ -6,7 +6,7 @@
  *
  */
 
-#include <Source/NetworkInput/NetworkInputChild.h>
+#include <Multiplayer/NetworkInput/NetworkInputChild.h>
 #include <Multiplayer/IMultiplayer.h>
 #include <AzNetworking/Serialization/ISerializer.h>
 

@@ -31,7 +31,7 @@
 // THE SOFTWARE.
 //
 //--------------------------------------------------------------------------------------
-#include <HairSimulationSrgs.azsli>
+#include <HairSimulationComputeSrgs.azsli>
 #include <HairSimulationCommon.azsli>
 
 //--------------------------------------------------------------------------------------

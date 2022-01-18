@@ -9,9 +9,11 @@
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/Serialization/Json/JsonSerializationSettings.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UnitTest/Mocks/MockFileIOBase.h>
+#include <AzCore/UnitTest/Mocks/MockSettingsRegistry.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
@@ -33,7 +35,9 @@ protected:
         AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
         auto projectPathKey =
             AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
-        registry->Set(projectPathKey, "AutomatedTesting");
+        AZ::IO::FixedMaxPath enginePath;
+        registry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+        registry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
         m_app.Start(AZ::ComponentApplication::Descriptor());
@@ -269,47 +273,6 @@ TEST_F(SourceDependencyTests, SourceDependencyTest)
     ASSERT_STREQ(dependencies[1].m_sourceFileDependencyPath.c_str(), "value.png");
 }
 
-struct SettingsRegistryMock : AZ::Interface<SettingsRegistryInterface>::Registrar
-{
-    bool Get(FixedValueString& result, AZStd::string_view) const override
-    {
-        result = "cache";
-        return true;
-    }
-
-    void SetApplyPatchSettings(const AZ::JsonApplyPatchSettings& /*applyPatchSettings*/) override{}
-    void GetApplyPatchSettings(AZ::JsonApplyPatchSettings& /*applyPatchSettings*/) override{}
-
-    MOCK_CONST_METHOD1(GetType, Type (AZStd::string_view));
-    MOCK_CONST_METHOD2(Visit, bool (Visitor&, AZStd::string_view));
-    MOCK_CONST_METHOD2(Visit, bool (const VisitorCallback&, AZStd::string_view));
-    MOCK_METHOD1(RegisterNotifier, NotifyEventHandler (const NotifyCallback&));
-    MOCK_METHOD1(RegisterNotifier, NotifyEventHandler (NotifyCallback&&));
-    MOCK_METHOD1(RegisterPreMergeEvent, PreMergeEventHandler (const PreMergeEventCallback&));
-    MOCK_METHOD1(RegisterPreMergeEvent, PreMergeEventHandler (PreMergeEventCallback&&));
-    MOCK_METHOD1(RegisterPostMergeEvent, PostMergeEventHandler (const PostMergeEventCallback&));
-    MOCK_METHOD1(RegisterPostMergeEvent, PostMergeEventHandler (PostMergeEventCallback&&));
-    MOCK_CONST_METHOD2(Get, bool (bool&, AZStd::string_view));
-    MOCK_CONST_METHOD2(Get, bool (s64&, AZStd::string_view));
-    MOCK_CONST_METHOD2(Get, bool (u64&, AZStd::string_view));
-    MOCK_CONST_METHOD2(Get, bool (double&, AZStd::string_view));
-    MOCK_CONST_METHOD2(Get, bool (AZStd::string&, AZStd::string_view));
-    MOCK_CONST_METHOD3(GetObject, bool (void*, Uuid, AZStd::string_view));
-    MOCK_METHOD2(Set, bool (AZStd::string_view, bool));
-    MOCK_METHOD2(Set, bool (AZStd::string_view, s64));
-    MOCK_METHOD2(Set, bool (AZStd::string_view, u64));
-    MOCK_METHOD2(Set, bool (AZStd::string_view, double));
-    MOCK_METHOD2(Set, bool (AZStd::string_view, AZStd::string_view));
-    MOCK_METHOD2(Set, bool (AZStd::string_view, const char*));
-    MOCK_METHOD3(SetObject, bool (AZStd::string_view, const void*, Uuid));
-    MOCK_METHOD1(Remove, bool (AZStd::string_view));
-    MOCK_METHOD3(MergeCommandLineArgument, bool (AZStd::string_view, AZStd::string_view, const CommandLineArgumentSettings&));
-    MOCK_METHOD2(MergeSettings, bool (AZStd::string_view, Format));
-    MOCK_METHOD4(MergeSettingsFile, bool (AZStd::string_view, Format, AZStd::string_view, AZStd::vector<char>*));
-    MOCK_METHOD5(MergeSettingsFolder, bool (AZStd::string_view, const Specializations&, AZStd::string_view, AZStd::string_view, AZStd::vector<char>*));
-    MOCK_METHOD1(SetUseFileIO, void (bool));
-};
-
 struct SourceDependencyMockedIOTests : UnitTest::ScopedAllocatorSetupFixture
     , UnitTest::SetRestoreFileIOBaseRAII
 {
@@ -355,7 +318,15 @@ struct SourceDependencyMockedIOTests : UnitTest::ScopedAllocatorSetupFixture
 TEST_F(SourceDependencyMockedIOTests, RegularManifestHasPriority)
 {
     ImportHandler handler;
-    SettingsRegistryMock settingsRegistry;
+    MockSettingsRegistry settingsRegistry;
+    SettingsRegistry::Register(&settingsRegistry);
+    using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+    auto MockGetFixedStringCall = [](FixedValueString& result, AZStd::string_view) -> bool
+    {
+        result = "cache";
+        return true;
+    };
+    ON_CALL(settingsRegistry, Get(::testing::An<FixedValueString&>(), ::testing::_)).WillByDefault(MockGetFixedStringCall);
 
     AssetBuilderSDK::CreateJobsRequest request;
     AssetBuilderSDK::CreateJobsResponse response;
@@ -371,12 +342,21 @@ TEST_F(SourceDependencyMockedIOTests, RegularManifestHasPriority)
     
     ASSERT_TRUE(SceneBuilderWorker::ManifestDependencyCheck(request, response));
     ASSERT_EQ(response.m_sourceFileDependencyList.size(), 2);
+    SettingsRegistry::Unregister(&settingsRegistry);
 }
 
 TEST_F(SourceDependencyMockedIOTests, GeneratedManifestTest)
 {
     ImportHandler handler;
-    SettingsRegistryMock settingsRegistry;
+    MockSettingsRegistry settingsRegistry;
+    SettingsRegistry::Register(&settingsRegistry);
+    using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+    auto MockGetFixedStringCall = [](FixedValueString& result, AZStd::string_view) -> bool
+    {
+        result = "cache";
+        return true;
+    };
+    ON_CALL(settingsRegistry, Get(::testing::An<FixedValueString&>(), ::testing::_)).WillByDefault(MockGetFixedStringCall);
 
     AssetBuilderSDK::CreateJobsRequest request;
     AssetBuilderSDK::CreateJobsResponse response;
@@ -392,4 +372,5 @@ TEST_F(SourceDependencyMockedIOTests, GeneratedManifestTest)
 
     ASSERT_TRUE(SceneBuilderWorker::ManifestDependencyCheck(request, response));
     ASSERT_EQ(response.m_sourceFileDependencyList.size(), 2);
+    SettingsRegistry::Unregister(&settingsRegistry);
 }

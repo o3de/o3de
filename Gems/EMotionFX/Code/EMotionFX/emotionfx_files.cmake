@@ -42,6 +42,7 @@ set(FILES
     Source/EMotionFXManager.h
     Source/EMotionFXAllocatorInitializer.cpp
     Source/EMotionFXAllocatorInitializer.h
+    Source/JointSelectionBus.h
     Source/KeyFrame.h
     Source/KeyFrame.inl
     Source/KeyFrameFinder.h
@@ -143,6 +144,8 @@ set(FILES
     Source/TransformData.h
     Source/TriggerActionSetup.cpp
     Source/TriggerActionSetup.h
+    Source/Velocity.cpp
+    Source/Velocity.h
     Source/VertexAttributeLayer.cpp
     Source/VertexAttributeLayer.h
     Source/VertexAttributeLayerAbstractData.cpp
@@ -349,6 +352,7 @@ set(FILES
     Source/MotionData/MotionData.h
     Source/MotionData/MotionDataFactory.cpp
     Source/MotionData/MotionDataFactory.h
+    Source/MotionData/MotionDataSampleSettings.h
     Source/MotionData/NonUniformMotionData.cpp
     Source/MotionData/NonUniformMotionData.h
     Source/MotionData/UniformMotionData.cpp

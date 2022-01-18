@@ -23,7 +23,6 @@
 #include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
 #include <AtomCore/Instance/Instance.h>
 #include <AzCore/Math/MatrixUtils.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Math/Obb.h>
 
 namespace AZ
@@ -199,13 +198,15 @@ namespace AZ
 
             if (m_shadowingLightHandle.IsValid())
             {
-                uint32_t shadowFilterMethod = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_shadowFilterMethod;
+                const uint32_t shadowFilterMethod = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_shadowFilterMethod;
                 RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(m_directionalShadowFilteringMethodName, AZ::RPI::ShaderOptionValue{shadowFilterMethod});
-                RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(m_directionalShadowReceiverPlaneBiasEnableName, AZ::RPI::ShaderOptionValue{ m_shadowProperties.GetData(m_shadowingLightHandle.GetIndex()).m_isReceiverPlaneBiasEnabled });                
+                RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(m_directionalShadowReceiverPlaneBiasEnableName, AZ::RPI::ShaderOptionValue{ m_shadowProperties.GetData(m_shadowingLightHandle.GetIndex()).m_isReceiverPlaneBiasEnabled });
 
                 const uint32_t cascadeCount = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_cascadeCount;
-                ShadowProperty& property = m_shadowProperties.GetData(m_shadowingLightHandle.GetIndex());
 
+                RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(m_BlendBetweenCascadesEnableName, AZ::RPI::ShaderOptionValue{cascadeCount > 1 && m_shadowProperties.GetData(m_shadowingLightHandle.GetIndex()).m_blendBetwenCascades });
+
+                ShadowProperty& property = m_shadowProperties.GetData(m_shadowingLightHandle.GetIndex());
                 bool segmentsNeedUpdate = property.m_segments.empty();
                 for (const auto& passIt : m_cascadedShadowmapsPasses)
                 {
@@ -343,7 +344,6 @@ namespace AZ
                 m_shadowBufferNeedsUpdate = true;
 
                 m_shadowProperties.GetData(index).m_cameraConfigurations[nullptr] = {};
-                m_shadowProperties.GetData(index).m_cameraTransforms[nullptr] = Transform::CreateIdentity();
 
                 const LightHandle handle(index);
                 m_shadowingLightHandle = handle; // only the recent light has shadows.
@@ -495,20 +495,10 @@ namespace AZ
 
         void DirectionalLightFeatureProcessor::SetCameraTransform(
             LightHandle handle,
-            const Transform& cameraTransform,
-            const RPI::RenderPipelineId& renderPipelineId)
+            const Transform&,
+            const RPI::RenderPipelineId&)
         {
             ShadowProperty& property = m_shadowProperties.GetData(handle.GetIndex());
-
-            if (RPI::RenderPipeline* renderPipeline = GetParentScene()->GetRenderPipeline(renderPipelineId).get())
-            {
-                const RPI::View* cameraView = renderPipeline->GetDefaultView().get();
-                property.m_cameraTransforms[cameraView] = cameraTransform;
-            }
-            else
-            {
-                property.m_cameraTransforms[nullptr] = cameraTransform;
-            }
             property.m_shadowmapViewNeedsUpdate = true;
         }
 
@@ -589,6 +579,29 @@ namespace AZ
             m_shadowProperties.GetData(handle.GetIndex()).m_isReceiverPlaneBiasEnabled = enable;
         }
 
+        void DirectionalLightFeatureProcessor::SetCascadeBlendingEnabled(LightHandle handle, bool enable)
+        {
+            m_shadowProperties.GetData(handle.GetIndex()).m_blendBetwenCascades = enable;
+        }
+
+        void DirectionalLightFeatureProcessor::SetShadowBias(LightHandle handle, float bias) 
+        {
+            for (auto& it : m_shadowData) 
+            {
+                it.second.GetData(handle.GetIndex()).m_shadowBias = bias;               
+            }
+            m_shadowBufferNeedsUpdate = true;
+        }
+
+        void DirectionalLightFeatureProcessor::SetNormalShadowBias(LightHandle handle, float normalShadowBias)
+        {
+            for (auto& it : m_shadowData)
+            {
+                it.second.GetData(handle.GetIndex()).m_normalShadowBias = normalShadowBias;
+            }
+            m_shadowBufferNeedsUpdate = true;
+        }
+
         void DirectionalLightFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
         {
             PrepareForChangingRenderPipelineAndCameraView();
@@ -629,54 +642,46 @@ namespace AZ
             UpdateViewsOfCascadeSegments();
         }
 
-        void DirectionalLightFeatureProcessor::CacheCascadedShadowmapsPass() {
-            const AZStd::vector<RPI::Pass*>& passes = RPI::PassSystemInterface::Get()->GetPassesForTemplateName(Name("CascadedShadowmapsTemplate"));
+        void DirectionalLightFeatureProcessor::CacheCascadedShadowmapsPass()
+        {
             m_cascadedShadowmapsPasses.clear();
-            for (RPI::Pass* pass : passes)
-            {
-                if (RPI::RenderPipeline* pipeline = pass->GetRenderPipeline())
+
+            RPI::PassFilter passFilter = RPI::PassFilter::CreateWithTemplateName(Name("CascadedShadowmapsTemplate"), GetParentScene());
+            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                 {
+                    RPI::RenderPipeline* pipeline = pass->GetRenderPipeline();
                     const RPI::RenderPipelineId pipelineId = pipeline->GetId();
-                    // This function can be called when the pipeline is not attached to the scene.
-                    // So we check it is attached to the scene.
-                    if (GetParentScene()->GetRenderPipeline(pipelineId).get() == pipeline)
+
+                    CascadedShadowmapsPass* shadowPass = azrtti_cast<CascadedShadowmapsPass*>(pass);
+                    AZ_Assert(shadowPass, "It is not a CascadedShadowmapPass.");
+                    if (pipeline->GetDefaultView())
                     {
-                        CascadedShadowmapsPass* shadowPass = azrtti_cast<CascadedShadowmapsPass*>(pass);
-                        AZ_Assert(shadowPass, "It is not a CascadedShadowmapPass.");
-                        if (pipeline->GetDefaultView())
-                        {
-                            m_cascadedShadowmapsPasses[pipelineId].push_back(shadowPass);
-                        }
+                        m_cascadedShadowmapsPasses[pipelineId].push_back(shadowPass);
                     }
-                }
-            }
+                    return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+                });
         }
 
         void DirectionalLightFeatureProcessor::CacheEsmShadowmapsPass()
         {
-            const AZStd::vector<RPI::Pass*>& passes = RPI::PassSystemInterface::Get()->GetPassesForTemplateName(Name("EsmShadowmapsTemplate"));
             m_esmShadowmapsPasses.clear();
-            for (RPI::Pass* pass : passes)
-            {
-                if (RPI::RenderPipeline* pipeline = pass->GetRenderPipeline())
+
+            RPI::PassFilter passFilter = RPI::PassFilter::CreateWithTemplateName(Name("EsmShadowmapsTemplate"), GetParentScene());
+            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                 {
-                    const RPI::RenderPipelineId pipelineId = pipeline->GetId();
-                    // checking the render pipeline is just removed from the scene.
-                    if (GetParentScene()->GetRenderPipeline(pipelineId).get() == pipeline)
+                    const RPI::RenderPipelineId pipelineId = pass->GetRenderPipeline()->GetId();
+
+                    if (m_cascadedShadowmapsPasses.find(pipelineId) != m_cascadedShadowmapsPasses.end())
                     {
-                        if (m_cascadedShadowmapsPasses.find(pipelineId) != m_cascadedShadowmapsPasses.end())
+                        EsmShadowmapsPass* esmPass = azrtti_cast<EsmShadowmapsPass*>(pass);
+                        AZ_Assert(esmPass, "It is not an EsmShadowmapPass.");
+                        if (esmPass->GetLightTypeName() == m_lightTypeName)
                         {
-                            EsmShadowmapsPass* esmPass = azrtti_cast<EsmShadowmapsPass*>(pass);
-                            AZ_Assert(esmPass, "It is not an EsmShadowmapPass.");
-                            if (m_cascadedShadowmapsPasses.find(esmPass->GetRenderPipeline()->GetId()) != m_cascadedShadowmapsPasses.end() &&
-                                esmPass->GetLightTypeName() == m_lightTypeName)
-                            {
-                                m_esmShadowmapsPasses[pipelineId].push_back(esmPass);
-                            }
+                            m_esmShadowmapsPasses[pipelineId].push_back(esmPass);
                         }
                     }
-                }
-            }
+                    return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+                });
         }
 
         void DirectionalLightFeatureProcessor::PrepareCameraViews()
@@ -924,17 +929,6 @@ namespace AZ
             return property.m_cameraConfigurations.at(nullptr);
         }
 
-        const Transform& DirectionalLightFeatureProcessor::GetCameraTransform(LightHandle handle, const RPI::View* cameraView) const
-        {
-            const ShadowProperty& property = m_shadowProperties.GetData(handle.GetIndex());
-            const auto findIt = property.m_cameraTransforms.find(cameraView);
-            if (findIt != property.m_cameraTransforms.end())
-            {
-                return findIt->second;
-            }
-            return property.m_cameraTransforms.at(nullptr);
-        }
-
         void DirectionalLightFeatureProcessor::UpdateFrustums(
             LightHandle handle)
         {
@@ -1045,12 +1039,13 @@ namespace AZ
 
                         // if the shadow is rendering in an EnvironmentCubeMapPass it also needs to be a ReflectiveCubeMap view,
                         // to filter out shadows from objects that are excluded from the cubemap
-                        RPI::PassClassFilter<RPI::EnvironmentCubeMapPass> passFilter;
-                        AZStd::vector<AZ::RPI::Pass*> cubeMapPasses = AZ::RPI::PassSystemInterface::Get()->FindPasses(passFilter);
-                        if (!cubeMapPasses.empty())
-                        {
-                            usageFlags |= RPI::View::UsageReflectiveCubeMap;
-                        }
+                        RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassClass<RPI::EnvironmentCubeMapPass>();
+                        passFilter.SetOwnerScene(GetParentScene()); // only handles passes for this scene
+                        RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [&usageFlags]([[maybe_unused]] RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
+                            {
+                                usageFlags |= RPI::View::UsageReflectiveCubeMap;
+                                return RPI::PassFilterExecutionFlow::StopVisitingPasses;
+                            });
 
                         segment.m_view = RPI::View::CreateView(viewName, usageFlags);
                     }
@@ -1237,6 +1232,32 @@ namespace AZ
             property.m_shadowmapViewNeedsUpdate = true;
         }
 
+        float DirectionalLightFeatureProcessor::GetShadowmapSizeFromCameraView(const LightHandle handle, const RPI::View* cameraView) const
+        {
+            const DirectionalLightShadowData& shadowData = m_shadowData.at(cameraView).GetData(handle.GetIndex());
+            return static_cast<float>(shadowData.m_shadowmapSize);
+        }
+
+        void DirectionalLightFeatureProcessor::SnapAabbToPixelIncrements(const float invShadowmapSize, Vector3& orthoMin, Vector3& orthoMax)
+        {
+            // This function stops the cascaded shadowmap from shimmering as the camera moves.
+            // See CascadedShadowsManager.cpp in the Microsoft CascadedShadowMaps11 sample for details.
+
+            const Vector3 normalizeByBufferSize = Vector3(invShadowmapSize, invShadowmapSize, invShadowmapSize);
+
+            const Vector3 worldUnitsPerTexel = (orthoMax - orthoMin) * normalizeByBufferSize;
+
+            // We snap the camera to 1 pixel increments so that moving the camera does not cause the shadows to jitter.
+            // This is a matter of dividing by the world space size of a texel
+            orthoMin /= worldUnitsPerTexel;
+            orthoMin = orthoMin.GetFloor();
+            orthoMin *= worldUnitsPerTexel;
+
+            orthoMax /= worldUnitsPerTexel;
+            orthoMax = orthoMax.GetFloor();
+            orthoMax *= worldUnitsPerTexel;
+        }
+
         void DirectionalLightFeatureProcessor::UpdateShadowmapViews(LightHandle handle)
         {
             ShadowProperty& property = m_shadowProperties.GetData(handle.GetIndex());
@@ -1248,18 +1269,26 @@ namespace AZ
 
             for (auto& segmentIt : property.m_segments)
             {
+                const float invShadowmapSize = 1.0f / GetShadowmapSizeFromCameraView(handle, segmentIt.first);
+
                 for (uint16_t cascadeIndex = 0; cascadeIndex < segmentIt.second.size(); ++cascadeIndex)
                 {
-                    const Aabb viewAabb = CalculateShadowViewAabb(
-                        handle, segmentIt.first, cascadeIndex, lightTransform);
+                    const Aabb viewAabb = CalculateShadowViewAabb(handle, segmentIt.first, cascadeIndex, lightTransform);
 
                     if (viewAabb.IsValid() && viewAabb.IsFinite())
                     {
+                        const float cascadeNear = viewAabb.GetMin().GetY();
+                        const float cascadeFar = viewAabb.GetMax().GetY();
+
+                        Vector3 snappedAabbMin = viewAabb.GetMin();
+                        Vector3 snappedAabbMax = viewAabb.GetMax();
+
+                        SnapAabbToPixelIncrements(invShadowmapSize, snappedAabbMin, snappedAabbMax);
+
                         Matrix4x4 viewToClipMatrix = Matrix4x4::CreateIdentity();
-                        MakeOrthographicMatrixRH(viewToClipMatrix,
-                            viewAabb.GetMin().GetElement(0), viewAabb.GetMax().GetElement(0),
-                            viewAabb.GetMin().GetElement(2), viewAabb.GetMax().GetElement(2),
-                            viewAabb.GetMin().GetElement(1), viewAabb.GetMax().GetElement(1));
+                        MakeOrthographicMatrixRH(
+                            viewToClipMatrix, snappedAabbMin.GetElement(0), snappedAabbMax.GetElement(0), snappedAabbMin.GetElement(2),
+                            snappedAabbMax.GetElement(2), cascadeNear, cascadeFar);
 
                         CascadeSegment& segment = segmentIt.second[cascadeIndex];
                         segment.m_aabb = viewAabb;
@@ -1320,10 +1349,11 @@ namespace AZ
             // If we used an AABB whose Y-direction range is from a segment,
             // the depth value on the shadowmap saturated to 0 or 1,
             // and we could not draw shadow correctly.
+            const Transform cameraTransform = cameraView->GetCameraTransform();
             const Vector3 entireFrustumCenterLight =
-                lightTransform.GetInverseFast() * (GetCameraTransform(handle, cameraView).TransformPoint(property.m_entireFrustumCenterLocal));
+                lightTransform.GetInverseFast() * (cameraTransform.TransformPoint(property.m_entireFrustumCenterLocal));
             const float entireCenterY = entireFrustumCenterLight.GetElement(1);
-            const Vector3 cameraLocationWorld = GetCameraTransform(handle, cameraView).GetTranslation();
+            const Vector3 cameraLocationWorld = cameraTransform.GetTranslation();
             const Vector3 cameraLocationLight = lightTransformInverse * cameraLocationWorld;
             // Extend light view frustum by camera depth far in order to avoid shadow lacking behind camera.
             const float cameraBehindMinY = cameraLocationLight.GetElement(1) - GetCameraConfiguration(handle, cameraView).GetDepthFar();
@@ -1383,8 +1413,8 @@ namespace AZ
                 GetCameraConfiguration(handle, cameraView).GetDepthCenter(depthNear, depthFar),
                 depthFar);
 
-            const Vector3 localCenter{ 0.f, depthCenter, 0.f };
-            return GetCameraTransform(handle, cameraView).TransformPoint(localCenter);
+            const Vector3 localCenter{ 0.f, depthCenter, 0.f };            
+            return cameraView->GetCameraTransform().TransformPoint(localCenter);
         }
 
         float DirectionalLightFeatureProcessor::GetRadius(
@@ -1438,7 +1468,7 @@ namespace AZ
             const ShadowProperty& property = m_shadowProperties.GetData(handle.GetIndex());
             const Vector3& boundaryCenter = GetWorldCenterPosition(handle, cameraView, depthNear, depthFar);
             const CascadeShadowCameraConfiguration& cameraConfiguration = GetCameraConfiguration(handle, cameraView);
-            const Transform& cameraTransform = GetCameraTransform(handle, cameraView);
+            const Transform cameraTransform = cameraView->GetCameraTransform();
             const Vector3& cameraFwd = cameraTransform.GetBasis(1);
             const Vector3& cameraUp = cameraTransform.GetBasis(2);
             const Vector3 cameraToBoundaryCenter = boundaryCenter - cameraTransform.GetTranslation();
@@ -1522,10 +1552,6 @@ namespace AZ
 
                 for (uint16_t cascadeIndex = 0; cascadeIndex < GetCascadeCount(handle); ++cascadeIndex)
                 {
-                    const Matrix4x4& worldToLightClipMatrix = property.m_segments.at(cameraView)[cascadeIndex].m_view->GetWorldToClipMatrix();
-                    const Matrix4x4 depthBiasMatrix = Shadow::GetClipToShadowmapTextureMatrix() * worldToLightClipMatrix;
-                    shadowData.m_depthBiasMatrices[cascadeIndex] = depthBiasMatrix;
-
                     const Matrix4x4& lightViewToLightClipMatrix = property.m_segments.at(cameraView)[cascadeIndex].m_view->GetViewToClipMatrix();
                     const Matrix4x4 lightViewToShadowmapMatrix = Shadow::GetClipToShadowmapTextureMatrix() * lightViewToLightClipMatrix;
                     shadowData.m_lightViewToShadowmapMatrices[cascadeIndex] = lightViewToShadowmapMatrix;

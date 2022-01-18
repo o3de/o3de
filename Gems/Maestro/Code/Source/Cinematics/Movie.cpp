@@ -6,11 +6,10 @@
  *
  */
 
-
 #include <AzCore/Component/Entity.h>
-#include <AzCore/std/allocator_stateless.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/Time/ITime.h>
 #include <AzFramework/Components/CameraBus.h>
 #include <Maestro/Bus/SequenceComponentBus.h>
 #include "Movie.h"
@@ -28,16 +27,13 @@
 #include "LayerNode.h"
 #include "ShadowsSetupNode.h"
 
-#include <StlUtils.h>
 #include <MathConversion.h>
 #include <StaticInstance.h>
 
 #include <ISystem.h>
 #include <ILog.h>
 #include <IConsole.h>
-#include <ITimer.h>
 #include <IRenderer.h>
-#include <IViewSystem.h>
 #include <Maestro/Types/AnimNodeType.h>
 #include <Maestro/Types/SequenceType.h>
 #include <Maestro/Types/AnimParamType.h>
@@ -76,137 +72,134 @@ static SMovieSequenceAutoComplete s_movieSequenceAutoComplete;
 #endif
 
 //////////////////////////////////////////////////////////////////////////
-namespace
-{
-    using AnimParamSystemString = AZStd::basic_string<char, AZStd::char_traits<char>, AZStd::stateless_allocator>;
-
-    template <typename KeyType, typename MappedType, typename Compare = AZStd::less<KeyType>>
-    using AnimSystemOrderedMap = AZStd::map<KeyType, MappedType, Compare, AZStd::stateless_allocator>;
-    template <typename KeyType, typename MappedType, typename Hasher = AZStd::hash<KeyType>, typename EqualKey = AZStd::equal_to<KeyType>>
-    using AnimSystemUnorderedMap = AZStd::unordered_map<KeyType, MappedType, Hasher, EqualKey, AZStd::stateless_allocator>;
-}
-
 // Serialization for anim nodes & param types
-#define REGISTER_NODE_TYPE(name) assert(!g_animNodeEnumToStringMap.contains(AnimNodeType::name)); \
-    g_animNodeEnumToStringMap[AnimNodeType::name] = AZ_STRINGIZE(name);                          \
-    g_animNodeStringToEnumMap[AnimParamSystemString(AZ_STRINGIZE(name))] = AnimNodeType::name;
+#define REGISTER_NODE_TYPE(name) assert(!m_animNodeEnumToStringMap.contains(AnimNodeType::name)); \
+    m_animNodeEnumToStringMap[AnimNodeType::name] = AZ_STRINGIZE(name);                          \
+    m_animNodeStringToEnumMap[AnimParamSystemString(AZ_STRINGIZE(name))] = AnimNodeType::name;
 
-#define REGISTER_PARAM_TYPE(name) assert(!g_animParamEnumToStringMap.contains(AnimParamType::name)); \
-    g_animParamEnumToStringMap[AnimParamType::name] = AZ_STRINGIZE(name);                           \
-    g_animParamStringToEnumMap[AnimParamSystemString(AZ_STRINGIZE(name))] = AnimParamType::name;
+#define REGISTER_PARAM_TYPE(name) assert(!m_animParamEnumToStringMap.contains(AnimParamType::name)); \
+    m_animParamEnumToStringMap[AnimParamType::name] = AZ_STRINGIZE(name);                           \
+    m_animParamStringToEnumMap[AnimParamSystemString(AZ_STRINGIZE(name))] = AnimParamType::name;
 
-namespace
+// If you get an assert in this function, it means two node types have the same enum value.
+void CMovieSystem::RegisterNodeTypes()
 {
-    AnimSystemUnorderedMap<AnimNodeType, AnimParamSystemString> g_animNodeEnumToStringMap;
-    AnimSystemOrderedMap<AnimParamSystemString, AnimNodeType, stl::less_stricmp<AnimParamSystemString>> g_animNodeStringToEnumMap;
-
-    AnimSystemUnorderedMap<AnimParamType, AnimParamSystemString> g_animParamEnumToStringMap;
-    AnimSystemOrderedMap<AnimParamSystemString, AnimParamType, stl::less_stricmp<AnimParamSystemString>> g_animParamStringToEnumMap;
-
-    // If you get an assert in this function, it means two node types have the same enum value.
-    void RegisterNodeTypes()
-    {
-        REGISTER_NODE_TYPE(Entity)
-        REGISTER_NODE_TYPE(Director)
-        REGISTER_NODE_TYPE(Camera)
-        REGISTER_NODE_TYPE(CVar)
-        REGISTER_NODE_TYPE(ScriptVar)
-        REGISTER_NODE_TYPE(Material)
-        REGISTER_NODE_TYPE(Event)
-        REGISTER_NODE_TYPE(Group)
-        REGISTER_NODE_TYPE(Layer)
-        REGISTER_NODE_TYPE(Comment)
-        REGISTER_NODE_TYPE(RadialBlur)
-        REGISTER_NODE_TYPE(ColorCorrection)
-        REGISTER_NODE_TYPE(DepthOfField)
-        REGISTER_NODE_TYPE(ScreenFader)
-        REGISTER_NODE_TYPE(Light)
-        REGISTER_NODE_TYPE(ShadowSetup)
-        REGISTER_NODE_TYPE(Alembic)
-        REGISTER_NODE_TYPE(GeomCache)
-        REGISTER_NODE_TYPE(Environment)
-        REGISTER_NODE_TYPE(AzEntity)
-        REGISTER_NODE_TYPE(Component)
-    }
-
-    // If you get an assert in this function, it means two param types have the same enum value.
-    void RegisterParamTypes()
-    {
-        REGISTER_PARAM_TYPE(FOV)
-        REGISTER_PARAM_TYPE(Position)
-        REGISTER_PARAM_TYPE(Rotation)
-        REGISTER_PARAM_TYPE(Scale)
-        REGISTER_PARAM_TYPE(Event)
-        REGISTER_PARAM_TYPE(Visibility)
-        REGISTER_PARAM_TYPE(Camera)
-        REGISTER_PARAM_TYPE(Animation)
-        REGISTER_PARAM_TYPE(Sound)
-        REGISTER_PARAM_TYPE(Sequence)
-        REGISTER_PARAM_TYPE(Console)
-        REGISTER_PARAM_TYPE(Music)                      ///@deprecated in 1.11, left in for legacy serialization
-        REGISTER_PARAM_TYPE(Float)
-        REGISTER_PARAM_TYPE(LookAt)
-        REGISTER_PARAM_TYPE(TrackEvent)
-        REGISTER_PARAM_TYPE(ShakeAmplitudeA)
-        REGISTER_PARAM_TYPE(ShakeAmplitudeB)
-        REGISTER_PARAM_TYPE(ShakeFrequencyA)
-        REGISTER_PARAM_TYPE(ShakeFrequencyB)
-        REGISTER_PARAM_TYPE(ShakeMultiplier)
-        REGISTER_PARAM_TYPE(ShakeNoise)
-        REGISTER_PARAM_TYPE(ShakeWorking)
-        REGISTER_PARAM_TYPE(ShakeAmpAMult)
-        REGISTER_PARAM_TYPE(ShakeAmpBMult)
-        REGISTER_PARAM_TYPE(ShakeFreqAMult)
-        REGISTER_PARAM_TYPE(ShakeFreqBMult)
-        REGISTER_PARAM_TYPE(DepthOfField)
-        REGISTER_PARAM_TYPE(FocusDistance)
-        REGISTER_PARAM_TYPE(FocusRange)
-        REGISTER_PARAM_TYPE(BlurAmount)
-        REGISTER_PARAM_TYPE(Capture)
-        REGISTER_PARAM_TYPE(TransformNoise)
-        REGISTER_PARAM_TYPE(TimeWarp)
-        REGISTER_PARAM_TYPE(FixedTimeStep)
-        REGISTER_PARAM_TYPE(NearZ)
-        REGISTER_PARAM_TYPE(Goto)
-        REGISTER_PARAM_TYPE(PositionX)
-        REGISTER_PARAM_TYPE(PositionY)
-        REGISTER_PARAM_TYPE(PositionZ)
-        REGISTER_PARAM_TYPE(RotationX)
-        REGISTER_PARAM_TYPE(RotationY)
-        REGISTER_PARAM_TYPE(RotationZ)
-        REGISTER_PARAM_TYPE(ScaleX)
-        REGISTER_PARAM_TYPE(ScaleY)
-        REGISTER_PARAM_TYPE(ScaleZ)
-        REGISTER_PARAM_TYPE(ColorR)
-        REGISTER_PARAM_TYPE(ColorG)
-        REGISTER_PARAM_TYPE(ColorB)
-        REGISTER_PARAM_TYPE(CommentText)
-        REGISTER_PARAM_TYPE(ScreenFader)
-        REGISTER_PARAM_TYPE(LightDiffuse)
-        REGISTER_PARAM_TYPE(LightRadius)
-        REGISTER_PARAM_TYPE(LightDiffuseMult)
-        REGISTER_PARAM_TYPE(LightHDRDynamic)
-        REGISTER_PARAM_TYPE(LightSpecularMult)
-        REGISTER_PARAM_TYPE(LightSpecPercentage)
-        REGISTER_PARAM_TYPE(MaterialDiffuse)
-        REGISTER_PARAM_TYPE(MaterialSpecular)
-        REGISTER_PARAM_TYPE(MaterialEmissive)
-        REGISTER_PARAM_TYPE(MaterialEmissiveIntensity)
-        REGISTER_PARAM_TYPE(MaterialOpacity)
-        REGISTER_PARAM_TYPE(MaterialSmoothness)
-        REGISTER_PARAM_TYPE(TimeRanges)
-        REGISTER_PARAM_TYPE(Physics)
-        REGISTER_PARAM_TYPE(GSMCache)
-        REGISTER_PARAM_TYPE(ShutterSpeed)
-        REGISTER_PARAM_TYPE(Physicalize)
-        REGISTER_PARAM_TYPE(PhysicsDriven)
-        REGISTER_PARAM_TYPE(SunLongitude)
-        REGISTER_PARAM_TYPE(SunLatitude)
-        REGISTER_PARAM_TYPE(MoonLongitude)
-        REGISTER_PARAM_TYPE(MoonLatitude)
-        REGISTER_PARAM_TYPE(ProceduralEyes)
-    }
+    REGISTER_NODE_TYPE(Entity)
+    REGISTER_NODE_TYPE(Director)
+    REGISTER_NODE_TYPE(Camera)
+    REGISTER_NODE_TYPE(CVar)
+    REGISTER_NODE_TYPE(ScriptVar)
+    REGISTER_NODE_TYPE(Material)
+    REGISTER_NODE_TYPE(Event)
+    REGISTER_NODE_TYPE(Group)
+    REGISTER_NODE_TYPE(Layer)
+    REGISTER_NODE_TYPE(Comment)
+    REGISTER_NODE_TYPE(RadialBlur)
+    REGISTER_NODE_TYPE(ColorCorrection)
+    REGISTER_NODE_TYPE(DepthOfField)
+    REGISTER_NODE_TYPE(ScreenFader)
+    REGISTER_NODE_TYPE(Light)
+    REGISTER_NODE_TYPE(ShadowSetup)
+    REGISTER_NODE_TYPE(Alembic)
+    REGISTER_NODE_TYPE(GeomCache)
+    REGISTER_NODE_TYPE(Environment)
+    REGISTER_NODE_TYPE(AzEntity)
+    REGISTER_NODE_TYPE(Component)
 }
+
+// If you get an assert in this function, it means two param types have the same enum value.
+void CMovieSystem::RegisterParamTypes()
+{
+    REGISTER_PARAM_TYPE(FOV)
+    REGISTER_PARAM_TYPE(Position)
+    REGISTER_PARAM_TYPE(Rotation)
+    REGISTER_PARAM_TYPE(Scale)
+    REGISTER_PARAM_TYPE(Event)
+    REGISTER_PARAM_TYPE(Visibility)
+    REGISTER_PARAM_TYPE(Camera)
+    REGISTER_PARAM_TYPE(Animation)
+    REGISTER_PARAM_TYPE(Sound)
+    REGISTER_PARAM_TYPE(Sequence)
+    REGISTER_PARAM_TYPE(Console)
+    REGISTER_PARAM_TYPE(Music)                      ///@deprecated in 1.11, left in for legacy serialization
+    REGISTER_PARAM_TYPE(Float)
+    REGISTER_PARAM_TYPE(LookAt)
+    REGISTER_PARAM_TYPE(TrackEvent)
+    REGISTER_PARAM_TYPE(ShakeAmplitudeA)
+    REGISTER_PARAM_TYPE(ShakeAmplitudeB)
+    REGISTER_PARAM_TYPE(ShakeFrequencyA)
+    REGISTER_PARAM_TYPE(ShakeFrequencyB)
+    REGISTER_PARAM_TYPE(ShakeMultiplier)
+    REGISTER_PARAM_TYPE(ShakeNoise)
+    REGISTER_PARAM_TYPE(ShakeWorking)
+    REGISTER_PARAM_TYPE(ShakeAmpAMult)
+    REGISTER_PARAM_TYPE(ShakeAmpBMult)
+    REGISTER_PARAM_TYPE(ShakeFreqAMult)
+    REGISTER_PARAM_TYPE(ShakeFreqBMult)
+    REGISTER_PARAM_TYPE(DepthOfField)
+    REGISTER_PARAM_TYPE(FocusDistance)
+    REGISTER_PARAM_TYPE(FocusRange)
+    REGISTER_PARAM_TYPE(BlurAmount)
+    REGISTER_PARAM_TYPE(Capture)
+    REGISTER_PARAM_TYPE(TransformNoise)
+    REGISTER_PARAM_TYPE(TimeWarp)
+    REGISTER_PARAM_TYPE(FixedTimeStep)
+    REGISTER_PARAM_TYPE(NearZ)
+    REGISTER_PARAM_TYPE(Goto)
+    REGISTER_PARAM_TYPE(PositionX)
+    REGISTER_PARAM_TYPE(PositionY)
+    REGISTER_PARAM_TYPE(PositionZ)
+    REGISTER_PARAM_TYPE(RotationX)
+    REGISTER_PARAM_TYPE(RotationY)
+    REGISTER_PARAM_TYPE(RotationZ)
+    REGISTER_PARAM_TYPE(ScaleX)
+    REGISTER_PARAM_TYPE(ScaleY)
+    REGISTER_PARAM_TYPE(ScaleZ)
+    REGISTER_PARAM_TYPE(ColorR)
+    REGISTER_PARAM_TYPE(ColorG)
+    REGISTER_PARAM_TYPE(ColorB)
+    REGISTER_PARAM_TYPE(CommentText)
+    REGISTER_PARAM_TYPE(ScreenFader)
+    REGISTER_PARAM_TYPE(LightDiffuse)
+    REGISTER_PARAM_TYPE(LightRadius)
+    REGISTER_PARAM_TYPE(LightDiffuseMult)
+    REGISTER_PARAM_TYPE(LightHDRDynamic)
+    REGISTER_PARAM_TYPE(LightSpecularMult)
+    REGISTER_PARAM_TYPE(LightSpecPercentage)
+    REGISTER_PARAM_TYPE(MaterialDiffuse)
+    REGISTER_PARAM_TYPE(MaterialSpecular)
+    REGISTER_PARAM_TYPE(MaterialEmissive)
+    REGISTER_PARAM_TYPE(MaterialEmissiveIntensity)
+    REGISTER_PARAM_TYPE(MaterialOpacity)
+    REGISTER_PARAM_TYPE(MaterialSmoothness)
+    REGISTER_PARAM_TYPE(TimeRanges)
+    REGISTER_PARAM_TYPE(Physics)
+    REGISTER_PARAM_TYPE(GSMCache)
+    REGISTER_PARAM_TYPE(ShutterSpeed)
+    REGISTER_PARAM_TYPE(Physicalize)
+    REGISTER_PARAM_TYPE(PhysicsDriven)
+    REGISTER_PARAM_TYPE(SunLongitude)
+    REGISTER_PARAM_TYPE(SunLatitude)
+    REGISTER_PARAM_TYPE(MoonLongitude)
+    REGISTER_PARAM_TYPE(MoonLatitude)
+    REGISTER_PARAM_TYPE(ProceduralEyes)
+}
+
+namespace Internal
+{
+    float ApplyDeltaTimeOverrideIfEnabled(float deltaTime)
+    {
+        if (auto* timeSystem = AZ::Interface<AZ::ITime>::Get())
+        {
+            const AZ::TimeMs deltatimeOverride = timeSystem->GetSimulationTickDeltaOverride();
+            if (deltatimeOverride != AZ::Time::ZeroTimeMs)
+            {
+                deltaTime = AZ::TimeMsToSeconds(deltatimeOverride);
+            }
+        }
+        return deltaTime;
+    }
+} // namespace Internal
 
 //////////////////////////////////////////////////////////////////////////
 CMovieSystem::CMovieSystem(ISystem* pSystem)
@@ -219,18 +212,13 @@ CMovieSystem::CMovieSystem(ISystem* pSystem)
     m_bEnableCameraShake = true;
     m_bCutscenesPausedInEditor = true;
     m_sequenceStopBehavior = eSSB_GotoEndTime;
-    m_lastUpdateTime.SetValue(0);
+    m_lastUpdateTime = AZ::Time::ZeroTimeUs;
     m_bStartCapture = false;
     m_captureFrame = -1;
     m_bEndCapture = false;
-    m_fixedTimeStepBackUp = 0;
-    m_maxStepBackUp = 0;
-    m_smoothingBackUp = 0;
+    m_fixedTimeStepBackUp = AZ::Time::ZeroTimeMs;
     m_cvar_capture_frame_once = nullptr;
     m_cvar_capture_folder = nullptr;
-    m_cvar_t_FixedStep = nullptr;
-    m_cvar_t_MaxStep = nullptr;
-    m_cvar_t_Smoothing = nullptr;
     m_cvar_sys_maxTimeStepForMovieSystem = nullptr;
     m_cvar_capture_frames = nullptr;
     m_cvar_capture_file_prefix = nullptr;
@@ -776,79 +764,65 @@ bool CMovieSystem::InternalStopSequence(IAnimSequence* sequence, bool bAbort, bo
 {
     assert(sequence != 0);
 
-    bool bRet = false;
     PlayingSequences::iterator it;
 
-    if (FindSequence(sequence, it))
+    if (!FindSequence(sequence, it))
     {
-        if (bAnimate && sequence->IsActivated())
-        {
-            if (m_sequenceStopBehavior == eSSB_GotoEndTime)
-            {
-                SAnimContext ac;
-                ac.singleFrame = true;
-                ac.time = sequence->GetTimeRange().end;
-                sequence->Animate(ac);
-            }
-            else if (m_sequenceStopBehavior == eSSB_GotoStartTime)
-            {
-                SAnimContext ac;
-                ac.singleFrame = true;
-                ac.time = sequence->GetTimeRange().start;
-                sequence->Animate(ac);
-            }
-
-            sequence->Deactivate();
-        }
-
-        // If this sequence is cut scene end it.
-        if (sequence->GetFlags() & IAnimSequence::eSeqFlags_CutScene)
-        {
-            if (!gEnv->IsEditing() || !m_bCutscenesPausedInEditor)
-            {
-                if (m_pUser)
-                {
-                    m_pUser->EndCutScene(sequence, sequence->GetCutSceneFlags(true));
-                }
-            }
-
-            sequence->SetParentSequence(NULL);
-        }
-
-        // tell all interested listeners
-        NotifyListeners(sequence, bAbort ? IMovieListener::eMovieEvent_Aborted : IMovieListener::eMovieEvent_Stopped);
-
-        // erase the sequence after notifying listeners so if they choose to they can get the ending time of this sequence
-        if (FindSequence(sequence, it))
-        {
-            m_playingSequences.erase(it);
-        }
-
-        sequence->Resume();
-        static_cast<CAnimSequence*>(sequence)->OnStop();
-        bRet = true;
+        return false;
     }
 
-    return bRet;
+    if (bAnimate && sequence->IsActivated())
+    {
+        if (m_sequenceStopBehavior == eSSB_GotoEndTime)
+        {
+            SAnimContext ac;
+            ac.singleFrame = true;
+            ac.time = sequence->GetTimeRange().end;
+            sequence->Animate(ac);
+        }
+        else if (m_sequenceStopBehavior == eSSB_GotoStartTime)
+        {
+            SAnimContext ac;
+            ac.singleFrame = true;
+            ac.time = sequence->GetTimeRange().start;
+            sequence->Animate(ac);
+        }
+
+        sequence->Deactivate();
+    }
+
+    // If this sequence is cut scene end it.
+    if (sequence->GetFlags() & IAnimSequence::eSeqFlags_CutScene)
+    {
+        if (!gEnv->IsEditing() || !m_bCutscenesPausedInEditor)
+        {
+            if (m_pUser)
+            {
+                m_pUser->EndCutScene(sequence, sequence->GetCutSceneFlags(true));
+            }
+        }
+
+        sequence->SetParentSequence(NULL);
+    }
+
+    // tell all interested listeners
+    NotifyListeners(sequence, bAbort ? IMovieListener::eMovieEvent_Aborted : IMovieListener::eMovieEvent_Stopped);
+
+    // erase the sequence after notifying listeners so if they choose to they can get the ending time of this sequence
+    if (FindSequence(sequence, it))
+    {
+        m_playingSequences.erase(it);
+    }
+
+    sequence->Resume();
+    static_cast<CAnimSequence*>(sequence)->OnStop();
+
+    return true;
 }
 
 //////////////////////////////////////////////////////////////////////////
 bool CMovieSystem::AbortSequence(IAnimSequence* sequence, bool bLeaveTime)
 {
-    assert(sequence);
-
-    // to avoid any camera blending after aborting a cut scene
-    IViewSystem* pViewSystem = gEnv->pSystem->GetIViewSystem();
-    if (pViewSystem)
-    {
-        pViewSystem->SetBlendParams(0, 0, 0);
-        IView* pView = pViewSystem->GetActiveView();
-        if (pView)
-        {
-            pView->ResetBlending();
-        }
-    }
-
     return InternalStopSequence(sequence, true, !bLeaveTime);
 }
 
@@ -911,7 +885,7 @@ void CMovieSystem::Reset(bool bPlayOnReset, bool bSeekToStart)
     InternalStopAllSequences(true, false);
 
     // Reset all sequences.
-    for (Sequences::iterator iter = m_sequences.begin(); iter != m_sequences.end(); ++iter)
+    for (Sequences::const_iterator iter = m_sequences.cbegin(); iter != m_sequences.cend(); ++iter)
     {
         IAnimSequence* pCurrentSequence = iter->get();
         NotifyListeners(pCurrentSequence, IMovieListener::eMovieEvent_Started);
@@ -945,7 +919,7 @@ void CMovieSystem::Reset(bool bPlayOnReset, bool bSeekToStart)
 //////////////////////////////////////////////////////////////////////////
 void CMovieSystem::PlayOnLoadSequences()
 {
-    for (Sequences::iterator sit = m_sequences.begin(); sit != m_sequences.end(); ++sit)
+    for (Sequences::const_iterator sit = m_sequences.cbegin(); sit != m_sequences.cend(); ++sit)
     {
         IAnimSequence* sequence = sit->get();
         if (sequence->GetFlags() & IAnimSequence::eSeqFlags_PlayOnReset)
@@ -989,15 +963,26 @@ void CMovieSystem::ShowPlayedSequencesDebug()
 {
     float y = 10.0f;
     std::vector<const char*> names;
+    std::vector<float> rows;
+    constexpr f32 green[4]  = {0, 1, 0, 1};
+    constexpr f32 purple[4] = {1, 0, 1, 1};
+    constexpr f32 white[4]  = {1, 1, 1, 1};
+
+    //TODO: needs an implementation
+    auto Draw2dLabel = [](float /*x*/,float /*y*/,float /*depth*/,const f32* /*color*/,bool /*center*/, const char* /*fmt*/, ...) {};
 
     for (PlayingSequences::iterator it = m_playingSequences.begin(); it != m_playingSequences.end(); ++it)
     {
         PlayingSequence& playingSequence = *it;
 
-        if (playingSequence.sequence == NULL)
+        if (playingSequence.sequence == nullptr)
         {
             continue;
         }
+
+        const char* fullname = playingSequence.sequence->GetName();
+
+        Draw2dLabel(1.0f, y, 1.3f, green, false, "Sequence %s : %f (x %f)", fullname, playingSequence.currentTime, playingSequence.currentSpeed);
 
         y += 16.0f;
 
@@ -1019,9 +1004,10 @@ void CMovieSystem::ShowPlayedSequencesDebug()
             if (alreadyThere == false)
             {
                 names.push_back(name);
-            }
-        }
 
+            }
+            Draw2dLabel((21.0f + 100.0f * i), ((i % 2) ? (y + 8.0f) : y), 1.0f, alreadyThere ? white : purple, false, "%s", name);
+        }
         y += 32.0f;
     }
 }
@@ -1041,13 +1027,13 @@ void CMovieSystem::PreUpdate(float deltaTime)
     }
     m_newlyActivatedSequences.clear();
 
-    UpdateInternal(m_cvar_t_FixedStep ? m_cvar_t_FixedStep->GetFVal() : deltaTime, true);
+    UpdateInternal(Internal::ApplyDeltaTimeOverrideIfEnabled(deltaTime), true);
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CMovieSystem::PostUpdate(float deltaTime)
 {
-    UpdateInternal(m_cvar_t_FixedStep ? m_cvar_t_FixedStep->GetFVal() : deltaTime, false);
+    UpdateInternal(Internal::ApplyDeltaTimeOverrideIfEnabled(deltaTime), false);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1061,7 +1047,7 @@ void CMovieSystem::UpdateInternal(const float deltaTime, const bool bPreUpdate)
     }
 
     // don't update more than once if dt==0.0
-    CTimeValue curTime = gEnv->pTimer->GetFrameStartTime();
+    const AZ::TimeUs curTime = AZ::GetLastSimulationTickTime();
     if (deltaTime == 0.0f && curTime == m_lastUpdateTime && !gEnv->IsEditor())
     {
         return;
@@ -1093,7 +1079,8 @@ void CMovieSystem::UpdateInternal(const float deltaTime, const bool bPreUpdate)
 
         // Skip sequence if current update does not apply
         const bool bSequenceEarlyUpdate = (playingSequence.sequence->GetFlags() & IAnimSequence::eSeqFlags_EarlyMovieUpdate) != 0;
-        if (bPreUpdate && !bSequenceEarlyUpdate || !bPreUpdate && bSequenceEarlyUpdate)
+        if ((bPreUpdate && !bSequenceEarlyUpdate ) || (!bPreUpdate && bSequenceEarlyUpdate)
+)
         {
             continue;
         }
@@ -1268,7 +1255,7 @@ void CMovieSystem::PauseCutScenes()
 {
     m_bCutscenesPausedInEditor = true;
 
-    if (m_pUser != NULL)
+    if (m_pUser != nullptr)
     {
         for (PlayingSequences::iterator it = m_playingSequences.begin(); it != m_playingSequences.end(); ++it)
         {
@@ -1290,7 +1277,7 @@ void CMovieSystem::ResumeCutScenes()
 
     m_bCutscenesPausedInEditor = false;
 
-    if (m_pUser != NULL)
+    if (m_pUser != nullptr)
     {
         for (PlayingSequences::iterator it = m_playingSequences.begin(); it != m_playingSequences.end(); ++it)
         {
@@ -1480,7 +1467,7 @@ void CMovieSystem::ListSequencesCmd([[maybe_unused]] IConsoleCmdArgs* pArgs)
 void CMovieSystem::PlaySequencesCmd(IConsoleCmdArgs* pArgs)
 {
     const char* sequenceName = pArgs->GetArg(1);
-    gEnv->pMovieSystem->PlaySequence(sequenceName, NULL, false, false);
+    gEnv->pMovieSystem->PlaySequence(sequenceName, nullptr, false, false);
 }
 #endif //#if !defined(_RELEASE)
 
@@ -1513,34 +1500,11 @@ void CMovieSystem::GoToFrame(const char* seqName, float targetFrame)
 
 void CMovieSystem::EnableFixedStepForCapture(float step)
 {
-    if (nullptr == m_cvar_t_FixedStep)
+    if (auto* timeSystem = AZ::Interface<AZ::ITime>::Get())
     {
-        m_cvar_t_FixedStep = gEnv->pConsole->GetCVar("t_FixedStep");
+        m_fixedTimeStepBackUp = timeSystem->GetSimulationTickDeltaOverride();
+        timeSystem->SetSimulationTickDeltaOverride(AZ::SecondsToTimeMs(step));
     }
-
-    m_fixedTimeStepBackUp = m_cvar_t_FixedStep->GetFVal();
-    m_cvar_t_FixedStep->Set(step);
-
-    if (nullptr == m_cvar_t_MaxStep)
-    {
-        m_cvar_t_MaxStep = gEnv->pConsole->GetCVar("t_MaxStep");
-    }
-
-    // Make sure to make the max step large enough
-    m_maxStepBackUp = m_cvar_t_MaxStep->GetFVal();
-    if (step > m_maxStepBackUp)
-    {
-        m_cvar_t_MaxStep->Set(step);
-    }
-
-    if (nullptr == m_cvar_t_Smoothing)
-    {
-        m_cvar_t_Smoothing = gEnv->pConsole->GetCVar("t_Smoothing");
-    }
-
-    // Turn off framerate smoothing
-    m_smoothingBackUp = m_cvar_t_Smoothing->GetFVal();
-    m_cvar_t_Smoothing->Set(0);
 
     if (nullptr == m_cvar_sys_maxTimeStepForMovieSystem)
     {
@@ -1557,9 +1521,10 @@ void CMovieSystem::EnableFixedStepForCapture(float step)
 
 void CMovieSystem::DisableFixedStepForCapture()
 {
-    m_cvar_t_FixedStep->Set(m_fixedTimeStepBackUp);
-    m_cvar_t_MaxStep->Set(m_maxStepBackUp);
-    m_cvar_t_Smoothing->Set(m_smoothingBackUp);
+    if (auto* timeSystem = AZ::Interface<AZ::ITime>::Get())
+    {
+        timeSystem->SetSimulationTickDeltaOverride(m_fixedTimeStepBackUp);
+    }
     m_cvar_sys_maxTimeStepForMovieSystem->Set(m_maxTimeStepForMovieSystemBackUp);
 }
 
@@ -1680,16 +1645,16 @@ void CMovieSystem::SerializeNodeType(AnimNodeType& animNodeType, XmlNodeRef& xml
             XmlString nodeTypeString;
             if (xmlNode->getAttr(kType, nodeTypeString))
             {
-                assert(g_animNodeStringToEnumMap.find(nodeTypeString.c_str()) != g_animNodeStringToEnumMap.end());
-                animNodeType = stl::find_in_map(g_animNodeStringToEnumMap, nodeTypeString.c_str(), AnimNodeType::Invalid);
+                assert(m_animNodeStringToEnumMap.find(nodeTypeString.c_str()) != m_animNodeStringToEnumMap.end());
+                animNodeType = stl::find_in_map(m_animNodeStringToEnumMap, nodeTypeString.c_str(), AnimNodeType::Invalid);
             }
         }
     }
     else
     {
         const char* pTypeString = "Invalid";
-        assert(g_animNodeEnumToStringMap.find(animNodeType) != g_animNodeEnumToStringMap.end());
-        pTypeString = g_animNodeEnumToStringMap[animNodeType].c_str();
+        assert(m_animNodeEnumToStringMap.find(animNodeType) != m_animNodeEnumToStringMap.end());
+        pTypeString = m_animNodeEnumToStringMap[animNodeType].c_str();
         xmlNode->setAttr(kType, pTypeString);
     }
 }
@@ -1758,8 +1723,8 @@ void CMovieSystem::LoadParamTypeFromXml(CAnimParamType& animParamType, const Xml
                     animParamType.m_name = virtualPropertyValue;
                 }
 
-                assert(g_animParamStringToEnumMap.find(paramTypeString.c_str()) != g_animParamStringToEnumMap.end());
-                animParamType.m_type = stl::find_in_map(g_animParamStringToEnumMap, paramTypeString.c_str(), AnimParamType::Invalid);
+                assert(m_animParamStringToEnumMap.find(paramTypeString.c_str()) != m_animParamStringToEnumMap.end());
+                animParamType.m_type = stl::find_in_map(m_animParamStringToEnumMap, paramTypeString.c_str(), AnimParamType::Invalid);
             }
         }
     }
@@ -1789,8 +1754,8 @@ void CMovieSystem::SaveParamTypeToXml(const CAnimParamType& animParamType, XmlNo
             xmlNode->setAttr(CAnimParamTypeXmlNames::kVirtualPropertyName, animParamType.m_name.c_str());
         }
 
-        assert(g_animParamEnumToStringMap.find(animParamType.m_type) != g_animParamEnumToStringMap.end());
-        pTypeString = g_animParamEnumToStringMap[animParamType.m_type].c_str();
+        assert(m_animParamEnumToStringMap.find(animParamType.m_type) != m_animParamEnumToStringMap.end());
+        pTypeString = m_animParamEnumToStringMap[animParamType.m_type].c_str();
     }
 
     xmlNode->setAttr(kParamType, pTypeString);
@@ -1823,9 +1788,9 @@ const char* CMovieSystem::GetParamTypeName(const CAnimParamType& animParamType)
     }
     else
     {
-        if (g_animParamEnumToStringMap.find(animParamType.m_type) != g_animParamEnumToStringMap.end())
+        if (m_animParamEnumToStringMap.contains(animParamType.m_type))
         {
-            return g_animParamEnumToStringMap[animParamType.m_type].c_str();
+            return m_animParamEnumToStringMap[animParamType.m_type].c_str();
         }
     }
 
@@ -1987,13 +1952,13 @@ void CLightAnimWrapper::RemoveCachedLightAnim(const char* name)
 //////////////////////////////////////////////////////////////////////////
 AnimNodeType CMovieSystem::GetNodeTypeFromString(const char* pString) const
 {
-    return stl::find_in_map(g_animNodeStringToEnumMap, pString, AnimNodeType::Invalid);
+    return stl::find_in_map(m_animNodeStringToEnumMap, pString, AnimNodeType::Invalid);
 }
 
 //////////////////////////////////////////////////////////////////////////
 CAnimParamType CMovieSystem::GetParamTypeFromString(const char* pString) const
 {
-    const AnimParamType paramType = stl::find_in_map(g_animParamStringToEnumMap, pString, AnimParamType::Invalid);
+    const AnimParamType paramType = stl::find_in_map(m_animParamStringToEnumMap, pString, AnimParamType::Invalid);
 
     if (paramType != AnimParamType::Invalid)
     {

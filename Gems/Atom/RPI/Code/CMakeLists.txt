@@ -6,7 +6,7 @@
 #
 #
 
-ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
+o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
 
 #for PAL_TRAIT_BUILD_ATOM_RPI_ASSETS_SUPPORTED and PAL_TRAIT_BUILD_ATOM_RPI_MASKED_OCCLUSION_CULLING_SUPPORTED
 include(${pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
@@ -160,6 +160,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::Atom_RPI.Public
                 Gem::Atom_RHI.Public
                 Gem::Atom_RPI.Edit
+                Gem::Atom_Utils.TestUtils.Static
     )
     ly_add_googletest(
         NAME Gem::Atom_RPI.Tests
@@ -175,8 +176,8 @@ endif()
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
 
-    ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
-    ly_get_list_relative_pal_filename(common_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common)
+    o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
+    set(common_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common)
 
     if(NOT PAL_TRAIT_BUILD_ATOM_RPI_ASSETS_SUPPORTED)
 

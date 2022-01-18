@@ -11,10 +11,14 @@ if(LY_TOOLCHAIN_NDK_API_LEVEL)
 endif()
 
 # Verify that the NDK environment is set and points to the support NDK
-
+if(NOT ${LY_NDK_DIR})
+    if($ENV{LY_NDK_DIR})
+        set(LY_NDK_DIR $ENV{LY_NDK_DIR})
+    endif()
+endif()
 file(TO_CMAKE_PATH "${LY_NDK_DIR}" LY_NDK_DIR)
 if(NOT LY_NDK_DIR)
-    message(FATAL_ERROR "Environment var for NDK is empty. Could not find the NDK installation folder")
+    message(FATAL_ERROR "Environment and cache var for NDK is empty. Could not find the NDK installation folder")
 endif()
 
 set(LY_ANDROID_NDK_TOOLCHAIN ${LY_NDK_DIR}/build/cmake/android.toolchain.cmake)
@@ -27,11 +31,10 @@ endif()
 if(NOT ANDROID_ABI)
     set(ANDROID_ABI arm64-v8a)
 endif()
-if(NOT ANDROID_ARM_MODE)
-    set(ANDROID_ARM_MODE arm)
-endif()
-if(NOT ANDROID_ARM_NEON)
-    set(ANDROID_ARM_NEON FALSE)
+
+# Only the 64-bit ANDROID ABIs arm supported
+if(NOT ANDROID_ABI MATCHES "^arm64-")
+    message(FATAL_ERROR "Only the 64-bit ANDROID_ABI's are supported. arm64-v8a can be used if not set")
 endif()
 if(NOT ANDROID_NATIVE_API_LEVEL)
     set(ANDROID_NATIVE_API_LEVEL 21)

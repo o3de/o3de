@@ -26,6 +26,12 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
     public:
         using SerializerFunction = AZStd::function<bool(AZStd::vector<uint8_t>&, const ProcessedObjectStore&)>;
 
+        struct AssetSmartPtrDeleter
+        {
+            void operator()(AZ::Data::AssetData* asset);
+        };
+        using AssetSmartPtr = AZStd::unique_ptr<AZ::Data::AssetData, AssetSmartPtrDeleter>; 
+
         //! Constructs a new instance.
         //! @param uniqueId A name for the object that's unique within the scope of the Prefab. This name will be used to generate a sub id for the product
         //!     which requires that the name to be stable between runs.
@@ -37,24 +43,24 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         
         bool Serialize(AZStd::vector<uint8_t>& output) const;
         static uint32_t BuildSubId(AZStd::string_view id);
+        uint32_t GetSubId() const;
 
         bool HasAsset() const;
         const AZ::Data::AssetType& GetAssetType() const;
         const AZ::Data::AssetData& GetAsset() const;
         AZ::Data::AssetData& GetAsset();
-        AZStd::unique_ptr<AZ::Data::AssetData> ReleaseAsset();
+        AssetSmartPtr ReleaseAsset();
 
         AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& GetReferencedAssets();
         const AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& GetReferencedAssets() const;
 
-
         const AZStd::string& GetId() const;
 
     private:
-        ProcessedObjectStore(AZStd::string uniqueId, AZStd::unique_ptr<AZ::Data::AssetData> asset, SerializerFunction assetSerializer);
+        ProcessedObjectStore(AZStd::string uniqueId, AssetSmartPtr asset, SerializerFunction assetSerializer);
 
         SerializerFunction m_assetSerializer;
-        AZStd::unique_ptr<AZ::Data::AssetData> m_asset;
+        AssetSmartPtr m_asset;
         AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>> m_referencedAssets;
         AZStd::string m_uniqueId;
     };
@@ -66,7 +72,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         static_assert(AZStd::is_base_of_v<AZ::Data::AssetData, T>,
             "ProcessedObjectStore can only be created from a class that derives from AZ::Data::AssetData.");
         AZ::Data::AssetId assetId(sourceId, BuildSubId(uniqueId));
-        auto instance = AZStd::make_unique<T>(assetId, AZ::Data::AssetData::AssetStatus::Ready);
+        auto instance = AssetSmartPtr(aznew T(assetId, AZ::Data::AssetData::AssetStatus::Ready));
         ProcessedObjectStore resultLeft(AZStd::move(uniqueId), AZStd::move(instance), AZStd::move(assetSerializer));
         T* resultRight = static_cast<T*>(&resultLeft.GetAsset());
         return AZStd::make_pair<ProcessedObjectStore, T*>(AZStd::move(resultLeft), resultRight);

@@ -129,7 +129,7 @@ namespace AzToolsFramework
 
         void Instance::SetLinkId(LinkId linkId)
         {
-            m_linkId = AZStd::move(linkId);
+            m_linkId = linkId;
         }
 
         LinkId Instance::GetLinkId() const
@@ -142,35 +142,38 @@ namespace AzToolsFramework
             return m_templateSourcePath;
         }
 
-        void Instance::SetTemplateSourcePath(AZ::IO::PathView sourcePath)
+        void Instance::SetTemplateSourcePath(AZ::IO::Path sourcePath)
         {
-            m_templateSourcePath = sourcePath;
+            m_templateSourcePath = AZStd::move(sourcePath);
         }
 
-        void Instance::SetContainerEntityName(AZStd::string_view containerName)
+        void Instance::SetContainerEntityName(AZStd::string containerName)
         {
-            m_containerEntity->SetName(containerName);
+            m_containerEntity->SetName(AZStd::move(containerName));
         }
 
         bool Instance::AddEntity(AZ::Entity& entity)
         {
-            EntityAlias newEntityAlias = GenerateEntityAlias();
-            return AddEntity(entity, newEntityAlias);
+            return AddEntity(entity, GenerateEntityAlias());
+        }
+
+        bool Instance::AddEntity(AZStd::unique_ptr<AZ::Entity>&& entity)
+        {
+            return AddEntity(AZStd::move(entity), GenerateEntityAlias());
         }
 
         bool Instance::AddEntity(AZ::Entity& entity, EntityAlias entityAlias)
         {
-            if (!RegisterEntity(entity.GetId(), entityAlias))
-            {
-                return false;
-            }
+            return
+                RegisterEntity(entity.GetId(), entityAlias) && 
+                m_entities.emplace(AZStd::move(entityAlias), &entity).second;
+        }
 
-            if (!m_entities.emplace(AZStd::make_pair(entityAlias, &entity)).second)
-            {
-                return false;
-            }
-
-            return true;
+        bool Instance::AddEntity(AZStd::unique_ptr<AZ::Entity>&& entity, EntityAlias entityAlias)
+        {
+            return
+                RegisterEntity(entity->GetId(), entityAlias) &&
+                m_entities.emplace(AZStd::move(entityAlias), AZStd::move(entity)).second;
         }
 
         AZStd::unique_ptr<AZ::Entity> Instance::DetachEntity(const AZ::EntityId& entityId)
@@ -226,6 +229,23 @@ namespace AzToolsFramework
             }
 
             m_entities.clear();
+        }
+
+        AZStd::unique_ptr<AZ::Entity> Instance::ReplaceEntity(AZStd::unique_ptr<AZ::Entity>&& entity, EntityAliasView alias)
+        {
+            AZStd::unique_ptr<AZ::Entity> result;
+            auto it = m_entities.find(alias);
+            if (it != m_entities.end())
+            {
+                // Swap entity ids as these need to remain stable
+                AZ::EntityId originalId = it->second->GetId();
+                it->second->SetId(entity->GetId());
+                entity->SetId(originalId);
+
+                result = AZStd::move(it->second);
+                it->second = AZStd::move(entity);
+            }
+            return result;
         }
 
         void Instance::RemoveNestedEntities(
@@ -377,7 +397,12 @@ namespace AzToolsFramework
             return entityAliases;
         }
 
-        void Instance::GetNestedEntityIds(const AZStd::function<bool(AZ::EntityId)>& callback)
+        size_t Instance::GetEntityAliasCount() const
+        {
+            return m_entities.size();
+        }
+
+        void Instance::GetNestedEntityIds(const AZStd::function<bool(AZ::EntityId)>& callback) const
         {
             GetEntityIds(callback);
 
@@ -387,11 +412,22 @@ namespace AzToolsFramework
             }
         }
 
-        void Instance::GetEntityIds(const AZStd::function<bool(AZ::EntityId)>& callback)
+        void Instance::GetEntityIds(const AZStd::function<bool(AZ::EntityId)>& callback) const
         {
             for (auto&&[entityAlias, entityId] : m_templateToInstanceEntityIdMap)
             {
                 if (!callback(entityId))
+                {
+                    break;
+                }
+            }
+        }
+
+        void Instance::GetEntityIdToAlias(const AZStd::function<bool(AZ::EntityId, EntityAliasView)>& callback) const
+        {
+            for (auto&& [entityAlias, entityId] : m_templateToInstanceEntityIdMap)
+            {
+                if (!callback(entityId, entityAlias))
                 {
                     break;
                 }
@@ -514,24 +550,106 @@ namespace AzToolsFramework
             }
         }
 
-        EntityAliasOptionalReference Instance::GetEntityAlias(const AZ::EntityId& id)
+        EntityAliasOptionalReference Instance::GetEntityAlias(AZ::EntityId id)
         {
-            if (m_instanceToTemplateEntityIdMap.count(id))
-            {
-                return m_instanceToTemplateEntityIdMap[id];
-            }
-                
-            return AZStd::nullopt;
+            auto it = m_instanceToTemplateEntityIdMap.find(id);
+            return it != m_instanceToTemplateEntityIdMap.end() ? EntityAliasOptionalReference(it->second)
+                                                               : EntityAliasOptionalReference(AZStd::nullopt);
         }
 
-        AZ::EntityId Instance::GetEntityId(const EntityAlias& alias)
+        EntityAliasView Instance::GetEntityAlias(AZ::EntityId id) const
         {
-            if (m_templateToInstanceEntityIdMap.count(alias))
+            auto it = m_instanceToTemplateEntityIdMap.find(id);
+            return it != m_instanceToTemplateEntityIdMap.end() ? EntityAliasView(it->second) : EntityAliasView();
+        }
+
+        AZStd::pair<Instance*, EntityAliasView> Instance::FindInstanceAndAlias(AZ::EntityId entity)
+        {
+            auto it = m_instanceToTemplateEntityIdMap.find(entity);
+            if (it != m_instanceToTemplateEntityIdMap.end())
             {
-                return m_templateToInstanceEntityIdMap[alias];
+                return AZStd::pair<Instance*, EntityAliasView>(this, it->second);
             }
-                
-            return AZ::EntityId();
+            else
+            {
+                for (auto&& [_, instance] : m_nestedInstances)
+                {
+                    AZStd::pair<Instance*, EntityAliasView> next = instance->FindInstanceAndAlias(entity);
+                    if (next.first != nullptr)
+                    {
+                        return next;
+                    }
+                }
+            }
+            return AZStd::pair<Instance*, EntityAliasView>(nullptr, "");
+        }
+
+        AZStd::pair<const Instance*, EntityAliasView> Instance::FindInstanceAndAlias(AZ::EntityId entity) const
+        {
+            return const_cast<Instance*>(this)->FindInstanceAndAlias(entity);
+        }
+
+        EntityOptionalReference Instance::GetEntity(const EntityAlias& alias)
+        {
+            auto it = m_entities.find(alias);
+            return it != m_entities.end() ? EntityOptionalReference(*it->second) : EntityOptionalReference(AZStd::nullopt);
+        }
+
+        EntityOptionalConstReference Instance::GetEntity(const EntityAlias& alias) const
+        {
+            auto it = m_entities.find(alias);
+            return it != m_entities.end() ? EntityOptionalConstReference(*it->second) : EntityOptionalConstReference(AZStd::nullopt);
+        }
+
+        AZ::EntityId Instance::GetEntityId(const EntityAlias& alias) const
+        {
+            auto it = m_templateToInstanceEntityIdMap.find(alias);
+            return it != m_templateToInstanceEntityIdMap.end() ? it->second : AZ::EntityId();
+        }
+
+        AZ::EntityId Instance::GetEntityIdFromAliasPath(AliasPathView relativeAliasPath) const
+        {
+            return GetInstanceAndEntityIdFromAliasPath(relativeAliasPath).second;
+        }
+
+        AZStd::pair<Instance*, AZ::EntityId> Instance::GetInstanceAndEntityIdFromAliasPath(AliasPathView relativeAliasPath)
+        {
+            Instance* instance = this;
+            AliasPathView path = relativeAliasPath.ParentPath();
+            for (auto it : path)
+            {
+                InstanceOptionalReference child = instance->FindNestedInstance(it.Native());
+                if (child.has_value())
+                {
+                    instance = &(child->get());
+                }
+                else
+                {
+                    return AZStd::pair<Instance*, AZ::EntityId>(nullptr, AZ::EntityId());
+                }
+            }
+
+            return AZStd::pair<Instance*, AZ::EntityId>(instance, instance->GetEntityId(relativeAliasPath.Filename().Native()));
+        }
+
+        AZStd::pair<const Instance*, AZ::EntityId> Instance::GetInstanceAndEntityIdFromAliasPath(AliasPathView relativeAliasPath) const
+        {
+            const Instance* instance = this;
+            AliasPathView path = relativeAliasPath.ParentPath();
+            for (auto it : path)
+            {
+                InstanceOptionalConstReference child = instance->FindNestedInstance(it.Native());
+                if (child.has_value())
+                {
+                    instance = &(child->get());
+                }
+                else
+                {
+                    return AZStd::pair<const Instance*, AZ::EntityId>(nullptr, AZ::EntityId());
+                }
+            }
+
+            return AZStd::pair<const Instance*, AZ::EntityId>(instance, instance->GetEntityId(relativeAliasPath.Filename().Native()));
         }
 
         AZStd::vector<InstanceAlias> Instance::GetNestedInstanceAliases(TemplateId templateId) const
@@ -570,6 +688,32 @@ namespace AzToolsFramework
             }
 
             return aliasPathResult;
+        }
+
+        AliasPath Instance::GetAliasPathRelativeToInstance(const AZ::EntityId& entity) const
+        {
+            AliasPath result = AliasPath(s_aliasPathSeparator);
+            auto&& [instance, alias] = FindInstanceAndAlias(entity);
+            if (instance)
+            {
+                AZStd::vector<const Instance*> instanceChain;
+                
+                while (instance && instance != this)
+                {
+                    instanceChain.push_back(instance);
+                    instance = instance->m_parent;
+                }
+
+                for (auto it = instanceChain.rbegin(); it != instanceChain.rend(); ++it)
+                {
+                    result.Append((*it)->m_alias);
+                }
+                return result.Append(alias);
+            }
+            else
+            {
+                return result;
+            }
         }
 
         EntityAlias Instance::GenerateEntityAlias()

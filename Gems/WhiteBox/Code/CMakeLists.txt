@@ -6,8 +6,8 @@
 #
 #
 
-ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
-ly_get_list_relative_pal_filename(common_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/Common)
+o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
+set(common_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/Common)
 
 include(${pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
@@ -29,7 +29,6 @@ if(NOT PAL_TRAIT_WHITEBOX_SUPPORTED)
     if(PAL_TRAIT_BUILD_HOST_TOOLS)
         ly_add_target(
             NAME WhiteBox.Editor GEM_MODULE
-
             NAMESPACE Gem
             FILES_CMAKE
                 whitebox_unsupported_files.cmake
@@ -44,6 +43,8 @@ if(NOT PAL_TRAIT_WHITEBOX_SUPPORTED)
             BUILD_DEPENDENCIES
                 PRIVATE
                     AZ::AzCore
+            RUNTIME_DEPENDENCIES
+                Gem::EditorPythonBindings.Editor
         )
     endif()
     return()

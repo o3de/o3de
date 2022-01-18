@@ -1,7 +1,8 @@
 {
     "project_name": "${Name}",
+    "project_id": "${ProjectId}",
     "origin": "The primary repo for ${Name} goes here: i.e. http://www.mydomain.com",
-    "license": "What license ${Name} uses goes here: i.e. https://opensource.org/licenses/MIT",
+    "license": "What license ${Name} uses goes here: i.e. https://opensource.org/licenses/Apache-2.0 Or https://opensource.org/licenses/MIT etc.",
     "display_name": "${Name}",
     "summary": "A short description of ${Name}.",
     "canonical_tags": [
@@ -12,5 +13,8 @@
     ],
     "icon_path": "preview.png",
     "engine": "o3de",
-    "external_subdirectories": []
+    "external_subdirectories": [
+        "Gem"
+    ],
+    "restricted": "${Name}"
 }

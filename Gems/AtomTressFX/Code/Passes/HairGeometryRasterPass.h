@@ -51,7 +51,7 @@ namespace AZ
                 //! The following will be called when an object was added or shader has been compiled
                 void SchedulePacketBuild(HairRenderObject* hairObject);
 
-                Data::Instance<RPI::Shader> GetShader() { return m_shader; }
+                Data::Instance<RPI::Shader> GetShader();
 
                 void SetFeatureProcessor(HairFeatureProcessor* featureProcessor)
                 {
@@ -76,7 +76,6 @@ namespace AZ
 
                 // Pass behavior overrides
                 void InitializeInternal() override;
-//                void BuildInternal() override;
                 void FrameBeginInternal(FramePrepareParams params) override;
 
                 // Scope producer functions...

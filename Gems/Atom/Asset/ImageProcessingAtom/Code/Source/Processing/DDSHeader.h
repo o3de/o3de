@@ -260,4 +260,6 @@ namespace ImageProcessingAtom
     const static AZ::u32 FOURCC_DXT3 = IMAGE_BUIDER_MAKEFOURCC('D', 'X', 'T', '3');
     const static AZ::u32 FOURCC_DXT4 = IMAGE_BUIDER_MAKEFOURCC('D', 'X', 'T', '4');
     const static AZ::u32 FOURCC_DXT5 = IMAGE_BUIDER_MAKEFOURCC('D', 'X', 'T', '5');
+    const static AZ::u32 FOURCC_3DCP = IMAGE_BUIDER_MAKEFOURCC('A', 'T', 'I', '1');
+    const static AZ::u32 FOURCC_3DC = IMAGE_BUIDER_MAKEFOURCC('A', 'T', 'I', '2');
 }

@@ -32,6 +32,13 @@ namespace Terrain
         AZ_RTTI(TerrainSurfaceGradientMapping, "{473AD2CE-F22A-45A9-803F-2192F3D9F2BF}");
         static void Reflect(AZ::ReflectContext* context);
 
+        TerrainSurfaceGradientMapping() = default;
+        TerrainSurfaceGradientMapping(const AZ::EntityId& entityId, const SurfaceData::SurfaceTag& surfaceTag)
+            : m_gradientEntityId(entityId)
+            , m_surfaceTag(surfaceTag)
+        {
+        }
+
         AZ::EntityId m_gradientEntityId;
         SurfaceData::SurfaceTag m_surfaceTag;
     };
@@ -72,7 +79,7 @@ namespace Terrain
         bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const override;
 
         // TerrainAreaSurfaceRequestBus
-        void GetSurfaceWeights(const AZ::Vector3& inPosition, AzFramework::SurfaceData::OrderedSurfaceTagWeightSet& outSurfaceWeights) const override;
+        void GetSurfaceWeights(const AZ::Vector3& inPosition, AzFramework::SurfaceData::SurfaceTagWeightList& outSurfaceWeights) const override;
 
     private:
         //////////////////////////////////////////////////////////////////////////

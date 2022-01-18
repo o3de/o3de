@@ -157,6 +157,15 @@ namespace AZ
             //! Sets whether the directional shadowmap should use receiver plane bias.
             //! This attempts to reduce shadow acne when using large pcf filters.
             virtual void SetShadowReceiverPlaneBiasEnabled(LightHandle handle, bool enable) = 0;
+
+            //! Reduces acne by applying a small amount of bias along shadow-space z.
+            virtual void SetShadowBias(LightHandle handle, float bias) = 0;
+
+            //! Reduces acne by biasing the shadowmap lookup along the geometric normal.
+            virtual void SetNormalShadowBias(LightHandle handle, float normalShadowBias) = 0;
+
+            //! Sets whether or not blending between shadow map cascades is enabled.
+            virtual void SetCascadeBlendingEnabled(LightHandle handle, bool enable) = 0;
         };
     } // namespace Render
 } // namespace AZ

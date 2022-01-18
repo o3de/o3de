@@ -1,5 +1,5 @@
 {
-    "Source" : "KawaseShadowBlur",
+    "Source" : "KawaseShadowBlur.azsl",
 
     "DrawList" : "shadow",
 

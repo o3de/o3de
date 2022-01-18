@@ -11,7 +11,7 @@
 #include <stdarg.h>
 #include <cstring>
 
-#include <AzCore/std/typetraits/is_integral.h>
+#include <AzCore/std/algorithm.h>
 
 #include <AzCore/std/string/fixed_string_Platform.inl>
 
@@ -62,14 +62,7 @@ namespace AZStd
     template<class InputIt, typename>
     inline constexpr basic_fixed_string<Element, MaxElementCount, Traits>::basic_fixed_string(InputIt first, InputIt last)
     {   // construct from [first, last)
-        if (first == last)
-        {
-            Traits::assign(m_buffer[0], Element()); // terminate
-        }
-        else
-        {
-            construct_iter(first, last);
-        }
+        assign(first, last);
     }
 
     // #7
@@ -98,8 +91,7 @@ namespace AZStd
     template<typename T, typename>
     inline constexpr basic_fixed_string<Element, MaxElementCount, Traits>::basic_fixed_string(const T& convertibleToView)
     {
-        AZStd::basic_string_view<Element, Traits> view = convertibleToView;
-        assign(view.begin(), view.end());
+        assign(convertibleToView);
     }
 
     // #11
@@ -313,15 +305,7 @@ namespace AZStd
         if (count > 0 && fits_in_capacity(num))
         {
             pointer data = m_buffer;
-            // make room and append new stuff using assign
-            if (count == 1)
-            {
-                Traits::assign(*(data + m_size), ch);
-            }
-            else
-            {
-                Traits::assign(data + m_size, count, ch);
-            }
+            Traits::assign(data + m_size, count, ch);
             m_size = static_cast<internal_size_type>(num);
             Traits::assign(data[num], Element());  // terminate
         }
@@ -332,13 +316,47 @@ namespace AZStd
     template<class InputIt>
     inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::append(InputIt first, InputIt last)
         -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>
-    {   // append [first, last)
-        return append_iter(first, last);
+    {
+        if constexpr (Internal::satisfies_contiguous_iterator_concept_v<InputIt>
+            && is_same_v<typename AZStd::iterator_traits<InputIt>::value_type, value_type>)
+        {
+            return append(AZStd::to_address(first), AZStd::distance(first, last));
+        }
+        else if constexpr (Internal::is_forward_iterator_v<InputIt>)
+        {
+            // Input Iterator pointer type doesn't match the const_pointer type
+            // So the elements need to be appended one by one into the buffer
+            size_type newSize = m_size + AZStd::distance(first, last);
+            if (fits_in_capacity(newSize))
+            {
+                for (size_t updateIndex = m_size; first != last; ++first, ++updateIndex)
+                {
+                    Traits::assign(m_buffer[updateIndex], static_cast<Element>(*first));
+                }
+                m_size = static_cast<internal_size_type>(newSize);
+                Traits::assign(m_buffer[newSize], Element());  // terminate
+            }
+            return *this;
+        }
+        else
+        {
+            // input iterator that aren't forward iterators can only be used in a single pass
+            // algorithm. Therefore AZStd::distance can't be used
+            // So the input is copied into a local string and then delegated
+            // to use the (const_pointer, size_type) overload
+            basic_fixed_string inputCopy;
+            for (; first != last; ++first)
+            {
+                inputCopy.push_back(static_cast<Element>(*first));
+            }
+
+            return append(inputCopy.c_str(), inputCopy.size());
+        }
     }
     template<class Element, size_t MaxElementCount, class Traits>
     inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::append(AZStd::initializer_list<Element> ilist) -> basic_fixed_string&
-    {   // append [first, last)
-        return append_iter(ilist.begin(), ilist.end());
+    {
+        return append(ilist.begin(), ilist.size());
     }
 
     template<class Element, size_t MaxElementCount, class Traits>
@@ -420,18 +438,10 @@ namespace AZStd
     inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::assign(size_type count, Element ch) -> basic_fixed_string&
     {
         // assign count * ch
-        AZSTD_CONTAINER_ASSERT(count != npos, "result is too long!");
         if (fits_in_capacity(count))
         {   // make room and assign new stuff
             pointer data = m_buffer;
-            if (count == 1)
-            {
-                Traits::assign(*(data), ch);
-            }
-            else
-            {
-                Traits::assign(data, count, ch);
-            }
+            Traits::assign(data, count, ch);
             m_size = static_cast<internal_size_type>(count);
             Traits::assign(data[count], Element());  // terminate
         }
@@ -443,12 +453,46 @@ namespace AZStd
     inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::assign(InputIt first, InputIt last)
         -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>
     {
-        return assign_iter(first, last);
+        if constexpr (Internal::satisfies_contiguous_iterator_concept_v<InputIt>
+            && is_same_v<typename AZStd::iterator_traits<InputIt>::value_type, value_type>)
+        {
+            return assign(AZStd::to_address(first), AZStd::distance(first, last));
+        }
+        else if constexpr (Internal::is_forward_iterator_v<InputIt>)
+        {
+            // Input Iterator pointer type doesn't match the const_pointer type
+            // So the elements need to be assigned one by one into the buffer
+            size_type newSize = AZStd::distance(first, last);
+            if (fits_in_capacity(newSize))
+            {
+                for (size_t updateIndex = 0; first != last; ++first, ++updateIndex)
+                {
+                    Traits::assign(m_buffer[updateIndex], static_cast<Element>(*first));
+                }
+                m_size = static_cast<internal_size_type>(newSize);
+                Traits::assign(m_buffer[newSize], Element());  // terminate
+            }
+            return *this;
+        }
+        else
+        {
+            // input iterator that aren't forward iterators can only be used in a single pass
+            // algorithm. Therefore AZStd::distance can't be used
+            // So the input is copied into a local string and then delegated
+            // to use the (const_pointer, size_type) overload
+            basic_fixed_string inputCopy;
+            for (; first != last; ++first)
+            {
+                inputCopy.push_back(static_cast<Element>(*first));
+            }
+
+            return assign(inputCopy.c_str(), inputCopy.size());
+        }
     }
     template<class Element, size_t MaxElementCount, class Traits>
     inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::assign(AZStd::initializer_list<Element> ilist) -> basic_fixed_string&
     {
-        return assign_iter(ilist.begin(), ilist.end());
+        return assign(ilist.begin(), ilist.size());
     }
 
     template<class Element, size_t MaxElementCount, class Traits>
@@ -536,14 +580,7 @@ namespace AZStd
             pointer data = m_buffer;
             // make room and insert new stuff
             Traits::copy_backward(data + offset + count, data + offset, m_size - offset);   // empty out hole
-            if (count == 1)
-            {
-                Traits::assign(*(data + offset), ch);
-            }
-            else
-            {
-                Traits::assign(data + offset, count, ch);
-            }
+            Traits::assign(data + offset, count, ch);
             m_size = static_cast<internal_size_type>(num);
             Traits::assign(data[num], Element());  // terminate
         }
@@ -582,14 +619,51 @@ namespace AZStd
     inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::insert(const_iterator insertPos,
         InputIt first, InputIt last)-> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, iterator>
     {   // insert [_First, _Last) at _Where
-        return insert_iter(insertPos, first, last);
+        size_type insertOffset = AZStd::distance(cbegin(), insertPos);
+        if constexpr (Internal::satisfies_contiguous_iterator_concept_v<InputIt>
+            && is_same_v<typename AZStd::iterator_traits<InputIt>::value_type, value_type>)
+        {
+            insert(insertOffset, AZStd::to_address(first), AZStd::distance(first, last));
+        }
+        else if constexpr (Internal::is_forward_iterator_v<InputIt>)
+        {
+            // Input Iterator pointer type doesn't match the const_pointer type
+            // So the elements need to be inserted one by one into the buffer
+            size_type count = AZStd::distance(first, last);
+            size_type newSize = m_size + count;
+            if (fits_in_capacity(newSize))
+            {
+                Traits::copy_backward(m_buffer + insertOffset + count, m_buffer + insertOffset, m_size - insertOffset); // empty out hole
+                for (size_t updateIndex = insertOffset; first != last; ++first, ++updateIndex)
+                {
+                    Traits::assign(m_buffer[updateIndex], static_cast<Element>(*first));
+                }
+                m_size = static_cast<internal_size_type>(newSize);
+                Traits::assign(m_buffer[newSize], Element()); // terminate
+            }
+        }
+        else
+        {
+            // input iterator that aren't forward iterators can only be used in a single pass
+            // algorithm. Therefore AZStd::distance can't be used
+            // So the input is copied into a local string and then delegated
+            // to use the (const_pointer, size_type) overload
+            basic_fixed_string inputCopy;
+            for (; first != last; ++first)
+            {
+                inputCopy.push_back(static_cast<Element>(*first));
+            }
+
+            insert(insertOffset, inputCopy.c_str(), inputCopy.size());
+        }
+        return begin() + insertOffset;
     }
 
     template<class Element, size_t MaxElementCount, class Traits>
     inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::insert(const_iterator insertPos,
         AZStd::initializer_list<Element> ilist) -> iterator
     {   // insert [_First, _Last) at _Where
-        return insert_iter(insertPos, ilist.begin(), ilist.end());
+        return insert(insertPos, ilist.begin(), ilist.end());
     }
 
     template<class Element, size_t MaxElementCount, class Traits>
@@ -604,7 +678,7 @@ namespace AZStd
         {
             // move elements down
             pointer data = m_buffer;
-            Traits::copy(data + offset, data + offset + count, m_size - offset - count);
+            Traits::move(data + offset, data + offset + count, m_size - offset - count);
             m_size = static_cast<internal_size_type>(m_size - count);
             Traits::assign(data[m_size], Element());  // terminate
         }
@@ -643,7 +717,7 @@ namespace AZStd
         const basic_fixed_string& rhs) -> basic_fixed_string&
     {
         // replace [offset, offset + count) with rhs
-        return replace(offset, count, rhs, size_type(0), npos);
+        return replace(offset, count, rhs.c_str(), rhs.size());
     }
 
     template<class Element, size_t MaxElementCount, class Traits>
@@ -651,56 +725,7 @@ namespace AZStd
         const basic_fixed_string& rhs, size_type rhsOffset, size_type rhsCount) -> basic_fixed_string&
     {
         // replace [offset, offset + count) with rhs [rhsOffset, rhsOffset + rhsCount)
-        AZSTD_CONTAINER_ASSERT(m_size >= offset && rhs.m_size >= rhsOffset, "Invalid offsets");
-        if (m_size - offset < count)
-        {
-            count = m_size - offset;    // trim count to size
-        }
-        size_type num = rhs.m_size - rhsOffset;
-        if (num < rhsCount)
-        {
-            rhsCount = num; // trim rhsCount to size
-        }
-        AZSTD_CONTAINER_ASSERT(npos - rhsCount > m_size - count, "Result is too long");
-
-        size_type nm = m_size - count - offset; // length of preserved tail
-        size_type newSize = m_size + rhsCount - count;
-        if (fits_in_capacity(newSize))
-        {
-            pointer data = m_buffer;
-            const_pointer rhsData = rhs.m_buffer;
-
-            if (this != &rhs)
-            {   // no overlap, just move down and copy in new stuff
-                Traits::copy_backward(data + offset + rhsCount, data + offset + count, nm);   // empty hole
-                Traits::copy(data + offset, rhsData + rhsOffset, rhsCount); // fill hole
-            }
-            else if (rhsCount <= count)
-            {   // hole doesn't get larger, just copy in substring
-                Traits::copy(data + offset, data + rhsOffset, rhsCount);    // fill hole
-                Traits::copy_backward(data + offset + rhsCount, data + offset + count, nm);   // move tail down
-            }
-            else if (rhsOffset <= offset)
-            {   // hole gets larger, substring begins before hole
-                Traits::copy_backward(data + offset + rhsCount, data + offset + count, nm);   // move tail down
-                Traits::copy(data + offset, data + rhsOffset, rhsCount);   // fill hole
-            }
-            else if (offset + count <= rhsOffset)
-            {   // hole gets larger, substring begins after hole
-                Traits::copy_backward(data + offset + rhsCount, data + offset + count, nm);   // move tail down
-                Traits::copy(data + offset, data + (rhsOffset + rhsCount - count), rhsCount);   // fill hole
-            }
-            else
-            {   // hole gets larger, substring begins in hole
-                Traits::copy(data + offset, data + rhsOffset, count);   // fill old hole
-                Traits::copy_backward(data + offset + rhsCount, data + offset + count, nm);   // move tail down
-                Traits::copy(data + offset + count, data + rhsOffset + rhsCount, rhsCount - count); // fill rest of new hole
-            }
-
-            m_size = static_cast<internal_size_type>(newSize);
-            Traits::assign(data[newSize], Element());  // terminate
-        }
-        return *this;
+        return replace(offset, count, rhs.c_str() + rhsOffset, AZStd::min(rhsCount, rhs.size() - rhsOffset));
     }
     template<class Element, size_t MaxElementCount, class Traits>
     template<typename T>
@@ -720,35 +745,83 @@ namespace AZStd
         pointer data = m_buffer;
         // replace [offset, offset + count) with [ptr, ptr + ptrCount)
         AZSTD_CONTAINER_ASSERT(m_size >= offset, "Invalid offset");
-        if (m_size - offset < count)
-        {
-            count = m_size - offset;    // trim _N0 to size
-        }
-        AZSTD_CONTAINER_ASSERT(npos - ptrCount > m_size - count, "Result too long");
+        // Make sure count is within is no larger than the distance from the offset
+        // to the end of this string
+        count = AZStd::min(count, m_size - offset);
 
-        size_type nm = m_size - count - offset;
-        if (ptrCount < count)
+        size_type newSize = m_size + ptrCount - count;
+        if (fits_in_capacity(newSize))
         {
-            Traits::copy(data + offset + ptrCount, data + offset + count, nm);  // smaller hole, move tail up
-        }
-        size_type num = m_size + ptrCount - count;
-        if ((0 != ptrCount || 0 != count) && fits_in_capacity(num))
-        {
-            data = m_buffer;
-            // make room and rearrange
-            if (count < ptrCount)
+            // The code assumes that compile time evaluation will not need to deal with overlapping input
+            size_type charsAfterCountToMove = m_size - count - offset;
+            if (az_builtin_is_constant_evaluated() || !((ptr >= data + offset && ptr < data + offset + count)
+                || (ptr + ptrCount > data + offset && ptr + ptrCount <= data + offset + count)))
             {
-                Traits::copy_backward(data + offset + ptrCount, data + offset + count, nm);   // move tail down
+                // Ex1. this = "ABCDEFG", offset = 1, count = 4
+                // Input string is "CDE"
+                // First the text post offset + count is moved to right after the input string will be copied
+                //  "ABCDFG"
+                //    ^^^
+                // Next the input string is copied into the buffer
+                // "ACDEFG"
+                //
+                // Ex2. this = "ABCDEFG", offset = 1, count = 2
+                // Input string is "CDE"
+                // Performing the same two steps above, the string transform as follows
+                // "ABCDEFG" -> "ABCDDEFG" -> "ACDEDEFG"
+                //                ^^^
+                if (count != ptrCount)
+                {
+                    Traits::move(data + offset + ptrCount, data + offset + count, charsAfterCountToMove);
+                }
+                if (ptrCount > 0)
+                {
+                    // Copy bytes up to the minimum of this string count and input string count
+                    Traits::copy(data + offset, ptr, ptrCount);
+                }
             }
-
-            if (ptrCount > 0)
+            else
             {
-                Traits::copy(data + offset, ptr, ptrCount);    // fill hole
+                // Overlap checks for fixed_string only needs to check between this string
+                // [offset, offset + count) due to fixed_string never moving memory
+                //
+                // Ex. this = "ABCDEFG", offset = 1, count=4
+                // substring is "CDE"
+                // The text from offset 1 for 4 chars "BCDE": should be replaced with "CDE"
+                // making a whole for the bytes results in output = "ABCDFG"
+                // Afterwards output = "ACDEFG"
+                // The input string overlaps with this string in this case
+                // So the string is copied piecewise
+                if (ptrCount <= count)
+                {   // hole doesn't get larger, just copy in substring
+                    Traits::move(data + offset, ptr, ptrCount);    // fill hole
+                    Traits::copy(data + offset + ptrCount, data + offset + count, charsAfterCountToMove);   // move tail down
+                }
+                else
+                {
+                    if (ptr <= data + offset)
+                    {   // hole gets larger, substring begins before hole
+                        Traits::copy_backward(data + offset + ptrCount, data + offset + count, charsAfterCountToMove);   // move tail down
+                        Traits::copy(data + offset, ptr, ptrCount);   // fill hole
+                    }
+                    else if (data + offset + count <= ptr)
+                    {   // hole gets larger, substring begins after hole
+                        Traits::copy_backward(data + offset + ptrCount, data + offset + count, charsAfterCountToMove);   // move tail down
+                        Traits::copy(data + offset, ptr + (ptrCount - count), ptrCount);   // fill hole
+                    }
+                    else
+                    {   // hole gets larger, substring begins in hole
+                        Traits::copy(data + offset, ptr, count);   // fill old hole
+                        Traits::copy_backward(data + offset + ptrCount, data + offset + count, charsAfterCountToMove);   // move tail down
+                        Traits::copy(data + offset + count, ptr + ptrCount, ptrCount - count); // fill rest of new hole
+                    }
+                }
             }
-
-            m_size = static_cast<internal_size_type>(num);
-            Traits::assign(data[num], Element());  // terminate
         }
+
+        m_size = static_cast<internal_size_type>(newSize);
+        Traits::assign(data[newSize], Element());  // terminate
+
         return *this;
     }
 
@@ -793,14 +866,7 @@ namespace AZStd
             {
                 Traits::copy_backward(data + offset + num, data + offset + count, nm); // move tail down
             }
-            if (count == 1)
-            {
-                Traits::assign(*(data + offset), ch);
-            }
-            else
-            {
-                Traits::assign(data + offset, num, ch);
-            }
+            Traits::assign(data + offset, num, ch);
             m_size = static_cast<internal_size_type>(numToGrow);
             Traits::assign(data[numToGrow], Element());  // terminate
         }
@@ -851,15 +917,54 @@ namespace AZStd
     template<class Element, size_t MaxElementCount, class Traits>
     template<class InputIt>
     inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::replace(const_iterator first, const_iterator last,
-        InputIt first2, InputIt last2) -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>
-    {   // replace [first, last) with [first2,last2)
-        return replace_iter(first, last, first2, last2);
+        InputIt replaceFirst, InputIt replaceLast) -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>
+    {   // replace [first, last) with [replaceFirst,replaceLast)
+        if constexpr (Internal::satisfies_contiguous_iterator_concept_v<InputIt>
+            && is_same_v<typename AZStd::iterator_traits<InputIt>::value_type, value_type>)
+        {
+            return replace(first, last, AZStd::to_address(replaceFirst), AZStd::distance(replaceFirst, replaceLast));
+        }
+        else if constexpr (Internal::is_forward_iterator_v<InputIt>)
+        {
+            // Input Iterator pointer type doesn't match the const_pointer type
+            // So the elements need to be appended one by one into the buffer
+
+            size_type insertOffset = AZStd::distance(cbegin(), first);
+            size_type postInsertOffset = AZStd::distance(cbegin(), last);
+            size_type count = AZStd::distance(replaceFirst, replaceLast);
+            size_type newSize = m_size + count - AZStd::distance(first, last);
+            if (fits_in_capacity(newSize))
+            {
+                Traits::move(first + count, last, m_size - postInsertOffset); // empty out hole
+                for (size_t updateIndex = insertOffset; replaceFirst != replaceLast; ++replaceFirst, ++updateIndex)
+                {
+                    Traits::assign(m_buffer[updateIndex], static_cast<Element>(*replaceFirst));
+                }
+                m_size = static_cast<internal_size_type>(newSize);
+                Traits::assign(m_buffer[newSize], Element()); // terminate
+            }
+            return *this;
+        }
+        else
+        {
+            // input iterator that aren't forward iterators can only be used in a single pass
+            // algorithm. Therefore AZStd::distance can't be used
+            // So the input is copied into a local string and then delegated
+            // to use the (const_pointer, size_type) overload
+            basic_fixed_string inputCopy;
+            for (; replaceFirst != replaceLast; ++replaceFirst)
+            {
+                inputCopy.push_back(static_cast<Element>(*replaceFirst));
+            }
+
+            return replace(first, last, inputCopy.c_str(), inputCopy.size());
+        }
     }
     template<class Element, size_t MaxElementCount, class Traits>
     inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::replace(const_iterator first, const_iterator last,
         AZStd::initializer_list<Element> ilist) -> basic_fixed_string&
-    {   // replace [first, last) with [first2,last2)
-        return replace_iter(first, last, ilist.begin(), ilist.end());
+    {
+        return replace(first, last, ilist.begin(), ilist.end());
     }
 
     template<class Element, size_t MaxElementCount, class Traits>
@@ -1412,54 +1517,6 @@ namespace AZStd
     }
 
     template<class Element, size_t MaxElementCount, class Traits>
-    template<class InputIt>
-    inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::construct_iter(InputIt first, InputIt last)
-        -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>>
-    {
-        // initialize from [first, last), input iterators
-        for (; first != last; ++first)
-        {
-            append((size_type)1, (Element)* first);
-        }
-    }
-
-    template<class Element, size_t MaxElementCount, class Traits>
-    template<class InputIt>
-    inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::append_iter(InputIt first, InputIt last)
-        -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>
-    {   // append [first, last), input iterators
-        return replace(end(), end(), first, last);
-    }
-
-    template<class Element, size_t MaxElementCount, class Traits>
-    template<class InputIt>
-    inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::assign_iter(InputIt first, InputIt last)
-        -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>
-    {
-        return replace(begin(), end(), first, last);
-    }
-
-    template<class Element, size_t MaxElementCount, class Traits>
-    template<class InputIt>
-    inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::insert_iter(const_iterator insertPos, InputIt first,
-        InputIt last) -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, iterator>
-    {   // insert [first, last) at insertPos, input iterators
-        difference_type offset = insertPos - cbegin();
-        replace(insertPos, insertPos, first, last);
-        return iterator(m_buffer + offset);
-    }
-
-    template<class Element, size_t MaxElementCount, class Traits>
-    template<class InputIt>
-    inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::replace_iter(const_iterator first, const_iterator last,
-        InputIt first2, InputIt last2) -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>
-    {   // replace [first, last) with [first2, last2), input iterators
-        basic_fixed_string rhs(first2, last2);
-        replace(first, last, rhs);
-        return *this;
-    }
-
-    template<class Element, size_t MaxElementCount, class Traits>
     inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::fits_in_capacity(size_type newSize)-> bool
     {
         AZSTD_CONTAINER_ASSERT(newSize <= Capacity, "New string size of %zu cannot fit in a fixed_string of size %zu", newSize, Capacity);
@@ -1680,10 +1737,31 @@ namespace AZStd
         return !operator<(lhs, rhs);
     }
 
+    template<class Element, size_t MaxElementCount, class Traits, class U>
+    inline constexpr auto erase(basic_fixed_string<Element, MaxElementCount, Traits>& container, const U& element)
+        -> typename basic_fixed_string<Element, MaxElementCount, Traits>::size_type
+    {
+        auto iter = AZStd::remove(container.begin(), container.end(), element);
+        auto removedCount = AZStd::distance(iter, container.end());
+        container.erase(iter, container.end());
+        return removedCount;
+    }
+
+    template<class Element, size_t MaxElementCount, class Traits, class Predicate>
+    inline constexpr auto erase_if(basic_fixed_string<Element, MaxElementCount, Traits>& container, Predicate predicate)
+        -> typename basic_fixed_string<Element, MaxElementCount, Traits>::size_type
+    {
+        auto iter = AZStd::remove_if(container.begin(), container.end(), predicate);
+        auto removedCount = AZStd::distance(iter, container.end());
+        container.erase(iter, container.end());
+        return removedCount;
+    }
+
     template<class Element, size_t MaxElementCount, class Traits>
     struct hash<basic_fixed_string<Element, MaxElementCount, Traits>>
     {
-        inline constexpr size_t operator()(const basic_fixed_string<Element, MaxElementCount, Traits>& value) const
+        using is_transparent = void;
+        inline constexpr size_t operator()(const basic_string_view<Element, Traits>& value) const
         {
             return hash_string(value.begin(), value.length());
         }

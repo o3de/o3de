@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 
 namespace AzToolsFramework
 {
@@ -22,6 +23,17 @@ namespace AzToolsFramework
 
             virtual void OnPrefabInstancePropagationBegin() {}
             virtual void OnPrefabInstancePropagationEnd() {}
+
+            virtual void OnPrefabTemplateDirtyFlagUpdated(
+                [[maybe_unused]] TemplateId templateId, [[maybe_unused]] bool status) {}
+
+            // Sent after a single template has been removed
+            // Does not get sent when all templates are being removed at once.  Be sure to handle OnAllTemplatesRemoved as well.
+            virtual void OnTemplateRemoved([[maybe_unused]] TemplateId templateId) {}
+
+            // Sent after all templates have been removed
+            // Does not trigger individual OnTemplateRemoved events
+            virtual void OnAllTemplatesRemoved() {}
         };
 
         using PrefabPublicNotificationBus = AZ::EBus<PrefabPublicNotifications>;

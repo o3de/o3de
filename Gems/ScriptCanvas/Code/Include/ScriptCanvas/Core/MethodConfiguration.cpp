@@ -13,6 +13,7 @@
 
 #include <ScriptCanvas/Core/Contracts/MethodOverloadContract.h>
 #include <ScriptCanvas/Libraries/Core/Method.h>
+#include "../../GraphCanvas/Code/Source/Translation/TranslationBus.h"
 
 namespace ScriptCanvas
 {
@@ -55,13 +56,30 @@ namespace ScriptCanvas
             {
                 const Data::Type outputType = (unpackedTypes.size() == 1 && AZ::BehaviorContextHelper::IsStringParameter(*result)) ? Data::Type::String() : Data::FromAZType(unpackedTypes[resultIndex]);
 
-                const AZStd::string resultSlotName(AZStd::string::format("Result: %s", Data::GetName(outputType).data()));
+                AZStd::string resultSlotName(Data::GetName(outputType));
+
+                AZStd::string className = outputConfig.config.m_className ? *outputConfig.config.m_className : "";
+                if (className.empty())
+                {
+                    className = outputConfig.config.m_prettyClassName;
+                }
+
+                GraphCanvas::TranslationKey key;
+                key << "BehaviorClass" << className << "methods" << *outputConfig.config.m_lookupName << "results" << resultIndex << "details";
+
+                GraphCanvas::TranslationRequests::Details details;
+                GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
+
+                if (!details.m_name.empty())
+                {
+                    resultSlotName = details.m_name;
+                }
+
                 SlotId addedSlotId;
 
                 if (outputConfig.isReturnValueOverloaded)
                 {
                     DynamicDataSlotConfiguration slotConfiguration;
-                    //slotConfiguration.m_name = outputConfig.outputNamePrefix + resultSlotName;
 
                     slotConfiguration.m_dynamicDataType = outputConfig.methodNode->GetOverloadedOutputType(resultIndex);
 

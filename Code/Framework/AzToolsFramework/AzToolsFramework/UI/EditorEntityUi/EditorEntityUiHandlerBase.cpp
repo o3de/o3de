@@ -101,8 +101,25 @@ namespace AzToolsFramework
     {
     }
 
-    void EditorEntityUiHandlerBase::OnDoubleClick([[maybe_unused]] AZ::EntityId entityId) const
+    bool EditorEntityUiHandlerBase::OnOutlinerItemClick(
+        [[maybe_unused]] const QPoint& position,
+        [[maybe_unused]] const QStyleOptionViewItem& option,
+        [[maybe_unused]] const QModelIndex& index) const
     {
+        return false;
+    }
+
+    void EditorEntityUiHandlerBase::OnOutlinerItemExpand([[maybe_unused]] const QModelIndex& index) const
+    {
+    }
+    
+    void EditorEntityUiHandlerBase::OnOutlinerItemCollapse([[maybe_unused]] const QModelIndex& index) const
+    {
+    }
+
+    bool EditorEntityUiHandlerBase::OnEntityDoubleClick([[maybe_unused]] AZ::EntityId entityId) const
+    {
+        return false;
     }
 
 } // namespace AzToolsFramework

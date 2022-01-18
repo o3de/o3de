@@ -2,7 +2,9 @@
     "gem_name": "AudioSystem",
     "display_name": "Audio System",
     "license": "Apache-2.0 Or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
     "type": "Code",
     "summary": "The Audio System Gem provides the Audio Translation Layer (ATL) and Audio Controls Editor, which add support for audio in Open 3D Engine.",
     "canonical_tags": [

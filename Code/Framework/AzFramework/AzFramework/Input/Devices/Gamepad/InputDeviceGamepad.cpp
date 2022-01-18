@@ -15,14 +15,6 @@
 namespace AzFramework
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    const char* InputDeviceGamepad::Name("gamepad");
-    const InputDeviceId InputDeviceGamepad::IdForIndex0(Name, 0);
-    const InputDeviceId InputDeviceGamepad::IdForIndex1(Name, 1);
-    const InputDeviceId InputDeviceGamepad::IdForIndex2(Name, 2);
-    const InputDeviceId InputDeviceGamepad::IdForIndex3(Name, 3);
-    const InputDeviceId InputDeviceGamepad::IdForIndexN(AZ::u32 n) { return InputDeviceId(Name, n); }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
     bool InputDeviceGamepad::IsGamepadDevice(const InputDeviceId& inputDeviceId)
     {
         return (inputDeviceId.GetNameCrc32() == IdForIndex0.GetNameCrc32());
@@ -94,7 +86,14 @@ namespace AzFramework
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     InputDeviceGamepad::InputDeviceGamepad(AZ::u32 index)
-        : InputDevice(InputDeviceId(Name, index))
+        : InputDeviceGamepad(InputDeviceId(Name, index)) // Delegated constructor
+    {
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    InputDeviceGamepad::InputDeviceGamepad(const InputDeviceId& inputDeviceId,
+                                           ImplementationFactory implementationFactory)
+        : InputDevice(inputDeviceId)
         , m_allChannelsById()
         , m_buttonChannelsById()
         , m_triggerChannelsById()
@@ -144,8 +143,8 @@ namespace AzFramework
             m_thumbStickDirectionChannelsById[channelId] = channel;
         }
 
-        // Create the platform specific implementation
-        m_pimpl.reset(Implementation::Create(*this));
+        // Create the platform specific or custom implementation
+        m_pimpl.reset(implementationFactory ? implementationFactory(*this) : nullptr);
 
         // Connect to the haptic feedback request bus
         InputHapticFeedbackRequestBus::Handler::BusConnect(GetInputDeviceId());

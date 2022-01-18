@@ -45,12 +45,13 @@ protected:
         AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
         auto projectPathKey =
             AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
-        registry->Set(projectPathKey, "AutomatedTesting");
+        AZ::IO::FixedMaxPath enginePath;
+        registry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+        registry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
         AZ::ComponentApplication::Descriptor desc;
         desc.m_useExistingAllocator = true;
-        desc.m_enableDrilling = false; // we already created a memory driller for the test (AllocatorsFixture)
         app.Start(desc);
 
         // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is

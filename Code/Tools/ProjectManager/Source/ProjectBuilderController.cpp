@@ -9,11 +9,11 @@
 #include <ProjectBuilderController.h>
 #include <ProjectBuilderWorker.h>
 #include <ProjectButtonWidget.h>
+#include <SettingsInterface.h>
 
 #include <QMessageBox>
 #include <QDesktopServices>
 #include <QUrl>
-
 
 namespace O3DE::ProjectManager
 {
@@ -26,6 +26,9 @@ namespace O3DE::ProjectManager
     {
         m_worker = new ProjectBuilderWorker(m_projectInfo);
         m_worker->moveToThread(&m_workerThread);
+
+        // Remove key here in case Project Manager crashed while building because that causes HandleResults to not be called
+        SettingsInterface::Get()->SetProjectBuiltSuccessfully(m_projectInfo, false);
 
         connect(&m_workerThread, &QThread::finished, m_worker, &ProjectBuilderWorker::deleteLater);
         connect(&m_workerThread, &QThread::started, m_worker, &ProjectBuilderWorker::BuildProject);
@@ -109,12 +112,16 @@ namespace O3DE::ProjectManager
                 emit NotifyBuildProject(m_projectInfo);
             }
 
+            SettingsInterface::Get()->SetProjectBuiltSuccessfully(m_projectInfo, false);
+
             emit Done(false);
             return;
         }
         else
         {
             m_projectInfo.m_buildFailed = false;
+
+            SettingsInterface::Get()->SetProjectBuiltSuccessfully(m_projectInfo, true);
         }
 
         emit Done(true);

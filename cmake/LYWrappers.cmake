@@ -11,7 +11,7 @@ set(LY_UNITY_BUILD ON CACHE BOOL "UNITY builds")
 include(CMakeFindDependencyMacro)
 include(cmake/LyAutoGen.cmake)
 
-ly_get_absolute_pal_filename(pal_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platform/${PAL_PLATFORM_NAME})
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
 include(${pal_dir}/LYWrappers_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
 # Not all platforms support unity builds
@@ -315,13 +315,16 @@ function(ly_add_target)
     # Store the target so we can walk through all of them in LocationDependencies.cmake
     set_property(GLOBAL APPEND PROPERTY LY_ALL_TARGETS ${interface_name})
 
-    # Store the aliased target into a DIRECTORY property
-    set_property(DIRECTORY APPEND PROPERTY LY_DIRECTORY_TARGETS ${interface_name})
-    # Store the directory path in a GLOBAL property so that it can be accessed
-    # in the layout install logic. Skip if the directory has already been added
-    get_property(ly_all_target_directories GLOBAL PROPERTY LY_ALL_TARGET_DIRECTORIES)
-    if(NOT CMAKE_CURRENT_SOURCE_DIR IN_LIST ly_all_target_directories)
-        set_property(GLOBAL APPEND PROPERTY LY_ALL_TARGET_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR})
+    if(NOT ly_add_target_IMPORTED)
+        # Store the aliased target into a DIRECTORY property
+        set_property(DIRECTORY APPEND PROPERTY LY_DIRECTORY_TARGETS ${interface_name})
+
+        # Store the directory path in a GLOBAL property so that it can be accessed
+        # in the layout install logic. Skip if the directory has already been added
+        get_property(ly_all_target_directories GLOBAL PROPERTY LY_ALL_TARGET_DIRECTORIES)
+        if(NOT CMAKE_CURRENT_SOURCE_DIR IN_LIST ly_all_target_directories)
+            set_property(GLOBAL APPEND PROPERTY LY_ALL_TARGET_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR})
+        endif()
     endif()
 
     # Custom commands need to be declared in the same folder as the target that they use. 
@@ -351,7 +354,7 @@ function(ly_add_target)
             # of running the copy of runtime dependencies, the stamp file is touched so the timestamp is updated.
             # Adding a config as part of the name since the stamp file is added to the VS project.
             # Note the STAMP_OUTPUT_FILE need to match with the one used in runtime dependencies (e.g. RuntimeDependencies_common.cmake)
-            set(STAMP_OUTPUT_FILE ${CMAKE_BINARY_DIR}/runtime_dependencies/$<CONFIG>/${ly_add_target_NAME}_$<CONFIG>.stamp)
+            set(STAMP_OUTPUT_FILE ${CMAKE_BINARY_DIR}/runtime_dependencies/$<CONFIG>/${ly_add_target_NAME}.stamp)
             add_custom_command(
                 OUTPUT ${STAMP_OUTPUT_FILE}
                 DEPENDS "$<GENEX_EVAL:$<TARGET_PROPERTY:${ly_add_target_NAME},RUNTIME_DEPENDENCIES_DEPENDS>>"
@@ -364,7 +367,7 @@ function(ly_add_target)
             # stamp file on each configuration so it gets properly excluded by the generator
             unset(stamp_files_per_config)
             foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
-                set(stamp_file_conf ${CMAKE_BINARY_DIR}/runtime_dependencies/${conf}/${ly_add_target_NAME}_${conf}.stamp)
+                set(stamp_file_conf ${CMAKE_BINARY_DIR}/runtime_dependencies/${conf}/${ly_add_target_NAME}.stamp)
                 set_source_files_properties(${stamp_file_conf} PROPERTIES GENERATED TRUE SKIP_AUTOGEN TRUE)
                 list(APPEND stamp_files_per_config $<$<CONFIG:${conf}>:${stamp_file_conf}>)
             endforeach()
@@ -400,7 +403,7 @@ function(ly_target_link_libraries TARGET)
         message(FATAL_ERROR "You must provide a target")
     endif()
 
-    set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LINK_${TARGET} ${ARGN})
+    set_property(TARGET ${TARGET} APPEND PROPERTY LY_DELAYED_LINK ${ARGN})
     set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LINK_TARGETS ${TARGET}) # to walk them at the end
 
 endfunction()
@@ -427,7 +430,7 @@ function(ly_delayed_target_link_libraries)
     get_property(delayed_targets GLOBAL PROPERTY LY_DELAYED_LINK_TARGETS)
     foreach(target ${delayed_targets})
 
-        get_property(delayed_link GLOBAL PROPERTY LY_DELAYED_LINK_${target})
+        get_property(delayed_link TARGET ${target} PROPERTY LY_DELAYED_LINK)
         if(delayed_link)
 
             cmake_parse_arguments(ly_delayed_target_link_libraries "" "" "${visibilities}" ${delayed_link})
@@ -455,7 +458,6 @@ function(ly_delayed_target_link_libraries)
 
                 endforeach()
             endforeach()
-            set_property(GLOBAL PROPERTY LY_DELAYED_LINK_${target})
 
         endif()
 
@@ -650,36 +652,6 @@ function(ly_add_source_properties)
 
 endfunction()
 
-
-#! ly_project_add_subdirectory: calls add_subdirectory() if the project name is in the project list
-#
-# This can be useful when including subdirs in the restricted folder only if the project is in the project list
-# If you give it a second parameter it will add_subdirectory using that instead, if the project is in the project list
-#
-# add_subdirectory(AutomatedTesting) if Automatedtesting is in the project list
-# EX. ly_project_add_subdirectory(AutomatedTesting)
-#
-# add_subdirectory(SamplesProject) if Automatedtesting is in the project list
-# EX. ly_project_add_subdirectory(AutomatedTesting SamplesProject)
-#
-# \arg:project_name the name of the project that may be enabled
-# \arg:binary_project_dir optional, if supplied that binary_project_dir will be added when project name is enabled.
-#
-function(ly_project_add_subdirectory project_name)
-    if(${project_name} IN_LIST LY_PROJECTS)
-       if(ARGC GREATER 1)
-           list(GET ARGN 0 subdir)
-       endif()
-       if(ARGC GREATER 2)
-           list(GET ARGN 1 binary_project_dir)
-       endif()
-       if(subdir)
-           add_subdirectory(${subdir} ${binary_project_dir})
-       else()
-           add_subdirectory(${project_name} ${binary_project_dir})
-       endif()
-    endif()
-endfunction()
 
 # given a target name, returns the "real" name of the target if its an alias.
 # this function recursively de-aliases

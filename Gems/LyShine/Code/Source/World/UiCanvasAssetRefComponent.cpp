@@ -11,7 +11,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <LyShine/Bus/UiCanvasBus.h>
 #include <LyShine/LyShineBus.h>
-#include <CryCommon/LyShine/ILyShine.h>
+#include <LyShine/ILyShine.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! UiCanvasAssetRefNotificationBus Behavior context handler class
@@ -239,15 +239,16 @@ void UiCanvasAssetRefComponent::Activate()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasAssetRefComponent::Deactivate()
 {
-#if !defined(DEDICATED_SERVER)
-    if (m_canvasEntityId.IsValid())
+    if (!gEnv->IsDedicated())
     {
-        gEnv->pLyShine->ReleaseCanvasDeferred(m_canvasEntityId);
-        m_canvasEntityId.SetInvalid();
-    }
+        if (m_canvasEntityId.IsValid())
+        {
+            gEnv->pLyShine->ReleaseCanvasDeferred(m_canvasEntityId);
+            m_canvasEntityId.SetInvalid();
+        }
 
-    UiCanvasAssetRefBus::Handler::BusDisconnect();
-    UiCanvasRefBus::Handler::BusDisconnect();
-    UiCanvasManagerNotificationBus::Handler::BusDisconnect();
-#endif
+        UiCanvasAssetRefBus::Handler::BusDisconnect();
+        UiCanvasRefBus::Handler::BusDisconnect();
+        UiCanvasManagerNotificationBus::Handler::BusDisconnect();
+    }
 }

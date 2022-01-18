@@ -12,7 +12,7 @@
 #include <QElapsedTimer>
 #include <Atom/RPI.Public/Base.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
-#include <AzToolsFramework/Input/QtEventToAzInputManager.h>
+#include <AzToolsFramework/Input/QtEventToAzInputMapper.h>
 #include <AzFramework/Input/Events/InputChannelEventListener.h>
 #include <AzFramework/Scene/Scene.h>
 #include <AzFramework/Viewport/ViewportControllerInterface.h>
@@ -21,6 +21,7 @@
 #include <AzFramework/Windowing/WindowBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
+#include <AtomToolsFramework/Viewport/ViewportInteractionImpl.h>
 
 namespace AtomToolsFramework
 {
@@ -30,8 +31,8 @@ namespace AtomToolsFramework
     //! @see AZ::RPI::ViewportContext for Atom's API for setting up 
     class RenderViewportWidget
         : public QWidget
-        , public AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler
         , public AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Handler
+        , public AzToolsFramework::ViewportInteraction::ViewportInteractionRequests
         , public AzFramework::WindowRequestBus::Handler
         , protected AzFramework::InputChannelEventListener
         , protected AZ::TickBus::Handler
@@ -90,11 +91,11 @@ namespace AtomToolsFramework
         //! Input processing is enabled by default.
         void SetInputProcessingEnabled(bool enabled);
 
-        // AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler overrides ...
+        // ViewportInteractionRequests overrides ...
         AzFramework::CameraState GetCameraState() override;
         AzFramework::ScreenPoint ViewportWorldToScreen(const AZ::Vector3& worldPosition) override;
-        AZStd::optional<AZ::Vector3> ViewportScreenToWorld(const AzFramework::ScreenPoint& screenPosition, float depth) override;
-        AZStd::optional<AzToolsFramework::ViewportInteraction::ProjectedViewportRay> ViewportScreenToWorldRay(
+        AZ::Vector3 ViewportScreenToWorld(const AzFramework::ScreenPoint& screenPosition) override;
+        AzToolsFramework::ViewportInteraction::ProjectedViewportRay ViewportScreenToWorldRay(
             const AzFramework::ScreenPoint& screenPosition) override;
         float DeviceScalingFactor() override;
 
@@ -102,6 +103,8 @@ namespace AtomToolsFramework
         void BeginCursorCapture() override;
         void EndCursorCapture() override;
         bool IsMouseOver() const override;
+        void SetOverrideCursor(AzToolsFramework::ViewportInteraction::CursorStyleOverride cursorStyleOverride) override;
+        void ClearOverrideCursor() override;
 
         // AzFramework::WindowRequestBus::Handler overrides ...
         void SetWindowTitle(const AZStd::string& title) override;
@@ -113,6 +116,7 @@ namespace AtomToolsFramework
         void ToggleFullScreenState() override;
         float GetDpiScaleFactor() const override;
         uint32_t GetSyncInterval() const override;
+        bool SetSyncInterval(uint32_t newSyncInterval) override;
         uint32_t GetDisplayRefreshRate() const override;
 
     protected:
@@ -123,7 +127,6 @@ namespace AtomToolsFramework
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
         // QWidget overrides ...
-        void resizeEvent(QResizeEvent *event) override;
         bool event(QEvent* event) override;
         void enterEvent(QEvent* event) override;
         void leaveEvent(QEvent* event) override;
@@ -148,5 +151,7 @@ namespace AtomToolsFramework
         AZ::ScriptTimePoint m_time;
         // Maps our internal Qt events into AzFramework InputChannels for our ViewportControllerList.
         AzToolsFramework::QtEventToAzInputMapper* m_inputChannelMapper = nullptr;
+        // Implementation of ViewportInteractionRequests (handles viewport picking operations).
+        AZStd::unique_ptr<ViewportInteractionImpl> m_viewportInteractionImpl;
     };
 } //namespace AtomToolsFramework

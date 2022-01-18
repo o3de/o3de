@@ -249,7 +249,7 @@ namespace AZ
 
             // Controls how often the timestamp data is refreshed
             RefreshType m_refreshType = RefreshType::Realtime;
-            AZStd::sys_time_t m_lastUpdateTimeMicroSecond;
+            AZStd::sys_time_t m_lastUpdateTimeMicroSecond = 0;
 
         };
 

@@ -266,6 +266,8 @@ const char* const AWSGameLiftClientManagerTest::DummyPlayerId = "dummyPlayerId";
 
 TEST_F(AWSGameLiftClientManagerTest, ConfigureGameLiftClient_CallWithoutRegion_GetFalseAsResult)
 {
+    AWSCoreRequestsHandlerMock coreHandlerMock;
+    EXPECT_CALL(coreHandlerMock, GetDefaultConfig()).Times(1).WillOnce(nullptr);
     AZ_TEST_START_TRACE_SUPPRESSION;
     auto result = m_gameliftClientManager->ConfigureGameLiftClient("");
     AZ_TEST_STOP_TRACE_SUPPRESSION(1); // capture 1 error message
@@ -274,6 +276,8 @@ TEST_F(AWSGameLiftClientManagerTest, ConfigureGameLiftClient_CallWithoutRegion_G
 
 TEST_F(AWSGameLiftClientManagerTest, ConfigureGameLiftClient_CallWithoutCredential_GetFalseAsResult)
 {
+    AWSCoreRequestsHandlerMock coreHandlerMock;
+    EXPECT_CALL(coreHandlerMock, GetDefaultConfig()).Times(1).WillOnce(nullptr);
     AWSResourceMappingRequestsHandlerMock handlerMock;
     EXPECT_CALL(handlerMock, GetDefaultRegion()).Times(1).WillOnce(::testing::Return("us-west-2"));
     AZ_TEST_START_TRACE_SUPPRESSION;
@@ -284,6 +288,8 @@ TEST_F(AWSGameLiftClientManagerTest, ConfigureGameLiftClient_CallWithoutCredenti
 
 TEST_F(AWSGameLiftClientManagerTest, ConfigureGameLiftClient_CallWithRegionAndCredential_GetTrueAsResult)
 {
+    AWSCoreRequestsHandlerMock coreHandlerMock;
+    EXPECT_CALL(coreHandlerMock, GetDefaultConfig()).Times(1).WillOnce(nullptr);
     AWSCredentialRequestsHandlerMock handlerMock;
     EXPECT_CALL(handlerMock, GetCredentialsProvider())
         .Times(1)

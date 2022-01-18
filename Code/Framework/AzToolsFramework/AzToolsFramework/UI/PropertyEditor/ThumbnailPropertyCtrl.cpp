@@ -67,16 +67,9 @@ namespace AzToolsFramework
 
     void ThumbnailPropertyCtrl::SetThumbnailKey(Thumbnailer::SharedThumbnailKey key, const char* contextName)
     {
-        if (m_customThumbnailEnabled)
-        {
-            ClearThumbnail();
-        }
-        else
-        {
-            m_key = key;
-            m_thumbnail->SetThumbnailKey(m_key, contextName);
-            m_thumbnailEnlarged->SetThumbnailKey(m_key, contextName);
-        }
+        m_key = key;
+        m_thumbnail->SetThumbnailKey(m_key, contextName);
+        m_thumbnailEnlarged->SetThumbnailKey(m_key, contextName);
         UpdateVisibility();
     }
 

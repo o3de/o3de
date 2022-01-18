@@ -262,6 +262,6 @@ static constexpr AZ::ThreadSafety ConsoleThreadSafety<_TYPE, std::enable_if_t<st
 //! @param _FLAGS a set of AzFramework::ConsoleFunctorFlags used to mutate behaviour
 //! @param _DESC a description of the cvar
 #define AZ_CONSOLEFREEFUNC_4(_NAME, _FUNCTION, _FLAGS, _DESC) \
-    inline AZ::ConsoleFunctor<void, false> Functor##_FUNCTION(#_FUNCTION, _DESC, _FLAGS | AZ::ConsoleFunctorFlags::DontDuplicate, AZ::TypeId::CreateNull(), &_FUNCTION)
+    inline AZ::ConsoleFunctor<void, false> Functor##_FUNCTION(_NAME, _DESC, _FLAGS | AZ::ConsoleFunctorFlags::DontDuplicate, AZ::TypeId::CreateNull(), &_FUNCTION)
 
 #define AZ_CONSOLEFREEFUNC(...) AZ_MACRO_SPECIALIZE(AZ_CONSOLEFREEFUNC_, AZ_VA_NUM_ARGS(__VA_ARGS__), (__VA_ARGS__))

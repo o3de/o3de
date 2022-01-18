@@ -162,6 +162,13 @@ def select_model_config(configname):
     azlmbr.materialeditor.MaterialViewportRequestBus(azlmbr.bus.Broadcast, "SelectModelPresetByName", configname)
 
 
+def destroy_main_window():
+    """
+    Closes the Material Editor window
+    """
+    azlmbr.atomtools.AtomToolsMainWindowFactoryRequestBus(azlmbr.bus.Broadcast, "DestroyMainWindow")
+
+
 def wait_for_condition(function, timeout_in_seconds=1.0):
     # type: (function, float) -> bool
     """

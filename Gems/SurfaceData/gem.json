@@ -2,7 +2,9 @@
     "gem_name": "SurfaceData",
     "display_name": "Surface Data",
     "license": "Apache-2.0 Or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
     "type": "Code",
     "summary": "The Surface Data Gem provides functionality to emit signals or tags from surfaces such as meshes and terrain.",
     "canonical_tags": [

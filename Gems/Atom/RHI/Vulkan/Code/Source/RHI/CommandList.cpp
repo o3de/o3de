@@ -6,6 +6,7 @@
  *
  */
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/std/parallel/lock.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferView.h>
@@ -688,8 +689,8 @@ namespace AZ
             if (interval != InvalidInterval)
             {
                 uint32_t numBuffers = interval.m_max - interval.m_min + 1;
-                AZStd::vector<VkBuffer> nativeBuffers(numBuffers, VK_NULL_HANDLE);
-                AZStd::vector<VkDeviceSize> offsets(numBuffers, 0);
+                AZStd::fixed_vector<VkBuffer, RHI::Limits::Pipeline::StreamCountMax> nativeBuffers(numBuffers, VK_NULL_HANDLE);
+                AZStd::fixed_vector<VkDeviceSize, RHI::Limits::Pipeline::StreamCountMax> offsets(numBuffers, 0);
                 for (uint32_t i = 0; i < numBuffers; ++i)
                 {
                     const RHI::StreamBufferView& bufferView = streams[i + interval.m_min];
@@ -729,8 +730,7 @@ namespace AZ
 
         void CommandList::SetStencilRef(uint8_t stencilRef)
         {
-            vkCmdSetStencilReference(m_nativeCommandBuffer, VK_STENCIL_FACE_FRONT_BIT, static_cast<uint32_t>(stencilRef));
-            vkCmdSetStencilReference(m_nativeCommandBuffer, VK_STENCIL_FACE_BACK_BIT, static_cast<uint32_t>(stencilRef));
+            vkCmdSetStencilReference(m_nativeCommandBuffer, VK_STENCIL_FACE_FRONT_AND_BACK, aznumeric_cast<uint32_t>(stencilRef));
         }
 
         void CommandList::BindPipeline(const PipelineState* pipelineState)

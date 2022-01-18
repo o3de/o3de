@@ -74,7 +74,7 @@ void InitCRTHandlers() {}
 //////////////////////////////////////////////////////////////////////////
 // This is an entry to DLL initialization function that must be called for each loaded module
 //////////////////////////////////////////////////////////////////////////
-extern "C" AZ_DLL_EXPORT void ModuleInitISystem(ISystem* pSystem, [[maybe_unused]] const char* moduleName)
+void ModuleInitISystem(ISystem* pSystem, [[maybe_unused]] const char* moduleName)
 {
     if (gEnv) // Already registered.
     {
@@ -96,25 +96,9 @@ extern "C" AZ_DLL_EXPORT void ModuleInitISystem(ISystem* pSystem, [[maybe_unused
     } // if pSystem
 }
 
-extern "C" AZ_DLL_EXPORT void ModuleShutdownISystem([[maybe_unused]] ISystem* pSystem)
+void ModuleShutdownISystem([[maybe_unused]] ISystem* pSystem)
 {
     // Unregister with AZ environment.
-    AZ::Environment::Detach();
-}
-
-extern "C" AZ_DLL_EXPORT void InjectEnvironment(void* env)
-{
-    static bool injected = false;
-    if (!injected)
-    {
-        AZ::Environment::Attach(reinterpret_cast<AZ::EnvironmentInstance>(env));
-        AZ::AllocatorManager::Instance();  // Force the AllocatorManager to instantiate and register any allocators defined in data sections
-        injected = true;
-    }
-}
-
-extern "C" AZ_DLL_EXPORT void DetachEnvironment()
-{
     AZ::Environment::Detach();
 }
 
@@ -126,16 +110,6 @@ void* GetModuleShutdownISystemSymbol()
 {
     return reinterpret_cast<void*>(&ModuleShutdownISystem);
 }
-void* GetInjectEnvironmentSymbol()
-{
-    return reinterpret_cast<void*>(&InjectEnvironment);
-}
-void* GetDetachEnvironmentSymbol()
-{
-    return reinterpret_cast<void*>(&DetachEnvironment);
-}
-
-bool g_bProfilerEnabled = false;
 
 //////////////////////////////////////////////////////////////////////////
 // global random number generator used by cry_random functions
@@ -204,21 +178,21 @@ void CrySleep(unsigned int dwMilliseconds)
 }
 
 //////////////////////////////////////////////////////////////////////////
-int CryMessageBox([[maybe_unused]] const char* lpText, [[maybe_unused]] const char* lpCaption, [[maybe_unused]] unsigned int uType)
+void CryMessageBox([[maybe_unused]] const char* lpText, [[maybe_unused]] const char* lpCaption, [[maybe_unused]] unsigned int uType)
 {
 #ifdef WIN32
     ICVar* const pCVar = gEnv && gEnv->pConsole ? gEnv->pConsole->GetCVar("sys_no_crash_dialog") : NULL;
     if ((pCVar && pCVar->GetIVal() != 0) || (gEnv && gEnv->bNoAssertDialog))
     {
-        return 0;
+        return;
     }
     AZStd::wstring lpTextW;
     AZStd::to_wstring(lpTextW, lpText);
     AZStd::wstring lpCaptionW;
     AZStd::to_wstring(lpCaptionW, lpCaption);
-    return MessageBoxW(NULL, lpTextW.c_str(), lpCaptionW.c_str(), uType);
+    MessageBoxW(NULL, lpTextW.c_str(), lpCaptionW.c_str(), uType);
 #else
-    return 0;
+    return;
 #endif
 }
 
@@ -307,12 +281,6 @@ int64 CryGetTicks()
     return li.QuadPart;
 }
 
-int64 CryGetTicksPerSec()
-{
-    LARGE_INTEGER li;
-    QueryPerformanceFrequency(&li);
-    return li.QuadPart;
-}
 #endif
 
 

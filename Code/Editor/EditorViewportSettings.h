@@ -12,6 +12,7 @@
 
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/Math/Vector3.h>
 #include <AzFramework/Input/Channels/InputChannelId.h>
 
 namespace SandboxEditor
@@ -100,6 +101,12 @@ namespace SandboxEditor
 
     SANDBOX_API bool CameraCaptureCursorForLook();
     SANDBOX_API void SetCameraCaptureCursorForLook(bool capture);
+
+    SANDBOX_API AZ::Vector3 CameraDefaultEditorPosition();
+    SANDBOX_API void SetCameraDefaultEditorPosition(const AZ::Vector3& position);
+
+    SANDBOX_API float CameraDefaultOrbitDistance();
+    SANDBOX_API void SetCameraDefaultOrbitDistance(float distance);
 
     SANDBOX_API AzFramework::InputChannelId CameraTranslateForwardChannelId();
     SANDBOX_API void SetCameraTranslateForwardChannelId(AZStd::string_view cameraTranslateForwardId);

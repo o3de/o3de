@@ -1,0 +1,172 @@
+{
+    "template_name": "PythonToolGem",
+    "template_restricted_platform_relative_path": "Templates/PythonToolGem",
+    "restricted_name": "o3de",
+    "restricted_platform_relative_path": "Templates/PythonToolGem",
+    "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
+    "license": "Apache-2.0 or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
+    "display_name": "PythonToolGem",
+    "summary": "A gem template for a custom tool in Python that gets registered with the Editor.",
+    "canonical_tags": [
+        "Python",
+        "Gem"
+    ],
+    "user_tags": [
+        "PythonToolGem"
+    ],
+    "icon_path": "preview.png",
+    "copyFiles": [
+        {
+            "file": ".gitignore",
+            "isTemplated": false
+        },
+        {
+            "file": "CMakeLists.txt",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_editor_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_editor_shared_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_editor_tests_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/CMakeLists.txt",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Include/${Name}/${Name}Bus.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Linux/${NameLower}_linux_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Linux/${NameLower}_shared_linux_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Linux/PAL_linux.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Mac/${NameLower}_mac_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Mac/${NameLower}_shared_mac_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Mac/PAL_mac.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/${NameLower}_shared_windows_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/${NameLower}_windows_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/PAL_windows.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/${Name}.qrc",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/${Name}EditorModule.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/${Name}EditorSystemComponent.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/${Name}EditorSystemComponent.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/${Name}ModuleInterface.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/toolbar_icon.svg",
+            "isTemplated": false
+        },
+        {
+            "file": "Code/Tests/${Name}EditorTest.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Editor/Scripts/__init__.py",
+            "isTemplated": true
+        },
+        {
+            "file": "Editor/Scripts/bootstrap.py",
+            "isTemplated": true
+        },
+        {
+            "file": "Editor/Scripts/${NameLower}_dialog.py",
+            "isTemplated": true
+        },
+        {
+            "file": "gem.json",
+            "isTemplated": true
+        },
+        {
+            "file": "preview.png",
+            "isTemplated": false
+        }
+    ],
+    "createDirectories": [
+        {
+            "dir": "Assets"
+        },
+        {
+            "dir": "Code"
+        },
+        {
+            "dir": "Editor"
+        },
+        {
+            "dir": "Editor/Scripts"
+        },
+        {
+            "dir": "Code/Include"
+        },
+        {
+            "dir": "Code/Include/${Name}"
+        },
+        {
+            "dir": "Code/Platform"
+        },
+        {
+            "dir": "Code/Platform/Linux"
+        },
+        {
+            "dir": "Code/Platform/Mac"
+        },
+        {
+            "dir": "Code/Platform/Windows"
+        },
+        {
+            "dir": "Code/Source"
+        },
+        {
+            "dir": "Code/Tests"
+        }
+    ]
+}

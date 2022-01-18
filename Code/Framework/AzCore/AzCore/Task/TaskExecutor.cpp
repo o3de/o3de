@@ -363,7 +363,11 @@ namespace AZ
     {
         ++m_graphsRemaining;
 
-        event->m_executor = this; // Used to validate event is not waited for inside a job
+        if (event)
+        {
+            event->IncWaitCount();
+            event->m_executor = this; // Used to validate event is not waited for inside a job
+        }
 
         // Submit all tasks that have no inbound edges
         for (Internal::Task& task : graph.Tasks())

@@ -10,7 +10,7 @@ if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
     return()
 endif()
 
-ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
+o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
 
 include(${pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake) # PAL_TRAIT_ATOM_MATERIAL_EDITOR_APPLICATION_SUPPORTED
 
@@ -60,7 +60,6 @@ ly_add_target(
             Gem::AtomToolsFramework.Editor
             Gem::Atom_RPI.Public
             Gem::Atom_Feature_Common.Public
-            Gem::ImageProcessingAtom.Headers
 )
 
 ly_add_target(
@@ -113,7 +112,6 @@ ly_add_target(
     RUNTIME_DEPENDENCIES
         Gem::AtomToolsFramework.Editor
         Gem::EditorPythonBindings.Editor
-        Gem::ImageProcessingAtom.Editor
 )
 
 ly_set_gem_variant_to_load(TARGETS MaterialEditor VARIANTS Tools)

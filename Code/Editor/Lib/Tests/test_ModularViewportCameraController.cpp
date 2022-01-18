@@ -9,7 +9,7 @@
 #include <AtomToolsFramework/Viewport/ModularViewportCameraController.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzFramework/Viewport/ViewportControllerList.h>
-#include <AzToolsFramework/Input/QtEventToAzInputManager.h>
+#include <AzToolsFramework/Input/QtEventToAzInputMapper.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <EditorViewportWidget.h>
 #include <Mocks/MockWindowRequests.h>
@@ -38,6 +38,8 @@ namespace UnitTest
         void BeginCursorCapture() override;
         void EndCursorCapture() override;
         bool IsMouseOver() const override;
+        void SetOverrideCursor(AzToolsFramework::ViewportInteraction::CursorStyleOverride cursorStyleOverride) override;
+        void ClearOverrideCursor() override;
 
     private:
         AzToolsFramework::QtEventToAzInputMapper* m_inputChannelMapper = nullptr;
@@ -58,10 +60,21 @@ namespace UnitTest
         return true;
     }
 
+    void ViewportMouseCursorRequestImpl::SetOverrideCursor(
+        [[maybe_unused]] AzToolsFramework::ViewportInteraction::CursorStyleOverride cursorStyleOverride)
+    {
+        // noop
+    }
+
+    void ViewportMouseCursorRequestImpl::ClearOverrideCursor()
+    {
+        // noop
+    }
+
     class ModularViewportCameraControllerFixture : public AllocatorsTestFixture
     {
     public:
-        static const AzFramework::ViewportId TestViewportId;
+        static inline constexpr AzFramework::ViewportId TestViewportId = 1234;
 
         void SetUp() override
         {
@@ -133,6 +146,17 @@ namespace UnitTest
             controller->SetCameraPropsBuilderCallback(
                 [](AzFramework::CameraProps& cameraProps)
                 {
+                    // note: rotateSmoothness is also used for roll (not related to camera input directly)
+                    cameraProps.m_rotateSmoothnessFn = []
+                    {
+                        return 5.0f;
+                    };
+
+                    cameraProps.m_translateSmoothnessFn = []
+                    {
+                        return 5.0f;
+                    };
+
                     cameraProps.m_rotateSmoothingEnabledFn = []
                     {
                         return false;
@@ -195,8 +219,6 @@ namespace UnitTest
         AZStd::unique_ptr<AZ::SettingsRegistryInterface> m_settingsRegistry;
         AZStd::unique_ptr<SandboxEditor::EditorModularViewportCameraComposer> m_editorModularViewportCameraComposer;
     };
-
-    const AzFramework::ViewportId ModularViewportCameraControllerFixture::TestViewportId = AzFramework::ViewportId(0);
 
     TEST_F(ModularViewportCameraControllerFixture, MouseMovementDoesNotAccumulateExcessiveDriftInModularViewportCameraWithVaryingDeltaTime)
     {
@@ -367,6 +389,7 @@ namespace UnitTest
         m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
 
         QTest::mouseRelease(m_rootWidget.get(), Qt::MouseButton::RightButton, Qt::NoModifier, start + mouseDelta);
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
 
         // update the position of the widget
         const auto offset = QPoint(500, 500);

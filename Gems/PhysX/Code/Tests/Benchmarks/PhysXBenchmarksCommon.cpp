@@ -61,7 +61,6 @@ namespace PhysX::Benchmarks
             m_defaultScene = physicsSystem->GetScene(m_testSceneHandle);
         }
 
-        m_dummyTerrainComponentDescriptor = DummyTestTerrainComponent::CreateDescriptor();
         Physics::DefaultWorldBus::Handler::BusConnect();
     }
 
@@ -80,9 +79,6 @@ namespace PhysX::Benchmarks
         m_testSceneHandle = AzPhysics::InvalidSceneHandle;
 
         TestUtils::ResetPhysXSystem();
-        
-        m_dummyTerrainComponentDescriptor->ReleaseDescriptor();
-        m_dummyTerrainComponentDescriptor = nullptr;
     }
 
     AzPhysics::SceneHandle PhysXBaseBenchmarkFixture::CreateDefaultTestScene()
