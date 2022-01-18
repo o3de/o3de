@@ -251,7 +251,7 @@ namespace O3DE::ProjectManager
     QFrame* GemRepoScreen::CreateReposContent()
     {
         constexpr int inspectorWidth = 240;
-        constexpr int middleLayoutLeftIndent = 60;
+        constexpr int middleLayoutIndent = 60;
 
         QFrame* contentFrame = new QFrame(this);
 
@@ -260,7 +260,7 @@ namespace O3DE::ProjectManager
         hLayout->setSpacing(0);
         contentFrame->setLayout(hLayout);
 
-        hLayout->addSpacing(middleLayoutLeftIndent);
+        hLayout->addSpacing(middleLayoutIndent);
 
         QVBoxLayout* middleVLayout = new QVBoxLayout();
         middleVLayout->setMargin(0);
@@ -298,15 +298,17 @@ namespace O3DE::ProjectManager
 
         middleVLayout->addSpacing(30);
 
-        const int headerTableMinWidth = MinWindowWidth - inspectorWidth - middleLayoutLeftIndent;
-        // Create a QTableWidget just for its header
-        // Using a seperate model allows the setup  of a header exactly as needed
+        constexpr int headerTableMinWidth = MinWindowWidth - inspectorWidth - middleLayoutIndent * 2;
+
         m_gemRepoHeaderTable = new AdjustableHeaderWidget(
-            QStringList{ tr("Repository Name"), tr("Creator"), tr("Updated") },
-            QVector<int> {
-            GemRepoItemDelegate::s_nameMaxWidth + GemRepoItemDelegate::s_contentSpacing, 
-            GemRepoItemDelegate::s_creatorMaxWidth + GemRepoItemDelegate::s_contentSpacing,
-            GemRepoItemDelegate::s_updatedMaxWidth + GemRepoItemDelegate::s_contentSpacing },
+            QStringList{ tr("Repository Name"), tr("Creator"), tr("Updated"), "" },
+            QVector<int>{
+                GemRepoItemDelegate::s_nameDefaultWidth + GemRepoItemDelegate::s_contentSpacing,
+                GemRepoItemDelegate::s_creatorDefaultWidth + GemRepoItemDelegate::s_contentSpacing,
+                GemRepoItemDelegate::s_updatedDefaultWidth + GemRepoItemDelegate::s_refreshIconSpacing + GemRepoItemDelegate::s_refreshIconSize + GemRepoItemDelegate::s_contentSpacing,
+                // Include header for delete button 
+                GemRepoItemDelegate::s_iconSize + GemRepoItemDelegate::s_contentMargins.right()
+            },
             headerTableMinWidth,
             this);
         m_gemRepoHeaderTable->setObjectName("gemRepoHeaderTable");
@@ -321,6 +323,8 @@ namespace O3DE::ProjectManager
         connect(m_gemRepoListView, &GemRepoListView::RefreshRepo, this, &GemRepoScreen::HandleRefreshRepoButton);
 
         hLayout->addLayout(middleVLayout);
+
+        hLayout->addSpacing(middleLayoutIndent);
 
         m_gemRepoInspector = new GemRepoInspector(m_gemRepoModel, this);
         m_gemRepoInspector->setFixedWidth(inspectorWidth);

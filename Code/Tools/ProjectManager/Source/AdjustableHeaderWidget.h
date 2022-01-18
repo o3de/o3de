@@ -29,6 +29,9 @@ namespace O3DE::ProjectManager
             const QVector<int>& defaultHeaderWidths, int minWidth, QWidget* parent = nullptr);
         ~AdjustableHeaderWidget() = default;
 
+        int GetScrollPosition() const;
+        int CalcHeaderXPos(int headerIndex, bool calcEnd = false) const;
+
         QHeaderView* m_header;
 
     protected:

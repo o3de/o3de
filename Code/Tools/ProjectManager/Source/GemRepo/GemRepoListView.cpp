@@ -12,6 +12,7 @@
 
 #include <QShortcut>
 #include <QHeaderView>
+#include <QScrollBar>
 
 namespace O3DE::ProjectManager
 {
@@ -29,6 +30,7 @@ namespace O3DE::ProjectManager
         connect(itemDelegate, &GemRepoItemDelegate::RemoveRepo, this, &GemRepoListView::RemoveRepo);
         connect(itemDelegate, &GemRepoItemDelegate::RefreshRepo, this, &GemRepoListView::RefreshRepo);
         connect(header->m_header, &QHeaderView::sectionResized, [=] { repaint(); });
+        connect(header->horizontalScrollBar(), &QScrollBar::sliderMoved, [=] { repaint(); });
         setItemDelegate(itemDelegate);
     }
 } // namespace O3DE::ProjectManager

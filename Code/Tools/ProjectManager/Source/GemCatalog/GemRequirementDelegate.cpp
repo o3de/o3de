@@ -54,7 +54,7 @@ namespace O3DE::ProjectManager
         // Gem name
         QString gemName = GemModel::GetDisplayName(modelIndex);
         QFont gemNameFont(options.font);
-        const int firstColumnMaxTextWidth = s_summaryStartX - 30;
+        const int firstColumnMaxTextWidth = s_defaultSummaryStartX - 30;
         gemName = QFontMetrics(gemNameFont).elidedText(gemName, Qt::TextElideMode::ElideRight, firstColumnMaxTextWidth);
         gemNameFont.setPixelSize(static_cast<int>(s_gemNameFontSize));
         gemNameFont.setBold(true);
@@ -75,8 +75,8 @@ namespace O3DE::ProjectManager
 
     QRect GemRequirementDelegate::CalcRequirementRect(const QRect& contentRect) const
     {
-        const QSize requirementSize = QSize(contentRect.width() - s_summaryStartX - s_itemMargins.right(), contentRect.height());
-        return QRect(QPoint(contentRect.left() + s_summaryStartX, contentRect.top()), requirementSize);
+        const QSize requirementSize = QSize(contentRect.width() - s_defaultSummaryStartX - s_itemMargins.right(), contentRect.height());
+        return QRect(QPoint(contentRect.left() + s_defaultSummaryStartX, contentRect.top()), requirementSize);
     }
 
     bool GemRequirementDelegate::editorEvent(

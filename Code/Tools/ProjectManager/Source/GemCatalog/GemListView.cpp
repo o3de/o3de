@@ -12,6 +12,7 @@
 
 #include <QMovie>
 #include <QHeaderView>
+#include <QScrollBar>
 
 namespace O3DE::ProjectManager
 {
@@ -35,6 +36,7 @@ namespace O3DE::ProjectManager
                     });
             });
         connect(header->m_header, &QHeaderView::sectionResized, [=] { repaint(); });
+        connect(header->horizontalScrollBar(), &QScrollBar::sliderMoved, [=] { repaint(); });
 
         setItemDelegate(itemDelegate);
     }

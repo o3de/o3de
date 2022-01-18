@@ -11,6 +11,7 @@
 #include <QHeaderView>
 #include <QTimer>
 #include <QResizeEvent>
+#include <QScrollBar>
 
 namespace O3DE::ProjectManager
 {
@@ -40,11 +41,51 @@ namespace O3DE::ProjectManager
         }
 
         m_header->setSectionResizeMode(QHeaderView::ResizeMode::Interactive);
-        m_header->setCascadingSectionResizes(false);
         m_header->setStretchLastSection(true);
 
         // Required to set stylesheet in code as it will not be respected if set in qss
         m_header->setStyleSheet("QHeaderView::section { background-color:#333333; color:white; font-size:12px; }");
+    }
+
+    int AdjustableHeaderWidget::GetScrollPosition() const
+    {
+        const QScrollBar* scrollBar = this->horizontalScrollBar();
+
+        const int scrollWidth = width();
+        const int absoluteWidth = m_header->length();
+        const int scrollMin = scrollBar->minimum();
+        const float scrollRange = static_cast<float>(scrollBar->maximum()) - static_cast<float>(scrollMin);
+        const int scrollValue = scrollBar->sliderPosition();
+
+        // Caculuate the abolute width in pixels that is scrolled
+        if (scrollValue == scrollMin || scrollWidth >= absoluteWidth)
+        {
+            return 0;
+        }
+        else
+        {
+            return static_cast<int>((scrollValue - scrollMin) / scrollRange * (absoluteWidth - scrollWidth));
+        }
+    }
+
+    int AdjustableHeaderWidget::CalcHeaderXPos(int headerIndex, bool calcEnd) const
+    {
+        // Total the widths of all headers before this one or including it if calcEnd is true
+        // Also factors in scroll position of the header
+        int xPos = -GetScrollPosition();
+
+        if (!calcEnd)
+        {
+            // Don't include this header in the x pos calculations, find the start of the header
+            --headerIndex;
+        }
+
+        for (; headerIndex >= 0; --headerIndex)
+        {
+            xPos += m_header->sectionSize(headerIndex);
+        }
+
+        return xPos;
     }
 
     void AdjustableHeaderWidget::resizeEvent(QResizeEvent* event)

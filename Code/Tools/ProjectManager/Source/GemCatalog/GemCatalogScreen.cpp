@@ -36,13 +36,17 @@
 #include <QMessageBox>
 #include <QHash>
 #include <QStackedWidget>
+#include <QApplication>
 
 namespace O3DE::ProjectManager
 {
     GemCatalogScreen::GemCatalogScreen(QWidget* parent)
         : ScreenWidget(parent)
     {
+        // The width of either side panel (filters, inspector) in the catalog
         constexpr int sidePanelWidth = 240;
+        // Querying qApp about styling reports the scroll bar being larger than it is so define it manually
+        const int verticalScrollBarWidth = 8;
 
         m_gemModel = new GemModel(this);
         m_proxyModel = new GemSortFilterProxyModel(m_gemModel, this);
@@ -91,12 +95,16 @@ namespace O3DE::ProjectManager
 
         GemListHeaderWidget* catalogHeaderWidget = new GemListHeaderWidget(m_proxyModel);
 
-        constexpr int headerTableMinWidth = MinWindowWidth - sidePanelWidth * 2;
+        const int headerTableMinWidth = MinWindowWidth - sidePanelWidth * 2 - GemItemDelegate::s_itemMargins.left() -
+            GemItemDelegate::s_itemMargins.right() - verticalScrollBarWidth;
+
         AdjustableHeaderWidget* listHeaderWidget = new AdjustableHeaderWidget(
             QStringList{ tr("Gem Name"), tr("Gem Summary"), tr("Status") },
-            QVector<int>{ GemItemDelegate::s_summaryStartX - 30,
-                          headerTableMinWidth - GemItemDelegate::s_summaryStartX - GemItemDelegate::s_buttonWidth - GemItemDelegate::s_itemMargins.right() * 3,
-                          GemItemDelegate::s_buttonWidth },
+            QVector<int>{
+                GemItemDelegate::s_defaultSummaryStartX - 30,
+                headerTableMinWidth - GemItemDelegate::s_defaultSummaryStartX - GemItemDelegate::s_buttonWidth - GemItemDelegate::s_extraSummarySpacing,
+                GemItemDelegate::s_buttonWidth + GemItemDelegate::s_contentMargins.right()
+            },
             headerTableMinWidth, this);
 
         m_gemListView = new GemListView(m_proxyModel, m_proxyModel->GetSelectionModel(), listHeaderWidget, this);
@@ -106,6 +114,7 @@ namespace O3DE::ProjectManager
         listHeaderLayout->setSpacing(0);
         listHeaderLayout->addSpacing(GemItemDelegate::s_itemMargins.left());
         listHeaderLayout->addWidget(listHeaderWidget);
+        listHeaderLayout->addSpacing(GemItemDelegate::s_itemMargins.right() + verticalScrollBarWidth);
 
         QVBoxLayout* middleVLayout = new QVBoxLayout();
         middleVLayout->setMargin(0);
