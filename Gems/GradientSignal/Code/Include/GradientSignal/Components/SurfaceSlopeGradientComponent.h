@@ -14,6 +14,7 @@
 #include <GradientSignal/Ebuses/SurfaceSlopeGradientRequestBus.h>
 #include <SurfaceData/SurfaceDataTypes.h>
 #include <GradientSignal/SmoothStep.h>
+#include <GradientSignal/Util.h>
 
 namespace LmbrCentral
 {
@@ -91,6 +92,7 @@ namespace GradientSignal
         //////////////////////////////////////////////////////////////////////////
         // GradientRequestBus
         float GetValue(const GradientSampleParams& sampleParams) const override;
+        void GetValues(AZStd::span<AZ::Vector3> positions, AZStd::span<float> outValues) const override;
 
     protected:
         //////////////////////////////////////////////////////////////////////////
@@ -121,6 +123,37 @@ namespace GradientSignal
         void SetFallOffMidpoint(float midpoint) override;
 
     private:
+        float GetSlopeRatio(const SurfaceData::SurfacePointList& points, float angleMin, float angleMax) const
+        {
+            if (points.empty())
+            {
+                return 0.0f;
+            }
+
+            // Assuming our surface normal vector is actually normalized, we can get the slope
+            // by just grabbing the Z value.  It's the same thing as normal.Dot(AZ::Vector3::CreateAxisZ()).
+            AZ_Assert(
+                points.front().m_normal.GetNormalized().IsClose(points.front().m_normal),
+                "Surface normals are expected to be normalized");
+            const float slope = points.front().m_normal.GetZ();
+            // Convert slope back to an angle so that we can lerp in "angular space", not "slope value space".
+            // (We want our 0-1 range to be linear across the range of angles)
+            const float slopeAngle = acosf(slope);
+
+            switch (m_configuration.m_rampType)
+            {
+            case SurfaceSlopeGradientConfig::RampType::SMOOTH_STEP:
+                return m_configuration.m_smoothStep.GetSmoothedValue(GetRatio(angleMin, angleMax, slopeAngle));
+            case SurfaceSlopeGradientConfig::RampType::LINEAR_RAMP_UP:
+                // For ramp up, linearly interpolate from min to max.
+                return GetRatio(angleMin, angleMax, slopeAngle);
+            case SurfaceSlopeGradientConfig::RampType::LINEAR_RAMP_DOWN:
+            default:
+                // For ramp down, linearly interpolate from max to min.
+                return GetRatio(angleMax, angleMin, slopeAngle);
+            }
+        }
+
         SurfaceSlopeGradientConfig m_configuration;
     };
 }
