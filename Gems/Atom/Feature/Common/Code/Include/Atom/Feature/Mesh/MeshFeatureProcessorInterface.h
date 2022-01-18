@@ -105,6 +105,8 @@ namespace AZ
             virtual void SetExcludeFromReflectionCubeMaps(const MeshHandle& meshHandle, bool excludeFromReflectionCubeMaps) = 0;
             //! Sets the option to exclude this mesh from raytracing
             virtual void SetRayTracingEnabled(const MeshHandle& meshHandle, bool rayTracingEnabled) = 0;
+            //! Gets whether this mesh is excluded from raytracing
+            virtual bool GetRayTracingEnabled(const MeshHandle& meshHandle) const = 0;
             //! Sets the mesh as visible or hidden.  When the mesh is hidden it will not be rendered by the feature processor.
             virtual void SetVisible(const MeshHandle& meshHandle, bool visible) = 0;
             //! Sets the mesh to render IBL specular in the forward pass.
