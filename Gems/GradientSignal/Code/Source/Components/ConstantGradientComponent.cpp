@@ -134,6 +134,18 @@ namespace GradientSignal
         return m_configuration.m_value;
     }
 
+    void ConstantGradientComponent::GetValues(
+        [[maybe_unused]] AZStd::span<AZ::Vector3> positions, AZStd::span<float> outValues) const
+    {
+        if (positions.size() != outValues.size())
+        {
+            AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
+            return;
+        }
+
+        AZStd::fill(outValues.begin(), outValues.end(), m_configuration.m_value);
+    }
+
     float ConstantGradientComponent::GetConstantValue() const
     {
         return m_configuration.m_value;

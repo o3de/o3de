@@ -10,8 +10,7 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Math/Vector3.h>
-
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 
 namespace GradientSignal
 {
@@ -57,7 +56,7 @@ namespace GradientSignal
          * \param positions The input list of positions to query.
          * \param outValues The output list of values. This list is expected to be the same size as the positions list.
          */
-        virtual void GetValues(AZStd::array_view<AZ::Vector3> positions, AZStd::array_view<float> outValues) const
+        virtual void GetValues(AZStd::span<AZ::Vector3> positions, AZStd::span<float> outValues) const
         {
             // Reference implementation of GetValues for any gradients that don't have their own optimized implementations.
             // This is 10%-60% faster than calling GetValue via EBus many times due to the per-call EBus overhead.
@@ -72,11 +71,7 @@ namespace GradientSignal
             for (size_t index = 0; index < positions.size(); index++)
             {
                 sampleParams.m_position = positions[index];
-
-                // The const_cast is necessary for now since array_view currently only supports const entries.
-                // If/when array_view is fixed to support non-const, or AZStd::span gets created, the const_cast can get removed.
-                auto& outValue = const_cast<float&>(outValues[index]);
-                outValue = GetValue(sampleParams);
+                outValues[index] = GetValue(sampleParams);
             }
         }
 
