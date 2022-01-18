@@ -13,6 +13,7 @@
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPIUtils.h>
+#include <Atom_Feature_Traits_Platform.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridBorderUpdatePass.h>
 #include <RayTracing/RayTracingFeatureProcessor.h>
@@ -30,17 +31,25 @@ namespace AZ
         DiffuseProbeGridBorderUpdatePass::DiffuseProbeGridBorderUpdatePass(const RPI::PassDescriptor& descriptor)
             : RPI::RenderPass(descriptor)
         {
-            LoadShader("Shaders/DiffuseGlobalIllumination/DiffuseProbeGridBorderUpdateRow.azshader",
-                       m_rowShader,
-                       m_rowPipelineState,
-                       m_rowSrgLayout,
-                       m_rowDispatchArgs);
+            if (!AZ_TRAIT_DIFFUSE_GI_PASSES_SUPPORTED)
+            {
+                // GI is not supported on this platform
+                SetEnabled(false);
+            }
+            else
+            {
+                LoadShader("Shaders/DiffuseGlobalIllumination/DiffuseProbeGridBorderUpdateRow.azshader",
+                           m_rowShader,
+                           m_rowPipelineState,
+                           m_rowSrgLayout,
+                           m_rowDispatchArgs);
 
-            LoadShader("Shaders/DiffuseGlobalIllumination/DiffuseProbeGridBorderUpdateColumn.azshader",
-                       m_columnShader,
-                       m_columnPipelineState,
-                       m_columnSrgLayout,
-                       m_columnDispatchArgs);
+                LoadShader("Shaders/DiffuseGlobalIllumination/DiffuseProbeGridBorderUpdateColumn.azshader",
+                           m_columnShader,
+                           m_columnPipelineState,
+                           m_columnSrgLayout,
+                           m_columnDispatchArgs);
+            }
         }
 
         void DiffuseProbeGridBorderUpdatePass::LoadShader(AZStd::string shaderFilePath,

@@ -7,7 +7,7 @@
  */
 #include "LyShineDebug.h"
 #include "IConsole.h"
-#include <LyShine/Draw2d.h>
+#include <LyShine/IDraw2d.h>
 
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 
@@ -375,9 +375,9 @@ static void DebugDrawColoredBox(AZ::Vector2 pos, AZ::Vector2 size, AZ::Color col
     IDraw2d::HAlign horizontalAlignment = IDraw2d::HAlign::Left,
     IDraw2d::VAlign verticalAlignment = IDraw2d::VAlign::Top)
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
-    CDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
+    IDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
     imageOptions.color = color.GetAsVector3();
     auto whiteTexture = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
     draw2d->DrawImageAligned(whiteTexture, pos, size, horizontalAlignment, verticalAlignment,
@@ -390,9 +390,9 @@ static void DebugDrawColoredBox(AZ::Vector2 pos, AZ::Vector2 size, AZ::Color col
 static void DebugDrawStringWithSizeBox(AZStd::string_view font, unsigned int effectIndex, const char* sizeString,
     const char* testString, AZ::Vector2 pos, float spacing, float size)
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
-    CDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
+    IDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
     if (!font.empty())
     {
         textOptions.fontName = font;
@@ -424,7 +424,7 @@ static void DebugDrawStringWithSizeBox(AZStd::string_view font, unsigned int eff
 #if !defined(_RELEASE)
 static void DebugDraw2dFontSizes(AZStd::string_view font, unsigned int effectIndex)
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     float xOffset = 20.0f;
     float yOffset = 20.0f;
@@ -546,7 +546,7 @@ static void DebugDrawAlignedTextWithOriginBox(AZ::Vector2 pos,
 #if !defined(_RELEASE)
 static void DebugDraw2dFontAlignment()
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
     float w = draw2d->GetViewportWidth();
     float yPos = 20;
 
@@ -613,12 +613,12 @@ static void DebugDraw2dFontAlignment()
 #if !defined(_RELEASE)
 static AZ::Vector2 DebugDrawFontColorTestBox(AZ::Vector2 pos, const char* string, AZ::Vector3 color, float opacity)
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     float pointSize = 32.0f;
     const float spacing = 6.0f;
 
-    CDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
+    IDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
     textOptions.effectIndex = 1;    // no drop shadow baked in
     textOptions.color = color;
 
@@ -648,7 +648,7 @@ static AZ::Vector2 DebugDrawFontColorTestBox(AZ::Vector2 pos, const char* string
 #if !defined(_RELEASE)
 static void DebugDraw2dFontColorAndOpacity()
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     AZ::Vector2 size;
     AZ::Vector2 pos(20.0f, 20.0f);
@@ -686,7 +686,7 @@ static void DebugDraw2dFontColorAndOpacity()
 #if !defined(_RELEASE)
 static void DebugDraw2dImageRotations()
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     AZ::Data::Instance<AZ::RPI::Image> texture = GetMonoTestTexture();
 
@@ -738,11 +738,11 @@ static void DebugDraw2dImageRotations()
 #if !defined(_RELEASE)
 static void DebugDraw2dImageColor()
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     AZ::Data::Instance<AZ::RPI::Image> texture = GetMonoAlphaTestTexture();
 
-    CDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
+    IDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
 
     draw2d->DrawText(
         "Testing image colors, image is black and white, top row is opacity=1, bottom row is opacity = 0.5",
@@ -774,13 +774,13 @@ static void DebugDraw2dImageColor()
 #if !defined(_RELEASE)
 static void DebugDraw2dImageBlendMode()
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     auto whiteTexture = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
 
     AZ::Data::Instance<AZ::RPI::Image> texture = GetColorAlphaTestTexture();
 
-    CDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
+    IDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
 
     draw2d->DrawText("Testing blend modes, src blend changes across x-axis, dst blend changes across y axis",
         AZ::Vector2(20, 20), 16);
@@ -801,7 +801,7 @@ static void DebugDraw2dImageBlendMode()
             AZ::Vector2 pos(xStart + xSpacing * srcIndex, yStart + ySpacing * dstIndex);
 
             // first draw a background with varying color and alpha
-            CDraw2d::VertexPosColUV verts[4] =
+            IDraw2d::VertexPosColUV verts[4] =
             {
                 { // top left
                     AZ::Vector2(pos.GetX(), pos.GetY()),
@@ -828,7 +828,7 @@ static void DebugDraw2dImageBlendMode()
 
             // Draw the image with this color
 
-            CDraw2d::RenderState renderState;
+            IDraw2d::RenderState renderState;
             renderState.m_blendState.m_blendSource = g_srcBlendModes[srcIndex];
             renderState.m_blendState.m_blendDest = g_dstBlendModes[dstIndex];
             draw2d->DrawImage(texture, pos, size, 1.0f, 0.0f, 0, 0, &imageOptions);
@@ -841,11 +841,11 @@ static void DebugDraw2dImageBlendMode()
 #if !defined(_RELEASE)
 static void DebugDraw2dImageUVs()
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     AZ::Data::Instance<AZ::RPI::Image> texture = GetColorTestTexture();
 
-    CDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
+    IDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
 
     draw2d->DrawText(
         "Testing DrawImage with minMaxTexCoords. Full image, top left quadrant, middle section, full flipped",
@@ -890,11 +890,11 @@ static void DebugDraw2dImageUVs()
 #if !defined(_RELEASE)
 static void DebugDraw2dImagePixelRounding()
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     AZ::Data::Instance<AZ::RPI::Image> texture = GetColorTestTexture();
 
-    CDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
+    IDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
 
     draw2d->DrawText("Testing DrawImage pixel rounding options", AZ::Vector2(20, 20), 16);
 
@@ -931,9 +931,9 @@ static void DebugDraw2dImagePixelRounding()
 #if !defined(_RELEASE)
 static void DebugDraw2dLineBasic()
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
-    CDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
+    IDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
 
     draw2d->DrawText("Testing DrawLine", AZ::Vector2(20, 20), 16);
 
@@ -1422,7 +1422,7 @@ void LyShineDebug::RenderDebug()
 #if !defined(_RELEASE)
 
 #ifndef EXCLUDE_DOCUMENTATION_PURPOSE
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
     if (!draw2d)
     {
         return;
