@@ -176,6 +176,13 @@ namespace UnitTest
             auto index10 = scene->GetGraph().AddChild(index8, "10", AZStd::make_shared<DataTypes::MockIGraphObject>(10));
             auto index11 = scene->GetGraph().AddChild(index8, "11", AZStd::make_shared<DataTypes::MockIGraphObject>(11));
 
+            scene->GetGraph().MakeEndPoint(index4);
+            scene->GetGraph().MakeEndPoint(index5);
+            scene->GetGraph().MakeEndPoint(index6);
+            scene->GetGraph().MakeEndPoint(index9);
+            scene->GetGraph().MakeEndPoint(index10);
+            scene->GetGraph().MakeEndPoint(index11);
+
             return scene;
         }
 
