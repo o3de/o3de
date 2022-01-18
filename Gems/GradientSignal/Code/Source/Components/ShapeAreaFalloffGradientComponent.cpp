@@ -168,7 +168,7 @@ namespace GradientSignal
         return (distance <= 0.0f) ? 1.0f : AZ::GetMax(1.0f - (distance / m_configuration.m_falloffWidth), 0.0f);
     }
 
-    void ShapeAreaFalloffGradientComponent::GetValues(AZStd::array_view<AZ::Vector3> positions, AZStd::array_view<float> outValues) const
+    void ShapeAreaFalloffGradientComponent::GetValues(AZStd::span<AZ::Vector3> positions, AZStd::span<float> outValues) const
     {
         if (positions.size() != outValues.size())
         {
@@ -187,10 +187,6 @@ namespace GradientSignal
 
                 for (size_t index = 0; index < positions.size(); index++)
                 {
-                    // The const_cast is necessary for now since array_view currently only supports const entries.
-                    // If/when array_view is fixed to support non-const, or AZStd::span gets created, the const_cast can get removed.
-                    auto& outValue = const_cast<float&>(outValues[index]);
-
                     float distance = shapeRequests->DistanceFromPoint(positions[index]);
 
                     // Since this is outer falloff, distance should give us values from 1.0 at the minimum distance to 0.0 at the maximum
@@ -198,18 +194,15 @@ namespace GradientSignal
                     // inside the shape (0 distance) return 1.0, and all points outside the shape return 0. This works because division by 0
                     // gives infinity, which gets clamped by the GetMax() to 0.  However, if distance == 0, it would give us NaN, so we have
                     // the separate conditional check to handle that case and clamp to 1.0.
-                    outValue = (distance <= 0.0f) ? 1.0f : AZ::GetMax(1.0f - (distance / falloffWidth), 0.0f);
+                    outValues[index] = (distance <= 0.0f) ? 1.0f : AZ::GetMax(1.0f - (distance / falloffWidth), 0.0f);
                 }
             });
 
         // If there's no shape, there's no falloff.
         if (!shapeConnected)
         {
-            for (size_t index = 0; index < positions.size(); index++)
+            for (auto& outValue : outValues)
             {
-                // The const_cast is necessary for now since array_view currently only supports const entries.
-                // If/when array_view is fixed to support non-const, or AZStd::span gets created, the const_cast can get removed.
-                auto& outValue = const_cast<float&>(outValues[index]);
                 outValue = 1.0f;
             }
         }
