@@ -8,6 +8,7 @@
 
 set(FILES
     Include/AtomToolsFramework/Application/AtomToolsApplication.h
+    Include/AtomToolsFramework/AssetBrowser/AtomToolsAssetBrowser.h
     Include/AtomToolsFramework/Communication/LocalServer.h
     Include/AtomToolsFramework/Communication/LocalSocket.h
     Include/AtomToolsFramework/Debug/TraceRecorder.h
@@ -36,6 +37,9 @@ set(FILES
     Include/AtomToolsFramework/Window/AtomToolsMainWindowFactoryRequestBus.h
     Include/AtomToolsFramework/Window/AtomToolsMainWindowNotificationBus.h
     Source/Application/AtomToolsApplication.cpp
+    Source/AssetBrowser/AtomToolsAssetBrowser.cpp
+    Source/AssetBrowser/AtomToolsAssetBrowser.qrc
+    Source/AssetBrowser/AtomToolsAssetBrowser.ui
     Source/Communication/LocalServer.cpp
     Source/Communication/LocalSocket.cpp
     Source/Debug/TraceRecorder.cpp
