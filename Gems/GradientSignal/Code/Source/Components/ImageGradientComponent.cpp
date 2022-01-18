@@ -6,7 +6,7 @@
  *
  */
 
-#include "ImageGradientComponent.h"
+#include <GradientSignal/Components/ImageGradientComponent.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Debug/Profiler.h>
@@ -129,6 +129,9 @@ namespace GradientSignal
 
     void ImageGradientComponent::Activate()
     {
+        // This will immediately call OnGradientTransformChanged and initialize m_gradientTransform.
+        GradientTransformNotificationBus::Handler::BusConnect(GetEntityId());
+
         SetupDependencies();
 
         ImageGradientRequestBus::Handler::BusConnect(GetEntityId());
@@ -144,6 +147,7 @@ namespace GradientSignal
         AZ::Data::AssetBus::Handler::BusDisconnect();
         GradientRequestBus::Handler::BusDisconnect();
         ImageGradientRequestBus::Handler::BusDisconnect();
+        GradientTransformNotificationBus::Handler::BusDisconnect();
 
         m_dependencyMonitor.Reset();
 
@@ -189,22 +193,59 @@ namespace GradientSignal
         m_configuration.m_imageAsset = asset;
     }
 
+    void ImageGradientComponent::OnGradientTransformChanged(const GradientTransform& newTransform)
+    {
+        AZStd::unique_lock<decltype(m_imageMutex)> lock(m_imageMutex);
+        m_gradientTransform = newTransform;
+    }
+
     float ImageGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
         AZ::Vector3 uvw = sampleParams.m_position;
-
         bool wasPointRejected = false;
-        const bool shouldNormalizeOutput = true;
-        GradientTransformRequestBus::Event(
-            GetEntityId(), &GradientTransformRequestBus::Events::TransformPositionToUVW, sampleParams.m_position, uvw, shouldNormalizeOutput, wasPointRejected);
 
-        if (!wasPointRejected)
         {
             AZStd::shared_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
-            return GetValueFromImageAsset(m_configuration.m_imageAsset, uvw, m_configuration.m_tilingX, m_configuration.m_tilingY, 0.0f);
+
+            m_gradientTransform.TransformPositionToUVWNormalized(sampleParams.m_position, uvw, wasPointRejected);
+
+            if (!wasPointRejected)
+            {
+                return GetValueFromImageAsset(
+                    m_configuration.m_imageAsset, uvw, m_configuration.m_tilingX, m_configuration.m_tilingY, 0.0f);
+            }
         }
 
         return 0.0f;
+    }
+
+    void ImageGradientComponent::GetValues(AZStd::span<AZ::Vector3> positions, AZStd::span<float> outValues) const
+    {
+        if (positions.size() != outValues.size())
+        {
+            AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
+            return;
+        }
+
+        AZ::Vector3 uvw;
+        bool wasPointRejected = false;
+
+        AZStd::shared_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
+
+        for (size_t index = 0; index < positions.size(); index++)
+        {
+            m_gradientTransform.TransformPositionToUVWNormalized(positions[index], uvw, wasPointRejected);
+
+            if (!wasPointRejected)
+            {
+                outValues[index] = GetValueFromImageAsset(
+                    m_configuration.m_imageAsset, uvw, m_configuration.m_tilingX, m_configuration.m_tilingY, 0.0f);
+            }
+            else
+            {
+                outValues[index] = 0.0f;
+            }
+        }
     }
 
     AZStd::string ImageGradientComponent::GetImageAssetPath() const

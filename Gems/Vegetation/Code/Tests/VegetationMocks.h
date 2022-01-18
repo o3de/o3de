@@ -444,6 +444,15 @@ namespace UnitTest
             m_GetVisibilityOutput = visibility;
         }
 
+        void SetRayTracingEnabled([[maybe_unused]] bool enabled) override
+        {
+        }
+
+        bool GetRayTracingEnabled() const override
+        {
+            return false;
+        }
+
         AZ::Data::AssetId m_assetIdOutput;
         void SetModelAssetId(AZ::Data::AssetId modelAssetId) override
         {

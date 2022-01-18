@@ -46,9 +46,10 @@ public:
 
     ////////////////////////////////////////////////////////////////////////////
     //// GradientTransformRequestBus
-    void TransformPositionToUVW([[maybe_unused]] const AZ::Vector3& inPosition, [[maybe_unused]] AZ::Vector3& outUVW, [[maybe_unused]] const bool shouldNormalizeOutput, [[maybe_unused]] bool& wasPointRejected) const override {}
-    void GetGradientLocalBounds([[maybe_unused]] AZ::Aabb& bounds) const override {}
-    void GetGradientEncompassingBounds([[maybe_unused]] AZ::Aabb& bounds) const override {}
+    const GradientSignal::GradientTransform& GetGradientTransform() const override
+    {
+        return m_gradientTransform;
+    }
 
     //////////////////////////////////////////////////////////////////////////
     // GradientTransformModifierRequestBus
@@ -96,6 +97,8 @@ public:
 
     bool GetAdvancedMode() const override { return false; }
     void SetAdvancedMode([[maybe_unused]] bool value) override {}
+
+    GradientSignal::GradientTransform m_gradientTransform;
 };
 
 TEST(FastNoiseTest, ComponentsWithComponentApplication)

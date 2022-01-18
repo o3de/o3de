@@ -24,7 +24,6 @@
 // Editor
 #include "SelectLightAnimationDialog.h"
 #include "SelectSequenceDialog.h"
-#include "SelectEAXPresetDlg.h"
 #include "QtViewPaneManager.h"
 
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING

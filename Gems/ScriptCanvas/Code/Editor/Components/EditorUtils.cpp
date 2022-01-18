@@ -33,11 +33,6 @@ namespace ScriptCanvasEditor
 {
     AZStd::optional<SourceHandle> CompleteDescription(const SourceHandle& source)
     {
-        if (source.IsDescriptionValid())
-        {
-            return source;
-        }
-
         AzToolsFramework::AssetSystemRequestBus::Events* assetSystem = AzToolsFramework::AssetSystemRequestBus::FindFirstHandler();
         if (assetSystem)
         {

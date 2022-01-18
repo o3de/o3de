@@ -265,11 +265,13 @@ namespace ScriptCanvasEditor
  
                             action = entityMenu->addAction(QString("%1").arg(QString(displayName.c_str())));
  
-                            QObject::connect(action, &QAction::triggered, [assetId]
+                            QObject::connect(action, &QAction::triggered, [assetInfo]
                             {
                                 AzToolsFramework::OpenViewPane(LyViewPane::ScriptCanvas);
+                                SourceHandle sourceHandle(nullptr, assetInfo.m_assetId.m_guid, "");
+                                CompleteDescriptionInPlace(sourceHandle);
                                 GeneralRequestBus::Broadcast(&GeneralRequests::OpenScriptCanvasAsset
-                                    , SourceHandle(nullptr, assetId.m_guid, "")
+                                    , sourceHandle
                                     , Tracker::ScriptCanvasFileState::UNMODIFIED, -1);
                             });
                         }

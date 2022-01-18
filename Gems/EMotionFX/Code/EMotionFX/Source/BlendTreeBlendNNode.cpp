@@ -224,6 +224,11 @@ namespace EMotionFX
                     poseIndexB = poseIndexA;
                     *outWeight = 0.0f;
                 }
+                else if ((*outWeight > 1.0f - MCore::Math::epsilon))
+                {
+                    poseIndexA = poseIndexB;
+                    *outWeight = 0.0f;
+                }
 
                 // Search complete: the input weight is between m_paramWeights[i] and m_paramWeights[i - 1]
                 // Calculate the blend weight and get the nodes and then return
