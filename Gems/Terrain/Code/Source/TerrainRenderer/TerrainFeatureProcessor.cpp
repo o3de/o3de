@@ -226,25 +226,26 @@ namespace Terrain
             auto& surfaceDataContext = SurfaceData::SurfaceDataSystemRequestBus::GetOrCreateContext(false);
             typename SurfaceData::SurfaceDataSystemRequestBus::Context::DispatchLockGuard scopeLock(surfaceDataContext.m_contextMutex);
 
-            for (int32_t y = yStart; y < yEnd; y++)
+            auto perPositionCallback = [this, &pixels]
+                ([[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex,
+                const AzFramework::SurfaceData::SurfacePoint& surfacePoint,
+                [[maybe_unused]] bool terrainExists)
             {
-                for (int32_t x = xStart; x < xEnd; x++)
-                {
-                    bool terrainExists = true;
-                    float terrainHeight = 0.0f;
-                    float xPos = x * m_sampleSpacing;
-                    float yPos = y * m_sampleSpacing;
-                    AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-                        terrainHeight, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats,
-                        xPos, yPos, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, &terrainExists);
+                const float clampedHeight = AZ::GetClamp((surfacePoint.m_position.GetZ() - m_terrainBounds.GetMin().GetZ()) / m_terrainBounds.GetExtents().GetZ(), 0.0f, 1.0f);
+                const float expandedHeight = AZStd::roundf(clampedHeight * AZStd::numeric_limits<uint16_t>::max());
+                const uint16_t uint16Height = aznumeric_cast<uint16_t>(expandedHeight);
 
-                    const float clampedHeight = AZ::GetClamp((terrainHeight - m_terrainBounds.GetMin().GetZ()) / m_terrainBounds.GetExtents().GetZ(), 0.0f, 1.0f);
-                    const float expandedHeight = AZStd::roundf(clampedHeight * AZStd::numeric_limits<uint16_t>::max());
-                    const uint16_t uint16Height = aznumeric_cast<uint16_t>(expandedHeight);
+                pixels.push_back(uint16Height);
+            };
 
-                    pixels.push_back(uint16Height);
-                }
-            }
+            AZ::Vector2 stepSize(m_sampleSpacing);
+            AZ::Vector3 maxBound(
+                m_dirtyRegion.GetMax().GetX() + m_sampleSpacing, m_dirtyRegion.GetMax().GetY() + m_sampleSpacing, 0.0f);
+            AZ::Aabb region;
+            region.Set(m_dirtyRegion.GetMin(), maxBound);
+            AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
+                &AzFramework::Terrain::TerrainDataRequests::ProcessHeightsFromRegion,
+                region, stepSize, perPositionCallback,AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
         }
 
         if (m_heightmapImage)
