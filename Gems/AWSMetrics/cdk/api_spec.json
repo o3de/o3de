@@ -3,7 +3,7 @@
     "info": {
         "title": "AWSMetricsServiceApi",
         "description": "Service API for the data analytics pipeline defined by the AWS Metrics Gem",
-        "version": "1.0.0"
+        "version": "1.0.1"
     },
     "x-amazon-apigateway-request-validators": {
       "all": {
