@@ -359,7 +359,7 @@ namespace AZ
             else
             {
                 const uint32_t bitsPerPixel = RHI::GetFormatSize(imageFormat) * 8;
-                subresourceLayout.m_bytesPerRow = (imageSize.m_width * bitsPerPixel + 7) / 8; // round up to nearest byte
+                subresourceLayout.m_bytesPerRow = DivideAndRoundUp(imageSize.m_width * bitsPerPixel, 8); // divide bit count by 8, then round up to nearest byte
                 subresourceLayout.m_rowCount = imageSize.m_height;
                 subresourceLayout.m_size.m_width = imageSize.m_width;
                 subresourceLayout.m_size.m_height = imageSize.m_height;

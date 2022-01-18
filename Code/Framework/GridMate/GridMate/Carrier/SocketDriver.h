@@ -221,18 +221,6 @@ namespace GridMate
             void StopWaitForData() override;
 
         private:
-            AZ::u64 RoundUpAndDivide(AZ::u64 Value, AZ::u64 RoundTo) const
-            {
-                return ((Value + RoundTo - 1) / RoundTo);
-            }
-            AZ::u64 RoundUp(AZ::u64 Value, AZ::u64 RoundTo) const
-            {
-                // rounds value up to multiple of RoundTo
-                // Example: RoundTo: 4
-                // Value:  0 1 2 3 4 5 6 7 8
-                // Result: 0 4 4 4 4 8 8 8 8
-                return RoundUpAndDivide(Value, RoundTo) * RoundTo;
-            }
             char *AllocRIOBuffer(AZ::u64 bufferSize, AZ::u64 numBuffers, AZ::u64* amountAllocated=nullptr);
             bool FreeRIOBuffer(char *buffer);
 

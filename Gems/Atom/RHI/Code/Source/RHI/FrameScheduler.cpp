@@ -281,7 +281,7 @@ namespace AZ
                     {
                         srgPool->CompileGroupsBegin();
                         const uint32_t compilesInPool = srgPool->GetGroupsToCompileCount();
-                        const uint32_t jobCount = DivideByMultiple(compilesInPool, compilesPerJob);
+                        const uint32_t jobCount = AZ::DivideAndRoundUp(compilesInPool, compilesPerJob);
                         AZ::TaskDescriptor srgCompileDesc{"SrgCompile", "Graphics"};
                         AZ::TaskDescriptor srgCompileEndDesc{"SrgCompileEnd", "Graphics"};
 
@@ -332,7 +332,7 @@ namespace AZ
                     const auto compileIntervalsFunction = [compilesPerJob, &jobCompletion](ShaderResourceGroupPool* srgPool)
                     {
                         const uint32_t compilesInPool = srgPool->GetGroupsToCompileCount();
-                        const uint32_t jobCount = DivideByMultiple(compilesInPool, compilesPerJob);
+                        const uint32_t jobCount = AZ::DivideAndRoundUp(compilesInPool, compilesPerJob);
 
                         for (uint32_t i = 0; i < jobCount; ++i)
                         {

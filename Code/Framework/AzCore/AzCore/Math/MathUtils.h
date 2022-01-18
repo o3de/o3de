@@ -461,6 +461,36 @@ namespace AZ
         return (azisfinite(x) != 0);
     }
 
+    //! Returns the value divided by alignment, where the result is rounded up if the remainder is non-zero.
+    //! Example: alignment: 4
+    //! Value:  0 1 2 3 4 5 6 7 8
+    //! Result: 0 1 1 1 1 2 2 2 2
+    constexpr uint32_t DivideAndRoundUp(uint32_t value, uint32_t alignment)
+    {
+        AZ_Assert(alignment != 0, "0 is an invalid multiple to round to.");
+        return ((value + alignment - 1) / alignment);
+    }
+
+    constexpr uint64_t DivideAndRoundUp(uint64_t value, uint64_t alignment)
+    {
+        AZ_Assert(alignment != 0, "0 is an invalid multiple to round to.");
+        return ((value + alignment - 1) / alignment);
+    }
+    
+    //! Returns the value rounded up to a multiple of alignment
+    //! Example: roundTo: 4
+    //! Value:  0 1 2 3 4 5 6 7 8
+    //! Result: 0 4 4 4 4 8 8 8 8
+    constexpr uint32_t RoundUpToMultiple(uint32_t value, uint32_t alignment)
+    {
+        return DivideAndRoundUp(value, alignment) * alignment;
+    }
+
+    constexpr uint64_t RoundUpToMultiple(uint64_t value, uint64_t alignment)
+    {
+        return DivideAndRoundUp(value, alignment) * alignment;
+    }
+
     //! Returns the maximum value for SourceType as constrained by the numerical range of ClampType.
     template <typename SourceType, typename ClampType>    
     constexpr SourceType ClampedIntegralLimits<SourceType, ClampType>::Min()

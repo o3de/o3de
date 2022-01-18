@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/base.h>
+#include <AzCore/Math/MathUtils.h>
 
 #ifndef AZ_BIT
 #define AZ_BIT(x) (1u << x)
@@ -239,9 +240,9 @@ namespace AZ
         /**
         * Returns the value divided by alignment, where the result is rounded up if the remainder is non-zero.
         */
-        template <typename T> inline T DivideByMultiple(T value, size_t alignment)
+        template <typename T> inline T DivideByMultiple2(T value, size_t alignment)
         {
-            return (T)((value + alignment - 1) / alignment);
+            return AZ::DivideAndRoundUp(value, alignment);
         }
 
         template <size_t S>

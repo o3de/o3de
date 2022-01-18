@@ -58,4 +58,55 @@ namespace UnitTest
         EXPECT_NEAR(0.6, AZ::LerpInverse(1.0, 1.0 + 5.0 * epsilonD, 1.0 + 3.0 * epsilonD), epsilonD);
         EXPECT_NEAR(1.0, AZ::LerpInverse(1.0, 1.0 + 5.0 * epsilonD, 1.0 + 5.0 * epsilonD), epsilonD);
     }
+
+    class RoundUpToMultipleTestsFixture
+        : public ScopedAllocatorSetupFixture
+        , public ::testing::WithParamInterface<uint32_t>
+    {
+    };
+
+    template <typename T>
+    void TestRoundUpToMultipleIsCorrect(T alignment)
+    {
+        // Example: alignment: 4
+        // inputValue:     0 1 2 3 4 5 6 7 8 ...
+        // expectedOutput: 0 4 4 4 4 8 8 8 8 ...
+        AZStd::vector<T> expectedOutput;
+        constexpr T iterations = 4;
+        expectedOutput.reserve(iterations * alignment + 1);
+        expectedOutput.push_back(0);
+
+        for (T i = 1; i <= iterations; ++i)
+        {
+            for (T j = 0; j < alignment; ++j)
+            {
+                expectedOutput.push_back(i * alignment);
+            }
+        }
+
+        for (T inputValue = 0; inputValue < expectedOutput.size(); ++inputValue)
+        {
+            T result = RoundUpToMultiple(inputValue, alignment);
+            EXPECT_EQ(result, expectedOutput[inputValue]);
+        }
+    }
+
+    TEST_P(RoundUpToMultipleTestsFixture, RoundUpToMultipleUInt32_ValidInput_IsCorrect)
+    {
+        uint32_t alignment = GetParam();
+        TestRoundUpToMultipleIsCorrect(alignment);
+    }
+
+    TEST_P(RoundUpToMultipleTestsFixture, RoundUpToMultipleUInt64_ValidInput_IsCorrect)
+    {
+        uint64_t alignment = GetParam();
+        TestRoundUpToMultipleIsCorrect(alignment);
+    }
+    
+    INSTANTIATE_TEST_CASE_P(
+        MATH_RoundUpToMultiple,
+        RoundUpToMultipleTestsFixture,
+        // Multiples that we're going to test rounding up to
+        // Test with some low numbers, prime numbers, power of two numbers, and non-prime non-power-of-two numbers
+        ::testing::ValuesIn({1u,2u,3u,4u,5u,8u,9u,12u,13u}));
 }

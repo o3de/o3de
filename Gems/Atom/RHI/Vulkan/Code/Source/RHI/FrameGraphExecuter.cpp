@@ -81,7 +81,7 @@ namespace AZ
                 const uint32_t CommandListCostThreshold =
                     AZStd::max(
                         m_frameGraphExecuterData.m_commandListCostThresholdMin,
-                        RHI::DivideByMultiple(estimatedItemCount, m_frameGraphExecuterData.m_commandListsPerScopeMax));
+                        AZ::DivideAndRoundUp(estimatedItemCount, m_frameGraphExecuterData.m_commandListsPerScopeMax));
 
                 /**
                     * Computes a cost heuristic based on the number of items and number of attachments in
@@ -136,7 +136,7 @@ namespace AZ
                 else
                 {
                     // And then create a new group for the current scope with dedicated [1, N] command lists.
-                    const uint32_t commandListCount = AZStd::max(RHI::DivideByMultiple(totalScopeCost, CommandListCostThreshold), 1u);
+                    const uint32_t commandListCount = AZStd::max(AZ::DivideAndRoundUp(totalScopeCost, CommandListCostThreshold), 1u);
 
                     FrameGraphExecuteGroup* scopeContextGroup = AddGroup<FrameGraphExecuteGroup>();
                     scopeContextGroup->Init(device, scope, commandListCount, GetJobPolicy());
