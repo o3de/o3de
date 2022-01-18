@@ -198,6 +198,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     AZ::AzTestShared
                     AZ::AzManipulatorTestFramework.Static
                     Gem::WhiteBox.Editor.Static
+            RUNTIME_DEPENDENCIES
+                Gem::PhysX.Editor
         )
 
         ly_add_googletest(
