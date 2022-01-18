@@ -114,8 +114,12 @@ namespace GradientSignal
                 return 0.0f;
             }
 
-            const AZ::Vector3& position = points.front().m_position;
-            return GetRatio(altitudeMin, altitudeMax, position.GetZ());
+            // GetSurfacePoints (which was used to populate the points list) always returns points in decreasing height order, so the
+            // first point in the list contains the highest altitude.
+            const float highestAltitude = points.front().m_position.GetZ();
+
+            // Turn the absolute altitude value into a 0-1 value by returning the % of the given altitude range that it falls at.
+            return GetRatio(altitudeMin, altitudeMax, highestAltitude);
         }
 
         mutable AZStd::shared_mutex m_cacheMutex;

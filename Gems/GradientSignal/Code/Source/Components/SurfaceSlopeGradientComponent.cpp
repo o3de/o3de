@@ -248,7 +248,7 @@ namespace GradientSignal
         if (!valuesFound)
         {
             // No surface tags, so no output values.
-            memset(outValues.data(), 0, outValues.size() * sizeof(float));
+            AZStd::fill(outValues.begin(), outValues.end(), 0.0f);
         }
     }
 

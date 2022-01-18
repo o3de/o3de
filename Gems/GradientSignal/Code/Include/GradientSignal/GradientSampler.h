@@ -152,7 +152,7 @@ namespace GradientSignal
         auto ClearOutputValues = [](AZStd::span<float> outValues)
         {
             // If we don't have a valid gradient (or it is fully transparent), clear out all the output values.
-            memset(outValues.data(), 0, outValues.size() * sizeof(float));
+            AZStd::fill(outValues.begin(), outValues.end(), 0.0f);
         };
 
         if (m_opacity <= 0.0f || !m_gradientId.IsValid())

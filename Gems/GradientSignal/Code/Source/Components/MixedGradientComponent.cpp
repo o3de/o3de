@@ -293,7 +293,7 @@ namespace GradientSignal
         }
 
         // Initialize all of our output data to 0.0f. Layer blends will combine with this, so we need it to have an initial value.
-        memset(outValues.data(), 0, outValues.size() * sizeof(float));
+        AZStd::fill(outValues.begin(), outValues.end(), 0.0f);
 
         AZStd::vector<float> layerValues(positions.size());
 
