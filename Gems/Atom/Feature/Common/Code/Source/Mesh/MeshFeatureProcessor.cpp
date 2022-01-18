@@ -435,6 +435,19 @@ namespace AZ
             }
         }
 
+        bool MeshFeatureProcessor::GetRayTracingEnabled(const MeshHandle& meshHandle) const
+        {
+            if (meshHandle.IsValid())
+            {
+                return meshHandle->m_descriptor.m_isRayTracingEnabled;
+            }
+            else
+            {
+                AZ_Assert(false, "Invalid mesh handle");
+                return false;
+            }
+        }
+
         void MeshFeatureProcessor::SetVisible(const MeshHandle& meshHandle, bool visible)
         {
             if (meshHandle.IsValid())
