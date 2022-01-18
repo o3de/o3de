@@ -30,7 +30,6 @@ set(FILES
     Source/Engine/ATLEntities.cpp
     Source/Engine/ATLUtils.cpp
     Source/Engine/AudioProxy.cpp
-    Source/Engine/AudioRequests.cpp
     Source/Engine/AudioSystem.cpp
     Source/Engine/FileCacheManager.cpp
     Source/Engine/SoundCVars.cpp
