@@ -51,58 +51,29 @@ namespace AZ
             return 0;
         }
 
-        template <>
-        AZ::u32 RetrieveUintValue<AZ::RHI::Format::R8_UNORM>(const AZ::u8* mem, size_t index)
-        {
-            return mem[index] / static_cast<AZ::u32>(std::numeric_limits<AZ::u8>::max());
-        }
-
-        template <>
-        AZ::u32 RetrieveUintValue<AZ::RHI::Format::R16_UNORM>(const AZ::u8* mem, size_t index)
-        {
-            // 16 bits per channel
-            auto actualMem = reinterpret_cast<const AZ::u16*>(mem);
-
-            return actualMem[index] / static_cast<AZ::u32>(std::numeric_limits<AZ::u16>::max());
-        }
-
-        template <>
-        AZ::s32 RetrieveIntValue<AZ::RHI::Format::R16_SINT>(const AZ::u8* mem, size_t index)
-        {
-            // 16 bits per channel
-            auto actualMem = reinterpret_cast<const AZ::s16*>(mem);
-
-            return actualMem[index] / static_cast<AZ::s32>(std::numeric_limits<AZ::s16>::max());
-        }
-
-        template <>
-        float RetrieveFloatValue<AZ::RHI::Format::R32_UINT>(const AZ::u8* mem, size_t index)
-        {
-            // 32 bits per channel
-            auto actualMem = reinterpret_cast<const float*>(mem);
-            actualMem += index;
-
-            return *actualMem;
-        }
-
-        template <>
-        float RetrieveFloatValue<AZ::RHI::Format::R32_FLOAT>(const AZ::u8* mem, size_t index)
-        {
-            // 32 bits per channel
-            auto actualMem = reinterpret_cast<const float*>(mem);
-            actualMem += index;
-
-            return *actualMem;
-        }
-
         float RetrieveFloatValue(const AZ::u8* mem, size_t index, AZ::RHI::Format format)
         {
             switch (format)
             {
-            case AZ::RHI::Format::R32_UINT:
-                return RetrieveFloatValue<AZ::RHI::Format::R32_UINT>(mem, index);
+            case AZ::RHI::Format::R8_UNORM:
+            case AZ::RHI::Format::R8_SNORM:
+            case AZ::RHI::Format::A8_UNORM:
+            {
+                return mem[index] / static_cast<float>(std::numeric_limits<AZ::u8>::max());
+            }
+            case AZ::RHI::Format::R16_FLOAT:
+            case AZ::RHI::Format::D16_UNORM:
+            case AZ::RHI::Format::R16_UNORM:
+            case AZ::RHI::Format::R16_SNORM:
+            {
+                return mem[index] / static_cast<float>(std::numeric_limits<AZ::u16>::max());
+            }
+            case AZ::RHI::Format::D32_FLOAT:
             case AZ::RHI::Format::R32_FLOAT:
-                return RetrieveFloatValue<AZ::RHI::Format::R32_FLOAT>(mem, index);
+            {
+                auto actualMem = reinterpret_cast<const float*>(mem);
+                return actualMem[index];
+            }
             default:
                 return RetrieveFloatValue<AZ::RHI::Format::Unknown>(mem, index);
             }
@@ -112,10 +83,20 @@ namespace AZ
         {
             switch (format)
             {
-            case AZ::RHI::Format::R8_UNORM:
-                return RetrieveUintValue<AZ::RHI::Format::R8_UNORM>(mem, index);
-            case AZ::RHI::Format::R16_UNORM:
-                return RetrieveUintValue<AZ::RHI::Format::R16_UNORM>(mem, index);
+            case AZ::RHI::Format::R8_UINT:
+            {
+                return mem[index] / static_cast<AZ::u32>(std::numeric_limits<AZ::u8>::max());
+            }
+            case AZ::RHI::Format::R16_UINT:
+            {
+                auto actualMem = reinterpret_cast<const AZ::u16*>(mem);
+                return actualMem[index] / static_cast<AZ::u32>(std::numeric_limits<AZ::u16>::max());
+            }
+            case AZ::RHI::Format::R32_UINT:
+            {
+                auto actualMem = reinterpret_cast<const AZ::u32*>(mem);
+                return actualMem[index];
+            }
             default:
                 return RetrieveUintValue<AZ::RHI::Format::Unknown>(mem, index);
             }
@@ -125,8 +106,20 @@ namespace AZ
         {
             switch (format)
             {
+            case AZ::RHI::Format::R8_SINT:
+            {
+                return mem[index] / static_cast<AZ::s32>(std::numeric_limits<AZ::s8>::max());
+            }
             case AZ::RHI::Format::R16_SINT:
-                return RetrieveIntValue<AZ::RHI::Format::R16_SINT>(mem, index);
+            {
+                auto actualMem = reinterpret_cast<const AZ::s16*>(mem);
+                return actualMem[index] / static_cast<AZ::s32>(std::numeric_limits<AZ::s16>::max());
+            }
+            case AZ::RHI::Format::R32_SINT:
+            {
+                auto actualMem = reinterpret_cast<const AZ::s32*>(mem);
+                return actualMem[index];
+            }
             default:
                 return RetrieveIntValue<AZ::RHI::Format::Unknown>(mem, index);
             }
@@ -292,9 +285,9 @@ namespace AZ
                 auto width = imageDescriptor.m_size.m_width;
 
                 size_t outValuesIndex = 0;
-                for (uint32_t x = topLeft.first; x < bottomRight.first; ++x)
+                for (uint32_t x = topLeft.first; x <= bottomRight.first; ++x)
                 {
-                    for (uint32_t y = topLeft.second; y < bottomRight.second; ++y)
+                    for (uint32_t y = topLeft.second; y <= bottomRight.second; ++y)
                     {
                         size_t imageDataIndex = (y * width) + x;
 
@@ -318,9 +311,9 @@ namespace AZ
                 auto width = imageDescriptor.m_size.m_width;
 
                 size_t outValuesIndex = 0;
-                for (uint32_t x = topLeft.first; x < bottomRight.first; ++x)
+                for (uint32_t x = topLeft.first; x <= bottomRight.first; ++x)
                 {
-                    for (uint32_t y = topLeft.second; y < bottomRight.second; ++y)
+                    for (uint32_t y = topLeft.second; y <= bottomRight.second; ++y)
                     {
                         size_t imageDataIndex = (y * width) + x;
 
@@ -344,9 +337,9 @@ namespace AZ
                 auto width = imageDescriptor.m_size.m_width;
 
                 size_t outValuesIndex = 0;
-                for (uint32_t x = topLeft.first; x < bottomRight.first; ++x)
+                for (uint32_t x = topLeft.first; x <= bottomRight.first; ++x)
                 {
-                    for (uint32_t y = topLeft.second; y < bottomRight.second; ++y)
+                    for (uint32_t y = topLeft.second; y <= bottomRight.second; ++y)
                     {
                         size_t imageDataIndex = (y * width) + x;
 
