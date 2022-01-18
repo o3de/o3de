@@ -471,7 +471,7 @@ namespace AWSMetrics
         ASSERT_EQ(m_metricsManager->GetNumBufferedMetrics(), MaxNumMetricsEvents / 2);
     }
 
-    TEST_F(MetricsManagerTest, OnResponseReceived_NoresponseEntries_RetryAllMetrics)
+    TEST_F(MetricsManagerTest, OnResponseReceived_NoResponseEntries_RetryAllMetrics)
     {
         // Reset the config file to change the max queue size setting.
         ResetClientConfig(false, (double)TestMetricsEventSizeInBytes * (MaxNumMetricsEvents + 1) / MbToBytes,
