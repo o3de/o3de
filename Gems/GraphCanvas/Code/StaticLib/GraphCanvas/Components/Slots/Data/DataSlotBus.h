@@ -70,8 +70,8 @@ namespace GraphCanvas
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         using BusIdType = AZ::EntityId;
 
-        virtual bool ConvertToReference() = 0;
-        virtual bool CanConvertToReference() const = 0;
+        virtual bool ConvertToReference(bool isNewSlot = false) = 0;
+        virtual bool CanConvertToReference(bool isNewSlot = false) const = 0;
 
         virtual bool ConvertToValue() = 0;
         virtual bool CanConvertToValue() const = 0;
