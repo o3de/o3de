@@ -42,7 +42,6 @@ ly_add_target(
     NAME ShaderManagementConsole.Window STATIC
     NAMESPACE Gem
     AUTOMOC
-    AUTOUIC
     AUTORCC
     FILES_CMAKE
         shadermanagementconsolewindow_files.cmake
