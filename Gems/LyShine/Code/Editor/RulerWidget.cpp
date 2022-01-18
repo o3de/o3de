@@ -63,7 +63,7 @@ void RulerWidget::paintEvent([[maybe_unused]] QPaintEvent* event)
 
     // Convert back to qt widget coords for painting
     float dpiScaleFactor = m_editorWindow->GetViewport()->WidgetToViewportFactor();
-    if (dpiScaleFactor != 0)
+    if (dpiScaleFactor != 0.0f)
     {
         scale /= dpiScaleFactor;
         translation /= dpiScaleFactor;
