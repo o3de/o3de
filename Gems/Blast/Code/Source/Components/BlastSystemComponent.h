@@ -100,11 +100,14 @@ namespace Blast
         class AZBlastAllocatorCallback : public Nv::Blast::AllocatorCallback
         {
         public:
+            // Blast requires 16-byte alignment
+            static const size_t alignment = 16;
+
             void* allocate(
                 size_t size, const char* typeName, [[maybe_unused]] const char* filename,
                 [[maybe_unused]] int line) override
             {
-                return azmalloc_4(size, 0, AZ::SystemAllocator, typeName);
+                return azmalloc_4(size, alignment, AZ::SystemAllocator, typeName);
             }
 
             void deallocate(void* ptr) override
