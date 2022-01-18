@@ -111,6 +111,7 @@ namespace AtomToolsFramework
         virtual void ProcessCommandLine(const AZ::CommandLine& commandLine);
 
         static void PyIdleWaitFrames(uint32_t frames);
+        static void PyExit();
 
         AzToolsFramework::TraceLogger m_traceLogger;
 
