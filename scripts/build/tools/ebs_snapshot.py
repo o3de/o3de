@@ -8,7 +8,6 @@
 
 import argparse
 import boto3
-import json
 import logging
 import sys
 
@@ -39,11 +38,26 @@ def _kv_to_dict(kv_string):
 
     return dict
 
-def create_snapshot(tag_keyvalue, snap_description, snap_dryrun):
+def _format_tags(tag_keyvalue):
+    """
+    Format tags in list form
+    
+    :param tag_keyvalue: String of comma separated key value pairs
+    :return List of dictionary values
+    """
+    tag_filter = []
+    
+    for keyvalue in tag_keyvalue:
+        tag_filter.append(_kv_to_dict(keyvalue))
+
+    return tag_filter
+
+def create_snapshot(ec2_client, tag_keyvalue, snap_description, snap_dryrun=DEFAULT_DRYRUN):
     """
     Find and snapshot all EBS volumes that have a matching tag value. Injects all volume tags into the snapshot, 
     including the name and adds a description
 
+    :param ec2_client: The EC2 resource object
     :param tag_keyvalue: List of Strings with tag keyvalues in the form of "key:value"
     :param snap_description: String with the snapshot description to write
     :param snap_dryrun: Boolean to dryrun the action. Set to true by default (always dryrun)
@@ -51,15 +65,12 @@ def create_snapshot(tag_keyvalue, snap_description, snap_dryrun):
     """
     success = 0
     failure = 0
-    tag_filter = []
-    ec2_client = boto3.resource('ec2')
-    
-    for keyvalue in tag_keyvalue:
-        tag_filter.append(_kv_to_dict(keyvalue))
 
-    for tags in tag_filter:
-        response = ec2_client.volumes.filter(Filters=[tags])
-        log.info(f'Snapshotting EBS volumes with tags that match {tags}...')
+    tags = _format_tags(tag_keyvalue)
+
+    for tag in tags:
+        response = ec2_client.volumes.filter(Filters=[tag])
+        log.info(f'Snapshotting EBS volumes with tags that match {tag}...')
         for volume in response:
             try:
                 log.info(f'Snapshotting volume {volume.volume_id}')
@@ -72,11 +83,12 @@ def create_snapshot(tag_keyvalue, snap_description, snap_dryrun):
 
     return success, failure
 
-def delete_snapshot(tag_keyvalue, snap_description, snap_retention, snap_dryrun=DEFAULT_DRYRUN):
+def delete_snapshot(ec2_client, tag_keyvalue, snap_description, snap_retention, snap_dryrun=DEFAULT_DRYRUN):
     """
     Find all EBS snapshots that have a matching tag value AND description. If the number of snapshots exceeds a retention amount, 
     delete the oldest snapshot until retention is achived.
 
+    :param ec2_client: The EC2 resource object
     :param tag_keyvalue: List of Strings with tag keyvalues in the form of "key:value"
     :param snap_description: String with the snapshot description to search
     :param snap_retention: Integer with the number of snapshots to retain
@@ -85,18 +97,15 @@ def delete_snapshot(tag_keyvalue, snap_description, snap_retention, snap_dryrun=
     """
     success = 0
     failure = 0
-    tag_filter = []
     description_filter = {"Name": "description", "Values": [snap_description]}
-    ec2_client = boto3.resource('ec2')
     
-    for keyvalue in tag_keyvalue:
-        tag_filter.append(_kv_to_dict(keyvalue))
+    tags = _format_tags(tag_keyvalue)
 
-    for tags in tag_filter:
-        response = list(ec2_client.snapshots.filter(Filters=[tags,description_filter]))
-        log.info(f'Getting snapshots with tags that match {tags}...')
+    for tag in tags:
+        response = list(ec2_client.snapshots.filter(Filters=[tag,description_filter]))
+        log.info(f'Getting snapshots with tags that match {tag}...')
         num_snaps = len(response)
-        log.info(f'Tag {tags} has {num_snaps} snapshots')
+        log.info(f'Tag {tag} has {num_snaps} snapshots')
 
         if num_snaps > snap_retention:
             log.info(f'Deleting oldest snapshots to keep retention of {snap_retention}')
@@ -114,27 +123,25 @@ def delete_snapshot(tag_keyvalue, snap_description, snap_retention, snap_dryrun=
 
     return success, failure
 
-def list_snapshot(tag_keyvalue, snap_description):
+def list_snapshot(ec2_client, tag_keyvalue, snap_description):
     """
     Find all EBS snapshots that have a matching tag value AND description. Prints snap id, description, tags, and start time.
 
+    :param ec2_client: The EC2 resource object
     :param tag_keyvalue: List of Strings with tag keyvalues in the form of "key:value"
     :param snap_description: String with the snapshot description to search
     :return: None
     """
 
-    tag_filter = []
     description_filter = {"Name": "description", "Values": [snap_description]}
-    ec2_client = boto3.resource('ec2')
     
-    for keyvalue in tag_keyvalue:
-        tag_filter.append(_kv_to_dict(keyvalue))
+    tags = _format_tags(tag_keyvalue)
 
-    for tags in tag_filter:
-        response = ec2_client.snapshots.filter(Filters=[tags,description_filter])
-        log.info(f'Getting snapshots with tags that match {tags}...')
+    for tag in tags:
+        response = ec2_client.snapshots.filter(Filters=[tag,description_filter])
+        log.info(f'Getting snapshots with tags that match {tag}...')
         num_snaps = len(list(response))
-        log.info(f'Tag {tags} has {num_snaps} snapshots')
+        log.info(f'Tag {tag} has {num_snaps} snapshots')
         snap_list = sorted(response, key=lambda k: k.start_time)
         for n in range(num_snaps):
             print(f'Snap ID: {snap_list[n].snapshot_id} \n Description: {snap_list[n].description} \n Tags: {snap_list[n].tags} \n Start Time: {snap_list[n].start_time}')
@@ -153,15 +160,15 @@ def parse_args():
 def main():
     args = parse_args()
     tag_list = args.tags.split(",")
-    print(tag_list)
+    ec2_client = boto3.resource('ec2')
     if 'create' in args.action:
-        ret = create_snapshot(tag_list, args.description, args.execute)
+        ret = create_snapshot(ec2_client, tag_list, args.description, args.execute)
         log.info(f'{ret[0]} snapshots created, {ret[1]} snapshots failed')
     elif 'delete' in args.action:
-        ret = delete_snapshot(tag_list, args.description, args.retention, args.execute)
+        ret = delete_snapshot(ec2_client, tag_list, args.description, args.retention, args.execute)
         log.info(f'{ret[0]} snapshots deleted, {ret[1]} snapshot deletions failed')
     elif 'list' in args.action:
-        ret = list_snapshot(tag_list, args.description)
+        ret = list_snapshot(ec2_client, tag_list, args.description)
 
 if __name__ == "__main__":
     sys.exit(main())
