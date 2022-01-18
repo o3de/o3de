@@ -42,7 +42,7 @@ namespace O3DE::ProjectManager
     GemCatalogScreen::GemCatalogScreen(QWidget* parent)
         : ScreenWidget(parent)
     {
-        int sidePanelWidth = 240;
+        constexpr int sidePanelWidth = 240;
 
         m_gemModel = new GemModel(this);
         m_proxyModel = new GemSortFilterProxyModel(m_gemModel, this);
@@ -91,7 +91,7 @@ namespace O3DE::ProjectManager
 
         GemListHeaderWidget* catalogHeaderWidget = new GemListHeaderWidget(m_proxyModel);
 
-        int headerTableMinWidth = MinWindowWidth - sidePanelWidth * 2;
+        constexpr int headerTableMinWidth = MinWindowWidth - sidePanelWidth * 2;
         AdjustableHeaderWidget* listHeaderWidget = new AdjustableHeaderWidget(
             QStringList{ tr("Gem Name"), tr("Gem Summary"), tr("Status") },
             QVector<int>{ GemItemDelegate::s_summaryStartX - 30,

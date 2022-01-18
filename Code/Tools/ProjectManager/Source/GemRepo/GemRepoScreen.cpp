@@ -250,8 +250,8 @@ namespace O3DE::ProjectManager
 
     QFrame* GemRepoScreen::CreateReposContent()
     {
-        int inspectorWidth = 240;
-        int middleLayoutLeftIndent = 60;
+        constexpr int inspectorWidth = 240;
+        constexpr int middleLayoutLeftIndent = 60;
 
         QFrame* contentFrame = new QFrame(this);
 
@@ -298,7 +298,7 @@ namespace O3DE::ProjectManager
 
         middleVLayout->addSpacing(30);
 
-        int headerTableMinWidth = MinWindowWidth - inspectorWidth - middleLayoutLeftIndent;
+        const int headerTableMinWidth = MinWindowWidth - inspectorWidth - middleLayoutLeftIndent;
         // Create a QTableWidget just for its header
         // Using a seperate model allows the setup  of a header exactly as needed
         m_gemRepoHeaderTable = new AdjustableHeaderWidget(

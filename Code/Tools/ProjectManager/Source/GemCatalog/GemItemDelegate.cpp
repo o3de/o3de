@@ -117,7 +117,7 @@ namespace O3DE::ProjectManager
             painter->restore();
         }
 
-        int summaryStartX = m_headerWidget->m_header->sectionSize(0);
+        const int summaryStartX = m_headerWidget->m_header->sectionSize(0);
 
         // Gem name
         QString gemName = GemModel::GetDisplayName(modelIndex);
@@ -213,7 +213,7 @@ namespace O3DE::ProjectManager
             // we must manually handle html links because we aren't using QLabels
             const QStringList featureTags = GemModel::GetFeatures(modelIndex);
             const bool hasTags = !featureTags.isEmpty();
-            int summaryStartX = m_headerWidget->m_header->sectionSize(0);
+            const int summaryStartX = m_headerWidget->m_header->sectionSize(0);
             const QRect summaryRect = CalcSummaryRect(contentRect, summaryStartX, hasTags);
             if (summaryRect.contains(mouseEvent->pos()))
             {
