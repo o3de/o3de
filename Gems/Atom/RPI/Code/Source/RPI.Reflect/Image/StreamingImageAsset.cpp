@@ -285,9 +285,9 @@ namespace AZ
                 auto width = imageDescriptor.m_size.m_width;
 
                 size_t outValuesIndex = 0;
-                for (uint32_t x = topLeft.first; x <= bottomRight.first; ++x)
+                for (uint32_t y = topLeft.second; y <= bottomRight.second; ++y)
                 {
-                    for (uint32_t y = topLeft.second; y <= bottomRight.second; ++y)
+                    for (uint32_t x = topLeft.first; x <= bottomRight.first; ++x)
                     {
                         size_t imageDataIndex = (y * width) + x;
 
@@ -311,9 +311,9 @@ namespace AZ
                 auto width = imageDescriptor.m_size.m_width;
 
                 size_t outValuesIndex = 0;
-                for (uint32_t x = topLeft.first; x <= bottomRight.first; ++x)
+                for (uint32_t y = topLeft.second; y <= bottomRight.second; ++y)
                 {
-                    for (uint32_t y = topLeft.second; y <= bottomRight.second; ++y)
+                    for (uint32_t x = topLeft.first; x <= bottomRight.first; ++x)
                     {
                         size_t imageDataIndex = (y * width) + x;
 
@@ -337,9 +337,9 @@ namespace AZ
                 auto width = imageDescriptor.m_size.m_width;
 
                 size_t outValuesIndex = 0;
-                for (uint32_t x = topLeft.first; x <= bottomRight.first; ++x)
+                for (uint32_t y = topLeft.second; y <= bottomRight.second; ++y)
                 {
-                    for (uint32_t y = topLeft.second; y <= bottomRight.second; ++y)
+                    for (uint32_t x = topLeft.first; x <= bottomRight.first; ++x)
                     {
                         size_t imageDataIndex = (y * width) + x;
 
