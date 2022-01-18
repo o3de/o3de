@@ -32,6 +32,8 @@ namespace AzToolsFramework
     void RichTextHighlighter::PaintHighlightedRichText(const QString& highlightedString,QPainter* painter, QStyleOptionViewItem option, QRect availableRect, QPoint offset /* = QPoint()*/)
     {
         // Now we setup a Text Document so it can draw the rich text
+        painter->save();
+        painter->setRenderHint(QPainter::Antialiasing);
         QTextDocument textDoc;
         textDoc.setDefaultFont(option.font);
         if (option.state & QStyle::State_Enabled)
@@ -46,5 +48,6 @@ namespace AzToolsFramework
         painter->translate(availableRect.topLeft() + offset);
         textDoc.setTextWidth(availableRect.width());
         textDoc.drawContents(painter, QRectF(0, 0, availableRect.width(), availableRect.height()));
+        painter->restore();
     }
 } // namespace AzToolsFramework
