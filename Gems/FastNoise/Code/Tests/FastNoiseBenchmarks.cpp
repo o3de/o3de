@@ -10,180 +10,21 @@
 
 #include <AzTest/AzTest.h>
 
-#include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Math/Vector3.h>
-#include <AzCore/Memory/PoolAllocator.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <GradientSignal/Components/GradientTransformComponent.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/GradientTransformModifierRequestBus.h>
 #include <GradientSignal/GradientSampler.h>
 #include <FastNoiseSystemComponent.h>
 #include <FastNoiseGradientComponent.h>
 #include <FastNoiseModule.h>
+#include <FastNoiseTest.h>
+#include <LmbrCentral/Shape/BoxShapeComponentBus.h>
 
 namespace UnitTest
 {
-    class MockGradientTransformComponent
-        : public AZ::Component
-        , private GradientSignal::GradientTransformRequestBus::Handler
-        , private GradientSignal::GradientTransformModifierRequestBus::Handler
-    {
-    public:
-        AZ_COMPONENT(MockGradientTransformComponent, "{464CF47B-7E10-4E1B-BD06-79BD2AC91399}");
-
-        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
-        {
-            services.push_back(AZ_CRC("GradientTransformService", 0x8c8c5ecc));
-        }
-        static void Reflect([[maybe_unused]] AZ::ReflectContext* context)
-        {
-        }
-
-        MockGradientTransformComponent() = default;
-        ~MockGradientTransformComponent() = default;
-
-        // AZ::Component interface
-        void Activate() override
-        {
-        }
-        void Deactivate() override
-        {
-        }
-
-        ////////////////////////////////////////////////////////////////////////////
-        //// GradientTransformRequestBus
-        const GradientSignal::GradientTransform& GetGradientTransform() const override
-        {
-            return m_gradientTransform;
-        }
-
-        //////////////////////////////////////////////////////////////////////////
-        // GradientTransformModifierRequestBus
-        bool GetAllowReference() const override
-        {
-            return false;
-        }
-        void SetAllowReference([[maybe_unused]] bool value) override
-        {
-        }
-
-        AZ::EntityId GetShapeReference() const override
-        {
-            return AZ::EntityId();
-        }
-        void SetShapeReference([[maybe_unused]] AZ::EntityId shapeReference) override
-        {
-        }
-
-        bool GetOverrideBounds() const override
-        {
-            return false;
-        }
-        void SetOverrideBounds([[maybe_unused]] bool value) override
-        {
-        }
-
-        AZ::Vector3 GetBounds() const override
-        {
-            return AZ::Vector3();
-        }
-        void SetBounds([[maybe_unused]] AZ::Vector3 bounds) override
-        {
-        }
-
-        GradientSignal::TransformType GetTransformType() const override
-        {
-            return static_cast<GradientSignal::TransformType>(0);
-        }
-        void SetTransformType([[maybe_unused]] GradientSignal::TransformType type) override
-        {
-        }
-
-        bool GetOverrideTranslate() const override
-        {
-            return false;
-        }
-        void SetOverrideTranslate([[maybe_unused]] bool value) override
-        {
-        }
-
-        AZ::Vector3 GetTranslate() const override
-        {
-            return AZ::Vector3();
-        }
-        void SetTranslate([[maybe_unused]] AZ::Vector3 translate) override
-        {
-        }
-
-        bool GetOverrideRotate() const override
-        {
-            return false;
-        }
-        void SetOverrideRotate([[maybe_unused]] bool value) override
-        {
-        }
-
-        AZ::Vector3 GetRotate() const override
-        {
-            return AZ::Vector3();
-        }
-        void SetRotate([[maybe_unused]] AZ::Vector3 rotate) override
-        {
-        }
-
-        bool GetOverrideScale() const override
-        {
-            return false;
-        }
-        void SetOverrideScale([[maybe_unused]] bool value) override
-        {
-        }
-
-        AZ::Vector3 GetScale() const override
-        {
-            return AZ::Vector3();
-        }
-        void SetScale([[maybe_unused]] AZ::Vector3 scale) override
-        {
-        }
-
-        float GetFrequencyZoom() const override
-        {
-            return false;
-        }
-        void SetFrequencyZoom([[maybe_unused]] float frequencyZoom) override
-        {
-        }
-
-        GradientSignal::WrappingType GetWrappingType() const override
-        {
-            return static_cast<GradientSignal::WrappingType>(0);
-        }
-        void SetWrappingType([[maybe_unused]] GradientSignal::WrappingType type) override
-        {
-        }
-
-        bool GetIs3D() const override
-        {
-            return false;
-        }
-        void SetIs3D([[maybe_unused]] bool value) override
-        {
-        }
-
-        bool GetAdvancedMode() const override
-        {
-            return false;
-        }
-        void SetAdvancedMode([[maybe_unused]] bool value) override
-        {
-        }
-
-        GradientSignal::GradientTransform m_gradientTransform;
-    };
-
     class FastNoiseGetValues
-        : public UnitTest::AllocatorsBenchmarkFixture
+        : public ::benchmark::Fixture
     {
     public:
         // We use an enum to list out the different types of GetValue() benchmarks to run so that way we can condense our test cases
@@ -338,55 +179,6 @@ namespace UnitTest
                 AZ_Assert(false, "Benchmark permutation type not supported.");
             }
         }
-
-        void SetUp(const ::benchmark::State& st) override
-        {
-            UnitTest::AllocatorsBenchmarkFixture::SetUp(st);
-            InternalSetUp();
-        }
-        void SetUp(::benchmark::State& st) override
-        {
-            UnitTest::AllocatorsBenchmarkFixture::SetUp(st);
-            InternalSetUp();
-        }
-
-        void TearDown(const ::benchmark::State& st) override
-        {
-            InternalTearDown();
-            UnitTest::AllocatorsBenchmarkFixture::TearDown(st);
-        }
-        void TearDown(::benchmark::State& st) override
-        {
-            InternalTearDown();
-            UnitTest::AllocatorsBenchmarkFixture::TearDown(st);
-        }
-
-        void InternalSetUp()
-        {
-            m_application = AZStd::make_unique<AZ::ComponentApplication>();
-
-            AZ::ComponentApplication::Descriptor appDesc;
-            AZ::ComponentApplication::StartupParameters appStartup;
-            appStartup.m_createStaticModulesCallback = [](AZStd::vector<AZ::Module*>& modules)
-            {
-                modules.emplace_back(new FastNoiseGem::FastNoiseModule);
-            };
-
-            auto systemEntity = m_application->Create(appDesc, appStartup);
-            m_application->RegisterComponentDescriptor(FastNoiseGem::FastNoiseGradientComponent::CreateDescriptor());
-            m_application->RegisterComponentDescriptor(MockGradientTransformComponent::CreateDescriptor());
-            systemEntity->Init();
-            systemEntity->Activate();
-        }
-
-        void InternalTearDown()
-        {
-            m_application->Destroy();
-            m_application.reset();
-        }
-
-        AZStd::unique_ptr<AZ::ComponentApplication> m_application;
-
     };
 
     // Because there's no good way to label different enums in the output results (they just appear as integer values), we work around it by
@@ -424,8 +216,10 @@ namespace UnitTest
     {
         AZ::Entity* noiseEntity = aznew AZ::Entity("noise_entity");
         ASSERT_TRUE(noiseEntity != nullptr);
+        noiseEntity->CreateComponent<AzFramework::TransformComponent>();
+        noiseEntity->CreateComponent(LmbrCentral::BoxShapeComponentTypeId);
+        noiseEntity->CreateComponent<GradientSignal::GradientTransformComponent>();
         noiseEntity->CreateComponent<FastNoiseGem::FastNoiseGradientComponent>();
-        noiseEntity->CreateComponent<MockGradientTransformComponent>();
 
         noiseEntity->Init();
         noiseEntity->Activate();

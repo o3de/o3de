@@ -8,43 +8,14 @@
 
 #include <AzTest/AzTest.h>
 
-#include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/UnitTest/TestTypes.h>
-#include <AzCore/Memory/SystemAllocator.h>
-#include <FastNoiseSystemComponent.h>
-#include <FastNoiseGradientComponent.h>
-#include <FastNoiseModule.h>
-#include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <EditorFastNoiseGradientComponent.h>
+#include <FastNoiseTest.h>
 
 
-class FastNoiseEditorTestApp
-    : public UnitTest::ScopedAllocatorSetupFixture
+class FastNoiseEditorTestApp : public ::testing::Test
 {
-public:
-    FastNoiseEditorTestApp()
-        : m_application()
-        , m_systemEntity(nullptr)
-    {
-    }
-
-    void SetUp() override
-    {
-        AZ::ComponentApplication::Descriptor appDesc;
-        AZ::ComponentApplication::StartupParameters appStartup;
-        m_systemEntity = m_application.Create(appDesc, appStartup);
-        m_systemEntity->Init();
-        m_systemEntity->Activate();
-    }
-
-    void TearDown() override
-    {
-        m_application.Destroy();
-    }
-
-    AZ::ComponentApplication m_application;
-    AZ::Entity* m_systemEntity;
 };
 
 TEST_F(FastNoiseEditorTestApp, FastNoise_EditorCreateGameEntity)
@@ -69,5 +40,5 @@ TEST_F(FastNoiseEditorTestApp, FastNoise_EditorCreateGameEntity)
     ASSERT_EQ(defaultConfig, gameComponentConfig);
 }
 
-AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);
-
+// This uses custom test / benchmark hooks so that we can load LmbrCentral and GradientSignal Gems.
+AZ_UNIT_TEST_HOOK(new UnitTest::FastNoiseTestEnvironment, UnitTest::FastNoiseBenchmarkEnvironment);
