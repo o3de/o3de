@@ -25,6 +25,24 @@ ly_add_target(
             AZ::AzCore
 )
 
+ly_add_target(
+    NAME AWSNativeSDKTestLibs STATIC
+    NAMESPACE AZ
+    FILES_CMAKE
+        aws_native_sdk_test_files.cmake
+    INCLUDE_DIRECTORIES
+        PUBLIC
+            include
+            tests/libs
+        PRIVATE
+            source
+    BUILD_DEPENDENCIES
+        PRIVATE
+            3rdParty::AWSNativeSDK::Core
+            AZ::AzCore
+            AZ::AzTest
+)
+
 ################################################################################
 # Tests
 ################################################################################
