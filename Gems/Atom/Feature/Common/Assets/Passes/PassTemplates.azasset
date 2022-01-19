@@ -552,6 +552,7 @@
                 "Name": "EditorModeFeedbackTemplate",
                 "Path": "Passes/EditorModeFeedback.pass"
             },
+            {
                 "Name": "LutGenerationTemplate",
                 "Path": "Passes/LutGeneration.pass"
             }
