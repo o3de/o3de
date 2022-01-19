@@ -16,6 +16,7 @@
 #include <AzFramework/Components/TransformComponent.h>
 #include <FastNoiseGradientComponent.h>
 #include <FastNoiseTest.h>
+#include <GradientSignalTestHelpers.h>
 #include <GradientSignal/Components/GradientTransformComponent.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/GradientTransformModifierRequestBus.h>
@@ -101,44 +102,7 @@ TEST_F(FastNoiseTest, FastNoise_VerifyGetValueAndGetValuesMatch)
     noiseEntity->Activate();
 
     // Create a gradient sampler and run through a series of points to see if they match expectations.
-
-    const AZ::Aabb queryRegion = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-shapeHalfBounds), AZ::Vector3(shapeHalfBounds));
-    const AZ::Vector2 stepSize(1.0f, 1.0f);
-
-    GradientSignal::GradientSampler gradientSampler;
-    gradientSampler.m_gradientId = noiseEntity->GetId();
-
-    const size_t numSamplesX = aznumeric_cast<size_t>(ceil(queryRegion.GetExtents().GetX() / stepSize.GetX()));
-    const size_t numSamplesY = aznumeric_cast<size_t>(ceil(queryRegion.GetExtents().GetY() / stepSize.GetY()));
-
-    // Build up the list of positions to query.
-    AZStd::vector<AZ::Vector3> positions(numSamplesX * numSamplesY);
-    size_t index = 0;
-    for (size_t yIndex = 0; yIndex < numSamplesY; yIndex++)
-    {
-        float y = queryRegion.GetMin().GetY() + (stepSize.GetY() * yIndex);
-        for (size_t xIndex = 0; xIndex < numSamplesX; xIndex++)
-        {
-            float x = queryRegion.GetMin().GetX() + (stepSize.GetX() * xIndex);
-            positions[index++] = AZ::Vector3(x, y, 0.0f);
-        }
-    }
-
-    // Get the results from GetValues
-    AZStd::vector<float> results(numSamplesX * numSamplesY);
-    gradientSampler.GetValues(positions, results);
-
-    // For each position, call GetValue and verify that the values match.
-    for (size_t positionIndex = 0; positionIndex < positions.size(); positionIndex++)
-    {
-        GradientSignal::GradientSampleParams params;
-        params.m_position = positions[positionIndex];
-        float value = gradientSampler.GetValue(params);
-
-        // We use ASSERT_NEAR instead of EXPECT_NEAR because if one value doesn't match, they probably all won't, so there's no
-        // reason to keep running and printing failures for every value.
-        ASSERT_NEAR(value, results[positionIndex], 0.000001f);
-    }
+    UnitTest::GradientSignalTestHelpers::CompareGetValueAndGetValues(noiseEntity->GetId(), shapeHalfBounds);
 }
 
 // This uses custom test / benchmark hooks so that we can load LmbrCentral and GradientSignal Gems.

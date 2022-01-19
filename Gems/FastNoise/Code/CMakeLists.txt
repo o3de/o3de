@@ -135,6 +135,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
                 Gem::FastNoise.Static
                 Gem::GradientSignal
+                Gem::GradientSignal.Tests.Static
                 Gem::LmbrCentral
     )
     ly_add_googletest(
