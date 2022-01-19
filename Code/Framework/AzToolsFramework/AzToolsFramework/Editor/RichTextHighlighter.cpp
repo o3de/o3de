@@ -29,12 +29,11 @@ namespace AzToolsFramework
         return highlightedString;
     }
 
-    void RichTextHighlighter::PaintHighlightedRichText(const QString& highlightedString,QPainter* painter, QStyleOptionViewItem option, QRect availableRect)
+    void RichTextHighlighter::PaintHighlightedRichText(const QString& highlightedString,QPainter* painter, QStyleOptionViewItem option, QRect availableRect, QPoint offset /* = QPoint()*/)
     {
+        // Now we setup a Text Document so it can draw the rich text
         painter->save();
         painter->setRenderHint(QPainter::Antialiasing);
-
-        // Now we setup a Text Document so it can draw the rich text
         QTextDocument textDoc;
         textDoc.setDefaultFont(option.font);
         if (option.state & QStyle::State_Enabled)
@@ -46,10 +45,9 @@ namespace AzToolsFramework
             textDoc.setDefaultStyleSheet("body {color: #7C7C7C}");
         }
         textDoc.setHtml("<body>" + highlightedString + "</body>");
-        painter->translate(availableRect.topLeft());
+        painter->translate(availableRect.topLeft() + offset);
         textDoc.setTextWidth(availableRect.width());
         textDoc.drawContents(painter, QRectF(0, 0, availableRect.width(), availableRect.height()));
-
         painter->restore();
     }
 } // namespace AzToolsFramework
