@@ -34,6 +34,8 @@
 
 namespace EMotionFX::MotionMatching
 {
+    class FeatureSchema;
+
 #ifdef O3DE_USE_EIGEN
     // Features are stored in columns, each row represents a frame
     // RowMajor: Store row components next to each other in memory for cache-optimized feature access for a given frame.
@@ -107,6 +109,7 @@ namespace EMotionFX::MotionMatching
         void Clear();
 
         void SaveAsCsv(const AZStd::string& filename, const AZStd::vector<AZStd::string>& columnNames = {});
+        void SaveAsCsv(const AZStd::string& filename, const FeatureSchema* featureSchema);
 
         size_t CalcMemoryUsageInBytes() const;
 
