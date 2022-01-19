@@ -136,8 +136,6 @@ namespace AZ
             }
         }
 
-
-
         template<typename VectorT>
         MaterialPropertyValue CastVectorMaterialPropertyValue(const MaterialPropertyValue& value)
         {
@@ -252,8 +250,8 @@ namespace AZ
                     else
                     {
                         // The material asset could be finalized sometime after the original JSON is loaded, and the material type might not have been available
-                        // at that time, so the data type would not be known for each property. So each raw property's type could be based on what appeared in the JSON
-                        // and this is the first opportunity we have to resolve that value with the actual type. For example, a float property could have been specified in
+                        // at that time, so the data type would not be known for each property. So each raw property's type was based on what appeared in the JSON
+                        // and here we have the first opportunity to resolve that value with the actual type. For example, a float property could have been specified in
                         // the JSON as 7 instead of 7.0, which is valid. Similarly, a Color and a Vector3 can both be specified as "[0.0,0.0,0.0]" in the JSON file.
 
                         MaterialPropertyValue finalValue = value;
