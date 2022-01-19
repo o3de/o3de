@@ -240,7 +240,7 @@ namespace AZ
         /**
         * Returns the value divided by alignment, where the result is rounded up if the remainder is non-zero.
         */
-        template <typename T> inline T DivideByMultiple2(T value, size_t alignment)
+        template <typename T> inline T DivideByMultiple(T value, size_t alignment)
         {
             return AZ::DivideAndRoundUp(value, alignment);
         }
