@@ -2605,6 +2605,8 @@ void OutlinerItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
         AzToolsFramework::RichTextHighlighter::PaintHighlightedRichText(
             entityNameRichText, painter, optionV4, textRect, QPoint(0, verticalOffset));
 
+        painter->restore();
+
         OutlinerListModel::s_paintingName = false;
     }
     else
