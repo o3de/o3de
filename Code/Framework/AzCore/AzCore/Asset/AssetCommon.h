@@ -157,6 +157,7 @@ namespace AZ
             AZ_FORCE_INLINE const AssetId& GetId() const { return m_assetId; }
             AZ_FORCE_INLINE const AssetType& GetType() const { return RTTI_GetType(); }
             AZ_FORCE_INLINE int GetUseCount() const { return m_useCount.load(); }
+            int GetCreationToken() const { return m_creationToken; }
 
         protected:
             /**
