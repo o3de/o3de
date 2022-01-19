@@ -47,6 +47,8 @@ namespace FastNoiseGem
         AZ::u32 GetFrequencyParameterVisbility() const;
         AZ::u32 GetInterpParameterVisibility() const;
 
+        bool operator==(const FastNoiseGradientConfig& rhs) const;
+
         int m_seed = 1;
         float m_frequency = 1.f;
         FastNoise::Interp m_interp = FastNoise::Interp::Quintic;

@@ -54,6 +54,21 @@ namespace FastNoiseGem
         return AZ::Edit::PropertyVisibility::Hide;
     }
 
+    bool FastNoiseGradientConfig::operator==(const FastNoiseGradientConfig& rhs) const
+    {
+        return (m_cellularDistanceFunction == rhs.m_cellularDistanceFunction)
+        && (m_cellularJitter == rhs.m_cellularJitter)
+        && (m_cellularReturnType == rhs.m_cellularReturnType)
+        && (m_fractalType == rhs.m_fractalType)
+        && (m_frequency == rhs.m_frequency)
+        && (m_gain == rhs.m_gain)
+        && (m_interp == rhs.m_interp)
+        && (m_lacunarity == rhs.m_lacunarity)
+        && (m_noiseType == rhs.m_noiseType)
+        && (m_octaves == rhs.m_octaves)
+        && (m_seed == rhs.m_seed);
+    }
+
     void FastNoiseGradientConfig::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
