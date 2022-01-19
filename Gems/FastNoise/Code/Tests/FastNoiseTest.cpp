@@ -11,9 +11,8 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Math/Random.h>
-#include <AzCore/Memory/Memory.h>
-#include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/Script/ScriptContext.h>
 #include <AzCore/std/chrono/clocks.h>
 #include <FastNoiseSystemComponent.h>
@@ -126,7 +125,7 @@ TEST(FastNoiseTest, ComponentsWithComponentApplication)
 }
 
 class FastNoiseTestApp
-    : public ::testing::Test
+    : public UnitTest::ScopedAllocatorSetupFixture
 {
 public:
     FastNoiseTestApp()
@@ -138,10 +137,6 @@ public:
     void SetUp() override
     {
         AZ::ComponentApplication::Descriptor appDesc;
-        appDesc.m_memoryBlocksByteSize = 10 * 1024 * 1024;
-        appDesc.m_recordingMode = AZ::Debug::AllocationRecords::RECORD_FULL;
-        appDesc.m_stackRecordLevels = 20;
-
         AZ::ComponentApplication::StartupParameters appStartup;
         appStartup.m_createStaticModulesCallback =
             [](AZStd::vector<AZ::Module*>& modules)
@@ -162,28 +157,6 @@ public:
 
     AZ::ComponentApplication m_application;
     AZ::Entity* m_systemEntity;
-};
-
-//////////////////////////////////////////////////////////////////////////
-// testing class to inspect protected data members in the FastNoiseGradientComponent
-struct FastNoiseGradientComponentTester : public FastNoiseGem::FastNoiseGradientComponent
-{
-    const FastNoiseGem::FastNoiseGradientConfig& GetConfig() const { return m_configuration; }
-
-    void AssertTrue(const FastNoiseGem::FastNoiseGradientConfig& cfg)
-    {
-        ASSERT_TRUE(m_configuration.m_cellularDistanceFunction == cfg.m_cellularDistanceFunction);
-        ASSERT_TRUE(m_configuration.m_cellularJitter == cfg.m_cellularJitter);
-        ASSERT_TRUE(m_configuration.m_cellularReturnType == cfg.m_cellularReturnType);
-        ASSERT_TRUE(m_configuration.m_fractalType == cfg.m_fractalType);
-        ASSERT_TRUE(m_configuration.m_frequency == cfg.m_frequency);
-        ASSERT_TRUE(m_configuration.m_gain == cfg.m_gain);
-        ASSERT_TRUE(m_configuration.m_interp == cfg.m_interp);
-        ASSERT_TRUE(m_configuration.m_lacunarity == cfg.m_lacunarity);
-        ASSERT_TRUE(m_configuration.m_noiseType == cfg.m_noiseType);
-        ASSERT_TRUE(m_configuration.m_octaves == cfg.m_octaves);
-        ASSERT_TRUE(m_configuration.m_seed == cfg.m_seed);
-    }
 };
 
 TEST_F(FastNoiseTestApp, FastNoise_Component)
@@ -223,6 +196,7 @@ TEST_F(FastNoiseTestApp, FastNoise_ComponentMatchesConfiguration)
     AZ::SimpleLcgRandom rand(AZStd::GetTimeNowMicroSecond());
 
     FastNoiseGem::FastNoiseGradientConfig cfg;
+    FastNoiseGem::FastNoiseGradientConfig componentConfig;
 
     noiseEntity->CreateComponent<FastNoiseGem::FastNoiseGradientComponent>(cfg);
     noiseEntity->CreateComponent<MockGradientTransformComponent>();
@@ -231,30 +205,9 @@ TEST_F(FastNoiseTestApp, FastNoise_ComponentMatchesConfiguration)
 
     FastNoiseGem::FastNoiseGradientComponent* noiseComp = noiseEntity->FindComponent<FastNoiseGem::FastNoiseGradientComponent>();
     ASSERT_TRUE(noiseComp != nullptr);
-    reinterpret_cast<FastNoiseGradientComponentTester*>(noiseComp)->AssertTrue(cfg);
+    noiseComp->WriteOutConfig(&componentConfig);
+    ASSERT_EQ(cfg, componentConfig);
 }
-
-#if FASTNOISE_EDITOR
-#include <EditorFastNoiseGradientComponent.h>
-
-TEST_F(FastNoiseTestApp, FastNoise_EditorCreateGameEntity)
-{
-    AZStd::unique_ptr<AZ::Entity> noiseEntity(aznew AZ::Entity("editor_noise_entity"));
-    ASSERT_TRUE(noiseEntity != nullptr);
-
-    FastNoiseGem::EditorFastNoiseGradientComponent editor;
-    auto* editorBase = static_cast<AzToolsFramework::Components::EditorComponentBase*>(&editor);
-    editorBase->BuildGameEntity(noiseEntity.get());
-
-    // the new game entity's ocean component should look like the default one
-    FastNoiseGem::FastNoiseGradientConfig cfg;
-
-    FastNoiseGem::FastNoiseGradientComponent* noiseComp = noiseEntity->FindComponent<FastNoiseGem::FastNoiseGradientComponent>();
-    ASSERT_TRUE(noiseComp != nullptr);
-    reinterpret_cast<FastNoiseGradientComponentTester*>(noiseComp)->AssertTrue(cfg);
-}
-
-#endif
 
 AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);
 
