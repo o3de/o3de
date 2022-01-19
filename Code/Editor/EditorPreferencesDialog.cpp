@@ -112,7 +112,7 @@ void EditorPreferencesDialog::showEvent(QShowEvent* event)
     QDialog::showEvent(event);
 }
 
-bool WidgetHandleKeyPressEvent(QKeyEvent* event)
+bool WidgetConsumesKeyPressEvent(QKeyEvent* event)
 {
     // If the enter key is pressed during any text input, the dialog box will close
     // making it inconvenient to do multiple edits. This routine captures the
@@ -120,24 +120,20 @@ bool WidgetHandleKeyPressEvent(QKeyEvent* event)
     // editing of that field has finished and then doesn't propagate it.
     if (event->key() != Qt::Key::Key_Enter && event->key() != Qt::Key::Key_Return)
     {
-        // Return false as the event was not handled
         return false;
     }
-    else
+   
+    if (QWidget* editWidget = QApplication::focusWidget())
     {
-        if (QWidget* editWidget = QApplication::focusWidget())
-        {
-            editWidget->clearFocus();
-        }
-
-        // We handle these events, so return true
-        return true;
+        editWidget->clearFocus();
     }
+
+    return true;
 }
 
 void EditorPreferencesDialog::keyPressEvent(QKeyEvent* event)
 {
-    if(!WidgetHandleKeyPressEvent(event))
+    if (!WidgetConsumesKeyPressEvent(event))
     {
         QDialog::keyPressEvent(event);
     }
