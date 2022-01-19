@@ -24,6 +24,7 @@ ly_append_configurations_options(
         -fno-exceptions
         -fvisibility=hidden
         -Wall
+        -Werror
 
         ${LY_GCC_GCOV_FLAGS}
         ${LY_GCC_GPROF_FLAGS}
@@ -64,12 +65,10 @@ ly_append_configurations_options(
 
     COMPILATION_C
         -Wno-absolute-value
-        -Werror
 
     COMPILATION_CXX
         -fvisibility-inlines-hidden
         -Wno-invalid-offsetof
-        -Werror
 
     COMPILATION_DEBUG
         -O0 # No optimization
