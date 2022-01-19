@@ -143,6 +143,12 @@ namespace AZ::Dom::Tests
         EXPECT_EQ(Path("/foo") / 0, Path("/foo/0"));
         EXPECT_EQ(Path() / "foo" / "bar", Path("/foo/bar"));
         EXPECT_EQ(Path("/foo") / "bar" / "baz", Path("/foo/bar/baz"));
+
+        Path p("/foo/bar");
+        p /= "baz";
+        EXPECT_EQ(p, Path("/foo/bar/baz"));
+        p /= Path("0/1");
+        EXPECT_EQ(p, Path("/foo/bar/baz/0/1"));
     }
 
     TEST_F(DomPathTests, EndOfArray_FromString)

@@ -93,6 +93,13 @@ namespace AZ::Dom
         Path operator/(AZ::Name) const;
         Path operator/(AZStd::string_view) const;
         Path operator/(const Path&) const;
+
+        Path& operator/=(const PathEntry&);
+        Path& operator/=(size_t);
+        Path& operator/=(AZ::Name);
+        Path& operator/=(AZStd::string_view);
+        Path& operator/=(const Path&);
+
         bool operator==(const Path&) const;
 
         const ContainerType& GetEntries() const;
