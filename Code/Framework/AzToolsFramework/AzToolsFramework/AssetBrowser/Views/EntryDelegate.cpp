@@ -290,6 +290,7 @@ namespace AzToolsFramework
                 {
                     displayString = RichTextHighlighter::HighlightText(displayString, m_assetBrowserFilerModel->GetStringFilter()->GetFilterString());
                 }
+
                 RichTextHighlighter::PaintHighlightedRichText(displayString, painter, optionV4, remainingRect);
             }
         }
