@@ -192,7 +192,8 @@ namespace ScriptCanvasEditor
     // VariablePanelContextMenu
     /////////////////////////////
 
-    VariablePanelContextMenu::VariablePanelContextMenu(VariableDockWidget* dockWidget, const ScriptCanvas::ScriptCanvasId& scriptCanvasId, ScriptCanvas::VariableId varId)
+    VariablePanelContextMenu::VariablePanelContextMenu(VariableDockWidget* dockWidget, const ScriptCanvas::ScriptCanvasId& scriptCanvasId
+        , ScriptCanvas::VariableId varId, QPoint position)
         : QMenu()
     {
         AZ::EntityId graphCanvasGraphId;
@@ -292,9 +293,9 @@ namespace ScriptCanvasEditor
 
         QObject::connect(configureAction,
             &QAction::triggered,
-            [dockWidget, varId](bool)
+            [dockWidget, varId, position](bool)
         {
-            dockWidget->OnConfigureVariable(varId);
+            dockWidget->OnConfigureVariable(varId, position);
         });
 
 
@@ -700,7 +701,7 @@ namespace ScriptCanvasEditor
         {
             varId = index.data(GraphVariablesModel::VarIdRole).value<ScriptCanvas::VariableId>();
 
-            VariablePanelContextMenu menu(this, m_scriptCanvasId, varId);
+            VariablePanelContextMenu menu(this, m_scriptCanvasId, varId, pos);
 
             menu.addSeparator();
             menu.addAction(cleanupAction);
@@ -865,20 +866,18 @@ namespace ScriptCanvasEditor
         EditorGraphRequestBus::Event(m_scriptCanvasId, &EditorGraphRequests::HighlightVariables, variableIds);
     }
 
-    void VariableDockWidget::OnConfigureVariable([[maybe_unused]] const ScriptCanvas::VariableId& variableId)
+    void VariableDockWidget::OnConfigureVariable([[maybe_unused]] const ScriptCanvas::VariableId& variableId, [[maybe_unused]] QPoint position)
     {
+        VariablePaletteRequests::SlotSetup selectedSlotSetup;
+        ScriptCanvas::GraphVariable* graphVariable = nullptr;
+        ScriptCanvas::GraphVariableManagerRequestBus::EventResult(graphVariable, m_scriptCanvasId, &ScriptCanvas::GraphVariableManagerRequests::FindVariableById, variableId);
 
-//         AZ::Vector2 position;
-//         GraphCanvas::GeometryRequestBus::EventResult(position, nodeId, &GraphCanvas::GeometryRequests::GetPosition);
-// 
-//         // First we need to automatically display the ShowVariableConfigurationWidget dialog so the user
-//         // can assign a type and name to the slot they are adding
-//         VariablePaletteRequests::SlotSetup selectedSlotSetup;
-//         bool createSlot = false;
-//         QPoint scenePoint(aznumeric_cast<int>(position.GetX()), aznumeric_cast<int>(position.GetY()));
-//         VariablePaletteRequestBus::BroadcastResult(createSlot, &VariablePaletteRequests::ShowVariableConfigurationWidget, slot, scenePoint, selectedSlotSetup);
-
-        // ShowVariableConfigurationWidget get the position and stuff that one needs
+        if (graphVariable)
+        {
+            bool createSlot = false;
+            VariablePaletteRequestBus::BroadcastResult(createSlot, &VariablePaletteRequests::ShowVariableConfigurationWidget
+                , graphVariable->GetVariableName(), graphVariable->GetDataType().GetAZType(), position, selectedSlotSetup);
+        }
     }
 
     void VariableDockWidget::OnRemoveUnusedVariables()
