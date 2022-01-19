@@ -321,7 +321,7 @@ namespace FastNoiseGem
 
     float FastNoiseGradientComponent::GetValue(const GradientSignal::GradientSampleParams& sampleParams) const
     {
-        AZ::Vector3 uvw = sampleParams.m_position;
+        AZ::Vector3 uvw;
         bool wasPointRejected = false;
 
         {
@@ -329,13 +329,34 @@ namespace FastNoiseGem
             m_gradientTransform.TransformPositionToUVW(sampleParams.m_position, uvw, wasPointRejected);
         }
 
-        if (!wasPointRejected)
+        // Generator returns a range between [-1, 1], map that to [0, 1]
+        return wasPointRejected ?
+            0.0f :
+            AZ::GetClamp((m_generator.GetNoise(uvw.GetX(), uvw.GetY(), uvw.GetZ()) + 1.0f) / 2.0f, 0.0f, 1.0f);
+    }
+
+    void FastNoiseGradientComponent::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
+    {
+        if (positions.size() != outValues.size())
         {
-            // Generator returns a range between [-1, 1], map that to [0, 1]
-            return AZ::GetClamp((m_generator.GetNoise(uvw.GetX(), uvw.GetY(), uvw.GetZ()) + 1.0f) / 2.0f, 0.0f, 1.0f);
+            AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
+            return;
         }
 
-        return 0.0f;
+        AZStd::shared_lock<decltype(m_transformMutex)> lock(m_transformMutex);
+        AZ::Vector3 uvw;
+
+        for (size_t index = 0; index < positions.size(); index++)
+        {
+            bool wasPointRejected = false;
+
+            m_gradientTransform.TransformPositionToUVW(positions[index], uvw, wasPointRejected);
+
+            // Generator returns a range between [-1, 1], map that to [0, 1]
+            outValues[index] = wasPointRejected ?
+                0.0f :
+                AZ::GetClamp((m_generator.GetNoise(uvw.GetX(), uvw.GetY(), uvw.GetZ()) + 1.0f) / 2.0f, 0.0f, 1.0f);
+        }
     }
 
     template <typename TValueType, TValueType FastNoiseGradientConfig::*TConfigMember, void (FastNoise::*TMethod)(TValueType)>

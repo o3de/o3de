@@ -92,6 +92,7 @@ namespace FastNoiseGem
 
         // GradientRequestBus overrides...
         float GetValue(const GradientSignal::GradientSampleParams& sampleParams) const override;
+        void GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const override;
 
     protected:
         FastNoiseGradientConfig m_configuration;
