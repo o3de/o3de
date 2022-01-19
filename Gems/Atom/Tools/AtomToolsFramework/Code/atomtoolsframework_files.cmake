@@ -12,6 +12,7 @@ set(FILES
     Include/AtomToolsFramework/Communication/LocalSocket.h
     Include/AtomToolsFramework/Debug/TraceRecorder.h
     Include/AtomToolsFramework/Document/AtomToolsDocument.h
+    Include/AtomToolsFramework/Document/AtomToolsDocumentApplication.h
     Include/AtomToolsFramework/Document/AtomToolsDocumentMainWindow.h
     Include/AtomToolsFramework/Document/AtomToolsDocumentSystemSettings.h
     Include/AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h
@@ -40,6 +41,7 @@ set(FILES
     Source/Communication/LocalSocket.cpp
     Source/Debug/TraceRecorder.cpp
     Source/Document/AtomToolsDocument.cpp
+    Source/Document/AtomToolsDocumentApplication.cpp
     Source/Document/AtomToolsDocumentMainWindow.cpp
     Source/Document/AtomToolsDocumentSystemSettings.cpp
     Source/Document/AtomToolsDocumentSystemComponent.cpp
