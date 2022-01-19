@@ -26,7 +26,7 @@ namespace Multiplayer
         //! INetworkSpawnableLibrary overrides.
         //! @{
         // Iterates over all assets (on-disk and in-memory) and stores any spawnables that are "network.spawnables"
-        // This allows us to look up network spawnable assets by name or id for later use
+        // This allows users to look up network spawnable assets by name or id if needed later
         void BuildSpawnablesList() override;
         void ProcessSpawnableAsset(const AZStd::string& relativePath, AZ::Data::AssetId id) override;
         AZ::Name GetSpawnableNameFromAssetId(AZ::Data::AssetId assetId) override;
