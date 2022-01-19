@@ -7,8 +7,6 @@
 #
 
 set(FILES
-    Source/Draw2d.cpp
-    Include/LyShine/Draw2d.h
     Include/LyShine/IDraw2d.h
     Include/LyShine/IRenderGraph.h
     Include/LyShine/ISprite.h
@@ -88,6 +86,8 @@ set(FILES
     Include/LyShine/Bus/World/UiCanvasOnMeshBus.h
     Include/LyShine/Bus/World/UiCanvasRefBus.h
     Include/LyShine/Bus/Tools/UiSystemToolsBus.h
+    Source/Draw2d.cpp
+    Source/Draw2d.h
     Source/LyShine.cpp
     Source/LyShine.h
     Source/LyShinePassDataBus.h

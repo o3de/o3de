@@ -100,11 +100,10 @@ namespace AWSMetrics
         AWSCore::RequestBuilder requestBuilder{};
         EXPECT_TRUE(request.parameters.BuildRequest(requestBuilder));
         std::shared_ptr<Aws::StringStream> bodyContent = requestBuilder.GetBodyContent();
-        EXPECT_TRUE(bodyContent != nullptr);
+        ASSERT_NE(nullptr, bodyContent);
 
-        AZStd::string bodyString;
         std::istreambuf_iterator<AZStd::string::value_type> eos;
-        bodyString = AZStd::string{ std::istreambuf_iterator<AZStd::string::value_type>(*bodyContent), eos };
-        EXPECT_TRUE(bodyString.find(AZStd::string::format("{\"%s\":[{\"event_timestamp\":", AwsMetricsRequestParameterKeyEvents)) != AZStd::string::npos);
+        AZStd::string bodyString{ std::istreambuf_iterator<AZStd::string::value_type>(*bodyContent), eos };
+        EXPECT_TRUE(bodyString.contains(AZStd::string::format("{\"%s\":[{\"event_timestamp\":", AwsMetricsRequestParameterKeyEvents)));
     }
 }
