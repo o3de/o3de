@@ -202,7 +202,7 @@ namespace AzToolsFramework
         virtual void OnSaveStreamForGameFailure(AZStd::string_view /*failureString*/) {}
 
         //! Preserve entity order when re-parenting entities
-        virtual void ForceAddEntitiesToBack(bool /*forceAddToBack*/) {}
+        virtual void SetForceAddEntitiesToBackFlag(bool /*forceAddToBack*/) {}
 
     };
 

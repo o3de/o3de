@@ -643,7 +643,7 @@ namespace AzToolsFramework
         }
     }
 
-    void EditorEntityModel::ForceAddEntitiesToBack(bool forceAddToBack)
+    void EditorEntityModel::SetForceAddEntitiesToBackFlag(bool forceAddToBack)
     {
         m_forceAddToBack = forceAddToBack;
     }
