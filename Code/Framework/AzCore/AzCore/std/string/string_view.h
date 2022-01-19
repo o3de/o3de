@@ -430,7 +430,6 @@ namespace AZStd
             else if constexpr (AZStd::is_same_v<char_type, wchar_t>)
             {
                 return __builtin_wmemchr(s, ch, count);
-                
             }
             else
             {
