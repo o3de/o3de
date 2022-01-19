@@ -1545,7 +1545,7 @@ namespace ScriptCanvasEditor
     {
         int outTabIndex = -1;
 
-        ScriptCanvas::DataPtr graph = Graph::Create();
+        ScriptCanvas::DataPtr graph = EditorGraph::Create();
         AZ::Uuid assetId = AZ::Uuid::CreateRandom();
         ScriptCanvasEditor::SourceHandle handle = ScriptCanvasEditor::SourceHandle(graph, assetId, assetPath);
 

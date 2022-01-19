@@ -138,11 +138,22 @@ namespace GradientSignal
 
     float ThresholdGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
-        float output = 0.0f;
+        return (m_configuration.m_gradientSampler.GetValue(sampleParams) <= m_configuration.m_threshold) ? 0.0f : 1.0f;
+    }
 
-        output = m_configuration.m_gradientSampler.GetValue(sampleParams) <= m_configuration.m_threshold ? 0.0f : 1.0f;
+    void ThresholdGradientComponent::GetValues(AZStd::span<AZ::Vector3> positions, AZStd::span<float> outValues) const
+    {
+        if (positions.size() != outValues.size())
+        {
+            AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
+            return;
+        }
 
-        return output;
+        m_configuration.m_gradientSampler.GetValues(positions, outValues);
+        for (auto& outValue : outValues)
+        {
+            outValue = (outValue <= m_configuration.m_threshold) ? 0.0f : 1.0f;
+        }
     }
 
     bool ThresholdGradientComponent::IsEntityInHierarchy(const AZ::EntityId& entityId) const
