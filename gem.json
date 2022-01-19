@@ -1,17 +1,22 @@
 {
     "gem_name": "MotionMatching",
-    "display_name": "MotionMatching",
-    "license": "What license MotionMatching uses goes here: i.e. https://opensource.org/licenses/MIT",
-    "origin": "The primary repo for MotionMatching goes here: i.e. http://www.mydomain.com",
+    "display_name": "Motion Matching",
+    "license": "Apache-2.0 Or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
+    "origin": "Open 3D Engine - o3de.org",
     "type": "Code",
-    "summary": "A short description of MotionMatching.",
+    "summary": "Motion matching is a data-driven animation technique that synthesizes motions based on existing animation data and the current character and input contexts.",
     "canonical_tags": [
         "Gem"
     ],
     "user_tags": [
-        "MotionMatching"
+        "Animation",
+        "Tools",
+        "Simulation"
     ],
     "icon_path": "preview.png",
     "requirements": "",
-    "restricted_name": "gems"
+    "restricted_name": "gems",
+    "dependencies": [
+        "EMotionFX"]
 }
