@@ -176,9 +176,7 @@ protected:
     virtual void OnFileSaveAs();
     //! called immediately after saving the level.
     void AfterSave();
-    void RegisterConsoleVariables();
     void OnStartLevelResourceList();
-    static void OnValidateSurfaceTypesChanged(ICVar*);
 
     QString GetCryIndexPath(const char* levelFilePath) const;
 
@@ -194,7 +192,6 @@ protected:
     XmlNodeRef m_environmentTemplate;
     std::list<IDocListener*> m_listeners;
     bool m_bDocumentReady = false;
-    ICVar* doc_validate_surface_types = nullptr;
     int m_modifiedModuleFlags;
     // On construction, it assumes loaded levels have already been exported. Can be a big fat lie, though.
     // The right way would require us to save to the level folder the export status of the level.
