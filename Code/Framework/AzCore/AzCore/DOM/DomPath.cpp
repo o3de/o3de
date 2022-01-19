@@ -9,6 +9,7 @@
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/DOM/DomPath.h>
 #include <AzCore/std/string/fixed_string.h>
+#include <AzCore/Console/ConsoleTypeHelpers.h>
 
 namespace AZ::Dom
 {
@@ -372,7 +373,8 @@ namespace AZ::Dom
                     }
                     else if (isNumber && section.size() > 0)
                     {
-                        const size_t index = strtoull(section.data(), nullptr, 10);
+                        size_t index = 0;
+                        ConsoleTypeHelpers::StringToValue(index, section);
                         m_entries.push_back(PathEntry{ index });
                     }
                     else
