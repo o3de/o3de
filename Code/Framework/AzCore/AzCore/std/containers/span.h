@@ -33,23 +33,24 @@ namespace AZStd
      *
      * Since the span does not copy and store any data, it is only valid as long as the data used to create it is valid.
      */
-    template <class Element>
+    template <class T>
     class span final
     {
     public:
-        using value_type = Element;
+        using element_type = T;
+        using value_type = AZStd::remove_cv_t<T>;
 
-        using pointer = value_type*;
-        using const_pointer = const value_type*;
+        using pointer = T*;
+        using const_pointer = const T*;
 
-        using reference = value_type&;
-        using const_reference = const value_type&;
+        using reference = T&;
+        using const_reference = const T&;
 
         using size_type = AZStd::size_t;
         using difference_type = AZStd::ptrdiff_t;
 
-        using iterator = value_type*;
-        using const_iterator = const value_type*;
+        using iterator = T*;
+        using const_iterator = const T*;
         using reverse_iterator = AZStd::reverse_iterator<iterator>;
         using const_reverse_iterator = AZStd::reverse_iterator<const_iterator>;
 
@@ -123,11 +124,6 @@ namespace AZStd
         pointer m_end;
     };
 
-    template<class Container>
-    span(const Container&) -> span<const typename Container::value_type>;
-
-    template<class Container>
-    span(Container&) -> span<typename Container::value_type>;
 } // namespace AZStd
 
 #include <AzCore/std/containers/span.inl>
