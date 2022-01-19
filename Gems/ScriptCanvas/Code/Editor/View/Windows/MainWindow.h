@@ -204,7 +204,7 @@ namespace ScriptCanvasEditor
     class GraphValidationDockWidget;
     class MainWindowStatusWidget;
     class StatisticsDialog;
-    class SlotTypeSelectorWidget;
+    class VariableConfigurationWidget;
 
     // Custom Context Menus
     class SceneContextMenu;
@@ -664,7 +664,7 @@ namespace ScriptCanvasEditor
         GraphCanvas::BookmarkDockWidget*    m_bookmarkDockWidget = nullptr;
         GraphCanvas::MiniMapDockWidget*     m_minimap = nullptr;
         LoggingWindow*                      m_loggingWindow = nullptr;
-        SlotTypeSelectorWidget*             m_slotTypeSelector = nullptr;
+        VariableConfigurationWidget*             m_slotTypeSelector = nullptr;
 
 
         AzQtComponents::WindowDecorationWrapper*    m_presetWrapper = nullptr;

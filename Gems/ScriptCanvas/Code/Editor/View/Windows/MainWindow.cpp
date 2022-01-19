@@ -136,7 +136,7 @@
 #include <Editor/View/Windows/Tools/UpgradeTool/UpgradeHelper.h>
 #include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
 
-#include <Editor/View/Widgets/VariablePanel/SlotTypeSelectorWidget.h>
+#include <Editor/View/Widgets/VariablePanel/VariableConfigurationWidget.h>
 
 // Save Format Conversion
 #include <AzCore/Component/EntityUtils.h>
@@ -991,7 +991,10 @@ namespace ScriptCanvasEditor
         AZ_Assert(slot, "A valid slot must be provided");
         if (slot)
         {
-            m_slotTypeSelector = new SlotTypeSelectorWidget(GetActiveScriptCanvasId(), this); // Recreate the widget every time because of https://bugreports.qt.io/browse/QTBUG-76509
+            // #chcurran
+            // make this more generic, name type in, name type out.
+
+            m_slotTypeSelector = new VariableConfigurationWidget(GetActiveScriptCanvasId(), this); // Recreate the widget every time because of https://bugreports.qt.io/browse/QTBUG-76509
             m_slotTypeSelector->PopulateVariablePalette(m_variablePaletteTypes);
 
             // Only set the slot name if the user has already configured this slot, so if they are creating
@@ -3878,7 +3881,7 @@ namespace ScriptCanvasEditor
         // Changing slot type is disabled temporarily because now that that user data slots are correctly coordinated with their reference
         // variables, their type cannot be changed. The next change will allow all variables to change their type post creation, and then
         // that will allow this action to be enabled.
-        setSlotTypeAction->setEnabled(false);
+        // setSlotTypeAction->setEnabled(false);
         contextMenu.AddMenuAction(setSlotTypeAction);
 
         return HandleContextMenu(contextMenu, slotId, screenPoint, scenePoint);

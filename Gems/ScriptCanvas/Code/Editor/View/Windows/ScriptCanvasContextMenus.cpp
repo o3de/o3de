@@ -19,7 +19,7 @@
 #include <Editor/Nodes/NodeUtils.h>
 #include <Editor/View/Widgets/ScriptCanvasNodePaletteDockWidget.h>
 #include <Editor/View/Widgets/VariablePanel/GraphVariablesTableView.h>
-#include <Editor/View/Widgets/VariablePanel/SlotTypeSelectorWidget.h>
+#include <Editor/View/Widgets/VariablePanel/VariableConfigurationWidget.h>
 
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <ScriptCanvas/Bus/RequestBus.h>
