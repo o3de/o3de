@@ -13,6 +13,7 @@
 #include <Prefab/PrefabDomTypes.h>
 #include <Prefab/Spawnable/PrefabProcessorContext.h>
 #include <Multiplayer/Components/NetBindComponent.h>
+#include <Multiplayer/MultiplayerConstants.h>
 #include <Source/Pipeline/NetworkPrefabProcessor.h>
 
 namespace UnitTest
@@ -92,7 +93,7 @@ namespace UnitTest
 
         // Verify the name and the type of the spawnable asset 
         const AZ::Data::AssetData& spawnableAsset = processedObjects[0].GetAsset();
-        EXPECT_EQ(prefabName + ".network.spawnable", processedObjects[0].GetId());
+        EXPECT_EQ(prefabName + Multiplayer::NetworkSpawnableFileExtension.data(), processedObjects[0].GetId());
         EXPECT_EQ(spawnableAsset.GetType(), azrtti_typeid<AzFramework::Spawnable>());
 
         // Verify we have only the networked entity in the network spawnable and not the static one
