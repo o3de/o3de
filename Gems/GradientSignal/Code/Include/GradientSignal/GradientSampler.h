@@ -33,7 +33,7 @@ namespace GradientSignal
         static void Reflect(AZ::ReflectContext* context);
 
         inline float GetValue(const GradientSampleParams& sampleParams) const;
-        inline void GetValues(AZStd::span<AZ::Vector3> positions, AZStd::span<float> outValues) const;
+        inline void GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const;
 
         bool IsEntityInHierarchy(const AZ::EntityId& entityId) const;
 
@@ -147,7 +147,7 @@ namespace GradientSignal
         return output * m_opacity;
     }
 
-    inline void GradientSampler::GetValues(AZStd::span<AZ::Vector3> positions, AZStd::span<float> outValues) const
+    inline void GradientSampler::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
     {
         auto ClearOutputValues = [](AZStd::span<float> outValues)
         {

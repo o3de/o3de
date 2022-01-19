@@ -168,7 +168,7 @@ namespace GradientSignal
         return (distance <= 0.0f) ? 1.0f : AZ::GetMax(1.0f - (distance / m_configuration.m_falloffWidth), 0.0f);
     }
 
-    void ShapeAreaFalloffGradientComponent::GetValues(AZStd::span<AZ::Vector3> positions, AZStd::span<float> outValues) const
+    void ShapeAreaFalloffGradientComponent::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
     {
         if (positions.size() != outValues.size())
         {
