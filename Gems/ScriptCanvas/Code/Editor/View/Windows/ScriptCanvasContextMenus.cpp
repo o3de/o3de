@@ -574,7 +574,8 @@ namespace ScriptCanvasEditor
         bool createSlot = false;
         VariablePaletteRequests::SlotSetup selectedSlotSetup;
         QPoint scenePoint(static_cast<int>(scenePos.GetX()), static_cast<int>(scenePos.GetY()));
-        VariablePaletteRequestBus::BroadcastResult(createSlot, &VariablePaletteRequests::ShowSlotTypeSelector, slot, scenePoint, selectedSlotSetup);
+        VariablePaletteRequestBus::BroadcastResult(createSlot, &VariablePaletteRequests::ShowVariableConfigurationWidget
+            , slot->GetName(), slot->GetDataType().GetAZType(), scenePoint, selectedSlotSetup);
 
         bool changed = false;
         if (createSlot && !selectedSlotSetup.m_type.IsNull())

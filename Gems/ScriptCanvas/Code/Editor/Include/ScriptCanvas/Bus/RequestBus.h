@@ -203,7 +203,8 @@ namespace ScriptCanvasEditor
             AZ::Uuid m_type = AZ::Uuid::CreateNull();
         };
 
-        virtual bool ShowSlotTypeSelector(ScriptCanvas::Slot* slot, const QPoint& scenePosition, SlotSetup&) = 0;
+        virtual bool ShowVariableConfigurationWidget(const AZStd::string& currentName, const AZ::Uuid& currentDataType
+            , const QPoint& scenePosition, SlotSetup&) = 0;
     };
 
     using VariablePaletteRequestBus = AZ::EBus<VariablePaletteRequests>;

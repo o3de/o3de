@@ -986,48 +986,41 @@ namespace ScriptCanvasEditor
         return m_variableDockWidget->IsValidVariableType(dataType);
     }
 
-    bool MainWindow::ShowSlotTypeSelector(ScriptCanvas::Slot* slot, const QPoint& scenePosition, VariablePaletteRequests::SlotSetup& outSetup)
+    bool MainWindow::ShowVariableConfigurationWidget(const AZStd::string& currentName, const AZ::Uuid& currentDataType
+        , const QPoint& scenePosition, VariablePaletteRequests::SlotSetup& outSetup)
     {
-        AZ_Assert(slot, "A valid slot must be provided");
-        if (slot)
+
+        m_slotTypeSelector = new VariableConfigurationWidget(GetActiveScriptCanvasId(), this); // Recreate the widget every time because of https://bugreports.qt.io/browse/QTBUG-76509
+        m_slotTypeSelector->PopulateVariablePalette(m_variablePaletteTypes);
+
+        // Only set the slot name if the user has already configured this slot, so if they are creating
+        // for the first time they will see the placeholder text instead
+        bool isValidVariableType = false;
+        VariablePaletteRequestBus::BroadcastResult(isValidVariableType, &VariablePaletteRequests::IsValidVariableType, ScriptCanvas::Data::FromAZType(currentDataType));
+        if (isValidVariableType)
         {
-            // #chcurran
-            // make this more generic, name type in, name type out.
-
-            m_slotTypeSelector = new VariableConfigurationWidget(GetActiveScriptCanvasId(), this); // Recreate the widget every time because of https://bugreports.qt.io/browse/QTBUG-76509
-            m_slotTypeSelector->PopulateVariablePalette(m_variablePaletteTypes);
-
-            // Only set the slot name if the user has already configured this slot, so if they are creating
-            // for the first time they will see the placeholder text instead
-            bool isValidVariableType = false;
-            VariablePaletteRequestBus::BroadcastResult(isValidVariableType, &VariablePaletteRequests::IsValidVariableType, slot->GetDataType());
-            if (isValidVariableType)
-            {
-                m_slotTypeSelector->SetSlotName(slot->GetName());
-            }
-
-            m_slotTypeSelector->move(scenePosition);
-            m_slotTypeSelector->setEnabled(true);
-            m_slotTypeSelector->update();
-
-            if (m_slotTypeSelector->exec() != QDialog::Rejected)
-            {
-                outSetup.m_name = m_slotTypeSelector->GetSlotName();
-                outSetup.m_type = m_slotTypeSelector->GetSelectedType();
-            }
-            else
-            {
-                delete m_slotTypeSelector;
-
-                return false;
-            }
-
-            delete m_slotTypeSelector;
+            m_slotTypeSelector->SetSlotName(currentName);
         }
 
+        m_slotTypeSelector->move(scenePosition);
+        m_slotTypeSelector->setEnabled(true);
+        m_slotTypeSelector->update();
+
+        if (m_slotTypeSelector->exec() != QDialog::Rejected)
+        {
+            outSetup.m_name = m_slotTypeSelector->GetSlotName();
+            outSetup.m_type = m_slotTypeSelector->GetSelectedType();
+        }
+        else
+        {
+            delete m_slotTypeSelector;
+
+            return false;
+        }
+
+        delete m_slotTypeSelector;
         return true;
     }
-
 
     void MainWindow::OpenValidationPanel()
     {

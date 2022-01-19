@@ -272,7 +272,8 @@ namespace ScriptCanvasEditor
         // VariablePaletteRequestBus
         void RegisterVariableType(const ScriptCanvas::Data::Type& variableType) override;
         bool IsValidVariableType(const ScriptCanvas::Data::Type& dataType) const override;
-        bool ShowSlotTypeSelector(ScriptCanvas::Slot* slot, const QPoint& scenePosition, VariablePaletteRequests::SlotSetup&) override;
+        bool ShowVariableConfigurationWidget(const AZStd::string& currentName, const AZ::Uuid& currentDataType
+            , const QPoint& scenePosition, VariablePaletteRequests::SlotSetup&) override;
         ////
 
         // GraphCanvas::AssetEditorRequestBus

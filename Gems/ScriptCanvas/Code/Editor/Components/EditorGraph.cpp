@@ -643,12 +643,13 @@ namespace ScriptCanvasEditor
                     AZ::Vector2 position;
                     GraphCanvas::GeometryRequestBus::EventResult(position, nodeId, &GraphCanvas::GeometryRequests::GetPosition);
 
-                    // First we need to automatically display the ShowSlotTypeSelector dialog so the user
+                    // First we need to automatically display the ShowVariableConfigurationWidget dialog so the user
                     // can assign a type and name to the slot they are adding
                     VariablePaletteRequests::SlotSetup selectedSlotSetup;
                     bool createSlot = false;
                     QPoint scenePoint(aznumeric_cast<int>(position.GetX()), aznumeric_cast<int>(position.GetY()));
-                    VariablePaletteRequestBus::BroadcastResult(createSlot, &VariablePaletteRequests::ShowSlotTypeSelector, slot, scenePoint, selectedSlotSetup);
+                    VariablePaletteRequestBus::BroadcastResult(createSlot, &VariablePaletteRequests::ShowVariableConfigurationWidget
+                        , slot->GetName(), slot->GetDataType().GetAZType(), scenePoint, selectedSlotSetup);
 
                     if (createSlot && !selectedSlotSetup.m_type.IsNull())
                     {
@@ -2236,7 +2237,7 @@ namespace ScriptCanvasEditor
         AZStd::string inBoxText = "";
 
         // Special case to try re-using the slot name if this is on an execution nodeling, since the user had just
-        // given it a name already with the ShowSlotTypeSelector dialog
+        // given it a name already with the ShowVariableConfigurationWidget dialog
         if (azrtti_istypeof<ScriptCanvas::Nodes::Core::FunctionDefinitionNode>(activeNode))
         {
             variableName = activeSlot->GetName();

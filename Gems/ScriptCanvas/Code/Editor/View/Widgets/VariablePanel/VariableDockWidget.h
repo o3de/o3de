@@ -164,6 +164,7 @@ namespace ScriptCanvasEditor
         void OnHighlightVariables(const AZStd::unordered_set< ScriptCanvas::VariableId>& variableIds);
 
         void OnRemoveUnusedVariables();
+        void OnConfigureVariable(const ScriptCanvas::VariableId& variableId);
 
     Q_SIGNALS:
         void OnVariableSelectionChanged(const AZStd::vector<AZ::EntityId>& variableIds);
