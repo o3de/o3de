@@ -191,7 +191,7 @@ namespace UnitTest
         struct MockTransform
             : public AZ::SceneAPI::DataTypes::ITransform
         {
-            AZ::Matrix3x4 m_matrix;
+            AZ::Matrix3x4 m_matrix = AZ::Matrix3x4::CreateIdentity();
 
             AZ::Matrix3x4& GetMatrix() override
             {
