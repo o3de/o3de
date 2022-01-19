@@ -7,7 +7,6 @@
  */
 
 #include <AzCore/Component/Entity.h>
-#include <AzCore/std/allocator_stateless.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/Time/ITime.h>
@@ -28,7 +27,6 @@
 #include "LayerNode.h"
 #include "ShadowsSetupNode.h"
 
-#include <StlUtils.h>
 #include <MathConversion.h>
 #include <StaticInstance.h>
 
@@ -74,136 +72,117 @@ static SMovieSequenceAutoComplete s_movieSequenceAutoComplete;
 #endif
 
 //////////////////////////////////////////////////////////////////////////
-namespace
-{
-    using AnimParamSystemString = AZStd::basic_string<char, AZStd::char_traits<char>, AZStd::stateless_allocator>;
+// Serialization for anim nodes & param types
+#define REGISTER_NODE_TYPE(name) assert(!m_animNodeEnumToStringMap.contains(AnimNodeType::name)); \
+    m_animNodeEnumToStringMap[AnimNodeType::name] = AZ_STRINGIZE(name);                          \
+    m_animNodeStringToEnumMap[AnimParamSystemString(AZ_STRINGIZE(name))] = AnimNodeType::name;
 
-    template <typename KeyType, typename MappedType, typename Compare = AZStd::less<KeyType>>
-    using AnimSystemOrderedMap = AZStd::map<KeyType, MappedType, Compare, AZStd::stateless_allocator>;
-    template <typename KeyType, typename MappedType, typename Hasher = AZStd::hash<KeyType>, typename EqualKey = AZStd::equal_to<KeyType>>
-    using AnimSystemUnorderedMap = AZStd::unordered_map<KeyType, MappedType, Hasher, EqualKey, AZStd::stateless_allocator>;
+#define REGISTER_PARAM_TYPE(name) assert(!m_animParamEnumToStringMap.contains(AnimParamType::name)); \
+    m_animParamEnumToStringMap[AnimParamType::name] = AZ_STRINGIZE(name);                           \
+    m_animParamStringToEnumMap[AnimParamSystemString(AZ_STRINGIZE(name))] = AnimParamType::name;
+
+// If you get an assert in this function, it means two node types have the same enum value.
+void CMovieSystem::RegisterNodeTypes()
+{
+    REGISTER_NODE_TYPE(Entity)
+    REGISTER_NODE_TYPE(Director)
+    REGISTER_NODE_TYPE(Camera)
+    REGISTER_NODE_TYPE(CVar)
+    REGISTER_NODE_TYPE(ScriptVar)
+    REGISTER_NODE_TYPE(Material)
+    REGISTER_NODE_TYPE(Event)
+    REGISTER_NODE_TYPE(Group)
+    REGISTER_NODE_TYPE(Layer)
+    REGISTER_NODE_TYPE(Comment)
+    REGISTER_NODE_TYPE(RadialBlur)
+    REGISTER_NODE_TYPE(ColorCorrection)
+    REGISTER_NODE_TYPE(DepthOfField)
+    REGISTER_NODE_TYPE(ScreenFader)
+    REGISTER_NODE_TYPE(Light)
+    REGISTER_NODE_TYPE(ShadowSetup)
+    REGISTER_NODE_TYPE(Alembic)
+    REGISTER_NODE_TYPE(GeomCache)
+    REGISTER_NODE_TYPE(Environment)
+    REGISTER_NODE_TYPE(AzEntity)
+    REGISTER_NODE_TYPE(Component)
 }
 
-// Serialization for anim nodes & param types
-#define REGISTER_NODE_TYPE(name) assert(!g_animNodeEnumToStringMap.contains(AnimNodeType::name)); \
-    g_animNodeEnumToStringMap[AnimNodeType::name] = AZ_STRINGIZE(name);                          \
-    g_animNodeStringToEnumMap[AnimParamSystemString(AZ_STRINGIZE(name))] = AnimNodeType::name;
-
-#define REGISTER_PARAM_TYPE(name) assert(!g_animParamEnumToStringMap.contains(AnimParamType::name)); \
-    g_animParamEnumToStringMap[AnimParamType::name] = AZ_STRINGIZE(name);                           \
-    g_animParamStringToEnumMap[AnimParamSystemString(AZ_STRINGIZE(name))] = AnimParamType::name;
-
-namespace
+// If you get an assert in this function, it means two param types have the same enum value.
+void CMovieSystem::RegisterParamTypes()
 {
-    AnimSystemUnorderedMap<AnimNodeType, AnimParamSystemString> g_animNodeEnumToStringMap;
-    AnimSystemOrderedMap<AnimParamSystemString, AnimNodeType, stl::less_stricmp<AnimParamSystemString>> g_animNodeStringToEnumMap;
-
-    AnimSystemUnorderedMap<AnimParamType, AnimParamSystemString> g_animParamEnumToStringMap;
-    AnimSystemOrderedMap<AnimParamSystemString, AnimParamType, stl::less_stricmp<AnimParamSystemString>> g_animParamStringToEnumMap;
-
-    // If you get an assert in this function, it means two node types have the same enum value.
-    void RegisterNodeTypes()
-    {
-        REGISTER_NODE_TYPE(Entity)
-        REGISTER_NODE_TYPE(Director)
-        REGISTER_NODE_TYPE(Camera)
-        REGISTER_NODE_TYPE(CVar)
-        REGISTER_NODE_TYPE(ScriptVar)
-        REGISTER_NODE_TYPE(Material)
-        REGISTER_NODE_TYPE(Event)
-        REGISTER_NODE_TYPE(Group)
-        REGISTER_NODE_TYPE(Layer)
-        REGISTER_NODE_TYPE(Comment)
-        REGISTER_NODE_TYPE(RadialBlur)
-        REGISTER_NODE_TYPE(ColorCorrection)
-        REGISTER_NODE_TYPE(DepthOfField)
-        REGISTER_NODE_TYPE(ScreenFader)
-        REGISTER_NODE_TYPE(Light)
-        REGISTER_NODE_TYPE(ShadowSetup)
-        REGISTER_NODE_TYPE(Alembic)
-        REGISTER_NODE_TYPE(GeomCache)
-        REGISTER_NODE_TYPE(Environment)
-        REGISTER_NODE_TYPE(AzEntity)
-        REGISTER_NODE_TYPE(Component)
-    }
-
-    // If you get an assert in this function, it means two param types have the same enum value.
-    void RegisterParamTypes()
-    {
-        REGISTER_PARAM_TYPE(FOV)
-        REGISTER_PARAM_TYPE(Position)
-        REGISTER_PARAM_TYPE(Rotation)
-        REGISTER_PARAM_TYPE(Scale)
-        REGISTER_PARAM_TYPE(Event)
-        REGISTER_PARAM_TYPE(Visibility)
-        REGISTER_PARAM_TYPE(Camera)
-        REGISTER_PARAM_TYPE(Animation)
-        REGISTER_PARAM_TYPE(Sound)
-        REGISTER_PARAM_TYPE(Sequence)
-        REGISTER_PARAM_TYPE(Console)
-        REGISTER_PARAM_TYPE(Music)                      ///@deprecated in 1.11, left in for legacy serialization
-        REGISTER_PARAM_TYPE(Float)
-        REGISTER_PARAM_TYPE(LookAt)
-        REGISTER_PARAM_TYPE(TrackEvent)
-        REGISTER_PARAM_TYPE(ShakeAmplitudeA)
-        REGISTER_PARAM_TYPE(ShakeAmplitudeB)
-        REGISTER_PARAM_TYPE(ShakeFrequencyA)
-        REGISTER_PARAM_TYPE(ShakeFrequencyB)
-        REGISTER_PARAM_TYPE(ShakeMultiplier)
-        REGISTER_PARAM_TYPE(ShakeNoise)
-        REGISTER_PARAM_TYPE(ShakeWorking)
-        REGISTER_PARAM_TYPE(ShakeAmpAMult)
-        REGISTER_PARAM_TYPE(ShakeAmpBMult)
-        REGISTER_PARAM_TYPE(ShakeFreqAMult)
-        REGISTER_PARAM_TYPE(ShakeFreqBMult)
-        REGISTER_PARAM_TYPE(DepthOfField)
-        REGISTER_PARAM_TYPE(FocusDistance)
-        REGISTER_PARAM_TYPE(FocusRange)
-        REGISTER_PARAM_TYPE(BlurAmount)
-        REGISTER_PARAM_TYPE(Capture)
-        REGISTER_PARAM_TYPE(TransformNoise)
-        REGISTER_PARAM_TYPE(TimeWarp)
-        REGISTER_PARAM_TYPE(FixedTimeStep)
-        REGISTER_PARAM_TYPE(NearZ)
-        REGISTER_PARAM_TYPE(Goto)
-        REGISTER_PARAM_TYPE(PositionX)
-        REGISTER_PARAM_TYPE(PositionY)
-        REGISTER_PARAM_TYPE(PositionZ)
-        REGISTER_PARAM_TYPE(RotationX)
-        REGISTER_PARAM_TYPE(RotationY)
-        REGISTER_PARAM_TYPE(RotationZ)
-        REGISTER_PARAM_TYPE(ScaleX)
-        REGISTER_PARAM_TYPE(ScaleY)
-        REGISTER_PARAM_TYPE(ScaleZ)
-        REGISTER_PARAM_TYPE(ColorR)
-        REGISTER_PARAM_TYPE(ColorG)
-        REGISTER_PARAM_TYPE(ColorB)
-        REGISTER_PARAM_TYPE(CommentText)
-        REGISTER_PARAM_TYPE(ScreenFader)
-        REGISTER_PARAM_TYPE(LightDiffuse)
-        REGISTER_PARAM_TYPE(LightRadius)
-        REGISTER_PARAM_TYPE(LightDiffuseMult)
-        REGISTER_PARAM_TYPE(LightHDRDynamic)
-        REGISTER_PARAM_TYPE(LightSpecularMult)
-        REGISTER_PARAM_TYPE(LightSpecPercentage)
-        REGISTER_PARAM_TYPE(MaterialDiffuse)
-        REGISTER_PARAM_TYPE(MaterialSpecular)
-        REGISTER_PARAM_TYPE(MaterialEmissive)
-        REGISTER_PARAM_TYPE(MaterialEmissiveIntensity)
-        REGISTER_PARAM_TYPE(MaterialOpacity)
-        REGISTER_PARAM_TYPE(MaterialSmoothness)
-        REGISTER_PARAM_TYPE(TimeRanges)
-        REGISTER_PARAM_TYPE(Physics)
-        REGISTER_PARAM_TYPE(GSMCache)
-        REGISTER_PARAM_TYPE(ShutterSpeed)
-        REGISTER_PARAM_TYPE(Physicalize)
-        REGISTER_PARAM_TYPE(PhysicsDriven)
-        REGISTER_PARAM_TYPE(SunLongitude)
-        REGISTER_PARAM_TYPE(SunLatitude)
-        REGISTER_PARAM_TYPE(MoonLongitude)
-        REGISTER_PARAM_TYPE(MoonLatitude)
-        REGISTER_PARAM_TYPE(ProceduralEyes)
-    }
+    REGISTER_PARAM_TYPE(FOV)
+    REGISTER_PARAM_TYPE(Position)
+    REGISTER_PARAM_TYPE(Rotation)
+    REGISTER_PARAM_TYPE(Scale)
+    REGISTER_PARAM_TYPE(Event)
+    REGISTER_PARAM_TYPE(Visibility)
+    REGISTER_PARAM_TYPE(Camera)
+    REGISTER_PARAM_TYPE(Animation)
+    REGISTER_PARAM_TYPE(Sound)
+    REGISTER_PARAM_TYPE(Sequence)
+    REGISTER_PARAM_TYPE(Console)
+    REGISTER_PARAM_TYPE(Music)                      ///@deprecated in 1.11, left in for legacy serialization
+    REGISTER_PARAM_TYPE(Float)
+    REGISTER_PARAM_TYPE(LookAt)
+    REGISTER_PARAM_TYPE(TrackEvent)
+    REGISTER_PARAM_TYPE(ShakeAmplitudeA)
+    REGISTER_PARAM_TYPE(ShakeAmplitudeB)
+    REGISTER_PARAM_TYPE(ShakeFrequencyA)
+    REGISTER_PARAM_TYPE(ShakeFrequencyB)
+    REGISTER_PARAM_TYPE(ShakeMultiplier)
+    REGISTER_PARAM_TYPE(ShakeNoise)
+    REGISTER_PARAM_TYPE(ShakeWorking)
+    REGISTER_PARAM_TYPE(ShakeAmpAMult)
+    REGISTER_PARAM_TYPE(ShakeAmpBMult)
+    REGISTER_PARAM_TYPE(ShakeFreqAMult)
+    REGISTER_PARAM_TYPE(ShakeFreqBMult)
+    REGISTER_PARAM_TYPE(DepthOfField)
+    REGISTER_PARAM_TYPE(FocusDistance)
+    REGISTER_PARAM_TYPE(FocusRange)
+    REGISTER_PARAM_TYPE(BlurAmount)
+    REGISTER_PARAM_TYPE(Capture)
+    REGISTER_PARAM_TYPE(TransformNoise)
+    REGISTER_PARAM_TYPE(TimeWarp)
+    REGISTER_PARAM_TYPE(FixedTimeStep)
+    REGISTER_PARAM_TYPE(NearZ)
+    REGISTER_PARAM_TYPE(Goto)
+    REGISTER_PARAM_TYPE(PositionX)
+    REGISTER_PARAM_TYPE(PositionY)
+    REGISTER_PARAM_TYPE(PositionZ)
+    REGISTER_PARAM_TYPE(RotationX)
+    REGISTER_PARAM_TYPE(RotationY)
+    REGISTER_PARAM_TYPE(RotationZ)
+    REGISTER_PARAM_TYPE(ScaleX)
+    REGISTER_PARAM_TYPE(ScaleY)
+    REGISTER_PARAM_TYPE(ScaleZ)
+    REGISTER_PARAM_TYPE(ColorR)
+    REGISTER_PARAM_TYPE(ColorG)
+    REGISTER_PARAM_TYPE(ColorB)
+    REGISTER_PARAM_TYPE(CommentText)
+    REGISTER_PARAM_TYPE(ScreenFader)
+    REGISTER_PARAM_TYPE(LightDiffuse)
+    REGISTER_PARAM_TYPE(LightRadius)
+    REGISTER_PARAM_TYPE(LightDiffuseMult)
+    REGISTER_PARAM_TYPE(LightHDRDynamic)
+    REGISTER_PARAM_TYPE(LightSpecularMult)
+    REGISTER_PARAM_TYPE(LightSpecPercentage)
+    REGISTER_PARAM_TYPE(MaterialDiffuse)
+    REGISTER_PARAM_TYPE(MaterialSpecular)
+    REGISTER_PARAM_TYPE(MaterialEmissive)
+    REGISTER_PARAM_TYPE(MaterialEmissiveIntensity)
+    REGISTER_PARAM_TYPE(MaterialOpacity)
+    REGISTER_PARAM_TYPE(MaterialSmoothness)
+    REGISTER_PARAM_TYPE(TimeRanges)
+    REGISTER_PARAM_TYPE(Physics)
+    REGISTER_PARAM_TYPE(GSMCache)
+    REGISTER_PARAM_TYPE(ShutterSpeed)
+    REGISTER_PARAM_TYPE(Physicalize)
+    REGISTER_PARAM_TYPE(PhysicsDriven)
+    REGISTER_PARAM_TYPE(SunLongitude)
+    REGISTER_PARAM_TYPE(SunLatitude)
+    REGISTER_PARAM_TYPE(MoonLongitude)
+    REGISTER_PARAM_TYPE(MoonLatitude)
+    REGISTER_PARAM_TYPE(ProceduralEyes)
 }
 
 namespace Internal
@@ -1666,16 +1645,16 @@ void CMovieSystem::SerializeNodeType(AnimNodeType& animNodeType, XmlNodeRef& xml
             XmlString nodeTypeString;
             if (xmlNode->getAttr(kType, nodeTypeString))
             {
-                assert(g_animNodeStringToEnumMap.find(nodeTypeString.c_str()) != g_animNodeStringToEnumMap.end());
-                animNodeType = stl::find_in_map(g_animNodeStringToEnumMap, nodeTypeString.c_str(), AnimNodeType::Invalid);
+                assert(m_animNodeStringToEnumMap.find(nodeTypeString.c_str()) != m_animNodeStringToEnumMap.end());
+                animNodeType = stl::find_in_map(m_animNodeStringToEnumMap, nodeTypeString.c_str(), AnimNodeType::Invalid);
             }
         }
     }
     else
     {
         const char* pTypeString = "Invalid";
-        assert(g_animNodeEnumToStringMap.find(animNodeType) != g_animNodeEnumToStringMap.end());
-        pTypeString = g_animNodeEnumToStringMap[animNodeType].c_str();
+        assert(m_animNodeEnumToStringMap.find(animNodeType) != m_animNodeEnumToStringMap.end());
+        pTypeString = m_animNodeEnumToStringMap[animNodeType].c_str();
         xmlNode->setAttr(kType, pTypeString);
     }
 }
@@ -1744,8 +1723,8 @@ void CMovieSystem::LoadParamTypeFromXml(CAnimParamType& animParamType, const Xml
                     animParamType.m_name = virtualPropertyValue;
                 }
 
-                assert(g_animParamStringToEnumMap.find(paramTypeString.c_str()) != g_animParamStringToEnumMap.end());
-                animParamType.m_type = stl::find_in_map(g_animParamStringToEnumMap, paramTypeString.c_str(), AnimParamType::Invalid);
+                assert(m_animParamStringToEnumMap.find(paramTypeString.c_str()) != m_animParamStringToEnumMap.end());
+                animParamType.m_type = stl::find_in_map(m_animParamStringToEnumMap, paramTypeString.c_str(), AnimParamType::Invalid);
             }
         }
     }
@@ -1775,8 +1754,8 @@ void CMovieSystem::SaveParamTypeToXml(const CAnimParamType& animParamType, XmlNo
             xmlNode->setAttr(CAnimParamTypeXmlNames::kVirtualPropertyName, animParamType.m_name.c_str());
         }
 
-        assert(g_animParamEnumToStringMap.find(animParamType.m_type) != g_animParamEnumToStringMap.end());
-        pTypeString = g_animParamEnumToStringMap[animParamType.m_type].c_str();
+        assert(m_animParamEnumToStringMap.find(animParamType.m_type) != m_animParamEnumToStringMap.end());
+        pTypeString = m_animParamEnumToStringMap[animParamType.m_type].c_str();
     }
 
     xmlNode->setAttr(kParamType, pTypeString);
@@ -1809,9 +1788,9 @@ const char* CMovieSystem::GetParamTypeName(const CAnimParamType& animParamType)
     }
     else
     {
-        if (g_animParamEnumToStringMap.find(animParamType.m_type) != g_animParamEnumToStringMap.end())
+        if (m_animParamEnumToStringMap.contains(animParamType.m_type))
         {
-            return g_animParamEnumToStringMap[animParamType.m_type].c_str();
+            return m_animParamEnumToStringMap[animParamType.m_type].c_str();
         }
     }
 
@@ -1973,13 +1952,13 @@ void CLightAnimWrapper::RemoveCachedLightAnim(const char* name)
 //////////////////////////////////////////////////////////////////////////
 AnimNodeType CMovieSystem::GetNodeTypeFromString(const char* pString) const
 {
-    return stl::find_in_map(g_animNodeStringToEnumMap, pString, AnimNodeType::Invalid);
+    return stl::find_in_map(m_animNodeStringToEnumMap, pString, AnimNodeType::Invalid);
 }
 
 //////////////////////////////////////////////////////////////////////////
 CAnimParamType CMovieSystem::GetParamTypeFromString(const char* pString) const
 {
-    const AnimParamType paramType = stl::find_in_map(g_animParamStringToEnumMap, pString, AnimParamType::Invalid);
+    const AnimParamType paramType = stl::find_in_map(m_animParamStringToEnumMap, pString, AnimParamType::Invalid);
 
     if (paramType != AnimParamType::Invalid)
     {

@@ -73,27 +73,27 @@ namespace AZ
     }
 
 
-    AZ_MATH_INLINE Quaternion Quaternion::CreateRotationX(float angle)
+    AZ_MATH_INLINE Quaternion Quaternion::CreateRotationX(float angleInRadians)
     {
-        const float halfAngle = 0.5f * angle;
+        const float halfAngle = 0.5f * angleInRadians;
         float sin, cos;
         SinCos(halfAngle, sin, cos);
         return Quaternion(sin, 0.0f, 0.0f, cos);
     }
 
 
-    AZ_MATH_INLINE Quaternion Quaternion::CreateRotationY(float angle)
+    AZ_MATH_INLINE Quaternion Quaternion::CreateRotationY(float angleInRadians)
     {
-        const float halfAngle = 0.5f * angle;
+        const float halfAngle = 0.5f * angleInRadians;
         float sin, cos;
         SinCos(halfAngle, sin, cos);
         return Quaternion(0.0f, sin, 0.0f, cos);
     }
 
 
-    AZ_MATH_INLINE Quaternion Quaternion::CreateRotationZ(float angle)
+    AZ_MATH_INLINE Quaternion Quaternion::CreateRotationZ(float angleInRadians)
     {
-        const float halfAngle = 0.5f * angle;
+        const float halfAngle = 0.5f * angleInRadians;
         float sin, cos;
         SinCos(halfAngle, sin, cos);
         return Quaternion(0.0f, 0.0f, sin, cos);
@@ -342,6 +342,23 @@ namespace AZ
         const Simd::Vec1::FloatType length = Simd::Vec1::SqrtEstimate(Simd::Vec4::Dot(m_value, m_value));
         m_value = Simd::Vec4::Div(m_value, Simd::Vec4::FromVec1(length));
         return Simd::Vec1::SelectFirst(length);
+    }
+
+
+    AZ_MATH_INLINE Quaternion Quaternion::GetShortestEquivalent() const
+    {
+        if (GetW() < 0.0f)
+        {
+            return -(*this);
+        }
+
+        return *this;
+    }
+
+
+    AZ_MATH_INLINE void Quaternion::ShortestEquivalent()
+    {
+        *this = GetShortestEquivalent();
     }
 
 

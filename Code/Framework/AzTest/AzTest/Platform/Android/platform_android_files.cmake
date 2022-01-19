@@ -8,6 +8,7 @@
 
 set(FILES
     ../Common/UnixLike/AzTest/ColorizedOutput_UnixLike.cpp
+    ../Common/UnixLike/AzTest/Utils_UnixLike.cpp
     ScopedAutoTempDirectory_Android.cpp
     Platform_Android.cpp
     AzTest_Traits_Platform.h

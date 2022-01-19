@@ -125,11 +125,11 @@ def is_pane_visible(pane_name):
     """
     :return: bool
     """
-    return atomtools.AtomToolsWindowRequestBus(bus.Broadcast, "IsDockWidgetVisible", pane_name)
+    return atomtools.AtomToolsMainWindowRequestBus(bus.Broadcast, "IsDockWidgetVisible", pane_name)
 
 
 def set_pane_visibility(pane_name, value):
-    atomtools.AtomToolsWindowRequestBus(bus.Broadcast, "SetDockWidgetVisible", pane_name, value)
+    atomtools.AtomToolsMainWindowRequestBus(bus.Broadcast, "SetDockWidgetVisible", pane_name, value)
 
 
 def select_lighting_config(config_name):
@@ -160,6 +160,13 @@ def get_shadowcatcher_enable_disable():
 
 def select_model_config(configname):
     azlmbr.materialeditor.MaterialViewportRequestBus(azlmbr.bus.Broadcast, "SelectModelPresetByName", configname)
+
+
+def destroy_main_window():
+    """
+    Closes the Material Editor window
+    """
+    azlmbr.atomtools.AtomToolsMainWindowFactoryRequestBus(azlmbr.bus.Broadcast, "DestroyMainWindow")
 
 
 def wait_for_condition(function, timeout_in_seconds=1.0):

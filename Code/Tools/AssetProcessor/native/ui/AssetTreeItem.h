@@ -50,6 +50,8 @@ namespace AssetProcessor
         explicit AssetTreeItem(
             AZStd::shared_ptr<AssetTreeItemData> data,
             QIcon errorIcon,
+            QIcon folderIcon,
+            QIcon fileIcon,
             AssetTreeItem* parentItem = nullptr);
         virtual ~AssetTreeItem();
 
