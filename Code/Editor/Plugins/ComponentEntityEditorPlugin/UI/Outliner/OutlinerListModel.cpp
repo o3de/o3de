@@ -2599,7 +2599,6 @@ void OutlinerItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
         optionV4.text.clear();
         optionV4.widget->style()->drawControl(QStyle::CE_ItemViewItem, &optionV4, painter);
 
-        // Now we setup a Text Document so it can draw the rich text
         int verticalOffset = GetEntityNameVerticalOffset(entityId);
 
         AzToolsFramework::RichTextHighlighter::PaintHighlightedRichText(
