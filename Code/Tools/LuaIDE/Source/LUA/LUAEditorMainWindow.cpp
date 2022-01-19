@@ -346,7 +346,11 @@ namespace LUAEditor
             {
                 auto selectedAsset = selectedAssets.front();
                 const AZStd::string filePath = selectedAsset->GetFullPath();
-                EBUS_EVENT(Context_DocumentManagement::Bus, OnLoadDocument, filePath, true);
+                auto entryType = selectedAsset->GetEntryType();
+                if (entryType == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Source)
+                {
+                    EBUS_EVENT(Context_DocumentManagement::Bus, OnLoadDocument, filePath, true);
+                }                    
             }
         });
     }
@@ -372,9 +376,17 @@ namespace LUAEditor
         StringFilter* stringFilter = new StringFilter();
         stringFilter->SetFilterPropagation(AssetTypeFilter::PropagateDirection::Up);
 
-        connect(m_gui->m_assetBrowserSearchWidget, &AzQtComponents::FilteredSearchWidget::TextFilterChanged, this, [stringFilter](const QString& newString)
+        connect(m_gui->m_assetBrowserSearchWidget, &AzQtComponents::FilteredSearchWidget::TextFilterChanged, this, [&, stringFilter](const QString& newString)
         {
             stringFilter->SetFilterString(newString);
+            if (newString.isEmpty())
+            {
+                m_gui->m_assetBrowserTreeView->collapseAll();
+            }
+            else
+            {
+                m_gui->m_assetBrowserTreeView->expandAll();
+            }
         });
 
         // Construct the final filter where they are all and'd together

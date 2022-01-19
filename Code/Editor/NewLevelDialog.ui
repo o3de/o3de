@@ -133,6 +133,9 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>LEVEL</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

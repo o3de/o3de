@@ -16,7 +16,6 @@
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 
 #include <LyShine/Bus/UiEditorCanvasBus.h>
-#include <LyShine/Draw2d.h>
 
 #include "LyShine.h"
 #include "UiRenderer.h"
@@ -27,6 +26,7 @@
 #include "RulerWidget.h"
 #include "CanvasHelpers.h"
 #include "AssetDropHelpers.h"
+#include "Draw2d.h"
 #include "QtHelpers.h"
 #include <QtGui/private/qhighdpiscaling_p.h>
 

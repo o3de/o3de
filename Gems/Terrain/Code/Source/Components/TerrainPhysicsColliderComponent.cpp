@@ -17,6 +17,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <AzFramework/Physics/Material.h>
+#include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 
 namespace Terrain
@@ -43,11 +44,25 @@ namespace Terrain
                         AZ::Edit::UIHandlers::ComboBox, &TerrainPhysicsSurfaceMaterialMapping::m_surfaceTag, "Surface Tag",
                         "Surface type to map to a physics material.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainPhysicsSurfaceMaterialMapping::m_materialId, "Material ID", "")
+                    ->ElementAttribute(Physics::Attributes::MaterialLibraryAssetId, &TerrainPhysicsSurfaceMaterialMapping::GetMaterialLibraryId)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::ShowProductAssetFileName, true);
             }
         }
     }
+
+    AZ::Data::AssetId TerrainPhysicsSurfaceMaterialMapping::GetMaterialLibraryId()
+    {
+        if (const auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
+        {
+            if (const auto* physicsConfiguration = physicsSystem->GetConfiguration())
+            {
+                return physicsConfiguration->m_materialLibraryAsset.GetId();
+            }
+        }
+        return {};
+    }
+
     void TerrainPhysicsColliderConfig::Reflect(AZ::ReflectContext* context)
     {
         TerrainPhysicsSurfaceMaterialMapping::Reflect(context);
@@ -255,6 +270,8 @@ namespace Terrain
 
     void TerrainPhysicsColliderComponent::GenerateHeightsInBounds(AZStd::vector<float>& heights) const
     {
+        AZ_PROFILE_FUNCTION(Entity);
+
         const AZ::Vector2 gridResolution = GetHeightfieldGridSpacing();
 
         AZ::Aabb worldSize = GetHeightfieldAabb();
@@ -315,6 +332,8 @@ namespace Terrain
     void TerrainPhysicsColliderComponent::GenerateHeightsAndMaterialsInBounds(
         AZStd::vector<Physics::HeightMaterialPoint>& heightMaterials) const
     {
+        AZ_PROFILE_FUNCTION(Entity);
+
         const AZ::Vector2 gridResolution = GetHeightfieldGridSpacing();
 
         AZ::Aabb worldSize = GetHeightfieldAabb();

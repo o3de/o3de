@@ -6,7 +6,7 @@
  *
  */
 
-#include "ReferenceGradientComponent.h"
+#include <GradientSignal/Components/ReferenceGradientComponent.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>

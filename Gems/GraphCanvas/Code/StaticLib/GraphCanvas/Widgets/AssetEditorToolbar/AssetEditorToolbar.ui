@@ -56,7 +56,7 @@
    <item>
     <widget class="QToolButton" name="groupNodes">
      <property name="toolTip">
-      <string>Groups the current selection in the active graph [Ctrl+Shift+G]</string>
+      <string>Groups the current selection in the active graph [Ctrl+Alt+O]</string>
      </property>
      <property name="text">
       <string>...</string>
@@ -66,14 +66,14 @@
        <normaloff>:/GraphCanvasEditorResources/group.svg</normaloff>:/GraphCanvasEditorResources/group.svg</iconset>
      </property>
      <property name="shortcut">
-      <string>Ctrl+Shift+G</string>
+      <string>Ctrl+Alt+O</string>
      </property>
     </widget>
    </item>
    <item>
     <widget class="QToolButton" name="ungroupNodes">
      <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ungroups the selected element in the active graph [Ctrl+Shift+H]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>Ungroups the selected element in the active graph [Ctrl+Alt+P]</string>
      </property>
      <property name="text">
       <string>...</string>
@@ -83,7 +83,7 @@
        <normaloff>:/GraphCanvasEditorResources/ungroup.svg</normaloff>:/GraphCanvasEditorResources/ungroup.svg</iconset>
      </property>
      <property name="shortcut">
-      <string>Ctrl+Shift+H</string>
+      <string>Ctrl+Alt+P</string>
      </property>
     </widget>
    </item>

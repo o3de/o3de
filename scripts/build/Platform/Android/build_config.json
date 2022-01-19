@@ -35,20 +35,10 @@
     "PARAMETERS": {
       "CONFIGURATION":"debug",
       "OUTPUT_DIRECTORY":"build\\android",
-      "CMAKE_OPTIONS":"-G \"Ninja Multi-Config\" -DCMAKE_TOOLCHAIN_FILE=cmake\\Platform\\Android\\Toolchain_android.cmake -DANDROID_ABI=arm64-v8a -DANDROID_ARM_MODE=arm -DANDROID_ARM_NEON=FALSE -DANDROID_NATIVE_API_LEVEL=21 -DLY_NDK_DIR=\"!LY_NDK_DIR!\"",
+      "CMAKE_OPTIONS":"-G \"Ninja Multi-Config\" -DCMAKE_TOOLCHAIN_FILE=cmake\\Platform\\Android\\Toolchain_android.cmake -DANDROID_NATIVE_API_LEVEL=21 -DLY_NDK_DIR=\"!LY_NDK_DIR!\"",
       "CMAKE_LY_PROJECTS":"AutomatedTesting",
       "CMAKE_TARGET":"all",
       "CMAKE_BUILD_ARGS":"-j!NUMBER_OF_PROCESSORS!"
-    }
-  },
-  "android_packaging_all": {
-    "TAGS": [
-      "packaging"
-    ],
-    "COMMAND": "../Windows/python_windows.cmd",
-    "PARAMETERS": {
-      "SCRIPT_PATH": "scripts/build/package/package.py",
-      "SCRIPT_PARAMETERS": "--platform Android --type all"
     }
   },
   "profile": {
@@ -60,7 +50,7 @@
     "PARAMETERS": {
       "CONFIGURATION":"profile",
       "OUTPUT_DIRECTORY":"build\\android",
-      "CMAKE_OPTIONS":"-G \"Ninja Multi-Config\" -DCMAKE_TOOLCHAIN_FILE=cmake\\Platform\\Android\\Toolchain_android.cmake -DANDROID_ABI=arm64-v8a -DANDROID_ARM_MODE=arm -DANDROID_ARM_NEON=FALSE -DANDROID_NATIVE_API_LEVEL=21 -DLY_NDK_DIR=\"!LY_NDK_DIR!\"",
+      "CMAKE_OPTIONS":"-G \"Ninja Multi-Config\" -DCMAKE_TOOLCHAIN_FILE=cmake\\Platform\\Android\\Toolchain_android.cmake -DANDROID_NATIVE_API_LEVEL=21 -DLY_NDK_DIR=\"!LY_NDK_DIR!\"",
       "CMAKE_LY_PROJECTS":"AutomatedTesting",
       "CMAKE_TARGET":"all",
       "CMAKE_BUILD_ARGS":"-j!NUMBER_OF_PROCESSORS!"
@@ -76,7 +66,7 @@
     "PARAMETERS": {
       "CONFIGURATION":"profile",
       "OUTPUT_DIRECTORY":"build\\android",
-      "CMAKE_OPTIONS":"-G \"Ninja Multi-Config\" -DCMAKE_TOOLCHAIN_FILE=cmake\\Platform\\Android\\Toolchain_android.cmake -DANDROID_ABI=arm64-v8a -DANDROID_ARM_MODE=arm -DANDROID_ARM_NEON=FALSE -DANDROID_NATIVE_API_LEVEL=21 -DLY_NDK_DIR=\"!LY_NDK_DIR!\" -DLY_UNITY_BUILD=FALSE",
+      "CMAKE_OPTIONS":"-G \"Ninja Multi-Config\" -DCMAKE_TOOLCHAIN_FILE=cmake\\Platform\\Android\\Toolchain_android.cmake -DANDROID_NATIVE_API_LEVEL=21 -DLY_NDK_DIR=\"!LY_NDK_DIR!\" -DLY_UNITY_BUILD=FALSE",
       "CMAKE_LY_PROJECTS":"AutomatedTesting",
       "CMAKE_TARGET":"all",
       "CMAKE_BUILD_ARGS":"-j!NUMBER_OF_PROCESSORS!"
@@ -112,7 +102,7 @@
     "PARAMETERS": {
       "CONFIGURATION":"release",
       "OUTPUT_DIRECTORY":"build\\android",
-      "CMAKE_OPTIONS":"-G \"Ninja Multi-Config\" -DCMAKE_TOOLCHAIN_FILE=cmake\\Platform\\Android\\Toolchain_android.cmake -DANDROID_ABI=arm64-v8a -DANDROID_ARM_MODE=arm -DANDROID_ARM_NEON=FALSE -DANDROID_NATIVE_API_LEVEL=21 -DLY_NDK_DIR=\"!LY_NDK_DIR!\"",
+      "CMAKE_OPTIONS":"-G \"Ninja Multi-Config\" -DCMAKE_TOOLCHAIN_FILE=cmake\\Platform\\Android\\Toolchain_android.cmake -DANDROID_NATIVE_API_LEVEL=21 -DLY_NDK_DIR=\"!LY_NDK_DIR!\"",
       "CMAKE_LY_PROJECTS":"AutomatedTesting",
       "CMAKE_TARGET":"all",
       "CMAKE_BUILD_ARGS":"-j!NUMBER_OF_PROCESSORS!"
@@ -128,7 +118,7 @@
     "PARAMETERS": {
       "CONFIGURATION":"release",
       "OUTPUT_DIRECTORY":"build\\mono_android",
-      "CMAKE_OPTIONS":"-G \"Ninja Multi-Config\" -DCMAKE_TOOLCHAIN_FILE=cmake\\Platform\\Android\\Toolchain_android.cmake -DANDROID_ABI=arm64-v8a -DANDROID_ARM_MODE=arm -DANDROID_ARM_NEON=FALSE -DANDROID_NATIVE_API_LEVEL=21 -DLY_NDK_DIR=\"!LY_NDK_DIR!\" -DLY_MONOLITHIC_GAME=TRUE",
+      "CMAKE_OPTIONS":"-G \"Ninja Multi-Config\" -DCMAKE_TOOLCHAIN_FILE=cmake\\Platform\\Android\\Toolchain_android.cmake -DANDROID_NATIVE_API_LEVEL=21 -DLY_NDK_DIR=\"!LY_NDK_DIR!\" -DLY_MONOLITHIC_GAME=TRUE",
       "CMAKE_LY_PROJECTS":"AutomatedTesting",
       "CMAKE_TARGET":"all",
       "CMAKE_BUILD_ARGS":"-j!NUMBER_OF_PROCESSORS!"

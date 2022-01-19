@@ -8,11 +8,11 @@
 #include "UserTypes.h"
 
 #include <AzCore/std/string/string.h>
-#include <AzCore/std/string/string_view.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/tokenize.h>
 #include <AzCore/std/string/alphanum.h>
 #include <AzCore/std/sort.h>
+#include <AzCore/std/allocator_stateless.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/array.h>
@@ -21,12 +21,9 @@
 #include <AzCore/std/string/fixed_string.h>
 
 // we need this for AZ_TEST_FLOAT compare
-#include <cfloat>
 #include <cinttypes>
 #include <string>
 #include <string_view>
-
-using namespace AZStd;
 
 // Because of the SSO (small string optimization) we always shoule have capacity != 0 and data != 0
 #define AZ_TEST_VALIDATE_EMPTY_STRING(_String)        \
@@ -80,8 +77,6 @@ namespace UnitTest
         azvsnwprintf(buffer, bufferSize, format, mark);
         va_end(mark);
     }
-
-#if !AZ_UNIT_TEST_SKIP_STD_STRING_TESTS
 
     TEST(StringC, VSNPrintf)
     {
@@ -168,75 +163,75 @@ namespace UnitTest
     {
         const char* sChar = "SSO string";  // 10 characters
         const char* sCharLong = "This is a long string test that will allocate";  // 45 characters
-        array<char, 6> aChar = {
+        AZStd::array<char, 6> aChar = {
             { 'a', 'b', 'c', 'd', 'e', 'f' }
         };                                                 // short string (should use SSO)
 
-        string str1;
+        AZStd::string str1;
         AZ_TEST_VALIDATE_EMPTY_STRING(str1);
 
         // short char*
-        string str2(sChar);
+        AZStd::string str2(sChar);
         AZ_TEST_VALIDATE_STRING(str2, 10);
 
-        string str2_1("");
+        AZStd::string str2_1("");
         AZ_TEST_VALIDATE_EMPTY_STRING(str2_1);
 
-        string str3(sChar, 5);
+        AZStd::string str3(sChar, 5);
         AZ_TEST_VALIDATE_STRING(str3, 5);
 
         // long char*
-        string str4(sCharLong);
+        AZStd::string str4(sCharLong);
         AZ_TEST_VALIDATE_STRING(str4, 45);
 
-        string str5(sCharLong, 35);
+        AZStd::string str5(sCharLong, 35);
         AZ_TEST_VALIDATE_STRING(str5, 35);
 
         // element
-        string str6(13, 'a');
+        AZStd::string str6(13, 'a');
         AZ_TEST_VALIDATE_STRING(str6, 13);
 
-        string str6_1(0, 'a');
+        AZStd::string str6_1(0, 'a');
         AZ_TEST_VALIDATE_EMPTY_STRING(str6_1);
 
-        string str7(aChar.begin(), aChar.end());
+        AZStd::string str7(aChar.begin(), aChar.end());
         AZ_TEST_VALIDATE_STRING(str7, 6);
 
-        string str7_1(aChar.begin(), aChar.begin());
+        AZStd::string str7_1(aChar.begin(), aChar.begin());
         AZ_TEST_VALIDATE_EMPTY_STRING(str7_1);
 
-        string str8(sChar, sChar + 3);
+        AZStd::string str8(sChar, sChar + 3);
         AZ_TEST_VALIDATE_STRING(str8, 3);
 
-        string str8_1(sChar, sChar);
+        AZStd::string str8_1(sChar, sChar);
         AZ_TEST_VALIDATE_EMPTY_STRING(str8_1);
 
         //
-        string str9(str2);
+        AZStd::string str9(str2);
         AZ_TEST_VALIDATE_STRING(str9, 10);
 
-        string str9_1(str1);
+        AZStd::string str9_1(str1);
         AZ_TEST_VALIDATE_EMPTY_STRING(str9_1);
 
-        string str10(str2, 4);
+        AZStd::string str10(str2, 4);
         AZ_TEST_VALIDATE_STRING(str10, 6);
 
-        string str11(str2, 4, 3);
+        AZStd::string str11(str2, 4, 3);
         AZ_TEST_VALIDATE_STRING(str11, 3);
 
-        string str12(sChar);
-        string large = sCharLong;
+        AZStd::string str12(sChar);
+        AZStd::string large = sCharLong;
 
         // move ctor
-        string strSm = AZStd::move(str12);
+        AZStd::string strSm = AZStd::move(str12);
         AZ_TEST_VALIDATE_STRING(strSm, 10);
         AZ_TEST_VALIDATE_EMPTY_STRING(str12);
 
-        string strLg(AZStd::move(large));
+        AZStd::string strLg(AZStd::move(large));
         AZ_TEST_VALIDATE_STRING(strLg, 45);
         AZ_TEST_VALIDATE_EMPTY_STRING(large);
 
-        string strEmpty(AZStd::move(str1));
+        AZStd::string strEmpty(AZStd::move(str1));
         AZ_TEST_VALIDATE_EMPTY_STRING(strEmpty);
         AZ_TEST_VALIDATE_EMPTY_STRING(str1);
 
@@ -369,7 +364,7 @@ namespace UnitTest
         AZ_TEST_VALIDATE_STRING(str2, 28);
         AZ_TEST_ASSERT(str2[0] == 'b');
 
-        str2.erase(str2.begin(), next(str2.begin(), 4));
+        str2.erase(str2.begin(), AZStd::next(str2.begin(), 4));
         AZ_TEST_VALIDATE_STRING(str2, 24);
         AZ_TEST_ASSERT(str2[0] == 'f');
 
@@ -400,33 +395,33 @@ namespace UnitTest
         AZ_TEST_ASSERT(str2[3] == 'g');
         AZ_TEST_ASSERT(str2[4] == 'g');
 
-        str2.replace(str2.begin(), next(str2.begin(), str1.length()), str1);
+        str2.replace(str2.begin(), AZStd::next(str2.begin(), str1.length()), str1);
         AZ_TEST_VALIDATE_STRING(str2, 24);
         AZ_TEST_ASSERT(str2[0] == 'a');
         AZ_TEST_ASSERT(str2[1] == 'b');
 
-        str2.replace(str2.begin(), next(str2.begin(), 10), sChar);
+        str2.replace(str2.begin(), AZStd::next(str2.begin(), 10), sChar);
         AZ_TEST_VALIDATE_STRING(str2, 24);
         AZ_TEST_ASSERT(str2[0] == 'S');
         AZ_TEST_ASSERT(str2[1] == 'S');
 
-        str2.replace(str2.begin(), next(str2.begin(), 3), sChar, 3);
+        str2.replace(str2.begin(), AZStd::next(str2.begin(), 3), sChar, 3);
         AZ_TEST_VALIDATE_STRING(str2, 24);
         AZ_TEST_ASSERT(str2[0] == 'S');
         AZ_TEST_ASSERT(str2[1] == 'S');
         AZ_TEST_ASSERT(str2[2] == 'O');
 
-        str2.replace(str2.begin(), next(str2.begin(), 2), 2, 'h');
+        str2.replace(str2.begin(), AZStd::next(str2.begin(), 2), 2, 'h');
         AZ_TEST_VALIDATE_STRING(str2, 24);
         AZ_TEST_ASSERT(str2[0] == 'h');
         AZ_TEST_ASSERT(str2[1] == 'h');
 
-        str2.replace(str2.begin(), next(str2.begin(), 2), aChar.begin(), next(aChar.begin(), 2));
+        str2.replace(str2.begin(), AZStd::next(str2.begin(), 2), aChar.begin(), AZStd::next(aChar.begin(), 2));
         AZ_TEST_VALIDATE_STRING(str2, 24);
         AZ_TEST_ASSERT(str2[0] == 'a');
         AZ_TEST_ASSERT(str2[1] == 'b');
 
-        str2.replace(str2.begin(), next(str2.begin(), 2), sChar, sChar + 5);
+        str2.replace(str2.begin(), AZStd::next(str2.begin(), 2), sChar, sChar + 5);
         AZ_TEST_VALIDATE_STRING(str2, 27);
         AZ_TEST_ASSERT(str2[0] == 'S');
         AZ_TEST_ASSERT(str2[1] == 'S');
@@ -489,7 +484,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(pos == 2);
 
         pos = str1.find('Z');
-        AZ_TEST_ASSERT(pos == string::npos);
+        AZ_TEST_ASSERT(pos == AZStd::string::npos);
 
         pos = str1.rfind(str2);
         AZ_TEST_ASSERT(pos == 12);
@@ -510,7 +505,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(pos == 12);
 
         pos = str1.rfind('Z');
-        AZ_TEST_ASSERT(pos == string::npos);
+        AZ_TEST_ASSERT(pos == AZStd::string::npos);
 
         pos = str1.find_first_of(str2);
         AZ_TEST_ASSERT(pos == 2);
@@ -535,7 +530,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(pos == 12);
 
         pos = str1.find_first_of('Z');
-        AZ_TEST_ASSERT(pos == string::npos);
+        AZ_TEST_ASSERT(pos == AZStd::string::npos);
 
         pos = str1.find_last_of(str2);
         AZ_TEST_ASSERT(pos == 14);
@@ -550,7 +545,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(pos == 12);
 
         pos = str1.find_last_of('Z');
-        AZ_TEST_ASSERT(pos == string::npos);
+        AZ_TEST_ASSERT(pos == AZStd::string::npos);
 
         pos = str1.find_first_not_of(str2, 3);
         AZ_TEST_ASSERT(pos == 5);
@@ -559,13 +554,13 @@ namespace UnitTest
         AZ_TEST_ASSERT(pos == 0);
 
         pos = str1.find_last_not_of(sChar);
-        AZ_TEST_ASSERT(pos == string::npos);
+        AZ_TEST_ASSERT(pos == AZStd::string::npos);
 
         pos = str1.find_last_not_of('Z');
         AZ_TEST_ASSERT(pos == 19);
 
 
-        string sub = str1.substr(0, 10);
+        AZStd::string sub = str1.substr(0, 10);
         AZ_TEST_VALIDATE_STRING(sub, 10);
         AZ_TEST_ASSERT(sub[0] == 'S');
         AZ_TEST_ASSERT(sub[9] == 'g');
@@ -594,13 +589,13 @@ namespace UnitTest
 
         using iteratorType = char;
         auto testValue = str4;
-        reverse_iterator<iteratorType*> rend = testValue.rend();
-        reverse_iterator<const iteratorType*> crend1 = testValue.rend();
-        reverse_iterator<const iteratorType*> crend2 = testValue.crend();
+        AZStd::reverse_iterator<iteratorType*> rend = testValue.rend();
+        AZStd::reverse_iterator<const iteratorType*> crend1 = testValue.rend();
+        AZStd::reverse_iterator<const iteratorType*> crend2 = testValue.crend();
 
-        reverse_iterator<iteratorType*> rbegin = testValue.rbegin();
-        reverse_iterator<const iteratorType*> crbegin1 = testValue.rbegin();
-        reverse_iterator<const iteratorType*> crbegin2 = testValue.crbegin();
+        AZStd::reverse_iterator<iteratorType*> rbegin = testValue.rbegin();
+        AZStd::reverse_iterator<const iteratorType*> crbegin1 = testValue.rbegin();
+        AZStd::reverse_iterator<const iteratorType*> crbegin2 = testValue.crbegin();
 
         AZ_TEST_ASSERT(rend == crend1);
         AZ_TEST_ASSERT(crend1 == crend2);
@@ -630,128 +625,128 @@ namespace UnitTest
 
     TEST_F(String, Algorithms)
     {
-        string str = string::format("%s %d", "BlaBla", 5);
+        AZStd::string str = AZStd::string::format("%s %d", "BlaBla", 5);
         AZ_TEST_VALIDATE_STRING(str, 8);
 
-        wstring wstr = wstring::format(L"%ls %d", L"BlaBla", 5);
+        AZStd::wstring wstr = AZStd::wstring::format(L"%ls %d", L"BlaBla", 5);
         AZ_TEST_VALIDATE_WSTRING(wstr, 8);
 
-        to_lower(str.begin(), str.end());
+        AZStd::to_lower(str.begin(), str.end());
         AZ_TEST_ASSERT(str[0] == 'b');
         AZ_TEST_ASSERT(str[3] == 'b');
 
-        to_upper(str.begin(), str.end());
+        AZStd::to_upper(str.begin(), str.end());
         AZ_TEST_ASSERT(str[1] == 'L');
         AZ_TEST_ASSERT(str[2] == 'A');
 
-        string intStr("10");
+        AZStd::string intStr("10");
         int ival = AZStd::stoi(intStr);
         AZ_TEST_ASSERT(ival == 10);
 
-        wstring wintStr(L"10");
+        AZStd::wstring wintStr(L"10");
         ival = AZStd::stoi(wintStr);
         AZ_TEST_ASSERT(ival == 10);
 
-        string floatStr("2.32");
+        AZStd::string floatStr("2.32");
         float fval = AZStd::stof(floatStr);
         AZ_TEST_ASSERT_FLOAT_CLOSE(fval, 2.32f);
 
-        wstring wfloatStr(L"2.32");
+        AZStd::wstring wfloatStr(L"2.32");
         fval = AZStd::stof(wfloatStr);
         AZ_TEST_ASSERT_FLOAT_CLOSE(fval, 2.32f);
 
-        to_string(intStr, 20);
+        AZStd::to_string(intStr, 20);
         AZ_TEST_ASSERT(intStr == "20");
 
-        AZ_TEST_ASSERT(to_string(static_cast<int16_t>(20)) == "20");
-        AZ_TEST_ASSERT(to_string(static_cast<uint16_t>(20)) == "20");
-        AZ_TEST_ASSERT(to_string(static_cast<int32_t>(20)) == "20");
-        AZ_TEST_ASSERT(to_string(static_cast<uint32_t>(20)) == "20");
-        AZ_TEST_ASSERT(to_string(static_cast<int64_t>(20)) == "20");
-        AZ_TEST_ASSERT(to_string(static_cast<uint64_t>(20)) == "20");
+        EXPECT_EQ("20", AZStd::to_string(static_cast<int16_t>(20)));
+        EXPECT_EQ("20", AZStd::to_string(static_cast<uint16_t>(20)));
+        EXPECT_EQ("20", AZStd::to_string(static_cast<int32_t>(20)));
+        EXPECT_EQ("20", AZStd::to_string(static_cast<uint32_t>(20)));
+        EXPECT_EQ("20", AZStd::to_string(static_cast<int64_t>(20)));
+        EXPECT_EQ("20", AZStd::to_string(static_cast<uint64_t>(20)));
 
         // wstring to string
-        string str1;
-        to_string(str1, wstr);
+        AZStd::string str1;
+        AZStd::to_string(str1, wstr);
         AZ_TEST_ASSERT(str1 == "BlaBla 5");
         EXPECT_EQ(8, to_string_length(wstr));
 
-        str1 = string::format("%ls", wstr.c_str());
+        str1 = AZStd::string::format("%ls", wstr.c_str());
         AZ_TEST_ASSERT(str1 == "BlaBla 5");
 
         // string to wstring
-        wstring wstr1;
-        to_wstring(wstr1, str);
+        AZStd::wstring wstr1;
+        AZStd::to_wstring(wstr1, str);
         AZ_TEST_ASSERT(wstr1 == L"BLABLA 5");
 
-        wstr1 = wstring::format(L"%hs", str.c_str());
+        wstr1 = AZStd::wstring::format(L"%hs", str.c_str());
         AZ_TEST_ASSERT(wstr1 == L"BLABLA 5");
 
         // wstring to char buffer
         char strBuffer[9];
-        to_string(strBuffer, 9, wstr1.c_str());
+        AZStd::to_string(strBuffer, 9, wstr1.c_str());
         AZ_TEST_ASSERT(0 == azstricmp(strBuffer, "BLABLA 5"));
         EXPECT_EQ(8, to_string_length(wstr1));
 
         // wstring to char with unicode
-        wstring ws1InfinityEscaped = L"Infinity: \u221E"; // escaped
+        AZStd::wstring ws1InfinityEscaped = L"Infinity: \u221E"; // escaped
         EXPECT_EQ(13, to_string_length(ws1InfinityEscaped));
 
         // wchar_t buffer to char buffer
         wchar_t wstrBuffer[9] = L"BLABLA 5";
         memset(strBuffer, 0, AZ_ARRAY_SIZE(strBuffer));
-        to_string(strBuffer, 9, wstrBuffer);
+        AZStd::to_string(strBuffer, 9, wstrBuffer);
         AZ_TEST_ASSERT(0 == azstricmp(strBuffer, "BLABLA 5"));
 
         // string to wchar_t buffer
         memset(wstrBuffer, 0, AZ_ARRAY_SIZE(wstrBuffer));
-        to_wstring(wstrBuffer, 9, str1.c_str());
+        AZStd::to_wstring(wstrBuffer, 9, str1.c_str());
         AZ_TEST_ASSERT(0 == azwcsicmp(wstrBuffer, L"BlaBla 5"));
 
         // char buffer to wchar_t buffer
         memset(wstrBuffer, L' ', AZ_ARRAY_SIZE(wstrBuffer)); // to check that the null terminator is properly placed
-        to_wstring(wstrBuffer, 9, strBuffer);
+        AZStd::to_wstring(wstrBuffer, 9, strBuffer);
         AZ_TEST_ASSERT(0 == azwcsicmp(wstrBuffer, L"BLABLA 5"));
 
         // wchar UTF16/UTF32 to/from Utf8
         wstr1 = L"this is a \u20AC \u00A3 test"; // that's a euro and a pound sterling
         AZStd::to_string(str, wstr1);
-        wstring wstr2;
+        AZStd::wstring wstr2;
         AZStd::to_wstring(wstr2, str);
         AZ_TEST_ASSERT(wstr1 == wstr2);
 
         // tokenize
-        vector<string> tokens;
-        tokenize(string("one, two, three"), string(", "), tokens);
+        AZStd::vector<AZStd::string> tokens;
+        AZStd::tokenize(AZStd::string("one, two, three"), AZStd::string(", "), tokens);
         AZ_TEST_ASSERT(tokens.size() == 3);
         AZ_TEST_ASSERT(tokens[0] == "one");
         AZ_TEST_ASSERT(tokens[1] == "two");
         AZ_TEST_ASSERT(tokens[2] == "three");
-        tokenize(string("one, ,, two, ,, three"), string(", "), tokens);
+        AZStd::tokenize(AZStd::string("one, ,, two, ,, three"), AZStd::string(", "), tokens);
         AZ_TEST_ASSERT(tokens.size() == 3);
         AZ_TEST_ASSERT(tokens[0] == "one");
         AZ_TEST_ASSERT(tokens[1] == "two");
         AZ_TEST_ASSERT(tokens[2] == "three");
-        tokenize(string("thequickbrownfox"), string("ABC"), tokens);
+        AZStd::tokenize(AZStd::string("thequickbrownfox"), AZStd::string("ABC"), tokens);
         AZ_TEST_ASSERT(tokens.size() == 1);
         AZ_TEST_ASSERT(tokens[0] == "thequickbrownfox");
 
-        tokenize(string(""), string(""), tokens);
+        AZStd::tokenize(AZStd::string{}, AZStd::string{}, tokens);
         AZ_TEST_ASSERT(tokens.empty());
-        tokenize(string("ABC"), string("ABC"), tokens);
+        AZStd::tokenize(AZStd::string("ABC"), AZStd::string("ABC"), tokens);
         AZ_TEST_ASSERT(tokens.empty());
-        tokenize(string(" foo bar "), string(" "), tokens);
+        AZStd::tokenize(AZStd::string(" foo bar "), AZStd::string(" "), tokens);
         AZ_TEST_ASSERT(tokens.size() == 2);
         AZ_TEST_ASSERT(tokens[0] == "foo");
         AZ_TEST_ASSERT(tokens[1] == "bar");
 
-        tokenize_keep_empty(string(" foo ,  bar "), string(","), tokens);
+        AZStd::tokenize_keep_empty(AZStd::string(" foo ,  bar "), AZStd::string(","), tokens);
         AZ_TEST_ASSERT(tokens.size() == 2);
         AZ_TEST_ASSERT(tokens[0] == " foo ");
         AZ_TEST_ASSERT(tokens[1] == "  bar ");
 
         // Sort
-        AZStd::vector<string> toSort;
+        AZStd::vector<AZStd::string> toSort;
         toSort.push_back("z2");
         toSort.push_back("z100");
         toSort.push_back("z1");
@@ -761,39 +756,39 @@ namespace UnitTest
         AZ_TEST_ASSERT(toSort[2] == "z2");
 
         // Natural sort
-        AZ_TEST_ASSERT(alphanum_comp("", "") == 0);
-        AZ_TEST_ASSERT(alphanum_comp("", "a") < 0);
-        AZ_TEST_ASSERT(alphanum_comp("a", "") > 0);
-        AZ_TEST_ASSERT(alphanum_comp("a", "a") == 0);
-        AZ_TEST_ASSERT(alphanum_comp("", "9") < 0);
-        AZ_TEST_ASSERT(alphanum_comp("9", "") > 0);
-        AZ_TEST_ASSERT(alphanum_comp("1", "1") == 0);
-        AZ_TEST_ASSERT(alphanum_comp("1", "2") < 0);
-        AZ_TEST_ASSERT(alphanum_comp("3", "2") > 0);
-        AZ_TEST_ASSERT(alphanum_comp("a1", "a1") == 0);
-        AZ_TEST_ASSERT(alphanum_comp("a1", "a2") < 0);
-        AZ_TEST_ASSERT(alphanum_comp("a2", "a1") > 0);
-        AZ_TEST_ASSERT(alphanum_comp("a1a2", "a1a3") < 0);
-        AZ_TEST_ASSERT(alphanum_comp("a1a2", "a1a0") > 0);
-        AZ_TEST_ASSERT(alphanum_comp("134", "122") > 0);
-        AZ_TEST_ASSERT(alphanum_comp("12a3", "12a3") == 0);
-        AZ_TEST_ASSERT(alphanum_comp("12a1", "12a0") > 0);
-        AZ_TEST_ASSERT(alphanum_comp("12a1", "12a2") < 0);
-        AZ_TEST_ASSERT(alphanum_comp("a", "aa") < 0);
-        AZ_TEST_ASSERT(alphanum_comp("aaa", "aa") > 0);
-        AZ_TEST_ASSERT(alphanum_comp("Alpha 2", "Alpha 2") == 0);
-        AZ_TEST_ASSERT(alphanum_comp("Alpha 2", "Alpha 2A") < 0);
-        AZ_TEST_ASSERT(alphanum_comp("Alpha 2 B", "Alpha 2") > 0);
-        string strA("Alpha 2");
-        AZ_TEST_ASSERT(alphanum_comp(strA, "Alpha 2") == 0);
-        AZ_TEST_ASSERT(alphanum_comp(strA, "Alpha 2A") < 0);
-        AZ_TEST_ASSERT(alphanum_comp("Alpha 2 B", strA) > 0);
-        AZ_TEST_ASSERT(alphanum_comp(strA, strdup("Alpha 2")) == 0);
-        AZ_TEST_ASSERT(alphanum_comp(strA, strdup("Alpha 2A")) < 0);
-        AZ_TEST_ASSERT(alphanum_comp(strdup("Alpha 2 B"), strA) > 0);
+        AZ_TEST_ASSERT(AZStd::alphanum_comp("", "") == 0);
+        AZ_TEST_ASSERT(AZStd::alphanum_comp("", "a") < 0);
+        AZ_TEST_ASSERT(AZStd::alphanum_comp("a", "") > 0);
+        AZ_TEST_ASSERT(AZStd::alphanum_comp("a", "a") == 0);
+        AZ_TEST_ASSERT(AZStd::alphanum_comp("", "9") < 0);
+        AZ_TEST_ASSERT(AZStd::alphanum_comp("9", "") > 0);
+        AZ_TEST_ASSERT(AZStd::alphanum_comp("1", "1") == 0);
+        AZ_TEST_ASSERT(AZStd::alphanum_comp("1", "2") < 0);
+        AZ_TEST_ASSERT(AZStd::alphanum_comp("3", "2") > 0);
+        AZ_TEST_ASSERT(AZStd::alphanum_comp("a1", "a1") == 0);
+        AZ_TEST_ASSERT(AZStd::alphanum_comp("a1", "a2") < 0);
+        AZ_TEST_ASSERT(AZStd::alphanum_comp("a2", "a1") > 0);
+        AZ_TEST_ASSERT(AZStd::alphanum_comp("a1a2", "a1a3") < 0);
+        AZ_TEST_ASSERT(AZStd::alphanum_comp("a1a2", "a1a0") > 0);
+        AZ_TEST_ASSERT(AZStd::alphanum_comp("134", "122") > 0);
+        AZ_TEST_ASSERT(AZStd::alphanum_comp("12a3", "12a3") == 0);
+        AZ_TEST_ASSERT(AZStd::alphanum_comp("12a1", "12a0") > 0);
+        AZ_TEST_ASSERT(AZStd::alphanum_comp("12a1", "12a2") < 0);
+        AZ_TEST_ASSERT(AZStd::alphanum_comp("a", "aa") < 0);
+        AZ_TEST_ASSERT(AZStd::alphanum_comp("aaa", "aa") > 0);
+        AZ_TEST_ASSERT(AZStd::alphanum_comp("Alpha 2", "Alpha 2") == 0);
+        AZ_TEST_ASSERT(AZStd::alphanum_comp("Alpha 2", "Alpha 2A") < 0);
+        AZ_TEST_ASSERT(AZStd::alphanum_comp("Alpha 2 B", "Alpha 2") > 0);
+        AZStd::string strA("Alpha 2");
+        AZ_TEST_ASSERT(AZStd::alphanum_comp(strA, "Alpha 2") == 0);
+        AZ_TEST_ASSERT(AZStd::alphanum_comp(strA, "Alpha 2A") < 0);
+        AZ_TEST_ASSERT(AZStd::alphanum_comp("Alpha 2 B", strA) > 0);
+        AZ_TEST_ASSERT(AZStd::alphanum_comp(strA, strdup("Alpha 2")) == 0);
+        AZ_TEST_ASSERT(AZStd::alphanum_comp(strA, strdup("Alpha 2A")) < 0);
+        AZ_TEST_ASSERT(AZStd::alphanum_comp(strdup("Alpha 2 B"), strA) > 0);
 
         // show usage of the comparison functor with a set
-        using StringSetType = set<string, alphanum_less<string>>;
+        using StringSetType = AZStd::set<AZStd::string, AZStd::alphanum_less<AZStd::string>>;
         StringSetType s;
         s.insert("Xiph Xlater 58");
         s.insert("Xiph Xlater 5000");
@@ -879,7 +874,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(*setIt++ == "Xiph Xlater 10000");
 
         // show usage of comparison functor with a map
-        using StringIntMapType = map<string, int, alphanum_less<string>>;
+        using StringIntMapType = AZStd::map<AZStd::string, int, AZStd::alphanum_less<AZStd::string>>;
         StringIntMapType m;
         m["z1.doc"] = 1;
         m["z10.doc"] = 2;
@@ -931,13 +926,13 @@ namespace UnitTest
         AZ_TEST_ASSERT((mapIt++)->second == 5);
 
         // show usage of comparison functor with an STL algorithm on a vector
-        vector<string> v;
+        AZStd::vector<AZStd::string> v;
         // vector contents are reversed sorted contents of the old set
-        AZStd::copy(s.rbegin(), s.rend(), back_inserter(v));
+        AZStd::copy(s.rbegin(), s.rend(), AZStd::back_inserter(v));
         // now sort the vector with the algorithm
-        AZStd::sort(v.begin(), v.end(), alphanum_less<string>());
+        AZStd::sort(v.begin(), v.end(), AZStd::alphanum_less<AZStd::string>());
         // check values
-        vector<string>::const_iterator vecIt = v.begin();
+        AZStd::vector<AZStd::string>::const_iterator vecIt = v.begin();
         AZ_TEST_ASSERT(*vecIt++ == "10X Radonius");
         AZ_TEST_ASSERT(*vecIt++ == "20X Radonius");
         AZ_TEST_ASSERT(*vecIt++ == "20X Radonius Prime");
@@ -988,52 +983,52 @@ namespace UnitTest
     TEST_F(Regex, Regex_IPAddressSubnetPattern_Success)
     {
         // Error case for LY-43888
-        regex txt_regex("^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(/([0-9]|[1-2][0-9]|3[0-2]))?$");
-        string sample_input("10.85.22.92/24");
-        bool match = regex_match(sample_input, txt_regex);
+        AZStd::regex txt_regex("^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(/([0-9]|[1-2][0-9]|3[0-2]))?$");
+        AZStd::string sample_input("10.85.22.92/24");
+        bool match = AZStd::regex_match(sample_input, txt_regex);
         AZ_TEST_ASSERT(match);
     }
 
     TEST_F(Regex, MatchConstChar)
     {
         //regex
-        AZ_TEST_ASSERT(regex_match("subject", regex("(sub)(.*)")));
+        AZ_TEST_ASSERT(AZStd::regex_match("subject", AZStd::regex("(sub)(.*)")));
     }
 
     TEST_F(Regex, MatchString)
     {
-        string reStr("subject");
-        regex re("(sub)(.*)");
-        AZ_TEST_ASSERT(regex_match(reStr, re));
-        AZ_TEST_ASSERT(regex_match(reStr.begin(), reStr.end(), re))
+        AZStd::string reStr("subject");
+        AZStd::regex re("(sub)(.*)");
+        AZ_TEST_ASSERT(AZStd::regex_match(reStr, re));
+        AZ_TEST_ASSERT(AZStd::regex_match(reStr.begin(), reStr.end(), re))
     }
 
     TEST_F(Regex, CMatch)
     {
-        regex re("(sub)(.*)");
-        cmatch cm;    // same as match_results<const char*> cm;
-        regex_match("subject", cm, re);
+        AZStd::regex re("(sub)(.*)");
+        AZStd::cmatch cm;    // same as match_results<const char*> cm;
+        AZStd::regex_match("subject", cm, re);
         AZ_TEST_ASSERT(cm.size() == 3);
     }
 
     TEST_F(Regex, SMatch)
     {
-        string reStr("subject");
-        regex re("(sub)(.*)");
-        smatch sm;    // same as std::match_results<string::const_iterator> sm;
-        regex_match(reStr, sm, re);
+        AZStd::string reStr("subject");
+        AZStd::regex re("(sub)(.*)");
+        AZStd::smatch sm;    // same as std::match_results<string::const_iterator> sm;
+        AZStd::regex_match(reStr, sm, re);
         AZ_TEST_ASSERT(sm.size() == 3);
 
-        regex_match(reStr.cbegin(), reStr.cend(), sm, re);
+        AZStd::regex_match(reStr.cbegin(), reStr.cend(), sm, re);
         AZ_TEST_ASSERT(sm.size() == 3);
     }
 
     TEST_F(Regex, CMatchWithFlags)
     {
-        regex re("(sub)(.*)");
-        cmatch cm;    // same as match_results<const char*> cm;
+        AZStd::regex re("(sub)(.*)");
+        AZStd::cmatch cm;    // same as match_results<const char*> cm;
         // using explicit flags:
-        regex_match("subject", cm, re, regex_constants::match_default);
+        AZStd::regex_match("subject", cm, re, AZStd::regex_constants::match_default);
         AZ_TEST_ASSERT(cm[0] == "subject");
         AZ_TEST_ASSERT(cm[1] == "sub");
         AZ_TEST_ASSERT(cm[2] == "ject");
@@ -1042,18 +1037,18 @@ namespace UnitTest
     TEST_F(Regex, PatternMatchFiles)
     {
         // Simple regular expression matching
-        string fnames[] = { "foo.txt", "bar.txt", "baz.dat", "zoidberg" };
-        regex txt_regex("[a-z]+\\.txt");
+        AZStd::string fnames[] = { "foo.txt", "bar.txt", "baz.dat", "zoidberg" };
+        AZStd::regex txt_regex("[a-z]+\\.txt");
 
         for (size_t i = 0; i < AZ_ARRAY_SIZE(fnames); ++i)
         {
             if (i < 2)
             {
-                AZ_TEST_ASSERT(regex_match(fnames[i], txt_regex) == true);
+                AZ_TEST_ASSERT(AZStd::regex_match(fnames[i], txt_regex) == true);
             }
             else
             {
-                AZ_TEST_ASSERT(regex_match(fnames[i], txt_regex) == false);
+                AZ_TEST_ASSERT(AZStd::regex_match(fnames[i], txt_regex) == false);
             }
         }
     }
@@ -1061,13 +1056,13 @@ namespace UnitTest
     TEST_F(Regex, PatternWithSingleCaptureGroup)
     {
         // Extraction of a sub-match
-        string fnames[] = { "foo.txt", "bar.txt", "baz.dat", "zoidberg" };
-        regex base_regex("([a-z]+)\\.txt");
-        smatch base_match;
+        AZStd::string fnames[] = { "foo.txt", "bar.txt", "baz.dat", "zoidberg" };
+        AZStd::regex base_regex("([a-z]+)\\.txt");
+        AZStd::smatch base_match;
 
         for (size_t i = 0; i < AZ_ARRAY_SIZE(fnames); ++i)
         {
-            if (regex_match(fnames[i], base_match, base_regex))
+            if (AZStd::regex_match(fnames[i], base_match, base_regex))
             {
                 AZ_TEST_ASSERT(base_match.size() == 2);
                 AZ_TEST_ASSERT(base_match[1] == "foo" || base_match[1] == "bar")
@@ -1078,12 +1073,12 @@ namespace UnitTest
     TEST_F(Regex, PatternWithMultipleCaptureGroups)
     {
         // Extraction of several sub-matches
-        string fnames[] = { "foo.txt", "bar.txt", "baz.dat", "zoidberg" };
-        regex pieces_regex("([a-z]+)\\.([a-z]+)");
-        smatch pieces_match;
+        AZStd::string fnames[] = { "foo.txt", "bar.txt", "baz.dat", "zoidberg" };
+        AZStd::regex pieces_regex("([a-z]+)\\.([a-z]+)");
+        AZStd::smatch pieces_match;
         for (size_t i = 0; i < AZ_ARRAY_SIZE(fnames); ++i)
         {
-            if (regex_match(fnames[i], pieces_match, pieces_regex))
+            if (AZStd::regex_match(fnames[i], pieces_match, pieces_regex))
             {
                 AZ_TEST_ASSERT(pieces_match.size() == 3);
                 AZ_TEST_ASSERT(pieces_match[0] == "foo.txt" || pieces_match[0] == "bar.txt" || pieces_match[0] == "baz.dat");
@@ -1096,40 +1091,40 @@ namespace UnitTest
     TEST_F(Regex, WideCharTests)
     {
         //wchar_t
-        AZ_TEST_ASSERT(regex_match(L"subject", wregex(L"(sub)(.*)")));
-        wstring reWStr(L"subject");
-        wregex reW(L"(sub)(.*)");
-        AZ_TEST_ASSERT(regex_match(reWStr, reW));
-        AZ_TEST_ASSERT(regex_match(reWStr.begin(), reWStr.end(), reW))
+        AZ_TEST_ASSERT(AZStd::regex_match(L"subject", AZStd::wregex(L"(sub)(.*)")));
+        AZStd::wstring reWStr(L"subject");
+        AZStd::wregex reW(L"(sub)(.*)");
+        AZ_TEST_ASSERT(AZStd::regex_match(reWStr, reW));
+        AZ_TEST_ASSERT(AZStd::regex_match(reWStr.begin(), reWStr.end(), reW))
     }
 
     TEST_F(Regex, LongPatterns)
     {
         // test construction and destruction of a regex with a pattern long enough to require reallocation of buffers
-        regex longerThan16(".*\\/Presets\\/GeomCache\\/.*", regex::flag_type::icase | regex::flag_type::ECMAScript);
-        regex longerThan32(".*\\/Presets\\/GeomCache\\/Whatever\\/Much\\/Test\\/Very\\/Memory\\/.*", regex::flag_type::icase);
+        AZStd::regex longerThan16(".*\\/Presets\\/GeomCache\\/.*", AZStd::regex::flag_type::icase | AZStd::regex::flag_type::ECMAScript);
+        AZStd::regex longerThan32(".*\\/Presets\\/GeomCache\\/Whatever\\/Much\\/Test\\/Very\\/Memory\\/.*", AZStd::regex::flag_type::icase);
     }
     
     TEST_F(Regex, SmileyFaceParseRegression)
     {
-        regex smiley(":)");
+        AZStd::regex smiley(":)");
 
         EXPECT_TRUE(smiley.Empty());
         EXPECT_TRUE(smiley.GetError() != nullptr);
-        EXPECT_FALSE(regex_match("wut", smiley));
-        EXPECT_FALSE(regex_match(":)", smiley));
+        EXPECT_FALSE(AZStd::regex_match("wut", smiley));
+        EXPECT_FALSE(AZStd::regex_match(":)", smiley));
     }
 
     TEST_F(Regex, ParseFailure)
     {
-        regex failed(")))/?!\\$");
+        AZStd::regex failed(")))/?!\\$");
 
         EXPECT_FALSE(failed.Valid());
 
-        regex other = AZStd::move(failed);
+        AZStd::regex other = AZStd::move(failed);
         EXPECT_FALSE(other.Valid());
 
-        regex other2;
+        AZStd::regex other2;
         other2.swap(other);
         EXPECT_TRUE(other.Empty());
         EXPECT_TRUE(other.GetError() == nullptr);
@@ -1139,69 +1134,69 @@ namespace UnitTest
 
     TEST_F(String, ConstString)
     {
-        string_view cstr1;
-        AZ_TEST_ASSERT(cstr1.data()==nullptr);
-        AZ_TEST_ASSERT(cstr1.size() == 0);
-        AZ_TEST_ASSERT(cstr1.length() == 0);
-        AZ_TEST_ASSERT(cstr1.begin() == cstr1.end());
-        AZ_TEST_ASSERT(cstr1 == string_view());
-        AZ_TEST_ASSERT(cstr1.empty());
+        AZStd::string_view cstr1;
+        EXPECT_EQ(nullptr, cstr1.data());
+        EXPECT_EQ(0, cstr1.size());
+        EXPECT_EQ(0, cstr1.length());
+        EXPECT_EQ(cstr1.begin(), cstr1.end());
+        EXPECT_EQ(cstr1, AZStd::string_view());
+        EXPECT_TRUE(cstr1.empty());
 
-        string_view cstr2("Test");
-        AZ_TEST_ASSERT(cstr2.data() != nullptr);
-        AZ_TEST_ASSERT(cstr2.size() == 4);
-        AZ_TEST_ASSERT(cstr2.length() == 4);
-        AZ_TEST_ASSERT(cstr2.begin() != cstr2.end());
-        AZ_TEST_ASSERT(cstr2 != cstr1);
-        AZ_TEST_ASSERT(cstr2 == string_view("Test"));
-        AZ_TEST_ASSERT(cstr2 == "Test");
-        AZ_TEST_ASSERT(cstr2 != "test");
-        AZ_TEST_ASSERT(cstr2[2] == 's');
-        AZ_TEST_ASSERT(cstr2.at(2) == 's');
+        AZStd::string_view cstr2("Test");
+        EXPECT_NE(nullptr, cstr2.data());
+        EXPECT_EQ(4, cstr2.size());
+        EXPECT_EQ(4, cstr2.length());
+        EXPECT_NE(cstr2.begin(), cstr2.end());
+        EXPECT_NE(cstr2, cstr1);
+        EXPECT_EQ(cstr2, AZStd::string_view("Test"));
+        EXPECT_EQ(cstr2, "Test");
+        EXPECT_NE(cstr2, "test");
+        EXPECT_EQ(cstr2[2], 's');
+        EXPECT_EQ(cstr2.at(2), 's');
         AZ_TEST_START_TRACE_SUPPRESSION;
-        AZ_TEST_ASSERT(cstr2.at(7) == 0);
+        EXPECT_EQ(0, cstr2.at(7));
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
-        AZ_TEST_ASSERT(!cstr2.empty());
-        AZ_TEST_ASSERT(cstr2.data() == string("Test"));
-        AZ_TEST_ASSERT((string)cstr2 == string("Test"));
+        EXPECT_FALSE(cstr2.empty());
+        EXPECT_EQ(cstr2.data(), AZStd::string("Test"));
+        EXPECT_EQ(cstr2, AZStd::string("Test"));
 
-        string_view cstr3 = cstr2;
-        AZ_TEST_ASSERT(cstr3 == cstr2);
+        AZStd::string_view cstr3 = cstr2;
+        EXPECT_EQ(cstr3, cstr2);
 
         cstr3.swap(cstr1);
-        AZ_TEST_ASSERT(cstr3 == string_view());
-        AZ_TEST_ASSERT(cstr1 == cstr2);
+        EXPECT_EQ(cstr3, AZStd::string_view());
+        EXPECT_EQ(cstr1, cstr2);
 
         cstr1 = {};
-        AZ_TEST_ASSERT(cstr1 == string_view());
-        AZ_TEST_ASSERT(cstr1.size() == 0);
-        AZ_TEST_ASSERT(cstr1.length() == 0);
+        EXPECT_EQ(cstr1, AZStd::string_view());
+        EXPECT_EQ(0, cstr1.size());
+        EXPECT_EQ(0, cstr1.length());
 
         AZStd::string str1("Test");
-        AZ_TEST_ASSERT(cstr2 == str1);
+        EXPECT_EQ(cstr2, str1);
         cstr1 = str1;
-        AZ_TEST_ASSERT(cstr1 == cstr2);
+        EXPECT_EQ(cstr1, cstr2);
 
         // check hashing
-        AZStd::hash<string_view> h;
+        AZStd::hash<AZStd::string_view> h;
         AZStd::size_t value = h(cstr1);
-        AZ_TEST_ASSERT(value != 0);
+        EXPECT_NE(0, value);
 
         // testing empty string
         AZStd::string emptyString;
-        string_view cstr4;
+        AZStd::string_view cstr4;
         cstr4 = emptyString;
-        AZ_TEST_ASSERT(cstr4.data() != nullptr);
-        AZ_TEST_ASSERT(cstr4.size() == 0);
-        AZ_TEST_ASSERT(cstr4.length() == 0);
-        AZ_TEST_ASSERT(cstr4.begin() == cstr4.end());
-        AZ_TEST_ASSERT(cstr4.empty());
+        EXPECT_NE(nullptr, cstr4.data());
+        EXPECT_EQ(0, cstr4.size());
+        EXPECT_EQ(0, cstr4.length());
+        EXPECT_EQ(cstr4.begin(), cstr4.end());
+        EXPECT_TRUE(cstr4.empty());
     }
 
     TEST_F(String, StringViewModifierTest)
     {
-        string_view emptyView1;
-        string_view view2("Needle in Haystack");
+        AZStd::string_view emptyView1;
+        AZStd::string_view view2("Needle in Haystack");
 
         // front
         EXPECT_EQ('N', view2.front());
@@ -1209,7 +1204,7 @@ namespace UnitTest
         EXPECT_EQ('k', view2.back());
 
         AZStd::string findStr("Hay");
-        string_view view3(findStr);
+        AZStd::string_view view3(findStr);
 
         // copy
         const size_t destBufferSize = 32;
@@ -1223,17 +1218,17 @@ namespace UnitTest
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
 
         // substr
-        string_view subView2 = view2.substr(10);
+        AZStd::string_view subView2 = view2.substr(10);
         EXPECT_EQ("Haystack", subView2);
         AZ_TEST_START_TRACE_SUPPRESSION;
-        [[maybe_unused]] string_view assertSubView = view2.substr(view2.size() + 1);
+        [[maybe_unused]] AZStd::string_view assertSubView = view2.substr(view2.size() + 1);
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
 
         // compare
         AZStd::size_t compareResult = view2.compare(1, view2.size() - 1, dest, copyResult);
         EXPECT_EQ(0, compareResult);
         
-        string_view compareView = "Stackhay in Needle";
+        AZStd::string_view compareView = "Stackhay in Needle";
         compareResult = compareView.compare(view2);
         EXPECT_NE(0, compareResult);
         
@@ -1252,7 +1247,7 @@ namespace UnitTest
         EXPECT_EQ(10, findResult);
 
         findResult = compareView.find("Random String");
-        EXPECT_EQ(string_view::npos, findResult);
+        EXPECT_EQ(AZStd::string_view::npos, findResult);
 
         findResult = view3.find('y', 2);
         EXPECT_EQ(2, findResult);
@@ -1262,13 +1257,13 @@ namespace UnitTest
         EXPECT_EQ(1, rfindResult);
 
         rfindResult = emptyView1.rfind("");
-        EXPECT_EQ(string_view::npos, rfindResult);
+        EXPECT_EQ(AZStd::string_view::npos, rfindResult);
 
         rfindResult = view2.rfind("z");
-        EXPECT_EQ(string_view::npos, rfindResult);
+        EXPECT_EQ(AZStd::string_view::npos, rfindResult);
 
         // find_first_of
-        string_view repeatString = "abcdefabcfedghiabcdef";
+        AZStd::string_view repeatString = "abcdefabcfedghiabcdef";
         AZStd::size_t findFirstOfResult = repeatString.find_first_of('f');
         EXPECT_EQ(5, findFirstOfResult);
 
@@ -1281,7 +1276,7 @@ namespace UnitTest
         AZStd::string notFoundStr = "zzz";
         AZStd::string foundStr = "ghi";
         findFirstOfResult = repeatString.find_first_of(notFoundStr);
-        EXPECT_EQ(string_view::npos, findFirstOfResult);
+        EXPECT_EQ(AZStd::string_view::npos, findFirstOfResult);
 
         findFirstOfResult = repeatString.find_first_of(foundStr);
         EXPECT_EQ(12, findFirstOfResult);
@@ -1297,7 +1292,7 @@ namespace UnitTest
         EXPECT_EQ(3, findLastOfResult);
 
         findLastOfResult = repeatString.find_last_of(notFoundStr);
-        EXPECT_EQ(string_view::npos, findLastOfResult);
+        EXPECT_EQ(AZStd::string_view::npos, findLastOfResult);
 
         findLastOfResult = repeatString.find_last_of(foundStr);
         EXPECT_EQ(14, findLastOfResult);
@@ -1335,12 +1330,12 @@ namespace UnitTest
         EXPECT_EQ(11, findLastNotOfResult);
 
         // remove_prefix
-        string_view prefixRemovalView = view2;
+        AZStd::string_view prefixRemovalView = view2;
         prefixRemovalView.remove_prefix(6);
         EXPECT_EQ(" in Haystack", prefixRemovalView);
         
         // remove_suffix
-        string_view suffixRemovalView = view2;
+        AZStd::string_view suffixRemovalView = view2;
         suffixRemovalView.remove_suffix(8);
         EXPECT_EQ("Needle in ", suffixRemovalView);
 
@@ -1365,10 +1360,10 @@ namespace UnitTest
 
     TEST_F(String, StringViewCmpOperatorTest)
     {
-        string_view view1("The quick brown fox jumped over the lazy dog");
-        string_view view2("Needle in Haystack");
-        string_view emptyBeaverView;
-        string_view superEmptyBeaverView("");
+        AZStd::string_view view1("The quick brown fox jumped over the lazy dog");
+        AZStd::string_view view2("Needle in Haystack");
+        AZStd::string_view emptyBeaverView;
+        AZStd::string_view superEmptyBeaverView("");
         
         EXPECT_EQ("", emptyBeaverView);
         EXPECT_EQ("", superEmptyBeaverView);
@@ -1378,13 +1373,13 @@ namespace UnitTest
         EXPECT_EQ(view2, "Needle in Haystack");
         EXPECT_NE(view2, "Needle in Hayqueue");
 
-        string_view compareView(view2);
+        AZStd::string_view compareView(view2);
         EXPECT_EQ(view2, compareView);
         EXPECT_NE(view2, view1);
 
         AZStd::string compareStr("Busy Beaver");
-        string_view notBeaverView("Lumber Beaver");
-        string_view beaverView("Busy Beaver");
+        AZStd::string_view notBeaverView("Lumber Beaver");
+        AZStd::string_view beaverView("Busy Beaver");
         EXPECT_EQ(compareStr, beaverView);
         EXPECT_NE(compareStr, notBeaverView);
 
@@ -1528,8 +1523,8 @@ namespace UnitTest
     TYPED_TEST_CASE(BasicStringViewConstexprFixture, StringViewElementTypes);
     TYPED_TEST(BasicStringViewConstexprFixture, StringView_DefaultConstructorsIsConstexpr)
     {
-        constexpr basic_string_view<TypeParam> defaultView1;
-        constexpr basic_string_view<TypeParam> defaultView2;
+        constexpr AZStd::basic_string_view<TypeParam> defaultView1;
+        constexpr AZStd::basic_string_view<TypeParam> defaultView2;
         static_assert(defaultView1 == defaultView2, "string_view constructor should be constexpr");
     }
 
@@ -1549,7 +1544,7 @@ namespace UnitTest
 
             return {};
         }();
-        constexpr basic_string_view<TypeParam> charTView1(compileTimeString);
+        constexpr AZStd::basic_string_view<TypeParam> charTView1(compileTimeString);
         static_assert(charTView1.size() == 10, "string_view constructor should be constexpr");
         // non-null terminated compile time string
         constexpr const TypeParam* compileTimeString2 = []() constexpr -> const TypeParam*
@@ -1565,7 +1560,7 @@ namespace UnitTest
 
             return {};
         }();
-        constexpr basic_string_view<TypeParam> charTViewWithLength(compileTimeString2, 7);
+        constexpr AZStd::basic_string_view<TypeParam> charTViewWithLength(compileTimeString2, 7);
         static_assert(charTViewWithLength.size() == 7, "string_view constructor should be constexpr");
     }
 
@@ -1585,8 +1580,8 @@ namespace UnitTest
 
             return {};
         }();
-        constexpr basic_string_view<TypeParam> copyView1(compileTimeString);
-        constexpr basic_string_view<TypeParam> copyView2(copyView1);
+        constexpr AZStd::basic_string_view<TypeParam> copyView1(compileTimeString);
+        constexpr AZStd::basic_string_view<TypeParam> copyView2(copyView1);
         static_assert(copyView1 == copyView2, "string_view constructor should be constexpr");
     }
 
@@ -1606,8 +1601,8 @@ namespace UnitTest
 
             return {};
         }();
-        constexpr basic_string_view<TypeParam> assignView1(compileTimeString1);
-        auto assignment_test_func = [](basic_string_view<TypeParam> sourceView) constexpr -> basic_string_view<TypeParam>
+        constexpr AZStd::basic_string_view<TypeParam> assignView1(compileTimeString1);
+        auto assignment_test_func = [](AZStd::basic_string_view<TypeParam> sourceView) constexpr -> AZStd::basic_string_view<TypeParam>
         {
             constexpr const TypeParam* const compileTimeString2 = []() constexpr-> const TypeParam*
             {
@@ -1622,7 +1617,7 @@ namespace UnitTest
 
                 return {};
             }();
-            basic_string_view<TypeParam> assignView2(compileTimeString2);
+            AZStd::basic_string_view<TypeParam> assignView2(compileTimeString2);
             assignView2 = sourceView;
             return assignView2;
         };
@@ -1646,15 +1641,15 @@ namespace UnitTest
 
             return {};
         }();
-        constexpr basic_string_view<TypeParam> iteratorView(compileTimeString1);
-        constexpr typename basic_string_view<TypeParam>::iterator beginIt = iteratorView.begin();
-        constexpr typename basic_string_view<TypeParam>::const_iterator cbeginIt = iteratorView.cbegin();
-        constexpr typename basic_string_view<TypeParam>::iterator endIt = iteratorView.end();
-        constexpr typename basic_string_view<TypeParam>::const_iterator cendIt = iteratorView.cend();
-        constexpr typename basic_string_view<TypeParam>::reverse_iterator rbeginIt = iteratorView.rbegin();
-        constexpr typename basic_string_view<TypeParam>::const_reverse_iterator crbeginIt = iteratorView.crbegin();
-        constexpr typename basic_string_view<TypeParam>::reverse_iterator rendIt = iteratorView.rend();
-        constexpr typename basic_string_view<TypeParam>::const_reverse_iterator crendIt = iteratorView.crend();
+        constexpr AZStd::basic_string_view<TypeParam> iteratorView(compileTimeString1);
+        constexpr typename AZStd::basic_string_view<TypeParam>::iterator beginIt = iteratorView.begin();
+        constexpr typename AZStd::basic_string_view<TypeParam>::const_iterator cbeginIt = iteratorView.cbegin();
+        constexpr typename AZStd::basic_string_view<TypeParam>::iterator endIt = iteratorView.end();
+        constexpr typename AZStd::basic_string_view<TypeParam>::const_iterator cendIt = iteratorView.cend();
+        constexpr typename AZStd::basic_string_view<TypeParam>::reverse_iterator rbeginIt = iteratorView.rbegin();
+        constexpr typename AZStd::basic_string_view<TypeParam>::const_reverse_iterator crbeginIt = iteratorView.crbegin();
+        constexpr typename AZStd::basic_string_view<TypeParam>::reverse_iterator rendIt = iteratorView.rend();
+        constexpr typename AZStd::basic_string_view<TypeParam>::const_reverse_iterator crendIt = iteratorView.crend();
         static_assert(beginIt != endIt, "begin and iterators should be different");
         static_assert(cbeginIt != cendIt, "begin and iterators should be different");
         static_assert(rbeginIt != rendIt, "begin and iterators should be different");
@@ -1679,7 +1674,7 @@ namespace UnitTest
 
             return {};
         }();
-        constexpr basic_string_view<TypeParam> elementView1(compileTimeString1);
+        constexpr AZStd::basic_string_view<TypeParam> elementView1(compileTimeString1);
         static_assert(elementView1[4] == 'o', "character at index 4 in string_view should be 'o'");
         static_assert(elementView1.at(5) == 'W', "character at index 5 in string_view should be 'W'");
     }
@@ -1700,7 +1695,7 @@ namespace UnitTest
 
             return {};
         }();
-        constexpr basic_string_view<TypeParam> elementView1(compileTimeString1);
+        constexpr AZStd::basic_string_view<TypeParam> elementView1(compileTimeString1);
         static_assert(elementView1.front() == 'H', "Fourth character in string_view should be 'H'");
         static_assert(elementView1.back() == 'd', "Fifth character in string_view should be 'd'");
     }
@@ -1734,8 +1729,8 @@ namespace UnitTest
 
             return {};
         }();
-        static constexpr basic_string_view<TypeParam> elementView1(compileTimeString1);
-        static constexpr basic_string_view<TypeParam> elementView2(compileTimeString2);
+        static constexpr AZStd::basic_string_view<TypeParam> elementView1(compileTimeString1);
+        static constexpr AZStd::basic_string_view<TypeParam> elementView2(compileTimeString2);
         static_assert(elementView1.data(), "string_view.data() should be non-nullptr");
         static_assert(elementView2.data(), "string_view.data() should be non-nullptr");
     }
@@ -1756,7 +1751,7 @@ namespace UnitTest
 
             return {};
         }();
-        constexpr basic_string_view<TypeParam> sizeView1(compileTimeString1);
+        constexpr AZStd::basic_string_view<TypeParam> sizeView1(compileTimeString1);
         static_assert(sizeView1.size() == sizeView1.length(), "string_views size and length function should return the same value");
         static_assert(!sizeView1.empty(), "string_views should not be empty");
         static_assert(sizeView1.max_size() != 0, "string_views max_size should be greater than 0");
@@ -1770,21 +1765,21 @@ namespace UnitTest
         {
             return "HelloWorld";
         };
-        constexpr basic_string_view<TypeParam> modifierView("HelloWorld");
+        constexpr AZStd::basic_string_view<TypeParam> modifierView("HelloWorld");
         // A constexpr lambda is used to evaluate non constexpr string_view instances' member functions which
         // have been marked as constexpr at compile time
         // The google test function being run is not a constexpr function and therefore will evaulate
         // non-constexpr string_view variables at runtime. This would cause static_assert to state
         // that the expression is evaluated at runtime
-        auto remove_prefix_test_func = [](basic_string_view<TypeParam> sourceView) constexpr -> basic_string_view<TypeParam>
+        auto remove_prefix_test_func = [](AZStd::basic_string_view<TypeParam> sourceView) constexpr -> AZStd::basic_string_view<TypeParam>
         {
-            basic_string_view<TypeParam> lstripView(sourceView);
+            AZStd::basic_string_view<TypeParam> lstripView(sourceView);
             lstripView.remove_prefix(5);
             return lstripView;
         };
-        auto remove_suffix_test_func = [](basic_string_view<TypeParam> sourceView) constexpr -> basic_string_view<TypeParam>
+        auto remove_suffix_test_func = [](AZStd::basic_string_view<TypeParam> sourceView) constexpr -> AZStd::basic_string_view<TypeParam>
         {
-            basic_string_view<TypeParam> rstripView(sourceView);
+            AZStd::basic_string_view<TypeParam> rstripView(sourceView);
             rstripView.remove_suffix(5);
             return rstripView;
         };
@@ -1801,8 +1796,8 @@ namespace UnitTest
             return "HelloWorld";
         };
         constexpr const TypeParam* compileTimeString1 = MakeCompileTimeString1();;
-        constexpr basic_string_view<TypeParam> fullView(compileTimeString1);
-        auto substr_test_func = [](basic_string_view<TypeParam> sourceView) constexpr -> basic_string_view<TypeParam>
+        constexpr AZStd::basic_string_view<TypeParam> fullView(compileTimeString1);
+        auto substr_test_func = [](AZStd::basic_string_view<TypeParam> sourceView) constexpr -> AZStd::basic_string_view<TypeParam>
         {
             return sourceView.substr(3, 5);
         };
@@ -1818,7 +1813,7 @@ namespace UnitTest
             return "elloGovernor";
         };
         constexpr const TypeParam* compileTimeString1 = MakeCompileTimeString1();
-        constexpr basic_string_view<TypeParam> withView(compileTimeString1);
+        constexpr AZStd::basic_string_view<TypeParam> withView(compileTimeString1);
         static_assert(withView.starts_with("ello"), "string_view should start with \"ello\"");
         // Regression in VS2017 15.8 and 15.9 where __builtin_memcmp fails in valid checks
 #if AZ_COMPILER_MSVC < 1915 && AZ_COMPILER_MSVC > 1916
@@ -1854,9 +1849,9 @@ namespace UnitTest
     TYPED_TEST(BasicStringViewConstexprFixture, StringView_FindOperationsAreConstexpr)
     {
         constexpr const TypeParam* compileTimeString1 = MakeCompileTimeString1<TypeParam>;
-        constexpr basic_string_view<TypeParam> quickFoxView(compileTimeString1);
+        constexpr AZStd::basic_string_view<TypeParam> quickFoxView(compileTimeString1);
         constexpr const TypeParam* searchString = MakeSearchString<TypeParam>;
-        constexpr basic_string_view<TypeParam> searchView(searchString);
+        constexpr AZStd::basic_string_view<TypeParam> searchView(searchString);
 
         constexpr const TypeParam* testString1 = MakeTestString1<TypeParam>;
         constexpr const TypeParam* testString2 = MakeTestString2<TypeParam>;
@@ -1893,10 +1888,10 @@ namespace UnitTest
         static_assert(quickFoxView.find_last_of('o') == 42, "string_view find_last_of should result in index 42");
         static_assert(quickFoxView.find_last_of(testString6) == 40, "string_view find_last_of should result in index 40");
         static_assert(quickFoxView.find_last_of(testString7, 31) == 29, "string_view find_last_of should result in index 29");
-        static_assert(quickFoxView.find_last_of(testString8, basic_string_view<TypeParam>::npos, 1) == 7, "string_view find_last_of should result in index 7");
+        static_assert(quickFoxView.find_last_of(testString8, AZStd::basic_string_view<TypeParam>::npos, 1) == 7, "string_view find_last_of should result in index 7");
 
         // find_first_not_of test
-        constexpr basic_string_view<TypeParam> firstNotOfView(testString9);
+        constexpr AZStd::basic_string_view<TypeParam> firstNotOfView(testString9);
         static_assert(quickFoxView.find_first_not_of(firstNotOfView) == 4, "string_view find_first_not_of should result in index 0");
         static_assert(quickFoxView.find_first_not_of('t') == 1, "string_view find_first_not_of should result in index 1");
         static_assert(quickFoxView.find_first_not_of(testString9) == 4, "string_view find_first_not_of should result in index 4");
@@ -1904,12 +1899,12 @@ namespace UnitTest
         static_assert(quickFoxView.find_first_not_of(testString9, 0, 1) == 1, "string_view find_first_not_of should result in index 1");
 
         // find_last_not_of test
-        constexpr basic_string_view<TypeParam> lastNotOfView(testString10);
+        constexpr AZStd::basic_string_view<TypeParam> lastNotOfView(testString10);
         static_assert(quickFoxView.find_last_not_of(lastNotOfView) == 39, "string_view find_last_not_of should result in index 39");
         static_assert(quickFoxView.find_last_not_of('g') == 42, "string_view find_last_not_of should result in index 42");
         static_assert(quickFoxView.find_last_not_of(testString10) == 39, "string_view find_last_not_of should result in index 39");
         static_assert(quickFoxView.find_last_not_of(testString10, 27) == 24, "string_view find_last_not_of should result in index 24");
-        static_assert(quickFoxView.find_last_not_of(testString10, basic_string_view<TypeParam>::npos, 1) == 43, "string_view find_last_not_of should result in index 43");
+        static_assert(quickFoxView.find_last_not_of(testString10, AZStd::basic_string_view<TypeParam>::npos, 1) == 43, "string_view find_last_not_of should result in index 43");
     }
 
     TEST_F(String, StringView_CompareIsConstexpr)
@@ -1925,8 +1920,8 @@ namespace UnitTest
         };
         constexpr const TypeParam* compileTimeString1 = ThisTestMakeCompileTimeString1();
         constexpr const TypeParam* compileTimeString2 = MakeCompileTimeString2();
-        constexpr basic_string_view<TypeParam> lhsView(compileTimeString1);
-        constexpr basic_string_view<TypeParam> rhsView(compileTimeString2);
+        constexpr AZStd::basic_string_view<TypeParam> lhsView(compileTimeString1);
+        constexpr AZStd::basic_string_view<TypeParam> rhsView(compileTimeString2);
         static_assert(lhsView.compare(rhsView) > 0, R"("HelloWorld" > "HelloPearl")");
         static_assert(lhsView.compare(0, 5, rhsView) < 0, R"("Hello" < HelloPearl")");
         static_assert(lhsView.compare(2, 3, rhsView, 2, 3) == 0, R"("llo" == llo")");
@@ -1943,7 +1938,7 @@ namespace UnitTest
             return "HelloWorld";
         };
         constexpr const TypeParam* compileTimeString1 = TestMakeCompileTimeString1();
-        constexpr basic_string_view<TypeParam> compareView(compileTimeString1);
+        constexpr AZStd::basic_string_view<TypeParam> compareView(compileTimeString1);
         static_assert(compareView == "HelloWorld", "string_view operator== comparison has failed");
         static_assert(compareView != "MadWorld", "string_view operator!= comparison has failed");
         static_assert(compareView < "JelloWorld", "string_view operator< comparison has failed");
@@ -1954,7 +1949,7 @@ namespace UnitTest
 
     TYPED_TEST(BasicStringViewConstexprFixture, StringView_SwapIsConstexpr)
     {
-        auto swap_test_func = []() constexpr -> basic_string_view<TypeParam>
+        auto swap_test_func = []() constexpr -> AZStd::basic_string_view<TypeParam>
         {
             constexpr auto ThisTestMakeCompileTimeString1 = []() constexpr -> const TypeParam*
             {
@@ -1980,8 +1975,8 @@ namespace UnitTest
             };
             constexpr const TypeParam* compileTimeString1 = ThisTestMakeCompileTimeString1();
             constexpr const TypeParam* compileTimeString2 = MakeCompileTimeString2();
-            basic_string_view<TypeParam> lhsView(compileTimeString1);
-            basic_string_view<TypeParam> rhsView(compileTimeString2);
+            AZStd::basic_string_view<TypeParam> lhsView(compileTimeString1);
+            AZStd::basic_string_view<TypeParam> rhsView(compileTimeString2);
             lhsView.swap(rhsView);
             return lhsView;
         };
@@ -2014,13 +2009,14 @@ namespace UnitTest
             }
         };
         constexpr const TypeParam* compileTimeString1 = ThisTestMakeCompileTimeString1();
-        constexpr basic_string_view<TypeParam> hashView(compileTimeString1);
-        constexpr size_t compileHash = AZStd::hash<basic_string_view<TypeParam>>{}(hashView);
+        constexpr AZStd::basic_string_view<TypeParam> hashView(compileTimeString1);
+        constexpr size_t compileHash = AZStd::hash<AZStd::basic_string_view<TypeParam>>{}(hashView);
         static_assert(compileHash != 0, "Hash of \"HelloWorld\" should not be 0");
     }
 
     TEST_F(String, StringView_UserLiteralsSucceed)
     {
+        using namespace AZStd::string_view_literals;
         constexpr auto charView{ "Test"_sv };
         constexpr auto wcharView{ L"Super Test"_sv };
         static_assert(charView == "Test", "char string literal should be \"Test\"");
@@ -2291,21 +2287,21 @@ namespace UnitTest
     {
         AZStd::fixed_string<32> filter1;
         AZStd::string testValue{ "test" };
-        EXPECT_FALSE(wildcard_match(filter1, testValue));
+        EXPECT_FALSE(AZStd::wildcard_match(filter1, testValue));
     }
     TEST_F(String, WildcardMatch_EmptyFilterWithEmptyValue_Succeeds)
     {
         AZStd::fixed_string<32> filter1;
         AZStd::fixed_string<32> emptyValue;
-        EXPECT_TRUE(wildcard_match(filter1, emptyValue));
+        EXPECT_TRUE(AZStd::wildcard_match(filter1, emptyValue));
     }
     TEST_F(String, WildcardMatch_AsteriskOnlyFilterWithEmptyValue_Succeeds)
     {
         const char* filter1{ "*" };
         const char* filter2{ "**" };
         const char* emptyValue{ "" };
-        EXPECT_TRUE(wildcard_match(filter1, emptyValue));
-        EXPECT_TRUE(wildcard_match(filter2, emptyValue));
+        EXPECT_TRUE(AZStd::wildcard_match(filter1, emptyValue));
+        EXPECT_TRUE(AZStd::wildcard_match(filter2, emptyValue));
     }
     TEST_F(String, WildcardMatch_AsteriskQuestionMarkFilterWithEmptyValue_Failes)
     {
@@ -2313,60 +2309,60 @@ namespace UnitTest
         const char* filter1{ "*?" };
         const char* filter2{ "?*" };
         const char* emptyValue{ "" };
-        EXPECT_FALSE(wildcard_match(filter1, emptyValue));
-        EXPECT_FALSE(wildcard_match(filter2, emptyValue));
+        EXPECT_FALSE(AZStd::wildcard_match(filter1, emptyValue));
+        EXPECT_FALSE(AZStd::wildcard_match(filter2, emptyValue));
     }
     TEST_F(String, WildcardMatch_DotValue_Succeeds)
     {
         const char* filter1{ "?" };
         const char* dotValue{ "." };
-        EXPECT_TRUE(wildcard_match(filter1, dotValue));
+        EXPECT_TRUE(AZStd::wildcard_match(filter1, dotValue));
     }
     TEST_F(String, WildcardMatch_DoubleDotValue_Succeeds)
     {
         const char* filter1{ "??" };
         const char* dotValue{ ".." };
-        EXPECT_TRUE(wildcard_match(filter1, dotValue));
+        EXPECT_TRUE(AZStd::wildcard_match(filter1, dotValue));
     }
     TEST_F(String, WildcardMatch_GlobFilters_Succeeds)
     {
         const char* filter1{ "*" };
         const char* filter2{ "*?" };
         const char* filter3{ "?*" };
-        EXPECT_TRUE(wildcard_match(filter1, "Hello"));
-        EXPECT_TRUE(wildcard_match(filter1, "?"));
-        EXPECT_TRUE(wildcard_match(filter1, "*"));
-        EXPECT_TRUE(wildcard_match(filter1, "Q"));
+        EXPECT_TRUE(AZStd::wildcard_match(filter1, "Hello"));
+        EXPECT_TRUE(AZStd::wildcard_match(filter1, "?"));
+        EXPECT_TRUE(AZStd::wildcard_match(filter1, "*"));
+        EXPECT_TRUE(AZStd::wildcard_match(filter1, "Q"));
 
-        EXPECT_TRUE(wildcard_match(filter2, "Hello"));
-        EXPECT_TRUE(wildcard_match(filter2, "?"));
-        EXPECT_TRUE(wildcard_match(filter2, "*"));
-        EXPECT_TRUE(wildcard_match(filter2, "Q"));
+        EXPECT_TRUE(AZStd::wildcard_match(filter2, "Hello"));
+        EXPECT_TRUE(AZStd::wildcard_match(filter2, "?"));
+        EXPECT_TRUE(AZStd::wildcard_match(filter2, "*"));
+        EXPECT_TRUE(AZStd::wildcard_match(filter2, "Q"));
 
-        EXPECT_TRUE(wildcard_match(filter3, "Hello"));
-        EXPECT_TRUE(wildcard_match(filter3, "?"));
-        EXPECT_TRUE(wildcard_match(filter3, "*"));
-        EXPECT_TRUE(wildcard_match(filter3, "Q"));
+        EXPECT_TRUE(AZStd::wildcard_match(filter3, "Hello"));
+        EXPECT_TRUE(AZStd::wildcard_match(filter3, "?"));
+        EXPECT_TRUE(AZStd::wildcard_match(filter3, "*"));
+        EXPECT_TRUE(AZStd::wildcard_match(filter3, "Q"));
     }
 
     TEST_F(String, WildcardMatch_NormalString_Succeeds)
     {
         constexpr AZStd::string_view jpgFilter{ "**/*.jpg" };
-        EXPECT_FALSE(wildcard_match(jpgFilter, "Test.jpg"));
-        EXPECT_FALSE(wildcard_match(jpgFilter, "Test.jpfg"));
-        EXPECT_TRUE(wildcard_match(jpgFilter, "Images/Other.jpg"));
-        EXPECT_FALSE(wildcard_match(jpgFilter, "Pictures/Other.gif"));
+        EXPECT_FALSE(AZStd::wildcard_match(jpgFilter, "Test.jpg"));
+        EXPECT_FALSE(AZStd::wildcard_match(jpgFilter, "Test.jpfg"));
+        EXPECT_TRUE(AZStd::wildcard_match(jpgFilter, "Images/Other.jpg"));
+        EXPECT_FALSE(AZStd::wildcard_match(jpgFilter, "Pictures/Other.gif"));
 
         constexpr AZStd::string_view tempDirFilter{ "temp/*" };
-        EXPECT_TRUE(wildcard_match(tempDirFilter, "temp/"));
-        EXPECT_TRUE(wildcard_match(tempDirFilter, "temp/f"));
-        EXPECT_FALSE(wildcard_match(tempDirFilter, "tem1/"));
+        EXPECT_TRUE(AZStd::wildcard_match(tempDirFilter, "temp/"));
+        EXPECT_TRUE(AZStd::wildcard_match(tempDirFilter, "temp/f"));
+        EXPECT_FALSE(AZStd::wildcard_match(tempDirFilter, "tem1/"));
 
         constexpr AZStd::string_view xmlFilter{ "test.xml" };
-        EXPECT_TRUE(wildcard_match(xmlFilter, "Test.xml"));
-        EXPECT_TRUE(wildcard_match(xmlFilter, "test.xml"));
-        EXPECT_FALSE(wildcard_match(xmlFilter, "test.xmlschema"));
-        EXPECT_FALSE(wildcard_match(xmlFilter, "Xtest.xml"));
+        EXPECT_TRUE(AZStd::wildcard_match(xmlFilter, "Test.xml"));
+        EXPECT_TRUE(AZStd::wildcard_match(xmlFilter, "test.xml"));
+        EXPECT_FALSE(AZStd::wildcard_match(xmlFilter, "test.xmlschema"));
+        EXPECT_FALSE(AZStd::wildcard_match(xmlFilter, "Xtest.xml"));
     }
 
     TEST_F(String, WildcardMatchCase_CanBeCompileTimeEvaluated_Succeeds)
@@ -2424,6 +2420,31 @@ namespace UnitTest
         EXPECT_EQ("oWord", eraseIfTest);
     }
 
+    TEST_F(String, StringWithStatelessAllocator_HasSizeOf_PointerPlus2IntTypes_Compiles)
+    {
+        // The expected size of a basic_string with a stateless allocator
+        // Is the size of the pointer (used for storing the memory address of the string)
+        // + the size of the string "size" member used to store the size of the string
+        // + the size of the string "capacity" member used to store the capacity of the string
+        size_t constexpr ExpectedBasicStringSize = sizeof(void*) + 2 * sizeof(size_t);
+        using StringStatelessAllocator = AZStd::basic_string<char, AZStd::char_traits<char>, AZStd::stateless_allocator>;
+        static_assert(ExpectedBasicStringSize == sizeof(StringStatelessAllocator),
+            "Stateless allocator is counting against the size of the basic_string class"
+            " A change has made to break the empty base optimization of the basic_string class");
+    }
+
+    TEST_F(String, StringWithStatefulAllocator_HasSizeOf_PointerPlus2IntTypesPlusAllocator_Compiles)
+    {
+        // The expected size of a basic_string with a stateless allocator
+        // Is the size of the pointer (used for storing the memory address of the string)
+        // + the size of the string "size" member used to store the size of the string
+        // + the size of the string "capacity" member used to store the capacity of the string
+        size_t constexpr ExpectedBasicStringSize = sizeof(void*) + 2 * sizeof(size_t) + sizeof(AZStd::allocator);
+        static_assert(ExpectedBasicStringSize == sizeof(AZStd::string),
+            "Using Stateful allocator with basic_string class should result in a 32-byte string class"
+            " on 64-bit platforms ");
+    }
+
     template <typename StringType>
     class ImmutableStringFunctionsFixture
         : public ScopedAllocatorSetupFixture
@@ -2473,5 +2494,296 @@ namespace UnitTest
         EXPECT_EQ(str, formatted);
     }
 
-#endif // AZ_UNIT_TEST_SKIP_STD_STRING_TESTS
 }
+
+#if defined(HAVE_BENCHMARK)
+namespace Benchmark
+{
+    class StringBenchmarkFixture
+        : public ::UnitTest::AllocatorsBenchmarkFixture
+    {
+    protected:
+        template <typename Element, typename Traits, typename Allocator>
+        void SwapStringViaMemcpy(AZStd::basic_string<Element, Traits, Allocator>& left,
+            AZStd::basic_string<Element, Traits, Allocator>& right)
+        {
+            // Test Swapping the storage container for the string class
+            // Use aligned_storage to prevent constructors from slowing operation
+            AZStd::aligned_storage_for_t<decltype(left.m_storage.first())> tempStorage;
+            ::memcpy(&tempStorage, &left.m_storage.first(), sizeof(left.m_storage.first()));
+            ::memcpy(&left.m_storage.first(), &right.m_storage.first(), sizeof(right.m_storage.first()));
+            ::memcpy(&right.m_storage.first(), &tempStorage, sizeof(tempStorage));
+        }
+
+
+        template <typename Element, typename Traits, typename Allocator>
+        void SwapStringViaPointerSizedSwaps(AZStd::basic_string<Element, Traits, Allocator>& left,
+            AZStd::basic_string<Element, Traits, Allocator>& right)
+        {
+            using String = AZStd::basic_string<Element, Traits, Allocator>;
+            using PointerAlignedData = typename String::PointerAlignedData;
+            // Use pointer sized swaps to swap the string storage
+            auto& leftAlignedPointers = reinterpret_cast<PointerAlignedData&>(left.m_storage.first());
+            auto& rightAlignedPointers = reinterpret_cast<PointerAlignedData&>(right.m_storage.first());
+            constexpr size_t alignedPointerCount{ AZStd::size(PointerAlignedData{}.m_alignedValues) };
+            for (size_t i = 0; i < alignedPointerCount; ++i)
+            {
+                AZStd::swap(leftAlignedPointers.m_alignedValues[i], rightAlignedPointers.m_alignedValues[i]);
+            }
+        }
+    };
+
+    BENCHMARK_F(StringBenchmarkFixture, BM_StringPointerSwapShortString)(benchmark::State& state)
+    {
+        AZStd::string test1{ "foo bar"};
+        AZStd::string test2{ "bar foo" };
+        for (auto _ : state)
+        {
+            SwapStringViaPointerSizedSwaps(test1, test2);
+        }
+    }
+
+    BENCHMARK_F(StringBenchmarkFixture, BM_StringPointerSwapLongString)(benchmark::State& state)
+    {
+        AZStd::string test1{ "The brown quick wolf jumped over the hyperactive cat" };
+        AZStd::string test2{ "The quick brown fox jumped over the lazy dog" };
+        for (auto _ : state)
+        {
+            SwapStringViaPointerSizedSwaps(test1, test2);
+        }
+    }
+
+    BENCHMARK_F(StringBenchmarkFixture, BM_StringMemcpySwapShortString)(benchmark::State& state)
+    {
+        AZStd::string test1{ "foo bar" };
+        AZStd::string test2{ "bar foo" };
+        for (auto _ : state)
+        {
+            SwapStringViaMemcpy(test1, test2);
+        }
+    }
+
+    BENCHMARK_F(StringBenchmarkFixture, BM_StringMemcpySwapLongString)(benchmark::State& state)
+    {
+        AZStd::string test1{ "The brown quick wolf jumped over the hyperactive cat" };
+        AZStd::string test2{ "The quick brown fox jumped over the lazy dog" };
+        for (auto _ : state)
+        {
+            SwapStringViaMemcpy(test1, test2);
+        }
+    }
+
+    template <typename StringType>
+    class StringTemplateBenchmarkFixture
+        : public ::UnitTest::AllocatorsBenchmarkFixture
+    {};
+
+    // AZStd::string assign benchmarks
+    BENCHMARK_TEMPLATE_DEFINE_F(StringTemplateBenchmarkFixture, BM_StringAssignConstPointer_NullDelimited, AZStd::string)(benchmark::State& state)
+    {
+        AZStd::string sourceString(state.range(0), 'a');
+        const char* sourceAddress = sourceString.c_str();
+
+        for (auto _ : state)
+        {
+            AZStd::string assignString;
+            assignString.assign(sourceAddress);
+        }
+    }
+
+    BENCHMARK_REGISTER_F(StringTemplateBenchmarkFixture, BM_StringAssignConstPointer_NullDelimited)
+        ->RangeMultiplier(2)->Range(8, 32);
+
+    BENCHMARK_TEMPLATE_DEFINE_F(StringTemplateBenchmarkFixture, BM_StringAssignConstPointer_WithSize, AZStd::string)(benchmark::State& state)
+    {
+        AZStd::string sourceString(state.range(0), 'a');
+        const char* sourceAddress = sourceString.c_str();
+        const size_t sourceSize = sourceString.size();
+
+        for (auto _ : state)
+        {
+            AZStd::string assignString;
+            assignString.assign(sourceAddress, sourceSize);
+        }
+    }
+
+    BENCHMARK_REGISTER_F(StringTemplateBenchmarkFixture, BM_StringAssignConstPointer_WithSize)
+        ->RangeMultiplier(2)->Range(8, 32);
+
+    BENCHMARK_TEMPLATE_DEFINE_F(StringTemplateBenchmarkFixture, BM_StringAssignFromIterators, AZStd::string)(benchmark::State& state)
+    {
+        AZStd::string sourceString(state.range(0), 'a');
+        auto sourceBegin = sourceString.begin();
+        auto sourceEnd = sourceString.end();
+
+        for (auto _ : state)
+        {
+            AZStd::string assignString;
+            assignString.assign(sourceBegin, sourceEnd);
+        }
+    }
+
+    BENCHMARK_REGISTER_F(StringTemplateBenchmarkFixture, BM_StringAssignFromIterators)
+        ->RangeMultiplier(2)->Range(8, 32);
+
+    BENCHMARK_TEMPLATE_DEFINE_F(StringTemplateBenchmarkFixture, BM_StringAssignFromStringView, AZStd::string)(benchmark::State& state)
+    {
+        AZStd::string sourceString(state.range(0), 'a');
+        AZStd::string_view sourceView(sourceString);
+
+        for (auto _ : state)
+        {
+            AZStd::string assignString;
+            assignString.assign(sourceView);
+        }
+    }
+
+    BENCHMARK_REGISTER_F(StringTemplateBenchmarkFixture, BM_StringAssignFromStringView)
+        ->RangeMultiplier(2)->Range(8, 32);
+
+    BENCHMARK_TEMPLATE_DEFINE_F(StringTemplateBenchmarkFixture, BM_StringAssignFromString_LValue, AZStd::string)(benchmark::State& state)
+    {
+        AZStd::string sourceString(state.range(0), 'a');
+
+        for (auto _ : state)
+        {
+            AZStd::string assignString;
+            assignString.assign(sourceString);
+        }
+    }
+
+    BENCHMARK_REGISTER_F(StringTemplateBenchmarkFixture, BM_StringAssignFromString_LValue)
+        ->RangeMultiplier(2)->Range(8, 32);
+
+    BENCHMARK_TEMPLATE_DEFINE_F(StringTemplateBenchmarkFixture, BM_StringAssignFromString_RValue, AZStd::string)(benchmark::State& state)
+    {
+        AZStd::string sourceString(state.range(0), 'a');
+
+        for (auto _ : state)
+        {
+            AZStd::string assignString;
+            assignString.assign(AZStd::move(sourceString));
+        }
+    }
+
+    BENCHMARK_REGISTER_F(StringTemplateBenchmarkFixture, BM_StringAssignFromString_RValue)
+        ->RangeMultiplier(2)->Range(8, 32);
+
+    BENCHMARK_TEMPLATE_DEFINE_F(StringTemplateBenchmarkFixture, BM_StringAssignFromSingleCharacter, AZStd::string)(benchmark::State& state)
+    {
+        for (auto _ : state)
+        {
+            AZStd::string assignString;
+            assignString.assign(state.range(0), 'a');
+        }
+    }
+
+    BENCHMARK_REGISTER_F(StringTemplateBenchmarkFixture, BM_StringAssignFromSingleCharacter)
+        ->RangeMultiplier(2)->Range(8, 32);
+
+    // AZStd::fixed_string assign benchmarks
+    // NOTE: This is a copy-and-paste of above because Google Benchmark doesn't support real templated benchmarks like Googletest
+    // https://github.com/google/benchmark/issues/541
+    BENCHMARK_TEMPLATE_DEFINE_F(StringTemplateBenchmarkFixture, BM_FixedStringAssignConstPointer_NullDelimited, AZStd::fixed_string<1024>)(benchmark::State& state)
+    {
+        AZStd::fixed_string<1024> sourceString(state.range(0), 'a');
+        const char* sourceAddress = sourceString.c_str();
+
+        for (auto _ : state)
+        {
+            AZStd::fixed_string<1024> assignString;
+            assignString.assign(sourceAddress);
+        }
+    }
+
+    BENCHMARK_REGISTER_F(StringTemplateBenchmarkFixture, BM_FixedStringAssignConstPointer_NullDelimited)
+        ->RangeMultiplier(2)->Range(8, 32);
+
+    BENCHMARK_TEMPLATE_DEFINE_F(StringTemplateBenchmarkFixture, BM_FixedStringAssignConstPointer_WithSize, AZStd::fixed_string<1024>)(benchmark::State& state)
+    {
+        AZStd::fixed_string<1024> sourceString(state.range(0), 'a');
+        const char* sourceAddress = sourceString.c_str();
+        const size_t sourceSize = sourceString.size();
+
+        for (auto _ : state)
+        {
+            AZStd::fixed_string<1024> assignString;
+            assignString.assign(sourceAddress, sourceSize);
+        }
+    }
+
+    BENCHMARK_REGISTER_F(StringTemplateBenchmarkFixture, BM_FixedStringAssignConstPointer_WithSize)
+        ->RangeMultiplier(2)->Range(8, 32);
+
+    BENCHMARK_TEMPLATE_DEFINE_F(StringTemplateBenchmarkFixture, BM_FixedStringAssignFromIterators, AZStd::fixed_string<1024>)(benchmark::State& state)
+    {
+        AZStd::fixed_string<1024> sourceString(state.range(0), 'a');
+        auto sourceBegin = sourceString.begin();
+        auto sourceEnd = sourceString.end();
+
+        for (auto _ : state)
+        {
+            AZStd::fixed_string<1024> assignString;
+            assignString.assign(sourceBegin, sourceEnd);
+        }
+    }
+
+    BENCHMARK_REGISTER_F(StringTemplateBenchmarkFixture, BM_FixedStringAssignFromIterators)
+        ->RangeMultiplier(2)->Range(8, 32);
+
+    BENCHMARK_TEMPLATE_DEFINE_F(StringTemplateBenchmarkFixture, BM_FixedStringAssignFromStringView, AZStd::fixed_string<1024>)(benchmark::State& state)
+    {
+        AZStd::fixed_string<1024> sourceString(state.range(0), 'a');
+        AZStd::string_view sourceView(sourceString);
+
+        for (auto _ : state)
+        {
+            AZStd::fixed_string<1024> assignString;
+            assignString.assign(sourceView);
+        }
+    }
+
+    BENCHMARK_REGISTER_F(StringTemplateBenchmarkFixture, BM_FixedStringAssignFromStringView)
+        ->RangeMultiplier(2)->Range(8, 32);
+
+    BENCHMARK_TEMPLATE_DEFINE_F(StringTemplateBenchmarkFixture, BM_FixedStringAssignFromString_LValue, AZStd::fixed_string<1024>)(benchmark::State& state)
+    {
+        AZStd::fixed_string<1024> sourceString(state.range(0), 'a');
+
+        for (auto _ : state)
+        {
+            AZStd::fixed_string<1024> assignString;
+            assignString.assign(sourceString);
+        }
+    }
+
+    BENCHMARK_REGISTER_F(StringTemplateBenchmarkFixture, BM_FixedStringAssignFromString_LValue)
+        ->RangeMultiplier(2)->Range(8, 32);
+
+    BENCHMARK_TEMPLATE_DEFINE_F(StringTemplateBenchmarkFixture, BM_FixedStringAssignFromString_RValue, AZStd::fixed_string<1024>)(benchmark::State& state)
+    {
+        AZStd::fixed_string<1024> sourceString(state.range(0), 'a');
+
+        for (auto _ : state)
+        {
+            AZStd::fixed_string<1024> assignString;
+            assignString.assign(AZStd::move(sourceString));
+        }
+    }
+
+    BENCHMARK_REGISTER_F(StringTemplateBenchmarkFixture, BM_FixedStringAssignFromString_RValue)
+        ->RangeMultiplier(2)->Range(8, 32);
+
+    BENCHMARK_TEMPLATE_DEFINE_F(StringTemplateBenchmarkFixture, BM_FixedStringAssignFromSingleCharacter, AZStd::fixed_string<1024>)(benchmark::State& state)
+    {
+        for (auto _ : state)
+        {
+            AZStd::fixed_string<1024> assignString;
+            assignString.assign(state.range(0), 'a');
+        }
+    }
+
+    BENCHMARK_REGISTER_F(StringTemplateBenchmarkFixture, BM_FixedStringAssignFromSingleCharacter)
+        ->RangeMultiplier(2)->Range(8, 32);
+}
+#endif

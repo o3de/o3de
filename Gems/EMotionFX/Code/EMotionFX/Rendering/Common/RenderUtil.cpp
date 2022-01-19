@@ -688,7 +688,7 @@ namespace MCommon
                 const AZ::Vector3       nodeWorldPos        = pose->GetWorldSpaceTransform(jointIndex).m_position;
                 const AZ::Vector3       parentWorldPos      = pose->GetWorldSpaceTransform(parentIndex).m_position;
                 const AZ::Vector3       bone                = parentWorldPos - nodeWorldPos;
-                const AZ::Vector3       boneDirection       = MCore::SafeNormalize(bone);
+                const AZ::Vector3       boneDirection       = bone.GetNormalizedSafe();
                 const float             boneLength          = MCore::SafeLength(bone);
                 const float             boneScale           = GetBoneScale(actorInstance, joint);
                 const float             parentBoneScale     = GetBoneScale(actorInstance, skeleton->GetNode(parentIndex));
@@ -952,7 +952,15 @@ namespace MCommon
         }
         else
         {
-            worldTM = AZ::Transform::CreateFromQuaternion(MCore::AzEulerAnglesToAzQuat(0.0f, 0.0f, MCore::Math::DegreesToRadians(180.0f)));
+            if (direction.GetX() > 0)
+            {
+                worldTM = AZ::Transform::CreateFromQuaternion(MCore::AzEulerAnglesToAzQuat(MCore::Math::DegreesToRadians(180.0f), 0.0f, MCore::Math::DegreesToRadians(180.0f)));
+            }
+            else
+            {
+                worldTM = AZ::Transform::CreateFromQuaternion(MCore::AzEulerAnglesToAzQuat(0.0f, 0.0f,  0.0f));
+            }
+            
         }
 
         // set the cylinder to the given position

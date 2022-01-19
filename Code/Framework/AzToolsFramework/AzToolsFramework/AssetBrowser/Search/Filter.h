@@ -106,6 +106,7 @@ namespace AzToolsFramework
             ~StringFilter() override = default;
 
             void SetFilterString(const QString& filterString);
+            QString GetFilterString() const;
 
         protected:
             QString GetNameInternal() const override;
