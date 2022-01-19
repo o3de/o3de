@@ -182,7 +182,7 @@ namespace UnitTest
 
         Data::Asset<MaterialAsset> materialAsset = materialAssetOutcome.GetValue();
 
-        EXPECT_TRUE(materialAsset->IsFinalized());
+        EXPECT_TRUE(materialAsset->WasPreFinalized());
         EXPECT_EQ(0, materialAsset->GetRawPropertyValues().size()); // A pre-baked material has no need for the original raw property names and values
 
         // The order here is based on the order in the MaterialTypeSourceData, as added to the MaterialTypeAssetCreator.
@@ -227,14 +227,10 @@ namespace UnitTest
         EXPECT_TRUE(materialAssetOutcome.IsSuccess());
 
         Data::Asset<MaterialAsset> materialAsset = materialAssetOutcome.GetValue();
-        
-        ErrorMessageFinder expectNotFinalizedError("MaterialAsset must be finalized");
 
-        EXPECT_FALSE(materialAsset->IsFinalized());
+        EXPECT_FALSE(materialAsset->WasPreFinalized());
 
-        expectNotFinalizedError.ResetCounts();
-        EXPECT_TRUE(materialAsset->GetPropertyValues().empty());
-        expectNotFinalizedError.CheckExpectedErrorsFound();
+        // Note we avoid calling  GetPropertyValues() because that will auto-finalize the material. We want to check its raw property values first.
 
         auto findRawPropertyValue = [materialAsset](const char* propertyId)
         {
@@ -279,16 +275,10 @@ namespace UnitTest
         SerializeTester<RPI::MaterialAsset> tester(GetSerializeContext());
         tester.SerializeOut(materialAsset.Get());
         materialAsset = tester.SerializeIn(Uuid::CreateRandom(), ObjectStream::FilterDescriptor{AZ::Data::AssetFilterNoAssetLoading});
-        
-        // We check that everything is still in the original un-finalized state after going through the serialization process.
-        EXPECT_FALSE(materialAsset->IsFinalized());
-        checkRawPropertyValues();
-        expectNotFinalizedError.ResetCounts();
-        EXPECT_TRUE(materialAsset->GetPropertyValues().empty());
-        expectNotFinalizedError.CheckExpectedErrorsFound();
 
-        materialAsset->Finalize();
-        EXPECT_TRUE(materialAsset->IsFinalized());
+        // We check that the asset is still in the original un-finalized state after going through the serialization process.
+        EXPECT_FALSE(materialAsset->WasPreFinalized());
+        checkRawPropertyValues();
 
         // Now all the property values should be available through the main GetPropertyValues() API.
         EXPECT_EQ(materialAsset->GetPropertyValues()[0].GetValue<bool>(), true);
@@ -301,8 +291,9 @@ namespace UnitTest
         EXPECT_EQ(materialAsset->GetPropertyValues()[7].GetValue<Color>(), Color(0.1f, 0.2f, 0.3f, 0.4f));
         EXPECT_EQ(materialAsset->GetPropertyValues()[8].GetValue<Data::Asset<ImageAsset>>(), m_testImageAsset);
         EXPECT_EQ(materialAsset->GetPropertyValues()[9].GetValue<uint32_t>(), 1u);
-
+        
         // The raw property values are still available (because they are needed if a hot-reload of the MaterialTypeAsset occurs)
+        EXPECT_FALSE(materialAsset->WasPreFinalized());
         checkRawPropertyValues();
     }
 
@@ -659,19 +650,19 @@ namespace UnitTest
 
         auto materialAssetLevel1 = sourceDataLevel1.CreateMaterialAsset(Uuid::CreateRandom(), "", MaterialAssetProcessingMode::PreBake, true);
         EXPECT_TRUE(materialAssetLevel1.IsSuccess());
-        EXPECT_TRUE(materialAssetLevel1.GetValue()->IsFinalized());
+        EXPECT_TRUE(materialAssetLevel1.GetValue()->WasPreFinalized());
 
         m_assetSystemStub.RegisterSourceInfo("level1.material", materialAssetLevel1.GetValue().GetId());
 
         auto materialAssetLevel2 = sourceDataLevel2.CreateMaterialAsset(Uuid::CreateRandom(), "", MaterialAssetProcessingMode::PreBake, true);
         EXPECT_TRUE(materialAssetLevel2.IsSuccess());
-        EXPECT_TRUE(materialAssetLevel2.GetValue()->IsFinalized());
+        EXPECT_TRUE(materialAssetLevel2.GetValue()->WasPreFinalized());
 
         m_assetSystemStub.RegisterSourceInfo("level2.material", materialAssetLevel2.GetValue().GetId());
 
         auto materialAssetLevel3 = sourceDataLevel3.CreateMaterialAsset(Uuid::CreateRandom(), "", MaterialAssetProcessingMode::PreBake, true);
         EXPECT_TRUE(materialAssetLevel3.IsSuccess());
-        EXPECT_TRUE(materialAssetLevel3.GetValue()->IsFinalized());
+        EXPECT_TRUE(materialAssetLevel3.GetValue()->WasPreFinalized());
 
         auto layout = m_testMaterialTypeAsset->GetMaterialPropertiesLayout();
         MaterialPropertyIndex myFloat = layout->FindPropertyIndex(Name("general.MyFloat"));
@@ -731,21 +722,21 @@ namespace UnitTest
         auto materialAssetLevel1Result = sourceDataLevel1.CreateMaterialAsset(Uuid::CreateRandom(), "", MaterialAssetProcessingMode::DeferredBake, true);
         EXPECT_TRUE(materialAssetLevel1Result.IsSuccess());
         Data::Asset<MaterialAsset> materialAssetLevel1 = materialAssetLevel1Result.TakeValue();
-        EXPECT_FALSE(materialAssetLevel1->IsFinalized());
+        EXPECT_FALSE(materialAssetLevel1->WasPreFinalized());
 
         m_assetSystemStub.RegisterSourceInfo("level1.material", materialAssetLevel1.GetId());
 
         auto materialAssetLevel2Result = sourceDataLevel2.CreateMaterialAsset(Uuid::CreateRandom(), "", MaterialAssetProcessingMode::DeferredBake, true);
         EXPECT_TRUE(materialAssetLevel2Result.IsSuccess());
         Data::Asset<MaterialAsset> materialAssetLevel2 = materialAssetLevel2Result.TakeValue();
-        EXPECT_FALSE(materialAssetLevel2->IsFinalized());
+        EXPECT_FALSE(materialAssetLevel2->WasPreFinalized());
 
         m_assetSystemStub.RegisterSourceInfo("level2.material", materialAssetLevel2.GetId());
 
         auto materialAssetLevel3Result = sourceDataLevel3.CreateMaterialAsset(Uuid::CreateRandom(), "", MaterialAssetProcessingMode::DeferredBake, true);
         EXPECT_TRUE(materialAssetLevel3Result.IsSuccess());
         Data::Asset<MaterialAsset> materialAssetLevel3 = materialAssetLevel3Result.TakeValue();
-        EXPECT_FALSE(materialAssetLevel3->IsFinalized());
+        EXPECT_FALSE(materialAssetLevel3->WasPreFinalized());
 
         // Now we'll create the material type asset in memory so the materials will have what they need to finalize.
         Data::Asset<MaterialTypeAsset> testMaterialTypeAsset = CreateTestMaterialTypeAsset(materialTypeAssetId);
@@ -766,9 +757,7 @@ namespace UnitTest
         tester.SerializeOut(materialAssetLevel3.Get());
         materialAssetLevel3 = tester.SerializeIn(Uuid::CreateRandom(), ObjectStream::FilterDescriptor{AZ::Data::AssetFilterNoAssetLoading});
 
-        materialAssetLevel1->Finalize();
-        materialAssetLevel2->Finalize();
-        materialAssetLevel3->Finalize();
+        // The properties will finalize automatically when we call GetPropertyValues()...
 
         AZStd::array_view<MaterialPropertyValue> properties;
 

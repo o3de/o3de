@@ -111,6 +111,10 @@ namespace UnitTest
 
         EXPECT_EQ(assetId, materialAsset->GetId());
         EXPECT_EQ(Data::AssetData::AssetStatus::Ready, materialAsset->GetStatus());
+
+        EXPECT_TRUE(materialAsset->WasPreFinalized());
+        EXPECT_EQ(0, materialAsset->GetRawPropertyValues().size());
+
         validate(materialAsset);
 
         // Also test serialization...
@@ -122,6 +126,57 @@ namespace UnitTest
         ObjectStream::FilterDescriptor noAssets{ AZ::Data::AssetFilterNoAssetLoading };
         Data::Asset<RPI::MaterialAsset> serializedAsset = tester.SerializeIn(Data::AssetId(Uuid::CreateRandom()), noAssets);
         validate(serializedAsset);
+    }
+    
+    TEST_F(MaterialAssetTests, DeferredFinalize)
+    {
+        Data::AssetId assetId(Uuid::CreateRandom());
+
+        MaterialAssetCreator creator;
+        bool shouldFinalize = false;
+        creator.Begin(assetId, m_testMaterialTypeAsset, shouldFinalize);
+
+        creator.SetPropertyValue(Name{ "MyFloat2" }, Vector2{ 0.1f, 0.2f });
+        creator.SetPropertyValue(Name{ "MyFloat3" }, Vector3{ 1.1f, 1.2f, 1.3f });
+        creator.SetPropertyValue(Name{ "MyFloat4" }, Vector4{ 2.1f, 2.2f, 2.3f, 2.4f });
+        creator.SetPropertyValue(Name{ "MyColor"  }, Color{ 1.0f, 1.0f, 1.0f, 1.0f });
+        creator.SetPropertyValue(Name{ "MyInt"    }, -2);
+        creator.SetPropertyValue(Name{ "MyUInt"   }, 12u);
+        creator.SetPropertyValue(Name{ "MyFloat"  }, 1.5f);
+        creator.SetPropertyValue(Name{ "MyBool"   }, true);
+        creator.SetPropertyValue(Name{ "MyImage"  }, m_testImageAsset);
+        creator.SetPropertyValue(Name{ "MyEnum"   }, 1u);
+
+        Data::Asset<MaterialAsset> materialAsset;
+        EXPECT_TRUE(creator.End(materialAsset));
+
+        EXPECT_FALSE(materialAsset->WasPreFinalized());
+        EXPECT_EQ(10, materialAsset->GetRawPropertyValues().size());
+
+        // Also test serialization...
+
+        SerializeTester<RPI::MaterialAsset> tester(GetSerializeContext());
+        tester.SerializeOut(materialAsset.Get());
+
+        // Using a filter that skips loading assets because we are using a dummy image asset
+        ObjectStream::FilterDescriptor noAssets{ AZ::Data::AssetFilterNoAssetLoading };
+        Data::Asset<RPI::MaterialAsset> serializedAsset = tester.SerializeIn(Data::AssetId(Uuid::CreateRandom()), noAssets);
+        
+        EXPECT_FALSE(materialAsset->WasPreFinalized());
+        EXPECT_EQ(10, materialAsset->GetRawPropertyValues().size());
+
+        // GetPropertyValues() will automatically finalize the material asset, so we can go ahead and check the property values.
+        EXPECT_EQ(materialAsset->GetPropertyValues().size(), 10);
+        EXPECT_EQ(materialAsset->GetPropertyValues()[0].GetValue<bool>(), true);
+        EXPECT_EQ(materialAsset->GetPropertyValues()[1].GetValue<int32_t>(), -2);
+        EXPECT_EQ(materialAsset->GetPropertyValues()[2].GetValue<uint32_t>(), 12);
+        EXPECT_EQ(materialAsset->GetPropertyValues()[3].GetValue<float>(), 1.5f);
+        EXPECT_EQ(materialAsset->GetPropertyValues()[4].GetValue<Vector2>(), Vector2(0.1f, 0.2f));
+        EXPECT_EQ(materialAsset->GetPropertyValues()[5].GetValue<Vector3>(), Vector3(1.1f, 1.2f, 1.3f));
+        EXPECT_EQ(materialAsset->GetPropertyValues()[6].GetValue<Vector4>(), Vector4(2.1f, 2.2f, 2.3f, 2.4f));
+        EXPECT_EQ(materialAsset->GetPropertyValues()[7].GetValue<Color>(), Color(1.0f, 1.0f, 1.0f, 1.0f));
+        EXPECT_EQ(materialAsset->GetPropertyValues()[8].GetValue<Data::Asset<ImageAsset>>(), m_testImageAsset);
+        EXPECT_EQ(materialAsset->GetPropertyValues()[9].GetValue<uint32_t>(), 1u);
     }
 
     TEST_F(MaterialAssetTests, PropertyDefaultValuesComeFromParentMaterial)
@@ -267,15 +322,13 @@ namespace UnitTest
         warningFinder.AddExpectedErrorMessage("This material is based on version '1'");
         warningFinder.AddExpectedErrorMessage("material type is now at version '2'");
         
-        materialAsset->Finalize();
-        
-        warningFinder.CheckExpectedErrorsFound();
-
         // Even though this material was created using the old version of the material type, it's property values should get automatically
         // updated to align with the new property layout in the latest MaterialTypeAsset.
         MaterialPropertyIndex myIntIndex = materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(Name{"MyIntRenamed"});
         EXPECT_EQ(2, myIntIndex.GetIndex());
         EXPECT_EQ(7, materialAsset->GetPropertyValues()[myIntIndex.GetIndex()].GetValue<int32_t>());
+        
+        warningFinder.CheckExpectedErrorsFound();
 
         // Since the MaterialAsset has already been updated, and the warning reported once, we should not see the "consider updating"
         // warning reported again on subsequent property accesses.

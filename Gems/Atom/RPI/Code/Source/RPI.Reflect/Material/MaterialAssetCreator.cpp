@@ -49,6 +49,8 @@ namespace AZ
                     [this](const char* message) { ReportWarning("%s", message); },
                     [this](const char* message) { ReportError("%s", message); });
 
+                m_asset->m_wasPreFinalized = true;
+
                 // Finalize() doesn't clear the raw property data because that's the same function used at runtime, which does need to maintain the raw data
                 // to support hot reload. But here we are pre-baking with the assumption that AP build dependencies will keep the material type
                 // and material asset in sync, so we can discard the raw property data and just rely on the data in the material type asset.
