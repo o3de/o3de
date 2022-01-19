@@ -292,8 +292,6 @@ namespace O3DE::ProjectManager
 
         connect(addRepoButton, &QPushButton::clicked, this, &GemRepoScreen::HandleAddRepoButton);
 
-        topMiddleHLayout->addSpacing(30);
-
         middleVLayout->addLayout(topMiddleHLayout);
 
         middleVLayout->addSpacing(30);
@@ -303,16 +301,14 @@ namespace O3DE::ProjectManager
         m_gemRepoHeaderTable = new AdjustableHeaderWidget(
             QStringList{ tr("Repository Name"), tr("Creator"), tr("Updated"), "" },
             QVector<int>{
-                GemRepoItemDelegate::s_nameDefaultWidth + GemRepoItemDelegate::s_contentSpacing,
-                GemRepoItemDelegate::s_creatorDefaultWidth + GemRepoItemDelegate::s_contentSpacing,
-                GemRepoItemDelegate::s_updatedDefaultWidth + GemRepoItemDelegate::s_refreshIconSpacing + GemRepoItemDelegate::s_refreshIconSize + GemRepoItemDelegate::s_contentSpacing,
-                // Include header for delete button 
+                GemRepoItemDelegate::s_nameDefaultWidth,
+                GemRepoItemDelegate::s_creatorDefaultWidth,
+                GemRepoItemDelegate::s_updatedDefaultWidth + GemRepoItemDelegate::s_refreshIconSpacing + GemRepoItemDelegate::s_refreshIconSize,
+                // Include invisible header for delete button 
                 GemRepoItemDelegate::s_iconSize + GemRepoItemDelegate::s_contentMargins.right()
             },
             headerTableMinWidth,
             this);
-        m_gemRepoHeaderTable->setObjectName("gemRepoHeaderTable");
-        m_gemRepoHeaderTable->m_header->setObjectName("gemRepoListHeader");
 
         middleVLayout->addWidget(m_gemRepoHeaderTable);
 

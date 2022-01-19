@@ -49,10 +49,9 @@ namespace O3DE::ProjectManager
         inline constexpr static int s_borderWidth = 4;
 
         // Content
-        inline constexpr static int s_contentSpacing = 5;
-        inline constexpr static int s_nameDefaultWidth = 145;
-        inline constexpr static int s_creatorDefaultWidth = 115;
-        inline constexpr static int s_updatedDefaultWidth = 125;
+        inline constexpr static int s_nameDefaultWidth = 150;
+        inline constexpr static int s_creatorDefaultWidth = 120;
+        inline constexpr static int s_updatedDefaultWidth = 130;
 
         // Icon
         inline constexpr static int s_iconSize = 24;
@@ -62,6 +61,7 @@ namespace O3DE::ProjectManager
 
         enum class HeaderOrder
         {
+            Indent,
             Name,
             Creator,
             Update,

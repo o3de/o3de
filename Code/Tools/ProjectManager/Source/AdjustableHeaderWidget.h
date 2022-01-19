@@ -32,12 +32,21 @@ namespace O3DE::ProjectManager
         int GetScrollPosition() const;
         int CalcHeaderXPos(int headerIndex, bool calcEnd = false) const;
 
+        inline constexpr static int s_headerTextIndent = 7;
+        inline constexpr static int s_headerWidgetHeight = 24;
+
         QHeaderView* m_header;
 
     protected:
         void resizeEvent(QResizeEvent* event) override;
+        void showEvent(QShowEvent* event) override;
+
+        void ScaleHeaders();
 
     private:
+        inline constexpr static int s_headerIndentSection = 11;
+
         int m_minWidth;
+        int m_previousWidth;
     };
 } // namespace O3DE::ProjectManager

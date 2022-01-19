@@ -72,15 +72,17 @@ namespace O3DE::ProjectManager
             painter->restore();
         }
 
-        int currentHorizontalOffset = contentRect.left() - m_headerWidget->GetScrollPosition();
+        int currentHorizontalOffset = CalcHeaderXPos(HeaderOrder::Name);
 
         // Repo name
         QString repoName = GemRepoModel::GetName(modelIndex);
         int sectionSize = m_headerWidget->m_header->sectionSize(static_cast<int>(HeaderOrder::Name));
-        repoName = standardFontMetrics.elidedText(repoName, Qt::TextElideMode::ElideRight, sectionSize - GemRepoItemDelegate::s_contentSpacing);
+        repoName = standardFontMetrics.elidedText(repoName, Qt::TextElideMode::ElideRight,
+            sectionSize - AdjustableHeaderWidget::s_headerTextIndent);
 
         QRect repoNameRect = GetTextRect(standardFont, repoName, s_fontSize);
-        repoNameRect.moveTo(currentHorizontalOffset, contentRect.center().y() - repoNameRect.height() / 2);
+        repoNameRect.moveTo(currentHorizontalOffset + AdjustableHeaderWidget::s_headerTextIndent,
+            contentRect.center().y() - repoNameRect.height() / 2);
         repoNameRect = painter->boundingRect(repoNameRect, Qt::TextSingleLine, repoName);
 
         painter->drawText(repoNameRect, Qt::TextSingleLine, repoName);
@@ -90,10 +92,12 @@ namespace O3DE::ProjectManager
         sectionSize = m_headerWidget->m_header->sectionSize(static_cast<int>(HeaderOrder::Creator));
 
         QString repoCreator = GemRepoModel::GetCreator(modelIndex);
-        repoCreator = standardFontMetrics.elidedText(repoCreator, Qt::TextElideMode::ElideRight, sectionSize - GemRepoItemDelegate::s_contentSpacing);
+        repoCreator = standardFontMetrics.elidedText(repoCreator, Qt::TextElideMode::ElideRight,
+            sectionSize - AdjustableHeaderWidget::s_headerTextIndent);
 
         QRect repoCreatorRect = GetTextRect(standardFont, repoCreator, s_fontSize);
-        repoCreatorRect.moveTo(currentHorizontalOffset, contentRect.center().y() - repoCreatorRect.height() / 2);
+        repoCreatorRect.moveTo(currentHorizontalOffset + AdjustableHeaderWidget::s_headerTextIndent,
+            contentRect.center().y() - repoCreatorRect.height() / 2);
         repoCreatorRect = painter->boundingRect(repoCreatorRect, Qt::TextSingleLine, repoCreator);
 
         painter->drawText(repoCreatorRect, Qt::TextSingleLine, repoCreator);
@@ -105,10 +109,11 @@ namespace O3DE::ProjectManager
         QString repoUpdatedDate = GemRepoModel::GetLastUpdated(modelIndex).toString(RepoTimeFormat);
         repoUpdatedDate = standardFontMetrics.elidedText(
             repoUpdatedDate, Qt::TextElideMode::ElideRight,
-            sectionSize - GemRepoItemDelegate::s_refreshIconSpacing - GemRepoItemDelegate::s_refreshIconSize - GemRepoItemDelegate::s_contentSpacing);
+            sectionSize - GemRepoItemDelegate::s_refreshIconSpacing - GemRepoItemDelegate::s_refreshIconSize - AdjustableHeaderWidget::s_headerTextIndent);
 
         QRect repoUpdatedDateRect = GetTextRect(standardFont, repoUpdatedDate, s_fontSize);
-        repoUpdatedDateRect.moveTo(currentHorizontalOffset, contentRect.center().y() - repoUpdatedDateRect.height() / 2);
+        repoUpdatedDateRect.moveTo(currentHorizontalOffset + AdjustableHeaderWidget::s_headerTextIndent,
+            contentRect.center().y() - repoUpdatedDateRect.height() / 2);
         repoUpdatedDateRect = painter->boundingRect(repoUpdatedDateRect, Qt::TextSingleLine, repoUpdatedDate);
 
         painter->drawText(repoUpdatedDateRect, Qt::TextSingleLine, repoUpdatedDate);
@@ -131,7 +136,7 @@ namespace O3DE::ProjectManager
         initStyleOption(&options, modelIndex);
 
         const int marginsHorizontal = s_itemMargins.left() + s_itemMargins.right() + s_contentMargins.left() + s_contentMargins.right();
-        return QSize(marginsHorizontal + s_nameDefaultWidth + s_creatorDefaultWidth + s_updatedDefaultWidth + s_contentSpacing * 3, s_height);
+        return QSize(marginsHorizontal + s_nameDefaultWidth + s_creatorDefaultWidth + s_updatedDefaultWidth, s_height);
     }
 
     bool GemRepoItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& modelIndex)

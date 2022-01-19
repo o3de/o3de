@@ -546,9 +546,16 @@ QProgressBar::chunk {
     min-height:24px;
 }
 
-#GemCatalogHeaderLabel {
-    font-size: 12px;
-    color: #FFFFFF;
+#adjustableHeaderWidget QTableCornerButton::section {
+    border:none;
+    background-color:#333333;
+}
+
+#adjustableHeaderWidget QHeaderView::section { 
+    background-color:#333333; 
+    color:white; 
+    font-size:12px; 
+    border-right:1px solid #FFFFFF 
 }
 
 #GemCatalogHeaderShowCountLabel {
@@ -730,15 +737,6 @@ QProgressBar::chunk {
 #gemRepoAddButton:pressed {
     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                             stop: 0 #555555, stop: 1.0 #777777);
-}
-
-#gemRepoHeaderTable {
-    background-color: transparent;
-    max-height: 30px;
-}
-
-#gemRepoListHeader {
-    background-color: transparent;
 }
 
 #gemRepoInspector {

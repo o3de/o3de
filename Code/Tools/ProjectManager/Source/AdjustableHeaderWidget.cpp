@@ -12,6 +12,10 @@
 #include <QTimer>
 #include <QResizeEvent>
 #include <QScrollBar>
+#include <QColor>
+#include <QStyledItemDelegate>
+#include <QApplication>
+#include <QPalette>
 
 namespace O3DE::ProjectManager
 {
@@ -19,32 +23,31 @@ namespace O3DE::ProjectManager
         const QStringList& headerLabels, const QVector<int>& defaultHeaderWidths, int minWidth, QWidget* parent)
         : QTableWidget(parent)
         , m_minWidth(minWidth)
+        , m_previousWidth(minWidth)
     {
+        setObjectName("adjustableHeaderWidget");
         setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
-        setFixedHeight(20);
+        setFixedHeight(s_headerWidgetHeight);
 
         m_header = horizontalHeader();
-
         m_header->setDefaultAlignment(Qt::AlignLeft);
 
-        // Insert columns so the header labels will show up
-        for (int column = 0; column < headerLabels.count(); ++column)
-        {
-            insertColumn(column);
-        }
-        setHorizontalHeaderLabels(headerLabels);
+        // Insert columns so the header labels will show up along with the additional first indent column
+        setColumnCount(headerLabels.count() + 1);
+        // Set header labels along with empty indent column
+        setHorizontalHeaderLabels(QStringList{ "" } + headerLabels);
 
-        const int headerExtraMargin = 18;
+        // Scale the first header section used for indenting
+        m_header->resizeSection(0, s_headerIndentSection);
+
+        // Resize the other headers to their defaults now that the are created
         for (int column = 0; column < headerLabels.count() && column < defaultHeaderWidths.count(); ++column)
         {
-            m_header->resizeSection(column, defaultHeaderWidths[column] + (column == 0 ? headerExtraMargin : 0));
+            m_header->resizeSection(column + 1, defaultHeaderWidths[column]);
         }
 
         m_header->setSectionResizeMode(QHeaderView::ResizeMode::Interactive);
         m_header->setStretchLastSection(true);
-
-        // Required to set stylesheet in code as it will not be respected if set in qss
-        m_header->setStyleSheet("QHeaderView::section { background-color:#333333; color:white; font-size:12px; }");
     }
 
     int AdjustableHeaderWidget::GetScrollPosition() const
@@ -90,21 +93,35 @@ namespace O3DE::ProjectManager
 
     void AdjustableHeaderWidget::resizeEvent(QResizeEvent* event)
     {
-        float newRatio = static_cast<float>(event->size().width()) / static_cast<float>(event->oldSize().width());
+        QTableWidget::resizeEvent(event);
+        // Handles header scaling while the headers are shown
+        ScaleHeaders();
+    }
 
-        // This is the intial scaling after window creation because window starts everything starts at size -1
-        if (newRatio < 0.0f)
+    void AdjustableHeaderWidget::showEvent(QShowEvent* event)
+    {
+        QTableWidget::showEvent(event);
+        // Handles header scaling incase the window was resized while this was not displayed
+        ScaleHeaders();
+    }
+
+    void AdjustableHeaderWidget::ScaleHeaders()
+    {
+        const int currentWidth = width();
+        const float newRatio = static_cast<float>(currentWidth) / static_cast<float>(m_previousWidth);
+
+        if (newRatio != 1.0f)
         {
-            // Scale from the default min size set in contructor to the ratio that the window scaling allows
-            newRatio = static_cast<float>(event->size().width()) / static_cast<float>(m_minWidth);
-        }
+            int columnCount = m_header->model()->columnCount(QModelIndex());
 
-        int columnCount = m_header->model()->columnCount(QModelIndex());
+            // Resize all columns except the first because it is a spacer and last because it is set to stretch and fill the remaining space
+            for (int columnIndex = 1; columnIndex < columnCount - 1; ++columnIndex)
+            {
+                m_header->resizeSection(columnIndex, static_cast<int>(m_header->sectionSize(columnIndex) * newRatio));
+            }
 
-        // Resize all columns except the last because it is set to stretch and fill the remaining space
-        for (int columnIndex = 0; columnIndex < columnCount - 1; ++columnIndex)
-        {
-            m_header->resizeSection(columnIndex, static_cast<int>(m_header->sectionSize(columnIndex) * newRatio));
+            m_previousWidth = currentWidth;
         }
     }
+
 } // namespace O3DE::ProjectManager
