@@ -7,23 +7,25 @@
  */
 
 #include <Atom/Document/ShaderManagementConsoleDocumentRequestBus.h>
+#include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/Name/Name.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
-#include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
 #include <Window/ShaderManagementConsoleWindow.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
+#include <QDesktopServices>
 #include <QHeaderView>
 #include <QStandardItemModel>
 #include <QTableView>
+#include <QUrl>
 #include <QWindow>
 AZ_POP_DISABLE_WARNING
 
 namespace ShaderManagementConsole
 {
     ShaderManagementConsoleWindow::ShaderManagementConsoleWindow(QWidget* parent /* = 0 */)
-        : AtomToolsFramework::AtomToolsDocumentMainWindow(parent)
+        : Base(parent)
     {
         resize(1280, 1024);
 
@@ -41,10 +43,17 @@ namespace ShaderManagementConsole
         m_toolBar->setObjectName("ToolBar");
         addToolBar(m_toolBar);
 
-        AddDockWidget("Asset Browser", new ShaderManagementConsoleBrowserWidget, Qt::BottomDockWidgetArea, Qt::Vertical);
-        AddDockWidget("Python Terminal", new AzToolsFramework::CScriptTermDialog, Qt::BottomDockWidgetArea, Qt::Horizontal);
+        m_assetBrowser->SetFilterState("", AZ::RPI::ShaderAsset::Group, true);
+        m_assetBrowser->SetOpenHandler([](const AZStd::string& absolutePath) {
+            if (AzFramework::StringFunc::Path::IsExtension(absolutePath.c_str(), AZ::RPI::ShaderVariantListSourceData::Extension))
+            {
+                AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(
+                    &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument, absolutePath);
+                return;
+            }
 
-        SetDockWidgetVisible("Python Terminal", false);
+            QDesktopServices::openUrl(QUrl::fromLocalFile(absolutePath.c_str()));
+        });
 
         // Restore geometry and show the window
         mainWindowWrapper->showFromSettings();

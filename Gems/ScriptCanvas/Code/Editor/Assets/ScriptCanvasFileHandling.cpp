@@ -180,7 +180,7 @@ namespace ScriptCanvasEditor
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
         AZ_Assert(serializeContext, "LoadEditorAssetTree() ailed to retrieve serialize context!");
 
-        const ScriptCanvasEditor::Graph* graph = handle.Get();
+        const ScriptCanvasEditor::EditorGraph* graph = handle.Get();
         serializeContext->EnumerateObject(graph, beginElementCB, nullptr, AZ::SerializeContext::ENUM_ACCESS_FOR_READ);
 
         EditorAssetTree result;
@@ -253,7 +253,7 @@ namespace ScriptCanvasEditor
                 aznumeric_caster(ScriptCanvas::MathNodeUtilities::GetRandomIntegral<AZ::s64>(1, std::numeric_limits<AZ::s64>::max()));
             entity->SetId(AZ::EntityId(entityId));
 
-            auto graph = entity->FindComponent<ScriptCanvasEditor::Graph>();
+            auto graph = entity->FindComponent<ScriptCanvasEditor::EditorGraph>();
             graph->MarkOwnership(*scriptCanvasData);
 
             entity->Init();
