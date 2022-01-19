@@ -268,8 +268,8 @@ namespace AZ::Dom
 
         Object::ConstIterator MemberBegin() const;
         Object::ConstIterator MemberEnd() const;
-        Object::Iterator MemberBegin();
-        Object::Iterator MemberEnd();
+        Object::Iterator MutableMemberBegin();
+        Object::Iterator MutableMemberEnd();
 
         Object::Iterator FindMutableMember(KeyType name);
         Object::Iterator FindMutableMember(AZStd::string_view name);
@@ -289,8 +289,8 @@ namespace AZ::Dom
         void RemoveMember(KeyType name);
         void RemoveMember(AZStd::string_view name);
         Object::Iterator RemoveMember(Object::Iterator pos);
-        Object::Iterator EraseMember(Object::ConstIterator pos);
-        Object::Iterator EraseMember(Object::ConstIterator first, Object::ConstIterator last);
+        Object::Iterator EraseMember(Object::Iterator pos);
+        Object::Iterator EraseMember(Object::Iterator first, Object::Iterator last);
         Object::Iterator EraseMember(KeyType name);
         Object::Iterator EraseMember(AZStd::string_view name);
 
@@ -313,15 +313,15 @@ namespace AZ::Dom
 
         Array::ConstIterator ArrayBegin() const;
         Array::ConstIterator ArrayEnd() const;
-        Array::Iterator ArrayBegin();
-        Array::Iterator ArrayEnd();
+        Array::Iterator MutableArrayBegin();
+        Array::Iterator MutableArrayEnd();
 
         Value& ArrayReserve(size_t newCapacity);
         Value& ArrayPushBack(Value value);
         Value& ArrayPopBack();
 
-        Array::Iterator ArrayErase(Array::ConstIterator pos);
-        Array::Iterator ArrayErase(Array::ConstIterator first, Array::ConstIterator last);
+        Array::Iterator ArrayErase(Array::Iterator pos);
+        Array::Iterator ArrayErase(Array::Iterator first, Array::Iterator last);
 
         Array::ContainerType& GetMutableArray();
         const Array::ContainerType& GetArray() const;

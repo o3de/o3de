@@ -33,23 +33,24 @@ namespace AZStd
      *
      * Since the span does not copy and store any data, it is only valid as long as the data used to create it is valid.
      */
-    template <class Element>
+    template <class T>
     class span final
     {
     public:
-        using value_type = Element;
+        using element_type = T;
+        using value_type = AZStd::remove_cv_t<T>;
 
-        using pointer = value_type*;
-        using const_pointer = const value_type*;
+        using pointer = T*;
+        using const_pointer = const T*;
 
-        using reference = value_type&;
-        using const_reference = const value_type&;
+        using reference = T&;
+        using const_reference = const T&;
 
         using size_type = AZStd::size_t;
         using difference_type = AZStd::ptrdiff_t;
 
-        using iterator = value_type*;
-        using const_iterator = const value_type*;
+        using iterator = T*;
+        using const_iterator = const T*;
         using reverse_iterator = AZStd::reverse_iterator<iterator>;
         using const_reverse_iterator = AZStd::reverse_iterator<const_iterator>;
 
@@ -65,21 +66,11 @@ namespace AZStd
         // create a span to just the first element instead of an entire array.
         constexpr span(const_pointer s) = delete;
 
-        template<AZStd::size_t N>
-        constexpr span(AZStd::array<value_type, N>& data);
+        template<typename Container>
+        constexpr span(Container& data);
 
-        constexpr span(AZStd::vector<value_type>& data);
-
-        template<AZStd::size_t N>
-        constexpr span(AZStd::fixed_vector<value_type, N>& data);
-
-        template<AZStd::size_t N>
-        constexpr span(const AZStd::array<value_type, N>& data);
-
-        constexpr span(const AZStd::vector<value_type>& data);
-
-        template<AZStd::size_t N>
-        constexpr span(const AZStd::fixed_vector<value_type, N>& data);
+        template<typename Container>
+        constexpr span(const Container& data);
 
         constexpr span(const span&) = default;
 
@@ -132,6 +123,7 @@ namespace AZStd
         pointer m_begin;
         pointer m_end;
     };
+
 } // namespace AZStd
 
 #include <AzCore/std/containers/span.inl>
