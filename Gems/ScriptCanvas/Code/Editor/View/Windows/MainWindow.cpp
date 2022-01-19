@@ -986,20 +986,20 @@ namespace ScriptCanvasEditor
         return m_variableDockWidget->IsValidVariableType(dataType);
     }
 
-    bool MainWindow::ShowVariableConfigurationWidget(const AZStd::string& currentName, const AZ::Uuid& currentDataType
-        , const QPoint& scenePosition, VariablePaletteRequests::SlotSetup& outSetup)
+    VariablePaletteRequests::VariableConfigurationOutput MainWindow::ShowVariableConfigurationWidget
+        ( const VariablePaletteRequests::VariableConfigurationInput& input, const QPoint& scenePosition)
     {
-
+        VariablePaletteRequests::VariableConfigurationOutput output;
         m_slotTypeSelector = new VariableConfigurationWidget(GetActiveScriptCanvasId(), this); // Recreate the widget every time because of https://bugreports.qt.io/browse/QTBUG-76509
         m_slotTypeSelector->PopulateVariablePalette(m_variablePaletteTypes);
 
         // Only set the slot name if the user has already configured this slot, so if they are creating
         // for the first time they will see the placeholder text instead
         bool isValidVariableType = false;
-        VariablePaletteRequestBus::BroadcastResult(isValidVariableType, &VariablePaletteRequests::IsValidVariableType, ScriptCanvas::Data::FromAZType(currentDataType));
+        VariablePaletteRequestBus::BroadcastResult(isValidVariableType, &VariablePaletteRequests::IsValidVariableType, input.m_currentType);
         if (isValidVariableType)
         {
-            m_slotTypeSelector->SetSlotName(currentName);
+            m_slotTypeSelector->SetSlotName(input.m_currentName);
         }
 
         m_slotTypeSelector->move(scenePosition);
@@ -1008,18 +1008,13 @@ namespace ScriptCanvasEditor
 
         if (m_slotTypeSelector->exec() != QDialog::Rejected)
         {
-            outSetup.m_name = m_slotTypeSelector->GetSlotName();
-            outSetup.m_type = m_slotTypeSelector->GetSelectedType();
-        }
-        else
-        {
-            delete m_slotTypeSelector;
-
-            return false;
+            output.m_name = m_slotTypeSelector->GetSlotName();
+            output.m_type = Data::FromAZType(m_slotTypeSelector->GetSelectedType());
+            output.m_actionIsValid = true;
         }
 
         delete m_slotTypeSelector;
-        return true;
+        return output;
     }
 
     void MainWindow::OpenValidationPanel()

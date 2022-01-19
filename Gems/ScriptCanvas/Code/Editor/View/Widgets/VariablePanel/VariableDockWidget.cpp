@@ -868,16 +868,24 @@ namespace ScriptCanvasEditor
 
     void VariableDockWidget::OnConfigureVariable([[maybe_unused]] const ScriptCanvas::VariableId& variableId, [[maybe_unused]] QPoint position)
     {
-        VariablePaletteRequests::SlotSetup selectedSlotSetup;
-        ScriptCanvas::GraphVariable* graphVariable = nullptr;
-        ScriptCanvas::GraphVariableManagerRequestBus::EventResult(graphVariable, m_scriptCanvasId, &ScriptCanvas::GraphVariableManagerRequests::FindVariableById, variableId);
+         ScriptCanvas::GraphVariable* graphVariable = nullptr;
+         ScriptCanvas::GraphVariableManagerRequestBus::EventResult(graphVariable, m_scriptCanvasId, &ScriptCanvas::GraphVariableManagerRequests::FindVariableById, variableId);
+ 
+         if (graphVariable)
+         {
+             VariablePaletteRequests::VariableConfigurationInput input;
+             input.m_graphVariable = graphVariable;
+             input.m_changeVariableName = true;
+             input.m_changeVariableType = true;
 
-        if (graphVariable)
-        {
-            bool createSlot = false;
-            VariablePaletteRequestBus::BroadcastResult(createSlot, &VariablePaletteRequests::ShowVariableConfigurationWidget
-                , graphVariable->GetVariableName(), graphVariable->GetDataType().GetAZType(), position, selectedSlotSetup);
-        }
+             VariablePaletteRequests::VariableConfigurationOutput output;
+             VariablePaletteRequestBus::BroadcastResult(output, &VariablePaletteRequests::ShowVariableConfigurationWidget, input, position);
+
+             if (output.m_actionIsValid)
+             {
+                 AZ_TracePrintf("ScriptCanvas", "Configure the variable now");
+             }
+         }
     }
 
     void VariableDockWidget::OnRemoveUnusedVariables()

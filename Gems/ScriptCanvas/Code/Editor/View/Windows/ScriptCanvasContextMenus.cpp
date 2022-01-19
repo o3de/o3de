@@ -571,29 +571,31 @@ namespace ScriptCanvasEditor
         }
 
         // Show the selection dialog
-        bool createSlot = false;
-        VariablePaletteRequests::SlotSetup selectedSlotSetup;
+        // #chcurran this will get changed...this is changing a slot data type, but soon it will actually mean changing a ...
+        // variable to which the slot is bound to refer
+        VariablePaletteRequests::VariableConfigurationInput selectedSlotSetup;
+        selectedSlotSetup.m_changeVariableType = true;
+        selectedSlotSetup.m_currentName = slot->GetName();
+        selectedSlotSetup.m_currentType = slot->GetDataType();
+
         QPoint scenePoint(static_cast<int>(scenePos.GetX()), static_cast<int>(scenePos.GetY()));
-        VariablePaletteRequestBus::BroadcastResult(createSlot, &VariablePaletteRequests::ShowVariableConfigurationWidget
-            , slot->GetName(), slot->GetDataType().GetAZType(), scenePoint, selectedSlotSetup);
+        VariablePaletteRequests::VariableConfigurationOutput output;
+        VariablePaletteRequestBus::BroadcastResult(output, &VariablePaletteRequests::ShowVariableConfigurationWidget
+            , selectedSlotSetup, scenePoint);
 
         bool changed = false;
-        if (createSlot && !selectedSlotSetup.m_type.IsNull())
+        if (output.m_actionIsValid)
         {
-            if (slot)
+            if (output.m_typeChanged && output.m_type.IsValid())
             {
-                auto displayType = ScriptCanvas::Data::FromAZType(selectedSlotSetup.m_type);
-                if (displayType.IsValid())
-                {
-                    slot->SetDisplayType(displayType);
-                    changed = true;
-                }
+                slot->SetDisplayType(output.m_type);
+                changed = true;
+            }
 
-                if (!selectedSlotSetup.m_name.empty())
-                {
-                    slot->Rename(selectedSlotSetup.m_name);
-                    changed = true;
-                }
+            if (output.m_nameChanged && !output.m_name.empty())
+            {
+                slot->Rename(output.m_name);
+                changed = true;
             }
         }
 

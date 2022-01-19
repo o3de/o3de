@@ -645,25 +645,27 @@ namespace ScriptCanvasEditor
 
                     // First we need to automatically display the ShowVariableConfigurationWidget dialog so the user
                     // can assign a type and name to the slot they are adding
-                    VariablePaletteRequests::SlotSetup selectedSlotSetup;
-                    bool createSlot = false;
-                    QPoint scenePoint(aznumeric_cast<int>(position.GetX()), aznumeric_cast<int>(position.GetY()));
-                    VariablePaletteRequestBus::BroadcastResult(createSlot, &VariablePaletteRequests::ShowVariableConfigurationWidget
-                        , slot->GetName(), slot->GetDataType().GetAZType(), scenePoint, selectedSlotSetup);
+                    VariablePaletteRequests::VariableConfigurationInput selectedSlotSetup;
+                    selectedSlotSetup.m_createVariable = false;
+                    selectedSlotSetup.m_currentName = slot->GetName();
+                    selectedSlotSetup.m_currentType = slot->GetDataType();
 
-                    if (createSlot && !selectedSlotSetup.m_type.IsNull())
+                    VariablePaletteRequests::VariableConfigurationOutput output;
+
+
+                    QPoint scenePoint(aznumeric_cast<int>(position.GetX()), aznumeric_cast<int>(position.GetY()));
+                    VariablePaletteRequestBus::BroadcastResult(output, &VariablePaletteRequests::ShowVariableConfigurationWidget
+                        , selectedSlotSetup, scenePoint);
+
+                    if (output.m_actionIsValid && output.m_type.IsValid())
                     {
                         if (slot)
                         {
-                            auto displayType = ScriptCanvas::Data::FromAZType(selectedSlotSetup.m_type);
-                            if (displayType.IsValid())
-                            {
-                                slot->SetDisplayType(displayType);
-                            }
+                            slot->SetDisplayType(output.m_type);
 
-                            if (!selectedSlotSetup.m_name.empty())
+                            if (!output.m_name.empty())
                             {
-                                slot->Rename(selectedSlotSetup.m_name);
+                                slot->Rename(output.m_name);
                             }
                         }
 
