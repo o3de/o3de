@@ -117,6 +117,10 @@ set(FILES
     DOM/DomBackend.h
     DOM/DomUtils.cpp
     DOM/DomUtils.h
+    DOM/DomValue.cpp
+    DOM/DomValue.h
+    DOM/DomValueWriter.cpp
+    DOM/DomValueWriter.h
     DOM/DomVisitor.cpp
     DOM/DomVisitor.h
     DOM/Backends/JSON/JsonBackend.h
@@ -533,6 +537,8 @@ set(FILES
     Serialization/Json/JsonUtils.cpp
     Serialization/Json/MapSerializer.h
     Serialization/Json/MapSerializer.cpp
+    Serialization/Json/PathSerializer.h
+    Serialization/Json/PathSerializer.cpp
     Serialization/Json/RegistrationContext.h
     Serialization/Json/RegistrationContext.cpp
     Serialization/Json/SmartPointerSerializer.h

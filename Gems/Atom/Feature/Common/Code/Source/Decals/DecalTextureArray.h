@@ -57,7 +57,7 @@ namespace AZ
             // often different (BC5 for normals, BC7 for diffuse, etc)
             const Data::Instance<RPI::StreamingImage>& GetPackedTexture(const DecalMapType mapType) const;
 
-            static bool IsValidDecalMaterial(const RPI::MaterialAsset& materialAsset);
+            static bool IsValidDecalMaterial(RPI::MaterialAsset& materialAsset);
 
         private:
 

@@ -143,11 +143,6 @@ namespace AZ
             RHI::ResultCode resultCode = RHI::ResultCode::Success;
             
             const ImageMipChainAsset& mipChainTailAsset = imageAsset.GetTailMipChain();
-                        
-#ifdef AZ_RPI_STREAMING_IMAGE_DEBUG_LOG
-            m_image->SetName(Name(imageAsset.GetHint().c_str()));
-            AZ_TracePrintf("StreamingImage", "Init image [%s]\n", m_image->GetName().data());
-#endif
 
             {
                 RHI::StreamingImageInitRequest initRequest;
@@ -193,6 +188,13 @@ namespace AZ
                 m_rhiPool = rhiPool;
                 m_pool = pool;
                 m_pool->AttachImage(this);
+
+                // Set rhi image name
+                m_image->SetName(Name(m_imageAsset.GetHint()));
+                        
+#ifdef AZ_RPI_STREAMING_IMAGE_DEBUG_LOG
+                AZ_TracePrintf("StreamingImage", "Init image [%s]\n", m_image->GetName().data());
+#endif
                                 
 #if defined (AZ_RPI_STREAMING_IMAGE_HOT_RELOADING)
                 BusConnect(imageAsset.GetId());

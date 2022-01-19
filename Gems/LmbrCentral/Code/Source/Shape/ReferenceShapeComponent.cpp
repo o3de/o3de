@@ -190,7 +190,7 @@ namespace LmbrCentral
     {
         AZ::Crc32 result = {};
 
-        AZ_WarningOnce("Vegetation", !m_isRequestInProgress, "Detected cyclic dependences with vegetation entity references");
+        AZ_WarningOnce("Shape", !m_isRequestInProgress, "Detected cyclic dependencies with shape entity references");
         if (AllowRequest())
         {
             m_isRequestInProgress = true;
@@ -205,7 +205,7 @@ namespace LmbrCentral
     {
         AZ::Aabb result = AZ::Aabb::CreateNull();
 
-        AZ_WarningOnce("Vegetation", !m_isRequestInProgress, "Detected cyclic dependences with vegetation entity references");
+        AZ_WarningOnce("Shape", !m_isRequestInProgress, "Detected cyclic dependencies with shape entity references");
         if (AllowRequest())
         {
             m_isRequestInProgress = true;
@@ -221,7 +221,7 @@ namespace LmbrCentral
         transform = AZ::Transform::CreateIdentity();
         bounds = AZ::Aabb::CreateNull();
 
-        AZ_WarningOnce("Vegetation", !m_isRequestInProgress, "Detected cyclic dependences with vegetation entity references");
+        AZ_WarningOnce("Shape", !m_isRequestInProgress, "Detected cyclic dependencies with shape entity references");
         if (AllowRequest())
         {
             m_isRequestInProgress = true;
@@ -234,7 +234,7 @@ namespace LmbrCentral
     {
         bool result = false;
 
-        AZ_WarningOnce("Vegetation", !m_isRequestInProgress, "Detected cyclic dependences with vegetation entity references");
+        AZ_WarningOnce("Shape", !m_isRequestInProgress, "Detected cyclic dependencies with shape entity references");
         if (AllowRequest())
         {
             m_isRequestInProgress = true;
@@ -249,7 +249,7 @@ namespace LmbrCentral
     {
         float result = FLT_MAX;
 
-        AZ_WarningOnce("Vegetation", !m_isRequestInProgress, "Detected cyclic dependences with vegetation entity references");
+        AZ_WarningOnce("Shape", !m_isRequestInProgress, "Detected cyclic dependencies with shape entity references");
         if (AllowRequest())
         {
             m_isRequestInProgress = true;
@@ -264,7 +264,7 @@ namespace LmbrCentral
     {
         float result = FLT_MAX;
 
-        AZ_WarningOnce("Vegetation", !m_isRequestInProgress, "Detected cyclic dependences with vegetation entity references");
+        AZ_WarningOnce("Shape", !m_isRequestInProgress, "Detected cyclic dependencies with shape entity references");
         if (AllowRequest())
         {
             m_isRequestInProgress = true;
@@ -279,7 +279,7 @@ namespace LmbrCentral
     {
         AZ::Vector3 result = AZ::Vector3::CreateZero();
 
-        AZ_WarningOnce("Vegetation", !m_isRequestInProgress, "Detected cyclic dependences with vegetation entity references");
+        AZ_WarningOnce("Shape", !m_isRequestInProgress, "Detected cyclic dependencies with shape entity references");
         if (AllowRequest())
         {
             m_isRequestInProgress = true;
@@ -294,7 +294,7 @@ namespace LmbrCentral
     {
         bool result = false;
 
-        AZ_WarningOnce("Vegetation", !m_isRequestInProgress, "Detected cyclic dependences with vegetation entity references");
+        AZ_WarningOnce("Shape", !m_isRequestInProgress, "Detected cyclic dependencies with shape entity references");
         if (AllowRequest())
         {
             m_isRequestInProgress = true;

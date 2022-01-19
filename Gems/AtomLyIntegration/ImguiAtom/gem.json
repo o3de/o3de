@@ -4,6 +4,7 @@
     "license": "Apache-2.0 Or MIT",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
     "type": "Code",
     "summary": "",
     "canonical_tags": [
@@ -11,6 +12,7 @@
     ],
     "user_tags": [],
     "requirements": "",
+    "documentation_url": "",
     "dependencies": [
         "ImGui",
         "Atom_Feature_Common"

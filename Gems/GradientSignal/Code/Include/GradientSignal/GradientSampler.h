@@ -33,6 +33,7 @@ namespace GradientSignal
         static void Reflect(AZ::ReflectContext* context);
 
         inline float GetValue(const GradientSampleParams& sampleParams) const;
+        inline void GetValues(AZStd::span<AZ::Vector3> positions, AZStd::span<float> outValues) const;
 
         bool IsEntityInHierarchy(const AZ::EntityId& entityId) const;
 
@@ -88,8 +89,6 @@ namespace GradientSignal
 
     inline float GradientSampler::GetValue(const GradientSampleParams& sampleParams) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
-
         if (m_opacity <= 0.0f || !m_gradientId.IsValid())
         {
             return 0.0f;
@@ -121,7 +120,7 @@ namespace GradientSignal
 
             if (m_isRequestInProgress)
             {
-                AZ_ErrorOnce("GradientSignal", !m_isRequestInProgress, "Detected cyclic dependences with gradient entity references");
+                AZ_ErrorOnce("GradientSignal", !m_isRequestInProgress, "Detected cyclic dependencies with gradient entity references");
             }
             else
             {
@@ -147,4 +146,83 @@ namespace GradientSignal
 
         return output * m_opacity;
     }
+
+    inline void GradientSampler::GetValues(AZStd::span<AZ::Vector3> positions, AZStd::span<float> outValues) const
+    {
+        auto ClearOutputValues = [](AZStd::span<float> outValues)
+        {
+            // If we don't have a valid gradient (or it is fully transparent), clear out all the output values.
+            AZStd::fill(outValues.begin(), outValues.end(), 0.0f);
+        };
+
+        if (m_opacity <= 0.0f || !m_gradientId.IsValid())
+        {
+            ClearOutputValues(outValues);
+            return;
+        }
+
+        AZStd::vector<AZ::Vector3> transformedPositions;
+        bool useTransformedPositions = false;
+
+        // apply transform if set
+        if (m_enableTransform && GradientSamplerUtil::AreTransformParamsSet(*this))
+        {
+            AZ::Matrix3x4 matrix3x4;
+            matrix3x4.SetFromEulerDegrees(m_rotate);
+            matrix3x4.MultiplyByScale(m_scale);
+            matrix3x4.SetTranslation(m_translate);
+
+            useTransformedPositions = true;
+            transformedPositions.resize(positions.size());
+            for (size_t index = 0; index < positions.size(); index++)
+            {
+                transformedPositions[index] = matrix3x4 * positions[index];
+            }
+        }
+
+        {
+            // Block other threads from accessing the surface data bus while we are in GetValue (which may call into the SurfaceData bus).
+            // We lock our surface data mutex *before* checking / setting "isRequestInProgress" so that we prevent race conditions
+            // that create false detection of cyclic dependencies when multiple requests occur on different threads simultaneously.
+            // (One case where this was previously able to occur was in rapid updating of the Preview widget on the
+            // GradientSurfaceDataComponent in the Editor when moving the threshold sliders back and forth rapidly)
+            auto& surfaceDataContext = SurfaceData::SurfaceDataSystemRequestBus::GetOrCreateContext(false);
+            typename SurfaceData::SurfaceDataSystemRequestBus::Context::DispatchLockGuard scopeLock(surfaceDataContext.m_contextMutex);
+
+            if (m_isRequestInProgress)
+            {
+                AZ_ErrorOnce("GradientSignal", !m_isRequestInProgress, "Detected cyclic dependencies with gradient entity references");
+                ClearOutputValues(outValues);
+                return;
+            }
+            else
+            {
+                m_isRequestInProgress = true;
+
+                GradientRequestBus::Event(
+                    m_gradientId, &GradientRequestBus::Events::GetValues, useTransformedPositions ? transformedPositions : positions,
+                    outValues);
+
+                m_isRequestInProgress = false;
+            }
+        }
+
+        // Perform any post-fetch transformations on the gradient values (invert, levels, opacity).
+        for (auto& outValue : outValues)
+        {
+            if (m_invertInput)
+            {
+                outValue = 1.0f - outValue;
+            }
+
+            // apply levels if set
+            if (m_enableLevels && GradientSamplerUtil::AreLevelParamsSet(*this))
+            {
+                outValue = GetLevels(outValue, m_inputMid, m_inputMin, m_inputMax, m_outputMin, m_outputMax);
+            }
+
+            outValue = outValue * m_opacity;
+        }
+    }
+
 }

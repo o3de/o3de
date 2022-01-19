@@ -5,7 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
+#include <AzCore/std/string/fixed_string.h>
 #include <native/FileWatcher/FileWatcher.h>
+#include <native/FileWatcher/FileWatcher_platform.h>
 
 #include <QDirIterator>
 #include <QHash>
@@ -15,155 +18,127 @@
 #include <sys/inotify.h>
 
 
-static constexpr int s_handleToFolderMapLockTimeout = 1000;      // 1 sec timeout for obtaining the handle to folder map lock
-static constexpr size_t s_iNotifyMaxEntries = 1024 * 16;         // Control the maximum number of entries (from inotify) that can be read at one time
-static constexpr size_t s_iNotifyEventSize = sizeof(struct inotify_event);
-static constexpr size_t s_iNotifyReadBufferSize = s_iNotifyMaxEntries * s_iNotifyEventSize;
+static constexpr size_t s_inotifyMaxEntries = 1024 * 16;         // Control the maximum number of entries (from inotify) that can be read at one time
+static constexpr size_t s_inotifyEventSize = sizeof(struct inotify_event);
+static constexpr size_t s_inotifyReadBufferSize = s_inotifyMaxEntries * s_inotifyEventSize;
 
-struct FolderRootWatch::PlatformImplementation
+bool FileWatcher::PlatformImplementation::Initialize()
 {
-    PlatformImplementation() = default;
-
-    int                         m_iNotifyHandle = -1;
-    QMutex                      m_handleToFolderMapLock;
-    QHash<int, QString>         m_handleToFolderMap;
-
-    bool Initialize()
+    if (m_inotifyHandle < 0)
     {
-        if (m_iNotifyHandle < 0)
-        {
-            // The CLOEXEC flag prevents the inotify watchers from copying on fork/exec
-            m_iNotifyHandle = inotify_init1(IN_CLOEXEC);
-        }
-        return (m_iNotifyHandle >= 0);
+        // The CLOEXEC flag prevents the inotify watchers from copying on fork/exec
+        m_inotifyHandle = inotify_init1(IN_CLOEXEC);
+
+        [[maybe_unused]] const auto err = errno;
+        [[maybe_unused]] AZStd::fixed_string<255> errorString;
+        AZ_Warning("FileWatcher", (m_inotifyHandle >= 0), "Unable to initialize inotify, file monitoring will not be available: %s\n", strerror_r(err, errorString.data(), errorString.capacity()));
     }
-
-    void Finalize()
-    {
-        if (m_iNotifyHandle >= 0)
-        {
-            if (!m_handleToFolderMapLock.tryLock(s_handleToFolderMapLockTimeout))
-            {
-                AZ_Error("FileWatcher", false, "Unable to obtain inotify handle lock on thread");
-                return;
-            }
-
-            QHashIterator<int, QString> iter(m_handleToFolderMap);
-            while (iter.hasNext())
-            {
-                iter.next();
-                int watchHandle = iter.key();
-                inotify_rm_watch(m_iNotifyHandle, watchHandle);
-            }
-            m_handleToFolderMap.clear();
-            m_handleToFolderMapLock.unlock();
-
-            ::close(m_iNotifyHandle);
-            m_iNotifyHandle = -1;
-        }
-    }
-
-    void AddWatchFolder(QString folder)
-    {
-        if (m_iNotifyHandle >= 0)
-        {
-            // Clean up the path before accepting it as a watch folder
-            QString cleanPath = QDir::cleanPath(folder);
-
-            // Add the folder to watch and track it
-            int watchHandle = inotify_add_watch(m_iNotifyHandle, 
-                                                cleanPath.toUtf8().constData(),
-                                                IN_CREATE | IN_CLOSE_WRITE | IN_DELETE | IN_DELETE_SELF | IN_MODIFY | IN_MOVE);
-            
-            if (!m_handleToFolderMapLock.tryLock(s_handleToFolderMapLockTimeout))
-            {
-                AZ_Error("FileWatcher", false, "Unable to obtain inotify handle lock on thread");
-                return;
-            }
-            m_handleToFolderMap[watchHandle] = cleanPath;
-            m_handleToFolderMapLock.unlock();
-
-            // Add all the subfolders to watch and track them
-            QDirIterator dirIter(folder, QDirIterator::Subdirectories | QDirIterator::FollowSymlinks);
-
-            while (dirIter.hasNext())
-            {
-                QString dirName = dirIter.next();
-                if (dirName.endsWith("/.") || dirName.endsWith("/.."))
-                {
-                    continue;
-                }
-                
-                int watchHandle = inotify_add_watch(m_iNotifyHandle, 
-                                                    dirName.toUtf8().constData(),
-                                                    IN_CREATE | IN_CLOSE_WRITE | IN_DELETE | IN_DELETE_SELF | IN_MODIFY | IN_MOVE);
-
-                if (!m_handleToFolderMapLock.tryLock(s_handleToFolderMapLockTimeout))
-                {
-                    AZ_Error("FileWatcher", false, "Unable to obtain inotify handle lock on thread");
-                    return;
-                }
-                m_handleToFolderMap[watchHandle] = dirName;
-                m_handleToFolderMapLock.unlock();
-            }
-        }
-    }
-
-    void RemoveWatchFolder(int watchHandle)
-    {
-        if (m_iNotifyHandle >= 0)
-        {
-            if (!m_handleToFolderMapLock.tryLock(s_handleToFolderMapLockTimeout))
-            {
-                AZ_Error("FileWatcher", false, "Unable to obtain inotify handle lock on thread");
-                return;
-            }
-
-            QHash<int, QString>::iterator handleToRemove = m_handleToFolderMap.find(watchHandle);
-            if (handleToRemove != m_handleToFolderMap.end())
-            {
-                inotify_rm_watch(m_iNotifyHandle, watchHandle);
-                m_handleToFolderMap.erase(handleToRemove);
-            }
-
-            m_handleToFolderMapLock.unlock();
-        }
-    }
-};
-
-//////////////////////////////////////////////////////////////////////////////
-/// FolderWatchRoot
-FolderRootWatch::FolderRootWatch(const QString rootFolder)
-    : m_root(rootFolder)
-    , m_shutdownThreadSignal(false)
-    , m_fileWatcher(nullptr)
-    , m_platformImpl(new PlatformImplementation())
-{
+    return (m_inotifyHandle >= 0);
 }
 
-FolderRootWatch::~FolderRootWatch()
+void FileWatcher::PlatformImplementation::Finalize()
 {
-    // Destructor is required in here since this file contains the definition of struct PlatformImplementation
-    Stop();
+    if (m_inotifyHandle < 0)
+    {
+        return;
+    }
 
-    delete m_platformImpl;
+    {
+        QMutexLocker lock{&m_handleToFolderMapLock};
+        for (const auto& watchHandle : m_handleToFolderMap.keys())
+        {
+            inotify_rm_watch(m_inotifyHandle, watchHandle);
+        }
+        m_handleToFolderMap.clear();
+    }
+
+    ::close(m_inotifyHandle);
+    m_inotifyHandle = -1;
 }
 
-bool FolderRootWatch::Start()
+void FileWatcher::PlatformImplementation::AddWatchFolder(QString folder, bool recursive)
+{
+    if (m_inotifyHandle < 0)
+    {
+        return;
+    }
+
+    // Clean up the path before accepting it as a watch folder
+    QString cleanPath = QDir::cleanPath(folder);
+
+    // Add the folder to watch and track it
+    int watchHandle = inotify_add_watch(m_inotifyHandle,
+                                        cleanPath.toUtf8().constData(),
+                                        IN_CREATE | IN_CLOSE_WRITE | IN_DELETE | IN_DELETE_SELF | IN_MODIFY | IN_MOVE);
+
+    if (watchHandle < 0)
+    {
+        [[maybe_unused]] const auto err = errno;
+        [[maybe_unused]] AZStd::fixed_string<255> errorString;
+        AZ_Warning("FileWatcher", false, "inotify_add_watch failed for path %s: %s", cleanPath.toUtf8().constData(), strerror_r(err, errorString.data(), errorString.capacity()));
+        return;
+    }
+    {
+        QMutexLocker lock{&m_handleToFolderMapLock};
+        m_handleToFolderMap[watchHandle] = cleanPath;
+    }
+
+    // Add all the contents (files and directories) to watch and track them
+    QDirIterator dirIter(folder, QDir::NoDotAndDotDot | QDir::Dirs | QDir::Files, (recursive ? QDirIterator::Subdirectories : QDirIterator::NoIteratorFlags) | QDirIterator::FollowSymlinks);
+
+    while (dirIter.hasNext())
+    {
+        QString dirName = dirIter.next();
+
+        watchHandle = inotify_add_watch(m_inotifyHandle,
+                                            dirName.toUtf8().constData(),
+                                            IN_CREATE | IN_CLOSE_WRITE | IN_DELETE | IN_DELETE_SELF | IN_MODIFY | IN_MOVE);
+        if (watchHandle < 0)
+        {
+            [[maybe_unused]] const auto err = errno;
+            [[maybe_unused]] AZStd::fixed_string<255> errorString;
+            AZ_Warning("FileWatcher", false, "inotify_add_watch failed for path %s: %s", dirName.toUtf8().constData(), strerror_r(err, errorString.data(), errorString.capacity()));
+            return;
+        }
+
+        QMutexLocker lock{&m_handleToFolderMapLock};
+        m_handleToFolderMap[watchHandle] = dirName;
+    }
+}
+
+void FileWatcher::PlatformImplementation::RemoveWatchFolder(int watchHandle)
+{
+    if (m_inotifyHandle < 0)
+    {
+        return;
+    }
+
+    QMutexLocker lock{&m_handleToFolderMapLock};
+    if (m_handleToFolderMap.remove(watchHandle))
+    {
+        inotify_rm_watch(m_inotifyHandle, watchHandle);
+    }
+}
+
+bool FileWatcher::PlatformStart()
 {
     // inotify will be used by linux to monitor file changes within directories under the root folder
     if (!m_platformImpl->Initialize())
     {
         return false;
     }
-    m_platformImpl->AddWatchFolder(m_root);
+    for (const auto& [directory, recursive] : m_folderWatchRoots)
+    {
+        if (QDir(directory).exists())
+        {
+            m_platformImpl->AddWatchFolder(directory, recursive);
+        }
+    }
 
-    m_shutdownThreadSignal = false;
-    m_thread = std::thread([this]() { WatchFolderLoop(); });
     return true;
 }
 
-void FolderRootWatch::Stop()
+void FileWatcher::PlatformStop()
 {
     m_shutdownThreadSignal = true;
 
@@ -172,64 +147,78 @@ void FolderRootWatch::Stop()
     if (m_thread.joinable())
     {
         m_thread.join(); // wait for the thread to finish
-        m_thread = std::thread(); //destroy
     }
 }
 
 
-void FolderRootWatch::WatchFolderLoop()
+void FileWatcher::WatchFolderLoop()
 {
-    char eventBuffer[s_iNotifyReadBufferSize];
+    char eventBuffer[s_inotifyReadBufferSize];
     while (!m_shutdownThreadSignal)
     {
-        ssize_t bytesRead = ::read(m_platformImpl->m_iNotifyHandle, eventBuffer, s_iNotifyReadBufferSize);
+        ssize_t bytesRead = ::read(m_platformImpl->m_inotifyHandle, eventBuffer, s_inotifyReadBufferSize);
         if (bytesRead < 0)
         {
             // Break out of the loop when the notify handle was closed (outside of this thread)
             break;
         }
-        else if (bytesRead > 0)
+        if (!bytesRead)
         {
-            for (size_t index=0; index<bytesRead;)
+            continue;
+        }
+        for (size_t index=0; index<bytesRead;)
+        {
+            const auto* event = reinterpret_cast<inotify_event*>(&eventBuffer[index]);
+
+            if (event->mask & (IN_CREATE | IN_DELETE | IN_MODIFY | IN_MOVE))
             {
-                struct inotify_event *event = ( struct inotify_event * ) &eventBuffer[ index ];
+                const QString pathStr = QDir(m_platformImpl->m_handleToFolderMap[event->wd]).absoluteFilePath(event->name);
 
-                if (event->mask & (IN_CREATE | IN_DELETE | IN_MODIFY | IN_MOVE ))
+                if (event->mask & (IN_CREATE | IN_MOVED_TO))
                 {
-                    QString pathStr = QString("%1%2%3").arg(m_platformImpl->m_handleToFolderMap[event->wd], QDir::separator(), event->name);
+                    if (event->mask & IN_ISDIR)
+                    {
+                        // New Directory, see if it should be added to the watched directories
+                        // It is only added if it is a child of a recursively watched directory
+                        const auto found = AZStd::find_if(begin(m_folderWatchRoots), end(m_folderWatchRoots), [this, event](const WatchRoot& watchRoot)
+                        {
+                            return watchRoot.m_directory == m_platformImpl->m_handleToFolderMap[event->wd];
+                        });
 
-                    if (event->mask & (IN_CREATE | IN_MOVED_TO)) 
-                    {
-                        if ( event->mask & IN_ISDIR ) 
+                        // If the path is not in m_folderWatchRoots, it must
+                        // be a new subdirectory of a subdirectory of some
+                        // other root that is being watched recursively.
+                        // Maintain the recursive nature of that root.
+                        const bool shouldAddFolder = (found == end(m_folderWatchRoots)) ? true : found->m_recursive;
+
+                        if (shouldAddFolder)
                         {
-                            // New Directory, add it to the watch
-                            m_platformImpl->AddWatchFolder(pathStr);
-                        }
-                        else 
-                        {
-                            ProcessNewFileEvent(pathStr);
-                        }
-                    }
-                    else if (event->mask & (IN_DELETE | IN_MOVED_FROM)) 
-                    {
-                        if (event->mask & IN_ISDIR) 
-                        {
-                            // Directory Deleted, remove it from the watch
-                            m_platformImpl->RemoveWatchFolder(event->wd);
-                        }
-                        else 
-                        {
-                            ProcessDeleteFileEvent(pathStr);
+                            m_platformImpl->AddWatchFolder(pathStr, true);
                         }
                     }
-                    else if ((event->mask & IN_MODIFY) && ((event->mask & IN_ISDIR) != IN_ISDIR))
+                    else
                     {
-                        ProcessModifyFileEvent(pathStr);
+                        rawFileAdded(pathStr, {});
                     }
                 }
-                index += s_iNotifyEventSize + event->len;
+                else if (event->mask & (IN_DELETE | IN_MOVED_FROM))
+                {
+                    if (event->mask & IN_ISDIR)
+                    {
+                        // Directory Deleted, remove it from the watch
+                        m_platformImpl->RemoveWatchFolder(event->wd);
+                    }
+                    else
+                    {
+                        rawFileRemoved(pathStr, {});
+                    }
+                }
+                else if ((event->mask & IN_MODIFY) && ((event->mask & IN_ISDIR) != IN_ISDIR))
+                {
+                    rawFileModified(pathStr, {});
+                }
             }
+            index += s_inotifyEventSize + event->len;
         }
     }
 }
-
