@@ -20,6 +20,7 @@ namespace Multiplayer
     constexpr AZStd::string_view MpNetworkInterfaceName("MultiplayerNetworkInterface");
     constexpr AZStd::string_view MpEditorInterfaceName("MultiplayerEditorNetworkInterface");
     constexpr AZStd::string_view LocalHost("127.0.0.1");
+    constexpr AZStd::string_view NetworkSpawnableFileExtension(".network.spawnable");
 
     constexpr uint16_t DefaultServerPort = 33450;
     constexpr uint16_t DefaultServerEditorPort = 33451;
