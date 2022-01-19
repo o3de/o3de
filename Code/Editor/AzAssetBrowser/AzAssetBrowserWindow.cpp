@@ -17,6 +17,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserTableModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 
 // AzQtComponents
 #include <AzQtComponents/Utilities/QtWindowUtilities.h>
@@ -31,6 +32,18 @@ AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 AZ_CVAR_EXTERNED(bool, ed_useNewAssetBrowserTableView);
+
+
+namespace AzToolsFramework
+{
+    namespace AssetBrowser
+    {
+        static constexpr const char* CollapseAllIcon = "Assets/Editor/Icons/AssetBrowser/Collapse_All.svg";
+        static constexpr const char* MenuIcon = ":/Menu/menu.svg";
+
+
+    } // namespace AssetBrowser
+} // namespace AzToolsFramework
 
 class ListenerForShowAssetEditorEvent
     : public QObject
@@ -85,8 +98,11 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     m_ui->m_toggleDisplayViewBtn->setVisible(false);
     m_ui->m_searchWidget->SetFilterInputInterval(AZStd::chrono::milliseconds(250));
 
+    m_assetBrowserModel->SetFilterModel(m_filterModel.data());
+
     m_ui->m_collapseAllButton->setAutoRaise(true); // hover highlight
-    m_ui->m_collapseAllButton->setIcon(QIcon(":/stylesheet/img/24x24/layers.png"));
+    m_ui->m_collapseAllButton->setIcon(QIcon(AzAssetBrowser::CollapseAllIcon));
+
     connect(
         m_ui->m_collapseAllButton, &QToolButton::clicked, this,
         [this]()
@@ -98,7 +114,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     {
         m_ui->m_toggleDisplayViewBtn->setVisible(true);
         m_ui->m_toggleDisplayViewBtn->setAutoRaise(true);
-        m_ui->m_toggleDisplayViewBtn->setIcon(QIcon(":/Menu/menu.svg"));
+        m_ui->m_toggleDisplayViewBtn->setIcon(QIcon(AzAssetBrowser::MenuIcon));
 
         m_tableModel->setFilterRole(Qt::DisplayRole);
         m_tableModel->setSourceModel(m_filterModel.data());

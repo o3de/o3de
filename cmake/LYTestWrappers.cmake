@@ -141,7 +141,7 @@ function(ly_add_test)
 
     set(wrapper_file ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/Platform/${PAL_PLATFORM_NAME}/LYTestWrappers_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
     if(NOT EXISTS ${wrapper_file})
-        ly_get_absolute_pal_filename(wrapper_file ${wrapper_file})
+        o3de_pal_dir(wrapper_file ${wrapper_file} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
     endif()
     include(${wrapper_file})
 

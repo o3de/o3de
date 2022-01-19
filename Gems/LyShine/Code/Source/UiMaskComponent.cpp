@@ -6,7 +6,7 @@
  *
  */
 #include "UiMaskComponent.h"
-#include <LyShine/Draw2d.h>
+#include <LyShine/IDraw2d.h>
 
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Serialization/SerializeContext.h>

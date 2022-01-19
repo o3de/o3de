@@ -103,15 +103,13 @@ namespace PhysX
         if (auto* settingsRegistry = AZ::SettingsRegistry::Get();
             settingsRegistry != nullptr)
         {
-            // Automatically register the event if it's not registered, because
-            // this system is initialized before the settings registry has loaded the event list.
             AZ::ComponentApplicationLifecycle::RegisterHandler(
                 *settingsRegistry, m_componentApplicationLifecycleHandler,
                 [this]([[maybe_unused]] AZStd::string_view path, [[maybe_unused]] AZ::SettingsRegistryInterface::Type type)
                 {
                     InitializeMaterialLibrary();
                 },
-                "LegacySystemInterfaceCreated"); // LegacySystemInterfaceCreated is signaled after critical assets have been processed
+                "CriticalAssetsCompiled");
         }
 
         m_state = State::Initialized;

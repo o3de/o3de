@@ -6,8 +6,6 @@
  *
  */
 
-#include <AzTest/AzTest.h>
-
 #include <aws/core/utils/memory/stl/AWSString.h>
 #include <aws/core/utils/memory/stl/AWSStringStream.h>
 
@@ -17,7 +15,7 @@ using namespace AWSCoreTestingUtils;
 
 using OBJECT_TYPE = TestObject<AZStd::string>;
 using ARRAY_TYPE = AZStd::vector<AZStd::string>;
-using JsonWriterTest = UnitTest::ScopedAllocatorSetupFixture;
+using JsonWriterTest = AWSCoreFixture;
 
 template<class ValueType>
 void TestJsonWriterSuccess(const ValueType& actualValue, const char* valueString)
