@@ -10,44 +10,47 @@
 
 namespace AZ::Debug
 {
+    namespace Platform
+    {
+        template<typename... T>
+        void BeginRegion(Budget* budget, const char* eventName, T const&... args);
+        void EndRegion(Budget* budget);
+    } // namespace Platform
+
     template<typename... T>
     void ProfileScope::BeginRegion(
         [[maybe_unused]] Budget* budget, [[maybe_unused]] const char* eventName, [[maybe_unused]] T const&... args)
     {
-        if (!budget)
+    #if !defined(_RELEASE)
+        if (budget)
         {
-            return;
-        }
-#if !defined(_RELEASE)
-        // TODO: Verification that the supplied system name corresponds to a known budget
-#if defined(USE_PIX)
-        PIXBeginEvent(PIX_COLOR_INDEX(budget->Crc() & 0xff), eventName, args...);
-#endif
-        budget->BeginProfileRegion();
+            Platform::BeginRegion(budget, eventName, args...);
 
-        if (auto profiler = AZ::Interface<Profiler>::Get(); profiler)
-        {
-            profiler->BeginRegion(budget, eventName);
+            budget->BeginProfileRegion();
+
+            if (auto profiler = AZ::Interface<Profiler>::Get(); profiler)
+            {
+                profiler->BeginRegion(budget, eventName);
+            }
         }
-#endif
+    #endif // #if !defined(_RELEASE)
     }
 
     inline void ProfileScope::EndRegion([[maybe_unused]] Budget* budget)
     {
-        if (!budget)
+    #if !defined(_RELEASE)
+        if (budget)
         {
-            return;
+            budget->EndProfileRegion();
+
+            if (auto profiler = AZ::Interface<Profiler>::Get(); profiler)
+            {
+                profiler->EndRegion(budget);
+            }
+
+            Platform::EndRegion(budget);
         }
-#if !defined(_RELEASE)
-        budget->EndProfileRegion();
-#if defined(USE_PIX)
-        PIXEndEvent();
-#endif
-        if (auto profiler = AZ::Interface<Profiler>::Get(); profiler)
-        {
-            profiler->EndRegion(budget);
-        }
-#endif
+    #endif // !defined(_RELEASE)
     }
 
     template<typename... T>
@@ -63,3 +66,5 @@ namespace AZ::Debug
     }
 
 } // namespace AZ::Debug
+
+#include <AzCore/Debug/Profiler_Platform.inl>
