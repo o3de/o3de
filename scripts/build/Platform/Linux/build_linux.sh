@@ -49,7 +49,7 @@ echo "Total Memory       : $TOTAL_MEMORY"
 echo "Total Cores        : $TOTAL_CORE_COUNT"
 
 # For machines that has a core to memory ratio that could cause running out of resources, 
-# we will check for en environment variable LY_MIN_MEMORY_PER_CORE to restrict the number
+# we will check for an environment variable LY_MIN_MEMORY_PER_CORE to restrict the number
 # of cores that we will allow.  If set, it will use this as the minimum anticipated memory
 # that all cores will need in order to no fall below that number. 
 # This is based on the value the total memory (in Kb) divided by the LY_MIN_MEMORY_PER_CORE 
