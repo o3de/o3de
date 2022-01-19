@@ -147,7 +147,7 @@ namespace AZ::Dom
         return *this / PathEntry(key);
     }
 
-    Path Path::operator+(const Path& other) const
+    Path Path::operator/(const Path& other) const
     {
         Path newPath(*this);
         for (const PathEntry& entry : other)

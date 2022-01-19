@@ -92,7 +92,7 @@ namespace AZ::Dom
         Path operator/(size_t) const;
         Path operator/(AZ::Name) const;
         Path operator/(AZStd::string_view) const;
-        Path operator+(const Path&) const;
+        Path operator/(const Path&) const;
         bool operator==(const Path&) const;
 
         const ContainerType& GetEntries() const;
