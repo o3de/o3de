@@ -251,6 +251,11 @@ namespace AZ::Dom
         return m_entries.cend();
     }
 
+    size_t Path::size() const
+    {
+        return m_entries.size();
+    }
+
     size_t Path::GetStringLength() const
     {
         size_t size = 0;
@@ -327,7 +332,7 @@ namespace AZ::Dom
             }
             else if (entry.IsIndex())
             {
-                bufferIndex += sprintf_s(&stringBuffer[bufferIndex], bufferSize - bufferIndex, "%zu", entry.GetIndex());
+                bufferIndex += azsnprintf(&stringBuffer[bufferIndex], bufferSize - bufferIndex, "%zu", entry.GetIndex());
             }
             else
             {
@@ -342,7 +347,7 @@ namespace AZ::Dom
     {
         AZStd::string formattedString;
         const size_t size = GetStringLength();
-        formattedString.resize(size);
+        formattedString.resize_no_construct(size);
         FormatString(formattedString.data(), size + 1);
         return formattedString;
     }
@@ -367,8 +372,7 @@ namespace AZ::Dom
                     }
                     else if (isNumber && section.size() > 0)
                     {
-                        size_t index = 0;
-                        sscanf_s(section.data(), "%zu", &index);
+                        const size_t index = strtoull(section.data(), nullptr, 10);
                         m_entries.push_back(PathEntry{ index });
                     }
                     else

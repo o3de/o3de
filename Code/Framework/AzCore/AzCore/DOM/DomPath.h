@@ -114,6 +114,7 @@ namespace AZ::Dom
         ContainerType::const_iterator end() const;
         ContainerType::const_iterator cbegin() const;
         ContainerType::const_iterator cend() const;
+        size_t size() const;
 
         //! Gets the length this path would require, if string-formatted.
         //! The length includes the contents of the string but not a null terminator.
