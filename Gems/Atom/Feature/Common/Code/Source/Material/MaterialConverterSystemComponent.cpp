@@ -28,8 +28,7 @@ namespace AZ
                 serializeContext->Class<MaterialConverterSettings>()
                     ->Version(2)
                     ->Field("Enable", &MaterialConverterSettings::m_enable)
-                    ->Field("DefaultMaterial", &MaterialConverterSettings::m_defaultMaterial)
-                    ->Field("IncludeMaterialPropertyNames", &MaterialConverterSettings::m_includeMaterialPropertyNames);
+                    ->Field("DefaultMaterial", &MaterialConverterSettings::m_defaultMaterial);
             }
         }
 
@@ -68,11 +67,6 @@ namespace AZ
         bool MaterialConverterSystemComponent::IsEnabled() const
         {
             return m_settings.m_enable;
-        }
-
-        bool MaterialConverterSystemComponent::ShouldIncludeMaterialPropertyNames() const
-        {
-            return m_settings.m_includeMaterialPropertyNames;
         }
 
         bool MaterialConverterSystemComponent::ConvertMaterial(
