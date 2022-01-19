@@ -241,19 +241,12 @@ namespace AZ
         template<typename T>
         T StreamingImageAsset::GetSubImagePixelValueInternal(uint32_t x, uint32_t y, uint32_t componentIndex, uint32_t mip, uint32_t slice)
         {
-            AZStd::vector<T> values;
-            values.resize(1);
+            AZStd::array<T, 1> values = { aznumeric_cast<T>(0) };
 
             auto position = AZStd::make_pair(x, y);
-
             GetSubImagePixelValues(position, position, values, componentIndex, mip, slice);
 
-            if (values.size() == 1)
-            {
-                return values[0];
-            }
-
-            return aznumeric_cast<T>(0);
+            return values[0];
         }
 
         template<>
