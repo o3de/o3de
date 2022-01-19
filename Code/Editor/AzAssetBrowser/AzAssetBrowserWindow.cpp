@@ -40,8 +40,6 @@ namespace AzToolsFramework
     {
         static constexpr const char* CollapseAllIcon = "Assets/Editor/Icons/AssetBrowser/Collapse_All.svg";
         static constexpr const char* MenuIcon = ":/Menu/menu.svg";
-
-
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 
