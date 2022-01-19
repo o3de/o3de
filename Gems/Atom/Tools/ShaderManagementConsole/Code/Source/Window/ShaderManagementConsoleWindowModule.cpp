@@ -9,10 +9,20 @@
 #include <Atom/Window/ShaderManagementConsoleWindowModule.h>
 #include <Window/ShaderManagementConsoleWindowComponent.h>
 
+void InitShaderManagementConsoleResources()
+{
+    // Must register qt resources from other modules
+    Q_INIT_RESOURCE(ShaderManagementConsole);
+    Q_INIT_RESOURCE(InspectorWidget);
+    Q_INIT_RESOURCE(AtomToolsAssetBrowser);
+}
+
 namespace ShaderManagementConsole
 {
     ShaderManagementConsoleWindowModule::ShaderManagementConsoleWindowModule()
     {
+        InitShaderManagementConsoleResources();
+
         // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
         m_descriptors.insert(m_descriptors.end(), {
             ShaderManagementConsoleWindowComponent::CreateDescriptor(),
@@ -25,4 +35,4 @@ namespace ShaderManagementConsole
             azrtti_typeid<ShaderManagementConsoleWindowComponent>(),
         };
     }
-}
+} // namespace ShaderManagementConsole
