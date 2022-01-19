@@ -62,8 +62,6 @@ namespace AZ
 
             m_materialAsset = { &materialAsset, AZ::Data::AssetLoadBehavior::PreLoad };
 
-            m_materialAsset->Finalize();
-
             // Cache off pointers to some key data structures from the material type...
             auto srgLayout = m_materialAsset->GetMaterialSrgLayout();
             if (srgLayout)
