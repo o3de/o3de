@@ -25,7 +25,18 @@ namespace EMotionFX
     class EMFX_API PoseDataFactory
     {
     public:
+        AZ_RTTI(PoseDataFactory, "{F10014A0-2B6A-44E5-BA53-0E11ED566701}")
+        AZ_CLASS_ALLOCATOR_DECL
+
+        PoseDataFactory();
+        virtual ~PoseDataFactory() = default;
+
         static PoseData* Create(Pose* pose, const AZ::TypeId& type);
-        static const AZStd::unordered_set<AZ::TypeId>& GetTypeIds();
+
+        void AddPoseDataType(const AZ::TypeId& poseDataType);
+        const AZStd::unordered_set<AZ::TypeId>& GetTypeIds() const;
+
+    private:
+        AZStd::unordered_set<AZ::TypeId> m_poseDataTypeIds;
     };
 } // namespace EMotionFX

@@ -9,8 +9,8 @@
 # TODO: would like to be able to build from this path, however, the whole setup is done at the workspace's root
 #       we also dont want to drop cmake output files everywhere.
 
-ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
-ly_get_list_relative_pal_filename(common_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/Common)
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
+set(common_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/Common)
 
 if(PAL_TRAIT_PROF_PIX_SUPPORTED)
     set(LY_PIX_ENABLED OFF CACHE BOOL "Enables PIX profiler integration.")
@@ -110,15 +110,15 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
     )
 
-    ly_get_list_relative_pal_filename(pal_test_dir ${CMAKE_CURRENT_LIST_DIR}/Tests/Platform/${PAL_PLATFORM_NAME})
+    o3de_pal_dir(pal_tests_dir ${CMAKE_CURRENT_LIST_DIR}/Tests/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
     ly_add_target(
         NAME AzCore.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE AZ
         FILES_CMAKE
             Tests/azcoretests_files.cmake
-            ${pal_test_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+            ${pal_tests_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
         PLATFORM_INCLUDE_FILES
-            ${pal_test_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
+            ${pal_tests_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
                 Tests
@@ -145,6 +145,11 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         SOURCES Tests/Debug.cpp
         PROPERTY COMPILE_DEFINITIONS
         VALUES AZCORETEST_DLL_NAME=\"$<TARGET_FILE_NAME:AzCore.Tests>\"
+    )
+    ly_add_target_files(
+        TARGETS AzCore.Tests
+        FILES ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Memory/AllocatorBenchmarkRecordings.bin
+        OUTPUT_SUBDIRECTORY Tests/AzCore/Memory
     )
 
 endif()

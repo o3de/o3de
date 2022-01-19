@@ -1071,6 +1071,8 @@ namespace EMStudio
         settings.m_mirroredBitangentsColor = m_mirroredBitangentsColor;
         settings.m_bitangentsColor = m_bitangentsColor;
         settings.m_wireframeColor = m_wireframeColor;
+        settings.m_nodeAABBColor = m_nodeAABBColor;
+        settings.m_meshAABBColor = m_meshAABBColor;
         settings.m_staticAABBColor = m_staticAABBColor;
         settings.m_skeletonColor = m_skeletonColor;
         settings.m_lineSkeletonColor = m_lineSkeletonColor;

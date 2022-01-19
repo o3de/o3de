@@ -6,13 +6,4 @@
 #
 #
 
-add_subdirectory(CommonFeatures)
-add_subdirectory(ImguiAtom)
-add_subdirectory(AtomImGuiTools)
-add_subdirectory(EMotionFXAtom)
-add_subdirectory(AtomFont)
-add_subdirectory(TechnicalArt)
-add_subdirectory(AtomBridge)
-add_subdirectory(AtomViewportDisplayInfo)
-add_subdirectory(AtomViewportDisplayIcons)
 

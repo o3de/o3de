@@ -142,9 +142,6 @@ SEditorSettings::SEditorSettings()
     viewports.bShowMeshStatsOnMouseOver = false;
     viewports.bDrawEntityLabels = false;
     viewports.bShowTriggerBounds = false;
-    viewports.bShowIcons = true;
-    viewports.bDistanceScaleIcons = true;
-    viewports.bShowSizeBasedIcons = false;
     viewports.nShowFrozenHelpers = true;
     viewports.bFillSelectedShapes = false;
     viewports.nTopMapTextureResolution = 512;
@@ -534,8 +531,6 @@ void SEditorSettings::Save(bool isEditorClosing)
     SaveValue("Settings", "ShowMeshStatsOnMouseOver", viewports.bShowMeshStatsOnMouseOver);
     SaveValue("Settings", "DrawEntityLabels", viewports.bDrawEntityLabels);
     SaveValue("Settings", "ShowTriggerBounds", viewports.bShowTriggerBounds);
-    SaveValue("Settings", "ShowIcons", viewports.bShowIcons);
-    SaveValue("Settings", "ShowSizeBasedIcons", viewports.bShowSizeBasedIcons);
     SaveValue("Settings", "ShowFrozenHelpers", viewports.nShowFrozenHelpers);
     SaveValue("Settings", "FillSelectedShapes", viewports.bFillSelectedShapes);
     SaveValue("Settings", "MapTextureResolution", viewports.nTopMapTextureResolution);
@@ -736,8 +731,6 @@ void SEditorSettings::Load()
     LoadValue("Settings", "ShowMeshStatsOnMouseOver", viewports.bShowMeshStatsOnMouseOver);
     LoadValue("Settings", "DrawEntityLabels", viewports.bDrawEntityLabels);
     LoadValue("Settings", "ShowTriggerBounds", viewports.bShowTriggerBounds);
-    LoadValue("Settings", "ShowIcons", viewports.bShowIcons);
-    LoadValue("Settings", "ShowSizeBasedIcons", viewports.bShowSizeBasedIcons);
     LoadValue("Settings", "ShowFrozenHelpers", viewports.nShowFrozenHelpers);
     LoadValue("Settings", "FillSelectedShapes", viewports.bFillSelectedShapes);
     LoadValue("Settings", "MapTextureResolution", viewports.nTopMapTextureResolution);

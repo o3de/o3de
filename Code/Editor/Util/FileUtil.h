@@ -29,9 +29,6 @@ public:
     static void EditTextFile(const char* txtFile, int line = 0, IFileUtil::ETextFileType fileType = IFileUtil::FILE_TYPE_SCRIPT);
     static void EditTextureFile(const char* txtureFile, bool bUseGameFolder);
 
-    //! dcc filename calculation and extraction sub-routines
-    static bool CalculateDccFilename(const QString& assetFilename, QString& dccFilename);
-
     //! Reformat filter string for (MFC) CFileDialog style file filtering
     static void FormatFilterString(QString& filter);
 
@@ -155,9 +152,6 @@ private:
 
     // Keep this variant of this method private! pIsSelected is captured in a lambda, and so requires menu use exec() and never use show()
     static void PopulateQMenu(QWidget* caller, QMenu* menu, AZStd::string_view fullGamePath, bool* pIsSelected);
-
-    static bool ExtractDccFilenameFromAssetDatabase(const QString& assetFilename, QString& dccFilename);
-    static bool ExtractDccFilenameUsingNamingConventions(const QString& assetFilename, QString& dccFilename);
 };
 
 class CAutoRestorePrimaryCDRoot
