@@ -203,7 +203,7 @@ namespace AZ
     JsonSerializationResult::Result JsonMapSerializer::LoadElement(void* outputValue, SerializeContext::IDataContainer* container,
         const SerializeContext::ClassElement* pairElement, SerializeContext::IDataContainer* pairContainer,
         const SerializeContext::ClassElement* keyElement, const SerializeContext::ClassElement* valueElement,
-        const rapidjson::Value& key, const rapidjson::Value& value, JsonDeserializerContext& context)
+        const rapidjson::Value& key, const rapidjson::Value& value, JsonDeserializerContext& context, bool isMultiMap)
     {
         namespace JSR = JsonSerializationResult;
 
@@ -233,8 +233,10 @@ namespace AZ
 
         void* valueAddress = nullptr;
         bool keyExists = false;
-        // Check if we should attempt to update the value if a key already exists
-        if (context.ShouldUpdateAssociativeContainer())
+
+        // For multimaps, we append values to keys instead updating them.
+        // This is to ensure legacy multimap serialization support.
+        if (!isMultiMap)
         {
             auto associativeContainer = container->GetAssociativeContainerInterface();
             void* existingKeyValuePair = associativeContainer->GetElementByKey(outputValue, keyElement, keyAddress);
@@ -246,8 +248,7 @@ namespace AZ
             }
         }
 
-        // Either we don't want to update values if the key already exists,
-        // or the key does not exist
+        // If the key doesn't exist or it's a multimap, we're adding the new element we reserved above.
         if (!keyExists)
         {
             valueAddress = pairContainer->GetElementByIndex(address, pairElement, 1);
@@ -462,7 +463,7 @@ namespace AZ
     JsonSerializationResult::Result JsonUnorderedMultiMapSerializer::LoadElement(void* outputValue, SerializeContext::IDataContainer* container,
         const SerializeContext::ClassElement* pairElement, SerializeContext::IDataContainer* pairContainer,
         const SerializeContext::ClassElement* keyElement, const SerializeContext::ClassElement* valueElement,
-        const rapidjson::Value& key, const rapidjson::Value& value, JsonDeserializerContext& context)
+        const rapidjson::Value& key, const rapidjson::Value& value, JsonDeserializerContext& context, bool isMultiMap)
     {
         namespace JSR = JsonSerializationResult;
 
@@ -472,7 +473,7 @@ namespace AZ
             for (auto& entry : value.GetArray())
             {
                 result.Combine(JsonMapSerializer::LoadElement(outputValue, container, pairElement, pairContainer,
-                    keyElement, valueElement, key, entry, context));
+                    keyElement, valueElement, key, entry, context, true));
                 if (result.GetProcessing() == JSR::Processing::Halted)
                 {
                     return context.Report(result, "Unable to process the key or all values in multi-map.");
@@ -483,7 +484,7 @@ namespace AZ
         else if (IsExplicitDefault(value))
         {
             return JsonMapSerializer::LoadElement(outputValue, container, pairElement, pairContainer,
-                keyElement, valueElement, key, value, context);
+                keyElement, valueElement, key, value, context, true);
         }
         else
         {

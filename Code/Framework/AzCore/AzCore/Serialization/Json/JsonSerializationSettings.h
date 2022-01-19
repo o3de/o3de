@@ -36,11 +36,6 @@ namespace AZ
         //! any values in the container will be kept and not overwritten.
         //! Note that this does not apply to containers where elements have a fixed location such as smart pointers or AZStd::tuple.
         bool m_clearContainers = false;
-
-        //! If true, when a key already exists in the container, the value associated with it will be updated instead of creating a new
-        //! default object. If the key does not exist, it will be created. This essentially allows patching data in associative containers.
-        //! If false, existing keys in the container will be replaced.
-        bool m_updateAssociativeContainer = false;
     };
 
     //! Optional settings used while storing an object to a json value.
