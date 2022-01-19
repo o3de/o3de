@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/DOM/DomPath.h>
 #include <AzCore/DOM/DomValue.h>
 #include <AzCore/DOM/DomValueWriter.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
