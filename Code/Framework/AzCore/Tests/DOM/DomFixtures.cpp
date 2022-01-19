@@ -55,7 +55,7 @@ namespace AZ::Dom::Tests
         document.SetObject();
 
         AZStd::string entryTemplate;
-        while (entryTemplate.size() < static_cast<size_t>(stringTemplateLength))
+        while (entryTemplate.size() < aznumeric_cast<size_t>(stringTemplateLength))
         {
             entryTemplate += "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor ";
         }
@@ -65,7 +65,7 @@ namespace AZ::Dom::Tests
         auto createString = [&](int n) -> rapidjson::Value
         {
             buffer = AZStd::string::format("#%i %s", n, entryTemplate.c_str());
-            return rapidjson::Value(buffer.data(), static_cast<rapidjson::SizeType>(buffer.size()), document.GetAllocator());
+            return rapidjson::Value(buffer.data(), aznumeric_cast<rapidjson::SizeType>(buffer.size()), document.GetAllocator());
         };
 
         auto createEntry = [&](int n) -> rapidjson::Value
@@ -73,7 +73,7 @@ namespace AZ::Dom::Tests
             rapidjson::Value entry(rapidjson::kObjectType);
             entry.AddMember("string", createString(n), document.GetAllocator());
             entry.AddMember("int", rapidjson::Value(n), document.GetAllocator());
-            entry.AddMember("double", rapidjson::Value(static_cast<double>(n) * 0.5), document.GetAllocator());
+            entry.AddMember("double", rapidjson::Value(aznumeric_cast<double>(n) * 0.5), document.GetAllocator());
             entry.AddMember("bool", rapidjson::Value(n % 2 == 0), document.GetAllocator());
             entry.AddMember("null", rapidjson::Value(rapidjson::kNullType), document.GetAllocator());
             return entry;
@@ -98,7 +98,7 @@ namespace AZ::Dom::Tests
             {
                 buffer = AZStd::string::format("Key%i", i);
                 rapidjson::Value key;
-                key.SetString(buffer.data(), static_cast<rapidjson::SizeType>(buffer.length()), document.GetAllocator());
+                key.SetString(buffer.data(), aznumeric_cast<rapidjson::SizeType>(buffer.length()), document.GetAllocator());
                 object.AddMember(key.Move(), createArray(), document.GetAllocator());
             }
             return object;
@@ -125,7 +125,7 @@ namespace AZ::Dom::Tests
         Value root(Type::Object);
 
         AZStd::string entryTemplate;
-        while (entryTemplate.size() < static_cast<size_t>(stringTemplateLength))
+        while (entryTemplate.size() < aznumeric_cast<size_t>(stringTemplateLength))
         {
             entryTemplate += "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor ";
         }
@@ -142,7 +142,7 @@ namespace AZ::Dom::Tests
             Value entry(Type::Object);
             entry.AddMember("string", createString(n));
             entry.AddMember("int", Value(n));
-            entry.AddMember("double", Value(static_cast<double>(n) * 0.5));
+            entry.AddMember("double", Value(aznumeric_cast<double>(n) * 0.5));
             entry.AddMember("bool", Value(n % 2 == 0));
             entry.AddMember("null", Value(Type::Null));
             return entry;
