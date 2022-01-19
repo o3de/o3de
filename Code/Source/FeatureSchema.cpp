@@ -80,14 +80,14 @@ namespace EMotionFX::MotionMatching
         AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         if (!context)
         {
-            AZ_Error("EMotionFX", false, "Can't get serialize context from component application.");
+            AZ_Error("Motion Matching", false, "Can't get serialize context from component application.");
             return nullptr;
         }
 
         const AZ::SerializeContext::ClassData* classData = context->FindClassData(typeId);
         if (!classData)
         {
-            AZ_Warning("EMotionFX", false, "Can't find class data for this type.");
+            AZ_Warning("Motion Matching", false, "Can't find class data for this type.");
             return nullptr;
         }
 

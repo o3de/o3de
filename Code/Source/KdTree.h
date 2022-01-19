@@ -16,8 +16,10 @@
 #include <AzCore/std/containers/vector.h>
 
 #include <EMotionFX/Source/EMotionFXConfig.h>
+
+#include <Feature.h>
+#include <FeatureMatrix.h>
 #include <FrameDatabase.h>
-#include <FeatureDatabase.h>
 
 namespace EMotionFX::MotionMatching
 {
@@ -30,7 +32,20 @@ namespace EMotionFX::MotionMatching
         KdTree() = default;
         virtual ~KdTree();
 
-        bool Init(const FrameDatabase& frameDatabase, const FeatureDatabase& featureDatabase, size_t maxDepth=10, size_t minFramesPerLeaf=1000);
+        bool Init(const FrameDatabase& frameDatabase,
+            const FeatureMatrix& featureMatrix,
+            const AZStd::vector<Feature*>& features,
+            size_t maxDepth=10,
+            size_t minFramesPerLeaf=1000);
+
+        /**
+         * Calculate the number of dimensions or values for the given feature set.
+         * Each feature might store one or multiple values inside the feature matrix and the number of
+         * values each feature holds varies with the feature type. This calculates the sum of the number of
+         * values of the given feature set.
+         */
+        static size_t CalcNumDimensions(const AZStd::vector<Feature*>& features);
+
         void Clear();
         void PrintStats();
 
@@ -52,10 +67,21 @@ namespace EMotionFX::MotionMatching
             AZStd::vector<size_t> m_frames;
         };
 
-        void BuildTreeNodes(const FrameDatabase& frameDatabase, const FeatureDatabase& featureDatabase, Node* node, Node* parent, size_t dimension=0, bool leftSide=true);
+        void BuildTreeNodes(const FrameDatabase& frameDatabase,
+            const FeatureMatrix& featureMatrix,
+            const AZStd::vector<Feature*>& features,
+            Node* node,
+            Node* parent,
+            size_t dimension = 0,
+            bool leftSide = true);
         void FillFeatureValues(const FeatureMatrix& featureMatrix, const Feature* feature, size_t frameIndex, size_t startIndex);
-        void FillFeatureValues(const FeatureDatabase& featureDatabase, size_t frameIndex);
-        void FillFramesForNode(Node* node, const FrameDatabase& frameDatabase, const FeatureDatabase& featureDatabase, Node* parent, bool leftSide);
+        void FillFeatureValues(const FeatureMatrix& featureMatrix, const AZStd::vector<Feature*>& features, size_t frameIndex);
+        void FillFramesForNode(Node* node,
+            const FrameDatabase& frameDatabase,
+            const FeatureMatrix& featureMatrix,
+            const AZStd::vector<Feature*>& features,
+            Node* parent,
+            bool leftSide);
         void RecursiveCalcNumFrames(Node* node, size_t& outNumFrames) const;
         void ClearFramesForNonEssentialNodes();
         void MergeSmallLeafNodesToParents();

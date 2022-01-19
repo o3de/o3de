@@ -11,8 +11,6 @@ set(FILES
     Source/Frame.h
     Source/Feature.cpp
     Source/Feature.h
-    Source/FeatureDatabase.cpp
-    Source/FeatureDatabase.h
     Source/FeatureMatrix.cpp
     Source/FeatureMatrix.h
     Source/FeaturePosition.cpp

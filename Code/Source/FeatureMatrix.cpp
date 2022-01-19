@@ -10,10 +10,12 @@
 *
 */
 
-#include <Allocators.h>
-#include <FeatureMatrix.h>
 #include <iostream>
 #include <fstream>
+
+#include <Allocators.h>
+#include <FeatureMatrix.h>
+#include <FeatureSchema.h>
 
 namespace EMotionFX::MotionMatching
 {
@@ -49,6 +51,22 @@ namespace EMotionFX::MotionMatching
         const static Eigen::IOFormat csvFormat(/*Eigen::StreamPrecision|FullPrecision*/8, Eigen::DontAlignCols, ", ", "\n");
         file << format(csvFormat);
 #endif
+    }
+
+    void FeatureMatrix::SaveAsCsv(const AZStd::string& filename, const FeatureSchema* featureSchema)
+    {
+        AZStd::vector<AZStd::string> columnNames;
+
+        for (Feature* feature: featureSchema->GetFeatures())
+        {
+            const size_t numDimensions = feature->GetNumDimensions();
+            for (size_t dimension = 0; dimension < numDimensions; ++dimension)
+            {
+                columnNames.push_back(feature->GetDimensionName(dimension));
+            }
+        }
+
+        SaveAsCsv(filename, columnNames);
     }
 
     AZ::Vector2 FeatureMatrix::GetVector2(Index row, Index startColumn) const
