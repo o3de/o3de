@@ -158,6 +158,7 @@ namespace AtomToolsFramework
             components.end(),
             {
                 azrtti_typeid<AzToolsFramework::AssetBrowser::AssetBrowserComponent>(),
+                azrtti_typeid<AzToolsFramework::AssetSystem::AssetSystemComponent>(),
                 azrtti_typeid<AzToolsFramework::Thumbnailer::ThumbnailerComponent>(),
                 azrtti_typeid<AzToolsFramework::Components::PropertyManagerComponent>(),
                 azrtti_typeid<AzToolsFramework::PerforceComponent>(),
@@ -186,6 +187,9 @@ namespace AtomToolsFramework
         AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusConnect();
         AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotificationBus::Broadcast(
             &AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotifications::OnDatabaseInitialized);
+
+        AzToolsFramework::SourceControlConnectionRequestBus::Broadcast(
+            &AzToolsFramework::SourceControlConnectionRequests::EnableSourceControl, true);
 
         if (!AZ::RPI::RPISystemInterface::Get()->IsInitialized())
         {

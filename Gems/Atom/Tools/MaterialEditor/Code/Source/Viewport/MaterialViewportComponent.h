@@ -12,11 +12,11 @@
 #include <Atom/Feature/Utils/LightingPreset.h>
 #include <Atom/Feature/Utils/ModelPreset.h>
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
-#include <Atom/Viewport/MaterialViewportRequestBus.h>
-#include <Atom/Viewport/MaterialViewportSettings.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
+#include <Viewport/MaterialViewportRequestBus.h>
+#include <Viewport/MaterialViewportSettings.h>
 
 namespace MaterialEditor
 {
