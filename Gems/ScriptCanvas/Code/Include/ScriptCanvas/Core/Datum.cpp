@@ -1793,9 +1793,9 @@ namespace ScriptCanvas
         return (source && DatumHelpers::FromBehaviorContextVector4(sourceTypeID, source, m_storage.value)) || true;
     }
 
-    void Datum::SetType(const Data::Type& dataType)
+    void Datum::SetType(const Data::Type& dataType, TypeChange typeChange)
     {
-        if (!GetType().IsValid() && m_isDefaultConstructed)
+        if (!GetType().IsValid() && m_isDefaultConstructed || typeChange == TypeChange::Forced)
         {
             if (dataType.IsValid())
             {

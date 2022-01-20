@@ -1011,6 +1011,8 @@ namespace ScriptCanvasEditor
             output.m_name = m_slotTypeSelector->GetSlotName();
             output.m_type = Data::FromAZType(m_slotTypeSelector->GetSelectedType());
             output.m_actionIsValid = true;
+            output.m_nameChanged = input.m_currentName != output.m_name;
+            output.m_typeChanged = input.m_currentType != output.m_type;
         }
 
         delete m_slotTypeSelector;

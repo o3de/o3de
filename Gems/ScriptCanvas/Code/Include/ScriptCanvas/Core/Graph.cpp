@@ -1004,6 +1004,17 @@ namespace ScriptCanvas
         return false;
     }
 
+    void Graph::RefreshDatumReferences(const Datum& datum)
+    {
+        for (auto nodeEntity : m_graphData.m_nodes)
+        {
+            if (auto node = FindNode(nodeEntity->GetId()))
+            {
+                node->OnDatumEdited(&datum);
+            }
+        }
+    }
+
     void Graph::RefreshConnectionValidity([[maybe_unused]] bool warnOnRemoval)
     {
         AZStd::vector<AZ::EntityId> removableConnections;
