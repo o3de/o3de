@@ -15,6 +15,7 @@
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutorInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusNotificationBus.h>
 #include <AzToolsFramework/Prefab/PrefabFocusUndo.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
@@ -74,6 +75,13 @@ namespace AzToolsFramework::Prefab
             m_focusModeInterface,
             "Prefab - PrefabFocusHandler - "
             "Focus Mode Interface could not be found. "
+            "Check that it is being correctly initialized.");
+
+        m_instanceUpdateExecutorInterface = AZ::Interface<InstanceUpdateExecutorInterface>::Get();
+        AZ_Assert(
+            m_instanceUpdateExecutorInterface,
+            "Prefab - PrefabFocusHandler - "
+            "Instance Update Executor Interface could not be found. "
             "Check that it is being correctly initialized.");
 
         m_readOnlyEntityQueryInterface = AZ::Interface<ReadOnlyEntityQueryInterface>::Get();
@@ -200,7 +208,7 @@ namespace AzToolsFramework::Prefab
         m_focusedInstanceContainerEntityId = focusedInstance->get().GetParentInstance().has_value() ? focusedInstance->get().GetContainerEntityId() : AZ::EntityId();
         m_focusedTemplateId = focusedInstance->get().GetTemplateId();
 
-        // Focus on the descendants of the container entity in the Editor, if the interface is initialized.
+        // Focus on the container entity in the Editor, if the interface is initialized.
         if (m_focusModeInterface)
         {
             const AZ::EntityId containerEntityId =
@@ -225,6 +233,20 @@ namespace AzToolsFramework::Prefab
         OpenInstanceContainers(m_instanceFocusHierarchy);
 
         PrefabFocusNotificationBus::Broadcast(&PrefabFocusNotifications::OnPrefabFocusChanged);
+
+        // Force propagation both the previous and the new focused instances to ensure they are represented correctly.
+        if (m_instanceUpdateExecutorInterface)
+        {
+            auto previouslyFocusedInstance = m_instanceEntityMapperInterface->FindOwningInstance(previousContainerEntityId);
+
+            // The most common operation is focusing a prefab instance nested in the currently focused instance.
+            // Queuing the previous focus before the new one saves some time in the propagation loop on average.
+            if (previouslyFocusedInstance.has_value())
+            {
+                m_instanceUpdateExecutorInterface->AddInstanceToQueue(previouslyFocusedInstance);
+            }
+            m_instanceUpdateExecutorInterface->AddInstanceToQueue(focusedInstance);
+        }
 
         return AZ::Success();
     }
