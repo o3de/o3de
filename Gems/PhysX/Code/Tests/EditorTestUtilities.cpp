@@ -70,6 +70,24 @@ namespace PhysXEditorTests
         }
     }
 
+    void PhysXEditorFixture::ConnectToPVD()
+    {
+        auto* debug = AZ::Interface<PhysX::Debug::PhysXDebugInterface>::Get();
+        if (debug)
+        {
+            debug->ConnectToPvd();
+        }
+    }
+
+    void PhysXEditorFixture::DisconnectFromPVD()
+    {
+        auto* debug = AZ::Interface<PhysX::Debug::PhysXDebugInterface>::Get();
+        if (debug)
+        {
+            debug->DisconnectFromPvd();
+        }
+    }
+
     // DefaultWorldBus
     AzPhysics::SceneHandle PhysXEditorFixture::GetDefaultSceneHandle() const
     {
