@@ -163,7 +163,8 @@ namespace Terrain
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
 
-        //! Returns the number of samples for a given region and step size.
+        //! Returns the number of samples for a given region and step size. The first and second
+        //! elements of the pair correspond to the X and Y sample counts respectively.
         virtual AZStd::pair<size_t, size_t> GetNumSamplesFromRegion(const AZ::Aabb& inRegion,
             const AZ::Vector2& stepSize) const override;
 
