@@ -95,18 +95,33 @@ namespace AZ
         {
             AZ_UNUSED(catalogFile);
 
-            // automatically register all layer categories assets
-            AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets,
-                nullptr,
-                [this](const AZ::Data::AssetId assetId, const AZ::Data::AssetInfo& assetInfo) {
+            // automatically register all layer category assets at Editor startup
+
+            AZStd::vector<AZ::Data::AssetId> layerAssetIds;
+
+            // First run through all the assets and gather up the asset IDs for all layer assets
+            AZ::Data::AssetCatalogRequestBus::Broadcast(
+                &AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets, nullptr,
+                [&layerAssetIds](const AZ::Data::AssetId assetId, const AZ::Data::AssetInfo& assetInfo)
+                {
                     const auto assetType = azrtti_typeid<EditorPostFxLayerCategoriesAsset>();
                     if (assetInfo.m_assetType == assetType)
                     {
-                        m_layerCategoriesAssetMap[assetId] = AZ::Data::AssetManager::Instance().GetAsset(assetId, assetType, AZ::Data::AssetLoadBehavior::PreLoad);
-                        m_layerCategoriesAssetMap[assetId].QueueLoad();
+                        layerAssetIds.emplace_back(assetId);
                     }
                 },
                 nullptr);
+
+            // Next, trigger all the loads.  This is done outside of EnumerateAssets to ensure that we don't have any deadlocks caused by
+            // lock inversion.  If this thread locks AssetCatalogRequestBus mutex with EnumerateAssets, then locks m_assetMutex in
+            // AssetManager::FindOrCreateAsset, it's possible for those locks to get locked in reverse on a loading thread, causing a
+            // deadlock.
+            for (auto& assetId : layerAssetIds)
+            {
+                m_layerCategoriesAssetMap[assetId] = AZ::Data::AssetManager::Instance().GetAsset(
+                    assetId, azrtti_typeid<EditorPostFxLayerCategoriesAsset>(), AZ::Data::AssetLoadBehavior::PreLoad);
+                m_layerCategoriesAssetMap[assetId].QueueLoad();
+            }
         }
 
         void EditorPostFxSystemComponent::OnCatalogAssetChanged(const AZ::Data::AssetId& assetId)
