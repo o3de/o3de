@@ -10,7 +10,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QTableWidget>
-
+#include <QHeaderView>
 #include <QStringList>
 #include <QVector>
 #endif
@@ -26,10 +26,11 @@ namespace O3DE::ProjectManager
 
     public:
         explicit AdjustableHeaderWidget(const QStringList& headerLabels,
-            const QVector<int>& defaultHeaderWidths, int minWidth, QWidget* parent = nullptr);
+            const QVector<int>& defaultHeaderWidths, int minHeaderWidth,
+            const QVector<QHeaderView::ResizeMode>& resizeModes,
+            QWidget* parent = nullptr);
         ~AdjustableHeaderWidget() = default;
 
-        int GetScrollPosition() const;
         int CalcHeaderXPos(int headerIndex, bool calcEnd = false) const;
 
         inline constexpr static int s_headerTextIndent = 7;
@@ -37,16 +38,10 @@ namespace O3DE::ProjectManager
 
         QHeaderView* m_header;
 
-    protected:
-        void resizeEvent(QResizeEvent* event) override;
-        void showEvent(QShowEvent* event) override;
-
-        void ScaleHeaders();
+    protected slots:
+        void OnSectionResized(int logicalIndex, int oldSize, int newSize);
 
     private:
         inline constexpr static int s_headerIndentSection = 11;
-
-        int m_minWidth;
-        int m_previousWidth;
     };
 } // namespace O3DE::ProjectManager

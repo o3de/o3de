@@ -70,7 +70,6 @@ namespace O3DE::ProjectManager
 
         enum class HeaderOrder
         {
-            Indent,
             Name,
             Summary,
             Status

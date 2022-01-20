@@ -98,14 +98,22 @@ namespace O3DE::ProjectManager
         const int headerTableMinWidth = MinWindowWidth - sidePanelWidth * 2 - GemItemDelegate::s_itemMargins.left() -
             GemItemDelegate::s_itemMargins.right() - verticalScrollBarWidth;
 
+        constexpr int minHeaderSectionWidth = 100;
         AdjustableHeaderWidget* listHeaderWidget = new AdjustableHeaderWidget(
             QStringList{ tr("Gem Name"), tr("Gem Summary"), tr("Status") },
             QVector<int>{
                 GemItemDelegate::s_defaultSummaryStartX - 30,
                 headerTableMinWidth - GemItemDelegate::s_defaultSummaryStartX - GemItemDelegate::s_buttonWidth - GemItemDelegate::s_extraSummarySpacing - GemItemDelegate::s_itemMargins.left() - GemItemDelegate::s_contentMargins.right(),
-                GemItemDelegate::s_buttonWidth + GemItemDelegate::s_contentMargins.right()
+                GemItemDelegate::s_buttonWidth + GemItemDelegate::s_itemMargins.left() + GemItemDelegate::s_itemMargins.right() + GemItemDelegate::s_contentMargins.right()
             },
-            headerTableMinWidth, this);
+            minHeaderSectionWidth,
+            QVector<QHeaderView::ResizeMode>
+            {
+                QHeaderView::ResizeMode::Interactive,
+                QHeaderView::ResizeMode::Stretch,
+                QHeaderView::ResizeMode::Fixed
+            },
+            this);
 
         m_gemListView = new GemListView(m_proxyModel, m_proxyModel->GetSelectionModel(), listHeaderWidget, this);
 
