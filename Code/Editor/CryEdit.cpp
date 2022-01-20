@@ -124,9 +124,6 @@ AZ_POP_DISABLE_WARNING
 #include "ScopedVariableSetter.h"
 
 #include "Util/3DConnexionDriver.h"
-
-#include "DimensionsDialog.h"
-
 #include "Util/AutoDirectoryRestoreFileDialog.h"
 #include "Util/EditorAutoLevelLoadTest.h"
 #include "AboutDialog.h"
@@ -1806,12 +1803,6 @@ bool CCryEditApp::InitInstance()
         InitLevel(cmdInfo);
     });
 
-#ifdef USE_WIP_FEATURES_MANAGER
-    // load the WIP features file
-    CWipFeatureManager::Instance()->EnableManager(!cmdInfo.m_bDeveloperMode);
-    CWipFeatureManager::Init();
-#endif
-
     if (!m_bConsoleMode && !m_bPreviewMode)
     {
         GetIEditor()->UpdateViews();
@@ -2141,13 +2132,6 @@ int CCryEditApp::ExitInstance(int exitCode)
         m_pEditor->OnBeginShutdownSequence();
     }
     qobject_cast<Editor::EditorQtApplication*>(qApp)->UnloadSettings();
-
-    #ifdef USE_WIP_FEATURES_MANAGER
-    //
-    // close wip features manager
-    //
-    CWipFeatureManager::Shutdown();
-    #endif
 
     if (IsInRegularEditorMode())
     {

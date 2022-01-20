@@ -55,6 +55,19 @@ namespace AZ
         // Returns the path to the engine's root by cdup from the current execution path until engine.txt is found
         AZStd::string GetEngineRootPath();
 
+        //! Create or modify environment variable.
+        //! @param envname The environment variable name
+        //! @param envvalue The environment variable name
+        //! @param overwrite If name does exist in the environment, then its value is changed to value if overwrite is nonzero;
+        //! if overwrite is zero, then the value of name is not changed
+        //! @returns Return true if successful, otherwise false
+        bool SetEnv(const char* envname, const char* envvalue, bool overwrite);
+
+        //! Remove environment variable.
+        //! @param envname The environment variable name
+        //! @returns Return true if successful, otherwise false
+        bool UnsetEnv(const char* envname);
+
         //! Provides a scoped object that will create a temporary operating-system specific folder on creation, and delete it and 
         //! its contents on destruction. This class is only available on host platforms (Windows, Mac, and Linux)
         class ScopedAutoTempDirectory

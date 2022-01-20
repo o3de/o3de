@@ -935,3 +935,8 @@ TEST_F(ScriptCanvasTestFixture, InterpretedExecutionOutPerformance)
 {
     RunUnitTestGraph("LY_SC_UnitTest_ExecutionOutPerformance", ExecutionMode::Interpreted);
 }
+
+TEST_F(ScriptCanvasTestFixture, PromotedUserVariables)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_PromotedUserVariables", ExecutionMode::Interpreted);
+}

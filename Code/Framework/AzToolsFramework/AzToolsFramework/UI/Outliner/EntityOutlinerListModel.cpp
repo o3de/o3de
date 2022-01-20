@@ -66,6 +66,7 @@
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerTreeView.hxx>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerCacheBus.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
+#include <AzToolsFramework/Editor/RichTextHighlighter.h>
 
 ////////////////////////////////////////////////////////////////////////////
 // EntityOutlinerListModel
@@ -259,17 +260,7 @@ namespace AzToolsFramework
                 if (s_paintingName && !m_filterString.empty())
                 {
                     // highlight characters in filter
-                    int highlightTextIndex = 0;
-                    do
-                    {
-                        highlightTextIndex = label.lastIndexOf(QString(m_filterString.c_str()), highlightTextIndex - 1, Qt::CaseInsensitive);
-                        if (highlightTextIndex >= 0)
-                        {
-                            const QString BACKGROUND_COLOR{ "#707070" };
-                            label.insert(highlightTextIndex + static_cast<int>(m_filterString.length()), "</span>");
-                            label.insert(highlightTextIndex, "<span style=\"background-color: " + BACKGROUND_COLOR + "\">");
-                        }
-                    } while(highlightTextIndex > 0);
+                    label = AzToolsFramework::RichTextHighlighter::HighlightText(label, m_filterString.c_str());
                 }
                 return label;
             }
@@ -2375,23 +2366,10 @@ namespace AzToolsFramework
         optionV4.text.clear();
         optionV4.widget->style()->drawControl(QStyle::CE_ItemViewItem, &optionV4, painter);
 
-        // Now we setup a Text Document so it can draw the rich text
-        QTextDocument textDoc;
-        textDoc.setDefaultFont(optionV4.font);
-        if (option.state & QStyle::State_Enabled)
-        {
-            textDoc.setDefaultStyleSheet("body {color: white}");
-        }
-        else
-        {
-            textDoc.setDefaultStyleSheet("body {color: #7C7C7C}");
-        }
-        textDoc.setHtml("<body>" + entityNameRichText + "</body>");
-        painter->translate(textRect.topLeft());
-        textDoc.setTextWidth(textRect.width());
-        textDoc.drawContents(painter, QRectF(0, 0, textRect.width(), textRect.height()));
+        AzToolsFramework::RichTextHighlighter::PaintHighlightedRichText(entityNameRichText, painter, optionV4, textRect);
 
         painter->restore();
+
         EntityOutlinerListModel::s_paintingName = false;
     }
 

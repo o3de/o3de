@@ -45,7 +45,6 @@
 #include "ActionManager.h"
 #include "Include/IObjectManager.h"
 #include "ErrorReportDialog.h"
-#include "SurfaceTypeValidator.h"
 #include "Util/AutoLogTime.h"
 #include "CheckOutDialog.h"
 #include "GameExporter.h"
@@ -99,8 +98,7 @@ namespace Internal
 // CCryEditDoc construction/destruction
 
 CCryEditDoc::CCryEditDoc()
-    : doc_validate_surface_types(nullptr)
-    , m_modifiedModuleFlags(eModifiedNothing)
+    : m_modifiedModuleFlags(eModifiedNothing)
 {
     ////////////////////////////////////////////////////////////////////////
     // Set member variables to initial values
@@ -120,7 +118,6 @@ CCryEditDoc::CCryEditDoc()
 
     GetIEditor()->SetDocument(this);
     CLogFile::WriteLine("Document created");
-    RegisterConsoleVariables();
 
     MainWindow::instance()->GetActionManager()->RegisterActionHandler(ID_FILE_SAVE_AS, this, &CCryEditDoc::OnFileSaveAs);
     bool isPrefabSystemEnabled = false;
@@ -458,8 +455,6 @@ void CCryEditDoc::Load(TDocMultiArchive& arrXmlAr, const QString& szFilename)
                 listener->OnLoadDocument();
             }
         }
-
-        CSurfaceTypeValidator().Validate();
 
         LogLoadTime(GetTickCount() - t0);
         // Loaded with success, remove event from log file
@@ -1909,25 +1904,6 @@ void CCryEditDoc::LogLoadTime(int time) const
 void CCryEditDoc::SetDocumentReady(bool bReady)
 {
     m_bDocumentReady = bReady;
-}
-
-void CCryEditDoc::RegisterConsoleVariables()
-{
-    doc_validate_surface_types = gEnv->pConsole->GetCVar("doc_validate_surface_types");
-
-    if (!doc_validate_surface_types)
-    {
-        doc_validate_surface_types = REGISTER_INT_CB("doc_validate_surface_types", 0, 0,
-            "Flag indicating whether icons are displayed on the animation graph.\n"
-            "Default is 1.\n",
-            OnValidateSurfaceTypesChanged);
-    }
-}
-
-void CCryEditDoc::OnValidateSurfaceTypesChanged(ICVar*)
-{
-    CErrorsRecorder errorsRecorder(GetIEditor());
-    CSurfaceTypeValidator().Validate();
 }
 
 void CCryEditDoc::OnStartLevelResourceList()

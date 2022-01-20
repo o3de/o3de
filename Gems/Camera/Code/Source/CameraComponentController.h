@@ -11,6 +11,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Components/CameraBus.h>
+#include <AzFramework/Viewport/CameraState.h>
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/ViewProviderBus.h>
@@ -110,6 +111,11 @@ namespace Camera
         void MakeActiveView() override;
         bool IsActiveView() override;
 
+        AZ::Vector3 ScreenToWorld(const AZ::Vector2& screenPosition, float depth) override;
+        AZ::Vector3 ScreenNdcToWorld(const AZ::Vector2& screenNdcPosition, float depth) override;
+        AZ::Vector2 WorldToScreen(const AZ::Vector3& worldPosition) override;
+        AZ::Vector2 WorldToScreenNdc(const AZ::Vector3& worldPosition) override;
+
         // AZ::TransformNotificationBus::Handler interface
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
@@ -127,6 +133,7 @@ namespace Camera
         void DeactivateAtomView();
         void UpdateCamera();
         void SetupAtomAuxGeom(AZ::RPI::ViewportContextPtr viewportContext);
+        AzFramework::CameraState GetCameraState();
 
         CameraComponentConfig m_config;
         AZ::EntityId m_entityId;

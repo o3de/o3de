@@ -27,7 +27,7 @@
 #include <LyShine/Bus/UiEntityContextBus.h>
 #include <LyShine/Bus/UiCanvasUpdateNotificationBus.h>
 #include <LyShine/UiSerializeHelpers.h>
-#include <LyShine/Draw2d.h>
+#include <LyShine/IDraw2d.h>
 
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Memory/Memory.h>
