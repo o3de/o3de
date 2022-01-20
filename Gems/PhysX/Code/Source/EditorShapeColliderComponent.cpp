@@ -407,8 +407,8 @@ namespace PhysX
             constexpr AZ::u32 indexCount = 6;
             const AZ::u32 indices[indexCount] =
             {
-                0, 1, 2,
-                0, 2, 3
+                0, 2, 1,
+                0, 3, 2
             };
 
             bool cookingResult = false;
