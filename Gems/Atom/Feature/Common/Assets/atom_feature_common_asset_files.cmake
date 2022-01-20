@@ -143,6 +143,7 @@ set(FILES
     Passes/ForwardMSAA.pass
     Passes/ForwardSubsurfaceMSAA.pass
     Passes/FullscreenCopy.pass
+    Passes/FullscreenShadow.pass
     Passes/FullscreenOutputOnly.pass
     Passes/HDRColorGrading.pass
     Passes/ImGui.pass
@@ -512,6 +513,8 @@ set(FILES
     Shaders/ScreenSpace/DeferredFog.shader
     Shaders/Shadow/DepthExponentiation.azsl
     Shaders/Shadow/DepthExponentiation.shader
+    Shaders/Shadow/FullscreenShadow.azsl
+    Shaders/Shadow/FullscreenShadow.shader
     Shaders/Shadow/KawaseShadowBlur.azsl
     Shaders/Shadow/KawaseShadowBlur.shader
     Shaders/Shadow/Shadowmap.azsl

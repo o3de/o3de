@@ -24,6 +24,12 @@
                     }
                 },
                 {
+                    "Name": "FullscreenShadow",
+                    "ShaderInputName": "m_fullscreenShadow",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },                                              
+                {
                     "Name": "ExponentialShadowmapDirectional",
                     "ShaderInputName": "m_directionalLightExponentialShadowmap",
                     "SlotType": "Input",

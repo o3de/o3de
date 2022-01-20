@@ -33,6 +33,10 @@
                 {
                     "Name": "SwapChainOutput",
                     "SlotType": "InputOutput"
+                },
+                {
+                    "Name": "FullscreenShadow",
+                    "SlotType": "Output"                
                 }
             ],
             "Connections": [
@@ -63,9 +67,16 @@
                         "Pass": "EsmShadowmapsPassProjected",
                         "Attachment": "EsmShadowmaps"
                     }
-                }
+                },
+                { 
+                    "LocalSlot": "FullscreenShadow",
+                    "AttachmentRef": {
+                        "Pass": "FullscreenShadowPass",
+                        "Attachment": "Output"
+                    } 
+                }                  
             ],
-            "PassRequests": [
+            "PassRequests": [          
                 {
                     "Name": "CascadedShadowmapsPass",
                     "TemplateName": "CascadedShadowmapsTemplate",
@@ -135,7 +146,21 @@
                             }
                         }
                     ]
-                }
+                },
+                {
+                    "Name": "FullscreenShadowPass",
+                    "TemplateName": "FullscreenShadowTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "SwapChainOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "SwapChainOutput"
+                            }
+                        }                   
+                        
+                    ]                    
+                }                
             ]
         }
     }

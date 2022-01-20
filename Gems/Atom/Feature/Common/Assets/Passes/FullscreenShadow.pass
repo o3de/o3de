@@ -1,0 +1,66 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "FullscreenShadowTemplate",
+            "PassClass": "ComputePass",
+            "Slots": [
+                {
+                    "Name": "Output",
+                    "SlotType": "Output",
+                    "ShaderInputName": "m_fullscreenShadow",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "LoadAction": "DontCare",
+                        "StoreAction": "Store"
+                    }             
+                },
+                // SwapChain here is only used to reference the frame height and format
+                {
+                    "Name": "SwapChainOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget"                    
+                }                
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "Result",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "SwapChainOutput"
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R16_FLOAT",
+                        "SharedQueueMask": "Graphics",                    
+                        "BindFlags": [
+                            "CopyRead",
+                            "Color",
+                            "ShaderReadWrite",
+                            "ShaderWrite",
+                            "ShaderRead"
+                        ]
+                    }                
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "Result"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "ComputePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/Shadow/FullscreenShadow.shader"
+                }
+            }            
+        }
+    }
+}

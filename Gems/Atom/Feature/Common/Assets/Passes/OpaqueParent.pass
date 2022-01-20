@@ -13,6 +13,10 @@
                     "SlotType": "Input"
                 },
                 {
+                    "Name": "FullscreenShadow",
+                    "SlotType": "Input"
+                },                
+                {
                     "Name": "DirectionalESM",
                     "SlotType": "Input"
                 },
@@ -89,6 +93,13 @@
                             }
                         },
                         {
+                            "LocalSlot": "FullscreenShadow",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "FullscreenShadow"
+                            }
+                        },                          
+                        {
                             "LocalSlot": "ExponentialShadowmapProjected",
                             "AttachmentRef": {
                                 "Pass": "Parent",
@@ -139,6 +150,13 @@
                                 "Attachment": "DirectionalShadowmap"
                             }
                         },
+                        {
+                            "LocalSlot": "FullscreenShadow",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "FullscreenShadow"
+                            }
+                        },                        
                         {
                             "LocalSlot": "ExponentialShadowmapDirectional",
                             "AttachmentRef": {

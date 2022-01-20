@@ -200,6 +200,10 @@ bool2 DirectionalLightShadow::IsShadowed(float3 shadowCoord, uint indexOfCascade
 
 float DirectionalLightShadow::GetVisibilityFromLightNoFilter()
 {
+    Texture2D<float> fullscreenShadow = PassSrg::m_fullscreenShadow;
+    float2 fullscreenCoord = 0.5;
+    return fullscreenShadow.SampleLevel(PassSrg::LinearSampler, fullscreenCoord, 0);
+    
     const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
     for (uint indexOfCascade = 0; indexOfCascade < cascadeCount; ++indexOfCascade)
     {
