@@ -9,9 +9,15 @@
 #pragma once
 
 #include <AzCore/DOM/DomBackend.h>
+#include <AzCore/DOM/DomValue.h>
 
 namespace AZ::Dom::Utils
 {
     Visitor::Result ReadFromString(Backend& backend, AZStd::string_view string, AZ::Dom::Lifetime lifetime, Visitor& visitor);
     Visitor::Result ReadFromStringInPlace(Backend& backend, AZStd::string& string, Visitor& visitor);
+
+    AZ::Outcome<Value, AZStd::string> WriteToValue(const Backend::WriteCallback& writeCallback);
+
+    bool DeepCompareIsEqual(const Value& lhs, const Value& rhs);
+    Value DeepCopy(const Value& value, bool copyStrings = true);
 } // namespace AZ::Dom::Utils

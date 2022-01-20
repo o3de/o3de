@@ -680,12 +680,6 @@ namespace MaterialEditor
                 return false;
             }
             m_materialTypeSourceData = materialTypeOutcome.GetValue();
-            
-            if (MaterialSourceData::ApplyVersionUpdatesResult::Failed == m_materialSourceData.ApplyVersionUpdates(m_absolutePath))
-            {
-                AZ_Error("MaterialDocument", false, "Material source data could not be auto updated to the latest version of the material type: '%s'.", m_materialSourceData.m_materialType.c_str());
-                return false;
-            }
         }
         else if (AzFramework::StringFunc::Path::IsExtension(m_absolutePath.c_str(), MaterialTypeSourceData::Extension))
         {
@@ -719,7 +713,7 @@ namespace MaterialEditor
         // Long term, the material document should not be concerned with assets at all. The viewport window should be the
         // only thing concerned with assets or instances.
         auto materialAssetResult =
-            m_materialSourceData.CreateMaterialAssetFromSourceData(Uuid::CreateRandom(), m_absolutePath, elevateWarnings, true, &m_sourceDependencies);
+            m_materialSourceData.CreateMaterialAssetFromSourceData(Uuid::CreateRandom(), m_absolutePath, elevateWarnings, &m_sourceDependencies);
         if (!materialAssetResult)
         {
             AZ_Error("MaterialDocument", false, "Material asset could not be created from source data: '%s'.", m_absolutePath.c_str());
@@ -759,7 +753,7 @@ namespace MaterialEditor
             }
             
             auto parentMaterialAssetResult = parentMaterialSourceData.CreateMaterialAssetFromSourceData(
-                parentMaterialAssetIdResult.GetValue(), m_materialSourceData.m_parentMaterial, true, true);
+                parentMaterialAssetIdResult.GetValue(), m_materialSourceData.m_parentMaterial, true);
             if (!parentMaterialAssetResult)
             {
                 AZ_Error("MaterialDocument", false, "Material parent asset could not be created from source data: '%s'.", m_materialSourceData.m_parentMaterial.c_str());

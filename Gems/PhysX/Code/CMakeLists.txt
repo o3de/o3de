@@ -8,7 +8,7 @@
 
 add_subdirectory(NumericalMethods)
 
-ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
+o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
 
 include(${pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake) # for PAL_TRAIT_PHYSX_SUPPORTED
 set(LY_PHYSX_ENABLE_RUNNING_BENCHMARKS OFF CACHE BOOL "Adds a target to allow running of the physx benchmarks.")
@@ -85,6 +85,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         AUTOUIC
         FILES_CMAKE
             ${physx_editor_files}
+        PLATFORM_INCLUDE_FILES
+            ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common/${PAL_TRAIT_COMPILER_ID}/physx_editor_static_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
         COMPILE_DEFINITIONS
             PUBLIC
                 PHYSX_EDITOR

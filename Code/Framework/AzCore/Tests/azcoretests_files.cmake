@@ -148,6 +148,7 @@ set(FILES
     Math/Matrix4x4PerformanceTests.cpp
     Math/Matrix4x4Tests.cpp
     Math/MatrixUtilsTests.cpp
+    Math/MathTest.h
     Math/MathTestData.h
     Math/ObbPerformanceTests.cpp
     Math/ObbTests.cpp
@@ -214,8 +215,12 @@ set(FILES
     AZStd/Variant.cpp
     AZStd/VariantSerialization.cpp
     AZStd/VectorAndArray.cpp
+    DOM/DomFixtures.cpp
+    DOM/DomFixtures.h
     DOM/DomJsonTests.cpp
     DOM/DomJsonBenchmarks.cpp
+    DOM/DomValueTests.cpp
+    DOM/DomValueBenchmarks.cpp
 )
 
 # Prevent the following files from being grouped in UNITY builds

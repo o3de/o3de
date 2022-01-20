@@ -558,10 +558,6 @@ namespace AZ
         m_entityActivatedEvent.DisconnectAllHandlers();
         m_entityDeactivatedEvent.DisconnectAllHandlers();
 
-#if !defined(_RELEASE)
-        m_budgetTracker.Reset();
-#endif
-
         DestroyAllocator();
     }
 
@@ -750,6 +746,12 @@ namespace AZ
 
         static_cast<SettingsRegistryImpl*>(m_settingsRegistry.get())->ClearNotifiers();
         static_cast<SettingsRegistryImpl*>(m_settingsRegistry.get())->ClearMergeEvents();
+
+#if !defined(_RELEASE)
+        // the budget tracker must be cleaned up prior to module unloading to ensure
+        // budgets initialized cross boundary are freed properly
+        m_budgetTracker.Reset();
+#endif
 
         // Uninit and unload any dynamic modules.
         m_moduleManager->UnloadModules();

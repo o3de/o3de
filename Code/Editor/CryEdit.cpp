@@ -124,9 +124,6 @@ AZ_POP_DISABLE_WARNING
 #include "ScopedVariableSetter.h"
 
 #include "Util/3DConnexionDriver.h"
-
-#include "DimensionsDialog.h"
-
 #include "Util/AutoDirectoryRestoreFileDialog.h"
 #include "Util/EditorAutoLevelLoadTest.h"
 #include "AboutDialog.h"
@@ -1352,8 +1349,27 @@ void CCryEditApp::CompileCriticalAssets() const
         }
     }
     assetsInQueueNotifcation.BusDisconnect();
-    CCryEditApp::OutputStartupMessage(QString("Asset Processor is now ready."));
 
+    // Signal the "CriticalAssetsCompiled" lifecycle event
+    // Also reload the "assetcatalog.xml" if it exists
+    if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+    {
+        AZ::ComponentApplicationLifecycle::SignalEvent(*settingsRegistry, "CriticalAssetsCompiled", R"({})");
+        // Reload the assetcatalog.xml at this point again
+        // Start Monitoring Asset changes over the network and load the AssetCatalog
+        auto LoadCatalog = [settingsRegistry](AZ::Data::AssetCatalogRequests* assetCatalogRequests)
+        {
+            if (AZ::IO::FixedMaxPath assetCatalogPath;
+                settingsRegistry->Get(assetCatalogPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
+            {
+                assetCatalogPath /= "assetcatalog.xml";
+                assetCatalogRequests->LoadCatalog(assetCatalogPath.c_str());
+            }
+        };
+        AZ::Data::AssetCatalogRequestBus::Broadcast(AZStd::move(LoadCatalog));
+    }
+
+    CCryEditApp::OutputStartupMessage(QString("Asset Processor is now ready."));
 }
 
 bool CCryEditApp::ConnectToAssetProcessor() const
@@ -1669,7 +1685,7 @@ bool CCryEditApp::InitInstance()
         return false;
     }
 
-    if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get())
+    if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
     {
         AZ::ComponentApplicationLifecycle::SignalEvent(*settingsRegistry, "LegacySystemInterfaceCreated", R"({})");
     }
@@ -1786,12 +1802,6 @@ bool CCryEditApp::InitInstance()
     QTimer::singleShot(0, this, [this, cmdInfo] {
         InitLevel(cmdInfo);
     });
-
-#ifdef USE_WIP_FEATURES_MANAGER
-    // load the WIP features file
-    CWipFeatureManager::Instance()->EnableManager(!cmdInfo.m_bDeveloperMode);
-    CWipFeatureManager::Init();
-#endif
 
     if (!m_bConsoleMode && !m_bPreviewMode)
     {
@@ -2122,13 +2132,6 @@ int CCryEditApp::ExitInstance(int exitCode)
         m_pEditor->OnBeginShutdownSequence();
     }
     qobject_cast<Editor::EditorQtApplication*>(qApp)->UnloadSettings();
-
-    #ifdef USE_WIP_FEATURES_MANAGER
-    //
-    // close wip features manager
-    //
-    CWipFeatureManager::Shutdown();
-    #endif
 
     if (IsInRegularEditorMode())
     {

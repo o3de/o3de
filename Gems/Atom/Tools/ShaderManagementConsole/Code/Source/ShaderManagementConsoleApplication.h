@@ -8,28 +8,25 @@
 
 #pragma once
 
-#include <AtomToolsFramework/Application/AtomToolsApplication.h>
-#include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
+#include <AtomToolsFramework/Document/AtomToolsDocumentApplication.h>
 
 namespace ShaderManagementConsole
 {
     class ShaderManagementConsoleApplication
-        : public AtomToolsFramework::AtomToolsApplication
+        : public AtomToolsFramework::AtomToolsDocumentApplication
     {
     public:
         AZ_TYPE_INFO(ShaderManagementConsole::ShaderManagementConsoleApplication, "{A31B1AEB-4DA3-49CD-884A-CC998FF7546F}");
 
-        using Base = AtomToolsFramework::AtomToolsApplication;
+        using Base = AtomToolsFramework::AtomToolsDocumentApplication;
 
         ShaderManagementConsoleApplication(int* argc, char*** argv);
 
-        //////////////////////////////////////////////////////////////////////////
-        // AzFramework::Application
+        // AzFramework::Application overrides...
         void CreateStaticModules(AZStd::vector<AZ::Module*>& outModules) override;
         const char* GetCurrentConfigurationName() const override;
 
-    private:
-        void ProcessCommandLine(const AZ::CommandLine& commandLine);
+        // AtomToolsFramework::AtomToolsApplication overrides...
         AZStd::string GetBuildTargetName() const override;
         AZStd::vector<AZStd::string> GetCriticalAssetFilters() const override;
     };

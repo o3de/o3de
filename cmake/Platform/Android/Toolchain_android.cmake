@@ -31,16 +31,15 @@ endif()
 if(NOT ANDROID_ABI)
     set(ANDROID_ABI arm64-v8a)
 endif()
-if(NOT ANDROID_ARM_MODE)
-    set(ANDROID_ARM_MODE arm)
-endif()
-if(NOT ANDROID_ARM_NEON)
-    set(ANDROID_ARM_NEON FALSE)
+
+# Only the 64-bit ANDROID ABIs arm supported
+if(NOT ANDROID_ABI MATCHES "^arm64-")
+    message(FATAL_ERROR "Only the 64-bit ANDROID_ABI's are supported. arm64-v8a can be used if not set")
 endif()
 if(NOT ANDROID_NATIVE_API_LEVEL)
-    set(ANDROID_NATIVE_API_LEVEL 21)
+    set(ANDROID_NATIVE_API_LEVEL 24)
 endif()
-
+set(ANDROID_PLATFORM android-${ANDROID_NATIVE_API_LEVEL})
 
 # Make a backup of the CMAKE_FIND_ROOT_PATH since it will be altered by the NDK toolchain file and needs to be restored after the input
 set(BACKUP_CMAKE_FIND_ROOT_PATH ${CMAKE_FIND_ROOT_PATH})
@@ -65,9 +64,9 @@ set(LY_TOOLCHAIN_NDK_API_LEVEL ${ANDROID_PLATFORM_LEVEL})
 set(MIN_NDK_VERSION 21)
 
 if(${LY_TOOLCHAIN_NDK_PKG_MAJOR} VERSION_LESS ${MIN_NDK_VERSION})
-    message(FATAL_ERROR "Unsupported NDK Version ${LY_TOOLCHAIN_NDK_PKG_MAJOR}.${LY_TOOLCHAIN_NDK_PKG_MINOR}.${LY_TOOLCHAIN_NDK_API_LEVEL}. Must be version ${MIN_NDK_VERSION} or above")
+    message(FATAL_ERROR "Unsupported NDK Version ${LY_TOOLCHAIN_NDK_PKG_MAJOR}.${LY_TOOLCHAIN_NDK_PKG_MINOR}. Must be version ${MIN_NDK_VERSION} or above")
 else()
-    message(STATUS "Detected NDK Version ${LY_TOOLCHAIN_NDK_PKG_MAJOR}.${LY_TOOLCHAIN_NDK_PKG_MINOR}.${LY_TOOLCHAIN_NDK_PKG_MINOR}")
+    message(STATUS "Detected NDK Version ${LY_TOOLCHAIN_NDK_PKG_MAJOR}.${LY_TOOLCHAIN_NDK_PKG_MINOR}")
 endif()
 
 list(APPEND CMAKE_TRY_COMPILE_PLATFORM_VARIABLES LY_NDK_DIR)

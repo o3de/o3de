@@ -269,14 +269,7 @@ set(FILES
     LevelTreeModel.h
     Include/Command.h
     Include/HitContext.h
-    Include/IAnimationCompressionManager.h
-    Include/IAssetItem.h
-    Include/IAssetItemDatabase.h
     Include/ICommandManager.h
-    Include/IConsoleConnectivity.h
-    Include/IDataBaseItem.h
-    Include/IDataBaseLibrary.h
-    Include/IDataBaseManager.h
     Include/IDisplayViewport.h
     Include/IEditorClassFactory.h
     Include/IEventLoopHook.h
@@ -288,9 +281,7 @@ set(FILES
     Include/IObjectManager.h
     Include/IPlugin.h
     Include/IPreferencesPage.h
-    Include/IRenderListener.h
     Include/ISourceControl.h
-    Include/ITextureDatabaseUpdater.h
     Include/ITransformManipulator.h
     Include/IViewPane.h
     Include/ObjectEvent.h
@@ -356,7 +347,6 @@ set(FILES
     MainStatusBar.cpp
     MainStatusBar.h
     MainStatusBarItems.h
-    CrtDebug.cpp
     CryEdit.rc
     CryEditDoc.cpp
     CryEditDoc.h
@@ -367,14 +357,10 @@ set(FILES
     LogFile.cpp
     LogFile.h
     Resource.h
-    UserMessageDefines.h
     ActionManager.cpp
     ActionManager.h
     ShortcutDispatcher.cpp
     ShortcutDispatcher.h
-    BaseLibraryManager.cpp
-    BaseLibraryItem.h
-    BaseLibraryManager.h
     CheckOutDialog.cpp
     CheckOutDialog.h
     CheckOutDialog.ui
@@ -409,9 +395,6 @@ set(FILES
     ResizeResolutionDialog.cpp
     ResizeResolutionDialog.h
     ResizeResolutionDialog.ui
-    SelectEAXPresetDlg.cpp
-    SelectEAXPresetDlg.h
-    SelectEAXPresetDlg.ui
     SelectLightAnimationDialog.cpp
     SelectLightAnimationDialog.h
     SelectSequenceDialog.cpp
@@ -433,9 +416,6 @@ set(FILES
     IconListDialog.ui
     UndoDropDown.cpp
     UndoDropDown.h
-    DimensionsDialog.cpp
-    DimensionsDialog.h
-    DimensionsDialog.ui
     NewLevelDialog.cpp
     NewLevelDialog.h
     NewLevelDialog.ui
@@ -457,27 +437,18 @@ set(FILES
     GameResourcesExporter.cpp
     GameExporter.h
     GameResourcesExporter.h
-    Geometry/TriMesh.cpp
-    Geometry/TriMesh.h
     AboutDialog.h
     AboutDialog.ui
     DocMultiArchive.h
-    EditMode/DeepSelection.h
     FBXExporterDialog.h
     FileTypeUtils.h
     GridUtils.h
     IObservable.h
     IPostRenderer.h
-    LightmapCompiler/SimpleTriangleRasterizer.h
     ToolBox.h
     TrackViewNewSequenceDialog.h
     UndoConfigSpec.h
-    UndoViewPosition.h
-    UndoViewRotation.h
     Util/GeometryUtil.h
-    WipFeaturesDlg.h
-    WipFeaturesDlg.ui
-    WipFeaturesDlg.qrc
     LevelIndependentFileMan.cpp
     LevelIndependentFileMan.h
     LogFileImpl.cpp
@@ -559,20 +530,13 @@ set(FILES
     AboutDialog.cpp
     ErrorReportTableModel.h
     ErrorReportTableModel.cpp
-    EditMode/DeepSelection.cpp
     FBXExporterDialog.cpp
     FBXExporterDialog.ui
     FileTypeUtils.cpp
-    LightmapCompiler/SimpleTriangleRasterizer.cpp
     ToolBox.cpp
     TrackViewNewSequenceDialog.cpp
     TrackViewNewSequenceDialog.ui
     UndoConfigSpec.cpp
-    UndoViewPosition.cpp
-    UndoViewRotation.cpp
-    WipFeatureManager.cpp
-    WipFeatureManager.h
-    WipFeaturesDlg.cpp
     Dialogs/ErrorsDlg.cpp
     Dialogs/ErrorsDlg.h
     Dialogs/ErrorsDlg.ui
@@ -589,8 +553,6 @@ set(FILES
     ProcessInfo.cpp
     ProcessInfo.h
     Report.h
-    SurfaceTypeValidator.cpp
-    SurfaceTypeValidator.h
     TrackView/AtomOutputFrameCapture.cpp
     TrackView/AtomOutputFrameCapture.h
     TrackView/TrackViewDialog.qrc
