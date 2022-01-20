@@ -489,6 +489,22 @@ namespace AzFramework
     //=========================================================================
     void AssetCatalog::EnumerateAssets(BeginAssetEnumerationCB beginCB, AssetEnumerationCB enumerateCB, EndAssetEnumerationCB endCB)
     {
+        using AssetCatalogRequestBusContext = typename AZ::Data::AssetCatalogRequestBus::Context;
+        using AssetCatalogRequestBusDispatchScopedLock = typename AZ::Data::AssetCatalogRequestBus::Context::DispatchLockGuard;
+
+        // Setting trackCallstack to true causes the context mutex to attempt to re-lock.
+        // That is being avoided here as the code only wants to unlock the Context mutex if it is in a dispatch.
+        constexpr bool trackCallstack = false;
+        AssetCatalogRequestBusContext* assetCatalogContext = AZ::Data::AssetCatalogRequestBus::GetContext(trackCallstack);
+
+        bool hasAssetCatalogMutex = false;
+        if (assetCatalogContext != nullptr && AZ::Data::AssetCatalogRequestBus::IsInDispatchThisThread(assetCatalogContext))
+        {
+            hasAssetCatalogMutex = true;
+            // Unlock the dispatch mutex for the AssetCatalogRequestBus
+            assetCatalogContext->m_contextMutex.unlock();
+        }
+
         if (beginCB)
         {
             beginCB();
@@ -507,6 +523,12 @@ namespace AzFramework
         if (endCB)
         {
             endCB();
+        }
+
+        if (hasAssetCatalogMutex)
+        {
+            // Relock the mutex if it was unlocked earlier
+            assetCatalogContext->m_contextMutex.lock();
         }
     }
 
