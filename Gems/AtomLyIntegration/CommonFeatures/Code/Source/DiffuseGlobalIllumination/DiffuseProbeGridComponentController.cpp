@@ -34,7 +34,7 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<DiffuseProbeGridComponentConfig>()
-                    ->Version(2) // ATOM-17127
+                    ->Version(2) // Added NumRaysPerProbe setting
                     ->Field("ProbeSpacing", &DiffuseProbeGridComponentConfig::m_probeSpacing)
                     ->Field("Extents", &DiffuseProbeGridComponentConfig::m_extents)
                     ->Field("AmbientMultiplier", &DiffuseProbeGridComponentConfig::m_ambientMultiplier)
