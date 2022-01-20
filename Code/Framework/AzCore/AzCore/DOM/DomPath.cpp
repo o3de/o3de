@@ -384,6 +384,14 @@ namespace AZ::Dom
         return formattedString;
     }
 
+    void Path::AppendToString(AZStd::string& output) const
+    {
+        const size_t startIndex = output.length();
+        const size_t stringLength = GetStringLength();
+        output.resize_no_construct(startIndex + stringLength);
+        FormatString(output.data() + startIndex, stringLength + 1);
+    }
+
     void Path::FromString(AZStd::string_view pathString)
     {
         m_entries.clear();

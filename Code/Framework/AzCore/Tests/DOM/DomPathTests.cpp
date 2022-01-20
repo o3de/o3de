@@ -163,4 +163,15 @@ namespace AZ::Dom::Tests
         EXPECT_EQ(Path("/-").ToString(), "/-");
         EXPECT_EQ(Path("/0/-").ToString(), "/0/-");
     }
+
+    TEST_F(DomPathTests, MixedPath_AppendToString)
+    {
+        Path p("/foo/0");
+        AZStd::string s;
+
+        p.AppendToString(s);
+        EXPECT_EQ(s, "/foo/0");
+        p.AppendToString(s);
+        EXPECT_EQ(s, "/foo/0/foo/0");
+    }
 } // namespace AZ::Dom::Tests

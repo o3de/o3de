@@ -131,6 +131,7 @@ namespace AZ::Dom
         void FormatString(char* stringBuffer, size_t bufferSize) const;
         //! Returns a JSON-pointer style path string for this path.
         AZStd::string ToString() const;
+        void AppendToString(AZStd::string& output) const;
         //! Reads a JSON-pointer style path from pathString and replaces this path's contents.
         //! Paths are accepted in the following forms:
         //! "/path/to/foo/0"
