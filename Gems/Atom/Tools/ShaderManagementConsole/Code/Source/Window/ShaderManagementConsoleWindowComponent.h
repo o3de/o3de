@@ -8,15 +8,15 @@
 
 #pragma once
 
+#include <Atom/Core/ShaderManagementConsoleRequestBus.h>
+#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
+#include <AtomToolsFramework/Window/AtomToolsMainWindowFactoryRequestBus.h>
+
 #include <AzCore/Component/Component.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 
-#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
-
-#include <AtomToolsFramework/Window/AtomToolsMainWindowFactoryRequestBus.h>
-#include <Atom/Core/ShaderManagementConsoleRequestBus.h>
-#include <Source/Window/ShaderManagementConsoleBrowserInteractions.h>
-#include <Source/Window/ShaderManagementConsoleWindow.h>
+#include <Window/ShaderManagementConsoleBrowserInteractions.h>
+#include <Window/ShaderManagementConsoleWindow.h>
 
 namespace ShaderManagementConsole
 {

@@ -279,11 +279,11 @@ namespace AZStd
                             reinterpret_cast<functor_type*>(&in_buffer.data);
                         if (op == clone_functor_tag)
                         {
-                            new ((void*)&out_buffer.data)functor_type(*in_functor);
+                            AZStd::construct_at(reinterpret_cast<functor_type*>(&out_buffer), functor_type(*in_functor));
                         }
                         else if (op == move_functor_tag)
                         {
-                            new ((void*)&out_buffer.data)functor_type(AZStd::move(*in_functor));
+                            AZStd::construct_at(reinterpret_cast<functor_type*>(&out_buffer), functor_type(AZStd::move(*in_functor)));
                             // Casting via union to get around compiler warnings (strict type on GCC, unused variable on MSVC)
                             union
                             {

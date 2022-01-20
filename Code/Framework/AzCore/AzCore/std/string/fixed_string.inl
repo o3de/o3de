@@ -30,9 +30,8 @@ namespace AZStd
     // #3
     template<class Element, size_t MaxElementCount, class Traits>
     inline constexpr basic_fixed_string<Element, MaxElementCount, Traits>::basic_fixed_string(const basic_fixed_string& rhs,
-        size_type rhsOffset)
+        size_type rhsOffset) : basic_fixed_string(rhs, rhsOffset, npos)
     {   // construct from rhs [rhsOffset, npos)
-        assign(rhs, rhsOffset, npos);
     }
 
     // #3
@@ -40,7 +39,15 @@ namespace AZStd
     inline constexpr basic_fixed_string<Element, MaxElementCount, Traits>::basic_fixed_string(const basic_fixed_string& rhs,
         size_type rhsOffset, size_type count)
     {   // construct from rhs [rhsOffset, rhsOffset + count)
-        assign(rhs, rhsOffset, count);
+        AZSTD_CONTAINER_ASSERT(rhs.size() >= rhsOffset, "Invalid offset");
+        size_type num = AZStd::min(count, rhs.size() - rhsOffset);
+
+        // make room and assign new stuff
+        pointer data = m_buffer;
+        const_pointer rhsData = rhs.m_buffer;
+        Traits::copy(data, rhsData + rhsOffset, num);
+        m_size = static_cast<internal_size_type>(num);
+        Traits::assign(data[num], Element()); // terminate
     }
 
     // #4
@@ -68,15 +75,18 @@ namespace AZStd
     // #7
     template<class Element, size_t MaxElementCount, class Traits>
     inline constexpr basic_fixed_string<Element, MaxElementCount, Traits>::basic_fixed_string(const basic_fixed_string& rhs)
+      : basic_fixed_string(rhs, size_type(0), npos)
     {
-        assign(rhs, size_type(0), npos);
     }
 
     // #8
     template<class Element, size_t MaxElementCount, class Traits>
     inline constexpr basic_fixed_string<Element, MaxElementCount, Traits>::basic_fixed_string(basic_fixed_string&& rhs)
     {
-        assign(AZStd::move(rhs));
+        Traits::copy(m_buffer, rhs.m_buffer, rhs.size() + 1);
+        m_size = rhs.m_size;
+        rhs.m_size = 0;
+        Traits::assign(rhs.m_buffer[0], Element{});
     }
 
     // #9

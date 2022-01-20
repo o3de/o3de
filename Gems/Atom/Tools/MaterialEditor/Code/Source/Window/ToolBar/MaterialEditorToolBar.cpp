@@ -6,21 +6,21 @@
  *
  */
 
-#include <Atom/Viewport/MaterialViewportNotificationBus.h>
-#include <Atom/Viewport/MaterialViewportRequestBus.h>
-#include <Atom/Viewport/MaterialViewportSettings.h>
 #include <AzCore/std/containers/vector.h>
+#include <Viewport/MaterialViewportNotificationBus.h>
+#include <Viewport/MaterialViewportRequestBus.h>
+#include <Viewport/MaterialViewportSettings.h>
 #include <Window/ToolBar/LightingPresetComboBox.h>
 #include <Window/ToolBar/MaterialEditorToolBar.h>
 #include <Window/ToolBar/ModelPresetComboBox.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
+#include <QAbstractItemView>
 #include <QAction>
 #include <QIcon>
 #include <QMenu>
 #include <QToolButton>
-#include <QAbstractItemView>
 AZ_POP_DISABLE_WARNING
 
 namespace MaterialEditor
