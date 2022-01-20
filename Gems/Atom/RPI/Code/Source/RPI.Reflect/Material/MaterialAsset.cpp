@@ -109,6 +109,9 @@ namespace AZ
             return m_wasPreFinalized;
         }
 
+        //! Attempts to convert a numeric MaterialPropertyValue to another numeric type @T,
+        //! since MaterialPropertyValue itself does not support any kind of casting.
+        //! If the original MaterialPropertyValue is not a numeric type, the original value is returned.
         template<typename T>
         MaterialPropertyValue CastNumericMaterialPropertyValue(const MaterialPropertyValue& value)
         {
@@ -135,7 +138,10 @@ namespace AZ
                 return value;
             }
         }
-
+        
+        //! Attempts to convert an AZ::Vector[2-4] MaterialPropertyValue to another AZ::Vector[2-4] type @T.
+        //! Any extra elements will be dropped or set to 0.0 as needed.
+        //! If the original MaterialPropertyValue is not a Vector type, the original value is returned.
         template<typename VectorT>
         MaterialPropertyValue CastVectorMaterialPropertyValue(const MaterialPropertyValue& value)
         {
