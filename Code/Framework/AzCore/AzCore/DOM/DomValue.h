@@ -51,7 +51,6 @@ namespace AZ::Dom
         ValueAllocator()
             : Base("DomValueAllocator", "Allocator for AZ::Dom::Value")
         {
-            DisableOverriding();
         }
     };
 
