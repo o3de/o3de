@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/std/utils.h>
+#include <AzCore/std/typetraits/is_same.h>
 #include <AzCore/std/typetraits/is_constructible.h>
 #include <AzCore/std/typetraits/remove_cvref.h>
 

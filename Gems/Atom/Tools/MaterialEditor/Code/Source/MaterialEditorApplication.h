@@ -8,30 +8,27 @@
 
 #pragma once
 
-#include <AtomToolsFramework/Application/AtomToolsApplication.h>
-#include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
+#include <AtomToolsFramework/Document/AtomToolsDocumentApplication.h>
 
 namespace MaterialEditor
 {
     class MaterialThumbnailRenderer;
 
     class MaterialEditorApplication
-        : public AtomToolsFramework::AtomToolsApplication
+        : public AtomToolsFramework::AtomToolsDocumentApplication
     {
     public:
         AZ_TYPE_INFO(MaterialEditor::MaterialEditorApplication, "{30F90CA5-1253-49B5-8143-19CEE37E22BB}");
 
-        using Base = AtomToolsFramework::AtomToolsApplication;
+        using Base = AtomToolsFramework::AtomToolsDocumentApplication;
 
         MaterialEditorApplication(int* argc, char*** argv);
 
-        //////////////////////////////////////////////////////////////////////////
-        // AzFramework::Application
+        // AzFramework::Application overrides...
         void CreateStaticModules(AZStd::vector<AZ::Module*>& outModules) override;
         const char* GetCurrentConfigurationName() const override;
 
-    private:
-        void ProcessCommandLine(const AZ::CommandLine& commandLine) override;
+        // AtomToolsFramework::AtomToolsApplication overrides...
         AZStd::string GetBuildTargetName() const override;
         AZStd::vector<AZStd::string> GetCriticalAssetFilters() const override;
     };

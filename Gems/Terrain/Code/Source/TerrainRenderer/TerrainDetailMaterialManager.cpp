@@ -751,50 +751,56 @@ namespace Terrain
             pixels.resize((quadrantWorldArea.m_max.m_x - quadrantWorldArea.m_min.m_x) * (quadrantWorldArea.m_max.m_y - quadrantWorldArea.m_min.m_y));
             uint32_t index = 0;
 
-            for (int yPos = quadrantWorldArea.m_min.m_y; yPos < quadrantWorldArea.m_max.m_y; ++yPos)
+            auto perPositionCallback = [this, &pixels, &index](
+                [[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex,
+                const AzFramework::SurfaceData::SurfacePoint& surfacePoint,
+                [[maybe_unused]] bool terrainExists)
             {
-                for (int xPos = quadrantWorldArea.m_min.m_x; xPos < quadrantWorldArea.m_max.m_x; ++xPos)
+                // Store the top two surface weights in the texture with m_blend storing the relative weight.
+                bool isFirstMaterial = true;
+                float firstWeight = 0.0f;
+                AZ::Vector2 position(surfacePoint.m_position.GetX(), surfacePoint.m_position.GetY());
+                for (const auto& surfaceTagWeight : surfacePoint.m_surfaceTags)
                 {
-                    AZ::Vector2 position = AZ::Vector2(xPos * DetailTextureScale, yPos * DetailTextureScale);
-                    AzFramework::SurfaceData::SurfaceTagWeightList surfaceWeights;
-                    AzFramework::Terrain::TerrainDataRequestBus::Broadcast(&AzFramework::Terrain::TerrainDataRequests::GetSurfaceWeightsFromVector2, position, surfaceWeights, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, nullptr);
-
-                    // Store the top two surface weights in the texture with m_blend storing the relative weight.
-                    bool isFirstMaterial = true;
-                    float firstWeight = 0.0f;
-                    for (const auto& surfaceTagWeight : surfaceWeights)
+                    if (surfaceTagWeight.m_weight > 0.0f)
                     {
-                        if (surfaceTagWeight.m_weight > 0.0f)
+                        AZ::Crc32 surfaceType = surfaceTagWeight.m_surfaceType;
+                        uint16_t materialId = GetDetailMaterialForSurfaceTypeAndPosition(surfaceType, position);
+                        if (materialId != m_detailMaterials.NoFreeSlot && materialId < 255)
                         {
-                            AZ::Crc32 surfaceType = surfaceTagWeight.m_surfaceType;
-                            uint16_t materialId = GetDetailMaterialForSurfaceTypeAndPosition(surfaceType, position);
-                            if (materialId != m_detailMaterials.NoFreeSlot && materialId < 255)
+                            if (isFirstMaterial)
                             {
-                                if (isFirstMaterial)
-                                {
-                                    pixels.at(index).m_material1 = aznumeric_cast<uint8_t>(materialId);
-                                    firstWeight = surfaceTagWeight.m_weight;
-                                    // m_blend only needs to be calculated is material 2 is found, otherwise the initial value of 0 is correct.
-                                    isFirstMaterial = false;
-                                }
-                                else
-                                {
-                                    pixels.at(index).m_material2 = aznumeric_cast<uint8_t>(materialId);
-                                    float totalWeight = firstWeight + surfaceTagWeight.m_weight;
-                                    float blendWeight = 1.0f - (firstWeight / totalWeight);
-                                    pixels.at(index).m_blend = aznumeric_cast<uint8_t>(AZStd::round(blendWeight * 255.0f));
-                                    break;
-                                }
+                                pixels.at(index).m_material1 = aznumeric_cast<uint8_t>(materialId);
+                                firstWeight = surfaceTagWeight.m_weight;
+                                // m_blend only needs to be calculated is material 2 is found, otherwise the initial value of 0 is correct.
+                                isFirstMaterial = false;
+                            }
+                            else
+                            {
+                                pixels.at(index).m_material2 = aznumeric_cast<uint8_t>(materialId);
+                                float totalWeight = firstWeight + surfaceTagWeight.m_weight;
+                                float blendWeight = 1.0f - (firstWeight / totalWeight);
+                                pixels.at(index).m_blend = aznumeric_cast<uint8_t>(AZStd::round(blendWeight * 255.0f));
+                                break;
                             }
                         }
-                        else
-                        {
-                            break; // since the list is ordered, no other materials are in the list with positive weights.
-                        }
                     }
-                    ++index;
+                    else
+                    {
+                        break; // since the list is ordered, no other materials are in the list with positive weights.
+                    }
                 }
-            }
+                ++index;
+            };
+            
+            AZ::Vector3 worldMin(quadrantWorldArea.m_min.m_x * DetailTextureScale, quadrantWorldArea.m_min.m_y * DetailTextureScale, 0.0f);
+            AZ::Vector3 worldMax(quadrantWorldArea.m_max.m_x * DetailTextureScale, quadrantWorldArea.m_max.m_y * DetailTextureScale, 0.0f);
+            AZ::Vector2 stepSize(DetailTextureScale);
+            AZ::Aabb region;
+            region.Set(worldMin, worldMax);
+
+            AzFramework::Terrain::TerrainDataRequestBus::Broadcast(&AzFramework::Terrain::TerrainDataRequests::ProcessSurfaceWeightsFromRegion,
+                region, stepSize, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
 
             const int32_t left = quadrantTextureArea.m_min.m_x;
             const int32_t top = quadrantTextureArea.m_min.m_y;

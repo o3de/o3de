@@ -14,9 +14,6 @@ set(FILES
     Source/Window/ShaderManagementConsoleWindow.h
     Source/Window/ShaderManagementConsoleWindow.cpp
     Source/Window/ShaderManagementConsoleWindowModule.cpp
-    Source/Window/ShaderManagementConsoleBrowserWidget.h
-    Source/Window/ShaderManagementConsoleBrowserWidget.cpp
-    Source/Window/ShaderManagementConsoleBrowserWidget.ui
     Source/Window/ShaderManagementConsole.qrc
     Source/Window/ShaderManagementConsoleWindowComponent.h
     Source/Window/ShaderManagementConsoleWindowComponent.cpp
