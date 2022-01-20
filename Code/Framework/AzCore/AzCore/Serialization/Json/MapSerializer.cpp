@@ -463,7 +463,7 @@ namespace AZ
     JsonSerializationResult::Result JsonUnorderedMultiMapSerializer::LoadElement(void* outputValue, SerializeContext::IDataContainer* container,
         const SerializeContext::ClassElement* pairElement, SerializeContext::IDataContainer* pairContainer,
         const SerializeContext::ClassElement* keyElement, const SerializeContext::ClassElement* valueElement,
-        const rapidjson::Value& key, const rapidjson::Value& value, JsonDeserializerContext& context, bool isMultiMap)
+        const rapidjson::Value& key, const rapidjson::Value& value, JsonDeserializerContext& context, [[maybe_unused]] bool isMultiMap)
     {
         namespace JSR = JsonSerializationResult;
 
