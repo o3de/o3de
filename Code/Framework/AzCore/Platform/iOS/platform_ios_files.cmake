@@ -67,4 +67,6 @@ set(FILES
     AzCore/Utils/Utils_iOS.mm
     ../Common/Apple/AzCore/Utils/Utils_Apple.cpp
     ../Common/UnixLike/AzCore/Utils/Utils_UnixLike.cpp
+    AzCore/Debug/Profiler_Platform.inl
+    ../Common/Unimplemented/AzCore/Debug/Profiler_Unimplemented.inl
 )
