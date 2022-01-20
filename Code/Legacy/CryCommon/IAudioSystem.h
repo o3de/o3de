@@ -14,8 +14,8 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Math/Vector3.h>
-#include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/containers/variant.h>
+#include <AzCore/std/parallel/mutex.h>
 
 #include <IAudioInterfacesCommonData.h>
 

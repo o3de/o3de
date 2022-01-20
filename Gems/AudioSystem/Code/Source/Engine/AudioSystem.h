@@ -18,7 +18,6 @@
 #include <AzCore/std/containers/vector.h>
 
 #include <AzCore/std/parallel/binary_semaphore.h>
-#include <AzCore/std/parallel/semaphore.h>
 #include <AzCore/std/parallel/thread.h>
 
 #define PROVIDE_GETNAME_SUPPORT

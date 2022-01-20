@@ -24,7 +24,6 @@
 #include <ATLUtils.h>
 #include <AudioAllocators.h>
 
-#include <platform.h>
 
 namespace Audio
 {
@@ -33,18 +32,6 @@ namespace Audio
 
     template <typename KeyType>
     using ATLSetLookupType = AZStd::unordered_set<KeyType, AZStd::hash<KeyType>, AZStd::equal_to<KeyType>, AudioSystemStdAllocator>;
-
-    // Forward declarations.
-    struct IAudioSystemImplementation;
-    class CATLCallbackManager;
-    struct IATLAudioObjectData;
-    struct IATLListenerData;
-    struct IATLTriggerImplData;
-    struct IATLRtpcImplData;
-    struct IATLSwitchStateImplData;
-    struct IATLEnvironmentImplData;
-    struct IATLEventData;
-    struct IATLAudioFileEntryData;
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     enum EATLObjectFlags : TATLEnumFlagsType

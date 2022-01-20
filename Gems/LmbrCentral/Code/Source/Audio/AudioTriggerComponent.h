@@ -5,12 +5,13 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
-#include <IAudioSystem.h>
+#include <AzCore/Component/Component.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/string.h>
-#include <AzCore/Component/Component.h>
+#include <IAudioSystem.h>
 #include <LmbrCentral/Audio/AudioTriggerComponentBus.h>
 
 namespace LmbrCentral

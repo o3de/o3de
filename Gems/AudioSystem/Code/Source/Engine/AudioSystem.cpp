@@ -105,9 +105,9 @@ namespace Audio
     void CAudioSystem::PushRequestBlockingNew([[maybe_unused]] AudioRequestVariant&& request)
     {
         // Add this request to be processed immediately.
-        // Acquire the m_mainEvent semaphore to block the main thread.
         // Release the m_processingEvent so that when the request is finished the audio thread doesn't
-        // block through it's time slice and can immediately re-enter the run loop to process more.
+        // block through it's normal time slice and can immediately re-enter the run loop to process more.
+        // Acquire the m_mainEvent semaphore to block the main thread.
         // This helps when there's a longer queue of blocking requests so that the back-and-forth between
         // threads is minimized.
         {

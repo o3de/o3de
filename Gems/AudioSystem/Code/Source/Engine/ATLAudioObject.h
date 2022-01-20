@@ -26,19 +26,6 @@ class ATLAudioObjectTest;
 namespace Audio
 {
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    enum EATLTriggerStatus : TATLEnumFlagsType
-    {
-        eATS_NONE                       = 0,
-        eATS_PLAYING                    = AUDIO_BIT(0),
-        eATS_PREPARED                   = AUDIO_BIT(1),
-        eATS_LOADING                    = AUDIO_BIT(2),
-        eATS_UNLOADING                  = AUDIO_BIT(3),
-        eATS_STARTING                   = AUDIO_BIT(4),
-        eATS_WAITING_FOR_REMOVAL        = AUDIO_BIT(5),
-        eATS_CALLBACK_ON_AUDIO_THREAD   = AUDIO_BIT(6),
-    };
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
     struct SATLTriggerImplState
     {
         SATLTriggerImplState()
