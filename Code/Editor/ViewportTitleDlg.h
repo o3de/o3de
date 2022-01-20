@@ -151,8 +151,8 @@ protected:
 
     void CheckForCameraSpeedUpdate();
 
-    void OnGridSnappingToggled(int state);
-    void OnAngleSnappingToggled(int state);
+    void OnGridSnappingToggled();
+    void OnAngleSnappingToggled();
 
     void OnGridSpinBoxChanged(double value);
     void OnAngleSpinBoxChanged(double value);
@@ -169,9 +169,9 @@ protected:
     QAction* m_compactInformationAction = nullptr;
     QAction* m_audioMuteAction = nullptr;
     QAction* m_enableVRAction = nullptr;
-    QCheckBox* m_enableGridSnappingCheckBox = nullptr;
-    QCheckBox* m_enableGridVisualizationCheckBox = nullptr;
-    QCheckBox* m_enableAngleSnappingCheckBox = nullptr;
+    QAction* m_enableGridSnappingAction = nullptr;
+    QAction* m_enableAngleSnappingAction = nullptr;
+    QAction* m_enableGridVisualizationAction = nullptr;
     QComboBox* m_cameraSpeed = nullptr;
     AzQtComponents::DoubleSpinBox* m_gridSpinBox = nullptr;
     AzQtComponents::DoubleSpinBox* m_angleSpinBox = nullptr;
