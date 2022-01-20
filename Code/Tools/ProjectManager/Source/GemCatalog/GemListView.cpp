@@ -35,8 +35,8 @@ namespace O3DE::ProjectManager
                         this->viewport()->repaint();
                     });
             });
-        connect(header->m_header, &QHeaderView::sectionResized, [=] { repaint(); });
-        connect(header->horizontalScrollBar(), &QScrollBar::sliderMoved, [=] { repaint(); });
+        
+        connect(header, &AdjustableHeaderWidget::sectionsResized, [=] { repaint(); });
 
         setItemDelegate(itemDelegate);
     }

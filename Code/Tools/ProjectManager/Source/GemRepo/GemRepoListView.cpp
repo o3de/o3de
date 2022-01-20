@@ -29,7 +29,7 @@ namespace O3DE::ProjectManager
         GemRepoItemDelegate* itemDelegate = new GemRepoItemDelegate(model, header, this);
         connect(itemDelegate, &GemRepoItemDelegate::RemoveRepo, this, &GemRepoListView::RemoveRepo);
         connect(itemDelegate, &GemRepoItemDelegate::RefreshRepo, this, &GemRepoListView::RefreshRepo);
-        connect(header->m_header, &QHeaderView::sectionResized, [=] { repaint(); });
+        connect(header, &AdjustableHeaderWidget::sectionsResized, [=] { repaint(); });
         connect(header->horizontalScrollBar(), &QScrollBar::sliderMoved, [=] { repaint(); });
         setItemDelegate(itemDelegate);
     }

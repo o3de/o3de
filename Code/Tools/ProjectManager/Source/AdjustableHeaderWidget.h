@@ -38,6 +38,9 @@ namespace O3DE::ProjectManager
 
         QHeaderView* m_header;
 
+    signals:
+        void sectionsResized();
+
     protected slots:
         void OnSectionResized(int logicalIndex, int oldSize, int newSize);
 

@@ -59,8 +59,8 @@ namespace O3DE::ProjectManager
         if (totalSectionWidth > headerWidth && newSize > oldSize)
         {
             int xPos = 0;
-
             int requiredWidth = 0;
+
             for (int i = 0; i < headerCount; i++)
             {
                 if (i < logicalIndex)
@@ -89,10 +89,23 @@ namespace O3DE::ProjectManager
                 m_header->resizeSection(logicalIndex, oldSize);
             }
         }
+
+        // wait till all columns resized
+        QTimer::singleShot(0, [&]()
+        {
+            // only re-paint when the header and section widths have settled
+            const int headerWidth = m_header->width();
+            const int totalSectionWidth = m_header->length();
+            if (totalSectionWidth == headerWidth)
+            {
+                emit sectionsResized();
+            }
+        });
     }
 
     int AdjustableHeaderWidget::CalcHeaderXPos(int headerIndex, bool calcEnd) const
     {
+
         // Total the widths of all headers before this one or including it if calcEnd is true
         // Also factors in scroll position of the header
         int xPos = 0;
