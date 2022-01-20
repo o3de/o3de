@@ -7,8 +7,7 @@
 #
 
 set(FILES
-    Tests/FastNoiseBenchmarks.cpp
-    Tests/FastNoiseTest.cpp
+    Tests/FastNoiseEditorTest.cpp
     Source/FastNoiseModule.h
     Source/FastNoiseModule.cpp
 )
