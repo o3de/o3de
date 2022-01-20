@@ -21,11 +21,11 @@ class TestSuccessFailTuples():
 def Multiplayer_SimpleNetworkLevelEntity():
     r"""
     Summary:
-    Runs a test to make sure that network entities in a level function and are replicated to clients as expecte
+    Test to make sure that network entities in a level function and are replicated to clients as expected
 
     Level Description:
     - Static
-        1. NetLevelEntity. This is a networked entity which has a script attached to ensure it's replicated.
+        1. NetLevelEntity. This is a networked entity which has a script attached which prints logs to ensure it's replicated.
     
                     
     Expected Outcome:
