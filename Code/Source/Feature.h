@@ -48,6 +48,8 @@ namespace EMotionFX::MotionMatching
         Feature() = default;
         virtual ~Feature() = default;
 
+        ////////////////////////////////////////////////////////////////////////
+        // Initialization
         struct EMFX_API InitSettings
         {
             ActorInstance* m_actorInstance = nullptr;
@@ -55,6 +57,8 @@ namespace EMotionFX::MotionMatching
         };
         virtual bool Init(const InitSettings& settings);
 
+        ////////////////////////////////////////////////////////////////////////
+        // Feature extraction
         struct EMFX_API ExtractFeatureContext
         {
             ExtractFeatureContext(FeatureMatrix& featureMatrix)
@@ -72,6 +76,8 @@ namespace EMotionFX::MotionMatching
         };
         virtual void ExtractFeatureValues(const ExtractFeatureContext& context) = 0;
 
+        ////////////////////////////////////////////////////////////////////////
+        // Feature cost
         struct EMFX_API FrameCostContext
         {
             FrameCostContext(const FeatureMatrix& featureMatrix, const Pose& currentPose)
@@ -141,13 +147,14 @@ namespace EMotionFX::MotionMatching
         float GetNormalizedDirectionDifference(const AZ::Vector2& directionA, const AZ::Vector2& directionB) const;
         float GetNormalizedDirectionDifference(const AZ::Vector3& directionA, const AZ::Vector3& directionB) const;
 
+
         // Shared and reflected data.
-        AZ::TypeId m_id = AZ::TypeId::CreateRandom(); /**< The frame data id. Use this instead of the RTTI class Id. This is because we can have multiple of the same types. */
+        AZ::TypeId m_id = AZ::TypeId::CreateRandom(); /**< The feature identification number. Use this instead of the RTTI class ID so that we can have multiple of the same type. */
         AZStd::string m_name; /**< Display name used for feature identification and debug visualizations. */
         AZStd::string m_jointName; /**< Joint name to extract the data from. */
-        AZStd::string m_relativeToJointName; /**< Make the data relative to this node (default=0). */
-        AZ::Color m_debugColor = AZ::Colors::Green; /**< The debug drawing color. */
-        bool m_debugDrawEnabled = false; /**< Is debug drawing enabled for this data? */
+        AZStd::string m_relativeToJointName; /**< When extracting feature data, convert it to relative-space to the given joint. */
+        AZ::Color m_debugColor = AZ::Colors::Green; /**< Color used for debug visualizations to identify the feature. */
+        bool m_debugDrawEnabled = false; /**< Are debug visualizations enabled for this feature? */
         float m_costFactor = 1.0f; /** The cost factor for the feature is multiplied with the actual and can be used to change a feature's influence in the motion matching search. */
 
         // Instance data (depends on the feature schema or actor instance).

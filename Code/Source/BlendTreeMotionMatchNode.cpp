@@ -19,10 +19,13 @@
 #include <EMotionFX/Source/EventManager.h>
 #include <EMotionFX/Source/Motion.h>
 #include <BlendTreeMotionMatchNode.h>
+#include <FeatureSchemaDefault.h>
 #include <EMotionFX/Source/MotionSet.h>
 #include <EMotionFX/Source/Node.h>
 #include <EMotionFX/Source/Recorder.h>
 #include <EMotionFX/Source/TransformData.h>
+
+#include <FeaturePosition.h>
 
 namespace EMotionFX::MotionMatching
 {
@@ -53,6 +56,28 @@ namespace EMotionFX::MotionMatching
             return false;
         }
 
+        // Automatically register the default feature schema in case the schema is empty after loading the node.
+        if (m_featureSchema.GetNumFeatures() == 0)
+        {
+            AZStd::string rootJointName;
+            if (m_animGraph->GetNumAnimGraphInstances() > 0)
+            {
+                const Actor* actor = m_animGraph->GetAnimGraphInstance(0)->GetActorInstance()->GetActor();
+                const Node* rootJoint = actor->GetMotionExtractionNode();
+                if (rootJoint)
+                {
+                    rootJointName = rootJoint->GetNameString();
+                }
+            }
+
+            DefaultFeatureSchemaInitSettings defaultSettings;
+            defaultSettings.m_rootJointName = rootJointName.c_str();
+            defaultSettings.m_leftFootJointName = "L_foot_JNT";
+            defaultSettings.m_rightFootJointName = "R_foot_JNT";
+            defaultSettings.m_pelvisJointName = "C_pelvis_JNT";
+            DefaultFeatureSchema(m_featureSchema, defaultSettings);
+        }
+
         InitInternalAttributesForAllInstances();
 
         Reinit();
@@ -80,9 +105,9 @@ namespace EMotionFX::MotionMatching
 
         // Clear existing data.
         delete m_instance;
-        delete m_config;
+        delete m_data;
 
-        m_config = aznew MotionMatching::MotionMatchingConfig();
+        m_data = aznew MotionMatching::MotionMatchingData(animGraphNode->m_featureSchema);
         m_instance = aznew MotionMatching::MotionMatchingInstance();
 
         MotionSet* motionSet = m_animGraphInstance->GetMotionSet();
@@ -97,8 +122,8 @@ namespace EMotionFX::MotionMatching
         timer.Stamp();
 
         // Build a list of motions we want to import the frames from.
-        AZ_Printf("EMotionFX", "[MotionMatching] Importing frames...");
-        MotionMatching::MotionMatchingConfig::InitSettings settings;
+        AZ_Printf("Motion Matching", "Importing motion database...");
+        MotionMatching::MotionMatchingData::InitSettings settings;
         settings.m_actorInstance = actorInstance;
         settings.m_frameImportSettings.m_sampleRate = animGraphNode->m_sampleRate;
         settings.m_importMirrored = animGraphNode->m_mirror;
@@ -114,29 +139,29 @@ namespace EMotionFX::MotionMatching
             }
             else
             {
-                AZ_Warning("EMotionFX", false, "Failed to get motion for motionset entry id '%s'", id.c_str());
+                AZ_Warning("Motion Matching", false, "Failed to get motion for motionset entry id '%s'", id.c_str());
             }
         }
 
-        // Initialize the config (slow).
-        AZ_Printf("EMotionFX", "[MotionMatching] Initializing config...");
-        if (!m_config->Init(settings))
+        // Initialize the motion matching data (slow).
+        AZ_Printf("Motion Matching", "Initializing motion matching...");
+        if (!m_data->Init(settings))
         {
-            AZ_Warning("EMotionFX", false, "Failed to initialize the motion matching config for anim graph node '%s'!", animGraphNode->GetName());
+            AZ_Warning("Motion Matching", false, "Failed to initialize motion matching for anim graph node '%s'!", animGraphNode->GetName());
             SetHasError(true);
             return;
         }
 
         // Initialize the instance.
-        AZ_Printf("EMotionFX", "[MotionMatching] Initializing instance...");
+        AZ_Printf("Motion Matching", "Initializing instance...");
         MotionMatching::MotionMatchingInstance::InitSettings initSettings;
         initSettings.m_actorInstance = actorInstance;
-        initSettings.m_config = m_config;
+        initSettings.m_data = m_data;
         m_instance->Init(initSettings);
 
         const float initTime = timer.GetDeltaTimeInSeconds();
-        const size_t memUsage = m_config->GetFrameDatabase().CalcMemoryUsageInBytes();
-        AZ_Printf("EMotionFX", "[MotionMatching] Finished in %.2f seconds (mem usage=%d bytes or %.2f mb)", initTime, memUsage, memUsage / (float)(1024 * 1024));
+        const size_t memUsage = m_data->GetFrameDatabase().CalcMemoryUsageInBytes();
+        AZ_Printf("Motion Matching", "Finished in %.2f seconds (mem usage=%d bytes or %.2f mb)", initTime, memUsage, memUsage / (float)(1024 * 1024));
         //---------------------------------
 
         SetHasError(false);
@@ -177,8 +202,6 @@ namespace EMotionFX::MotionMatching
         {
             uniqueData->SetPreSyncTime(uniqueData->GetCurrentPlayTime());
         }
-
-        //AZ_Printf("EMotionFX", "%f, %f    =    %f", uniqueData->GetPreSyncTime(), uniqueData->GetCurrentPlayTime(), uniqueData->GetCurrentPlayTime() - uniqueData->GetPreSyncTime());
             
         m_updateTimeInMs = m_timer.GetDeltaTimeInSeconds() * 1000.0f;
     }
@@ -287,14 +310,15 @@ namespace EMotionFX::MotionMatching
 
         serializeContext->Class<BlendTreeMotionMatchNode, AnimGraphNode>()
             ->Version(9)
-            ->Field("maxKdTreeDepth", &BlendTreeMotionMatchNode::m_maxKdTreeDepth)
-            ->Field("minFramesPerKdTreeNode", &BlendTreeMotionMatchNode::m_minFramesPerKdTreeNode)
             ->Field("sampleRate", &BlendTreeMotionMatchNode::m_sampleRate)
             ->Field("lowestCostSearchFrequency", &BlendTreeMotionMatchNode::m_lowestCostSearchFrequency)
+            ->Field("maxKdTreeDepth", &BlendTreeMotionMatchNode::m_maxKdTreeDepth)
+            ->Field("minFramesPerKdTreeNode", &BlendTreeMotionMatchNode::m_minFramesPerKdTreeNode)
             ->Field("mirror", &BlendTreeMotionMatchNode::m_mirror)
             ->Field("controlSplineMode", &BlendTreeMotionMatchNode::m_trajectoryQueryMode)
             ->Field("pathRadius", &BlendTreeMotionMatchNode::m_pathRadius)
             ->Field("pathSpeed", &BlendTreeMotionMatchNode::m_pathSpeed)
+            ->Field("featureSchema", &BlendTreeMotionMatchNode::m_featureSchema)
             ->Field("motionIds", &BlendTreeMotionMatchNode::m_motionIds)
             ;
 
@@ -306,8 +330,8 @@ namespace EMotionFX::MotionMatching
 
         editContext->Class<BlendTreeMotionMatchNode>("Motion Matching Node", "Motion Matching Attributes")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-            ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
-            ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
+                ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
             ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_maxKdTreeDepth, "Max kdTree depth", "The maximum number of hierarchy levels in the kdTree.")
             ->Attribute(AZ::Edit::Attributes::Min, 1)
             ->Attribute(AZ::Edit::Attributes::Max, 20)

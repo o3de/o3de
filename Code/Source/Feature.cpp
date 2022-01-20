@@ -56,7 +56,9 @@ namespace EMotionFX::MotionMatching
         // Set a default feature name in case it did not get set manually.
         if (m_name.empty())
         {
-            m_name = AZStd::string::format("%s (%s)", this->RTTI_GetTypeName(), m_jointName.c_str());
+            AZStd::string featureTypeName = this->RTTI_GetTypeName();
+            AzFramework::StringFunc::Replace(featureTypeName, "Feature", "");
+            m_name = AZStd::string::format("%s (%s)", featureTypeName.c_str(), m_jointName.c_str());
         }
         return true;
     }

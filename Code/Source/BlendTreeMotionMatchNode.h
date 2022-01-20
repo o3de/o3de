@@ -17,7 +17,7 @@
 #include <EMotionFX/Source/EMotionFXConfig.h>
 #include <MotionMatchingInstance.h>
 #include <FeatureSchema.h>
-#include <MotionMatchingConfig.h>
+#include <MotionMatchingData.h>
 #include <ImGuiMonitor.h>
 
 namespace EMotionFX::MotionMatching
@@ -57,7 +57,7 @@ namespace EMotionFX::MotionMatching
 
             ~UniqueData()
             {
-                delete m_config;
+                delete m_data;
                 delete m_instance;
             }
 
@@ -65,7 +65,7 @@ namespace EMotionFX::MotionMatching
 
         public:
             MotionMatching::MotionMatchingInstance* m_instance = nullptr;
-            MotionMatching::MotionMatchingConfig* m_config = nullptr;
+            MotionMatching::MotionMatchingData* m_data = nullptr;
         };
 
         BlendTreeMotionMatchNode();
@@ -91,12 +91,13 @@ namespace EMotionFX::MotionMatching
         void Update(AnimGraphInstance* animGraphInstance, float timePassedInSeconds) override;
         void PostUpdate(AnimGraphInstance* animGraphInstance, float timePassedInSeconds) override;
 
+        FeatureSchema m_featureSchema;
         AZStd::vector<AZStd::string> m_motionIds;
 
         float m_pathRadius = 1.0f;
         float m_pathSpeed = 1.0f;
-        float m_lowestCostSearchFrequency = 0.1f;
-        AZ::u32 m_sampleRate = 15;
+        float m_lowestCostSearchFrequency = 5.0f;
+        AZ::u32 m_sampleRate = 30;
         AZ::u32 m_maxKdTreeDepth = 15;
         AZ::u32 m_minFramesPerKdTreeNode = 1000;
         TrajectoryQuery::EMode m_trajectoryQueryMode = TrajectoryQuery::MODE_TARGETDRIVEN;
@@ -108,5 +109,6 @@ namespace EMotionFX::MotionMatching
         float m_outputTimeInMs = 0.0f;
 
         ImGuiMonitor m_imguiMonitor;
+
     };
 } // namespace EMotionFX::MotionMatching

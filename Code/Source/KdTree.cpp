@@ -56,19 +56,19 @@ namespace EMotionFX::MotionMatching
         m_numDimensions = CalcNumDimensions(features);
         if (m_numDimensions == 0 || m_numDimensions > 20)
         {
-            AZ_Error("EMotionFX", false, "KdTree dimension (%d) have to be between 1 and 20. Cannot continue. Please use Feature::SetIncludeInKdTree(false) on some of your frame data objects.", m_numDimensions);
+            AZ_Error("Motion Matching", false, "Cannot initialize KD-tree. KD-tree dimension (%d) has to be between 1 and 20. Please use Feature::SetIncludeInKdTree(false) on some features.", m_numDimensions);
             return false;
         }
 
         if (minFramesPerLeaf > 100000)
         {
-            AZ_Error("EMotionFX", false, "KdTree minFramesPerLeaf (%d) cannot be smaller than 100000.", minFramesPerLeaf);
+            AZ_Error("Motion Matching", false, "KdTree minFramesPerLeaf (%d) cannot be smaller than 100000.", minFramesPerLeaf);
             return false;
         }
 
         if (maxDepth == 0)
         {
-            AZ_Error("EMotionFX", false, "KdTree max depth (%d) cannot be zero", maxDepth);
+            AZ_Error("Motion Matching", false, "KdTree max depth (%d) cannot be zero", maxDepth);
             return false;
         }
 
@@ -230,7 +230,7 @@ namespace EMotionFX::MotionMatching
         AZStd::vector<Node*> nodesToRemove;
 
         // Build a list of leaf nodes to remove.
-        // These are ones that have no frame data inside them.
+        // These are ones that have no feature inside them.
         for (Node* node : m_nodes)
         {
             if ((!node->m_leftNode && !node->m_rightNode) &&

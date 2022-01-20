@@ -33,6 +33,12 @@ namespace EMotionFX::MotionMatching
 {
     class FrameDatabase;
 
+    /**
+     * Matches the root joint past and future trajectory.
+     * For each frame in the motion database, the position and facing direction relative to the current frame of the joint will be evaluated for a past and future time window.
+     * The past and future samples together form the trajectory of the current frame within the time window. This basically describes where the character came from to reach the
+     * current frame and where it will go when continuing to play the animation.
+     **/
     class EMFX_API FeatureTrajectory
         : public Feature
     {
@@ -75,11 +81,13 @@ namespace EMotionFX::MotionMatching
         void SetFacingAxis(const Axis axis);
         void UpdateFacingAxis();
 
-        size_t GetNumFutureSamples() const { return m_numFutureSamples; }
+        float GetPastTimeRange() const { return m_pastTimeRange; }
         size_t GetNumPastSamples() const { return m_numPastSamples; }
+        float GetPastCostFactor() const { return m_pastCostFactor; }
 
         float GetFutureTimeRange() const { return m_futureTimeRange; }
-        float GetPastTimeRange() const { return m_pastTimeRange; }
+        size_t GetNumFutureSamples() const { return m_numFutureSamples; }
+        float GetFutureCostFactor() const { return m_futureCostFactor; }
 
         AZ::Vector2 CalculateFacingDirection(const Pose& pose, const Transform& invRootTransform) const;
         AZ::Vector3 GetFacingAxisDir() const { return m_facingAxisDir; }
@@ -128,12 +136,15 @@ namespace EMotionFX::MotionMatching
             const Sample& sample,
             const AZ::Vector3& samplePosWorldSpace) const;
 
-        size_t m_numFutureSamples = 6; /**< How many samples do we store per frame, for the future trajectory of this frame? */
-        size_t m_numPastSamples = 4; /**< How many samples do we store per frame, for the past (history) of the trajectory of this frame? */
-        float m_futureTimeRange = 1.2f; /**< How many seconds do we look into the future? */
-        float m_pastTimeRange = 0.7f; /**< How many seconds do we look back in the past? */
+        float m_pastTimeRange = 0.7f; //< The time window the samples are distributed along for the past trajectory.
+        size_t m_numPastSamples = 4; //< The number of samples stored per frame for the past (history) trajectory.
+        float m_pastCostFactor = 0.5f; //< TODO:
 
-        Axis m_facingAxis = Axis::Y; /** Which of this node's axes points forward? */
+        float m_futureTimeRange = 1.2f; //< The time window the samples are distributed along for the future trajectory.
+        size_t m_numFutureSamples = 6; //< The number of samples stored per frame for the future trajectory.
+        float m_futureCostFactor = 0.75f; //< TODO:
+
+        Axis m_facingAxis = Axis::Y; //< Which axis of the joint transform is facing forward?
         AZ::Vector3 m_facingAxisDir = AZ::Vector3::CreateAxisY();
     };
 } // namespace EMotionFX::MotionMatching

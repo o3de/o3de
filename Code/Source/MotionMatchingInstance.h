@@ -36,7 +36,7 @@ namespace EMotionFX
 
 namespace EMotionFX::MotionMatching
 {
-    class MotionMatchingConfig;
+    class MotionMatchingData;
 
     class EMFX_API MotionMatchingInstance
     {
@@ -49,7 +49,7 @@ namespace EMotionFX::MotionMatching
         struct EMFX_API InitSettings
         {
             ActorInstance* m_actorInstance = nullptr;
-            MotionMatchingConfig* m_config = nullptr;
+            MotionMatchingData* m_data = nullptr;
         };
         void Init(const InitSettings& settings);
 
@@ -62,20 +62,11 @@ namespace EMotionFX::MotionMatching
 
         MotionInstance* GetMotionInstance() const { return m_motionInstance; }
         ActorInstance* GetActorInstance() const { return m_actorInstance; }
-        MotionMatchingConfig* GetConfig() const { return m_config; }
+        MotionMatchingData* GetData() const { return m_data; }
 
         size_t GetLowestCostFrameIndex() const { return m_lowestCostFrameIndex; }
-
-        void SetTimeSinceLastFrameSwitch(float newTime) { m_timeSinceLastFrameSwitch = newTime; }
-        float GetTimeSinceLastFrameSwitch() const { return m_timeSinceLastFrameSwitch; }
-
-        void SetLowestCostSearchFrequency(float timeInSeconds) { m_lowestCostSearchFrequency = timeInSeconds; }
-        float GetLowestCostSearchFrequency() const { return m_lowestCostSearchFrequency; }
-
+        void SetLowestCostSearchFrequency(float frequency) { m_lowestCostSearchFrequency = frequency; }
         float GetNewMotionTime() const { return m_newMotionTime; }
-        void SetNewMotionTime(float t) { m_newMotionTime = t; }
-
-        const Pose& GetBlendSourcePose() const { return m_blendSourcePose; }
 
         /**
          * Get the cached trajectory feature.
@@ -86,8 +77,6 @@ namespace EMotionFX::MotionMatching
         const TrajectoryHistory& GetTrajectoryHistory() const { return m_trajectoryHistory; }
         const Transform& GetMotionExtractionDelta() const { return m_motionExtractionDelta; }
 
-        static void Reflect(AZ::ReflectContext* context);
-
     private:
         MotionInstance* CreateMotionInstance() const;
         void SamplePose(MotionInstance* motionInstance, Pose& outputPose);
@@ -95,7 +84,7 @@ namespace EMotionFX::MotionMatching
 
         size_t FindLowestCostFrameIndex(const Feature::FrameCostContext& context);
 
-        MotionMatchingConfig* m_config = nullptr;
+        MotionMatchingData* m_data = nullptr;
         ActorInstance* m_actorInstance = nullptr;
         Pose m_blendSourcePose;
         Pose m_blendTargetPose;
@@ -116,13 +105,13 @@ namespace EMotionFX::MotionMatching
         float m_timeSinceLastFrameSwitch = 0.0f;
         float m_newMotionTime = 0.0f;
         size_t m_lowestCostFrameIndex = InvalidIndex;
-        float m_lowestCostSearchFrequency = 0.1f; // Search lowest cost frame 10 times per second.
+        float m_lowestCostSearchFrequency = 5.0f; //< How often the lowest cost frame shall be searched per second.
 
         bool m_blending = false;
         float m_blendWeight = 1.0f;
         float m_blendProgressTime = 0.0f; // How long are we already blending? In seconds.
 
-        /// Buffers used for MotionMatchingConfig::FindLowestCostFrameIndex().
+        /// Buffers used for FindLowestCostFrameIndex().
         AZStd::vector<float> m_tempCosts;
         AZStd::vector<float> m_minCosts;
 

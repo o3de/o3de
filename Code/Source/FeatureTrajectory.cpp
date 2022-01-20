@@ -15,7 +15,7 @@
 #include <EMotionFX/Source/AnimGraphPose.h>
 #include <EMotionFX/Source/AnimGraphPosePool.h>
 #include <EMotionFX/Source/EventManager.h>
-#include <MotionMatchingConfig.h>
+#include <MotionMatchingData.h>
 #include <MotionMatchingInstance.h>
 #include <FrameDatabase.h>
 #include <FeatureTrajectory.h>
@@ -215,7 +215,7 @@ namespace EMotionFX::MotionMatching
         }
 
         constexpr float markerSize = 0.02f;
-        const FeatureMatrix& featureMatrix = instance->GetConfig()->GetFeatureMatrix();
+        const FeatureMatrix& featureMatrix = instance->GetData()->GetFeatureMatrix();
 
         debugDisplay.DepthTestOff();
         debugDisplay.SetColor(color);
@@ -320,14 +320,14 @@ namespace EMotionFX::MotionMatching
 
     float FeatureTrajectory::CalculateFutureFrameCost(size_t frameIndex, const FrameCostContext& context) const
     {
-        AZ_Assert(context.m_trajectoryQuery->GetFutureControlPoints().size() == m_numFutureSamples, "Number of future control points does not match trajecotry frame data number of future points.");
+        AZ_Assert(context.m_trajectoryQuery->GetFutureControlPoints().size() == m_numFutureSamples, "Number of future control points from the trajectory query does not match the one from the trajectory feature.");
         const Transform invRootTransform = context.m_currentPose.GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
         return CalculateCost(context.m_featureMatrix, frameIndex, invRootTransform, context.m_trajectoryQuery->GetFutureControlPoints(), AZStd::bind(&FeatureTrajectory::CalcFutureFrameIndex, this, AZStd::placeholders::_1));
     }
 
     float FeatureTrajectory::CalculatePastFrameCost(size_t frameIndex, const FrameCostContext& context) const
     {
-        AZ_Assert(context.m_trajectoryQuery->GetPastControlPoints().size() == m_numPastSamples, "Number of past control points does not match trajecotry frame data number of past points.");
+        AZ_Assert(context.m_trajectoryQuery->GetPastControlPoints().size() == m_numPastSamples, "Number of past control points from the trajectory query does not match the one from the trajectory feature");
         const Transform invRootTransform = context.m_currentPose.GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
         return CalculateCost(context.m_featureMatrix, frameIndex, invRootTransform, context.m_trajectoryQuery->GetPastControlPoints(), AZStd::bind(&FeatureTrajectory::CalcPastFrameIndex, this, AZStd::placeholders::_1));
     }

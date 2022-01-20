@@ -15,7 +15,7 @@
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <EMotionFX/Source/EventManager.h>
 #include <EMotionFX/Source/TransformData.h>
-#include <MotionMatchingConfig.h>
+#include <MotionMatchingData.h>
 #include <MotionMatchingInstance.h>
 #include <FrameDatabase.h>
 #include <FeatureVelocity.h>
@@ -75,8 +75,8 @@ namespace EMotionFX::MotionMatching
             return;
         }
 
-        const MotionMatchingConfig* config = instance->GetConfig();
-        const AZ::Vector3 velocity = GetFeatureData(config->GetFeatureMatrix(), frameIndex);
+        const MotionMatchingData* data = instance->GetData();
+        const AZ::Vector3 velocity = GetFeatureData(data->GetFeatureMatrix(), frameIndex);
         DebugDraw(debugDisplay, instance, velocity, m_jointIndex, m_relativeToNodeIndex, m_debugColor);
     }
 

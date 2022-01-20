@@ -35,14 +35,14 @@ namespace EMotionFX
 
 namespace EMotionFX::MotionMatching
 {
-    class EMFX_API MotionMatchingConfig
+    class EMFX_API MotionMatchingData
     {
     public:
-        AZ_RTTI(MotionMatchingConfig, "{7BC3DFF5-8864-4518-B6F0-0553ADFAB5C1}")
+        AZ_RTTI(MotionMatchingData, "{7BC3DFF5-8864-4518-B6F0-0553ADFAB5C1}")
         AZ_CLASS_ALLOCATOR_DECL
 
-        MotionMatchingConfig();
-        virtual ~MotionMatchingConfig();
+        MotionMatchingData(const FeatureSchema& featureSchema);
+        virtual ~MotionMatchingData();
 
         struct EMFX_API InitSettings
         {
@@ -59,21 +59,17 @@ namespace EMotionFX::MotionMatching
 
         const FrameDatabase& GetFrameDatabase() const { return m_frameDatabase; }
         FrameDatabase& GetFrameDatabase() { return m_frameDatabase; }
-        FeatureSchema& GetFeatureSchema() { return m_featureSchema; }
         const FeatureSchema& GetFeatureSchema() const { return m_featureSchema; }
         const FeatureMatrix& GetFeatureMatrix() const { return m_featureMatrix; }
         const KdTree& GetKdTree() const { return *m_kdTree.get(); }
         const AZStd::vector<Feature*>& GetFeaturesInKdTree() const { return m_featuresInKdTree; }
 
-        static void Reflect(AZ::ReflectContext* context);
-
     protected:
-        bool RegisterFeatures(const InitSettings& settings);
         bool ExtractFeatures(ActorInstance* actorInstance, FrameDatabase* frameDatabase, size_t maxKdTreeDepth=20, size_t minFramesPerKdTreeNode=2000);
 
         FrameDatabase m_frameDatabase; /**< The animation database with all the keyframes and joint transform data. */
 
-        FeatureSchema m_featureSchema;
+        const FeatureSchema& m_featureSchema;
         FeatureMatrix m_featureMatrix;
 
         AZStd::unique_ptr<KdTree> m_kdTree; /**< The acceleration structure to speed up the search for lowest cost frames. */
