@@ -573,6 +573,8 @@ namespace O3DELauncher
             status = ReturnCode::ErrCrySystemInterface;
         }
 
+    #if !defined(AZ_MONOLITHIC_BUILD)
+
     #if !defined(_RELEASE)
         // until CrySystem can be removed (or made to be managed by the component application),
         // we need to manually clear the BudgetTracker before CrySystem is unloaded so the Budget
@@ -583,7 +585,6 @@ namespace O3DELauncher
         }
     #endif // !defined(_RELEASE)
 
-    #if !defined(AZ_MONOLITHIC_BUILD)
         delete systemInitParams.pSystem;
         crySystemLibrary.reset(nullptr);
     #endif // !defined(AZ_MONOLITHIC_BUILD)
