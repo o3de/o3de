@@ -153,16 +153,16 @@ namespace AWSCore
 
 /// An Az::Job that that executes a specific AWS request.
     template<class RequestTraits>
-    class AwsApiRequestJob
+    class AwsApiRequestJobBase
         : public AwsApiClientJob<typename RequestTraits::ClientType>
     {
 
     public:
 
         // To use a different allocator, extend this class and use this macro.
-        AZ_CLASS_ALLOCATOR(AwsApiRequestJob, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AwsApiRequestJobBase, AZ::SystemAllocator, 0);
 
-        using AwsApiRequestJobType = AwsApiRequestJob<RequestTraits>;
+        using AwsApiRequestJobType = AwsApiRequestJobBase<RequestTraits>;
         using AwsApiClientJobType = AwsApiClientJob<typename RequestTraits::ClientType>;
 
         using ClientType = typename RequestTraits::ClientType;
@@ -180,7 +180,7 @@ namespace AWSCore
             return s_configHolder.GetConfig(AwsApiClientJobType::GetDefaultConfig());
         }
 
-        AwsApiRequestJob(bool isAutoDelete, IConfig* config = GetDefaultConfig())
+        AwsApiRequestJobBase(bool isAutoDelete, IConfig* config = GetDefaultConfig())
             : AwsApiClientJobType(isAutoDelete, config)
         {
         }
@@ -277,22 +277,30 @@ namespace AWSCore
         virtual void DoCleanup()
         {
         }
+    };
 
+    template<class RequestTraits>
+    class AwsApiRequestJob : public AwsApiRequestJobBase<RequestTraits>
+    {
     public:
-        using OnSuccessFunction = AZStd::function<void(AwsApiRequestJob* job)>;
-        using OnFailureFunction = AZStd::function<void(AwsApiRequestJob* job)>;
+        using OnSuccessFunction = AZStd::function<void(AwsApiRequestJob<RequestTraits>* job)>;
+        using OnFailureFunction = AZStd::function<void(AwsApiRequestJob<RequestTraits>* job)>;
+        using IConfig = IAwsApiRequestJobConfig<RequestTraits>;
+
+        // To use a different allocator, extend this class and use this macro.
+        AZ_CLASS_ALLOCATOR(AwsApiRequestJob, AZ::SystemAllocator, 0);
 
         /// A specialization of AwsApiRequestJob that lets you provide functions
         /// that are called on success or failure of the request.
-        class Function : public AwsApiRequestJob
+        class Function : public AwsApiRequestJobBase<RequestTraits>
         {
 
         public:
             // To use a different allocator, extend this class and use this macro.
             AZ_CLASS_ALLOCATOR(Function, AZ::SystemAllocator, 0);
 
-            Function(OnSuccessFunction onSuccess, OnFailureFunction onFailure = OnFailureFunction{}, IConfig* config = GetDefaultConfig())
-                : AwsApiRequestJobType(false, config) // No auto delete - we need to perform our callbacks on the main thread so we queue them through tickbus
+            Function(OnSuccessFunction onSuccess, OnFailureFunction onFailure = OnFailureFunction{}, IConfig* config = AwsApiRequestJob<RequestTraits>::GetDefaultConfig())
+                : AwsApiRequestJobBase<RequestTraits>(false, config) // No auto delete - we need to perform our callbacks on the main thread so we queue them through tickbus
                 , m_onSuccess{ onSuccess }
                 , m_onFailure{ onFailure }
             {
@@ -308,7 +316,7 @@ namespace AWSCore
                 {
                     if (m_onSuccess)
                     {
-                        m_onSuccess(this);
+                        m_onSuccess(reinterpret_cast<AwsApiRequestJob<RequestTraits>*>(this));
                     }
                     delete this;
                 };
@@ -321,7 +329,7 @@ namespace AWSCore
                 {
                     if (m_onFailure)
                     {
-                        m_onFailure(this);
+                        m_onFailure(reinterpret_cast<AwsApiRequestJob<RequestTraits>*>(this));
                     }
                     delete this;
                 };
@@ -340,11 +348,11 @@ namespace AWSCore
         };
 
         template<class Allocator = AZ::SystemAllocator>
-        static AwsApiRequestJob* Create(OnSuccessFunction onSuccess, OnFailureFunction onFailure = OnFailureFunction{}, IConfig* config = GetDefaultConfig())
+        static AwsApiRequestJob<RequestTraits>* Create(OnSuccessFunction onSuccess, OnFailureFunction onFailure = OnFailureFunction{}, IConfig* config = AwsApiRequestJob<RequestTraits>::GetDefaultConfig())
         {
-            return azcreate(Function, (onSuccess, onFailure, config), Allocator);
+            return reinterpret_cast<AwsApiRequestJob<RequestTraits>*>(azcreate(Function, (onSuccess, onFailure, config), Allocator));
         }
-
     };
+
 
 } // namespace AWSCore

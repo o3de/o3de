@@ -62,6 +62,7 @@ ly_append_configurations_options(
         -Wno-comment
         -Wno-reorder
         -Wno-restrict
+        -Wno-format-overflow
 
     COMPILATION_C
         -Wno-absolute-value

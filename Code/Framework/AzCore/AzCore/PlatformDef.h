@@ -82,6 +82,13 @@
 #define AZ_PUSH_DISABLE_WARNING_CLANG(_clangOption)
 #define AZ_PUSH_DISABLE_WARNING_GCC(_gccOption)
 
+/// Compiler specific AZ_POP_DISABLE_WARNING. This needs to be matched with the compiler specific AZ_PUSH_DISABLE_WARNINGs
+#define AZ_POP_DISABLE_WARNING_CLANG                     
+#define AZ_POP_DISABLE_WARNING_MSVC                     \
+    __pragma(warning(pop))
+#define AZ_POP_DISABLE_WARNING_GCC
+
+
 // Variadic definitions for AZ_PUSH_DISABLE_WARNING for the current compiler
 #define AZ_PUSH_DISABLE_WARNING_1(_msvcOption)          \
     __pragma(warning(push))                             \
@@ -131,6 +138,12 @@
 #define AZ_PUSH_DISABLE_WARNING_MSVC(_msvcOption)
 #define AZ_PUSH_DISABLE_WARNING_GCC(_gccOption)
 
+/// Compiler specific AZ_POP_DISABLE_WARNING. This needs to be matched with the compiler specific AZ_PUSH_DISABLE_WARNINGs
+#define AZ_POP_DISABLE_WARNING_CLANG                       \
+    _Pragma("clang diagnostic pop")
+#define AZ_POP_DISABLE_WARNING_MSVC
+#define AZ_POP_DISABLE_WARNING_GCC
+
 // Variadic definitions for AZ_PUSH_DISABLE_WARNING for the current compiler
 #define AZ_PUSH_DISABLE_WARNING_1(_1)
 #define AZ_PUSH_DISABLE_WARNING_2(_1, _clangOption)     AZ_PUSH_DISABLE_WARNING_CLANG(_clangOption)
@@ -150,6 +163,12 @@
     _Pragma(AZ_STRINGIZE(GCC diagnostic ignored _gccOption))
 #define AZ_PUSH_DISABLE_WARNING_CLANG(_clangOption)
 #define AZ_PUSH_DISABLE_WARNING_MSVC(_msvcOption)
+
+/// Compiler specific AZ_POP_DISABLE_WARNING. This needs to be matched with the compiler specific AZ_PUSH_DISABLE_WARNINGs
+#define AZ_POP_DISABLE_WARNING_CLANG
+#define AZ_POP_DISABLE_WARNING_MSVC
+#define AZ_POP_DISABLE_WARNING_GCC                          \
+    _Pragma("GCC diagnostic pop")
 
 // Variadic definitions for AZ_PUSH_DISABLE_WARNING for the current compiler
 #define AZ_PUSH_DISABLE_WARNING_1(_1)

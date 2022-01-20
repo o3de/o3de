@@ -130,21 +130,21 @@ namespace AWSCore
 
     /// Base class for Cloud Gem service request jobs.
     template<class RequestType>
-    class ServiceRequestJob
+    class ServiceRequestJobBase
         : public ServiceClientJob<typename RequestType::ServiceTraits>
         , public RequestType
     {
 
     public:
         // To use a different allocator, extend this class and use this macro.
-        AZ_CLASS_ALLOCATOR(ServiceRequestJob, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ServiceRequestJobBase, AZ::SystemAllocator, 0);
 
         /// Aliases for the configuration types used for this job class.
         using IConfig = IServiceRequestJobConfig;
         using Config = ServiceRequestJobConfig<RequestType>;
 
         /// An alias for this type, useful in derived classes.
-        using ServiceRequestJobType = ServiceRequestJob<RequestType>;
+        using ServiceRequestJobType = ServiceRequestJobBase<RequestType>;
         using ServiceClientJobType = ServiceClientJob<typename RequestType::ServiceTraits>;
 
         static Config* GetDefaultConfig()
@@ -153,7 +153,7 @@ namespace AWSCore
             return s_configHolder.GetConfig(ServiceClientJobType::GetDefaultConfig());
         }
 
-        ServiceRequestJob(bool isAutoDelete, IConfig* config = GetDefaultConfig())
+        ServiceRequestJobBase(bool isAutoDelete, IConfig* config = GetDefaultConfig())
             : ServiceClientJobType{ isAutoDelete, config }
             , m_requestUrl{ config->GetRequestUrl() }
         {
@@ -597,13 +597,21 @@ namespace AWSCore
             AZ_Printf(logRequestsChannel, "Response Body:\n");
             PrintRequestOutput(responseContent);
         }
+    };
 
+    template<class RequestType>
+    class ServiceRequestJob : public ServiceRequestJobBase<RequestType>
+    {
     public:
-        using OnSuccessFunction = AZStd::function<void(ServiceRequestJob* job)>;
-        using OnFailureFunction = AZStd::function<void(ServiceRequestJob* job)>;
+        using OnSuccessFunction = AZStd::function<void(ServiceRequestJob<RequestType>* job)>;
+        using OnFailureFunction = AZStd::function<void(ServiceRequestJob<RequestType>* job)>;
+        using IConfig = IServiceRequestJobConfig;
+
+        // To use a different allocator, extend this class and use this macro.
+        AZ_CLASS_ALLOCATOR(ServiceRequestJob, AZ::SystemAllocator, 0);
 
         /// A derived class that calls lambda functions on job completion.
-        class Function : public ServiceRequestJobType
+        class Function : public ServiceRequestJobBase<RequestType>
         {
 
         public:
@@ -611,15 +619,14 @@ namespace AWSCore
             // To use a different allocator, extend this class and use this macro.
             AZ_CLASS_ALLOCATOR(Function, AZ::SystemAllocator, 0);
 
-            Function(OnSuccessFunction onSuccess, OnFailureFunction onFailure = OnFailureFunction{}, IConfig* config = GetDefaultConfig())
-                : ServiceRequestJob(false, config) // No auto delete - we'll take care of it
+            Function(OnSuccessFunction onSuccess, OnFailureFunction onFailure = OnFailureFunction{}, IConfig* config = ServiceRequestJobBase<RequestType>::GetDefaultConfig())
+                : ServiceRequestJobBase<RequestType>(false, config) // No auto delete - we'll take care of it
                 , m_onSuccess{ onSuccess }
                 , m_onFailure{ onFailure }
             {
             }
 
         protected:
-
             OnSuccessFunction m_onSuccess;
             OnFailureFunction m_onFailure;
 
@@ -629,7 +636,7 @@ namespace AWSCore
                 {
                     if (m_onSuccess)
                     {
-                        m_onSuccess(this);
+                        m_onSuccess(reinterpret_cast<ServiceRequestJob<RequestType>*>(this));
                     }
                     delete this;
                 };
@@ -642,7 +649,7 @@ namespace AWSCore
                 {
                     if (m_onFailure)
                     {
-                        m_onFailure(this);
+                        m_onFailure(reinterpret_cast<ServiceRequestJob<RequestType>*>(this));
                     }
                     delete this;
                 };
@@ -661,11 +668,10 @@ namespace AWSCore
         };
 
         template<class Allocator = AZ::SystemAllocator>
-        static ServiceRequestJob* Create(OnSuccessFunction onSuccess, OnFailureFunction onFailure = OnFailureFunction{}, IConfig* config = GetDefaultConfig())
+        static ServiceRequestJob* Create(OnSuccessFunction onSuccess, OnFailureFunction onFailure = OnFailureFunction{}, IConfig* config = ServiceRequestJobBase<RequestType>::GetDefaultConfig())
         {
-            return azcreate(Function, (onSuccess, onFailure, config), Allocator);
+            return reinterpret_cast<ServiceRequestJob<RequestType>*>(azcreate(Function, (onSuccess, onFailure, config), Allocator));
         }
-
     };
 
 } // namespace AWSCore
