@@ -188,7 +188,7 @@ namespace AWSCore
         {
         }
 
-       RequestType request;
+        RequestType request;
         ResultType result;
         ErrorType error;
 
