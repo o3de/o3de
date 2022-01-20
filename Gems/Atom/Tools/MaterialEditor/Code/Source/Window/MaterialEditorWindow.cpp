@@ -6,19 +6,19 @@
  *
  */
 
-#include <Atom/Document/MaterialDocumentRequestBus.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
-#include <Atom/Window/MaterialEditorWindowSettings.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
+#include <Document/MaterialDocumentRequestBus.h>
 #include <Viewport/MaterialViewportWidget.h>
 #include <Window/CreateMaterialDialog/CreateMaterialDialog.h>
 #include <Window/HelpDialog/HelpDialog.h>
 #include <Window/MaterialEditorWindow.h>
+#include <Window/MaterialEditorWindowSettings.h>
 #include <Window/MaterialInspector/MaterialInspector.h>
 #include <Window/PerformanceMonitor/PerformanceMonitorWidget.h>
 #include <Window/SettingsDialog/SettingsDialog.h>

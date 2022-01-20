@@ -6,7 +6,6 @@
  *
  */
 
-#include <Atom/Document/MaterialDocumentRequestBus.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Material/MaterialPropertyId.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
@@ -15,6 +14,7 @@
 #include <AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h>
 #include <AtomToolsFramework/Inspector/InspectorPropertyGroupWidget.h>
 #include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
+#include <Document/MaterialDocumentRequestBus.h>
 #include <Window/MaterialInspector/MaterialInspector.h>
 
 namespace MaterialEditor

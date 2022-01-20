@@ -6,11 +6,11 @@
  *
  */
 
-#include <AzCore/Math/Vector3.h>
-#include <AzCore/Math/Quaternion.h>
 #include <AzCore/Component/TransformBus.h>
-#include <Atom/Viewport/InputController/MaterialEditorViewportInputControllerBus.h>
-#include <Source/Viewport/InputController/PanCameraBehavior.h>
+#include <AzCore/Math/Quaternion.h>
+#include <AzCore/Math/Vector3.h>
+#include <Viewport/InputController/MaterialEditorViewportInputControllerBus.h>
+#include <Viewport/InputController/PanCameraBehavior.h>
 
 namespace MaterialEditor
 {

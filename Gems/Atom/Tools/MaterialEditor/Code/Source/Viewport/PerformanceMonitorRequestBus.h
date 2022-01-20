@@ -8,8 +8,7 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
-
-#include <Atom/Viewport/PerformanceMetrics.h>
+#include <Viewport/PerformanceMetrics.h>
 
 namespace MaterialEditor
 {
