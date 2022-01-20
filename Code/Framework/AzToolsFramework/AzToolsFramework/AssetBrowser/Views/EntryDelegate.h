@@ -70,7 +70,7 @@ namespace AzToolsFramework
             Q_OBJECT
         public:
             explicit SearchEntryDelegate(QWidget* parent = nullptr);
-
+            void Init();
             void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
         private:
@@ -78,6 +78,7 @@ namespace AzToolsFramework
             void DrawBranchPixMap(EntryBranchType branchType, QPainter* painter, const QPoint& point, const QSize& size) const;
 
         private:
+            AssetBrowserFilterModel* m_assetBrowserFilerModel;
             QMap<EntryBranchType, QPixmap> m_branchIcons;
         };
     } // namespace AssetBrowser

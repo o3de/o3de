@@ -8,7 +8,6 @@
 
 #include <Atom/Document/ShaderManagementConsoleDocumentModule.h>
 #include <Atom/Window/ShaderManagementConsoleWindowModule.h>
-#include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <ShaderManagementConsoleApplication.h>
 #include <ShaderManagementConsole_Traits_Platform.h>
@@ -36,7 +35,7 @@ namespace ShaderManagementConsole
     }
 
     ShaderManagementConsoleApplication::ShaderManagementConsoleApplication(int* argc, char*** argv)
-        : AtomToolsApplication(argc, argv)
+        : Base(argc, argv)
     {
         QApplication::setApplicationName("O3DE Shader Management Console");
 
@@ -55,21 +54,5 @@ namespace ShaderManagementConsole
     AZStd::vector<AZStd::string> ShaderManagementConsoleApplication::GetCriticalAssetFilters() const
     {
         return AZStd::vector<AZStd::string>({ "passes/", "config/" });
-    }
-
-    void ShaderManagementConsoleApplication::ProcessCommandLine(const AZ::CommandLine& commandLine)
-    {
-        // Process command line options for opening one or more documents on startup
-        size_t openDocumentCount = commandLine.GetNumMiscValues();
-        for (size_t openDocumentIndex = 0; openDocumentIndex < openDocumentCount; ++openDocumentIndex)
-        {
-            const AZStd::string openDocumentPath = commandLine.GetMiscValue(openDocumentIndex);
-
-            AZ_Printf(GetBuildTargetName().c_str(), "Opening document: %s", openDocumentPath.c_str());
-            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(
-                &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument, openDocumentPath);
-        }
-
-        Base::ProcessCommandLine(commandLine);
     }
 } // namespace ShaderManagementConsole

@@ -7,21 +7,28 @@
         "ShaderAssetFileName": "diffuseprobegridblenddistance.azshader",
         "PlatformIdentifiers": 
         [
-            "pc", "linux"
+            "pc", 
+            "linux"
         ],
-        "RootShaderVariantAssets":
+        "Supervariants":
         [
             {
-                "APIName": "dx12",
-                "RootShaderVariantAssetFileName": "diffuseprobegridblenddistance_dx12_0.azshadervariant"
-            },
-            {
-                "APIName": "vulkan",
-                "RootShaderVariantAssetFileName": "diffuseprobegridblenddistance_vulkan_0.azshadervariant"
-            },
-            {
-                "APIName": "null",
-                "RootShaderVariantAssetFileName": "diffuseprobegridblenddistance_null_0.azshadervariant"
+                "Name": "",
+                "RootShaderVariantAssets":
+                [
+                    {
+                        "APIName": "dx12",
+                        "RootShaderVariantAssetFileName": "diffuseprobegridblenddistance_dx12_0.azshadervariant"
+                    },
+                    {
+                        "APIName": "vulkan",
+                        "RootShaderVariantAssetFileName": "diffuseprobegridblenddistance_vulkan_0.azshadervariant"
+                    },
+                    {
+                        "APIName": "null",
+                        "RootShaderVariantAssetFileName": "diffuseprobegridblenddistance_null_0.azshadervariant"
+                    }
+                ]
             }
         ]
     }

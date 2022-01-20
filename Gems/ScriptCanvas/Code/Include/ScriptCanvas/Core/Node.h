@@ -498,7 +498,7 @@ namespace ScriptCanvas
         void SanityCheckDynamicDisplay();
         void SanityCheckDynamicDisplay(ExploredDynamicGroupCache& exploredGroupCache);
 
-        bool ConvertSlotToReference(const SlotId& slotId);
+        bool ConvertSlotToReference(const SlotId& slotId, bool isNewSlot = false);
         bool ConvertSlotToValue(const SlotId& slotId);
 
         NamedEndpoint CreateNamedEndpoint(SlotId slotId) const;
