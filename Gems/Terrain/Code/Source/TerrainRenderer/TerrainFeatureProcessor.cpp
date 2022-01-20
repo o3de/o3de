@@ -221,8 +221,8 @@ namespace Terrain
             numSamples, &AzFramework::Terrain::TerrainDataRequests::GetNumSamplesFromRegion,
             region, stepSize);
 
-        uint32_t updateWidth = numSamples.first;
-        uint32_t updateHeight = numSamples.second;
+        uint32_t updateWidth = static_cast<uint32_t>(numSamples.first);
+        uint32_t updateHeight = static_cast<uint32_t>(numSamples.second);
         AZStd::vector<uint16_t> pixels;
         pixels.reserve(updateWidth * updateHeight);
         {
