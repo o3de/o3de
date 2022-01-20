@@ -72,7 +72,6 @@ protected:
 
     void ProcessRegionLoop(const AZ::Aabb& inRegion, const AZ::Vector2& stepSize,
         AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
-        AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter,
         AzFramework::SurfaceData::SurfaceTagWeightList* surfaceTags,
         float mockHeight)
     {
@@ -281,9 +280,9 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsRetu
     ON_CALL(terrainListener, ProcessHeightsFromRegion).WillByDefault(
         [this](const AZ::Aabb& inRegion, const AZ::Vector2& stepSize,
             AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
-            AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter)
+            [[maybe_unused]] AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter)
         {
-            ProcessRegionLoop(inRegion, stepSize, perPositionCallback, sampleFilter, nullptr, 0.0f);
+            ProcessRegionLoop(inRegion, stepSize, perPositionCallback, nullptr, 0.0f);
         }
     );
 
@@ -323,9 +322,9 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsRelativ
     ON_CALL(terrainListener, ProcessHeightsFromRegion).WillByDefault(
         [this, mockHeight](const AZ::Aabb& inRegion, const AZ::Vector2& stepSize,
             AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
-            AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter)
+            [[maybe_unused]]  AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter)
         {
-            ProcessRegionLoop(inRegion, stepSize, perPositionCallback, sampleFilter, nullptr, mockHeight);
+            ProcessRegionLoop(inRegion, stepSize, perPositionCallback, nullptr, mockHeight);
         }
     );
 
@@ -476,9 +475,9 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsAndM
     ON_CALL(terrainListener, ProcessSurfacePointsFromRegion).WillByDefault(
         [this, mockHeight, &surfaceTags](const AZ::Aabb& inRegion, const AZ::Vector2& stepSize,
             AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
-            AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter)
+            [[maybe_unused]] AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter)
         {
-            ProcessRegionLoop(inRegion, stepSize, perPositionCallback, sampleFilter, &surfaceTags, mockHeight);
+            ProcessRegionLoop(inRegion, stepSize, perPositionCallback, &surfaceTags, mockHeight);
         }
     );
 
