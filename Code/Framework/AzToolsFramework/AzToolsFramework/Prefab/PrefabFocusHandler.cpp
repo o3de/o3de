@@ -192,6 +192,40 @@ namespace AzToolsFramework::Prefab
         return FocusOnPrefabInstance(focusedInstance);
     }
 
+    PrefabFocusOperationResult PrefabFocusHandler::OpenPrefabInstanceOwningEntityIdAndDescendants(AZ::EntityId entityId)
+    {
+        // TODO - Currently this only opens the instances, but we need a way to toggle.
+
+        // Retrieve the instance
+        InstanceOptionalReference instance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
+
+        if (!instance.has_value())
+        {
+            return AZ::Failure(AZStd::string("OpenPrefabInstanceOwningEntityIdAndDescendants error - invalid instance"));
+        }
+
+        AZStd::queue<Instance*> instanceQueue;
+        instanceQueue.push(&instance->get());
+
+        // TODO - possibly reuse existing helper functions?
+        while (!instanceQueue.empty())
+        {
+            Instance* currentInstance = instanceQueue.front();
+            instanceQueue.pop();
+
+            m_containerEntityInterface->SetContainerOpen(currentInstance->GetContainerEntityId(), true);
+
+            currentInstance->GetNestedInstances(
+                [&](AZStd::unique_ptr<Instance>& nestedInstance)
+                {
+                    instanceQueue.push(nestedInstance.get());
+                }
+            );
+        }
+
+        return AZ::Success();
+    }
+
     PrefabFocusOperationResult PrefabFocusHandler::FocusOnPrefabInstance(InstanceOptionalReference focusedInstance)
     {
         if (!focusedInstance.has_value())

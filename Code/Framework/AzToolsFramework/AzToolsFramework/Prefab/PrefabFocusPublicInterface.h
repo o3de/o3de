@@ -30,6 +30,9 @@ namespace AzToolsFramework::Prefab
         //! @param entityId The entityId of the entity whose owning instance we want the prefab system to focus on.
         virtual PrefabFocusOperationResult FocusOnOwningPrefab(AZ::EntityId entityId) = 0;
 
+        // TODO - comment
+        virtual PrefabFocusOperationResult OpenPrefabInstanceOwningEntityIdAndDescendants(AZ::EntityId entityId) = 0;
+
         //! Set the focused prefab instance to the parent of the currently focused prefab instance. Supports undo/redo.
         virtual PrefabFocusOperationResult FocusOnParentOfFocusedPrefab(AzFramework::EntityContextId entityContextId) = 0;
 

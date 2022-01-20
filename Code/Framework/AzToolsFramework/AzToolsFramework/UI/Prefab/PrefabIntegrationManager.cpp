@@ -407,6 +407,18 @@ namespace AzToolsFramework
                                         ContextMenu_EditPrefab(selectedEntity);
                                     });
                             }
+
+                            // Edit Prefab
+                            QAction* overrideAction = menu->addAction(QObject::tr("Open/Edit Instance"));
+                            overrideAction->setToolTip(QObject::tr("Edit the prefab instance as overrides."));
+
+                            QObject::connect(
+                                overrideAction, &QAction::triggered, overrideAction,
+                                [selectedEntity]
+                                {
+                                    ContextMenu_OpenPrefab(selectedEntity);
+                                });
+
                         }
                         else
                         {
@@ -671,6 +683,11 @@ namespace AzToolsFramework
         void PrefabIntegrationManager::ContextMenu_EditPrefab(AZ::EntityId containerEntity)
         {
             s_prefabFocusPublicInterface->FocusOnOwningPrefab(containerEntity);
+        }
+
+        void PrefabIntegrationManager::ContextMenu_OpenPrefab(AZ::EntityId containerEntity)
+        {
+            s_prefabFocusPublicInterface->OpenPrefabInstanceOwningEntityIdAndDescendants(containerEntity);
         }
 
         void PrefabIntegrationManager::ContextMenu_SavePrefab(AZ::EntityId containerEntity)

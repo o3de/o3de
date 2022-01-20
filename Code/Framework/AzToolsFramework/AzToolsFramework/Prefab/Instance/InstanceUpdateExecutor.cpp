@@ -184,7 +184,7 @@ namespace AzToolsFramework
                     domSourceToFocusPath.Set(instanceDom, focusedInstanceDom);
                 }
 
-                // Then, also replace the transform on the container (just like above - helper function?
+                // Then, also replace the transform on the container (just like above - helper function?)
 
                 // TODO
             }
