@@ -25,6 +25,11 @@ def edit_engine_props(engine_path: pathlib.Path = None,
     if not engine_path and not engine_name:
         logger.error(f'Either a engine path or a engine name must be supplied to lookup engine.json')
         return 1
+
+    if not new_name and not new_version:
+        logger.error('A new engine name or new version, or both must be supplied.')
+        return 1
+
     if not engine_path:
         engine_path = manifest.get_registered(engine_name=engine_name)
 
