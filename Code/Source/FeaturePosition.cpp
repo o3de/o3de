@@ -15,7 +15,7 @@
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <EMotionFX/Source/EventManager.h>
 #include <EMotionFX/Source/TransformData.h>
-#include <MotionMatchingConfig.h>
+#include <MotionMatchingData.h>
 #include <MotionMatchingInstance.h>
 #include <FrameDatabase.h>
 #include <FeaturePosition.h>
@@ -51,13 +51,13 @@ namespace EMotionFX::MotionMatching
         MotionMatchingInstance* instance,
         size_t frameIndex)
     {
-        const MotionMatchingConfig* config = instance->GetConfig();
+        const MotionMatchingData* data = instance->GetData();
         const ActorInstance* actorInstance = instance->GetActorInstance();
         const Pose* pose = actorInstance->GetTransformData()->GetCurrentPose();
         const Transform jointModelTM = pose->GetModelSpaceTransform(m_jointIndex);
         const Transform relativeToWorldTM = pose->GetWorldSpaceTransform(m_relativeToNodeIndex);
 
-        const AZ::Vector3 position = GetFeatureData(config->GetFeatureMatrix(), frameIndex);
+        const AZ::Vector3 position = GetFeatureData(data->GetFeatureMatrix(), frameIndex);
         const AZ::Vector3 transformedPos = relativeToWorldTM.TransformPoint(position);
 
         constexpr float markerSize = 0.03f;

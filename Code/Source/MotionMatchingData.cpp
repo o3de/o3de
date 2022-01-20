@@ -25,44 +25,26 @@
 #include <FeatureTrajectory.h>
 #include <FrameDatabase.h>
 #include <KdTree.h>
-#include <MotionMatchingConfig.h>
+#include <MotionMatchingData.h>
 
 namespace EMotionFX::MotionMatching
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MotionMatchingConfig, MotionMatchAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MotionMatchingData, MotionMatchAllocator, 0)
 
-    MotionMatchingConfig::MotionMatchingConfig()
+    MotionMatchingData::MotionMatchingData(const FeatureSchema& featureSchema)
+        : m_featureSchema(featureSchema)
     {
         m_kdTree = AZStd::make_unique<KdTree>();
     }
 
-    MotionMatchingConfig::~MotionMatchingConfig()
+    MotionMatchingData::~MotionMatchingData()
     {
         Clear();
     }
 
-    bool MotionMatchingConfig::RegisterFeatures(const InitSettings& settings)
+    bool MotionMatchingData::ExtractFeatures(ActorInstance* actorInstance, FrameDatabase* frameDatabase, size_t maxKdTreeDepth, size_t minFramesPerKdTreeNode)
     {
-        const Node* rootJoint = settings.m_actorInstance->GetActor()->GetMotionExtractionNode();
-        if (!rootJoint)
-        {
-            AZ_Error("MotionMatching", false, "Cannot register features. Cannot find motion extraction joint.");
-            return false;
-        }
-
-        DefaultFeatureSchemaInitSettings defaultSettings;
-        defaultSettings.m_rootJointName = rootJoint->GetNameString();
-        defaultSettings.m_leftFootJointName = "L_foot_JNT";
-        defaultSettings.m_rightFootJointName = "R_foot_JNT";
-        defaultSettings.m_pelvisJointName = "C_pelvis_JNT";
-        DefaultFeatureSchema(m_featureSchema, defaultSettings);
-
-        return true;
-    }
-
-    bool MotionMatchingConfig::ExtractFeatures(ActorInstance* actorInstance, FrameDatabase* frameDatabase, size_t maxKdTreeDepth, size_t minFramesPerKdTreeNode)
-    {
-        AZ_PROFILE_SCOPE(Animation, "FeatureDatabase::ExtractFeatures");
+        AZ_PROFILE_SCOPE(Animation, "MotionMatchingData::ExtractFeatures");
         AZ::Debug::Timer timer;
         timer.Stamp();
 
@@ -72,15 +54,10 @@ namespace EMotionFX::MotionMatching
             return true;
         }
 
-        // Initialize all frame datas before we process each frame.
+        // Initialize all features before we process each frame.
         FeatureMatrix::Index featureComponentCount = 0;
         for (Feature* feature : m_featureSchema.GetFeatures())
         {
-            if (feature && feature->GetId().IsNull())
-            {
-                return false;
-            }
-
             Feature::InitSettings frameSettings;
             frameSettings.m_actorInstance = actorInstance;
             if (!feature->Init(frameSettings))
@@ -146,9 +123,9 @@ namespace EMotionFX::MotionMatching
         return true;
     }
 
-    bool MotionMatchingConfig::Init(const InitSettings& settings)
+    bool MotionMatchingData::Init(const InitSettings& settings)
     {
-        AZ_PROFILE_SCOPE(Animation, "MotionMatchingConfig::Init");
+        AZ_PROFILE_SCOPE(Animation, "MotionMatchingData::Init");
 
         // Import all motion frames.
         size_t totalNumFramesImported = 0;
@@ -171,13 +148,12 @@ namespace EMotionFX::MotionMatching
 
         if (totalNumFramesImported > 0 || totalNumFramesDiscarded > 0)
         {
-            AZ_TracePrintf("EMotionFX", "Motion matching config '%s' has imported a total of %d frames (%d frames discarded) across %d motions. This is %.2f seconds (%.2f minutes) of motion data.", RTTI_GetTypeName(), totalNumFramesImported, totalNumFramesDiscarded, settings.m_motionList.size(), totalNumFramesImported / (float)settings.m_frameImportSettings.m_sampleRate, (totalNumFramesImported / (float)settings.m_frameImportSettings.m_sampleRate) / 60.0f);
-        }
-
-        if (!RegisterFeatures(settings))
-        {
-            AZ_Error("EMotionFX", false, "Failed to register features inside motion matching config.");
-            return false;
+            AZ_TracePrintf("Motion Matching", "Imported a total of %d frames (%d frames discarded) across %d motions. This is %.2f seconds (%.2f minutes) of motion data.",
+                totalNumFramesImported,
+                totalNumFramesDiscarded,
+                settings.m_motionList.size(),
+                totalNumFramesImported / (float)settings.m_frameImportSettings.m_sampleRate,
+                (totalNumFramesImported / (float)settings.m_frameImportSettings.m_sampleRate) / 60.0f);
         }
 
         // Use all features other than the trajectory for the broad-phase search using the KD-Tree.
@@ -189,45 +165,21 @@ namespace EMotionFX::MotionMatching
             }
         }
 
-        // Now build the per frame data (slow).
+        // Extract feature data and place the values into the feature matrix.
         if (!ExtractFeatures(settings.m_actorInstance, &m_frameDatabase, settings.m_maxKdTreeDepth, settings.m_minFramesPerKdTreeNode))
         {
-            AZ_Error("EMotionFX", false, "Failed to generate frame datas inside motion matching config.");
+            AZ_Error("Motion Matching", false, "Failed to extract features from motion database.");
             return false;
         }
 
         return true;
     }
 
-    void MotionMatchingConfig::Clear()
+    void MotionMatchingData::Clear()
     {
         m_frameDatabase.Clear();
-        m_featureSchema.Clear();
         m_featureMatrix.Clear();
         m_kdTree->Clear();
         m_featuresInKdTree.clear();
-    }
-
-    void MotionMatchingConfig::Reflect(AZ::ReflectContext* context)
-    {
-        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
-        if (!serializeContext)
-        {
-            return;
-        }
-
-        serializeContext->Class<MotionMatchingConfig>()
-            ->Version(1);
-
-        AZ::EditContext* editContext = serializeContext->GetEditContext();
-        if (!editContext)
-        {
-            return;
-        }
-
-        editContext->Class<MotionMatchingConfig>("MotionMatchingConfig", "Base class for motion matching configs")
-            ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-            ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
-            ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
     }
 } // namespace EMotionFX::MotionMatching

@@ -38,8 +38,8 @@ set(FILES
     Source/KdTree.h
     Source/MotionMatchEventData.cpp
     Source/MotionMatchEventData.h
-    Source/MotionMatchingConfig.cpp
-    Source/MotionMatchingConfig.h
+    Source/MotionMatchingData.cpp
+    Source/MotionMatchingData.h
     Source/MotionMatchingInstance.cpp
     Source/MotionMatchingInstance.h
 )
