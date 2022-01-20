@@ -15,6 +15,84 @@ namespace AZ
 {
     namespace Internal
     {
+        // The original implementation was from cryhalf's CryConvertFloatToHalf and CryConvertHalfToFloat function
+        // Will be replaced with centralized half float API
+        struct SHalf
+        {
+            explicit SHalf(float floatValue)
+            {
+                AZ::u32 Result;
+
+                AZ::u32 intValue = ((AZ::u32*)(&floatValue))[0];
+                AZ::u32 Sign = (intValue & 0x80000000U) >> 16U;
+                intValue = intValue & 0x7FFFFFFFU;
+
+                if (intValue > 0x47FFEFFFU)
+                {
+                    // The number is too large to be represented as a half.  Saturate to infinity.
+                    Result = 0x7FFFU;
+                }
+                else
+                {
+                    if (intValue < 0x38800000U)
+                    {
+                        // The number is too small to be represented as a normalized half.
+                        // Convert it to a denormalized value.
+                        AZ::u32 Shift = 113U - (intValue >> 23U);
+                        intValue = (0x800000U | (intValue & 0x7FFFFFU)) >> Shift;
+                    }
+                    else
+                    {
+                        // Rebias the exponent to represent the value as a normalized half.
+                        intValue += 0xC8000000U;
+                    }
+
+                    Result = ((intValue + 0x0FFFU + ((intValue >> 13U) & 1U)) >> 13U) & 0x7FFFU;
+                }
+                h = static_cast<AZ::u16>(Result | Sign);
+            }
+
+            operator float() const
+            {
+                AZ::u32 Mantissa;
+                AZ::u32 Exponent;
+                AZ::u32 Result;
+
+                Mantissa = h & 0x03FF;
+
+                if ((h & 0x7C00) != 0)  // The value is normalized
+                {
+                    Exponent = ((h >> 10) & 0x1F);
+                }
+                else if (Mantissa != 0)     // The value is denormalized
+                {
+                    // Normalize the value in the resulting float
+                    Exponent = 1;
+
+                    do
+                    {
+                        Exponent--;
+                        Mantissa <<= 1;
+                    } while ((Mantissa & 0x0400) == 0);
+
+                    Mantissa &= 0x03FF;
+                }
+                else                        // The value is zero
+                {
+                    Exponent = static_cast<AZ::u32>(-112);
+                }
+
+                Result = ((h & 0x8000) << 16) | // Sign
+                    ((Exponent + 112) << 23) | // Exponent
+                    (Mantissa << 13);          // Mantissa
+
+                return *(float*)&Result;
+            }
+
+        private:
+            AZ::u16 h;
+        };
+
         template <AZ::RHI::Format>
         float RetrieveFloatValue(const AZ::u8* mem, size_t index)
         {
@@ -51,22 +129,41 @@ namespace AZ
             return 0;
         }
 
+        float ScaleValue(float value, float origMin, float origMax, float scaledMin, float scaledMax)
+        {
+            return ((value - origMin) / (origMax - origMin)) * (scaledMax - scaledMin) + scaledMin;
+        }
+
         float RetrieveFloatValue(const AZ::u8* mem, size_t index, AZ::RHI::Format format)
         {
             switch (format)
             {
             case AZ::RHI::Format::R8_UNORM:
-            case AZ::RHI::Format::R8_SNORM:
             case AZ::RHI::Format::A8_UNORM:
             {
                 return mem[index] / static_cast<float>(std::numeric_limits<AZ::u8>::max());
             }
-            case AZ::RHI::Format::R16_FLOAT:
+            case AZ::RHI::Format::R8_SNORM:
+            {
+                // Scale the value from AZ::s8 min/max to -1 to 1
+                auto actualMem = reinterpret_cast<const AZ::s8*>(mem);
+                return ScaleValue(actualMem[index], std::numeric_limits<AZ::s8>::min(), std::numeric_limits<AZ::s8>::max(), -1, 1);
+            }
             case AZ::RHI::Format::D16_UNORM:
             case AZ::RHI::Format::R16_UNORM:
-            case AZ::RHI::Format::R16_SNORM:
             {
                 return mem[index] / static_cast<float>(std::numeric_limits<AZ::u16>::max());
+            }
+            case AZ::RHI::Format::R16_SNORM:
+            {
+                // Scale the value from AZ::s16 min/max to -1 to 1
+                auto actualMem = reinterpret_cast<const AZ::s16*>(mem);
+                return ScaleValue(actualMem[index], std::numeric_limits<AZ::s16>::min(), std::numeric_limits<AZ::s16>::max(), -1, 1);
+            }
+            case AZ::RHI::Format::R16_FLOAT:
+            {
+                auto actualMem = reinterpret_cast<const float*>(mem);
+                return SHalf(actualMem[index]);
             }
             case AZ::RHI::Format::D32_FLOAT:
             case AZ::RHI::Format::R32_FLOAT:
