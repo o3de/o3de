@@ -45,7 +45,9 @@ namespace AZ
     //! that already exist.
     class NameDictionary final
     {
+    public:
         AZ_CLASS_ALLOCATOR(NameDictionary, AZ::OSAllocator, 0);
+    private:
 
         friend Module;
         friend Name;
@@ -75,8 +77,8 @@ namespace AZ
         //! @return A Name instance. If the hash was not found, the Name will be empty.
         Name FindName(Name::Hash hash) const;
 
-    private:
         NameDictionary();
+    private:
         ~NameDictionary();
 
         void ReportStats() const;

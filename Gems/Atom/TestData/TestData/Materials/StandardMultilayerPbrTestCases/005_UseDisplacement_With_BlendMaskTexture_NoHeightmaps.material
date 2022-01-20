@@ -2,7 +2,7 @@
     "description": "",
     "materialType": "Materials/Types/StandardMultilayerPBR.materialtype",
     "parentMaterial": "TestData/Materials/StandardMultilayerPbrTestCases/005_UseDisplacement_With_BlendMaskTexture.material",
-    "propertyLayoutVersion": 3,
+    "materialTypeVersion": 3,
     "properties": {
         "layer1_parallax": {
             "offset": -0.03200000151991844,
