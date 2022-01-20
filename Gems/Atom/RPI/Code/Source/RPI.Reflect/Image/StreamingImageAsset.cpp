@@ -244,7 +244,8 @@ namespace AZ
             AZStd::array<T, 1> values = { aznumeric_cast<T>(0) };
 
             auto position = AZStd::make_pair(x, y);
-            GetSubImagePixelValues(position, position, values, componentIndex, mip, slice);
+            AZStd::span<T> valueSpan(values.begin(), values.size());
+            GetSubImagePixelValues(position, position, valueSpan, componentIndex, mip, slice);
 
             return values[0];
         }
@@ -267,7 +268,7 @@ namespace AZ
             return GetSubImagePixelValueInternal<AZ::s32>(x, y, componentIndex, mip, slice);
         }
 
-        void StreamingImageAsset::GetSubImagePixelValues(AZStd::pair<uint32_t, uint32_t> topLeft, AZStd::pair<uint32_t, uint32_t> bottomRight, AZStd::array_view<float> outValues, uint32_t componentIndex, uint32_t mip, uint32_t slice)
+        void StreamingImageAsset::GetSubImagePixelValues(AZStd::pair<uint32_t, uint32_t> topLeft, AZStd::pair<uint32_t, uint32_t> bottomRight, AZStd::span<float> outValues, uint32_t componentIndex, uint32_t mip, uint32_t slice)
         {
             // TODO: Use the component index
             (void)componentIndex;
@@ -293,7 +294,7 @@ namespace AZ
             }
         }
 
-        void StreamingImageAsset::GetSubImagePixelValues(AZStd::pair<uint32_t, uint32_t> topLeft, AZStd::pair<uint32_t, uint32_t> bottomRight, AZStd::array_view<AZ::u32> outValues, uint32_t componentIndex, uint32_t mip, uint32_t slice)
+        void StreamingImageAsset::GetSubImagePixelValues(AZStd::pair<uint32_t, uint32_t> topLeft, AZStd::pair<uint32_t, uint32_t> bottomRight, AZStd::span<AZ::u32> outValues, uint32_t componentIndex, uint32_t mip, uint32_t slice)
         {
             // TODO: Use the component index
             (void)componentIndex;
@@ -319,7 +320,7 @@ namespace AZ
             }
         }
 
-        void StreamingImageAsset::GetSubImagePixelValues(AZStd::pair<uint32_t, uint32_t> topLeft, AZStd::pair<uint32_t, uint32_t> bottomRight, AZStd::array_view<AZ::s32> outValues, uint32_t componentIndex, uint32_t mip, uint32_t slice)
+        void StreamingImageAsset::GetSubImagePixelValues(AZStd::pair<uint32_t, uint32_t> topLeft, AZStd::pair<uint32_t, uint32_t> bottomRight, AZStd::span<AZ::s32> outValues, uint32_t componentIndex, uint32_t mip, uint32_t slice)
         {
             // TODO: Use the component index
             (void)componentIndex;
