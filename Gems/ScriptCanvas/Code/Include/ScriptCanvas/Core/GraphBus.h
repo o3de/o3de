@@ -150,7 +150,7 @@ namespace ScriptCanvas
         //! The variable datum pointer is non-null if the variable has been found
         virtual GraphVariable* FindVariableById(const VariableId& variableId) = 0;
 
-        virtual void RefreshDatumReferences(const Datum& datum) = 0;
+        virtual void RefreshVariableReferences(const VariableId& variableId) = 0;
     };
     using GraphRequestBus = AZ::EBus<GraphRequests>;
 

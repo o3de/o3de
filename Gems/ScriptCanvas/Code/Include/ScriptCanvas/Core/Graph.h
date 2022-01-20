@@ -177,7 +177,7 @@ namespace ScriptCanvas
         AZ::EntityId FindAssetNodeIdByRuntimeNodeId(AZ::EntityId editorNode) const override { return editorNode; }
         AZ::EntityId FindRuntimeNodeIdByAssetNodeId(AZ::EntityId runtimeNode) const override { return runtimeNode; }
 
-        void RefreshDatumReferences(const Datum& datum);
+        void RefreshVariableReferences(const VariableId& variableId);
 
         VariableData* GetVariableData() override;
         

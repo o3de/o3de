@@ -1250,12 +1250,12 @@ namespace ScriptCanvasEditor
         ScriptCanvas::Slot* slot = nullptr;
         ScriptCanvas::NodeRequestBus::EventResult(slot, scriptCanvasNodeId, &ScriptCanvas::NodeRequests::GetSlot, scriptCanvasSlotId);
 
-        if (slot == nullptr)
+        if (slot == nullptr || slot->IsUserAdded())
         {
             return nullptr;
         }
 
-        if (slot->IsVariableReference() && !slot->IsUserAdded())
+        if (slot->IsVariableReference())
         {
             ScriptCanvasVariableReferenceDataInterface* dataInterface = aznew ScriptCanvasVariableReferenceDataInterface(&m_variableDataModel, GetScriptCanvasId(), scriptCanvasNodeId, scriptCanvasSlotId);
             GraphCanvas::NodePropertyDisplay* dataDisplay = nullptr;

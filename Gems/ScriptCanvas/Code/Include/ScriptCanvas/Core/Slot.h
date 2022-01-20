@@ -149,7 +149,12 @@ namespace ScriptCanvas
 
         bool CanConvertToReference(bool isNewSlot = false) const;
         bool ConvertToReference(bool isNewSlot = false);
-        void SetVariableReference(const VariableId& variableId);
+        enum class IsVariableTypChange
+        {
+            No,
+            Yes
+        };
+        void SetVariableReference(const VariableId& variableId, IsVariableTypChange isTypeChange = IsVariableTypChange::No);
         const VariableId& GetVariableReference() const;
         GraphVariable* GetVariable() const;
 

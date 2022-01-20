@@ -1004,13 +1004,19 @@ namespace ScriptCanvas
         return false;
     }
 
-    void Graph::RefreshDatumReferences(const Datum& datum)
+    void Graph::RefreshVariableReferences(const VariableId& variableId)
     {
         for (auto nodeEntity : m_graphData.m_nodes)
         {
             if (auto node = FindNode(nodeEntity->GetId()))
             {
-                node->OnDatumEdited(&datum);
+                for (auto slot : node->ModAllSlots())
+                {
+                    if (slot->IsData())
+                    {
+                        slot->SetVariableReference(variableId, Slot::IsVariableTypChange::Yes);
+                    }
+                }
             }
         }
     }

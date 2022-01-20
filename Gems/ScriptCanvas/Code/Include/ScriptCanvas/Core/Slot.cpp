@@ -480,14 +480,14 @@ namespace ScriptCanvas
         return m_isVariableReference;
     }
 
-    void Slot::SetVariableReference(const VariableId& variableId)
+    void Slot::SetVariableReference(const VariableId& variableId, IsVariableTypChange isTypeChange)
     {
         if (!IsVariableReference() && !ConvertToReference())
         {
             return;
         }
 
-        if (m_variableReference == variableId)
+        if (m_variableReference == variableId && isTypeChange == IsVariableTypChange::No)
         {
             return;
         }
@@ -498,7 +498,7 @@ namespace ScriptCanvas
 
         if (IsDynamicSlot())
         {
-            if (!HasDisplayType())
+            if (!HasDisplayType() || isTypeChange == IsVariableTypChange::Yes)
             {
                 GraphVariable* variable = m_node->FindGraphVariable(m_variableReference);
 

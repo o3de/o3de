@@ -888,21 +888,12 @@ namespace ScriptCanvasEditor
                      graphVariable->SetVariableName(output.m_name);
                  }
 
-                 if (output.m_typeChanged && output.m_type.IsValid())
-                 {
-                     // check the UX display
-                     //
-                     // use this: ModifiableDatumView
-                     graphVariable->ModDatum().SetType(output.m_type, ScriptCanvas::Datum::TypeChange::Forced);
-                     ScriptCanvas::GraphRequestBus::Event(m_scriptCanvasId, &ScriptCanvas::GraphRequests::RefreshDatumReferences, graphVariable->ModDatum());
-                     // VariableNotificationBus::Event(m_scopedVariableId, &VariableNotifications::OnVariableValueChanged);
-
-                     // get the variable type to update first, then handle the slots, and the get/set variables
-
-                    // then here, this needs to be called on every node in the graph as the notification id
-                     // // GetActiveScriptCanvasId
-                     // DatumNotificationBus::Event(m_notificationId, &DatumNotifications::OnDatumEdited, this); //  graphVariable->OnDatumEdited();
-                 }
+                if (output.m_typeChanged && output.m_type.IsValid())
+                {
+                    graphVariable->ModDatum().SetType(output.m_type, ScriptCanvas::Datum::TypeChange::Forced);
+                    ScriptCanvas::GraphRequestBus::Event(m_scriptCanvasId, &ScriptCanvas::GraphRequests::RefreshVariableReferences
+                        , graphVariable->GetVariableId());
+                }
              }
          }
     }
