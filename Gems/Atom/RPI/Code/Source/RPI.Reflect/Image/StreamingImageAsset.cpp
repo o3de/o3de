@@ -376,13 +376,14 @@ namespace AZ
             {
                 const AZ::RHI::ImageDescriptor imageDescriptor = GetImageDescriptor();
                 auto width = imageDescriptor.m_size.m_width;
+                const uint32_t pixelSize = AZ::RHI::GetFormatSize(imageDescriptor.m_format);
 
                 size_t outValuesIndex = 0;
                 for (uint32_t y = topLeft.second; y <= bottomRight.second; ++y)
                 {
                     for (uint32_t x = topLeft.first; x <= bottomRight.first; ++x)
                     {
-                        size_t imageDataIndex = (y * width) + x;
+                        size_t imageDataIndex = (y * width * pixelSize) + (x * pixelSize);
 
                         auto& outValue = const_cast<float&>(outValues[outValuesIndex++]);
                         outValue = Internal::RetrieveFloatValue(imageData.data(), imageDataIndex, imageDescriptor.m_format);
@@ -402,13 +403,14 @@ namespace AZ
             {
                 const AZ::RHI::ImageDescriptor imageDescriptor = GetImageDescriptor();
                 auto width = imageDescriptor.m_size.m_width;
+                const uint32_t pixelSize = AZ::RHI::GetFormatSize(imageDescriptor.m_format);
 
                 size_t outValuesIndex = 0;
                 for (uint32_t y = topLeft.second; y <= bottomRight.second; ++y)
                 {
                     for (uint32_t x = topLeft.first; x <= bottomRight.first; ++x)
                     {
-                        size_t imageDataIndex = (y * width) + x;
+                        size_t imageDataIndex = (y * width * pixelSize) + (x * pixelSize);
 
                         auto& outValue = const_cast<AZ::u32&>(outValues[outValuesIndex++]);
                         outValue = Internal::RetrieveUintValue(imageData.data(), imageDataIndex, imageDescriptor.m_format);
@@ -428,13 +430,14 @@ namespace AZ
             {
                 const AZ::RHI::ImageDescriptor imageDescriptor = GetImageDescriptor();
                 auto width = imageDescriptor.m_size.m_width;
+                const uint32_t pixelSize = AZ::RHI::GetFormatSize(imageDescriptor.m_format);
 
                 size_t outValuesIndex = 0;
                 for (uint32_t y = topLeft.second; y <= bottomRight.second; ++y)
                 {
                     for (uint32_t x = topLeft.first; x <= bottomRight.first; ++x)
                     {
-                        size_t imageDataIndex = (y * width) + x;
+                        size_t imageDataIndex = (y * width * pixelSize) + (x * pixelSize);
 
                         auto& outValue = const_cast<AZ::s32&>(outValues[outValuesIndex++]);
                         outValue = Internal::RetrieveIntValue(imageData.data(), imageDataIndex, imageDescriptor.m_format);
