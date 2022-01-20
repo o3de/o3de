@@ -110,11 +110,13 @@ namespace AZ::Dom
 
     size_t PathEntry::GetIndex() const
     {
+        AZ_Assert(IsIndex(), "GetIndex called on PathEntry that is not an index");
         return AZStd::get<size_t>(m_value);
     }
 
     const AZ::Name& PathEntry::GetKey() const
     {
+        AZ_Assert(IsKey(), "Key called on PathEntry that is not a key");
         return AZStd::get<AZ::Name>(m_value);
     }
 
