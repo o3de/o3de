@@ -132,6 +132,9 @@ namespace AZ::Dom
         //! Returns a JSON-pointer style path string for this path.
         AZStd::string ToString() const;
         //! Reads a JSON-pointer style path from pathString and replaces this path's contents.
+        //! Paths are accepted in the following forms:
+        //! "/path/to/foo/0"
+        //! "path/to/foo/0"
         void FromString(AZStd::string_view pathString);
 
     private:

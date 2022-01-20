@@ -93,12 +93,14 @@ namespace AZ::Dom
 
     bool PathEntry::IsEndOfArray() const
     {
-        return AZStd::holds_alternative<size_t>(m_value) && AZStd::get<size_t>(m_value) == EndOfArrayIndex;
+        const size_t* result = AZStd::get_if<size_t>(&m_value);
+        return result == nullptr ? false : ((*result) == EndOfArrayIndex);
     }
 
     bool PathEntry::IsIndex() const
     {
-        return AZStd::holds_alternative<size_t>(m_value) && AZStd::get<size_t>(m_value) != EndOfArrayIndex;
+        const size_t* result = AZStd::get_if<size_t>(&m_value);
+        return result == nullptr ? false : ((*result) != EndOfArrayIndex);
     }
 
     bool PathEntry::IsKey() const
@@ -383,61 +385,75 @@ namespace AZ::Dom
     void Path::FromString(AZStd::string_view pathString)
     {
         m_entries.clear();
-        size_t pathIndex = 0;
+        if (pathString.empty())
+        {
+            return;
+        }
+
+        size_t pathEntryCount = 0;
+        for (size_t i = 1; i <= pathString.size(); ++i)
+        {
+            if (pathString[i] == PathSeparator)
+            {
+                ++pathEntryCount;
+            }
+        }
+        m_entries.reserve(pathEntryCount);
+
+        // Ignore a preceeding path separator and start processing after it
+        size_t pathIndex = pathString[0] == PathSeparator ? 1 : 0;
         bool isNumber = true;
-        for (size_t i = 0; i <= pathString.size(); ++i)
+        AZStd::string convertedSection;
+        for (size_t i = pathIndex; i <= pathString.size(); ++i)
         {
             if (i == pathString.size() || pathString[i] == PathSeparator)
             {
-                if (i > 0)
+                AZStd::string_view section = pathString.substr(pathIndex, i - pathIndex);
+                if (section.size() == 1 && section[0] == EndOfArrayCharacter)
                 {
-                    AZStd::string_view section(&pathString.data()[pathIndex], i - pathIndex);
-                    if (section.size() == 1 && section[0] == EndOfArrayCharacter)
+                    PathEntry entry;
+                    entry.SetEndOfArray();
+                    m_entries.push_back(AZStd::move(entry));
+                }
+                else if (isNumber && !section.empty())
+                {
+                    size_t index = 0;
+                    ConsoleTypeHelpers::StringToValue(index, section);
+                    m_entries.push_back(PathEntry{ index });
+                }
+                else
+                {
+                    convertedSection.clear();
+                    size_t lastPos = 0;
+                    size_t posToEscape = section.find(EscapeCharacter);
+                    while (posToEscape != AZStd::string_view::npos)
                     {
-                        PathEntry entry;
-                        entry.SetEndOfArray();
-                        m_entries.push_back(AZStd::move(entry));
-                    }
-                    else if (isNumber && section.size() > 0)
-                    {
-                        size_t index = 0;
-                        ConsoleTypeHelpers::StringToValue(index, section);
-                        m_entries.push_back(PathEntry{ index });
-                    }
-                    else
-                    {
-                        AZStd::string convertedSection;
-                        size_t lastPos = 0;
-                        size_t posToEscape = section.find(EscapeCharacter);
-                        while (posToEscape != AZStd::string_view::npos)
+                        if (convertedSection.empty())
                         {
-                            if (convertedSection.empty())
-                            {
-                                convertedSection.reserve(section.size() - 1);
-                            }
-                            convertedSection += section.substr(lastPos, posToEscape - lastPos);
-                            if (section[posToEscape + 1] == ForwardSlashSequence)
-                            {
-                                convertedSection += '/';
-                            }
-                            else
-                            {
-                                convertedSection += '~';
-                            }
-
-                            lastPos = posToEscape + 2;
-                            posToEscape = section.find(EscapeCharacter, posToEscape + 2);
+                            convertedSection.reserve(section.size() - 1);
                         }
-
-                        if (!convertedSection.empty())
+                        convertedSection += section.substr(lastPos, posToEscape - lastPos);
+                        if (section[posToEscape + 1] == ForwardSlashSequence)
                         {
-                            convertedSection += section.substr(lastPos);
-                            m_entries.push_back(PathEntry{ convertedSection });
+                            convertedSection += '/';
                         }
                         else
                         {
-                            m_entries.push_back(PathEntry{ section });
+                            convertedSection += '~';
                         }
+
+                        lastPos = posToEscape + 2;
+                        posToEscape = section.find(EscapeCharacter, posToEscape + 2);
+                    }
+
+                    if (!convertedSection.empty())
+                    {
+                        convertedSection += section.substr(lastPos);
+                        m_entries.emplace_back(convertedSection);
+                    }
+                    else
+                    {
+                        m_entries.emplace_back(section);
                     }
                 }
                 pathIndex = i + 1;
@@ -446,10 +462,7 @@ namespace AZ::Dom
             }
 
             const char c = pathString[i];
-            if (isNumber && !(c >= '0' && c <= '9'))
-            {
-                isNumber = false;
-            }
+            isNumber = isNumber && c >= '0' && c <= '9';
         }
     }
 } // namespace AZ::Dom
