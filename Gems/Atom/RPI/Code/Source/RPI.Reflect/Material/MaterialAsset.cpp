@@ -33,11 +33,12 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<MaterialAsset, AZ::Data::AssetData>()
-                    ->Version(11) // Material version update
+                    ->Version(13) // added m_rawPropertyValues
                     ->Field("materialTypeAsset", &MaterialAsset::m_materialTypeAsset)
                     ->Field("materialTypeVersion", &MaterialAsset::m_materialTypeVersion)
                     ->Field("propertyValues", &MaterialAsset::m_propertyValues)
-                    ->Field("propertyNames", &MaterialAsset::m_propertyNames)
+                    ->Field("rawPropertyValues", &MaterialAsset::m_rawPropertyValues)
+                    ->Field("isFinalized", &MaterialAsset::m_isFinalized)
                     ;
             }
         }
@@ -102,31 +103,94 @@ namespace AZ
         {
             return m_materialTypeAsset->GetMaterialPropertiesLayout();
         }
-
-        AZStd::array_view<MaterialPropertyValue> MaterialAsset::GetPropertyValues() const
+        
+        bool MaterialAsset::IsFinalized() const
         {
-            // If property names are included, they are used to re-arrange the property value list to align with the
-            // MaterialPropertiesLayout. This realignment would be necessary if the material type is updated with
-            // a new property layout, and a corresponding material is not reprocessed by the AP and continues using the
-            // old property layout.
-            if (!m_propertyNames.empty())
+            if (m_isFinalized)
             {
-                const uint32_t materialTypeVersion = m_materialTypeAsset->GetVersion();
-                if (m_materialTypeVersion < materialTypeVersion)
-                {
-                    // It is possible that the material type has had some properties renamed. If that's the case, and this material
-                    // is still referencing the old property layout, we need to apply any auto updates to rename those properties
-                    // before using them to realign the property values.
-                    const_cast<MaterialAsset*>(this)->ApplyVersionUpdates();
-                }
+                AZ_Assert(GetMaterialPropertiesLayout() && m_propertyValues.size() == GetMaterialPropertiesLayout()->GetPropertyCount(), "MaterialAsset is marked as Finalized but does not have the right number of property values.");
+            }
 
-                if (m_isDirty)
+            return m_isFinalized;
+        }
+
+        void MaterialAsset::Finalize()
+        {
+            if (IsFinalized())
+            {
+                return;
+            }
+
+            const uint32_t materialTypeVersion = m_materialTypeAsset->GetVersion();
+            if (m_materialTypeVersion < materialTypeVersion)
+            {
+                // It is possible that the material type has had some properties renamed or otherwise updated. If that's the case,
+                // and this material is still referencing the old property layout, we need to apply any auto updates to rename those
+                // properties before using them to realign the property values.
+                ApplyVersionUpdates();
+            }
+            
+            const MaterialPropertiesLayout* propertyLayout = GetMaterialPropertiesLayout();
+
+            AZStd::vector<MaterialPropertyValue> finalizedPropertyValues(m_materialTypeAsset->GetDefaultPropertyValues().begin(), m_materialTypeAsset->GetDefaultPropertyValues().end());
+
+            for (const auto& [name, value] : m_rawPropertyValues)
+            {
+                const MaterialPropertyIndex propertyIndex = propertyLayout->FindPropertyIndex(name);
+                if (propertyIndex.IsValid())
                 {
-                    const_cast<MaterialAsset*>(this)->RealignPropertyValuesAndNames();
+                    const MaterialPropertyDescriptor* propertyDescriptor = propertyLayout->GetPropertyDescriptor(propertyIndex);
+
+                    if (value.Is<AZStd::string>() && propertyDescriptor->GetDataType() == MaterialPropertyDataType::Enum)
+                    {
+                        AZ::Name enumName = AZ::Name(value.GetValue<AZStd::string>());
+                        uint32_t enumValue = propertyDescriptor->GetEnumValue(enumName);
+                        if (enumValue == MaterialPropertyDescriptor::InvalidEnumValue)
+                        {
+                            AZ_Error(s_debugTraceName, false, "Material property name \"%s\" has invalid enum value \"%s\".", name.GetCStr(), enumName.GetCStr());
+                        }
+                        else
+                        {
+                            finalizedPropertyValues[propertyIndex.GetIndex()] = enumValue;
+                        }
+                    }
+                    else if (value.Is<AZStd::string>() && propertyDescriptor->GetDataType() == MaterialPropertyDataType::Image)
+                    {
+                        // Here we assume that the material asset builder resolved any image source file paths to an ImageAsset reference.
+                        // So the only way a string could be present is if it's an empty image path reference, meaning no image should be bound.
+                        AZ_Assert(value.GetValue<AZStd::string>().empty(), "Material property '%s' references in image '%s'. Image file paths must be resolved by the material asset builder.");
+
+                        finalizedPropertyValues[propertyIndex.GetIndex()] = Data::Asset<ImageAsset>{};
+                    }
+                    else
+                    {
+                        finalizedPropertyValues[propertyIndex.GetIndex()] = value;
+                    }
+                }
+                else
+                {
+                    AZ_Warning(s_debugTraceName, false, "Material property name \"%s\" is not found in the material properties layout and will not be used.", name.GetCStr());
                 }
             }
 
+            m_propertyValues.swap(finalizedPropertyValues);
+
+            m_isFinalized = true;
+        }
+
+        const AZStd::vector<MaterialPropertyValue>& MaterialAsset::GetPropertyValues() const
+        {
+            // This can't be done in MaterialAssetHandler::LoadAssetData because the MaterialTypeAsset isn't necessarily loaded at that point.
+            // And it can't be done in PostLoadInit() because that happens on the next frame which might be too late. So we finalize just-in-time
+            // when properties are accessed.
+            const_cast<MaterialAsset*>(this)->Finalize();
+
             return m_propertyValues;
+        }
+        
+        const AZStd::vector<AZStd::pair<Name, MaterialPropertyValue>>& MaterialAsset::GetRawPropertyValues() const
+        {
+            return m_rawPropertyValues;
         }
 
         void MaterialAsset::SetReady()
@@ -173,34 +237,6 @@ namespace AZ
             }
         }
         
-        void MaterialAsset::RealignPropertyValuesAndNames()
-        {
-            const MaterialPropertiesLayout* propertyLayout = GetMaterialPropertiesLayout();
-            AZStd::vector<MaterialPropertyValue> alignedPropertyValues(m_materialTypeAsset->GetDefaultPropertyValues().begin(), m_materialTypeAsset->GetDefaultPropertyValues().end());
-            for (size_t i = 0; i < m_propertyNames.size(); ++i)
-            {
-                const MaterialPropertyIndex propertyIndex = propertyLayout->FindPropertyIndex(m_propertyNames[i]);
-                if (propertyIndex.IsValid())
-                {
-                    alignedPropertyValues[propertyIndex.GetIndex()] = m_propertyValues[i];
-                }
-                else
-                {
-                    AZ_Warning(s_debugTraceName, false, "Material property name \"%s\" is not found in the material properties layout and will not be used.", m_propertyNames[i].GetCStr());
-                }
-            }
-            m_propertyValues.swap(alignedPropertyValues);
-
-            const size_t propertyCount = propertyLayout->GetPropertyCount();
-            m_propertyNames.resize(propertyCount);
-            for (size_t i = 0; i < propertyCount; ++i)
-            {
-                m_propertyNames[i] = propertyLayout->GetPropertyDescriptor(MaterialPropertyIndex{ i })->GetName();
-            }
-
-            m_isDirty = false;
-        } 
-
         void MaterialAsset::ApplyVersionUpdates()
         {
             if (m_materialTypeVersion == m_materialTypeAsset->GetVersion())
@@ -248,7 +284,13 @@ namespace AZ
                 // This also covers the case where just the MaterialTypeAsset is reloaded and not the MaterialAsset.
                 m_materialTypeAsset = newMaterialTypeAsset;
 
-                m_isDirty = true;
+                // If the material asset was not finalized on disk, then we clear the previously finalized property values to force re-finalize.
+                // This 
+                if (!m_wasPreFinalized)
+                {
+                    m_isFinalized = false;
+                    m_propertyValues.clear();
+                }
 
                 // Notify interested parties that this MaterialAsset is changed and may require other data to reinitialize as well
                 MaterialReloadNotificationBus::Event(GetId(), &MaterialReloadNotifications::OnMaterialAssetReinitialized, Data::Asset<MaterialAsset>{this, AZ::Data::AssetLoadBehavior::PreLoad});
@@ -276,6 +318,7 @@ namespace AZ
             if (Base::LoadAssetData(asset, stream, assetLoadFilterCB) == Data::AssetHandler::LoadResult::LoadComplete)
             {
                 asset.GetAs<MaterialAsset>()->AssetInitBus::Handler::BusConnect();
+                asset.GetAs<MaterialAsset>()->m_wasPreFinalized = asset.GetAs<MaterialAsset>()->m_isFinalized;
                 return Data::AssetHandler::LoadResult::LoadComplete;
             }
 
