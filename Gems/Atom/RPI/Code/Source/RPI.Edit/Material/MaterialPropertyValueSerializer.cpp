@@ -54,12 +54,6 @@ namespace AZ
             MaterialSourceData::Property* property = reinterpret_cast<MaterialSourceData::Property*>(outputValue);
             AZ_Assert(property, "Output value for JsonMaterialPropertyValueSerializer can't be null.");
 
-            // Construct the full property name (groupName.propertyName) by parsing it from the JSON path string.
-            size_t startPropertyName = context.GetPath().Get().rfind('/');
-            size_t startGroupName = context.GetPath().Get().rfind('/', startPropertyName-1);
-            AZStd::string_view groupName = context.GetPath().Get().substr(startGroupName + 1, startPropertyName - startGroupName - 1);
-            AZStd::string_view propertyName = context.GetPath().Get().substr(startPropertyName + 1);
-
             JSR::ResultCode result(JSR::Tasks::ReadField);
 
             if (inputValue.IsBool())
