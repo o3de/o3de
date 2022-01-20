@@ -102,7 +102,7 @@ namespace AZStd
         typedef typename base_type::pair_iter_bool              pair_iter_bool;
 
         using node_type = map_node_handle<map_node_traits<key_type, mapped_type, allocator_type, typename base_type::list_node_type, typename base_type::node_deleter>>;
-        using insert_return_type = insert_return_type<iterator, node_type>;
+        using insert_return_type = AZStd::AssociativeInternal::insert_return_type<iterator, node_type>;
 
         AZ_FORCE_INLINE unordered_map()
             : base_type(hasher(), key_eq(), allocator_type()) {}

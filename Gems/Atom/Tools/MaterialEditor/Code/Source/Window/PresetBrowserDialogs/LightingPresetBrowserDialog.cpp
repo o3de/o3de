@@ -8,9 +8,9 @@
 
 #include <Atom/Feature/Utils/LightingPreset.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
-#include <Atom/Viewport/MaterialViewportRequestBus.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzFramework/Application/Application.h>
+#include <Viewport/MaterialViewportRequestBus.h>
 #include <Window/PresetBrowserDialogs/LightingPresetBrowserDialog.h>
 
 namespace MaterialEditor

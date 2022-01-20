@@ -81,6 +81,9 @@ namespace AZ
             float GetViewBias() const { return m_viewBias; }
             void SetViewBias(float viewBias);
 
+            const DiffuseProbeGridNumRaysPerProbeEntry& GetNumRaysPerProbe() const { return DiffuseProbeGridNumRaysPerProbeArray[aznumeric_cast<uint32_t>(m_numRaysPerProbe)]; }
+            void SetNumRaysPerProbe(const DiffuseProbeGridNumRaysPerProbe& numRaysPerProbe);
+
             float GetAmbientMultiplier() const { return m_ambientMultiplier; }
             void SetAmbientMultiplier(float ambientMultiplier);
 
@@ -94,8 +97,6 @@ namespace AZ
 
             DiffuseProbeGridMode GetMode() const { return m_mode; }
             void SetMode(DiffuseProbeGridMode mode);
-
-            uint32_t GetNumRaysPerProbe() const { return m_numRaysPerProbe; }
 
             uint32_t GetRemainingRelocationIterations() const { return aznumeric_cast<uint32_t>(m_remainingRelocationIterations); }
             void DecrementRemainingRelocationIterations() { m_remainingRelocationIterations = AZStd::max(0, m_remainingRelocationIterations - 1); }
@@ -201,7 +202,6 @@ namespace AZ
             bool     m_enabled = true;
             float    m_normalBias = 0.6f;
             float    m_viewBias = 0.01f;
-            uint32_t m_numRaysPerProbe = 288;
             float    m_probeMaxRayDistance = 30.0f;
             float    m_probeDistanceExponent = 50.0f;
             float    m_probeHysteresis = 0.95f;
@@ -213,6 +213,8 @@ namespace AZ
             float    m_ambientMultiplier = 1.0f;
             bool     m_giShadows = true;
             bool     m_useDiffuseIbl = true;
+
+            DiffuseProbeGridNumRaysPerProbe m_numRaysPerProbe = DiffuseProbeGridNumRaysPerProbe::NumRaysPerProbe_288;
 
             // rotation transform applied to probe rays
             AZ::Quaternion m_probeRayRotation;

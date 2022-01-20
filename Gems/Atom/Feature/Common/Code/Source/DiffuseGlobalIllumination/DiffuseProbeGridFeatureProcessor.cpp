@@ -295,6 +295,12 @@ namespace AZ
             probeGrid->SetNormalBias(normalBias);
         }
 
+        void DiffuseProbeGridFeatureProcessor::SetNumRaysPerProbe(const DiffuseProbeGridHandle& probeGrid, const DiffuseProbeGridNumRaysPerProbe& numRaysPerProbe)
+        {
+            AZ_Assert(probeGrid.get(), "SetNumRaysPerProbe called with an invalid handle");
+            probeGrid->SetNumRaysPerProbe(numRaysPerProbe);
+        }
+
         void DiffuseProbeGridFeatureProcessor::SetAmbientMultiplier(const DiffuseProbeGridHandle& probeGrid, float ambientMultiplier)
         {
             AZ_Assert(probeGrid.get(), "SetAmbientMultiplier called with an invalid handle");

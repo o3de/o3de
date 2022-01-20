@@ -161,6 +161,11 @@ namespace AzFramework
                 SurfacePointListFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT) const = 0;
 
+            //! Returns the number of samples for a given region and step size. The first and second
+            //! elements of the pair correspond to the X and Y sample counts respectively.
+            virtual AZStd::pair<size_t, size_t> GetNumSamplesFromRegion(const AZ::Aabb& inRegion,
+                const AZ::Vector2& stepSize) const = 0;
+
             //! Given a region(aabb) and a step size, call the provided callback function with surface data corresponding to the
             //! coordinates in the region.
             virtual void ProcessHeightsFromRegion(const AZ::Aabb& inRegion,
