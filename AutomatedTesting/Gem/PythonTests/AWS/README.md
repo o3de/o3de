@@ -20,16 +20,18 @@
 3. Open a new CLI window at the engine root and set the following environment variables:
     * Windows
         ```
-            Set O3DE_AWS_PROJECT_NAME=AWSAUTO
             Set O3DE_AWS_DEPLOY_REGION=us-east-1
             Set ASSUME_ROLE_ARN=arn:aws:iam::{your_aws_account_id}:role/o3de-automation-tests
+            Set BRANCH_NAME={your_branch_name}
+            Set PIPELINE_NAME={your_pipeline_name}
             Set COMMIT_ID=HEAD
         ```
     * Linux
         ```
-            export O3DE_AWS_PROJECT_NAME=AWSAUTO
             export O3DE_AWS_DEPLOY_REGION=us-east-1
             export ASSUME_ROLE_ARN=arn:aws:iam::{your_aws_account_id}:role/o3de-automation-tests
+            export BRANCH_NAME={your_branch_name}
+            export PIPELINE_NAME={your_pipeline_name}
             export COMMIT_ID=HEAD
         ```
 4. In the same CLI window, Deploy the CDK applications for AWS gems by running deploy_cdk_applications.cmd.
