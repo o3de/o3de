@@ -68,6 +68,7 @@ namespace UnitTest
         AZStd::unique_ptr<NiceMock<UnitTest::MockBoxShapeComponentRequests>> m_boxShapeRequests;
         AZStd::unique_ptr<NiceMock<UnitTest::MockShapeComponentRequests>> m_shapeRequests;
         AZStd::unique_ptr<NiceMock<UnitTest::MockTerrainAreaHeightRequests>> m_terrainAreaHeightRequests;
+        AZStd::unique_ptr<NiceMock<UnitTest::MockTerrainAreaSurfaceRequestBus>> m_terrainAreaSurfaceRequests;
 
         void SetUp() override
         {
@@ -84,6 +85,7 @@ namespace UnitTest
             m_boxShapeRequests.reset();
             m_shapeRequests.reset();
             m_terrainAreaHeightRequests.reset();
+            m_terrainAreaSurfaceRequests.reset();
             m_app.Destroy();
         }
 
@@ -159,6 +161,49 @@ namespace UnitTest
 
             ActivateEntity(entity.get());
             return entity;
+        }
+
+        void SetupSurfaceWeightMocks(AZ::Entity* entity, AzFramework::SurfaceData::SurfaceTagWeightList& expectedTags)
+        {
+            const SurfaceData::SurfaceTag tag1 = SurfaceData::SurfaceTag("tag1");
+            const SurfaceData::SurfaceTag tag2 = SurfaceData::SurfaceTag("tag2");
+            const SurfaceData::SurfaceTag tag3 = SurfaceData::SurfaceTag("tag3");
+
+            AzFramework::SurfaceData::SurfaceTagWeight tagWeight1;
+            tagWeight1.m_surfaceType = tag1;
+            tagWeight1.m_weight = 1.0f;
+            expectedTags.push_back(tagWeight1);
+
+            AzFramework::SurfaceData::SurfaceTagWeight tagWeight2;
+            tagWeight2.m_surfaceType = tag2;
+            tagWeight2.m_weight = 0.7f;
+            expectedTags.push_back(tagWeight2);
+
+            AzFramework::SurfaceData::SurfaceTagWeight tagWeight3;
+            tagWeight3.m_surfaceType = tag3;
+            tagWeight3.m_weight = 0.3f;
+            expectedTags.push_back(tagWeight3);
+
+            m_terrainAreaSurfaceRequests = AZStd::make_unique<NiceMock<UnitTest::MockTerrainAreaSurfaceRequestBus>>(entity->GetId());
+            ON_CALL(*m_terrainAreaSurfaceRequests, GetSurfaceWeights).WillByDefault(
+                [tagWeight1, tagWeight2, tagWeight3](const AZ::Vector3& position, AzFramework::SurfaceData::SurfaceTagWeightList& surfaceWeights)
+                {
+                    surfaceWeights.clear();
+                    float absYPos = fabsf(position.GetY());
+                    if (absYPos < 1.0f)
+                    {
+                        surfaceWeights.push_back(tagWeight1);
+                    }
+                    else if(absYPos < 2.0f)
+                    {
+                        surfaceWeights.push_back(tagWeight2);
+                    }
+                    else
+                    {
+                        surfaceWeights.push_back(tagWeight3);
+                    }
+                }
+            );
         }
     };
 
@@ -921,62 +966,28 @@ namespace UnitTest
         const AZ::Aabb testRegionBox = AZ::Aabb::CreateFromMinMaxValues(-3.0f, -3.0f, -1.0f, 3.0f, 3.0f, 1.0f);
         const AZ::Vector2 stepSize(1.0f);
 
-        const SurfaceData::SurfaceTag tag1 = SurfaceData::SurfaceTag("tag1");
-        const SurfaceData::SurfaceTag tag2 = SurfaceData::SurfaceTag("tag2");
-        const SurfaceData::SurfaceTag tag3 = SurfaceData::SurfaceTag("tag3");
+        AzFramework::SurfaceData::SurfaceTagWeightList expectedTags;
+        SetupSurfaceWeightMocks(entity.get(), expectedTags);
 
-        AzFramework::SurfaceData::SurfaceTagWeight tagWeight1;
-        tagWeight1.m_surfaceType = tag1;
-        tagWeight1.m_weight = 1.0f;
-
-        AzFramework::SurfaceData::SurfaceTagWeight tagWeight2;
-        tagWeight2.m_surfaceType = tag2;
-        tagWeight2.m_weight = 0.7f;
-
-        AzFramework::SurfaceData::SurfaceTagWeight tagWeight3;
-        tagWeight3.m_surfaceType = tag3;
-        tagWeight3.m_weight = 0.3f;
-
-        NiceMock<UnitTest::MockTerrainAreaSurfaceRequestBus> mockSurfaceRequests(entity->GetId());
-        ON_CALL(mockSurfaceRequests, GetSurfaceWeights).WillByDefault(
-            [&tagWeight1, &tagWeight2, &tagWeight3](const AZ::Vector3& position, AzFramework::SurfaceData::SurfaceTagWeightList& surfaceWeights)
-            {
-                surfaceWeights.clear();
-                float absYPos = fabsf(position.GetY());
-                if (absYPos < 1.0f)
-                {
-                    surfaceWeights.push_back(tagWeight1);
-                }
-                else if(absYPos < 2.0f)
-                {
-                    surfaceWeights.push_back(tagWeight2);
-                }
-                else
-                {
-                    surfaceWeights.push_back(tagWeight3);
-                }
-            }
-        );
-
-        auto perPositionCallback = [&tagWeight1, &tagWeight2, &tagWeight3](size_t xIndex, size_t yIndex,
+        auto perPositionCallback = [&expectedTags](size_t xIndex, size_t yIndex,
             const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
         {
             constexpr float epsilon = 0.0001f;
             float absYPos = fabsf(surfacePoint.m_position.GetY());
             if (absYPos < 1.0f)
             {
-                EXPECT_EQ(surfacePoint.m_surfaceTags[0].m_surfaceType, tagWeight1.m_surfaceType);
-                EXPECT_NEAR(surfacePoint.m_surfaceTags[0].m_weight, tagWeight1.m_weight, epsilon);
+                EXPECT_EQ(surfacePoint.m_surfaceTags[0].m_surfaceType, expectedTags[0].m_surfaceType);
+                EXPECT_NEAR(surfacePoint.m_surfaceTags[0].m_weight, expectedTags[0].m_weight, epsilon);
             }
             else if(absYPos < 2.0f)
             {
-                EXPECT_EQ(surfacePoint.m_surfaceTags[0].m_surfaceType, tagWeight2.m_surfaceType);
-                EXPECT_NEAR(surfacePoint.m_surfaceTags[0].m_weight, tagWeight2.m_weight, epsilon);
+                EXPECT_EQ(surfacePoint.m_surfaceTags[0].m_surfaceType, expectedTags[1].m_surfaceType);
+                EXPECT_NEAR(surfacePoint.m_surfaceTags[0].m_weight, expectedTags[1].m_weight, epsilon);
             }
             else
             {
-                EXPECT_EQ(surfacePoint.m_surfaceTags[0].m_surfaceType, tagWeight3.m_surfaceType);
-                EXPECT_NEAR(surfacePoint.m_surfaceTags[0].m_weight, tagWeight3.m_weight, epsilon);
+                EXPECT_EQ(surfacePoint.m_surfaceTags[0].m_surfaceType, expectedTags[2].m_surfaceType);
+                EXPECT_NEAR(surfacePoint.m_surfaceTags[0].m_weight, expectedTags[2].m_weight, epsilon);
             }
         };
 
@@ -1001,44 +1012,10 @@ namespace UnitTest
         const AZ::Aabb testRegionBox = AZ::Aabb::CreateFromMinMaxValues(-3.0f, -3.0f, -1.0f, 3.0f, 3.0f, 1.0f);
         const AZ::Vector2 stepSize(1.0f);
 
-        const SurfaceData::SurfaceTag tag1 = SurfaceData::SurfaceTag("tag1");
-        const SurfaceData::SurfaceTag tag2 = SurfaceData::SurfaceTag("tag2");
-        const SurfaceData::SurfaceTag tag3 = SurfaceData::SurfaceTag("tag3");
+        AzFramework::SurfaceData::SurfaceTagWeightList expectedTags;
+        SetupSurfaceWeightMocks(entity.get(), expectedTags);
 
-        AzFramework::SurfaceData::SurfaceTagWeight tagWeight1;
-        tagWeight1.m_surfaceType = tag1;
-        tagWeight1.m_weight = 1.0f;
-
-        AzFramework::SurfaceData::SurfaceTagWeight tagWeight2;
-        tagWeight2.m_surfaceType = tag2;
-        tagWeight2.m_weight = 0.7f;
-
-        AzFramework::SurfaceData::SurfaceTagWeight tagWeight3;
-        tagWeight3.m_surfaceType = tag3;
-        tagWeight3.m_weight = 0.3f;
-
-        NiceMock<UnitTest::MockTerrainAreaSurfaceRequestBus> mockSurfaceRequests(entity->GetId());
-        ON_CALL(mockSurfaceRequests, GetSurfaceWeights).WillByDefault(
-            [&tagWeight1, &tagWeight2, &tagWeight3](const AZ::Vector3& position, AzFramework::SurfaceData::SurfaceTagWeightList& surfaceWeights)
-            {
-                surfaceWeights.clear();
-                float absYPos = fabsf(position.GetY());
-                if (absYPos < 1.0f)
-                {
-                    surfaceWeights.push_back(tagWeight1);
-                }
-                else if(absYPos < 2.0f)
-                {
-                    surfaceWeights.push_back(tagWeight2);
-                }
-                else
-                {
-                    surfaceWeights.push_back(tagWeight3);
-                }
-            }
-        );
-
-        auto perPositionCallback = [&tagWeight1, &tagWeight2, &tagWeight3](size_t xIndex, size_t yIndex,
+        auto perPositionCallback = [&expectedTags](size_t xIndex, size_t yIndex,
             const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
         {
             constexpr float epsilon = 0.0001f;
@@ -1049,18 +1026,18 @@ namespace UnitTest
             float absYPos = fabsf(surfacePoint.m_position.GetY());
             if (absYPos < 1.0f)
             {
-                EXPECT_EQ(surfacePoint.m_surfaceTags[0].m_surfaceType, tagWeight1.m_surfaceType);
-                EXPECT_NEAR(surfacePoint.m_surfaceTags[0].m_weight, tagWeight1.m_weight, epsilon);
+                EXPECT_EQ(surfacePoint.m_surfaceTags[0].m_surfaceType, expectedTags[0].m_surfaceType);
+                EXPECT_NEAR(surfacePoint.m_surfaceTags[0].m_weight, expectedTags[0].m_weight, epsilon);
             }
             else if(absYPos < 2.0f)
             {
-                EXPECT_EQ(surfacePoint.m_surfaceTags[0].m_surfaceType, tagWeight2.m_surfaceType);
-                EXPECT_NEAR(surfacePoint.m_surfaceTags[0].m_weight, tagWeight2.m_weight, epsilon);
+                EXPECT_EQ(surfacePoint.m_surfaceTags[0].m_surfaceType, expectedTags[1].m_surfaceType);
+                EXPECT_NEAR(surfacePoint.m_surfaceTags[0].m_weight, expectedTags[1].m_weight, epsilon);
             }
             else
             {
-                EXPECT_EQ(surfacePoint.m_surfaceTags[0].m_surfaceType, tagWeight3.m_surfaceType);
-                EXPECT_NEAR(surfacePoint.m_surfaceTags[0].m_weight, tagWeight3.m_weight, epsilon);
+                EXPECT_EQ(surfacePoint.m_surfaceTags[0].m_surfaceType, expectedTags[2].m_surfaceType);
+                EXPECT_NEAR(surfacePoint.m_surfaceTags[0].m_weight, expectedTags[2].m_weight, epsilon);
             }
         };
 
