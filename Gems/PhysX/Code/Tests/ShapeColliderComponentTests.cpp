@@ -707,5 +707,39 @@ namespace PhysXEditorTests
         delete rigidBodyComponent;
     }
 
-    INSTANTIATE_TEST_CASE_P(PhysXEditorTests, PhysXEditorParamBoolFixture, ::testing::Bool());
+    INSTANTIATE_TEST_CASE_P(PhysXEditorTest, PhysXEditorParamBoolFixture, ::testing::Bool());
+
+    TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_SingleSidedQuadDoesNotCollideFromBelow)
+    {
+        // create an editor entity without a rigid body (that means both single-sided and double-sided quads are valid), positioned at the origin
+        EntityPtr editorQuadEntity = CreateInactiveEditorEntity("QuadEntity");
+        editorQuadEntity->CreateComponent(LmbrCentral::EditorQuadShapeComponentTypeId);
+        auto* shapeColliderComponent = editorQuadEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
+        SetSingleSided(shapeColliderComponent, true);
+        editorQuadEntity->Activate();
+        LmbrCentral::QuadShapeComponentRequestBus::Event(editorQuadEntity->GetId(), &LmbrCentral::QuadShapeComponentRequests::SetQuadHeight, 10.0f);
+        LmbrCentral::QuadShapeComponentRequestBus::Event(editorQuadEntity->GetId(), &LmbrCentral::QuadShapeComponentRequests::SetQuadWidth, 10.0f);
+
+        // add a second entity with a box collider and a rigid body, positioned below the quad
+        EntityPtr editorBoxEntity = CreateInactiveEditorEntity("BoxEntity");
+        editorBoxEntity->CreateComponent(LmbrCentral::BoxShapeComponentTypeId);
+        editorBoxEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
+        editorBoxEntity->CreateComponent<PhysX::EditorRigidBodyComponent>();
+        editorBoxEntity->Activate();
+        AZ::TransformBus::Event(editorBoxEntity->GetId(), &AZ::TransformBus::Events::SetWorldTranslation, -AZ::Vector3::CreateAxisZ());
+
+        EntityPtr gameQuadEntity = CreateActiveGameEntityFromEditorEntity(editorQuadEntity.get());
+        EntityPtr gameBoxEntity = CreateActiveGameEntityFromEditorEntity(editorBoxEntity.get());
+
+        // give the box enough upward velocity to rise above the level of the quad and simulate
+        Physics::RigidBodyRequestBus::Event(gameBoxEntity->GetId(), &Physics::RigidBodyRequests::SetLinearVelocity, AZ::Vector3::CreateAxisZ(6.0f));
+        PhysX::TestUtils::UpdateScene(m_defaultScene, AzPhysics::SystemConfiguration::DefaultFixedTimestep, 200);
+
+        // the box should travel through the base of the quad because it has no collision from that direction
+        // and land on the top surface of the quad, which does have collision
+        float finalHeight = 0.0f;
+        AZ::TransformBus::EventResult(finalHeight, gameBoxEntity->GetId(), &AZ::TransformBus::Events::GetWorldZ);
+
+        EXPECT_GT(finalHeight, 0.0f);
+    }
 } // namespace PhysXEditorTests
