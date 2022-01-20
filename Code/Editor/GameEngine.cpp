@@ -42,8 +42,6 @@
 
 #include "ViewManager.h"
 #include "AnimationContext.h"
-#include "UndoViewPosition.h"
-#include "UndoViewRotation.h"
 #include "MainWindow.h"
 #include "Include/IObjectManager.h"
 #include "ActionManager.h"

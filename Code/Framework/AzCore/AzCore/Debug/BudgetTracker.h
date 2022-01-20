@@ -20,7 +20,7 @@ namespace AZ::Debug
     {
     public:
         AZ_TYPE_INFO(BudgetTracker, "{E14A746D-BFFE-4C02-90FB-4699B79864A5}");
-        static Budget* GetBudgetFromEnvironment(const char* budgetName, uint32_t crc);
+        static void GetBudgetFromEnvironment(Budget*& extBudgetRef, const char* budgetName, uint32_t crc);
 
         ~BudgetTracker();
 
@@ -28,7 +28,7 @@ namespace AZ::Debug
         bool Init();
         void Reset();
 
-        Budget& GetBudget(const char* budgetName, uint32_t crc);
+        void GetBudget(Budget*& extBudgetRef, const char* budgetName, uint32_t crc);
 
     private:
         struct BudgetTrackerImpl;

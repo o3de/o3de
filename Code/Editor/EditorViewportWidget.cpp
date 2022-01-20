@@ -582,11 +582,11 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
 
     case eNotify_OnCloseScene:
         m_renderViewport->SetScene(nullptr);
-        SetDefaultCamera();
         break;
 
     case eNotify_OnEndSceneOpen:
         UpdateScene();
+        SetDefaultCamera();
         break;
 
     case eNotify_OnBeginNewScene:

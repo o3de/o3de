@@ -275,7 +275,7 @@ namespace UnitTest
         materialTypeCreator.End(m_testMaterialTypeAsset);
 
         MaterialAssetCreator materialCreator;
-        materialCreator.Begin(Uuid::CreateRandom(), *m_testMaterialTypeAsset);
+        materialCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, true);
         materialCreator.SetPropertyValue(registedPropertyName, 42);
         materialCreator.SetPropertyValue(unregistedPropertyName, 42);
         materialCreator.SetPropertyValue(unrelatedPropertyName, 42);

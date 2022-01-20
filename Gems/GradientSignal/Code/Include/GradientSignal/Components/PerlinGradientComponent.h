@@ -70,7 +70,7 @@ namespace GradientSignal
 
         // GradientRequestBus overrides...
         float GetValue(const GradientSampleParams& sampleParams) const override;
-        void GetValues(AZStd::array_view<AZ::Vector3> positions, AZStd::array_view<float> outValues) const override;
+        void GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const override;
 
     private:
         PerlinGradientConfig m_configuration;

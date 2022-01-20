@@ -283,64 +283,33 @@ namespace AZ::Dom
 
     Type Dom::Value::GetType() const
     {
-        return AZStd::visit(
-            [](auto&& value) -> Type
-            {
-                using CurrentType = AZStd::decay_t<decltype(value)>;
-                if constexpr (AZStd::is_same_v<CurrentType, AZStd::monostate>)
-                {
-                    return Type::Null;
-                }
-                else if constexpr (AZStd::is_same_v<CurrentType, int64_t>)
-                {
-                    return Type::Int64;
-                }
-                else if constexpr (AZStd::is_same_v<CurrentType, uint64_t>)
-                {
-                    return Type::Uint64;
-                }
-                else if constexpr (AZStd::is_same_v<CurrentType, double>)
-                {
-                    return Type::Double;
-                }
-                else if constexpr (AZStd::is_same_v<CurrentType, bool>)
-                {
-                    return Type::Bool;
-                }
-                else if constexpr (AZStd::is_same_v<CurrentType, AZStd::string_view>)
-                {
-                    return Type::String;
-                }
-                else if constexpr (AZStd::is_same_v<CurrentType, SharedStringType>)
-                {
-                    return Type::String;
-                }
-                else if constexpr (AZStd::is_same_v<CurrentType, ShortStringType>)
-                {
-                    return Type::String;
-                }
-                else if constexpr (AZStd::is_same_v<CurrentType, ObjectPtr>)
-                {
-                    return Type::Object;
-                }
-                else if constexpr (AZStd::is_same_v<CurrentType, ArrayPtr>)
-                {
-                    return Type::Array;
-                }
-                else if constexpr (AZStd::is_same_v<CurrentType, NodePtr>)
-                {
-                    return Type::Node;
-                }
-                else if constexpr (AZStd::is_same_v<CurrentType, OpaqueStorageType>)
-                {
-                    return Type::Opaque;
-                }
-                else
-                {
-                    AZ_Assert(false, "AZ::Dom::Value::GetType: m_value has an unexpected type");
-                }
-            },
-            m_value);
+        switch (m_value.index())
+        {
+        case GetTypeIndex<AZStd::monostate>():
+            return Type::Null;
+        case GetTypeIndex<int64_t>():
+            return Type::Int64;
+        case GetTypeIndex<uint64_t>():
+            return Type::Uint64;
+        case GetTypeIndex<double>():
+            return Type::Double;
+        case GetTypeIndex<bool>():
+            return Type::Bool;
+        case GetTypeIndex<AZStd::string_view>():
+        case GetTypeIndex<SharedStringType>():
+        case GetTypeIndex<ShortStringType>():
+            return Type::String;
+        case GetTypeIndex<ObjectPtr>():
+            return Type::Object;
+        case GetTypeIndex<ArrayPtr>():
+            return Type::Array;
+        case GetTypeIndex<NodePtr>():
+            return Type::Node;
+        case GetTypeIndex<AZStd::shared_ptr<AZStd::any>>():
+            return Type::Opaque;
+        }
+        AZ_Assert(false, "AZ::Dom::Value::GetType: m_value has an unexpected type");
+        return Type::Null;
     }
 
     bool Value::IsNull() const
@@ -594,12 +563,12 @@ namespace AZ::Dom
         return GetObjectInternal().end();
     }
 
-    Object::Iterator Value::MemberBegin()
+    Object::Iterator Value::MutableMemberBegin()
     {
         return GetObjectInternal().begin();
     }
 
-    Object::Iterator Value::MemberEnd()
+    Object::Iterator Value::MutableMemberEnd()
     {
         return GetObjectInternal().end();
     }
@@ -725,12 +694,12 @@ namespace AZ::Dom
         return object.end();
     }
 
-    Object::Iterator Value::EraseMember(Object::ConstIterator pos)
+    Object::Iterator Value::EraseMember(Object::Iterator pos)
     {
         return GetObjectInternal().erase(pos);
     }
 
-    Object::Iterator Value::EraseMember(Object::ConstIterator first, Object::ConstIterator last)
+    Object::Iterator Value::EraseMember(Object::Iterator first, Object::Iterator last)
     {
         return GetObjectInternal().erase(first, last);
     }
@@ -811,12 +780,12 @@ namespace AZ::Dom
         return GetArrayInternal().end();
     }
 
-    Array::Iterator Value::ArrayBegin()
+    Array::Iterator Value::MutableArrayBegin()
     {
         return GetArrayInternal().begin();
     }
 
-    Array::Iterator Value::ArrayEnd()
+    Array::Iterator Value::MutableArrayEnd()
     {
         return GetArrayInternal().end();
     }
@@ -843,12 +812,12 @@ namespace AZ::Dom
         return *this;
     }
 
-    Array::Iterator Value::ArrayErase(Array::ConstIterator pos)
+    Array::Iterator Value::ArrayErase(Array::Iterator pos)
     {
         return GetArrayInternal().erase(pos);
     }
 
-    Array::Iterator Value::ArrayErase(Array::ConstIterator first, Array::ConstIterator last)
+    Array::Iterator Value::ArrayErase(Array::Iterator first, Array::Iterator last)
     {
         return GetArrayInternal().erase(first, last);
     }
@@ -1112,6 +1081,10 @@ namespace AZ::Dom
                 else if constexpr (AZStd::is_same_v<Alternative, SharedStringType>)
                 {
                     result = visitor.RefCountedString(arg, copyStrings ? Lifetime::Temporary : Lifetime::Persistent);
+                }
+                else if constexpr (AZStd::is_same_v<Alternative, ShortStringType>)
+                {
+                    result = visitor.String(arg, copyStrings ? Lifetime::Temporary : Lifetime::Persistent);
                 }
                 else if constexpr (AZStd::is_same_v<Alternative, ObjectPtr>)
                 {

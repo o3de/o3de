@@ -347,7 +347,6 @@ set(FILES
     MainStatusBar.cpp
     MainStatusBar.h
     MainStatusBarItems.h
-    CrtDebug.cpp
     CryEdit.rc
     CryEditDoc.cpp
     CryEditDoc.h
@@ -358,7 +357,6 @@ set(FILES
     LogFile.cpp
     LogFile.h
     Resource.h
-    UserMessageDefines.h
     ActionManager.cpp
     ActionManager.h
     ShortcutDispatcher.cpp
@@ -397,9 +395,6 @@ set(FILES
     ResizeResolutionDialog.cpp
     ResizeResolutionDialog.h
     ResizeResolutionDialog.ui
-    SelectEAXPresetDlg.cpp
-    SelectEAXPresetDlg.h
-    SelectEAXPresetDlg.ui
     SelectLightAnimationDialog.cpp
     SelectLightAnimationDialog.h
     SelectSequenceDialog.cpp
@@ -421,9 +416,6 @@ set(FILES
     IconListDialog.ui
     UndoDropDown.cpp
     UndoDropDown.h
-    DimensionsDialog.cpp
-    DimensionsDialog.h
-    DimensionsDialog.ui
     NewLevelDialog.cpp
     NewLevelDialog.h
     NewLevelDialog.ui
@@ -456,12 +448,7 @@ set(FILES
     ToolBox.h
     TrackViewNewSequenceDialog.h
     UndoConfigSpec.h
-    UndoViewPosition.h
-    UndoViewRotation.h
     Util/GeometryUtil.h
-    WipFeaturesDlg.h
-    WipFeaturesDlg.ui
-    WipFeaturesDlg.qrc
     LevelIndependentFileMan.cpp
     LevelIndependentFileMan.h
     LogFileImpl.cpp
@@ -550,11 +537,6 @@ set(FILES
     TrackViewNewSequenceDialog.cpp
     TrackViewNewSequenceDialog.ui
     UndoConfigSpec.cpp
-    UndoViewPosition.cpp
-    UndoViewRotation.cpp
-    WipFeatureManager.cpp
-    WipFeatureManager.h
-    WipFeaturesDlg.cpp
     Dialogs/ErrorsDlg.cpp
     Dialogs/ErrorsDlg.h
     Dialogs/ErrorsDlg.ui
@@ -571,8 +553,6 @@ set(FILES
     ProcessInfo.cpp
     ProcessInfo.h
     Report.h
-    SurfaceTypeValidator.cpp
-    SurfaceTypeValidator.h
     TrackView/AtomOutputFrameCapture.cpp
     TrackView/AtomOutputFrameCapture.h
     TrackView/TrackViewDialog.qrc
