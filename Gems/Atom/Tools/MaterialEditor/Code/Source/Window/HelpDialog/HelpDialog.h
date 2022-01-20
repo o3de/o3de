@@ -13,7 +13,7 @@
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QDialog>
-#include <Source/Window/HelpDialog/ui_HelpDialog.h>
+#include <Window/HelpDialog/ui_HelpDialog.h>
 AZ_POP_DISABLE_WARNING
 #endif
 
