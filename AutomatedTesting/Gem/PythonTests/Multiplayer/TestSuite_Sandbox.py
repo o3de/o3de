@@ -35,3 +35,7 @@ class TestAutomation(TestAutomationBase):
     def test_Multiplayer_AutoComponent_RPC(self, request, workspace, editor, launcher_platform):
         from .tests import Multiplayer_AutoComponent_RPC as test_module
         self._run_prefab_test(request, workspace, editor, test_module)
+
+    def test_Multiplayer_SimpleNetworkLevelEntity(self, request, workspace, editor, launcher_platform):
+        from .tests import Multiplayer_SimpleNetworkLevelEntity as test_module
+        self._run_prefab_test(request, workspace, editor, test_module)
