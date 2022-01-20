@@ -494,7 +494,7 @@ namespace JsonSerializationTests
 
         auto entry = values.find("Hello");
         ASSERT_NE(values.end(), entry);
-        EXPECT_STRCASEEQ("Other", entry->second.c_str());
+        EXPECT_EQ("Other", entry->second);
     }
 
     TEST_F(JsonMapSerializerTests, Load_DuplicateMultiKey_LoadEverything)
