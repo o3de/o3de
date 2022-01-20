@@ -8,7 +8,6 @@
 
 #include <CpuProfilerImpl.h>
 
-#include <AzCore/Debug/Timer.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Statistics/StatisticalProfilerProxy.h>
@@ -325,7 +324,8 @@ namespace Profiler
     // Gets called when region ends and all data is set
     void CpuTimingLocalStorage::AddCachedRegion(const CachedTimeRegion& timeRegionCached)
     {
-        if (m_hitSizeLimitMap[timeRegionCached.m_groupRegionName.m_regionName])
+        if (auto iter = m_hitSizeLimitMap.find(timeRegionCached.m_groupRegionName.m_regionName);
+            iter != m_hitSizeLimitMap.end() && iter->second)
         {
             return;
         }

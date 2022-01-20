@@ -8,156 +8,218 @@
 
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/Component/ComponentApplication.h>
-#include <Atom/Feature/Utils/MultiIndexedDataVector.h>
+#include <Atom/Feature/Utils/IndexedDataVector.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <gtest/gtest.h>
-
 
 namespace UnitTest
 {
     using namespace AZ;
     using namespace AZ::Render;
-
+    
     class IndexedDataVectorTests
-        : public ::testing::Test
+        : public UnitTest::AllocatorsTestFixture
     {
     public:
         void SetUp() override
         {
-            CreateAllocator();
+            UnitTest::AllocatorsTestFixture::SetUp();
         }
 
         void TearDown() override
         {
-            DestroyAllocator();
+            UnitTest::AllocatorsTestFixture::TearDown();
         }
 
-    private:
-
-        void CreateAllocator()
+        template<typename T>
+        IndexedDataVector<T> SetupIndexedDataVector(size_t size, T initialValue = T(0), T incrementAmount = T(1), AZStd::vector<uint16_t>* indices = nullptr)
         {
-            static constexpr size_t NumMBToAllocate = 1;
-            SystemAllocator::Descriptor desc;
-            desc.m_heap.m_numFixedMemoryBlocks = 1;
-            desc.m_heap.m_fixedMemoryBlocksByteSize[0] = NumMBToAllocate * 1024 * 1024;
-            m_memBlock = AZ_OS_MALLOC(
-                desc.m_heap.m_fixedMemoryBlocksByteSize[0],
-                desc.m_heap.m_memoryBlockAlignment);
-            desc.m_heap.m_fixedMemoryBlocks[0] = m_memBlock;
-
-            AllocatorInstance<AZ::SystemAllocator>::Create(desc);
+            IndexedDataVector<T> data;
+            T value = initialValue;
+            for (size_t i = 0; i < size; ++i)
+            {
+                uint16_t index = data.GetFreeSlotIndex();
+                EXPECT_NE(index, IndexedDataVector<int>::NoFreeSlot);
+                if (indices)
+                {
+                    indices->push_back(index);
+                }
+                if (index != IndexedDataVector<int>::NoFreeSlot)
+                {
+                    data.GetData(index) = value;
+                    value += incrementAmount;
+                }
+            }
+            return data;
         }
 
-        void DestroyAllocator()
+        template<typename T>
+        void ShuffleIndexedDataVector(IndexedDataVector<T>& dataVector, AZStd::vector<uint16_t>& indices)
         {
-            AllocatorInstance<AZ::SystemAllocator>::Destroy();
-            AZ_OS_FREE(m_memBlock);
-            m_memBlock = nullptr;
+            AZStd::vector<T> values;
+
+            // remove every other element and store it
+            for (size_t i = 0; i < indices.size(); ++i)
+            {
+                values.push_back(dataVector.GetData(indices.at(i)));
+                dataVector.RemoveIndex(indices.at(i));
+                indices.erase(&indices.at(i));
+            }
+
+            for (T value : values)
+            {
+                uint16_t index = dataVector.GetFreeSlotIndex();
+                indices.push_back(index);
+                dataVector.GetData(index) = value;
+            }
         }
 
-        void* m_memBlock = nullptr;
     };
-
-    TEST_F(IndexedDataVectorTests, TestInsert)
+    
+    TEST_F(IndexedDataVectorTests, Construction)
     {
-        MultiIndexedDataVector<int, double> myVec;
-        constexpr int NumToInsert = 5;
+        IndexedDataVector<int> testVector;
+        uint16_t index = testVector.GetFreeSlotIndex();
+        EXPECT_NE(index, IndexedDataVector<int>::NoFreeSlot);
+    }
+    
+    TEST_F(IndexedDataVectorTests, TestInsertGetBasic)
+    {
+        constexpr size_t count = 16;
+        constexpr int initialValue = 0;
+        constexpr int increment = 1;
 
         AZStd::vector<uint16_t> indices;
-
-        for (int i = 0; i < NumToInsert; ++i)
+        IndexedDataVector<int> testVector = SetupIndexedDataVector<int>(count, initialValue, increment, &indices);
+        
+        int value = initialValue;
+        for (size_t i = 0; i < count; ++i)
         {
-            auto index = myVec.GetFreeSlotIndex();
-            indices.push_back(index);
-            myVec.GetData<0>(index) = i;
-            myVec.GetData<1>(index) = (double)i;
+            EXPECT_EQ(testVector.GetData(indices.at(i)), value);
+            value += increment;
+        }
+    }
+    
+    TEST_F(IndexedDataVectorTests, TestInsertGetComplex)
+    {
+        constexpr size_t count = 16;
+        constexpr int initialValue = 0;
+        constexpr int increment = 1;
+
+        AZStd::vector<uint16_t> indices;
+        IndexedDataVector<int> testVector = SetupIndexedDataVector<int>(count, initialValue, increment, &indices);
+
+        // Create a set of the data that should be in the IndexedDataVector
+        AZStd::set<int> values;
+        for (int i = 0; i < count; ++i)
+        {
+            values.emplace(initialValue + i * increment);
         }
 
-        for (size_t i = 0; i < NumToInsert; ++i)
+        // Add and remove items to shuffle the underlying data
+        ShuffleIndexedDataVector(testVector, indices);
+
+        // Check to make sure all the data is still there
+        AZStd::vector<int>& underlyingVector = testVector.GetDataVector();
+        for (size_t i = 0; i < underlyingVector.size(); ++i)
         {
-            auto index = indices[i];
-            EXPECT_EQ(i, myVec.GetData<0>(index));
-            EXPECT_EQ((double)i, myVec.GetData<1>(index));
+            EXPECT_TRUE(values.contains(underlyingVector.at(i)));
         }
     }
 
     TEST_F(IndexedDataVectorTests, TestSize)
     {
-        MultiIndexedDataVector<int> myVec;
-        constexpr int NumToInsert = 5;
-        for (int i = 0; i < NumToInsert; ++i)
-        {
-            auto index = myVec.GetFreeSlotIndex();
-            myVec.GetData<0>(index) = i;
-        }
-        EXPECT_EQ(NumToInsert, myVec.GetDataCount());
-        EXPECT_EQ(NumToInsert, myVec.GetDataVector<0>().size());
+        constexpr size_t count = 32;
 
-        myVec.Clear();
-
-        EXPECT_EQ(0, myVec.GetDataCount());
-        EXPECT_EQ(0, myVec.GetDataVector<0>().size());
+        IndexedDataVector<int> testVector = SetupIndexedDataVector<int>(count);
+        EXPECT_EQ(testVector.GetDataCount(), count);
     }
 
-    TEST_F(IndexedDataVectorTests, TestErase)
+    TEST_F(IndexedDataVectorTests, TestClear)
     {
-        MultiIndexedDataVector<int> myVec;
-        constexpr int NumToInsert = 200;
-        AZStd::unordered_map<int, uint16_t> valueToIndex;
-
-        for (int i = 0; i < NumToInsert; ++i)
-        {
-            auto index = myVec.GetFreeSlotIndex();
-            valueToIndex[i] = index;
-            myVec.GetData<0>(index) = i;
-        }
-
-        // erase every even number
-        for (int i = 0; i < NumToInsert; i += 2)
-        {
-            uint16_t index = valueToIndex[i];
-            auto previousRawIndex = myVec.GetRawIndex(index);
-            auto movedIndex = myVec.RemoveIndex(index);
-            if (movedIndex != MultiIndexedDataVector<int>::NoFreeSlot)
-            {
-                auto newRawIndex = myVec.GetRawIndex(movedIndex);
-
-                // RemoveIndex() returns the index of the item that moves into its spot if any, so check
-                // to make sure the Raw index of the old matches the raw index of the new
-                EXPECT_EQ(previousRawIndex, newRawIndex);
-            }
-            valueToIndex.erase(i);
-        }
-
-        for (const auto& iter : valueToIndex)
-        {
-            int val = iter.first;
-            uint16_t index = iter.second;
-            EXPECT_EQ(val, myVec.GetData<0>(index));
-        }
+        constexpr size_t count = 32;
+        IndexedDataVector<int> testVector = SetupIndexedDataVector<int>(count);
+        testVector.Clear();
+        EXPECT_EQ(testVector.GetDataCount(), 0);
     }
 
-    TEST_F(IndexedDataVectorTests, TestManyTypes)
+    TEST_F(IndexedDataVectorTests, TestRemove)
     {
-        MultiIndexedDataVector<int, AZStd::string, double, float, const char*> myVec;
-        auto index = myVec.GetFreeSlotIndex();
+        constexpr size_t count = 8;
+        constexpr int initialValue = 0;
+        constexpr int increment = 8;
 
-        constexpr int TestIntVal = INT_MIN;
-        constexpr double TestDoubleVal = -DBL_MIN;
-        const AZStd::string TestStringVal = "This is an AZStd::string.";
-        constexpr float TestFloatVal = FLT_MAX;
-        const char* TestConstPointerVal = "This is a C array.";
+        AZStd::vector<uint16_t> indices;
+        IndexedDataVector<int> testVector = SetupIndexedDataVector<int>(count, initialValue, increment, &indices);
 
-        myVec.GetData<0>(index) = TestIntVal;
-        myVec.GetData<1>(index) = TestStringVal;
-        myVec.GetData<2>(index) = TestDoubleVal;
-        myVec.GetData<3>(index) = TestFloatVal;
-        myVec.GetData<4>(index) = TestConstPointerVal;
+        // Remove every other element by index
+        for (uint16_t i = 0; i < count; i += 2)
+        {
+            testVector.RemoveIndex(i);
+        }
+        
+        EXPECT_EQ(testVector.GetDataCount(), count / 2);
 
-        EXPECT_EQ(TestIntVal, static_cast<int>(myVec.GetData<0>(index)));
-        EXPECT_EQ(TestStringVal, static_cast<AZStd::string>(myVec.GetData<1>(index)));
-        EXPECT_EQ(TestDoubleVal, static_cast<double>(myVec.GetData<2>(index)));
-        EXPECT_EQ(TestFloatVal, static_cast<float>(myVec.GetData<3>(index)));
-        EXPECT_STREQ(TestConstPointerVal, static_cast<const char*>(myVec.GetData<4>(index)));
+        // Make sure the rest of the data is still there
+        AZStd::vector<uint16_t> remainingIndices;
+        for (size_t i = 1; i < count; i += 2)
+        {
+            int value = testVector.GetData(indices.at(i));
+            EXPECT_EQ(value, initialValue + increment * i);
+            remainingIndices.push_back(indices.at(i));
+        }
+
+        // remove the rest of the valus by value
+        for (uint16_t index : remainingIndices)
+        {
+            int* valuePtr = &testVector.GetData(index);
+            testVector.RemoveData(valuePtr);
+        }
+
+        EXPECT_EQ(testVector.GetDataCount(), 0);
+    }
+
+    TEST_F(IndexedDataVectorTests, TestIndexForData)
+    {
+        constexpr size_t count = 8;
+        constexpr int initialValue = 0;
+        constexpr int increment = 8;
+
+        AZStd::vector<uint16_t> indices;
+        IndexedDataVector<int> testVector = SetupIndexedDataVector<int>(count, initialValue, increment, &indices);
+        
+        // Add and remove items to shuffle the underlying data
+        ShuffleIndexedDataVector(testVector, indices);
+        
+        AZStd::vector<int>& underlyingVector = testVector.GetDataVector();
+        for (size_t i = 0; i < underlyingVector.size(); ++i)
+        {
+            int value = underlyingVector.at(i);
+            uint16_t index = testVector.GetIndexForData(&underlyingVector.at(i));
+
+            // The data from GetData(index) should match for the index retrieved using GetIndexForData() for the same data.
+            EXPECT_EQ(testVector.GetData(index), value);
+        }
+    }
+    
+    TEST_F(IndexedDataVectorTests, TestRawIndex)
+    {
+        constexpr size_t count = 8;
+        constexpr int initialValue = 0;
+        constexpr int increment = 8;
+
+        AZStd::vector<uint16_t> indices;
+        IndexedDataVector<int> testVector = SetupIndexedDataVector<int>(count, initialValue, increment, &indices);
+
+        // Add and remove items to shuffle the underlying data
+        ShuffleIndexedDataVector(testVector, indices);
+        
+        AZStd::vector<int>& underlyingVector = testVector.GetDataVector();
+        for (size_t i = 0; i < indices.size(); ++i)
+        {
+            // Check that the data retrieved from GetData for a given index matches the data in the underlying vector for the raw index.
+            EXPECT_EQ(testVector.GetData(indices.at(i)), underlyingVector.at(testVector.GetRawIndex(indices.at(i))));
+        }
+
     }
 }

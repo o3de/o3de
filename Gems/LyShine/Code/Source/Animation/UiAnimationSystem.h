@@ -12,6 +12,9 @@
 #include <LyShine/Animation/IUiAnimation.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/map.h>
+#include <AzCore/Time/ITime.h>
+
+#include <CryCommon/StlUtils.h>
 
 struct PlayingUIAnimSequence
 {
@@ -133,11 +136,9 @@ public:
     void SerializeParamType(CUiAnimParamType& animParamType, XmlNodeRef& xmlNode, bool bLoading, const uint version) override;
     void SerializeParamData(UiAnimParamData& animParamData, XmlNodeRef& xmlNode, bool bLoading) override;
 
-    static const char* GetParamTypeName(const CUiAnimParamType& animParamType);
+    const char* GetParamTypeName(const CUiAnimParamType& animParamType);
 
     void OnCameraCut();
-
-    static void StaticInitialize();
 
     static void Reflect(AZ::SerializeContext* serializeContext);
 
@@ -164,7 +165,7 @@ private:
 
     IUiAnimationCallback* m_pCallback;
 
-    CTimeValue m_lastUpdateTime;
+    AZ::TimeUs m_lastUpdateTime;
 
     using Sequences = AZStd::vector<AZStd::intrusive_ptr<IUiAnimSequence> >;
     Sequences m_sequences;
@@ -185,6 +186,22 @@ private:
 
     // A sequence which turned on the early animation update last time
     uint32 m_nextSequenceId;
+
+
+    using UiAnimParamSystemString = AZStd::string;
+    template <typename KeyType, typename MappedType, typename Compare = stl::less_stricmp<KeyType>>
+    using UiAnimSystemOrderedMap = AZStd::map<KeyType, MappedType, Compare>;
+    template <typename KeyType, typename MappedType, typename Hasher = AZStd::hash<KeyType>, typename EqualKey = AZStd::equal_to<>>
+    using UiAnimSystemUnorderedMap = AZStd::unordered_map<KeyType, MappedType, Hasher, EqualKey>;
+
+    UiAnimSystemUnorderedMap<int, UiAnimParamSystemString> m_animNodeEnumToStringMap;
+    UiAnimSystemOrderedMap<UiAnimParamSystemString, EUiAnimNodeType> m_animNodeStringToEnumMap;
+
+    UiAnimSystemUnorderedMap<int, UiAnimParamSystemString> m_animParamEnumToStringMap;
+    UiAnimSystemOrderedMap<UiAnimParamSystemString, EUiAnimParamType> m_animParamStringToEnumMap;
+
+    void RegisterNodeTypes();
+    void RegisterParamTypes();
 
     void ShowPlayedSequencesDebug();
 };

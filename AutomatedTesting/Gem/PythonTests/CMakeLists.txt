@@ -10,7 +10,7 @@
 # Automated Tests
 ################################################################################
 
-ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
 
 include(${pal_dir}/PAL_traits_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
@@ -61,6 +61,9 @@ add_subdirectory(Terrain)
 
 ## AWS ##
 add_subdirectory(AWS)
+
+## Multiplayer ##
+add_subdirectory(Multiplayer)
 
 ## Integration tests for editor testing framework ##
 add_subdirectory(editor_test_testing)

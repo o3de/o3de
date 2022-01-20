@@ -13,9 +13,9 @@ ly_add_target(
         awsmetrics_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
-            Include/Public
+            Include
         PRIVATE
-            Include/Private
+            Source
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
@@ -32,9 +32,9 @@ ly_add_target(
         awsmetrics_shared_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
-            Include/Public
+            Include
         PRIVATE
-            Include/Private
+            Source
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
@@ -88,8 +88,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             awsmetrics_tests_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
-                Include/Private
-                Include/Public
+                Include
+                Source
                 Tests
         BUILD_DEPENDENCIES
             PRIVATE

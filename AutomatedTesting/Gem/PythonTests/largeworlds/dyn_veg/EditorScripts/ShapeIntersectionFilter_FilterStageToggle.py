@@ -57,7 +57,7 @@ def ShapeIntersectionFilter_FilterStageToggle():
     # Create basic vegetation entity
     position = math.Vector3(512.0, 512.0, 32.0)
     asset_path = os.path.join("Slices", "PinkFlower.dynamicslice")
-    vegetation = dynveg.create_vegetation_area("vegetation", position, 16.0, 16.0, 16.0, asset_path)
+    vegetation = dynveg.create_dynamic_slice_vegetation_area("vegetation", position, 16.0, 16.0, 16.0, asset_path)
 
     # Create Surface for instances to plant on
     dynveg.create_surface_entity("Surface_Entity_Parent", position, 16.0, 16.0, 1.0)
@@ -68,7 +68,7 @@ def ShapeIntersectionFilter_FilterStageToggle():
     # Create a new entity as a child of the vegetation area entity with Box Shape
     box = hydra.Entity("box")
     box.create_entity(position, ["Box Shape"])
-    box.get_set_test(0, "Box Shape|Box Configuration|Dimensions", math.Vector3(8.0, 8.0, 1.0))
+    box.get_set_test(0, "Box Shape|Box Configuration|Dimensions", math.Vector3(5.0, 5.0, 1.0))
 
     # Create a new entity as a child of the vegetation area entity with Cylinder Shape.
     cylinder = hydra.Entity("cylinder")
@@ -80,10 +80,10 @@ def ShapeIntersectionFilter_FilterStageToggle():
 
     # On the Shape Intersection Filter component, click the crosshair button, and add child entities one by one
     vegetation.get_set_test(3, "Configuration|Shape Entity Id", box.id)
-    result = helper.wait_for_condition(lambda: dynveg.validate_instance_count(position, 8.0, 100), 2.0)
+    result = helper.wait_for_condition(lambda: dynveg.validate_instance_count(position, 5.0, 49), 2.0)
     Report.result(Tests.instance_count_in_box_shape, result)
     vegetation.get_set_test(3, "Configuration|Shape Entity Id", cylinder.id)
-    result = helper.wait_for_condition(lambda: dynveg.validate_instance_count(position, 5.0, 100), 2.0)
+    result = helper.wait_for_condition(lambda: dynveg.validate_instance_count(position, 5.0, 121), 2.0)
     Report.result(Tests.instance_count_in_cylinder_shape, result)
 
     # Create a new entity as a child of the area entity with Random Noise Gradient, Gradient Transform Modifier,
@@ -98,12 +98,13 @@ def ShapeIntersectionFilter_FilterStageToggle():
     # Pin the Random Noise entity to the Gradient Entity Id field of the Position Modifier's Gradient X
     vegetation.get_set_test(4, "Configuration|Position X|Gradient|Gradient Entity Id", random_noise.id)
 
-    # Toggle between PreProcess and PostProcess
+    # Toggle between PreProcess and PostProcess and validate instances. Validate in a 0.3m wider radius due to position
+    # offsets
     vegetation.get_set_test(3, "Configuration|Filter Stage", 1)
-    result = helper.wait_for_condition(lambda: dynveg.validate_instance_count(position, 5.0, 117), 2.0)
+    result = helper.wait_for_condition(lambda: dynveg.validate_instance_count(position, 5.3, 121), 2.0)
     Report.result(Tests.preprocess_instance_count, result)
     vegetation.get_set_test(3, "Configuration|Filter Stage", 2)
-    result = helper.wait_for_condition(lambda: dynveg.validate_instance_count(position, 5.0, 122), 2.0)
+    result = helper.wait_for_condition(lambda: dynveg.validate_instance_count(position, 5.3, 122), 2.0)
     Report.result(Tests.postprocess_instance_count, result)
 
 

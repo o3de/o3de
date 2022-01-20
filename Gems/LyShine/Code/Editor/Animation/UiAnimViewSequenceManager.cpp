@@ -8,7 +8,7 @@
 
 
 #include "UiEditorAnimationBus.h"
-#include "UiEditorDLLBus.h"
+#include <LyShine/UiEditorDLLBus.h>
 #include "UiAnimViewSequenceManager.h"
 #include "UiAnimViewUndo.h"
 #include "AnimationContext.h"

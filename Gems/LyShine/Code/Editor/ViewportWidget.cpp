@@ -16,7 +16,6 @@
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 
 #include <LyShine/Bus/UiEditorCanvasBus.h>
-#include <LyShine/Draw2d.h>
 
 #include "LyShine.h"
 #include "UiRenderer.h"
@@ -27,6 +26,7 @@
 #include "RulerWidget.h"
 #include "CanvasHelpers.h"
 #include "AssetDropHelpers.h"
+#include "Draw2d.h"
 #include "QtHelpers.h"
 #include <QtGui/private/qhighdpiscaling_p.h>
 
@@ -341,11 +341,6 @@ void ViewportWidget::ClearUntilSafeToRedraw()
     // set flag so that Update will just clear the screen rather than rendering canvas
     m_canvasRenderIsEnabled = false;
 
-#ifdef LYSHINE_ATOM_TODO // check if still needed
-    // Force an update
-    Update();
-#endif
-
     // Schedule a timer to set the m_canvasRenderIsEnabled flag
     // using a time of zero just waits until there is nothing on the event queue
     QTimer::singleShot(0, this, SLOT(EnableCanvasRender()));
@@ -453,29 +448,6 @@ void ViewportWidget::contextMenuEvent(QContextMenuEvent* e)
 
     RenderViewportWidget::contextMenuEvent(e);
 }
-
-#ifdef LYSHINE_ATOM_TODO // check if still needed
-void ViewportWidget::HandleSignalRender([[maybe_unused]] const SRenderContext& context)
-{
-    // Called from QViewport when redrawing the viewport.
-    // Triggered from a QViewport resize event or from our call to QViewport::Update
-    if (m_canvasRenderIsEnabled)
-    {
-        gEnv->pRenderer->SetSrgbWrite(true);
-
-        UiEditorMode editorMode = m_editorWindow->GetEditorMode();
-
-        if (editorMode == UiEditorMode::Edit)
-        {
-            RenderEditMode();
-        }
-        else // if (editorMode == UiEditorMode::Preview)
-        {
-            RenderPreviewMode();
-        }
-    }
-}
-#endif
 
 void ViewportWidget::UserSelectionChanged(HierarchyItemRawPtrList* items)
 {
@@ -998,13 +970,6 @@ void ViewportWidget::RenderEditMode()
         canvasSize,
         m_viewportInteraction->GetCanvasToViewportScale(),
         m_viewportInteraction->GetCanvasToViewportTranslation());
-
-#ifdef LYSHINE_ATOM_TODO
-    // clear the stencil buffer before rendering each canvas - required for masking
-    // NOTE: the FRT_CLEAR_IMMEDIATE is required since we will not be setting the render target
-    ColorF viewportBackgroundColor(0, 0, 0, 0); // if clearing color we want to set alpha to zero also
-    gEnv->pRenderer->ClearTargetsImmediately(FRT_CLEAR_STENCIL, viewportBackgroundColor);
-#endif
 
     // Set the target size of the canvas
     EBUS_EVENT_ID(canvasEntityId, UiCanvasBus, SetTargetCanvasSize, false, canvasSize);

@@ -7,50 +7,54 @@
 #
 
 set(FILES
-    Include/Public/AWSCoreBus.h
-    Include/Public/Credential/AWSCredentialBus.h
-    Include/Public/Framework/AWSApiClientJob.h
-    Include/Public/Framework/AWSApiClientJobConfig.h
-    Include/Public/Framework/AWSApiJob.h
-    Include/Public/Framework/AWSApiJobConfig.h
-    Include/Public/Framework/AWSApiRequestJob.h
-    Include/Public/Framework/AWSApiRequestJobConfig.h
-    Include/Public/Framework/Error.h
-    Include/Public/Framework/HttpClientComponent.h
-    Include/Public/Framework/HttpRequestJob.h
-    Include/Public/Framework/HttpRequestJobConfig.h
-    Include/Public/Framework/JobExecuter.h
-    Include/Public/Framework/JsonObjectHandler.h
-    Include/Public/Framework/JsonWriter.h
-    Include/Public/Framework/MultipartFormData.h
-    Include/Public/Framework/RequestBuilder.h
-    Include/Public/Framework/ServiceClientJob.h
-    Include/Public/Framework/ServiceClientJobConfig.h
-    Include/Public/Framework/ServiceJob.h
-    Include/Public/Framework/ServiceJobConfig.h
-    Include/Public/Framework/ServiceJobUtil.h
-    Include/Public/Framework/ServiceRequestJob.h
-    Include/Public/Framework/ServiceRequestJobConfig.h
-    Include/Public/Framework/Util.h
-    Include/Public/ResourceMapping/AWSResourceMappingBus.h
-    Include/Public/ScriptCanvas/AWSScriptBehaviorDynamoDB.h
-    Include/Public/ScriptCanvas/AWSScriptBehaviorLambda.h
-    Include/Public/ScriptCanvas/AWSScriptBehaviorS3.h
-    Include/Public/ScriptCanvas/AWSScriptBehaviorsComponent.h
-    Include/Private/AWSCoreInternalBus.h
-    Include/Private/AWSCoreSystemComponent.h
-    Include/Private/Configuration/AWSCoreConfiguration.h
-    Include/Private/Credential/AWSCredentialManager.h
-    Include/Private/Credential/AWSCVarCredentialHandler.h
-    Include/Private/Credential/AWSDefaultCredentialHandler.h
-    Include/Private/ResourceMapping/AWSResourceMappingConstants.h
-    Include/Private/ResourceMapping/AWSResourceMappingManager.h
-    Include/Private/ResourceMapping/AWSResourceMappingUtils.h
+    Include/AWSCoreBus.h
+    Include/Credential/AWSCredentialBus.h
+    Include/Framework/AWSApiClientJob.h
+    Include/Framework/AWSApiClientJobConfig.h
+    Include/Framework/AWSApiJob.h
+    Include/Framework/AWSApiJobConfig.h
+    Include/Framework/AWSApiRequestJob.h
+    Include/Framework/AWSApiRequestJobConfig.h
+    Include/Framework/Error.h
+    Include/Framework/HttpClientComponent.h
+    Include/Framework/HttpRequestJob.h
+    Include/Framework/HttpRequestJobConfig.h
+    Include/Framework/JobExecuter.h
+    Include/Framework/JsonObjectHandler.h
+    Include/Framework/JsonWriter.h
+    Include/Framework/MultipartFormData.h
+    Include/Framework/RequestBuilder.h
+    Include/Framework/ServiceClientJob.h
+    Include/Framework/ServiceClientJobConfig.h
+    Include/Framework/ServiceJob.h
+    Include/Framework/ServiceJobConfig.h
+    Include/Framework/ServiceJobUtil.h
+    Include/Framework/ServiceRequestJob.h
+    Include/Framework/ServiceRequestJobConfig.h
+    Include/Framework/Util.h
+    Include/ResourceMapping/AWSResourceMappingBus.h
+    Include/ScriptCanvas/AWSScriptBehaviorDynamoDB.h
+    Include/ScriptCanvas/AWSScriptBehaviorLambda.h
+    Include/ScriptCanvas/AWSScriptBehaviorS3.h
+    Include/ScriptCanvas/AWSScriptBehaviorsComponent.h
+
+    Source/AWSCoreInternalBus.h
     Source/AWSCoreSystemComponent.cpp
+    Source/AWSCoreSystemComponent.h
     Source/Configuration/AWSCoreConfiguration.cpp
+    Source/Configuration/AWSCoreConfiguration.h
     Source/Credential/AWSCredentialManager.cpp
+    Source/Credential/AWSCredentialManager.h
     Source/Credential/AWSCVarCredentialHandler.cpp
+    Source/Credential/AWSCVarCredentialHandler.h
     Source/Credential/AWSDefaultCredentialHandler.cpp
+    Source/Credential/AWSDefaultCredentialHandler.h
+    Source/ResourceMapping/AWSResourceMappingConstants.h
+    Source/ResourceMapping/AWSResourceMappingManager.cpp
+    Source/ResourceMapping/AWSResourceMappingManager.h
+    Source/ResourceMapping/AWSResourceMappingUtils.cpp
+    Source/ResourceMapping/AWSResourceMappingUtils.h
+    
     Source/Framework/AWSApiJob.cpp
     Source/Framework/AWSApiJobConfig.cpp
     Source/Framework/Error.cpp
@@ -61,8 +65,6 @@ set(FILES
     Source/Framework/RequestBuilder.cpp
     Source/Framework/ServiceJob.cpp
     Source/Framework/ServiceJobConfig.cpp
-    Source/ResourceMapping/AWSResourceMappingManager.cpp
-    Source/ResourceMapping/AWSResourceMappingUtils.cpp
     Source/ScriptCanvas/AWSScriptBehaviorDynamoDB.cpp
     Source/ScriptCanvas/AWSScriptBehaviorLambda.cpp
     Source/ScriptCanvas/AWSScriptBehaviorS3.cpp

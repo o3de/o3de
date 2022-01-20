@@ -141,7 +141,6 @@ public:
     const SGizmoParameters& GetGlobalGizmoParameters() override;
     CBaseObject* NewObject(const char* typeName, const char* fileName = "", const char* name = "", float x = 0.0f, float y = 0.0f, float z = 0.0f, bool modifyDoc = true) override;
     void DeleteObject(CBaseObject* obj) override;
-    CBaseObject* CloneObject(CBaseObject* obj) override;
     IObjectManager* GetObjectManager() override;
     // This will return a null pointer if CrySystem is not loaded before
     // Global Sandbox Settings are loaded from the registry before CrySystem
@@ -158,7 +157,6 @@ public:
     void LockSelection(bool bLock) override;
     bool IsSelectionLocked() override;
 
-    IDataBaseManager* GetDBItemManager(EDataBaseItemType itemType) override;
     CMusicManager* GetMusicManager() override { return m_pMusicManager; };
 
     IEditorFileMonitor* GetFileMonitor() override;
@@ -295,11 +293,8 @@ public:
     void RegisterObjectContextMenuExtension(TContextMenuExtensionFunc func) override;
 
     SSystemGlobalEnvironment* GetEnv() override;
-    IBaseLibraryManager* GetMaterialManagerLibrary() override; // Vladimir@Conffx
-    IEditorMaterialManager* GetIEditorMaterialManager() override; // Vladimir@Conffx
     IImageUtil* GetImageUtil() override;  // Vladimir@conffx
     SEditorSettings* GetEditorSettings() override;
-    IEditorPanelUtils* GetEditorPanelUtils() override;
     ILogFile* GetLogFile() override { return m_pLogFile; }
 
     void UnloadPlugins() override;
@@ -357,7 +352,6 @@ protected:
     CErrorsDlg* m_pErrorsDlg;
     //! Source control interface.
     ISourceControl* m_pSourceControl;
-    IEditorPanelUtils* m_panelEditorUtils;
 
     CSelectionTreeManager* m_pSelectionTreeManager;
 

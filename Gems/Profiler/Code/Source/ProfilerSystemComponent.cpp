@@ -51,32 +51,6 @@ namespace Profiler
         int m_framesLeft{ 0 };
     };
 
-    class ProfilerNotificationBusHandler final
-        : public ProfilerNotificationBus::Handler
-        , public AZ::BehaviorEBusHandler
-    {
-    public:
-        AZ_EBUS_BEHAVIOR_BINDER(ProfilerNotificationBusHandler, "{44161459-B816-4876-95A4-BA16DEC767D6}", AZ::SystemAllocator,
-            OnCaptureCpuProfilingStatisticsFinished
-        );
-
-        void OnCaptureCpuProfilingStatisticsFinished(bool result, const AZStd::string& info) override
-        {
-            Call(FN_OnCaptureCpuProfilingStatisticsFinished, result, info);
-        }
-
-        static void Reflect(AZ::ReflectContext* context)
-        {
-            if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-            {
-                behaviorContext->EBus<ProfilerNotificationBus>("ProfilerNotificationBus")
-                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
-                    ->Attribute(AZ::Script::Attributes::Module, "profiler")
-                    ->Handler<ProfilerNotificationBusHandler>();
-            }
-        }
-    };
-
     bool SerializeCpuProfilingData(const AZStd::ring_buffer<CpuProfiler::TimeRegionMap>& data, AZStd::string outputFilePath, bool wasEnabled)
     {
         AZ_TracePrintf("ProfilerSystemComponent", "Beginning serialization of %zu frames of profiling data\n", data.size());
@@ -107,8 +81,8 @@ namespace Profiler
             CpuProfiler::Get()->SetProfilerEnabled(false);
         }
 
-        // Notify listeners that the pass' PipelineStatistics queries capture has finished.
-        ProfilerNotificationBus::Broadcast(&ProfilerNotificationBus::Events::OnCaptureCpuProfilingStatisticsFinished,
+        // Notify listeners that the profiler capture has finished.
+        AZ::Debug::ProfilerNotificationBus::Broadcast(&AZ::Debug::ProfilerNotificationBus::Events::OnCaptureFinished,
             saveResult.IsSuccess(),
             captureInfo);
 
@@ -128,19 +102,7 @@ namespace Profiler
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
-
-                ProfilerNotificationBusHandler::Reflect(context);
             }
-        }
-
-        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-        {
-            behaviorContext->EBus<ProfilerRequestBus>("ProfilerRequestBus")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
-                ->Attribute(AZ::Script::Attributes::Module, "profiler")
-                ->Event("CaptureCpuProfilingStatistics", &ProfilerRequestBus::Events::CaptureCpuProfilingStatistics);
-
-            ProfilerNotificationBusHandler::Reflect(context);
         }
 
         CpuProfilingStatisticsSerializer::Reflect(context);
@@ -166,32 +128,28 @@ namespace Profiler
 
     ProfilerSystemComponent::ProfilerSystemComponent()
     {
-        if (ProfilerInterface::Get() == nullptr)
+        if (AZ::Debug::ProfilerSystemInterface::Get() == nullptr)
         {
-            ProfilerInterface::Register(this);
+            AZ::Debug::ProfilerSystemInterface::Register(this);
         }
     }
 
     ProfilerSystemComponent::~ProfilerSystemComponent()
     {
-        if (ProfilerInterface::Get() == this)
+        if (AZ::Debug::ProfilerSystemInterface::Get() == this)
         {
-            ProfilerInterface::Unregister(this);
+            AZ::Debug::ProfilerSystemInterface::Unregister(this);
         }
     }
 
     void ProfilerSystemComponent::Activate()
     {
-        ProfilerRequestBus::Handler::BusConnect();
-
         m_cpuProfiler.Init();
     }
 
     void ProfilerSystemComponent::Deactivate()
     {
         m_cpuProfiler.Shutdown();
-
-        ProfilerRequestBus::Handler::BusDisconnect();
 
         // Block deactivation until the IO thread has finished serializing the CPU data
         if (m_cpuDataSerializationThread.joinable())
@@ -200,12 +158,17 @@ namespace Profiler
         }
     }
 
-    void ProfilerSystemComponent::SetProfilerEnabled(bool enabled)
+    bool ProfilerSystemComponent::IsActive() const
+    {
+        return m_cpuProfiler.IsProfilerEnabled();
+    }
+
+    void ProfilerSystemComponent::SetActive(bool enabled)
     {
         m_cpuProfiler.SetProfilerEnabled(enabled);
     }
 
-    bool ProfilerSystemComponent::CaptureCpuProfilingStatistics(const AZStd::string& outputFilePath)
+    bool ProfilerSystemComponent::CaptureFrame(const AZStd::string& outputFilePath)
     {
         bool expected = false;
         if (!m_cpuCaptureInProgress.compare_exchange_strong(expected, true))
@@ -236,12 +199,13 @@ namespace Profiler
         return true;
     }
 
-    bool ProfilerSystemComponent::BeginContinuousCpuProfilingCapture()
+    bool ProfilerSystemComponent::StartCapture(AZStd::string outputFilePath)
     {
+        m_captureFile = AZStd::move(outputFilePath);
         return m_cpuProfiler.BeginContinuousCapture();
     }
 
-    bool ProfilerSystemComponent::EndContinuousCpuProfilingCapture(const AZStd::string& outputFilePath)
+    bool ProfilerSystemComponent::EndCapture()
     {
         bool expected = false;
         if (!m_cpuDataSerializationInProgress.compare_exchange_strong(expected, true))
@@ -263,7 +227,7 @@ namespace Profiler
 
         // cpuProfilingData could be 1GB+ once saved, so use an IO thread to write it to disk.
         auto threadIoFunction =
-            [data = AZStd::move(captureResult), filePath = AZStd::string(outputFilePath), &flag = m_cpuDataSerializationInProgress]()
+            [data = AZStd::move(captureResult), filePath = m_captureFile, &flag = m_cpuDataSerializationInProgress]()
             {
                 SerializeCpuProfilingData(data, filePath, true);
                 flag.store(false);

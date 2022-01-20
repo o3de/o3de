@@ -15,7 +15,7 @@
 
 #include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
 
-#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
+
 #include <ScriptCanvas/Bus/RequestBus.h>
 
 namespace
@@ -176,14 +176,15 @@ namespace ScriptCanvasEditor
     {
     }
 
-    void StatisticsDialog::OnCatalogAssetChanged(const AZ::Data::AssetId& assetId)
+    void StatisticsDialog::OnCatalogAssetChanged(const AZ::Data::AssetId& /*assetId*/)
     {
-        AZ::Data::AssetInfo assetInfo;
-        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, assetId);
-        if (assetInfo.m_assetType == azrtti_typeid<ScriptCanvasAsset>())
-        {
-            m_scriptCanvasAssetTreeRoot->RegisterAsset(assetId, assetInfo.m_assetType);
-        }
+        // #sc_editor_asset_redux cut or update
+//         AZ::Data::AssetInfo assetInfo;
+//         AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, assetId);
+//         if (assetInfo.m_assetType == azrtti_typeid<OldAssetType())
+//         {
+//             m_scriptCanvasAssetTreeRoot->RegisterAsset(assetId, assetInfo.m_assetType);
+//         }
     }
     
     void StatisticsDialog::OnCatalogAssetAdded(const AZ::Data::AssetId& assetId)
@@ -191,14 +192,16 @@ namespace ScriptCanvasEditor
         OnCatalogAssetChanged(assetId);
     }
     
-    void StatisticsDialog::OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& /*assetInfo*/)
+    void StatisticsDialog::OnCatalogAssetRemoved(const AZ::Data::AssetId& /*assetId*/, const AZ::Data::AssetInfo& /*assetInfo*/)
     {
-        AZ::Data::AssetInfo assetInfo;
-        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, assetId);
-        if (assetInfo.m_assetType == azrtti_typeid<ScriptCanvasAsset>())
-        {
-            m_scriptCanvasAssetTreeRoot->RemoveAsset(assetId);
-        }
+        // #sc_editor_asset_redux cut or update
+
+//         AZ::Data::AssetInfo assetInfo;
+//         AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, assetId);
+//         if (assetInfo.m_assetType == azrtti_typeid<OldAssetType>())
+//         {
+//             m_scriptCanvasAssetTreeRoot->RemoveAsset(assetId);
+//         }
     }
 
     void StatisticsDialog::OnAssetModelRepopulated()
@@ -257,7 +260,10 @@ namespace ScriptCanvasEditor
 
                 if (treeItem->GetAssetId().IsValid())
                 {
-                    GeneralRequestBus::Broadcast(&GeneralRequests::OpenScriptCanvasAssetId, treeItem->GetAssetId());
+                    GeneralRequestBus::Broadcast
+                        ( &GeneralRequests::OpenScriptCanvasAssetId
+                        , SourceHandle(nullptr, treeItem->GetAssetId().m_guid, "")
+                        , Tracker::ScriptCanvasFileState::UNMODIFIED);
                 }
             }
         }
@@ -429,22 +435,23 @@ namespace ScriptCanvasEditor
         }
     }
 
-    void StatisticsDialog::ProcessAsset(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry)
+    void StatisticsDialog::ProcessAsset([[maybe_unused]] const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry)
     {
-        if (entry)
-        {
-            if (entry->GetEntryType() == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Product)
-            {
-                const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry* productEntry = static_cast<const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry*>(entry);
-
-                if (productEntry->GetAssetType() == azrtti_typeid<ScriptCanvasAsset>())
-                {
-                    const AZ::Data::AssetId& assetId = productEntry->GetAssetId();
-
-                    m_scriptCanvasAssetTreeRoot->RegisterAsset(assetId, productEntry->GetAssetType());
-                }
-            }
-        }
+           // #sc_editor_asset_redux cut or update
+//         if (entry)
+//         {
+//             if (entry->GetEntryType() == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Product)
+//             {
+//                 const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry* productEntry = static_cast<const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry*>(entry);
+// 
+//                 if (productEntry->GetAssetType() == azrtti_typeid<OldAssetType>())
+//                 {
+//                     const AZ::Data::AssetId& assetId = productEntry->GetAssetId();
+// 
+//                     m_scriptCanvasAssetTreeRoot->RegisterAsset(assetId, productEntry->GetAssetType());
+//                 }
+//             }
+//         }
     }
 
 #include <Editor/View/Widgets/StatisticsDialog/moc_ScriptCanvasStatisticsDialog.cpp>

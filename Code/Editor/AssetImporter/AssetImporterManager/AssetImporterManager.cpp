@@ -140,7 +140,7 @@ bool AssetImporterManager::OnBrowseFiles()
     bool encounteredCrate = false;
     QStringList invalidFiles;
 
-    for (QString path : fileDialog.selectedFiles())
+    for (const QString& path : fileDialog.selectedFiles())
     {
         QString fileName = GetFileName(path);
         QFileInfo info(path);
@@ -191,6 +191,7 @@ void AssetImporterManager::OnBrowseDestinationFilePath(QLineEdit* destinationLin
     fileDialog.setViewMode(QFileDialog::List);
     fileDialog.setWindowModality(Qt::WindowModality::ApplicationModal);
     fileDialog.setWindowTitle(tr("Select import destination"));
+    fileDialog.setFileMode(QFileDialog::Directory);
 
     QSettings settings;
     QString currentDestination = settings.value(AssetImporterManagerPrivate::g_selectDestinationFilesPath).toString();

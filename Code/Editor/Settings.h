@@ -136,13 +136,6 @@ struct SViewportsSettings
     bool bDrawEntityLabels;
     //! Show Trigger bounds.
     bool bShowTriggerBounds;
-    //! Show Icons in viewport.
-    bool bShowIcons;
-    //! Scale icons with distance, so they aren't a fixed size no matter how far away you are
-    bool bDistanceScaleIcons;
-
-    //! Show Size-based Icons in viewport.
-    bool bShowSizeBasedIcons;
 
     //! Show Helpers in viewport for frozen objects.
     int nShowFrozenHelpers;
@@ -305,7 +298,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     bool m_showCircularDependencyError;
     bool bAutoloadLastLevelAtStartup;
     bool bMuteAudio;
-    bool bEnableGameModeVR;
 
     //! Speed of camera movement.
     float cameraMoveSpeed;

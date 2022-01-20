@@ -54,7 +54,7 @@ namespace AZ::SceneAPI::Behaviors
 
         SCENE_DATA_API void GetManifestDependencyPaths(AZStd::vector<AZStd::string>& paths) override;
     protected:
-        bool LoadPython(const AZ::SceneAPI::Containers::Scene& scene, AZStd::string& scriptPath);
+        bool LoadPython(const AZ::SceneAPI::Containers::Scene& scene, AZStd::string& scriptPath, Events::ProcessingResult& fallbackResult);
         void UnloadPython();
         bool DoPrepareForExport(Events::PreExportEventContext& context);
 

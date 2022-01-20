@@ -8,8 +8,6 @@
 
 #include <SkyBox/SkyBoxFeatureProcessor.h>
 
-#include <AzCore/Debug/EventTrace.h>
-
 #include <AzFramework/Asset/AssetSystemBus.h>
 
 #include <Atom/RHI/Factory.h>
@@ -190,7 +188,7 @@ namespace AZ
 
         void SkyBoxFeatureProcessor::Render(const FeatureProcessor::RenderPacket& packet)
         {
-             AZ_TRACE_METHOD();
+             AZ_PROFILE_FUNCTION(AzRender);
              AZ_UNUSED(packet);
         }
 

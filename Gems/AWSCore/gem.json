@@ -3,7 +3,8 @@
     "display_name": "AWS Core",
     "license": "Apache-2.0 Or MIT",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
-    "origin": "Amazon Web Services, Inc.",
+    "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
     "type": "Code",
     "summary": "The AWS Core Gem provides basic shared AWS functionality such as AWS SDK initialization and client configuration, and is automatically added when selecting any AWS feature Gem.",
     "canonical_tags": [
@@ -17,5 +18,6 @@
     "icon_path": "preview.png",
     "requirements": "",
     "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/aws/aws-core/",
-    "dependencies": []
+    "dependencies": [
+    ]
 }

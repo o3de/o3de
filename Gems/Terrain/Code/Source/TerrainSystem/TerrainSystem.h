@@ -14,6 +14,7 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/parallel/shared_mutex.h>
 #include <AzCore/std/containers/map.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Aabb.h>
 
@@ -135,9 +136,56 @@ namespace Terrain
             Sampler sampleFilter = Sampler::DEFAULT,
             bool* terrainExistsPtr = nullptr) const override;
 
+        //! Given a list of XY coordinates, call the provided callback function with surface data corresponding to each
+        //! XY coordinate in the list.
+        virtual void ProcessHeightsFromList(const AZStd::span<AZ::Vector3>& inPositions,
+            AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
+            Sampler sampleFilter = Sampler::DEFAULT) const override;
+        virtual void ProcessNormalsFromList(const AZStd::span<AZ::Vector3>& inPositions,
+            AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
+            Sampler sampleFilter = Sampler::DEFAULT) const override;
+        virtual void ProcessSurfaceWeightsFromList(const AZStd::span<AZ::Vector3>& inPositions,
+            AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
+            Sampler sampleFilter = Sampler::DEFAULT) const override;
+        virtual void ProcessSurfacePointsFromList(const AZStd::span<AZ::Vector3>& inPositions,
+            AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
+            Sampler sampleFilter = Sampler::DEFAULT) const override;
+        virtual void ProcessHeightsFromListOfVector2(const AZStd::span<AZ::Vector2>& inPositions,
+            AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
+            Sampler sampleFilter = Sampler::DEFAULT) const override;
+        virtual void ProcessNormalsFromListOfVector2(const AZStd::span<AZ::Vector2>& inPositions,
+            AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
+            Sampler sampleFilter = Sampler::DEFAULT) const override;
+        virtual void ProcessSurfaceWeightsFromListOfVector2(const AZStd::span<AZ::Vector2>& inPositions,
+            AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
+            Sampler sampleFilter = Sampler::DEFAULT) const override;
+        virtual void ProcessSurfacePointsFromListOfVector2(const AZStd::span<AZ::Vector2>& inPositions,
+            AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
+            Sampler sampleFilter = Sampler::DEFAULT) const override;
+
+        //! Given a region(aabb) and a step size, call the provided callback function with surface data corresponding to the
+        //! coordinates in the region.
+        virtual void ProcessHeightsFromRegion(const AZ::Aabb& inRegion,
+            const AZ::Vector2& stepSize,
+            AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
+            Sampler sampleFilter = Sampler::DEFAULT) const override;
+        virtual void ProcessNormalsFromRegion(const AZ::Aabb& inRegion,
+            const AZ::Vector2& stepSize,
+            AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
+            Sampler sampleFilter = Sampler::DEFAULT) const override;
+        virtual void ProcessSurfaceWeightsFromRegion(const AZ::Aabb& inRegion,
+            const AZ::Vector2& stepSize,
+            AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
+            Sampler sampleFilter = Sampler::DEFAULT) const override;
+        virtual void ProcessSurfacePointsFromRegion(const AZ::Aabb& inRegion,
+            const AZ::Vector2& stepSize,
+            AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
+            Sampler sampleFilter = Sampler::DEFAULT) const override;
+
 
     private:
         void ClampPosition(float x, float y, AZ::Vector2& outPosition, AZ::Vector2& normalizedDelta) const;
+        bool InWorldBounds(float x, float y) const;
 
         AZ::EntityId FindBestAreaEntityAtPosition(float x, float y, AZ::Aabb& bounds) const;
         void GetOrderedSurfaceWeights(

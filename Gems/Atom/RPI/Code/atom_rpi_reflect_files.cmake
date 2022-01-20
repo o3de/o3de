@@ -51,7 +51,6 @@ set(FILES
     Include/Atom/RPI.Reflect/Image/StreamingImagePoolAssetCreator.h
     Include/Atom/RPI.Reflect/Material/LuaMaterialFunctor.h
     Include/Atom/RPI.Reflect/Material/MaterialAsset.h
-    Include/Atom/RPI.Reflect/Material/MaterialAssetCreatorCommon.h
     Include/Atom/RPI.Reflect/Material/MaterialAssetCreator.h
     Include/Atom/RPI.Reflect/Material/MaterialDynamicMetadata.h
     Include/Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h
@@ -75,6 +74,7 @@ set(FILES
     Include/Atom/RPI.Reflect/Pass/PassTemplate.h
     Include/Atom/RPI.Reflect/Pass/RasterPassData.h
     Include/Atom/RPI.Reflect/Pass/RenderPassData.h
+    Include/Atom/RPI.Reflect/Pass/SlowClearPassData.h
     Include/Atom/RPI.Reflect/Shader/ShaderCommonTypes.h
     Include/Atom/RPI.Reflect/Shader/ShaderAsset.h
     Include/Atom/RPI.Reflect/Shader/ShaderAssetCreator.h
@@ -132,7 +132,6 @@ set(FILES
     Source/RPI.Reflect/Image/StreamingImagePoolAssetCreator.cpp
     Source/RPI.Reflect/Material/MaterialPropertyValue.cpp
     Source/RPI.Reflect/Material/MaterialAsset.cpp
-    Source/RPI.Reflect/Material/MaterialAssetCreatorCommon.cpp
     Source/RPI.Reflect/Material/MaterialAssetCreator.cpp
     Source/RPI.Reflect/Material/LuaMaterialFunctor.cpp
     Source/RPI.Reflect/Material/MaterialDynamicMetadata.cpp

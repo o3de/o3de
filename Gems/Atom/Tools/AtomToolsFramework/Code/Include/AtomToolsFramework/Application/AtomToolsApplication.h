@@ -16,7 +16,6 @@
 #include <AzCore/UserSettings/UserSettingsProvider.h>
 
 #include <AzFramework/Application/Application.h>
-#include <AzFramework/Asset/AssetSystemBus.h>
 
 #include <AzQtComponents/Application/AzQtApplication.h>
 #include <AzQtComponents/Components/StyleManager.h>
@@ -34,7 +33,6 @@ namespace AtomToolsFramework
         : public AzFramework::Application
         , public AzQtComponents::AzQtApplication
         , protected AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler
-        , protected AzFramework::AssetSystemStatusBus::Handler
         , protected AzToolsFramework::EditorPythonConsoleNotificationBus::Handler
         , protected AZ::UserSettingsOwnerRequestBus::Handler
         , protected AtomToolsMainWindowNotificationBus::Handler
@@ -58,7 +56,7 @@ namespace AtomToolsFramework
         void CreateStaticModules(AZStd::vector<AZ::Module*>& outModules) override;
         const char* GetCurrentConfigurationName() const override;
         void StartCommon(AZ::Entity* systemEntity) override;
-        void Tick(float deltaOverride = -1.f) override;
+        void Tick() override;
         void Stop() override;
 
     protected:
@@ -75,11 +73,6 @@ namespace AtomToolsFramework
         //////////////////////////////////////////////////////////////////////////
         // AzFramework::Application overrides...
         void Destroy() override;
-        //////////////////////////////////////////////////////////////////////////
-
-        //////////////////////////////////////////////////////////////////////////
-        // AzFramework::AssetSystemStatusBus::Handler overrides...
-        void AssetSystemAvailable() override;
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
@@ -107,10 +100,12 @@ namespace AtomToolsFramework
 
         virtual void LoadSettings();
         virtual void UnloadSettings();
+        virtual void ConnectToAssetProcessor();
         virtual void CompileCriticalAssets();
         virtual void ProcessCommandLine(const AZ::CommandLine& commandLine);
 
         static void PyIdleWaitFrames(uint32_t frames);
+        static void PyExit();
 
         AzToolsFramework::TraceLogger m_traceLogger;
 

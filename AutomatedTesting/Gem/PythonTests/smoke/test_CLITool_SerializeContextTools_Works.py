@@ -13,7 +13,10 @@ import os
 import pytest
 import subprocess
 
+import ly_test_tools
 
+
+@pytest.mark.skipif(not ly_test_tools.WINDOWS, reason="Only succeeds on windows https://github.com/o3de/o3de/issues/5539")
 @pytest.mark.SUITE_smoke
 class TestCLIToolSerializeContextToolsWorks(object):
     def test_CLITool_SerializeContextTools_Works(self, build_directory):

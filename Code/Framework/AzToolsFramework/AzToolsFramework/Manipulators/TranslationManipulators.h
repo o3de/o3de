@@ -15,6 +15,20 @@
 
 namespace AzToolsFramework
 {
+    //! Parameters to configure the appearance of the TranslationManipulators view(s).
+    struct TranslationManipulatorsViewCreateInfo
+    {
+        float linearAxisLength;
+        float linearConeLength;
+        float linearConeRadius;
+        float planarAxisLength;
+        float surfaceRadius;
+        AZ::Color axis1Color;
+        AZ::Color axis2Color;
+        AZ::Color axis3Color;
+        AZ::Color surfaceColor;
+    };
+
     //! TranslationManipulators is an aggregation of 3 linear manipulators, 3 planar manipulators
     //! and one surface manipulator who share the same transform.
     class TranslationManipulators : public Manipulators
@@ -22,6 +36,9 @@ namespace AzToolsFramework
     public:
         AZ_RTTI(TranslationManipulators, "{D5E49EA2-30E0-42BC-A51D-6A7F87818260}")
         AZ_CLASS_ALLOCATOR(TranslationManipulators, AZ::SystemAllocator, 0)
+
+        TranslationManipulators(TranslationManipulators&&) = delete;
+        TranslationManipulators& operator=(TranslationManipulators&&) = delete;
 
         //! How many dimensions does this translation manipulator have.
         enum class Dimensions
@@ -52,24 +69,30 @@ namespace AzToolsFramework
 
         void SetAxes(const AZ::Vector3& axis1, const AZ::Vector3& axis2, const AZ::Vector3& axis3 = AZ::Vector3::CreateAxisZ());
 
+        void ConfigureView2d(const TranslationManipulatorsViewCreateInfo& translationManipulatorViewCreateInfo);
+        void ConfigureView3d(const TranslationManipulatorsViewCreateInfo& translationManipulatorViewCreateInfo);
+
+        //! Sets the bound width to use for the line/axis of a linear manipulator.
+        void SetLineBoundWidth(float lineBoundWidth);
+
+    private:
         void ConfigurePlanarView(
+            float planeSize,
+            float linearAxisLength,
+            float linearConeLength,
             const AZ::Color& plane1Color,
             const AZ::Color& plane2Color = AZ::Color(0.0f, 1.0f, 0.0f, 0.5f),
             const AZ::Color& plane3Color = AZ::Color(0.0f, 0.0f, 1.0f, 0.5f));
 
         void ConfigureLinearView(
             float axisLength,
+            float coneLength,
+            float coneRadius,
             const AZ::Color& axis1Color,
             const AZ::Color& axis2Color,
             const AZ::Color& axis3Color = AZ::Color(0.0f, 0.0f, 1.0f, 0.5f));
 
         void ConfigureSurfaceView(float radius, const AZ::Color& color);
-
-        //! Sets the bound width to use for the line/axis of a linear manipulator.
-        void SetLineBoundWidth(float lineBoundWidth);
-
-    private:
-        AZ_DISABLE_COPY_MOVE(TranslationManipulators)
 
         // Manipulators
         void ProcessManipulators(const AZStd::function<void(BaseManipulator*)>&) override;
@@ -130,4 +153,12 @@ namespace AzToolsFramework
     void ConfigureTranslationManipulatorAppearance3d(TranslationManipulators* translationManipulators);
     void ConfigureTranslationManipulatorAppearance2d(TranslationManipulators* translationManipulators);
 
+    AZStd::shared_ptr<ManipulatorViewQuad> CreateManipulatorViewQuadForPlanarTranslationManipulator(
+        const AZ::Vector3& axis1,
+        const AZ::Vector3& axis2,
+        const AZ::Color& axis1Color,
+        const AZ::Color& axis2Color,
+        float linearAxisLength,
+        float linearConeLength,
+        float planarAxisLength);
 } // namespace AzToolsFramework

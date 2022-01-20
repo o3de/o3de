@@ -24,8 +24,9 @@ from datetime import datetime
 
 from o3de import manifest, repo, utils, validation, register
 
-logger = logging.getLogger()
-logging.basicConfig()
+logger = logging.getLogger('o3de.download')
+logging.basicConfig(format=utils.LOG_FORMAT)
+
 
 def unzip_manifest_json_data(download_zip_path: pathlib.Path, zip_file_name: str) -> dict:
     json_data = {}
@@ -37,6 +38,7 @@ def unzip_manifest_json_data(download_zip_path: pathlib.Path, zip_file_name: str
                 logger.error(f'UnZip exception:{str(e)}')
 
     return json_data
+
 
 def validate_downloaded_zip_sha256(download_uri_json_data: dict, download_zip_path: pathlib.Path,
                                    manifest_json_name) -> int:
@@ -275,9 +277,6 @@ def is_o3de_restricted_update_available(restricted_name: str, local_last_updated
     return is_o3de_object_update_available(restricted_name, 'restricted_name', local_last_updated)
 
 def _run_download(args: argparse) -> int:
-    if args.override_home_folder:
-        manifest.override_home_folder = args.override_home_folder
-
     if args.engine_name:
         return download_engine(args.engine_name,
                                args.dest_path,
@@ -329,8 +328,6 @@ def add_parser_args(parser):
     parser.add_argument('-f', '--force', action='store_true', required=False,
                             default=False,
                             help = 'Force overwrite the current object')
-    parser.add_argument('-ohf', '--override-home-folder', type=str, required=False,
-                            help='By default the home folder is the user folder, override it to this folder.')
 
     parser.set_defaults(func=_run_download)
 

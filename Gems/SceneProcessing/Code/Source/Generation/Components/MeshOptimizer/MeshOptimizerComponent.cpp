@@ -69,6 +69,10 @@ namespace AZ::MeshBuilder
 {
     using MeshBuilderVertexAttributeLayerColor = MeshBuilderVertexAttributeLayerT<AZ::SceneAPI::DataTypes::Color>;
     AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(MeshBuilderVertexAttributeLayerColor, AZ::SystemAllocator, 0)
+        
+    using MeshBuilderVertexAttributeLayerSkinInfluence = MeshBuilderVertexAttributeLayerT<AZ::SceneAPI::DataTypes::ISkinWeightData::Link>;
+    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(MeshBuilderVertexAttributeLayerSkinInfluence, AZ::SystemAllocator, 0)
+
 } // namespace AZ::MeshBuilder
 
 namespace AZ::SceneGenerationComponents
@@ -205,50 +209,27 @@ namespace AZ::SceneGenerationComponents
         auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
         {
-            serializeContext->Class<MeshOptimizerComponent, GenerationComponent>()->Version(4);
+            serializeContext->Class<MeshOptimizerComponent, GenerationComponent>()->Version(11);
         }
     }
 
-    template<class MeshDataType, class SkinWeightDataView>
-    static AZStd::unique_ptr<AZ::MeshBuilder::MeshBuilderSkinningInfo> ExtractSkinningInfo(
-        const MeshDataType* meshData,
-        const SkinWeightDataView& skinWeights,
+    static AZStd::vector<AZ::MeshBuilder::MeshBuilderSkinningInfo::Influence> ExtractSkinningInfo(
+        const AZStd::vector<MeshBuilder::MeshBuilderVertexAttributeLayerSkinInfluence*>& skinningInfluencesLayers,
+        const AZ::MeshBuilder::MeshBuilderVertexLookup& vertexLookup,
         AZ::u32 maxWeightsPerVertex,
-        float weightThreshold,
-        const Vector3Map<MeshDataType>& positionMap)
+        float weightThreshold)
     {
-        if (skinWeights.empty())
+        AZ::MeshBuilder::MeshBuilderSkinningInfo skinningInfo(1);
+
+        AZStd::vector<AZ::MeshBuilder::MeshBuilderSkinningInfo::Influence> influences;
+        for (const auto& skinLayer : skinningInfluencesLayers)
         {
-            return {};
+            const ISkinWeightData::Link& link = skinLayer->GetVertexValue(vertexLookup.mOrgVtx, vertexLookup.mDuplicateNr);
+            influences.push_back({ aznumeric_caster(link.boneId), link.weight });
         }
 
-        const size_t usedControlPointCount = positionMap.size();
-
-        auto skinningInfo = AZStd::make_unique<AZ::MeshBuilder::MeshBuilderSkinningInfo>(aznumeric_cast<AZ::u32>(usedControlPointCount));
-
-        for (const auto& skinData : skinWeights)
-        {
-            for (size_t controlPointIndex = 0; controlPointIndex < skinData.get().GetVertexCount(); ++controlPointIndex)
-            {
-                const int usedPointIndex = meshData->GetUsedPointIndexForControlPoint(meshData->GetControlPointIndex(aznumeric_caster(controlPointIndex)));
-                const size_t linkCount = skinData.get().GetLinkCount(controlPointIndex);
-
-                if (usedPointIndex < 0 || linkCount == 0)
-                {
-                    continue;
-                }
-
-                for (size_t linkIndex = 0; linkIndex < linkCount; ++linkIndex)
-                {
-                    const ISkinWeightData::Link& link = skinData.get().GetLink(controlPointIndex, linkIndex);
-                    skinningInfo->AddInfluence(positionMap.at(usedPointIndex), {aznumeric_caster(link.boneId), link.weight});
-                }
-            }
-        }
-
-        skinningInfo->Optimize(maxWeightsPerVertex, weightThreshold);
-
-        return skinningInfo;
+        skinningInfo.Optimize(influences, maxWeightsPerVertex, weightThreshold);
+        return influences;
     }
 
     // Recurse through the SceneAPI's iterator types, extracting the real underlying iterator.
@@ -467,6 +448,40 @@ namespace AZ::SceneGenerationComponents
         return layers;
     };
 
+    template<class SkinWeightDataView>
+    static const AZStd::vector<MeshBuilder::MeshBuilderVertexAttributeLayerSkinInfluence*> MakeSkinInfluenceLayers(
+        AZ::MeshBuilder::MeshBuilder& meshBuilder,
+        const SkinWeightDataView& skinWeights,
+        size_t vertexCount)
+    {
+        if (skinWeights.empty())
+        {
+            return {};
+        }
+
+        size_t maxInfluenceCount = 0;
+
+        AZStd::vector<MeshBuilder::MeshBuilderVertexAttributeLayerSkinInfluence*> outLayers;
+
+        // Do a pass over the skin influences, and determine the max influence count for any one vertex,
+        // which will be the number of influence layers we add
+        for (const auto& skinData : skinWeights)
+        {
+            for (size_t controlPointIndex = 0; controlPointIndex < skinData.get().GetVertexCount(); ++controlPointIndex)
+            {
+                const size_t linkCount = skinData.get().GetLinkCount(controlPointIndex);
+                maxInfluenceCount = AZStd::max(maxInfluenceCount, linkCount);
+            }
+        }
+
+        // Create the influence layers
+        for (size_t i = 0; i < maxInfluenceCount; ++i)
+        {
+            outLayers.push_back(meshBuilder.AddLayer<MeshBuilder::MeshBuilderVertexAttributeLayerSkinInfluence>(vertexCount));
+        }
+
+        return outLayers;
+    }
 
     template<class MeshDataType>
     AZStd::tuple<
@@ -492,7 +507,7 @@ namespace AZ::SceneGenerationComponents
         AZ::MeshBuilder::MeshBuilder meshBuilder(vertexCount, AZStd::numeric_limits<size_t>::max(), AZStd::numeric_limits<size_t>::max(), /*optimizeDuplicates=*/ !hasBlendShapes);
 
         // Make the layers to hold the vertex data
-        auto* orgVtxLayer = meshBuilder.AddLayer<MeshBuilder::MeshBuilderVertexAttributeLayerUInt32>(vertexCount);
+        auto* controlPointLayer = meshBuilder.AddLayer<MeshBuilder::MeshBuilderVertexAttributeLayerUInt32>(vertexCount);
         auto* posLayer = meshBuilder.AddLayer<MeshBuilder::MeshBuilderVertexAttributeLayerVector3>(vertexCount, false, true);
         auto* normalsLayer = meshBuilder.AddLayer<MeshBuilder::MeshBuilderVertexAttributeLayerVector3>(vertexCount, false, true);
 
@@ -527,6 +542,8 @@ namespace AZ::SceneGenerationComponents
         const AZStd::vector<MeshBuilder::MeshBuilderVertexAttributeLayerVector4*> tangentLayers = makeLayersForData(tangents);
         const AZStd::vector<MeshBuilder::MeshBuilderVertexAttributeLayerVector3*> bitangentLayers = makeLayersForData(bitangents);
         const AZStd::vector<MeshBuilder::MeshBuilderVertexAttributeLayerColor*> vertexColorLayers = makeLayersForData(vertexColors);
+        const AZStd::vector<MeshBuilder::MeshBuilderVertexAttributeLayerSkinInfluence*> skinningInfluencesLayers =
+            MakeSkinInfluenceLayers(meshBuilder, skinWeights, vertexCount);
 
         constexpr float positionTolerance = 0.0001f;
         Vector3Map positionMap(meshData, hasBlendShapes, positionTolerance);
@@ -539,9 +556,9 @@ namespace AZ::SceneGenerationComponents
             meshBuilder.BeginPolygon(baseMesh->GetFaceMaterialId(faceIndex));
             for (const AZ::u32 vertexIndex : meshData->GetFaceInfo(faceIndex).vertexIndex)
             {
-                const AZ::u32 orgVertexNumber = positionMap[vertexIndex];
+                const AZ::u32 controlPointVertexIndex = positionMap[vertexIndex];
 
-                orgVtxLayer->SetCurrentVertexValue(orgVertexNumber);
+                controlPointLayer->SetCurrentVertexValue(controlPointVertexIndex);
 
                 posLayer->SetCurrentVertexValue(meshData->GetPosition(vertexIndex));
                 normalsLayer->SetCurrentVertexValue(meshData->GetNormal(vertexIndex));
@@ -563,9 +580,44 @@ namespace AZ::SceneGenerationComponents
                 {
                     vertexColorLayer->SetCurrentVertexValue(vertexColorData.get().GetColor(vertexIndex));
                 }
+
+                // Initialize skin weights to 0, 0.0
+                for (auto& skinInfluenceLayer : skinningInfluencesLayers)
+                {
+                    skinInfluenceLayer->SetCurrentVertexValue(ISkinWeightData::Link{ 0, 0.0f });
+                }
+
+#if defined(AZ_ENABLE_TRACING)
+                bool influencesFoundForThisVertex = false;
+#endif
+                // Set any real weights, if they exist
+                for (const auto& skinWeightData : skinWeights)
+                {
+                    const size_t linkCount = skinWeightData.get().GetLinkCount(vertexIndex);
+                    AZ_Assert(
+                        linkCount <= skinningInfluencesLayers.size(),
+                        "MeshOptimizer - The previously calculated maximum influence count is less than the current link count.");
+
+                    // Check that either the current skinWeightData doesn't have any influences for this vertex,
+                    // or that none of the ones which came before it had any influences for this vertex.
+                    AZ_Assert(
+                        linkCount == 0 || influencesFoundForThisVertex == false,
+                        "Two different skinWeightData instances in skinWeights apply to the same vertex. "
+                        "The mesh optimizer assumes there will only ever be one skinWeightData that impacts a given vertex.");
+#if defined(AZ_ENABLE_TRACING)
+                    // Mark that at least one influence has been found for this vertex
+                    influencesFoundForThisVertex |= linkCount > 0;
+#endif
+
+                    for (size_t linkIndex = 0; linkIndex < linkCount; ++linkIndex)
+                    {
+                        const ISkinWeightData::Link& link = skinWeightData.get().GetLink(vertexIndex, linkIndex);
+                        skinningInfluencesLayers[linkIndex]->SetCurrentVertexValue(link);
+                    }
+                }
                 AZ_POP_DISABLE_WARNING
 
-                meshBuilder.AddPolygonVertex(orgVertexNumber);
+                meshBuilder.AddPolygonVertex(controlPointVertexIndex);
             }
 
             meshBuilder.EndPolygon();
@@ -574,9 +626,10 @@ namespace AZ::SceneGenerationComponents
         const auto* skinRule = meshGroup.GetRuleContainerConst().FindFirstByType<SceneAPI::DataTypes::ISkinRule>().get();
         const AZ::u32 maxWeightsPerVertex = skinRule ? skinRule->GetMaxWeightsPerVertex() : 4;
         const float weightThreshold = skinRule ? skinRule->GetWeightThreshold() : 0.001f;
-        meshBuilder.SetSkinningInfo(ExtractSkinningInfo(meshData, skinWeights, maxWeightsPerVertex, weightThreshold, positionMap));
 
         meshBuilder.GenerateSubMeshVertexOrders();
+
+        const size_t optimizedVertexCount = meshBuilder.CalcNumVertices();
 
         // Create the resulting nodes
         struct ResultingType
@@ -594,6 +647,13 @@ namespace AZ::SceneGenerationComponents
         AZStd::vector<AZStd::unique_ptr<MeshVertexTangentData>> optimizedTangents = makeSceneGraphNodesForMeshBuilderLayers<MeshVertexTangentData>(tangentLayers);
         AZStd::vector<AZStd::unique_ptr<MeshVertexBitangentData>> optimizedBitangents = makeSceneGraphNodesForMeshBuilderLayers<MeshVertexBitangentData>(bitangentLayers);
         AZStd::vector<AZStd::unique_ptr<MeshVertexColorData>> optimizedVertexColors = makeSceneGraphNodesForMeshBuilderLayers<MeshVertexColorData>(vertexColorLayers);
+        AZStd::unique_ptr<SkinWeightData> optimizedSkinWeights = nullptr;
+
+        if (!skinningInfluencesLayers.empty())
+        {
+            optimizedSkinWeights = AZStd::make_unique<SkinWeightData>();
+            optimizedSkinWeights->ResizeContainerSpace(optimizedVertexCount);
+        }
 
         // Copy node attributes
         AZStd::apply([](const auto&&... nodePairView) {
@@ -613,14 +673,16 @@ namespace AZ::SceneGenerationComponents
         for (size_t subMeshIndex = 0; subMeshIndex < meshBuilder.GetNumSubMeshes(); ++subMeshIndex)
         {
             const AZ::MeshBuilder::MeshBuilderSubMesh* subMesh = meshBuilder.GetSubMesh(subMeshIndex);
-            for (size_t vertexIndex = 0; vertexIndex < subMesh->GetNumVertices(); ++vertexIndex)
+            for (size_t subMeshVertexIndex = 0; subMeshVertexIndex < subMesh->GetNumVertices(); ++subMeshVertexIndex)
             {
-                const AZ::MeshBuilder::MeshBuilderVertexLookup& vertexLookup = subMesh->GetVertex(vertexIndex);
+                const AZ::MeshBuilder::MeshBuilderVertexLookup& vertexLookup = subMesh->GetVertex(subMeshVertexIndex);
                 optimizedMesh->AddPosition(posLayer->GetVertexValue(vertexLookup.mOrgVtx, vertexLookup.mDuplicateNr));
                 optimizedMesh->AddNormal(normalsLayer->GetVertexValue(vertexLookup.mOrgVtx, vertexLookup.mDuplicateNr));
+                
+                int modelVertexIndex = optimizedMesh->GetVertexCount() - 1;
                 optimizedMesh->SetVertexIndexToControlPointIndexMap(
-                    aznumeric_caster(optimizedMesh->GetVertexCount() - 1),
-                    orgVtxLayer->GetVertexValue(vertexLookup.mOrgVtx, vertexLookup.mDuplicateNr)
+                    modelVertexIndex,
+                    controlPointLayer->GetVertexValue(vertexLookup.mOrgVtx, vertexLookup.mDuplicateNr)
                 );
 
                 for (auto [uvLayer, optimizedUVNode] : Containers::Views::MakePairView(uvLayers, optimizedUVs))
@@ -639,6 +701,19 @@ namespace AZ::SceneGenerationComponents
                 {
                     optimizedVertexColorNode->AppendColor(vertexColorLayer->GetVertexValue(vertexLookup.mOrgVtx, vertexLookup.mDuplicateNr));
                 }
+
+                if (optimizedSkinWeights)
+                {
+                    AZStd::vector<AZ::MeshBuilder::MeshBuilderSkinningInfo::Influence> influences =
+                        ExtractSkinningInfo(skinningInfluencesLayers, vertexLookup, maxWeightsPerVertex, weightThreshold);
+
+                    for (const auto& influence : influences)
+                    {
+                        const int boneId =
+                            optimizedSkinWeights->GetBoneId(skinWeights[0].get().GetBoneName(aznumeric_caster(influence.mNodeNr)));
+                        optimizedSkinWeights->AppendLink(aznumeric_caster(modelVertexIndex), { boneId, influence.mWeight });
+                    }
+                }
             }
             AZStd::unordered_set<size_t> usedIndexes;
             for (size_t polygonIndex = 0; polygonIndex < subMesh->GetNumPolygons(); ++polygonIndex)
@@ -654,26 +729,6 @@ namespace AZ::SceneGenerationComponents
                 AZStd::copy(AZStd::begin(faceInfo.vertexIndex), AZStd::end(faceInfo.vertexIndex), AZStd::inserter(usedIndexes, usedIndexes.begin()));
             }
             indexOffset += static_cast<unsigned int>(usedIndexes.size());
-        }
-
-        AZStd::unique_ptr<SkinWeightData> optimizedSkinWeights;
-        if (MeshBuilder::MeshBuilderSkinningInfo* skinningInfo = meshBuilder.GetSkinningInfo())
-        {
-            optimizedSkinWeights = AZStd::make_unique<SkinWeightData>();
-
-            const size_t skinnedVertexCount = skinningInfo->GetNumOrgVertices();
-            optimizedSkinWeights->ResizeContainerSpace(skinnedVertexCount);
-
-            for (size_t vertex = 0; vertex < skinnedVertexCount; ++vertex)
-            {
-                const size_t boneCountAffectingThisVertex = skinningInfo->GetNumInfluences(vertex);
-                for (size_t influencingBone = 0; influencingBone < boneCountAffectingThisVertex; ++influencingBone)
-                {
-                    const MeshBuilder::MeshBuilderSkinningInfo::Influence& influence = skinningInfo->GetInfluence(vertex, influencingBone);
-                    const int boneId = optimizedSkinWeights->GetBoneId(skinWeights[0].get().GetBoneName(aznumeric_caster(influence.mNodeNr)));
-                    optimizedSkinWeights->AppendLink(vertex, {boneId, influence.mWeight});
-                }
-            }
         }
 
         return AZStd::make_tuple(

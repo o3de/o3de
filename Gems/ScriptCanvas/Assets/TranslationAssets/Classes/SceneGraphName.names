@@ -1,0 +1,108 @@
+{
+    "entries": [
+        {
+            "base": "SceneGraphName",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Scene Graph Name",
+                "category": "Scene Graph"
+            },
+            "methods": [
+                {
+                    "base": "GetPath",
+                    "context": "SceneGraphName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Path"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Path is invoked"
+                    },
+                    "details": {
+                        "name": "Get Path"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{4077AC3C-B301-4F5A-BEA7-54D6511AEC2E}",
+                            "details": {
+                                "name": "Scene Graph Name"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "Path"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetName",
+                    "context": "SceneGraphName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Name"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Name is invoked"
+                    },
+                    "details": {
+                        "name": "Get Name"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{4077AC3C-B301-4F5A-BEA7-54D6511AEC2E}",
+                            "details": {
+                                "name": "Scene Graph Name"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "Name"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ToString",
+                    "context": "SceneGraphName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke To String"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after To String is invoked"
+                    },
+                    "details": {
+                        "name": "To String"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{4077AC3C-B301-4F5A-BEA7-54D6511AEC2E}",
+                            "details": {
+                                "name": "Scene Graph Name"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "String"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

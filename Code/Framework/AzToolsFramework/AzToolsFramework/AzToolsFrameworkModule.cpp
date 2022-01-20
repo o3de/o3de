@@ -23,6 +23,7 @@
 #include <AzToolsFramework/Entity/EditorEntityModelComponent.h>
 #include <AzToolsFramework/Entity/EditorEntitySearchComponent.h>
 #include <AzToolsFramework/Entity/EditorEntitySortComponent.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntitySystemComponent.h>
 #include <AzToolsFramework/FocusMode/FocusModeSystemComponent.h>
 #include <AzToolsFramework/PropertyTreeEditor/PropertyTreeEditorComponent.h>
 #include <AzToolsFramework/Render/EditorIntersectorComponent.h>
@@ -54,6 +55,8 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemComponent.h>
 #include <AzToolsFramework/Entity/EntityUtilityComponent.h>
+#include <AzToolsFramework/Script/LuaSymbolsReporterSystemComponent.h>
+#include <Prefab/ProceduralPrefabSystemComponent.h>
 
 AZ_DEFINE_BUDGET(AzToolsFramework);
 
@@ -74,11 +77,13 @@ namespace AzToolsFramework
             EditorEntityFixupComponent::CreateDescriptor(),
             EntityUtilityComponent::CreateDescriptor(),
             ContainerEntitySystemComponent::CreateDescriptor(),
+            ReadOnlyEntitySystemComponent::CreateDescriptor(),
             FocusModeSystemComponent::CreateDescriptor(),
             SliceMetadataEntityContextComponent::CreateDescriptor(),
             SliceRequestComponent::CreateDescriptor(),
             Prefab::PrefabSystemComponent::CreateDescriptor(),
             Prefab::EditorPrefabComponent::CreateDescriptor(),
+            Prefab::ProceduralPrefabSystemComponent::CreateDescriptor(),
             Components::EditorEntityActionComponent::CreateDescriptor(),
             Components::EditorEntityIconComponent::CreateDescriptor(),
             Components::EditorInspectorComponent::CreateDescriptor(),
@@ -106,6 +111,7 @@ namespace AzToolsFramework
             AzToolsFramework::Components::EditorIntersectorComponent::CreateDescriptor(),
             AzToolsFramework::AzToolsFrameworkConfigurationSystemComponent::CreateDescriptor(),
             AzToolsFramework::Components::EditorEntityUiSystemComponent::CreateDescriptor(),
+            AzToolsFramework::Script::LuaSymbolsReporterSystemComponent::CreateDescriptor(),
         });
     }
 }

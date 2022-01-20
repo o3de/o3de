@@ -553,11 +553,9 @@ namespace AzFramework
 
     ////////////////////////////////////////////////////////////////////////////
 
-    AZ_CVAR(float, t_frameTimeOverride, 0.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "If > 0, overrides the application delta frame-time with the provided value");
-
-    void Application::Tick(float deltaOverride /*= -1.f*/)
+    void Application::Tick()
     {
-        ComponentApplication::Tick((t_frameTimeOverride > 0.0f) ? t_frameTimeOverride : deltaOverride);
+        ComponentApplication::Tick();
     }
 
     ////////////////////////////////////////////////////////////////////////////

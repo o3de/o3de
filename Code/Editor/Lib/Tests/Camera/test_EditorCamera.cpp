@@ -15,28 +15,19 @@
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <EditorModularViewportCameraComposer.h>
 
+#include <GotoPositionDlg.h>
+
 namespace UnitTest
 {
-    class EditorCameraTestEnvironment : public AZ::Test::GemTestEnvironment
-    {
-        // AZ::Test::GemTestEnvironment overrides ...
-        void AddGemsAndComponents() override;
-    };
-
-    void EditorCameraTestEnvironment::AddGemsAndComponents()
-    {
-        AddDynamicModulePaths({ CAMERA_EDITOR_MODULE });
-        AddComponentDescriptors({ AzToolsFramework::Components::TransformComponent::CreateDescriptor() });
-    }
-
     class EditorCameraFixture : public ::testing::Test
     {
     public:
+        AZ::ComponentApplication* m_application = nullptr;
         AtomToolsFramework::ModularCameraViewportContext* m_cameraViewportContextView = nullptr;
         AZStd::unique_ptr<SandboxEditor::EditorModularViewportCameraComposer> m_editorModularViewportCameraComposer;
-        AZStd::unique_ptr<AZ::DynamicModuleHandle> m_editorLibHandle;
         AzFramework::ViewportControllerListPtr m_controllerList;
-        AZStd::unique_ptr<AZ::Entity> m_entity;
+        AZ::Entity* m_entity = nullptr;
+        AZ::ComponentDescriptor* m_transformComponent = nullptr;
 
         static inline constexpr AzFramework::ViewportId TestViewportId = 2345;
         static inline constexpr float HalfInterpolateToTransformDuration =
@@ -44,17 +35,18 @@ namespace UnitTest
 
         void SetUp() override
         {
-            m_editorLibHandle = AZ::DynamicModuleHandle::Create("EditorLib");
-            [[maybe_unused]] const bool loaded = m_editorLibHandle->Load(true);
-            AZ_Assert(loaded, "EditorLib could not be loaded");
+            m_application = aznew AZ::ComponentApplication;
+            AZ::ComponentApplication::Descriptor appDesc;
+            m_entity = m_application->Create(appDesc);
+            m_transformComponent = AzToolsFramework::Components::TransformComponent::CreateDescriptor();
+            m_application->RegisterComponentDescriptor(m_transformComponent);
 
-            m_controllerList = AZStd::make_shared<AzFramework::ViewportControllerList>();
-            m_controllerList->RegisterViewportContext(TestViewportId);
-
-            m_entity = AZStd::make_unique<AZ::Entity>();
             m_entity->Init();
             m_entity->CreateComponent<AzToolsFramework::Components::TransformComponent>();
             m_entity->Activate();
+
+            m_controllerList = AZStd::make_shared<AzFramework::ViewportControllerList>();
+            m_controllerList->RegisterViewportContext(TestViewportId);
 
             m_editorModularViewportCameraComposer = AZStd::make_unique<SandboxEditor::EditorModularViewportCameraComposer>(TestViewportId);
 
@@ -74,8 +66,17 @@ namespace UnitTest
         {
             m_editorModularViewportCameraComposer.reset();
             m_cameraViewportContextView = nullptr;
-            m_entity.reset();
-            m_editorLibHandle = {};
+
+            if (m_application)
+            {
+                m_application->UnregisterComponentDescriptor(m_transformComponent);
+                delete m_transformComponent;
+                m_transformComponent = nullptr;
+
+                m_application->Destroy();
+                delete m_application;
+                m_application = nullptr;
+            }
         }
     };
 
@@ -258,16 +259,35 @@ namespace UnitTest
         EXPECT_THAT(interpolating, ::testing::IsFalse());
         EXPECT_THAT(nextInterpolationBegan, ::testing::IsTrue());
     }
+
+    TEST(GotoPositionPitchConstraints, GoToPositionPitchIsSetToPlusOrMinusNinetyDegrees)
+    {
+        float minPitch = 0.0f;
+        float maxPitch = 0.0f;
+
+        GotoPositionPitchConstraints m_gotoPositionContraints;
+        m_gotoPositionContraints.DeterminePitchRange(
+            [&minPitch, &maxPitch](const float minPitchDegrees, const float maxPitchDegrees)
+            {
+                minPitch = minPitchDegrees;
+                maxPitch = maxPitchDegrees;
+            });
+
+        using ::testing::FloatNear;
+        EXPECT_THAT(minPitch, FloatNear(-90.0f, AZ::Constants::FloatEpsilon));
+        EXPECT_THAT(maxPitch, FloatNear(90.0f, AZ::Constants::FloatEpsilon));
+    }
+
+    TEST(GotoPositionPitchConstraints, GoToPositionPitchClampsFinalPitchValueWithTolerance)
+    {
+        const auto [expectedMinPitchRadians, expectedMaxPitchRadians] = AzFramework::CameraPitchMinMaxRadiansWithTolerance();
+
+        GotoPositionPitchConstraints m_gotoPositionContraints;
+        const float minClampedPitchRadians = m_gotoPositionContraints.PitchClampedRadians(-90.0f);
+        const float maxClampedPitchRadians = m_gotoPositionContraints.PitchClampedRadians(90.0f);
+
+        using ::testing::FloatNear;
+        EXPECT_THAT(minClampedPitchRadians, FloatNear(expectedMinPitchRadians, AZ::Constants::FloatEpsilon));
+        EXPECT_THAT(maxClampedPitchRadians, FloatNear(expectedMaxPitchRadians, AZ::Constants::FloatEpsilon));
+    }
 } // namespace UnitTest
-
-// required to support running integration tests with the Camera Gem
-AZTEST_EXPORT int AZ_UNIT_TEST_HOOK_NAME(int argc, char** argv)
-{
-    ::testing::InitGoogleMock(&argc, argv);
-    AZ::Test::printUnusedParametersWarning(argc, argv);
-    AZ::Test::addTestEnvironments({ new UnitTest::EditorCameraTestEnvironment() });
-    int result = RUN_ALL_TESTS();
-    return result;
-}
-
-IMPLEMENT_TEST_EXECUTABLE_MAIN();

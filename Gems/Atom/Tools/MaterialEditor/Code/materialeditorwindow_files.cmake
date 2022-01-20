@@ -15,9 +15,6 @@ set(FILES
     Source/Window/MaterialEditorWindow.cpp
     Source/Window/MaterialEditorWindowModule.cpp
     Source/Window/MaterialEditorWindowSettings.cpp
-    Source/Window/MaterialBrowserWidget.h
-    Source/Window/MaterialBrowserWidget.cpp
-    Source/Window/MaterialBrowserWidget.ui
     Source/Window/MaterialEditor.qrc
     Source/Window/MaterialEditor.qss
     Source/Window/MaterialEditorWindowComponent.h

@@ -38,9 +38,9 @@ namespace AudioControls
 
     private slots:
         void ShowConnectionContextMenu(const QPoint& pos);
-        void SelectedConnectionChanged();
         void CurrentConnectionModified();
         void RemoveSelectedConnection();
+        void SelectedConnectionChanged();
 
     private:
         bool eventFilter(QObject* object, QEvent* event) override;
@@ -51,6 +51,8 @@ namespace AudioControls
         CATLControl* m_control;
         QColor m_notFoundColor;
         QColor m_localizedColor;
+
+        QWidget* m_connectionPropertiesWidget = nullptr;
     };
 
 } // namespace AudioControls

@@ -26,7 +26,7 @@ namespace AtomToolsFramework
 
         virtual AZ::Transform GetCameraTransform() const = 0;
         virtual void SetCameraTransform(const AZ::Transform& transform) = 0;
-        virtual void ConnectViewMatrixChangedHandler(AZ::RPI::ViewportContext::MatrixChangedEvent::Handler& handler) = 0;
+        virtual void ConnectViewMatrixChangedHandler(AZ::RPI::MatrixChangedEvent::Handler& handler) = 0;
     };
 
     //! A function object to represent returning a camera controller priority.
@@ -91,7 +91,7 @@ namespace AtomToolsFramework
         // ModularCameraViewportContext overrides ...
         AZ::Transform GetCameraTransform() const override;
         void SetCameraTransform(const AZ::Transform& transform) override;
-        void ConnectViewMatrixChangedHandler(AZ::RPI::ViewportContext::MatrixChangedEvent::Handler& handler) override;
+        void ConnectViewMatrixChangedHandler(AZ::RPI::MatrixChangedEvent::Handler& handler) override;
 
     private:
         AzFramework::ViewportId m_viewportId;
@@ -117,6 +117,9 @@ namespace AtomToolsFramework
         void StartTrackingTransform(const AZ::Transform& worldFromLocal) override;
         void StopTrackingTransform() override;
         bool IsTrackingTransform() const override;
+        void SetCameraPivotAttached(const AZ::Vector3& pivot) override;
+        void SetCameraPivotDetached(const AZ::Vector3& pivot) override;
+        void SetCameraOffset(const AZ::Vector3& offset) override;
 
     private:
         //! Combine the current camera transform with any potential roll from the tracked
@@ -152,7 +155,7 @@ namespace AtomToolsFramework
         float m_roll = 0.0f; //!< The current amount of roll to be applied to the camera.
         float m_targetRoll = 0.0f; //!< The target amount of roll to be applied to the camera (current will move towards this).
         //! Listen for camera view changes outside of the camera controller.
-        AZ::RPI::ViewportContext::MatrixChangedEvent::Handler m_cameraViewMatrixChangeHandler;
+        AZ::RPI::MatrixChangedEvent::Handler m_cameraViewMatrixChangeHandler;
         //! The current instance of the modular camera viewport context.
         AZStd::unique_ptr<ModularCameraViewportContext> m_modularCameraViewportContext;
         //! Flag to prevent circular updates of the camera transform (while the viewport transform is being updated internally).
@@ -165,10 +168,10 @@ namespace AtomToolsFramework
     public:
         AZ::Transform GetCameraTransform() const override;
         void SetCameraTransform(const AZ::Transform& transform) override;
-        void ConnectViewMatrixChangedHandler(AZ::RPI::ViewportContext::MatrixChangedEvent::Handler& handler) override;
+        void ConnectViewMatrixChangedHandler(AZ::RPI::MatrixChangedEvent::Handler& handler) override;
 
     private:
         AZ::Transform m_cameraTransform = AZ::Transform::CreateIdentity();
-        AZ::RPI::ViewportContext::MatrixChangedEvent m_viewMatrixChangedEvent;
+        AZ::RPI::MatrixChangedEvent m_viewMatrixChangedEvent;
     };
 } // namespace AtomToolsFramework

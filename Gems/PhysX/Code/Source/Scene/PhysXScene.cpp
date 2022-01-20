@@ -66,12 +66,12 @@ namespace PhysX
             {
                 sceneDesc.filterShader = Collision::DefaultFilterShader;
             }
-            
+
             if (config.m_enableActiveActors)
             {
                 sceneDesc.flags |= physx::PxSceneFlag::eENABLE_ACTIVE_ACTORS;
             }
-    
+
             if (config.m_enablePcm)
             {
                 sceneDesc.flags |= physx::PxSceneFlag::eENABLE_PCM;
@@ -80,19 +80,19 @@ namespace PhysX
             {
                 sceneDesc.flags &= ~physx::PxSceneFlag::eENABLE_PCM;
             }
-            
+
             if (config.m_kinematicFiltering)
             {
                 sceneDesc.kineKineFilteringMode = physx::PxPairFilteringMode::eKEEP;
             }
-    
+
             if (config.m_kinematicStaticFiltering)
             {
                 sceneDesc.staticKineFilteringMode = physx::PxPairFilteringMode::eKEEP;
             }
-    
+
             sceneDesc.bounceThresholdVelocity = config.m_bounceThresholdVelocity;
-    
+
             sceneDesc.filterCallback = filterCallback;
             sceneDesc.simulationEventCallback = simEventCallback;
             #ifdef ENABLE_TGS_SOLVER
@@ -139,9 +139,8 @@ namespace PhysX
             else if (auto* shapeColliderPairList = AZStd::get_if<AZStd::vector<AzPhysics::ShapeColliderPair>>(&shapeData))
             {
                 bool shapeAdded = false;
-                if (!shapeColliderPairList->empty())
+                for (const auto& shapeColliderConfigs : *shapeColliderPairList)
                 {
-                    const auto& shapeColliderConfigs = shapeColliderPairList->front();
                     auto shapePtr = AZStd::make_shared<Shape>(*(shapeColliderConfigs.first), *(shapeColliderConfigs.second));
                     AZStd::visit([shapePtr, &shapeAdded](auto&& body)
                         {
@@ -151,8 +150,8 @@ namespace PhysX
                                 shapeAdded = true;
                             }
                         }, simulatedBody);
-                    return shapeAdded;
                 }
+                return shapeAdded;
             }
             else if (auto* shape = AZStd::get_if<AZStd::shared_ptr<Physics::Shape>>(&shapeData))
             {
@@ -233,10 +232,10 @@ namespace PhysX
         }
 
         template<class JointType, class ConfigurationType>
-        AzPhysics::Joint* CreateJoint(const ConfigurationType* configuration, 
+        AzPhysics::Joint* CreateJoint(const ConfigurationType* configuration,
             AzPhysics::SceneHandle sceneHandle,
             AzPhysics::SimulatedBodyHandle parentBodyHandle,
-            AzPhysics::SimulatedBodyHandle childBodyHandle, 
+            AzPhysics::SimulatedBodyHandle childBodyHandle,
             AZ::Crc32& crc)
         {
             JointType* newBody = aznew JointType(*configuration, sceneHandle, parentBodyHandle, childBodyHandle);
@@ -255,7 +254,7 @@ namespace PhysX
             // The filter should also use the eTOUCH flag to find all contacts with the ray.
             // Otherwise the default buffer (1 result) and eBLOCK flag is enough to find the first hit.
             physx::PxRaycastBuffer castResult;
-            SceneQueryHelpers::PhysXQueryFilterCallback queryFilterCallback; 
+            SceneQueryHelpers::PhysXQueryFilterCallback queryFilterCallback;
             if (raycastRequest->m_reportMultipleHits)
             {
                 const AZ::u64 maxSize = AZStd::min(raycastRequest->m_maxResults, sceneMaxResults);
@@ -477,7 +476,7 @@ namespace PhysX
             //register for future changes to the buffer sizes.
             physXSystem->RegisterSystemConfigurationChangedEvent(m_physicsSystemConfigChanged);
         }
-        
+
         PhysXScene::s_rayCastBuffer = {};
         PhysXScene::s_sweepBuffer = {};
         PhysXScene::s_overlapBuffer = {};
@@ -504,7 +503,7 @@ namespace PhysX
             {
                 if (simulatedBody.second->m_simulating)
                 {
-                    // Disable simulation on body (not signaling OnSimulationBodySimulationDisabled event) 
+                    // Disable simulation on body (not signaling OnSimulationBodySimulationDisabled event)
                     DisableSimulationOfBodyInternal(*simulatedBody.second);
                 }
                 m_simulatedBodyRemovedEvent.Signal(m_sceneHandle, simulatedBody.second->m_bodyHandle);
@@ -578,7 +577,7 @@ namespace PhysX
             // Swap the buffers, invoke callbacks, build the list of active actors.
             m_pxScene->fetchResults(true);
         }
-        
+
         if (activeActorsEnabled)
         {
             AZ_PROFILE_SCOPE(Physics, "PhysXScene::ActiveActors");
@@ -754,14 +753,14 @@ namespace PhysX
         {
             return;
         }
-        
+
         AzPhysics::SimulatedBodyIndex index = AZStd::get<AzPhysics::HandleTypeIndex::Index>(bodyHandle);
         if (index < m_simulatedBodies.size()
             && m_simulatedBodies[index].first == AZStd::get<AzPhysics::HandleTypeIndex::Crc>(bodyHandle))
         {
             if (m_simulatedBodies[index].second->m_simulating)
             {
-                // Disable simulation on body (not signaling OnSimulationBodySimulationDisabled event) 
+                // Disable simulation on body (not signaling OnSimulationBodySimulationDisabled event)
                 DisableSimulationOfBodyInternal(*m_simulatedBodies[index].second);
             }
 
@@ -801,7 +800,7 @@ namespace PhysX
 
             EnableSimulationOfBodyInternal(*body);
         }
-        else 
+        else
         {
             AZ_Warning("PhysXScene", false, "Unable to enable Simulated body, failed to find body.")
         }
@@ -831,8 +830,8 @@ namespace PhysX
         }
     }
 
-    AzPhysics::JointHandle PhysXScene::AddJoint(const AzPhysics::JointConfiguration* jointConfig, 
-        AzPhysics::SimulatedBodyHandle parentBody, AzPhysics::SimulatedBodyHandle childBody) 
+    AzPhysics::JointHandle PhysXScene::AddJoint(const AzPhysics::JointConfiguration* jointConfig,
+        AzPhysics::SimulatedBodyHandle parentBody, AzPhysics::SimulatedBodyHandle childBody)
     {
         AzPhysics::Joint* newJoint = nullptr;
         AZ::Crc32 newJointCrc;
@@ -881,7 +880,7 @@ namespace PhysX
         return AzPhysics::InvalidJointHandle;
     }
 
-    AzPhysics::Joint* PhysXScene::GetJointFromHandle(AzPhysics::JointHandle jointHandle) 
+    AzPhysics::Joint* PhysXScene::GetJointFromHandle(AzPhysics::JointHandle jointHandle)
     {
         if (jointHandle == AzPhysics::InvalidJointHandle)
         {
@@ -897,13 +896,13 @@ namespace PhysX
         return nullptr;
     }
 
-    void PhysXScene::RemoveJoint(AzPhysics::JointHandle jointHandle) 
+    void PhysXScene::RemoveJoint(AzPhysics::JointHandle jointHandle)
     {
         if (jointHandle == AzPhysics::InvalidJointHandle)
         {
             return;
         }
-        
+
         AzPhysics::JointIndex index = AZStd::get<AzPhysics::HandleTypeIndex::Index>(jointHandle);
         if (index < m_joints.size()
             && m_joints[index].first == AZStd::get<AzPhysics::HandleTypeIndex::Crc>(jointHandle))
@@ -922,7 +921,7 @@ namespace PhysX
             return {}; //return 0 hits
         }
 
-        // Query flags. 
+        // Query flags.
         const physx::PxQueryFlags queryFlags = SceneQueryHelpers::GetPxQueryFlags(request->m_queryType);
         const physx::PxQueryFilterData queryData(queryFlags);
 
@@ -1017,7 +1016,7 @@ namespace PhysX
 
     void PhysXScene::EnableSimulationOfBodyInternal(AzPhysics::SimulatedBody& body)
     {
-        //character controller is a special actor and only needs the m_simulating flag set, 
+        //character controller is a special actor and only needs the m_simulating flag set,
         if (!azrtti_istypeof<PhysX::CharacterController>(body) &&
             !azrtti_istypeof<PhysX::Ragdoll>(body))
         {
@@ -1044,7 +1043,7 @@ namespace PhysX
 
     void PhysXScene::DisableSimulationOfBodyInternal(AzPhysics::SimulatedBody& body)
     {
-        //character controller is a special actor and only needs the m_simulating flag set, 
+        //character controller is a special actor and only needs the m_simulating flag set,
         if (!azrtti_istypeof<PhysX::CharacterController>(body) &&
             !azrtti_istypeof<PhysX::Ragdoll>(body))
         {
@@ -1175,7 +1174,10 @@ namespace PhysX
         using physx::PxGeometryType;
 
         bool isProfilingActive = false;
-        AZ::Debug::ProfilerRequestBus::BroadcastResult(isProfilingActive, &AZ::Debug::ProfilerRequests::IsActive);
+        if (auto profilerSystem = AZ::Debug::ProfilerSystemInterface::Get(); profilerSystem)
+        {
+            isProfilingActive = profilerSystem->IsActive();
+        }
 
         if (!isProfilingActive)
         {
@@ -1223,10 +1225,10 @@ namespace PhysX
         AZ_PROFILE_DATAPOINT(Physics, stats.getNbBroadPhaseRemoves(), RootCategory, BroadphaseSubCategory, "BroadPhaseRemoves");
 
         // Compute pair stats for all geometry types
+#if AZ_PROFILE_DATAPOINT
         AZ::u32 ccdPairs = 0;
         AZ::u32 modifiedPairs = 0;
         AZ::u32 triggerPairs = 0;
-
         for (AZ::u32 i = 0; i < PxGeometryType::eGEOMETRY_COUNT; i++)
         {
             // stat[i][j] = stat[j][i], hence, discarding the symmetric entries
@@ -1239,6 +1241,7 @@ namespace PhysX
                 triggerPairs += stats.getRbPairStats(physx::PxSimulationStatistics::eTRIGGER_PAIRS, firstGeom, secondGeom);
             }
         }
+#endif
 
         [[maybe_unused]] const char* CollisionsSubCategory = "Collisions";
         AZ_PROFILE_DATAPOINT(Physics, ccdPairs, RootCategory, CollisionsSubCategory, "CCDPairs");

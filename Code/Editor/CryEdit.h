@@ -14,7 +14,6 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Outcome/Outcome.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
-#include "WipFeatureManager.h"
 #include "CryEditDoc.h"
 #include "ViewPane.h"
 
@@ -237,7 +236,6 @@ public:
     void OnSyncPlayerUpdate(QAction* action);
     void OnResourcesReduceworkingset();
     void OnDummyCommand() {};
-    void OnShowHelpers();
     void OnFileSave();
     void OnUpdateDocumentReady(QAction* action);
     void OnUpdateFileOpen(QAction* action);
@@ -432,6 +430,7 @@ public:
 class CCrySingleDocTemplate
     : public QObject
 {
+    Q_OBJECT
 private:
     explicit CCrySingleDocTemplate(const QMetaObject* pDocClass)
         : QObject()

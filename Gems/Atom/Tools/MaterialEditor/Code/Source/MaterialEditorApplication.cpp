@@ -9,7 +9,6 @@
 #include <Atom/Document/MaterialDocumentModule.h>
 #include <Atom/Viewport/MaterialViewportModule.h>
 #include <Atom/Window/MaterialEditorWindowModule.h>
-#include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <MaterialEditorApplication.h>
 #include <MaterialEditor_Traits_Platform.h>
@@ -37,7 +36,7 @@ namespace MaterialEditor
     }
 
     MaterialEditorApplication::MaterialEditorApplication(int* argc, char*** argv)
-        : AtomToolsApplication(argc, argv)
+        : Base(argc, argv)
     {
         QApplication::setApplicationName("O3DE Material Editor");
 
@@ -57,20 +56,5 @@ namespace MaterialEditor
     AZStd::vector<AZStd::string> MaterialEditorApplication::GetCriticalAssetFilters() const
     {
         return AZStd::vector<AZStd::string>({ "passes/", "config/", "MaterialEditor/" });
-    }
-
-    void MaterialEditorApplication::ProcessCommandLine(const AZ::CommandLine& commandLine)
-    {
-        // Process command line options for opening one or more material documents on startup
-        size_t openDocumentCount = commandLine.GetNumMiscValues();
-        for (size_t openDocumentIndex = 0; openDocumentIndex < openDocumentCount; ++openDocumentIndex)
-        {
-            const AZStd::string openDocumentPath = commandLine.GetMiscValue(openDocumentIndex);
-
-            AZ_Printf(GetBuildTargetName().c_str(), "Opening document: %s", openDocumentPath.c_str());
-            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument, openDocumentPath);
-        }
-
-        Base::ProcessCommandLine(commandLine);
     }
 } // namespace MaterialEditor

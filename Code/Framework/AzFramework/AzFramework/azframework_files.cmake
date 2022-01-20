@@ -21,6 +21,7 @@ set(FILES
     Archive/ArchiveFindData.cpp
     Archive/ArchiveFindData.h
     Archive/ArchiveVars.h
+    Archive/ArchiveVars.cpp
     Archive/Codec.h
     Archive/IArchive.h
     Archive/INestedArchive.h
@@ -78,6 +79,7 @@ set(FILES
     CommandLine/CommandLine.h
     CommandLine/CommandRegistrationBus.h
     Debug/DebugCameraBus.h
+    feature_options.cmake
     Viewport/ViewportBus.h
     Viewport/ViewportBus.cpp
     Viewport/ViewportColors.h
@@ -268,13 +270,13 @@ set(FILES
     Physics/WindBus.h
     Process/ProcessCommunicator.cpp
     Process/ProcessCommunicator.h
-    Process/ProcessWatcher.cpp
-    Process/ProcessWatcher.h
     Process/ProcessCommon_fwd.h
     Process/ProcessCommunicator.h
     Process/ProcessWatcher.cpp
     Process/ProcessWatcher.h
     Process/ProcessCommon_fwd.h
+    Process/ProcessCommunicatorTracePrinter.cpp
+    Process/ProcessCommunicatorTracePrinter.h
     ProjectManager/ProjectManager.h
     ProjectManager/ProjectManager.cpp
     Render/GameIntersectorComponent.h
@@ -287,6 +289,7 @@ set(FILES
     Spawnable/RootSpawnableInterface.h
     Spawnable/Spawnable.cpp
     Spawnable/Spawnable.h
+    Spawnable/SpawnableAssetBus.h
     Spawnable/SpawnableAssetHandler.h
     Spawnable/SpawnableAssetHandler.cpp
     Spawnable/SpawnableEntitiesContainer.h

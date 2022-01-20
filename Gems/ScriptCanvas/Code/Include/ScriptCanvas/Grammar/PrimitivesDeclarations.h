@@ -245,6 +245,7 @@ namespace ScriptCanvas
         AZ_CVAR_EXTERNED(bool, g_disableParseOnGraphValidation);
         AZ_CVAR_EXTERNED(bool, g_printAbstractCodeModel);
         AZ_CVAR_EXTERNED(bool, g_printAbstractCodeModelAtPrefabTime);
+        AZ_CVAR_EXTERNED(bool, g_processingErrorsForUnitTestsEnabled);
         AZ_CVAR_EXTERNED(bool, g_saveRawTranslationOuputToFile);
         AZ_CVAR_EXTERNED(bool, g_saveRawTranslationOuputToFileAtPrefabTime);
 

@@ -5,8 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzCore/Debug/EventTrace.h>
-
 #include <Atom/RHI/Factory.h>
 
 #include <Atom/RPI.Public/Shader/Shader.h>
@@ -215,6 +213,8 @@ namespace AZ
                 Data::Instance<RPI::Shader> rasterShader,
                 uint32_t vertexCount, uint32_t strandsCount )
             {
+                m_initialized = false;
+
                 AZ_Assert(vertexCount <= std::numeric_limits<uint32_t>().max(), "Hair vertex count exceeds uint32_t size.");
 
                 // Create the dynamic shared buffers Srg.
@@ -610,8 +610,16 @@ namespace AZ
                 // First, Directly loading from the asset stored in the render settings.
                 if (pRenderSettings)
                 {
-                    m_baseAlbedo = RPI::StreamingImage::FindOrCreate(pRenderSettings->m_baseAlbedoAsset);
-                    m_strandAlbedo = RPI::StreamingImage::FindOrCreate(pRenderSettings->m_strandAlbedoAsset);
+                    if (pRenderSettings->m_baseAlbedoAsset)
+                    {
+                        pRenderSettings->m_baseAlbedoAsset.BlockUntilLoadComplete();
+                        m_baseAlbedo = RPI::StreamingImage::FindOrCreate(pRenderSettings->m_baseAlbedoAsset);
+                    }
+                    if (pRenderSettings->m_strandAlbedoAsset)
+                    {
+                        pRenderSettings->m_strandAlbedoAsset.BlockUntilLoadComplete();
+                        m_strandAlbedo = RPI::StreamingImage::FindOrCreate(pRenderSettings->m_strandAlbedoAsset);
+                    }
                 }
 
                 // Fallback using the texture name stored in the render settings. 
@@ -958,7 +966,7 @@ namespace AZ
                 const char* assetName, AMD::TressFXAsset* asset,
                 AMD::TressFXSimulationSettings* simSettings, AMD::TressFXRenderingSettings* renderSettings)
             {
-                AZ_TRACE_METHOD();
+                AZ_PROFILE_FUNCTION(AzRender);
 
                 ++s_objectCounter;
 
@@ -1144,7 +1152,7 @@ namespace AZ
 
                 if (!renderMaterialSrg || !simSrg)
                 {
-                    AZ_Error("Hair Gem", false, "Failed to get thre hair material Srg for the raster pass.");
+                    AZ_Error("Hair Gem", false, "Failed to get the hair material Srg for the raster pass.");
                     return false;
                 }
                 // No need to compile the simSrg since it was compiled already by the Compute pass this frame

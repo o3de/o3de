@@ -7,7 +7,6 @@
  */
 
 #include <Decals/DecalTextureArrayFeatureProcessor.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/Material/Material.h>
@@ -26,7 +25,7 @@ namespace AZ
     {
         namespace
         {
-            static AZ::RHI::Size GetTextureSizeFromMaterialAsset(const AZ::RPI::MaterialAsset* materialAsset)
+            static AZ::RHI::Size GetTextureSizeFromMaterialAsset(AZ::RPI::MaterialAsset* materialAsset)
             {
                 for (const auto& elem : materialAsset->GetPropertyValues())
                 {
@@ -376,7 +375,7 @@ namespace AZ
             }
         }
 
-        AZStd::optional<AZ::Render::DecalTextureArrayFeatureProcessor::DecalLocation> DecalTextureArrayFeatureProcessor::AddMaterialToTextureArrays(const AZ::RPI::MaterialAsset* materialAsset)
+        AZStd::optional<AZ::Render::DecalTextureArrayFeatureProcessor::DecalLocation> DecalTextureArrayFeatureProcessor::AddMaterialToTextureArrays(AZ::RPI::MaterialAsset* materialAsset)
         {
             const RHI::Size textureSize = GetTextureSizeFromMaterialAsset(materialAsset);
 
@@ -411,7 +410,7 @@ namespace AZ
             AZ_PROFILE_SCOPE(AzRender, "DecalTextureArrayFeatureProcessor: OnAssetReady");
             const Data::AssetId& assetId = asset->GetId();
             
-            const RPI::MaterialAsset* materialAsset = asset.GetAs<AZ::RPI::MaterialAsset>();
+            RPI::MaterialAsset* materialAsset = asset.GetAs<AZ::RPI::MaterialAsset>();
             const bool validDecalMaterial = materialAsset && DecalTextureArray::IsValidDecalMaterial(*materialAsset);
             if (validDecalMaterial)
             {

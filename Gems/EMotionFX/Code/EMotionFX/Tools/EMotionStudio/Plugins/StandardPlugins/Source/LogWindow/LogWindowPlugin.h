@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __EMSTUDIO_LOGWINDOWPLUGIN_H
-#define __EMSTUDIO_LOGWINDOWPLUGIN_H
+#pragma once
 
 #if !defined(Q_MOC_RUN)
 #include <MCore/Source/LogManager.h>
@@ -65,5 +64,3 @@ namespace EMStudio
         AzQtComponents::FilteredSearchWidget* m_searchWidget;
     };
 }   // namespace EMStudio
-
-#endif

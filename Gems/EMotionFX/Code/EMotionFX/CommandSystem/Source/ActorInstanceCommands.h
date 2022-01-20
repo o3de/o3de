@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __EMFX_ACTORINSTANCECOMMANDS_H
-#define __EMFX_ACTORINSTANCECOMMANDS_H
+#pragma once
 
 // include the required headers
 #include "CommandSystemConfig.h"
@@ -61,6 +60,3 @@ public:
     void COMMANDSYSTEM_API MakeSelectedActorInstancesVisible();
     void COMMANDSYSTEM_API UnselectSelectedActorInstances();
 } // namespace CommandSystem
-
-
-#endif

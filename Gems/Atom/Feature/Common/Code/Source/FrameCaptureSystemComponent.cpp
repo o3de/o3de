@@ -29,6 +29,8 @@
 #include <AzCore/Script/ScriptContextAttributes.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
+#include <AzCore/Task/TaskGraph.h>
+
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
@@ -50,6 +52,15 @@ namespace AZ
             "Sets the compression level for saving png screenshots. Valid values are from 0 to 8"
         );
 
+        AZ_CVAR(int,
+            r_pngCompressionNumThreads,
+            8, // Number of threads to use for the png r<->b channel data swap
+            nullptr,
+            ConsoleFunctorFlags::Null,
+            "Sets the number of threads for saving png screenshots. Valid values are from 1 to 128, although less than or equal the number of hw threads is recommended"
+        );
+
+
         FrameCaptureOutputResult PngFrameCaptureOutput(
             const AZStd::string& outputFilePath, const AZ::RPI::AttachmentReadback::ReadbackResult& readbackResult)
         {
@@ -65,33 +76,67 @@ namespace AZ
 
                 buffer = AZStd::make_shared<AZStd::vector<uint8_t>>(readbackResult.m_dataBuffer->size());
                 AZStd::copy(readbackResult.m_dataBuffer->begin(), readbackResult.m_dataBuffer->end(), buffer->begin());
-
-                AZ::JobCompletion jobCompletion;
-                const int numThreads = 8;
+                const int numThreads = r_pngCompressionNumThreads;
                 const int numPixelsPerThread = static_cast<int>(buffer->size() / numChannels / numThreads);
-                for (int i = 0; i < numThreads; ++i)
+
+                AZ::TaskGraphActiveInterface* taskGraphActiveInterface = AZ::Interface<AZ::TaskGraphActiveInterface>::Get();
+                bool taskGraphActive = taskGraphActiveInterface && taskGraphActiveInterface->IsTaskGraphActive();
+
+                if (taskGraphActive)
                 {
-                    int startPixel = i * numPixelsPerThread;
+                    static const AZ::TaskDescriptor pngTaskDescriptor{"PngWriteOutChannelSwap", "Graphics"};
+                    AZ::TaskGraph taskGraph;
+                    for (int i = 0; i < numThreads; ++i)
+                    {
+                        int startPixel = i * numPixelsPerThread;
 
-                    AZ::Job* job = AZ::CreateJobFunction(
-                        [&, startPixel, numPixelsPerThread]()
-                        {
-                            for (int pixelOffset = 0; pixelOffset < numPixelsPerThread; ++pixelOffset)
+                        taskGraph.AddTask(
+                            pngTaskDescriptor,
+                            [&, startPixel]()
                             {
-                                if (startPixel * numChannels + numChannels < buffer->size())
+                                for (int pixelOffset = 0; pixelOffset < numPixelsPerThread; ++pixelOffset)
                                 {
-                                    AZStd::swap(
-                                        buffer->data()[(startPixel + pixelOffset) * numChannels],
-                                        buffer->data()[(startPixel + pixelOffset) * numChannels + 2]
-                                    );
+                                    if (startPixel * numChannels + numChannels < buffer->size())
+                                    {
+                                        AZStd::swap(
+                                            buffer->data()[(startPixel + pixelOffset) * numChannels],
+                                            buffer->data()[(startPixel + pixelOffset) * numChannels + 2]
+                                        );
+                                    }
                                 }
-                            }
-                        }, true, nullptr);
-
-                    job->SetDependent(&jobCompletion);
-                    job->Start();
+                            });
+                    }
+                    AZ::TaskGraphEvent taskGraphFinishedEvent;
+                    taskGraph.Submit(&taskGraphFinishedEvent);
+                    taskGraphFinishedEvent.Wait();
                 }
-                jobCompletion.StartAndWaitForCompletion();
+                else
+                {
+                    AZ::JobCompletion jobCompletion;
+                    for (int i = 0; i < numThreads; ++i)
+                    {
+                        int startPixel = i * numPixelsPerThread;
+
+                        AZ::Job* job = AZ::CreateJobFunction(
+                            [&, startPixel]()
+                            {
+                                for (int pixelOffset = 0; pixelOffset < numPixelsPerThread; ++pixelOffset)
+                                {
+                                    if (startPixel * numChannels + numChannels < buffer->size())
+                                    {
+                                        AZStd::swap(
+                                            buffer->data()[(startPixel + pixelOffset) * numChannels],
+                                            buffer->data()[(startPixel + pixelOffset) * numChannels + 2]
+                                        );
+                                    }
+                                }
+                            }, true, nullptr);
+
+                        job->SetDependent(&jobCompletion);
+                        job->Start();
+                    }
+                    jobCompletion.StartAndWaitForCompletion();
+                }
             }
 
             Utils::PngFile image = Utils::PngFile::Create(readbackResult.m_imageDescriptor.m_size, format, *buffer);

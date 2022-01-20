@@ -8,8 +8,7 @@ REM
 REM
 
 REM To get recursive folder creation
-SETLOCAL EnableExtensions
-SETLOCAL EnableDelayedExpansion
+SETLOCAL EnableExtensions EnableDelayedExpansion
 
 where /Q cmake
 IF NOT %ERRORLEVEL%==0 (
@@ -22,21 +21,26 @@ IF NOT "%COMMAND_CWD%"=="" (
     CD %COMMAND_CWD%
 )
 
-REM Jenkins reports MSB8029 when TMP/TEMP is not defined, define a dummy folder
-IF NOT "%TMP%"=="" (
-    IF NOT "%WORKSPACE_TMP%"=="" (
-        SET TMP=%WORKSPACE_TMP%
-        SET TEMP=%WORKSPACE_TMP%
+REM Ending the local environment to be able to propagate the TMP/TEMP variables to the calling script
+ENDLOCAL
+
+REM Jenkins does not defined TMP
+IF "%TMP%"=="" (
+    IF "%WORKSPACE%"=="" (
+        SET TMP=%APPDATA%\Local\Temp
+        SET TEMP=%APPDATA%\Local\Temp
     ) ELSE (
-        SET TMP=%cd%/temp
-        SET TEMP=%cd%/temp
+        SET TMP=%WORKSPACE%\Temp
+        SET TEMP=%WORKSPACE%\Temp
+        REM This folder may not be created in the workspace
+        IF NOT EXIST "!TMP!" (
+            MKDIR "!TMP!"
+        )
     )
-)
-IF NOT EXIST "!TMP!" (
-    MKDIR "!TMP!"
 )
 
 EXIT /b 0
 
 :error
+ENDLOCAL
 EXIT /b 1

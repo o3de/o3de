@@ -39,18 +39,24 @@ namespace AZ
 
 namespace EMStudio
 {
+    class RenderOptions;
+
     class AnimViewportRenderer
     {
     public:
         AZ_CLASS_ALLOCATOR(AnimViewportRenderer, AZ::SystemAllocator, 0);
 
-        AnimViewportRenderer(AZ::RPI::ViewportContextPtr viewportContext);
+        AnimViewportRenderer(AZ::RPI::ViewportContextPtr viewportContext, const RenderOptions* renderOptions);
         ~AnimViewportRenderer();
 
         void Reinit();
 
         //! Return the center position of the existing objects.
         AZ::Vector3 GetCharacterCenter() const;
+
+        void UpdateActorRenderFlag(EMotionFX::ActorRenderFlagBitset renderFlags);
+
+        AZStd::shared_ptr<AzFramework::Scene> GetFrameworkScene() const;
 
     private:
 
@@ -79,13 +85,11 @@ namespace EMStudio
 
         AZ::Entity* m_postProcessEntity = nullptr;
         AZ::Entity* m_iblEntity = nullptr;
-        AZ::Entity* m_cameraEntity = nullptr;
-        AZ::Component* m_cameraComponent = nullptr;
-        AZ::Entity* m_modelEntity = nullptr;
-        AZ::Data::AssetId m_modelAssetId;
-        AZ::Entity* m_gridEntity = nullptr;
+        AZ::Entity* m_groundEntity = nullptr;
         AZStd::vector<AZ::Entity*> m_actorEntities;
+        const RenderOptions* m_renderOptions;
 
+        const float DefaultFrustumDimension = 128.0f;
         AZStd::vector<AZ::Render::DirectionalLightFeatureProcessorInterface::LightHandle> m_lightHandles;
     };
 }

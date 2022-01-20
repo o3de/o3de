@@ -68,6 +68,7 @@ namespace AtomToolsFramework
         {
             return false;
         }
+        const AzFramework::ViewportId newId = m_viewportContext->GetId();
 
         SetControllerList(AZStd::make_shared<AzFramework::ViewportControllerList>());
 
@@ -78,14 +79,14 @@ namespace AtomToolsFramework
         m_viewportInteractionImpl = AZStd::make_unique<ViewportInteractionImpl>(m_defaultCamera);
         m_viewportInteractionImpl->m_deviceScalingFactorFn = [this] { return aznumeric_cast<float>(devicePixelRatioF()); };
         m_viewportInteractionImpl->m_screenSizeFn = [this] { return AzFramework::ScreenSize(width(), height()); };
-        m_viewportInteractionImpl->Connect(id);
+        m_viewportInteractionImpl->Connect(newId);
 
         AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Handler::BusConnect(GetId());
         AzFramework::InputChannelEventListener::Connect();
         AZ::TickBus::Handler::BusConnect();
         AzFramework::WindowRequestBus::Handler::BusConnect(params.windowHandle);
 
-        m_inputChannelMapper = new AzToolsFramework::QtEventToAzInputMapper(this, id);
+        m_inputChannelMapper = new AzToolsFramework::QtEventToAzInputMapper(this, newId);
 
         // Forward input events to our controller list.
         QObject::connect(m_inputChannelMapper, &AzToolsFramework::QtEventToAzInputMapper::InputChannelUpdated, this,
@@ -141,6 +142,24 @@ namespace AtomToolsFramework
             m_viewportContext->SetRenderScene(nullptr);
             return;
         }
+
+        // Check if the scene already has an atom scene attached. In this case we don't need to create a new atom scene.
+        if (auto existingScene = scene->FindSubsystem<AZ::RPI::ScenePtr>())
+        {
+            m_viewportContext->SetRenderScene(*existingScene);
+
+            // If we have a render pipeline, use it and ensure an AuxGeom feature processor is installed.
+            // Otherwise, fall through and ensure a render pipeline is installed for this scene.
+            if (m_viewportContext->GetCurrentPipeline())
+            {
+                if (auto auxGeomFP = existingScene->get()->GetFeatureProcessor<AZ::RPI::AuxGeomFeatureProcessorInterface>())
+                {
+                    m_auxGeom = auxGeomFP->GetOrCreateDrawQueueForView(m_defaultCamera.get());
+                }
+                return;
+            }
+        }
+
         AZ::RPI::ScenePtr atomScene;
         auto initializeScene = [&](AZ::Render::Bootstrap::Request* bootstrapRequests)
         {
@@ -383,4 +402,11 @@ namespace AtomToolsFramework
     {
         return 1;
     }
+
+    // Editor ignores requests to change the sync interval
+    bool RenderViewportWidget::SetSyncInterval(uint32_t /*ignored*/)
+    {
+        return false;
+    }
+
 } //namespace AtomToolsFramework

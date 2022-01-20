@@ -10,7 +10,6 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <Cry_Camera.h>
 
 #include <QSet>
 
@@ -80,6 +79,8 @@ struct EditorViewportSettings : public AzToolsFramework::ViewportInteraction::Vi
     float ManipulatorCircleBoundWidth() const override;
     bool StickySelectEnabled() const override;
     AZ::Vector3 DefaultEditorCameraPosition() const override;
+    bool IconsVisible() const override;
+    bool HelpersVisible() const override;
 };
 
 // EditorViewportWidget window
@@ -171,7 +172,6 @@ private:
     void ViewToWorldRay(const QPoint& vp, Vec3& raySrc, Vec3& rayDir) const override;
     Vec3 ViewToWorldNormal(const QPoint& vp, bool onlyTerrain, bool bTestRenderMesh = false) override;
     float GetScreenScaleFactor(const Vec3& worldPoint) const override;
-    float GetScreenScaleFactor(const CCamera& camera, const Vec3& object_position) override;
     float GetAspectRatio() const override;
     bool HitTest(const QPoint& point, HitContext& hitInfo) override;
     bool IsBoundsVisible(const AABB& box) const override;
@@ -207,8 +207,6 @@ private:
     void* GetSystemCursorConstraintWindow() const override;
 
     // AzToolsFramework::MainEditorViewportInteractionRequestBus overrides ...
-    AZ::Vector3 PickTerrain(const AzFramework::ScreenPoint& point) override;
-    float TerrainHeight(const AZ::Vector2& position) override;
     bool ShowingWorldSpace() override;
     QWidget* GetWidgetForViewportContextMenu() override;
 
@@ -294,9 +292,6 @@ private:
     void PostCameraSet();
     // This switches the active camera to the next one in the list of (default, all custom cams).
     void CycleCamera();
-
-    AzFramework::CameraState GetCameraState();
-    AzFramework::ScreenPoint ViewportWorldToScreen(const AZ::Vector3& worldPosition);
 
     QPoint WidgetToViewport(const QPoint& point) const;
     QPoint ViewportToWidget(const QPoint& point) const;

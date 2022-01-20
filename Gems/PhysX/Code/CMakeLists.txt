@@ -8,10 +8,10 @@
 
 add_subdirectory(NumericalMethods)
 
-ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
+o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
 
 include(${pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake) # for PAL_TRAIT_PHYSX_SUPPORTED
-set(PHYSX_ENABLE_RUNNING_BENCHMARKS OFF CACHE BOOL "Adds a target to allow running of the physx benchmarks.")
+set(LY_PHYSX_ENABLE_RUNNING_BENCHMARKS OFF CACHE BOOL "Adds a target to allow running of the physx benchmarks.")
 
 if(PAL_TRAIT_PHYSX_SUPPORTED)
     set(physx_dependency 3rdParty::PhysX)
@@ -182,14 +182,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             Gem::LmbrCentral
     )
 
-    if(PAL_TRAIT_JOINTS_TYPED_TEST_CASE)
-        ly_add_source_properties(
-            SOURCES Tests/PhysXJointsTest.cpp
-            PROPERTY COMPILE_DEFINITIONS 
-            VALUES ENABLE_JOINTS_TYPED_TEST_CASE
-        )
-    endif()
-
     ly_add_googletest(
         NAME Gem::PhysX.Tests
     )
@@ -197,7 +189,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     # Only add the physx benchmarks if this flag is set. The benchmark code is still built, as it is part of the PhysX.Tests project.
     # Currently jenkins has a 1500sec(25min) timeout, our benchmarks can sometimes take over 1500sec and cause a build failure for timeout.
     # Jenkins currently doesn't upload the results of the benchmarks, so this is ok.
-    if(PHYSX_ENABLE_RUNNING_BENCHMARKS)
+    if(LY_PHYSX_ENABLE_RUNNING_BENCHMARKS)
         ly_add_googlebenchmark(
             NAME Gem::PhysX.Benchmarks
             TARGET Gem::PhysX.Tests
@@ -224,6 +216,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     AZ::AzTestShared
                     AZ::AzTest
                     AZ::AzToolsFrameworkTestCommon
+                    AZ::AzManipulatorTestFramework.Static
                     Gem::PhysX.Static
                     Gem::PhysX.Mocks
                     Gem::PhysX.Editor.Static

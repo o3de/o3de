@@ -15,6 +15,10 @@
 #include <AzTest/AzTest.h>
 
 #include <limits>
+#include <AzCore/Jobs/JobContext.h>
+#include <AzCore/Jobs/JobManager.h>
+#include <AzCore/Jobs/JobManagerComponent.h>
+#include <AzCore/Jobs/JobManagerDesc.h>
 
 using namespace AssetProcessor;
 
@@ -26,6 +30,7 @@ public:
 
     friend class GTEST_TEST_CLASS_NAME_(MultiplatformPathDependencyTest, AssetProcessed_Impl_MultiplatformDependencies);
     friend class GTEST_TEST_CLASS_NAME_(MultiplatformPathDependencyTest, AssetProcessed_Impl_MultiplatformDependencies_DeferredResolution);
+    friend class GTEST_TEST_CLASS_NAME_(MultiplatformPathDependencyTest, SameFilenameForAllPlatforms);
 
     friend class GTEST_TEST_CLASS_NAME_(MultiplatformPathDependencyTest, AssetProcessed_Impl_MultiplatformDependencies_SourcePath);
 
@@ -88,6 +93,7 @@ public:
     friend struct DuplicateProductsTest;
     friend struct DuplicateProcessTest;
     friend struct AbsolutePathProductDependencyTest;
+    friend struct WildcardSourceDependencyTest;
 
     explicit AssetProcessorManager_Test(PlatformConfiguration* config, QObject* parent = nullptr);
     ~AssetProcessorManager_Test() override;
@@ -175,7 +181,20 @@ void AssetProcessorManagerTest::SetUp()
 
     AssetProcessorTest::SetUp();
 
+    AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
+    AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
+
     m_data = AZStd::make_unique<StaticData>();
+
+    m_data->m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
+
+    m_data->m_descriptor = AZ::JobManagerComponent::CreateDescriptor();
+    m_data->m_descriptor->Reflect(m_data->m_serializeContext.get());
+
+    m_data->m_jobManagerEntity = aznew AZ::Entity{};
+    m_data->m_jobManagerEntity->CreateComponent<AZ::JobManagerComponent>();
+    m_data->m_jobManagerEntity->Init();
+    m_data->m_jobManagerEntity->Activate();
 
     m_config.reset(new AssetProcessor::PlatformConfiguration());
     m_mockApplicationManager.reset(new AssetProcessor::MockApplicationManager());
@@ -255,6 +274,10 @@ void AssetProcessorManagerTest::SetUp()
 
 void AssetProcessorManagerTest::TearDown()
 {
+    m_data->m_jobManagerEntity->Deactivate();
+    delete m_data->m_jobManagerEntity;
+    delete m_data->m_descriptor;
+
     m_data = nullptr;
 
     QObject::disconnect(m_idleConnection);
@@ -269,6 +292,9 @@ void AssetProcessorManagerTest::TearDown()
     m_config.reset();
     m_qApp.reset();
     m_scopeDir.reset();
+
+    AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
+    AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
 
     AssetProcessor::AssetProcessorTest::TearDown();
 }
@@ -1269,7 +1295,8 @@ TEST_F(AbsolutePathProductDependencyTest, AbsolutePathProductDependency_RetryDef
         AZ::Data::AssetType::CreateNull());
     m_assetProcessorManager->m_stateData->SetProduct(matchingProductForDependency);
 
-    m_assetProcessorManager->m_pathDependencyManager->RetryDeferredDependencies(matchingSource);
+    m_assetProcessorManager->m_pathDependencyManager->QueueSourceForDependencyResolution(matchingSource);
+    m_assetProcessorManager->m_pathDependencyManager->ProcessQueuedDependencyResolves();
 
     // The product dependency ID shouldn't change when it goes from unresolved to resolved.
     AZStd::vector<ProductDependencyDatabaseEntry> resolvedProductDependencies;
@@ -1404,6 +1431,7 @@ bool PathDependencyTest::ProcessAsset(TestAsset& asset, const OutputAssetSet& ou
         // tell the APM that the asset has been processed and allow it to bubble through its event queue:
         m_isIdling = false;
         m_assetProcessorManager->AssetProcessed(capturedDetails[jobSet].m_jobEntry, processJobResponse);
+        m_assetProcessorManager->CheckForIdle();
 
         jobSet++;
     }
@@ -2643,6 +2671,44 @@ TEST_F(MultiplatformPathDependencyTest, AssetProcessed_Impl_MultiplatformDepende
     ASSERT_EQ(resolvedCount, 1);
     ASSERT_EQ(unresolvedCount, 1);
     ASSERT_NE(SearchDependencies(dependencyContainer, asset1.m_products[0]), SearchDependencies(dependencyContainer, asset1.m_products[1]));
+}
+
+TEST_F(MultiplatformPathDependencyTest, SameFilenameForAllPlatforms)
+{
+    TestAsset asset2("asset2");
+    bool result = ProcessAsset(
+        asset2, { { ".output" }, { ".output" } }, { { "*1.output", AssetBuilderSDK::ProductPathDependencyType::ProductFile } }, "subfolder1/",
+        ".txt");
+
+    ASSERT_TRUE(result);
+
+    TestAsset asset1("asset1");
+    result = ProcessAsset(asset1, { { ".output" }, { ".output" } }, {});
+
+    ASSERT_TRUE(result);
+
+    AssetDatabaseConnection* sharedConnection = m_assetProcessorManager->m_stateData.get();
+    ASSERT_TRUE(sharedConnection);
+
+    AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer dependencyContainer;
+
+    sharedConnection->GetProductDependencies(dependencyContainer);
+    int resolvedCount = 0;
+    int unresolvedCount = 0;
+    for (const auto& dep : dependencyContainer)
+    {
+        if (dep.m_unresolvedPath.empty())
+        {
+            resolvedCount++;
+        }
+        else
+        {
+            unresolvedCount++;
+        }
+    }
+    ASSERT_EQ(resolvedCount, 2);
+    ASSERT_EQ(unresolvedCount, 2);
+    VerifyDependencies(dependencyContainer, { asset1.m_products[0], asset1.m_products[1] }, { "*1.output", "*1.output" });
 }
 
 TEST_F(MultiplatformPathDependencyTest, AssetProcessed_Impl_MultiplatformDependencies_SourcePath)
@@ -4184,7 +4250,7 @@ TEST_F(LockedFileTest, DeleteFile_LockedProduct_DeleteFails)
     auto theFile = m_data->m_absolutePath[1].toUtf8();
     const char* theFileString = theFile.constData();
     auto [sourcePath, productPath] = *m_data->m_productPaths.find(theFileString);
-    
+
     {
         QFile file(theFileString);
         file.remove();
@@ -4256,7 +4322,7 @@ TEST_F(LockedFileTest, DeleteFile_LockedProduct_DeletesWhenReleased)
 
         EXPECT_FALSE(QFile::exists(productPath));
         EXPECT_EQ(m_data->m_deletedSources.size(), 1);
-        
+
         EXPECT_GT(m_deleteCounter, 1); // Make sure the AP tried more than once to delete the file
         m_errorAbsorber->ExpectAsserts(0);
     }
@@ -5326,4 +5392,345 @@ TEST_F(MetadataFileTest, MetadataFile_SourceFileExtensionDifferentCase)
 
     ASSERT_TRUE(BlockUntilIdle(5000));
     ASSERT_EQ(jobDetails.m_jobEntry.m_pathRelativeToWatchFolder, relFileName);
+}
+
+AZStd::vector<AZStd::string> QStringListToVector(const QStringList& qstringList)
+{
+    AZStd::vector<AZStd::string> azVector;
+    // Convert to a vector of AZStd::strings because GTest handles this type better when displaying errors
+    for (const QString& resolvedPath : qstringList)
+    {
+        azVector.emplace_back(resolvedPath.toUtf8().constData());
+    }
+
+    return azVector;
+}
+
+bool WildcardSourceDependencyTest::Test(
+    const AZStd::string& dependencyPath, AZStd::vector<AZStd::string>& resolvedPaths)
+{
+    [[maybe_unused]] QString resolvedName;
+    QStringList stringlistPaths;
+    AssetBuilderSDK::SourceFileDependency dependency(dependencyPath, AZ::Uuid::CreateNull(), AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards);
+    bool result = m_assetProcessorManager->ResolveSourceFileDependencyPath(dependency, resolvedName, stringlistPaths);
+
+    resolvedPaths = QStringListToVector(stringlistPaths);
+
+    return result;
+}
+
+AZStd::vector<AZStd::string> WildcardSourceDependencyTest::FileAddedTest(const QString& path)
+{
+    auto result = m_assetProcessorManager->GetSourceFilesWhichDependOnSourceFile(path);
+
+    return QStringListToVector(result);
+}
+
+void WildcardSourceDependencyTest::SetUp()
+{
+    AssetProcessorManagerTest::SetUp();
+
+    QDir tempPath(m_tempDir.path());
+
+    // Add a non-recursive scan folder.  Only files directly inside of this folder should be picked up, subfolders are ignored
+    m_config->AddScanFolder(ScanFolderInfo(tempPath.filePath("no_recurse"), "no_recurse",
+        "no_recurse", false, false, m_config->GetEnabledPlatforms(), 1));
+
+    {
+        ExcludeAssetRecognizer excludeFolder;
+        excludeFolder.m_name = "Exclude ignored Folder";
+        excludeFolder.m_patternMatcher =
+            AssetBuilderSDK::FilePatternMatcher(R"REGEX(^(.*\/)?ignored(\/.*)?$)REGEX", AssetBuilderSDK::AssetBuilderPattern::Regex);
+        m_config->AddExcludeRecognizer(excludeFolder);
+    }
+
+    {
+        ExcludeAssetRecognizer excludeFile;
+        excludeFile.m_name = "Exclude z.foo Files";
+        excludeFile.m_patternMatcher =
+            AssetBuilderSDK::FilePatternMatcher(R"REGEX(^(.*\/)?z\.foo$)REGEX", AssetBuilderSDK::AssetBuilderPattern::Regex);
+        m_config->AddExcludeRecognizer(excludeFile);
+    }
+
+    UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("subfolder1/1a.foo"));
+    UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("subfolder1/1b.foo"));
+    UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("subfolder2/redirected/a.foo"));
+    UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("subfolder2/redirected/b.foo"));
+    UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("subfolder2/redirected/folder/one/c.foo"));
+    UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("subfolder2/redirected/folder/one/d.foo"));
+
+    // Add a file that is not in a scanfolder.  Should always be ignored
+    UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("not/a/scanfolder/e.foo"));
+
+    // Add a file in the non-recursive scanfolder.  Since its not directly in the scan folder, it should always be ignored
+    UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("no_recurse/one/two/three/f.foo"));
+
+    // Add a file to an ignored folder
+    UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("subfolder2/redirected/folder/ignored/g.foo"));
+
+    // Add an ignored file
+    UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("subfolder2/redirected/folder/one/z.foo"));
+
+    // Add a file in the cache
+    AZStd::string projectCacheRootValue;
+    AZ::SettingsRegistry::Get()->Get(projectCacheRootValue, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder);
+    projectCacheRootValue = AssetUtilities::NormalizeFilePath(projectCacheRootValue.c_str()).toUtf8().constData();
+    auto path = AZ::IO::Path(projectCacheRootValue) / "cache.foo";
+    UnitTestUtils::CreateDummyFile(path.c_str());
+
+    AzToolsFramework::AssetDatabase::SourceFileDependencyEntryContainer dependencies;
+
+    // Relative path wildcard dependency
+    dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
+        AZ::Uuid::CreateRandom(), "a.foo", "%a.foo",
+        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0));
+
+    // Absolute path wildcard dependency
+    dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
+        AZ::Uuid::CreateRandom(), "b.foo", tempPath.absoluteFilePath("%b.foo").toUtf8().constData(),
+        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0));
+
+    // Test what happens when we have 2 dependencies on the same file
+    dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
+        AZ::Uuid::CreateRandom(), "folder/one/d.foo", "%c.foo",
+        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0));
+
+    dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
+        AZ::Uuid::CreateRandom(), "folder/one/d.foo", tempPath.absoluteFilePath("%c.foo").toUtf8().constData(),
+        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0));
+
+#ifdef AZ_PLATFORM_WINDOWS
+    // Test to make sure a relative wildcard dependency doesn't match an absolute path
+    // For example, if the input is C:/project/subfolder1/a.foo
+    // This should not match a wildcard of c%.foo
+    // Take the first character of the tempPath and append %.foo onto it for this test, which should produce something like c%.foo
+    // This only applies to windows because on other OSes if the dependency starts with /, then its an abs path dependency
+    auto test = (tempPath.absolutePath().left(1) + "%.foo");
+    dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
+        AZ::Uuid::CreateRandom(), "folder/one/d.foo",
+        (test).toUtf8().constData(),
+        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0));
+#endif
+
+    ASSERT_TRUE(m_assetProcessorManager->m_stateData->SetSourceFileDependencies(dependencies));
+}
+
+TEST_F(WildcardSourceDependencyTest, Relative_Broad)
+{
+    // Expect all files except for the 2 invalid ones (e and f)
+    AZStd::vector<AZStd::string> resolvedPaths;
+
+    ASSERT_TRUE(Test("*.foo", resolvedPaths));
+    ASSERT_THAT(resolvedPaths, ::testing::UnorderedElementsAre("a.foo", "b.foo", "folder/one/c.foo", "folder/one/d.foo", "1a.foo", "1b.foo"));
+}
+
+TEST_F(WildcardSourceDependencyTest, Relative_WithFolder)
+{
+    // Make sure we can filter to files under a folder
+    AZStd::vector<AZStd::string> resolvedPaths;
+
+    ASSERT_TRUE(Test("folder/*.foo", resolvedPaths));
+    ASSERT_THAT(resolvedPaths, ::testing::UnorderedElementsAre("folder/one/c.foo", "folder/one/d.foo"));
+}
+
+TEST_F(WildcardSourceDependencyTest, Relative_WildcardPath)
+{
+    // Make sure the * wildcard works even if the full filename is given
+    AZStd::vector<AZStd::string> resolvedPaths;
+
+    ASSERT_TRUE(Test("*a.foo", resolvedPaths));
+    ASSERT_THAT(resolvedPaths, ::testing::UnorderedElementsAre("a.foo", "1a.foo"));
+}
+
+TEST_F(WildcardSourceDependencyTest, Absolute_WithFolder)
+{
+    // Make sure we can use absolute paths to filter to files under a folder
+    AZStd::vector<AZStd::string> resolvedPaths;
+    QDir tempPath(m_tempDir.path());
+
+    ASSERT_TRUE(Test(tempPath.absoluteFilePath("subfolder2/redirected/*.foo").toUtf8().constData(), resolvedPaths));
+    ASSERT_THAT(resolvedPaths, ::testing::UnorderedElementsAre("a.foo", "b.foo", "folder/one/c.foo", "folder/one/d.foo"));
+}
+
+TEST_F(WildcardSourceDependencyTest, Absolute_NotInScanfolder)
+{
+    // Files outside a scanfolder should not be returned even with an absolute path
+    AZStd::vector<AZStd::string> resolvedPaths;
+    QDir tempPath(m_tempDir.path());
+
+    ASSERT_TRUE(Test(tempPath.absoluteFilePath("not/a/scanfolder/*.foo").toUtf8().constData(), resolvedPaths));
+    ASSERT_THAT(resolvedPaths, ::testing::UnorderedElementsAre());
+}
+
+TEST_F(WildcardSourceDependencyTest, Relative_NotInScanfolder)
+{
+    // Files outside a scanfolder should not be returned
+    AZStd::vector<AZStd::string> resolvedPaths;
+    QDir tempPath(m_tempDir.path());
+
+    ASSERT_TRUE(Test("*/e.foo", resolvedPaths));
+    ASSERT_THAT(resolvedPaths, ::testing::UnorderedElementsAre());
+}
+
+TEST_F(WildcardSourceDependencyTest, Relative_InNonRecursiveScanfolder)
+{
+    // Files deep inside non-recursive scanfolders should not be returned
+    AZStd::vector<AZStd::string> resolvedPaths;
+    QDir tempPath(m_tempDir.path());
+
+    ASSERT_TRUE(Test("*/f.foo", resolvedPaths));
+    ASSERT_THAT(resolvedPaths, ::testing::UnorderedElementsAre());
+}
+
+TEST_F(WildcardSourceDependencyTest, Absolute_InNonRecursiveScanfolder)
+{
+    // Absolute paths to files deep inside non-recursive scanfolders should not be returned
+    AZStd::vector<AZStd::string> resolvedPaths;
+    QDir tempPath(m_tempDir.path());
+
+    ASSERT_TRUE(Test(tempPath.absoluteFilePath("one/two/three/*.foo").toUtf8().constData(), resolvedPaths));
+    ASSERT_THAT(resolvedPaths, ::testing::UnorderedElementsAre());
+}
+
+TEST_F(WildcardSourceDependencyTest, Relative_NoWildcard)
+{
+    // No wildcard results in a failure
+    AZStd::vector<AZStd::string> resolvedPaths;
+    QDir tempPath(m_tempDir.path());
+
+    ASSERT_FALSE(Test("subfolder1/1a.foo", resolvedPaths));
+    ASSERT_THAT(resolvedPaths, ::testing::UnorderedElementsAre());
+}
+
+TEST_F(WildcardSourceDependencyTest, Absolute_NoWildcard)
+{
+    // No wildcard results in a failure
+    AZStd::vector<AZStd::string> resolvedPaths;
+    QDir tempPath(m_tempDir.path());
+
+    ASSERT_FALSE(Test(tempPath.absoluteFilePath("subfolder1/1a.foo").toUtf8().constData(), resolvedPaths));
+    ASSERT_THAT(resolvedPaths, ::testing::UnorderedElementsAre());
+}
+
+TEST_F(WildcardSourceDependencyTest, Relative_IgnoredFolder)
+{
+    AZStd::vector<AZStd::string> resolvedPaths;
+
+    ASSERT_TRUE(Test("*g.foo", resolvedPaths));
+    ASSERT_THAT(resolvedPaths, ::testing::UnorderedElementsAre());
+}
+
+TEST_F(WildcardSourceDependencyTest, Absolute_IgnoredFolder)
+{
+    AZStd::vector<AZStd::string> resolvedPaths;
+    QDir tempPath(m_tempDir.path());
+
+    ASSERT_TRUE(Test(tempPath.absoluteFilePath("*g.foo").toUtf8().constData(), resolvedPaths));
+    ASSERT_THAT(resolvedPaths, ::testing::UnorderedElementsAre());
+}
+
+TEST_F(WildcardSourceDependencyTest, Relative_IgnoredFile)
+{
+    AZStd::vector<AZStd::string> resolvedPaths;
+
+    ASSERT_TRUE(Test("*z.foo", resolvedPaths));
+    ASSERT_THAT(resolvedPaths, ::testing::UnorderedElementsAre());
+}
+
+TEST_F(WildcardSourceDependencyTest, Absolute_IgnoredFile)
+{
+    AZStd::vector<AZStd::string> resolvedPaths;
+    QDir tempPath(m_tempDir.path());
+
+    ASSERT_TRUE(Test(tempPath.absoluteFilePath("*z.foo").toUtf8().constData(), resolvedPaths));
+    ASSERT_THAT(resolvedPaths, ::testing::UnorderedElementsAre());
+}
+
+TEST_F(WildcardSourceDependencyTest, Relative_CacheFolder)
+{
+    AZStd::vector<AZStd::string> resolvedPaths;
+    QDir tempPath(m_tempDir.path());
+
+    ASSERT_TRUE(Test("*cache.foo", resolvedPaths));
+    ASSERT_THAT(resolvedPaths, ::testing::UnorderedElementsAre());
+}
+
+TEST_F(WildcardSourceDependencyTest, FilesAddedAfterInitialCache)
+{
+    AZStd::vector<AZStd::string> resolvedPaths;
+    QDir tempPath(m_tempDir.path());
+
+    auto excludedFolderCacheInterface = AZ::Interface<ExcludedFolderCacheInterface>::Get();
+
+    ASSERT_TRUE(excludedFolderCacheInterface);
+
+    {
+        const auto& excludedFolders = excludedFolderCacheInterface->GetExcludedFolders();
+
+        ASSERT_EQ(excludedFolders.size(), 2);
+    }
+
+    // Add a file to a new ignored folder
+    QString newFilePath = tempPath.absoluteFilePath("subfolder2/redirected/folder/two/ignored/three/new.foo");
+    UnitTestUtils::CreateDummyFile(newFilePath);
+
+    excludedFolderCacheInterface->FileAdded(newFilePath);
+
+    const auto& excludedFolders = excludedFolderCacheInterface->GetExcludedFolders();
+
+    ASSERT_EQ(excludedFolders.size(), 3);
+    ASSERT_THAT(excludedFolders, ::testing::Contains(AZStd::string(tempPath.absoluteFilePath("subfolder2/redirected/folder/two/ignored").toUtf8().constData())));
+}
+
+TEST_F(WildcardSourceDependencyTest, FilesRemovedAfterInitialCache)
+{
+    AZStd::vector<AZStd::string> resolvedPaths;
+    QDir tempPath(m_tempDir.path());
+
+    // Add a file to a new ignored folder
+    QString newFilePath = tempPath.absoluteFilePath("subfolder2/redirected/folder/two/ignored/three/new.foo");
+    UnitTestUtils::CreateDummyFile(newFilePath);
+
+    auto excludedFolderCacheInterface = AZ::Interface<ExcludedFolderCacheInterface>::Get();
+
+    ASSERT_TRUE(excludedFolderCacheInterface);
+
+    {
+        const auto& excludedFolders = excludedFolderCacheInterface->GetExcludedFolders();
+
+        ASSERT_EQ(excludedFolders.size(), 3);
+    }
+
+    m_fileStateCache->SignalDeleteEvent(tempPath.absoluteFilePath("subfolder2/redirected/folder/two/ignored"));
+
+    const auto& excludedFolders = excludedFolderCacheInterface->GetExcludedFolders();
+
+    ASSERT_EQ(excludedFolders.size(), 2);
+}
+
+TEST_F(WildcardSourceDependencyTest, NewFile_MatchesSavedRelativeDependency)
+{
+    QDir tempPath(m_tempDir.path());
+
+    auto matches = FileAddedTest(tempPath.absoluteFilePath("subfolder1/1a.foo"));
+
+    ASSERT_THAT(matches, ::testing::UnorderedElementsAre(tempPath.absoluteFilePath("subfolder2/redirected/a.foo").toUtf8().constData()));
+}
+
+TEST_F(WildcardSourceDependencyTest, NewFile_MatchesSavedAbsoluteDependency)
+{
+    QDir tempPath(m_tempDir.path());
+
+    auto matches = FileAddedTest(tempPath.absoluteFilePath("subfolder1/1b.foo"));
+
+    ASSERT_THAT(matches, ::testing::UnorderedElementsAre(tempPath.absoluteFilePath("subfolder2/redirected/b.foo").toUtf8().constData()));
+}
+
+TEST_F(WildcardSourceDependencyTest, NewFile_MatchesDuplicatedDependenciesOnce)
+{
+    QDir tempPath(m_tempDir.path());
+
+    auto matches = FileAddedTest(tempPath.absoluteFilePath("subfolder2/redirected/folder/one/c.foo"));
+
+    ASSERT_THAT(matches, ::testing::UnorderedElementsAre(tempPath.absoluteFilePath("subfolder2/redirected/folder/one/d.foo").toUtf8().constData()));
 }

@@ -14,6 +14,7 @@
 #include <AzToolsFramework/UI/PropertyEditor/PropertyQTConstants.h>
 #include <AzToolsFramework/UI/PropertyEditor/QtWidgetLimits.h>
 #include <QtWidgets/QWidget>
+#include <QLocale> 
 
 namespace AzToolsFramework
 {   
@@ -92,25 +93,11 @@ namespace AzToolsFramework
             {
                 toolTipString += "\n";
             }
-            toolTipString += "[";
-            if (propertyControl->minimum() <= aznumeric_cast<AZ::s64>(QtWidgetLimits<T>::Min()))
-            {
-                toolTipString += "-" + QObject::tr(PropertyQTConstant_InfinityString);
-            }
-            else
-            {
-                toolTipString += QString::number(propertyControl->minimum());
-            }
-            toolTipString += ", ";
-            if (propertyControl->maximum() >= aznumeric_cast<AZ::s64>(QtWidgetLimits<T>::Max()))
-            {
-                toolTipString += QObject::tr(PropertyQTConstant_InfinityString);
-            }
-            else
-            {
-                toolTipString += QString::number(propertyControl->maximum());
-            }
-            toolTipString += "]";
+
+            const QString minString = QLocale().toString(propertyControl->minimum());
+            const QString maxString = QLocale().toString(propertyControl->maximum());
+            toolTipString += QString("[%1, %2]").arg(minString).arg(maxString);
+
             return true;
         }
         return false;
@@ -128,16 +115,11 @@ namespace AzToolsFramework
             {
                 toolTipString += "\n";
             }
-            toolTipString += "[" + QString::number(propertyControl->minimum()) + ", ";
-            if (propertyControl->maximum() >= aznumeric_cast<AZ::s64>(QtWidgetLimits<T>::Max()))
-            {
-                toolTipString += QObject::tr(PropertyQTConstant_InfinityString);
-            }
-            else
-            {
-                toolTipString += QString::number(propertyControl->maximum());
-            }
-            toolTipString += "]";
+
+            const QString minString = QLocale().toString(propertyControl->minimum());
+            const QString maxString = QLocale().toString(propertyControl->maximum());
+            toolTipString += QString("[%1, %2]").arg(minString).arg(maxString);
+
             return true;
         }
         return false;
@@ -169,6 +151,10 @@ namespace AzToolsFramework
         {
             AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
         });
+        this->connect(newCtrl, &PropertyControl::editingFinished, this, [newCtrl]()
+        {
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
+        });
         // note:  Qt automatically disconnects objects from each other when either end is destroyed, no need to worry about delete.
 
         // Set the value range to that of ValueType as clamped to the range of QtWidgetValueType
@@ -192,7 +178,7 @@ namespace AzToolsFramework
             }
             else
             {
-                AZ_WarningOnce("AzToolsFramework", false, "Property %s: 'Min' attribute from property '%s' into widget", debugName);
+                AZ_WarningOnce("AzToolsFramework", false, "Failed to read 'Min' attribute from property '%s' into widget", debugName);
             }
         }
         else if (attrib == AZ::Edit::Attributes::Max)

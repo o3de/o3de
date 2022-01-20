@@ -34,6 +34,7 @@
 #include <GraphCanvas/Widgets/NodePropertyBus.h>
 
 #include <Editor/Include/ScriptCanvas/Components/GraphUpgrade.h>
+#include <Editor/Assets/ScriptCanvasUndoHelper.h>
 
 namespace ScriptCanvas
 {
@@ -44,7 +45,7 @@ namespace ScriptCanvas
 namespace ScriptCanvasEditor
 {
     //! EditorGraph is the editor version of the ScriptCanvas::Graph component that is activated when executing the script canvas engine
-    class Graph
+    class EditorGraph
         : public ScriptCanvas::Graph
         , private NodeCreationNotificationBus::Handler
         , private SceneCounterRequestBus::Handler
@@ -76,7 +77,7 @@ namespace ScriptCanvasEditor
 
         typedef AZStd::unordered_map< AZ::EntityId, AZ::EntityId > WrappedNodeGroupingMap;
 
-        static void ConvertToGetVariableNode(Graph* graph, ScriptCanvas::VariableId variableId, const AZ::EntityId& nodeId, AZStd::unordered_map<AZ::EntityId, AZ::EntityId>& setVariableRemapping);
+        static void ConvertToGetVariableNode(EditorGraph* graph, ScriptCanvas::VariableId variableId, const AZ::EntityId& nodeId, AZStd::unordered_map<AZ::EntityId, AZ::EntityId>& setVariableRemapping);
 
         struct CRCCache
         {
@@ -99,11 +100,13 @@ namespace ScriptCanvasEditor
         };
 
     public:
-        AZ_COMPONENT(Graph, "{4D755CA9-AB92-462C-B24F-0B3376F19967}", ScriptCanvas::Graph);
+        AZ_COMPONENT(EditorGraph, "{4D755CA9-AB92-462C-B24F-0B3376F19967}", ScriptCanvas::Graph);
+
+        static ScriptCanvas::DataPtr Create();
 
         static void Reflect(AZ::ReflectContext* context);
 
-        Graph(const ScriptCanvas::ScriptCanvasId& scriptCanvasId = AZ::Entity::MakeId())
+        EditorGraph(const ScriptCanvas::ScriptCanvasId& scriptCanvasId = AZ::Entity::MakeId())
             : ScriptCanvas::Graph(scriptCanvasId)
             , m_variableCounter(0)
             , m_graphCanvasSceneEntity(nullptr)
@@ -112,10 +115,20 @@ namespace ScriptCanvasEditor
             , m_upgradeSM(this)
         {}
 
-        ~Graph() override;
+        ~EditorGraph() override;
 
         void Activate() override;
         void Deactivate() override;
+
+        static const char* GetMimeType()
+        {
+            return "application/x-o3de-scriptcanvas";
+        }
+
+        static const char* GetWrappedNodeGroupingMimeType()
+        {
+            return "application/x-03de-scriptcanvas-wrappednodegrouping";
+        }
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
@@ -136,10 +149,6 @@ namespace ScriptCanvasEditor
         // SceneCounterRequestBus
         AZ::u32 GetNewVariableCounter() override;
         void ReleaseVariableCounter(AZ::u32 variableCounter) override;
-        ////
-
-        // RuntimeBus
-        AZ::Data::AssetId GetAssetId() const override { return m_assetId; }
         ////
 
         // GraphCanvas::GraphModelRequestBus
@@ -176,12 +185,12 @@ namespace ScriptCanvasEditor
         void RemoveSlot(const GraphCanvas::Endpoint& endpoint) override;
         bool IsSlotRemovable(const GraphCanvas::Endpoint& endpoint) const override;
 
-        bool ConvertSlotToReference(const GraphCanvas::Endpoint& endpoint) override;
-        bool CanConvertSlotToReference(const GraphCanvas::Endpoint& endpoint) override;
+        bool ConvertSlotToReference(const GraphCanvas::Endpoint& endpoint, bool isNewSlot = false) override;
+        bool CanConvertSlotToReference(const GraphCanvas::Endpoint& endpoint, bool isNewSlot = false) override;
         GraphCanvas::CanHandleMimeEventOutcome CanHandleReferenceMimeEvent(const GraphCanvas::Endpoint& endpoint, const QMimeData* mimeData) override;
         bool HandleReferenceMimeEvent(const GraphCanvas::Endpoint& endpoint, const QMimeData* mimeData) override;
-        bool CanPromoteToVariable(const GraphCanvas::Endpoint& endpoint) const override;
-        bool PromoteToVariableAction(const GraphCanvas::Endpoint& endpoint) override;
+        bool CanPromoteToVariable(const GraphCanvas::Endpoint& endpoint, bool isNewSlot = false) const override;
+        bool PromoteToVariableAction(const GraphCanvas::Endpoint& endpoint, bool isNewSlot = false) override;
         bool SynchronizeReferences(const GraphCanvas::Endpoint& sourceEndpoint, const GraphCanvas::Endpoint& targetEndpoint) override;
 
         bool ConvertSlotToValue(const GraphCanvas::Endpoint& endpoint) override;
@@ -221,9 +230,6 @@ namespace ScriptCanvasEditor
         void OnGraphCanvasNodeCreated(const AZ::EntityId& nodeId) override;
         ///////////////////////////
 
-        // EditorGraphRequestBus
-        void SetAssetId(const AZ::Data::AssetId& assetId) override { m_assetId = assetId; }
-
         void CreateGraphCanvasScene() override;
         void ClearGraphCanvasScene() override;
         void DisplayGraphCanvasScene() override;
@@ -235,7 +241,7 @@ namespace ScriptCanvasEditor
             IfOutOfDate,
             Forced
         };
-        bool UpgradeGraph(const AZ::Data::Asset<AZ::Data::AssetData>& asset, UpgradeRequest request, bool isVerbose = true);
+        bool UpgradeGraph(SourceHandle& asset, UpgradeRequest request, bool isVerbose = true);
         void ConnectGraphCanvasBuses();
         void DisconnectGraphCanvasBuses();
         ///////
@@ -302,11 +308,12 @@ namespace ScriptCanvasEditor
         void OnUndoRedoEnd() override;
         ////
 
-        void SetAssetType(AZ::Data::AssetType);
-
         void ReportError(const ScriptCanvas::Node& node, const AZStd::string& errorSource, const AZStd::string& errorMessage) override;
 
         const GraphStatisticsHelper& GetNodeUsageStatistics() const;
+
+        void MarkOwnership(ScriptCanvas::ScriptCanvasData& owner);
+        ScriptCanvas::DataPtr GetOwnership() const;
 
         // Finds and returns all nodes within the graph that are of the specified type
         template <typename NodeType>
@@ -329,7 +336,7 @@ namespace ScriptCanvasEditor
 
         void UnregisterToast(const AzToolsFramework::ToastId& toastId);
 
-        Graph(const Graph&) = delete;
+        EditorGraph(const EditorGraph&) = delete;
 
         void DisplayUpdateToast();
 
@@ -384,12 +391,15 @@ namespace ScriptCanvasEditor
 
         GraphCanvas::NodeFocusCyclingHelper m_focusHelper;
         GraphStatisticsHelper m_statisticsHelper;
+        UndoHelper m_undoHelper;
 
         bool m_ignoreSaveRequests;
 
         //! Defaults to true to signal that this graph does not have the GraphCanvas stuff intermingled
         bool m_saveFormatConverted = true;
 
-        AZ::Data::AssetId m_assetId;
+        ScriptCanvasEditor::SourceHandle m_assetId;
+        // temporary step in cleaning up the graph / asset class structure. This reference is deliberately weak.
+        ScriptCanvas::ScriptCanvasData* m_owner;
     };
 }

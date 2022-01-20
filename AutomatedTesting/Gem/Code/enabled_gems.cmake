@@ -56,4 +56,5 @@ set(ENABLED_GEMS
     AudioSystem
     Terrain
     Profiler
+    Multiplayer
 )

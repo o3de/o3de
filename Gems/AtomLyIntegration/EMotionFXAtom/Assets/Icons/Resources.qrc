@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/EMotionFXAtom">
         <file>Camera_category.svg</file>
+        <file>Visualization.svg</file>
     </qresource>
 </RCC>

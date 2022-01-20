@@ -58,8 +58,6 @@ set(FILES
     Source/CreateProjectCtrl.cpp
     Source/UpdateProjectCtrl.h
     Source/UpdateProjectCtrl.cpp
-    Source/ProjectManagerSettings.h
-    Source/ProjectManagerSettings.cpp
     Source/ProjectsScreen.h
     Source/ProjectsScreen.cpp
     Source/ProjectSettingsScreen.h
@@ -72,12 +70,17 @@ set(FILES
     Source/ProjectButtonWidget.cpp
     Source/ScreenHeaderWidget.h
     Source/ScreenHeaderWidget.cpp
+    Source/Settings.h
+    Source/Settings.cpp
+    Source/SettingsInterface.h
     Source/LinkWidget.h
     Source/LinkWidget.cpp
     Source/TagWidget.h
     Source/TagWidget.cpp
     Source/TemplateButtonWidget.h
     Source/TemplateButtonWidget.cpp
+    Source/ExternalLinkDialog.h
+    Source/ExternalLinkDialog.cpp
     Source/GemCatalog/GemCatalogHeaderWidget.h
     Source/GemCatalog/GemCatalogHeaderWidget.cpp
     Source/GemCatalog/GemCatalogScreen.h

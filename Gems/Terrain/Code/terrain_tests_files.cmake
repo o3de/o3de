@@ -14,5 +14,7 @@ set(FILES
     Tests/SurfaceMaterialsListTest.cpp
     Tests/MockAxisAlignedBoxShapeComponent.h
     Tests/TerrainHeightGradientListTests.cpp
+    Tests/TerrainMacroMaterialTests.cpp
     Tests/TerrainSurfaceGradientListTests.cpp
+    Tests/TerrainSystemBenchmarks.cpp
 )

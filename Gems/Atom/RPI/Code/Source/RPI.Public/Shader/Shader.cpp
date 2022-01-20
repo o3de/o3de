@@ -17,6 +17,7 @@
 
 #include <AzCore/Component/TickBus.h>
 
+#define PSOCacheVersion 0 // Bump this if you want to reset PSO cache for everyone
 
 namespace AZ
 {
@@ -25,20 +26,33 @@ namespace AZ
         Data::Instance<Shader> Shader::FindOrCreate(const Data::Asset<ShaderAsset>& shaderAsset, const Name& supervariantName)
         {
             auto anySupervariantName = AZStd::any(supervariantName);
-            Data::Instance<Shader> shaderInstance = Data::InstanceDatabase<Shader>::Instance().FindOrCreate(
-                Data::InstanceId::CreateFromAssetId(shaderAsset.GetId()), shaderAsset, &anySupervariantName);
 
-            if (shaderInstance)
+            // retrieve the supervariant index from the shader asset
+            SupervariantIndex supervariantIndex = shaderAsset->GetSupervariantIndex(supervariantName);
+            if (!supervariantIndex.IsValid())
             {
-                // [GFX TODO][ATOM-15813] Change InstanceDatabase<Shader> to support multiple instances with different supervariants.
-                // At this time we do not support multiple supervariants loaded for a shader asset simultaneously, so if this shader
-                // is referring to the wrong supervariant we need to change it to the correct one.
-                SupervariantIndex supervariantIndex = shaderAsset->GetSupervariantIndex(supervariantName);
-                if (supervariantIndex.IsValid() && shaderInstance->GetSupervariantIndex() != supervariantIndex)
-                {
-                    shaderInstance->ChangeSupervariant(supervariantIndex);
-                }
+                AZ_Error("Shader", false, "Supervariant with name %s, was not found in shader %s", supervariantName.GetCStr(), shaderAsset->GetName().GetCStr());
+                return nullptr;
             }
+
+            // create the InstanceId from the combined assetId and supervariantIndex
+            const Data::AssetId& assetId = shaderAsset.GetId();
+            uint32_t shaderSupervariantIndex = supervariantIndex.GetIndex();
+
+            const uint32_t instanceIdDataSize = sizeof(assetId.m_guid) + sizeof(assetId.m_subId) + sizeof(shaderSupervariantIndex);
+            uint8_t instanceIdData[instanceIdDataSize];
+            uint8_t* instanceIdDataPtr = instanceIdData;
+
+            memcpy(instanceIdDataPtr, &assetId.m_guid, sizeof(assetId.m_guid));
+            instanceIdDataPtr += sizeof(assetId.m_guid);
+            memcpy(instanceIdDataPtr, &assetId.m_subId, sizeof(assetId.m_subId));
+            instanceIdDataPtr += sizeof(assetId.m_subId);
+            memcpy(instanceIdDataPtr, &shaderSupervariantIndex, sizeof(shaderSupervariantIndex));
+
+            Data::InstanceId instanceId = Data::InstanceId::CreateData(instanceIdData, instanceIdDataSize);
+
+            // retrieve the shader instance from the Instance database
+            Data::Instance<Shader> shaderInstance = Data::InstanceDatabase<Shader>::Instance().FindOrCreate(instanceId, shaderAsset, &anySupervariantName);
 
             return shaderInstance;
         }
@@ -85,10 +99,17 @@ namespace AZ
                 AZStd::string uuidString;
                 assetId.m_guid.ToString<AZStd::string>(uuidString, false, false);
 
+                RHI::RHISystemInterface* rhiSystem = RHI::RHISystemInterface::Get();
+                RHI::PhysicalDeviceDescriptor physicalDeviceDesc = rhiSystem->GetPhysicalDeviceDescriptor();
+
                 char pipelineLibraryPathTemp[AZ_MAX_PATH_LEN];
                 azsnprintf(
-                    pipelineLibraryPathTemp, AZ_MAX_PATH_LEN, "@user@/Atom/PipelineStateCache/%s/%s_%s_%d.bin", platformName.GetCStr(),
-                    shaderName.GetCStr(), uuidString.data(), assetId.m_subId);
+                    pipelineLibraryPathTemp, AZ_MAX_PATH_LEN, "@user@/Atom/PipelineStateCache_%s_%i_%i _Ver_%i/%s/%s_%s_%d.bin",
+                    ToString(physicalDeviceDesc.m_vendorId).data(), physicalDeviceDesc.m_deviceId, physicalDeviceDesc.m_driverVersion, PSOCacheVersion,
+                    platformName.GetCStr(),
+                    shaderName.GetCStr(),
+                    uuidString.data(),
+                    assetId.m_subId);
 
                 fileIOBase->ResolvePath(pipelineLibraryPathTemp, pipelineLibraryPath, pipelineLibraryPathLength);
                 return true;
@@ -185,7 +206,7 @@ namespace AZ
             if (asset.GetAs<ShaderVariantAsset>())
             {
                 m_reloadedRootShaderVariantAsset = Data::static_pointer_cast<ShaderVariantAsset>(asset);
-                if (m_asset->m_shaderAssetBuildTimestamp == m_reloadedRootShaderVariantAsset->GetBuildTimestamp())
+                if (m_asset->m_buildTimestamp == m_reloadedRootShaderVariantAsset->GetBuildTimestamp())
                 {
                     Init(*m_asset.Get());
                     ShaderReloadNotificationBus::Event(asset.GetId(), &ShaderReloadNotificationBus::Events::OnShaderReinitialized, *this);
@@ -201,9 +222,9 @@ namespace AZ
                     // Do nothing, as We should not re-initilize until the root shader variant asset has been reloaded.
                     return;
                 }
-                AZ_Assert(m_asset->m_shaderAssetBuildTimestamp == m_reloadedRootShaderVariantAsset->GetBuildTimestamp(),
+                AZ_Assert(m_asset->m_buildTimestamp == m_reloadedRootShaderVariantAsset->GetBuildTimestamp(),
                     "shaderAsset '%s' timeStamp=%lld, but Root ShaderVariantAsset timeStamp=%lld", m_asset.GetHint().c_str(),
-                    m_asset->m_shaderAssetBuildTimestamp, m_reloadedRootShaderVariantAsset->GetBuildTimestamp());
+                    m_asset->m_buildTimestamp, m_reloadedRootShaderVariantAsset->GetBuildTimestamp());
                 m_asset->UpdateRootShaderVariantAsset(m_supervariantIndex, m_reloadedRootShaderVariantAsset);
                 m_reloadedRootShaderVariantAsset = {}; // Clear the temporary reference.
 
@@ -221,7 +242,7 @@ namespace AZ
 
                     const auto shaderVariantAsset = m_asset->GetRootVariant();
                     ShaderReloadDebugTracker::Printf("{%p}->Shader::OnAssetReloaded for shader '%s' [build time %s] found variant '%s' [build time %s]", this,
-                        m_asset.GetHint().c_str(), makeTimeString(m_asset->m_shaderAssetBuildTimestamp, now).c_str(),
+                        m_asset.GetHint().c_str(), makeTimeString(m_asset->m_buildTimestamp, now).c_str(),
                         shaderVariantAsset.GetHint().c_str(), makeTimeString(shaderVariantAsset->GetBuildTimestamp(), now).c_str());
                 }
                 Init(*m_asset.Get());
@@ -239,6 +260,12 @@ namespace AZ
 
             AZ_Assert(shaderVariantAsset, "Reloaded ShaderVariantAsset is null");
             const ShaderVariantStableId stableId = shaderVariantAsset->GetStableId();
+
+            // check the supervariantIndex of the ShaderVariantAsset to make sure it matches the supervariantIndex of this shader instance
+            if (shaderVariantAsset->GetSupervariantIndex() != m_supervariantIndex.GetIndex())
+            {
+                return;
+            }
 
             // We make a copy of the updated variant because OnShaderVariantReinitialized must not be called inside
             // m_variantCacheMutex or deadlocks may occur.
@@ -343,6 +370,30 @@ namespace AZ
 
         const ShaderVariant& Shader::GetVariant(ShaderVariantStableId shaderVariantStableId)
         {
+            const ShaderVariant& variant = GetVariantInternal(shaderVariantStableId);
+            
+            if (ShaderReloadDebugTracker::IsEnabled())
+            {
+                auto makeTimeString = [](AZStd::sys_time_t timestamp, AZStd::sys_time_t now)
+                {
+                    AZStd::sys_time_t elapsedMicroseconds = now - timestamp;
+                    double elapsedSeconds = aznumeric_cast<double>(elapsedMicroseconds / 1'000'000);
+                    AZStd::string timeString = AZStd::string::format("%lld (%f seconds ago)", timestamp, elapsedSeconds);
+                    return timeString;
+                };
+
+                AZStd::sys_time_t now = AZStd::GetTimeNowMicroSecond();
+
+                ShaderReloadDebugTracker::Printf("{%p}->Shader::GetVariant for shader '%s' [build time %s] found variant '%s' [build time %s]", this,
+                    m_asset.GetHint().c_str(), makeTimeString(m_asset->GetBuildTimestamp(), now).c_str(),
+                    variant.GetShaderVariantAsset().GetHint().c_str(), makeTimeString(variant.GetShaderVariantAsset()->GetBuildTimestamp(), now).c_str());
+            }
+
+            return variant;
+        }
+
+        const ShaderVariant& Shader::GetVariantInternal(ShaderVariantStableId shaderVariantStableId)
+        {
             if (!shaderVariantStableId.IsValid() || shaderVariantStableId == ShaderAsset::RootShaderVariantStableId)
             {
                 return m_rootVariant;
@@ -358,7 +409,7 @@ namespace AZ
                     // reloaded, but some (or all) shader variants haven't been built yet. Since we want to use the latest version of the
                     // shader code, ignore the old variants and fall back to the newer root variant instead. There's no need to report a
                     // warning here because m_asset->GetVariant below will report one.
-                    if (findIt->second.GetBuildTimestamp() >= m_asset->GetShaderAssetBuildTimestamp())
+                    if (findIt->second.GetBuildTimestamp() >= m_asset->GetBuildTimestamp())
                     {
                         return findIt->second;
                     }
@@ -381,7 +432,7 @@ namespace AZ
             auto findIt = m_shaderVariants.find(shaderVariantStableId);
             if (findIt != m_shaderVariants.end())
             {
-                if (findIt->second.GetBuildTimestamp() >= m_asset->GetShaderAssetBuildTimestamp())
+                if (findIt->second.GetBuildTimestamp() >= m_asset->GetBuildTimestamp())
                 {
                     return findIt->second;
                 }
@@ -452,15 +503,6 @@ namespace AZ
         RHI::DrawListTag Shader::GetDrawListTag() const
         {
             return m_drawListTag;
-        }
-
-        void Shader::ChangeSupervariant(SupervariantIndex supervariantIndex)
-        {
-            if (supervariantIndex != m_supervariantIndex)
-            {
-                m_supervariantIndex = supervariantIndex;
-                Init(*m_asset);
-            }
         }
 
     } // namespace RPI

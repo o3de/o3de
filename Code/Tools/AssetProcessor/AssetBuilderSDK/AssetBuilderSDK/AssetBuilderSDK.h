@@ -10,12 +10,13 @@
 #pragma once
 
 #include <AzCore/Debug/TraceMessageBus.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/AZStdContainers.inl>
 #include <AzCore/std/string/regex.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/parallel/atomic.h>
 #include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/bitset.h>
 #include <AzFramework/Asset/AssetProcessorMessages.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
@@ -463,35 +464,6 @@ namespace AssetBuilderSDK
         AZStd::string m_platformIdentifier;
     };
 
-    //! RegisterBuilderRequest contains input data that will be sent by the AssetProcessor to the builder during the startup registration phase
-    struct RegisterBuilderRequest
-    {
-        AZ_CLASS_ALLOCATOR(RegisterBuilderRequest, AZ::SystemAllocator, 0);
-        AZ_TYPE_INFO(RegisterBuilderRequest, "{7C6C5198-4766-42B8-9A1E-48479CE2F5EA}");
-
-        AZStd::string m_filePath;
-
-        RegisterBuilderRequest() {}
-
-        explicit RegisterBuilderRequest(const AZStd::string& filePath)
-            : m_filePath(filePath)
-        {
-        }
-
-        static void Reflect(AZ::ReflectContext* context);
-    };
-
-    //! INTERNAL USE ONLY - RegisterBuilderResponse contains registration data that will be sent by the builder to the AssetProcessor in response to RegisterBuilderRequest
-    struct RegisterBuilderResponse
-    {
-        AZ_CLASS_ALLOCATOR(RegisterBuilderResponse, AZ::SystemAllocator, 0);
-        AZ_TYPE_INFO(RegisterBuilderResponse, "{0AE5583F-C763-410E-BA7F-78BD90546C01}");
-
-        AZStd::vector<AssetBuilderDesc> m_assetBuilderDescList;
-
-        static void Reflect(AZ::ReflectContext* context);
-    };
-
     /**
     *  This tells you about a platform in your CreateJobsRequest or your ProcessJobRequest
     */
@@ -755,99 +727,9 @@ namespace AssetBuilderSDK
         static void Reflect(AZ::ReflectContext* context);
     };
 
-    //! BuilderHelloRequest is sent by an AssetBuilder that is attempting to connect to the AssetProcessor to register itself as a worker
-    class BuilderHelloRequest : public AzFramework::AssetSystem::BaseAssetProcessorMessage
-    {
-    public:
+    
 
-        AZ_CLASS_ALLOCATOR(BuilderHelloRequest, AZ::OSAllocator, 0);
-        AZ_RTTI(BuilderHelloRequest, "{5fab5962-a1d8-42a5-bf7a-fb1a8c5a9588}", BaseAssetProcessorMessage);
-
-        static void Reflect(AZ::ReflectContext* context);
-        static unsigned int MessageType();
-
-        unsigned int GetMessageType() const override;
-
-        //! Unique ID assigned to this builder to identify it
-        AZ::Uuid m_uuid = AZ::Uuid::CreateNull();
-    };
-
-    //! BuilderHelloResponse contains the AssetProcessor's response to a builder connection attempt, indicating if it is accepted and the ID that it was assigned
-    class BuilderHelloResponse : public AzFramework::AssetSystem::BaseAssetProcessorMessage
-    {
-    public:
-
-        AZ_CLASS_ALLOCATOR(BuilderHelloResponse, AZ::OSAllocator, 0);
-        AZ_RTTI(BuilderHelloResponse, "{5f3d7c11-6639-4c6f-980a-32be546903c2}", BaseAssetProcessorMessage);
-
-        static void Reflect(AZ::ReflectContext* context);
-
-        unsigned int GetMessageType() const override;
-
-        //! Indicates if the builder was accepted by the AP
-        bool m_accepted = false;
-
-        //! Unique ID assigned to the builder.  If the builder isn't a local process, this is the ID assigned by the AP
-        AZ::Uuid m_uuid = AZ::Uuid::CreateNull();
-    };
-
-    class CreateJobsNetRequest : public AzFramework::AssetSystem::BaseAssetProcessorMessage
-    {
-    public:
-
-        AZ_CLASS_ALLOCATOR(CreateJobsNetRequest, AZ::OSAllocator, 0);
-        AZ_RTTI(CreateJobsNetRequest, "{97fa717d-3a09-4d21-95c6-b2eafd773f1c}", BaseAssetProcessorMessage);
-
-        static void Reflect(AZ::ReflectContext* context);
-        static unsigned int MessageType();
-
-        unsigned int GetMessageType() const override;
-
-        CreateJobsRequest m_request;
-    };
-
-    class CreateJobsNetResponse : public AzFramework::AssetSystem::BaseAssetProcessorMessage
-    {
-    public:
-
-        AZ_CLASS_ALLOCATOR(CreateJobsNetResponse, AZ::OSAllocator, 0);
-        AZ_RTTI(CreateJobsNetResponse, "{b2c7c2d3-b60e-4b27-b699-43e0ba991c33}", BaseAssetProcessorMessage);
-
-        static void Reflect(AZ::ReflectContext* context);
-
-        unsigned int GetMessageType() const override;
-
-        CreateJobsResponse m_response;
-    };
-
-    class ProcessJobNetRequest : public AzFramework::AssetSystem::BaseAssetProcessorMessage
-    {
-    public:
-
-        AZ_CLASS_ALLOCATOR(ProcessJobNetRequest, AZ::OSAllocator, 0);
-        AZ_RTTI(ProcessJobNetRequest, "{05288de1-020b-48db-b9de-715f17284efa}", BaseAssetProcessorMessage);
-
-        static void Reflect(AZ::ReflectContext* context);
-        static unsigned int MessageType();
-
-        unsigned int GetMessageType() const override;
-
-        ProcessJobRequest m_request;
-    };
-
-    class ProcessJobNetResponse : public AzFramework::AssetSystem::BaseAssetProcessorMessage
-    {
-    public:
-
-        AZ_CLASS_ALLOCATOR(ProcessJobNetResponse, AZ::OSAllocator, 0);
-        AZ_RTTI(ProcessJobNetResponse, "{26ddf882-246c-4cfb-912f-9b8e389df4f6}", BaseAssetProcessorMessage);
-
-        static void Reflect(AZ::ReflectContext* context);
-
-        unsigned int GetMessageType() const override;
-
-        ProcessJobResponse m_response;
-    };
+    
 
     //! JobCancelListener can be used by builders in their processJob method to listen for job cancellation request.
     //! The address of this listener is the jobid which can be found in the process job request.
@@ -934,44 +816,3 @@ namespace AZ
     AZ_TYPE_INFO_SPECIALIZE(AssetBuilderSDK::ProductPathDependencyType, "{EF77742B-9627-4072-B431-396AA7183C80}");
     AZ_TYPE_INFO_SPECIALIZE(AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType, "{BE9C8805-DB17-4500-944A-EB33FD0BE347}");
 }
-
-//! This macro should be used by every AssetBuilder to register itself,
-//! AssetProcessor uses these exported function to identify whether a dll is an Asset Builder or not
-//! If you want something highly custom you can do these entry points yourself instead of using the macro.
-#define REGISTER_ASSETBUILDER                                                      \
-    extern void BuilderOnInit();                                                   \
-    extern void BuilderDestroy();                                                  \
-    extern void BuilderRegisterDescriptors();                                      \
-    extern void BuilderAddComponents(AZ::Entity * entity);                         \
-    extern "C"                                                                     \
-    {                                                                              \
-    AZ_DLL_EXPORT int IsAssetBuilder()                                             \
-    {                                                                              \
-        return 0;                                                                  \
-    }                                                                              \
-                                                                                   \
-    AZ_DLL_EXPORT void InitializeModule(AZ::EnvironmentInstance sharedEnvironment) \
-    {                                                                              \
-        AZ::Environment::Attach(sharedEnvironment);                                \
-        BuilderOnInit();                                                           \
-    }                                                                              \
-                                                                                   \
-    AZ_DLL_EXPORT void UninitializeModule()                                        \
-    {                                                                              \
-        BuilderDestroy();                                                          \
-        AZ::Environment::Detach();                                                 \
-    }                                                                              \
-                                                                                   \
-    AZ_DLL_EXPORT void ModuleRegisterDescriptors()                                 \
-    {                                                                              \
-        BuilderRegisterDescriptors();                                              \
-    }                                                                              \
-                                                                                   \
-    AZ_DLL_EXPORT void ModuleAddComponents(AZ::Entity * entity)                    \
-    {                                                                              \
-        BuilderAddComponents(entity);                                              \
-    }                                                                              \
-    }
-// confusion-reducing note: above end-brace is part of the macro, not a namespace
-
-

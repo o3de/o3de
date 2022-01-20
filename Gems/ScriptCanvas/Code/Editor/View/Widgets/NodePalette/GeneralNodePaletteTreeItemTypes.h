@@ -10,6 +10,9 @@
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/DraggableNodePaletteTreeItem.h>
 
 #include "CreateNodeMimeEvent.h"
+#include "NodePaletteModel.h"
+#include <Source/Translation/TranslationBus.h>
+#include "TranslationGeneration.h"
 
 namespace ScriptCanvasEditor
 {
@@ -56,6 +59,26 @@ namespace ScriptCanvasEditor
         bool IsOverload() const;
         ScriptCanvas::PropertyStatus GetPropertyStatus() const;
 
+        AZ::IO::Path GetTranslationDataPath() const override
+        {
+            return AZ::IO::Path("Classes") / GetClassMethodName();
+        }
+
+        void GenerateTranslationData() override
+        {
+            AZ::BehaviorContext* behaviorContext{};
+            AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationRequests::GetBehaviorContext);
+
+            const char* className = m_className.toUtf8().data();
+            if (behaviorContext->m_classes.contains(className))
+            {
+                auto behaviorClass = behaviorContext->m_classes.find(className);
+
+                ScriptCanvasEditorTools::TranslationGeneration translation;
+                translation.TranslateBehaviorClass(behaviorClass->second);
+            }
+        }
+
     private:
         bool m_isOverload = false;
         QString m_className;
@@ -101,6 +124,10 @@ namespace ScriptCanvasEditor
 
         const AZStd::string& GetMethodName() const;
 
+        AZ::IO::Path GetTranslationDataPath() const override;
+        void GenerateTranslationData() override;
+
+
     private:
         AZStd::string m_methodName;
     };
@@ -137,15 +164,31 @@ namespace ScriptCanvasEditor
         AZ_CLASS_ALLOCATOR(CustomNodePaletteTreeItem, AZ::SystemAllocator, 0);
         AZ_RTTI(CustomNodePaletteTreeItem, "{50E75C4D-F59C-4AF6-A6A3-5BAD557E335C}", GraphCanvas::DraggableNodePaletteTreeItem);
 
-        CustomNodePaletteTreeItem(const AZ::Uuid& typeId, AZStd::string_view nodeName);
+        explicit CustomNodePaletteTreeItem(const ScriptCanvasEditor::CustomNodeModelInformation&);
         ~CustomNodePaletteTreeItem() = default;
 
         GraphCanvas::GraphCanvasMimeEvent* CreateMimeEvent() const override;
 
         AZ::Uuid GetTypeId() const;
+        const ScriptCanvasEditor::CustomNodeModelInformation& GetInfo() const { return m_info; }
+
+        AZ::IO::Path GetTranslationDataPath() const override
+        {
+            AZStd::string filename = AZStd::string::format("%s_%s", GetInfo().m_categoryPath.c_str(), GetName().toUtf8().data());
+            filename = GraphCanvas::TranslationKey::Sanitize(filename);
+
+            return AZ::IO::Path("Nodes") / filename;
+        }
+
+        void GenerateTranslationData() override
+        {
+            ScriptCanvasEditorTools::TranslationGeneration translation;
+            translation.TranslateNode(m_typeId);
+        }
 
     private:
         AZ::Uuid m_typeId;
+        ScriptCanvasEditor::CustomNodeModelInformation m_info;
     };
 
     // </CustomNode>

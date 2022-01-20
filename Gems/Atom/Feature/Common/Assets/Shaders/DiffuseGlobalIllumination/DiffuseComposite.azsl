@@ -68,9 +68,7 @@ float3 SampleProbeIrradiance(uint sampleIndex, uint2 probeIrradianceCoords, floa
         if (abs(depth - downsampledDepth) <= DepthTolerance)
         {
             // use this irradiance sample
-            float3 probeIrradiance = PassSrg::m_downsampledProbeIrradiance.Load(probeIrradianceCoords, sampleIndex).rgb;
-            probeIrradiance = saturate(probeIrradiance);
-            return probeIrradiance;
+            return PassSrg::m_downsampledProbeIrradiance.Load(probeIrradianceCoords, sampleIndex).rgb;
         }
     }
 
@@ -99,9 +97,7 @@ float3 SampleProbeIrradiance(uint sampleIndex, uint2 probeIrradianceCoords, floa
                     float downsampledDepth = PassSrg::m_downsampledDepth.Load(probeIrradianceCoords + int2(x, y), sampleIndex).r;
                     if (abs(depth - downsampledDepth) <= DepthTolerance)
                     {
-                        float3 probeIrradiance = PassSrg::m_downsampledProbeIrradiance.Load(probeIrradianceCoords + int2(x, y), sampleIndex).rgb;
-                        probeIrradiance = saturate(probeIrradiance);
-                        return probeIrradiance;
+                        return PassSrg::m_downsampledProbeIrradiance.Load(probeIrradianceCoords + int2(x, y), sampleIndex).rgb;
                     }
 
                     closestDot = normalDot;
@@ -111,9 +107,7 @@ float3 SampleProbeIrradiance(uint sampleIndex, uint2 probeIrradianceCoords, floa
         }
     }
     
-    float3 probeIrradiance = PassSrg::m_downsampledProbeIrradiance.Load(probeIrradianceCoords + closestOffset, sampleIndex).rgb;
-    probeIrradiance = saturate(probeIrradiance);
-    return probeIrradiance;
+    return PassSrg::m_downsampledProbeIrradiance.Load(probeIrradianceCoords + closestOffset, sampleIndex).rgb;
 }
 
 // retrieve irradiance from the global IBL diffuse cubemap
@@ -156,22 +150,23 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
     float4 encodedNormal = PassSrg::m_normal.Load(screenCoords, sampleIndex);
     float3 normal = DecodeNormalSignedOctahedron(encodedNormal.rgb);
     float4 albedo = PassSrg::m_albedo.Load(screenCoords, sampleIndex);
-    float useProbeIrradiance = PassSrg::m_downsampledProbeIrradiance.Load(probeIrradianceCoords, sampleIndex).a;
+    float probeIrradianceBlendWeight = saturate(PassSrg::m_downsampledProbeIrradiance.Load(probeIrradianceCoords, sampleIndex).a);
   
     float3 diffuse = float3(0.0f, 0.0f, 0.0f);
-    if (useProbeIrradiance > 0.0f)
-    {   
-        float3 irradiance = SampleProbeIrradiance(sampleIndex, probeIrradianceCoords, depth, normal, albedo, PassSrg::m_imageScale);
-        diffuse = (albedo.rgb / PI) * irradiance;
-    }
-    else
+    if (probeIrradianceBlendWeight > 0.0f)
     {
-        float3 irradiance = SampleGlobalIBL(sampleIndex, screenCoords, depth, normal);
-        diffuse = albedo * irradiance;
+        float3 probeIrradiance = SampleProbeIrradiance(sampleIndex, probeIrradianceCoords, depth, normal, albedo, PassSrg::m_imageScale);
+        diffuse = (albedo.rgb / PI) * probeIrradiance * probeIrradianceBlendWeight;
+    }
 
-        // adjust IBL lighting by exposure.
-        float iblExposureFactor = pow(2.0, SceneSrg::m_iblExposure);
-        diffuse *= iblExposureFactor;
+    if (probeIrradianceBlendWeight < 1.0f)
+    {
+        float3 globalIrradiance = SampleGlobalIBL(sampleIndex, screenCoords, depth, normal);
+
+        // adjust IBL lighting by exposure
+        float3 globalDiffuse = (albedo * globalIrradiance) * pow(2.0, SceneSrg::m_iblExposure);
+
+        diffuse += globalDiffuse * (1.0f - probeIrradianceBlendWeight);
     }
 
     PSOutput OUT;

@@ -4,17 +4,25 @@
     "license": "Apache-2.0 Or MIT",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
     "type": "Code",
-    "summary": "",
+    "summary": "RHI for Atom",
     "canonical_tags": [
         "Gem"
     ],
     "user_tags": [],
     "requirements": "",
+    "external_subdirectories": [
+        "DX12",
+        "Metal",
+        "Null",
+        "Vulkan"
+    ],
     "dependencies": [
         "Atom_RHI_DX12",
         "Atom_RHI_Metal",
         "Atom_RHI_Vulkan",
+        "Atom_RHI_Salem",
         "Atom_RHI_Null",
         "Atom_Feature_Common"
     ]

@@ -6,7 +6,7 @@
 #
 #
 
-ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
 
 ly_add_target(
     NAME AWSCore.Static STATIC
@@ -16,10 +16,10 @@ ly_add_target(
          ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
-            Include/Public
+            Include
             ${pal_dir}
         PRIVATE
-            Include/Private
+            Source
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
@@ -36,7 +36,7 @@ ly_add_target(
         awscore_shared_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
-            Include/Private
+            Source
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
@@ -61,7 +61,7 @@ ly_create_alias(
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
 
-    include(${CMAKE_CURRENT_SOURCE_DIR}/Platform/${PAL_PLATFORM_NAME}/PAL_traits_editor_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+    include(${pal_dir}/PAL_traits_editor_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
     ly_add_target(
         NAME AWSCore.Editor.Static STATIC
@@ -71,10 +71,10 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
             ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_editor_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
-                Include/Private
+                Source
                 ${pal_dir}
             PUBLIC
-                Include/Public
+                Include
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzQtComponents
@@ -93,7 +93,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
             awscore_editor_shared_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
-                Include/Private
+                Source
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzCore
@@ -112,7 +112,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 awscore_resourcemappingtool_files.cmake
             INCLUDE_DIRECTORIES
                 PRIVATE
-                    Include/Private
+                    Source
             BUILD_DEPENDENCIES
                 PRIVATE
                     Gem::AWSCore.Editor.Static
@@ -156,18 +156,28 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             awscore_tests_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
-                Include/Private
-                Include/Public
+                Source
+                Include
                 Tests
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzTest
                 AZ::AzFramework
-                AZ::AWSNativeSDKInit
+                AZ::AWSNativeSDKTestLibs
                 Gem::AWSCore.Static
     )
+
     ly_add_googletest(
         NAME Gem::AWSCore.Tests
+    )
+
+    ly_add_target_files(
+        TARGETS
+            AWSCore.Tests
+        FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/Tools/ResourceMappingTool/resource_mapping_schema.json
+        OUTPUT_SUBDIRECTORY
+            Gems/AWSCore
     )
 
     if (PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -180,9 +190,9 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_editor_tests_files.cmake
             INCLUDE_DIRECTORIES
                 PRIVATE
-                    Include/Private
+                    Source
                     ${pal_dir}
-                    Include/Public
+                    Include
                     Tests
             COMPILE_DEFINITIONS
                 PRIVATE
@@ -192,6 +202,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     3rdParty::Qt::Gui
                     3rdParty::Qt::Widgets
                     AZ::AzTest
+                    AZ::AWSNativeSDKTestLibs
                     Gem::AWSCore.Static
                     Gem::AWSCore.Editor.Static
         )
@@ -201,3 +212,13 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     endif()
 endif()
 
+ly_add_target_files(
+    TARGETS
+        AWSCore
+    FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/Tools/ResourceMappingTool/resource_mapping_schema.json
+    OUTPUT_SUBDIRECTORY
+        Gems/AWSCore
+)
+
+ly_install_directory(DIRECTORIES Tools/ResourceMappingTool)

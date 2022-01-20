@@ -20,7 +20,7 @@ namespace ScriptCanvas
 
 namespace ScriptCanvasEditor
 {
-    class Graph;
+    class EditorGraph;
     class StateMachine;
 
     //! StateTraits provides each state the ability to provide its own compile time ID
@@ -102,9 +102,6 @@ namespace ScriptCanvasEditor
         void Log(const char* format, ...);
 
     private:
-
-        bool m_verbose = true;
-
         StateMachine* m_stateMachine;
     };
 
@@ -161,7 +158,7 @@ namespace ScriptCanvasEditor
     public:
         AZ_RTTI(EditorGraphUpgradeMachine, "{C7EABC22-A3DD-4ABE-8303-418EA3CD1246}", StateMachine);
 
-        EditorGraphUpgradeMachine(Graph* graph);
+        EditorGraphUpgradeMachine(EditorGraph* graph);
 
         AZStd::unordered_set<ScriptCanvas::Node*> m_allNodes;
         AZStd::unordered_set<ScriptCanvas::Node*> m_outOfDateNodes;
@@ -183,10 +180,10 @@ namespace ScriptCanvasEditor
 
         bool m_graphNeedsDirtying = false;
 
-        Graph* m_graph = nullptr;
-        AZ::Data::Asset<AZ::Data::AssetData> m_asset;
+        EditorGraph* m_graph = nullptr;
+        SourceHandle m_asset;
 
-        void SetAsset(const AZ::Data::Asset<AZ::Data::AssetData>& asset);
+        void SetAsset(SourceHandle& assetasset);
 
         void OnComplete(IState::ExitStatus exitStatus) override;
 
@@ -363,7 +360,7 @@ namespace ScriptCanvasEditor
     template <typename Traits>
     void ScriptCanvasEditor::State<Traits>::Log(const char* format, ...)
     {
-        if (m_verbose)
+        if (m_stateMachine->GetVerbose())
         {
             char sBuffer[2048];
             va_list ArgList;

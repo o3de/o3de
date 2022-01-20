@@ -51,7 +51,7 @@ namespace AssetProcessor
             case AZ::SettingsRegistryInterface::VisitAction::Begin:
             {
                 // Only continue traversal if the path is exactly the AssetProcessorSettingsKey (which indicates the start of traversal)
-                // or if a "Platform *" object and it's children are being traversed 
+                // or if a "Platform *" object and it's children are being traversed
                 if (jsonPath == AssetProcessorSettingsKey)
                 {
                     return AZ::SettingsRegistryInterface::VisitResponse::Continue;
@@ -631,7 +631,7 @@ namespace AssetProcessor
         for (const AssetBuilderSDK::PlatformInfo& platform : m_enabledPlatforms)
         {
             AZStd::string_view currentRCParams = assetRecognizer.m_defaultParams;
-            // The "/Amazon/AssetProcessor/Settings/RC */<platform>" entry will be queried 
+            // The "/Amazon/AssetProcessor/Settings/RC */<platform>" entry will be queried
             AZ::IO::Path overrideParamsKey = AZ::IO::Path(AZ::IO::PosixPathSeparator);
             overrideParamsKey /= path;
             overrideParamsKey /= platform.m_identifier;
@@ -644,7 +644,7 @@ namespace AssetProcessor
             }
             else
             {
-                // otherwise check for tags associated with the platform 
+                // otherwise check for tags associated with the platform
                 for (const AZStd::string& tag : platform.m_tags)
                 {
                     overrideParamsKey.ReplaceFilename(AZ::IO::PathView(tag));
@@ -1285,6 +1285,13 @@ namespace AssetProcessor
         return m_scanFolders[index];
     }
 
+    const AssetProcessor::ScanFolderInfo& PlatformConfiguration::GetScanFolderAt(int index) const
+    {
+        Q_ASSERT(index >= 0);
+        Q_ASSERT(index < m_scanFolders.size());
+        return m_scanFolders[index];
+    }
+
     void PlatformConfiguration::AddScanFolder(const AssetProcessor::ScanFolderInfo& source, bool isUnitTesting)
     {
         if (isUnitTesting)
@@ -1409,6 +1416,8 @@ namespace AssetProcessor
             return QString();
         }
 
+        auto* fileStateInterface = AZ::Interface<AssetProcessor::IFileStateRequests>::Get();
+
         for (int pathIdx = 0; pathIdx < m_scanFolders.size(); ++pathIdx)
         {
             AssetProcessor::ScanFolderInfo scanFolderInfo = m_scanFolders[pathIdx];
@@ -1423,7 +1432,7 @@ namespace AssetProcessor
             QDir rooted(scanFolderInfo.ScanPath());
             QString absolutePath = rooted.absoluteFilePath(tempRelativeName);
             AssetProcessor::FileStateInfo fileStateInfo;
-            auto* fileStateInterface = AZ::Interface<AssetProcessor::IFileStateRequests>::Get();
+
             if (fileStateInterface)
             {
                 if (fileStateInterface->GetFileInfo(absolutePath, &fileStateInfo))
@@ -1436,7 +1445,10 @@ namespace AssetProcessor
     }
 
     QStringList PlatformConfiguration::FindWildcardMatches(
-        const QString& sourceFolder, QString relativeName, bool includeFolders, bool recursiveSearch) const
+        const QString& sourceFolder,
+        QString relativeName,
+        bool includeFolders,
+        bool recursiveSearch) const
     {
         if (relativeName.isEmpty())
         {
@@ -1466,6 +1478,67 @@ namespace AssetProcessor
                 returnList.append(QDir::fromNativeSeparators(dirIterator.filePath()));
             }
         }
+        return returnList;
+    }
+
+    QStringList PlatformConfiguration::FindWildcardMatches(
+        const QString& sourceFolder,
+        QString relativeName,
+        const AZStd::unordered_set<AZStd::string>& excludedFolders,
+        bool includeFolders,
+        bool recursiveSearch) const
+    {
+        if (relativeName.isEmpty())
+        {
+            return QStringList();
+        }
+
+        QDir sourceFolderDir(sourceFolder);
+
+        QString posixRelativeName = QDir::fromNativeSeparators(relativeName);
+
+        QStringList returnList;
+        QRegExp nameMatch{ posixRelativeName, Qt::CaseInsensitive, QRegExp::Wildcard };
+        AZStd::stack<QString> dirs;
+        dirs.push(sourceFolderDir.absolutePath());
+
+        while (!dirs.empty())
+        {
+            QString absolutePath = dirs.top();
+            dirs.pop();
+
+            if (excludedFolders.contains(absolutePath.toUtf8().constData()))
+            {
+                continue;
+            }
+
+            QDirIterator dirIterator(absolutePath, QDir::AllEntries | QDir::NoSymLinks | QDir::NoDotAndDotDot);
+
+            while (dirIterator.hasNext())
+            {
+                dirIterator.next();
+
+                if (!dirIterator.fileInfo().isFile())
+                {
+                    if (recursiveSearch)
+                    {
+                        dirs.push(dirIterator.filePath());
+                    }
+
+                    if (!includeFolders)
+                    {
+                        continue;
+                    }
+                }
+
+                QString pathMatch{ sourceFolderDir.relativeFilePath(dirIterator.filePath()) };
+                if (nameMatch.exactMatch(pathMatch))
+                {
+                    returnList.append(QDir::fromNativeSeparators(dirIterator.filePath()));
+                }
+            }
+        }
+
         return returnList;
     }
 
@@ -1633,13 +1706,18 @@ namespace AssetProcessor
 
     bool AssetProcessor::PlatformConfiguration::IsFileExcluded(QString fileName) const
     {
-        for (const ExcludeAssetRecognizer& excludeRecognizer : m_excludeAssetRecognizers)
+        QString relPath, scanFolderName;
+        if (ConvertToRelativePath(fileName, relPath, scanFolderName))
         {
-            if (excludeRecognizer.m_patternMatcher.MatchesPath(fileName.toUtf8().constData()))
+            for (const ExcludeAssetRecognizer& excludeRecognizer : m_excludeAssetRecognizers)
             {
-                return true;
+                if (excludeRecognizer.m_patternMatcher.MatchesPath(relPath.toUtf8().constData()))
+                {
+                    return true;
+                }
             }
         }
+
         return false;
     }
 

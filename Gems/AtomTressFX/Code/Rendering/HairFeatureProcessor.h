@@ -217,7 +217,7 @@ namespace AZ
                 bool m_forceClearRenderData = false;
                 bool m_initialized = false;
                 bool m_isEnabled = true;
-                bool m_usePPLLRenderTechnique = true;
+                bool m_usePPLLRenderTechnique = false;
                 static uint32_t s_instanceCount;
 
                 HairGlobalSettings m_hairGlobalSettings;
