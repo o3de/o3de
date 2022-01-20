@@ -115,43 +115,6 @@ extern LONG WINAPI CryEngineExceptionFilterWER(struct _EXCEPTION_POINTERS* pExce
 #include AZ_RESTRICTED_FILE(SystemInit_cpp)
 #endif
 
-#if AZ_TRAIT_USE_CRY_SIGNAL_HANDLER
-
-#include <execinfo.h>
-#include <signal.h>
-void CryEngineSignalHandler(int signal)
-{
-    char resolvedPath[_MAX_PATH];
-
-    // it is assumed that @log@ points at the appropriate place (so for apple, to the user profile dir)
-    if (AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath("@log@/crash.log", resolvedPath, _MAX_PATH))
-    {
-        fprintf(stderr, "Crash Signal Handler - logged to %s\n", resolvedPath);
-        FILE* file = fopen(resolvedPath, "a");
-        if (file)
-        {
-            char sTime[128];
-            time_t ltime;
-            time(&ltime);
-            struct tm* today = localtime(&ltime);
-            strftime(sTime, 40, "<%Y-%m-%d %H:%M:%S> ", today);
-            fprintf(file, "%s: Error: signal %s:\n", sTime, strsignal(signal));
-            fflush(file);
-            void* array[100];
-            int s = backtrace(array, 100);
-            backtrace_symbols_fd(array, s, fileno(file));
-            fclose(file);
-            CryLogAlways("Successfully recorded crash file:  '%s'", resolvedPath);
-            abort();
-        }
-    }
-
-    CryLogAlways("Could not record crash file...");
-    abort();
-}
-
-#endif // AZ_TRAIT_USE_CRY_SIGNAL_HANDLER
-
 //////////////////////////////////////////////////////////////////////////
 #define DEFAULT_LOG_FILENAME "@log@/Log.txt"
 
@@ -697,11 +660,6 @@ public:
 /////////////////////////////////////////////////////////////////////////////////
 bool CSystem::Init(const SSystemInitParams& startupParams)
 {
-#if AZ_TRAIT_USE_CRY_SIGNAL_HANDLER
-    signal(SIGSEGV, CryEngineSignalHandler);
-    signal(SIGTRAP, CryEngineSignalHandler);
-    signal(SIGILL, CryEngineSignalHandler);
-#endif // AZ_TRAIT_USE_CRY_SIGNAL_HANDLER
 
     // Temporary Fix for an issue accessing gEnv from this object instance. The gEnv is not resolving to the
     // global gEnv, instead its resolving an some uninitialized gEnv elsewhere (NULL). Since gEnv is
