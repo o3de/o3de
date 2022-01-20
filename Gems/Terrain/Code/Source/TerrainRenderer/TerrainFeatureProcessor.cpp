@@ -208,12 +208,21 @@ namespace Terrain
         }
         
         int32_t xStart = aznumeric_cast<int32_t>(AZStd::ceilf(m_dirtyRegion.GetMin().GetX() / m_sampleSpacing));
-        int32_t xEnd = aznumeric_cast<int32_t>(AZStd::floorf(m_dirtyRegion.GetMax().GetX() / m_sampleSpacing)) + 1;
         int32_t yStart = aznumeric_cast<int32_t>(AZStd::ceilf(m_dirtyRegion.GetMin().GetY() / m_sampleSpacing));
-        int32_t yEnd = aznumeric_cast<int32_t>(AZStd::floorf(m_dirtyRegion.GetMax().GetY() / m_sampleSpacing)) + 1;
-        uint32_t updateWidth = xEnd - xStart;
-        uint32_t updateHeight = yEnd - yStart;
 
+        AZ::Vector2 stepSize(m_sampleSpacing);
+        AZ::Vector3 maxBound(
+            m_dirtyRegion.GetMax().GetX() + m_sampleSpacing, m_dirtyRegion.GetMax().GetY() + m_sampleSpacing, 0.0f);
+        AZ::Aabb region;
+        region.Set(m_dirtyRegion.GetMin(), maxBound);
+
+        AZStd::pair<size_t, size_t> numSamples;
+        AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
+            numSamples, &AzFramework::Terrain::TerrainDataRequests::GetNumSamplesFromRegion,
+            region, stepSize);
+
+        uint32_t updateWidth = numSamples.first;
+        uint32_t updateHeight = numSamples.second;
         AZStd::vector<uint16_t> pixels;
         pixels.reserve(updateWidth * updateHeight);
         {
@@ -238,14 +247,9 @@ namespace Terrain
                 pixels.push_back(uint16Height);
             };
 
-            AZ::Vector2 stepSize(m_sampleSpacing);
-            AZ::Vector3 maxBound(
-                m_dirtyRegion.GetMax().GetX() + m_sampleSpacing, m_dirtyRegion.GetMax().GetY() + m_sampleSpacing, 0.0f);
-            AZ::Aabb region;
-            region.Set(m_dirtyRegion.GetMin(), maxBound);
             AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
                 &AzFramework::Terrain::TerrainDataRequests::ProcessHeightsFromRegion,
-                region, stepSize, perPositionCallback,AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
+                region, stepSize, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
         }
 
         if (m_heightmapImage)
