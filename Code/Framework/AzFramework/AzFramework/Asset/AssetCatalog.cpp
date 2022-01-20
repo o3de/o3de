@@ -512,9 +512,13 @@ namespace AzFramework
 
         if (enumerateCB)
         {
-            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_registryMutex);
+            // Make sure we don't hold on to any locks during the enumerateCB, so copy the registry info to a local variable
+            // and unlock the registryMutex before calling the callback.
+            m_registryMutex.lock();
+            auto assetIdToInfoCopy = m_registry->m_assetIdToInfo;
+            m_registryMutex.unlock();
 
-            for (auto& it : m_registry->m_assetIdToInfo)
+            for (auto& it : assetIdToInfoCopy)
             {
                 enumerateCB(it.first, it.second);
             }
