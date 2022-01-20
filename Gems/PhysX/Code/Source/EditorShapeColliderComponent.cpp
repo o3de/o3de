@@ -702,9 +702,9 @@ namespace PhysX
             m_editorSceneHandle = m_sceneInterface->GetSceneHandle(AzPhysics::EditorPhysicsSceneName);
         }
 
-        UpdateTriggerSettings();
         UpdateSingleSidedSettings();
         UpdateShapeConfigs();
+        UpdateTriggerSettings();
 
         // Debug drawing
         m_colliderDebugDraw.Connect(GetEntityId());
@@ -947,6 +947,7 @@ namespace PhysX
             if (!m_previousIsTrigger.has_value())
             {
                 m_previousIsTrigger = m_colliderConfig.m_isTrigger;
+                m_colliderConfig.m_isTrigger = false;
             }
             m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::IsTrigger, false);
         }

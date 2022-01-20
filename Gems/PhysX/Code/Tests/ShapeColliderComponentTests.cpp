@@ -23,6 +23,7 @@
 #include <LmbrCentral/Shape/PolygonPrismShapeComponentBus.h>
 #include <LmbrCentral/Shape/SphereShapeComponentBus.h>
 #include <LmbrCentral/Shape/CompoundShapeComponentBus.h>
+#include <LmbrCentral/Shape/QuadShapeComponentBus.h>
 #include <PhysX/ForceRegionComponentBus.h>
 #include <PhysX/PhysXLocks.h>
 #include <PhysX/SystemComponentBus.h>
@@ -452,19 +453,53 @@ namespace PhysXEditorTests
         EXPECT_TRUE(aabb.GetMin().IsClose(translation - 0.5f * scale * boxDimensions));
     }
 
-    void SetTrigger(PhysX::EditorShapeColliderComponent* editorShapeColliderComponent, bool isTrigger)
+    void SetBoolValueOnComponent(AZ::Component* component, AZ::Crc32 name, bool value)
     {
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
         AzToolsFramework::InstanceDataHierarchy instanceDataHierarchy;
-        instanceDataHierarchy.AddRootInstance(editorShapeColliderComponent);
+        instanceDataHierarchy.AddRootInstance(component);
         instanceDataHierarchy.Build(serializeContext, AZ::SerializeContext::ENUM_ACCESS_FOR_WRITE);
         AzToolsFramework::InstanceDataHierarchy::InstanceDataNode* instanceNode =
-            instanceDataHierarchy.FindNodeByPartialAddress({ AZ_CRC("Trigger", 0x1a6b0f5d) });
+            instanceDataHierarchy.FindNodeByPartialAddress({ name });
         if (instanceNode)
         {
-            instanceNode->Write<bool>(isTrigger);
+            instanceNode->Write<bool>(value);
         }
+    }
+
+    void SetTrigger(PhysX::EditorShapeColliderComponent* editorShapeColliderComponent, bool isTrigger)
+    {
+        SetBoolValueOnComponent(editorShapeColliderComponent, AZ_CRC("Trigger", 0x1a6b0f5d), isTrigger);
+    }
+
+    bool GetBoolValueFromComponent(AZ::Component* component, AZ::Crc32 name)
+    {
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+        AzToolsFramework::InstanceDataHierarchy instanceDataHierarchy;
+        instanceDataHierarchy.AddRootInstance(component);
+        instanceDataHierarchy.Build(serializeContext, AZ::SerializeContext::ENUM_ACCESS_FOR_READ);
+        AzToolsFramework::InstanceDataHierarchy::InstanceDataNode* instanceNode =
+            instanceDataHierarchy.FindNodeByPartialAddress({ name });
+        bool value = false;
+        instanceNode->Read<bool>(value);
+        return value;
+    }
+
+    bool IsTrigger(PhysX::EditorShapeColliderComponent* editorShapeColliderComponent)
+    {
+        return GetBoolValueFromComponent(editorShapeColliderComponent, AZ_CRC("Trigger"));
+    }
+
+    void SetSingleSided(PhysX::EditorShapeColliderComponent* editorShapeColliderComponent, bool singleSided)
+    {
+        SetBoolValueOnComponent(editorShapeColliderComponent, AZ_CRC("SingleSided"), singleSided);
+    }
+
+    bool IsSingleSided(PhysX::EditorShapeColliderComponent* editorShapeColliderComponent)
+    {
+        return GetBoolValueFromComponent(editorShapeColliderComponent, AZ_CRC("SingleSided"));
     }
 
     EntityPtr CreateRigidBox(const AZ::Vector3& boxDimensions, const AZ::Vector3& position)
@@ -566,4 +601,111 @@ namespace PhysXEditorTests
         EXPECT_THAT(aabb.GetMin(), UnitTest::IsClose(-0.5f * boxDimensions * parentScale));
     }
 
+    class PhysXEditorParamBoolFixture
+        : public ::testing::WithParamInterface<bool>
+        , public PhysXEditorFixture
+    {
+    };
+
+    TEST_P(PhysXEditorParamBoolFixture, EditorShapeColliderComponent_ShapeColliderWithQuadShapeNonUniformlyScalesCorrectly)
+    {
+        // test both single and double-sided quad colliders
+        bool singleSided = GetParam();
+
+        EntityPtr editorEntity = CreateInactiveEditorEntity("QuadEntity");
+        editorEntity->CreateComponent(LmbrCentral::EditorQuadShapeComponentTypeId);
+        auto* shapeColliderComponent = editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
+        SetSingleSided(shapeColliderComponent, singleSided);
+        editorEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
+        const auto entityId = editorEntity->GetId();
+
+        editorEntity->Activate();
+
+        LmbrCentral::QuadShapeComponentRequestBus::Event(entityId, &LmbrCentral::QuadShapeComponentRequests::SetQuadWidth, 1.2f);
+        LmbrCentral::QuadShapeComponentRequestBus::Event(entityId, &LmbrCentral::QuadShapeComponentRequests::SetQuadHeight, 0.8f);
+
+        // update the transform scale and non-uniform scale
+        AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetLocalUniformScale, 3.0f);
+        AZ::NonUniformScaleRequestBus::Event(entityId, &AZ::NonUniformScaleRequests::SetScale, AZ::Vector3(1.5f, 0.5f, 1.0f));
+
+        // make a game entity and check that its AABB is as expected
+        EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
+        AZ::Aabb aabb = gameEntity->FindComponent<PhysX::StaticRigidBodyComponent>()->GetAabb();
+
+        EXPECT_NEAR(aabb.GetMin().GetX(), -2.7f, 1e-3f);
+        EXPECT_NEAR(aabb.GetMin().GetY(), -0.6f, 1e-3f);
+        EXPECT_NEAR(aabb.GetMax().GetX(), 2.7f, 1e-3f);
+        EXPECT_NEAR(aabb.GetMax().GetY(), 0.6f, 1e-3f);
+        EXPECT_TRUE(true);
+    }
+
+    TEST_P(PhysXEditorParamBoolFixture, EditorShapeColliderComponent_TriggerSettingIsRememberedWhenSwitchingToQuadAndBack)
+    {
+        bool initialTriggerSetting = GetParam();
+
+        // create an editor entity with a box component (which does support trigger)
+        EntityPtr editorEntity = CreateInactiveEditorEntity("QuadEntity");
+        auto* boxShapeComponent = editorEntity->CreateComponent(LmbrCentral::EditorBoxShapeComponentTypeId);
+        auto* shapeColliderComponent = editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
+        SetTrigger(shapeColliderComponent, initialTriggerSetting);
+        editorEntity->Activate();
+
+        // the trigger setting should be what it was set to
+        EXPECT_EQ(IsTrigger(shapeColliderComponent), initialTriggerSetting);
+
+        // deactivate the entity and swap the box for a quad (which does not support trigger)
+        editorEntity->Deactivate();
+        editorEntity->RemoveComponent(boxShapeComponent);
+        auto* quadShapeComponent = editorEntity->CreateComponent(LmbrCentral::EditorQuadShapeComponentTypeId);
+        editorEntity->Activate();
+
+        // the trigger setting should now be false, because quad shape does not support triggers
+        EXPECT_FALSE(IsTrigger(shapeColliderComponent));
+
+        // swap back to a box shape
+        editorEntity->Deactivate();
+        editorEntity->RemoveComponent(quadShapeComponent);
+        editorEntity->AddComponent(boxShapeComponent);
+        editorEntity->Activate();
+
+        // the original trigger setting should have been remembered
+        EXPECT_EQ(IsTrigger(shapeColliderComponent), initialTriggerSetting);
+
+        // the quad shape component is no longer attached to the entity so won't be automatically cleared up
+        delete quadShapeComponent;
+    }
+
+    TEST_P(PhysXEditorParamBoolFixture, EditorShapeColliderComponent_SingleSidedSettingIsRememberedWhenAddingAndRemovingRigidBody)
+    {
+        bool initialSingleSidedSetting = GetParam();
+
+        // create an editor entity without a rigid body (that means both single-sided and double-sided quads are valid)
+        EntityPtr editorEntity = CreateInactiveEditorEntity("QuadEntity");
+        editorEntity->CreateComponent(LmbrCentral::EditorQuadShapeComponentTypeId);
+        auto* shapeColliderComponent = editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
+        SetSingleSided(shapeColliderComponent, initialSingleSidedSetting);
+        editorEntity->Activate();
+
+        // verify that the single sided setting matches the initial value
+        EXPECT_EQ(IsSingleSided(shapeColliderComponent), initialSingleSidedSetting);
+
+        // add an editor rigid body component (this should mean single-sided quads are not supported)
+        editorEntity->Deactivate();
+        auto rigidBodyComponent = editorEntity->CreateComponent<PhysX::EditorRigidBodyComponent>();
+        editorEntity->Activate();
+
+        EXPECT_FALSE(IsSingleSided(shapeColliderComponent));
+
+        // remove the editor rigid body component (the previous single-sided setting should be restored)
+        editorEntity->Deactivate();
+        editorEntity->RemoveComponent(rigidBodyComponent);
+        editorEntity->Activate();
+
+        EXPECT_EQ(IsSingleSided(shapeColliderComponent), initialSingleSidedSetting);
+
+        // the rigid body component is no longer attached to the entity so won't be automatically cleared up
+        delete rigidBodyComponent;
+    }
+
+    INSTANTIATE_TEST_CASE_P(PhysXEditorTests, PhysXEditorParamBoolFixture, ::testing::Bool());
 } // namespace PhysXEditorTests
