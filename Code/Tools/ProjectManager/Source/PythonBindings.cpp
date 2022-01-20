@@ -459,6 +459,13 @@ namespace O3DE::ProjectManager
             if (!pybind11::isinstance<pybind11::none>(enginePathResult))
             {
                 engineInfo = EngineInfoFromPath(enginePathResult);
+
+                // handle the case where an engine was registered but the engine.json is missing/corrupt
+                if (!engineInfo.IsValid())
+                {
+                    engineInfo.m_name = engineName;
+                    engineInfo.m_path = Py_To_String(enginePathResult); 
+                }
             }
         });
 
