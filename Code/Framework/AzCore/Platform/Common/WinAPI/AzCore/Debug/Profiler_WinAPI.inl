@@ -21,6 +21,13 @@ namespace AZ::Debug::Platform
     #endif
     }
 
+    inline void BeginRegion([[maybe_unused]] Budget* budget, [[maybe_unused]] const char* eventName)
+    {
+    #ifdef USE_PIX
+        PIXBeginEvent(PIX_COLOR_INDEX(budget->Crc() & 0xff), eventName);
+    #endif
+    }
+
     inline void EndRegion([[maybe_unused]] Budget* budget)
     {
     #ifdef USE_PIX

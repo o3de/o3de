@@ -14,6 +14,7 @@ namespace AZ::Debug
     {
         template<typename... T>
         void BeginRegion(Budget* budget, const char* eventName, T const&... args);
+        void BeginRegion(Budget* budget, const char* eventName);
         void EndRegion(Budget* budget);
     } // namespace Platform
 
