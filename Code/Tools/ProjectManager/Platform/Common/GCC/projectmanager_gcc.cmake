@@ -6,10 +6,7 @@
 #
 #
 
-ly_add_source_properties(
-    SOURCES
-        GridMate/Carrier/SecureSocketDriver.cpp
-        GridMate/Carrier/StreamSecureSocketDriver.cpp
-    PROPERTY COMPILE_OPTIONS
-    VALUES -Wno-deprecated-declarations
+set(LY_COMPILE_OPTIONS
+    PUBLIC
+        -fexceptions # The macro PYBIND11_EMBEDDED_MODULE uses a try catch block
 )
