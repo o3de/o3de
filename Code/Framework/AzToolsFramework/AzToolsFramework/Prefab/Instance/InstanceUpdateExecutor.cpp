@@ -121,7 +121,10 @@ namespace AzToolsFramework
         const Instance* InstanceUpdateExecutor::ClimbUpToTargetInstance(
             const Instance* startInstance, const Instance* targetInstance, AZStd::string& aliasPath)
         {
-            // TODO - add checks on instances
+            if (!startInstance)
+            {
+                return nullptr;
+            }
 
             // Climb up the instance hierarchy from this instance until you hit the target or the root.
             InstanceOptionalConstReference instance = *startInstance;
@@ -162,6 +165,11 @@ namespace AzToolsFramework
             }
             instanceDom.CopyFrom(*instanceDomValueFromSource, instanceDom.GetAllocator());
 
+            // If our instance is the focused instance, replace the transform on the container
+            // with the one containing overrides to maintain the position.
+
+            // TODO
+
             // If the focused instance is not an ancestor of our instance, verify if it's a descendant.
             if (domSourceInstance != &focusedInstance->get())
             {
@@ -175,6 +183,10 @@ namespace AzToolsFramework
                     PrefabDomPath domSourceToFocusPath(aliasPathToFocus.c_str());
                     domSourceToFocusPath.Set(instanceDom, focusedInstanceDom);
                 }
+
+                // Then, also replace the transform on the container (just like above - helper function?
+
+                // TODO
             }
 
             PrefabDomValueReference instanceDomFromRoot = *instanceDomValueFromSource;
@@ -270,7 +282,7 @@ namespace AzToolsFramework
                             Template& currentTemplate = currentTemplateReference->get();
                             instanceToUpdate->GetNestedInstances([&](AZStd::unique_ptr<Instance>& nestedInstance) 
                             {
-                                if (nestedInstance->GetLinkId() != InvalidLinkId)
+                                if (!nestedInstance || nestedInstance->GetLinkId() != InvalidLinkId)
                                 {
                                     return;
                                 }
