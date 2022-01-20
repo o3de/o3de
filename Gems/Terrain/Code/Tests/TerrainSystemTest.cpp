@@ -969,7 +969,7 @@ namespace UnitTest
         AzFramework::SurfaceData::SurfaceTagWeightList expectedTags;
         SetupSurfaceWeightMocks(entity.get(), expectedTags);
 
-        auto perPositionCallback = [&expectedTags](size_t xIndex, size_t yIndex,
+        auto perPositionCallback = [&expectedTags]([[maybe_unused]]  size_t xIndex, [[maybe_unused]] size_t yIndex,
             const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
         {
             constexpr float epsilon = 0.0001f;
@@ -1015,7 +1015,7 @@ namespace UnitTest
         AzFramework::SurfaceData::SurfaceTagWeightList expectedTags;
         SetupSurfaceWeightMocks(entity.get(), expectedTags);
 
-        auto perPositionCallback = [&expectedTags](size_t xIndex, size_t yIndex,
+        auto perPositionCallback = [&expectedTags]([[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex,
             const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
         {
             constexpr float epsilon = 0.0001f;
