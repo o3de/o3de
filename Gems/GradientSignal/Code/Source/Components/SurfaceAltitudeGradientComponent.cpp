@@ -211,7 +211,7 @@ namespace GradientSignal
         return CalculateAltitudeRatio(points, m_configuration.m_altitudeMin, m_configuration.m_altitudeMax);
     }
 
-    void SurfaceAltitudeGradientComponent::GetValues(AZStd::span<AZ::Vector3> positions, AZStd::span<float> outValues) const
+    void SurfaceAltitudeGradientComponent::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
     {
         if (positions.size() != outValues.size())
         {
