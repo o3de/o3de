@@ -135,7 +135,7 @@ namespace GradientSignal
     }
 
     void ConstantGradientComponent::GetValues(
-        [[maybe_unused]] AZStd::array_view<AZ::Vector3> positions, AZStd::array_view<float> outValues) const
+        [[maybe_unused]] AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
     {
         if (positions.size() != outValues.size())
         {
@@ -143,11 +143,7 @@ namespace GradientSignal
             return;
         }
 
-        for (auto& outValue : outValues)
-        {
-            float& writableOutValue = const_cast<float&>(outValue);
-            writableOutValue = m_configuration.m_value;
-        }
+        AZStd::fill(outValues.begin(), outValues.end(), m_configuration.m_value);
     }
 
     float ConstantGradientComponent::GetConstantValue() const

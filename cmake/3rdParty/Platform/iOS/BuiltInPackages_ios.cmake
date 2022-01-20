@@ -18,7 +18,7 @@ ly_associate_package(PACKAGE_NAME glad-2.0.0-beta-rev2-multiplatform TARGETS gla
 # platform-specific:
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-rev3-ios         TARGETS TIFF            PACKAGE_HASH e9067e88649fb6e93a926d9ed38621a9fae360a2e6f6eb24ebca63c1bc7761ea)
 ly_associate_package(PACKAGE_NAME freetype-2.10.4.16-ios         TARGETS freetype        PACKAGE_HASH 3ac3c35e056ae4baec2e40caa023d76a7a3320895ef172b6655e9261b0dc2e29)
-ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev4-ios  TARGETS AWSNativeSDK    PACKAGE_HASH d10e7496ca705577032821011beaf9f2507689f23817bfa0ed4d2a2758afcd02)
+ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.9.50-rev1-ios   TARGETS AWSNativeSDK    PACKAGE_HASH c3c9478c259ecb569fb2ce6fcfa733647adc3b6bd2854e8eff9de64bcd18c745)
 ly_associate_package(PACKAGE_NAME Lua-5.3.5-rev5-ios             TARGETS Lua             PACKAGE_HASH c2d3c4e67046c293049292317a7d60fdb8f23effeea7136aefaef667163e5ffe)
 ly_associate_package(PACKAGE_NAME PhysX-4.1.2.29882248-rev5-ios  TARGETS PhysX           PACKAGE_HASH 4a5e38b385837248590018eb133444b4e440190414e6756191200a10c8fa5615)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-ios          TARGETS mikkelsen       PACKAGE_HASH 976aaa3ccd8582346132a10af253822ccc5d5bcc9ea5ba44d27848f65ee88a8a)

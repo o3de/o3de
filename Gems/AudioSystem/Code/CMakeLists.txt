@@ -10,7 +10,7 @@ set(AUDIOSYSTEM_COMPILEDEFINITIONS
     $<IF:$<CONFIG:Release>,AUDIO_RELEASE,ENABLE_AUDIO_LOGGING>
 )
 
-ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
 
 ly_add_target(
     NAME AudioSystem.Static STATIC
@@ -65,7 +65,7 @@ ly_create_alias(NAME AudioSystem.Clients  NAMESPACE Gem TARGETS Gem::AudioSystem
 # Tests
 ################################################################################
 if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
-    ly_get_list_relative_pal_filename(common_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/Common)
+    set(common_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/Common)
     ly_add_target(
         NAME AudioSystem.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem

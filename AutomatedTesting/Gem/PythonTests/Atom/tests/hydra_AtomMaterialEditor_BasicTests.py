@@ -36,6 +36,19 @@ MATERIAL_TYPE_PATH = os.path.join(
 CACHE_FILE_EXTENSION = ".azmaterial"
 
 
+def verify_pane_visibility(pane_name: str):
+    """
+    print log lines indicating Material Editor pane visibility function
+    :param pane_name: Name of the pane to be tested
+    """
+    initial_value = material_editor.is_pane_visible(pane_name)
+    material_editor.set_pane_visibility(pane_name, not initial_value)
+    result = (material_editor.is_pane_visible(pane_name) is not initial_value)
+    material_editor.set_pane_visibility(pane_name, initial_value)
+    result = result and (initial_value is material_editor.is_pane_visible(pane_name))
+    print(f"P1: {pane_name} visibility working as expected: {result}")
+
+
 def run():
     """
     Summary:
@@ -49,9 +62,12 @@ def run():
     7. Saving as a New Material
     8. Saving as a Child Material
     9. Saving all Open Materials
+    10. Verify Asset Browser pane visibility
+    11. Verify Material Inspector pane visibility
 
     Expected Result:
     All the above functions work as expected in Material Editor.
+    Pane visibility functions as expected
 
     :return: None
     """
@@ -186,6 +202,14 @@ def run():
     material_editor.set_property(document2_id, property2_name, initial_color)
     material_editor.save_all()
     material_editor.close_all_documents()
+
+    # 10) Verify Asset Browser pane visibility
+    verify_pane_visibility("Asset Browser")
+
+    # 11) Verify Material Inspector pane visibility
+    verify_pane_visibility("Inspector")
+
+    # Confirm documents closed and exit Material Editor
     material_editor.wait_for_condition(lambda:
                                        (not material_editor.is_open(document1_id)) and
                                        (not material_editor.is_open(document2_id)) and
