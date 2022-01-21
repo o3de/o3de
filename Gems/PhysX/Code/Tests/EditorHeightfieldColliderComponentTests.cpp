@@ -343,7 +343,6 @@ namespace PhysXEditorTests
             for (int sampleColumn = 0; sampleColumn < numColumns; ++sampleColumn)
             {
                 physx::PxHeightFieldSample samplePhysX = heightfield->getSample(sampleRow, sampleColumn);
-                Physics::HeightMaterialPoint samplePhysics = samples[sampleRow * numColumns + sampleColumn];
 
                 auto [materialIndex0, materialIndex1] = PhysX::Utils::GetPhysXMaterialIndicesFromHeightfieldSamples(samples, sampleRow, sampleColumn, numRows, numColumns);
                 EXPECT_EQ(samplePhysX.materialIndex0, materialIndex0);
