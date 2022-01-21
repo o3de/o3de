@@ -883,10 +883,12 @@ namespace ScriptCanvasEditor
 
              if (output.m_actionIsValid)
              {
-                 // #before_pr post an undo point
+                 bool changeMade = false;
+
                  if (output.m_nameChanged && !output.m_name.empty())
                  {
                      graphVariable->SetVariableName(output.m_name);
+                     changeMade = true;
                  }
 
                 if (output.m_typeChanged && output.m_type.IsValid())
@@ -894,6 +896,12 @@ namespace ScriptCanvasEditor
                     graphVariable->ModDatum().SetType(output.m_type, ScriptCanvas::Datum::TypeChange::Forced);
                     ScriptCanvas::GraphRequestBus::Event(m_scriptCanvasId, &ScriptCanvas::GraphRequests::RefreshVariableReferences
                         , graphVariable->GetVariableId());
+                    changeMade = true;
+                }
+
+                if (changeMade)
+                {
+                    GeneralRequestBus::Broadcast(&GeneralRequests::PostUndoPoint, m_scriptCanvasId);
                 }
              }
          }
