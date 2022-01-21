@@ -111,7 +111,7 @@ namespace Profiler
         void OnSystemTick() final override;
 
         //! AZ::Debug::Profiler overrides...
-        void BeginRegion(const AZ::Debug::Budget* budget, const char* eventName)  final override;
+        void BeginRegion(const AZ::Debug::Budget* budget, const char* eventName, size_t eventNameArgCount, ...)  final override;
         void EndRegion(const AZ::Debug::Budget* budget) final override;
 
         //! CpuProfiler overrides...

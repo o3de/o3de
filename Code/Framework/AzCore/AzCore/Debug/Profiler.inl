@@ -14,44 +14,44 @@ namespace AZ::Debug
     void ProfileScope::BeginRegion(
         [[maybe_unused]] Budget* budget, [[maybe_unused]] const char* eventName, [[maybe_unused]] T const&... args)
     {
-        if (!budget)
+    #if !defined(_RELEASE)
+        if (budget)
         {
-            return;
-        }
-#if !defined(_RELEASE)
-        // TODO: Verification that the supplied system name corresponds to a known budget
-#if defined(USE_PIX)
-        PIXBeginEvent(PIX_COLOR_INDEX(budget->Crc() & 0xff), eventName, args...);
-#endif
-        budget->BeginProfileRegion();
+        #if defined(USE_PIX)
+            PIXBeginEvent(PIX_COLOR_INDEX(budget->Crc() & 0xff), eventName, args...);
+        #endif // defined(USE_PIX)
 
-        if (auto profiler = AZ::Interface<Profiler>::Get(); profiler)
-        {
-            profiler->BeginRegion(budget, eventName);
+            budget->BeginProfileRegion();
+
+            if (auto profiler = AZ::Interface<Profiler>::Get(); profiler)
+            {
+                profiler->BeginRegion(budget, eventName, sizeof...(T), args...);
+            }
         }
-#endif
+    #endif // !defined(_RELEASE)
     }
 
     inline void ProfileScope::EndRegion([[maybe_unused]] Budget* budget)
     {
-        if (!budget)
+    #if !defined(_RELEASE)
+        if (budget)
         {
-            return;
+            budget->EndProfileRegion();
+
+            if (auto profiler = AZ::Interface<Profiler>::Get(); profiler)
+            {
+                profiler->EndRegion(budget);
+            }
+
+        #if defined(USE_PIX)
+            PIXEndEvent();
+        #endif // defined(USE_PIX)
         }
-#if !defined(_RELEASE)
-        budget->EndProfileRegion();
-#if defined(USE_PIX)
-        PIXEndEvent();
-#endif
-        if (auto profiler = AZ::Interface<Profiler>::Get(); profiler)
-        {
-            profiler->EndRegion(budget);
-        }
-#endif
+    #endif // !defined(_RELEASE)
     }
 
     template<typename... T>
-    ProfileScope::ProfileScope(Budget* budget, char const* eventName, T const&... args)
+    ProfileScope::ProfileScope(Budget* budget, const char* eventName, T const&... args)
         : m_budget{ budget }
     {
         BeginRegion(budget, eventName, args...);
