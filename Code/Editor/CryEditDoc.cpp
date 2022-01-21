@@ -2129,12 +2129,12 @@ void CCryEditDoc::ReleaseXmlArchiveArray(TDocMultiArchive& arrXmlAr)
 
 //////////////////////////////////////////////////////////////////////////
 // AzToolsFramework::EditorEntityContextNotificationBus interface implementation
-void CCryEditDoc::OnSliceInstantiated([[maybe_unused]] const AZ::Data::AssetId& sliceAssetId, [[maybe_unused]] AZ::SliceComponent::SliceInstanceAddress& sliceAddress, [[maybe_unused]] const AzFramework::SliceInstantiationTicket& /*ticket*/)
+void CCryEditDoc::OnSliceInstantiated([[maybe_unused]] const AZ::Data::AssetId& sliceAssetId, [[maybe_unused]] AZ::SliceComponent::SliceInstanceAddress& sliceAddress, [[maybe_unused]] const AzFramework::SliceInstantiationTicket& ticket)
 {
     GetIEditor()->ResumeUndo();
 }
 
-void CCryEditDoc::OnSliceInstantiationFailed([[maybe_unused]] const AZ::Data::AssetId& sliceAssetId, [[maybe_unused]] const AzFramework::SliceInstantiationTicket& /*ticket*/)
+void CCryEditDoc::OnSliceInstantiationFailed([[maybe_unused]] const AZ::Data::AssetId& sliceAssetId, [[maybe_unused]] const AzFramework::SliceInstantiationTicket& ticket)
 {
     GetIEditor()->ResumeUndo();
 }
