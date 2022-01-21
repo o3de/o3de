@@ -1,4 +1,12 @@
+# coding:utf-8
+#!/usr/bin/python
+"""
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
+SPDX-License-Identifier: Apache-2.0 OR MIT
+"""
+# -------------------------------------------------------------------------
 import bpy
 from bpy.props import EnumProperty
 import os
@@ -45,6 +53,9 @@ def LoopThroughSelectedMaterailsToExport(textureFilePath):
         # Loop through material node tree and get all the texture iamges
         for img in material.node_tree.nodes:
             if img.type == 'TEX_IMAGE':
+                # Frist make sure the image is not packed inside blender
+                if img.image.packed_file:
+                    bpy.ops.image.unpack(id=img.image.name)
                 fullPath = bpy.path.abspath(img.image.filepath, library=img.image.library)
                 sourcePath = os.path.normpath(fullPath)
                 baseName = os.path.basename(sourcePath)
