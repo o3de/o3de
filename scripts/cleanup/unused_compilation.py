@@ -52,7 +52,7 @@ def create_filelist(path):
     for input_file in path:
         if os.path.isdir(input_file):
             for dp, dn, filenames in os.walk(input_file):
-                if 'build\\windows_vs2019' in dp:
+                if 'build\\windows' in dp:
                     continue
                 for f in filenames:
                     extension = os.path.splitext(f)[1]
