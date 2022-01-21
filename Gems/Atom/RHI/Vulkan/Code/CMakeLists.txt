@@ -113,6 +113,7 @@ ly_add_target(
             Gem::Atom_RHI_Vulkan.Reflect
             Gem::Atom_RHI_Vulkan.Glad.Static
             3rdParty::glad_vulkan
+            3rdParty::vulkan-validationlayers
 )
 
 ly_add_target(
