@@ -58,6 +58,9 @@ class Tests:
     container_reset = (
         "EntityIdReferences reset succeeded",
         "P1: EntityIdReferences reset did not succeed")
+    entity_reference_component_removed = (
+        "Entity Reference component removed from entity",
+        "P1: Entity Reference component NOT removed from entity")
 
 
 def AtomEditorComponents_EntityReference_AddedToEntity():
@@ -78,13 +81,21 @@ def AtomEditorComponents_EntityReference_AddedToEntity():
     2) Add Entity Reference component to Entity Reference entity.
     3) UNDO the entity creation and component addition.
     4) REDO the entity creation and component addition.
-    5) Enter/Exit game mode.
-    6) Test IsHidden.
-    7) Test IsVisible.
-    8) Delete Entity Reference entity.
-    9) UNDO deletion.
-    10) REDO deletion.
-    11) Look for errors.
+    5) 'EntityIdReferences' is a container property
+    6) Append item to 'EntityIdReferences'
+    7) Add item to 'EntityIdReferences'
+    8) Update item in 'EntityIdReferences'
+    9) Remove item from 'EntityIdReferences'
+    10) Rest the container property then put one entity reference back for further tests
+    11) Remove component
+    12) Undo component remove
+    13) Enter/Exit game mode.
+    14) Test IsHidden.
+    15) Test IsVisible.
+    16) Delete Entity Reference entity.
+    17) UNDO deletion.
+    18) REDO deletion.
+    19) Look for errors.
 
     :return: None
     """
@@ -142,13 +153,13 @@ def AtomEditorComponents_EntityReference_AddedToEntity():
         test_2 = EditorEntity.create_editor_entity('test_2')
         test_3 = EditorEntity.create_editor_entity('test_3')
 
-        # is container property
+        # 5. 'EntityIdReferences' is a container property
         Report.result(
             Tests.entity_id_references_is_container,
             entity_reference_component.is_property_container(
                 AtomComponentProperties.entity_reference('EntityIdReferences')))
 
-        # Append entity reference to container
+        # 6. Append item to 'EntityIdReferences'
         entity_reference_component.append_container_item(AtomComponentProperties.entity_reference('EntityIdReferences'),
                                                          test_1.id)
         Report.result(
@@ -156,7 +167,7 @@ def AtomEditorComponents_EntityReference_AddedToEntity():
             entity_reference_component.get_container_item(
                 AtomComponentProperties.entity_reference('EntityIdReferences'), 0) == test_1.id)
 
-        # Add entity reference to container
+        # 7. Add item to 'EntityIdReferences'
         entity_reference_component.add_container_item(AtomComponentProperties.entity_reference('EntityIdReferences'),
                                                       1, test_1.id)
         Report.result(
@@ -165,7 +176,7 @@ def AtomEditorComponents_EntityReference_AddedToEntity():
                 AtomComponentProperties.entity_reference('EntityIdReferences')) == 2
         )
 
-        # Update entity reference
+        # 8. Update item in 'EntityIdReferences'
         entity_reference_component.update_container_item(AtomComponentProperties.entity_reference('EntityIdReferences'),
                                                          1, test_2.id)
         Report.result(
@@ -173,7 +184,7 @@ def AtomEditorComponents_EntityReference_AddedToEntity():
             entity_reference_component.get_container_item(
                 AtomComponentProperties.entity_reference('EntityIdReferences'), 1) == test_2.id)
 
-        # Remove entity reference
+        # 9. Remove item from 'EntityIdReferences'
         entity_reference_component.append_container_item(AtomComponentProperties.entity_reference('EntityIdReferences'),
                                                          test_3.id)
         count_before = entity_reference_component.get_container_count(
@@ -190,41 +201,57 @@ def AtomEditorComponents_EntityReference_AddedToEntity():
                  AtomComponentProperties.entity_reference('EntityIdReferences'), 1) == test_3.id))
         )
 
-        # Reset
+        # 10. Rest the container property then put one entity reference back for further tests
         entity_reference_component.reset_container(AtomComponentProperties.entity_reference('EntityIdReferences'))
+        general.idle_wait_frames(1)
         Report.result(
             Tests.container_reset,
             entity_reference_component.get_container_count(
-                AtomComponentProperties.entity_reference('EntityIdReferences')) == 0
-        )
+                AtomComponentProperties.entity_reference('EntityIdReferences')) == 0)
+        entity_reference_component.append_container_item(AtomComponentProperties.entity_reference('EntityIdReferences'),
+                                                         test_1.id)
 
-        # 5. Enter/Exit game mode.
+        # 11. Remove component
+        entity_reference_entity.remove_component(AtomComponentProperties.entity_reference())
+        general.idle_wait_frames(1)
+        Report.result(Tests.entity_reference_component_removed, not entity_reference_entity.has_component(
+            AtomComponentProperties.entity_reference()))
+
+        # 12. Undo component remove
+        general.undo()
+        general.idle_wait_frames(1)
+        Report.result(Tests.entity_reference_component, entity_reference_entity.has_component(
+            AtomComponentProperties.entity_reference()))
+
+        # 13. Enter/Exit game mode.
         TestHelper.enter_game_mode(Tests.enter_game_mode)
         general.idle_wait_frames(1)
         TestHelper.exit_game_mode(Tests.exit_game_mode)
 
-        # 6. Test IsHidden.
+        # 14. Test IsHidden.
         entity_reference_entity.set_visibility_state(False)
         Report.result(Tests.is_hidden, entity_reference_entity.is_hidden() is True)
 
-        # 7. Test IsVisible.
+        # 15. Test IsVisible.
         entity_reference_entity.set_visibility_state(True)
         general.idle_wait_frames(1)
         Report.result(Tests.is_visible, entity_reference_entity.is_visible() is True)
 
-        # 8. Delete Entity Reference entity.
+        # 16. Delete Entity Reference entity.
         entity_reference_entity.delete()
         Report.result(Tests.entity_deleted, not entity_reference_entity.exists())
 
-        # 9. UNDO deletion.
+        # 17. UNDO deletion.
         general.undo()
+        general.idle_wait_frames(1)
         Report.result(Tests.deletion_undo, entity_reference_entity.exists())
 
-        # 10. REDO deletion.
+        # 18. REDO deletion.
         general.redo()
+        general.idle_wait_frames(1)
         Report.result(Tests.deletion_redo, not entity_reference_entity.exists())
 
-        # 11. Look for errors and asserts.
+        # 19. Look for errors and asserts.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
             Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")
