@@ -1014,7 +1014,7 @@ namespace ScriptCanvas
                 {
                     if (slot->IsData())
                     {
-                        slot->SetVariableReference(variableId, Slot::IsVariableTypChange::Yes);
+                        slot->SetVariableReference(variableId, Slot::IsVariableTypeChange::Yes);
                     }
                 }
             }
