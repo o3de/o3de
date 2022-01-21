@@ -140,7 +140,7 @@ namespace AZ
                 {
                     if (action.m_operation == "rename")
                     {
-                        if (action.m_renameFrom == propertyId.GetFullName().GetStringView())
+                        if (action.m_renameFrom == propertyId.GetStringView())
                         {
                             propertyId = MaterialPropertyId::Parse(action.m_renameTo);
                             renamed = true;
@@ -177,14 +177,19 @@ namespace AZ
 
             // Do the search again with the new names
 
-            groupIter = m_propertyLayout.m_properties.find(propertyId.GetGroupName().GetStringView());
-            if (groupIter != m_propertyLayout.m_properties.end())
+            AZStd::vector<AZStd::string> tokens;
+            AZ::StringFunc::Tokenize(propertyId.GetStringView(), tokens, ".", true, true);
+            if (tokens.size() == 2)
             {
-                for (const PropertyDefinition& property : groupIter->second)
+                groupIter = m_propertyLayout.m_properties.find(tokens[0]);
+                if (groupIter != m_propertyLayout.m_properties.end())
                 {
-                    if (property.m_name == propertyId.GetPropertyName().GetStringView())
+                    for (const PropertyDefinition& property : groupIter->second)
                     {
-                        return &property;
+                        if (property.m_name == tokens[1])
+                        {
+                            return &property;
+                        }
                     }
                 }
             }

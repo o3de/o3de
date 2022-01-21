@@ -99,7 +99,9 @@ namespace AZ
                 }
             }
 
-            AzFramework::StringFunc::Join(m_fullName, names.begin(), names.end(), ".");
+            AZStd::string fullName; // m_fullName is a Name, not a string, so we have to join into a local variable temporarily.
+            AzFramework::StringFunc::Join(fullName, names.begin(), names.end(), ".");
+            m_fullName = fullName;
         }
 
         MaterialPropertyId::operator const Name&() const
