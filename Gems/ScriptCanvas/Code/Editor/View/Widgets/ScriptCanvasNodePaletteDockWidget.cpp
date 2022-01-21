@@ -894,6 +894,26 @@ namespace ScriptCanvasEditor
                 GraphCanvas::NodePaletteTreeItem* nodePaletteItem = static_cast<GraphCanvas::NodePaletteTreeItem*>(sourceIndex.internalPointer());
                 nodePaletteItem->GenerateTranslationData();
             }
+
+            if (indexList.size() == 1)
+            {
+                AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
+                QModelIndex sourceIndex = filterModel->mapToSource(indexList[0]);
+                if (sourceIndex.isValid())
+                {
+                    GraphCanvas::NodePaletteTreeItem* nodePaletteItem = static_cast<GraphCanvas::NodePaletteTreeItem*>(sourceIndex.internalPointer());
+
+                    AZ::IO::Path gemPath = GetGemPath("ScriptCanvas.Editor");
+                    gemPath = gemPath / AZ::IO::Path("TranslationAssets");
+                    gemPath = gemPath / nodePaletteItem->GetTranslationDataPath();
+                    gemPath.ReplaceExtension(".names");
+
+                    if (fileIO->Exists(gemPath.c_str()))
+                    {
+                        AzQtComponents::ShowFileOnDesktop(gemPath.c_str());
+                    }
+                }
+            }
         }
 
         void NodePaletteDockWidget::OpenTranslationData()
