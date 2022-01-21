@@ -473,12 +473,11 @@ class EditorEntity:
         :param component_names: List of component names to remove
         :return: None
         """
-        type_ids = EditorComponent.get_type_ids(component_names, EditorEntityType.GAME)
-        for type_id in type_ids:
-            remove_outcome = editor.EditorComponentAPIBus(bus.Broadcast, "RemoveComponents", self.id, [type_id])
-            assert (
-                remove_outcome.IsSuccess()
-            ), f"Failure: could not remove component from '{self.get_name()}'"
+        component_ids = [component.id for component in self.get_components_of_type(component_names)]
+        remove_success = editor.EditorComponentAPIBus(bus.Broadcast, "RemoveComponents", component_ids)
+        assert (
+            remove_success
+        ), f"Failure: could not remove component from '{self.get_name()}'"
 
     def get_components_of_type(self, component_names: list) -> List[EditorComponent]:
         """
