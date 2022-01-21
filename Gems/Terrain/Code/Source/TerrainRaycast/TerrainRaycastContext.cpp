@@ -62,7 +62,7 @@ namespace
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Convenience function to find the nearest intersection (if any) between a triangle and a ray.
-    // This is an implementation of the Möller–Trumbore intersection algorithm. I first attempted to use
+    // This is an implementation of the Moller–Trumbore intersection algorithm. I first attempted to use
     // the existing AZ::Intersect::IntersectSegmentTriangleCCW, which appears to use the same algorithm,
     // but it takes a line segment as opposed to a ray and was not returning the expected results. Once
     // I've written some tests I can go back and try it again to figure out what is different, but this
