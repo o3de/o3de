@@ -75,7 +75,10 @@ namespace AzToolsFramework
                 Instance& commonRootEntityOwningInstance,
                 EntityList& outEntities,
                 AZStd::vector<Instance*>& outInstances) const;
-            EntityIdList GenerateEntityIdListWithoutFocusedInstanceContainer(const EntityIdList& entityIds) const;
+
+            //! Sanitizes an EntityIdList to remove entities that should not be affected by prefab operations.
+            //! It will identify and exclude the container of the root prefab entity, and all read-only entities.
+            EntityIdList SanitizeEntityIdList(const EntityIdList& entityIds) const;
 
             InstanceOptionalReference GetOwnerInstanceByEntityId(AZ::EntityId entityId) const;
             bool EntitiesBelongToSameInstance(const EntityIdList& entityIds) const;
