@@ -644,6 +644,7 @@ namespace AzToolsFramework
             entityOwningInstance.AddEntity(*entity, entityAlias);
 
             EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequestBus::Events::HandleEntitiesAdded, EntityList{entity});
+            EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequestBus::Events::FinalizeEditorEntity, entity);
 
             AZ::Transform transform = AZ::Transform::CreateIdentity();
             transform.SetTranslation(position);
