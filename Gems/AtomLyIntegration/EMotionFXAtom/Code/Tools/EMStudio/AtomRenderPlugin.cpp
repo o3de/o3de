@@ -313,6 +313,11 @@ namespace EMStudio
 
     void AtomRenderPlugin::Render([[maybe_unused]]EMotionFX::ActorRenderFlagBitset renderFlags)
     {
+        if (!m_animViewportWidget)
+        {
+            return;
+        }
+
         AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
         AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, m_animViewportWidget->GetViewportContext()->GetId());
         AzFramework::DebugDisplayRequests* debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
@@ -341,9 +346,6 @@ namespace EMStudio
 
         using AzToolsFramework::ViewportInteraction::MouseEvent;
         const auto& mouseInteraction = mouseInteractionEvent.m_mouseInteraction;
-
-        // store the current interaction for use in DrawManipulators
-        // m_currentInteraction = mouseInteraction;
 
         switch (mouseInteractionEvent.m_mouseEvent)
         {
