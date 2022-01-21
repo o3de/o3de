@@ -883,6 +883,7 @@ namespace ScriptCanvasEditor
 
              if (output.m_actionIsValid)
              {
+                 // #before_pr post an undo point
                  if (output.m_nameChanged && !output.m_name.empty())
                  {
                      graphVariable->SetVariableName(output.m_name);

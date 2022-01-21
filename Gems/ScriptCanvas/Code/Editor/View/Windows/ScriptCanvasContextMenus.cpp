@@ -570,11 +570,22 @@ namespace ScriptCanvasEditor
             return GraphCanvas::ContextMenuAction::SceneReaction::Nothing;
         }
 
-        // Show the selection dialog
-        // #chcurran this will get changed...this is changing a slot data type, but soon it will actually mean changing a ...
-        // variable to which the slot is bound to refer
+        auto variable = slot->GetVariable();
+        if (!variable)
+        {
+            return GraphCanvas::ContextMenuAction::SceneReaction::Nothing;
+        }
+
+        ScriptCanvas::ScriptCanvasId scriptCanvasGraphId;
+        GeneralRequestBus::BroadcastResult(scriptCanvasGraphId, &GeneralRequests::GetScriptCanvasId, graphId);
+        if (!scriptCanvasGraphId.IsValid())
+        {
+            return GraphCanvas::ContextMenuAction::SceneReaction::Nothing;
+        }
+
         VariablePaletteRequests::VariableConfigurationInput selectedSlotSetup;
         selectedSlotSetup.m_changeVariableType = true;
+        selectedSlotSetup.m_graphVariable = variable;
         selectedSlotSetup.m_currentName = slot->GetName();
         selectedSlotSetup.m_currentType = slot->GetDataType();
 
@@ -583,18 +594,22 @@ namespace ScriptCanvasEditor
         VariablePaletteRequestBus::BroadcastResult(output, &VariablePaletteRequests::ShowVariableConfigurationWidget
             , selectedSlotSetup, scenePoint);
 
+
         bool changed = false;
         if (output.m_actionIsValid)
         {
-            if (output.m_typeChanged && output.m_type.IsValid())
+            // #before_pr post an undo point
+            if (output.m_nameChanged && !output.m_name.empty())
             {
-                slot->SetDisplayType(output.m_type);
+                variable->SetVariableName(output.m_name);
                 changed = true;
             }
 
-            if (output.m_nameChanged && !output.m_name.empty())
+            if (output.m_typeChanged && output.m_type.IsValid())
             {
-                slot->Rename(output.m_name);
+                variable->ModDatum().SetType(output.m_type, ScriptCanvas::Datum::TypeChange::Forced);
+                ScriptCanvas::GraphRequestBus::Event(scriptCanvasGraphId, &ScriptCanvas::GraphRequests::RefreshVariableReferences
+                    , variable->GetVariableId());
                 changed = true;
             }
         }
