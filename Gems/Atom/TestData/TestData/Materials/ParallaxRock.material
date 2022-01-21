@@ -2,7 +2,7 @@
     "description": "",
     "materialType": "Materials/Types/StandardPBR.materialtype",
     "parentMaterial": "Materials/Presets/PBR/default_grid.material",
-    "propertyLayoutVersion": 3,
+    "materialTypeVersion": 3,
     "properties": {
         "occlusion": {
             "diffuseTextureMap": "TestData/Textures/cc0/Rock030_2K_AmbientOcclusion.jpg"

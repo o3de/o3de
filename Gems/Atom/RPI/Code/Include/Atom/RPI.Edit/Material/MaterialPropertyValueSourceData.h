@@ -54,7 +54,7 @@ namespace AZ
             //! The resolved value with a valid type of a property. It needs to be mutable to allow post-resolving when parent objects are declared as const.
             mutable MaterialPropertyValue m_resolvedValue;
             //! Candidate values from serialization.
-            AZStd::map<AZ::TypeId, MaterialPropertyValue> m_possibleValues;
+            AZStd::map<AZ::TypeId, MaterialPropertyValue> m_possibleValues; 
         };
     } // namespace RPI
 } // namespace AZ

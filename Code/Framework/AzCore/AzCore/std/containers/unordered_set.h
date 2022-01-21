@@ -87,7 +87,7 @@ namespace AZStd
         typedef typename base_type::const_local_iterator        const_local_iterator;
 
         using node_type = set_node_handle<set_node_traits<value_type, allocator_type, typename base_type::list_node_type, typename base_type::node_deleter>>;
-        using insert_return_type = insert_return_type<iterator, node_type>;
+        using insert_return_type = AZStd::AssociativeInternal::insert_return_type<iterator, node_type>;
 
         AZ_FORCE_INLINE unordered_set()
             : base_type(hasher(), key_eq(), allocator_type()) {}

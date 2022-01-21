@@ -1,6 +1,6 @@
 {
     "materialType": "ReflectionProbeVisualization.materialtype",
-    "propertyLayoutVersion": 1,
+    "materialTypeVersion": 1,
     "properties": {
         "general": {
             "enableShadows": false,
