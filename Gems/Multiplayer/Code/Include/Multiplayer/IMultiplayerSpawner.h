@@ -17,8 +17,8 @@ namespace Multiplayer
     //! @brief IMultiplayerSpawner routes spawning requests for connecting players from
     //! the Muliplayer Gem to game logic utilizing it
     //!
-    //! IMultiplayerSpawner is an AZ::Interface<T> that provides applications a means to
-    //! let games tell the Muliplayer Gem what to spawn on player connection.
+    //! IMultiplayerSpawner is an AZ::Interface<T> that provides a mechanism to
+    //! tell the Multiplayer Gem what to spawn on player connection.
     //! IMultiplayerSpawner is intended to be implemented on games utilizing the
     //! Multiplayer Gem. The Multiplayer Gem then calls the implementation via
     //! AZ::Interface.
@@ -30,6 +30,8 @@ namespace Multiplayer
 
         virtual ~IMultiplayerSpawner() = default;
 
-        virtual AZStd::pair<Multiplayer::PrefabEntityId, AZ::Transform> SpawnPlayerPrefab(uint64_t userId) = 0;
+        virtual AZStd::pair<Multiplayer::PrefabEntityId, AZ::Transform> OnPlayerJoin(uint64_t userId) = 0;
+
+        virtual void OnPlayerLeave(ConstNetworkEntityHandle entityHandle) = 0;
     };
 }

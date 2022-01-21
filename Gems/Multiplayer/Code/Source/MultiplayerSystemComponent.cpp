@@ -85,8 +85,6 @@ namespace Multiplayer
     AZ_CVAR(bool, sv_isDedicated, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether the host command creates an independent or client hosted server");
     AZ_CVAR(bool, sv_isTransient, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether a dedicated server shuts down if all existing connections disconnect.");
     AZ_CVAR(AZ::TimeMs, sv_serverSendRateMs, AZ::TimeMs{ 50 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Minimum number of milliseconds between each network update");
-    AZ_CVAR(AZ::CVarFixedString, sv_defaultPlayerSpawnAsset, "prefabs/player.network.spawnable", nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
-        "The default spawnable to use when a new player connects");
     AZ_CVAR(float, cl_renderTickBlendBase, 0.15f, nullptr, AZ::ConsoleFunctorFlags::Null,
         "The base used for blending between network updates, 0.1 will be quite linear, 0.2 or 0.3 will "
         "slow down quicker and may be better suited to connections with highly variable latency");
@@ -525,33 +523,27 @@ namespace Multiplayer
             {
                 controlledEntity = m_networkEntityManager.GetNetworkEntityTracker()->Get(node->second);
             }
-            else if (!spawner)
-            {
-                // If no spawner we have a default option
-                // make sure the player prefab path is lowercase (how it's stored in the cache folder)
-                auto sv_defaultPlayerSpawnAssetLowerCase = static_cast<AZ::CVarFixedString>(sv_defaultPlayerSpawnAsset);
-                AZStd::to_lower(sv_defaultPlayerSpawnAssetLowerCase.begin(), sv_defaultPlayerSpawnAssetLowerCase.end());
-                PrefabEntityId playerPrefabEntityId(AZ::Name(sv_defaultPlayerSpawnAssetLowerCase.c_str()));
-                controlledEntity = SpawnPlayerPrefab(playerPrefabEntityId, AZ::Transform::CreateIdentity());
-            }
-            else
+            else if (spawner)
             {
                 // Route to spawner implementation
-                AZStd::pair<PrefabEntityId, AZ::Transform> spawnParams = spawner->SpawnPlayerPrefab(packet.GetTemporaryUserId());
-                controlledEntity = SpawnPlayerPrefab(spawnParams.first, spawnParams.second);
+                AZStd::pair<PrefabEntityId, AZ::Transform> spawnParams = spawner->OnPlayerJoin(packet.GetTemporaryUserId());
+                controlledEntity = TrySpawnPlayerPrefab(spawnParams.first, spawnParams.second);
             }
 
-            EnableAutonomousControl(controlledEntity, connection->GetConnectionId());
-
-            ServerToClientConnectionData* connectionData = reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData());
-            AZStd::unique_ptr<IReplicationWindow> window = AZStd::make_unique<ServerToClientReplicationWindow>(controlledEntity, connection);
-            connectionData->GetReplicationManager().SetReplicationWindow(AZStd::move(window));
-            connectionData->SetControlledEntity(controlledEntity);
-
-            // If this is a migrate or rejoin, immediately ready the connection for updates
-            if (packet.GetTemporaryUserId() != 0)
+            if (controlledEntity.Exists())
             {
-                connectionData->SetCanSendUpdates(true);
+                EnableAutonomousControl(controlledEntity, connection->GetConnectionId());
+
+                ServerToClientConnectionData* connectionData = reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData());
+                AZStd::unique_ptr<IReplicationWindow> window = AZStd::make_unique<ServerToClientReplicationWindow>(controlledEntity, connection);
+                connectionData->GetReplicationManager().SetReplicationWindow(AZStd::move(window));
+                connectionData->SetControlledEntity(controlledEntity);
+
+                // If this is a migrate or rejoin, immediately ready the connection for updates
+                if (packet.GetTemporaryUserId() != 0)
+                {
+                    connectionData->SetCanSendUpdates(true);
+                }
             }
         }
 
@@ -805,13 +797,24 @@ namespace Multiplayer
         else if (m_agentType == MultiplayerAgentType::DedicatedServer || m_agentType == MultiplayerAgentType::ClientServer)
         {
             // Signal to session management that a user has left the server
-            if (AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get() != nullptr &&
-                connection->GetConnectionRole() == ConnectionRole::Acceptor)
+            if (connection->GetConnectionRole() == ConnectionRole::Acceptor)
             {
-                AzFramework::PlayerConnectionConfig config;
-                config.m_playerConnectionId = aznumeric_cast<uint32_t>(connection->GetConnectionId());
-                config.m_playerSessionId = reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->GetProviderTicket();
-                AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get()->HandlePlayerLeaveSession(config);
+                IMultiplayerSpawner* spawner = AZ::Interface<IMultiplayerSpawner>::Get();
+                if (spawner)
+                {
+                    ServerToClientConnectionData* connectionData =
+                        reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData());
+                    spawner->OnPlayerLeave(connectionData->GetPrimaryPlayerEntity());
+                }
+
+                if (AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get() != nullptr)
+                {
+                    AzFramework::PlayerConnectionConfig config;
+                    config.m_playerConnectionId = aznumeric_cast<uint32_t>(connection->GetConnectionId());
+                    config.m_playerSessionId =
+                        reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->GetProviderTicket();
+                    AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get()->HandlePlayerLeaveSession(config);
+                }
             }
         }
 
@@ -880,22 +883,16 @@ namespace Multiplayer
         {
             IMultiplayerSpawner* spawner = AZ::Interface<IMultiplayerSpawner>::Get();
             NetworkEntityHandle controlledEntity;
-            if (!spawner)
-            {
-                // If no spawner we have a default option
-                // make sure the player prefab path is lowercase (how it's stored in the cache folder)
-                auto sv_defaultPlayerSpawnAssetLowerCase = static_cast<AZ::CVarFixedString>(sv_defaultPlayerSpawnAsset);
-                AZStd::to_lower(sv_defaultPlayerSpawnAssetLowerCase.begin(), sv_defaultPlayerSpawnAssetLowerCase.end());
-                PrefabEntityId playerPrefabEntityId(AZ::Name(sv_defaultPlayerSpawnAssetLowerCase.c_str()));
-                controlledEntity = SpawnPlayerPrefab(playerPrefabEntityId, AZ::Transform::CreateIdentity());
-            }
-            else
+            if (spawner)
             {
                 // Route to spawner implementation
-                AZStd::pair<PrefabEntityId, AZ::Transform> spawnParams = spawner->SpawnPlayerPrefab(0);
-                controlledEntity = SpawnPlayerPrefab(spawnParams.first, spawnParams.second);
+                AZStd::pair<PrefabEntityId, AZ::Transform> spawnParams = spawner->OnPlayerJoin(0);
+                controlledEntity = TrySpawnPlayerPrefab(spawnParams.first, spawnParams.second);
             }
-            EnableAutonomousControl(controlledEntity, AzNetworking::InvalidConnectionId);
+            if (controlledEntity.Exists())
+            {
+                EnableAutonomousControl(controlledEntity, AzNetworking::InvalidConnectionId);
+            }
         }
         
         AZLOG_INFO("Multiplayer operating in %s mode", GetEnumString(m_agentType));
@@ -1165,13 +1162,9 @@ namespace Multiplayer
         }
     }
 
-    NetworkEntityHandle MultiplayerSystemComponent::SpawnPlayerPrefab(Multiplayer::PrefabEntityId playerPrefabEntityId, AZ::Transform transform)
+    NetworkEntityHandle MultiplayerSystemComponent::TrySpawnPlayerPrefab(Multiplayer::PrefabEntityId playerPrefabEntityId, AZ::Transform transform)
     {        
         INetworkEntityManager::EntityList entityList = m_networkEntityManager.CreateEntitiesImmediate(playerPrefabEntityId, NetEntityRole::Authority, transform, Multiplayer::AutoActivate::DoNotActivate);
-
-        AZ_Warning(
-            "MultiplayerSystemComponent", !entityList.empty(),
-            "SpawnPlayerPrefab failed'.\n")
 
         for (NetworkEntityHandle subEntity : entityList)
         {
