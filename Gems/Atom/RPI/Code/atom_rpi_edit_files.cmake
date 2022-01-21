@@ -25,7 +25,6 @@ set(FILES
     Include/Atom/RPI.Edit/Material/MaterialPropertyValueSourceData.h
     Include/Atom/RPI.Edit/Material/MaterialPropertyValueSourceDataSerializer.h
     Include/Atom/RPI.Edit/Material/MaterialSourceData.h
-    Include/Atom/RPI.Edit/Material/MaterialSourceDataSerializer.h
     Include/Atom/RPI.Edit/Material/MaterialFunctorSourceData.h
     Include/Atom/RPI.Edit/Material/MaterialFunctorSourceDataSerializer.h
     Include/Atom/RPI.Edit/Material/MaterialFunctorSourceDataRegistration.h
@@ -45,7 +44,6 @@ set(FILES
     Source/RPI.Edit/Material/MaterialPropertyValueSourceData.cpp
     Source/RPI.Edit/Material/MaterialPropertyValueSourceDataSerializer.cpp
     Source/RPI.Edit/Material/MaterialSourceData.cpp
-    Source/RPI.Edit/Material/MaterialSourceDataSerializer.cpp
     Source/RPI.Edit/Material/MaterialFunctorSourceData.cpp
     Source/RPI.Edit/Material/MaterialFunctorSourceDataSerializer.cpp
     Source/RPI.Edit/Material/MaterialFunctorSourceDataRegistration.cpp

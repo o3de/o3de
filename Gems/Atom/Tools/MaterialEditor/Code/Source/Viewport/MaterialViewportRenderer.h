@@ -11,12 +11,12 @@
 #include <Atom/Feature/CoreLights/DirectionalLightFeatureProcessorInterface.h>
 #include <Atom/Feature/SkyBox/SkyBoxFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/Base.h>
-#include <Atom/Viewport/MaterialViewportNotificationBus.h>
 #include <AtomCore/Instance/Instance.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <Viewport/InputController/MaterialEditorViewportInputController.h>
+#include <Viewport/MaterialViewportNotificationBus.h>
 
 namespace AZ
 {

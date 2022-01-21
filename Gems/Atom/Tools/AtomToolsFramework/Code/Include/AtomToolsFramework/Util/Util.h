@@ -38,5 +38,5 @@ namespace AtomToolsFramework
     QFileInfo GetOpenFileInfo(const AZStd::vector<AZ::Data::AssetType>& assetTypes);
     QFileInfo GetUniqueFileInfo(const QString& initialPath);
     QFileInfo GetDuplicationFileInfo(const QString& initialPath);
-    bool LaunchTool(const QString& baseName, const QString& extension, const QStringList& arguments);
+    bool LaunchTool(const QString& baseName, const QStringList& arguments);
 } // namespace AtomToolsFramework

@@ -1702,7 +1702,7 @@ CarrierThread::UpdateReceive()
 
                         if (compErr != CompressorError::Ok)
                         {
-                            AZ_Error("GridMate", compErr == CompressorError::Ok, "Decompress failed with error %d this will lead to data read errors!", compErr);
+                            AZ_Error("GridMate", compErr == CompressorError::Ok, "Decompress failed with error %d this will lead to data read errors!", aznumeric_cast<int32_t>(compErr));
                             conn->m_isBadPackets = true;
                             break;  /// stop processing this data
                         }
@@ -2136,7 +2136,7 @@ bool CarrierThread::SendDatagram(ThreadConnection* connection)
         {
             if (compErr != CompressorError::Ok)
             {
-                AZ_Error("GridMate", compErr == CompressorError::Ok, "Failed to compress chunk with error=%d.\n", static_cast<int>(compErr));
+                AZ_Error("GridMate", compErr == CompressorError::Ok, "Failed to compress chunk with error=%d.\n", aznumeric_cast<int32_t>(compErr));
             }
 
             // we can use writeBuffer directly because we already added the compression hint to indicate that this data is uncompressed

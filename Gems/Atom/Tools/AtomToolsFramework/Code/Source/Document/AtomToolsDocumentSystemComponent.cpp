@@ -69,6 +69,7 @@ namespace AtomToolsFramework
                 ->Event("SaveDocumentAsCopy", &AtomToolsDocumentSystemRequestBus::Events::SaveDocumentAsCopy)
                 ->Event("SaveDocumentAsChild", &AtomToolsDocumentSystemRequestBus::Events::SaveDocumentAsChild)
                 ->Event("SaveAllDocuments", &AtomToolsDocumentSystemRequestBus::Events::SaveAllDocuments)
+                ->Event("GetDocumentCount", &AtomToolsDocumentSystemRequestBus::Events::GetDocumentCount)
                 ;
 
             behaviorContext->EBus<AtomToolsDocumentRequestBus>("AtomToolsDocumentRequestBus")
@@ -455,6 +456,11 @@ namespace AtomToolsFramework
         }
 
         return result;
+    }
+
+    AZ::u32 AtomToolsDocumentSystemComponent::GetDocumentCount() const
+    {
+        return aznumeric_cast<AZ::u32>(m_documentMap.size());
     }
 
     AZ::Uuid AtomToolsDocumentSystemComponent::OpenDocumentImpl(AZStd::string_view sourcePath, bool checkIfAlreadyOpen)

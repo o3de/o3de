@@ -74,6 +74,7 @@ namespace AtomToolsFramework
         bool SaveDocumentAsCopy(const AZ::Uuid& documentId, AZStd::string_view targetPath) override;
         bool SaveDocumentAsChild(const AZ::Uuid& documentId, AZStd::string_view targetPath) override;
         bool SaveAllDocuments() override;
+        AZ::u32 GetDocumentCount() const override;
         ////////////////////////////////////////////////////////////////////////
 
         AZ::Uuid OpenDocumentImpl(AZStd::string_view sourcePath, bool checkIfAlreadyOpen);

@@ -328,9 +328,9 @@ namespace ScriptCanvas
         return AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Graph>(m_scriptCanvasEntity.get());
     }
 
-    const ScriptCanvasEditor::Graph* ScriptCanvasData::GetEditorGraph() const
+    const ScriptCanvasEditor::EditorGraph* ScriptCanvasData::GetEditorGraph() const
     {
-        return reinterpret_cast<const ScriptCanvasEditor::Graph*>(GetGraph());
+        return reinterpret_cast<const ScriptCanvasEditor::EditorGraph*>(GetGraph());
     }
 
     Graph* ScriptCanvasData::ModGraph()
@@ -338,8 +338,8 @@ namespace ScriptCanvas
         return AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Graph>(m_scriptCanvasEntity.get());
     }
 
-    ScriptCanvasEditor::Graph* ScriptCanvasData::ModEditorGraph()
+    ScriptCanvasEditor::EditorGraph* ScriptCanvasData::ModEditorGraph()
     {
-        return reinterpret_cast<ScriptCanvasEditor::Graph*>(ModGraph());
+        return reinterpret_cast<ScriptCanvasEditor::EditorGraph*>(ModGraph());
     }
 }
