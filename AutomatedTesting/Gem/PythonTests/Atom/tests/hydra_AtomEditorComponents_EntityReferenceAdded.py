@@ -9,37 +9,55 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 class Tests:
     creation_undo = (
         "UNDO Entity creation success",
-        "UNDO Entity creation failed")
+        "P0: UNDO Entity creation failed")
     creation_redo = (
         "REDO Entity creation success",
-        "REDO Entity creation failed")
+        "P0: REDO Entity creation failed")
     entity_reference_creation = (
         "Entity Reference Entity successfully created",
-        "Entity Reference Entity failed to be created")
+        "P0: Entity Reference Entity failed to be created")
     entity_reference_component = (
         "Entity has an Entity Reference component",
-        "Entity failed to find Entity Reference component")
+        "P0: Entity failed to find Entity Reference component")
     enter_game_mode = (
         "Entered game mode",
-        "Failed to enter game mode")
+        "P0: Failed to enter game mode")
     exit_game_mode = (
         "Exited game mode",
-        "Couldn't exit game mode")
+        "P0: Couldn't exit game mode")
     is_visible = (
         "Entity is visible",
-        "Entity was not visible")
+        "P0: Entity was not visible")
     is_hidden = (
         "Entity is hidden",
-        "Entity was not hidden")
+        "P0: Entity was not hidden")
     entity_deleted = (
         "Entity deleted",
-        "Entity was not deleted")
+        "P0: Entity was not deleted")
     deletion_undo = (
         "UNDO deletion success",
-        "UNDO deletion failed")
+        "P0: UNDO deletion failed")
     deletion_redo = (
         "REDO deletion success",
-        "REDO deletion failed")
+        "P0: REDO deletion failed")
+    entity_id_references_is_container = (
+        "EntityIdReferences is a container property",
+        "P1: EntityIdReferences is NOT a container property")
+    container_append = (
+        "EntityIdReferences append succeeded",
+        "P1: EntityIdReferences append did not succeed")
+    container_add = (
+        "EntityIdReferences add succeeded",
+        "P1: EntityIdReferences add did not succeed")
+    container_update = (
+        "EntityIdReferences update succeeded",
+        "P1: EntityIdReferences update did not succeed")
+    container_remove = (
+        "EntityIdReferences remove succeeded",
+        "P1: EntityIdReferences remove did not succeed")
+    container_reset = (
+        "EntityIdReferences reset succeeded",
+        "P1: EntityIdReferences reset did not succeed")
 
 
 def AtomEditorComponents_EntityReference_AddedToEntity():
@@ -118,6 +136,67 @@ def AtomEditorComponents_EntityReference_AddedToEntity():
         general.redo()
         general.idle_wait_frames(1)
         Report.result(Tests.creation_redo, entity_reference_entity.exists())
+
+        # Entities for EntityIdReferences tests
+        test_1 = EditorEntity.create_editor_entity('test_1')
+        test_2 = EditorEntity.create_editor_entity('test_2')
+        test_3 = EditorEntity.create_editor_entity('test_3')
+
+        # is container property
+        Report.result(
+            Tests.entity_id_references_is_container,
+            entity_reference_component.is_property_container(
+                AtomComponentProperties.entity_reference('EntityIdReferences')))
+
+        # Append entity reference to container
+        entity_reference_component.append_container_item(AtomComponentProperties.entity_reference('EntityIdReferences'),
+                                                         test_1.id)
+        Report.result(
+            Tests.container_append,
+            entity_reference_component.get_container_item(
+                AtomComponentProperties.entity_reference('EntityIdReferences'), 0) == test_1.id)
+
+        # Add entity reference to container
+        entity_reference_component.add_container_item(AtomComponentProperties.entity_reference('EntityIdReferences'),
+                                                      1, test_1.id)
+        Report.result(
+            Tests.container_add,
+            entity_reference_component.get_container_count(
+                AtomComponentProperties.entity_reference('EntityIdReferences')) == 2
+        )
+
+        # Update entity reference
+        entity_reference_component.update_container_item(AtomComponentProperties.entity_reference('EntityIdReferences'),
+                                                         1, test_2.id)
+        Report.result(
+            Tests.container_update,
+            entity_reference_component.get_container_item(
+                AtomComponentProperties.entity_reference('EntityIdReferences'), 1) == test_2.id)
+
+        # Remove entity reference
+        entity_reference_component.append_container_item(AtomComponentProperties.entity_reference('EntityIdReferences'),
+                                                         test_3.id)
+        count_before = entity_reference_component.get_container_count(
+            AtomComponentProperties.entity_reference('EntityIdReferences'))
+        entity_reference_component.remove_container_item(AtomComponentProperties.entity_reference('EntityIdReferences'),
+                                                         1)
+        count_after = entity_reference_component.get_container_count(
+            AtomComponentProperties.entity_reference('EntityIdReferences'))
+        remove_count = (count_before == 3) and (count_after == 2)
+        Report.result(
+            Tests.container_remove,
+            ((count_before == 3) and (count_after == 2) and
+             (entity_reference_component.get_container_item(
+                 AtomComponentProperties.entity_reference('EntityIdReferences'), 1) == test_3.id))
+        )
+
+        # Reset
+        entity_reference_component.reset_container(AtomComponentProperties.entity_reference('EntityIdReferences'))
+        Report.result(
+            Tests.container_reset,
+            entity_reference_component.get_container_count(
+                AtomComponentProperties.entity_reference('EntityIdReferences')) == 0
+        )
 
         # 5. Enter/Exit game mode.
         TestHelper.enter_game_mode(Tests.enter_game_mode)
