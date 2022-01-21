@@ -9,6 +9,7 @@
 #include <Multiplayer/MultiplayerConstants.h>
 #include <Multiplayer/Components/MultiplayerComponent.h>
 #include <Multiplayer/Components/NetworkHierarchyRootComponent.h>
+#include <Multiplayer/IMultiplayerSpawner.h>
 #include <MultiplayerSystemComponent.h>
 #include <ConnectionData/ClientToServerConnectionData.h>
 #include <ConnectionData/ServerToClientConnectionData.h>
@@ -515,7 +516,31 @@ namespace Multiplayer
          || GetAgentType() == MultiplayerAgentType::DedicatedServer)
         {
             // We use a temporary userId over the clients address so we can maintain client lookups even in the event of wifi handoff
-            NetworkEntityHandle controlledEntity = SpawnDefaultPlayerPrefab(packet.GetTemporaryUserId());
+            IMultiplayerSpawner* spawner = AZ::Interface<IMultiplayerSpawner>::Get();
+            NetworkEntityHandle controlledEntity;
+
+            // Check rejoin data first
+            const auto node = m_playerRejoinData.find(packet.GetTemporaryUserId());
+            if (node != m_playerRejoinData.end())
+            {
+                controlledEntity = m_networkEntityManager.GetNetworkEntityTracker()->Get(node->second);
+            }
+            else if (!spawner)
+            {
+                // If no spawner we have a default option
+                // make sure the player prefab path is lowercase (how it's stored in the cache folder)
+                auto sv_defaultPlayerSpawnAssetLowerCase = static_cast<AZ::CVarFixedString>(sv_defaultPlayerSpawnAsset);
+                AZStd::to_lower(sv_defaultPlayerSpawnAssetLowerCase.begin(), sv_defaultPlayerSpawnAssetLowerCase.end());
+                PrefabEntityId playerPrefabEntityId(AZ::Name(sv_defaultPlayerSpawnAssetLowerCase.c_str()));
+                controlledEntity = SpawnPlayerPrefab(playerPrefabEntityId, AZ::Transform::CreateIdentity());
+            }
+            else
+            {
+                // Route to spawner implementation
+                AZStd::pair<PrefabEntityId, AZ::Transform> spawnParams = spawner->SpawnPlayerPrefab(packet.GetTemporaryUserId());
+                controlledEntity = SpawnPlayerPrefab(spawnParams.first, spawnParams.second);
+            }
+
             EnableAutonomousControl(controlledEntity, connection->GetConnectionId());
 
             ServerToClientConnectionData* connectionData = reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData());
@@ -853,7 +878,23 @@ namespace Multiplayer
         // Spawn the default player for this host since the host is also a player (not a dedicated server)
         if (m_agentType == MultiplayerAgentType::ClientServer)
         {
-            NetworkEntityHandle controlledEntity = SpawnDefaultPlayerPrefab(0);
+            IMultiplayerSpawner* spawner = AZ::Interface<IMultiplayerSpawner>::Get();
+            NetworkEntityHandle controlledEntity;
+            if (!spawner)
+            {
+                // If no spawner we have a default option
+                // make sure the player prefab path is lowercase (how it's stored in the cache folder)
+                auto sv_defaultPlayerSpawnAssetLowerCase = static_cast<AZ::CVarFixedString>(sv_defaultPlayerSpawnAsset);
+                AZStd::to_lower(sv_defaultPlayerSpawnAssetLowerCase.begin(), sv_defaultPlayerSpawnAssetLowerCase.end());
+                PrefabEntityId playerPrefabEntityId(AZ::Name(sv_defaultPlayerSpawnAssetLowerCase.c_str()));
+                controlledEntity = SpawnPlayerPrefab(playerPrefabEntityId, AZ::Transform::CreateIdentity());
+            }
+            else
+            {
+                // Route to spawner implementation
+                AZStd::pair<PrefabEntityId, AZ::Transform> spawnParams = spawner->SpawnPlayerPrefab(0);
+                controlledEntity = SpawnPlayerPrefab(spawnParams.first, spawnParams.second);
+            }
             EnableAutonomousControl(controlledEntity, AzNetworking::InvalidConnectionId);
         }
         
@@ -1124,25 +1165,13 @@ namespace Multiplayer
         }
     }
 
-    NetworkEntityHandle MultiplayerSystemComponent::SpawnDefaultPlayerPrefab(uint64_t temporaryUserIdentifier)
-    {
-        const auto node = m_playerRejoinData.find(temporaryUserIdentifier);
-        if (node != m_playerRejoinData.end())
-        {
-            return m_networkEntityManager.GetNetworkEntityTracker()->Get(node->second);
-        }
-
-        // make sure the player prefab path is lowercase (how it's stored in the cache folder)
-        auto sv_defaultPlayerSpawnAssetLowerCase = static_cast<AZ::CVarFixedString>(sv_defaultPlayerSpawnAsset);
-        AZStd::to_lower(sv_defaultPlayerSpawnAssetLowerCase.begin(), sv_defaultPlayerSpawnAssetLowerCase.end());
-        PrefabEntityId playerPrefabEntityId(AZ::Name(sv_defaultPlayerSpawnAssetLowerCase.c_str()));
-
-        INetworkEntityManager::EntityList entityList = m_networkEntityManager.CreateEntitiesImmediate(playerPrefabEntityId, NetEntityRole::Authority, AZ::Transform::CreateIdentity(), Multiplayer::AutoActivate::DoNotActivate);
+    NetworkEntityHandle MultiplayerSystemComponent::SpawnPlayerPrefab(Multiplayer::PrefabEntityId playerPrefabEntityId, AZ::Transform transform)
+    {        
+        INetworkEntityManager::EntityList entityList = m_networkEntityManager.CreateEntitiesImmediate(playerPrefabEntityId, NetEntityRole::Authority, transform, Multiplayer::AutoActivate::DoNotActivate);
 
         AZ_Warning(
             "MultiplayerSystemComponent", !entityList.empty(),
-            "SpawnDefaultPlayerPrefab failed. Missing sv_defaultPlayerSpawnAsset at path '%s'.\n",
-            sv_defaultPlayerSpawnAssetLowerCase.c_str())
+            "SpawnPlayerPrefab failed'.\n")
 
         for (NetworkEntityHandle subEntity : entityList)
         {
