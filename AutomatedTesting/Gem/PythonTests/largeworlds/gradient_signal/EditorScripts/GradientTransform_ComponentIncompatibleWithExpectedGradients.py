@@ -46,8 +46,7 @@ def GradientTransform_ComponentIncompatibleWithExpectedGradients():
         return editor.EditorComponentAPIBus(bus.Broadcast, "IsComponentEnabled", EntityComponentIdPair)
 
     # 1) Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     # 2) Create a new entity with components Gradient Transform Modifier and Box Shape
     entity_position = math.Vector3(125.0, 136.0, 32.0)
