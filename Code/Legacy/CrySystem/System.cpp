@@ -461,6 +461,9 @@ bool CSystem::IsQuitting() const
     bool wasExitMainLoopRequested = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(wasExitMainLoopRequested, &AzFramework::ApplicationRequests::WasExitMainLoopRequested);
     return wasExitMainLoopRequested;
+}
+
+//////////////////////////////////////////////////////////////////////////
 ISystem* CSystem::GetCrySystem()
 {
     return this;

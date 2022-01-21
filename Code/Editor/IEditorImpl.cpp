@@ -12,6 +12,7 @@
 #include "EditorDefs.h"
 
 #include "IEditorImpl.h"
+#include <EditorCommonAPI.h>
 
 // Qt
 #include <QByteArray>
