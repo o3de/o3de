@@ -6,7 +6,7 @@
  *
  */
 
-#include <Source/Window/HelpDialog/HelpDialog.h>
+#include <Window/HelpDialog/HelpDialog.h>
 
 namespace MaterialEditor
 {
@@ -20,4 +20,4 @@ namespace MaterialEditor
     HelpDialog::~HelpDialog() = default;
 } // namespace MaterialEditor
 
-#include <Source/Window/HelpDialog/moc_HelpDialog.cpp>
+#include <Window/HelpDialog/moc_HelpDialog.cpp>

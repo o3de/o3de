@@ -7,10 +7,10 @@
  */
 
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
-#include <Atom/Viewport/MaterialViewportRequestBus.h>
 #include <AtomToolsFramework/Inspector/InspectorPropertyGroupWidget.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/Utils/Utils.h>
+#include <Viewport/MaterialViewportRequestBus.h>
 #include <Window/PresetBrowserDialogs/LightingPresetBrowserDialog.h>
 #include <Window/PresetBrowserDialogs/ModelPresetBrowserDialog.h>
 #include <Window/ViewportSettingsInspector/ViewportSettingsInspector.h>
@@ -376,4 +376,4 @@ namespace MaterialEditor
 
 } // namespace MaterialEditor
 
-#include <Source/Window/ViewportSettingsInspector/moc_ViewportSettingsInspector.cpp>
+#include <Window/ViewportSettingsInspector/moc_ViewportSettingsInspector.cpp>

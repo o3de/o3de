@@ -11,7 +11,6 @@
 
 #include <stdlib.h>
 
-#define XML_STATIC // Alternative to defining this here would be setting it project-wide
 #include <expat.h>
 #include "xml.h"
 #include <algorithm>

@@ -39,9 +39,6 @@ public:
     bool ExtractFile(QString& file, bool bMsgBoxAskForExtraction = true, const char* pDestinationFilename = nullptr) override;
     void EditTextureFile(const char* txtureFile, bool bUseGameFolder) override;
 
-    //! dcc filename calculation and extraction sub-routines
-    bool CalculateDccFilename(const QString& assetFilename, QString& dccFilename) override;
-
     //! Reformat filter string for (MFC) CFileDialog style file filtering
     void FormatFilterString(QString& filter) override;
 

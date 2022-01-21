@@ -38,13 +38,13 @@ endif()
 
 # Check for timestamp
 if(LY_TIMESTAMP_REFERENCE)
-    if(NOT EXISTS ${LY_TIMESTAMP_REFERENCE})
+    if(NOT EXISTS "${LY_TIMESTAMP_REFERENCE}")
         message(FATAL_ERROR "File LY_TIMESTAMP_REFERENCE=${LY_TIMESTAMP_REFERENCE} does not exists")
     endif()
     if(NOT LY_TIMESTAMP_FILE)
-        set(LY_TIMESTAMP_FILE ${LY_TIMESTAMP_REFERENCE}.stamp)
+        set(LY_TIMESTAMP_FILE "${LY_TIMESTAMP_REFERENCE}.stamp")
     endif()
-    if(EXISTS ${LY_TIMESTAMP_FILE} AND NOT ${LY_TIMESTAMP_REFERENCE} IS_NEWER_THAN ${LY_TIMESTAMP_FILE})
+    if(EXISTS "${LY_TIMESTAMP_FILE}" AND NOT "${LY_TIMESTAMP_REFERENCE}" IS_NEWER_THAN "${LY_TIMESTAMP_FILE}")
         # Stamp newer, nothing to do
         return()
     endif()
@@ -52,7 +52,7 @@ endif()
 
 if(LY_LOCK_FILE)
     # Lock the file
-    file(LOCK ${LY_LOCK_FILE} TIMEOUT 1200 RESULT_VARIABLE lock_result)
+    file(LOCK "${LY_LOCK_FILE}" TIMEOUT 1200 RESULT_VARIABLE lock_result)
     if(NOT ${lock_result} EQUAL 0)
         message(FATAL_ERROR "Lock failure ${lock_result}")
     endif()
@@ -83,5 +83,5 @@ endif()
 
 if(LY_TIMESTAMP_REFERENCE)
     # Touch the timestamp file
-    file(TOUCH ${LY_TIMESTAMP_FILE})
+    file(TOUCH "${LY_TIMESTAMP_FILE}")
 endif()

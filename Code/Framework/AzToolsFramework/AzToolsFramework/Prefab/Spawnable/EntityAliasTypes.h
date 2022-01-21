@@ -1,0 +1,69 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#include <AzCore/base.h>
+#include <AzCore/Component/EntityId.h>
+#include <AzCore/std/containers/variant.h>
+#include <AzCore/std/string/string.h>
+#include <AzFramework/Spawnable/Spawnable.h>
+#include <AzToolsFramework/Prefab/Instance/Instance.h>
+
+namespace AzToolsFramework::Prefab::PrefabConversionUtils
+{
+    enum class EntityAliasType : uint8_t
+    {
+        Disable, //!< No alias is added.
+        OptionalReplace, //!< At runtime the entity might be replaced. If the alias is disabled the original entity will be spawned.
+                         //!<   The original entity will be left in the spawnable and a copy is returned.
+        Replace, //!< At runtime the entity will be replaced. If the alias is disabled nothing will be spawned. The original
+                 //!<   entity is returned and a blank entity is left.
+        Additional, //!< At runtime the alias entity will be added as an additional but unrelated entity with a new entity id.
+                    //!<   An empty entity will be returned.
+        Merge //!< At runtime the components in both entities will be merged. An empty entity will be returned. The added
+              //!<   components may no conflict with the entities already in the root entity.
+    };
+
+    enum class EntityAliasSpawnableLoadBehavior : uint8_t
+    {
+        NoLoad, //!< Don't load the spawnable referenced in the entity alias. Loading will be up to the caller.
+        QueueLoad, //!< Queue the spawnable referenced in the entity alias for loading. This will be an async load because asset
+                   //!<    handlers aren't allowed to start a blocking load as this can lead to deadlocks. This option will allow
+                   //!<    to disable loading the referenced spawnable through the event fired from the spawnables asset handler.
+        DependentLoad //!< The spawnable referenced in the entity alias is made a dependency of the spawnable that holds the entity
+                      //!<    alias. This will cause the spawnable to be automatically loaded along with the owning spawnable.
+    };
+
+    struct EntityAliasSpawnableLink
+    {
+        EntityAliasSpawnableLink(AzFramework::Spawnable& spawnable, AZ::EntityId index);
+
+        AzFramework::Spawnable& m_spawnable;
+        AZ::EntityId m_index;
+    };
+
+    struct EntityAliasPrefabLink
+    {
+        EntityAliasPrefabLink(AZStd::string prefabName, AzToolsFramework::Prefab::AliasPath alias);
+
+        AZStd::string m_prefabName;
+        AzToolsFramework::Prefab::AliasPath m_alias;
+    };
+
+    struct EntityAliasStore
+    {
+        using LinkStore = AZStd::variant<AZStd::monostate, EntityAliasSpawnableLink, EntityAliasPrefabLink>;
+
+        LinkStore m_source;
+        LinkStore m_target;
+        uint32_t m_tag;
+        AzFramework::Spawnable::EntityAliasType m_aliasType;
+        EntityAliasSpawnableLoadBehavior m_loadBehavior;
+    };
+} // namespace AzToolsFramework::Prefab::PrefabConversionUtils

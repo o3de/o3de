@@ -40,12 +40,14 @@ protected:
     void SetupEnvironment() override
     {
         // Setup code
+        AZ::Environment::Create(nullptr);
         qInstallMessageHandler(UnitTestMessageHandler);
     }
 
     void TeardownEnvironment() override
     {
         qInstallMessageHandler(nullptr);
+        AZ::Environment::Destroy();
     }
 
 private:
