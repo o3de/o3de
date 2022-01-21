@@ -218,30 +218,18 @@ namespace AWSCore
         /// for replacing these parts of the url.
         const Aws::String& m_requestUrl;
 
-        /// Constructor for creating Jobs that can handle queued responses
-        /// for OnSuccess, OnFailure, and DoCleanup
-        ServiceRequestJob(bool queueOnSuccess,
-                          OnSuccessFunction onSuccess,
-                          bool queueOnFailure,
-                          OnFailureFunction onFailure,
-                          bool queueDelete,
-                          IConfig* config = GetDefaultConfig()
-        ) : ServiceClientJobType{ false, config }
-          , m_requestUrl{ config->GetRequestUrl() }
-          , m_queueOnSuccess{ queueOnSuccess }
-          , m_onSuccess{ onSuccess }
-          , m_queueOnFailure{ queueOnFailure }
-          , m_onFailure{ onFailure }
-          , m_queueDelete{ queueDelete }
-        {
-        }
-
-        /// Constructor for creating Jobs that can handle queued responses
+        /// Constructor for creating ServiceRequestJob Jobs that can handle queued responses
         /// for OnSuccess, OnFailure, and DoCleanup
         ServiceRequestJob(OnSuccessFunction onSuccess,
                           OnFailureFunction onFailure,
                           IConfig* config = GetDefaultConfig()
-        ) : ServiceRequestJob(true, onSuccess, true, onFailure, true, config)
+        ) : ServiceClientJobType{ false, config }
+          , m_requestUrl{ config->GetRequestUrl() }
+          , m_queueOnSuccess{ true }
+          , m_onSuccess{ onSuccess }
+          , m_queueOnFailure{ true }
+          , m_onFailure{ onFailure }
+          , m_queueDelete{ true }
         {
         }
 

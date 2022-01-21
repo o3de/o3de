@@ -210,29 +210,18 @@ namespace AWSCore
         }
 
     protected:
-        /// Constructor for creating Jobs that can handle queued responses
-        /// for OnSuccess, OnFailure, and DoCleanup
-        AwsApiRequestJob(bool queueOnSuccess,
-                         OnSuccessFunction onSuccess,
-                         bool queueOnFailure,
-                         OnFailureFunction onFailure,
-                         bool queueDelete,
-                         IConfig* config = GetDefaultConfig()
-        ) : AwsApiClientJobType(false, config)
-          , m_queueOnSuccess{ queueOnSuccess }
-          , m_onSuccess{ onSuccess }
-          , m_queueOnFailure{ queueOnFailure }
-          , m_onFailure{ onFailure }
-          , m_queueDelete{ queueDelete }
-        {
-        }
 
-        /// Constructor for creating Jobs that can handle queued responses
+        /// Constructor for creating AwsApiRequestJob Jobs that can handle queued responses
         /// for OnSuccess, OnFailure, and DoCleanup
         AwsApiRequestJob(OnSuccessFunction onSuccess,
                          OnFailureFunction onFailure,
                          IConfig* config = GetDefaultConfig()
-        ) : AwsApiRequestJob(true, onSuccess, true, onFailure, true, config)
+        ) : AwsApiClientJobType(false, config)
+          , m_queueOnSuccess{ true }
+          , m_onSuccess{ onSuccess }
+          , m_queueOnFailure{ true }
+          , m_onFailure{ onFailure }
+          , m_queueDelete{ true }
         {
         }
 
