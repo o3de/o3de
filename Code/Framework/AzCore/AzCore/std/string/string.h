@@ -5,23 +5,44 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_STRING_H
-#define AZSTD_STRING_H
+#pragma once
 
 #include <wchar.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <cstring>
 
+#include <AzCore/std/containers/compressed_pair.h>
 #include <AzCore/std/base.h>
 #include <AzCore/std/iterator.h>
 #include <AzCore/std/allocator.h>
 #include <AzCore/std/allocator_traits.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/typetraits/alignment_of.h>
+#include <AzCore/std/typetraits/is_convertible.h>
 #include <AzCore/std/typetraits/is_integral.h>
 
 #include <AzCore/std/string/string_view.h>
+
+namespace AZStd::StringInternal
+{
+    template<class Element, size_t ElementSize = sizeof(Element)>
+    struct Padding
+    {
+        AZ::u8 m_padding[ElementSize - 1];
+    };
+
+    template<class Element>
+    struct Padding<Element, 1>
+    {};
+}
+
+#if defined(HAVE_BENCHMARK)
+namespace Benchmark
+{
+    class StringBenchmarkFixture;
+}
+#endif
 
 namespace AZStd
 {
@@ -35,130 +56,95 @@ namespace AZStd
         : public Debug::checked_container_base
 #endif
     {
-        typedef basic_string<Element, Traits, Allocator> this_type;
+        using this_type = basic_string<Element, Traits, Allocator>;
     public:
-        typedef Element*                                pointer;
-        typedef const Element*                          const_pointer;
+        using pointer = Element*;
+        using const_pointer = const Element*;
 
-        typedef Element&                                reference;
-        typedef const Element&                          const_reference;
-        typedef typename Allocator::difference_type     difference_type;
-        typedef typename Allocator::size_type           size_type;
+        using reference = Element&;
+        using const_reference = const Element&;
+        using difference_type = typename Allocator::difference_type;
+        using size_type = typename Allocator::size_type;
 
-        typedef pointer                                 iterator_impl;
-        typedef const_pointer                           const_iterator_impl;
+        using iterator_impl = pointer;
+        using const_iterator_impl = const_pointer;
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
-        typedef Debug::checked_randomaccess_iterator<iterator_impl, this_type>       iterator;
-        typedef Debug::checked_randomaccess_iterator<const_iterator_impl, this_type> const_iterator;
+        using iterator = Debug::checked_randomaccess_iterator<iterator_impl, this_type>;
+        using const_iterator = Debug::checked_randomaccess_iterator<const_iterator_impl, this_type>;
 #else
-        typedef iterator_impl                           iterator;
-        typedef const_iterator_impl                     const_iterator;
+        using iterator = iterator_impl;
+        using const_iterator = const_iterator_impl;
 #endif
-        typedef AZStd::reverse_iterator<iterator>       reverse_iterator;
-        typedef AZStd::reverse_iterator<const_iterator> const_reverse_iterator;
-        typedef Element                                 value_type;
-        typedef Traits                                  traits_type;
-        typedef Allocator                               allocator_type;
+        using reverse_iterator = AZStd::reverse_iterator<iterator>;
+        using const_reverse_iterator = AZStd::reverse_iterator<const_iterator>;
+        using value_type = Element;
+        using traits_type = Traits;
+        using allocator_type = Allocator;
 
         // AZSTD extension.
         /**
         * \brief Allocation node type. Common for all AZStd containers.
         * In vectors case we allocate always "sizeof(node_type)*capacity" block.
         */
-        typedef value_type                              node_type;
+        using node_type = value_type;
 
-        static const size_type                          npos = size_type(-1);
+        inline static constexpr size_type npos = size_type(-1);
 
         inline basic_string(const Allocator& alloc = Allocator())
-            : m_size(0)
-            , m_capacity(SSO_BUF_SIZE - 1)
-            , m_allocator(alloc)
+            : m_storage{ skip_element_tag{}, alloc }
         {
-            Traits::assign(m_buffer[0], Element());
+            Traits::assign(m_storage.first().GetData()[0], Element());
         }
 
         inline basic_string(const_pointer ptr, size_type count, const Allocator& alloc = Allocator())
-            : m_size(0)
-            , m_capacity(SSO_BUF_SIZE - 1)
-            , m_allocator(alloc)
+            : m_storage{ skip_element_tag{}, alloc }
         {   // construct from [ptr, ptr + count)
             assign(ptr, count);
         }
 
         inline basic_string(const_pointer ptr, const Allocator& alloc = Allocator())
-            : m_size(0)
-            , m_capacity(SSO_BUF_SIZE - 1)
-            , m_allocator(alloc)
+            : m_storage{ skip_element_tag{}, alloc }
         {   // construct from [ptr, <null>)
             assign(ptr);
         }
 
         inline basic_string(size_type count, Element ch, const Allocator& alloc = Allocator())
-            : m_size(0)
-            , m_capacity(SSO_BUF_SIZE - 1)
-            , m_allocator(alloc)
+            : m_storage{ skip_element_tag{}, alloc }
         {   // construct from count * ch
             assign(count, ch);
         }
 
-        template<class InputIterator>
-        inline basic_string(InputIterator first, InputIterator last, const Allocator& alloc = Allocator())
-            : m_size(0)
-            , m_capacity(SSO_BUF_SIZE - 1)
-            , m_allocator(alloc)
+        template<class InputIt, typename = enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_t>>>
+        inline basic_string(InputIt first, InputIt last, const Allocator& alloc = Allocator())
+            : m_storage{ skip_element_tag{}, alloc }
         {   // construct from [first, last)
-            if (first == last)
-            {
-                Traits::assign(m_buffer[0], Element()); // terminate
-            }
-            else
-            {
-                construct_iter(first, last, is_integral<InputIterator>());
-            }
+            assign(first, last);
         }
 
         inline basic_string(const_pointer first, const_pointer last)
-            : m_size(0)
-            , m_capacity(SSO_BUF_SIZE - 1)
         {   // construct from [first, last), const pointers
-            assign(&*first, last - first);
+            assign(first, last - first);
         }
 
-        //inline basic_string(const_iterator _First, const_iterator _Last)
-        //  : m_size(0)
-        //  , m_capacity(SSO_BUF_SIZE-1)
-        //{ // construct from [_First, _Last), const_iterators
-        //  if (first != last)
-        //      assign(&*first, last - first);
-        //}
-
         inline basic_string(const this_type& rhs)
-            : m_size(0)
-            , m_capacity(SSO_BUF_SIZE - 1)
-            , m_allocator(rhs.m_allocator)
+            : m_storage{ skip_element_tag{}, rhs.m_storage.second() }
         {
             assign(rhs, 0, npos);
         }
 
         inline basic_string(this_type&& rhs)
-            : m_size(0)
-            , m_capacity(SSO_BUF_SIZE - 1)
-            , m_allocator(AZStd::move(rhs.m_allocator))
+            : m_storage{ skip_element_tag{}, AZStd::move(rhs.m_storage.second()) }
         {
             assign(AZStd::forward<this_type>(rhs));
         }
 
         inline basic_string(const this_type& rhs, size_type rhsOffset, size_type count = npos)
-            : m_size(0)
-            , m_capacity(SSO_BUF_SIZE - 1)
         {   // construct from rhs [rhsOffset, rhsOffset + count)
             assign(rhs, rhsOffset, count);
         }
 
         inline basic_string(const this_type& rhs, size_type rhsOffset, size_type count, const Allocator& alloc)
-            : m_size(0)
-            , m_capacity(SSO_BUF_SIZE - 1)
-            , m_allocator(alloc)
+            : m_storage{ skip_element_tag{}, alloc }
         {   // construct from rhs [rhsOffset, rhsOffset + count) with allocator
             assign(rhs, rhsOffset, count);
         }
@@ -174,7 +160,7 @@ namespace AZStd
         inline ~basic_string()
         {
             // destroy the string
-            deallocate_memory(m_data, 0, typename allocator_type::allow_memory_leaks());
+            deallocate_memory(m_storage.first().GetData(), 0, typename allocator_type::allow_memory_leaks());
         }
 
         operator AZStd::basic_string_view<Element, Traits>() const
@@ -182,12 +168,12 @@ namespace AZStd
             return AZStd::basic_string_view<Element, Traits>(data(), size());
         }
 
-        inline iterator begin()             { return iterator(AZSTD_CHECKED_ITERATOR(iterator_impl, SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer)); }
-        inline const_iterator begin() const { return const_iterator(AZSTD_CHECKED_ITERATOR(const_iterator_impl, SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer)); }
-        inline const_iterator cbegin() const    { return const_iterator(AZSTD_CHECKED_ITERATOR(const_iterator_impl, SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer)); }
-        inline iterator end()                   { return iterator(AZSTD_CHECKED_ITERATOR(iterator_impl, (SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer) + m_size)); }
-        inline const_iterator end() const       { return const_iterator(AZSTD_CHECKED_ITERATOR(const_iterator_impl, (SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer) + m_size)); }
-        inline const_iterator cend() const      { return const_iterator(AZSTD_CHECKED_ITERATOR(const_iterator_impl, (SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer) + m_size)); }
+        inline iterator begin()             { return iterator(AZSTD_CHECKED_ITERATOR(iterator_impl, m_storage.first().GetData())); }
+        inline const_iterator begin() const { return const_iterator(AZSTD_CHECKED_ITERATOR(const_iterator_impl, m_storage.first().GetData())); }
+        inline const_iterator cbegin() const    { return const_iterator(AZSTD_CHECKED_ITERATOR(const_iterator_impl, m_storage.first().GetData())); }
+        inline iterator end()                   { return iterator(AZSTD_CHECKED_ITERATOR(iterator_impl, (m_storage.first().GetData()) + m_storage.first().GetSize())); }
+        inline const_iterator end() const       { return const_iterator(AZSTD_CHECKED_ITERATOR(const_iterator_impl, (m_storage.first().GetData()) + m_storage.first().GetSize())); }
+        inline const_iterator cend() const      { return const_iterator(AZSTD_CHECKED_ITERATOR(const_iterator_impl, (m_storage.first().GetData()) + m_storage.first().GetSize())); }
         inline reverse_iterator     rbegin()            { return reverse_iterator(end()); }
         inline const_reverse_iterator   rbegin() const      { return const_reverse_iterator(end()); }
         inline const_reverse_iterator   crbegin() const     { return const_reverse_iterator(end()); }
@@ -196,7 +182,7 @@ namespace AZStd
         inline const_reverse_iterator   crend() const       { return const_reverse_iterator(begin()); }
 
         inline this_type& operator=(const this_type& rhs)       { return assign(rhs); }
-        inline this_type& operator=(this_type&& rhs) { return assign(AZStd::forward<this_type>(rhs)); }
+        inline this_type& operator=(this_type&& rhs) { return assign(AZStd::move(rhs)); }
         inline this_type& operator=(AZStd::basic_string_view<Element, Traits> view) { return assign(view); }
         inline this_type& operator=(const_pointer ptr)          { return assign(ptr); }
         inline this_type& operator=(Element ch)             { return assign(1, ch); }
@@ -208,21 +194,18 @@ namespace AZStd
         this_type& append(const this_type& rhs, size_type rhsOffset, size_type count)
         {   // append rhs [rhsOffset, rhsOffset + count)
             AZSTD_CONTAINER_ASSERT(rhs.size() >= rhsOffset, "Invalid offset!");
-            size_type num = rhs.m_size - rhsOffset;
-            if (num < count)
+            count = AZStd::min(count, rhs.size() - rhsOffset);
+
+            size_type oldSize = size();
+            size_type newSize = oldSize + count;
+            if (count > 0  && grow(newSize))
             {
-                count = num;    // trim count to size
-            }
-            AZSTD_CONTAINER_ASSERT(npos - m_size > count && m_size + count >= m_size, "result is too long!");
-            num = m_size + count;
-            if (count > 0  && grow(num))
-            {
-                pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
-                const_pointer rhsData = SSO_BUF_SIZE <= rhs.m_capacity ? rhs.m_data : rhs.m_buffer;
+                pointer data = m_storage.first().GetData();
+                const_pointer rhsData = rhs.data();
                 // make room and append new stuff
-                Traits::copy(data + m_size /*, m_capacity - m_size*/, rhsData + rhsOffset, count);
-                m_size = num;
-                Traits::assign(data[num], Element()); // terminate
+                Traits::copy(data + oldSize, rhsData + rhsOffset, count);
+                m_storage.first().SetSize(newSize);
+                Traits::assign(data[newSize], Element()); // terminate
             }
             return *this;
         }
@@ -230,20 +213,21 @@ namespace AZStd
         this_type& append(const_pointer ptr, size_type count)
         {
             // append [ptr, ptr + count)
-            pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
-            if (ptr != 0 && ptr >= data && (data + m_size) > ptr)
+            pointer data = m_storage.first().GetData();
+            if (ptr != nullptr && ptr >= data && (data + size()) > ptr)
             {
                 return append(*this, ptr - data, count);    // substring
             }
-            AZSTD_CONTAINER_ASSERT(npos - m_size > count && m_size + count >= m_size, "result is too long!");
-            size_type num = m_size + count;
-            if (count > 0 && grow(num))
+            AZSTD_CONTAINER_ASSERT(npos - size() > count && size() + count >= size(), "result is too long!");
+            size_type oldSize = size();
+            size_type newSize = oldSize + count;
+            if (count > 0 && grow(newSize))
             {
                 // make room and append new stuff
-                data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
-                Traits::copy(data + m_size /*, m_capacity - m_size*/, ptr, count);
-                m_size = num;
-                Traits::assign(data[num], Element());  // terminate
+                data = m_storage.first().GetData();
+                Traits::copy(data + oldSize , ptr, count);
+                m_storage.first().SetSize(newSize);
+                Traits::assign(data[newSize], Element());  // terminate
             }
             return *this;
         }
@@ -252,41 +236,66 @@ namespace AZStd
         this_type& append(size_type count, Element ch)
         {
             // append count * ch
-            AZSTD_CONTAINER_ASSERT(npos - m_size > count, "result is too long");
-            size_type num  = m_size + count;
+            AZSTD_CONTAINER_ASSERT(npos - size() > count, "result is too long");
+            size_type num  = size() + count;
             if (count > 0 && grow(num))
             {
-                pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
+                pointer data = m_storage.first().GetData();
                 // make room and append new stuff using assign
-                if (count == 1)
-                {
-                    Traits::assign(*(data + m_size), ch);
-                }
-                else
-                {
-                    Traits::assign(data + m_size, count, ch);
-                }
-                m_size = num;
+                Traits::assign(data + size(), count, ch);
+                m_storage.first().SetSize(num);
                 Traits::assign(data[num], Element());  // terminate
             }
             return *this;
         }
 
-        template<class InputIterator>
-        inline this_type& append(InputIterator first, InputIterator last)
+        template<class InputIt>
+        inline auto append(InputIt first, InputIt last)
+            -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, this_type&>
         {   // append [first, last)
-            return append_iter(first, last, AZStd::is_integral<InputIterator>());
+            if constexpr (Internal::satisfies_contiguous_iterator_concept_v<InputIt>
+                && is_same_v<typename AZStd::iterator_traits<InputIt>::value_type, value_type>)
+            {
+                return append(AZStd::to_address(first), AZStd::distance(first, last));
+            }
+            else if constexpr (Internal::is_forward_iterator_v<InputIt>)
+            {
+                // Input Iterator pointer type doesn't match the const_pointer type
+                // So the elements need to be appended one by one into the buffer
+                size_type oldSize = size();
+                size_type newSize = oldSize + AZStd::distance(first, last);
+                if (grow(newSize))
+                {
+                    pointer buffer = data();
+                    for (size_t updateIndex = oldSize; first != last; ++first, ++updateIndex)
+                    {
+                        Traits::assign(buffer[updateIndex], static_cast<Element>(*first));
+                    }
+                    m_storage.first().SetSize(newSize);
+                    Traits::assign(buffer[newSize], Element());  // terminate
+                }
+                return *this;
+            }
+            else
+            {
+                // input iterator that aren't forward iterators can only be used in a single pass
+                // algorithm. Therefore AZStd::distance can't be used
+                // So the input is copied into a local string and then delegated
+                // to use the (const_pointer, size_type) overload
+                basic_string inputCopy;
+                for (; first != last; ++first)
+                {
+                    inputCopy.push_back(static_cast<Element>(*first));
+                }
+
+                return append(inputCopy.c_str(), inputCopy.size());
+            }
         }
 
         inline this_type& append(const_pointer first, const_pointer last)
         {   // append [first, last), const pointers
             return replace(end(), end(), first, last);
         }
-
-        //inline this_type& append(const_iterator first, const_iterator last)
-        //{ // append [first, last), const_iterators
-        //  return replace(end(), end(), first, last);
-        //}
 
         inline this_type& assign(const this_type& rhs)
         {
@@ -302,27 +311,34 @@ namespace AZStd
         {
             if (this != &rhs)
             {
-                if (SSO_BUF_SIZE <= m_capacity)
+                deallocate_memory(m_storage.first().GetData(), 0, typename allocator_type::allow_memory_leaks());
+
+                m_storage.first().SetCapacity(rhs.capacity());
+
+                pointer data = m_storage.first().GetData();
+                pointer rhsData = rhs.data();
+                // Memmove the right hand side string data if it is using the short string optimization
+                // Otherwise set the pointer to the right hand side
+                if (rhs.m_storage.first().ShortStringOptimizationActive())
                 {
-                    deallocate_memory(m_data, 0, typename allocator_type::allow_memory_leaks());
+                    Traits::move(data, rhsData, rhs.size() + 1); // string + null-terminator
                 }
+                else
+                {
+                    m_storage.first().SetData(rhsData);
+                }
+                m_storage.first().SetSize(rhs.size());
+                m_storage.second() = rhs.m_storage.second();
 
-                Traits::move(m_buffer, rhs.m_buffer, sizeof(m_buffer));
-                m_size = rhs.m_size;
-                m_capacity = rhs.m_capacity;
-                m_allocator = rhs.m_allocator;
-
-                rhs.m_data = nullptr;
-                rhs.m_size = 0;
-                rhs.m_capacity = SSO_BUF_SIZE - 1;
+                rhs.leak_and_reset();
             }
             return *this;
         }
 
         this_type& assign(const this_type& rhs, size_type rhsOffset, size_type count)
         {   // assign rhs [rhsOffset, rhsOffset + count)
-            AZSTD_CONTAINER_ASSERT(rhs.m_size >= rhsOffset, "Invalid offset");
-            size_type num = rhs.m_size - rhsOffset;
+            AZSTD_CONTAINER_ASSERT(rhs.size() >= rhsOffset, "Invalid offset");
+            size_type num = rhs.size() - rhsOffset;
             if (count < num)
             {
                 num = count;    // trim num to size
@@ -334,10 +350,10 @@ namespace AZStd
             }
             else if (grow(num))
             {   // make room and assign new stuff
-                pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
-                const_pointer rhsData = SSO_BUF_SIZE <= rhs.m_capacity ? rhs.m_data : rhs.m_buffer;
-                Traits::copy(data /*, m_capacity*/, rhsData + rhsOffset, num);
-                m_size = num;
+                pointer data = m_storage.first().GetData();
+                const_pointer rhsData = rhs.data();
+                Traits::copy(data, rhsData + rhsOffset, num);
+                m_storage.first().SetSize(num);
                 Traits::assign(data[num], Element());  // terminate
             }
             return *this;
@@ -345,20 +361,20 @@ namespace AZStd
 
         this_type& assign(const_pointer ptr, size_type count)
         {   // assign [ptr, ptr + count)
-            pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
-            if (ptr != 0 && ptr >= data && (data + m_size) > ptr)
+            pointer data = m_storage.first().GetData();
+            if (ptr != nullptr && ptr >= data && (data + size()) > ptr)
             {
                 return assign(*this, ptr - data, count);    // substring
             }
             if (grow(count))
             {
                 // make room and assign new stuff
-                data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
+                data = m_storage.first().GetData();
                 if (count > 0)
                 {
                     Traits::copy(data, ptr, count);
                 }
-                m_size = count;
+                m_storage.first().SetSize(count);
                 Traits::assign(data[count], Element());  // terminate
             }
             return *this;
@@ -367,109 +383,132 @@ namespace AZStd
         this_type& assign(size_type count, Element ch)
         {
             // assign count * ch
-            AZSTD_CONTAINER_ASSERT(count != npos, "result is too long!");
             if (grow(count))
             {   // make room and assign new stuff
-                pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
-                if (count == 1)
-                {
-                    Traits::assign(*(data), ch);
-                }
-                else
-                {
-                    Traits::assign(data, count, ch);
-                }
-                m_size = count;
+                pointer data = m_storage.first().GetData();
+                Traits::assign(data, count, ch);
+                m_storage.first().SetSize(count);
                 Traits::assign(data[count], Element());  // terminate
             }
             return *this;
         }
 
-        template<class InputIterator>
-        inline this_type& assign(InputIterator first, InputIterator last)   { return assign_iter(first, last, AZStd::is_integral<InputIterator>()); }
-        inline this_type& assign(const_pointer first, const_pointer last)                           { return replace(begin(), end(), first, last); }
-        inline this_type& insert(size_type offset, const this_type& rhs)                            { return insert(offset, rhs, 0, npos);  }
+        template<class InputIt>
+        auto assign(InputIt first, InputIt last)
+            -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, this_type&>
+        {
+            if constexpr (Internal::satisfies_contiguous_iterator_concept_v<InputIt>
+                && is_same_v<typename AZStd::iterator_traits<InputIt>::value_type, value_type>)
+            {
+                return assign(AZStd::to_address(first), AZStd::distance(first, last));
+            }
+            else if constexpr (Internal::is_forward_iterator_v<InputIt>)
+            {
+                // forward iterator pointer type doesn't match the const_pointer type
+                // So the elements need to be assigned one by one into the buffer
+                size_type newSize = AZStd::distance(first, last);
+                if (grow(newSize))
+                {
+                    pointer buffer = data();
+                    for (size_t updateIndex = 0; first != last; ++first, ++updateIndex)
+                    {
+                        Traits::assign(buffer[updateIndex], static_cast<Element>(*first));
+                    }
+                    m_storage.first().SetSize(newSize);
+                    Traits::assign(buffer[newSize], Element());  // terminate
+                }
+                return *this;
+            }
+            else
+            {
+                // input iterator that aren't forward iterators can only be used in a single pass
+                // algorithm. Therefore AZStd::distance can't be used
+                // So the input is copied into a local string and then delegated
+                // to use the (const_pointer, size_type) overload
+                basic_string inputCopy;
+                for (; first != last; ++first)
+                {
+                    inputCopy.push_back(static_cast<Element>(*first));
+                }
+
+                return assign(inputCopy.c_str(), inputCopy.size());
+            }
+        }
+        inline this_type& insert(size_type offset, const this_type& rhs) { return insert(offset, rhs, 0, npos); }
         this_type& insert(size_type offset, const this_type& rhs, size_type rhsOffset, size_type count)
         {
             // insert rhs [rhsOffset, rhsOffset + count) at offset
-            AZSTD_CONTAINER_ASSERT(m_size >= offset && rhs.m_size >= rhsOffset, "Invalid offset(s)");
-            size_type num = rhs.m_size - rhsOffset;
+            AZSTD_CONTAINER_ASSERT(size() >= offset && rhs.size() >= rhsOffset, "Invalid offset(s)");
+            size_type num = rhs.size() - rhsOffset;
             if (num < count)
             {
                 count = num;    // trim _Count to size
             }
-            AZSTD_CONTAINER_ASSERT(npos - m_size > count, "Result is too long");
-            num = m_size + count;
+            AZSTD_CONTAINER_ASSERT(npos - size() > count, "Result is too long");
+            num = size() + count;
             if (count > 0 && grow(num))
             {
-                pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
+                pointer data = m_storage.first().GetData();
                 // make room and insert new stuff
-                Traits::move(data + offset + count /*, m_capacity - offset - count*/, data + offset, m_size - offset);   // empty out hole
+                Traits::move(data + offset + count, data + offset, size() - offset);   // empty out hole
                 if (this == &rhs)
                 {
-                    Traits::move(data + offset /*, m_capacity - offset*/, data + (offset < rhsOffset ? rhsOffset + count : rhsOffset), count); // substring
+                    Traits::move(data + offset, data + (offset < rhsOffset ? rhsOffset + count : rhsOffset), count); // substring
                 }
                 else
                 {
-                    const_pointer rhsData = SSO_BUF_SIZE <= rhs.m_capacity ? rhs.m_data : rhs.m_buffer;
-                    Traits::copy(data + offset /*, m_capacity - offset*/, rhsData + rhsOffset, count);   // fill hole
+                    const_pointer rhsData = rhs.data();
+                    Traits::copy(data + offset, rhsData + rhsOffset, count);   // fill hole
                 }
-                m_size = num;
+                m_storage.first().SetSize(num);
                 Traits::assign(data[num], Element());  // terminate
             }
             return (*this);
         }
 
-        this_type&  insert(size_type offset, const_pointer ptr, size_type count)
+        this_type& insert(size_type offset, const_pointer ptr, size_type count)
         {
             // insert [ptr, ptr + count) at offset
-            pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
-            if (ptr != 0 && ptr >= data && (data + m_size) > ptr)
+            pointer data = m_storage.first().GetData();
+            if (ptr != nullptr && ptr >= data && (data + size()) > ptr)
             {
-                return insert(offset, *this,    ptr - data, count); // substring
+                return insert(offset, *this, ptr - data, count); // substring
             }
-            AZSTD_CONTAINER_ASSERT(m_size >= offset, "Invalid offset");
-            AZSTD_CONTAINER_ASSERT(npos - m_size > count, "Result is too long");
-            size_type num = m_size + count;
+            AZSTD_CONTAINER_ASSERT(size() >= offset, "Invalid offset");
+            AZSTD_CONTAINER_ASSERT(npos - size() > count, "Result is too long");
+            size_type num = size() + count;
             if (count > 0 && grow(num))
             {   // make room and insert new stuff
-                data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
-                Traits::move(data + offset + count /*, m_capacity - offset - count*/, data + offset, m_size - offset);   // empty out hole
-                Traits::copy(data + offset /*, m_capacity - offset*/, ptr, count);   // fill hole
-                m_size = num;
+                data = m_storage.first().GetData();
+                Traits::move(data + offset + count, data + offset, size() - offset);   // empty out hole
+                Traits::copy(data + offset, ptr, count);   // fill hole
+                m_storage.first().SetSize(num);
                 Traits::assign(data[num], Element());  // terminate
             }
             return *this;
         }
 
-        inline this_type& insert(size_type offset, const_pointer ptr)  { return insert(offset, ptr, Traits::length(ptr));   }
+        inline this_type& insert(size_type offset, const_pointer ptr) { return insert(offset, ptr, Traits::length(ptr)); }
 
         this_type& insert(size_type offset, size_type count, Element ch)
         {
             // insert count * ch at offset
-            AZSTD_CONTAINER_ASSERT(m_size >= offset, "Invalid offset");
-            AZSTD_CONTAINER_ASSERT(npos - m_size > count, "Result is too long");
-            size_type num = m_size + count;
+            AZSTD_CONTAINER_ASSERT(size() >= offset, "Invalid offset");
+            AZSTD_CONTAINER_ASSERT(npos - size() > count, "Result is too long");
+            size_type num = size() + count;
             if (count > 0 && grow(num))
             {
-                pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
+                pointer data = m_storage.first().GetData();
                 // make room and insert new stuff
-                Traits::move(data + offset + count /*, m_capacity - offset - count*/, data + offset, m_size - offset);   // empty out hole
-                if (count == 1)
-                {
-                    Traits::assign(*(data + offset), ch);
-                }
-                else
-                {
-                    Traits::assign(data + offset, count, ch);
-                }
-                m_size = num;
+                Traits::move(data + offset + count, data + offset, size() - offset);   // empty out hole
+                Traits::assign(data + offset, count, ch);
+                m_storage.first().SetSize(num);
                 Traits::assign(data[num], Element());  // terminate
             }
             return *this;
         }
 
-        inline iterator insert(const_iterator insertPos)    { return insert(insertPos, Element()); }
+        inline iterator insert(const_iterator insertPos) { return insert(insertPos, Element()); }
 
         iterator insert(const_iterator insertPos, Element ch)
         {
@@ -479,54 +518,89 @@ namespace AZStd
             const_pointer insertPosPtr = insertPos;
 #endif
 
-            const_pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
+            const_pointer data = m_storage.first().GetData();
             size_type offset = insertPosPtr - data;
             insert(offset, 1, ch);
             return iterator(AZSTD_CHECKED_ITERATOR(iterator_impl, data + offset));
         }
 
-        void insert(const_iterator insertPos, size_type count, Element ch)
+        iterator insert(const_iterator insertPos, size_type count, Element ch)
         {   // insert count * elem at insertPos
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
             const_pointer insertPosPtr = insertPos.get_iterator();
 #else
             const_pointer insertPosPtr = insertPos;
 #endif
-            pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
+            pointer data = m_storage.first().GetData();
             size_type offset = insertPosPtr - data;
             insert(offset, count, ch);
+            return begin() + offset;
         }
 
-        template<class InputIterator>
-        inline void insert(const_iterator insertPos, InputIterator first, InputIterator last)
+        template<class InputIt>
+        auto insert(const_iterator insertPos, InputIt first, InputIt last)
+            -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, iterator>
         {   // insert [_First, _Last) at _Where
-            insert_iter(insertPos, first, last, is_integral<InputIterator>());
-        }
+            size_type insertOffset = AZStd::distance(cbegin(), insertPos);
+            if constexpr (Internal::satisfies_contiguous_iterator_concept_v<InputIt>
+                && is_same_v<typename AZStd::iterator_traits<InputIt>::value_type, value_type>)
+            {
+                insert(insertOffset, AZStd::to_address(first), AZStd::distance(first, last));
+            }
+            else if constexpr (Internal::is_forward_iterator_v<InputIt>)
+            {
+                // Input Iterator pointer type doesn't match the const_pointer type
+                // So the elements need to be inserted one by one into the buffer
+                size_type count = AZStd::distance(first, last);
+                size_type oldSize = size();
+                size_type newSize = oldSize + count;
+                if (grow(newSize))
+                {
+                    pointer buffer = m_storage.first().GetData();
+                    Traits::copy_backward(buffer + insertOffset + count, buffer + insertOffset, oldSize - insertOffset); // empty out hole
+                    for (size_t updateIndex = insertOffset; first != last; ++first, ++updateIndex)
+                    {
+                        Traits::assign(buffer[updateIndex], static_cast<Element>(*first));
+                    }
+                    m_storage.first().SetSize(newSize);
+                    Traits::assign(buffer[newSize], Element()); // terminate
+                }
+            }
+            else
+            {
+                // input iterator that aren't forward iterators can only be used in a single pass
+                // algorithm. Therefore AZStd::distance can't be used
+                // So the input is copied into a local string and then delegated
+                // to use the (const_pointer, size_type) overload
+                basic_string inputCopy;
+                for (; first != last; ++first)
+                {
+                    inputCopy.push_back(static_cast<Element>(*first));
+                }
 
-        inline void insert(const_iterator insertPos, const_pointer first, const_pointer last)
-        {   // insert [first, last) at insertPos, const pointers
-            replace(insertPos, insertPos, first, last);
+                insert(insertOffset, inputCopy.c_str(), inputCopy.size());
+            }
+            return begin() + insertOffset;
         }
-
 
         this_type& erase(size_type offset = 0, size_type count = npos)
         {   // erase elements [offset, offset + count)
-            AZSTD_CONTAINER_ASSERT(m_size >= offset, "Invalid offset");
-            if (m_size - offset < count)
+            AZSTD_CONTAINER_ASSERT(size() >= offset, "Invalid offset");
+            if (size() - offset < count)
             {
-                count = m_size - offset;    // trim count
+                count = size() - offset;    // trim count
             }
             if (count > 0)
             {
                 // move elements down
-                pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
+                pointer data = m_storage.first().GetData();
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
                 orphan_range(data + offset, data + offset + count);
 #endif
-                Traits::move(data + offset /*, m_capacity - offset*/, data + offset + count, m_size - offset - count);
-                m_size = m_size - count;
-                Traits::assign(data[m_size], Element());  // terminate
-            }
+                Traits::move(data + offset, data + offset + count, size() - offset - count);
+                m_storage.first().SetSize(size() - count);
+                Traits::assign(data[size()], Element());  // terminate
+        }
             return *this;
         }
 
@@ -538,10 +612,10 @@ namespace AZStd
             const_pointer erasePtr = erasePos;
 #endif
             // erase element at insertPos
-            const_pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
+            const_pointer data = m_storage.first().GetData();
             size_type count = erasePtr - data;
             erase(count, 1);
-            data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
+            data = m_storage.first().GetData();
             return iterator(AZSTD_CHECKED_ITERATOR(iterator_impl, data + count));
         }
 
@@ -554,159 +628,152 @@ namespace AZStd
             const_pointer firstPtr = first;
             const_pointer lastPtr = last;
 #endif
-            pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
+            pointer data = m_storage.first().GetData();
             size_type count = firstPtr - data;
             erase(count, lastPtr - firstPtr);
-            data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
+            data = m_storage.first().GetData();
             return iterator(AZSTD_CHECKED_ITERATOR(iterator_impl, data + count));
         }
 
-        inline void  clear()        { erase(begin(), end()); }
-        inline this_type& replace(size_type offset, size_type count, const this_type& rhs)
+        inline void  clear() { erase(begin(), end()); }
+        this_type& replace(size_type offset, size_type count, const this_type& rhs)
         {
-            // replace [offset, offset + count) with rhs
-            return replace(offset, count, rhs, 0, npos);
+            return replace(offset, count, rhs.c_str(), rhs.size());
         }
 
         this_type& replace(size_type offset, size_type count, const this_type& rhs, size_type rhsOffset, size_type rhsCount)
         {
-            // replace [offset, offset + count) with rhs [rhsOffset, rhsOffset + rhsCount)
-            AZSTD_CONTAINER_ASSERT(m_size >= offset && rhs.m_size >= rhsOffset, "Invalid offsets");
-            if (m_size - offset < count)
-            {
-                count = m_size - offset;    // trim count to size
-            }
-            size_type num = rhs.m_size - rhsOffset;
-            if (num < rhsCount)
-            {
-                rhsCount = num; // trim rhsCount to size
-            }
-            AZSTD_CONTAINER_ASSERT(npos - rhsCount > m_size - count, "Result is too long");
-
-            size_type nm = m_size - count - offset; // length of preserved tail
-            size_type newSize = m_size + rhsCount - count;
-            if (m_size < newSize)
-            {
-                grow(newSize);
-            }
-
-            pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
-            const_pointer rhsData = SSO_BUF_SIZE <= rhs.m_capacity ? rhs.m_data : rhs.m_buffer;
-
-#ifdef AZSTD_HAS_CHECKED_ITERATORS
-            orphan_range(data + offset, data + offset + count);
-#endif
-            if (this != &rhs)
-            {   // no overlap, just move down and copy in new stuff
-                Traits::move(data + offset + rhsCount /*, m_capacity - offset - rhsCount*/, data + offset + count, nm);   // empty hole
-                Traits::copy(data + offset /*, m_capacity - offset*/,    rhsData + rhsOffset, rhsCount); // fill hole
-            }
-            else if (rhsCount <= count)
-            {   // hole doesn't get larger, just copy in substring
-                Traits::move(data + offset /*, m_capacity - offset*/,    data + rhsOffset, rhsCount);    // fill hole
-                Traits::move(data + offset + rhsCount /*, m_capacity - offset - rhsCount*/, data + offset + count, nm);   // move tail down
-            }
-            else if (rhsOffset <= offset)
-            {   // hole gets larger, substring begins before hole
-                Traits::move(data + offset + rhsCount /*, m_capacity - offset - rhsCount*/, data + offset + count, nm);   // move tail down
-                Traits::move(data + offset /*, m_capacity - offset*/, data + rhsOffset, rhsCount);   // fill hole
-            }
-            else if (offset + count <= rhsOffset)
-            {   // hole gets larger, substring begins after hole
-                Traits::move(data + offset + rhsCount /*, m_capacity - offset - rhsCount*/, data + offset + count, nm);   // move tail down
-                Traits::move(data + offset /*, m_capacity - offset*/,    data + (rhsOffset + rhsCount - count), rhsCount);   // fill hole
-            }
-            else
-            {   // hole gets larger, substring begins in hole
-                Traits::move(data + offset /*, m_capacity - offset*/,    data + rhsOffset, count);   // fill old hole
-                Traits::move(data + offset + rhsCount /*, m_capacity - offset - rhsCount*/, data + offset + count, nm);   // move tail down
-                Traits::move(data + offset + count /*, m_capacity - offset - count*/, data + rhsOffset + rhsCount, rhsCount - count); // fill rest of new hole
-            }
-
-            m_size = newSize;
-            Traits::assign(data[newSize], Element());  // terminate
-            return (*this);
+            return replace(offset, count, rhs.c_str() + rhsOffset, AZStd::min(rhsCount, rhs.size() - rhsOffset));
         }
 
         this_type& replace(size_type offset, size_type count, const_pointer ptr, size_type ptrCount)
         {
-            pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
             // replace [offset, offset + count) with [ptr, ptr + ptrCount)
-            if (ptr != 0 && ptr >= data && (data + m_size) > ptr)
-            {
-                return (replace(offset, count, *this, ptr - data, ptrCount));   // substring, replace carefully
-            }
-            AZSTD_CONTAINER_ASSERT(m_size >= offset, "Invalid offset");
-            if (m_size - offset < count)
-            {
-                count = m_size - offset;    // trim _N0 to size
-            }
-            AZSTD_CONTAINER_ASSERT(npos - ptrCount > m_size - count, "Result too long");
+            AZSTD_CONTAINER_ASSERT(size() >= offset, "Invalid offset");
+            // Make sure count is within is no larger than the distance from the offset
+            // to the end of this string
+            count = AZStd::min(count, size() - offset);
 
-#ifdef AZSTD_HAS_CHECKED_ITERATORS
-            orphan_range(data + offset, data + offset + count);
-#endif
-            size_type nm = m_size - count - offset;
-            if (ptrCount < count)
+            size_type newSize = size() + ptrCount - count;
+            size_type charsAfterCountToMove = size() - count - offset;
+            pointer inputStringCopy{};
+
+            if (pointer thisBuffer = m_storage.first().GetData();
+                (ptr >= thisBuffer && ptr < thisBuffer + size())
+                || (ptr + ptrCount > thisBuffer && ptr + ptrCount <= thisBuffer + size()))
             {
-                Traits::move(data + offset + ptrCount, data + offset + count, nm);  // smaller hole, move tail up
-            }
-            size_type num = m_size + ptrCount - count;
-            if ((0 < ptrCount || 0 < count) && grow(num))
-            {
-                data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
-                // make room and rearrange
-                if (count < ptrCount)
+                // Overlap checks for tring needs if the input pointer is anywhere within the string
+                // even if it is outside of the range of [offset, offset + count) as a growing
+                // the string buffer could cause a realloc to occur
+                if (!fits_in_capacity(newSize))
                 {
-                    Traits::move(data + offset + ptrCount /*, m_capacity - offset - ptrCount*/, data + offset + count, nm);   // move tail down
+                    // If the input string is a sub-string and it would cause
+                    // this string to need to re-allocated as it doesn't fit in the capacity
+                    // Then the  input string is needs to be copied into a local buffer
+                    inputStringCopy = reinterpret_cast<pointer>(get_allocator().allocate(ptrCount * sizeof(value_type), alignof(value_type)));
+                    Traits::copy(inputStringCopy, ptr, ptrCount);
+                    // Updated the input string pointer to point to the local buffer
+                    ptr = inputStringCopy;
+                    // Now this string buffer can now be safely resized and the non-overlapping string logic below can be used
+                }
+                else
+                {
+                    // overlapping string in-place logic
+                    // Ex. this = "ABCDEFG", offset = 1, count=4
+                    // substring is "CDE"
+                    // The text from offset 1 for 4 chars "BCDE": should be replaced with "CDE"
+                    // making a whole for the bytes results in output = "ABCDFG"
+                    // Afterwards output = "ACDEFG"
+                    // The input string overlaps with this string in this case
+                    // So the string is copied piecewise
+                    if (ptrCount <= count)
+                    {   // hole doesn't get larger, just copy in substring
+                        Traits::move(thisBuffer + offset, ptr, ptrCount);    // fill hole
+                        Traits::copy(thisBuffer + offset + ptrCount, thisBuffer + offset + count, charsAfterCountToMove);   // move tail down
+                    }
+                    else
+                    {
+                        if (ptr <= thisBuffer + offset)
+                        {   // hole gets larger, substring begins before hole
+                            Traits::copy_backward(thisBuffer + offset + ptrCount, thisBuffer + offset + count, charsAfterCountToMove);   // move tail down
+                            Traits::copy(thisBuffer + offset, ptr, ptrCount);   // fill hole
+                        }
+                        else if (thisBuffer + offset + count <= ptr)
+                        {   // hole gets larger, substring begins after hole
+                            Traits::copy_backward(thisBuffer + offset + ptrCount, thisBuffer + offset + count, charsAfterCountToMove);   // move tail down
+                            Traits::copy(thisBuffer + offset, ptr + (ptrCount - count), ptrCount);   // fill hole
+                        }
+                        else
+                        {   // hole gets larger, substring begins in hole
+                            Traits::copy(thisBuffer + offset, ptr, count);   // fill old hole
+                            Traits::copy_backward(thisBuffer + offset + ptrCount, thisBuffer + offset + count, charsAfterCountToMove);   // move tail down
+                            Traits::copy(thisBuffer + offset + count, ptr + ptrCount, ptrCount - count); // fill rest of new hole
+                        }
+                    }
+                    m_storage.first().SetSize(newSize);
+                    Traits::assign(thisBuffer[newSize], Element());  // terminate
+                    return *this;
+                }
+            }
+
+            // input string doesn't overlap, so this string can be re-allocated safely
+            if (grow(newSize))
+            {
+                // Need to regrab the memory address for the storage buffer
+                // in case the grow re-allocated memory
+                pointer thisBuffer = m_storage.first().GetData();
+                if (count != ptrCount)
+                {
+                    Traits::move(thisBuffer + offset + ptrCount, thisBuffer + offset + count, charsAfterCountToMove);
                 }
                 if (ptrCount > 0)
                 {
-                    Traits::copy(data + offset /*, m_capacity - offset*/, ptr, ptrCount);    // fill hole
+                    // Copy bytes up to the minimum of this string count and input string count
+                    Traits::copy(thisBuffer + offset, ptr, ptrCount);
                 }
-
-                m_size = num;
-                Traits::assign(data[num], Element());  // terminate
+                // input string doesn't overlap, so this string can be re-allocated safely
+                m_storage.first().SetSize(newSize);
+                Traits::assign(thisBuffer[newSize], Element());  // terminate
             }
+
+            // If a local string was allocated, then de-allocate its memory
+            if (inputStringCopy != nullptr)
+            {
+                get_allocator().deallocate(inputStringCopy, 0, alignof(value_type));
+            }
+
             return *this;
         }
 
         inline this_type& replace(size_type offset, size_type count, const_pointer ptr) { return replace(offset, count, ptr, Traits::length(ptr)); }
         this_type& replace(size_type offset, size_type count, size_type num, Element ch)
         {   // replace [offset, offset + count) with num * ch
-            AZSTD_CONTAINER_ASSERT(m_size > offset, "Invalid offset");
-            if (m_size - offset < count)
+            AZSTD_CONTAINER_ASSERT(size() > offset, "Invalid offset");
+            if (size() - offset < count)
             {
-                count = m_size - offset;    // trim count to size
+                count = size() - offset;    // trim count to size
             }
-            AZSTD_CONTAINER_ASSERT(npos - num > m_size - count, "Result is too long");
-            size_type nm = m_size - count - offset;
+            AZSTD_CONTAINER_ASSERT(npos - num > size() - count, "Result is too long");
+            size_type nm = size() - count - offset;
 
-            pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
+            pointer data = m_storage.first().GetData();
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
             orphan_range(data + offset, data + offset + count);
 #endif
             if (num < count)
             {
-                Traits::move(data + offset + num /*, m_capacity - offset - num*/, data + offset + count, nm); // smaller hole, move tail up
+                Traits::move(data + offset + num, data + offset + count, nm); // smaller hole, move tail up
             }
-            size_type numToGrow = m_size + num - count;
+            size_type numToGrow = size() + num - count;
             if ((0 < num || 0 < count) && grow(numToGrow))
             {   // make room and rearrange
-                data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
+                data = m_storage.first().GetData();
                 if (count < num)
                 {
-                    Traits::move(data + offset + num /*, m_capacity - offset - num*/, data + offset + count, nm); // move tail down
+                    Traits::move(data + offset + num, data + offset + count, nm); // move tail down
                 }
-                if (count == 1)
-                {
-                    Traits::assign(*(data + offset), ch);
-                }
-                else
-                {
-                    Traits::assign(data + offset, num, ch);
-                }
-                m_size = numToGrow;
+                Traits::assign(data + offset, num, ch);
+                m_storage.first().SetSize(numToGrow);
                 Traits::assign(data[numToGrow], Element());  // terminate
             }
             return *this;
@@ -722,7 +789,7 @@ namespace AZStd
             const_pointer firstPtr = first;
             const_pointer lastPtr = last;
 #endif
-            pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
+            pointer data = m_storage.first().GetData();
             return replace(firstPtr - data, lastPtr - firstPtr, rhs);
         }
 
@@ -735,7 +802,7 @@ namespace AZStd
             const_pointer firstPtr = first;
             const_pointer lastPtr = last;
 #endif
-            pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
+            pointer data = m_storage.first().GetData();
             return replace(firstPtr - data, lastPtr - firstPtr, ptr, count);
         }
 
@@ -748,7 +815,7 @@ namespace AZStd
             const_pointer firstPtr = first;
             const_pointer lastPtr = last;
 #endif
-            pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
+            pointer data = m_storage.first().GetData();
             return replace(firstPtr - data, lastPtr - firstPtr, ptr);
         }
 
@@ -761,113 +828,133 @@ namespace AZStd
             const_pointer firstPtr = first;
             const_pointer lastPtr = last;
 #endif
-            pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
+            pointer data = m_storage.first().GetData();
             return replace(firstPtr - data, lastPtr - firstPtr, count, ch);
         }
 
-        template<class InputIterator>
-        inline this_type& replace(const_iterator first, const_iterator last, InputIterator first2, InputIterator last2)
-        {   // replace [first, last) with [first2,last2)
-            return replace_iter(first, last, first2, last2, is_integral<InputIterator>());
-        }
-
-        this_type& replace(const_iterator first, const_iterator last, const_pointer first2, const_pointer last2)
+        template<class InputIt>
+        inline auto replace(const_iterator first, const_iterator last, InputIt replaceFirst, InputIt replaceLast)
+            -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, this_type&>
         {
-#ifdef AZSTD_HAS_CHECKED_ITERATORS
-            const_pointer first1 = first.get_iterator();
-            const_pointer last1 = last.get_iterator();
-#else
-            const_pointer first1 = first;
-            const_pointer last1 = last;
-#endif
-            // replace [first, last) with [first2, last2), const pointers
-            pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
-            if (first2 == last2)
+            if constexpr (Internal::satisfies_contiguous_iterator_concept_v<InputIt>
+                && is_same_v<typename AZStd::iterator_traits<InputIt>::value_type, value_type>)
             {
-                erase(first1 - data, last1 - first1);
+                return replace(first, last, AZStd::to_address(replaceFirst), AZStd::distance(replaceFirst, replaceLast));
+            }
+            else if constexpr (Internal::is_forward_iterator_v<InputIt>)
+            {
+                // Input Iterator pointer type doesn't match the const_pointer type
+                // So the elements need to be appended one by one into the buffer
+
+                size_type insertOffset = AZStd::distance(cbegin(), first);
+                size_type postInsertOffset = AZStd::distance(cbegin(), last);
+                size_type count = AZStd::distance(replaceFirst, replaceLast);
+                size_type oldSize = size();
+                size_type newSize = oldSize + count - AZStd::distance(first, last);
+                if (grow(newSize))
+                {
+                    pointer buffer = data();
+                    Traits::move(first + count, last, oldSize - postInsertOffset); // empty out hole
+                    for (size_t updateIndex = insertOffset; replaceFirst != replaceLast; ++replaceFirst, ++updateIndex)
+                    {
+                        Traits::assign(buffer[updateIndex], static_cast<Element>(*replaceFirst));
+                    }
+                    m_storage.first().SetSize(newSize);
+                    Traits::assign(buffer[newSize], Element()); // terminate
+                }
+                return *this;
             }
             else
             {
-                replace(first1 - data, last1 - first1, &*first2, last2 - first2);
+                // input iterator that aren't forward iterators can only be used in a single pass
+                // algorithm. Therefore AZStd::distance can't be used
+                // So the input is copied into a local string and then delegated
+                // to use the (const_pointer, size_type) overload
+                basic_string inputCopy;
+                for (; replaceFirst != replaceLast; ++replaceFirst)
+                {
+                    inputCopy.push_back(static_cast<Element>(*replaceFirst));
+                }
+
+                return replace(first, last, inputCopy.c_str(), inputCopy.size());
             }
-            return *this;
         }
 
         inline reference at(size_type offset)
         {
             // subscript mutable sequence with checking
-            AZSTD_CONTAINER_ASSERT(m_size > offset, "Invalid offset");
-            pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
+            AZSTD_CONTAINER_ASSERT(size() > offset, "Invalid offset");
+            pointer data = m_storage.first().GetData();
             return data[offset];
         }
 
         inline const_reference at(size_type offset) const
         {
             // subscript nonmutable sequence with checking
-            AZSTD_CONTAINER_ASSERT(m_size > offset, "Invalid offset");
-            const_pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
+            AZSTD_CONTAINER_ASSERT(size() > offset, "Invalid offset");
+            const_pointer data = m_storage.first().GetData();
             return data[offset];
         }
 
         inline reference operator[](size_type offset)
         {
             // subscript mutable sequence with checking
-            AZSTD_CONTAINER_ASSERT(m_size > offset, "Invalid offset");
-            pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
+            AZSTD_CONTAINER_ASSERT(size() > offset, "Invalid offset");
+            pointer data = m_storage.first().GetData();
             return data[offset];
         }
 
         inline const_reference operator[](size_type offset) const
         {
             // subscript nonmutable sequence with checking
-            AZSTD_CONTAINER_ASSERT(m_size > offset, "Invalid offset");
-            const_pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
+            AZSTD_CONTAINER_ASSERT(size() > offset, "Invalid offset");
+            const_pointer data = m_storage.first().GetData();
             return data[offset];
         }
 
         inline reference front()
         {
-            AZSTD_CONTAINER_ASSERT(m_size != 0, "AZStd::string::front - string is empty!");
-            pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
+            AZSTD_CONTAINER_ASSERT(size() != 0, "AZStd::string::front - string is empty!");
+            pointer data = m_storage.first().GetData();
             return data[0];
         }
 
         inline const_reference front() const
         {
-            AZSTD_CONTAINER_ASSERT(m_size != 0, "AZStd::string::front - string is empty!");
-            const_pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
+            AZSTD_CONTAINER_ASSERT(size() != 0, "AZStd::string::front - string is empty!");
+            const_pointer data = m_storage.first().GetData();
             return data[0];
         }
 
         inline reference back()
         {
-            AZSTD_CONTAINER_ASSERT(m_size != 0, "AZStd::string::back - string is empty!");
-            pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
-            return data[m_size - 1];
+            AZSTD_CONTAINER_ASSERT(size() != 0, "AZStd::string::back - string is empty!");
+            pointer data = m_storage.first().GetData();
+            return data[size() - 1];
         }
 
         inline const_reference back() const
         {
-            AZSTD_CONTAINER_ASSERT(m_size != 0, "AZStd::string::back - string is empty!");
-            const_pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
-            return data[m_size - 1];
+            AZSTD_CONTAINER_ASSERT(size() != 0, "AZStd::string::back - string is empty!");
+            const_pointer data = m_storage.first().GetData();
+            return data[size() - 1];
         }
 
         inline void push_back(Element ch)
         {
-            const_pointer end = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
-            end += m_size;
+            const_pointer end = data();
+            end += size();
             insert(end, ch);
         }
 
-        inline const_pointer    c_str() const       {   return (SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer); }
-        inline size_type        length() const      {   return m_size; }
-        inline size_type        size() const        {   return m_size; }
-        inline size_type        capacity() const    {   return m_capacity; }
+        inline const_pointer    c_str() const       {   return (data()); }
+        inline size_type        length() const      {   return m_storage.first().GetSize(); }
+        inline size_type        size() const        {   return m_storage.first().GetSize(); }
+        inline size_type        capacity() const    {   return m_storage.first().GetCapacity(); }
         inline size_type        max_size() const
         {
             // return maximum possible length of sequence
-            return AZStd::allocator_traits<allocator_type>::max_size(m_allocator) / sizeof(value_type);
+            return AZStd::allocator_traits<allocator_type>::max_size(m_storage.second()) / sizeof(value_type);
         }
 
         inline void resize(size_type newSize)
@@ -877,58 +964,58 @@ namespace AZStd
 
         inline void resize_no_construct(size_type newSize)
         {
-            if (newSize <= m_size)
+            if (newSize <= size())
             {
                 erase(newSize);
             }
             else
             {
                 reserve(newSize);
-                pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
-                m_size = newSize;
-                Traits::assign(data[m_size], Element());  // terminate
+                pointer data = m_storage.first().GetData();
+                m_storage.first().SetSize(newSize);
+                Traits::assign(data[newSize], Element());  // terminate
             }
         }
 
         inline void resize(size_type newSize, Element ch)
         {   // determine new length, padding with ch elements as needed
-            if (newSize <= m_size)
+            if (newSize <= size())
             {
                 erase(newSize);
             }
             else
             {
-                append(newSize - m_size, ch);
+                append(newSize - size(), ch);
             }
         }
 
         void reserve(size_type newCapacity = 0)
         {   // determine new minimum length of allocated storage
-            if (m_size <= newCapacity && m_capacity != newCapacity)
+            if (size() <= newCapacity && capacity() != newCapacity)
             {
                 // change reservation
-                size_type size = m_size;
+                size_type curSize = size();
                 if (grow(newCapacity))
                 {
-                    m_size = size;
-                    pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
-                    Traits::assign(data[size], Element());  // terminate
+                    m_storage.first().SetSize(curSize);
+                    pointer data = m_storage.first().GetData();
+                    Traits::assign(data[curSize], Element());  // terminate
                 }
             }
         }
 
-        inline bool empty() const       { return (m_size == 0); }
-        size_type copy(Element* dest /*, size_type destSize */, size_type count, size_type offset = 0) const
+        inline bool empty() const { return size() == 0; }
+        size_type copy(Element* dest, size_type count, size_type offset = 0) const
         {
             // copy [offset, offset + count) to [dest, dest + count)
             // assume there is enough space in _Ptr
-            AZSTD_CONTAINER_ASSERT(m_size >= offset, "Invalid offset");
-            if (m_size - offset < count)
+            AZSTD_CONTAINER_ASSERT(size() >= offset, "Invalid offset");
+            if (size() - offset < count)
             {
-                count = m_size - offset;
+                count = size() - offset;
             }
-            const_pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
-            Traits::copy(dest /*, destSize*/, data + offset, count);
+            const_pointer data = m_storage.first().GetData();
+            Traits::copy(dest, data + offset, count);
             return count;
         }
 
@@ -939,19 +1026,10 @@ namespace AZStd
                 return;
             }
 
-            if (m_allocator == rhs.m_allocator)
+            if (m_storage.second() == rhs.m_storage.second())
             {
-                // same allocator, swap control information
-#ifdef AZSTD_HAS_CHECKED_ITERATORS
-                swap_all(rhs);
-#endif
-                Element temp[SSO_BUF_SIZE];
-                ::memcpy(temp, rhs.m_buffer, sizeof(m_buffer));
-                ::memcpy(rhs.m_buffer, m_buffer, sizeof(m_buffer));
-                ::memcpy(m_buffer, temp, sizeof(m_buffer));
-
-                AZStd::swap(m_size, rhs.m_size);
-                AZStd::swap(m_capacity, rhs.m_capacity);
+                // same allocator, swap storage
+                m_storage.first().swap(rhs.m_storage.first());
             }
             else
             {
@@ -980,174 +1058,76 @@ namespace AZStd
 
         inline size_type find(const this_type& rhs, size_type offset = 0) const
         {
-            const_pointer rhsData = SSO_BUF_SIZE <= rhs.m_capacity ? rhs.m_data : rhs.m_buffer;
-            return find(rhsData, offset, rhs.m_size);
+            const_pointer rhsData = rhs.data();
+            return find(rhsData, offset, rhs.size());
         }
         size_type find(const_pointer ptr, size_type offset, size_type count) const
         {
-            AZ_Assert(ptr != NULL, "Invalid input!");
-
-            // look for [ptr, ptr + count) beginning at or after offset
-            if (count == 0 && offset <= m_size)
-            {
-                return offset;  // null string always matches (if inside string)
-            }
-            size_type nm;
-            if (offset < m_size && count <= (nm = m_size - offset))
-            {   // room for match, look for it
-                const_pointer uptr, vptr;
-                const_pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
-                for (nm -= count - 1, vptr = data + offset; (uptr = Traits::find(vptr, nm, *ptr)) != 0; nm -= uptr - vptr + 1, vptr = uptr + 1)
-                {
-                    if (Traits::compare(uptr, ptr, count) == 0)
-                    {
-                        return (uptr - data);   // found a match
-                    }
-                }
-            }
-
-            return (npos);  // no match
+            return StringInternal::find<traits_type>(data(), size(), ptr, offset, count, npos);
         }
 
         inline size_type find(const_pointer ptr, size_type offset = 0) const    { return find(ptr, offset, Traits::length(ptr)); }
         inline size_type find(Element ch, size_type offset = 0) const           { return find((const_pointer) & ch, offset, 1); }
         inline size_type rfind(const this_type& rhs, size_type offset = npos) const
         {
-            const_pointer rhsData = SSO_BUF_SIZE <= rhs.m_capacity ? rhs.m_data : rhs.m_buffer;
-            return rfind(rhsData, offset, rhs.m_size);
+            const_pointer rhsData = rhs.data();
+            return rfind(rhsData, offset, rhs.size());
         }
 
         size_type rfind(const_pointer ptr, size_type offset, size_type count) const
-        {   // look for [ptr, ptr + count) beginning before offset
-            if (count == 0)
-            {
-                return (offset < m_size ? offset : m_size); // null always matches
-            }
-            if (count <= m_size)
-            {   // room for match, look for it
-                const_pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
-                const_pointer uptr = data + (offset < m_size - count ? offset : m_size - count);
-                for (;; --uptr)
-                {
-                    if (Traits::eq(*uptr, *ptr) && Traits::compare(uptr, ptr, count) == 0)
-                    {
-                        return (uptr - data);   // found a match
-                    }
-                    else if (uptr == data)
-                    {
-                        break;  // at beginning, no more chance for match
-                    }
-                }
-            }
-
-            return npos;    // no match
+        {
+            return StringInternal::rfind<traits_type>(data(), size(), ptr, offset, count, npos);
         }
 
         inline size_type rfind(const_pointer ptr, size_type offset = npos) const    { return rfind(ptr, offset, Traits::length(ptr)); }
         inline size_type rfind(Element ch, size_type offset = npos) const           { return rfind((const_pointer) & ch, offset, 1); }
         inline size_type find_first_of(const this_type& rhs, size_type offset = 0) const
         {
-            const_pointer rhsData = SSO_BUF_SIZE <= rhs.m_capacity ? rhs.m_data : rhs.m_buffer;
-            return find_first_of(rhsData, offset, rhs.m_size);
+            const_pointer rhsData = rhs.data();
+            return find_first_of(rhsData, offset, rhs.size());
         }
 
         size_type find_first_of(const_pointer ptr, size_type offset, size_type count) const
-        {   // look for one of [ptr, ptr + count) at or after offset
-            if (0 < count && offset < m_size)
-            {   // room for match, look for it
-                const_pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
-                const Element* const vptr = data + m_size;
-                for (const_pointer uptr = data + offset; uptr < vptr; ++uptr)
-                {
-                    if (Traits::find(ptr, count, *uptr) != 0)
-                    {
-                        return uptr - data; // found a match
-                    }
-                }
-            }
-            return npos;    // no match
+        {
+            return StringInternal::find_first_of<traits_type>(data(), size(), ptr, offset, count, npos);
         }
 
         inline size_type find_first_of(const_pointer ptr, size_type offset = 0) const   {   return find_first_of(ptr, offset, Traits::length(ptr)); }
         inline size_type find_first_of(Element ch, size_type offset = 0) const          {   return find((const_pointer) & ch, offset, 1); }
         inline size_type find_last_of(const this_type& rhs, size_type offset = npos) const
         {
-            const_pointer rhsData = SSO_BUF_SIZE <= rhs.m_capacity ? rhs.m_data : rhs.m_buffer;
-            return find_last_of(rhsData, offset, rhs.m_size);
+            const_pointer rhsData = rhs.data();
+            return find_last_of(rhsData, offset, rhs.size());
         }
 
         size_type find_last_of(const_pointer ptr, size_type offset, size_type count) const
-        {   // look for one of [ptr, ptr + count) before offset
-            if (0 < count && 0 < m_size)
-            {
-                const_pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
-                for (const_pointer uptr = data + (offset < m_size ? offset : m_size - 1);; --uptr)
-                {
-                    if (Traits::find(ptr, count, *uptr) != 0)
-                    {
-                        return uptr - data; // found a match
-                    }
-                    else if (uptr == data)
-                    {
-                        break;  // at beginning, no more chance for match
-                    }
-                }
-            }
-
-            return npos;    // no match
+        {
+            return StringInternal::find_last_of<traits_type>(data(), size(), ptr, offset, count, npos);
         }
 
         inline size_type find_last_of(const_pointer ptr, size_type offset = npos) const      { return find_last_of(ptr, offset, Traits::length(ptr)); }
         inline size_type find_last_of(Element ch, size_type offset = npos) const            { return rfind((const_pointer) & ch, offset, 1);  }
         inline size_type find_first_not_of(const this_type& rhs, size_type offset = 0) const
         {   // look for none of rhs at or after offset
-            const_pointer rhsData = SSO_BUF_SIZE <= rhs.m_capacity ? rhs.m_data : rhs.m_buffer;
-            return find_first_not_of(rhsData, offset, rhs.m_size);
+            const_pointer rhsData = rhs.data();
+            return find_first_not_of(rhsData, offset, rhs.size());
         }
 
         size_type find_first_not_of(const_pointer ptr, size_type offset, size_type count) const
         {
-            // look for none of [ptr, ptr + count) at or after offset
-            if (offset < m_size)
-            {   // room for match, look for it
-                const_pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
-                const Element* const vptr = data + m_size;
-                for (const_pointer uptr = data + offset; uptr < vptr; ++uptr)
-                {
-                    if (Traits::find(ptr, count, *uptr) == 0)
-                    {
-                        return uptr - data;
-                    }
-                }
-            }
-            return npos;
+            return StringInternal::find_first_not_of<traits_type>(data(), size(), ptr, offset, count, npos);
         }
 
         inline size_type find_first_not_of(const_pointer ptr, size_type offset = 0) const       {   return find_first_not_of(ptr, offset, Traits::length(ptr)); }
         inline size_type find_first_not_of(Element ch, size_type offset = 0) const              {   return find_first_not_of((const_pointer) & ch, offset, 1); }
         inline size_type find_last_not_of(const this_type& rhs, size_type offset = npos) const
         {   // look for none of rhs before offset
-            const_pointer rhsData = SSO_BUF_SIZE <= rhs.m_capacity ? rhs.m_data : rhs.m_buffer;
-            return find_last_not_of(rhsData, offset, rhs.m_size);
+            const_pointer rhsData = rhs.data();
+            return find_last_not_of(rhsData, offset, rhs.size());
         }
         size_type find_last_not_of(const_pointer ptr, size_type offset, size_type count) const
-        {   // look for none of [ptr, ptr + count) before offset
-            if (0 < m_size)
-            {
-                const_pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
-                for (const_pointer uptr = data + (offset < m_size ? offset : m_size - 1);; --uptr)
-                {
-                    if (Traits::find(ptr, count, *uptr) == 0)
-                    {
-                        return uptr - data;
-                    }
-                    else if (uptr == data)
-                    {
-                        break;
-                    }
-                }
-            }
-            return npos;
+        {
+            return StringInternal::find_last_not_of<traits_type>(data(), size(), ptr, offset, count, npos);
         }
 
         inline size_type find_last_not_of(const_pointer ptr, size_type offset = npos) const {   return find_last_not_of(ptr, offset, Traits::length(ptr)); }
@@ -1161,8 +1141,8 @@ namespace AZStd
 
         inline int compare(const this_type& rhs) const
         {
-            const_pointer rhsData = SSO_BUF_SIZE <= rhs.m_capacity ? rhs.m_data : rhs.m_buffer;
-            return compare(0, m_size, rhsData, rhs.m_size);
+            const_pointer rhsData = rhs.data();
+            return compare(0, size(), rhsData, rhs.size());
         }
 
         inline int compare(size_type offset, size_type count, const this_type& rhs) const
@@ -1173,26 +1153,26 @@ namespace AZStd
         int compare(size_type offset, size_type count, const this_type& rhs, size_type rhsOffset, size_type rhsCount) const
         {
             // compare [offset, offset + count) with rhs [rhsOffset, rhsOffset + rhsCount)
-            AZSTD_CONTAINER_ASSERT(rhs.m_size >= rhsOffset, "Invalid offset");
-            if (rhs.m_size - rhsOffset < rhsCount)
+            AZSTD_CONTAINER_ASSERT(rhs.size() >= rhsOffset, "Invalid offset");
+            if (rhs.size() - rhsOffset < rhsCount)
             {
-                rhsCount = rhs.m_size - rhsOffset;  // trim rhsCount to size
+                rhsCount = rhs.size() - rhsOffset;  // trim rhsCount to size
             }
-            const_pointer rhsData = SSO_BUF_SIZE <= rhs.m_capacity ? rhs.m_data : rhs.m_buffer;
+            const_pointer rhsData = rhs.data();
             return compare(offset, count, rhsData + rhsOffset, rhsCount);
         }
 
-        inline int compare(const_pointer ptr) const                                     { return compare(0, m_size, ptr, Traits::length(ptr)); }
+        inline int compare(const_pointer ptr) const                                     { return compare(0, size(), ptr, Traits::length(ptr)); }
         inline int compare(size_type offset, size_type count, const_pointer ptr) const      { return compare(offset, count, ptr, Traits::length(ptr)); }
         int compare(size_type offset, size_type count, const_pointer ptr, size_type ptrCount) const
         {
             // compare [offset, offset + _N0) with [_Ptr, _Ptr + _Count)
-            AZSTD_CONTAINER_ASSERT(m_size >= offset, "Invalid offset");
-            if (m_size - offset < count)
+            AZSTD_CONTAINER_ASSERT(size() >= offset, "Invalid offset");
+            if (size() - offset < count)
             {
-                count = m_size - offset;    // trim count to size
+                count = size() - offset;    // trim count to size
             }
-            const_pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
+            const_pointer data = m_storage.first().GetData();
             size_type ans = Traits::compare(data + offset, ptr, count < ptrCount ? count : ptrCount);
             return (ans != 0 ? (int)ans : count < ptrCount ? -1 : count == ptrCount ? 0 : +1);
         }
@@ -1231,11 +1211,11 @@ namespace AZStd
 
         inline void pop_back()
         {
-            if (m_size > 0)
+            if (!empty())
             {
-                pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
-                --m_size;
-                Traits::assign(data[m_size], Element());  // terminate
+                pointer data = m_storage.first().GetData();
+                m_storage.first().SetSize(m_storage.first().GetSize() - 1);
+                Traits::assign(data[size()], Element());  // terminate
             }
         }
 
@@ -1245,39 +1225,35 @@ namespace AZStd
         * @{
         */
         /// TR1 Extension. Return pointer to the vector data. The vector data is guaranteed to be stored as an array.
-        inline pointer          data()          { return (SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer); }
-        inline const_pointer    data() const    { return (SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer); }
+        inline pointer          data()          { return m_storage.first().GetData(); }
+        inline const_pointer    data() const    { return m_storage.first().GetData(); }
 
         ///
 
         /// The only difference from the standard is that we return the allocator instance, not a copy.
-        inline allocator_type&          get_allocator()         { return m_allocator; }
-        inline const allocator_type&    get_allocator() const   { return m_allocator; }
+        inline allocator_type&          get_allocator()         { return m_storage.second(); }
+        inline const allocator_type&    get_allocator() const   { return m_storage.second(); }
         /// Set the vector allocator. If different than then current all elements will be reallocated.
         void                            set_allocator(const allocator_type& allocator)
         {
-            if (m_allocator != allocator)
+            if (m_storage.second() != allocator)
             {
-                if (m_size > 0 && SSO_BUF_SIZE <= m_capacity)
+                if (!empty() && !m_storage.first().ShortStringOptimizationActive())
                 {
                     allocator_type newAllocator = allocator;
-                    pointer data = m_data;
+                    pointer data = m_storage.first().GetData();
 
-                    pointer newData = reinterpret_cast<pointer>(newAllocator.allocate(sizeof(node_type) * (m_capacity + 1), alignment_of<node_type>::value));
+                    pointer newData = reinterpret_cast<pointer>(newAllocator.allocate(sizeof(node_type) * (capacity() + 1), alignof(node_type)));
 
-                    Traits::copy(newData, data, m_size + 1);  // copy elements and terminator
+                    Traits::copy(newData, data, size() + 1);  // copy elements and terminator
 
                     // Free memory (if needed).
                     deallocate_memory(data, 0, typename allocator_type::allow_memory_leaks());
-                    m_allocator = newAllocator;
-
-#ifdef AZSTD_HAS_CHECKED_ITERATORS
-                    orphan_all();
-#endif
+                    m_storage.second() = newAllocator;
                 }
                 else
                 {
-                    m_allocator = allocator;
+                    m_storage.second() = allocator;
                 }
             }
         }
@@ -1296,12 +1272,12 @@ namespace AZStd
 #else
             pointer iterPtr = iter;
 #endif
-            const_pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
-            if (iterPtr < data || iterPtr > (data + m_size))
+            const_pointer data = m_storage.first().GetData();
+            if (iterPtr < data || iterPtr > (data + size()))
             {
                 return isf_none;
             }
-            else if (iterPtr == (data + m_size))
+            else if (iterPtr == (data + size()))
             {
                 return isf_valid;
             }
@@ -1316,12 +1292,12 @@ namespace AZStd
 #else
             const_pointer iterPtr = iter;
 #endif
-            const_pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
-            if (iterPtr < data || iterPtr > (data + m_size))
+            const_pointer data = m_storage.first().GetData();
+            if (iterPtr < data || iterPtr > (data + size()))
             {
                 return isf_none;
             }
-            else if (iterPtr == (data + m_size))
+            else if (iterPtr == (data + size()))
             {
                 return isf_valid;
             }
@@ -1337,86 +1313,74 @@ namespace AZStd
         * \note This function is added to the vector for consistency. In the vector case we have only one allocation, and if the allocator allows memory leaks
         * it can just leave deallocate function empty, which performance wise will be the same. For more complex containers this will make big difference.
         */
-        void                leak_and_reset()
+        void leak_and_reset()
         {
-            m_size = 0;
-            m_capacity = SSO_BUF_SIZE - 1;
-            Traits::assign(m_buffer[0], Element());
-
-#ifdef AZSTD_HAS_CHECKED_ITERATORS
-            orphan_all();
-#endif
+            m_storage.first() = {};
         }
 
         /**
         * Set the capacity, if necessary it will erase elements at the end of the container to match the new capacity.
         */
-        void                        set_capacity(size_type numElements)
+        void set_capacity(size_type numElements)
         {
             // sets the new capacity of the vector, can be smaller than size()
-            if (m_capacity != numElements)
+            if (capacity() != numElements)
             {
-                if (numElements < SSO_BUF_SIZE)
+                if (numElements < ShortStringData::Capacity)
                 {
-                    if (m_capacity >= SSO_BUF_SIZE)
+                    if (!m_storage.first().ShortStringOptimizationActive())
                     {
                         // copy any leftovers to small buffer and deallocate
-                        pointer ptr = m_data;
-                        numElements = numElements < m_size ? numElements : m_size;
+                        pointer ptr = m_storage.first().GetData();
+                        numElements = numElements < size() ? numElements : size();
+                        m_storage.first().SetCapacity(ShortStringData::Capacity);
                         if (0 < numElements)
                         {
-                            Traits::copy(m_buffer /*, SSO_BUF_SIZE*/, ptr, numElements);
+                            Traits::copy(m_storage.first().GetData(), ptr, numElements);
                         }
-                        deallocate_memory(ptr, 0, typename allocator_type::allow_memory_leaks());
-                        m_capacity = SSO_BUF_SIZE - 1;
+                        // deallocate_memory functione examines the current
+                        // m_storage short string optimization state was changed to true
+                        // by the SetCapacity call above. Therefore m_storage.second().deallocate
+                        // is used directly
+                        m_storage.second().deallocate(ptr, 0, alignof(node_type));
                     }
 
-                    m_size = numElements;
-                    Traits::assign(m_buffer[numElements], Element());  // terminate
+                    m_storage.first().SetSize(numElements);
+                    Traits::assign(m_storage.first().GetData()[numElements], Element());  // terminate
                 }
                 else
                 {
                     size_type expandedSize = 0;
-                    if (m_capacity >= SSO_BUF_SIZE)
+                    if (!m_storage.first().ShortStringOptimizationActive())
                     {
-                        expandedSize = m_allocator.resize(m_data, sizeof(node_type) * (numElements + 1));
+                        expandedSize = m_storage.second().resize(m_storage.first().GetData(), sizeof(node_type) * (numElements + 1));
                         // our memory managers allocate on 8+ bytes boundary and our node type should be less than that in general, otherwise
                         // we need to take care when we compute the size on deallocate.
                         AZ_Assert(expandedSize % sizeof(node_type) == 0, "Expanded size not a multiply of node type. This should not happen");
                         size_type expandedCapacity = expandedSize / sizeof(node_type);
                         if (expandedCapacity > numElements)
                         {
-                            m_capacity = expandedCapacity - 1;
+                            m_storage.first().SetCapacity(expandedCapacity - 1);
                             return;
                         }
                     }
 
-                    pointer newData = reinterpret_cast<pointer>(m_allocator.allocate(sizeof(node_type) * (numElements + 1), alignment_of<node_type>::value));
-                    AZSTD_CONTAINER_ASSERT(newData != 0, "AZStd::string allocation failed!");
+                    pointer newData = reinterpret_cast<pointer>(m_storage.second().allocate(sizeof(node_type) * (numElements + 1), alignof(node_type)));
+                    AZSTD_CONTAINER_ASSERT(newData != nullptr, "AZStd::string allocation failed!");
 
-                    size_type newSize = numElements < m_size ? numElements : m_size;
-                    const_pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
+                    size_type newSize = numElements < m_storage.first().GetSize() ? numElements : m_storage.first().GetSize();
+                    pointer data = m_storage.first().GetData();
                     if (newSize > 0)
                     {
-                        Traits::copy(newData /*, newSize + 1*/, data, newSize);  // copy existing elements
+                        Traits::copy(newData, data, newSize);  // copy existing elements
                     }
-                    if (m_capacity >= SSO_BUF_SIZE)
-                    {
-                        deallocate_memory(m_data, expandedSize, typename allocator_type::allow_memory_leaks());
-                    }
+                    deallocate_memory(data, expandedSize, typename allocator_type::allow_memory_leaks());
 
-                    m_data = newData;
-                    m_capacity = numElements;
-                    m_size = newSize;
-                    Traits::assign(m_data[newSize], Element());  // terminate
+                    Traits::assign(newData[newSize], Element());  // terminate
+                    m_storage.first().SetCapacity(numElements);
+                    m_storage.first().SetData(newData);
+                    m_storage.first().SetSize(newSize);
                 }
-
-#ifdef AZSTD_HAS_CHECKED_ITERATORS
-                // when we move data in the buffer we don't really need to make invalid all iterators, but it's
-                // very important that we are consistent, so people don't have different behavior when they have
-                // short strings
-                orphan_all();
-#endif
             }
         }
 
@@ -1521,11 +1485,11 @@ namespace AZStd
             }
         };
 
-// Clang supports compile-time check for printf-like signatures
-// On MSVC, *only* if /analyze flag is enabled(defines _PREFAST_) we can also do a compile-time check
-// For not affecting final release binary size, we don't use the templated version on Release configuration either
-#if AZ_COMPILER_CLANG || defined(_PREFAST_) || defined(_RELEASE)
-#    if AZ_COMPILER_CLANG
+        // Clang/GCC supports compile-time check for printf-like signatures
+        // On MSVC, *only* if /analyze flag is enabled(defines _PREFAST_) we can also do a compile-time check
+        // For not affecting final release binary size, we don't use the templated version on Release configuration either
+#if AZ_COMPILER_CLANG || AZ_COMPILER_GCC || defined(_PREFAST_) || defined(_RELEASE)
+#    if AZ_COMPILER_CLANG || AZ_COMPILER_GCC
 #        define FORMAT_FUNC      __attribute__((format(printf, 1, 2)))
 #        define FORMAT_FUNC_ARG
 #    elif AZ_COMPILER_MSVC
@@ -1597,137 +1561,70 @@ namespace AZStd
 
         template<class UAllocator>
         inline basic_string(const basic_string<Element, Traits, UAllocator>& rhs)
-            : m_size(0)
-            , m_capacity(SSO_BUF_SIZE - 1)
         {
             assign(rhs.c_str());
         }
         template<class  UAllocator>
         inline this_type& operator=(const basic_string<Element, Traits, UAllocator>& rhs) { return assign(rhs.c_str()); }
         template<class  UAllocator>
-        inline this_type& append(const basic_string<Element, Traits, UAllocator>& rhs)        { return append(rhs.c_str()); }
+        inline this_type& append(const basic_string<Element, Traits, UAllocator>& rhs) { return append(rhs.c_str()); }
         template<class  UAllocator>
         inline this_type& insert(size_type offset, const basic_string<Element, Traits, UAllocator>& rhs) { return insert(offset, rhs.c_str()); }
         template<class  UAllocator>
         inline this_type& replace(size_type offset, size_type count, const basic_string<Element, Traits, UAllocator>& rhs) { return replace(offset, count, rhs.c_str()); }
         template<class  UAllocator>
-        inline int compare(const basic_string<Element, Traits, UAllocator>& rhs)              { return compare(rhs.c_str()); }
+        inline int compare(const basic_string<Element, Traits, UAllocator>& rhs) { return compare(rhs.c_str()); }
         // @}
 
     protected:
         enum
-        {   // length of internal buffer, [1, 16]
-            SSO_BUF_SIZE = 16 / sizeof (Element) < 1 ? 1 : 16 / sizeof(Element)
-        };
-        enum
         {   // roundup mask for allocated buffers, [0, 15]
-            _ALLOC_MASK = sizeof (Element) <= 1 ? 15 : sizeof (Element) <= 2 ? 7 : sizeof (Element) <= 4 ? 3 : sizeof (Element) <= 8 ? 1 : 0
+            _ALLOC_MASK = sizeof(Element) <= 1 ? 15
+                : sizeof(Element) <= 2 ? 7
+                : sizeof(Element) <= 4 ? 3
+                : sizeof(Element) <= 8 ? 1 : 0
         };
-
-        template<class InputIterator>
-        inline this_type& append_iter(InputIterator count, InputIterator ch, const true_type& /* is_integral<InputIterator> */)
-        {   // append count *  ch
-            return append((size_type)count, (Element)ch);
-        }
-
-        template<class InputIterator>
-        inline void construct_iter(InputIterator count, InputIterator ch, const true_type& /* is_integral<InputIterator> */)
-        {   // initialize from count * ch
-            assign((size_type)count, (Element)ch);
-        }
-
-        template<class InputIterator>
-        inline void construct_iter(InputIterator first, InputIterator last, const false_type& /*,  const input_iterator_tag&*/)
-        {
-            // initialize from [first, last), input iterators
-            // \todo use insert ?
-            for (; first != last; ++first)
-            {
-                append((size_type)1, (Element) * first);
-            }
-        }
-
-
-        template<class InputIterator>
-        inline this_type& append_iter(InputIterator first, InputIterator last, const false_type& /* !is_integral<InputIterator> */)
-        {   // append [first, last), input iterators
-            return replace(end(), end(), first, last);
-        }
-
-
-        template<class InputIterator>
-        inline this_type& assign_iter(InputIterator count, InputIterator ch, const true_type&)  { return assign((size_type)count, (Element)ch); }
-        template<class InputIterator>
-        inline this_type& assign_iter(InputIterator first, InputIterator last, const false_type&){ return replace(begin(), end(), first, last); }
-
-        template<class InputIterator>
-        inline void insert_iter(const_iterator insertPos, InputIterator count, InputIterator ch, const true_type& /* is_integral<InputIterator>() */)
-        {   // insert count * ch at insertPos
-            insert(insertPos, (size_type)count, (Element)ch);
-        }
-
-        template<class InputIterator>
-        inline void insert_iter(const_iterator insertPos, InputIterator first, InputIterator last, const false_type& /* is_integral<InputIterator>() */)
-        {   // insert [first, last) at insertPos, input iterators
-            replace(insertPos, insertPos, first, last);
-        }
-
-
-        template<class InputIterator>
-        inline this_type& replace_iter(const_iterator first, const_iterator last, InputIterator count, InputIterator ch, const true_type& /* is_intergral<InputIterator> */)
-        {   // replace [first, last) with count * ch
-            return replace(first, last, (size_type)count, (Element)ch);
-        }
-
-        template<class InputIterator>
-        inline this_type& replace_iter(const_iterator first, const_iterator last, InputIterator first2, InputIterator last2, const false_type& /* !is_intergral<InputIterator> */)
-        {   // replace [first, last) with [first2, last2), input iterators
-            this_type rhs(first2, last2);
-            replace(first, last, rhs);
-            return *this;
-        }
 
         void copy(size_type newSize, size_type oldLength)
         {
             size_type newCapacity = newSize | _ALLOC_MASK;
-            if (newCapacity / 3 < m_capacity / 2)
+            size_type currentCapacity = capacity();
+            if (newCapacity / 3 < currentCapacity / 2)
             {
-                newCapacity = m_capacity + m_capacity / 2;  // grow exponentially if possible
+                newCapacity = currentCapacity + currentCapacity / 2;  // grow exponentially if possible
             }
-            if (newCapacity >= SSO_BUF_SIZE)
+            if (newCapacity >= ShortStringData::Capacity)
             {
                 size_type expandedSize = 0;
-                if (m_capacity >= SSO_BUF_SIZE)
+                if (!m_storage.first().ShortStringOptimizationActive())
                 {
-                    expandedSize = m_allocator.resize(m_data, sizeof(node_type) * (newCapacity + 1));
+                    expandedSize = m_storage.second().resize(m_storage.first().GetData(), sizeof(node_type) * (newCapacity + 1));
                     // our memory managers allocate on 8+ bytes boundary and our node type should be less than that in general, otherwise
                     // we need to take care when we compute the size on deallocate.
-                    AZ_Assert(expandedSize % sizeof(node_type) == 0, "Expanded size not a multiply of node type. This should not happen");
+                    AZ_Assert(expandedSize % sizeof(node_type) == 0, "Expanded size not a multiple of node type. This should not happen");
                     size_type expandedCapacity = expandedSize / sizeof(node_type);
                     if (expandedCapacity > newCapacity)
                     {
-                        m_capacity = expandedCapacity - 1;
+                        m_storage.first().SetCapacity(expandedCapacity - 1);
                         return;
                     }
                 }
 
-                pointer newData = reinterpret_cast<pointer>(m_allocator.allocate(sizeof(node_type) * (newCapacity + 1), alignment_of<node_type>::value));
-                AZSTD_CONTAINER_ASSERT(newData != 0, "AZStd::string allocation failed!");
+                pointer newData = reinterpret_cast<pointer>(m_storage.second().allocate(sizeof(node_type) * (newCapacity + 1), alignof(node_type)));
+                AZSTD_CONTAINER_ASSERT(newData != nullptr, "AZStd::string allocation failed!");
                 if (newData)
                 {
-                    const_pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
+                    pointer data = m_storage.first().GetData();
                     if (0 < oldLength)
                     {
-                        Traits::copy(newData /*, newSize + 1*/, data, oldLength);    // copy existing elements
+                        Traits::copy(newData, data, oldLength);    // copy existing elements
                     }
-                    if (m_capacity >= SSO_BUF_SIZE)
-                    {
-                        deallocate_memory(m_data, expandedSize, typename allocator_type::allow_memory_leaks());
-                    }
+                    deallocate_memory(data, expandedSize, typename allocator_type::allow_memory_leaks());
 
-                    m_data = newData;
-                    m_capacity = newCapacity;
-                    Traits::assign(m_data[newSize], Element());  // terminate
+                    Traits::assign(newData[oldLength], Element());  // terminate
+                    m_storage.first().SetCapacity(newCapacity);
+                    m_storage.first().SetSize(oldLength);
+                    m_storage.first().SetData(newData);
                 }
             }
         }
@@ -1735,17 +1632,22 @@ namespace AZStd
         bool grow(size_type newSize)
         {
             // ensure buffer is big enough, trim to size if _Trim is true
-            if (m_capacity < newSize)
+            if (capacity() < newSize)
             {
-                copy(newSize, m_size);  // reallocate to grow
+                copy(newSize, size());  // reallocate to grow
             }
             else if (newSize == 0)
             {
-                pointer data = SSO_BUF_SIZE <= m_capacity ? m_data : m_buffer;
-                m_size = 0;
+                pointer data = m_storage.first().GetData();
+                m_storage.first().SetSize(0);
                 Traits::assign(data[0], Element());  // terminate
             }
             return (0 < newSize);   // return true only if more work to do
+        }
+
+        bool fits_in_capacity(size_type newSize)
+        {
+            return newSize <= capacity();
         }
 
         inline void deallocate_memory(pointer, size_type, const true_type& /* allocator::allow_memory_leaks */)
@@ -1753,22 +1655,186 @@ namespace AZStd
 
         inline void deallocate_memory(pointer data, size_type expandedSize, const false_type& /* !allocator::allow_memory_leaks */)
         {
-            if (m_capacity >= SSO_BUF_SIZE)
+            if (!m_storage.first().ShortStringOptimizationActive())
             {
-                size_type byteSize = (expandedSize == 0) ? (sizeof(node_type) * (m_capacity + 1)) : expandedSize;
-                m_allocator.deallocate(data, byteSize, alignment_of<node_type>::value);
+                size_type byteSize = (expandedSize == 0) ? (sizeof(node_type) * (m_storage.first().GetCapacity() + 1)) : expandedSize;
+                m_storage.second().deallocate(data, byteSize, alignof(node_type));
             }
         }
 
-        union //Storage
+        //! Assuming 64-bit for pointer and size_t size
+        //! The offset and sizes of each structure are marked below
+
+        //! dynamically allocated data
+        struct AllocatedStringData
         {
-            Element m_buffer[SSO_BUF_SIZE];     //< small buffer used for small string optimization
-            pointer m_data;                     //< dynamically allocated data
+            AllocatedStringData()
+            {
+                m_capacity = 0;
+                m_ssoActive = false;
+            }
+            // bit offset: 0, bits: 64
+            pointer m_data{};
+
+            // bit offset: 64, bit: 64
+            size_type m_size{};
+
+            // Use all but the top bit of a size_t for the string capacity
+            // This allows the short string optimization to be used
+            // with no additional space at the cost of cutting the max_size in half
+            // to 2^63-1
+            // offset: 128, bits: 63
+            size_type m_capacity : AZStd::numeric_limits<size_type>::digits - 1;
+
+            // bit offset: 191, bits: 1
+            size_type m_ssoActive : 1;
+
+            // Total size 192 bits(24 bytes)
         };
 
-        size_type m_size;           // current length of string
-        size_type m_capacity;       // current storage reserved for string
-        allocator_type m_allocator;
+        static_assert(sizeof(AllocatedStringData) <= 24, "The AllocatedStringData structure"
+            " should be an 8-byte pointer, 8 byte size, 63-bit capacity and 1-bit SSO flag for"
+            " a total of 24 bytes");
+
+        //! small buffer used for small string optimization
+        struct ShortStringData
+        {
+            //! The size can be stored within 7 bits since the buffer will be no larger
+            //! than 23 bytes(22 characters + 1 null-terminating character)
+            inline static constexpr size_type BufferMaxSize = sizeof(AllocatedStringData) - sizeof(AZ::u8);
+            static_assert(sizeof(Element) < BufferMaxSize, "The size of Element type must be less than the size of "
+                " the AllocatedStringData struct in order to use it with the basic_string class");
+            inline static constexpr size_type BufferCapacityPlusNull = BufferMaxSize / sizeof(Element);
+
+            inline static constexpr size_type Capacity = BufferCapacityPlusNull - 1;
+
+            ShortStringData()
+            {
+                // Make sure the short string buffer is null-terminated
+                m_buffer[0] = Element{};
+                m_size = 0;
+                m_ssoActive = true;
+            }
+
+            // bit offset: 0, bits: 184
+            Element m_buffer[BufferCapacityPlusNull];
+
+            // Padding to make sure for Element types with a size >1
+            // such as wchar_t, that the `m_size` member starts at the bit 164
+            // NOTE: Uses the anonymous struct extension
+            // supported by MSVC, Clang and GCC
+            // Takes advantage of the empty base optimization
+            // to have the StringInternal::Padding<Element> struct
+            // take 0 bytes when the Element type is 1-byte type like `char`
+            // When C++20 support is added, this can be changed to use [[no_unique_address]]
+            struct
+                : StringInternal::Padding<Element>
+            {
+
+                // bit offset: 184, bits: 7
+                AZ::u8 m_size : AZStd::numeric_limits<AZ::u8>::digits - 1;
+
+                // bit offset: 191, bits: 1
+                AZ::u8 m_ssoActive : 1;
+            };
+            // Total size 192 bits(24 bytes)
+        };
+
+        struct PointerAlignedData
+        {
+            uintptr_t m_alignedValues[sizeof(ShortStringData) / sizeof(uintptr_t)];
+        };
+
+        static_assert(sizeof(AllocatedStringData) == sizeof(ShortStringData) && "Short string struct must be the same size"
+            " as the regular allocated string struct");
+
+        static_assert(sizeof(PointerAlignedData) == sizeof(ShortStringData) && "Pointer aligned struct must be the same size"
+            " as the short string struct ");
+
+        // The top-bit in the last byte of the AllocatedStringData and ShortStringData is used to determine if the short string optimization is being used
+        union Storage
+        {
+            Storage() {};
+
+            bool ShortStringOptimizationActive() const
+            {
+                return m_shortData.m_ssoActive;
+            }
+            const_pointer GetData() const
+            {
+                return ShortStringOptimizationActive() ? m_shortData.m_buffer
+                    : reinterpret_cast<const AllocatedStringData&>(m_shortData).m_data;
+            }
+            pointer GetData()
+            {
+                return ShortStringOptimizationActive() ? m_shortData.m_buffer
+                    : reinterpret_cast<AllocatedStringData&>(m_shortData).m_data;
+            }
+            void SetData(pointer address)
+            {
+                if (!ShortStringOptimizationActive())
+                {
+                    reinterpret_cast<AllocatedStringData&>(m_shortData).m_data = address;
+                }
+                else
+                {
+                    AZSTD_CONTAINER_ASSERT(false, "Programming Error: string class is invoking SetData when the Short Optimization"
+                        " is active. Make sure SetCapacity(<size greater than ShortStringData::Capacity>) is invoked"
+                        " before calling this function.");
+                }
+            }
+            size_type GetSize() const
+            {
+                return ShortStringOptimizationActive() ? m_shortData.m_size
+                    : reinterpret_cast<const AllocatedStringData&>(m_shortData).m_size;
+            }
+            void SetSize(size_type size)
+            {
+                if (ShortStringOptimizationActive())
+                {
+                    m_shortData.m_size = size;
+                }
+                else
+                {
+                    reinterpret_cast<AllocatedStringData&>(m_shortData).m_size = size;
+                }
+            }
+            size_type GetCapacity() const
+            {
+                return ShortStringOptimizationActive() ? m_shortData.Capacity
+                    : reinterpret_cast<const AllocatedStringData&>(m_shortData).m_capacity;
+            }
+            void SetCapacity(size_type capacity)
+            {
+                if (capacity <= ShortStringData::Capacity)
+                {
+                    m_shortData.m_ssoActive = true;
+                }
+                else
+                {
+                    m_shortData.m_ssoActive = false;
+                    reinterpret_cast<AllocatedStringData&>(m_shortData).m_capacity = capacity;
+                }
+            }
+            void swap(Storage& rhs)
+            {
+                // Use pointer sized swaps to swap the string storage
+                AZStd::aligned_storage_for_t<Storage> tempStorage;
+                ::memcpy(&tempStorage, this, sizeof(Storage));
+                ::memcpy(this, &rhs, sizeof(Storage));
+                ::memcpy(&rhs, &tempStorage, sizeof(Storage));
+            }
+        private:
+            ShortStringData m_shortData{};
+            AllocatedStringData m_allocatedData;
+            PointerAlignedData m_pointerData;
+        };
+
+        AZStd::compressed_pair<Storage, allocator_type> m_storage;
+
+#if defined(HAVE_BENCHMARK)
+        friend class Benchmark::StringBenchmarkFixture;
+#endif
 
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
         void orphan_range(pointer first, pointer last) const
@@ -1809,18 +1875,7 @@ namespace AZStd
     };
 
     template<class Element, class Traits, class Allocator>
-    const typename basic_string<Element, Traits, Allocator>::size_type basic_string<Element, Traits, Allocator>::npos;
-
-    // basic_string implements a performant swap
-    /*template<class Element, class Traits, class Allocator>
-    class move_operation_category<basic_string1<Element, Traits, Allocator> >
-    {
-    public:
-        typedef swap_move_tag move_cat;
-    };*/
-
-    template<class Element, class Traits, class Allocator>
-    inline  void swap(basic_string<Element, Traits, Allocator>& left, basic_string<Element, Traits, Allocator>& right)
+    inline void swap(basic_string<Element, Traits, Allocator>& left, basic_string<Element, Traits, Allocator>& right)
     {
         left.swap(right);
     }
@@ -2018,15 +2073,11 @@ namespace AZStd
     template<class Element, class Traits, class Allocator>
     struct hash< basic_string< Element, Traits, Allocator> >
     {
-        typedef basic_string< Element, Traits, Allocator> argument_type;
-        typedef AZStd::size_t                           result_type;
-        inline result_type operator()(const argument_type& value) const
+        using is_transparent = void;
+        inline constexpr size_t operator()(const basic_string_view<Element, Traits>& value) const
         {
             return hash_string(value.begin(), value.length());
         }
     };
 
 } // namespace AZStd
-
-#endif // AZSTD_STRING_H
-#pragma once

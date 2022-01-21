@@ -8,15 +8,12 @@
 
 set(FILES
     Tests/GradientSignalBenchmarks.cpp
+    Tests/GradientSignalGetValuesTests.cpp
     Tests/GradientSignalImageTests.cpp
     Tests/GradientSignalReferencesTests.cpp
     Tests/GradientSignalServicesTests.cpp
     Tests/GradientSignalSurfaceTests.cpp
     Tests/GradientSignalTransformTests.cpp
-    Tests/GradientSignalTestFixtures.cpp
-    Tests/GradientSignalTestFixtures.h
-    Tests/GradientSignalTestMocks.cpp
-    Tests/GradientSignalTestMocks.h
     Tests/GradientSignalTest.cpp
     Tests/ImageAssetTests.cpp
 )

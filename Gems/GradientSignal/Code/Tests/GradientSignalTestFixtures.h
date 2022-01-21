@@ -8,9 +8,40 @@
 #pragma once
 
 #include <Tests/GradientSignalTestMocks.h>
+#include <LmbrCentral/Shape/MockShapes.h>
+#include <AzTest/GemTestEnvironment.h>
 
 namespace UnitTest
 {
+    // The GradientSignal unit tests need to use the GemTestEnvironment to load the LmbrCentral Gem so that Shape components can be used
+    // in the unit tests and benchmarks.
+    class GradientSignalTestEnvironment
+        : public AZ::Test::GemTestEnvironment
+    {
+    public:
+        void AddGemsAndComponents() override;
+    };
+
+#ifdef HAVE_BENCHMARK
+    //! The Benchmark environment is used for one time setup and tear down of shared resources
+    class GradientSignalBenchmarkEnvironment
+        : public AZ::Test::BenchmarkEnvironmentBase
+        , public GradientSignalTestEnvironment
+
+    {
+    protected:
+        void SetUpBenchmark() override
+        {
+            SetupEnvironment();
+        }
+
+        void TearDownBenchmark() override
+        {
+            TeardownEnvironment();
+        }
+    };
+#endif
+
     // Base test fixture used for GradientSignal unit tests and benchmark tests
     class GradientSignalBaseFixture
     {
@@ -29,40 +60,51 @@ namespace UnitTest
             entity->Activate();
         }
 
-        template<typename Component, typename Configuration>
-        AZ::Component* CreateComponent(AZ::Entity* entity, const Configuration& config)
-        {
-            m_app->RegisterComponentDescriptor(Component::CreateDescriptor());
-            return entity->CreateComponent<Component>(config);
-        }
+        // Create a mock SurfaceDataSystem that will respond to requests for surface points with mock responses for points inside
+        // the given input box.
+        AZStd::unique_ptr<MockSurfaceDataSystem> CreateMockSurfaceDataSystem(const AZ::Aabb& spawnerBox);
 
-        template<typename Component>
-        AZ::Component* CreateComponent(AZ::Entity* entity)
-        {
-            m_app->RegisterComponentDescriptor(Component::CreateDescriptor());
-            return entity->CreateComponent<Component>();
-        }
+        // Create an entity with a mock shape and a transform. It won't be activated yet though, because we expect a gradient component
+        // to also get added to it first before activation.
+        AZStd::unique_ptr<AZ::Entity> CreateTestEntity(float shapeHalfBounds);
 
-        AZStd::unique_ptr<AZ::ComponentApplication> m_app;
-        AZ::Entity* m_systemEntity = nullptr;
-        ImageAssetMockAssetHandler* m_mockHandler = nullptr;
+        // Create and activate an entity with a gradient component of the requested type, initialized with test data.
+        AZStd::unique_ptr<AZ::Entity> BuildTestConstantGradient(float shapeHalfBounds);
+        AZStd::unique_ptr<AZ::Entity> BuildTestImageGradient(float shapeHalfBounds);
+        AZStd::unique_ptr<AZ::Entity> BuildTestPerlinGradient(float shapeHalfBounds);
+        AZStd::unique_ptr<AZ::Entity> BuildTestRandomGradient(float shapeHalfBounds);
+        AZStd::unique_ptr<AZ::Entity> BuildTestShapeAreaFalloffGradient(float shapeHalfBounds);
+
+        AZStd::unique_ptr<AZ::Entity> BuildTestDitherGradient(float shapeHalfBounds, const AZ::EntityId& inputGradientId);
+        AZStd::unique_ptr<AZ::Entity> BuildTestInvertGradient(float shapeHalfBounds, const AZ::EntityId& inputGradientId);
+        AZStd::unique_ptr<AZ::Entity> BuildTestLevelsGradient(float shapeHalfBounds, const AZ::EntityId& inputGradientId);
+        AZStd::unique_ptr<AZ::Entity> BuildTestMixedGradient(
+            float shapeHalfBounds, const AZ::EntityId& baseGradientId, const AZ::EntityId& mixedGradientId);
+        AZStd::unique_ptr<AZ::Entity> BuildTestPosterizeGradient(float shapeHalfBounds, const AZ::EntityId& inputGradientId);
+        AZStd::unique_ptr<AZ::Entity> BuildTestReferenceGradient(float shapeHalfBounds, const AZ::EntityId& inputGradientId);
+        AZStd::unique_ptr<AZ::Entity> BuildTestSmoothStepGradient(float shapeHalfBounds, const AZ::EntityId& inputGradientId);
+        AZStd::unique_ptr<AZ::Entity> BuildTestThresholdGradient(float shapeHalfBounds, const AZ::EntityId& inputGradientId);
+
+        AZStd::unique_ptr<AZ::Entity> BuildTestSurfaceAltitudeGradient(float shapeHalfBounds);
+        AZStd::unique_ptr<AZ::Entity> BuildTestSurfaceMaskGradient(float shapeHalfBounds);
+        AZStd::unique_ptr<AZ::Entity> BuildTestSurfaceSlopeGradient(float shapeHalfBounds);
+
+        UnitTest::ImageAssetMockAssetHandler* m_mockHandler = nullptr;
     };
 
     struct GradientSignalTest
         : public GradientSignalBaseFixture
-        , public UnitTest::AllocatorsTestFixture
+        , public ::testing::Test
     {
     protected:
         void SetUp() override
         {
-            UnitTest::AllocatorsTestFixture::SetUp();
             SetupCoreSystems();
         }
 
         void TearDown() override
         {
             TearDownCoreSystems();
-            UnitTest::AllocatorsTestFixture::TearDown();
         }
 
         void TestFixedDataSampler(const AZStd::vector<float>& expectedOutput, int size, AZ::EntityId gradientEntityId);
@@ -71,54 +113,37 @@ namespace UnitTest
 #ifdef HAVE_BENCHMARK
     class GradientSignalBenchmarkFixture
         : public GradientSignalBaseFixture
-        , public UnitTest::AllocatorsBenchmarkFixture
-        , public UnitTest::TraceBusRedirector
+        , public ::benchmark::Fixture
     {
     public:
-        void internalSetUp(const benchmark::State& state)
+        void internalSetUp()
         {
-            AZ::Debug::TraceMessageBus::Handler::BusConnect();
-            UnitTest::AllocatorsBenchmarkFixture::SetUp(state);
             SetupCoreSystems();
-
-            // Create a default test entity with bounds of 256 m x 256 m x 256 m.
-            const float shapeHalfBounds = 128.0f;
-            CreateTestEntity(shapeHalfBounds);
         }
 
-        void internalTearDown(const benchmark::State& state)
+        void internalTearDown()
         {
-            DestroyTestEntity();
             TearDownCoreSystems();
-            UnitTest::AllocatorsBenchmarkFixture::TearDown(state);
-            AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
         }
-
-        void CreateTestEntity(float shapeHalfBounds);
-        void DestroyTestEntity();
-
-        void RunGetValueBenchmark(benchmark::State& state);
 
     protected:
-        void SetUp(const benchmark::State& state) override
+        void SetUp([[maybe_unused]] const benchmark::State& state) override
         {
-            internalSetUp(state);
+            internalSetUp();
         }
-        void SetUp(benchmark::State& state) override
+        void SetUp([[maybe_unused]] benchmark::State& state) override
         {
-            internalSetUp(state);
-        }
-
-        void TearDown(const benchmark::State& state) override
-        {
-            internalTearDown(state);
-        }
-        void TearDown(benchmark::State& state) override
-        {
-            internalTearDown(state);
+            internalSetUp();
         }
 
-        AZStd::unique_ptr<AZ::Entity> m_testEntity;
+        void TearDown([[maybe_unused]] const benchmark::State& state) override
+        {
+            internalTearDown();
+        }
+        void TearDown([[maybe_unused]] benchmark::State& state) override
+        {
+            internalTearDown();
+        }
     };
 #endif
 }

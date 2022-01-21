@@ -17,7 +17,7 @@ SOURCE_DIRECTORY=${PWD}
 pushd $OUTPUT_DIRECTORY
 
 LAST_CONFIGURE_CMD_FILE=ci_last_configure_cmd.txt
-CONFIGURE_CMD="cmake ${SOURCE_DIRECTORY} ${CMAKE_OPTIONS} ${EXTRA_CMAKE_OPTIONS}"
+CONFIGURE_CMD="cmake '${SOURCE_DIRECTORY}' ${CMAKE_OPTIONS} ${EXTRA_CMAKE_OPTIONS}"
 if [[ -n "$CMAKE_LY_PROJECTS" ]]; then
     CONFIGURE_CMD="${CONFIGURE_CMD} -DLY_PROJECTS='${CMAKE_LY_PROJECTS}'"
 fi
@@ -43,7 +43,30 @@ if [[ ! -z "$RUN_CONFIGURE" ]]; then
     echo "${CONFIGURE_CMD}" > ${LAST_CONFIGURE_CMD_FILE}
 fi
 
-eval echo [ci_build] cmake --build . --target ${CMAKE_TARGET} --config ${CONFIGURATION} -j $(grep -c processor /proc/cpuinfo) -- ${CMAKE_NATIVE_BUILD_ARGS}
-eval cmake --build . --target ${CMAKE_TARGET} --config ${CONFIGURATION} -j $(grep -c processor /proc/cpuinfo) -- ${CMAKE_NATIVE_BUILD_ARGS}
+TOTAL_MEMORY=$(cat /proc/meminfo | grep MemTotal | awk '{print $2}')
+TOTAL_CORE_COUNT=$(grep -c processor /proc/cpuinfo)
+echo "Total Memory        : $TOTAL_MEMORY kB"
+echo "Total Cores         : $TOTAL_CORE_COUNT"
+
+# For machines that has a core to memory ratio that could cause running out of resources, 
+# we will check for an environment variable LY_MIN_MEMORY_PER_CORE to restrict the number
+# of cores that we will allow.  If set, it will use this as the minimum anticipated memory
+# that all cores will need in order to no fall below that number. 
+#
+# This is based on the value the total memory (in kB) divided by the LY_MIN_MEMORY_PER_CORE 
+# (in kB, e.g. 2 GB = 2097152 kB)
+
+if [[ "${LY_MIN_MEMORY_PER_CORE:-0}" -gt 0 ]]; then
+    MIN_MEMORY_PER_CORE=${LY_MIN_MEMORY_PER_CORE}
+    CALCULATED_MAX_CORE_USAGE=$(expr $TOTAL_MEMORY / $MIN_MEMORY_PER_CORE - 1)
+    CORE_COUNT=$((CALCULATED_MAX_CORE_USAGE > TOTAL_CORE_COUNT ? TOTAL_CORE_COUNT :  CALCULATED_MAX_CORE_USAGE))
+    echo "Max Usable Cores    : $CORE_COUNT"
+else
+    CORE_COUNT=$TOTAL_CORE_COUNT
+fi
+
+
+eval echo [ci_build] cmake --build . --target ${CMAKE_TARGET} --config ${CONFIGURATION} -j $CORE_COUNT -- ${CMAKE_NATIVE_BUILD_ARGS}
+eval cmake --build . --target ${CMAKE_TARGET} --config ${CONFIGURATION} -j $CORE_COUNT -- ${CMAKE_NATIVE_BUILD_ARGS}
 
 popd

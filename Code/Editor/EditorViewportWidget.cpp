@@ -455,9 +455,6 @@ void EditorViewportWidget::Update()
 
     // Render
     {
-        // TODO: Move out this logic to a controller and refactor to work with Atom
-        ProcessRenderLisneters(m_displayContext);
-
         m_displayContext.Flush2D();
 
         // Post Render Callback
@@ -586,11 +583,11 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
 
     case eNotify_OnCloseScene:
         m_renderViewport->SetScene(nullptr);
-        SetDefaultCamera();
         break;
 
     case eNotify_OnEndSceneOpen:
         UpdateScene();
+        SetDefaultCamera();
         break;
 
     case eNotify_OnBeginNewScene:
@@ -1031,8 +1028,6 @@ void EditorViewportWidget::OnTitleMenu(QMenu* menu)
     AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Safe Frame"), &gSettings.viewports.bShowSafeFrame);
     AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Construction Plane"), &gSettings.snap.constructPlaneDisplay);
     AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Trigger Bounds"), &gSettings.viewports.bShowTriggerBounds);
-    AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Icons"), &gSettings.viewports.bShowIcons, &gSettings.viewports.bShowSizeBasedIcons);
-    AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Size-based Icons"), &gSettings.viewports.bShowSizeBasedIcons, &gSettings.viewports.bShowIcons);
     AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Helpers of Frozen Objects"), &gSettings.viewports.nShowFrozenHelpers);
 
     if (!m_predefinedAspectRatios.IsEmpty())

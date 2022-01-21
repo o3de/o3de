@@ -408,7 +408,7 @@ namespace O3DE::ProjectManager
             }
 
             // check if engine path is registered
-            auto allEngines = m_manifest.attr("get_engines")();
+            auto allEngines = m_manifest.attr("get_manifest_engines")();
             if (pybind11::isinstance<pybind11::list>(allEngines))
             {
                 const AZ::IO::FixedMaxPath enginePathFixed(Py_To_String(enginePath));
@@ -891,7 +891,7 @@ namespace O3DE::ProjectManager
 
         bool result = ExecuteWithLock([&] {
             // external projects
-            for (auto path : m_manifest.attr("get_projects")())
+            for (auto path : m_manifest.attr("get_manifest_projects")())
             {
                 projects.push_back(ProjectInfoFromPath(path));
             }
@@ -1221,7 +1221,7 @@ namespace O3DE::ProjectManager
         auto result = ExecuteWithLockErrorHandling(
             [&]
             {
-                for (auto repoUri : m_manifest.attr("get_repos")())
+                for (auto repoUri : m_manifest.attr("get_manifest_repos")())
                 {
                     gemRepos.push_back(GetGemRepoInfo(repoUri));
                 }

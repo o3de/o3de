@@ -129,6 +129,32 @@ namespace Camera
                 GetFrustumHeight()
             };
         }
+
+        //! Unprojects a position in screen space pixel coordinates to world space.
+        //! With a depth of zero, the position returned will be on the near clip plane of the camera
+        //! in world space.
+        //! @param screenPosition The absolute screen position
+        //! @param depth The depth offset into the world relative to the near clip plane of the camera 
+        //! @return the position in world space
+        virtual AZ::Vector3 ScreenToWorld(const AZ::Vector2& screenPosition, float depth) = 0;
+
+        //! Unprojects a position in screen space normalized device coordinates to world space.
+        //! With a depth of zero, the position returned will be on the near clip plane of the camera
+        //! in world space.
+        //! @param screenNdcPosition The normalized device coordinates in the range [0,1]
+        //! @param depth The depth offset into the world relative to the near clip plane of the camera 
+        //! @return the position in world space
+        virtual AZ::Vector3 ScreenNdcToWorld(const AZ::Vector2& screenNdcPosition, float depth) = 0;
+
+        //! Projects a position in world space to screen space for the given camera.
+        //! @param worldPosition The world position
+        //! @return The absolute screen position
+        virtual AZ::Vector2 WorldToScreen(const AZ::Vector3& worldPosition) = 0;
+
+        //! Projects a position in world space to screen space normalized device coordinates.
+        //! @param worldPosition The world position
+        //! @return The normalized device coordinates in the range [0,1]
+        virtual AZ::Vector2 WorldToScreenNdc(const AZ::Vector3& worldPosition) = 0;
     };
     using CameraRequestBus = AZ::EBus<CameraComponentRequests>;
 

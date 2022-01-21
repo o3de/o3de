@@ -160,7 +160,7 @@ namespace AtomToolsFramework
                 ApplyRangeEditDataAttributes<float>();
                 break;
             case DynamicPropertyType::Color:
-                AddEditDataAttribute(AZ_CRC("ColorEditorConfiguration", 0xc8b9510e), AZ::RPI::ColorUtils::GetLinearRgbEditorConfig());
+                AddEditDataAttribute(AZ_CRC_CE("ColorEditorConfiguration"), AZ::RPI::ColorUtils::GetRgbEditorConfig());
                 break;
             case DynamicPropertyType::Enum:
                 m_editData.m_elementId = AZ::Edit::UIHandlers::ComboBox;

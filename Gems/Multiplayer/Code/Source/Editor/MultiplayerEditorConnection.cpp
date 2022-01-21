@@ -58,7 +58,7 @@ namespace Multiplayer
                     {
                         ActivateDedicatedEditorServer();
                     },
-                    "LegacySystemInterfaceCreated");
+                    "CriticalAssetsCompiled");
             }
         }
     }

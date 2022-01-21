@@ -38,7 +38,7 @@ def pipelineParameters = [
     booleanParam(defaultValue: false, description: 'Recreates the volume used for the workspace. The volume will be created out of a snapshot taken from main.', name: 'RECREATE_VOLUME')
 ]
 
-def palSh(cmd, lbl = '', winSlashReplacement = true) {
+def palSh(cmd, lbl = '', winSlashReplacement = true, winCharReplacement = true) {
     if (env.IS_UNIX) {
         sh label: lbl,
            script: cmd
@@ -46,7 +46,9 @@ def palSh(cmd, lbl = '', winSlashReplacement = true) {
         if (winSlashReplacement) {
             cmd = cmd.replace('/','\\')
         }
-        cmd = cmd.replace('%', '%%')
+        if (winCharReplacement) {
+            cmd = cmd.replace('%', '%%')
+        }
         bat label: lbl,
             script: cmd
     }
@@ -262,7 +264,7 @@ def CheckoutRepo(boolean disableSubmodules = false) {
     commitDateFmt = '%%cI'
     if (env.IS_UNIX) commitDateFmt = '%cI'
 
-    palSh("git show -s --format=${commitDateFmt} ${env.CHANGE_ID} > commitdate", 'Getting commit date')
+    palSh("git show -s --format=${commitDateFmt} ${env.CHANGE_ID} > commitdate", 'Getting commit date', winSlashReplacement=true, winCharReplacement=false)
     env.CHANGE_DATE = readFile file: 'commitdate'
     env.CHANGE_DATE = env.CHANGE_DATE.trim()
     palRm('commitdate')
@@ -811,7 +813,7 @@ try {
                         }
                     }
 
-                    pipelineProperties.add(parameters(pipelineParameters))
+                    pipelineProperties.add(parameters(pipelineParameters.unique()))
                     properties(pipelineProperties)
 
                     // Stash the INCREMENTAL_BUILD_SCRIPT_PATH since all nodes will use it

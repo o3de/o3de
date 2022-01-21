@@ -9,6 +9,7 @@
 set(FILES
     base.h
     Docs.h
+    variadic.h
     Platform.cpp
     Platform.h
     PlatformDef.h
@@ -115,8 +116,14 @@ set(FILES
     Debug/TraceReflection.h
     DOM/DomBackend.cpp
     DOM/DomBackend.h
+    DOM/DomPath.cpp
+    DOM/DomPath.h
     DOM/DomUtils.cpp
     DOM/DomUtils.h
+    DOM/DomValue.cpp
+    DOM/DomValue.h
+    DOM/DomValueWriter.cpp
+    DOM/DomValueWriter.h
     DOM/DomVisitor.cpp
     DOM/DomVisitor.h
     DOM/Backends/JSON/JsonBackend.h
