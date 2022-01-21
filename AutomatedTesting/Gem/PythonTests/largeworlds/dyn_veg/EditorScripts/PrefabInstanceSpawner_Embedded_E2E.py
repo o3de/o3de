@@ -112,7 +112,8 @@ def DynamicSliceInstanceSpawner_Embedded_E2E():
     # 6) Save the created level
     general.save_level()
     level_prefab_path = os.path.join(paths.products, "levels", lvl_name, f"{lvl_name}.spawnable")
-    Report.result(Tests.saved_and_exported, os.path.exists(level_prefab_path))
+    success = helper.wait_for_condition(lambda: os.path.exists(level_prefab_path), 5.0)
+    Report.result(Tests.saved_and_exported, success)
 
 
 if __name__ == "__main__":
