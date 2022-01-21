@@ -595,7 +595,7 @@ namespace MaterialEditor
                 MaterialPropertyValue propertyValue = AtomToolsFramework::ConvertToRuntimeType(it->second.GetValue());
                 if (propertyValue.IsValid())
                 {
-                    if (!AtomToolsFramework::ConvertToExportFormat(exportPath, propertyId.GetFullName(), propertyDefinition, propertyValue))
+                    if (!AtomToolsFramework::ConvertToExportFormat(exportPath, propertyId, propertyDefinition, propertyValue))
                     {
                         AZ_Error("MaterialDocument", false, "Material document property could not be converted: '%s' in '%s'.", propertyId.GetCStr(), m_absolutePath.c_str());
                         result = false;
