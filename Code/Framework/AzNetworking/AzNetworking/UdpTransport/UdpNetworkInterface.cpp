@@ -446,7 +446,7 @@ namespace AzNetworking
 
         if (compErr != CompressorError::Ok)
         {
-            AZLOG_ERROR("Decompress failed with error %d this will lead to data read errors!", compErr);
+            AZLOG_ERROR("Decompress failed with error %d this will lead to data read errors!", aznumeric_cast<int32_t>(compErr));
             return false;
         }
 

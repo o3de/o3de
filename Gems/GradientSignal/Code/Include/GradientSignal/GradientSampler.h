@@ -33,7 +33,7 @@ namespace GradientSignal
         static void Reflect(AZ::ReflectContext* context);
 
         inline float GetValue(const GradientSampleParams& sampleParams) const;
-        inline void GetValues(AZStd::span<AZ::Vector3> positions, AZStd::span<float> outValues) const;
+        inline void GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const;
 
         bool IsEntityInHierarchy(const AZ::EntityId& entityId) const;
 
@@ -147,12 +147,12 @@ namespace GradientSignal
         return output * m_opacity;
     }
 
-    inline void GradientSampler::GetValues(AZStd::span<AZ::Vector3> positions, AZStd::span<float> outValues) const
+    inline void GradientSampler::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
     {
         auto ClearOutputValues = [](AZStd::span<float> outValues)
         {
             // If we don't have a valid gradient (or it is fully transparent), clear out all the output values.
-            memset(outValues.data(), 0, outValues.size() * sizeof(float));
+            AZStd::fill(outValues.begin(), outValues.end(), 0.0f);
         };
 
         if (m_opacity <= 0.0f || !m_gradientId.IsValid())

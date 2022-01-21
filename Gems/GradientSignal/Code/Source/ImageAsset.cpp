@@ -24,6 +24,7 @@ namespace
     float RetrieveValue(const AZ::u8* mem,  size_t index)
     {
         AZ_Assert(false, "Unimplemented!");
+        return 0.0f;
     }
 
     template <>

@@ -185,7 +185,7 @@ namespace GradientSignal
         return output;
     }
 
-    void LevelsGradientComponent::GetValues(AZStd::span<AZ::Vector3> positions, AZStd::span<float> outValues) const
+    void LevelsGradientComponent::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
     {
         if (positions.size() != outValues.size())
         {

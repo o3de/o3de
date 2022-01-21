@@ -30,7 +30,8 @@ namespace AzToolsFramework
         RichTextHighlighter() = delete;
 
         static QString HighlightText(const QString& displayString, const QString& matchingSubstring);
-        static void PaintHighlightedRichText(const QString& highlightedString,QPainter* painter, QStyleOptionViewItem option, QRect availableRect);
+        static void PaintHighlightedRichText(const QString& highlightedString,QPainter* painter, QStyleOptionViewItem option,
+            QRect availableRect, QPoint offset = QPoint());
 
     };
 } // namespace AzToolsFramework
