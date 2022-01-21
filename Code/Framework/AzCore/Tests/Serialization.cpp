@@ -720,6 +720,49 @@ namespace SerializeTestClasses {
         AZStd::intrusive_ptr<SmartPtrClass>         m_intrusivePtr;
         AZStd::unique_ptr<SmartPtrClass>            m_uniquePtr;
     };
+
+    struct ElementOverrideType
+    {
+        AZ_RTTI(ElementOverrideType, "{BAA18B6C-3CB3-476C-8B41-21EA7CE1F4CF}");
+        AZ_CLASS_ALLOCATOR(ElementOverrideType, AZ::SystemAllocator, 0);
+
+        static AZ::ObjectStreamWriteOverrideResponse Writer(
+            AZ::SerializeContext::EnumerateInstanceCallContext& callContext,
+            const void* object,
+            const AZ::SerializeContext::ClassData&,
+            const AZ::SerializeContext::ClassElement*)
+        {
+            auto ptr = static_cast<const ElementOverrideType*>(object);
+
+            if(ptr)
+            {
+                switch(ptr->m_field)
+                {
+                case 0:
+                {
+                    float output{};
+                    callContext.m_context->EnumerateInstanceConst(&callContext, &output, azrtti_typeid<decltype(output)>(), nullptr, nullptr);
+                    return AZ::ObjectStreamWriteOverrideResponse::CompletedWrite;
+                }
+                case 1:
+                    return AZ::ObjectStreamWriteOverrideResponse::FallbackToDefaultWrite;
+                }
+            }
+
+            return AZ::ObjectStreamWriteOverrideResponse::AbortWrite;
+        }
+
+        static void Reflect(AZ::SerializeContext& sc)
+        {
+            sc.Class<ElementOverrideType>()
+                ->Attribute(AZ::SerializeContextAttributes::ObjectStreamWriteElementOverride, &ElementOverrideType::Writer)
+                ->Field("field", &ElementOverrideType::m_field);
+        }
+
+        int m_field = 0;
+
+        static AZ::ObjectStreamWriteOverrideResponse m_response;
+    };
 } //SerializeTestClasses
 
 namespace AZ
@@ -1696,6 +1739,64 @@ namespace UnitTest
                 genericClassInfo->Reflect(serializeContext);
             }
         }
+    }
+
+    TEST_F(Serialization, ElementOverrideTest_DefaultSerializationWorks)
+    {
+        ElementOverrideType::Reflect(*m_serializeContext);
+
+        ElementOverrideType testType;
+        testType.m_field = 1; // Our custom serializer will use the default output when this value is 1
+
+        AZStd::vector<char> buffer;
+        IO::ByteContainerStream<AZStd::vector<char>> stream(&buffer);
+        ASSERT_TRUE(Utils::SaveObjectToStream(stream, DataStream::ST_XML, &testType, m_serializeContext.get()));
+
+        constexpr const char* expectedValue = R"(<ObjectStream version="3">
+	<Class name="ElementOverrideType" type="{BAA18B6C-3CB3-476C-8B41-21EA7CE1F4CF}">
+		<Class name="int" field="field" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+	</Class>
+</ObjectStream>)";
+
+        AZStd::string result(buffer.data(), stream.GetLength());
+        AZ::StringFunc::TrimWhiteSpace(result, true, true);
+
+        EXPECT_STREQ(result.c_str(), expectedValue);
+    }
+
+    TEST_F(Serialization, ElementOverrideTest_CustomSerializationWorks)
+    {
+        ElementOverrideType::Reflect(*m_serializeContext);
+
+        ElementOverrideType testType;
+        testType.m_field = 0; // Our custom serializer will do its own output when this value is 0
+
+        AZStd::vector<char> buffer;
+        IO::ByteContainerStream<AZStd::vector<char>> stream(&buffer);
+        ASSERT_TRUE(Utils::SaveObjectToStream(stream, DataStream::ST_XML, &testType, m_serializeContext.get()));
+
+        constexpr const char* expectedValue = R"(<ObjectStream version="3">
+	<Class name="float" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+</ObjectStream>)";
+
+        AZStd::string result(buffer.data(), stream.GetLength());
+        AZ::StringFunc::TrimWhiteSpace(result, true, true);
+
+        EXPECT_STREQ(result.c_str(), expectedValue);
+    }
+
+    TEST_F(Serialization, ElementOverrideTest_FailureCase)
+    {
+        ElementOverrideType::Reflect(*m_serializeContext);
+
+        ElementOverrideType testType;
+        testType.m_field = 2; // Our custom serializer will report a failure when this value is not 0/1
+
+        AZStd::vector<char> buffer;
+        IO::ByteContainerStream<AZStd::vector<char>> stream(&buffer);
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        ASSERT_FALSE(Utils::SaveObjectToStream(stream, DataStream::ST_XML, &testType, m_serializeContext.get()));
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
     }
 
     TEST_F(Serialization, ContainerTypeContainedTypeDiffersByPointer)
