@@ -7,8 +7,19 @@
 #
 
 set(FILES
+    Source/Document/ShaderManagementConsoleDocumentRequestBus.h
+    Source/Document/ShaderManagementConsoleDocument.cpp
+    Source/Document/ShaderManagementConsoleDocument.h
+
+    Source/Window/ShaderManagementConsoleBrowserInteractions.h
+    Source/Window/ShaderManagementConsoleBrowserInteractions.cpp
+    Source/Window/ShaderManagementConsoleWindow.h
+    Source/Window/ShaderManagementConsoleWindow.cpp
+    Source/Window/ShaderManagementConsole.qrc
+
     Source/main.cpp
     Source/ShaderManagementConsoleApplication.cpp
     Source/ShaderManagementConsoleApplication.h
+    Source/ShaderManagementConsoleRequestBus.h
     ../Scripts/GenerateShaderVariantListForMaterials.py
 )
